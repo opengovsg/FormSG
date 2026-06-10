@@ -597,7 +597,7 @@ describe('multirespondent-submision.controller', () => {
               url: '',
               isRetryEnabled: false,
             },
-          } as SnapshottedFormDef,
+          } as unknown as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -686,7 +686,7 @@ describe('multirespondent-submision.controller', () => {
               url: '',
               isRetryEnabled: false,
             },
-          } as SnapshottedFormDef,
+          } as unknown as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -749,7 +749,7 @@ describe('multirespondent-submision.controller', () => {
               url: '',
               isRetryEnabled: false,
             },
-          } as SnapshottedFormDef,
+          } as unknown as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -812,7 +812,7 @@ describe('multirespondent-submision.controller', () => {
               url: '',
               isRetryEnabled: false,
             },
-          } as SnapshottedFormDef,
+          } as unknown as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -869,7 +869,7 @@ describe('multirespondent-submision.controller', () => {
               url: '',
               isRetryEnabled: false,
             },
-          } as SnapshottedFormDef,
+          } as unknown as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -926,7 +926,7 @@ describe('multirespondent-submision.controller', () => {
               url: '',
               isRetryEnabled: false,
             },
-          } as SnapshottedFormDef,
+          } as unknown as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,
@@ -980,7 +980,7 @@ describe('multirespondent-submision.controller', () => {
               url: '',
               isRetryEnabled: false,
             },
-          } as SnapshottedFormDef,
+          } as unknown as SnapshottedFormDef,
           encryptedPayload: {
             encryptedContent: 'encryptedContent',
             version: 1,

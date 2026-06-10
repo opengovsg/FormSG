@@ -124,10 +124,12 @@ describe('multirespondent-submission.service', () => {
       responses: {
         [singleSubmissionFieldId]: {
           fieldType: BasicField.ShortText,
-          answer: 'answer',
+          question: '',
+          answer: { value: 'answer' },
+          provenance: {},
         },
       },
-      mrfVersion: 1,
+      mrfVersion: 2,
       ...overrides,
     })
 

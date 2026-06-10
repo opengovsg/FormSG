@@ -1,25 +1,14 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import { ObjectId } from 'bson'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
 import {
-  AddressAttributes,
-  AddressResponseV3,
-  AttachmentResponseV3,
   BasicField,
-  CheckboxResponseV3,
-  ChildBirthRecordsResponseV3,
-  EmailResponseV3,
-  FieldResponsesV3,
   FormFieldDto,
   FormWorkflowStepConditional,
   FormWorkflowStepDto,
-  LongTextResponseV3,
-  NumberResponseV3,
-  ShortTextResponseV3,
-  SignatureFieldResponseV3,
   SignatureVectorArray,
   SubmissionType,
-  TableResponseV3,
   WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -41,9 +30,10 @@ import {
   ITableFieldSchema,
   MultirespondentSubmissionData,
 } from 'src/types'
+import { ParsedClearFormFieldResponsesV4 } from 'src/types/api'
 
 import * as fieldValidation from '../../../../utils/field-validation'
-import { ValidateFieldErrorV3 } from '../../submission.errors'
+import { ValidateFieldErrorV4 } from '../../submission.errors'
 import {
   createMultirespondentSubmissionDto,
   createPublicMultirespondentSubmissionDto,
@@ -107,25 +97,29 @@ describe('multirespondent-submission.utils', () => {
         responses: {
           [inactiveEmailField]: {
             fieldType: BasicField.Email,
-            answer: {
-              value: 'notexpectedsinceinactive@email.com',
-            },
+            question: '',
+            answer: { value: 'notexpectedsinceinactive@email.com' },
+            provenance: {},
           },
           [activeEmailField]: {
             fieldType: BasicField.Email,
-            answer: {
-              value: 'expected@email.com',
-            },
+            question: '',
+            answer: { value: 'expected@email.com' },
+            provenance: {},
           },
           [shortTextFieldId]: {
             fieldType: BasicField.ShortText,
-            answer: 'short text answer',
+            question: '',
+            answer: { value: 'short text answer' },
+            provenance: {},
           },
           [activeEmailFieldNoAutoReply]: {
             fieldType: BasicField.Email,
+            question: '',
             answer: { value: 'notexpectedsincenoautoReply@email.com' },
+            provenance: {},
           },
-        },
+        } as FieldResponsesV4,
         formFields,
         currentStepActiveFields: [
           activeEmailField,
@@ -375,14 +369,13 @@ describe('multirespondent-submission.utils', () => {
           _id: field1Id,
         }),
       ]
-      const mockResponses = {
+      const mockResponses: ParsedClearFormFieldResponsesV4 = {
         [field1Id]: {
           fieldType: BasicField.Children,
-          answer: {
-            child: [],
-            childFields: [],
-          },
-        } as ChildBirthRecordsResponseV3,
+          question: '',
+          answer: {},
+          provenance: {},
+        } as unknown as ParsedClearFormFieldResponsesV4[string],
       }
 
       // Act
@@ -395,16 +388,16 @@ describe('multirespondent-submission.utils', () => {
 
       // Assert
       expect(result.isErr()).toBe(true)
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV3)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
       expect(result._unsafeUnwrapErr().message).toBe(
         'Children field type is not supported for MRF submisisons',
       )
     })
 
-    it('should invoke validateFieldV3 with isVisible true when non-hidden and supported field type is submitted', () => {
+    it('should invoke validateFieldV4 with isVisible true when non-hidden and supported field type is submitted', () => {
       // Arrange
-      const validateFieldV3Mock = jest
-        .spyOn(fieldValidation, 'validateFieldV3')
+      const validateFieldV4Mock = jest
+        .spyOn(fieldValidation, 'validateFieldV4')
         .mockReturnValue(ok(true))
       const mockFormId = 'mockFormId'
       const field1Id = 'field1'
@@ -412,11 +405,13 @@ describe('multirespondent-submission.utils', () => {
       const mockFormFields = [
         generateDefaultField(BasicField.ShortText, { _id: field1Id }),
       ]
-      const mockResponses = {
+      const mockResponses: ParsedClearFormFieldResponsesV4 = {
         [field1Id]: {
           fieldType: BasicField.ShortText,
-          answer: 'Some text',
-        } as ShortTextResponseV3,
+          question: '',
+          answer: { value: 'Some text' },
+          provenance: {},
+        } as unknown as ParsedClearFormFieldResponsesV4[string],
       }
 
       // Act
@@ -428,20 +423,20 @@ describe('multirespondent-submission.utils', () => {
       })
 
       // Assert
-      expect(validateFieldV3Mock).toHaveBeenCalledWith({
+      expect(validateFieldV4Mock).toHaveBeenCalledWith({
         formId: mockFormId,
         formField: mockFormFields[0],
         response: mockResponses.field1,
         isVisible: true,
       })
 
-      expect(validateFieldV3Mock).toHaveBeenCalledOnce()
+      expect(validateFieldV4Mock).toHaveBeenCalledOnce()
     })
 
-    it('should invoke validateFieldV3 with isVisible false when hidden and supported field type is submitted', () => {
+    it('should invoke validateFieldV4 with isVisible false when hidden and supported field type is submitted', () => {
       // Arrange
-      const validateFieldV3Mock = jest
-        .spyOn(fieldValidation, 'validateFieldV3')
+      const validateFieldV4Mock = jest
+        .spyOn(fieldValidation, 'validateFieldV4')
         .mockReturnValue(ok(true))
       const mockFormId = 'mockFormId'
       const field1Id = 'field1'
@@ -451,15 +446,19 @@ describe('multirespondent-submission.utils', () => {
         generateDefaultField(BasicField.ShortText, { _id: field1Id }),
         generateDefaultField(BasicField.LongText, { _id: field2Id }),
       ]
-      const mockResponses = {
+      const mockResponses: ParsedClearFormFieldResponsesV4 = {
         [field1Id]: {
           fieldType: BasicField.ShortText,
-          answer: 'Some text',
-        } as ShortTextResponseV3,
+          question: '',
+          answer: { value: 'Some text' },
+          provenance: {},
+        } as unknown as ParsedClearFormFieldResponsesV4[string],
         [field2Id]: {
           fieldType: BasicField.LongText,
-          answer: 'Some long text',
-        } as LongTextResponseV3,
+          question: '',
+          answer: { value: 'Some long text' },
+          provenance: {},
+        } as unknown as ParsedClearFormFieldResponsesV4[string],
       }
 
       // Act
@@ -471,21 +470,21 @@ describe('multirespondent-submission.utils', () => {
       })
 
       // Assert
-      expect(validateFieldV3Mock).toHaveBeenCalledWith({
+      expect(validateFieldV4Mock).toHaveBeenCalledWith({
         formId: mockFormId,
         formField: mockFormFields[0],
         response: mockResponses.field1,
         isVisible: false,
       })
 
-      expect(validateFieldV3Mock).toHaveBeenCalledWith({
+      expect(validateFieldV4Mock).toHaveBeenCalledWith({
         formId: mockFormId,
         formField: mockFormFields[1],
         response: mockResponses.field2,
         isVisible: true,
       })
 
-      expect(validateFieldV3Mock).toHaveBeenCalledTimes(2)
+      expect(validateFieldV4Mock).toHaveBeenCalledTimes(2)
     })
   })
 
@@ -508,16 +507,25 @@ describe('multirespondent-submission.utils', () => {
           fieldType: BasicField.Email,
         } as IEmailFieldSchema,
       ]
-      const responses: FieldResponsesV3 = {
+      const responses: FieldResponsesV4 = {
         '1': {
           fieldType: BasicField.ShortText,
-          answer: 'Test answer',
-        } as ShortTextResponseV3,
-        '2': { fieldType: BasicField.Number, answer: '42' } as NumberResponseV3,
+          question: 'Short Text',
+          answer: { value: 'Test answer' },
+          provenance: {},
+        },
+        '2': {
+          fieldType: BasicField.Number,
+          question: 'Number',
+          answer: { value: '42' },
+          provenance: {},
+        },
         '3': {
           fieldType: BasicField.Email,
+          question: 'Email',
           answer: { value: 'test@example.com' },
-        } as EmailResponseV3,
+          provenance: {},
+        },
       }
 
       const result = getQuestionAnswerPairsForMultipleFields({
@@ -548,11 +556,13 @@ describe('multirespondent-submission.utils', () => {
           fieldType: BasicField.Attachment,
         } as IAttachmentFieldSchema,
       ]
-      const responses: FieldResponsesV3 = {
+      const responses: FieldResponsesV4 = {
         '1': {
           fieldType: BasicField.Attachment,
-          answer: { answer: 'file.pdf' },
-        } as AttachmentResponseV3,
+          question: 'File Upload',
+          answer: { value: 'file.pdf', hasBeenScanned: false },
+          provenance: {},
+        },
       }
 
       const result = getQuestionAnswerPairsForMultipleFields({
@@ -590,21 +600,25 @@ describe('multirespondent-submission.utils', () => {
           ],
         } as ITableFieldSchema,
       ]
-      const responses: FieldResponsesV3 = {
+      const responses: FieldResponsesV4 = {
         '1': {
           fieldType: BasicField.Table,
-          answer: [
-            { col1: 'Alice', col2: '30' },
-            { col1: 'Bob', col2: '25' },
-          ],
-        } as TableResponseV3,
+          question: 'Table of Name and Age',
+          answer: {
+            row0: { rowNum: 0, value: { col1: 'Alice', col2: '30' } },
+            row1: { rowNum: 1, value: { col1: 'Bob', col2: '25' } },
+          },
+          provenance: {},
+        },
         '2': {
           fieldType: BasicField.Table,
-          answer: [
-            { col3: 'Swimming', col4: '5' },
-            { col3: 'Reading', col4: '10' },
-          ],
-        } as TableResponseV3,
+          question: 'Table of Hobbies',
+          answer: {
+            row0: { rowNum: 0, value: { col3: 'Swimming', col4: '5' } },
+            row1: { rowNum: 1, value: { col3: 'Reading', col4: '10' } },
+          },
+          provenance: {},
+        },
       }
 
       const result = getQuestionAnswerPairsForMultipleFields({
@@ -644,14 +658,16 @@ describe('multirespondent-submission.utils', () => {
           fieldType: BasicField.Checkbox,
         } as ICheckboxFieldSchema,
       ]
-      const responses: FieldResponsesV3 = {
+      const responses: FieldResponsesV4 = {
         '1': {
           fieldType: BasicField.Checkbox,
+          question: 'Checkbox',
           answer: {
             value: ['Option 1', 'Option 2', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
             othersInput: 'Custom Option',
           },
-        } as CheckboxResponseV3,
+          provenance: {},
+        },
       }
 
       const result = getQuestionAnswerPairsForMultipleFields({
@@ -676,20 +692,20 @@ describe('multirespondent-submission.utils', () => {
           fieldType: BasicField.Address,
         } as IAddressCompoundFieldSchema,
       ]
-      const responses: FieldResponsesV3 = {
+      const responses: FieldResponsesV4 = {
         '1': {
           fieldType: BasicField.Address,
+          question: 'Address',
           answer: {
-            addressSubFields: {
-              postalCode: '650161',
-              blockNumber: '161',
-              streetName: 'BUKIT BATOK STREET 11',
-              buildingName: '',
-              levelNumber: '1',
-              unitNumber: '1',
-            } as AddressAttributes,
+            postalCode: { value: '650161' },
+            blockNumber: { value: '161' },
+            streetName: { value: 'BUKIT BATOK STREET 11' },
+            buildingName: { value: '' },
+            levelNumber: { value: '1' },
+            unitNumber: { value: '1' },
           },
-        } as AddressResponseV3,
+          provenance: {},
+        },
       }
 
       const result = getQuestionAnswerPairsForMultipleFields({
@@ -720,13 +736,12 @@ describe('multirespondent-submission.utils', () => {
         [[40, 40, 0.5]],
       ]
 
-      const responses: FieldResponsesV3 = {
+      const responses: FieldResponsesV4 = {
         '1': {
           fieldType: BasicField.Signature,
-          answer: {
-            type: 'draw',
-            value: MOCK_SIGNATURE_VALUE,
-          } as SignatureFieldResponseV3,
+          question: 'Signature',
+          answer: { type: 'draw', value: MOCK_SIGNATURE_VALUE },
+          provenance: {},
         },
       }
 
@@ -758,13 +773,12 @@ describe('multirespondent-submission.utils', () => {
         } as ISignatureFieldSchema,
       ]
 
-      const responses: FieldResponsesV3 = {
+      const responses: FieldResponsesV4 = {
         '1': {
           fieldType: BasicField.Signature,
-          answer: {
-            type: 'draw',
-            value: [[[10, 20, 0.5]], [[40, 40, 0.5]]],
-          } as SignatureFieldResponseV3,
+          question: 'Signature',
+          answer: { type: 'draw', value: [[[10, 20, 0.5]], [[40, 40, 0.5]]] },
+          provenance: {},
         },
       }
 
@@ -785,10 +799,12 @@ describe('multirespondent-submission.utils', () => {
 
     it('should handle Ndi fields correctly', () => {
       const formFields: FormFieldSchema[] = []
-      const responses: FieldResponsesV3 = {
+      const responses: FieldResponsesV4 = {
         'SingPass Validated NRIC': {
           fieldType: BasicField.Nric,
-          answer: 'S1234567A',
+          question: 'SingPass Validated NRIC',
+          answer: { value: 'S1234567A' },
+          provenance: {},
         },
       }
 
@@ -830,16 +846,20 @@ describe('multirespondent-submission.utils', () => {
         } as IPopulatedForm
 
         // Test Option A
-        const mockResponsesA = {
+        const mockResponsesA: FieldResponsesV4 = {
           [mockConditionalFieldId]: {
             fieldType: BasicField.Dropdown,
-            answer: 'Option A',
+            question: '',
+            answer: { value: 'Option A' },
+            provenance: {},
           },
           [mockShortTextFieldId]: {
             fieldType: BasicField.ShortText,
-            answer: 'Some text response',
+            question: '',
+            answer: { value: 'Some text response' },
+            provenance: {},
           },
-        } as FieldResponsesV3
+        }
 
         const mockWorkflowStep = {
           workflow_type: WorkflowType.Conditional,
@@ -855,16 +875,20 @@ describe('multirespondent-submission.utils', () => {
         expect(resultA._unsafeUnwrap()).toEqual(['test1@example.com'])
 
         // Test Option B
-        const mockResponsesB = {
+        const mockResponsesB: FieldResponsesV4 = {
           [mockConditionalFieldId]: {
             fieldType: BasicField.Dropdown,
-            answer: 'Option B',
+            question: '',
+            answer: { value: 'Option B' },
+            provenance: {},
           },
           [mockShortTextFieldId]: {
             fieldType: BasicField.ShortText,
-            answer: 'Some text response',
+            question: '',
+            answer: { value: 'Some text response' },
+            provenance: {},
           },
-        } as FieldResponsesV3
+        }
 
         // Act & Assert for Option B
         const resultB = retrieveWorkflowStepEmailAddresses(
@@ -893,7 +917,7 @@ describe('multirespondent-submission.utils', () => {
             }),
           ],
         } as IPopulatedForm
-        const mockResponses = {} as FieldResponsesV3
+        const mockResponses: FieldResponsesV4 = {}
         const mockWorkflowStep = {
           workflow_type: WorkflowType.Conditional,
           conditional_field: mockConditionalFieldId,
@@ -920,12 +944,14 @@ describe('multirespondent-submission.utils', () => {
             }),
           ],
         } as IPopulatedForm
-        const mockResponses = {
+        const mockResponses: FieldResponsesV4 = {
           [mockConditionalFieldId]: {
             fieldType: BasicField.ShortText,
-            answer: 'Some text',
+            question: '',
+            answer: { value: 'Some text' },
+            provenance: {},
           },
-        } as FieldResponsesV3
+        }
         const mockWorkflowStep = {
           workflow_type: WorkflowType.Conditional,
           conditional_field: mockConditionalFieldId,
@@ -953,12 +979,14 @@ describe('multirespondent-submission.utils', () => {
             }),
           ],
         } as IPopulatedForm
-        const mockResponses = {
+        const mockResponses: FieldResponsesV4 = {
           [mockConditionalFieldId]: {
             fieldType: BasicField.Dropdown,
-            answer: 'Option A',
+            question: '',
+            answer: { value: 'Option A' },
+            provenance: {},
           },
-        } as FieldResponsesV3
+        }
         const mockWorkflowStep = {
           workflow_type: WorkflowType.Conditional,
           conditional_field: mockConditionalFieldId,
@@ -991,12 +1019,14 @@ describe('multirespondent-submission.utils', () => {
           }),
         ],
       } as IPopulatedForm
-      const mockResponses = {
+      const mockResponses: FieldResponsesV4 = {
         [mockConditionalFieldId]: {
           fieldType: BasicField.Dropdown,
-          answer: 'Option C', // Option not in mapping
+          question: '',
+          answer: { value: 'Option C' }, // Option not in mapping
+          provenance: {},
         },
-      } as FieldResponsesV3
+      }
       const mockWorkflowStep = {
         workflow_type: WorkflowType.Conditional,
         conditional_field: mockConditionalFieldId,
@@ -1016,11 +1046,13 @@ describe('multirespondent-submission.utils', () => {
 
   it('should return an empty array when formFields is not iterable', () => {
     const formFields = null as unknown as FormFieldSchema[]
-    const responses: FieldResponsesV3 = {
+    const responses: FieldResponsesV4 = {
       '1': {
         fieldType: BasicField.ShortText,
-        answer: 'Test answer',
-      } as ShortTextResponseV3,
+        question: 'Short Text',
+        answer: { value: 'Test answer' },
+        provenance: {},
+      },
     }
 
     const result = getQuestionAnswerPairsForMultipleFields({
@@ -1042,13 +1074,13 @@ describe('multirespondent-submission.utils', () => {
 
     const undefinedResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
-      responses: undefined as unknown as FieldResponsesV3,
+      responses: undefined as unknown as FieldResponsesV4,
     })
     expect(undefinedResult).toEqual([])
 
     const nullResult = getQuestionAnswerPairsForMultipleFields({
       formFields,
-      responses: null as unknown as FieldResponsesV3,
+      responses: null as unknown as FieldResponsesV4,
     })
     expect(nullResult).toEqual([])
   })
