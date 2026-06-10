@@ -6,11 +6,15 @@ import Verification from './verification'
 import Webhooks from './webhooks'
 
 export { adaptV3ToV4 } from './adapt-v3-to-v4'
+export { adaptV4ToV1 } from './adapt-v4-to-v1'
 export { adaptV4ToV3 } from './adapt-v4-to-v3'
 export { isFieldResponsesV4 } from './crypto-v3'
 export {
   ADDRESS_SUBFIELD_KEYS,
+  ADDRESS_V1_ANSWER_ORDER,
+  CHECKBOX_OTHERS_INPUT_VALUE,
   GENERIC_STRING_FIELD_TYPES,
+  OTHERS_PREFIX,
 } from './constants-v4'
 
 export type {

@@ -1,4 +1,5 @@
-import { adaptV4ToV1 } from '../../src/adapt-v4-to-v1'
+// Import through the package entrypoint: the adapter is public SDK surface.
+import { adaptV4ToV1 } from '../../src/index'
 import Crypto from '../../src/crypto'
 import CryptoV3 from '../../src/crypto-v3'
 import { FormField } from '../../src/types'
