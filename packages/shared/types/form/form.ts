@@ -111,12 +111,40 @@ export enum FormResponseMode {
   Multirespondent = 'multirespondent',
 }
 
+/**
+ * The source(s) a form replaced, captured during form set-up (paper-forms
+ * tracking). These seven codes are the single source of truth.
+ */
+export enum FormOrigin {
+  Paper = 'paper',
+  DigitalNew = 'digital-new',
+  DigitalEmail = 'digital-email',
+  DigitalDocument = 'digital-document',
+  DigitalSpreadsheet = 'digital-spreadsheet',
+  DigitalFormBuilder = 'digital-formbuilder',
+  DigitalOthers = 'digital-others',
+}
+
+/**
+ * Prefix of a stored "Others" entry (`digital-others: <detail>`), mirroring
+ * the checkbox-Others answer convention; dashboards count Others by prefix
+ * match. Lives beside the enum so {@link FormOriginEntry} shares the literal.
+ */
+export const FORM_ORIGIN_OTHERS_PREFIX = `${FormOrigin.DigitalOthers}: ` as const
+
+/** A recognised origin code, or "Others" with its free-text detail embedded. */
+export type FormOriginEntry =
+  | FormOrigin
+  | `${typeof FORM_ORIGIN_OTHERS_PREFIX}${string}`
+
 export interface FormMetadata {
   mfb_text_prompt_count?: number
   num_mrf_reminder_emails_sent?: number
   mfb_vision_prompt_count?: number
   template_form_id?: Schema.Types.ObjectId
   delimiter?: string
+  /** Multi-select source(s) the form replaced; "Others" embeds its detail. */
+  formOrigins?: FormOriginEntry[]
 }
 
 export type FormPaymentsChannel = {
@@ -446,7 +474,12 @@ export type CreateStorageFormBodyDto = Pick<
 export type CreateMultirespondentFormBodyDto = Pick<
   MultirespondentFormDto,
   'publicKey' | 'responseMode' | 'title'
-> & { workspaceId?: string; emails?: string[] }
+> & {
+  workspaceId?: string
+  emails?: string[]
+  // Only formOrigins is admin-writable; the rest of FormMetadata is server-managed.
+  metadata?: Pick<FormMetadata, 'formOrigins'>
+}
 
 export type CreateFormBodyDto =
   | CreateEmailFormBodyDto

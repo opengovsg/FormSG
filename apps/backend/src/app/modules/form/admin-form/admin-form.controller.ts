@@ -48,6 +48,10 @@ import {
   EncryptedStringsMessageContent,
   encryptStringsMessage,
 } from 'formsg-shared/utils/crypto'
+import {
+  normalizeFormOrigins,
+  validateFormOriginsSelection,
+} from 'formsg-shared/utils/form-origin-validation'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
@@ -143,6 +147,33 @@ const createFormValidator = celebrate({
           otherwise: Joi.forbidden(),
         }),
         workspaceId: Joi.string(),
+        // Paper-forms tracking: origins are captured only on the post-MRF-cutover
+        // create flow, so metadata is MRF-only and only formOrigins is
+        // admin-writable. Presence is optional — Joi skips the key rules when
+        // it is absent. Per-entry rules live in the shared helper — "Others"
+        // embeds its free-text detail in the entry, which Joi can't
+        // enum-validate.
+        metadata: Joi.when('responseMode', {
+          is: FormResponseMode.Multirespondent,
+          then: Joi.object({
+            formOrigins: Joi.array()
+              .items(Joi.string().trim())
+              .min(1)
+              .unique()
+              .custom((value, helpers) => {
+                const originsError = validateFormOriginsSelection(value)
+                if (originsError) {
+                  return helpers.message({
+                    custom: `{{#label}} is invalid: ${originsError}`,
+                  })
+                }
+                // Returning the converted value: celebrate writes it back to
+                // req.body, so only canonical Others entries persist.
+                return normalizeFormOrigins(value)
+              }),
+          }),
+          otherwise: Joi.forbidden(),
+        }),
       })
       .required()
       // Allow other form schema keys to be passed for form creation.

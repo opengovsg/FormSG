@@ -77,6 +77,10 @@
     "./constants/form": {
       "default": "./constants/form.ts"
     },
+    "./constants/form-origin": {
+      "require": "./dist/constants/form-origin.js",
+      "default": "./constants/form-origin.ts"
+    },
     "./constants/routes": {
       "require": "./dist/constants/routes.js",
       "default": "./constants/routes.ts"
@@ -96,6 +100,10 @@
     "./utils/address-validation": {
       "require": "./dist/utils/address-validation.js",
       "default": "./utils/address-validation.ts"
+    },
+    "./utils/form-origin-validation": {
+      "require": "./dist/utils/form-origin-validation.js",
+      "default": "./utils/form-origin-validation.ts"
     },
     "./utils/address": {
       "require": "./dist/utils/address.js",
