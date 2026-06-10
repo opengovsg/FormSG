@@ -27,7 +27,7 @@ export const formatVehicles = (vehicles: string): string => {
       const vehiclesObject = JSON.parse(vehicles)
       const vehicleNos = vehiclesObject
         .map((vehicle: { vehicle_number: string }) => vehicle['vehicle_number'])
-        .join(', ')
+          .join('; ')
       return vehicleNos
     } catch (error) {
       logger.error({
