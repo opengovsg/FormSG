@@ -1,10 +1,12 @@
 import {
+  ADDRESS_V1_ANSWER_ORDER,
   CHECKBOX_OTHERS_INPUT_VALUE,
   GENERIC_STRING_FIELD_TYPES,
   OTHERS_PREFIX,
 } from './constants-v4'
 import { FieldType, FormField } from './types'
 import {
+  AddressAnswerV4,
   AnswerV4,
   CheckboxAnswerV4,
   FieldResponsesV4,
@@ -48,6 +50,14 @@ function convertAnswerToV1(
           v === CHECKBOX_OTHERS_INPUT_VALUE && othersInput !== undefined
             ? `${OTHERS_PREFIX}${othersInput}`
             : v
+        ),
+      }
+    }
+    case 'address': {
+      const subfields = answer as AddressAnswerV4
+      return {
+        answerArray: ADDRESS_V1_ANSWER_ORDER.map((key) =>
+          convertToStringAnswer(subfields[key])
         ),
       }
     }

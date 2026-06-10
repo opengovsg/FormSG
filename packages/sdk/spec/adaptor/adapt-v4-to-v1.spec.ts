@@ -301,6 +301,60 @@ const parityCases: ParityCase[] = [
       provenance: { stepNumber: 1 },
     },
   },
+  {
+    name: 'address (all subfields)',
+    id: '6200000000000000000000b1',
+    v1: {
+      _id: '6200000000000000000000b1',
+      question: 'Home address',
+      fieldType: 'address',
+      // V1 producer order: postalCode last
+      answerArray: [
+        '123',
+        'Main Street',
+        'Sunshine Tower',
+        '10',
+        '01',
+        '654321',
+      ],
+    },
+    v4: {
+      fieldType: 'address',
+      question: 'Home address',
+      answer: {
+        postalCode: { value: '654321' },
+        blockNumber: { value: '123' },
+        streetName: { value: 'Main Street' },
+        buildingName: { value: 'Sunshine Tower' },
+        levelNumber: { value: '10' },
+        unitNumber: { value: '01' },
+      },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
+    name: 'address (empty optional subfields)',
+    id: '6200000000000000000000b2',
+    v1: {
+      _id: '6200000000000000000000b2',
+      question: 'Office address',
+      fieldType: 'address',
+      answerArray: ['1', 'Short Road', '', '', '', '111111'],
+    },
+    v4: {
+      fieldType: 'address',
+      question: 'Office address',
+      answer: {
+        postalCode: { value: '111111' },
+        blockNumber: { value: '1' },
+        streetName: { value: 'Short Road' },
+        buildingName: { value: '' },
+        levelNumber: { value: '' },
+        unitNumber: { value: '' },
+      },
+      provenance: { stepNumber: 1 },
+    },
+  },
 ]
 
 const buildV1Content = (cases: ParityCase[]): FormField[] =>

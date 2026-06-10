@@ -41,3 +41,18 @@ export const ADDRESS_SUBFIELD_KEYS = [
   'levelNumber',
   'unitNumber',
 ] as const
+
+/**
+ * The order of address subfields in a V1 content answerArray, as the V1
+ * producer emits it (postalCode last). Distinct from ADDRESS_SUBFIELD_KEYS,
+ * which is the V3 record-key list with postalCode first — rendering an
+ * answerArray in that order would silently scramble addresses.
+ */
+export const ADDRESS_V1_ANSWER_ORDER = [
+  'blockNumber',
+  'streetName',
+  'buildingName',
+  'levelNumber',
+  'unitNumber',
+  'postalCode',
+] as const
