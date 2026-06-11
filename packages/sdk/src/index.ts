@@ -39,6 +39,7 @@ export type {
   CheckboxAnswerV4,
   ChildrenAnswerV4,
   DecryptedContentV4,
+  DecryptedVersionedContentAndAttachments,
   FieldResponsesV4,
   FieldResponseV4,
   FormFieldMeta,
