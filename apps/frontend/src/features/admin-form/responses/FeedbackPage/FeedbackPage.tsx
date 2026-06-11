@@ -179,13 +179,13 @@ export const FeedbackPage = (): JSX.Element => {
     form?.title,
   ])
 
-  // Handle page loading state
-  if (isPageLoading(currentFeedbackType, issueProps, reviewProps)) {
+  // Empty vs content depends on both queries' counts, so wait for both to
+  // resolve — otherwise the faster query resolving empty flickers the wrong view.
+  const pageView = getFeedbackPageView(reviewProps, issueProps)
+  if (pageView === 'loading') {
     return isMobile ? <FeedbackPageSkeletonMobile /> : <FeedbackPageSkeleton />
   }
-
-  // Handle page empty state
-  if (issueProps.count === 0 && reviewProps.count === 0) {
+  if (pageView === 'empty') {
     return <EmptyFeedback />
   }
 
@@ -377,7 +377,11 @@ const getFeedBackDownloadButtonProps = (
   isDisabled: boolean
   isLoading: boolean
 } => {
-  const isLoading = isPageLoading(currentFeedbackType, issueProps, reviewProps)
+  const isLoading = isCurrentTabLoading(
+    currentFeedbackType,
+    issueProps,
+    reviewProps,
+  )
   if (currentFeedbackType === FeedbackType.Issues) {
     return {
       isDisabled:
@@ -392,7 +396,7 @@ const getFeedBackDownloadButtonProps = (
   }
 }
 
-const isPageLoading = (
+const isCurrentTabLoading = (
   currentFeedbackType: FeedbackType,
   issueProps: Issue,
   reviewProps: Review,
@@ -402,12 +406,27 @@ const isPageLoading = (
     : reviewProps.isGetLoading
 }
 
+type FeedbackPageView = 'loading' | 'empty' | 'content'
+
+export const getFeedbackPageView = (
+  review: Feedback,
+  issue: Feedback,
+): FeedbackPageView => {
+  if (review.isGetLoading || issue.isGetLoading) {
+    return 'loading'
+  }
+  if (review.count === 0 && issue.count === 0) {
+    return 'empty'
+  }
+  return 'content'
+}
+
 const getDisplayTableProp = (
   currentFeedbackType: FeedbackType,
   issueProps: Issue,
   reviewProps: Review,
 ): string => {
-  return isPageLoading(currentFeedbackType, issueProps, reviewProps) ||
+  return isCurrentTabLoading(currentFeedbackType, issueProps, reviewProps) ||
     currentFeedbackType === FeedbackType.Issues
     ? issueProps.count === 0
       ? 'none'
