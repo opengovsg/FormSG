@@ -1,6 +1,6 @@
 import {
   ADDRESS_V1_ANSWER_ORDER,
-  CHECKBOX_OTHERS_INPUT_VALUE,
+  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
   GENERIC_STRING_FIELD_TYPES,
   OTHERS_PREFIX,
 } from './constants-v4'
@@ -49,7 +49,7 @@ function convertAnswerToV1(
       }
       return {
         answerArray: value.map((v) =>
-          v === CHECKBOX_OTHERS_INPUT_VALUE && othersInput !== undefined
+          v === CLIENT_CHECKBOX_OTHERS_INPUT_VALUE && othersInput !== undefined
             ? `${OTHERS_PREFIX}${othersInput}`
             : v
         ),

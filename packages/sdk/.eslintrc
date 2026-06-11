@@ -1,4 +1,5 @@
 {
+  "root": true,
   "env": {
     "commonjs": true,
     "es6": true,
@@ -17,7 +18,7 @@
         "ecmaFeatures": {
           "modules": true
         },
-        "project": "tsconfig.json"
+        "project": true
       },
       "plugins": [
         "@typescript-eslint",
