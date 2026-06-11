@@ -1,6 +1,6 @@
 {
   "name": "formsg-shared",
-  "version": "7.27.0",
+  "version": "7.28.0",
   "private": true,
   "description": "",
   "scripts": {
@@ -88,6 +88,10 @@
     "./constants/field/myinfo": {
       "require": "./dist/constants/field/myinfo/index.js",
       "default": "./constants/field/myinfo/index.ts"
+    },
+    "./utils/field": {
+      "require": "./dist/utils/field.js",
+      "default": "./utils/field.ts"
     },
     "./utils/address-validation": {
       "require": "./dist/utils/address-validation.js",

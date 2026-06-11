@@ -650,7 +650,7 @@ describe('encrypt-submission.service', () => {
           const mockResponses: ProcessedFieldResponse[] = [
             {
               _id: new ObjectId().toHexString(),
-              question: '[MyInfo] Test Question',
+              question: '[Myinfo] Test Question',
               answer: 'Test Answer',
               fieldType: BasicField.ShortText,
             },
@@ -694,12 +694,12 @@ describe('encrypt-submission.service', () => {
           )
         })
 
-        it('should strip [MyInfo] prefix from expected dataCollationData to sendSubmissionToAdmin', async () => {
+        it('should strip [Myinfo] prefix from expected dataCollationData to sendSubmissionToAdmin', async () => {
           // Arrange
           const mockResponses: ProcessedFieldResponse[] = [
             {
               _id: new ObjectId().toHexString(),
-              question: '[MyInfo] Name',
+              question: '[Myinfo] Name',
               answer: 'Test Answer',
               fieldType: BasicField.ShortText,
               isVisible: true,
