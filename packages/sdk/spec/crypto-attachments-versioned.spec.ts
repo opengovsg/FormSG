@@ -105,4 +105,103 @@ describe('Crypto (envelope-aware attachment decryption)', () => {
       },
     })
   })
+
+  it('decryptWithAttachmentsVersioned returns native V4 content (not double-adapted) plus attachments', async () => {
+    const { publicKey, secretKey } = crypto.generate()
+    const { enc, uploadedFile } = await encryptV4WithFile(
+      v4ResponsesWithAttachment,
+      publicKey,
+      testFileBuffer
+    )
+
+    const resultPromise = crypto.decryptWithAttachmentsVersioned(secretKey, {
+      encryptedContent: enc.encryptedContent,
+      encryptedSubmissionSecretKey: enc.encryptedSubmissionSecretKey,
+      attachmentDownloadUrls: { [ATTACHMENT_FIELD_ID]: DOWNLOAD_URL },
+      version: MRF_TEST_VERSION,
+    })
+    mockAxios.mockResponse({ data: { encryptedFile: uploadedFile } })
+    const result = await resultPromise
+
+    expect(result).toEqual({
+      content: {
+        submissionSecretKey: enc.submissionSecretKey,
+        responses: v4ResponsesWithAttachment,
+      },
+      attachments: {
+        [ATTACHMENT_FIELD_ID]: {
+          filename: 'my-random-file.txt',
+          content: testFileBuffer,
+        },
+      },
+    })
+    // The attachment response keeps its structured V4 answer.
+    const responses = result!.content.responses as FieldResponsesV4
+    expect(responses[ATTACHMENT_FIELD_ID].answer).toEqual({
+      value: 'my-random-file.txt',
+      hasBeenScanned: false,
+    })
+  })
+
+  it('decryptWithAttachmentsVersioned returns the V1 arm plus attachments for a storage-mode payload', async () => {
+    const { publicKey, secretKey } = crypto.generate()
+    const v1Plaintext = [
+      {
+        _id: ATTACHMENT_FIELD_ID,
+        question: 'Upload a file',
+        fieldType: 'attachment',
+        answer: 'my-random-file.txt',
+      },
+    ]
+    const encryptedContent = crypto.encrypt(v1Plaintext, publicKey)
+    // Storage-mode files are encrypted with the form keypair.
+    const encryptedFile = await crypto.encryptFile(testFileBuffer, publicKey)
+    const uploadedFile = {
+      submissionPublicKey: encryptedFile.submissionPublicKey,
+      nonce: encryptedFile.nonce,
+      binary: encodeBase64(encryptedFile.binary),
+    }
+
+    const resultPromise = crypto.decryptWithAttachmentsVersioned(secretKey, {
+      encryptedContent,
+      attachmentDownloadUrls: { [ATTACHMENT_FIELD_ID]: DOWNLOAD_URL },
+      version: 1,
+    })
+    mockAxios.mockResponse({ data: { encryptedFile: uploadedFile } })
+    const result = await resultPromise
+
+    expect(result).toEqual({
+      content: { responses: v1Plaintext },
+      attachments: {
+        [ATTACHMENT_FIELD_ID]: {
+          filename: 'my-random-file.txt',
+          content: testFileBuffer,
+        },
+      },
+    })
+    expect(result!.content).not.toHaveProperty('submissionSecretKey')
+  })
+
+  it('returns null when a V4 attachment file was encrypted with the form key instead of the submission key', async () => {
+    const { publicKey, secretKey } = crypto.generate()
+    const enc = cryptoV3.encrypt(v4ResponsesWithAttachment, publicKey)
+    // Wrongly encrypt the file to the form keypair; the submission secret key
+    // cannot open it.
+    const encryptedFile = await crypto.encryptFile(testFileBuffer, publicKey)
+    const uploadedFile = {
+      submissionPublicKey: encryptedFile.submissionPublicKey,
+      nonce: encryptedFile.nonce,
+      binary: encodeBase64(encryptedFile.binary),
+    }
+
+    const resultPromise = crypto.decryptWithAttachments(secretKey, {
+      encryptedContent: enc.encryptedContent,
+      encryptedSubmissionSecretKey: enc.encryptedSubmissionSecretKey,
+      attachmentDownloadUrls: { [ATTACHMENT_FIELD_ID]: DOWNLOAD_URL },
+      version: MRF_TEST_VERSION,
+    })
+    mockAxios.mockResponse({ data: { encryptedFile: uploadedFile } })
+
+    expect(await resultPromise).toBeNull()
+  })
 })
