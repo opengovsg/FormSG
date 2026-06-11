@@ -337,6 +337,27 @@ export const StepDetailPanel = ({
             >
               <Stack spacing="0.75rem">
                 <Box>
+                  <Radio
+                    value="specific_email"
+                    colorScheme={checkboxColorScheme}
+                  >
+                    <Text textStyle="body-1" color="secondary.700">
+                      Specific emails that you choose
+                    </Text>
+                  </Radio>
+                  {currentRespondentType === 'specific_email' && (
+                    <Box ml="2.75rem" pt="0.5rem">
+                      <Input
+                        value={emailsText}
+                        onChange={(e) => setEmailsText(e.target.value)}
+                        onBlur={handleEmailsBlur}
+                        placeholder="Enter email addresses"
+                      />
+                    </Box>
+                  )}
+                </Box>
+
+                <Box>
                   <Radio value="email_field" colorScheme={checkboxColorScheme}>
                     <Text textStyle="body-1" color="secondary.700">
                       Emails entered into an email field
@@ -374,27 +395,6 @@ export const StepDetailPanel = ({
                           </Button>
                         </Stack>
                       )}
-                    </Box>
-                  )}
-                </Box>
-
-                <Box>
-                  <Radio
-                    value="specific_email"
-                    colorScheme={checkboxColorScheme}
-                  >
-                    <Text textStyle="body-1" color="secondary.700">
-                      Specific emails that you choose
-                    </Text>
-                  </Radio>
-                  {currentRespondentType === 'specific_email' && (
-                    <Box ml="2.75rem" pt="0.5rem">
-                      <Input
-                        value={emailsText}
-                        onChange={(e) => setEmailsText(e.target.value)}
-                        onBlur={handleEmailsBlur}
-                        placeholder="Enter email addresses"
-                      />
                     </Box>
                   )}
                 </Box>
