@@ -89,4 +89,23 @@ describe('Crypto (versioned decryption)', () => {
     })
     expect(result).not.toHaveProperty('submissionSecretKey')
   })
+
+  it('treats an MRF payload with an empty record as a valid empty V4 submission', () => {
+    const { publicKey, secretKey } = crypto.generate()
+    const enc = cryptoV3.encrypt({}, publicKey)
+    const params = {
+      encryptedContent: enc.encryptedContent,
+      encryptedSubmissionSecretKey: enc.encryptedSubmissionSecretKey,
+      version: MRF_TEST_VERSION,
+    }
+
+    const versioned = crypto.decryptVersioned(secretKey, params)
+    expect(versioned).toEqual({
+      submissionSecretKey: enc.submissionSecretKey,
+      responses: {},
+    })
+
+    const adapted = crypto.decrypt(secretKey, params)
+    expect(adapted).toEqual({ responses: [] })
+  })
 })

@@ -169,12 +169,17 @@ export default class Crypto extends CryptoBase {
         }
       }
 
-      if (
-        typeof decryptedObject !== 'object' ||
-        decryptedObject === null ||
-        !isFieldResponsesV4(decryptedObject as Record<string, unknown>) ||
-        submissionSecretKey === null
-      ) {
+      if (typeof decryptedObject !== 'object' || decryptedObject === null) {
+        return null
+      }
+      // An empty record is a valid V4 submission with no answered fields;
+      // `isFieldResponsesV4` alone cannot claim it since it checks the first entry.
+      const isV4Record =
+        Object.keys(decryptedObject).length === 0 ||
+        isFieldResponsesV4(decryptedObject as Record<string, unknown>)
+      // V4 content only arrives inside an MRF envelope; without one there is
+      // no per-submission secret key to honestly return.
+      if (!isV4Record || submissionSecretKey === null) {
         return null
       }
 
