@@ -407,6 +407,22 @@ const parityCases: ParityCase[] = [
     },
   },
   {
+    name: 'nric',
+    id: '6200000000000000000000b6',
+    v1: {
+      _id: '6200000000000000000000b6',
+      question: 'Your NRIC',
+      fieldType: 'nric',
+      answer: 'S1234567A',
+    },
+    v4: {
+      fieldType: 'nric',
+      question: 'Your NRIC',
+      answer: { value: 'S1234567A' },
+      provenance: { stepNumber: 1 },
+    },
+  },
+  {
     name: 'children (one row per child, values only)',
     id: '6200000000000000000000b5',
     v1: {
