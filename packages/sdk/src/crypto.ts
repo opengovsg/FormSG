@@ -15,6 +15,7 @@ import {
   verifySignedMessage,
 } from './util/crypto'
 import { determineIsFormFields } from './util/validate'
+import { adaptV4ToV1 } from './adapt-v4-to-v1'
 import CryptoBase from './crypto-base'
 import { isFieldResponsesV4 } from './crypto-v3'
 import { AttachmentDecryptionError, MissingPublicKeyError } from './errors'
@@ -73,59 +74,21 @@ export default class Crypto extends CryptoBase {
     formSecretKey: string,
     decryptParams: DecryptParams
   ): DecryptedContent | null => {
+    const decrypted = this.decryptVersioned(formSecretKey, decryptParams)
+    if (decrypted === null) return null
+    if (Array.isArray(decrypted.responses)) {
+      return decrypted as DecryptedContent
+    }
     try {
-      const { encryptedContent, verifiedContent } = decryptParams
-
-      // Do not return the transformed object in `_decrypt` function as a signed
-      // object is not encoded in UTF8 and is encoded in Base-64 instead.
-      const decryptedContent = decryptContent(formSecretKey, encryptedContent)
-      if (!decryptedContent) {
-        throw new Error('Failed to decrypt content')
+      return {
+        responses: adaptV4ToV1(decrypted.responses),
+        ...(decrypted.verified !== undefined && {
+          verified: decrypted.verified,
+        }),
       }
-      const decryptedObject: Record<string, unknown> = JSON.parse(
-        encodeUTF8(decryptedContent)
-      )
-      if (!determineIsFormFields(decryptedObject)) {
-        throw new Error('Decrypted object does not fit expected shape')
-      }
-
-      const returnedObject: DecryptedContent = {
-        responses: decryptedObject,
-      }
-
-      if (verifiedContent) {
-        if (!this.signingPublicKey) {
-          throw new MissingPublicKeyError(
-            'Public signing key must be provided when instantiating the Crypto class in order to verify verified content'
-          )
-        }
-        // Only care if it is the correct shape if verifiedContent exists, since
-        // we need to append it to the end.
-        // Decrypted message must be able to be authenticated by the public key.
-        const decryptedVerifiedContent = decryptContent(
-          formSecretKey,
-          verifiedContent
-        )
-        if (!decryptedVerifiedContent) {
-          // Returns null if decrypting verified content failed.
-          throw new Error('Failed to decrypt verified content')
-        }
-        const decryptedVerifiedObject = verifySignedMessage(
-          decryptedVerifiedContent,
-          this.signingPublicKey
-        )
-
-        returnedObject.verified = decryptedVerifiedObject
-      }
-
-      return returnedObject
-    } catch (err) {
-      // Should only throw if MissingPublicKeyError.
-      // This library should be able to be used to encrypt and decrypt content
-      // if the content does not contain verified fields.
-      if (err instanceof MissingPublicKeyError) {
-        throw err
-      }
+    } catch {
+      // Malformed V4 answer shapes abort the whole submission rather than
+      // produce partial output.
       return null
     }
   }
@@ -141,12 +104,39 @@ export default class Crypto extends CryptoBase {
    * @returns The decrypted content if successful. Else, null will be returned.
    * @throws {MissingPublicKeyError} if a public key is not provided when instantiating this class and is needed for verifying signed content.
    */
+  /**
+   * Decrypts and verifies signed verified content with the same key that
+   * encrypted the submission content.
+   * @throws {MissingPublicKeyError} if no signing public key was provided at instantiation.
+   * @throws {Error} if decryption or signature verification fails.
+   */
+  private decryptVerifiedContent = (
+    contentSecretKey: string,
+    verifiedContent: EncryptedContent
+  ): Record<string, any> => {
+    if (!this.signingPublicKey) {
+      throw new MissingPublicKeyError(
+        'Public signing key must be provided when instantiating the Crypto class in order to verify verified content'
+      )
+    }
+    // Decrypted message must be able to be authenticated by the public key.
+    const decryptedVerifiedContent = decryptContent(
+      contentSecretKey,
+      verifiedContent
+    )
+    if (!decryptedVerifiedContent) {
+      throw new Error('Failed to decrypt verified content')
+    }
+    return verifySignedMessage(decryptedVerifiedContent, this.signingPublicKey)
+  }
+
   decryptVersioned = (
     formSecretKey: string,
     decryptParams: DecryptParams
   ): DecryptedContent | DecryptedContentV4 | null => {
     try {
-      const { encryptedContent, encryptedSubmissionSecretKey } = decryptParams
+      const { encryptedContent, verifiedContent, encryptedSubmissionSecretKey } =
+        decryptParams
 
       let contentSecretKey = formSecretKey
       let submissionSecretKey: string | null = null
@@ -167,9 +157,16 @@ export default class Crypto extends CryptoBase {
       if (!decryptedContent) return null
       const decryptedObject: unknown = JSON.parse(encodeUTF8(decryptedContent))
 
+      const verified = verifiedContent
+        ? this.decryptVerifiedContent(contentSecretKey, verifiedContent)
+        : undefined
+
       if (Array.isArray(decryptedObject)) {
         if (!determineIsFormFields(decryptedObject)) return null
-        return { responses: decryptedObject }
+        return {
+          responses: decryptedObject,
+          ...(verified !== undefined && { verified }),
+        }
       }
 
       if (
@@ -184,6 +181,7 @@ export default class Crypto extends CryptoBase {
       return {
         submissionSecretKey,
         responses: decryptedObject as FieldResponsesV4,
+        ...(verified !== undefined && { verified }),
       }
     } catch (err) {
       if (err instanceof MissingPublicKeyError) {

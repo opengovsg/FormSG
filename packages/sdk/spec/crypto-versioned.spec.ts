@@ -60,4 +60,33 @@ describe('Crypto (versioned decryption)', () => {
     expect(result!.responses).toEqual(plaintext)
     expect(result).not.toHaveProperty('submissionSecretKey')
   })
+
+  it('decrypt adapts an MRF V4 payload to V1 DecryptedContent without key material', () => {
+    const { publicKey, secretKey } = crypto.generate()
+    const enc = cryptoV3.encrypt(v4Responses, publicKey)
+
+    const result = crypto.decrypt(secretKey, {
+      encryptedContent: enc.encryptedContent,
+      encryptedSubmissionSecretKey: enc.encryptedSubmissionSecretKey,
+      version: MRF_TEST_VERSION,
+    })
+
+    expect(result).toEqual({
+      responses: [
+        {
+          _id: '650abc0000000000000000aa',
+          question: 'What is your name?',
+          fieldType: 'textfield',
+          answer: 'TAN AH KOW',
+        },
+        {
+          _id: '650abc0000000000000000ab',
+          question: 'Favourite colour',
+          fieldType: 'radiobutton',
+          answer: 'Others: vermilion',
+        },
+      ],
+    })
+    expect(result).not.toHaveProperty('submissionSecretKey')
+  })
 })
