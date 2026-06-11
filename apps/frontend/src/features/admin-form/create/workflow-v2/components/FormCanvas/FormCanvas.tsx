@@ -4,6 +4,7 @@ import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { StartPageView } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContent/StartPageView'
 import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
+import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 
 import { getStepColourThemes } from '../../types'
@@ -15,7 +16,11 @@ import {
 
 import { FormFieldCard } from './FormFieldCard'
 
-const EmptyFieldsPlaceholder = (): JSX.Element => (
+const EmptyFieldsPlaceholder = ({
+  onGoToFields,
+}: {
+  onGoToFields: () => void
+}): JSX.Element => (
   <Flex
     direction="column"
     align="center"
@@ -29,13 +34,24 @@ const EmptyFieldsPlaceholder = (): JSX.Element => (
       No fields yet
     </Text>
     <Text textStyle="body-2" color="secondary.400" mt="0.25rem">
-      Create fields in the Fields tab and choose which step to put them in
+      Add fields from the{' '}
+      <Text
+        as="span"
+        color="primary.500"
+        cursor="pointer"
+        _hover={{ textDecoration: 'underline' }}
+        onClick={onGoToFields}
+      >
+        Fields tab
+      </Text>
+      , then assign them to steps here.
     </Text>
   </Flex>
 )
 
 export const FormCanvas = (): JSX.Element => {
   const { data: form } = useAdminForm()
+  const { handleBuilderClick } = useCreatePageSidebar()
   const steps = useWorkflowBuilderStore(stepsSelector)
   const focusState = useWorkflowBuilderStore(focusStateSelector)
 
@@ -123,7 +139,9 @@ export const FormCanvas = (): JSX.Element => {
               borderRadius={isStepEdit ? '4px' : undefined}
             >
               {fields.length === 0 ? (
-                <EmptyFieldsPlaceholder />
+                <EmptyFieldsPlaceholder
+                  onGoToFields={() => handleBuilderClick(false)}
+                />
               ) : (
                 fields.map((field, i) => (
                   <FormFieldCard key={field._id} field={field} fieldIndex={i} />

@@ -8,15 +8,23 @@ import {
   Icon,
   IconButton,
   Input,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
   Radio,
   RadioGroup,
   Stack,
   Text,
   Textarea,
+  useDisclosure,
 } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import { SingleSelect } from '~components/Dropdown'
+import { ModalCloseButton } from '~components/Modal'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
@@ -30,6 +38,7 @@ import {
   setFocusSelector,
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
+import { OptionEmailMappingModal } from '../AddRespondentsPanel/OptionEmailMappingModal'
 
 type StepDetailPanelProps = {
   step: WorkflowStep
@@ -67,6 +76,17 @@ export const StepDetailPanel = ({
 
   const [editName, setEditName] = useState(step.name)
   const [emailsText, setEmailsText] = useState('')
+  const mappingModal = useDisclosure()
+  const deleteModal = useDisclosure()
+
+  // Step is "dirty" if any configuration has been done
+  const isStepDirty = useMemo(() => {
+    if (step.respondentIds.length > 0) return true
+    if (step.fieldIds.length > 0) return true
+    if (step.isCustomName) return true
+    if (step.type !== 'collect') return true
+    return false
+  }, [step.respondentIds, step.fieldIds, step.isCustomName, step.type])
 
   const colorTheme = useDesignColorTheme()
   const checkboxColorScheme = colorTheme ? `theme-${colorTheme}` : 'theme-blue'
@@ -132,6 +152,37 @@ export const StepDetailPanel = ({
         label: f.title,
       }))
   }, [form?.form_fields])
+
+  // Options for the currently selected dropdown field (for email mapping)
+  const selectedDropdownOptions = useMemo(() => {
+    if (!currentLinkedFieldId || !form?.form_fields) return []
+    const field = form.form_fields.find((f) => f._id === currentLinkedFieldId)
+    if (!field || field.fieldType !== 'dropdown') return []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return ((field as any).fieldOptions as string[]) ?? []
+  }, [currentLinkedFieldId, form?.form_fields])
+
+  // Current mapping from respondent
+  const currentMapping = useMemo(() => {
+    if (stepRespondents.length === 0) return undefined
+    return stepRespondents[0].optionsToRecipientsMap
+  }, [stepRespondents])
+
+  const mappedCount = useMemo(() => {
+    if (!currentMapping) return 0
+    const values = Object.values(currentMapping) as string[][]
+    return values.filter((emails) => emails.length > 0).length
+  }, [currentMapping])
+
+  const handleMappingSave = useCallback(
+    (mapping: Record<string, string[]>) => {
+      if (stepRespondents.length === 0) return
+      updateRespondent(stepRespondents[0].id, {
+        optionsToRecipientsMap: mapping,
+      })
+    },
+    [stepRespondents, updateRespondent],
+  )
 
   const handleRespondentTypeChange = useCallback(
     (newType: string) => {
@@ -292,7 +343,7 @@ export const StepDetailPanel = ({
                     </Text>
                   </Radio>
                   {currentRespondentType === 'email_field' && (
-                    <Box pl="1.75rem" pt="0.5rem">
+                    <Box ml="2.75rem" pt="0.5rem">
                       {emailFieldItems.length > 0 ? (
                         <SingleSelect
                           name="emailFieldSelect"
@@ -303,18 +354,25 @@ export const StepDetailPanel = ({
                           onChange={handleFieldSelect}
                         />
                       ) : (
-                        <Text textStyle="body-2" color="secondary.400">
-                          You'll need an email field on your form.{' '}
-                          <Text
-                            as="span"
-                            color="primary.500"
-                            cursor="pointer"
-                            _hover={{ textDecoration: 'underline' }}
-                            onClick={() => handleBuilderClick(false)}
-                          >
-                            Add one from the Fields tab
+                        <Stack spacing="0.5rem">
+                          <Text textStyle="body-2" color="secondary.400">
+                            You don't have any email fields.
                           </Text>
-                        </Text>
+                          <Button
+                            variant="outline"
+                            colorScheme="primary"
+                            size="sm"
+                            onClick={() =>
+                              setFocus({
+                                type: 'create_field',
+                                fieldType: 'email',
+                                fromStepId: step.id,
+                              })
+                            }
+                          >
+                            Create email field
+                          </Button>
+                        </Stack>
                       )}
                     </Box>
                   )}
@@ -330,13 +388,12 @@ export const StepDetailPanel = ({
                     </Text>
                   </Radio>
                   {currentRespondentType === 'specific_email' && (
-                    <Box pl="1.75rem" pt="0.5rem">
-                      <Textarea
+                    <Box ml="2.75rem" pt="0.5rem">
+                      <Input
                         value={emailsText}
                         onChange={(e) => setEmailsText(e.target.value)}
                         onBlur={handleEmailsBlur}
-                        placeholder="e.g. bigboss@open.gov.sg, admin@open.gov.sg"
-                        rows={3}
+                        placeholder="Enter email addresses"
                       />
                     </Box>
                   )}
@@ -352,29 +409,53 @@ export const StepDetailPanel = ({
                     </Text>
                   </Radio>
                   {currentRespondentType === 'dropdown_field' && (
-                    <Box pl="1.75rem" pt="0.5rem">
+                    <Box ml="2.75rem" pt="0.5rem">
                       {dropdownFieldItems.length > 0 ? (
-                        <SingleSelect
-                          name="dropdownFieldSelect"
-                          isClearable={false}
-                          placeholder="Select a dropdown field"
-                          items={dropdownFieldItems}
-                          value={currentLinkedFieldId ?? ''}
-                          onChange={handleFieldSelect}
-                        />
+                        <>
+                          <SingleSelect
+                            name="dropdownFieldSelect"
+                            isClearable={false}
+                            placeholder="Select a dropdown field"
+                            items={dropdownFieldItems}
+                            value={currentLinkedFieldId ?? ''}
+                            onChange={handleFieldSelect}
+                          />
+                          {currentLinkedFieldId &&
+                            selectedDropdownOptions.length > 0 && (
+                              <Button
+                                variant="outline"
+                                colorScheme="primary"
+                                size="sm"
+                                w="100%"
+                                mt="0.5rem"
+                                onClick={mappingModal.onOpen}
+                              >
+                                {mappedCount > 0
+                                  ? `${mappedCount} option${mappedCount === 1 ? '' : 's'} mapped`
+                                  : 'Map emails to options'}
+                              </Button>
+                            )}
+                        </>
                       ) : (
-                        <Text textStyle="body-2" color="secondary.400">
-                          You'll need a dropdown field on your form.{' '}
-                          <Text
-                            as="span"
-                            color="primary.500"
-                            cursor="pointer"
-                            _hover={{ textDecoration: 'underline' }}
-                            onClick={() => handleBuilderClick(false)}
-                          >
-                            Add one from the Fields tab
+                        <Stack spacing="0.5rem">
+                          <Text textStyle="body-2" color="secondary.400">
+                            You don't have any dropdown fields.
                           </Text>
-                        </Text>
+                          <Button
+                            variant="outline"
+                            colorScheme="primary"
+                            size="sm"
+                            onClick={() =>
+                              setFocus({
+                                type: 'create_field',
+                                fieldType: 'dropdown',
+                                fromStepId: step.id,
+                              })
+                            }
+                          >
+                            Create dropdown field
+                          </Button>
+                        </Stack>
                       )}
                     </Box>
                   )}
@@ -444,19 +525,25 @@ export const StepDetailPanel = ({
                           onChange={handleApprovalFieldChange}
                         />
                       ) : (
-                        <Text textStyle="body-2" color="secondary.400">
-                          You'll need a Yes/No field on your form for approvers
-                          to use.{' '}
-                          <Text
-                            as="span"
-                            color="primary.500"
-                            cursor="pointer"
-                            _hover={{ textDecoration: 'underline' }}
-                            onClick={() => handleBuilderClick(false)}
-                          >
-                            Add one from the Fields tab
+                        <Stack spacing="0.5rem">
+                          <Text textStyle="body-2" color="secondary.400">
+                            You don't have a Yes/No field for approvers to use.
                           </Text>
-                        </Text>
+                          <Button
+                            variant="outline"
+                            colorScheme="primary"
+                            size="sm"
+                            onClick={() =>
+                              setFocus({
+                                type: 'create_field',
+                                fieldType: 'yes_no',
+                                fromStepId: step.id,
+                              })
+                            }
+                          >
+                            Create Yes/No field
+                          </Button>
+                        </Stack>
                       )}
                     </Box>
                   )}
@@ -472,31 +559,46 @@ export const StepDetailPanel = ({
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <Flex justify="space-between" align="center" mb="0.75rem">
             <Text textStyle="subhead-1" color="secondary.700">
-              Fields in this step
+              Choose which fields to fill in this step
             </Text>
             <Text textStyle="body-2" color="secondary.400">
               {assignedCount} of {totalCount}
             </Text>
           </Flex>
 
-          <Stack spacing="0.5rem">
-            {fields.map((field) => {
-              const isAssigned = step.fieldIds.includes(field.id)
-              return (
-                <Checkbox
-                  key={field.id}
-                  isChecked={isAssigned}
-                  onChange={() => toggleFieldAssignment(step.id, field.id)}
-                  colorScheme={checkboxColorScheme}
-                  spacing="0.75rem"
-                >
-                  <Text textStyle="body-1" color="secondary.700">
-                    {field.number}. {field.name}
-                  </Text>
-                </Checkbox>
-              )
-            })}
-          </Stack>
+          {fields.length > 0 ? (
+            <Stack spacing="0.5rem">
+              {fields.map((field) => {
+                const isAssigned = step.fieldIds.includes(field.id)
+                return (
+                  <Checkbox
+                    key={field.id}
+                    isChecked={isAssigned}
+                    onChange={() => toggleFieldAssignment(step.id, field.id)}
+                    colorScheme={checkboxColorScheme}
+                    spacing="0.75rem"
+                  >
+                    <Text textStyle="body-1" color="secondary.700">
+                      {field.number}. {field.name}
+                    </Text>
+                  </Checkbox>
+                )
+              })}
+            </Stack>
+          ) : (
+            <Text textStyle="body-2" color="secondary.400">
+              No fields on your form yet.{' '}
+              <Text
+                as="span"
+                color="primary.500"
+                cursor="pointer"
+                _hover={{ textDecoration: 'underline' }}
+                onClick={() => handleBuilderClick(false)}
+              >
+                Add fields from the Fields tab
+              </Text>
+            </Text>
+          )}
         </Box>
       </Box>
 
@@ -517,8 +619,12 @@ export const StepDetailPanel = ({
             colorScheme="danger"
             size="sm"
             onClick={() => {
-              removeStep(step.id)
-              handleBack()
+              if (isStepDirty) {
+                deleteModal.onOpen()
+              } else {
+                removeStep(step.id)
+                handleBack()
+              }
             }}
           />
         ) : (
@@ -533,6 +639,61 @@ export const StepDetailPanel = ({
           </Button>
         </Flex>
       </Flex>
+
+      {/* Dropdown email mapping modal */}
+      <OptionEmailMappingModal
+        isOpen={mappingModal.isOpen}
+        onClose={mappingModal.onClose}
+        options={selectedDropdownOptions}
+        initialMapping={currentMapping}
+        onSave={handleMappingSave}
+      />
+
+      {/* Delete step confirmation modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={deleteModal.onClose}
+        size="md"
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalCloseButton />
+          <ModalHeader color="secondary.700" pr="4rem">
+            Delete &ldquo;{step.name}&rdquo;?
+          </ModalHeader>
+          <ModalBody>
+            <Text textStyle="body-2" color="secondary.500">
+              This step has been configured. Are you sure you want to delete it?
+              This action cannot be undone.
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Stack
+              spacing="1rem"
+              w="100%"
+              direction={{ base: 'column', md: 'row-reverse' }}
+            >
+              <Button
+                colorScheme="danger"
+                onClick={() => {
+                  removeStep(step.id)
+                  handleBack()
+                }}
+                autoFocus
+              >
+                Yes, delete step
+              </Button>
+              <Button
+                variant="clear"
+                colorScheme="secondary"
+                onClick={deleteModal.onClose}
+              >
+                No, return to editing
+              </Button>
+            </Stack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Flex>
   )
 }

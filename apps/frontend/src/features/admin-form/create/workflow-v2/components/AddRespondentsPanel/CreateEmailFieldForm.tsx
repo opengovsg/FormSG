@@ -35,9 +35,6 @@ export const CreateEmailFieldForm = (): JSX.Element => {
   const focusState = useWorkflowBuilderStore(focusStateSelector)
   const setFocus = useWorkflowBuilderStore((s) => s.setFocus)
   const addField = useWorkflowBuilderStore((s) => s.addField)
-  const setPendingFieldSelection = useWorkflowBuilderStore(
-    (s) => s.setPendingFieldSelection,
-  )
 
   const fromStepId =
     focusState.type === 'create_field' ? focusState.fromStepId : undefined
@@ -66,9 +63,16 @@ export const CreateEmailFieldForm = (): JSX.Element => {
     },
   )
 
-  const navigateBack = useCallback(() => {
-    setFocus({ type: 'new_respondent', fromStepId })
-  }, [setFocus, fromStepId])
+  const navigateBack = useCallback(
+    (pendingFieldId?: string) => {
+      if (fromStepId) {
+        setFocus({ type: 'step_edit', stepId: fromStepId, pendingFieldId })
+      } else {
+        setFocus({ type: 'default' })
+      }
+    },
+    [setFocus, fromStepId],
+  )
 
   const handleSave = useCallback(async () => {
     if (!name.trim()) return
@@ -77,7 +81,6 @@ export const CreateEmailFieldForm = (): JSX.Element => {
     addField({ name: name.trim(), fieldType: 'email' })
     const store = useWorkflowBuilderStore.getState()
     const newField = store.fields[store.fields.length - 1]
-    setPendingFieldSelection(newField.id)
 
     // Also create via API so it appears in the Build tab
     try {
@@ -102,13 +105,12 @@ export const CreateEmailFieldForm = (): JSX.Element => {
       // API call failed (e.g. no backend running) - field still exists locally
     }
 
-    navigateBack()
+    navigateBack(newField.id)
   }, [
     name,
     description,
     isRequired,
     addField,
-    setPendingFieldSelection,
     createFieldMutation,
     navigateBack,
   ])
@@ -143,7 +145,7 @@ export const CreateEmailFieldForm = (): JSX.Element => {
           size="sm"
           h="1.5rem"
           w="1.5rem"
-          onClick={navigateBack}
+          onClick={() => navigateBack()}
         />
         <Text
           textStyle="h4"
@@ -163,7 +165,7 @@ export const CreateEmailFieldForm = (): JSX.Element => {
         <Box px="1.5rem" pt="1.5rem">
           <InlineMessage>
             This field will be placed at the end of your form. You can arrange
-            and edit it again in the form-builder page.
+            and edit it again in the Fields page.
           </InlineMessage>
         </Box>
 
@@ -252,7 +254,7 @@ export const CreateEmailFieldForm = (): JSX.Element => {
         {/* CTA */}
         <Divider />
         <Flex justify="flex-end" gap="0.75rem" px="1.5rem" py="1rem">
-          <Button variant="clear" onClick={navigateBack}>
+          <Button variant="clear" onClick={() => navigateBack()}>
             Cancel
           </Button>
           <Button

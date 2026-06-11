@@ -1,18 +1,20 @@
 import { useCallback, useMemo, useState } from 'react'
 import {
-  ButtonGroup,
   Modal,
   ModalBody,
   ModalContent,
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Stack,
   Text,
   Textarea,
 } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
+
+import { useUser } from '~features/user/queries'
 
 type OptionEmailMappingModalProps = {
   isOpen: boolean
@@ -25,11 +27,15 @@ type OptionEmailMappingModalProps = {
 function buildInitialText(
   options: string[],
   mapping?: Record<string, string[]>,
+  defaultEmail?: string,
 ): string {
   return options
-    .map((opt) => {
+    .map((opt, i) => {
       const emails = mapping?.[opt]
-      return emails?.length ? `${opt}: ${emails.join(', ')}` : `${opt}: `
+      if (emails?.length) return `${opt}: ${emails.join(', ')}`
+      // Prefill the first option with the owner's email
+      if (i === 0 && defaultEmail) return `${opt}: ${defaultEmail}`
+      return `${opt}: `
     })
     .join('\n')
 }
@@ -60,9 +66,11 @@ export const OptionEmailMappingModal = ({
   initialMapping,
   onSave,
 }: OptionEmailMappingModalProps): JSX.Element => {
+  const { user } = useUser()
+
   const initialText = useMemo(
-    () => buildInitialText(options, initialMapping),
-    [options, initialMapping],
+    () => buildInitialText(options, initialMapping, user?.email),
+    [options, initialMapping, user?.email],
   )
   const [text, setText] = useState(initialText)
 
@@ -75,13 +83,19 @@ export const OptionEmailMappingModal = ({
     <Modal isOpen={isOpen} onClose={onClose} size="lg">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Map emails to dropdown options</ModalHeader>
         <ModalCloseButton />
+        <ModalHeader color="secondary.700" pr="4rem">
+          Map emails to dropdown options
+        </ModalHeader>
         <ModalBody>
-          <Text color="secondary.500" mb="1rem">
+          <Text textStyle="body-2" color="secondary.500" mb="1rem">
             For each dropdown option, add the email addresses that should
-            receive the form (comma-separated). Do not change the text before
-            the colon.
+            receive the form. Separate multiple emails with commas.
+          </Text>
+          <Text textStyle="body-2" color="secondary.500" mb="1rem">
+            Example: <br />
+            Engineering: alice@open.gov.sg <br />
+            Design: bob@open.gov.sg, carol@open.gov.sg
           </Text>
           <Textarea
             value={text}
@@ -90,14 +104,18 @@ export const OptionEmailMappingModal = ({
           />
         </ModalBody>
         <ModalFooter>
-          <ButtonGroup>
+          <Stack
+            direction={{ base: 'column-reverse', md: 'row' }}
+            w="100%"
+            justify="flex-end"
+          >
             <Button variant="clear" colorScheme="secondary" onClick={onClose}>
               Cancel
             </Button>
             <Button colorScheme="primary" onClick={handleSave}>
               Save mapping
             </Button>
-          </ButtonGroup>
+          </Stack>
         </ModalFooter>
       </ModalContent>
     </Modal>

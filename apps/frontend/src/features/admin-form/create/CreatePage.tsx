@@ -23,6 +23,7 @@ import { CreatePageContent } from './common/CreatePageContent'
 import { CreatePageSidebar } from './common/CreatePageSidebar'
 import { CreatePageSidebarProvider } from './common/CreatePageSidebarContext'
 import { FeatureTour } from './featureTour/FeatureTour'
+import { useWorkflowBuilderStore } from './workflow-v2/workflowBuilderStore'
 
 export const CreatePage = (): JSX.Element => {
   const { formId } = useParams()
@@ -31,6 +32,14 @@ export const CreatePage = (): JSX.Element => {
   const { hasEditAccess, isLoading: isCollabLoading } =
     useAdminFormCollaborators(formId)
   const navigate = useNavigate()
+  const loadForForm = useWorkflowBuilderStore(
+    (s: { loadForForm: (formId: string) => void }) => s.loadForForm,
+  )
+
+  // Scope workflow store to this form on mount / form switch
+  useEffect(() => {
+    loadForForm(formId)
+  }, [formId, loadForForm])
   const { i18n } = useTranslation()
 
   // Redirect view-only collaborators to results screen.

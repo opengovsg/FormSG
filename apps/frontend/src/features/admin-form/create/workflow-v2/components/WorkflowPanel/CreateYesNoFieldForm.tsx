@@ -28,7 +28,7 @@ import {
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
 
-export const CreateDropdownFieldForm = (): JSX.Element => {
+export const CreateYesNoFieldForm = (): JSX.Element => {
   const { formId } = useParams()
   const queryClient = useQueryClient()
 
@@ -39,18 +39,10 @@ export const CreateDropdownFieldForm = (): JSX.Element => {
   const fromStepId =
     focusState.type === 'create_field' ? focusState.fromStepId : undefined
 
-  // Form state
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isRequired, setIsRequired] = useState(true)
-  const [optionsText, setOptionsText] = useState('')
 
-  const parsedOptions = optionsText
-    .split('\n')
-    .map((o) => o.trim())
-    .filter(Boolean)
-
-  // Real API mutation to create field in backend
   const createFieldMutation = useMutation(
     (body: Record<string, unknown>) =>
       createSingleFormField({
@@ -77,26 +69,19 @@ export const CreateDropdownFieldForm = (): JSX.Element => {
   )
 
   const handleSave = useCallback(async () => {
-    if (!name.trim() || parsedOptions.length === 0) return
+    if (!name.trim()) return
 
-    // Save to local Zustand store (for workflow dropdowns)
-    addField({
-      name: name.trim(),
-      fieldType: 'dropdown',
-      options: parsedOptions,
-    })
+    addField({ name: name.trim(), fieldType: 'yes_no' })
     const store = useWorkflowBuilderStore.getState()
     const newField = store.fields[store.fields.length - 1]
 
-    // Also create via API so it appears in the Build tab
     try {
       await createFieldMutation.mutateAsync({
-        fieldType: 'dropdown',
+        fieldType: 'yes_no',
         title: name.trim(),
         description: description.trim(),
         required: isRequired,
         disabled: false,
-        fieldOptions: parsedOptions,
       })
     } catch {
       // API call failed - field still exists locally
@@ -107,13 +92,12 @@ export const CreateDropdownFieldForm = (): JSX.Element => {
     name,
     description,
     isRequired,
-    parsedOptions,
     addField,
     createFieldMutation,
     navigateBack,
   ])
 
-  const canSave = name.trim().length > 0 && parsedOptions.length > 0
+  const canSave = name.trim().length > 0
 
   return (
     <Flex
@@ -152,14 +136,13 @@ export const CreateDropdownFieldForm = (): JSX.Element => {
           flex={1}
           textAlign="center"
         >
-          Edit Dropdown
+          Edit Yes/No
         </Text>
         <CreatePageDrawerCloseButton />
       </Stack>
 
       {/* Scrollable content */}
       <Box flex={1} overflow="auto">
-        {/* Info box */}
         <Box px="1.5rem" pt="1.5rem">
           <InlineMessage>
             This field will be placed at the end of your form. You can arrange
@@ -167,7 +150,6 @@ export const CreateDropdownFieldForm = (): JSX.Element => {
           </InlineMessage>
         </Box>
 
-        {/* Field Name */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <FormControl>
             <FormLabel textStyle="subhead-1" color="secondary.500">
@@ -176,7 +158,7 @@ export const CreateDropdownFieldForm = (): JSX.Element => {
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Department"
+              placeholder="e.g. Do you approve this request?"
               autoFocus
             />
           </FormControl>
@@ -184,7 +166,6 @@ export const CreateDropdownFieldForm = (): JSX.Element => {
 
         <Divider />
 
-        {/* Description */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <FormControl>
             <Flex>
@@ -205,7 +186,6 @@ export const CreateDropdownFieldForm = (): JSX.Element => {
 
         <Divider />
 
-        {/* Required */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <Toggle
             label="Required"
@@ -214,24 +194,6 @@ export const CreateDropdownFieldForm = (): JSX.Element => {
           />
         </Box>
 
-        <Divider />
-
-        {/* Options */}
-        <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
-          <FormControl>
-            <FormLabel textStyle="subhead-1" color="secondary.500">
-              Options
-            </FormLabel>
-            <Textarea
-              value={optionsText}
-              onChange={(e) => setOptionsText(e.target.value)}
-              placeholder={'Option 1\nOption 2'}
-              rows={5}
-            />
-          </FormControl>
-        </Box>
-
-        {/* CTA */}
         <Divider />
         <Flex justify="flex-end" gap="0.75rem" px="1.5rem" py="1rem">
           <Button variant="clear" onClick={() => navigateBack()}>

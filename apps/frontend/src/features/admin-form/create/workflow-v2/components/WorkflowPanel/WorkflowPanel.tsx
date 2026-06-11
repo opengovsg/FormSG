@@ -13,7 +13,10 @@ import {
   stepsSelector,
   useWorkflowBuilderStore,
 } from '../../workflowBuilderStore'
+import { CreateDropdownFieldForm } from '../AddRespondentsPanel/CreateDropdownFieldForm'
+import { CreateEmailFieldForm } from '../AddRespondentsPanel/CreateEmailFieldForm'
 
+import { CreateYesNoFieldForm } from './CreateYesNoFieldForm'
 import { EndWorkflowCard } from './EndWorkflowCard'
 import { EndWorkflowDetailPanel } from './EndWorkflowDetailPanel'
 import { FieldDetailPanel } from './FieldDetailPanel'
@@ -101,6 +104,21 @@ export const WorkflowPanel = (): JSX.Element => {
     },
     [addStep, setFocus],
   )
+
+  // Create field mode: render inline field creation form
+  if (focusState.type === 'create_field') {
+    const CreateForm =
+      focusState.fieldType === 'email'
+        ? CreateEmailFieldForm
+        : focusState.fieldType === 'dropdown'
+          ? CreateDropdownFieldForm
+          : CreateYesNoFieldForm
+    return (
+      <Flex w="100%" h="100%" flexDir="column" bg="white">
+        <CreateForm />
+      </Flex>
+    )
+  }
 
   // Field edit mode: render field detail panel
   if (focusState.type === 'field_edit') {

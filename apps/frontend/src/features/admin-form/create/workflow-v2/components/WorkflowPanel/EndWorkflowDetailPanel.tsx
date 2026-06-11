@@ -12,6 +12,7 @@ import {
 } from '@chakra-ui/react'
 
 import Button from '~components/Button'
+import { SingleSelect } from '~components/Dropdown'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
@@ -200,7 +201,7 @@ export const EndWorkflowDetailPanel = (): JSX.Element => {
                 </Text>
               </Checkbox>
               {settings.specificEmails && (
-                <Box ml="1.75rem">
+                <Box ml="2rem">
                   <MockEmailTags
                     emails={settings.emails}
                     onRemove={(email) =>
@@ -232,40 +233,24 @@ export const EndWorkflowDetailPanel = (): JSX.Element => {
                 </Text>
               </Checkbox>
               {settings.emailField && (
-                <Box ml="1.75rem" mt="0.5rem">
+                <Box ml="2rem" mt="0.5rem">
                   {emailFields.length > 0 ? (
-                    <Box
-                      as="select"
-                      border="1px solid"
-                      borderColor="neutral.400"
-                      borderRadius="4px"
-                      px="1rem"
-                      h="2.75rem"
-                      w="100%"
-                      bg="white"
-                      textStyle="body-1"
-                      color={
-                        settings.selectedEmailFieldId
-                          ? 'secondary.500'
-                          : 'neutral.500'
-                      }
+                    <SingleSelect
+                      name="notificationEmailFieldSelect"
+                      isClearable={false}
+                      placeholder="Select an email field"
+                      items={emailFields.map((f) => ({
+                        value: f.id,
+                        label: `${f.number}. ${f.title}`,
+                      }))}
                       value={settings.selectedEmailFieldId ?? ''}
-                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      onChange={(value) =>
                         setSettings((s) => ({
                           ...s,
-                          selectedEmailFieldId: e.target.value || null,
+                          selectedEmailFieldId: value || null,
                         }))
-                      }}
-                    >
-                      <option value="" disabled>
-                        Select an email field
-                      </option>
-                      {emailFields.map((f) => (
-                        <option key={f.id} value={f.id}>
-                          {f.number}. {f.title}
-                        </option>
-                      ))}
-                    </Box>
+                      }
+                    />
                   ) : (
                     <Text textStyle="body-2" color="secondary.400">
                       You'll need an email field on your form.{' '}

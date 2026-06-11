@@ -22,11 +22,7 @@ import {
   StepFocusRespondentPanel,
 } from './AddRespondentsPanel'
 import { AddStepsPanel } from './AddStepsPanel'
-import {
-  AssignFieldsPanel,
-  FieldAssignPanel,
-  StepFocusFieldPanel,
-} from './AssignFieldsPanel'
+import { FieldAssignPanel } from './AssignFieldsPanel'
 import { PhaseProgressBar } from './PhaseProgressBar'
 
 const DrawerContent = (): JSX.Element => {
@@ -45,8 +41,6 @@ const DrawerContent = (): JSX.Element => {
           <AddStepsPanel />
         ) : focusState.phase === 'add_respondents' ? (
           <AddRespondentsPanel />
-        ) : focusState.phase === 'assign_fields' ? (
-          <AssignFieldsPanel />
         ) : (
           <SummaryPanel />
         )
@@ -66,9 +60,6 @@ const DrawerContent = (): JSX.Element => {
     case 'step_focus':
       if (focusState.phase === 'add_respondents') {
         return <StepFocusRespondentPanel />
-      }
-      if (focusState.phase === 'assign_fields') {
-        return <StepFocusFieldPanel />
       }
       return <SummaryPanel />
     case 'new_respondent':

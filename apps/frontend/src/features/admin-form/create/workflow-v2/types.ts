@@ -96,11 +96,14 @@ export function getStepColourThemes(formColorTheme?: string): string[] {
 }
 
 // Focus state for form-as-canvas (simplified from wizard phases)
+export type CreateFieldType = 'email' | 'dropdown' | 'yes_no'
+
 export type FocusState =
   | { type: 'default' }
-  | { type: 'step_edit'; stepId: string }
+  | { type: 'step_edit'; stepId: string; pendingFieldId?: string }
   | { type: 'field_edit'; fieldId: string }
   | { type: 'end_workflow_edit' }
+  | { type: 'create_field'; fieldType: CreateFieldType; fromStepId: string }
 
 // Store interface
 export type WorkflowStore = {
