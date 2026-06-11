@@ -130,7 +130,8 @@ export enum FormOrigin {
  * the checkbox-Others answer convention; dashboards count Others by prefix
  * match. Lives beside the enum so {@link FormOriginEntry} shares the literal.
  */
-export const FORM_ORIGIN_OTHERS_PREFIX = `${FormOrigin.DigitalOthers}: ` as const
+export const FORM_ORIGIN_OTHERS_PREFIX =
+  `${FormOrigin.DigitalOthers}: ` as const
 
 /** A recognised origin code, or "Others" with its free-text detail embedded. */
 export type FormOriginEntry =

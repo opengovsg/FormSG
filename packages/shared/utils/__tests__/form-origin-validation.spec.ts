@@ -24,9 +24,9 @@ describe('isValidFormOrigin', () => {
   })
 
   it('rejects an "Others" entry — embedded detail is not a bare code', () => {
-    expect(isValidFormOrigin(`${FORM_ORIGIN_OTHERS_PREFIX}Carrier pigeon`)).toBe(
-      false,
-    )
+    expect(
+      isValidFormOrigin(`${FORM_ORIGIN_OTHERS_PREFIX}Carrier pigeon`),
+    ).toBe(false)
   })
 })
 
