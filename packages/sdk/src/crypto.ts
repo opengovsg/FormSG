@@ -167,10 +167,14 @@ export default class Crypto extends CryptoBase {
       if (!decryptedContent) return null
       const decryptedObject: unknown = JSON.parse(encodeUTF8(decryptedContent))
 
+      if (Array.isArray(decryptedObject)) {
+        if (!determineIsFormFields(decryptedObject)) return null
+        return { responses: decryptedObject }
+      }
+
       if (
         typeof decryptedObject !== 'object' ||
         decryptedObject === null ||
-        Array.isArray(decryptedObject) ||
         !isFieldResponsesV4(decryptedObject as Record<string, unknown>) ||
         submissionSecretKey === null
       ) {
