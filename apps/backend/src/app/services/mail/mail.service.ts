@@ -844,7 +844,7 @@ export class MailService {
       const formQuestionAnswers: QuestionAnswer[] = formData.map(
         ({ question, answerTemplate, fieldType }) => ({
           question,
-          answer: String(answerTemplate),
+          answer: answerTemplate.join('\n'),
           fieldType,
         }),
       )
