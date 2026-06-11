@@ -726,12 +726,15 @@ export const duplicateForm = (
     })
   }
 
-  // if created from template, track original form id in metadata
-  if (isFromTemplate) {
-    duplicateParams.metadata = {
-      template_form_id: originalForm._id,
-      ...(formOrigins && { formOrigins }),
-    }
+  // Track the original form id when duplicating from a template, and persist
+  // the admin's origin answer (asked on both the use-template and duplicate
+  // flows). Origins are never copied from the source form.
+  const metadata: FormMetadata = {
+    ...(isFromTemplate && { template_form_id: originalForm._id }),
+    ...(formOrigins && { formOrigins }),
+  }
+  if (Object.keys(metadata).length > 0) {
+    duplicateParams.metadata = metadata
   }
 
   if (workspaceId)

@@ -18,9 +18,3 @@ export const FORM_ORIGIN_OPTIONS = [
 
 /** The single option that reveals a free-text "please specify" input. */
 export const FORM_ORIGIN_OTHERS_VALUE = FormOrigin.DigitalOthers
-
-/** Re-exported from types/form so the entry type and prefix share one literal. */
-export { FORM_ORIGIN_OTHERS_PREFIX } from '../types/form/form'
-
-/** Max length of the embedded "please specify" detail; mirrors the form-title cap. */
-export const FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH = 200

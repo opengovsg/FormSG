@@ -19,6 +19,7 @@ import {
   STORAGE_PUBLIC_FORM_FIELDS,
 } from '../../constants/form'
 import { DateString } from '../generic'
+import { CheckboxFieldResponsesV3 } from '../response-v3'
 import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
@@ -125,27 +126,14 @@ export enum FormOrigin {
   DigitalOthers = 'digital-others',
 }
 
-/**
- * Prefix of a stored "Others" entry (`digital-others: <detail>`), mirroring
- * the checkbox-Others answer convention; dashboards count Others by prefix
- * match. Lives beside the enum so {@link FormOriginEntry} shares the literal.
- */
-export const FORM_ORIGIN_OTHERS_PREFIX =
-  `${FormOrigin.DigitalOthers}: ` as const
-
-/** A recognised origin code, or "Others" with its free-text detail embedded. */
-export type FormOriginEntry =
-  | FormOrigin
-  | `${typeof FORM_ORIGIN_OTHERS_PREFIX}${string}`
-
 export interface FormMetadata {
   mfb_text_prompt_count?: number
   num_mrf_reminder_emails_sent?: number
   mfb_vision_prompt_count?: number
   template_form_id?: Schema.Types.ObjectId
   delimiter?: string
-  /** Multi-select source(s) the form replaced; "Others" embeds its detail. */
-  formOrigins?: FormOriginEntry[]
+  /** The source(s) the form replaced, captured as a checkbox selection. */
+  formOrigins?: CheckboxFieldResponsesV3
 }
 
 export type FormPaymentsChannel = {
@@ -460,16 +448,12 @@ export type DuplicateFormOverwriteDto = {
 
 export type DuplicateFormBodyDto = DuplicateFormOverwriteDto & {
   workspaceId?: string
-}
-
-/**
- * Body of the use-template flow. Unlike duplication, using a template re-asks
- * the origin question, so the request may carry the admin's answer.
- */
-export type CopyTemplateFormBodyDto = DuplicateFormBodyDto & {
-  // Only formOrigins is admin-writable; the rest of FormMetadata is server-managed.
+  // The admin's origin answer, captured on both the duplicate and use-template
+  // flows (paper-forms tracking). Never copied from the source form.
   metadata?: Pick<FormMetadata, 'formOrigins'>
 }
+
+export type CopyTemplateFormBodyDto = DuplicateFormBodyDto
 
 export type CreateEmailFormBodyDto = Pick<
   EmailFormDto,
@@ -487,7 +471,6 @@ export type CreateMultirespondentFormBodyDto = Pick<
 > & {
   workspaceId?: string
   emails?: string[]
-  // Only formOrigins is admin-writable; the rest of FormMetadata is server-managed.
   metadata?: Pick<FormMetadata, 'formOrigins'>
 }
 

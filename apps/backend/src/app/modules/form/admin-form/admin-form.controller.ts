@@ -24,6 +24,7 @@ import {
   FormFeedbackMetaDto,
   FormFieldDto,
   FormLogoState,
+  FormOrigin,
   FormResponseMode,
   FormSettings,
   FormWebhookResponseModeSettings,
@@ -49,10 +50,6 @@ import {
   EncryptedStringsMessageContent,
   encryptStringsMessage,
 } from 'formsg-shared/utils/crypto'
-import {
-  normalizeFormOrigins,
-  validateFormOriginsSelection,
-} from 'formsg-shared/utils/form-origin-validation'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { ResultAsync } from 'neverthrow'
@@ -106,31 +103,15 @@ const logger = createLoggerWithLabel(module)
 
 // Validators
 
-// Paper-forms tracking: origin capture rides on the post-MRF-cutover flows
-// (create and use-template), so metadata is MRF-only and only formOrigins is
-// admin-writable. Presence is optional — Joi skips the key rules when it is
-// absent. Per-entry rules live in the shared helper — "Others" embeds its
-// free-text detail in the entry, which Joi can't enum-validate.
-const formOriginsMetadataValidator = Joi.when('responseMode', {
-  is: FormResponseMode.Multirespondent,
-  then: Joi.object({
-    formOrigins: Joi.array()
-      .items(Joi.string().trim())
-      .min(1)
-      .unique()
-      .custom((value, helpers) => {
-        const originsError = validateFormOriginsSelection(value)
-        if (originsError) {
-          return helpers.message({
-            custom: `{{#label}} is invalid: ${originsError}`,
-          })
-        }
-        // Returning the converted value: celebrate writes it back to
-        // req.body, so only canonical Others entries persist.
-        return normalizeFormOrigins(value)
-      }),
+// Paper-forms tracking: admins may report the source(s) a form replaced. This
+// is best-effort metadata, so it is always optional. When present, the only
+// admin-writable key is formOrigins, stored as a checkbox selection whose
+// values must be recognised origin codes.
+const formOriginsMetadataValidator = Joi.object({
+  formOrigins: Joi.object({
+    value: Joi.array().items(Joi.string().valid(...Object.values(FormOrigin))),
+    othersInput: Joi.string().allow(''),
   }),
-  otherwise: Joi.forbidden(),
 })
 
 const createFormValidator = celebrate({
@@ -226,14 +207,15 @@ const duplicateFormValidator = celebrate({
       otherwise: Joi.forbidden(),
     }),
     workspaceId: Joi.string(),
+    metadata: formOriginsMetadataValidator,
   }),
 })
 
 const copyTemplateFormValidator = celebrate({
   // The use-template flow re-asks the origin question (paper-forms tracking),
-  // so this endpoint accepts the same MRF-only metadata.formOrigins as the
-  // create flow. The rest of the historically unvalidated use-template body is
-  // intentionally left untouched (unknown(true)).
+  // so this endpoint accepts the same metadata.formOrigins as the create flow.
+  // The rest of the historically unvalidated use-template body is intentionally
+  // left untouched (unknown(true)).
   [Segments.BODY]: BaseJoi.object<CopyTemplateFormBodyDto>({
     metadata: formOriginsMetadataValidator,
   }).unknown(true),
@@ -983,7 +965,11 @@ export const duplicateAdminForm: ControllerHandler<
               originalForm,
               userId,
               overrideParams,
-              { workspaceId: workspaceId, overrideEmails },
+              {
+                workspaceId: workspaceId,
+                overrideEmails,
+                formOrigins: overrideParams.metadata?.formOrigins,
+              },
             ),
           )
           // Step 4: Retrieve dashboard view of duplicated form.
@@ -1108,11 +1094,7 @@ export const copyTemplateForm: ControllerHandler<
           AdminFormService.duplicateForm(originalForm, userId, overrideParams, {
             overrideEmails: [user.email],
             isFromTemplate: true,
-            // The origin question is re-asked on use-template; origins are
-            // never copied from the source form.
-            ...(overrideParams.metadata?.formOrigins && {
-              formOrigins: overrideParams.metadata.formOrigins,
-            }),
+            formOrigins: overrideParams.metadata?.formOrigins,
           })
             // Step 4: Retrieve dashboard view of duplicated form.
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
