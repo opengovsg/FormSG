@@ -978,9 +978,10 @@ export class MailService {
         //TODO (email-standardisation): remove when email standardisation is GA
         if (useStandardisedEmailTemplate) {
           const formQuestionAnswers: QuestionAnswer[] = responsesData.map(
-            ({ question, answerTemplate }) => ({
+            ({ question, answerTemplate, fieldType }) => ({
               question,
               answer: String(answerTemplate), // fallback to answerTemplate if answer is empty to still show the question in the email
+              fieldType,
             }),
           )
 
@@ -1189,6 +1190,7 @@ export class MailService {
     submissionId,
     timestamp,
     formQuestionAnswers,
+    responseJson,
     attachments,
     replyTo,
   }: {
@@ -1199,6 +1201,7 @@ export class MailService {
     submissionId?: string
     timestamp: string
     formQuestionAnswers: QuestionAnswer[]
+    responseJson: string
     attachments?: Mail.Attachment[]
     replyTo?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
@@ -1207,6 +1210,7 @@ export class MailService {
       responseId: responseId.toString(),
       timestamp,
       formQuestionAnswers,
+      responseJson,
     }
 
     return this.#sendEmailWithTemplate({
@@ -1231,6 +1235,7 @@ export class MailService {
     timestamp,
     isRejected,
     formQuestionAnswers,
+    responseJson,
     attachments,
     replyTo,
   }: {
@@ -1242,6 +1247,7 @@ export class MailService {
     timestamp: string
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
+    responseJson: string
     attachments?: Mail.Attachment[]
     replyTo?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
@@ -1255,6 +1261,7 @@ export class MailService {
       timestamp,
       outcome,
       formQuestionAnswers,
+      responseJson,
     }
 
     return this.#sendEmailWithTemplate({
