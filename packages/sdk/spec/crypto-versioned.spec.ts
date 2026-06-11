@@ -1,3 +1,4 @@
+import { adaptV4ToV1 } from '../src/adapt-v4-to-v1'
 import Crypto from '../src/crypto'
 import CryptoV3 from '../src/crypto-v3'
 import { SIGNING_KEYS } from '../src/resource/signing-keys'
@@ -292,6 +293,190 @@ describe('Crypto (versioned decryption)', () => {
           version: MRF_TEST_VERSION,
         })
       ).toBeNull()
+    })
+  })
+
+  describe('version param remains ignored', () => {
+    it.each([0, 4, 999, undefined])(
+      'produces identical results for version=%p on V1 and V4 payloads',
+      (junkVersion) => {
+        const { publicKey, secretKey } = crypto.generate()
+        const v1Encrypted = crypto.encrypt(plaintext, publicKey)
+        const v4Enc = cryptoV3.encrypt(v4Responses, publicKey)
+
+        const v1WithJunk = crypto.decryptVersioned(secretKey, {
+          encryptedContent: v1Encrypted,
+          version: junkVersion as unknown as number,
+        })
+        const v1WithCorrect = crypto.decryptVersioned(secretKey, {
+          encryptedContent: v1Encrypted,
+          version: 1,
+        })
+        expect(v1WithJunk).toEqual(v1WithCorrect)
+
+        const v4Params = {
+          encryptedContent: v4Enc.encryptedContent,
+          encryptedSubmissionSecretKey: v4Enc.encryptedSubmissionSecretKey,
+        }
+        const v4WithJunk = crypto.decryptVersioned(secretKey, {
+          ...v4Params,
+          version: junkVersion as unknown as number,
+        })
+        const v4WithCorrect = crypto.decryptVersioned(secretKey, {
+          ...v4Params,
+          version: MRF_TEST_VERSION,
+        })
+        expect(v4WithJunk).toEqual(v4WithCorrect)
+        expect(
+          crypto.decrypt(secretKey, {
+            ...v4Params,
+            version: junkVersion as unknown as number,
+          })
+        ).toEqual(
+          crypto.decrypt(secretKey, { ...v4Params, version: MRF_TEST_VERSION })
+        )
+      }
+    )
+  })
+
+  describe('key handling', () => {
+    it('never returns the form secret key as submissionSecretKey', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const enc = cryptoV3.encrypt(v4Responses, publicKey)
+
+      const result = crypto.decryptVersioned(secretKey, {
+        encryptedContent: enc.encryptedContent,
+        encryptedSubmissionSecretKey: enc.encryptedSubmissionSecretKey,
+        version: MRF_TEST_VERSION,
+      }) as DecryptedContentV4
+
+      expect(result.submissionSecretKey).toEqual(enc.submissionSecretKey)
+      expect(result.submissionSecretKey).not.toEqual(secretKey)
+    })
+
+    it('decrypt output has no submissionSecretKey property for either envelope', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const v4Enc = cryptoV3.encrypt(v4Responses, publicKey)
+
+      const fromV4 = crypto.decrypt(secretKey, {
+        encryptedContent: v4Enc.encryptedContent,
+        encryptedSubmissionSecretKey: v4Enc.encryptedSubmissionSecretKey,
+        version: MRF_TEST_VERSION,
+      })
+      const fromV1 = crypto.decrypt(secretKey, {
+        encryptedContent: crypto.encrypt(plaintext, publicKey),
+        version: 1,
+      })
+
+      expect(fromV4).not.toHaveProperty('submissionSecretKey')
+      expect(fromV1).not.toHaveProperty('submissionSecretKey')
+    })
+  })
+
+  describe('cross-implementation consistency', () => {
+    it('matches cryptoV3.decryptToV4 for the same MRF V4 payload', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const enc = cryptoV3.encrypt(v4Responses, publicKey)
+      const params = {
+        encryptedContent: enc.encryptedContent,
+        encryptedSubmissionSecretKey: enc.encryptedSubmissionSecretKey,
+        version: MRF_TEST_VERSION,
+      }
+
+      const versioned = crypto.decryptVersioned(
+        secretKey,
+        params
+      ) as DecryptedContentV4
+      const viaV3 = cryptoV3.decryptToV4(secretKey, params, {})
+
+      expect(versioned.responses).toEqual(viaV3!.responses)
+      expect(versioned.submissionSecretKey).toEqual(viaV3!.submissionSecretKey)
+    })
+
+    it('decrypt equals the V4 arm of decryptVersioned run through adaptV4ToV1', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const enc = cryptoV3.encrypt(v4Responses, publicKey)
+      const params = {
+        encryptedContent: enc.encryptedContent,
+        encryptedSubmissionSecretKey: enc.encryptedSubmissionSecretKey,
+        version: MRF_TEST_VERSION,
+      }
+
+      const adapted = crypto.decrypt(secretKey, params)
+      const versioned = crypto.decryptVersioned(
+        secretKey,
+        params
+      ) as DecryptedContentV4
+
+      expect(adapted).toEqual({ responses: adaptV4ToV1(versioned.responses) })
+    })
+  })
+
+  describe('verified content', () => {
+    const mockVerifiedContent = {
+      uinFin: 'S12345679Z',
+      somethingElse: 99,
+    }
+    const signingSecretKey = SIGNING_KEYS.test.secretKey
+
+    it('round-trips verified content in the V1 arm and stays absent when not given', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const encryptedContent = crypto.encrypt(plaintext, publicKey)
+      const verifiedContent = crypto.encrypt(
+        mockVerifiedContent,
+        publicKey,
+        signingSecretKey
+      )
+
+      const withVerified = crypto.decryptVersioned(secretKey, {
+        encryptedContent,
+        verifiedContent,
+        version: 1,
+      })
+      expect(withVerified).toEqual({
+        responses: plaintext,
+        verified: mockVerifiedContent,
+      })
+
+      const withoutVerified = crypto.decryptVersioned(secretKey, {
+        encryptedContent,
+        version: 1,
+      })
+      expect(withoutVerified).not.toHaveProperty('verified')
+    })
+
+    it('round-trips verified content in the V4 arm (and through decrypt) and stays absent when not given', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const enc = cryptoV3.encrypt(v4Responses, publicKey)
+      // MRF verified content is encrypted with the submission public key.
+      const verifiedContent = crypto.encrypt(
+        mockVerifiedContent,
+        enc.submissionPublicKey,
+        signingSecretKey
+      )
+      const params = {
+        encryptedContent: enc.encryptedContent,
+        encryptedSubmissionSecretKey: enc.encryptedSubmissionSecretKey,
+        version: MRF_TEST_VERSION,
+      }
+
+      const versioned = crypto.decryptVersioned(secretKey, {
+        ...params,
+        verifiedContent,
+      })
+      expect(versioned).toHaveProperty('verified', mockVerifiedContent)
+      expect(versioned!.responses).toEqual(v4Responses)
+
+      const adapted = crypto.decrypt(secretKey, {
+        ...params,
+        verifiedContent,
+      })
+      expect(adapted).toHaveProperty('verified', mockVerifiedContent)
+
+      expect(crypto.decryptVersioned(secretKey, params)).not.toHaveProperty(
+        'verified'
+      )
+      expect(crypto.decrypt(secretKey, params)).not.toHaveProperty('verified')
     })
   })
 })
