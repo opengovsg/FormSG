@@ -118,6 +118,11 @@ function convertAnswerToV1(
  * Hence, it:
  * - maps only answered fields (does not generate empty entries missing in the V4 record)
  * - the generated array follows the V4 record insertion order
+ *
+ * @throws {Error} if an answer's value does not match the shape expected for
+ * its field type (e.g. a non-string value for a string field, or a non-array
+ * value for a checkbox or signature field). Callers should handle this
+ * per-response if one malformed submission must not abort a batch.
  */
 export function adaptV4ToV1(v4Responses: FieldResponsesV4): FormField[] {
   const v1Fields: FormField[] = []
