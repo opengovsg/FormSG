@@ -77,6 +77,14 @@ export interface DecryptParams {
   version: number
   verifiedContent?: EncryptedContent
   attachmentDownloadUrls?: EncryptedAttachmentRecords
+  /**
+   * Present on multirespondent (MRF) webhook payloads. When given, decryption
+   * opens the MRF envelope: the submission secret key is decrypted with the
+   * form secret key, then the content with the submission secret key. When
+   * absent, content decrypts directly with the form secret key (storage-mode
+   * envelope).
+   */
+  encryptedSubmissionSecretKey?: EncryptedContent
 }
 
 export interface DecryptParamsV3 {

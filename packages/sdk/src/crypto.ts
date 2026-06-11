@@ -1,6 +1,11 @@
 import axios from 'axios'
 import nacl from 'tweetnacl'
-import { decodeBase64, decodeUTF8, encodeUTF8 } from 'tweetnacl-util'
+import {
+  decodeBase64,
+  decodeUTF8,
+  encodeBase64,
+  encodeUTF8,
+} from 'tweetnacl-util'
 
 import {
   areAttachmentFieldIdsValid,
@@ -11,6 +16,7 @@ import {
 } from './util/crypto'
 import { determineIsFormFields } from './util/validate'
 import CryptoBase from './crypto-base'
+import { isFieldResponsesV4 } from './crypto-v3'
 import { AttachmentDecryptionError, MissingPublicKeyError } from './errors'
 import {
   DecryptedAttachments,
@@ -22,6 +28,7 @@ import {
   EncryptedContent,
   FormField,
 } from './types'
+import { DecryptedContentV4, FieldResponsesV4 } from './types-v4'
 
 export default class Crypto extends CryptoBase {
   signingPublicKey?: string
@@ -116,6 +123,65 @@ export default class Crypto extends CryptoBase {
       // Should only throw if MissingPublicKeyError.
       // This library should be able to be used to encrypt and decrypt content
       // if the content does not contain verified fields.
+      if (err instanceof MissingPublicKeyError) {
+        throw err
+      }
+      return null
+    }
+  }
+
+  /**
+   * Decrypts an encrypted submission and returns its content in the version it
+   * was submitted in: V1 content (storage-mode envelope) as `DecryptedContent`,
+   * V4 content (MRF envelope) as `DecryptedContentV4` including the decrypted
+   * per-submission secret key. Consumers discriminate the union with
+   * `Array.isArray(result.responses)`.
+   * @param formSecretKey The base-64 secret key of the form to decrypt with.
+   * @param decryptParams The params containing encrypted content and information.
+   * @returns The decrypted content if successful. Else, null will be returned.
+   * @throws {MissingPublicKeyError} if a public key is not provided when instantiating this class and is needed for verifying signed content.
+   */
+  decryptVersioned = (
+    formSecretKey: string,
+    decryptParams: DecryptParams
+  ): DecryptedContent | DecryptedContentV4 | null => {
+    try {
+      const { encryptedContent, encryptedSubmissionSecretKey } = decryptParams
+
+      let contentSecretKey = formSecretKey
+      let submissionSecretKey: string | null = null
+      if (encryptedSubmissionSecretKey) {
+        const decryptedSubmissionSecretKey = decryptContent(
+          formSecretKey,
+          encryptedSubmissionSecretKey
+        )
+        if (decryptedSubmissionSecretKey === null) return null
+        submissionSecretKey = encodeBase64(decryptedSubmissionSecretKey)
+        contentSecretKey = submissionSecretKey
+      }
+
+      const decryptedContent = decryptContent(
+        contentSecretKey,
+        encryptedContent
+      )
+      if (!decryptedContent) return null
+      const decryptedObject: unknown = JSON.parse(encodeUTF8(decryptedContent))
+
+      if (
+        typeof decryptedObject !== 'object' ||
+        decryptedObject === null ||
+        Array.isArray(decryptedObject) ||
+        !isFieldResponsesV4(decryptedObject as Record<string, unknown>) ||
+        submissionSecretKey === null
+      ) {
+        return null
+      }
+
+      return {
+        submissionSecretKey,
+        responses: decryptedObject as FieldResponsesV4,
+      }
+    } catch (err) {
       if (err instanceof MissingPublicKeyError) {
         throw err
       }
