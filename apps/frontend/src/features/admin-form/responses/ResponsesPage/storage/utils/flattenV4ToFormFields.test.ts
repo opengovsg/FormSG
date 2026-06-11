@@ -6,14 +6,17 @@ import { BasicField, FormFieldDto } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from './flattenV4ToFormFields'
 
 /**
- * Golden parity suite.
+ * flattenV4ToFormFields owns the merge of V4 responses with the form
+ * definition: ordering output by the form definition, synthesizing the
+ * per-field-type empty shape for unanswered fields, and appending entries
+ * that have no form field (verified SPCP/sgID entries, orphaned responses).
  *
- * The snapshots were generated from the pre-refactor implementation (the one
- * with all per-field-type conversion logic inline). The refactor to delegate
- * per-field mapping to the SDK's adaptV4ToV1 must keep every snapshot
- * byte-identical — only dead branches (children answers, empty signatures,
- * see ADR 0001) are allowed to differ, and those are deliberately absent
- * from these fixtures.
+ * Per-field-type value mapping is delegated to the SDK's adaptV4ToV1 and
+ * pinned in the SDK's own spec (packages/sdk/spec/adaptor/
+ * adapt-v4-to-v1.spec.ts); a single smoke test here proves the delegation
+ * is wired up. The expected outputs below are the contract the CSV pipeline
+ * (CsvRecord, EncryptedResponseCsvGenerator, Response classes) consumes —
+ * changes to them change what agencies see in exported CSVs.
  */
 const makeFieldDto = (
   id: string,
@@ -51,177 +54,186 @@ const allTypeFormFields: FormFieldDto[] = [
   makeFieldDto('f-signature', BasicField.Signature, 'Sign here'),
 ]
 
-const allTypeResponses: FieldResponsesV4 = {
-  'f-section': {
-    fieldType: 'section',
-    question: 'Part A',
-    answer: { value: '' },
-    provenance: { stepNumber: 1 },
+const textfieldResponse: FieldResponsesV4[string] = {
+  fieldType: 'textfield',
+  question: 'Your name',
+  answer: { value: 'TAN AH KOW' },
+  provenance: { stepNumber: 1 },
+}
+
+const dropdownResponse: FieldResponsesV4[string] = {
+  fieldType: 'dropdown',
+  question: 'Citizenship',
+  answer: { value: 'SINGAPORE CITIZEN' },
+  provenance: { stepNumber: 1 },
+}
+
+const checkboxOthersResponse: FieldResponsesV4[string] = {
+  fieldType: 'checkbox',
+  question: 'Sauces',
+  answer: {
+    value: ['Ketchup', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+    othersInput: 'sambal',
   },
-  'f-textfield': {
-    fieldType: 'textfield',
-    question: 'Your name',
-    answer: { value: 'TAN AH KOW' },
-    provenance: { stepNumber: 1 },
-  },
-  'f-dropdown': {
-    fieldType: 'dropdown',
-    question: 'Citizenship',
-    answer: { value: 'SINGAPORE CITIZEN' },
-    provenance: { stepNumber: 1 },
-  },
-  'f-yesno': {
-    fieldType: 'yes_no',
-    question: 'Do you agree?',
-    answer: { value: 'Yes' },
-    provenance: { stepNumber: 1 },
-  },
-  'f-email-verified': {
-    fieldType: 'email',
-    question: 'Your email',
-    answer: { value: 'user@example.com', signature: 'dGVzdC1zaWduYXR1cmU=' },
-    provenance: { stepNumber: 1 },
-  },
-  'f-email-plain': {
-    fieldType: 'email',
-    question: 'Alternate email',
-    answer: { value: 'other@example.com' },
-    provenance: { stepNumber: 1 },
-  },
-  'f-mobile-verified': {
-    fieldType: 'mobile',
-    question: 'Your mobile',
-    answer: { value: '+6598765432', signature: 'bW9iaWxlLXNpZw==' },
-    provenance: { stepNumber: 1 },
-  },
-  'f-radio-plain': {
-    fieldType: 'radiobutton',
-    question: 'Favourite colour',
-    answer: { value: 'Blue', isOthersInput: false },
-    provenance: { stepNumber: 1 },
-  },
-  'f-radio-others': {
-    fieldType: 'radiobutton',
-    question: 'Favourite fruit',
-    answer: { value: 'durian', isOthersInput: true },
-    provenance: { stepNumber: 1 },
-  },
-  'f-checkbox': {
-    fieldType: 'checkbox',
-    question: 'Toppings',
-    answer: { value: ['Cheese', 'Mushroom'] },
-    provenance: { stepNumber: 1 },
-  },
-  'f-checkbox-others': {
-    fieldType: 'checkbox',
-    question: 'Sauces',
-    answer: {
-      value: ['Ketchup', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-      othersInput: 'sambal',
-    },
-    provenance: { stepNumber: 1 },
-  },
-  'f-checkbox-empty': {
-    fieldType: 'checkbox',
-    question: 'Optional extras',
-    answer: { value: [] },
-    provenance: { stepNumber: 1 },
-  },
-  'f-attachment': {
-    fieldType: 'attachment',
-    question: 'Upload your CV',
-    answer: {
-      value: 'resume.pdf',
-      hasBeenScanned: true,
-      md5Hash: 'd41d8cd98f00b204e9800998ecf8427e',
-    },
-    provenance: { stepNumber: 1 },
-  },
-  'f-table': {
-    fieldType: 'table',
-    question: 'Employment history',
-    answer: {
-      row2: { rowNum: 1, value: { col1: 'GovTech', col2: 'Manager' } },
-      row1: { rowNum: 0, value: { col1: 'OGP', col2: 'Engineer' } },
-    },
-    provenance: { stepNumber: 1 },
-  },
-  'f-address': {
-    fieldType: 'address',
-    question: 'Home address',
-    answer: {
-      postalCode: { value: '654321' },
-      blockNumber: { value: '123' },
-      streetName: { value: 'Main Street' },
-      buildingName: { value: 'Sunshine Tower' },
-      levelNumber: { value: '10' },
-      unitNumber: { value: '01' },
-    },
-    provenance: { stepNumber: 1 },
-  },
-  'f-address-partial': {
-    fieldType: 'address',
-    question: 'Office address',
-    answer: {
-      postalCode: { value: '111111' },
-      blockNumber: { value: '1' },
-      streetName: { value: 'Short Road' },
-      buildingName: { value: '' },
-      levelNumber: { value: '' },
-      unitNumber: { value: '' },
-    },
-    provenance: { stepNumber: 1 },
-  },
-  'f-signature': {
-    fieldType: 'signature',
-    question: 'Sign here',
-    answer: {
-      type: 'draw',
-      value: [
-        [
-          [1, 2, 0],
-          [3, 4, 1],
-        ],
-      ],
-    },
-    provenance: { stepNumber: 1 },
-  },
+  provenance: { stepNumber: 1 },
+}
+
+const flattenedTextfield = {
+  _id: 'f-textfield',
+  fieldType: 'textfield',
+  question: 'Your name',
+  answer: 'TAN AH KOW',
 }
 
 describe('flattenV4ToFormFields', () => {
-  it('renders every answered field type identically to the pre-refactor implementation', () => {
+  it('delegates per-field value mapping to the SDK adapter', () => {
+    // The checkbox Others sentinel only resolves to 'Others: x' inside
+    // adaptV4ToV1, so its presence proves the delegation is wired up.
     const result = flattenV4ToFormFields({
-      v4Responses: allTypeResponses,
-      formFields: allTypeFormFields,
+      v4Responses: {
+        'f-textfield': textfieldResponse,
+        'f-checkbox-others': checkboxOthersResponse,
+      },
+      formFields: [
+        makeFieldDto('f-textfield', BasicField.ShortText, 'Your name'),
+        makeFieldDto('f-checkbox-others', BasicField.Checkbox, 'Sauces'),
+      ],
     })
 
-    expect(result).toMatchSnapshot()
+    expect(result).toEqual([
+      flattenedTextfield,
+      {
+        _id: 'f-checkbox-others',
+        fieldType: 'checkbox',
+        question: 'Sauces',
+        answerArray: ['Ketchup', 'Others: sambal'],
+      },
+    ])
   })
 
   it('synthesizes empty entries for unanswered fields', () => {
     // Only one field answered; everything else must be synthesized in the
-    // empty shape its field type demands (statement/image excluded).
-    const v4Responses: FieldResponsesV4 = {
-      'f-textfield': allTypeResponses['f-textfield'],
-    }
-
+    // empty shape its field type demands, via transformInputsToOutputs
+    // (statement/image excluded). Quirks this pins: an unanswered section
+    // carries isHeader: true (an answered one does not — adaptV4ToV1 drops
+    // it), an unanswered table renders its column titles into the question,
+    // and an unanswered signature renders as ['', ''].
     const result = flattenV4ToFormFields({
-      v4Responses,
+      v4Responses: { 'f-textfield': textfieldResponse },
       formFields: allTypeFormFields,
     })
 
-    expect(result).toMatchSnapshot()
+    expect(result).toEqual([
+      {
+        _id: 'f-section',
+        fieldType: 'section',
+        question: 'Part A',
+        answer: '',
+        isHeader: true,
+      },
+      flattenedTextfield,
+      {
+        _id: 'f-dropdown',
+        fieldType: 'dropdown',
+        question: 'Citizenship',
+        answer: '',
+      },
+      {
+        _id: 'f-yesno',
+        fieldType: 'yes_no',
+        question: 'Do you agree?',
+        answer: '',
+      },
+      {
+        _id: 'f-email-verified',
+        fieldType: 'email',
+        question: 'Your email',
+        answer: '',
+      },
+      {
+        _id: 'f-email-plain',
+        fieldType: 'email',
+        question: 'Alternate email',
+        answer: '',
+      },
+      {
+        _id: 'f-mobile-verified',
+        fieldType: 'mobile',
+        question: 'Your mobile',
+        answer: '',
+      },
+      {
+        _id: 'f-radio-plain',
+        fieldType: 'radiobutton',
+        question: 'Favourite colour',
+        answer: '',
+      },
+      {
+        _id: 'f-radio-others',
+        fieldType: 'radiobutton',
+        question: 'Favourite fruit',
+        answer: '',
+      },
+      {
+        _id: 'f-checkbox',
+        fieldType: 'checkbox',
+        question: 'Toppings',
+        answerArray: [],
+      },
+      {
+        _id: 'f-checkbox-others',
+        fieldType: 'checkbox',
+        question: 'Sauces',
+        answerArray: [],
+      },
+      {
+        _id: 'f-checkbox-empty',
+        fieldType: 'checkbox',
+        question: 'Optional extras',
+        answerArray: [],
+      },
+      {
+        _id: 'f-attachment',
+        fieldType: 'attachment',
+        question: 'Upload your CV',
+        answer: '',
+      },
+      {
+        _id: 'f-table',
+        fieldType: 'table',
+        question: 'Employment history (Company, Role)',
+        answerArray: [],
+      },
+      {
+        _id: 'f-address',
+        fieldType: 'address',
+        question: 'Home address',
+        answerArray: [],
+      },
+      {
+        _id: 'f-address-partial',
+        fieldType: 'address',
+        question: 'Office address',
+        answerArray: [],
+      },
+      {
+        _id: 'f-signature',
+        fieldType: 'signature',
+        question: 'Sign here',
+        answerArray: ['', ''],
+      },
+    ])
   })
 
   it('orders output by the form definition when responses arrive out of order', () => {
     const outOfOrder: FieldResponsesV4 = {
-      'f-dropdown': allTypeResponses['f-dropdown'],
-      'f-textfield': allTypeResponses['f-textfield'],
+      'f-dropdown': dropdownResponse,
+      'f-textfield': textfieldResponse,
     }
     const formFields = [
-      allTypeFormFields.find((f) => f._id === 'f-textfield'),
-      allTypeFormFields.find((f) => f._id === 'f-dropdown'),
-    ] as FormFieldDto[]
+      makeFieldDto('f-textfield', BasicField.ShortText, 'Your name'),
+      makeFieldDto('f-dropdown', BasicField.Dropdown, 'Citizenship'),
+    ]
 
     const result = flattenV4ToFormFields({
       v4Responses: outOfOrder,
@@ -233,7 +245,7 @@ describe('flattenV4ToFormFields', () => {
 
   it('appends extra verified entries not present in the form definition', () => {
     const v4Responses: FieldResponsesV4 = {
-      'f-textfield': allTypeResponses['f-textfield'],
+      'f-textfield': textfieldResponse,
       'SP NRIC': {
         fieldType: 'nric',
         question: 'SingPass Validated NRIC',
@@ -242,12 +254,20 @@ describe('flattenV4ToFormFields', () => {
       },
     }
     const formFields = [
-      allTypeFormFields.find((f) => f._id === 'f-textfield'),
-    ] as FormFieldDto[]
+      makeFieldDto('f-textfield', BasicField.ShortText, 'Your name'),
+    ]
 
     const result = flattenV4ToFormFields({ v4Responses, formFields })
 
-    expect(result).toMatchSnapshot()
+    expect(result).toEqual([
+      flattenedTextfield,
+      {
+        _id: 'SP NRIC',
+        fieldType: 'nric',
+        question: 'SingPass Validated NRIC',
+        answer: 'S1234567A',
+      },
+    ])
   })
 
   it('appends a response whose _id is not in the form definition', () => {
@@ -262,27 +282,41 @@ describe('flattenV4ToFormFields', () => {
 
     const result = flattenV4ToFormFields({
       v4Responses,
-      formFields: [allTypeFormFields.find((f) => f._id === 'f-textfield')!],
+      formFields: [
+        makeFieldDto('f-textfield', BasicField.ShortText, 'Your name'),
+      ],
     })
 
-    expect(result).toMatchSnapshot()
+    expect(result).toEqual([
+      { ...flattenedTextfield, answer: '' },
+      {
+        _id: 'unknown-field-id',
+        fieldType: 'textfield',
+        question: 'Orphaned question',
+        answer: 'orphaned answer',
+      },
+    ])
   })
 
   it('renders a duplicated form field once per occurrence', () => {
-    const textfield = allTypeFormFields.find((f) => f._id === 'f-textfield')!
+    const textfield = makeFieldDto(
+      'f-textfield',
+      BasicField.ShortText,
+      'Your name',
+    )
 
     const result = flattenV4ToFormFields({
-      v4Responses: { 'f-textfield': allTypeResponses['f-textfield'] },
+      v4Responses: { 'f-textfield': textfieldResponse },
       formFields: [textfield, textfield],
     })
 
-    expect(result).toMatchSnapshot()
+    expect(result).toEqual([flattenedTextfield, flattenedTextfield])
   })
 
   it('ignores myInfo and previousAnswers metadata', () => {
     const withMetadata: FieldResponsesV4 = {
       'f-textfield': {
-        ...allTypeResponses['f-textfield'],
+        ...textfieldResponse,
         myInfo: { attr: 'name' },
         previousAnswers: [
           {
@@ -293,16 +327,14 @@ describe('flattenV4ToFormFields', () => {
       },
     }
     const formFields = [
-      allTypeFormFields.find((f) => f._id === 'f-textfield'),
-    ] as FormFieldDto[]
+      makeFieldDto('f-textfield', BasicField.ShortText, 'Your name'),
+    ]
 
     expect(
       flattenV4ToFormFields({ v4Responses: withMetadata, formFields }),
     ).toEqual(
       flattenV4ToFormFields({
-        v4Responses: {
-          'f-textfield': allTypeResponses['f-textfield'],
-        },
+        v4Responses: { 'f-textfield': textfieldResponse },
         formFields,
       }),
     )
