@@ -94,17 +94,6 @@ export default class Crypto extends CryptoBase {
   }
 
   /**
-   * Decrypts an encrypted submission and returns its content in the version it
-   * was submitted in: V1 content (storage-mode envelope) as `DecryptedContent`,
-   * V4 content (MRF envelope) as `DecryptedContentV4` including the decrypted
-   * per-submission secret key. Consumers discriminate the union with
-   * `Array.isArray(result.responses)`.
-   * @param formSecretKey The base-64 secret key of the form to decrypt with.
-   * @param decryptParams The params containing encrypted content and information.
-   * @returns The decrypted content if successful. Else, null will be returned.
-   * @throws {MissingPublicKeyError} if a public key is not provided when instantiating this class and is needed for verifying signed content.
-   */
-  /**
    * Decrypts and verifies signed verified content with the same key that
    * encrypted the submission content.
    * @throws {MissingPublicKeyError} if no signing public key was provided at instantiation.
@@ -130,6 +119,17 @@ export default class Crypto extends CryptoBase {
     return verifySignedMessage(decryptedVerifiedContent, this.signingPublicKey)
   }
 
+  /**
+   * Decrypts an encrypted submission and returns its content in the version it
+   * was submitted in: V1 content (storage-mode envelope) as `DecryptedContent`,
+   * V4 content (MRF envelope) as `DecryptedContentV4` including the decrypted
+   * per-submission secret key. Consumers discriminate the union with
+   * `Array.isArray(result.responses)`.
+   * @param formSecretKey The base-64 secret key of the form to decrypt with.
+   * @param decryptParams The params containing encrypted content and information.
+   * @returns The decrypted content if successful. Else, null will be returned.
+   * @throws {MissingPublicKeyError} if a public key is not provided when instantiating this class and is needed for verifying signed content.
+   */
   decryptVersioned = (
     formSecretKey: string,
     decryptParams: DecryptParams
@@ -157,12 +157,11 @@ export default class Crypto extends CryptoBase {
       if (!decryptedContent) return null
       const decryptedObject: unknown = JSON.parse(encodeUTF8(decryptedContent))
 
-      const verified = verifiedContent
-        ? this.decryptVerifiedContent(contentSecretKey, verifiedContent)
-        : undefined
-
       if (Array.isArray(decryptedObject)) {
         if (!determineIsFormFields(decryptedObject)) return null
+        const verified = verifiedContent
+          ? this.decryptVerifiedContent(contentSecretKey, verifiedContent)
+          : undefined
         return {
           responses: decryptedObject,
           ...(verified !== undefined && { verified }),
@@ -183,6 +182,9 @@ export default class Crypto extends CryptoBase {
         return null
       }
 
+      const verified = verifiedContent
+        ? this.decryptVerifiedContent(contentSecretKey, verifiedContent)
+        : undefined
       return {
         submissionSecretKey,
         responses: decryptedObject as FieldResponsesV4,
