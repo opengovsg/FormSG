@@ -11,10 +11,7 @@ export { adaptV4ToV3 } from './adapt-v4-to-v3'
 export { isFieldResponsesV4 } from './crypto-v3'
 export {
   ADDRESS_SUBFIELD_KEYS,
-  ADDRESS_V1_ANSWER_ORDER,
-  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
   GENERIC_STRING_FIELD_TYPES,
-  OTHERS_PREFIX,
 } from './constants-v4'
 
 export type {
