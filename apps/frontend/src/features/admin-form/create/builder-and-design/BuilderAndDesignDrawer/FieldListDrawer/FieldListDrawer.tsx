@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiRightArrowAlt, BiSearch } from 'react-icons/bi'
+import { BiSearch } from 'react-icons/bi'
 import {
   Box,
   Divider,
@@ -9,7 +9,6 @@ import {
   Input,
   InputGroup,
   InputLeftElement,
-  Progress,
   TabList,
   TabPanel,
   TabPanels,
@@ -22,15 +21,7 @@ import { featureFlags } from 'formsg-shared/constants'
 
 import { Tab } from '~components/Tabs'
 
-import {
-  DrawerTabs,
-  useCreatePageSidebar,
-} from '~features/admin-form/create/common/CreatePageSidebarContext'
-import {
-  completedPhases,
-  stepsSelector,
-  useWorkflowBuilderStore,
-} from '~features/admin-form/create/workflow-v2/workflowBuilderStore'
+import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 import { useCreateTabForm } from '../../../builder-and-design/useCreateTabForm'
 import { CreatePageDrawerCloseButton } from '../../../common'
@@ -92,26 +83,8 @@ export const FieldListDrawer = (): JSX.Element => {
   const { isLoading } = useCreateTabForm()
   const [searchValue, setSearchValue] = useState('')
 
-  // Workflow progress card state
-  const steps = useWorkflowBuilderStore(stepsSelector)
-  const workflowStoreState = useWorkflowBuilderStore((s) => s)
-  const hasWorkflow = steps.length > 1
-  const completedCount = useMemo(
-    () => (hasWorkflow ? completedPhases(workflowStoreState).length : 0),
-    [hasWorkflow, workflowStoreState],
-  )
-  const showProgressCard = hasWorkflow && completedCount < 4
-
   // Workflow nudge for MRF forms that match workflow signals
   const { shouldShowNudge, dismissNudge } = useWorkflowNudge()
-
-  // Collapse progress card when user scrolls the field list
-  const [isCompact, setIsCompact] = useState(false)
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const handleScroll = useCallback(() => {
-    if (!scrollRef.current) return
-    setIsCompact(scrollRef.current.scrollTop > 20)
-  }, [])
 
   const tabsDataList = [
     {
@@ -159,46 +132,7 @@ export const FieldListDrawer = (): JSX.Element => {
           </Text>
           <CreatePageDrawerCloseButton />
         </Flex>
-        {showProgressCard ? (
-          <Box
-            mb="0.75rem"
-            px="0.75rem"
-            py={isCompact ? '0.5rem' : '0.75rem'}
-            borderRadius="8px"
-            border="1px solid"
-            borderColor="primary.300"
-            bg="primary.100"
-            cursor="pointer"
-            _hover={{ borderColor: 'primary.500' }}
-            transition="all 0.2s"
-            onClick={() => handleWorkflowClick(false)}
-          >
-            <Flex justify="space-between" align="center">
-              <Text textStyle="subhead-2" color="secondary.500">
-                Continue setting up your workflow
-              </Text>
-              <Icon
-                as={BiRightArrowAlt}
-                color="primary.500"
-                fontSize="1.25rem"
-              />
-            </Flex>
-            <Box
-              overflow="hidden"
-              maxH={isCompact ? '0' : '1rem'}
-              opacity={isCompact ? 0 : 1}
-              transition="all 0.2s"
-            >
-              <Progress
-                value={(completedCount / 4) * 100}
-                size="xs"
-                colorScheme="primary"
-                borderRadius="full"
-                mt="0.5rem"
-              />
-            </Box>
-          </Box>
-        ) : shouldShowNudge ? (
+        {shouldShowNudge ? (
           <WorkflowNudgeCard
             onDismiss={dismissNudge}
             onClick={() => handleWorkflowClick(false)}
@@ -218,13 +152,7 @@ export const FieldListDrawer = (): JSX.Element => {
         </TabList>
         <Divider w="auto" mx="-1.5rem" />
       </Box>
-      <TabPanels
-        ref={scrollRef}
-        onScroll={handleScroll}
-        pb="1rem"
-        flex={1}
-        overflowY="auto"
-      >
+      <TabPanels pb="1rem" flex={1} overflowY="auto">
         {tabsDataList.map((tab) => (
           <TabPanel key={tab.key}>
             <tab.component searchValue={searchValue} />

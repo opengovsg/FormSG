@@ -21,6 +21,7 @@ import { SingleSelect } from '~components/Dropdown'
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/CreatePageDrawer'
+import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 import type { RespondentType, StepType, WorkflowStep } from '../../types'
 import {
@@ -62,6 +63,7 @@ export const StepDetailPanel = ({
   const updateRespondent = useWorkflowBuilderStore((s) => s.updateRespondent)
 
   const { data: form } = useAdminForm()
+  const { handleBuilderClick } = useCreatePageSidebar()
 
   const [editName, setEditName] = useState(step.name)
   const [emailsText, setEmailsText] = useState('')
@@ -246,7 +248,7 @@ export const StepDetailPanel = ({
       <Box flex={1} overflow="auto">
         {/* Section 1: Step name */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
-          <Text textStyle="subhead-1" color="secondary.500" mb="0.75rem">
+          <Text textStyle="subhead-1" color="secondary.700" mb="0.75rem">
             Step name
           </Text>
           <Input
@@ -266,14 +268,14 @@ export const StepDetailPanel = ({
 
         {/* Section 2: People involved */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
-          <Text textStyle="subhead-1" color="secondary.500" mb="0.75rem">
-            People involved
+          <Text textStyle="subhead-1" color="secondary.700" mb="0.75rem">
+            People who are filling up this step
           </Text>
 
           {step.order === 0 ? (
             <Flex align="center" gap="0.5rem">
               <Icon as={BiEnvelope} fontSize="1rem" color="secondary.400" />
-              <Text textStyle="body-1" color="secondary.500">
+              <Text textStyle="body-1" color="secondary.700">
                 Anyone you share this form link with
               </Text>
             </Flex>
@@ -285,20 +287,35 @@ export const StepDetailPanel = ({
               <Stack spacing="0.75rem">
                 <Box>
                   <Radio value="email_field" colorScheme={checkboxColorScheme}>
-                    <Text textStyle="body-1" color="secondary.500">
-                      Email field
+                    <Text textStyle="body-1" color="secondary.700">
+                      Emails entered into an email field
                     </Text>
                   </Radio>
                   {currentRespondentType === 'email_field' && (
                     <Box pl="1.75rem" pt="0.5rem">
-                      <SingleSelect
-                        name="emailFieldSelect"
-                        isClearable={false}
-                        placeholder="Select an email field"
-                        items={emailFieldItems}
-                        value={currentLinkedFieldId ?? ''}
-                        onChange={handleFieldSelect}
-                      />
+                      {emailFieldItems.length > 0 ? (
+                        <SingleSelect
+                          name="emailFieldSelect"
+                          isClearable={false}
+                          placeholder="Select an email field"
+                          items={emailFieldItems}
+                          value={currentLinkedFieldId ?? ''}
+                          onChange={handleFieldSelect}
+                        />
+                      ) : (
+                        <Text textStyle="body-2" color="secondary.400">
+                          You'll need an email field on your form.{' '}
+                          <Text
+                            as="span"
+                            color="primary.500"
+                            cursor="pointer"
+                            _hover={{ textDecoration: 'underline' }}
+                            onClick={() => handleBuilderClick(false)}
+                          >
+                            Add one from the Fields tab
+                          </Text>
+                        </Text>
+                      )}
                     </Box>
                   )}
                 </Box>
@@ -308,8 +325,8 @@ export const StepDetailPanel = ({
                     value="specific_email"
                     colorScheme={checkboxColorScheme}
                   >
-                    <Text textStyle="body-1" color="secondary.500">
-                      Specific email(s)
+                    <Text textStyle="body-1" color="secondary.700">
+                      Specific emails that you choose
                     </Text>
                   </Radio>
                   {currentRespondentType === 'specific_email' && (
@@ -330,20 +347,35 @@ export const StepDetailPanel = ({
                     value="dropdown_field"
                     colorScheme={checkboxColorScheme}
                   >
-                    <Text textStyle="body-1" color="secondary.500">
-                      Dropdown field
+                    <Text textStyle="body-1" color="secondary.700">
+                      Emails mapped to a dropdown field
                     </Text>
                   </Radio>
                   {currentRespondentType === 'dropdown_field' && (
                     <Box pl="1.75rem" pt="0.5rem">
-                      <SingleSelect
-                        name="dropdownFieldSelect"
-                        isClearable={false}
-                        placeholder="Select a dropdown field"
-                        items={dropdownFieldItems}
-                        value={currentLinkedFieldId ?? ''}
-                        onChange={handleFieldSelect}
-                      />
+                      {dropdownFieldItems.length > 0 ? (
+                        <SingleSelect
+                          name="dropdownFieldSelect"
+                          isClearable={false}
+                          placeholder="Select a dropdown field"
+                          items={dropdownFieldItems}
+                          value={currentLinkedFieldId ?? ''}
+                          onChange={handleFieldSelect}
+                        />
+                      ) : (
+                        <Text textStyle="body-2" color="secondary.400">
+                          You'll need a dropdown field on your form.{' '}
+                          <Text
+                            as="span"
+                            color="primary.500"
+                            cursor="pointer"
+                            _hover={{ textDecoration: 'underline' }}
+                            onClick={() => handleBuilderClick(false)}
+                          >
+                            Add one from the Fields tab
+                          </Text>
+                        </Text>
+                      )}
                     </Box>
                   )}
                 </Box>
@@ -356,68 +388,82 @@ export const StepDetailPanel = ({
 
         {/* Section 3: What they do (step type) */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
-          <Text textStyle="subhead-1" color="secondary.500" mb="0.75rem">
+          <Text textStyle="subhead-1" color="secondary.700" mb="0.75rem">
             What they do
           </Text>
-          <RadioGroup
-            value={step.type}
-            onChange={(val) => setStepType(step.id, val as StepType)}
-          >
-            <Stack spacing="0.75rem">
-              <Box>
-                <Radio value="collect" colorScheme={checkboxColorScheme}>
-                  <Stack spacing="0.25rem">
-                    <Text textStyle="body-1" color="secondary.500">
-                      Fill up a response
-                    </Text>
-                    <Text textStyle="caption-1" color="secondary.400">
-                      This person fills in their selected fields.
-                    </Text>
-                  </Stack>
-                </Radio>
-              </Box>
-              <Box>
-                <Radio value="review" colorScheme={checkboxColorScheme}>
-                  <Stack spacing="0.25rem">
-                    <Text textStyle="body-1" color="secondary.500">
-                      Fill up a response and approve
-                    </Text>
-                    <Text textStyle="caption-1" color="secondary.400">
-                      This person fills in their selected fields and makes an
-                      approval decision. If they select No, the workflow will
-                      stop.
-                    </Text>
-                  </Stack>
-                </Radio>
-                {step.type === 'review' && (
-                  <Box ml="1.75rem" mt="0.75rem">
-                    <Text
-                      textStyle="subhead-2"
-                      color="secondary.500"
-                      mb="0.5rem"
-                    >
-                      Approval field (Yes/No)
-                    </Text>
-                    {yesNoFields.length > 0 ? (
-                      <SingleSelect
-                        name="approvalFieldSelect"
-                        isClearable={false}
-                        placeholder="Select a Yes/No field"
-                        items={yesNoFields}
-                        value={step.approvalDecisionFieldId ?? ''}
-                        onChange={handleApprovalFieldChange}
-                      />
-                    ) : (
-                      <Text textStyle="caption-1" color="secondary.400">
-                        No Yes/No fields in this form yet. Create one in the
-                        Fields tab.
+          {step.order === 0 ? (
+            <Text textStyle="body-1" color="secondary.700">
+              Fill up a response
+            </Text>
+          ) : (
+            <RadioGroup
+              value={step.type}
+              onChange={(val) => setStepType(step.id, val as StepType)}
+            >
+              <Stack spacing="0.75rem">
+                <Box>
+                  <Radio value="collect" colorScheme={checkboxColorScheme}>
+                    <Stack spacing="0.25rem">
+                      <Text textStyle="body-1" color="secondary.700">
+                        Fill up fields
                       </Text>
-                    )}
-                  </Box>
-                )}
-              </Box>
-            </Stack>
-          </RadioGroup>
+                      <Text textStyle="body-2" color="secondary.400">
+                        This person fills in the fields assigned to them.
+                      </Text>
+                    </Stack>
+                  </Radio>
+                </Box>
+                <Box>
+                  <Radio value="review" colorScheme={checkboxColorScheme}>
+                    <Stack spacing="0.25rem">
+                      <Text textStyle="body-1" color="secondary.700">
+                        Fill up fields and approve
+                      </Text>
+                      <Text textStyle="body-2" color="secondary.400">
+                        This person fills in their fields, then approves or
+                        rejects. If rejected, the workflow stops.
+                      </Text>
+                    </Stack>
+                  </Radio>
+                  {step.type === 'review' && (
+                    <Box ml="2.75rem" mt="0.75rem">
+                      <Text
+                        textStyle="subhead-2"
+                        color="secondary.700"
+                        mb="0.5rem"
+                      >
+                        Approval field
+                      </Text>
+                      {yesNoFields.length > 0 ? (
+                        <SingleSelect
+                          name="approvalFieldSelect"
+                          isClearable={false}
+                          placeholder="Select a Yes/No field"
+                          items={yesNoFields}
+                          value={step.approvalDecisionFieldId ?? ''}
+                          onChange={handleApprovalFieldChange}
+                        />
+                      ) : (
+                        <Text textStyle="body-2" color="secondary.400">
+                          You'll need a Yes/No field on your form for approvers
+                          to use.{' '}
+                          <Text
+                            as="span"
+                            color="primary.500"
+                            cursor="pointer"
+                            _hover={{ textDecoration: 'underline' }}
+                            onClick={() => handleBuilderClick(false)}
+                          >
+                            Add one from the Fields tab
+                          </Text>
+                        </Text>
+                      )}
+                    </Box>
+                  )}
+                </Box>
+              </Stack>
+            </RadioGroup>
+          )}
         </Box>
 
         <Divider />
@@ -425,7 +471,7 @@ export const StepDetailPanel = ({
         {/* Section 4: Fields in this step */}
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
           <Flex justify="space-between" align="center" mb="0.75rem">
-            <Text textStyle="subhead-1" color="secondary.500">
+            <Text textStyle="subhead-1" color="secondary.700">
               Fields in this step
             </Text>
             <Text textStyle="body-2" color="secondary.400">
@@ -444,7 +490,7 @@ export const StepDetailPanel = ({
                   colorScheme={checkboxColorScheme}
                   spacing="0.75rem"
                 >
-                  <Text textStyle="body-1" color="secondary.500">
+                  <Text textStyle="body-1" color="secondary.700">
                     {field.number}. {field.name}
                   </Text>
                 </Checkbox>

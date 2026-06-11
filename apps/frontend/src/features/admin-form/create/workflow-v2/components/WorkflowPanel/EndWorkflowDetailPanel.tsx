@@ -16,6 +16,7 @@ import Button from '~components/Button'
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useDesignColorTheme } from '~features/admin-form/create/builder-and-design/utils/useDesignColorTheme'
 import { CreatePageDrawerCloseButton } from '~features/admin-form/create/common/CreatePageDrawer'
+import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 
 import {
   setFocusSelector,
@@ -95,6 +96,7 @@ export const EndWorkflowDetailPanel = (): JSX.Element => {
   const setFocus = useWorkflowBuilderStore(setFocusSelector)
   const { data: form } = useAdminForm()
 
+  const { handleBuilderClick } = useCreatePageSidebar()
   const colorTheme = useDesignColorTheme()
   const checkboxColorScheme = colorTheme ? `theme-${colorTheme}` : 'theme-blue'
 
@@ -153,10 +155,10 @@ export const EndWorkflowDetailPanel = (): JSX.Element => {
       {/* Scrollable content */}
       <Box flex={1} overflow="auto">
         <Box px="1.5rem" pt="1.5rem" pb="1.5rem">
-          <Text textStyle="subhead-1" color="secondary.500" mb="0.75rem">
+          <Text textStyle="subhead-1" color="secondary.700" mb="0.75rem">
             Recipients
           </Text>
-          <Text textStyle="caption-1" color="secondary.400" mb="1rem">
+          <Text textStyle="body-2" color="secondary.400" mb="1rem">
             Select who should receive an email when the workflow is complete.
           </Text>
 
@@ -174,7 +176,7 @@ export const EndWorkflowDetailPanel = (): JSX.Element => {
                 colorScheme={checkboxColorScheme}
                 spacing="0.75rem"
               >
-                <Text textStyle="body-1" color="secondary.500">
+                <Text textStyle="body-1" color="secondary.700">
                   Collaborators on this form
                 </Text>
               </Checkbox>
@@ -193,8 +195,8 @@ export const EndWorkflowDetailPanel = (): JSX.Element => {
                 colorScheme={checkboxColorScheme}
                 spacing="0.75rem"
               >
-                <Text textStyle="body-1" color="secondary.500">
-                  Specific email(s)
+                <Text textStyle="body-1" color="secondary.700">
+                  Specific emails that you choose
                 </Text>
               </Checkbox>
               {settings.specificEmails && (
@@ -225,8 +227,8 @@ export const EndWorkflowDetailPanel = (): JSX.Element => {
                 colorScheme={checkboxColorScheme}
                 spacing="0.75rem"
               >
-                <Text textStyle="body-1" color="secondary.500">
-                  Email field
+                <Text textStyle="body-1" color="secondary.700">
+                  Emails from an email field on the form
                 </Text>
               </Checkbox>
               {settings.emailField && (
@@ -265,8 +267,17 @@ export const EndWorkflowDetailPanel = (): JSX.Element => {
                       ))}
                     </Box>
                   ) : (
-                    <Text textStyle="caption-1" color="secondary.400">
-                      No email fields in this form yet.
+                    <Text textStyle="body-2" color="secondary.400">
+                      You'll need an email field on your form.{' '}
+                      <Text
+                        as="span"
+                        color="primary.500"
+                        cursor="pointer"
+                        _hover={{ textDecoration: 'underline' }}
+                        onClick={() => handleBuilderClick(false)}
+                      >
+                        Add one from the Fields tab
+                      </Text>
                     </Text>
                   )}
                 </Box>
