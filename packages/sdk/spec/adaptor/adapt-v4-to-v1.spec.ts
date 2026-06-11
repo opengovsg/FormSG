@@ -1,23 +1,19 @@
 // Import through the package entrypoint: the adapter is public SDK surface.
-import { adaptV4ToV1 } from '../../src/index'
 import Crypto from '../../src/crypto'
 import CryptoV3 from '../../src/crypto-v3'
+import { adaptV4ToV1 } from '../../src/index'
 import { FormField } from '../../src/types'
 import { FieldResponsesV4 } from '../../src/types-v4'
 
 /**
- * Round-trip parity harness.
+ * Round-trip parity harness: each case's answers are rendered both as the
+ * V1 content a storage-mode submission would carry (follows the V1 producer's
+ * transformInputsToOutputs rules) and as the V4 content an MRF submission
+ * would carry, then encrypted and decrypted.
+ * Finally, the adapter's output for the V4 side is verified to equal the decrypted V1 side.
  *
- * One source of answers is rendered twice: as the V1 content a storage-mode
- * submission would carry (per the V1 producer's transformInputsToOutputs
- * rules) and as the V4 content an MRF submission would carry. Both are
- * encrypted with their real envelopes and decrypted back, then the adapter's
- * output for the V4 side must equal the decrypted V1 side.
- *
- * `section` is deliberately absent here: the V1 producer renders it with
- * `isHeader: true`, while the adapter follows the admin frontend's flatten
- * (no isHeader) per the ADR 0001 fidelity contract. It is covered in the
- * direct tests below.
+ * `section` is deliberately absent: the V1 producer emits isHeader: true,
+ * while the adapter follows the frontend flatten (no isHeader).
  */
 type ParityCase = {
   name: string
@@ -510,10 +506,10 @@ describe('adaptV4ToV1', () => {
 
   describe('direct adapter behaviour', () => {
     it('should replace the checkbox Others sentinel in place, following the frontend flatten', () => {
-      // The V1 producer removes the sentinel and appends 'Others: x' at the
-      // end; the frontend flatten replaces it in place. In production the
-      // client always appends the sentinel last so the two agree — for the
-      // unreachable not-last case, the fidelity contract follows the flatten.
+      // The V1 producer appends 'Others: x' at the end; the flatten replaces
+      // the sentinel in place. The client always appends the sentinel last,
+      // so the two agree in production; this unreachable case follows the
+      // flatten.
       const v4: FieldResponsesV4 = {
         field1: {
           fieldType: 'checkbox',

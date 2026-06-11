@@ -56,10 +56,9 @@ function convertAnswerToV1(
       }
     }
     case 'children': {
-      // One row per child, values only — the V1 producer's answerArray shape.
-      // Attribute order follows the first child's record keys, like the
-      // V4→V3 adapter. Unreachable in production today (MRF submissions
-      // cannot contain children fields yet), so the V1 producer wins.
+      // Follows V1 producer shape: one row per child, values only, attribute order
+      // from the first child's keys (similar to the V4→V3 adapter).
+      // NOTE: Currently unreachable in production today since MRF does not support children fields yet.
       const children = answer as ChildrenAnswerV4
       const childEntries = Object.values(children)
       if (childEntries.length === 0) {
@@ -115,11 +114,10 @@ function convertAnswerToV1(
 /**
  * Adapts V4 content's field responses to V1 content's `FormField[]`.
  *
- * Form-definition-free: maps only answered fields, in record insertion order,
- * and synthesizes nothing (no empty entries, no section headers, no
- * reordering). Question text is carried over from the self-describing V4
- * responses. See docs/adr/0001-unified-sdk-decrypt-for-v4.md for the
- * fidelity contract.
+ * Note: Does not use the form definition and relies only on the information in FieldResponsesV4.
+ * Hence, it:
+ * - maps only answered fields (does not generate empty entries missing in the V4 record)
+ * - the generated array follows the V4 record insertion order
  */
 export function adaptV4ToV1(v4Responses: FieldResponsesV4): FormField[] {
   const v1Fields: FormField[] = []

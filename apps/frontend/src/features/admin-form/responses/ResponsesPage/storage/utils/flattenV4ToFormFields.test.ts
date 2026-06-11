@@ -6,17 +6,9 @@ import { BasicField, FormFieldDto } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from './flattenV4ToFormFields'
 
 /**
- * flattenV4ToFormFields owns the merge of V4 responses with the form
- * definition: ordering output by the form definition, synthesizing the
- * per-field-type empty shape for unanswered fields, and appending entries
- * that have no form field (verified SPCP/sgID entries, orphaned responses).
- *
- * Per-field-type value mapping is delegated to the SDK's adaptV4ToV1 and
- * pinned in the SDK's own spec (packages/sdk/spec/adaptor/
- * adapt-v4-to-v1.spec.ts); a single smoke test here proves the delegation
- * is wired up. The expected outputs below are the contract the CSV pipeline
- * (CsvRecord, EncryptedResponseCsvGenerator, Response classes) consumes —
- * changes to them change what agencies see in exported CSVs.
+ * Tests only the responsibilities of flattenV4ToFormFields: form-definition
+ * ordering, empty entries for unanswered fields, and appending entries with
+ * no form field.
  */
 const makeFieldDto = (
   id: string,
@@ -87,8 +79,6 @@ const flattenedTextfield = {
 
 describe('flattenV4ToFormFields', () => {
   it('delegates per-field value mapping to the SDK adapter', () => {
-    // The checkbox Others sentinel only resolves to 'Others: x' inside
-    // adaptV4ToV1, so its presence proves the delegation is wired up.
     const result = flattenV4ToFormFields({
       v4Responses: {
         'f-textfield': textfieldResponse,
@@ -112,12 +102,6 @@ describe('flattenV4ToFormFields', () => {
   })
 
   it('synthesizes empty entries for unanswered fields', () => {
-    // Only one field answered; everything else must be synthesized in the
-    // empty shape its field type demands, via transformInputsToOutputs
-    // (statement/image excluded). Quirks this pins: an unanswered section
-    // carries isHeader: true (an answered one does not — adaptV4ToV1 drops
-    // it), an unanswered table renders its column titles into the question,
-    // and an unanswered signature renders as ['', ''].
     const result = flattenV4ToFormFields({
       v4Responses: { 'f-textfield': textfieldResponse },
       formFields: allTypeFormFields,

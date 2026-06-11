@@ -18,17 +18,17 @@ export const GENERIC_STRING_FIELD_TYPES = new Set<FieldType>([
 ])
 
 /**
- * Prefix prepended to free-text "Others" answers when rendering radio and
- * checkbox responses as V1 content. Duplicated from the application's shared
- * constants — the SDK deliberately has no dependency on packages/shared.
+ * Prefix for free-text "Others" answers in V1 radio/checkbox content.
+ * Duplicated from packages/shared — the SDK deliberately takes no dependency
+ * on it.
  */
 export const OTHERS_PREFIX = 'Others: '
 
 /**
- * Internal sentinel the form client stores in a checkbox answer's value array
- * when the "Others" option is checked; the free-text input travels separately
- * as `othersInput`. Duplicated (name and value) from the application's shared
- * constants — the SDK deliberately has no dependency on packages/shared.
+ * Sentinel the form client stores in a checkbox value array when "Others" is
+ * checked; the free text travels separately as `othersInput`. Duplicated
+ * (name and value) from packages/shared — the SDK deliberately takes no
+ * dependency on it.
  */
 export const CLIENT_CHECKBOX_OTHERS_INPUT_VALUE =
   '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
@@ -43,10 +43,9 @@ export const ADDRESS_SUBFIELD_KEYS = [
 ] as const
 
 /**
- * The order of address subfields in a V1 content answerArray, as the V1
- * producer emits it (postalCode last). Distinct from ADDRESS_SUBFIELD_KEYS,
- * which is the V3 record-key list with postalCode first — rendering an
- * answerArray in that order would silently scramble addresses.
+ * Address subfield order in a V1 content answerArray (postalCode last). Not
+ * interchangeable with ADDRESS_SUBFIELD_KEYS (V3 record keys, postalCode
+ * first) — using that order would silently scramble addresses.
  */
 export const ADDRESS_V1_ANSWER_ORDER = [
   'blockNumber',
