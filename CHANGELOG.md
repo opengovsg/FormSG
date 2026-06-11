@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.28.0](https://github.com/opengovsg/formsg/compare/v7.27.0...v7.28.0) (2026-06-11)
+
+
+### Features
+
+* add headers to questionAnswerPairs; affecting mrf nextstep, workflow completion, respondent copy emails ([08b9e25](https://github.com/opengovsg/formsg/commit/08b9e252cfae5d3fcce02a4c91c0ff64d7b87e29))
+* add JSON to MRF emails ([18c613a](https://github.com/opengovsg/formsg/commit/18c613a4ddb097b5bcca1b77551fb0d233d0bc93))
+* add verified prefix to questionAnswer ([6c89002](https://github.com/opengovsg/formsg/commit/6c890028d3cac88137c89031fae16538f7c00f26))
+* implement standardised email template for payment form, feature-flagged ([1a0ddf6](https://github.com/opengovsg/formsg/commit/1a0ddf66265ef314d28e4d2343bf18ee62fb793f))
+* include 'Others :' in checkbox & radio others field ([4f23b42](https://github.com/opengovsg/formsg/commit/4f23b42510e40f4cf09416ba42db4f1cd0b4e994))
+* make MRF JSON table delimiters ;, implement foothole to use formSetting to determine delimiter used for the future ([59c474b](https://github.com/opengovsg/formsg/commit/59c474b796c20727c459daf9e43345a348653561))
+* show headers with different styles in email template ([d0c4075](https://github.com/opengovsg/formsg/commit/d0c40758baf1a7f768a718774a7278dfb402ec1a))
+
+
+### Bug Fixes
+
+* add fieldType to storage mode respondent copy so headers take header css property in email template ([7eebf73](https://github.com/opengovsg/formsg/commit/7eebf734f723c2e5f09537b8157c1dbb4c912457))
+* preserve line breaks in standardised email template responses (#9592) ([#9592](https://github.com/opengovsg/formsg/commit/1c1bb6c1ab215eb161eb59bce1c7a3a7b8aed4a5))
+* rename [MyInfo] with [Myinfo] ([c29de94](https://github.com/opengovsg/formsg/commit/c29de94b08ca83d82603fe49b4273126b177294c))
+* tests & linting ([0c5a4f6](https://github.com/opengovsg/formsg/commit/0c5a4f6c4cca0fcf1e80a038d113cae25f72e017))
+
+
+### Chores
+
+* move non_response_field_set to shared file to be used by FE and BE ([cecbef1](https://github.com/opengovsg/formsg/commit/cecbef130cbe625e215d8b69c515aa4c24502a42))
+
+
+### Miscellaneous
+
+* Merge pull request #9505 from opengovsg/feat/email-standardisation-phase-3 ([#9505](https://github.com/opengovsg/formsg/commit/ced5773d208035d2ea58c862d06898093a3fc194))
+* resolve JSON DOM tree status in email template ([6621269](https://github.com/opengovsg/formsg/commit/6621269b2e5d62325c11139bbe794d1edcd5e576))
+
 ## [7.27.0](https://github.com/opengovsg/formsg/compare/v7.26.1...v7.27.0) (2026-06-10)
 
 
