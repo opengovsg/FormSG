@@ -3,6 +3,10 @@ import CryptoV3 from '../src/crypto-v3'
 import { SIGNING_KEYS } from '../src/resource/signing-keys'
 import { DecryptedContentV4, FieldResponsesV4 } from '../src/types-v4'
 
+import { decodeUTF8 } from 'tweetnacl-util'
+
+import { encryptMessage } from '../src/util/crypto'
+
 import { plaintext } from './resources/crypto-data-20200322'
 
 const signingPublicKey = SIGNING_KEYS.test.publicKey
@@ -196,6 +200,95 @@ describe('Crypto (versioned decryption)', () => {
         crypto.decryptVersioned(otherKeypair.secretKey, {
           encryptedContent: v4Enc.encryptedContent,
           encryptedSubmissionSecretKey: v4Enc.encryptedSubmissionSecretKey,
+          version: MRF_TEST_VERSION,
+        })
+      ).toBeNull()
+    })
+  })
+
+  describe('plaintext-shape dispatch', () => {
+    // Encrypts arbitrary plaintext (even invalid JSON) inside an MRF envelope.
+    const encryptRawInEnvelope = (raw: string, formPublicKey: string) => {
+      const envelope = cryptoV3.encrypt({}, formPublicKey)
+      return {
+        // Encrypt to the submission keypair like the MRF envelope does.
+        encryptedContent: encryptMessage(
+          decodeUTF8(raw),
+          envelope.submissionPublicKey
+        ),
+        encryptedSubmissionSecretKey: envelope.encryptedSubmissionSecretKey,
+        version: MRF_TEST_VERSION,
+      }
+    }
+
+    it('returns null for a V3-shaped record (no provenance)', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const v3Responses = {
+        '650abc0000000000000000aa': {
+          fieldType: 'textfield',
+          answer: 'TAN AH KOW',
+        },
+      }
+      const enc = cryptoV3.encrypt(v3Responses, publicKey)
+      const params = {
+        encryptedContent: enc.encryptedContent,
+        encryptedSubmissionSecretKey: enc.encryptedSubmissionSecretKey,
+        version: MRF_TEST_VERSION,
+      }
+
+      expect(crypto.decryptVersioned(secretKey, params)).toBeNull()
+      expect(crypto.decrypt(secretKey, params)).toBeNull()
+    })
+
+    it('returns null for non-JSON plaintext', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const params = encryptRawInEnvelope('this is not json {', publicKey)
+
+      expect(crypto.decryptVersioned(secretKey, params)).toBeNull()
+      expect(crypto.decrypt(secretKey, params)).toBeNull()
+    })
+
+    it.each([
+      ['string literal', '"just a string"'],
+      ['number literal', '42'],
+      ['boolean literal', 'true'],
+      ['null literal', 'null'],
+    ])('returns null for JSON that is a %s', (_label, raw) => {
+      const { publicKey, secretKey } = crypto.generate()
+      const params = encryptRawInEnvelope(raw, publicKey)
+
+      expect(crypto.decryptVersioned(secretKey, params)).toBeNull()
+      expect(crypto.decrypt(secretKey, params)).toBeNull()
+    })
+
+    it('returns null for an array that fails the V1 field validator', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const invalidV1 = [{ notAFormField: true }]
+      const encryptedContent = crypto.encrypt(invalidV1, publicKey)
+      const params = { encryptedContent, version: 1 }
+
+      expect(crypto.decryptVersioned(secretKey, params)).toBeNull()
+      expect(crypto.decrypt(secretKey, params)).toBeNull()
+    })
+
+    it('decrypt returns null, not partial output, when a later V4 entry is malformed', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const responses = {
+        ...v4Responses,
+        '650abc0000000000000000ac': {
+          fieldType: 'checkbox',
+          question: 'Broken checkbox',
+          // checkbox answers must carry an array value
+          answer: { value: 'not-an-array' },
+          provenance: { stepNumber: 1 },
+        },
+      }
+      const enc = cryptoV3.encrypt(responses, publicKey)
+
+      expect(
+        crypto.decrypt(secretKey, {
+          encryptedContent: enc.encryptedContent,
+          encryptedSubmissionSecretKey: enc.encryptedSubmissionSecretKey,
           version: MRF_TEST_VERSION,
         })
       ).toBeNull()
