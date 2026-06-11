@@ -29,7 +29,12 @@ import {
   EncryptedContent,
   FormField,
 } from './types'
-import { DecryptedContentV4, FieldResponsesV4 } from './types-v4'
+import {
+  AttachmentAnswerV4,
+  DecryptedContentV4,
+  DecryptedVersionedContentAndAttachments,
+  FieldResponsesV4,
+} from './types-v4'
 
 export default class Crypto extends CryptoBase {
   signingPublicKey?: string
@@ -229,20 +234,75 @@ export default class Crypto extends CryptoBase {
     formSecretKey: string,
     decryptParams: DecryptParams
   ): Promise<DecryptedContentAndAttachments | null> => {
+    const decrypted = await this.decryptWithAttachmentsVersioned(
+      formSecretKey,
+      decryptParams
+    )
+    if (decrypted === null) return null
+    if (Array.isArray(decrypted.content.responses)) {
+      return decrypted as DecryptedContentAndAttachments
+    }
+    try {
+      return {
+        content: {
+          responses: adaptV4ToV1(decrypted.content.responses),
+          ...(decrypted.content.verified !== undefined && {
+            verified: decrypted.content.verified,
+          }),
+        },
+        attachments: decrypted.attachments,
+      }
+    } catch {
+      // Malformed V4 answer shapes abort the whole submission rather than
+      // produce partial output.
+      return null
+    }
+  }
+
+  /**
+   * Decrypts an encrypted submission in its submitted content version, and
+   * also downloads and decrypts any attachments alongside it. Attachment files
+   * are decrypted with the per-submission secret key for MRF (V4) submissions
+   * and the form secret key for storage-mode (V1) submissions.
+   * @param formSecretKey Secret key as a base-64 string
+   * @param decryptParams The params containing encrypted content and information.
+   * @returns A promise of the versioned decrypted content and attachments (if any). Or else returns null if a decryption error decrypting any part of the submission.
+   * @throws {MissingPublicKeyError} if a public key is not provided when instantiating this class and is needed for verifying signed content.
+   */
+  decryptWithAttachmentsVersioned = async (
+    formSecretKey: string,
+    decryptParams: DecryptParams
+  ): Promise<DecryptedVersionedContentAndAttachments | null> => {
     const decryptedRecords: DecryptedAttachments = {}
     const filenames: Record<string, string> = {}
 
     const attachmentRecords: EncryptedAttachmentRecords =
       decryptParams.attachmentDownloadUrls ?? {}
-    const decryptedContent = this.decrypt(formSecretKey, decryptParams)
+    const decryptedContent = this.decryptVersioned(formSecretKey, decryptParams)
     if (decryptedContent === null) return null
 
     // Retrieve all original filenames for attachments for easy lookup
-    decryptedContent.responses.forEach((response) => {
-      if (response.fieldType === 'attachment' && response.answer) {
-        filenames[response._id] = response.answer
-      }
-    })
+    let fileSecretKey = formSecretKey
+    if (Array.isArray(decryptedContent.responses)) {
+      decryptedContent.responses.forEach((response) => {
+        if (response.fieldType === 'attachment' && response.answer) {
+          filenames[response._id] = response.answer
+        }
+      })
+    } else {
+      // V4 attachment files are encrypted with the per-submission keypair.
+      const v4Content = decryptedContent as DecryptedContentV4
+      fileSecretKey = v4Content.submissionSecretKey
+      Object.entries(v4Content.responses).forEach(
+        ([fieldId, response]) => {
+          if (response.fieldType !== 'attachment') return
+          const { value } = response.answer as AttachmentAnswerV4
+          if (typeof value === 'string' && value) {
+            filenames[fieldId] = value
+          }
+        }
+      )
+    }
 
     const fieldIds = Object.keys(attachmentRecords)
     // Check if all fieldIds are within filenames
@@ -261,7 +321,7 @@ export default class Crypto extends CryptoBase {
           .then(({ data: downloadResponse }) => {
             const encryptedFile =
               convertEncryptedAttachmentToFileContent(downloadResponse)
-            return this.decryptFile(formSecretKey, encryptedFile)
+            return this.decryptFile(fileSecretKey, encryptedFile)
           })
           .then((decryptedFile) => {
             // Check if the file exists and set the filename accordingly; otherwise, throw an error

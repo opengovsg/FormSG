@@ -1,4 +1,8 @@
-import { FieldType } from './types'
+import {
+  DecryptedAttachments,
+  DecryptedContent,
+  FieldType,
+} from './types'
 
 // TODO: provenance shape may be updated when it is implemented
 export type ResponseProvenance = {
@@ -177,4 +181,9 @@ export type DecryptedContentV4 = {
   responses: FieldResponsesV4
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   verified?: Record<string, any>
+}
+
+export type DecryptedVersionedContentAndAttachments = {
+  content: DecryptedContent | DecryptedContentV4
+  attachments: DecryptedAttachments
 }
