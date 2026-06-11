@@ -179,6 +179,29 @@ Attachments are end-to-end encrypted in the same way as normal form submissions,
 
 _Warning:_ We do not have the ability to scan any attachments for malicious content (e.g. spyware or viruses), so careful handling is needed.
 
+### Decrypting Multirespondent (V4) Submissions
+
+Multirespondent form (MRF) webhooks deliver their content in the V4 format, encrypted with a unique keypair per submission. The webhook payload carries the per-submission secret key, itself encrypted with your form's public key, in the `encryptedSubmissionSecretKey` field. Pass the payload into `decrypt` as usual — when `decryptParams.encryptedSubmissionSecretKey` is present, the SDK opens the submission-key envelope for you:
+
+```javascript
+const submission = formsg.crypto.decrypt(formSecretKey, req.body.data)
+```
+
+`decrypt` returns the same `{ responses: FormField[] }` shape for V4 submissions as for storage-mode submissions, so existing processing code keeps working. Differences in V4-sourced output:
+
+| Aspect            | Storage mode (V1)                          | Multirespondent (V4)                                          |
+| ----------------- | ------------------------------------------ | ------------------------------------------------------------- |
+| Unanswered fields | Present with empty `answer`                | Omitted                                                       |
+| Section headers   | Present (`isHeader: true`)                 | Omitted                                                       |
+| Field order       | Form order                                 | Not guaranteed — key responses by `_id`, not array index      |
+
+If you want the richer V4 structure (typed answers, question text, provenance), use `formsg.crypto.decryptVersioned(formSecretKey, decryptParams)`, which returns the content in the version it was submitted in: `DecryptedContent | DecryptedContentV4 | null`. Discriminate the union with `Array.isArray(result.responses)` — `true` means V1 content, `false` means V4 content. The V4 arm additionally carries `submissionSecretKey`, the decrypted per-submission secret key, which you can use to decrypt that submission's attachments or other artifacts yourself.
+
+> **Note:** <br>
+> MRF submissions made before the V4 switchover carry V3 content, which has no question text and cannot be converted to the `FormField[]` shape. `decrypt` returns `null` for these; decrypt them with `formsg.cryptoV3.decrypt` instead.
+
+_Warning:_ V4 attachments are encrypted with the per-submission keypair, not the form keypair. Manually decrypting downloaded files with your form secret key will not work for V4 submissions — use `decryptWithAttachments`, or `decryptVersioned` and decrypt the files with the returned `submissionSecretKey`.
+
 ### Processing Local address fields
 
 Address Field is a compound field with 6 inputs in the answerArray. It will always follow the ordinance of [`blockNumber`, `streetName`, `buildingName`, `levelNumber`, `unitNumber`, `postalCode`]
