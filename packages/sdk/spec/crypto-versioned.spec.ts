@@ -108,4 +108,97 @@ describe('Crypto (versioned decryption)', () => {
     const adapted = crypto.decrypt(secretKey, params)
     expect(adapted).toEqual({ responses: [] })
   })
+
+  describe('envelope/content mismatches', () => {
+    it('returns null for an MRF payload when encryptedSubmissionSecretKey is not given', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const enc = cryptoV3.encrypt(v4Responses, publicKey)
+      const params = {
+        encryptedContent: enc.encryptedContent,
+        version: MRF_TEST_VERSION,
+      }
+
+      expect(crypto.decryptVersioned(secretKey, params)).toBeNull()
+      expect(crypto.decrypt(secretKey, params)).toBeNull()
+    })
+
+    it('returns null for a storage-mode payload carrying a spurious encryptedSubmissionSecretKey', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const encryptedContent = crypto.encrypt(plaintext, publicKey)
+      // A validly-enveloped submission key that did not encrypt this content.
+      const spuriousEnvelope = cryptoV3.encrypt({}, publicKey)
+      const params = {
+        encryptedContent,
+        encryptedSubmissionSecretKey:
+          spuriousEnvelope.encryptedSubmissionSecretKey,
+        version: 1,
+      }
+
+      expect(crypto.decryptVersioned(secretKey, params)).toBeNull()
+      expect(crypto.decrypt(secretKey, params)).toBeNull()
+    })
+
+    it('returns null when encryptedSubmissionSecretKey is corrupt or encrypted for another key', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const otherKeypair = crypto.generate()
+      const enc = cryptoV3.encrypt(v4Responses, publicKey)
+      const wrongKeyEnvelope = cryptoV3.encrypt(v4Responses, otherKeypair.publicKey)
+
+      const corrupt = {
+        encryptedContent: enc.encryptedContent,
+        encryptedSubmissionSecretKey: 'utterly;corrupt:envelope',
+        version: MRF_TEST_VERSION,
+      }
+      const wrongKey = {
+        encryptedContent: enc.encryptedContent,
+        encryptedSubmissionSecretKey: wrongKeyEnvelope.encryptedSubmissionSecretKey,
+        version: MRF_TEST_VERSION,
+      }
+
+      expect(crypto.decryptVersioned(secretKey, corrupt)).toBeNull()
+      expect(crypto.decrypt(secretKey, corrupt)).toBeNull()
+      expect(crypto.decryptVersioned(secretKey, wrongKey)).toBeNull()
+      expect(crypto.decrypt(secretKey, wrongKey)).toBeNull()
+    })
+
+    it('returns null for tampered ciphertext and wrong form secret key in both arms', () => {
+      const { publicKey, secretKey } = crypto.generate()
+      const otherKeypair = crypto.generate()
+
+      const v1Encrypted = crypto.encrypt(plaintext, publicKey)
+      const v4Enc = cryptoV3.encrypt(v4Responses, publicKey)
+
+      const tamper = (content: string) => {
+        const flipped = content.slice(0, -4) + (content.endsWith('AAAA') ? 'BBBB' : 'AAAA')
+        return flipped
+      }
+
+      expect(
+        crypto.decryptVersioned(secretKey, {
+          encryptedContent: tamper(v1Encrypted),
+          version: 1,
+        })
+      ).toBeNull()
+      expect(
+        crypto.decryptVersioned(secretKey, {
+          encryptedContent: tamper(v4Enc.encryptedContent),
+          encryptedSubmissionSecretKey: v4Enc.encryptedSubmissionSecretKey,
+          version: MRF_TEST_VERSION,
+        })
+      ).toBeNull()
+      expect(
+        crypto.decryptVersioned(otherKeypair.secretKey, {
+          encryptedContent: v1Encrypted,
+          version: 1,
+        })
+      ).toBeNull()
+      expect(
+        crypto.decryptVersioned(otherKeypair.secretKey, {
+          encryptedContent: v4Enc.encryptedContent,
+          encryptedSubmissionSecretKey: v4Enc.encryptedSubmissionSecretKey,
+          version: MRF_TEST_VERSION,
+        })
+      ).toBeNull()
+    })
+  })
 })
