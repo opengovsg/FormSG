@@ -1,4 +1,5 @@
 import { BasicField, EmailResponseV3 } from 'formsg-shared/types'
+import { emailDomainMatchesAllowed } from 'formsg-shared/utils/email-domain-validation'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import isEmail from 'validator/lib/isEmail'
@@ -47,10 +48,10 @@ const makeEmailDomainValidator: EmailValidatorConstructor =
     const emailAddress = String(answer).trim()
     if (!(hasAllowedEmailDomains && allowedEmailDomains.length))
       return right(response)
-    const emailDomain = ('@' + emailAddress.split('@').pop()).toLowerCase()
+    const emailDomain = '@' + emailAddress.split('@').pop()
 
-    return allowedEmailDomains.some(
-      (domain) => domain.toLowerCase() === emailDomain,
+    return allowedEmailDomains.some((domain) =>
+      emailDomainMatchesAllowed(emailDomain, domain),
     )
       ? right(response)
       : left(`EmailValidator:\t answer is not a valid email domain`)
@@ -104,10 +105,10 @@ const makeEmailDomainValidatorV3: ResponseValidatorConstructor<
   const emailAddress = String(value).trim()
   if (!(hasAllowedEmailDomains && allowedEmailDomains.length))
     return right(response)
-  const emailDomain = ('@' + emailAddress.split('@').pop()).toLowerCase()
+  const emailDomain = '@' + emailAddress.split('@').pop()
 
-  return allowedEmailDomains.some(
-    (domain) => domain.toLowerCase() === emailDomain,
+  return allowedEmailDomains.some((domain) =>
+    emailDomainMatchesAllowed(emailDomain, domain),
   )
     ? right(response)
     : left(`EmailValidatorV3:\t answer value is not a valid email domain`)
