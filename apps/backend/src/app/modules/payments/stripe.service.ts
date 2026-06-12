@@ -58,7 +58,8 @@ import {
   computePayoutDetails,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
-  getStripeMetadataForLogging,
+  getStripeEventForLogging,
+  getStripeObjectForLogging,
 } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -455,16 +456,7 @@ export const handleStripeEvent = (
 ): ResultAsync<void, HandleStripeEventResultError> => {
   const logMeta = {
     action: 'handleStripeEvent',
-    event: {
-      ...event,
-      data: {
-        ...event.data,
-        object: {
-          ...event.data.object,
-          metadata: getStripeMetadataForLogging(event.data.object.metadata),
-        },
-      },
-    },
+    event: getStripeEventForLogging(event),
   }
 
   let result: ResultAsync<void, HandleStripeEventResultError> =
@@ -949,7 +941,7 @@ export const verifyPaymentStatusWithStripe = (
               meta: {
                 ...logMeta,
                 payment: getPaymentLogMeta(payment),
-                paymentIntent,
+                paymentIntent: getStripeObjectForLogging(paymentIntent),
               },
             })
             return okAsync({
@@ -978,7 +970,7 @@ export const verifyPaymentStatusWithStripe = (
                   meta: {
                     ...logMeta,
                     payment: getPaymentLogMeta(payment),
-                    paymentIntent,
+                    paymentIntent: getStripeObjectForLogging(paymentIntent),
                   },
                   error,
                 })
@@ -1018,7 +1010,7 @@ export const verifyPaymentStatusWithStripe = (
               meta: {
                 ...logMeta,
                 payment: getPaymentLogMeta(payment),
-                paymentIntent,
+                paymentIntent: getStripeObjectForLogging(paymentIntent),
               },
             })
             return okAsync({
@@ -1043,7 +1035,7 @@ export const verifyPaymentStatusWithStripe = (
               meta: {
                 ...logMeta,
                 payment: getPaymentLogMeta(payment),
-                paymentIntent,
+                paymentIntent: getStripeObjectForLogging(paymentIntent),
               },
             })
             return okAsync({

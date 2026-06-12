@@ -128,6 +128,47 @@ export const getStripeMetadataForLogging = (
 }
 
 /**
+ * Returns the safe-for-logging subset of a Stripe API object that can
+ * appear inside an event payload or be passed directly (PaymentIntent,
+ * Charge, Payout, etc). Keeps identifiers and high-level state, drops
+ * verbose/PII fields (billing, receipt email, payment method details),
+ * and sanitises metadata via {@link getStripeMetadataForLogging}.
+ */
+export const getStripeObjectForLogging = (
+  obj:
+    | { id?: string; object?: string; metadata?: Stripe.Metadata | null }
+    | null
+    | undefined,
+) => {
+  if (!obj) return undefined
+  const o = obj as Record<string, unknown>
+  return {
+    id: o.id as string | undefined,
+    object: o.object as string | undefined,
+    status: o.status as string | undefined,
+    created: o.created as number | undefined,
+    amount: o.amount as number | undefined,
+    currency: o.currency as string | undefined,
+    metadata: getStripeMetadataForLogging(o.metadata as Stripe.Metadata),
+  }
+}
+
+/**
+ * Returns the safe-for-logging subset of a Stripe Event. Drops the full
+ * nested payload (which may contain PII such as billing details or
+ * receipt email) and keeps event identifiers plus an allow-listed view
+ * of the inner object.
+ */
+export const getStripeEventForLogging = (event: Stripe.Event) => ({
+  id: event.id,
+  type: event.type,
+  account: event.account,
+  created: event.created,
+  livemode: event.livemode,
+  object: getStripeObjectForLogging(event.data?.object),
+})
+
+/**
  * Extracts the payment id from the metadata field of objects expected to have
  * it (i.e. payment intents and charges).
  * @param {Stripe.Metadata} metadata the metadata object which is expected to have a payment id
