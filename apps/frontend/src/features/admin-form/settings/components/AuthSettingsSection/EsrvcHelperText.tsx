@@ -13,7 +13,6 @@ export const EsrvcHelperText = ({
   authType,
 }: EsrvcHelperTextProps): JSX.Element => {
   switch (authType) {
-    case FormAuthType.SP:
     case FormAuthType.CP:
     case FormAuthType.MyInfo:
       return (
