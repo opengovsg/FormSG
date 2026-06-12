@@ -209,6 +209,64 @@ describe('Email field validation', () => {
     expect(validateResult._unsafeUnwrap()).toEqual(true)
   })
 
+  it('should allow email addresses matching a wildcard domain pattern', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      required: true,
+      isVerifiable: true,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@*.moe.gov.sg'],
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: true,
+      answer: 'user@mail.moe.gov.sg',
+      signature: 'some signature',
+    } as SingleAnswerFieldResponse
+    const validateResult = validateField(
+      'formId',
+      formField,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should not allow the base domain itself against a wildcard pattern', () => {
+    const formField = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      globalId: 'random',
+      title: 'random',
+      required: true,
+      isVerifiable: true,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@*.moe.gov.sg'],
+    } as OmitUnusedValidatorProps<IEmailFieldSchema>
+    const response = {
+      _id: 'abc123',
+      fieldType: BasicField.Email,
+      question: 'random',
+      isVisible: true,
+      answer: 'user@moe.gov.sg',
+      signature: 'some signature',
+    } as SingleAnswerFieldResponse
+    const validateResult = validateField(
+      'formId',
+      formField,
+      response as ProcessedFieldResponse,
+    )
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
+  })
+
   it('should not allow email addresses whose email domain does not belong to allowedEmailDomains when isVerifiable is true, hasAllowedEmailDomains is true and allowedEmailDomains is not empty', () => {
     const formField = {
       _id: 'abc123',
@@ -754,6 +812,54 @@ describe('Email field validation V3', () => {
     })
     expect(validateResult.isOk()).toBe(true)
     expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow email addresses matching a wildcard domain pattern (V3)', () => {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
+      isVerifiable: true,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@*.moe.gov.sg'],
+    })
+    const response = generateVerifiableAnswerResponseV3({
+      fieldType: BasicField.Email,
+      answer: {
+        value: 'user@mail.moe.gov.sg',
+        signature: 'some signature',
+      },
+    })
+    const validateResult = validateFieldV3({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should not allow the base domain itself against a wildcard pattern (V3)', () => {
+    const formField = generateDefaultFieldV3(BasicField.Email, {
+      isVerifiable: true,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@*.moe.gov.sg'],
+    })
+    const response = generateVerifiableAnswerResponseV3({
+      fieldType: BasicField.Email,
+      answer: {
+        value: 'user@moe.gov.sg',
+        signature: 'some signature',
+      },
+    })
+    const validateResult = validateFieldV3({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldError('Invalid answer submitted'),
+    )
   })
 
   it('should not allow email addresses whose email domain does not belong to allowedEmailDomains when isVerifiable is true, hasAllowedEmailDomains is true and allowedEmailDomains is not empty', () => {
