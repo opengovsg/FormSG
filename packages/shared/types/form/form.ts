@@ -112,12 +112,6 @@ export enum FormResponseMode {
   Multirespondent = 'multirespondent',
 }
 
-/**
- * The source(s) a form replaced, captured during form set-up (paper-forms
- * tracking). These codes are the single source of truth. "Others" is not a
- * code here: it is the checkbox field's built-in free-text option, carried in
- * CheckboxFieldResponsesV3.othersInput.
- */
 export enum FormOrigin {
   Paper = 'paper',
   DigitalNew = 'digital-new',
@@ -133,7 +127,6 @@ export interface FormMetadata {
   mfb_vision_prompt_count?: number
   template_form_id?: Schema.Types.ObjectId
   delimiter?: string
-  /** The source(s) the form replaced, captured as a checkbox selection. */
   formOrigins?: CheckboxFieldResponsesV3
 }
 
@@ -447,9 +440,6 @@ export type DuplicateFormOverwriteDto = {
     }
 )
 
-// Shared by the duplicate and use-template flows: both re-ask the origin
-// question (paper-forms tracking) and accept the admin's answer here. The
-// origin is never copied from the source form.
 export type DuplicateFormBodyDto = DuplicateFormOverwriteDto & {
   workspaceId?: string
   metadata?: Pick<FormMetadata, 'formOrigins'>

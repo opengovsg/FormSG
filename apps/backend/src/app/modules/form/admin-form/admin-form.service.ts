@@ -663,8 +663,6 @@ type DuplicateFormOpts = {
   overrideEmails?: string[]
   // If duplicated from a use-template
   isFromTemplate?: boolean
-  // The admin's answer to the origin question, asked again on use-template.
-  // Origins are never copied from the source form (paper-forms tracking).
   formOrigins?: FormMetadata['formOrigins']
 }
 
@@ -726,10 +724,8 @@ export const duplicateForm = (
     })
   }
 
-  // Track the original form id when duplicating from a template, and persist
-  // the admin's origin answer (asked on both the use-template and duplicate
-  // flows). Origins are never copied from the source form.
   const metadata: FormMetadata = {
+    // if created from template, track original form id in metadata
     ...(isFromTemplate && { template_form_id: originalForm._id }),
     ...(formOrigins && { formOrigins }),
   }
