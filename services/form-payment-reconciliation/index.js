@@ -10,7 +10,11 @@
  */
 
 const { SSMClient, GetParameterCommand } = require('@aws-sdk/client-ssm')
-const { generateLinkToCloudwatch, getPostToSlack } = require('./src/utils')
+const {
+  generateLinkToCloudwatch,
+  getPostToSlack,
+  getReconcileAccountResponseDataForLogging,
+} = require('./src/utils')
 
 const AWS_REGION = process.env.AWS_REGION
 
@@ -199,7 +203,13 @@ async function main(events, context) {
 
       console.log(
         `Reconcile attempt OK for Stripe account ${stripeAccount}`,
-        JSON.stringify(reconcileAccountResponse.data, null, 2),
+        JSON.stringify(
+          getReconcileAccountResponseDataForLogging(
+            reconcileAccountResponse.data,
+          ),
+          null,
+          2,
+        ),
       )
       reconciliationMeta.ok.accounts.push(stripeAccount)
 

@@ -14,6 +14,7 @@ import { DAY_IN_SECONDS } from '../../constants/time'
 import { stripe } from '../../loaders/stripe'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
 
+import { getPaymentLogMeta } from './payment.service.utils'
 import {
   InvoicePdfGenerationError,
   PaymentProofPresignS3Error,
@@ -211,7 +212,7 @@ const _generatePaymentInvoiceAsPdf = (
           'Some business info not available during invoice generation. Expecting either agency or form to have business info',
         meta: {
           action: 'downloadPaymentInvoice',
-          payment,
+          payment: getPaymentLogMeta(payment),
           agencyName: populatedForm.admin.agency.fullName,
           agencyBusinessInfo,
           formBusinessInfo,
