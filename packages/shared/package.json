@@ -77,10 +77,6 @@
     "./constants/form": {
       "default": "./constants/form.ts"
     },
-    "./constants/form-origin": {
-      "require": "./dist/constants/form-origin.js",
-      "default": "./constants/form-origin.ts"
-    },
     "./constants/routes": {
       "require": "./dist/constants/routes.js",
       "default": "./constants/routes.ts"
