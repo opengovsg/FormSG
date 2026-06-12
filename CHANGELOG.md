@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.28.1](https://github.com/opengovsg/formsg/compare/v7.28.0...v7.28.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* **backend:** improve metadata logging selectivity ([51abcdf](https://github.com/opengovsg/formsg/commit/51abcdfc98e044d12ff73d79b38696b6b89c76df))
+
 ## [7.28.0](https://github.com/opengovsg/formsg/compare/v7.27.0...v7.28.0) (2026-06-11)
 
 
