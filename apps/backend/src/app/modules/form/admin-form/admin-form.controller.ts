@@ -103,12 +103,14 @@ const logger = createLoggerWithLabel(module)
 
 const clientMetadataValidator = Joi.object({
   formOrigins: Joi.object({
-    value: Joi.array().items(
-      Joi.string().valid(
-        ...Object.values(FormOrigin),
-        CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+    value: Joi.array()
+      .unique()
+      .items(
+        Joi.string().valid(
+          ...Object.values(FormOrigin),
+          CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+        ),
       ),
-    ),
     othersInput: Joi.string().allow(''),
   }),
 })
