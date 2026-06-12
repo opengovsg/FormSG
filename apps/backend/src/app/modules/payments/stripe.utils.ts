@@ -108,6 +108,26 @@ const isStripeMetadataFormsg = (
   hasProp(obj, 'submissionId')
 
 /**
+ * Returns the safe-for-logging subset of Stripe metadata, or undefined
+ * when metadata is missing. Allow-lists FormSG identifier fields so
+ * partial/malformed metadata is still useful for debugging, while PII
+ * fields (e.g. paymentContactEmail) and unknown third-party fields are
+ * never logged.
+ */
+export const getStripeMetadataForLogging = (
+  metadata: Stripe.Metadata | null | undefined,
+) => {
+  if (!metadata) return undefined
+  return {
+    env: metadata.env,
+    formId: metadata.formId,
+    formTitle: metadata.formTitle,
+    submissionId: metadata.submissionId,
+    paymentId: metadata.paymentId,
+  }
+}
+
+/**
  * Extracts the payment id from the metadata field of objects expected to have
  * it (i.e. payment intents and charges).
  * @param {Stripe.Metadata} metadata the metadata object which is expected to have a payment id
@@ -127,26 +147,26 @@ export const getMetadataPaymentId = (
 > => {
   const logMeta = {
     action: 'getMetadataPaymentId',
-    metadata,
+    metadata: getStripeMetadataForLogging(metadata),
   }
   if (!isStripeMetadataFormsg(metadata)) {
     logger.warn({
       message: 'Got non-FormSG Stripe metadata ',
-      meta: { ...logMeta, metadata },
+      meta: logMeta,
     })
     return err(new StripeMetadataNotFormsgError())
   }
   if (!isStripeMetadata(metadata)) {
     logger.warn({
       message: 'Got invalid Stripe metadata',
-      meta: { ...logMeta, metadata },
+      meta: logMeta,
     })
     return err(new StripeMetadataInvalidError())
   }
   if (!mongoose.Types.ObjectId.isValid(metadata.paymentId)) {
     logger.warn({
       message: 'Got Stripe metadata with invalid paymentId',
-      meta: { ...logMeta, metadata },
+      meta: logMeta,
     })
     return err(new StripeMetadataValidPaymentIdNotFoundError())
   }

@@ -27,6 +27,7 @@ import * as FormService from '../form/form.service'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 
+import { getPaymentLogMeta } from './payment.service.utils'
 import { PaymentAccountInformationError } from './payments.errors'
 import * as PaymentService from './payments.service'
 import {
@@ -60,7 +61,7 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
         message: 'Found paymentId in payment document',
         meta: {
           action: 'checkPaymentReceiptStatus',
-          payment,
+          payment: getPaymentLogMeta(payment),
         },
       })
 

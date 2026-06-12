@@ -6,6 +6,19 @@ import { IPaymentSchema } from '../../../types'
 import config from '../../config/config'
 import { PaymentWebhookEventObject } from '../webhook/webhook.types'
 
+export const getPaymentLogMeta = (payment: IPaymentSchema) => ({
+  _id: payment._id,
+  status: payment.status,
+  chargeIdLatest: payment.chargeIdLatest,
+  formId: payment.formId,
+  pendingSubmissionId: payment.pendingSubmissionId,
+  completedPayment: payment.completedPayment,
+  created: payment.created,
+  lastModified: payment.lastModified,
+  paymentIntent: payment.paymentIntentId,
+  targetAccountId: payment.targetAccountId,
+})
+
 export const getPaymentWebhookEventObject = (
   payment: IPaymentSchema,
 ): PaymentWebhookEventObject | object => {
