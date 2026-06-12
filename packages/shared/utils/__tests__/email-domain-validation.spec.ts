@@ -32,9 +32,7 @@ describe('validateEmailDomains', () => {
   })
 
   it('should accept a mix of exact and wildcard domains', () => {
-    expect(
-      validateEmailDomains(['@test.gov.sg', '@*.moe.gov.sg']),
-    ).toBe(true)
+    expect(validateEmailDomains(['@test.gov.sg', '@*.moe.gov.sg'])).toBe(true)
   })
 })
 
@@ -53,9 +51,9 @@ describe('emailDomainMatchesAllowed', () => {
     })
 
     it('should not match different domains', () => {
-      expect(
-        emailDomainMatchesAllowed('@other.gov.sg', '@test.gov.sg'),
-      ).toBe(false)
+      expect(emailDomainMatchesAllowed('@other.gov.sg', '@test.gov.sg')).toBe(
+        false,
+      )
     })
 
     it('should not match subdomains against an exact domain', () => {
@@ -74,17 +72,14 @@ describe('emailDomainMatchesAllowed', () => {
 
     it('should match multiple subdomain levels', () => {
       expect(
-        emailDomainMatchesAllowed(
-          '@dept.mail.moe.gov.sg',
-          '@*.moe.gov.sg',
-        ),
+        emailDomainMatchesAllowed('@dept.mail.moe.gov.sg', '@*.moe.gov.sg'),
       ).toBe(true)
     })
 
     it('should not match the base domain itself', () => {
-      expect(
-        emailDomainMatchesAllowed('@moe.gov.sg', '@*.moe.gov.sg'),
-      ).toBe(false)
+      expect(emailDomainMatchesAllowed('@moe.gov.sg', '@*.moe.gov.sg')).toBe(
+        false,
+      )
     })
 
     it('should match case-insensitively', () => {
@@ -94,9 +89,9 @@ describe('emailDomainMatchesAllowed', () => {
     })
 
     it('should not match unrelated domains with same suffix', () => {
-      expect(
-        emailDomainMatchesAllowed('@notmoe.gov.sg', '@*.moe.gov.sg'),
-      ).toBe(false)
+      expect(emailDomainMatchesAllowed('@notmoe.gov.sg', '@*.moe.gov.sg')).toBe(
+        false,
+      )
     })
   })
 })
