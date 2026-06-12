@@ -453,7 +453,7 @@ export type CreateEmailFormBodyDto = Pick<
 export type CreateStorageFormBodyDto = Pick<
   StorageFormDto,
   'publicKey' | 'responseMode' | 'title' | 'emails'
-> & { workspaceId?: string }
+> & { workspaceId?: string; metadata?: Pick<FormMetadata, 'formOrigins'> }
 
 export type CreateMultirespondentFormBodyDto = Pick<
   MultirespondentFormDto,
