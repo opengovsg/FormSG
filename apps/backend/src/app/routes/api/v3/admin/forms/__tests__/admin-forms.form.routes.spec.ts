@@ -317,6 +317,24 @@ describe('admin-form.form.routes', () => {
       expect(response.body.message).toEqual('Validation failed')
     })
 
+    it('should return 400 when form origins contain duplicate values', async () => {
+      // Act
+      const response = await request.post('/admin/forms').send({
+        form: {
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mrf form with duplicate origins',
+          publicKey: 'some random public key',
+          metadata: {
+            formOrigins: { value: [FormOrigin.Paper, FormOrigin.Paper] },
+          },
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body.message).toEqual('Validation failed')
+    })
+
     it('should return 200 when no form origins are provided (legacy / flag-off)', async () => {
       // Act
       const response = await request.post('/admin/forms').send({
@@ -1668,6 +1686,32 @@ describe('admin-form.form.routes', () => {
         }),
       )
     })
+
+    it('should return 400 when form origins contain duplicate values', async () => {
+      // Arrange
+      const formToDupe = await EncryptFormModel.create({
+        title: 'form to duplicate',
+        admin: defaultUser._id,
+        publicKey: 'some random key',
+        emails: [],
+      })
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${formToDupe._id}/duplicate`)
+        .send({
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'duplicated mrf form with duplicate origins',
+          publicKey: 'some random public key',
+          metadata: {
+            formOrigins: { value: [FormOrigin.Paper, FormOrigin.Paper] },
+          },
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body.message).toEqual('Validation failed')
+    })
   })
 
   describe('POST /admin/forms/:formId/use-template', () => {
@@ -1723,6 +1767,27 @@ describe('admin-form.form.routes', () => {
           title: 'mrf form from template with bad origin',
           publicKey: 'some random public key',
           metadata: { formOrigins: { value: ['not-a-real-origin'] } },
+        })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when form origins contain duplicate values', async () => {
+      // Arrange
+      const templateForm = await createPublicTemplateForm()
+
+      // Act
+      const response = await request
+        .post(`/admin/forms/${templateForm._id}/use-template`)
+        .send({
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mrf form from template with duplicate origins',
+          publicKey: 'some random public key',
+          metadata: {
+            formOrigins: { value: [FormOrigin.Paper, FormOrigin.Paper] },
+          },
         })
 
       // Assert
