@@ -3,6 +3,7 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
@@ -11,7 +12,6 @@ import {
 import {
   AdminDashboardFormMetaDto,
   BasicField,
-  CopyTemplateFormBodyDto,
   CreateFormBodyDto,
   DeserializeTransform,
   DuplicateFormBodyDto,
@@ -103,13 +103,23 @@ const logger = createLoggerWithLabel(module)
 
 // Validators
 
-// Paper-forms tracking: admins may report the source(s) a form replaced. This
-// is best-effort metadata, so it is always optional. When present, the only
-// admin-writable key is formOrigins, stored as a checkbox selection whose
-// values must be recognised origin codes.
-const formOriginsMetadataValidator = Joi.object({
+// Client-sourced form metadata. This is best-effort metadata, so it is always
+// optional, and the rest of FormMetadata is server-managed and not writable
+// here. As more client-supplied keys are added, extend this validator.
+//
+// formOrigins (paper-forms tracking): the source(s) a form replaced, stored as
+// a checkbox selection whose values must be recognised origin codes. "Others"
+// is the checkbox's built-in free-text option: the client marks it with the
+// CLIENT_CHECKBOX_OTHERS_INPUT_VALUE sentinel in value and carries the typed
+// text in othersInput.
+const clientMetadataValidator = Joi.object({
   formOrigins: Joi.object({
-    value: Joi.array().items(Joi.string().valid(...Object.values(FormOrigin))),
+    value: Joi.array().items(
+      Joi.string().valid(
+        ...Object.values(FormOrigin),
+        CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+      ),
+    ),
     othersInput: Joi.string().allow(''),
   }),
 })
@@ -157,7 +167,7 @@ const createFormValidator = celebrate({
           otherwise: Joi.forbidden(),
         }),
         workspaceId: Joi.string(),
-        metadata: formOriginsMetadataValidator,
+        metadata: clientMetadataValidator,
       })
       .required()
       // Allow other form schema keys to be passed for form creation.
@@ -207,7 +217,7 @@ const duplicateFormValidator = celebrate({
       otherwise: Joi.forbidden(),
     }),
     workspaceId: Joi.string(),
-    metadata: formOriginsMetadataValidator,
+    metadata: clientMetadataValidator,
   }),
 })
 
@@ -216,8 +226,8 @@ const copyTemplateFormValidator = celebrate({
   // so this endpoint accepts the same metadata.formOrigins as the create flow.
   // The rest of the historically unvalidated use-template body is intentionally
   // left untouched (unknown(true)).
-  [Segments.BODY]: BaseJoi.object<CopyTemplateFormBodyDto>({
-    metadata: formOriginsMetadataValidator,
+  [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
+    metadata: clientMetadataValidator,
   }).unknown(true),
 })
 
@@ -1073,7 +1083,7 @@ export const handleGetTemplateForm: ControllerHandler<
 export const copyTemplateForm: ControllerHandler<
   { formId: string },
   AdminDashboardFormMetaDto | ErrorDto,
-  CopyTemplateFormBodyDto
+  DuplicateFormBodyDto
 > = (req, res) => {
   const { formId } = req.params
   const userId = (req.session as AuthedSessionData).user._id

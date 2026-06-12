@@ -114,7 +114,9 @@ export enum FormResponseMode {
 
 /**
  * The source(s) a form replaced, captured during form set-up (paper-forms
- * tracking). These seven codes are the single source of truth.
+ * tracking). These codes are the single source of truth. "Others" is not a
+ * code here: it is the checkbox field's built-in free-text option, carried in
+ * CheckboxFieldResponsesV3.othersInput.
  */
 export enum FormOrigin {
   Paper = 'paper',
@@ -123,7 +125,6 @@ export enum FormOrigin {
   DigitalDocument = 'digital-document',
   DigitalSpreadsheet = 'digital-spreadsheet',
   DigitalFormBuilder = 'digital-formbuilder',
-  DigitalOthers = 'digital-others',
 }
 
 export interface FormMetadata {
@@ -446,14 +447,13 @@ export type DuplicateFormOverwriteDto = {
     }
 )
 
+// Shared by the duplicate and use-template flows: both re-ask the origin
+// question (paper-forms tracking) and accept the admin's answer here. The
+// origin is never copied from the source form.
 export type DuplicateFormBodyDto = DuplicateFormOverwriteDto & {
   workspaceId?: string
-  // The admin's origin answer, captured on both the duplicate and use-template
-  // flows (paper-forms tracking). Never copied from the source form.
   metadata?: Pick<FormMetadata, 'formOrigins'>
 }
-
-export type CopyTemplateFormBodyDto = DuplicateFormBodyDto
 
 export type CreateEmailFormBodyDto = Pick<
   EmailFormDto,

@@ -5,7 +5,13 @@ import { FormOrigin } from '../types/form/form'
  * Display copy lives in the frontend i18n locale files, keyed by these codes.
  */
 
-/** Ordered exactly as shown on the form set-up origin screen (Screen 2). */
+/**
+ * Ordered exactly as shown on the form set-up origin screen (Screen 2).
+ *
+ * "Others" is not listed here: it is the checkbox field's built-in free-text
+ * option, carried in CheckboxFieldResponsesV3.othersInput rather than as an
+ * origin code.
+ */
 export const FORM_ORIGIN_OPTIONS = [
   FormOrigin.Paper,
   FormOrigin.DigitalNew,
@@ -13,8 +19,4 @@ export const FORM_ORIGIN_OPTIONS = [
   FormOrigin.DigitalDocument,
   FormOrigin.DigitalSpreadsheet,
   FormOrigin.DigitalFormBuilder,
-  FormOrigin.DigitalOthers,
 ] as const
-
-/** The single option that reveals a free-text "please specify" input. */
-export const FORM_ORIGIN_OTHERS_VALUE = FormOrigin.DigitalOthers

@@ -8,6 +8,7 @@ import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-data'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
 import {
   BasicField,
   FormColorTheme,
@@ -357,7 +358,7 @@ describe('admin-form.form.routes', () => {
           publicKey: 'some random public key',
           metadata: {
             formOrigins: {
-              value: [FormOrigin.Paper, FormOrigin.DigitalOthers],
+              value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
               othersInput: 'Carrier pigeon',
             },
           },
@@ -368,7 +369,7 @@ describe('admin-form.form.routes', () => {
       expect(response.status).toEqual(200)
       const saved = await FormModel.findById(response.body._id)
       expect(saved?.metadata?.formOrigins).toEqual({
-        value: [FormOrigin.Paper, FormOrigin.DigitalOthers],
+        value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
         othersInput: 'Carrier pigeon',
       })
     })
@@ -1742,7 +1743,7 @@ describe('admin-form.form.routes', () => {
           publicKey: 'some random public key',
           metadata: {
             formOrigins: {
-              value: [FormOrigin.DigitalOthers],
+              value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
               othersInput: 'Carrier pigeon',
             },
           },
@@ -1752,7 +1753,7 @@ describe('admin-form.form.routes', () => {
       expect(response.status).toEqual(200)
       const saved = await FormModel.findById(response.body._id)
       expect(saved?.metadata?.formOrigins).toEqual({
-        value: [FormOrigin.DigitalOthers],
+        value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
         othersInput: 'Carrier pigeon',
       })
     })

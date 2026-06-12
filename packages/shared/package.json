@@ -101,10 +101,6 @@
       "require": "./dist/utils/address-validation.js",
       "default": "./utils/address-validation.ts"
     },
-    "./utils/form-origin-validation": {
-      "require": "./dist/utils/form-origin-validation.js",
-      "default": "./utils/form-origin-validation.ts"
-    },
     "./utils/address": {
       "require": "./dist/utils/address.js",
       "default": "./utils/address.ts"
