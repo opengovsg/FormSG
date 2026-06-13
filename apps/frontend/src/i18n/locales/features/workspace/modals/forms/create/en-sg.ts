@@ -61,7 +61,7 @@ export const enSG: CreateFormModal = {
     next: 'Next step',
   },
   origin: {
-    question: 'Where is this being filled today?',
+    question: 'How is this being filled today?',
     options: {
       paper: 'Paper form',
       'digital-new': 'This is a new process',
