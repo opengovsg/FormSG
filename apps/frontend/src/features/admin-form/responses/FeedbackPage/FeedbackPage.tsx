@@ -17,6 +17,7 @@ import { ProcessedFeedbackMeta, ProcessedIssueMeta } from 'formsg-shared/types'
 import Pagination from '~/components/Pagination'
 
 import { BxsInfoCircle } from '~assets/icons'
+import { useDelayedFlag } from '~hooks/useDelayedFlag'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { ButtonProps } from '~components/Button'
 import Tooltip from '~components/Tooltip'
@@ -45,6 +46,10 @@ enum FeedbackType {
   Issues = 'issues',
   Reviews = 'reviews',
 }
+
+// Hold off rendering the skeleton until loading outlasts this threshold, so
+// fast loads don't flash it. ~300ms is below the point a blank gap is noticed.
+const SKELETON_DELAY_MS = 300
 
 interface Feedback {
   count: number | undefined
@@ -182,7 +187,15 @@ export const FeedbackPage = (): JSX.Element => {
   // Empty vs content depends on both queries' counts, so wait for both to
   // resolve — otherwise the faster query resolving empty flickers the wrong view.
   const pageView = getFeedbackPageView(reviewProps, issueProps)
+
+  // Only show the skeleton once loading outlasts the threshold. Fast loads
+  // resolve before then and render nothing instead, avoiding a skeleton flash.
+  const showSkeleton = useDelayedFlag(pageView === 'loading', SKELETON_DELAY_MS)
+
   if (pageView === 'loading') {
+    if (!showSkeleton) {
+      return <></>
+    }
     return isMobile ? <FeedbackPageSkeletonMobile /> : <FeedbackPageSkeleton />
   }
   if (pageView === 'empty') {
