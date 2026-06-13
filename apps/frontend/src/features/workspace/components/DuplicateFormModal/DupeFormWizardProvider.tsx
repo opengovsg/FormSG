@@ -48,6 +48,7 @@ export const useDupeFormWizardContext = (
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goBackToDetails,
   } = useCommonFormWizardProvider()
 
   const { reset, getValues } = formMethods
@@ -205,6 +206,12 @@ export const useDupeFormWizardContext = (
     direction,
     formMethods,
     handleCreateStorageModeOrMultirespondentForm,
+    // Paper-forms origin capture is not part of the duplicate flow (a copied
+    // form keeps the source's metadata), so proceeding from details creates
+    // directly and the origin step is never shown.
+    handleProceedFromDetails: handleCreateStorageModeOrMultirespondentForm,
+    goBackToDetails,
+    isPaperTrackingSetUpPageEnabled: false,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,
     submitEmailModeFeedback,

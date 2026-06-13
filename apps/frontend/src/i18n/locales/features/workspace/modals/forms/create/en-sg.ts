@@ -58,6 +58,19 @@ export const enSG: CreateFormModal = {
         'All email addresses below will be notified. Ensure that inboxes can support the classification and sensitivity.',
     },
     create: 'Create form',
+    next: 'Next step',
+  },
+  origin: {
+    question: 'Where is this being filled today?',
+    options: {
+      paper: 'Paper form',
+      'digital-new': 'This is a new process',
+      'digital-email': 'Emails',
+      'digital-document': 'Documents (e.g. PDF, Word)',
+      'digital-spreadsheet': 'Spreadsheets (e.g. Excel, Sheets)',
+      'digital-formbuilder': 'Other form builders',
+      others: 'Other',
+    },
   },
   secretKey: {
     title: 'Your form has been created! Download your Secret Key to proceed.',

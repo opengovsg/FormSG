@@ -49,6 +49,22 @@ export interface CreateFormModal {
       description: string
     }
     create: string
+    next: string
+  }
+  // Paper-forms tracking: copy for the form-origin step (Screen 2). Option
+  // labels are keyed by FormOrigin code; `others` is the checkbox's built-in
+  // "Other" option.
+  origin: {
+    question: string
+    options: {
+      paper: string
+      'digital-new': string
+      'digital-email': string
+      'digital-document': string
+      'digital-spreadsheet': string
+      'digital-formbuilder': string
+      others: string
+    }
   }
   secretKey: {
     title: string

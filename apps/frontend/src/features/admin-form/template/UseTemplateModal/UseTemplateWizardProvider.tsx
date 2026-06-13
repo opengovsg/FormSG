@@ -41,6 +41,7 @@ export const useUseTemplateWizardContext = (
     isMrfCutoverEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
+    goBackToDetails,
   } = useCommonFormWizardProvider()
 
   const { reset, getValues } = formMethods
@@ -170,6 +171,11 @@ export const useUseTemplateWizardContext = (
     direction,
     formMethods,
     handleCreateStorageModeOrMultirespondentForm,
+    // Paper-forms origin capture is not part of the use-template flow, so
+    // proceeding from details creates directly and the origin step is skipped.
+    handleProceedFromDetails: handleCreateStorageModeOrMultirespondentForm,
+    goBackToDetails,
+    isPaperTrackingSetUpPageEnabled: false,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
