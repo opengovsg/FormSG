@@ -1,6 +1,6 @@
 {
   "name": "@opengovsg/formsg-sdk",
-  "version": "7.1.4",
+  "version": "7.3.1",
   "main": "./cjs-entry.cjs",
   "module": "./dist/esm/index.js",
   "types": "./dist/cjs/index.d.ts",
@@ -24,12 +24,25 @@
         "types": "./dist/cjs/types.d.ts",
         "default": "./dist/cjs/types.js"
       }
+    },
+    "./adapters": {
+      "import": {
+        "types": "./dist/esm/adapters.d.ts",
+        "default": "./dist/esm/adapters.js"
+      },
+      "require": {
+        "types": "./dist/cjs/adapters.d.ts",
+        "default": "./dist/cjs/adapters.js"
+      }
     }
   },
   "typesVersions": {
     "*": {
       "dist/types": [
         "./dist/cjs/types.d.ts"
+      ],
+      "adapters": [
+        "./dist/cjs/adapters.d.ts"
       ]
     }
   },

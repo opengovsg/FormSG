@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.3.1](https://github.com/opengovsg/formsg/compare/sdk-v7.3.0...sdk-v7.3.1) (2026-06-10)
+
+
+### Miscellaneous
+
+* Merge pull request #9577 from opengovsg/feat/v4-encryption-improvements ([#9577](https://github.com/opengovsg/formsg/commit/f79c81e413546eb0408aa4eda2b479bb2904c5d9))
+
+## [7.3.0](https://github.com/opengovsg/formsg/compare/sdk-v7.1.4...sdk-v7.3.0) (2026-06-08)
+
+
+### Features
+
+* answer object decryption (#9371) ([#9371](https://github.com/opengovsg/formsg/commit/7f630e84c519c50e3a76372941d1f731295f3c28))
+* answer object encryption (#9502) ([#9502](https://github.com/opengovsg/formsg/commit/ebe965c733d8f73114b2f0ea2fdcfeb6c0ba3f1b))
+
+
+### Chores
+
+* **sdk:** bump version to 7.2.0 ([29f230e](https://github.com/opengovsg/formsg/commit/29f230e9b6c2bef26fe2b61129d804666e32c1ec))
+
+## [7.2.0](https://github.com/opengovsg/formsg/compare/sdk-v7.1.4...sdk-v7.2.0) (2026-06-04)
+
+
+### Features
+
+* answer object decryption (#9371) ([#9371](https://github.com/opengovsg/formsg/commit/7f630e84c519c50e3a76372941d1f731295f3c28))
+* answer object encryption (#9502) ([#9502](https://github.com/opengovsg/formsg/commit/ebe965c733d8f73114b2f0ea2fdcfeb6c0ba3f1b))
+
 ## [7.1.4](https://github.com/opengovsg/formsg/compare/sdk-v7.1.3...sdk-v7.1.4) (2026-04-27)
 
 

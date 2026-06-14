@@ -27,12 +27,14 @@ import * as FormService from '../form/form.service'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 
+import { getPaymentLogMeta } from './payment.service.utils'
 import { PaymentAccountInformationError } from './payments.errors'
 import * as PaymentService from './payments.service'
 import {
   StripeFetchError,
   StripeMetadataIncorrectEnvError,
   StripeMetadataInvalidError,
+  StripeMetadataNotFormsgError,
 } from './stripe.errors'
 import * as StripeService from './stripe.service'
 import { mapRouteError } from './stripe.utils'
@@ -59,7 +61,7 @@ export const checkPaymentReceiptStatus: ControllerHandler<{
         message: 'Found paymentId in payment document',
         meta: {
           action: 'checkPaymentReceiptStatus',
-          payment,
+          payment: getPaymentLogMeta(payment),
         },
       })
 
@@ -317,10 +319,12 @@ export const reconcileAccount: ControllerHandler<
         .orElse((error) => {
           if (
             error instanceof StripeMetadataIncorrectEnvError ||
+            error instanceof StripeMetadataNotFormsgError ||
             error instanceof StripeMetadataInvalidError
           ) {
             // Intercept this as it is not really an error.
             // StripeMetadataIncorrectEnvError: the request will be processed by another environment server.
+            // StripeMetadataNotFormsgError: Agencies are using the Stripe account to process payments outside of FormSG.
             // StripeMetadataInvalidError: Agencies are using the Stripe account to process payments outside of FormSG.
             return okAsync(undefined)
           }

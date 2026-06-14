@@ -1,6 +1,13 @@
+import type { FieldResponsesV4, FormFieldMeta } from '@opengovsg/formsg-sdk'
+import {
+  adaptV3ToV4,
+  adaptV4ToV3,
+  isFieldResponsesV4,
+} from '@opengovsg/formsg-sdk/adapters'
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FormAuthType,
@@ -10,6 +17,7 @@ import {
   SubmissionType,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
+import _ from 'lodash'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
@@ -53,6 +61,8 @@ import {
   MissingSubmitterIdError,
   MrfWorkflowOverflowError,
   ProcessingError,
+  SubmissionEncryptionMismatchError,
+  SubmissionEncryptionVerificationError,
   SubmissionNotFoundError,
 } from '../submission.errors'
 import * as SubmissionService from '../submission.service'
@@ -457,6 +467,7 @@ export const validateMultirespondentSubmission = async (
               previousSubmission: {
                 encryptedContent: mrfSubmission.encryptedContent,
                 version: mrfSubmission.version,
+                mrfVersion: mrfSubmission.mrfVersion,
               },
               workflowStep: mrfSubmission.workflowStep + 1,
               workflow: mrfSubmission.workflow,
@@ -561,8 +572,21 @@ export const validateMultirespondentSubmission = async (
                   )
                 }
 
-                const previousResponses =
-                  previousSubmissionDecryptedContent.responses as ParsedClearFormFieldResponsesV3
+                /**
+                 * Since the incoming client responses are in V3,
+                 * if previous submission was encrypted in V4 format, convert to V3
+                 * to facilitate comparison.
+                 */
+                const previousResponses = (() => {
+                  const responses = previousSubmissionDecryptedContent.responses
+                  if (isFieldResponsesV4(responses)) {
+                    return adaptV4ToV3(
+                      responses as FieldResponsesV4,
+                    ) as ParsedClearFormFieldResponsesV3
+                  }
+                  // Response is in v3 format, return as is
+                  return responses as ParsedClearFormFieldResponsesV3
+                })()
 
                 const previousNonEditableFieldIdsWithResponses = Object.keys(
                   previousResponses,
@@ -736,6 +760,13 @@ export const encryptSubmission = async (
   next: NextFunction,
 ) => {
   const formDef = req.formsg.formDef
+
+  void req.growthbook?.setAttributes({
+    ...req.growthbook.getAttributes(),
+    formId: req.params.formId,
+    formCreated: formDef.created?.toISOString(),
+  })
+
   const formPublicKey = formDef.publicKey
   const responses = req.body.responses
 
@@ -775,12 +806,108 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
+  const useV4Encryption =
+    (req.growthbook?.isOn(featureFlags.answerObjectEncryption) &&
+      !formDef.webhook?.url) ??
+    false
+
+  let responsesToEncrypt:
+    | Record<
+        string,
+        ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
+      >
+    | FieldResponsesV4 = strippedAttachmentResponses
+
+  if (useV4Encryption) {
+    logger.info({
+      message: 'Using V4 encryption for submission',
+      meta: {
+        action: 'encryptSubmission',
+        formId: req.params.formId,
+        submissionId: req.params.submissionId,
+      },
+    })
+    // Build FormFieldMeta map from form definition for question text
+    const formFieldMeta: Record<string, FormFieldMeta> = {}
+    for (const field of formDef.form_fields) {
+      formFieldMeta[field._id] = {
+        question: field.title,
+        ...(field.myInfo?.attr && { myInfo: { attr: field.myInfo.attr } }),
+      }
+    }
+
+    responsesToEncrypt = adaptV3ToV4(strippedAttachmentResponses, {
+      formFields: formFieldMeta,
+      provenance: {},
+    })
+  }
+
   const {
     encryptedContent,
     encryptedSubmissionSecretKey,
     submissionSecretKey,
     submissionPublicKey,
-  } = formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
+  } = formsgSdk.cryptoV3.encrypt(responsesToEncrypt, formPublicKey)
+
+  // Verify the encrypted content can be decrypted using the generated submission secret key before saving
+  // Perform a diff check between original & recently decrypted responses to ensure round trip encryption-decryption
+  const decryptionVerification = formsgSdk.cryptoV3.decryptFromSubmissionKey(
+    submissionSecretKey,
+    { encryptedContent, version: req.body.version },
+  )
+  if (!decryptionVerification) {
+    const error = new SubmissionEncryptionVerificationError()
+    logger.error({
+      message: error.message,
+      meta: {
+        action: 'encryptSubmission',
+        formId: req.params.formId,
+        submissionId: req.params.submissionId,
+        version: req.body.version,
+        mrfVersion: useV4Encryption ? 2 : 1,
+        ...createReqMeta(req),
+      },
+      error,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'An error occurred while processing your submission',
+    })
+  }
+
+  const decryptedResponsesV3 = isFieldResponsesV4(
+    decryptionVerification.responses,
+  )
+    ? adaptV4ToV3(decryptionVerification.responses as FieldResponsesV4)
+    : decryptionVerification.responses
+
+  // cryptoV3.encrypt serializes via JSON.stringify, which drops `undefined` object keys.
+  const normalizedOriginalResponses = JSON.parse(
+    JSON.stringify(strippedAttachmentResponses),
+  ) as typeof strippedAttachmentResponses
+
+  const responseMismatch = !_.isEqual(
+    normalizedOriginalResponses,
+    decryptedResponsesV3,
+  )
+
+  if (responseMismatch) {
+    const mismatchError = new SubmissionEncryptionMismatchError()
+    logger.error({
+      message: mismatchError.message,
+      meta: {
+        action: 'encryptSubmission',
+        formId: req.params.formId,
+        submissionId: req.params.submissionId,
+        version: req.body.version,
+        mrfVersion: useV4Encryption ? 2 : 1,
+        ...createReqMeta(req),
+      },
+      error: mismatchError,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'An error occurred while processing your submission',
+    })
+  }
 
   const encryptedAttachments =
     await getEncryptedAttachmentsMapFromAttachmentsMap(
@@ -800,12 +927,10 @@ export const encryptSubmission = async (
     workflowStep: req.body.workflowStep,
     responses,
     /**
-     * MRF Version: 1
-     * ====================
-     * - Encrypted payload does not contain attachment contents
-     * - Encrypted Attachment now encrypted by mrf / submission Public Key instead of Form Public Key
+     * MRF Version: 1 — V3 encrypted responses
+     * MRF Version: 2 — V4 encrypted responses (with provenance)
      */
-    mrfVersion: 1,
+    mrfVersion: useV4Encryption ? 2 : 1,
   }
 
   return next()

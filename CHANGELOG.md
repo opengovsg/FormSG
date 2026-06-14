@@ -2,6 +2,169 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.28.1](https://github.com/opengovsg/formsg/compare/v7.28.0...v7.28.1) (2026-06-12)
+
+
+### Bug Fixes
+
+* **backend:** improve metadata logging selectivity ([51abcdf](https://github.com/opengovsg/formsg/commit/51abcdfc98e044d12ff73d79b38696b6b89c76df))
+
+## [7.28.0](https://github.com/opengovsg/formsg/compare/v7.27.0...v7.28.0) (2026-06-11)
+
+
+### Features
+
+* add headers to questionAnswerPairs; affecting mrf nextstep, workflow completion, respondent copy emails ([08b9e25](https://github.com/opengovsg/formsg/commit/08b9e252cfae5d3fcce02a4c91c0ff64d7b87e29))
+* add JSON to MRF emails ([18c613a](https://github.com/opengovsg/formsg/commit/18c613a4ddb097b5bcca1b77551fb0d233d0bc93))
+* add verified prefix to questionAnswer ([6c89002](https://github.com/opengovsg/formsg/commit/6c890028d3cac88137c89031fae16538f7c00f26))
+* implement standardised email template for payment form, feature-flagged ([1a0ddf6](https://github.com/opengovsg/formsg/commit/1a0ddf66265ef314d28e4d2343bf18ee62fb793f))
+* include 'Others :' in checkbox & radio others field ([4f23b42](https://github.com/opengovsg/formsg/commit/4f23b42510e40f4cf09416ba42db4f1cd0b4e994))
+* make MRF JSON table delimiters ;, implement foothole to use formSetting to determine delimiter used for the future ([59c474b](https://github.com/opengovsg/formsg/commit/59c474b796c20727c459daf9e43345a348653561))
+* show headers with different styles in email template ([d0c4075](https://github.com/opengovsg/formsg/commit/d0c40758baf1a7f768a718774a7278dfb402ec1a))
+
+
+### Bug Fixes
+
+* add fieldType to storage mode respondent copy so headers take header css property in email template ([7eebf73](https://github.com/opengovsg/formsg/commit/7eebf734f723c2e5f09537b8157c1dbb4c912457))
+* preserve line breaks in standardised email template responses (#9592) ([#9592](https://github.com/opengovsg/formsg/commit/1c1bb6c1ab215eb161eb59bce1c7a3a7b8aed4a5))
+* rename [MyInfo] with [Myinfo] ([c29de94](https://github.com/opengovsg/formsg/commit/c29de94b08ca83d82603fe49b4273126b177294c))
+* tests & linting ([0c5a4f6](https://github.com/opengovsg/formsg/commit/0c5a4f6c4cca0fcf1e80a038d113cae25f72e017))
+
+
+### Chores
+
+* move non_response_field_set to shared file to be used by FE and BE ([cecbef1](https://github.com/opengovsg/formsg/commit/cecbef130cbe625e215d8b69c515aa4c24502a42))
+
+
+### Miscellaneous
+
+* Merge pull request #9505 from opengovsg/feat/email-standardisation-phase-3 ([#9505](https://github.com/opengovsg/formsg/commit/ced5773d208035d2ea58c862d06898093a3fc194))
+* resolve JSON DOM tree status in email template ([6621269](https://github.com/opengovsg/formsg/commit/6621269b2e5d62325c11139bbe794d1edcd5e576))
+
+## [7.27.0](https://github.com/opengovsg/formsg/compare/v7.26.1...v7.27.0) (2026-06-10)
+
+
+### Features
+
+* short answer prefill progressive disclosure (#9565) ([#9565](https://github.com/opengovsg/formsg/commit/4623122db933dfdf0fc007d43f99e9a4e9c5fd5a))
+
+
+### Miscellaneous
+
+* Merge pull request #9577 from opengovsg/feat/v4-encryption-improvements ([#9577](https://github.com/opengovsg/formsg/commit/f79c81e413546eb0408aa4eda2b479bb2904c5d9))
+
+## [7.26.1](https://github.com/opengovsg/formsg/compare/v7.26.0...v7.26.1) (2026-06-09)
+
+
+### Bug Fixes
+
+* add replyTo and X-Formsg-Submission-ID headers to MRF outcome emails (#9570) ([#9570](https://github.com/opengovsg/formsg/commit/b7e9c320686c326dc9c6518da4b3a97875cdc980))
+
+
+### Miscellaneous
+
+* Merge pull request #9568 from opengovsg/chore/revert-number-field-buttons-removal ([#9568](https://github.com/opengovsg/formsg/commit/d1698445285a9b0be20d5ecf02d955cbb2500081))
+
+## [7.26.0](https://github.com/opengovsg/formsg/compare/v7.25.0...v7.26.0) (2026-06-08)
+
+
+### Features
+
+* **frontend:** link "What's new" to Gitbook guide (#9557) ([#9557](https://github.com/opengovsg/formsg/commit/319707fcc7c56e179a02dd2238edc0eaae98328f))
+
+
+### Bug Fixes
+
+* **frontend:** show "(optional)" beside Description for input fields (#9562) ([#9562](https://github.com/opengovsg/formsg/commit/972d81cd0c8d9402bedf93afb48976fe3011e0fb))
+
+## [7.25.0](https://github.com/opengovsg/formsg/compare/v7.24.0...v7.25.0) (2026-06-08)
+
+
+### Features
+
+* **frontend:** remove beta badge from save draft toggle (#9556) ([#9556](https://github.com/opengovsg/formsg/commit/d616a9b816ac3bfcdb44744c0cd906a60984c60b))
+* **mrf-cutover:** default DuplicateFormModal to MRF with storage-mode escape hatch (5/6) (#9466) ([#9466](https://github.com/opengovsg/formsg/commit/0be568327e716eca49248afc43655f9ba845cdaa))
+
+
+### Chores
+
+* add observability for v4 encryption failures (#9559) ([#9559](https://github.com/opengovsg/formsg/commit/34b23d9c4e722adf40c7875042dba5a710362ebe))
+
+## [7.24.0](https://github.com/opengovsg/formsg/compare/v7.23.0...v7.24.0) (2026-06-04)
+
+
+### Features
+
+* answer object encryption (#9502) ([#9502](https://github.com/opengovsg/formsg/commit/ebe965c733d8f73114b2f0ea2fdcfeb6c0ba3f1b))
+
+## [7.23.0](https://github.com/opengovsg/formsg/compare/v7.22.1...v7.23.0) (2026-06-04)
+
+
+### Features
+
+* **i18n:** add landing payments and not found error pages (#9522) ([#9522](https://github.com/opengovsg/formsg/commit/17d59ca99bd96c77d045219842a92416e61b5640))
+
+
+### Bug Fixes
+
+* **NumberField:** remove +/- stepper buttons (#9444) (#9448) ([#9444](https://github.com/opengovsg/formsg/commit/0c4c1ff66b3c39f8b532559bc1ba1c3bc884e30d))
+* **table:** add default for dropdown columns (#9526) ([#9526](https://github.com/opengovsg/formsg/commit/ca979eb7d3bc6fbbef6aa75de8aa2a846e6f52af))
+* enable line breaks in thank you page message (#9507) ([#9507](https://github.com/opengovsg/formsg/commit/ffccdd52202fa511ad05e27f08fbb496db0b19af))
+
+
+### Chores
+
+* add agent context and scratch to gitignore (#9544) ([#9544](https://github.com/opengovsg/formsg/commit/e386cd06986d89dbf0a7e454f2dcfe5786244c7c))
+
+
+### Miscellaneous
+
+* Merge pull request #9465 from opengovsg/feat/create-form-modal-cutover ([#9465](https://github.com/opengovsg/formsg/commit/46add49ed851cf3fcaaed323b5ad4a031f57d2c2))
+* Merge pull request #9527 from opengovsg/fix/signature-hover-theme-color ([#9527](https://github.com/opengovsg/formsg/commit/0b64e549b7064e6b318b7b85f9c89aba703a97f6))
+* Merge pull request #9545 from opengovsg/fix/optional-pdf-display ([#9545](https://github.com/opengovsg/formsg/commit/7fedc79f69e3aaf92d4415c30b3a8f18e1f67fc0))
+
+## [7.22.1](https://github.com/opengovsg/formsg/compare/v7.22.0...v7.22.1) (2026-06-03)
+
+
+### Bug Fixes
+
+* **backend:** stripe event handling syntax error (#9536) ([#9536](https://github.com/opengovsg/formsg/commit/4446d74c1a7bfcda0b7655a17b65602db4d66148))
+
+
+### Miscellaneous
+
+* Merge pull request #9532 from opengovsg/fix/backend/handle-non-formsg-stripe-events ([#9532](https://github.com/opengovsg/formsg/commit/a399838ca32d7d227061f2fbf3eb9d92446b917c))
+
+## [7.22.0](https://github.com/opengovsg/formsg/compare/v7.21.2...v7.22.0) (2026-06-03)
+
+
+### Features
+
+* **mrf-cutover:** foundation — beta flag, feature flag key, escape-hatch copy composer (1/6) (#9462) ([#9462](https://github.com/opengovsg/formsg/commit/7c498f72bcf9f23c5e1a0da4c4832cb31b87232d))
+* **mrf-cutover:** webhook v1 schema infobox on storage-mode settings (3/6) (#9463) ([#9463](https://github.com/opengovsg/formsg/commit/e885b98a44c897071132b28e9f4fa3b7d08c8c63))
+
+
+### Bug Fixes
+
+* add mt to webhook section (#9530) ([#9530](https://github.com/opengovsg/formsg/commit/3b192a38fb3ba0d367fd3ae2c909a397ddcd8012))
+
+
+### Miscellaneous
+
+* Merge pull request #9468 from opengovsg/refactor/modal-cutover-prep ([#9468](https://github.com/opengovsg/formsg/commit/b4b89a78a081e5a7148c65bb1f123a0d4224ec86))
+
+
+### Builds
+
+* merge 7.21.2 back to develop (#9521) ([#9521](https://github.com/opengovsg/formsg/commit/2d7a69174f7efd125450e0e851bc2ecb96fe6482))
+
+## [7.21.2](https://github.com/opengovsg/formsg/compare/v7.21.1...v7.21.2) (2026-06-02)
+
+
+### Miscellaneous
+
+* Merge pull request #9517 from opengovsg/stg-alt2 ([#9517](https://github.com/opengovsg/formsg/commit/72e6634b6a23bd600300fe1ef5c0c958bed1e43b))
+
 ## [7.21.1](https://github.com/opengovsg/formsg/compare/v7.21.0...v7.21.1) (2026-05-28)
 
 

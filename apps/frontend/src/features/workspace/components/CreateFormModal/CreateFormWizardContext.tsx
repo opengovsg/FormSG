@@ -14,6 +14,7 @@ import { CheckboxFieldValues } from '~templates/Field'
 export enum CreateFormFlowStates {
   Landing = 'landing',
   Details = 'details',
+  StorageModeDetails = 'storageModeDetails',
   EmailFeedback = 'emailFeedback',
   EmailModeCreation = 'emailModeCreation',
 }
@@ -22,7 +23,7 @@ export interface CreateFormWizardInputProps {
   title: string
   responseMode: FormResponseMode
   // Email form props
-  emails: string[]
+  emails?: string[]
   // Storage form props
   storageAck?: boolean
 
@@ -48,6 +49,9 @@ export type CreateFormWizardContextReturn = {
   isSingpass: boolean
   hasMyInfoChildren: boolean
   onClose: () => void
+  isMrfCutoverEnabled: boolean
+  goToStorageModeDetails: () => void
+  goToMrfDetails: () => void
 }
 
 export const CreateFormWizardContext = createContext<

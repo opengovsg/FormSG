@@ -844,7 +844,7 @@ export class MailService {
       const formQuestionAnswers: QuestionAnswer[] = formData.map(
         ({ question, answerTemplate, fieldType }) => ({
           question,
-          answer: String(answerTemplate),
+          answer: answerTemplate.join('\n'),
           fieldType,
         }),
       )
@@ -978,9 +978,10 @@ export class MailService {
         //TODO (email-standardisation): remove when email standardisation is GA
         if (useStandardisedEmailTemplate) {
           const formQuestionAnswers: QuestionAnswer[] = responsesData.map(
-            ({ question, answerTemplate }) => ({
+            ({ question, answerTemplate, fieldType }) => ({
               question,
               answer: String(answerTemplate), // fallback to answerTemplate if answer is empty to still show the question in the email
+              fieldType,
             }),
           )
 
@@ -1186,23 +1187,30 @@ export class MailService {
     formId,
     formTitle,
     responseId,
+    submissionId,
     timestamp,
     formQuestionAnswers,
+    responseJson,
     attachments,
+    replyTo,
   }: {
     emails: string[]
     formId: string
     formTitle: string
     responseId: string
+    submissionId?: string
     timestamp: string
     formQuestionAnswers: QuestionAnswer[]
+    responseJson: string
     attachments?: Mail.Attachment[]
+    replyTo?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const emailTemplateData: EmailData = {
       formTitle,
       responseId: responseId.toString(),
       timestamp,
       formQuestionAnswers,
+      responseJson,
     }
 
     return this.#sendEmailWithTemplate({
@@ -1213,6 +1221,8 @@ export class MailService {
       attachments,
       emailType: EmailType.WorkflowCompletion,
       actionName: 'sendMrfWorkflowCompletionEmail',
+      submissionId,
+      replyTo,
     })
   }
 
@@ -1221,19 +1231,25 @@ export class MailService {
     formId,
     formTitle,
     responseId,
+    submissionId,
     timestamp,
     isRejected,
     formQuestionAnswers,
+    responseJson,
     attachments,
+    replyTo,
   }: {
     emails: string[]
     formId: string
     formTitle: string
     responseId: string
+    submissionId?: string
     timestamp: string
     isRejected: boolean
     formQuestionAnswers: QuestionAnswer[]
+    responseJson: string
     attachments?: Mail.Attachment[]
+    replyTo?: string
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const outcome = isRejected
       ? WorkflowOutcome.NOT_APPROVED
@@ -1245,6 +1261,7 @@ export class MailService {
       timestamp,
       outcome,
       formQuestionAnswers,
+      responseJson,
     }
 
     return this.#sendEmailWithTemplate({
@@ -1255,6 +1272,8 @@ export class MailService {
       attachments,
       emailType: EmailType.WorkflowApproval,
       actionName: 'sendMrfApprovalEmail',
+      submissionId,
+      replyTo,
     })
   }
 

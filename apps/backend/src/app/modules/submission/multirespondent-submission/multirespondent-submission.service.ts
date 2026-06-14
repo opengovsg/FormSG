@@ -68,9 +68,12 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
+  buildMrfResponseJson,
+  extractEmailAnswersFromResponses,
   extractRespondentCopyEmailDatas,
   formatSubmittedStepTimestamp,
   getEmailFromResponses,
+  getFormDelimiter,
   getQuestionAnswerPairsForMultipleFields,
   getResponsesDataFromMrfResponses,
   retrieveWorkflowStepEmailAddresses,
@@ -446,6 +449,7 @@ const sendMrfOutcomeEmails = ({
     | '_id'
     | 'title'
     | 'emails'
+    | 'metadata'
     | 'stepOneEmailNotificationFieldId'
     | 'stepsToNotify'
     | 'workflow'
@@ -515,6 +519,14 @@ const sendMrfOutcomeEmails = ({
           responses,
         })
 
+        const responseJson = buildMrfResponseJson({
+          formFields: form.form_fields,
+          responses,
+          responseId: submissionId,
+          timestamp: latestSubmissionTimestamp,
+          delimiter: getFormDelimiter(form.metadata),
+        })
+
         const emailAttachments = []
         emailAttachments.push(...(attachments ?? []))
         if (responsePdf) {
@@ -524,13 +536,18 @@ const sendMrfOutcomeEmails = ({
         if (isApproval) {
           return MailService.sendMrfApprovalEmail({
             emails: destinationEmails,
-            formId: form._id,
+            formId: String(form._id),
             formTitle: form.title,
             responseId: submissionId,
+            submissionId,
             timestamp: latestSubmissionTimestamp,
             isRejected,
             formQuestionAnswers,
+            responseJson,
             attachments: emailAttachments,
+            replyTo:
+              extractEmailAnswersFromResponses(responses).join(', ') ||
+              undefined,
           }).orElse((error) => {
             logger.error({
               message: 'Failed to send approval email',
@@ -547,12 +564,16 @@ const sendMrfOutcomeEmails = ({
 
         return MailService.sendMrfWorkflowCompletionEmail({
           emails: destinationEmails,
-          formId: form._id,
+          formId: String(form._id),
           formTitle: form.title,
           responseId: submissionId,
+          submissionId,
           timestamp: latestSubmissionTimestamp,
           formQuestionAnswers,
+          responseJson,
           attachments: emailAttachments,
+          replyTo:
+            extractEmailAnswersFromResponses(responses).join(', ') || undefined,
         }).orElse((error) => {
           logger.error({
             message: 'Failed to send workflow completion email',

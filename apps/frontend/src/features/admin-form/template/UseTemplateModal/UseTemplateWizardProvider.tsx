@@ -32,8 +32,16 @@ export const useUseTemplateWizardContext = (
     (field) => field.fieldType === 'children',
   )
 
-  const { formMethods, currentStep, direction, keypair, setCurrentStep } =
-    useCommonFormWizardProvider()
+  const {
+    formMethods,
+    currentStep,
+    direction,
+    keypair,
+    setCurrentStep,
+    isMrfCutoverEnabled,
+    goToStorageModeDetails,
+    goToMrfDetails,
+  } = useCommonFormWizardProvider()
 
   const { reset, getValues } = formMethods
 
@@ -67,13 +75,14 @@ export const useUseTemplateWizardContext = (
       if (!formId) return
       switch (responseMode) {
         case FormResponseMode.Encrypt: {
+          const defaultEmails = adminEmail ? [adminEmail] : []
           return useStorageModeFormTemplateMutation.mutate(
             {
               formIdToDuplicate: formId,
               title,
               responseMode,
               publicKey: keypair.publicKey,
-              emails: emails.filter(Boolean),
+              emails: (emails ?? defaultEmails).filter(Boolean),
             },
             {
               onSuccess: () => {
@@ -144,7 +153,7 @@ export const useUseTemplateWizardContext = (
     handleSubmit((inputs) => {
       return useEmailModeFormTemplateMutation.mutate({
         formIdToDuplicate: formId,
-        emails: inputs.emails.filter(Boolean),
+        emails: (inputs.emails ?? []).filter(Boolean),
         title: inputs.title,
         responseMode: FormResponseMode.Email,
       })
@@ -168,6 +177,9 @@ export const useUseTemplateWizardContext = (
     hasMyInfoChildren,
     modalHeader: t('features.workspace.modals.forms.create.title.duplicate'),
     onClose,
+    isMrfCutoverEnabled,
+    goToStorageModeDetails,
+    goToMrfDetails,
   }
 }
 

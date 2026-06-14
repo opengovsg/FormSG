@@ -12,11 +12,13 @@ import {
   Fields,
   HeaderAndInstructions,
   LandingPage,
+  LandingPayments,
   Logic,
   Login,
   Meta,
   Modals,
   Navbar,
+  NotFoundError,
   PublicForm,
   ResponsesCharts,
   ResponsesComponents,
@@ -28,7 +30,6 @@ import {
   ThankYou,
   Toasts,
   TransferOwnership,
-  WhatsNew,
   Workflow,
   Workspace,
 } from './features'
@@ -65,10 +66,11 @@ interface Translation {
       app?: App
       common?: Common
       landingPage?: LandingPage
+      landingPayments?: LandingPayments
+      notFoundError?: NotFoundError
       publicForm?: PublicForm
       login?: Login
       workspace?: Workspace
-      whatsNew?: WhatsNew
       user?: {
         emergencyContact: EmergencyContact
         transferOwnership: TransferOwnership

@@ -8,6 +8,7 @@ import * as FormService from '../form/form.service'
 import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 import * as UserService from '../user/user.service'
 
+import { getPaymentLogMeta } from './payment.service.utils'
 import * as PaymentProofService from './payment-proof.service'
 import * as PaymentService from './payments.service'
 
@@ -75,7 +76,7 @@ export const downloadPaymentInvoice: ControllerHandler<{
         message: 'Found paymentId in payment document',
         meta: {
           action: 'downloadPaymentInvoice',
-          payment,
+          payment: getPaymentLogMeta(payment),
         },
       })
 

@@ -20,6 +20,8 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { FormId } from 'formsg-shared/types/form/form'
+
 import { FORMSG_UAT } from '~constants/links'
 import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 import Button, { ButtonProps } from '~components/Button'
@@ -166,7 +168,11 @@ export const PreviewFormBanner = ({
             onClose={onModalClose}
           />
         ) : (
-          <DuplicateFormModal isOpen={isModalOpen} onClose={onModalClose} />
+          <DuplicateFormModal
+            isOpen={isModalOpen}
+            onClose={onModalClose}
+            formIdToDuplicate={formId as FormId}
+          />
         )}
         <Drawer
           placement="bottom"
