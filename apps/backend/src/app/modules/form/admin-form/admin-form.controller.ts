@@ -8,6 +8,7 @@ import {
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from 'formsg-shared/constants/file'
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
@@ -23,6 +24,7 @@ import {
   FormFeedbackMetaDto,
   FormFieldDto,
   FormLogoState,
+  FormOrigin,
   FormResponseMode,
   FormSettings,
   FormWebhookResponseModeSettings,
@@ -99,7 +101,21 @@ const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 const logger = createLoggerWithLabel(module)
 
-// Validators
+const clientMetadataValidator = Joi.object({
+  formOrigins: Joi.object({
+    value: Joi.array()
+      .items(
+        Joi.string().valid(
+          ...Object.values(FormOrigin),
+          CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+        ),
+      )
+      .unique()
+      .required(),
+    othersInput: Joi.string().allow('').max(200),
+  }),
+})
+
 const createFormValidator = celebrate({
   [Segments.BODY]: {
     form: BaseJoi.object<CreateFormBodyDto>()
@@ -143,6 +159,7 @@ const createFormValidator = celebrate({
           otherwise: Joi.forbidden(),
         }),
         workspaceId: Joi.string(),
+        metadata: clientMetadataValidator,
       })
       .required()
       // Allow other form schema keys to be passed for form creation.
@@ -192,7 +209,14 @@ const duplicateFormValidator = celebrate({
       otherwise: Joi.forbidden(),
     }),
     workspaceId: Joi.string(),
+    metadata: clientMetadataValidator,
   }),
+})
+
+const copyTemplateFormValidator = celebrate({
+  [Segments.BODY]: BaseJoi.object<DuplicateFormBodyDto>({
+    metadata: clientMetadataValidator,
+  }).unknown(true),
 })
 
 const transferFormOwnershipValidator = celebrate({
@@ -939,7 +963,11 @@ export const duplicateAdminForm: ControllerHandler<
               originalForm,
               userId,
               overrideParams,
-              { workspaceId: workspaceId, overrideEmails },
+              {
+                workspaceId: workspaceId,
+                overrideEmails,
+                formOrigins: overrideParams.metadata?.formOrigins,
+              },
             ),
           )
           // Step 4: Retrieve dashboard view of duplicated form.
@@ -1040,7 +1068,7 @@ export const handleGetTemplateForm: ControllerHandler<
  * @returns 422 when user in session cannot be retrieved from the database
  * @returns 500 when database error occurs
  */
-export const handleCopyTemplateForm: ControllerHandler<
+export const copyTemplateForm: ControllerHandler<
   { formId: string },
   AdminDashboardFormMetaDto | ErrorDto,
   DuplicateFormBodyDto
@@ -1064,6 +1092,7 @@ export const handleCopyTemplateForm: ControllerHandler<
           AdminFormService.duplicateForm(originalForm, userId, overrideParams, {
             overrideEmails: [user.email],
             isFromTemplate: true,
+            formOrigins: overrideParams.metadata?.formOrigins,
           })
             // Step 4: Retrieve dashboard view of duplicated form.
             .map((duplicatedForm) => duplicatedForm.getDashboardView(user)),
@@ -1095,6 +1124,11 @@ export const handleCopyTemplateForm: ControllerHandler<
       })
   )
 }
+
+export const handleCopyTemplateForm = [
+  copyTemplateFormValidator,
+  copyTemplateForm,
+] as ControllerHandler[]
 
 /**
  * Handler for POST /admin/forms/all-transfer-owner.

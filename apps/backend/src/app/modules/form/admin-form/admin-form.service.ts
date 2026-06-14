@@ -663,6 +663,7 @@ type DuplicateFormOpts = {
   overrideEmails?: string[]
   // If duplicated from a use-template
   isFromTemplate?: boolean
+  formOrigins?: FormMetadata['formOrigins']
 }
 
 /**
@@ -683,7 +684,8 @@ export const duplicateForm = (
     overrideParams,
     newAdminId,
   )
-  const { workspaceId, overrideEmails, isFromTemplate } = opts ?? {}
+  const { workspaceId, overrideEmails, isFromTemplate, formOrigins } =
+    opts ?? {}
 
   // Set startPage.logo to default irregardless.
   overrideProps.startPage = {
@@ -722,11 +724,13 @@ export const duplicateForm = (
     })
   }
 
-  // if created from template, track original form id in metadata
-  if (isFromTemplate) {
-    duplicateParams.metadata = {
-      template_form_id: originalForm._id,
-    }
+  const metadata: FormMetadata = {
+    // if created from template, track original form id in metadata
+    ...(isFromTemplate && { template_form_id: originalForm._id }),
+    ...(formOrigins && { formOrigins }),
+  }
+  if (Object.keys(metadata).length > 0) {
+    duplicateParams.metadata = metadata
   }
 
   if (workspaceId)

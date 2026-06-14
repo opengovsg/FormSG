@@ -19,6 +19,7 @@ import {
   STORAGE_PUBLIC_FORM_FIELDS,
 } from '../../constants/form'
 import { DateString } from '../generic'
+import { CheckboxFieldResponsesV3 } from '../response-v3'
 import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
 import { Product } from './product'
@@ -111,12 +112,22 @@ export enum FormResponseMode {
   Multirespondent = 'multirespondent',
 }
 
+export enum FormOrigin {
+  Paper = 'paper',
+  DigitalNew = 'digital-new',
+  DigitalEmail = 'digital-email',
+  DigitalDocument = 'digital-document',
+  DigitalSpreadsheet = 'digital-spreadsheet',
+  DigitalFormBuilder = 'digital-formbuilder',
+}
+
 export interface FormMetadata {
   mfb_text_prompt_count?: number
   num_mrf_reminder_emails_sent?: number
   mfb_vision_prompt_count?: number
   template_form_id?: Schema.Types.ObjectId
   delimiter?: string
+  formOrigins?: CheckboxFieldResponsesV3
 }
 
 export type FormPaymentsChannel = {
@@ -431,6 +442,7 @@ export type DuplicateFormOverwriteDto = {
 
 export type DuplicateFormBodyDto = DuplicateFormOverwriteDto & {
   workspaceId?: string
+  metadata?: Pick<FormMetadata, 'formOrigins'>
 }
 
 export type CreateEmailFormBodyDto = Pick<
@@ -441,12 +453,16 @@ export type CreateEmailFormBodyDto = Pick<
 export type CreateStorageFormBodyDto = Pick<
   StorageFormDto,
   'publicKey' | 'responseMode' | 'title' | 'emails'
-> & { workspaceId?: string }
+> & { workspaceId?: string; metadata?: Pick<FormMetadata, 'formOrigins'> }
 
 export type CreateMultirespondentFormBodyDto = Pick<
   MultirespondentFormDto,
   'publicKey' | 'responseMode' | 'title'
-> & { workspaceId?: string; emails?: string[] }
+> & {
+  workspaceId?: string
+  emails?: string[]
+  metadata?: Pick<FormMetadata, 'formOrigins'>
+}
 
 export type CreateFormBodyDto =
   | CreateEmailFormBodyDto
