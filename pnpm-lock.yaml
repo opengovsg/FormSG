@@ -1297,6 +1297,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: ^3.775.0
         version: 3.1000.0
+      '@aws-sdk/s3-presigned-post':
+        specifier: ^3.775.0
+        version: 3.1068.0
       '@types/jest':
         specifier: ^29.5.1
         version: 29.5.14
