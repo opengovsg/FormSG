@@ -4,7 +4,7 @@ describe('composeEscapeHatchCopy', () => {
   it('returns payments-only copy when no extra flags are set', () => {
     expect(composeEscapeHatchCopy()).toEqual({
       prefix: 'Need payments? Use the ',
-      linkText: 'old version of FormSG',
+      linkText: 'legacy version of FormSG',
       suffix: '.',
     })
   })

@@ -21,8 +21,10 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { cloneDeep } from 'lodash'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   FormPaymentsField,
   FormResponseMode,
@@ -458,6 +460,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
     keyPrefix: 'features.adminForm.sidebar.fields.paymentsInputPanel',
   })
   const { data: form } = useAdminForm()
+  const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
 
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
   const isStripeConnected =
@@ -488,7 +491,12 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   }, [paymentsField, resetData, setData, setToEditingPayment, setToInactive])
 
   const paymentDisabledMessage = !isEncryptMode ? (
-    <Text>{t('disabled.storageModeOnly')}</Text>
+    <Text>
+      {/* TODO [MRF-CUTOVER]: Remove cutover copy override after cutover. */}
+      {isMrfCutoverEnabled
+        ? 'Payments are only available in the legacy version of FormSG.'
+        : t('disabled.storageModeOnly')}
+    </Text>
   ) : !isStripeConnected ? (
     <Text>
       {t('disabled.stripeNotConnectedBefore')}{' '}

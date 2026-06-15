@@ -9,7 +9,7 @@ export type EscapeHatchCopy = {
   suffix: string
 }
 
-const LINK_TEXT = 'old version of FormSG'
+const LINK_TEXT = 'legacy version of FormSG'
 const SUFFIX = '.'
 
 export const composeEscapeHatchCopy = (

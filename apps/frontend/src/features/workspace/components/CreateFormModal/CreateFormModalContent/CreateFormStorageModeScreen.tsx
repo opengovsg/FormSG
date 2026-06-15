@@ -30,15 +30,15 @@ export const CreateFormStorageModeScreen = (): JSX.Element => {
               onClick={goToMrfDetails}
               mr="0.5rem"
             />
-            Set up a Storage mode form
+            Set up a legacy form
           </Flex>
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW="45rem" p={0}>
           <Text textStyle="body-2" color="secondary.500" mb="2rem">
-            Storage mode is outdated and no longer receives new features. Only
-            use this if you need a feature not yet available in the current
+            This is the legacy version of FormSG and no longer receives new
+            features. Use it only if you need a feature not yet in the latest
             version.
           </Text>
           <FormTitleInput mb="2.5rem" />
