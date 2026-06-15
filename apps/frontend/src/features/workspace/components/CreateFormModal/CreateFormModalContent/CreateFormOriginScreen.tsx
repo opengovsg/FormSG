@@ -14,8 +14,10 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
-import { FORM_ORIGIN_OPTIONS } from 'formsg-shared/constants/form-origin'
+import {
+  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+  FORM_ORIGIN_OPTIONS,
+} from 'formsg-shared/constants'
 
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
