@@ -58,6 +58,7 @@ describe('DupeFormWizardProvider', () => {
       goToStorageModeDetails: vi.fn(),
       goToMrfDetails: vi.fn(),
       goBackToDetails: vi.fn(),
+      makeHandleProceedFromDetails: vi.fn(() => vi.fn()),
     }))
 
     vi.mocked(usePreviewForm).mockReturnValue({

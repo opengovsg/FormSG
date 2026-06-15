@@ -4,10 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import {
-  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
-  featureFlags,
-} from 'formsg-shared/constants'
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 
 import formsgSdk from '~utils/formSdk'
@@ -20,6 +17,7 @@ import {
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import {
+  buildFormOriginsMetadata,
   CreateFormFlowStates,
   CreateFormWizardContext,
   CreateFormWizardContextReturn,
@@ -77,6 +75,21 @@ export const useCommonFormWizardProvider = ({
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
 
+  // Paper-forms tracking: builds the "proceed from the title step" handler shared
+  // by the create, duplicate and use-template providers. When the origin step is
+  // enabled it diverts there; otherwise it creates directly via the provider's
+  // own `createForm`. Title validation runs first via handleSubmit; the origin
+  // field is only registered on the origin step, so it is not validated here.
+  const makeHandleProceedFromDetails = (
+    createForm: (inputs: CreateFormWizardInputProps) => unknown,
+  ) =>
+    formMethods.handleSubmit((inputs) => {
+      if (isPaperTrackingSetUpPageEnabled) {
+        return setCurrentStep([CreateFormFlowStates.Origin, 1])
+      }
+      return createForm(inputs)
+    })
+
   return {
     formMethods,
     keypair,
@@ -88,6 +101,7 @@ export const useCommonFormWizardProvider = ({
     goToStorageModeDetails,
     goToMrfDetails,
     goBackToDetails,
+    makeHandleProceedFromDetails,
   }
 }
 
@@ -106,6 +120,7 @@ export const useCreateFormWizardContext = (
     goToStorageModeDetails,
     goToMrfDetails,
     goBackToDetails,
+    makeHandleProceedFromDetails,
   } = useCommonFormWizardProvider({
     defaultValues: {
       responseMode: FormResponseMode.Encrypt,
@@ -138,27 +153,11 @@ export const useCreateFormWizardContext = (
     formOrigins,
     formOriginOtherDetail,
   }: CreateFormWizardInputProps) => {
-    // Paper-forms tracking: carry the captured origins so the form is created
-    // with them in a single write. Only attached when the origin step is enabled
-    // and the admin selected at least one. Mapped to the backend's checkbox shape
-    // (CheckboxFieldResponsesV3): the selected codes (incl. the "Other" sentinel)
-    // go in `value`, and the typed "Other" text in `othersInput`. Shared by the
-    // storage and multirespondent branches since both flow through the origin
-    // step once `enablePaperTrackingSetUpPage` is on.
-    const formOriginsMetadata =
-      isPaperTrackingSetUpPageEnabled && formOrigins?.length
-        ? {
-            metadata: {
-              formOrigins: {
-                value: formOrigins,
-                ...(formOrigins.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) &&
-                formOriginOtherDetail?.trim()
-                  ? { othersInput: formOriginOtherDetail.trim() }
-                  : {}),
-              },
-            },
-          }
-        : {}
+    const formOriginsMetadata = buildFormOriginsMetadata(
+      isPaperTrackingSetUpPageEnabled,
+      formOrigins,
+      formOriginOtherDetail,
+    )
 
     switch (responseMode) {
       case FormResponseMode.Encrypt: {
@@ -212,20 +211,9 @@ export const useCreateFormWizardContext = (
     createStorageModeOrMultirespondentForm,
   )
 
-  // Paper-forms tracking: from the Details (title) step, divert to the origin
-  // step whenever `enablePaperTrackingSetUpPage` is on; otherwise create the form
-  // directly (unchanged behaviour). Decoupled from the MRF cutover so the origin
-  // page can be piloted (by email domain) before cutover completes — it applies
-  // to both storage and multirespondent creates. Email mode is no longer a
-  // reachable create option, so it needs no special-casing here. Title validation
-  // runs first via handleSubmit; the origin field is only registered on the
-  // origin step, so it is not validated here.
-  const handleProceedFromDetails = handleSubmit((inputs) => {
-    if (isPaperTrackingSetUpPageEnabled) {
-      return setCurrentStep([CreateFormFlowStates.Origin, 1])
-    }
-    return createStorageModeOrMultirespondentForm(inputs)
-  })
+  const handleProceedFromDetails = makeHandleProceedFromDetails(
+    createStorageModeOrMultirespondentForm,
+  )
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   // Collect email mode usage feedback before creating the form

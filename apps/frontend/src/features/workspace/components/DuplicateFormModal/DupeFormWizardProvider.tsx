@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 import { FormId } from 'formsg-shared/types/form/form'
 
@@ -15,6 +14,7 @@ import { useDashboard } from '~features/workspace/queries'
 import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
 
 import {
+  buildFormOriginsMetadata,
   CreateFormFlowStates,
   CreateFormWizardContext,
   CreateFormWizardContextReturn,
@@ -52,6 +52,7 @@ export const useDupeFormWizardContext = (
     goToStorageModeDetails,
     goToMrfDetails,
     goBackToDetails,
+    makeHandleProceedFromDetails,
   } = useCommonFormWizardProvider()
 
   const { reset, getValues } = formMethods
@@ -115,23 +116,12 @@ export const useDupeFormWizardContext = (
 
     // Paper-forms tracking: the duplicate flow re-asks the origin question
     // (origins are never copied from the source form), so the freshly captured
-    // origins are written to the new form's metadata. Same checkbox shape as
-    // the create flow: selected codes (incl. the "Other" sentinel) in `value`,
-    // the typed "Other" text in `othersInput`.
-    const formOriginsMetadata =
-      isPaperTrackingSetUpPageEnabled && formOrigins?.length
-        ? {
-            metadata: {
-              formOrigins: {
-                value: formOrigins,
-                ...(formOrigins.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) &&
-                formOriginOtherDetail?.trim()
-                  ? { othersInput: formOriginOtherDetail.trim() }
-                  : {}),
-              },
-            },
-          }
-        : {}
+    // origins are written to the new form's metadata.
+    const formOriginsMetadata = buildFormOriginsMetadata(
+      isPaperTrackingSetUpPageEnabled,
+      formOrigins,
+      formOriginOtherDetail,
+    )
 
     switch (responseMode) {
       case FormResponseMode.Encrypt: {
@@ -182,16 +172,8 @@ export const useDupeFormWizardContext = (
   const handleCreateStorageModeOrMultirespondentForm =
     handleSubmit(createDuplicateForm)
 
-  // Paper-forms tracking: from the Details step, divert to the origin step when
-  // enabled; otherwise duplicate directly (unchanged behaviour). Title validation
-  // runs first via handleSubmit; the origin field is only registered on the
-  // origin step, so it is not validated here.
-  const handleProceedFromDetails = handleSubmit((inputs) => {
-    if (isPaperTrackingSetUpPageEnabled) {
-      return setCurrentStep([CreateFormFlowStates.Origin, 1])
-    }
-    return createDuplicateForm(inputs)
-  })
+  const handleProceedFromDetails =
+    makeHandleProceedFromDetails(createDuplicateForm)
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   // Collect email mode usage feedback before creating the form
