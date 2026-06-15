@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.29.0](https://github.com/opengovsg/formsg/compare/v7.28.1...v7.29.0) (2026-06-15)
+
+
+### Features
+
+* **paper forms tracking:** form-origin model + backend persistence (part 1) (#9576) ([#9576](https://github.com/opengovsg/formsg/commit/0ae1a540624208dc86c77378b3b064dddddeacfe))
+
+
+### Bug Fixes
+
+* **copy:** align dashboard dropdown menu's copy with rest of platform (#9608) ([#9608](https://github.com/opengovsg/formsg/commit/5fe504743b8051d5e0b581363bfc765f3f8037b1))
+* add require for form (#9610) ([#9610](https://github.com/opengovsg/formsg/commit/3d51cebf9d74f38d839fa9b7bad3c9be5d6f380d))
+
 ## [7.28.1](https://github.com/opengovsg/formsg/compare/v7.28.0...v7.28.1) (2026-06-12)
 
 
