@@ -128,6 +128,17 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isActive={activeTab === DrawerTabs.Design}
           id={FEATURE_TOUR_IDS[1].id}
         />
+        {data?.responseMode === FormResponseMode.Multirespondent && (
+          <DrawerTabIcon
+            label={t('features.adminForm.sidebar.workflow.title')}
+            shortLabel="Workflow"
+            trackingLabel="create_builder.drawer_tab.add_workflow"
+            icon={<MultiParty fontSize="1.5rem" />}
+            onClick={handleDrawerWorkflowClick}
+            isActive={activeTab === DrawerTabs.Workflow}
+            showRedDot={shouldShowMrfWorkflowReddot}
+          />
+        )}
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.logic.addLogicBtn')}
           shortLabel="Logic"
@@ -139,26 +150,13 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
-          shortLabel="End Page"
+          shortLabel="Thank you"
           trackingLabel="create_builder.drawer_tab.edit_thank_you_page"
           icon={<PhHandsClapping fontSize="1.5rem" />}
           onClick={handleDrawerEndpageClick}
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR_IDS[3].id}
         />
-        {data?.responseMode === FormResponseMode.Multirespondent && (
-          <>
-            <DrawerTabIcon
-              label={t('features.adminForm.sidebar.workflow.title')}
-              shortLabel="Workflow"
-              trackingLabel="create_builder.drawer_tab.add_workflow"
-              icon={<MultiParty fontSize="1.5rem" />}
-              onClick={handleDrawerWorkflowClick}
-              isActive={activeTab === DrawerTabs.Workflow}
-              showRedDot={shouldShowMrfWorkflowReddot}
-            />
-          </>
-        )}
       </Stack>
       <Tooltip label="Help" placement="right">
         <IconButton

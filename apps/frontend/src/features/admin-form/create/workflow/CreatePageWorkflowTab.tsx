@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { Box, Container } from '@chakra-ui/react'
 
 import { GuidedWorkflowCreation } from './components/GuidedCreation'
@@ -7,6 +7,7 @@ import { WorkflowSkeleton } from './components/WorkflowSkeleton'
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import { useAdminWorkflowStore } from './adminWorkflowStore'
 import {
+  currentStepIndexSelector,
   guidedModeSelector,
   useGuidedWorkflowStore,
 } from './guidedWorkflowStore'
@@ -24,6 +25,7 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
   const { isLoading, formWorkflow } = useAdminFormWorkflow()
 
   const guidedMode = useGuidedWorkflowStore(guidedModeSelector)
+  const currentStepIndex = useGuidedWorkflowStore(currentStepIndexSelector)
   const resetGuided = useGuidedWorkflowStore((s) => s.reset)
 
   const isEmptyWorkflow = useMemo(
@@ -35,12 +37,16 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
   const showGuided =
     guidedMode !== 'normal' && (isEmptyWorkflow || guidedMode !== 'intro')
 
-  // Reset guided state when workflow is externally emptied (all steps deleted)
+  // Reset guided state when it's stale (doesn't match the actual workflow).
+  // Case 1: workflow is empty but store thinks we're in 'normal' mode (finished a previous form)
+  // Case 2: workflow is empty but store has a non-zero step index (leftover from another form)
   useEffect(() => {
-    if (formWorkflow?.length === 0 && guidedMode === 'normal') {
-      resetGuided()
+    if (formWorkflow?.length === 0) {
+      if (guidedMode === 'normal' || currentStepIndex > 0) {
+        resetGuided()
+      }
     }
-  }, [formWorkflow?.length, guidedMode, resetGuided])
+  }, [formWorkflow?.length, guidedMode, currentStepIndex, resetGuided])
 
   useEffect(() => reset, [reset])
 

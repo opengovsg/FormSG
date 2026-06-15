@@ -166,25 +166,20 @@ export const InactiveStepBlock = ({
         borderColor="neutral.300"
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={isPreventEdit ? 'not-allowed' : 'auto'}
+        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
         disabled={isPreventEdit}
         aria-disabled={isPreventEdit}
+        onClick={handleClick}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
 
           <Stack>
             <Text textStyle="subhead-3">
-              {t(
-                'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
-              )}
+              People who are filling up this step
             </Text>
             {isFirstStep ? (
-              <Text>
-                {t(
-                  'features.adminForm.sidebar.workflow.respondentBlock.anyone',
-                )}
-              </Text>
+              <Text>Anyone with the form link can respond.</Text>
             ) : (
               <Flex
                 flexDir={{ base: 'column', md: 'row' }}

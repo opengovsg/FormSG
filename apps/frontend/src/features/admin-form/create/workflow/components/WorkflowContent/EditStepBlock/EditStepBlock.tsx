@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Divider, Stack } from '@chakra-ui/react'
 
@@ -7,6 +7,8 @@ import {
   FormWorkflowStepBase,
   WorkflowType,
 } from 'formsg-shared/types'
+
+import { UnsavedChangesModal } from '~templates/NavigationPrompt'
 
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
 import { useUser } from '~features/user/queries'
@@ -45,12 +47,21 @@ export const EditStepBlock = ({
   handleOpenDeleteModal,
 }: EditLogicBlockProps) => {
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
+  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false)
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
   })
   const { user, isLoading: isUserLoading } = useUser()
   const _isLoading = isLoading || isUserLoading
+
+  const handleCancel = useCallback(() => {
+    if (formMethods.formState.isDirty) {
+      setIsDiscardModalOpen(true)
+    } else {
+      setToInactive()
+    }
+  }, [formMethods.formState.isDirty, setToInactive])
 
   const wrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -175,9 +186,15 @@ export const EditStepBlock = ({
         isLoading={_isLoading}
         handleSubmit={handleSubmit}
         handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
-        handleCancel={setToInactive}
+        handleCancel={handleCancel}
         submitButtonLabel={submitButtonLabel}
         ariaLabelName="step"
+      />
+      <UnsavedChangesModal
+        isOpen={isDiscardModalOpen}
+        onClose={() => setIsDiscardModalOpen(false)}
+        onConfirm={setToInactive}
+        onCancel={() => setIsDiscardModalOpen(false)}
       />
     </Stack>
   )

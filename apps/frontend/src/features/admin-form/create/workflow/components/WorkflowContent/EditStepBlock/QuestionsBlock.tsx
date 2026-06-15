@@ -1,12 +1,15 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { textStyles } from '~theme/textStyles'
+import Button from '~components/Button'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 
+import { useCreatePageSidebar } from '~features/admin-form/create/common'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
@@ -21,15 +24,18 @@ interface QuestionsBlockProps {
   isLoading: boolean
   formMethods: UseFormReturn<EditStepInputs>
   isFirstStep: boolean
+  showGuidedHint?: boolean
 }
 
 export const QuestionsBlock = ({
   isLoading,
   formMethods,
   isFirstStep,
+  showGuidedHint,
 }: QuestionsBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
+  const { handleBuilderClick } = useCreatePageSidebar()
   const {
     formState: { errors },
     control,
@@ -55,6 +61,8 @@ export const QuestionsBlock = ({
       label: getLogicFieldLabel(idToFieldMap[f._id]),
       icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
     }))
+
+  const hasFields = items.length > 0
 
   return (
     <EditStepBlockContainer>
@@ -92,6 +100,27 @@ export const QuestionsBlock = ({
         />
         <FormErrorMessage>{errors.edit?.message}</FormErrorMessage>
       </FormControl>
+      {showGuidedHint && (
+        <InlineMessage variant="info">
+          {hasFields ? (
+            "Now pick the fields they'll fill up."
+          ) : (
+            <Stack spacing="0.5rem">
+              <Text>
+                Now pick the fields they'll fill up. Looks like you have no
+                fields though. You can add them later or build them now.
+              </Text>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleBuilderClick(false)}
+              >
+                Go to Fields
+              </Button>
+            </Stack>
+          )}
+        </InlineMessage>
+      )}
     </EditStepBlockContainer>
   )
 }

@@ -64,6 +64,7 @@ export const GuidedStep = ({
 }: GuidedStepProps): JSX.Element => {
   const currentSection = useGuidedWorkflowStore(currentSectionSelector)
   const revealNextSection = useGuidedWorkflowStore((s) => s.revealNextSection)
+  const goBackSection = useGuidedWorkflowStore((s) => s.goBackSection)
   const completeCurrentStep = useGuidedWorkflowStore(
     (s) => s.completeCurrentStep,
   )
@@ -184,7 +185,12 @@ export const GuidedStep = ({
     if (isLastSection) {
       return (
         <Box px={{ base: '1.5rem', md: '2rem' }} pt="1rem">
-          <Flex justifyContent="flex-end">
+          <Flex justifyContent="flex-end" gap="0.75rem">
+            {sectionIndex > 1 && (
+              <Button variant="clear" onClick={goBackSection}>
+                Back
+              </Button>
+            )}
             <Button
               isLoading={createStepMutation.isLoading}
               onClick={handleDone}
@@ -198,7 +204,12 @@ export const GuidedStep = ({
 
     return (
       <Box px={{ base: '1.5rem', md: '2rem' }} pt="1rem">
-        <Flex justifyContent="flex-end">
+        <Flex justifyContent="flex-end" gap="0.75rem">
+          {sectionIndex > 1 && (
+            <Button variant="clear" onClick={goBackSection}>
+              Back
+            </Button>
+          )}
           <Button onClick={revealNextSection}>Continue</Button>
         </Flex>
       </Box>
@@ -212,58 +223,44 @@ export const GuidedStep = ({
   if (currentSection >= 1) {
     sections.push(
       <Box key="step-name">
-        <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />
+        <StepNameBlock
+          formMethods={formMethods}
+          stepNumber={stepNumber}
+          showGuidedHint={isFirstStep && currentSection === 1}
+        />
         {renderContinueButton(1)}
       </Box>,
     )
   }
 
   if (isFirstStep) {
-    // Transition after StepName
-    if (currentSection >= 2) {
-      sections.push(
-        <TransitionMessage
-          key="transition-1"
-          message="This is the first step, so anyone with the form link can respond."
-        />,
-      )
-    }
-
     // Section 2: RespondentBlock
     if (currentSection >= 2) {
+      sections.push(<Divider key="divider-1" />)
       sections.push(
         <FadeIn key="respondent">
-          <Divider />
           <RespondentBlock
             user={user}
             stepNumber={stepNumber}
             formMethods={formMethods}
             isLoading={isUserLoading}
+            showGuidedHint={currentSection === 2}
           />
           {renderContinueButton(2)}
         </FadeIn>,
       )
     }
 
-    // Transition after Respondent
-    if (currentSection >= 3) {
-      sections.push(
-        <TransitionMessage
-          key="transition-2"
-          message="Now pick the fields they'll fill up."
-        />,
-      )
-    }
-
     // Section 3: QuestionsBlock
     if (currentSection >= 3) {
+      sections.push(<Divider key="divider-2" />)
       sections.push(
         <FadeIn key="questions">
-          <Divider />
           <QuestionsBlock
             formMethods={formMethods}
             isLoading={isUserLoading}
             isFirstStep={isFirstStep}
+            showGuidedHint
           />
           {renderContinueButton(3)}
         </FadeIn>,
@@ -284,9 +281,9 @@ export const GuidedStep = ({
 
     // Section 2: RespondentBlock
     if (currentSection >= 2) {
+      sections.push(<Divider key="divider-1" />)
       sections.push(
         <FadeIn key="respondent">
-          <Divider />
           <RespondentBlock
             user={user}
             stepNumber={stepNumber}
@@ -310,9 +307,9 @@ export const GuidedStep = ({
 
     // Section 3: ApprovalsBlock
     if (currentSection >= 3) {
+      sections.push(<Divider key="divider-2" />)
       sections.push(
         <FadeIn key="approvals">
-          <Divider />
           <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
           {renderContinueButton(3)}
         </FadeIn>,
@@ -331,9 +328,9 @@ export const GuidedStep = ({
 
     // Section 4: QuestionsBlock
     if (currentSection >= 4) {
+      sections.push(<Divider key="divider-3" />)
       sections.push(
         <FadeIn key="questions">
-          <Divider />
           <QuestionsBlock
             formMethods={formMethods}
             isLoading={isUserLoading}
@@ -349,7 +346,7 @@ export const GuidedStep = ({
     <Stack
       ref={wrapperRef}
       py="2rem"
-      spacing="1.5rem"
+      spacing="1rem"
       borderRadius="4px"
       bg="white"
       border="1px solid"

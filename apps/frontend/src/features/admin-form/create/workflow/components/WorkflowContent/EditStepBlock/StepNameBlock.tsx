@@ -12,6 +12,7 @@ import {
 
 import { textStyles } from '~theme/textStyles'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 
 import { EditStepInputs } from '../../../types'
 
@@ -20,6 +21,7 @@ import { EditStepBlockContainer } from './EditStepBlockContainer'
 type StepNameProps = {
   stepNumber: number
   formMethods: UseFormReturn<EditStepInputs>
+  showGuidedHint?: boolean
 }
 
 const STEP_NAME = 'step_name'
@@ -28,6 +30,7 @@ const MAX_CHAR = 50
 export const StepNameBlock = ({
   stepNumber,
   formMethods,
+  showGuidedHint,
 }: StepNameProps): JSX.Element => {
   const { t } = useTranslation()
   const {
@@ -101,6 +104,12 @@ export const StepNameBlock = ({
               </FormHelperText>
             ) : null}
           </FormControl>
+          {showGuidedHint && (
+            <InlineMessage variant="info" mt="0.75rem">
+              Name it something to make it easier for you to know what this step
+              is for later. Or keep it as "Step 1", we don't judge.
+            </InlineMessage>
+          )}
         </Box>
       </Stack>
     </EditStepBlockContainer>

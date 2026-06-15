@@ -7,6 +7,7 @@ import { UserDto } from 'formsg-shared/types'
 import { textStyles } from '~theme/textStyles'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import InlineMessage from '~components/InlineMessage'
 import Radio from '~components/Radio'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -25,12 +26,14 @@ interface RespondentBlockProps {
   isLoading: boolean
   formMethods: UseFormReturn<EditStepInputs>
   user: UserDto | undefined
+  showGuidedHint?: boolean
 }
 
 export const RespondentBlock = ({
   stepNumber,
   isLoading,
   formMethods,
+  showGuidedHint,
 }: RespondentBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const {
@@ -57,14 +60,14 @@ export const RespondentBlock = ({
     <EditStepBlockContainer>
       {isFirstStep ? (
         <Stack spacing="0.5rem">
-          <Text style={textStyles.h4}>
-            {t(
-              'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
-            )}
-          </Text>
-          <Text>
-            {t('features.adminForm.sidebar.workflow.respondentBlock.anyone')}
-          </Text>
+          <Text style={textStyles.h4}>People who are filling up this step</Text>
+          <Text>Anyone with the form link can respond.</Text>
+          {showGuidedHint && (
+            <InlineMessage variant="info">
+              Step 1 is always filled up by whoever opens your form link. In the
+              next steps, you'll choose specific people to send the form to.
+            </InlineMessage>
+          )}
         </Stack>
       ) : (
         <FormControl
@@ -73,7 +76,7 @@ export const RespondentBlock = ({
           isInvalid={!!errors.workflow_type}
         >
           <FormLabel style={textStyles.h4}>
-            {t('features.adminForm.sidebar.workflow.respondentBlock.select')}
+            People who are filling up this step
           </FormLabel>
           <Stack spacing="0.25rem">
             <Radio.RadioGroup value={selectedWorkflowType}>

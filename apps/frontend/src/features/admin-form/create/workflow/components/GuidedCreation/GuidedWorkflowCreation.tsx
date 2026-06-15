@@ -1,7 +1,17 @@
 import { Fragment, useEffect, useRef } from 'react'
 import { BiHelpCircle } from 'react-icons/bi'
-import { Flex, IconButton, Stack, Tooltip } from '@chakra-ui/react'
+import {
+  Flex,
+  IconButton,
+  Stack,
+  Tooltip,
+  useDisclosure,
+} from '@chakra-ui/react'
 
+import {
+  editDataSelector,
+  useAdminWorkflowStore,
+} from '../../adminWorkflowStore'
 import {
   completedStepsSelector,
   currentSectionSelector,
@@ -10,6 +20,8 @@ import {
   useGuidedWorkflowStore,
 } from '../../guidedWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { DeleteStepModal } from '../DeleteStepModal'
+import { ActiveStepBlock } from '../WorkflowContent/ActiveStepBlock'
 import { InactiveStepBlock } from '../WorkflowContent/InactiveStepBlock'
 import { WorkflowStepBlockDivider } from '../WorkflowContent/WorkflowContent'
 
@@ -31,6 +43,12 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
 
   const revealNextSection = useGuidedWorkflowStore((s) => s.revealNextSection)
   const requestGuidedMode = useGuidedWorkflowStore((s) => s.requestGuidedMode)
+  const editState = useAdminWorkflowStore(editDataSelector)
+  const {
+    isOpen: isDeleteModalOpen,
+    onClose: onDeleteModalClose,
+    onOpen: onDeleteModalOpen,
+  } = useDisclosure()
 
   // Track the previous stepIndex so we can auto-reveal when entering step 3+.
   const prevStepIndexRef = useRef(currentStepIndex)
@@ -58,14 +76,25 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
     return <IntroPage />
   }
 
+  const editingStepNumber = editState?.stepNumber
+
   // Render completed steps from the real workflow data
   const completedStepElements = completedSteps.map((stepIdx) => {
     const step = formWorkflow?.[stepIdx]
     if (!step) return null
+    const isEditing = editState?.stepNumber === stepIdx
     return (
       <Fragment key={stepIdx}>
         {stepIdx > 0 && <WorkflowStepBlockDivider />}
-        <InactiveStepBlock stepNumber={stepIdx} step={step} />
+        {isEditing ? (
+          <ActiveStepBlock
+            stepNumber={stepIdx}
+            step={step}
+            handleOpenDeleteModal={onDeleteModalOpen}
+          />
+        ) : (
+          <InactiveStepBlock stepNumber={stepIdx} step={step} />
+        )}
       </Fragment>
     )
   })
@@ -80,6 +109,13 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
 
     return (
       <Stack spacing="0">
+        {editingStepNumber !== undefined && (
+          <DeleteStepModal
+            isOpen={isDeleteModalOpen}
+            onClose={onDeleteModalClose}
+            stepNumber={editingStepNumber}
+          />
+        )}
         {completedStepElements}
         {completedSteps.length > 0 && <WorkflowStepBlockDivider />}
         {isLaterStep && allSectionsRevealed && (
@@ -107,6 +143,13 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
   if (mode === 'add_another') {
     return (
       <Stack spacing="0">
+        {editingStepNumber !== undefined && (
+          <DeleteStepModal
+            isOpen={isDeleteModalOpen}
+            onClose={onDeleteModalClose}
+            stepNumber={editingStepNumber}
+          />
+        )}
         {completedStepElements}
         <AddAnotherPrompt stepNumber={currentStepIndex} />
       </Stack>

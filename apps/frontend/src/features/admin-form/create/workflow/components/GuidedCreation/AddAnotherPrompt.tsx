@@ -1,5 +1,4 @@
-import { BiCheck } from 'react-icons/bi'
-import { Flex, Text } from '@chakra-ui/react'
+import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
@@ -16,28 +15,35 @@ export const AddAnotherPrompt = ({
   const finishWorkflow = useGuidedWorkflowStore((state) => state.finishWorkflow)
 
   return (
-    <Flex
-      direction="column"
-      align="center"
-      gap="1.5rem"
-      py="2rem"
-      color="secondary.500"
+    <Box
+      bg="primary.100"
+      borderRadius="4px"
+      border="1px solid"
+      borderColor="primary.200"
+      mt="-0.5rem"
+      py="1.5rem"
+      px={{ base: '1.5rem', md: '2rem' }}
     >
-      <Flex align="center" gap="0.5rem">
-        <BiCheck fontSize="1.5rem" color="var(--chakra-colors-success-500)" />
-        <Text textStyle="body-1">Step {stepNumber + 1}&apos;s done.</Text>
-      </Flex>
-      <Text textStyle="body-1">Do you need another step?</Text>
-      <Flex gap="0.75rem">
-        <Button onClick={addAnotherStep}>Yes</Button>
-        <Button
-          variant="clear"
-          colorScheme="secondary"
-          onClick={finishWorkflow}
-        >
-          No
-        </Button>
-      </Flex>
-    </Flex>
+      <Stack spacing="1rem">
+        <Stack spacing="0.25rem">
+          <Text textStyle="subhead-1" color="secondary.500">
+            Nice, Step {stepNumber + 1} is all set!
+          </Text>
+          <Text textStyle="body-1" color="secondary.400">
+            Would you like to add another step?
+          </Text>
+        </Stack>
+        <Flex justify="flex-end" gap="0.75rem">
+          <Button
+            variant="clear"
+            colorScheme="secondary"
+            onClick={finishWorkflow}
+          >
+            No, I'm done
+          </Button>
+          <Button onClick={addAnotherStep}>Yes, add a step</Button>
+        </Flex>
+      </Stack>
+    </Box>
   )
 }
