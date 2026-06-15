@@ -1,0 +1,99 @@
+import { useTranslation } from 'react-i18next'
+import { BiPencil } from 'react-icons/bi'
+import { Box, chakra, Stack, Text } from '@chakra-ui/react'
+
+import { MultirespondentFormSettings } from 'formsg-shared/types'
+
+import IconButton from '~components/IconButton'
+
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
+
+import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+
+import { EmailLabel } from './EmailLabel'
+
+interface InactiveEmailCardProps {
+  onEdit: () => void
+  isPreventEdit?: boolean
+}
+
+export const InactiveEmailCard = ({
+  onEdit,
+  isPreventEdit = false,
+}: InactiveEmailCardProps): JSX.Element => {
+  const { t } = useTranslation()
+  const { data: settings } = useAdminFormSettings<MultirespondentFormSettings>()
+  const { idToFieldMap, formWorkflow } = useAdminFormWorkflow()
+
+  const hasStepOneField = !!settings?.stepOneEmailNotificationFieldId
+  const stepOneField = hasStepOneField
+    ? idToFieldMap[settings.stepOneEmailNotificationFieldId]
+    : undefined
+
+  const stepsToNotify = settings?.stepsToNotify ?? []
+  const emails = settings?.emails ?? []
+
+  const hasAnyRecipient =
+    hasStepOneField || stepsToNotify.length > 0 || emails.length > 0
+
+  return (
+    <Box pos="relative">
+      <chakra.button
+        type="button"
+        w="100%"
+        textAlign="start"
+        borderRadius="4px"
+        bg="white"
+        border="1px solid"
+        borderColor="neutral.300"
+        transitionProperty="common"
+        transitionDuration="normal"
+        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
+        disabled={isPreventEdit}
+        aria-disabled={isPreventEdit}
+        onClick={isPreventEdit ? undefined : onEdit}
+      >
+        <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
+          <EmailLabel />
+
+          <Stack>
+            <Text textStyle="subhead-3">Recipients</Text>
+            {hasAnyRecipient ? (
+              <Stack spacing="0.25rem">
+                {stepOneField && (
+                  <Text textStyle="body-2" color="secondary.500">
+                    Person in Step 1: {stepOneField.title}
+                  </Text>
+                )}
+                {stepsToNotify.length > 0 && (
+                  <Text textStyle="body-2" color="secondary.500">
+                    {stepsToNotify.length} other step(s) notified
+                  </Text>
+                )}
+                {emails.length > 0 && (
+                  <Text textStyle="body-2" color="secondary.500">
+                    {emails.join(', ')}
+                  </Text>
+                )}
+              </Stack>
+            ) : (
+              <Text textStyle="body-2" color="secondary.400">
+                No recipients configured
+              </Text>
+            )}
+          </Stack>
+        </Stack>
+      </chakra.button>
+      <IconButton
+        top={{ base: '0.5rem', md: '2rem' }}
+        right={{ base: '0.5rem', md: '2rem' }}
+        pos="absolute"
+        aria-label="Edit email notification"
+        variant="clear"
+        onClick={isPreventEdit ? undefined : onEdit}
+        icon={<BiPencil fontSize="1.5rem" />}
+        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
+      />
+    </Box>
+  )
+}

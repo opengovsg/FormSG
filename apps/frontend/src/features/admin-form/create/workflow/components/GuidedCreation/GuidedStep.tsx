@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Divider, Flex, Stack } from '@chakra-ui/react'
+import { Box, Divider, Flex, Link, Stack } from '@chakra-ui/react'
 
 import {
   FormWorkflowStep,
@@ -9,6 +9,7 @@ import {
 } from 'formsg-shared/types'
 
 import Button from '~components/Button'
+import InlineMessage from '~components/InlineMessage'
 
 import { useUser } from '~features/user/queries'
 
@@ -18,23 +19,23 @@ import {
 } from '../../guidedWorkflowStore'
 import { useWorkflowMutations } from '../../mutations'
 import { EditStepInputs } from '../../types'
-import { ApprovalsBlock } from '../WorkflowContent/EditStepBlock/ApprovalsBlock'
 import { QuestionsBlock } from '../WorkflowContent/EditStepBlock/QuestionsBlock'
 import { RespondentBlock } from '../WorkflowContent/EditStepBlock/RespondentBlock'
 import { StepNameBlock } from '../WorkflowContent/EditStepBlock/StepNameBlock'
 
-import { TransitionMessage } from './TransitionMessage'
+import { GuidedRespondentBlock } from './GuidedRespondentBlock'
+import { GuidedWhatTheyDoBlock } from './GuidedWhatTheyDoBlock'
 
 interface GuidedStepProps {
   stepIndex: number
   isFirstStep: boolean
 }
 
-// Sections for step 1: StepName, transition, Respondent, transition, Questions
-// Sections for step 2+: StepName, transition, Respondent, transition, Approvals, transition, Questions
-// currentSection is 1-indexed and counts block sections only (transitions appear between blocks).
+// Sections for step 1: StepName, Respondent, Questions
+// Sections for step 2+: StepName, Respondent, WhatTheyDo, Questions
+// currentSection is 1-indexed. Each guided block (Respondent, WhatTheyDo) manages its own sub-steps internally.
 // For step 1: section 1 = StepName, section 2 = Respondent, section 3 = Questions
-// For step 2+: section 1 = StepName, section 2 = Respondent, section 3 = Approvals, section 4 = Questions
+// For step 2+: section 1 = StepName, section 2 = Respondent, section 3 = WhatTheyDo, section 4 = Questions
 
 const FIRST_STEP_TOTAL_SECTIONS = 3
 const LATER_STEP_TOTAL_SECTIONS = 4
@@ -65,9 +66,11 @@ export const GuidedStep = ({
   const currentSection = useGuidedWorkflowStore(currentSectionSelector)
   const revealNextSection = useGuidedWorkflowStore((s) => s.revealNextSection)
   const goBackSection = useGuidedWorkflowStore((s) => s.goBackSection)
+  const cancelCurrentStep = useGuidedWorkflowStore((s) => s.cancelCurrentStep)
   const completeCurrentStep = useGuidedWorkflowStore(
     (s) => s.completeCurrentStep,
   )
+  const requestGuidedMode = useGuidedWorkflowStore((s) => s.requestGuidedMode)
 
   const { user, isLoading: isUserLoading } = useUser()
   const { createStepMutation } = useWorkflowMutations()
@@ -108,75 +111,85 @@ export const GuidedStep = ({
     : LATER_STEP_TOTAL_SECTIONS
 
   const isLastSection = currentSection >= totalSections
+  const isLaterStep = stepIndex >= 2
+  // Step 3+ shows all sections at once; show the "you know what to do" infobox
+  // only when all sections are already revealed (not when user chose guided mode)
+  const showSkipGuidedHint = isLaterStep && isLastSection
 
   // stepIndex is 0-indexed, matching the existing stepNumber convention
   // (isFirstStepByStepNumber checks stepNumber === 0)
   const stepNumber = stepIndex
 
-  const handleDone = formMethods.handleSubmit((values: EditStepInputs) => {
-    if (values.step_name === '') {
-      values.step_name = undefined as unknown as string
-    }
-    if (values.approval_field === '') {
-      values.approval_field = undefined
-    }
-
-    let step: FormWorkflowStep
-
-    if (isFirstStep) {
-      step = {
-        workflow_type: WorkflowType.Static,
-        emails: values.emails ?? [],
-        edit: values.edit || [],
-        step_name: values.step_name || undefined,
+  const handleDone = formMethods.handleSubmit(
+    (values: EditStepInputs) => {
+      console.log('[GuidedStep] Form submitted with values:', values)
+      if (values.step_name === '') {
+        values.step_name = undefined as unknown as string
       }
-    } else {
-      const workflowStepBase: FormWorkflowStepBase = {
-        workflow_type: values.workflow_type,
-        edit: values.edit,
-        approval_field: values.approval_field,
-        step_name: values.step_name,
+      if (values.approval_field === '') {
+        values.approval_field = undefined
       }
 
-      switch (values.workflow_type) {
-        case WorkflowType.Static: {
-          step = {
-            ...workflowStepBase,
-            workflow_type: WorkflowType.Static,
-            emails: values.emails ?? [],
-          }
-          break
+      let step: FormWorkflowStep
+
+      if (isFirstStep) {
+        step = {
+          workflow_type: WorkflowType.Static,
+          emails: values.emails ?? [],
+          edit: values.edit || [],
+          step_name: values.step_name || undefined,
         }
-        case WorkflowType.Dynamic: {
-          if (!values.field) return
-          step = {
-            ...workflowStepBase,
-            workflow_type: WorkflowType.Dynamic,
-            field: values.field,
-          }
-          break
+      } else {
+        const workflowStepBase: FormWorkflowStepBase = {
+          workflow_type: values.workflow_type,
+          edit: values.edit,
+          approval_field: values.approval_field,
+          step_name: values.step_name,
         }
-        case WorkflowType.Conditional: {
-          if (!values.conditional_field) return
-          step = {
-            ...workflowStepBase,
-            workflow_type: WorkflowType.Conditional,
-            conditional_field: values.conditional_field,
+
+        switch (values.workflow_type) {
+          case WorkflowType.Static: {
+            step = {
+              ...workflowStepBase,
+              workflow_type: WorkflowType.Static,
+              emails: values.emails ?? [],
+            }
+            break
           }
-          break
-        }
-        default: {
-          throw new Error('Invalid workflow type')
+          case WorkflowType.Dynamic: {
+            if (!values.field) return
+            step = {
+              ...workflowStepBase,
+              workflow_type: WorkflowType.Dynamic,
+              field: values.field,
+            }
+            break
+          }
+          case WorkflowType.Conditional: {
+            if (!values.conditional_field) return
+            step = {
+              ...workflowStepBase,
+              workflow_type: WorkflowType.Conditional,
+              conditional_field: values.conditional_field,
+            }
+            break
+          }
+          default: {
+            throw new Error('Invalid workflow type')
+          }
         }
       }
-    }
 
-    createStepMutation.mutate(step, {
-      onSuccess: () => {
-        completeCurrentStep()
-      },
-    })
-  })
+      createStepMutation.mutate(step, {
+        onSuccess: () => {
+          completeCurrentStep()
+        },
+      })
+    },
+    (errors) => {
+      console.error('[GuidedStep] Form validation errors:', errors)
+    },
+  )
 
   const renderContinueButton = (sectionIndex: number) => {
     // Only show button on the active (most recently revealed) section
@@ -186,11 +199,15 @@ export const GuidedStep = ({
       return (
         <Box px={{ base: '1.5rem', md: '2rem' }} pt="1rem">
           <Flex justifyContent="flex-end" gap="0.75rem">
-            {sectionIndex > 1 && (
+            {showSkipGuidedHint ? (
+              <Button variant="clear" onClick={cancelCurrentStep}>
+                Cancel
+              </Button>
+            ) : sectionIndex > 1 ? (
               <Button variant="clear" onClick={goBackSection}>
                 Back
               </Button>
-            )}
+            ) : null}
             <Button
               isLoading={createStepMutation.isLoading}
               onClick={handleDone}
@@ -205,6 +222,11 @@ export const GuidedStep = ({
     return (
       <Box px={{ base: '1.5rem', md: '2rem' }} pt="1rem">
         <Flex justifyContent="flex-end" gap="0.75rem">
+          {sectionIndex === 1 && !isFirstStep && (
+            <Button variant="clear" onClick={cancelCurrentStep}>
+              Cancel
+            </Button>
+          )}
           {sectionIndex > 1 && (
             <Button variant="clear" onClick={goBackSection}>
               Back
@@ -223,10 +245,34 @@ export const GuidedStep = ({
   if (currentSection >= 1) {
     sections.push(
       <Box key="step-name">
+        {showSkipGuidedHint && (
+          <Box px={{ base: '1.5rem', md: '2rem' }} pb="0.5rem">
+            <InlineMessage variant="info">
+              <Box as="span">
+                You already know what to do. If you still need help,{' '}
+                <Link
+                  as="button"
+                  color="primary.500"
+                  fontWeight="medium"
+                  textDecoration="underline"
+                  onClick={requestGuidedMode}
+                >
+                  click here
+                </Link>{' '}
+                to switch to guided mode.
+              </Box>
+            </InlineMessage>
+          </Box>
+        )}
         <StepNameBlock
           formMethods={formMethods}
           stepNumber={stepNumber}
-          showGuidedHint={isFirstStep && currentSection === 1}
+          showGuidedHint={currentSection === 1 && !showSkipGuidedHint}
+          guidedHintText={
+            isFirstStep
+              ? undefined
+              : 'Rename the step if you feel like it. You know what to do.'
+          }
         />
         {renderContinueButton(1)}
       </Box>,
@@ -267,62 +313,39 @@ export const GuidedStep = ({
       )
     }
   } else {
-    // Step 2+: StepName -> Respondent -> Approvals -> Questions
+    // Step 2+: StepName -> Respondent (guided sub-steps) -> Approvals -> Questions
 
-    // Transition after StepName
-    if (currentSection >= 2) {
-      sections.push(
-        <TransitionMessage
-          key="transition-1"
-          message="Now choose how this step gets to the next person."
-        />,
-      )
-    }
-
-    // Section 2: RespondentBlock
+    // Section 2: GuidedRespondentBlock (handles its own sub-step reveal + buttons)
     if (currentSection >= 2) {
       sections.push(<Divider key="divider-1" />)
       sections.push(
         <FadeIn key="respondent">
-          <RespondentBlock
+          <GuidedRespondentBlock
             user={user}
             stepNumber={stepNumber}
             formMethods={formMethods}
             isLoading={isUserLoading}
+            onComplete={revealNextSection}
+            onBack={goBackSection}
+            isActive={currentSection === 2}
           />
-          {renderContinueButton(2)}
         </FadeIn>,
       )
     }
 
-    // Transition after Respondent
-    if (currentSection >= 3) {
-      sections.push(
-        <TransitionMessage
-          key="transition-2"
-          message="What will this person do?"
-        />,
-      )
-    }
-
-    // Section 3: ApprovalsBlock
+    // Section 3: GuidedWhatTheyDoBlock (handles its own sub-step reveal + buttons)
     if (currentSection >= 3) {
       sections.push(<Divider key="divider-2" />)
       sections.push(
-        <FadeIn key="approvals">
-          <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
-          {renderContinueButton(3)}
+        <FadeIn key="what-they-do">
+          <GuidedWhatTheyDoBlock
+            stepNumber={stepNumber}
+            formMethods={formMethods}
+            onComplete={revealNextSection}
+            onBack={goBackSection}
+            isActive={currentSection === 3}
+          />
         </FadeIn>,
-      )
-    }
-
-    // Transition after Approvals
-    if (currentSection >= 4) {
-      sections.push(
-        <TransitionMessage
-          key="transition-3"
-          message="Last thing. Pick the fields for this step."
-        />,
       )
     }
 
@@ -335,6 +358,7 @@ export const GuidedStep = ({
             formMethods={formMethods}
             isLoading={isUserLoading}
             isFirstStep={isFirstStep}
+            showGuidedHint={!showSkipGuidedHint}
           />
           {renderContinueButton(4)}
         </FadeIn>,

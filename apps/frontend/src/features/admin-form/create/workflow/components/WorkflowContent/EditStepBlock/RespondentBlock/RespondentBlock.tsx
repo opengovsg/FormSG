@@ -80,14 +80,14 @@ export const RespondentBlock = ({
           </FormLabel>
           <Stack spacing="0.25rem">
             <Radio.RadioGroup value={selectedWorkflowType}>
-              <DynamicRespondentOption
+              <StaticRespondentOption
                 selectedWorkflowType={selectedWorkflowType}
-                emailFieldItems={emailFieldItems}
                 formMethods={formMethods}
                 isLoading={isLoading}
               />
-              <StaticRespondentOption
+              <DynamicRespondentOption
                 selectedWorkflowType={selectedWorkflowType}
+                emailFieldItems={emailFieldItems}
                 formMethods={formMethods}
                 isLoading={isLoading}
               />

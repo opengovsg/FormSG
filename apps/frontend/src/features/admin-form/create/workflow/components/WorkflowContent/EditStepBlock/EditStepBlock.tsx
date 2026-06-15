@@ -20,10 +20,10 @@ import {
 import { EditStepInputs } from '../../../types'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
-import { ApprovalsBlock } from './ApprovalsBlock'
 import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
 import { StepNameBlock } from './StepNameBlock'
+import { WhatTheyDoBlock } from './WhatTheyDoBlock'
 
 export interface EditLogicBlockProps {
   /** Sets default values of inputs if this is provided */
@@ -178,7 +178,7 @@ export const EditStepBlock = ({
       {!isFirstStep ? (
         <>
           <Divider />
-          <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+          <WhatTheyDoBlock formMethods={formMethods} stepNumber={stepNumber} />
         </>
       ) : null}
       <Divider />

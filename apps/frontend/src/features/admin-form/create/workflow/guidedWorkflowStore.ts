@@ -1,7 +1,12 @@
 import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
-type GuidedMode = 'intro' | 'guided_step' | 'add_another' | 'normal'
+type GuidedMode =
+  | 'intro'
+  | 'guided_step'
+  | 'add_another'
+  | 'email_setup'
+  | 'normal'
 
 type GuidedWorkflowStore = {
   mode: GuidedMode
@@ -17,6 +22,8 @@ type GuidedWorkflowStore = {
   promptAddAnother: () => void
   addAnotherStep: () => void
   finishWorkflow: () => void
+  startEmailSetup: () => void
+  cancelCurrentStep: () => void
   requestGuidedMode: () => void
   reset: () => void
 }
@@ -74,6 +81,16 @@ export const useGuidedWorkflowStore = create<GuidedWorkflowStore>()(
             currentSection: 1,
             mode: 'guided_step',
           })),
+        cancelCurrentStep: () =>
+          set((state) => ({
+            currentStepIndex: Math.max(0, state.currentStepIndex - 1),
+            currentSection: 1,
+            mode: 'add_another',
+          })),
+        startEmailSetup: () =>
+          set({
+            mode: 'email_setup',
+          }),
         finishWorkflow: () =>
           set({
             mode: 'normal',

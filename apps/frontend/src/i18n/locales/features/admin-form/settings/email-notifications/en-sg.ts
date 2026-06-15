@@ -11,15 +11,15 @@ export const enSG = {
         'Select who to notify when the form and/or workflow is complete:',
       respondents: {
         step1: {
-          label: 'Respondent in Step 1',
+          label: 'Person in Step 1',
           placeholder: 'Select an email field from your form',
         },
         stepN: {
           label: {
-            overall: 'Other respondents in your workflow',
-            each: 'Respondent(s) in Step {stepNumber}',
+            overall: 'Other people in your workflow',
+            each: 'Person(s) in Step {stepNumber}',
           },
-          placeholder: 'Select respondents from your form',
+          placeholder: 'Select people from your form',
         },
         others: {
           label: 'Others',

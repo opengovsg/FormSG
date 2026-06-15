@@ -23,7 +23,7 @@ import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
-import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
+import { InactiveWhatTheyDoBlock } from './InactiveWhatTheyDoBlock'
 
 interface InactiveStepBlockProps {
   stepNumber: number
@@ -41,7 +41,14 @@ const SubsequentStepRespondentBadges = ({
 }: RespondentBadgeProps): JSX.Element => {
   switch (step.workflow_type) {
     case WorkflowType.Static:
-      return (
+      return step.emails.length === 0 ? (
+        <FieldLogicBadge
+          defaults={{
+            variant: 'info',
+            message: 'No people selected',
+          }}
+        />
+      ) : (
         <>
           {step.emails.map((email) => (
             <LogicBadge key={email}>{email}</LogicBadge>
@@ -195,6 +202,9 @@ export const InactiveStepBlock = ({
             )}
           </Stack>
 
+          {!isFirstStep ? (
+            <InactiveWhatTheyDoBlock step={step} idToFieldMap={idToFieldMap} />
+          ) : null}
           <Stack>
             <Text textStyle="subhead-3">
               {t(
@@ -205,9 +215,6 @@ export const InactiveStepBlock = ({
               {questionBadges}
             </Stack>
           </Stack>
-          {!isFirstStep ? (
-            <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
-          ) : null}
         </Stack>
       </chakra.button>
       {

@@ -6,9 +6,9 @@ import { StatusTrackerToggle } from '~features/admin-form/settings/components/Em
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 
+import { EndOfWorkflowBlock } from './EndOfWorkflowBlock'
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'
-import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
 
 export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
@@ -32,13 +32,15 @@ export const WorkflowContent = (): JSX.Element | null => {
           <StatusTrackerToggle />
         </Stack>
       </Box>
-      <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
-        {formWorkflow?.map((step, i) => (
-          <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
-        ))}
-        <NewStepBlock />
-      </Stack>
-      {formWorkflow?.length ? <WorkflowCompletionMessageBlock /> : null}
+      <Box>
+        <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
+          {formWorkflow?.map((step, i) => (
+            <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
+          ))}
+          <NewStepBlock />
+        </Stack>
+        {formWorkflow?.length ? <EndOfWorkflowBlock /> : null}
+      </Box>
     </Stack>
   )
 }

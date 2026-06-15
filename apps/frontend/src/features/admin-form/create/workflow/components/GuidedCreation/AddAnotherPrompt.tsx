@@ -12,7 +12,9 @@ export const AddAnotherPrompt = ({
   stepNumber,
 }: AddAnotherPromptProps): JSX.Element => {
   const addAnotherStep = useGuidedWorkflowStore((state) => state.addAnotherStep)
-  const finishWorkflow = useGuidedWorkflowStore((state) => state.finishWorkflow)
+  const startEmailSetup = useGuidedWorkflowStore(
+    (state) => state.startEmailSetup,
+  )
 
   return (
     <Box
@@ -37,7 +39,7 @@ export const AddAnotherPrompt = ({
           <Button
             variant="clear"
             colorScheme="secondary"
-            onClick={finishWorkflow}
+            onClick={startEmailSetup}
           >
             No, I'm done
           </Button>

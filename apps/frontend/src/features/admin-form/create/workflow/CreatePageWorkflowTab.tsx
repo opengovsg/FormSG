@@ -42,7 +42,11 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
   // Case 2: workflow is empty but store has a non-zero step index (leftover from another form)
   useEffect(() => {
     if (formWorkflow?.length === 0) {
-      if (guidedMode === 'normal' || currentStepIndex > 0) {
+      if (
+        guidedMode === 'normal' ||
+        guidedMode === 'email_setup' ||
+        currentStepIndex > 0
+      ) {
         resetGuided()
       }
     }

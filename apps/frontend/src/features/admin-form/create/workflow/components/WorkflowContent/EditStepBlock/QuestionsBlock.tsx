@@ -103,7 +103,7 @@ export const QuestionsBlock = ({
       {showGuidedHint && (
         <InlineMessage variant="info">
           {hasFields ? (
-            "Now pick the fields they'll fill up."
+            "Now pick the fields they'll fill up. You can also come back to this later."
           ) : (
             <Stack spacing="0.5rem">
               <Text>

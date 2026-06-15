@@ -22,6 +22,7 @@ type StepNameProps = {
   stepNumber: number
   formMethods: UseFormReturn<EditStepInputs>
   showGuidedHint?: boolean
+  guidedHintText?: string
 }
 
 const STEP_NAME = 'step_name'
@@ -31,6 +32,7 @@ export const StepNameBlock = ({
   stepNumber,
   formMethods,
   showGuidedHint,
+  guidedHintText,
 }: StepNameProps): JSX.Element => {
   const { t } = useTranslation()
   const {
@@ -106,8 +108,8 @@ export const StepNameBlock = ({
           </FormControl>
           {showGuidedHint && (
             <InlineMessage variant="info" mt="0.75rem">
-              Name it something to make it easier for you to know what this step
-              is for later. Or keep it as "Step 1", we don't judge.
+              {guidedHintText ||
+                'Name it something to make it easier for you to know what this step is for later. Or keep it as "Step 1", we don\'t judge.'}
             </InlineMessage>
           )}
         </Box>
