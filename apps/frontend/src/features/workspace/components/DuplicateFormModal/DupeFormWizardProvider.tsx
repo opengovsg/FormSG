@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 import { FormId } from 'formsg-shared/types/form/form'
 
@@ -17,6 +18,7 @@ import {
   CreateFormFlowStates,
   CreateFormWizardContext,
   CreateFormWizardContextReturn,
+  CreateFormWizardInputProps,
 } from '../CreateFormModal/CreateFormWizardContext'
 import { useCommonFormWizardProvider } from '../CreateFormModal/CreateFormWizardProvider'
 
@@ -46,6 +48,7 @@ export const useDupeFormWizardContext = (
     keypair,
     setCurrentStep,
     isMrfCutoverEnabled,
+    isPaperTrackingSetUpPageEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
     goBackToDetails,
@@ -99,56 +102,96 @@ export const useDupeFormWizardContext = (
 
   const workspaceId = source.workspaceId
 
-  const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
-    ({ title, responseMode, emails }) => {
-      if (!sourceFormId) {
-        return
-      }
+  const createDuplicateForm = ({
+    title,
+    responseMode,
+    emails,
+    formOrigins,
+    formOriginOtherDetail,
+  }: CreateFormWizardInputProps) => {
+    if (!sourceFormId) {
+      return
+    }
 
-      switch (responseMode) {
-        case FormResponseMode.Encrypt: {
-          const defaultEmails = adminEmail ? [adminEmail] : []
-          return dupeStorageModeFormMutation.mutate(
-            {
-              formIdToDuplicate: sourceFormId,
-              title,
-              responseMode,
-              publicKey: keypair.publicKey,
-              workspaceId,
-              emails: (emails ?? defaultEmails).filter(Boolean),
-            },
-            {
-              onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Landing, 1])
+    // Paper-forms tracking: the duplicate flow re-asks the origin question
+    // (origins are never copied from the source form), so the freshly captured
+    // origins are written to the new form's metadata. Same checkbox shape as
+    // the create flow: selected codes (incl. the "Other" sentinel) in `value`,
+    // the typed "Other" text in `othersInput`.
+    const formOriginsMetadata =
+      isPaperTrackingSetUpPageEnabled && formOrigins?.length
+        ? {
+            metadata: {
+              formOrigins: {
+                value: formOrigins,
+                ...(formOrigins.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) &&
+                formOriginOtherDetail?.trim()
+                  ? { othersInput: formOriginOtherDetail.trim() }
+                  : {}),
               },
             },
-          )
-        }
-        case FormResponseMode.Email:
-          return
-        case FormResponseMode.Multirespondent:
-          return dupeMultirespondentModeFormMutation.mutate(
-            {
-              formIdToDuplicate: sourceFormId,
-              title,
-              responseMode,
-              publicKey: keypair.publicKey,
-              workspaceId,
+          }
+        : {}
+
+    switch (responseMode) {
+      case FormResponseMode.Encrypt: {
+        const defaultEmails = adminEmail ? [adminEmail] : []
+        return dupeStorageModeFormMutation.mutate(
+          {
+            formIdToDuplicate: sourceFormId,
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            workspaceId,
+            emails: (emails ?? defaultEmails).filter(Boolean),
+            ...formOriginsMetadata,
+          },
+          {
+            onSuccess: () => {
+              setCurrentStep([CreateFormFlowStates.Landing, 1])
             },
-            {
-              onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Landing, 1])
-              },
-            },
-          )
-        default: {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const _: never = responseMode
-          throw new Error('Invalid response mode')
-        }
+          },
+        )
       }
-    },
-  )
+      case FormResponseMode.Email:
+        return
+      case FormResponseMode.Multirespondent:
+        return dupeMultirespondentModeFormMutation.mutate(
+          {
+            formIdToDuplicate: sourceFormId,
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            workspaceId,
+            ...formOriginsMetadata,
+          },
+          {
+            onSuccess: () => {
+              setCurrentStep([CreateFormFlowStates.Landing, 1])
+            },
+          },
+        )
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _: never = responseMode
+        throw new Error('Invalid response mode')
+      }
+    }
+  }
+
+  const handleCreateStorageModeOrMultirespondentForm =
+    handleSubmit(createDuplicateForm)
+
+  // Paper-forms tracking: from the Details step, divert to the origin step when
+  // enabled; otherwise duplicate directly (unchanged behaviour). Title validation
+  // runs first via handleSubmit; the origin field is only registered on the
+  // origin step, so it is not validated here.
+  const handleProceedFromDetails = handleSubmit((inputs) => {
+    if (isPaperTrackingSetUpPageEnabled) {
+      return setCurrentStep([CreateFormFlowStates.Origin, 1])
+    }
+    return createDuplicateForm(inputs)
+  })
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   // Collect email mode usage feedback before creating the form
@@ -206,12 +249,9 @@ export const useDupeFormWizardContext = (
     direction,
     formMethods,
     handleCreateStorageModeOrMultirespondentForm,
-    // Paper-forms origin capture is not part of the duplicate flow (a copied
-    // form keeps the source's metadata), so proceeding from details creates
-    // directly and the origin step is never shown.
-    handleProceedFromDetails: handleCreateStorageModeOrMultirespondentForm,
+    handleProceedFromDetails,
     goBackToDetails,
-    isPaperTrackingSetUpPageEnabled: false,
+    isPaperTrackingSetUpPageEnabled,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,
     submitEmailModeFeedback,

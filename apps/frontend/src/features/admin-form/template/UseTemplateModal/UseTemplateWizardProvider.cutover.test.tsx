@@ -1,10 +1,12 @@
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { act, renderHook } from '@testing-library/react'
 
-import { FormResponseMode } from 'formsg-shared/types'
+import { featureFlags } from 'formsg-shared/constants'
+import { FormOrigin, FormResponseMode } from 'formsg-shared/types'
 
 import { useFormTemplate } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
+import { CreateFormFlowStates } from '~features/workspace/components/CreateFormModal/CreateFormWizardContext'
 import { useEmailModeFeedbackMutation } from '~features/workspace/mutations'
 
 import { useUseTemplateMutations } from '../mutation'
@@ -21,6 +23,20 @@ vi.mock('~features/admin-form/common/queries')
 vi.mock('~features/user/queries')
 vi.mock('~features/workspace/mutations')
 vi.mock('../mutation')
+
+const setFlags = ({
+  cutover,
+  paperTracking,
+}: {
+  cutover: boolean
+  paperTracking: boolean
+}) => {
+  vi.mocked(useFeatureIsOn).mockImplementation((flag: string) => {
+    if (flag === featureFlags.mrfCutover) return cutover
+    if (flag === featureFlags.enablePaperTrackingSetUpPage) return paperTracking
+    return false
+  })
+}
 
 const MOCK_FORM_ID = 'form123'
 const MOCK_USER_EMAIL = 'admin@example.com'
@@ -126,5 +142,51 @@ describe('UseTemplateWizardProvider — cutover behaviour', () => {
       expect.anything(),
     )
     expect(useMultirespondentFormTemplateMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('diverts to the origin step from details when paper tracking is enabled', async () => {
+    setFlags({ cutover: true, paperTracking: true })
+    const { result } = renderHook(() =>
+      useUseTemplateWizardContext(MOCK_FORM_ID, vi.fn()),
+    )
+
+    act(() => result.current.formMethods.setValue('title', 'New title'))
+    await act(async () => {
+      await result.current.handleProceedFromDetails()
+    })
+
+    expect(result.current.currentStep).toBe(CreateFormFlowStates.Origin)
+    expect(useMultirespondentFormTemplateMutation.mutate).not.toHaveBeenCalled()
+    expect(useStorageModeFormTemplateMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('re-asks origins and creates from template with them as metadata', async () => {
+    setFlags({ cutover: true, paperTracking: true })
+    const { result } = renderHook(() =>
+      useUseTemplateWizardContext(MOCK_FORM_ID, vi.fn()),
+    )
+
+    act(() => {
+      result.current.formMethods.setValue('title', 'New title')
+      result.current.formMethods.setValue('formOrigins', [
+        FormOrigin.DigitalSpreadsheet,
+      ])
+    })
+    await act(async () => {
+      await result.current.handleCreateStorageModeOrMultirespondentForm()
+    })
+
+    expect(useMultirespondentFormTemplateMutation.mutate).toHaveBeenCalledTimes(
+      1,
+    )
+    expect(
+      useMultirespondentFormTemplateMutation.mutate.mock.calls[0][0],
+    ).toEqual(
+      expect.objectContaining({
+        metadata: {
+          formOrigins: { value: [FormOrigin.DigitalSpreadsheet] },
+        },
+      }),
+    )
   })
 })
