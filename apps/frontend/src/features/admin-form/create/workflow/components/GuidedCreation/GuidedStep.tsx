@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Box, Divider, Flex, Stack } from '@chakra-ui/react'
 
@@ -39,6 +39,25 @@ interface GuidedStepProps {
 const FIRST_STEP_TOTAL_SECTIONS = 3
 const LATER_STEP_TOTAL_SECTIONS = 4
 
+const FadeIn = ({ children }: { children: React.ReactNode }) => {
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 50)
+    return () => clearTimeout(timer)
+  }, [])
+
+  return (
+    <Box
+      opacity={isVisible ? 1 : 0}
+      transform={isVisible ? 'translateY(0)' : 'translateY(8px)'}
+      transition="opacity 0.3s ease, transform 0.3s ease"
+    >
+      {children}
+    </Box>
+  )
+}
+
 export const GuidedStep = ({
   stepIndex,
   isFirstStep,
@@ -71,6 +90,17 @@ export const GuidedStep = ({
       })
     }
   }, [])
+
+  useEffect(() => {
+    if (currentSection > 1 && wrapperRef.current) {
+      setTimeout(() => {
+        wrapperRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end',
+        })
+      }, 100)
+    }
+  }, [currentSection])
 
   const totalSections = isFirstStep
     ? FIRST_STEP_TOTAL_SECTIONS
@@ -202,7 +232,7 @@ export const GuidedStep = ({
     // Section 2: RespondentBlock
     if (currentSection >= 2) {
       sections.push(
-        <Box key="respondent">
+        <FadeIn key="respondent">
           <Divider />
           <RespondentBlock
             user={user}
@@ -211,7 +241,7 @@ export const GuidedStep = ({
             isLoading={isUserLoading}
           />
           {renderContinueButton(2)}
-        </Box>,
+        </FadeIn>,
       )
     }
 
@@ -228,7 +258,7 @@ export const GuidedStep = ({
     // Section 3: QuestionsBlock
     if (currentSection >= 3) {
       sections.push(
-        <Box key="questions">
+        <FadeIn key="questions">
           <Divider />
           <QuestionsBlock
             formMethods={formMethods}
@@ -236,7 +266,7 @@ export const GuidedStep = ({
             isFirstStep={isFirstStep}
           />
           {renderContinueButton(3)}
-        </Box>,
+        </FadeIn>,
       )
     }
   } else {
@@ -255,7 +285,7 @@ export const GuidedStep = ({
     // Section 2: RespondentBlock
     if (currentSection >= 2) {
       sections.push(
-        <Box key="respondent">
+        <FadeIn key="respondent">
           <Divider />
           <RespondentBlock
             user={user}
@@ -264,7 +294,7 @@ export const GuidedStep = ({
             isLoading={isUserLoading}
           />
           {renderContinueButton(2)}
-        </Box>,
+        </FadeIn>,
       )
     }
 
@@ -281,11 +311,11 @@ export const GuidedStep = ({
     // Section 3: ApprovalsBlock
     if (currentSection >= 3) {
       sections.push(
-        <Box key="approvals">
+        <FadeIn key="approvals">
           <Divider />
           <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
           {renderContinueButton(3)}
-        </Box>,
+        </FadeIn>,
       )
     }
 
@@ -302,7 +332,7 @@ export const GuidedStep = ({
     // Section 4: QuestionsBlock
     if (currentSection >= 4) {
       sections.push(
-        <Box key="questions">
+        <FadeIn key="questions">
           <Divider />
           <QuestionsBlock
             formMethods={formMethods}
@@ -310,7 +340,7 @@ export const GuidedStep = ({
             isFirstStep={isFirstStep}
           />
           {renderContinueButton(4)}
-        </Box>,
+        </FadeIn>,
       )
     }
   }
