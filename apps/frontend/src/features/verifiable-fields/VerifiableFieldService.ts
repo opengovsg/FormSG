@@ -1,9 +1,10 @@
+import { StatusCodes } from 'http-status-codes'
 import { Opaque } from 'type-fest'
 
 import { SendFormOtpResponseDto } from 'formsg-shared/types/form'
 
 import { transformAllIsoStringsToDate } from '~utils/date'
-import { ApiService } from '~services/ApiService'
+import { ApiService, HttpError } from '~services/ApiService'
 
 /**
  * Response when retrieving new transaction. Can be an empty object if the
@@ -17,6 +18,22 @@ type VerifiedFieldSignature = Opaque<string, 'VerifiedFieldSignature'>
 
 const FORM_API_PREFIX = '/forms'
 const VERIFICATION_ENDPOINT = 'fieldverifications'
+export const OTP_RATE_LIMIT_ERROR_MESSAGE =
+  'Too many OTP attempts. Please wait a few minutes before trying again.'
+
+const mapOtpRateLimitError = (error: unknown): never => {
+  if (
+    error instanceof HttpError &&
+    error.code === StatusCodes.TOO_MANY_REQUESTS
+  ) {
+    throw new HttpError(
+      OTP_RATE_LIMIT_ERROR_MESSAGE,
+      StatusCodes.TOO_MANY_REQUESTS,
+    )
+  }
+
+  throw error
+}
 
 /**
  * Create a transaction for given form.
@@ -66,7 +83,9 @@ export const triggerSendOtp = async ({
       answer,
       previousSubmissionId,
     },
-  ).then(({ data }) => data)
+  )
+    .then(({ data }) => data)
+    .catch(mapOtpRateLimitError)
 }
 
 /**
@@ -93,7 +112,9 @@ export const verifyOtp = async ({
     {
       otp,
     },
-  ).then(({ data }) => data)
+  )
+    .then(({ data }) => data)
+    .catch(mapOtpRateLimitError)
 }
 
 /**
