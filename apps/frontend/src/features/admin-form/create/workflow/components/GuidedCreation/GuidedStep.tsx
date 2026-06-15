@@ -78,7 +78,9 @@ export const GuidedStep = ({
 
   const isLastSection = currentSection >= totalSections
 
-  const stepNumber = stepIndex + 1
+  // stepIndex is 0-indexed, matching the existing stepNumber convention
+  // (isFirstStepByStepNumber checks stepNumber === 0)
+  const stepNumber = stepIndex
 
   const handleDone = formMethods.handleSubmit((values: EditStepInputs) => {
     if (values.step_name === '') {
