@@ -65,6 +65,18 @@ export interface CreateFormModal {
       'digital-formbuilder': string
       others: string
     }
+    // Accessible name for the "Other" free-text input.
+    otherInputLabel: string
+    errors: {
+      atLeastOne: string
+      otherRequired: string
+      // Interpolates `{{maxLength}}`.
+      otherMaxLength: string
+    }
+    cta: {
+      next: string
+      back: string
+    }
   }
   secretKey: {
     title: string

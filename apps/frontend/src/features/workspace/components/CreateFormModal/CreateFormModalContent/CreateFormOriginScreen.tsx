@@ -26,18 +26,10 @@ import Input from '~components/Input'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
 
-// Paper-forms tracking: UI-only validation copy for the origin step. Option
-// labels and the question text are sourced from i18n (keyed by FormOrigin code),
-// matching the shipped backend which keeps display copy out of the shared
-// constants; these error strings live alongside the field.
-const FORM_ORIGIN_AT_LEAST_ONE_ERROR = 'Please select at least 1 option.'
-const FORM_ORIGIN_OTHER_DETAIL_REQUIRED_ERROR =
-  'Please specify a value for the "others" option'
 // Mirrors the form-title cap (200 chars). Soft cap via a react-hook-form rule,
 // matching useFormTitleValidationRules — the admin sees an error rather than
-// being silently truncated.
+// being silently truncated. The cap is interpolated into the i18n error string.
 const FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH = 200
-const FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH_ERROR = `Please use ${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH} characters or fewer.`
 
 const ORIGIN_I18N_PREFIX = 'features.workspace.modals.forms.create.origin'
 
@@ -91,7 +83,7 @@ export const CreateFormOriginScreen = ({
               rules={{
                 validate: (value) =>
                   (Array.isArray(value) && value.length > 0) ||
-                  FORM_ORIGIN_AT_LEAST_ONE_ERROR,
+                  t(`${ORIGIN_I18N_PREFIX}.errors.atLeastOne`),
               }}
               render={({ field: { value, onChange } }) => (
                 <CheckboxGroup value={value ?? []} onChange={onChange}>
@@ -112,16 +104,25 @@ export const CreateFormOriginScreen = ({
                             isInvalid={!!errors.formOriginOtherDetail}
                           >
                             <Input
-                              aria-label="Other source"
+                              aria-label={t(
+                                `${ORIGIN_I18N_PREFIX}.otherInputLabel`,
+                              )}
                               {...register('formOriginOtherDetail', {
                                 validate: (detail) =>
                                   !isOthersSelected ||
                                   !!detail?.trim() ||
-                                  FORM_ORIGIN_OTHER_DETAIL_REQUIRED_ERROR,
+                                  t(
+                                    `${ORIGIN_I18N_PREFIX}.errors.otherRequired`,
+                                  ),
                                 maxLength: {
                                   value: FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
-                                  message:
-                                    FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH_ERROR,
+                                  message: t(
+                                    `${ORIGIN_I18N_PREFIX}.errors.otherMaxLength`,
+                                    {
+                                      maxLength:
+                                        FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
+                                    },
+                                  ),
                                 },
                               })}
                             />
@@ -157,13 +158,17 @@ export const CreateFormOriginScreen = ({
               isFullWidth
               data-dd-action-name="dashboard.create.origin_next"
             >
-              <Text lineHeight="1.5rem">Next step</Text>
+              <Text lineHeight="1.5rem">
+                {t(`${ORIGIN_I18N_PREFIX}.cta.next`)}
+              </Text>
             </Button>
             {/* Back control sits below "Next step" and centred (placement per
                 PM/design). The Back affordance itself is not in Figma Screen 2a;
                 added to satisfy the slice's back-navigation requirement. */}
             <Button variant="clear" onClick={goBackToDetails}>
-              <Text lineHeight="1.5rem">Back</Text>
+              <Text lineHeight="1.5rem">
+                {t(`${ORIGIN_I18N_PREFIX}.cta.back`)}
+              </Text>
             </Button>
           </Stack>
         </Container>

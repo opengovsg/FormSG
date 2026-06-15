@@ -27,9 +27,27 @@ vi.mock('react-i18next', () => {
     [`${P}.options.digital-spreadsheet`]: 'Spreadsheets (e.g. Excel, Sheets)',
     [`${P}.options.digital-formbuilder`]: 'Other form builders',
     [`${P}.options.others`]: 'Other',
+    [`${P}.otherInputLabel`]: 'Other source',
+    [`${P}.errors.atLeastOne`]: 'Please select at least 1 option.',
+    [`${P}.errors.otherRequired`]:
+      'Please specify a value for the "others" option',
+    [`${P}.errors.otherMaxLength`]:
+      'Please use {{maxLength}} characters or fewer.',
+    [`${P}.cta.next`]: 'Next step',
+    [`${P}.cta.back`]: 'Back',
   }
+  // Minimal interpolation so `{{maxLength}}`-style placeholders resolve like i18next.
+  const interpolate = (s: string, opts?: Record<string, unknown>) =>
+    opts
+      ? s.replace(/\{\{(\w+)\}\}/g, (_, key) =>
+          key in opts ? String(opts[key]) : `{{${key}}}`,
+        )
+      : s
   return {
-    useTranslation: () => ({ t: (k: string) => translations[k] ?? k }),
+    useTranslation: () => ({
+      t: (k: string, opts?: Record<string, unknown>) =>
+        interpolate(translations[k] ?? k, opts),
+    }),
     Trans: ({ children }: PropsWithChildren) => children,
   }
 })

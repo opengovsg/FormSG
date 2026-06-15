@@ -71,6 +71,16 @@ export const enSG: CreateFormModal = {
       'digital-formbuilder': 'Other form builders',
       others: 'Other',
     },
+    otherInputLabel: 'Other source',
+    errors: {
+      atLeastOne: 'Please select at least 1 option.',
+      otherRequired: 'Please specify a value for the "others" option',
+      otherMaxLength: 'Please use {{maxLength}} characters or fewer.',
+    },
+    cta: {
+      next: 'Next step',
+      back: 'Back',
+    },
   },
   secretKey: {
     title: 'Your form has been created! Download your Secret Key to proceed.',
