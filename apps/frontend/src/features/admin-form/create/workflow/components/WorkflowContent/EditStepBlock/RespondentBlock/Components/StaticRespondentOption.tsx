@@ -55,12 +55,9 @@ export const StaticRespondentOption = ({
               control={control}
               rules={{
                 validate: {
-                  required: (emails) =>
-                    !emails || emails.length === 0
-                      ? 'You must enter at least one email to receive responses'
-                      : true,
                   isEmails: (emails) =>
                     !emails ||
+                    emails.length === 0 ||
                     emails.every((email) => isEmail(email)) ||
                     'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved',
                 },

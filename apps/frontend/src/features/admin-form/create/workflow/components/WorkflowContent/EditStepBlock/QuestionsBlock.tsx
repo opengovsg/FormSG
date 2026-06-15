@@ -90,7 +90,7 @@ export const QuestionsBlock = ({
             />
           )}
         />
-        <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
+        <FormErrorMessage>{errors.edit?.message}</FormErrorMessage>
       </FormControl>
     </EditStepBlockContainer>
   )

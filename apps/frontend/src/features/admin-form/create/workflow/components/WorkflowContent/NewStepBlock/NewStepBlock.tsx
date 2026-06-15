@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 
-import { FormWorkflowStep } from 'formsg-shared/types'
+import { FormWorkflowStep, WorkflowType } from 'formsg-shared/types'
 
 import Button from '~components/Button'
 
@@ -41,7 +41,12 @@ export const NewStepBlock = () => {
       stepNumber={formWorkflow.length}
       isLoading={createStepMutation.isLoading}
       onSubmit={handleSubmit}
-      defaultValues={{ edit: [] }}
+      defaultValues={{
+        workflow_type: WorkflowType.Static,
+        edit: [],
+        emails: [],
+        step_name: '',
+      }}
       submitButtonLabel={t(
         'features.adminForm.sidebar.workflow.approvals.addStep',
       )}
