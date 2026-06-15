@@ -164,7 +164,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             )}
           >
             <Text lineHeight="1.5rem">
-              {isPaperTrackingSetUpPageEnabled && isMrfCutoverEnabled
+              {isPaperTrackingSetUpPageEnabled
                 ? t('features.workspace.modals.forms.create.details.next')
                 : t('features.workspace.modals.forms.create.details.create')}
             </Text>

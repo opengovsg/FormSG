@@ -138,6 +138,28 @@ export const useCreateFormWizardContext = (
     formOrigins,
     formOriginOtherDetail,
   }: CreateFormWizardInputProps) => {
+    // Paper-forms tracking: carry the captured origins so the form is created
+    // with them in a single write. Only attached when the origin step is enabled
+    // and the admin selected at least one. Mapped to the backend's checkbox shape
+    // (CheckboxFieldResponsesV3): the selected codes (incl. the "Other" sentinel)
+    // go in `value`, and the typed "Other" text in `othersInput`. Shared by the
+    // storage and multirespondent branches since both flow through the origin
+    // step once `enablePaperTrackingSetUpPage` is on.
+    const formOriginsMetadata =
+      isPaperTrackingSetUpPageEnabled && formOrigins?.length
+        ? {
+            metadata: {
+              formOrigins: {
+                value: formOrigins,
+                ...(formOrigins.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) &&
+                formOriginOtherDetail?.trim()
+                  ? { othersInput: formOriginOtherDetail.trim() }
+                  : {}),
+              },
+            },
+          }
+        : {}
+
     switch (responseMode) {
       case FormResponseMode.Encrypt: {
         const defaultEmails = adminEmail ? [adminEmail] : []
@@ -148,6 +170,7 @@ export const useCreateFormWizardContext = (
             publicKey: keypair.publicKey,
             workspaceId,
             emails: (emails ?? defaultEmails).filter(Boolean),
+            ...formOriginsMetadata,
           },
           {
             onSuccess: () => {
@@ -165,26 +188,7 @@ export const useCreateFormWizardContext = (
             responseMode,
             publicKey: keypair.publicKey,
             workspaceId,
-            // Paper-forms tracking: carry the captured origins so the form is
-            // created with them in a single write. Only attached when the
-            // origin step is enabled and the admin selected at least one.
-            // Mapped to the backend's checkbox shape (CheckboxFieldResponsesV3):
-            // the selected codes (incl. the "Other" sentinel) go in `value`, and
-            // the typed "Other" text in `othersInput`.
-            ...(isPaperTrackingSetUpPageEnabled && formOrigins?.length
-              ? {
-                  metadata: {
-                    formOrigins: {
-                      value: formOrigins,
-                      ...(formOrigins.includes(
-                        CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
-                      ) && formOriginOtherDetail?.trim()
-                        ? { othersInput: formOriginOtherDetail.trim() }
-                        : {}),
-                    },
-                  },
-                }
-              : {}),
+            ...formOriginsMetadata,
           },
           {
             onSuccess: () => {
@@ -209,12 +213,15 @@ export const useCreateFormWizardContext = (
   )
 
   // Paper-forms tracking: from the Details (title) step, divert to the origin
-  // step when it is enabled for this MRF-cutover create flow; otherwise create
-  // the form directly (unchanged behaviour). Title validation runs first via
-  // handleSubmit; the origin field is only registered on the origin step, so it
-  // is not validated here.
+  // step whenever `enablePaperTrackingSetUpPage` is on; otherwise create the form
+  // directly (unchanged behaviour). Decoupled from the MRF cutover so the origin
+  // page can be piloted (by email domain) before cutover completes — it applies
+  // to both storage and multirespondent creates. Email mode is no longer a
+  // reachable create option, so it needs no special-casing here. Title validation
+  // runs first via handleSubmit; the origin field is only registered on the
+  // origin step, so it is not validated here.
   const handleProceedFromDetails = handleSubmit((inputs) => {
-    if (isPaperTrackingSetUpPageEnabled && isMrfCutoverEnabled) {
+    if (isPaperTrackingSetUpPageEnabled) {
       return setCurrentStep([CreateFormFlowStates.Origin, 1])
     }
     return createStorageModeOrMultirespondentForm(inputs)

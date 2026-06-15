@@ -80,6 +80,47 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
     expect(mrfMutation.mutate).not.toHaveBeenCalled()
   })
 
+  it('diverts to the origin step even when MRF cutover is off (decoupled pilot)', async () => {
+    setFlags({ cutover: false, paperTracking: true })
+    const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))
+
+    act(() => result.current.formMethods.reset({ title: 'My form' }))
+    await act(async () => {
+      await result.current.handleProceedFromDetails()
+    })
+
+    expect(result.current.currentStep).toBe(CreateFormFlowStates.Origin)
+    expect(storageMutation.mutate).not.toHaveBeenCalled()
+    expect(mrfMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('creates the storage-mode form with selected origins as metadata', async () => {
+    setFlags({ cutover: false, paperTracking: true })
+    const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))
+
+    act(() =>
+      result.current.formMethods.reset({
+        title: 'My form',
+        responseMode: FormResponseMode.Encrypt,
+        formOrigins: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
+      }),
+    )
+    await act(async () => {
+      await result.current.handleCreateStorageModeOrMultirespondentForm()
+    })
+
+    expect(storageMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(storageMutation.mutate.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        metadata: {
+          formOrigins: {
+            value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
+          },
+        },
+      }),
+    )
+  })
+
   it('creates the MRF form with selected origins as metadata', async () => {
     setFlags({ cutover: true, paperTracking: true })
     const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))
