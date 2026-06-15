@@ -75,6 +75,7 @@
       "default": "./constants/file.ts"
     },
     "./constants/form": {
+      "require": "./dist/constants/form.js",
       "default": "./constants/form.ts"
     },
     "./constants/routes": {
