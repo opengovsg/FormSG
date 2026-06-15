@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Box, Container } from '@chakra-ui/react'
 
-import { EmptyWorkflow } from './components/EmptyWorkflow'
+import { GuidedWorkflowCreation } from './components/GuidedCreation'
 import { WorkflowContent } from './components/WorkflowContent'
 import { WorkflowSkeleton } from './components/WorkflowSkeleton'
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import { useAdminWorkflowStore } from './adminWorkflowStore'
+import {
+  guidedModeSelector,
+  useGuidedWorkflowStore,
+} from './guidedWorkflowStore'
 
 export const CreatePageWorkflowTab = (): JSX.Element => {
   const { createOrEditData, reset } = useAdminWorkflowStore(
@@ -19,10 +23,24 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
   )
   const { isLoading, formWorkflow } = useAdminFormWorkflow()
 
+  const guidedMode = useGuidedWorkflowStore(guidedModeSelector)
+  const resetGuided = useGuidedWorkflowStore((s) => s.reset)
+
   const isEmptyWorkflow = useMemo(
     () => formWorkflow?.length === 0 && !createOrEditData,
     [createOrEditData, formWorkflow?.length],
   )
+
+  // Show guided when: mode is not 'normal' AND (empty workflow triggers intro, or guided is in progress)
+  const showGuided =
+    guidedMode !== 'normal' && (isEmptyWorkflow || guidedMode !== 'intro')
+
+  // Reset guided state when workflow is externally emptied (all steps deleted)
+  useEffect(() => {
+    if (formWorkflow?.length === 0 && guidedMode === 'normal') {
+      resetGuided()
+    }
+  }, [formWorkflow?.length, guidedMode, resetGuided])
 
   useEffect(() => reset, [reset])
 
@@ -46,7 +64,7 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
       px={{ base: '1.5rem', md: '3.75rem' }}
     >
       <Container p={0} maxW="42.5rem">
-        {isEmptyWorkflow ? <EmptyWorkflow /> : <WorkflowContent />}
+        {showGuided ? <GuidedWorkflowCreation /> : <WorkflowContent />}
       </Container>
     </Box>
   )

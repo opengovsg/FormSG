@@ -43,7 +43,7 @@ export const WorkflowContent = (): JSX.Element | null => {
   )
 }
 
-const WorkflowStepBlockDivider = () => (
+export const WorkflowStepBlockDivider = () => (
   <Box alignSelf="center" justifyContent="center" border="none">
     <Divider
       orientation="vertical"
