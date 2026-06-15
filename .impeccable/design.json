@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-15T00:00:00Z",
+  "title": "Design System: FormSG",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Civic Blue",
+        "canonical": "#4A61C0",
+        "tonalRamp": [
+          "#161D3A",
+          "#1E274D",
+          "#2C3A73",
+          "#3B4E9A",
+          "#4A61C0",
+          "#8998D6",
+          "#B7C0E6",
+          "#E4E7F6",
+          "#F6F7FC"
+        ]
+      },
+      "secondary": {
+        "role": "secondary",
+        "displayName": "Slate",
+        "canonical": "#445072",
+        "tonalRamp": [
+          "#0E1017",
+          "#1B202E",
+          "#293044",
+          "#36405B",
+          "#445072",
+          "#69738E",
+          "#A2A8B9",
+          "#DADCE3",
+          "#F5F6F8"
+        ]
+      },
+      "neutral-bg": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#FBFCFD",
+        "tonalRamp": [
+          "#242425",
+          "#48494B",
+          "#636467",
+          "#999B9F",
+          "#ABADB2",
+          "#C9CCCF",
+          "#E1E2E4",
+          "#F0F0F1",
+          "#FBFCFD"
+        ]
+      },
+      "danger": {
+        "role": "semantic",
+        "displayName": "Danger Red",
+        "canonical": "#C05050",
+        "tonalRamp": [
+          "#602828",
+          "#733030",
+          "#9A4040",
+          "#AD4848",
+          "#C05050",
+          "#D88888",
+          "#E8C1C1",
+          "#F8EAEA",
+          "#FFF8F8"
+        ]
+      },
+      "success": {
+        "role": "semantic",
+        "displayName": "Success Green",
+        "canonical": "#05CC9A",
+        "tonalRamp": [
+          "#023D2E",
+          "#03664D",
+          "#038564",
+          "#05B88B",
+          "#05CC9A",
+          "#50DBB8",
+          "#9BEBD7",
+          "#CDF5EB",
+          "#E6FCF7"
+        ]
+      },
+      "warning": {
+        "role": "semantic",
+        "displayName": "Warning Gold",
+        "canonical": "#F9D867",
+        "tonalRamp": [
+          "#4B411F",
+          "#7D6C34",
+          "#AE9748",
+          "#E0C25D",
+          "#F9D867",
+          "#FBE495",
+          "#FCECB3",
+          "#FDF3D1",
+          "#FFFCF2"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Landing page heroes only. Mobile variant drops to 2.5rem."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headings, page titles. The workhorse heading level."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles, subsection labels, dialog headers."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All running text. Max line length 65-75ch."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Form labels, navigation items, secondary headings."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Timestamps, helper text, badges."
+      }
+    },
+    "shadows": [
+      {
+        "name": "ambient",
+        "value": "0px 0px 10px rgba(216, 222, 235, 0.5)",
+        "purpose": "Gentle lift for cards on hover. Cool-toned."
+      },
+      {
+        "name": "float",
+        "value": "0px 0px 20px rgba(97, 108, 137, 0.3)",
+        "purpose": "Dropdowns, popovers, tooltips. Floating layers."
+      },
+      {
+        "name": "overlay",
+        "value": "0px 0px 50px rgba(97, 108, 137, 0.4)",
+        "purpose": "Modals and dialogs, with 65% black backdrop."
+      }
+    ],
+    "motion": [
+      {
+        "name": "fade-in",
+        "value": "opacity 250ms ease-out",
+        "purpose": "Section reveal in guided workflow creation."
+      },
+      {
+        "name": "state-change",
+        "value": "150ms ease-out",
+        "purpose": "Hover, focus, active state transitions on buttons and inputs."
+      }
+    ],
+    "breakpoints": [
+      { "name": "xs", "value": "360px" },
+      { "name": "sm", "value": "480px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1440px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call-to-action. Civic Blue fill, white text, 44px min-height.",
+      "html": "<button class=\"ds-btn-primary\">Save and proceed</button>",
+      "css": ".ds-btn-primary { background: #4A61C0; color: #fff; font-family: 'Inter var', sans-serif; font-size: 1rem; font-weight: 500; line-height: 1.5rem; letter-spacing: -0.011em; padding: 9px 15px; min-height: 2.75rem; border: 1px solid #4A61C0; border-radius: 4px; cursor: pointer; transition: background 150ms ease-out; white-space: pre-wrap; } .ds-btn-primary:hover { background: #3B4E9A; border-color: #3B4E9A; } .ds-btn-primary:active { background: #2C3A73; border-color: #2C3A73; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 4px #B7C0E6; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action. White fill, Civic Blue border and text.",
+      "html": "<button class=\"ds-btn-outline\">Cancel</button>",
+      "css": ".ds-btn-outline { background: #fff; color: #4A61C0; font-family: 'Inter var', sans-serif; font-size: 1rem; font-weight: 500; line-height: 1.5rem; letter-spacing: -0.011em; padding: 9px 15px; min-height: 2.75rem; border: 1px solid #4A61C0; border-radius: 4px; cursor: pointer; transition: background 150ms ease-out; } .ds-btn-outline:hover { background: #F6F7FC; } .ds-btn-outline:active { background: #E4E7F6; } .ds-btn-outline:focus-visible { outline: none; box-shadow: 0 0 0 4px #B7C0E6; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Standard form field. 44px height, neutral border, blue focus ring.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Enter your response\" />",
+      "css": ".ds-input { background: #fff; color: #474747; font-family: 'Inter var', sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5rem; letter-spacing: -0.011em; padding: 0 1rem; height: 2.75rem; border: 1px solid #C9CCCF; border-radius: 4px; width: 100%; box-sizing: border-box; transition: border-color 150ms ease-out; } .ds-input::placeholder { color: #ABADB2; } .ds-input:hover { border-color: #999B9F; } .ds-input:focus { border-color: #4A61C0; box-shadow: 0 0 0 1px #4A61C0; outline: none; } .ds-input:disabled { background: #F0F0F1; cursor: not-allowed; }"
+    },
+    {
+      "name": "Card Surface",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Standard content container. White on tinted backgrounds, 4px radius, 24px padding.",
+      "html": "<div class=\"ds-card\"><h3 class=\"ds-card-title\">Step 1</h3><p class=\"ds-card-body\">Configure your form respondents and approval flow.</p></div>",
+      "css": ".ds-card { background: #fff; border-radius: 4px; padding: 1.5rem; border: 1px solid #E1E2E4; } .ds-card-title { font-family: 'Inter var', sans-serif; font-size: 1.125rem; font-weight: 500; line-height: 1.5rem; letter-spacing: -0.014em; color: #2E2E2E; margin: 0 0 0.5rem 0; } .ds-card-body { font-family: 'Inter var', sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5rem; letter-spacing: -0.011em; color: #474747; margin: 0; }"
+    },
+    {
+      "name": "Badge",
+      "kind": "chip",
+      "refersTo": "badge-subtle",
+      "description": "Status indicator. Caption-size text, tinted background, 4px radius.",
+      "html": "<span class=\"ds-badge ds-badge-primary\">Active</span>",
+      "css": ".ds-badge { font-family: 'Inter var', sans-serif; font-size: 0.75rem; font-weight: 500; line-height: 1rem; padding: 0.25rem 0.5rem; border-radius: 4px; display: inline-block; } .ds-badge-primary { background: #F6F7FC; color: #4A61C0; } .ds-badge-success { background: #E6FCF7; color: #038564; } .ds-badge-danger { background: #FFF8F8; color: #C05050; }"
+    },
+    {
+      "name": "Admin Navigation Item",
+      "kind": "nav",
+      "refersTo": "nav-sidebar",
+      "description": "Sidebar navigation link. Icon + label, tinted background on active.",
+      "html": "<a class=\"ds-nav-item ds-nav-item-active\"><svg class=\"ds-nav-icon\" width=\"20\" height=\"20\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path d=\"M10 2a8 8 0 100 16 8 8 0 000-16zm1 11H9v-2h2v2zm0-4H9V5h2v4z\"/></svg><span>Build</span></a>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem 1rem; font-family: 'Inter var', sans-serif; font-size: 0.875rem; font-weight: 500; line-height: 1.25rem; letter-spacing: -0.006em; color: #445072; text-decoration: none; border-radius: 4px; cursor: pointer; transition: background 150ms ease-out; } .ds-nav-item:hover { background: #F5F6F8; } .ds-nav-item-active { background: #F6F7FC; color: #4A61C0; } .ds-nav-icon { width: 20px; height: 20px; flex-shrink: 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Helpful Desk Officer",
+    "overview": "The colleague who knows every government process inside out and walks you through it without making you feel lost. Not a cold kiosk. Not a chatbot. A real person at a real desk who happens to know exactly what form you need, which fields matter, and what happens next.\n\nFormSG's design system serves this metaphor at every level. Interfaces are warm but competent. They guide without hand-holding. They speak in plain language, celebrate completion without fanfare, and never make the user feel like they need training. The system earns trust through consistency: same patterns, same vocabulary, same behavior on every screen.\n\nWhat this system explicitly rejects: the gray density of enterprise tools like Salesforce, the gratuitous animation of over-designed SaaS, and the dated patterns of generic government portals.",
+    "keyCharacteristics": [
+      "Single font family (Inter) across all surfaces for unified, professional voice",
+      "Restrained color palette with primary blue as the sole accent, used sparingly",
+      "Tonal layering for depth instead of heavy shadows",
+      "4px radius everywhere for gentle consistency",
+      "Warm, guiding component feel with clear state feedback",
+      "Progressive disclosure over locked gates"
+    ],
+    "rules": [
+      {
+        "name": "The One Accent Rule",
+        "body": "Civic Blue is the only accent color. It marks primary actions and current state. Every other color is neutral or semantic. If blue appears on more than 10% of a screen, something is over-decorated.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tight Tracking Rule",
+        "body": "Every text style carries negative letter-spacing (from -0.006em to -0.022em). This is intentional, not default. Inter at these sizes benefits from slightly tighter tracking. Never override to normal or 0 without checking the result at the target size.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tonal Depth Rule",
+        "body": "Depth comes from background color, not shadow. A sidebar is secondary.100, not white-with-shadow. A selected card is primary.100, not white-with-border. Shadows appear only when something genuinely floats above the page plane.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do use Civic Blue (#4A61C0) exclusively for primary actions and current state. Its rarity is the signal.",
+      "Do use tonal layering (background color shifts) for depth. White on neutral.100, primary.100 for selected states.",
+      "Do maintain 44px minimum touch targets on all interactive elements.",
+      "Do use the same 4px radius on every component. Consistency builds trust.",
+      "Do write labels in plain language. If a government officer wouldn't say it out loud, rewrite it.",
+      "Do provide clear error messages that tell the user what to fix, not what went wrong technically.",
+      "Do use semantic colors strictly for system states (danger for errors, success for confirmation, warning for caution)."
+    ],
+    "donts": [
+      "Don't use shadows for depth on surfaces at rest. Shadows are for floating layers only.",
+      "Don't make it look like Salesforce or ServiceNow. No gray density, no information overload.",
+      "Don't add gratuitous animations, gradient buttons, or startup-cute illustrations.",
+      "Don't reproduce generic government portal patterns. No dated layouts.",
+      "Don't use Civic Blue decoratively. It's reserved for action and state.",
+      "Don't use display fonts in UI labels, buttons, or data.",
+      "Don't add side-stripe borders (border-left > 1px as colored accent).",
+      "Don't introduce a second accent color. One accent, one voice.",
+      "Don't use different component vocabularies across screens."
+    ]
+  }
+}
