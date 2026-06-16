@@ -93,6 +93,29 @@ export class WebhookPushToQueueError extends ApplicationError {
 }
 
 /**
+ * A reconstruction was given a submissionIndex but no matching
+ * submission_history snapshot. This is a data-integrity error to surface and
+ * alarm on — never silently papered over, because falling back to the live-row
+ * payload would deliver the stale latest-state payload this feature exists to
+ * eliminate.
+ */
+export class SubmissionHistoryMissingError extends ApplicationError {
+  meta: {
+    submissionId: string
+    submissionIndex: number
+  }
+
+  constructor(
+    submissionId: string,
+    submissionIndex: number,
+    message = 'Submission history snapshot missing for the requested step',
+  ) {
+    super(message, undefined, ErrorCodes.WEBHOOK_SUBMISSION_HISTORY_MISSING)
+    this.meta = { submissionId, submissionIndex }
+  }
+}
+
+/**
  * Cannot send webhook retry because form has no webhook URL or does not have
  * retries enabled.
  */
