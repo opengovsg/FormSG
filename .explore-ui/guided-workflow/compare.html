@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore UI: Guided Workflow Creation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Toolbar */
+    nav {
+      display: flex;
+      align-items: center;
+      background: #16213e;
+      border-bottom: 1px solid #2a2a4a;
+      padding: 0 1rem;
+      height: 48px;
+      flex-shrink: 0;
+      gap: 0.25rem;
+    }
+    nav .title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #8888aa;
+      margin-right: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .tab {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #8888aa;
+      background: none;
+      border: none;
+      cursor: pointer;
+      border-radius: 6px 6px 0 0;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .tab:hover { color: #c0c0e0; background: rgba(255,255,255,0.05); }
+    .tab.active {
+      color: #fff;
+      background: #1a1a2e;
+    }
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: #4A61C0;
+    }
+    .spacer { flex: 1; }
+    .ranking-toggle {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #8888aa;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid #2a2a4a;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .ranking-toggle:hover { color: #c0c0e0; border-color: #4A61C0; }
+
+    /* Preview area */
+    #preview-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    .preview-frame {
+      position: absolute;
+      inset: 0;
+      display: none;
+    }
+    .preview-frame.active { display: block; }
+    .preview-frame iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* All view grid */
+    .preview-frame.grid-view {
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #2a2a4a;
+    }
+    .preview-frame.grid-view.active { display: grid; }
+    .grid-cell {
+      display: flex;
+      flex-direction: column;
+      background: #1a1a2e;
+    }
+    .grid-label {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #8888aa;
+      background: #16213e;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .grid-cell iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+    }
+
+    /* Ranking panel */
+    #ranking-panel {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 360px;
+      height: 100%;
+      background: #16213e;
+      border-left: 1px solid #2a2a4a;
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      z-index: 10;
+      overflow-y: auto;
+      padding: 1.5rem;
+    }
+    #ranking-panel.open { transform: translateX(0); }
+    #ranking-panel h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .rank-entry {
+      margin-bottom: 1.25rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid #2a2a4a;
+      border-radius: 6px;
+    }
+    .rank-entry.recommended {
+      border-color: #4A61C0;
+      background: rgba(74, 97, 192, 0.08);
+    }
+    .rank-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .rank-number {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #2a2a4a;
+      color: #c0c0e0;
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rank-entry.recommended .rank-number {
+      background: #4A61C0;
+      color: #fff;
+    }
+    .rank-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e0e0e0;
+    }
+    .rank-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #4A61C0;
+      background: rgba(74, 97, 192, 0.15);
+      padding: 2px 6px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .rank-desc {
+      font-size: 0.8rem;
+      color: #8888aa;
+      line-height: 1.4;
+      margin-bottom: 0.5rem;
+    }
+    .rank-pros, .rank-cons {
+      font-size: 0.75rem;
+      line-height: 1.4;
+      margin-bottom: 0.25rem;
+    }
+    .rank-pros { color: #05CC9A; }
+    .rank-cons { color: #C05050; }
+    .rank-pros::before { content: '+ '; font-weight: 700; }
+    .rank-cons::before { content: '- '; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="title">Explore UI</span>
+    <button class="tab active" data-target="stacked">Stacked Scroll</button>
+    <button class="tab" data-target="focus">Focus Fade</button>
+    <button class="tab" data-target="convo">Conversational</button>
+    <button class="tab" data-target="all">All</button>
+    <span class="spacer"></span>
+    <button class="ranking-toggle" id="rankingBtn">Ranking</button>
+  </nav>
+
+  <div id="preview-area">
+    <!-- Individual views -->
+    <div class="preview-frame active" id="view-stacked">
+      <iframe src="option-1-stacked-scroll.html"></iframe>
+    </div>
+    <div class="preview-frame" id="view-focus">
+      <iframe src="option-2-focus-fade.html"></iframe>
+    </div>
+    <div class="preview-frame" id="view-convo">
+      <iframe src="option-3-conversational.html"></iframe>
+    </div>
+
+    <!-- All view -->
+    <div class="preview-frame grid-view" id="view-all">
+      <div class="grid-cell">
+        <div class="grid-label">Stacked Scroll</div>
+        <iframe src="option-1-stacked-scroll.html"></iframe>
+      </div>
+      <div class="grid-cell">
+        <div class="grid-label">Focus Fade</div>
+        <iframe src="option-2-focus-fade.html"></iframe>
+      </div>
+      <div class="grid-cell">
+        <div class="grid-label">Conversational</div>
+        <iframe src="option-3-conversational.html"></iframe>
+      </div>
+    </div>
+
+    <!-- Ranking panel -->
+    <div id="ranking-panel">
+      <h3>Claude's Ranking</h3>
+
+      <div class="rank-entry recommended">
+        <div class="rank-header">
+          <span class="rank-number">1</span>
+          <span class="rank-name">Stacked Scroll</span>
+          <span class="rank-badge">Recommended</span>
+        </div>
+        <div class="rank-desc">Simple vertical stacking. Completed sections stay visible and editable. No visual tricks, just clean progression.</div>
+        <div class="rank-pros">Closest to existing FormSG patterns. Low cognitive load. Nothing to learn.</div>
+        <div class="rank-cons">Less visual emphasis on the current section. Could feel flat for longer steps.</div>
+      </div>
+
+      <div class="rank-entry">
+        <div class="rank-header">
+          <span class="rank-number">2</span>
+          <span class="rank-name">Focus Fade</span>
+        </div>
+        <div class="rank-desc">Active section at full opacity, completed sections dim to 50%. Draws attention to what needs action while keeping context.</div>
+        <div class="rank-pros">Strong visual focus on the current task. Makes progress feel tangible.</div>
+        <div class="rank-cons">Dimmed sections might feel "locked" to some users. Clicking to restore adds interaction complexity.</div>
+      </div>
+
+      <div class="rank-entry">
+        <div class="rank-header">
+          <span class="rank-number">3</span>
+          <span class="rank-name">Conversational</span>
+        </div>
+        <div class="rank-desc">Friendly transition messages between sections ("Nice! Now let's..."). More onboarding-like, warmer tone.</div>
+        <div class="rank-pros">Most approachable for first-time users. Builds confidence through encouragement.</div>
+        <div class="rank-cons">Transition messages add vertical space. May feel patronizing for experienced users. Harder to maintain consistent tone.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Tab switching
+    const tabs = document.querySelectorAll('.tab');
+    const views = {
+      stacked: document.getElementById('view-stacked'),
+      focus: document.getElementById('view-focus'),
+      convo: document.getElementById('view-convo'),
+      all: document.getElementById('view-all'),
+    };
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        Object.values(views).forEach(v => v.classList.remove('active'));
+        views[tab.dataset.target].classList.add('active');
+      });
+    });
+
+    // Ranking panel toggle
+    const rankingPanel = document.getElementById('ranking-panel');
+    const rankingBtn = document.getElementById('rankingBtn');
+    rankingBtn.addEventListener('click', () => {
+      rankingPanel.classList.toggle('open');
+      rankingBtn.textContent = rankingPanel.classList.contains('open') ? 'Close Ranking' : 'Ranking';
+    });
+  </script>
+</body>
+</html>

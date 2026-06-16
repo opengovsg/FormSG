@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Option 3: Conversational — Guided Workflow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #4A61C0;
+      --blue-hover:  #3B4E9A;
+      --blue-light:  #F6F7FC;
+      --secondary:   #445072;
+      --n200:        #F0F0F1;
+      --n300:        #E1E2E4;
+      --n400:        #C9CCCF;
+      --n500:        #ABADB2;
+      --n900:        #242425;
+      --white:       #FFFFFF;
+      --success:     #05CC9A;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--n200);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 3rem 1rem 4rem;
+      color: var(--n900);
+    }
+
+    .card {
+      background: var(--white);
+      width: 100%;
+      max-width: 680px;
+      border-radius: 8px;
+      box-shadow: 0px 0px 10px rgba(216, 222, 235, 0.5);
+      padding: 2rem 2.5rem;
+      overflow: hidden;
+    }
+
+    /* Step label */
+    .step-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--secondary);
+      margin-bottom: 1.25rem;
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+    }
+    .section.visible {
+      display: block;
+    }
+
+    /* Fade-slide in animation */
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in {
+      animation: fadeSlideIn 400ms ease forwards;
+    }
+
+    /* Transition message */
+    .transition-msg {
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.25rem;
+      color: var(--secondary);
+      padding: 0.875rem 0;
+      display: none;
+    }
+    .transition-msg.visible {
+      display: block;
+    }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--n300);
+      margin: 0;
+      display: none;
+    }
+    .divider.visible {
+      display: block;
+    }
+
+    /* Intro */
+    .intro-heading {
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 2rem;
+      color: var(--n900);
+      margin-bottom: 1.75rem;
+    }
+
+    /* Section heading */
+    .section-heading {
+      font-size: 1.125rem;
+      font-weight: 500;
+      line-height: 1.5rem;
+      color: var(--n900);
+      margin-bottom: 0.5rem;
+    }
+
+    /* Section padding wrapper */
+    .section-body {
+      padding: 1.25rem 0 1.25rem;
+    }
+
+    /* Label */
+    label.field-label {
+      display: block;
+      font-size: 1rem;
+      font-weight: 500;
+      line-height: 1.5rem;
+      color: var(--n900);
+      margin-bottom: 0.375rem;
+    }
+
+    /* Input */
+    input[type="text"] {
+      display: block;
+      width: 100%;
+      height: 2.75rem;
+      border: 1px solid var(--n400);
+      border-radius: 4px;
+      padding: 0 1rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--n900);
+      outline: none;
+      transition: border-color 150ms, box-shadow 150ms;
+    }
+    input[type="text"]::placeholder {
+      color: var(--n500);
+    }
+    input[type="text"]:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px var(--blue);
+    }
+
+    /* Helper text */
+    .helper {
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.25rem;
+      color: var(--secondary);
+      margin-top: 0.375rem;
+    }
+
+    /* Readonly respondent row */
+    .respondent-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1rem;
+      border: 1px solid var(--n300);
+      border-radius: 4px;
+      background: var(--n200);
+      margin-bottom: 0.5rem;
+    }
+    .respondent-icon {
+      width: 1.25rem;
+      height: 1.25rem;
+      flex-shrink: 0;
+      color: var(--blue);
+    }
+    .respondent-label {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--n900);
+    }
+
+    /* Field checkboxes */
+    .field-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .field-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--n300);
+      cursor: pointer;
+    }
+    .field-item:last-child {
+      border-bottom: none;
+    }
+    .field-item input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 1.125rem;
+      height: 1.125rem;
+      border: 1.5px solid var(--n400);
+      border-radius: 3px;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: border-color 150ms, background 150ms;
+      position: relative;
+    }
+    .field-item input[type="checkbox"]:checked {
+      background: var(--blue);
+      border-color: var(--blue);
+    }
+    .field-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      left: 3.5px;
+      width: 5px;
+      height: 9px;
+      border: 2px solid white;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+    .field-name {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--n900);
+      line-height: 1.5rem;
+    }
+    .field-type {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--n500);
+      margin-left: auto;
+    }
+
+    /* Buttons */
+    .btn-row {
+      margin-top: 1.25rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 4px;
+      padding: 9px 15px;
+      cursor: pointer;
+      border: none;
+      transition: background 150ms, color 150ms;
+      line-height: 1.5rem;
+    }
+    .btn-primary {
+      background: var(--blue);
+      color: var(--white);
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: var(--blue-hover);
+    }
+    .btn-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .btn-clear {
+      background: transparent;
+      color: var(--blue);
+    }
+    .btn-clear:hover {
+      background: var(--blue-light);
+    }
+
+    /* Completion */
+    .completion {
+      display: none;
+      text-align: center;
+      padding: 2.5rem 1rem;
+    }
+    .completion.visible {
+      display: block;
+    }
+    .checkmark-circle {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      background: var(--success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+    }
+    .checkmark-circle svg {
+      width: 1.5rem;
+      height: 1.5rem;
+      color: white;
+    }
+    .completion-heading {
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 2rem;
+      color: var(--n900);
+      margin-bottom: 0.5rem;
+    }
+    .completion-sub {
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.25rem;
+      color: var(--secondary);
+    }
+
+    /* Completed section edit link */
+    .edit-link {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--blue);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+    .edit-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Completed section summary row */
+    .completed-summary {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .completed-value {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--n900);
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="card" id="card">
+
+  <!-- Step label -->
+  <div class="step-label">Step 1</div>
+
+  <!-- ─── INTRO ─── -->
+  <div id="intro-section" class="section visible animate-in">
+    <h2 class="intro-heading">Let's set up your first step.</h2>
+    <div class="section-body">
+      <label class="field-label" for="step-name-input">What would you like to call this step?</label>
+      <input
+        type="text"
+        id="step-name-input"
+        placeholder="e.g. Staff submission"
+        autocomplete="off"
+      />
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-name-continue" disabled>Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DIVIDER 1 ─── -->
+  <hr class="divider" id="div-1" />
+
+  <!-- ─── TRANSITION 1 ─── -->
+  <div class="transition-msg" id="trans-1">
+    Nice! Now let's figure out who will fill this up.
+  </div>
+
+  <!-- ─── DIVIDER 2 ─── -->
+  <hr class="divider" id="div-2" />
+
+  <!-- ─── RESPONDENT SECTION ─── -->
+  <div id="respondent-section" class="section">
+    <div class="section-body">
+      <div class="completed-summary" style="margin-bottom:0.875rem">
+        <div class="section-heading" style="margin-bottom:0">Who fills this up</div>
+      </div>
+      <div class="respondent-row">
+        <svg class="respondent-icon" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M10 2a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 10c4.42 0 8 1.79 8 4v1H2v-1c0-2.21 3.58-4 8-4z" fill="currentColor"/>
+        </svg>
+        <span class="respondent-label">Anyone with the link</span>
+      </div>
+      <p class="helper">The first step is always open to anyone with the form link.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-respondent-continue">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DIVIDER 3 ─── -->
+  <hr class="divider" id="div-3" />
+
+  <!-- ─── TRANSITION 2 ─── -->
+  <div class="transition-msg" id="trans-2">
+    Perfect. Last thing — which fields should they fill up?
+  </div>
+
+  <!-- ─── DIVIDER 4 ─── -->
+  <hr class="divider" id="div-4" />
+
+  <!-- ─── FIELDS SECTION ─── -->
+  <div id="fields-section" class="section">
+    <div class="section-body">
+      <div class="section-heading">What they fill up</div>
+      <p class="helper" style="margin-bottom:0.875rem">Select the fields for this step.</p>
+      <div class="field-list">
+        <label class="field-item">
+          <input type="checkbox" checked />
+          <span class="field-name">Staff name</span>
+          <span class="field-type">Short text</span>
+        </label>
+        <label class="field-item">
+          <input type="checkbox" checked />
+          <span class="field-name">Staff email</span>
+          <span class="field-type">Email</span>
+        </label>
+        <label class="field-item">
+          <input type="checkbox" />
+          <span class="field-name">Department</span>
+          <span class="field-type">Dropdown</span>
+        </label>
+        <label class="field-item">
+          <input type="checkbox" checked />
+          <span class="field-name">Feedback comments</span>
+          <span class="field-type">Long text</span>
+        </label>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btn-fields-done">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── COMPLETION ─── -->
+  <div class="completion" id="completion-section">
+    <div class="checkmark-circle" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div class="completion-heading">Step 1 is ready!</div>
+    <p class="completion-sub">Your first step has been configured. You can keep building from here.</p>
+  </div>
+
+</div>
+
+<script>
+  // ── Helpers ──────────────────────────────────────────────────────────────
+
+  function show(el, delay = 0) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        el.classList.add('visible');
+        el.classList.add('animate-in');
+        // clean up animation class after it fires so re-runs work
+        el.addEventListener('animationend', () => el.classList.remove('animate-in'), { once: true });
+        resolve();
+      }, delay);
+    });
+  }
+
+  function showStatic(el, delay = 0) {
+    return new Promise(resolve => {
+      setTimeout(() => {
+        el.classList.add('visible');
+        resolve();
+      }, delay);
+    });
+  }
+
+  // ── Elements ─────────────────────────────────────────────────────────────
+
+  const nameInput       = document.getElementById('step-name-input');
+  const btnNameCont     = document.getElementById('btn-name-continue');
+
+  const div1            = document.getElementById('div-1');
+  const trans1          = document.getElementById('trans-1');
+  const div2            = document.getElementById('div-2');
+  const respondentSec   = document.getElementById('respondent-section');
+  const btnResCont      = document.getElementById('btn-respondent-continue');
+
+  const div3            = document.getElementById('div-3');
+  const trans2          = document.getElementById('trans-2');
+  const div4            = document.getElementById('div-4');
+  const fieldsSec       = document.getElementById('fields-section');
+  const btnFieldsDone   = document.getElementById('btn-fields-done');
+
+  const completionSec   = document.getElementById('completion-section');
+
+  // ── Step 1: name input enables Continue ──────────────────────────────────
+
+  nameInput.addEventListener('input', () => {
+    btnNameCont.disabled = nameInput.value.trim() === '';
+  });
+
+  // ── Step 2: Name → Respondent ─────────────────────────────────────────────
+
+  let nameContinued = false;
+
+  btnNameCont.addEventListener('click', async () => {
+    if (nameContinued) return;
+    nameContinued = true;
+    btnNameCont.disabled = true;
+    btnNameCont.textContent = 'Saved';
+
+    // divider → transition → divider → respondent section
+    await showStatic(div1, 0);
+    await show(trans1, 80);
+    await showStatic(div2, 300);
+    await show(respondentSec, 480);
+
+    // scroll to new content
+    respondentSec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  // ── Step 3: Respondent → Fields ───────────────────────────────────────────
+
+  let resContinued = false;
+
+  btnResCont.addEventListener('click', async () => {
+    if (resContinued) return;
+    resContinued = true;
+    btnResCont.disabled = true;
+    btnResCont.textContent = 'Saved';
+
+    await showStatic(div3, 0);
+    await show(trans2, 80);
+    await showStatic(div4, 300);
+    await show(fieldsSec, 480);
+
+    fieldsSec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  // ── Step 4: Fields → Completion ───────────────────────────────────────────
+
+  btnFieldsDone.addEventListener('click', async () => {
+    btnFieldsDone.disabled = true;
+
+    // hide fields section body gracefully, then show completion
+    await new Promise(r => setTimeout(r, 80));
+    completionSec.style.display = 'block';
+    completionSec.classList.add('animate-in');
+    completionSec.classList.add('visible');
+    completionSec.addEventListener('animationend', () => completionSec.classList.remove('animate-in'), { once: true });
+
+    completionSec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+</script>
+</body>
+</html>

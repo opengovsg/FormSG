@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stacked Scroll — Guided Workflow (Option 1)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #F0F0F1;
+      color: #242425;
+      min-height: 100vh;
+      padding: 3rem 1rem 6rem;
+    }
+
+    /* Card */
+    .card {
+      background: #FFFFFF;
+      max-width: 680px;
+      margin: 0 auto;
+      border-radius: 8px;
+      box-shadow: 0px 0px 10px rgba(216, 222, 235, 0.5);
+      overflow: hidden;
+    }
+
+    /* Step label bar */
+    .step-label {
+      padding: 1rem 2rem;
+      border-bottom: 1px solid #E1E2E4;
+    }
+
+    .step-label span {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #445072;
+    }
+
+    /* Each section */
+    .section {
+      padding: 1.5rem 2rem;
+    }
+
+    .section + .section {
+      border-top: 1px solid #E1E2E4;
+    }
+
+    /* Section that is "hidden" (not yet revealed) */
+    .section.hidden {
+      display: none;
+    }
+
+    /* Fade-in animation */
+    @keyframes fadeSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .section.revealed {
+      animation: fadeSlideIn 300ms ease forwards;
+    }
+
+    /* Section header */
+    .section-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #ABADB2;
+      margin-bottom: 0.375rem;
+    }
+
+    .section-title {
+      font-size: 1.125rem;
+      font-weight: 500;
+      line-height: 1.5rem;
+      color: #242425;
+      margin-bottom: 1rem;
+    }
+
+    /* Input */
+    .input-wrap {
+      margin-bottom: 1.25rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      height: 44px;
+      padding: 0 1rem;
+      border: 1px solid #C9CCCF;
+      border-radius: 4px;
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 400;
+      color: #242425;
+      background: #FFFFFF;
+      outline: none;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    input[type="text"]::placeholder {
+      color: #ABADB2;
+    }
+
+    input[type="text"]:focus {
+      border-color: #4A61C0;
+      box-shadow: 0 0 0 1px #4A61C0;
+    }
+
+    /* Read-only value display */
+    .readonly-value {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #242425;
+      line-height: 1.5rem;
+      margin-bottom: 0.375rem;
+    }
+
+    .helper-text {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: #445072;
+      line-height: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Field checkboxes */
+    .field-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-bottom: 1.25rem;
+      border: 1px solid #E1E2E4;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .field-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 150ms ease;
+    }
+
+    .field-item:not(:last-child) {
+      border-bottom: 1px solid #E1E2E4;
+    }
+
+    .field-item:hover {
+      background-color: #F6F7FC;
+    }
+
+    .field-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #4A61C0;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .field-item-name {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: #242425;
+      flex: 1;
+    }
+
+    .field-item-type {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: #ABADB2;
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    button {
+      font-family: 'Inter', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 4px;
+      padding: 9px 15px;
+      border: none;
+      cursor: pointer;
+      transition: background-color 150ms ease, color 150ms ease;
+    }
+
+    .btn-primary {
+      background-color: #4A61C0;
+      color: #FFFFFF;
+    }
+
+    .btn-primary:hover {
+      background-color: #3B4E9A;
+    }
+
+    .btn-primary:disabled {
+      background-color: #C9CCCF;
+      cursor: not-allowed;
+    }
+
+    .btn-clear {
+      background-color: transparent;
+      color: #4A61C0;
+    }
+
+    .btn-clear:hover {
+      background-color: #F6F7FC;
+    }
+
+    /* Completed section state */
+    .section.completed .section-title {
+      color: #242425;
+    }
+
+    /* Completed value in a completed section */
+    .completed-value {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #242425;
+      margin-bottom: 0;
+    }
+
+    /* Edit link */
+    .edit-link {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #4A61C0;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .edit-link:hover {
+      color: #3B4E9A;
+    }
+
+    /* Success state */
+    .success-bar {
+      display: none;
+      background-color: #F0FFF9;
+      border-top: 1px solid #05CC9A;
+      padding: 1rem 2rem;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .success-bar.visible {
+      display: flex;
+    }
+
+    .success-icon {
+      width: 20px;
+      height: 20px;
+      background-color: #05CC9A;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .success-icon svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .success-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #242425;
+    }
+
+    .success-subtext {
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: #445072;
+    }
+
+    /* Completed section summary row */
+    .summary-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    /* Tag pill for selected fields */
+    .field-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+      margin-bottom: 0;
+    }
+
+    .field-tag {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: #445072;
+      background: #F0F0F1;
+      border-radius: 3px;
+      padding: 2px 8px;
+    }
+
+    /* Section completed overlay hint */
+    .section-completed-label {
+      display: none;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: #05CC9A;
+      letter-spacing: 0.04em;
+    }
+
+    .section.completed .section-completed-label {
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card" id="card">
+
+  <!-- Step label -->
+  <div class="step-label">
+    <span>Step 1</span>
+  </div>
+
+  <!-- Section 1: Name -->
+  <div class="section" id="section-name">
+    <p class="section-label">Name</p>
+    <p class="section-title" id="name-title">What do you want to call this step?</p>
+
+    <!-- Active state -->
+    <div id="name-active">
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="step-name-input"
+          placeholder="e.g. Initial submission"
+          maxlength="80"
+          autocomplete="off"
+        />
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="name-continue-btn" disabled>Continue</button>
+      </div>
+    </div>
+
+    <!-- Completed state (hidden until done) -->
+    <div id="name-completed" style="display:none;">
+      <div class="summary-row">
+        <p class="completed-value" id="name-display"></p>
+        <button class="edit-link" onclick="editSection('name')">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Who fills this up (hidden initially) -->
+  <div class="section hidden" id="section-who">
+    <p class="section-label">Who fills this up</p>
+    <p class="section-title">Who can fill up this step?</p>
+
+    <!-- Active state -->
+    <div id="who-active">
+      <p class="readonly-value">Anyone with the link</p>
+      <p class="helper-text">The first step is always open to anyone with the form link.</p>
+      <div class="btn-row">
+        <button class="btn-primary" id="who-continue-btn">Continue</button>
+      </div>
+    </div>
+
+    <!-- Completed state -->
+    <div id="who-completed" style="display:none;">
+      <div class="summary-row">
+        <p class="completed-value">Anyone with the link</p>
+        <button class="edit-link" onclick="editSection('who')">Edit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: What they fill up (hidden initially) -->
+  <div class="section hidden" id="section-fields">
+    <p class="section-label">What they fill up</p>
+    <p class="section-title">Which fields does this step include?</p>
+
+    <!-- Active state -->
+    <div id="fields-active">
+      <div class="field-list" id="field-list">
+        <!-- Items rendered by JS -->
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="fields-done-btn">Done</button>
+        <button class="btn-clear" onclick="skipFields()">Skip for now</button>
+      </div>
+    </div>
+
+    <!-- Completed state -->
+    <div id="fields-completed" style="display:none;">
+      <div class="summary-row" style="margin-bottom: 0.5rem;">
+        <span></span>
+        <button class="edit-link" onclick="editSection('fields')">Edit</button>
+      </div>
+      <div class="field-summary" id="fields-summary"></div>
+    </div>
+  </div>
+
+  <!-- Success bar -->
+  <div class="success-bar" id="success-bar">
+    <div class="success-icon">
+      <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M2 6L5 9L10 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div>
+      <p class="success-text">Step 1 set up</p>
+      <p class="success-subtext">You can add more steps or publish the form.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const FIELDS = [
+    { id: 'staff-name',     label: 'Staff name',        type: 'Short text' },
+    { id: 'staff-email',    label: 'Staff email',        type: 'Email'      },
+    { id: 'department',     label: 'Department',         type: 'Dropdown'   },
+    { id: 'feedback',       label: 'Feedback comments',  type: 'Long text'  },
+  ];
+
+  let selectedFields = new Set(FIELDS.map(f => f.id)); // all checked by default
+
+  // ---- Render field list ----
+  function renderFieldList() {
+    const list = document.getElementById('field-list');
+    list.innerHTML = '';
+    FIELDS.forEach(field => {
+      const item = document.createElement('label');
+      item.className = 'field-item';
+      item.innerHTML = `
+        <input type="checkbox" ${selectedFields.has(field.id) ? 'checked' : ''} data-id="${field.id}" />
+        <span class="field-item-name">${field.label}</span>
+        <span class="field-item-type">${field.type}</span>
+      `;
+      item.querySelector('input').addEventListener('change', (e) => {
+        if (e.target.checked) selectedFields.add(field.id);
+        else selectedFields.delete(field.id);
+      });
+      list.appendChild(item);
+    });
+  }
+
+  renderFieldList();
+
+  // ---- Section 1: Name ----
+  const nameInput = document.getElementById('step-name-input');
+  const nameContinueBtn = document.getElementById('name-continue-btn');
+
+  nameInput.addEventListener('input', () => {
+    nameContinueBtn.disabled = nameInput.value.trim() === '';
+  });
+
+  nameContinueBtn.addEventListener('click', () => {
+    const val = nameInput.value.trim();
+    if (!val) return;
+
+    // Show completed state
+    document.getElementById('name-active').style.display = 'none';
+    document.getElementById('name-display').textContent = val;
+    document.getElementById('name-completed').style.display = 'block';
+    document.getElementById('name-title').textContent = val;
+
+    // Reveal next section
+    revealSection('section-who');
+  });
+
+  // ---- Section 2: Who ----
+  document.getElementById('who-continue-btn').addEventListener('click', () => {
+    document.getElementById('who-active').style.display = 'none';
+    document.getElementById('who-completed').style.display = 'block';
+
+    revealSection('section-fields');
+  });
+
+  // ---- Section 3: Fields ----
+  document.getElementById('fields-done-btn').addEventListener('click', () => {
+    completeFields();
+  });
+
+  function skipFields() {
+    selectedFields = new Set();
+    completeFields();
+  }
+
+  function completeFields() {
+    document.getElementById('fields-active').style.display = 'none';
+
+    const summary = document.getElementById('fields-summary');
+    summary.innerHTML = '';
+    if (selectedFields.size === 0) {
+      summary.innerHTML = '<span class="field-tag" style="color:#ABADB2;">No fields selected</span>';
+    } else {
+      FIELDS.filter(f => selectedFields.has(f.id)).forEach(f => {
+        const tag = document.createElement('span');
+        tag.className = 'field-tag';
+        tag.textContent = f.label;
+        summary.appendChild(tag);
+      });
+    }
+
+    document.getElementById('fields-completed').style.display = 'block';
+
+    // Show success bar
+    const successBar = document.getElementById('success-bar');
+    successBar.classList.add('visible');
+    successBar.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ---- Reveal section helper ----
+  function revealSection(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('hidden');
+    el.classList.add('revealed');
+    // Smooth scroll to newly revealed section
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, 50);
+  }
+
+  // ---- Edit section ----
+  function editSection(section) {
+    if (section === 'name') {
+      document.getElementById('name-active').style.display = 'block';
+      document.getElementById('name-completed').style.display = 'none';
+      nameInput.focus();
+    } else if (section === 'who') {
+      document.getElementById('who-active').style.display = 'block';
+      document.getElementById('who-completed').style.display = 'none';
+    } else if (section === 'fields') {
+      document.getElementById('fields-active').style.display = 'block';
+      document.getElementById('fields-completed').style.display = 'none';
+      // Restore checkbox state
+      renderFieldList();
+      // Re-sync checked state
+      document.querySelectorAll('#field-list input[type=checkbox]').forEach(cb => {
+        cb.checked = selectedFields.has(cb.dataset.id);
+      });
+      document.getElementById('success-bar').classList.remove('visible');
+    }
+  }
+</script>
+
+</body>
+</html>

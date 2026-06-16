@@ -79,4 +79,9 @@ coverage/
 
 # Scratch files (usually used for AI state/context handoff)
 # =======
-.scratch 
+.scratch
+
+# Claude Code / Playwright MCP artifacts
+# =======================================
+.github/skills/
+.playwright-mcp/ 
