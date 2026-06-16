@@ -19,6 +19,6 @@ export const EmailLabel = () => (
     >
       <Icon as={BiMailSend} boxSize="1.25rem" />
     </Flex>
-    <Text>Email notification</Text>
+    <Text>End-of-workflow Email</Text>
   </Stack>
 )

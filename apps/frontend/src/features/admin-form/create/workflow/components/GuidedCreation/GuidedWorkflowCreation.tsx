@@ -1,5 +1,8 @@
 import { Fragment, useEffect, useLayoutEffect, useRef } from 'react'
-import { Box, Stack, useDisclosure } from '@chakra-ui/react'
+import { Box, Flex, Stack, useDisclosure } from '@chakra-ui/react'
+
+import Button from '~components/Button'
+import InlineMessage from '~components/InlineMessage'
 
 import {
   editDataSelector,
@@ -26,6 +29,7 @@ import { GuidedEmailCard } from './GuidedEmailCard'
 import { GuidedStep } from './GuidedStep'
 import { IntroPage } from './IntroPage'
 import { PeekCard } from './PeekCard'
+import { WorkflowSuccessModal } from './WorkflowSuccessModal'
 
 // For steps 3+ (index >= 2), auto-reveal all sections so users see
 // everything at once. They can click "Guide me" to reset to section 1.
@@ -45,6 +49,9 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
   )
   const completeStatusToggle = useGuidedWorkflowStore(
     (s) => s.completeStatusToggle,
+  )
+  const completeSuccessModal = useGuidedWorkflowStore(
+    (s) => s.completeSuccessModal,
   )
   const editState = useAdminWorkflowStore(editDataSelector)
   const {
@@ -198,8 +205,9 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
           {allStepElements}
           <EndOfWorkflowBlock />
           <PeekCard
-            title="You're done setting up the base of your workflow!"
+            title="You're done setting up the end-of-workflow email! Now learn about some special workflow settings."
             onDone={completeWorkflowPeek}
+            doneLabel="Continue"
           />
         </Box>
       </Stack>
@@ -218,7 +226,32 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
     )
   }
 
-  // mode === 'normal' or 'reorder_reveal' — workflow is complete
+  if (mode === 'success_modal') {
+    return (
+      <Stack spacing="0">
+        <WorkflowCard />
+        <WorkflowSuccessModal isOpen={true} onDone={completeSuccessModal} />
+        <Box mt="2.75rem">
+          {editingStepNumber !== undefined && (
+            <DeleteStepModal
+              isOpen={isDeleteModalOpen}
+              onClose={onDeleteModalClose}
+              stepNumber={editingStepNumber}
+            />
+          )}
+          {formWorkflow?.length ? (
+            <SortableStepList
+              steps={formWorkflow}
+              onDeleteModalOpen={onDeleteModalOpen}
+            />
+          ) : null}
+          {formWorkflow?.length ? <EndOfWorkflowBlock /> : null}
+        </Box>
+      </Stack>
+    )
+  }
+
+  // mode === 'normal' — workflow is complete
   return (
     <Stack spacing="0">
       <WorkflowCard />
@@ -268,12 +301,22 @@ const StatusToggleMode = ({
   return (
     <Stack spacing="0">
       <Box ref={cardRef}>
-        <WorkflowCard showSubheader showStatusToggle />
+        <WorkflowCard
+          showSubheader
+          showStatusToggle
+          belowToggle={
+            <Stack spacing="0.75rem">
+              <InlineMessage variant="info">
+                Use this to let people who filled up the form view the status of
+                their response.
+              </InlineMessage>
+              <Flex justifyContent="flex-end">
+                <Button onClick={onDone}>Done</Button>
+              </Flex>
+            </Stack>
+          }
+        />
       </Box>
-      <PeekCard
-        title="Use this to let people who filled up the form view the status of their response."
-        onDone={onDone}
-      />
       <Box mt="2.75rem">
         {editingStepNumber !== undefined && (
           <DeleteStepModal

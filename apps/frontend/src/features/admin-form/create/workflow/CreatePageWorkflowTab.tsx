@@ -47,7 +47,7 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
         guidedMode === 'email_setup' ||
         guidedMode === 'workflow_complete' ||
         guidedMode === 'status_toggle' ||
-        guidedMode === 'reorder_reveal' ||
+        guidedMode === 'success_modal' ||
         currentStepIndex > 0
       ) {
         resetGuided()

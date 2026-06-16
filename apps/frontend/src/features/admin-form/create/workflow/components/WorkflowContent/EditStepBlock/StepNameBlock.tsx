@@ -108,8 +108,16 @@ export const StepNameBlock = ({
           </FormControl>
           {showGuidedHint && (
             <InlineMessage variant="info" mt="0.75rem">
-              {guidedHintText ||
-                'Name it something to make it easier for you to know what this step is for later. Or keep it as "Step 1", we don\'t judge.'}
+              {guidedHintText || (
+                <>
+                  Let&apos;s start by naming your first step. It makes it easier
+                  to know what this step is for later.
+                  <br />
+                  <br />
+                  You can also stick to &quot;Step 1&quot;. Simplicity works
+                  too!
+                </>
+              )}
             </InlineMessage>
           )}
         </Box>

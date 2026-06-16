@@ -122,7 +122,7 @@ export const enSG: Workflow = {
   questions: {
     tooltip:
       'Respondent will only be able to fill the fields you have selected',
-    label: 'Select field(s) for this respondent to fill',
+    label: 'Select field(s) for this person to fill',
     placeholder: 'Select field(s) from your form',
   },
   approvals: {

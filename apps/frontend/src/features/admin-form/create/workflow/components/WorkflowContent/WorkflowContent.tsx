@@ -54,12 +54,17 @@ export const WorkflowContent = (): JSX.Element | null => {
 }
 
 export const WorkflowStepBlockDivider = () => (
-  <Box alignSelf="center" justifyContent="center" border="none">
+  <Box
+    display="flex"
+    flexDirection="column"
+    alignItems="center"
+    border="none"
+    my="0.25rem"
+  >
     <Divider
       orientation="vertical"
       h="1rem"
       borderLeftWidth="2px"
-      marginLeft="7px"
       borderColor="secondary.200"
     />
     <BxsChevronDown />
@@ -67,7 +72,6 @@ export const WorkflowStepBlockDivider = () => (
       orientation="vertical"
       h="1rem"
       borderLeftWidth="2px"
-      marginLeft="7px"
       borderColor="secondary.200"
     />
   </Box>

@@ -31,7 +31,7 @@ export const AddAnotherPrompt = ({
           <Text textStyle="subhead-1" color="secondary.500">
             Nice, Step {stepNumber + 1} is all set!
           </Text>
-          <Text textStyle="body-1" color="secondary.400">
+          <Text textStyle="body-2" color="secondary.400">
             Would you like to add another step?
           </Text>
         </Stack>

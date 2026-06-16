@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
@@ -20,15 +20,30 @@ import { StaticRespondentOption } from '../WorkflowContent/EditStepBlock/Respond
 
 const TOTAL_SUB_STEPS = 5
 
-const SUB_STEP_INFOBOXES = [
+const SUB_STEP_INFOBOXES: React.ReactNode[] = [
   // Sub-step 1: Just the label
-  'This is where you choose how the form reaches the next person.',
+  'This is where you choose how this step of the form reaches the next person.',
   // Sub-step 2: Static option revealed
-  'Best when you already know who should fill this up. You type in their email addresses directly.',
+  <span>
+    <span style={{ fontWeight: 600 }}>
+      Best when you already know who should fill this up.
+    </span>{' '}
+    You type in their email addresses directly.
+  </span>,
   // Sub-step 3: Dynamic option revealed
-  "Best when the previous respondent decides who's next. They'll enter the email of whoever should fill up the next step.",
+  <span>
+    <span style={{ fontWeight: 600 }}>
+      Best when the previous respondent decides who&apos;s next.
+    </span>{' '}
+    They&apos;ll enter the email of whoever should fill up the next step.
+  </span>,
   // Sub-step 4: Conditional option revealed
-  'Best for routing to different people based on an answer. You map each dropdown option to a different email.',
+  <span>
+    <span style={{ fontWeight: 600 }}>
+      Best for sending to different people based on an answer.
+    </span>{' '}
+    You map each dropdown option to a different email.
+  </span>,
   // Sub-step 5: All enabled
   '', // placeholder, built dynamically with step number
 ]
