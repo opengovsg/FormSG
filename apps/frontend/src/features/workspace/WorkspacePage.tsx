@@ -11,10 +11,12 @@ import {
   Grid,
   GridItem,
   Stack,
+  Text,
   useDisclosure,
 } from '@chakra-ui/react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 
+import { featureFlags, MRF_CUTOVER_FAQ_LINK } from 'formsg-shared/constants'
 import { Workspace } from 'formsg-shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
@@ -22,6 +24,8 @@ import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
+import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 
 import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
@@ -45,6 +49,10 @@ export const WorkspacePage = (): JSX.Element => {
 
   const mobileDrawer = useDisclosure()
   const isMobile = useIsMobile()
+
+  // TODO [MRF-CUTOVER]: Remove this infobox (and MRF_CUTOVER_FAQ_LINK) once the
+  // cutover is complete and the flag is retired.
+  const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
 
   const { user } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
@@ -165,6 +173,26 @@ export const WorkspacePage = (): JSX.Element => {
             defaultWorkspace={DEFAULT_WORKSPACE}
             setCurrentWorkspace={setCurrWorkspaceId}
           >
+            {isMrfCutoverEnabled && (
+              <InlineMessage>
+                <Text>
+                  <Text as="span" fontWeight="bold">
+                    Legacy forms
+                  </Text>{' '}
+                  (previously labelled Storage mode) will be migrated
+                  automatically to the latest FormSG experience — your existing
+                  forms keep working, with full storage support. New forms
+                  already use the latest experience.{' '}
+                  <Link
+                    display="inline"
+                    href={MRF_CUTOVER_FAQ_LINK}
+                    target="_blank"
+                  >
+                    Learn what this means for you.
+                  </Link>
+                </Text>
+              </InlineMessage>
+            )}
             <WorkspaceContent />
           </WorkspaceProvider>
         </GridItem>
