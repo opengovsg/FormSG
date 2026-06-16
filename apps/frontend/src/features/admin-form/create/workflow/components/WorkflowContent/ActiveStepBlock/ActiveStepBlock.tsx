@@ -5,6 +5,7 @@ import { FormWorkflowStep, FormWorkflowStepDto } from 'formsg-shared/types'
 import { datadogRum } from '~utils/datadog'
 
 import {
+  completePendingSwitchSelector,
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
@@ -45,6 +46,9 @@ export const ActiveStepBlock = ({
 }: ActiveStepBlockProps): JSX.Element => {
   const { updateStepMutation } = useWorkflowMutations()
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
+  const completePendingSwitch = useAdminWorkflowStore(
+    completePendingSwitchSelector,
+  )
 
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) => {
@@ -55,11 +59,18 @@ export const ActiveStepBlock = ({
           updateStepBody: step,
         },
         {
-          onSuccess: () => setToInactive(),
+          onSuccess: () => {
+            const pending = useAdminWorkflowStore.getState().pendingSwitchTo
+            if (pending !== null) {
+              completePendingSwitch()
+            } else {
+              setToInactive()
+            }
+          },
         },
       )
     },
-    [updateStepMutation, stepNumber, setToInactive],
+    [updateStepMutation, stepNumber, setToInactive, completePendingSwitch],
   )
 
   return (

@@ -23,6 +23,7 @@ type GuidedWorkflowStore = {
   startGuided: () => void
   revealNextSection: () => void
   goBackSection: () => void
+  setCurrentSection: (section: number) => void
   completeCurrentStep: () => void
   promptAddAnother: () => void
   addAnotherStep: () => void
@@ -78,6 +79,7 @@ export const useGuidedWorkflowStore = create<GuidedWorkflowStore>()(
           set((state) => ({
             currentSection: Math.max(1, state.currentSection - 1),
           })),
+        setCurrentSection: (section) => set({ currentSection: section }),
         completeCurrentStep: () =>
           set((state) => ({
             completedSteps: [...state.completedSteps, state.currentStepIndex],

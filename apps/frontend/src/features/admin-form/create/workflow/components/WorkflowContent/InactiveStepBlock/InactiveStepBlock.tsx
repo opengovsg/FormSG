@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiGridVertical, BiPencil } from 'react-icons/bi'
-import { Box, Flex, Icon, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Icon, Stack, Text, Tooltip } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
 import { BasicField, FormField } from 'formsg-shared/types'
@@ -14,6 +14,7 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import {
   createOrEditDataSelector,
+  requestSwitchToSelector,
   setToEditingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
@@ -108,16 +109,16 @@ export const InactiveStepBlock = ({
   const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
-
-  // Prevent editing step if some other step is being edited.
-  const isPreventEdit = useMemo(() => !!stateData, [stateData])
+  const requestSwitchTo = useAdminWorkflowStore(requestSwitchToSelector)
 
   const handleClick = useCallback(() => {
-    if (isPreventEdit) {
+    if (stateData) {
+      // Another step is being edited; request auto-save and switch
+      requestSwitchTo(stepNumber)
       return
     }
     setToEditing(stepNumber)
-  }, [isPreventEdit, stepNumber, setToEditing])
+  }, [stateData, stepNumber, setToEditing, requestSwitchTo])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
@@ -170,15 +171,10 @@ export const InactiveStepBlock = ({
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
-        _hover={
-          isPreventEdit
-            ? undefined
-            : { borderColor: 'primary.500', bg: 'primary.50' }
-        }
+        _hover={{ borderColor: 'primary.500', bg: 'primary.50' }}
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-        aria-disabled={isPreventEdit}
+        cursor="pointer"
         onClick={handleClick}
         pos="relative"
       >
@@ -227,20 +223,33 @@ export const InactiveStepBlock = ({
           alignItems="center"
           gap="0.25rem"
         >
-          <Icon
-            as={BiPencil}
-            boxSize="1.25rem"
-            color="secondary.300"
-            _groupHover={{ color: 'primary.500' }}
-            transition="color 0.15s ease"
-          />
-          <Icon
-            as={BiGridVertical}
-            boxSize="1.25rem"
-            color="secondary.300"
-            _groupHover={{ color: 'primary.500' }}
-            transition="color 0.15s ease"
-          />
+          <Tooltip label="Edit" placement="top" hasArrow openDelay={300}>
+            <Box display="inline-flex">
+              <Icon
+                as={BiPencil}
+                boxSize="1.25rem"
+                color="secondary.300"
+                _groupHover={{ color: 'primary.500' }}
+                transition="color 0.15s ease"
+              />
+            </Box>
+          </Tooltip>
+          <Tooltip
+            label="Drag to reorder"
+            placement="top"
+            hasArrow
+            openDelay={300}
+          >
+            <Box display="inline-flex">
+              <Icon
+                as={BiGridVertical}
+                boxSize="1.25rem"
+                color="secondary.300"
+                _groupHover={{ color: 'primary.500' }}
+                transition="color 0.15s ease"
+              />
+            </Box>
+          </Tooltip>
         </Flex>
       </Box>
     </Box>

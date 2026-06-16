@@ -28,6 +28,11 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { useMutateFormSettings } from '~features/admin-form/settings/mutations'
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
+import {
+  completePendingSwitchSelector,
+  pendingSwitchToSelector,
+  useAdminWorkflowStore,
+} from '../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 
 import { EmailLabel } from './EmailLabel'
@@ -136,6 +141,20 @@ export const ActiveEmailCard = ({
     handleSubmit(onSubmit)()
     onDone()
   }
+
+  // Auto-save when user clicks a step while email card is active
+  const pendingSwitchTo = useAdminWorkflowStore(pendingSwitchToSelector)
+  const completePendingSwitch = useAdminWorkflowStore(
+    completePendingSwitchSelector,
+  )
+
+  useEffect(() => {
+    if (pendingSwitchTo === null) return
+    // Save and close, then complete the switch
+    handleSubmit(onSubmit)()
+    completePendingSwitch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSwitchTo])
 
   const handleOtherPartiesEmailInputBlur = () => {
     const uniqueValidEmails = uniq(

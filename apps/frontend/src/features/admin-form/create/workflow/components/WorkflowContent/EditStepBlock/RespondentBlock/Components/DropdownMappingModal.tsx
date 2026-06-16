@@ -3,7 +3,6 @@ import {
   Box,
   Flex,
   FormControl,
-  Link,
   Modal,
   ModalBody,
   ModalContent,
@@ -11,14 +10,14 @@ import {
   ModalHeader,
   ModalOverlay,
   Stack,
-  Text,
+  useBreakpointValue,
 } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
 import { DropdownFieldBase } from 'formsg-shared/types'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import FormLabel from '~components/FormControl/FormLabel'
 import { ModalCloseButton } from '~components/Modal'
 import { TagInput } from '~components/TagInput'
 
@@ -41,7 +40,11 @@ export const DropdownMappingModal = ({
   isSaving,
   onOpenCsvModal,
 }: DropdownMappingModalProps): JSX.Element => {
-  const isMobile = useIsMobile()
+  const modalSize = useBreakpointValue({
+    base: 'mobile',
+    xs: 'mobile',
+    md: 'md',
+  })
 
   // Local state: option -> emails array
   const [mapping, setMapping] = useState<Record<string, string[]>>({})
@@ -78,20 +81,20 @@ export const DropdownMappingModal = ({
   )
 
   return (
-    <Modal size={isMobile ? 'mobile' : 'md'} isOpen={isOpen} onClose={onClose}>
+    <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader>
-          <Text textStyle="h4">Map emails to options</Text>
+        <ModalHeader color="secondary.700" pr="4rem">
+          Map emails to options
         </ModalHeader>
         <ModalBody>
           <Stack spacing="1rem">
             {fieldOptions.map((option) => (
               <Box key={option}>
-                <Text textStyle="subhead-2" mb="0.375rem">
-                  {option}
-                </Text>
+                <FormLabel mb="0.5rem" textColor="secondary.700">
+                  {`Map emails to "${option}"`}
+                </FormLabel>
                 <FormControl>
                   <TagInput
                     placeholder="Add email addresses..."
@@ -105,28 +108,24 @@ export const DropdownMappingModal = ({
               </Box>
             ))}
           </Stack>
-          <Link
-            mt="1rem"
-            display="inline-block"
-            textStyle="body-2"
-            color="primary.500"
-            onClick={handleCsvFallback}
-          >
-            Upload CSV instead
-          </Link>
         </ModalBody>
         <ModalFooter>
-          <Flex gap="0.5rem">
-            <Button variant="clear" onClick={onClose}>
-              Cancel
+          <Flex w="100%" justifyContent="space-between" alignItems="center">
+            <Button variant="clear" onClick={handleCsvFallback}>
+              Upload CSV instead
             </Button>
-            <Button
-              onClick={handleSave}
-              isLoading={isSaving}
-              isDisabled={!hasAnyEmails}
-            >
-              Save
-            </Button>
+            <Flex gap="0.5rem">
+              <Button variant="clear" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSave}
+                isLoading={isSaving}
+                isDisabled={!hasAnyEmails}
+              >
+                Save
+              </Button>
+            </Flex>
           </Flex>
         </ModalFooter>
       </ModalContent>

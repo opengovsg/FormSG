@@ -82,6 +82,10 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
     prevStepIndexRef.current = currentStepIndex
   }, [currentStepIndex, mode, revealNextSection])
 
+  const isAnyCardActive = useAdminWorkflowStore(
+    (s) => s.createOrEditData !== null,
+  )
+
   if (mode === 'intro') {
     return <IntroPage />
   }
@@ -145,7 +149,9 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
             />
           )}
           {completedStepElements}
-          <AddAnotherPrompt stepNumber={currentStepIndex} />
+          {!isAnyCardActive && (
+            <AddAnotherPrompt stepNumber={currentStepIndex} />
+          )}
         </Box>
       </Stack>
     )
@@ -204,11 +210,13 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
           )}
           {allStepElements}
           <EndOfWorkflowBlock />
-          <PeekCard
-            title="You're done setting up the end-of-workflow email! Now learn about some special workflow settings."
-            onDone={completeWorkflowPeek}
-            doneLabel="Continue"
-          />
+          {!isAnyCardActive && (
+            <PeekCard
+              title="You're done setting up the end-of-workflow email! Now learn about some special workflow settings."
+              onDone={completeWorkflowPeek}
+              doneLabel="Continue"
+            />
+          )}
         </Box>
       </Stack>
     )

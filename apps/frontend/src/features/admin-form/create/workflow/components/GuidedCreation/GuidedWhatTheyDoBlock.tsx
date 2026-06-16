@@ -128,7 +128,6 @@ export const GuidedWhatTheyDoBlock = ({
 
   const hasYesNoFields = yesNoFieldItems.length > 0
   const allRevealed = subStep >= TOTAL_SUB_STEPS
-  const isDisabled = !allRevealed
 
   // During walkthrough, highlight the option being explained
   const SUB_STEP_TO_STEP_TYPE: Record<number, StepType | undefined> = {
@@ -187,134 +186,116 @@ export const GuidedWhatTheyDoBlock = ({
         {subStep >= 2 && (
           <Radio.RadioGroup
             value={displayedStepType}
-            onChange={(val) => {
-              if (allRevealed) handleStepTypeChange(val as StepType)
-            }}
+            onChange={(val) => handleStepTypeChange(val as StepType)}
           >
             {/* Sub-step 2: Fill up fields */}
             {subStep >= 2 && (
               <FadeIn key="collect">
-                <Box pointerEvents={isDisabled ? 'none' : 'auto'}>
-                  <Radio
-                    isDisabled={isLoading || isDisabled}
-                    isLabelFullWidth
-                    allowDeselect={false}
-                    value="collect"
-                    px="0.5rem"
-                    __css={{ _focusWithin: { boxShadow: 'none' } }}
-                  >
-                    <Text>Fill up fields only</Text>
-                    {displayedStepType === 'collect' && (
-                      <Text
-                        textStyle="body-2"
-                        color="secondary.400"
-                        pt="0.25rem"
-                      >
-                        This person fills in the fields assigned to them.
-                      </Text>
-                    )}
-                  </Radio>
-                </Box>
+                <Radio
+                  isDisabled={isLoading}
+                  isLabelFullWidth
+                  allowDeselect={false}
+                  value="collect"
+                  px="0.5rem"
+                  __css={{ _focusWithin: { boxShadow: 'none' } }}
+                >
+                  <Text>Fill up fields only</Text>
+                  {displayedStepType === 'collect' && (
+                    <Text textStyle="body-2" color="secondary.400" pt="0.25rem">
+                      This person fills in the fields assigned to them.
+                    </Text>
+                  )}
+                </Radio>
               </FadeIn>
             )}
 
             {/* Sub-step 3: Fill up fields and approve */}
             {subStep >= 3 && (
               <FadeIn key="review">
-                <Box pointerEvents={isDisabled ? 'none' : 'auto'}>
-                  <Radio
-                    isDisabled={isLoading || isDisabled}
-                    isLabelFullWidth
-                    allowDeselect={false}
-                    value="review"
-                    px="0.5rem"
-                    __css={{ _focusWithin: { boxShadow: 'none' } }}
-                  >
-                    <Text>Fill up fields and approve</Text>
-                    {displayedStepType === 'review' && (
-                      <Stack spacing="0.5rem" pt="0.25rem">
-                        <Text textStyle="body-2" color="secondary.400">
-                          This person fills in their fields, then approves or
-                          rejects. If rejected, the workflow stops.
-                        </Text>
+                <Radio
+                  isDisabled={isLoading}
+                  isLabelFullWidth
+                  allowDeselect={false}
+                  value="review"
+                  px="0.5rem"
+                  __css={{ _focusWithin: { boxShadow: 'none' } }}
+                >
+                  <Text>Fill up fields and approve</Text>
+                  {displayedStepType === 'review' && (
+                    <Stack spacing="0.5rem" pt="0.25rem">
+                      <Text textStyle="body-2" color="secondary.400">
+                        This person fills in their fields, then approves or
+                        rejects. If rejected, the workflow stops.
+                      </Text>
 
-                        {allRevealed && (
-                          <FormControl
-                            isInvalid={!!errors.approval_field?.message}
-                          >
-                            <Text style={textStyles.subhead2} mb="0.5rem">
-                              Approval field
-                            </Text>
-                            {hasYesNoFields ? (
-                              <Controller
-                                name={APPROVAL_FIELD_NAME}
-                                control={control}
-                                rules={{
-                                  validate: (value) => {
-                                    if (!value) {
-                                      return t(
-                                        'features.adminForm.sidebar.workflow.approvals.validation.noField',
-                                      )
-                                    }
-                                    if (
-                                      value &&
-                                      approvalFieldsFromOtherSteps.includes(
-                                        value,
-                                      )
-                                    ) {
-                                      return t(
-                                        'features.adminForm.sidebar.workflow.approvals.validation.fieldAlreadyUsed',
-                                      )
-                                    }
-                                    if (
-                                      value &&
-                                      !selectedEditFields.includes(value)
-                                    ) {
-                                      return t(
-                                        'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
-                                      )
-                                    }
-                                  },
-                                }}
-                                render={({
-                                  field: { value = '', ...rest },
-                                }) => (
-                                  <SingleSelect
-                                    placeholder={t(
-                                      'features.adminForm.sidebar.workflow.approvals.toggle.placeholder',
-                                    )}
-                                    items={yesNoFieldItems}
-                                    value={getValueIfNotDeleted(value)}
-                                    isClearable
-                                    isDisabled={isLoading}
-                                    {...rest}
-                                  />
+                      <FormControl isInvalid={!!errors.approval_field?.message}>
+                        <Text style={textStyles.subhead2} mb="0.5rem">
+                          Approval field
+                        </Text>
+                        {hasYesNoFields ? (
+                          <Controller
+                            name={APPROVAL_FIELD_NAME}
+                            control={control}
+                            rules={{
+                              validate: (value) => {
+                                if (!value) {
+                                  return t(
+                                    'features.adminForm.sidebar.workflow.approvals.validation.noField',
+                                  )
+                                }
+                                if (
+                                  value &&
+                                  approvalFieldsFromOtherSteps.includes(value)
+                                ) {
+                                  return t(
+                                    'features.adminForm.sidebar.workflow.approvals.validation.fieldAlreadyUsed',
+                                  )
+                                }
+                                if (
+                                  value &&
+                                  !selectedEditFields.includes(value)
+                                ) {
+                                  return t(
+                                    'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
+                                  )
+                                }
+                              },
+                            }}
+                            render={({ field: { value = '', ...rest } }) => (
+                              <SingleSelect
+                                placeholder={t(
+                                  'features.adminForm.sidebar.workflow.approvals.toggle.placeholder',
                                 )}
+                                items={yesNoFieldItems}
+                                value={getValueIfNotDeleted(value)}
+                                isClearable
+                                isDisabled={isLoading}
+                                {...rest}
                               />
-                            ) : (
-                              <Stack spacing="0.5rem">
-                                <Text textStyle="body-2" color="secondary.400">
-                                  You don't have a Yes/No field for approvers to
-                                  use.
-                                </Text>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={handleCreateYesNoField}
-                                >
-                                  Create Yes/No field
-                                </Button>
-                              </Stack>
                             )}
-                            <FormErrorMessage>
-                              {errors.approval_field?.message}
-                            </FormErrorMessage>
-                          </FormControl>
+                          />
+                        ) : (
+                          <Stack spacing="0.5rem">
+                            <Text textStyle="body-2" color="secondary.400">
+                              You don&apos;t have a Yes/No field for approvers
+                              to use.
+                            </Text>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={handleCreateYesNoField}
+                            >
+                              Create Yes/No field
+                            </Button>
+                          </Stack>
                         )}
-                      </Stack>
-                    )}
-                  </Radio>
-                </Box>
+                        <FormErrorMessage>
+                          {errors.approval_field?.message}
+                        </FormErrorMessage>
+                      </FormControl>
+                    </Stack>
+                  )}
+                </Radio>
               </FadeIn>
             )}
           </Radio.RadioGroup>

@@ -1,4 +1,10 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { useForm } from 'react-hook-form'
 import { Box, Divider, Flex, Stack } from '@chakra-ui/react'
 
@@ -16,6 +22,7 @@ import { SaveActionGroup } from '~features/admin-form/create/logic/components/Lo
 import { useUser } from '~features/user/queries'
 
 import {
+  pendingSwitchToSelector,
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
@@ -149,6 +156,86 @@ export const EditStepBlock = ({
     }
     onSubmit(step)
   })
+
+  // Auto-save when user clicks another step while editing this one
+  const pendingSwitchTo = useAdminWorkflowStore(pendingSwitchToSelector)
+  const completePendingSwitch = useAdminWorkflowStore(
+    (s) => s.completePendingSwitch,
+  )
+
+  useEffect(() => {
+    if (pendingSwitchTo === null) return
+
+    if (!formMethods.formState.isDirty) {
+      // No changes, just switch directly
+      completePendingSwitch()
+      return
+    }
+
+    // Build step from current form values, bypassing validation
+    const inputs = { ...formMethods.getValues() }
+    if (inputs.approval_field === '') inputs.approval_field = undefined
+    if (inputs.step_name === '')
+      inputs.step_name = undefined as unknown as string
+
+    let step: FormWorkflowStep | null = null
+
+    if (isFirstStep) {
+      step = inputs.field
+        ? {
+            ...inputs,
+            workflow_type: WorkflowType.Dynamic,
+            field: inputs.field,
+          }
+        : {
+            ...inputs,
+            workflow_type: WorkflowType.Static,
+            emails: inputs.emails ?? [],
+          }
+    } else {
+      const base: FormWorkflowStepBase & { _id: string } = {
+        _id: inputs._id,
+        workflow_type: inputs.workflow_type,
+        edit: inputs.edit,
+        approval_field: inputs.approval_field,
+        step_name: inputs.step_name,
+      }
+      switch (inputs.workflow_type) {
+        case WorkflowType.Static:
+          step = {
+            ...base,
+            workflow_type: WorkflowType.Static,
+            emails: inputs.emails ?? [],
+          }
+          break
+        case WorkflowType.Dynamic:
+          if (inputs.field)
+            step = {
+              ...base,
+              workflow_type: WorkflowType.Dynamic,
+              field: inputs.field,
+            }
+          break
+        case WorkflowType.Conditional:
+          if (inputs.conditional_field)
+            step = {
+              ...base,
+              workflow_type: WorkflowType.Conditional,
+              conditional_field: inputs.conditional_field,
+            }
+          break
+      }
+    }
+
+    if (step) {
+      // Save via onSubmit (ActiveStepBlock's onSuccess will complete the switch)
+      onSubmit(step)
+    } else {
+      // Can't build valid step, switch without saving
+      completePendingSwitch()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSwitchTo])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 

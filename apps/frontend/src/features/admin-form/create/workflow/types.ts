@@ -9,6 +9,7 @@ import {
 export enum AdminEditWorkflowState {
   CreatingStep,
   EditingStep,
+  EditingEmailCard,
 }
 
 export type EditStepInputs = FormWorkflowStep & {

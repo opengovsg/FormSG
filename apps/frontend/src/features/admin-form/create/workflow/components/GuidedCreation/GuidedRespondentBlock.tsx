@@ -101,7 +101,6 @@ export const GuidedRespondentBlock = ({
 
   const selectedWorkflowType = formMethods.watch('workflow_type')
   const allRevealed = subStep >= TOTAL_SUB_STEPS
-  const isDisabled = !allRevealed
 
   // Map each sub-step to the workflow type being showcased
   const SUB_STEP_TO_WORKFLOW_TYPE: Record<number, WorkflowType | undefined> = {
@@ -113,7 +112,7 @@ export const GuidedRespondentBlock = ({
   // During walkthrough, highlight the currently-shown option as selected
   const displayedWorkflowType = allRevealed
     ? selectedWorkflowType
-    : SUB_STEP_TO_WORKFLOW_TYPE[subStep]
+    : (SUB_STEP_TO_WORKFLOW_TYPE[subStep] ?? selectedWorkflowType)
 
   const handleContinue = () => {
     if (subStep < TOTAL_SUB_STEPS) {
@@ -151,41 +150,35 @@ export const GuidedRespondentBlock = ({
             {/* Sub-step 2: Static option */}
             {subStep >= 2 && (
               <FadeIn key="static">
-                <Box pointerEvents={isDisabled ? 'none' : 'auto'}>
-                  <StaticRespondentOption
-                    selectedWorkflowType={displayedWorkflowType}
-                    formMethods={formMethods}
-                    isLoading={isLoading || isDisabled}
-                  />
-                </Box>
+                <StaticRespondentOption
+                  selectedWorkflowType={displayedWorkflowType}
+                  formMethods={formMethods}
+                  isLoading={isLoading}
+                />
               </FadeIn>
             )}
 
             {/* Sub-step 3: Dynamic option */}
             {subStep >= 3 && (
               <FadeIn key="dynamic">
-                <Box pointerEvents={isDisabled ? 'none' : 'auto'}>
-                  <DynamicRespondentOption
-                    selectedWorkflowType={displayedWorkflowType}
-                    emailFieldItems={emailFieldItems}
-                    formMethods={formMethods}
-                    isLoading={isLoading || isDisabled}
-                  />
-                </Box>
+                <DynamicRespondentOption
+                  selectedWorkflowType={displayedWorkflowType}
+                  emailFieldItems={emailFieldItems}
+                  formMethods={formMethods}
+                  isLoading={isLoading}
+                />
               </FadeIn>
             )}
 
             {/* Sub-step 4: Conditional option */}
             {subStep >= 4 && (
               <FadeIn key="conditional">
-                <Box pointerEvents={isDisabled ? 'none' : 'auto'}>
-                  <ConditionalRoutingOption
-                    selectedWorkflowType={displayedWorkflowType}
-                    conditionalFormFields={dropdownFormFields}
-                    formMethods={formMethods}
-                    isLoading={isLoading || isDisabled}
-                  />
-                </Box>
+                <ConditionalRoutingOption
+                  selectedWorkflowType={displayedWorkflowType}
+                  conditionalFormFields={dropdownFormFields}
+                  formMethods={formMethods}
+                  isLoading={isLoading}
+                />
               </FadeIn>
             )}
           </Radio.RadioGroup>

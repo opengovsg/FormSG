@@ -328,13 +328,6 @@ export const ConditionalRoutingOption = ({
       selectedConditionalField?.fieldOptions || [],
     )
 
-  const noEmailToOptionsMappingErrorMessage =
-    !selectedConditionalFieldOptionsToRecipientsMap
-      ? t(
-          'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.addEmailsBeforeSave',
-        )
-      : null
-
   const validateCsvFile = async (
     file: File | null,
   ): Promise<string | undefined> => {
@@ -476,16 +469,8 @@ export const ConditionalRoutingOption = ({
                     control={control}
                     name="conditional_field"
                     rules={{
-                      required: t(
-                        'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
-                      ),
                       validate: (selectedValue) => {
-                        if (noEmailToOptionsMappingErrorMessage) {
-                          return noEmailToOptionsMappingErrorMessage
-                        }
-                        if (validateOptionsToRecipientsMapErrorMessage) {
-                          return validateOptionsToRecipientsMapErrorMessage
-                        }
+                        if (!selectedValue) return true
                         return (
                           isLoading ||
                           !conditionalFieldItems ||

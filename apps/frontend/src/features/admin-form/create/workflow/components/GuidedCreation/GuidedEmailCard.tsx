@@ -150,7 +150,6 @@ export const GuidedEmailCard = ({
   }
 
   const allRevealed = subStep >= TOTAL_SUB_STEPS
-  const isFieldDisabled = !allRevealed
 
   const handleContinue = () => {
     if (subStep < TOTAL_SUB_STEPS) {
@@ -197,134 +196,120 @@ export const GuidedEmailCard = ({
           <Stack spacing="1.5rem" px={{ base: '1.5rem', md: '2rem' }}>
             {/* Sub-step 2: Person in Step 1 */}
             <FadeIn key="step1-field">
-              <Box pointerEvents={isFieldDisabled ? 'none' : 'auto'}>
-                <FormLabel mb="0.75rem" textColor="secondary.700">
-                  {t(
-                    'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.label',
+              <FormLabel mb="0.75rem" textColor="secondary.700">
+                {t(
+                  'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.label',
+                )}
+              </FormLabel>
+              <Skeleton isLoaded={!isLoading}>
+                <Controller
+                  control={control}
+                  name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
+                  render={({ field: { value, onBlur, ...rest } }) => (
+                    <SingleSelect
+                      isDisabled={isLoading}
+                      placeholder={t(
+                        'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.placeholder',
+                      )}
+                      items={emailFieldItems}
+                      isClearable
+                      value={value}
+                      {...rest}
+                    />
                   )}
-                </FormLabel>
-                <Skeleton isLoaded={!isLoading}>
-                  <Controller
-                    control={control}
-                    name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
-                    render={({ field: { value, onBlur, ...rest } }) => (
-                      <SingleSelect
-                        isDisabled={isLoading || isFieldDisabled}
-                        placeholder={t(
-                          'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.placeholder',
-                        )}
-                        items={emailFieldItems}
-                        isClearable
-                        value={value}
-                        {...rest}
-                      />
-                    )}
-                  />
-                </Skeleton>
-              </Box>
+                />
+              </Skeleton>
             </FadeIn>
 
             {/* Sub-step 3: Other people */}
             {subStep >= 3 && (
               <FadeIn key="stepN-field">
-                <Box pointerEvents={isFieldDisabled ? 'none' : 'auto'}>
-                  <FormLabel mb="0.75rem" textColor="secondary.700">
-                    {t(
-                      'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
+                <FormLabel mb="0.75rem" textColor="secondary.700">
+                  {t(
+                    'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
+                  )}
+                </FormLabel>
+                <Skeleton isLoaded={!isLoading}>
+                  <Controller
+                    control={control}
+                    name={WORKFLOW_EMAIL_MULTISELECT_NAME}
+                    render={({
+                      field: { value: values = [], onChange, onBlur, ...rest },
+                    }) => (
+                      <MultiSelect
+                        items={formWorkflowStepsWithStepNumber
+                          .filter((step) => step.stepNumber > 1)
+                          .map(({ step_name, stepNumber, _id: value }) => ({
+                            label:
+                              t(
+                                'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.each',
+                                { stepNumber },
+                              ) + (step_name ? ` (${step_name})` : ''),
+                            value,
+                          }))}
+                        values={values}
+                        onChange={onChange}
+                        onBlur={onBlur}
+                        placeholder={t(
+                          'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.placeholder',
+                        )}
+                        isSelectedItemFullWidth
+                        isDisabled={isLoading}
+                        {...rest}
+                      />
                     )}
-                  </FormLabel>
-                  <Skeleton isLoaded={!isLoading}>
-                    <Controller
-                      control={control}
-                      name={WORKFLOW_EMAIL_MULTISELECT_NAME}
-                      render={({
-                        field: {
-                          value: values = [],
-                          onChange,
-                          onBlur,
-                          ...rest
-                        },
-                      }) => (
-                        <MultiSelect
-                          items={formWorkflowStepsWithStepNumber
-                            .filter((step) => step.stepNumber > 1)
-                            .map(({ step_name, stepNumber, _id: value }) => ({
-                              label:
-                                t(
-                                  'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.each',
-                                  { stepNumber },
-                                ) + (step_name ? ` (${step_name})` : ''),
-                              value,
-                            }))}
-                          values={values}
-                          onChange={onChange}
-                          onBlur={onBlur}
-                          placeholder={t(
-                            'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.placeholder',
-                          )}
-                          isSelectedItemFullWidth
-                          isDisabled={isLoading || isFieldDisabled}
-                          {...rest}
-                        />
-                      )}
-                    />
-                  </Skeleton>
-                </Box>
+                  />
+                </Skeleton>
               </FadeIn>
             )}
 
             {/* Sub-step 4: Others */}
             {subStep >= 4 && (
               <FadeIn key="others-field">
-                <Box pointerEvents={isFieldDisabled ? 'none' : 'auto'}>
-                  <FormControl
-                    isInvalid={!isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME])}
-                  >
-                    <FormLabel
-                      textColor="secondary.700"
-                      mb="0.75rem"
-                      tooltipVariant="info"
-                      tooltipPlacement="top"
-                      tooltipText={t(
-                        'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.tooltipText',
-                      )}
-                    >
-                      {t(
-                        'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.label',
-                      )}
-                    </FormLabel>
-                    <Controller<FormData>
-                      name={OTHER_PARTIES_EMAIL_INPUT_NAME}
-                      control={control}
-                      rules={
-                        optionalAdminEmailValidationRules as RegisterOptions<FormData>
-                      }
-                      render={({ field }) => (
-                        <TagInput
-                          placeholder={otherPartiesEmailInputPlaceholder}
-                          {...field}
-                          value={field.value as string[]}
-                          onBlur={handleOtherPartiesEmailInputBlur}
-                          tagValidation={isEmail}
-                        />
-                      )}
-                    />
-                    {isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME]) ? (
-                      <FormLabel.Description color="secondary.400" mt="0.5rem">
-                        {t(
-                          'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
-                        )}
-                      </FormLabel.Description>
-                    ) : (
-                      <FormErrorMessage>
-                        {get(
-                          errors,
-                          `${OTHER_PARTIES_EMAIL_INPUT_NAME}.message`,
-                        )}
-                      </FormErrorMessage>
+                <FormControl
+                  isInvalid={!isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME])}
+                >
+                  <FormLabel
+                    textColor="secondary.700"
+                    mb="0.75rem"
+                    tooltipVariant="info"
+                    tooltipPlacement="top"
+                    tooltipText={t(
+                      'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.tooltipText',
                     )}
-                  </FormControl>
-                </Box>
+                  >
+                    {t(
+                      'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.label',
+                    )}
+                  </FormLabel>
+                  <Controller<FormData>
+                    name={OTHER_PARTIES_EMAIL_INPUT_NAME}
+                    control={control}
+                    rules={
+                      optionalAdminEmailValidationRules as RegisterOptions<FormData>
+                    }
+                    render={({ field }) => (
+                      <TagInput
+                        placeholder={otherPartiesEmailInputPlaceholder}
+                        {...field}
+                        value={field.value as string[]}
+                        onBlur={handleOtherPartiesEmailInputBlur}
+                        tagValidation={isEmail}
+                      />
+                    )}
+                  />
+                  {isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME]) ? (
+                    <FormLabel.Description color="secondary.400" mt="0.5rem">
+                      {t(
+                        'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
+                      )}
+                    </FormLabel.Description>
+                  ) : (
+                    <FormErrorMessage>
+                      {get(errors, `${OTHER_PARTIES_EMAIL_INPUT_NAME}.message`)}
+                    </FormErrorMessage>
+                  )}
+                </FormControl>
               </FadeIn>
             )}
           </Stack>

@@ -80,10 +80,8 @@ export const DynamicRespondentOption = ({
                 control={control}
                 name="field"
                 rules={{
-                  required: t(
-                    'features.adminForm.sidebar.workflow.dynamicRespondent.required',
-                  ),
                   validate: (selectedValue) => {
+                    if (!selectedValue) return true
                     return (
                       isLoading ||
                       !emailFieldItems ||

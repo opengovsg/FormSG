@@ -66,6 +66,7 @@ export const GuidedStep = ({
   const currentSection = useGuidedWorkflowStore(currentSectionSelector)
   const revealNextSection = useGuidedWorkflowStore((s) => s.revealNextSection)
   const goBackSection = useGuidedWorkflowStore((s) => s.goBackSection)
+  const setCurrentSection = useGuidedWorkflowStore((s) => s.setCurrentSection)
   const cancelCurrentStep = useGuidedWorkflowStore((s) => s.cancelCurrentStep)
   const completeCurrentStep = useGuidedWorkflowStore(
     (s) => s.completeCurrentStep,
@@ -111,9 +112,24 @@ export const GuidedStep = ({
 
   const isLastSection = currentSection >= totalSections
   const isLaterStep = stepIndex >= 2
-  // Step 3+ shows all sections at once; show the "you know what to do" infobox
-  // only when all sections are already revealed (not when user chose guided mode)
-  const showSkipGuidedHint = isLaterStep && isLastSection
+
+  // Per-step guided toggle for step 3+
+  const [guidedEdit, setGuidedEdit] = useState(false)
+  // Show the "you know what to do" hint only when step 3+ has all sections
+  // revealed AND guided mode is off
+  const showSkipGuidedHint = isLaterStep && isLastSection && !guidedEdit
+
+  const handleToggleGuide = () => {
+    if (guidedEdit) {
+      // Turn off: reveal all sections
+      setCurrentSection(totalSections)
+      setGuidedEdit(false)
+    } else {
+      // Turn on: reset to section 1
+      setCurrentSection(1)
+      setGuidedEdit(true)
+    }
+  }
 
   // stepIndex is 0-indexed, matching the existing stepNumber convention
   // (isFirstStepByStepNumber checks stepNumber === 0)
@@ -261,6 +277,12 @@ export const GuidedStep = ({
               ? undefined
               : 'Rename the step if you feel like it. You know what to do.'
           }
+          {...(isLaterStep
+            ? {
+                guidedEdit,
+                onToggleGuide: handleToggleGuide,
+              }
+            : {})}
         />
         {renderContinueButton(1)}
       </Box>,

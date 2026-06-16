@@ -12,12 +12,10 @@ import { EmailLabel } from './EmailLabel'
 
 interface InactiveEmailCardProps {
   onEdit: () => void
-  isPreventEdit?: boolean
 }
 
 export const InactiveEmailCard = ({
   onEdit,
-  isPreventEdit = false,
 }: InactiveEmailCardProps): JSX.Element => {
   const { t } = useTranslation()
   const { data: settings } = useAdminFormSettings<MultirespondentFormSettings>()
@@ -44,17 +42,11 @@ export const InactiveEmailCard = ({
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
-        _hover={
-          isPreventEdit
-            ? undefined
-            : { borderColor: 'primary.500', bg: 'primary.50' }
-        }
+        _hover={{ borderColor: 'primary.500', bg: 'primary.50' }}
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-        disabled={isPreventEdit}
-        aria-disabled={isPreventEdit}
-        onClick={isPreventEdit ? undefined : onEdit}
+        cursor="pointer"
+        onClick={onEdit}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <EmailLabel />
