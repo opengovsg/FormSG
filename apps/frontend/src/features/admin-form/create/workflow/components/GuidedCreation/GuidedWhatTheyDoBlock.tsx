@@ -203,7 +203,7 @@ export const GuidedWhatTheyDoBlock = ({
                     px="0.5rem"
                     __css={{ _focusWithin: { boxShadow: 'none' } }}
                   >
-                    <Text>Fill up fields</Text>
+                    <Text>Fill up fields only</Text>
                     {displayedStepType === 'collect' && (
                       <Text
                         textStyle="body-2"

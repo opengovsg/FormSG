@@ -42,7 +42,7 @@ export const InactiveWhatTheyDoBlock = ({
             )}
           </>
         ) : (
-          <LogicBadge>Fill up fields</LogicBadge>
+          <LogicBadge>Fill up fields only</LogicBadge>
         )}
       </Stack>
     </Stack>

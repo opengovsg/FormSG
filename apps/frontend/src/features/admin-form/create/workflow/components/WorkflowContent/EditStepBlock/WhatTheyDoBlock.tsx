@@ -125,7 +125,7 @@ export const WhatTheyDoBlock = ({
             px="0.5rem"
             __css={{ _focusWithin: { boxShadow: 'none' } }}
           >
-            <Text>Fill up fields</Text>
+            <Text>Fill up fields only</Text>
             {stepType === 'collect' && (
               <Text textStyle="body-2" color="secondary.400" pt="0.25rem">
                 This person fills in the fields assigned to them.
