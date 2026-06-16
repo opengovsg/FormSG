@@ -8,6 +8,10 @@ export enum FilterOption {
   EmailForms = 'Email mode forms',
   StorageForms = 'Storage mode forms',
   MultiRespondentForms = 'Multi-respondent forms',
+  // TODO [MRF-CUTOVER]: Remove after cutover. Shown only while the flag is on;
+  // matches Encrypt (Storage mode) forms — the same forms that carry the
+  // "Legacy" badge (see useResponseModeBadgeLabel).
+  LegacyForms = 'Legacy forms',
 }
 
 export const filterOptionMap: Record<string, FilterOption> = {
@@ -16,6 +20,8 @@ export const filterOptionMap: Record<string, FilterOption> = {
   closed: FilterOption.ClosedForms,
   storage: FilterOption.StorageForms,
   mrf: FilterOption.MultiRespondentForms,
+  // TODO [MRF-CUTOVER]: Remove after cutover.
+  legacy: FilterOption.LegacyForms,
 }
 
 export const filterOptionReverseMap: Record<FilterOption, string> = Object.keys(

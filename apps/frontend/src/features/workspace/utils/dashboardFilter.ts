@@ -14,17 +14,20 @@ export const FILTER_OPTIONS: FilterOption[] = [
 ]
 
 // TODO [MRF-CUTOVER]: Remove after cutover. During the experiment the
-// response-mode filters are hidden so admins aren't shown the
-// Storage/Multi-respondent/Email mode distinctions.
-const CUTOVER_HIDDEN_FILTER_OPTIONS: FilterOption[] = [
-  FilterOption.StorageForms,
-  FilterOption.MultiRespondentForms,
-  FilterOption.EmailForms,
+// response-mode options (Storage / Multi-respondent / Email) are replaced by a
+// single "Legacy" option, so admins aren't shown the mode distinctions the
+// cutover hides everywhere else. "Legacy" matches Encrypt (Storage mode) forms.
+const CUTOVER_FILTER_OPTIONS: FilterOption[] = [
+  FilterOption.AllForms,
+  FilterOption.OpenForms,
+  FilterOption.ClosedForms,
+  FilterOption.LegacyForms,
 ]
 
 /**
  * Returns the filter options to show in the dashboard filter menu. While the
- * MRF cutover flag is on, the response-mode options are hidden.
+ * MRF cutover flag is on, the response-mode options are replaced by a single
+ * "Legacy" option.
  *
  * TODO [MRF-CUTOVER]: Remove after cutover; consumers should use
  * `FILTER_OPTIONS` directly again.
@@ -32,7 +35,5 @@ const CUTOVER_HIDDEN_FILTER_OPTIONS: FilterOption[] = [
 export const useDashboardFilterOptions = (): FilterOption[] => {
   const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
   if (!isMrfCutoverEnabled) return FILTER_OPTIONS
-  return FILTER_OPTIONS.filter(
-    (option) => !CUTOVER_HIDDEN_FILTER_OPTIONS.includes(option),
-  )
+  return CUTOVER_FILTER_OPTIONS
 }
