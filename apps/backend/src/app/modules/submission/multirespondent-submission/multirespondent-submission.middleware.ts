@@ -77,6 +77,7 @@ import {
   checkFormIsMultirespondent,
   getMultirespondentSubmission,
 } from './multirespondent-submission.service'
+import { produceFormKeyContentCopy } from './multirespondent-submission.snapshot'
 import {
   CreateFormsgAndRetrieveFormMiddlewareHandlerRequest,
   MultirespondentSubmissionMiddlewareHandlerRequest,
@@ -806,10 +807,16 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
+  // A webhook form goes V4 only when the global V4 rollout AND the (dormant)
+  // enable-mrf-webhooks flag are both on; non-webhook forms are unaffected.
+  // Replaces today's `answerObjectEncryption && !hasWebhookUrl`.
+  const answerObjectEncryption =
+    req.growthbook?.isOn(featureFlags.answerObjectEncryption) ?? false
+  const enableMrfWebhooks =
+    req.growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false
+  const hasWebhookUrl = !!formDef.webhook?.url
   const useV4Encryption =
-    (req.growthbook?.isOn(featureFlags.answerObjectEncryption) &&
-      !formDef.webhook?.url) ??
-    false
+    answerObjectEncryption && (!hasWebhookUrl || enableMrfWebhooks)
 
   let responsesToEncrypt:
     | Record<
@@ -931,6 +938,19 @@ export const encryptSubmission = async (
      * MRF Version: 2 — V4 encrypted responses (with provenance)
      */
     mrfVersion: useV4Encryption ? 2 : 1,
+  }
+
+  // Produce the form-key content copy for the submission_history snapshot, but
+  // only when a snapshot will be written: V4 + a webhook URL + retries enabled.
+  // The plaintext (responsesToEncrypt) exists only here. This slice ships V4
+  // content as-is (contentFormat 'v4'); the V4->V1 flatten for generic
+  // consumers is the next slice.
+  if (useV4Encryption && hasWebhookUrl && formDef.webhook?.isRetryEnabled) {
+    req.formsg.encryptedPayload.formKeyContentCopy = produceFormKeyContentCopy({
+      content: responsesToEncrypt,
+      formPublicKey,
+      contentFormat: 'v4',
+    })
   }
 
   return next()

@@ -46,6 +46,8 @@ import { DatabaseError } from '../../core/core.errors'
 import { FormRespondentSingleSubmissionValidationError } from '../../form/form.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
 import { WebhookFactory } from '../../webhook/webhook.factory'
+import { shouldSendMrfWebhook } from '../../webhook/webhook.policy'
+import { getWebhookType } from '../../webhook/webhook.service'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
@@ -66,6 +68,7 @@ import {
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
+import { saveStepWithSnapshot } from './multirespondent-submission.snapshot'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   buildMrfResponseJson,
@@ -805,6 +808,7 @@ export const createMultiRespondentFormSubmission = ({
               hashedSubmitterId,
               0,
               submissionContent,
+              encryptedPayload.formKeyContentCopy,
             )
           if (!uniqueSavedSubmission) {
             const formSingleSubmissionError =
@@ -819,7 +823,10 @@ export const createMultiRespondentFormSubmission = ({
           return uniqueSavedSubmission
         }
         const submission = new MultirespondentSubmission(submissionContent)
-        return submission.save()
+        return saveStepWithSnapshot(
+          submission,
+          encryptedPayload.formKeyContentCopy,
+        )
       }
 
       return ResultAsync.fromPromise(
@@ -1111,7 +1118,13 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   })
 
   const webhookUrl = form.webhook?.url
-  if (webhookUrl) {
+  if (
+    webhookUrl &&
+    shouldSendMrfWebhook({
+      mrfVersion: submission.mrfVersion,
+      webhookType: getWebhookType(webhookUrl),
+    })
+  ) {
     logger.info({
       message: 'Sending initial webhook for multirespondent submission',
       meta: logMeta,
@@ -1302,7 +1315,10 @@ export const updateMultiRespondentFormSubmission = ({
       submission.mrfVersion = mrfVersion
 
       return ResultAsync.fromPromise(
-        submission.save().then(() => ({ submission, responseMetadata })),
+        saveStepWithSnapshot(
+          submission,
+          encryptedPayload.formKeyContentCopy,
+        ).then(() => ({ submission, responseMetadata })),
         (error) => {
           logger.error({
             message: 'Multirespondent submission save error',
@@ -1383,7 +1399,13 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   const isStepRejected = isStepRejectedResult.value
 
   const webhookUrl = snapshottedFormDef.webhook?.url
-  if (webhookUrl) {
+  if (
+    webhookUrl &&
+    shouldSendMrfWebhook({
+      mrfVersion: submission.mrfVersion,
+      webhookType: getWebhookType(webhookUrl),
+    })
+  ) {
     logger.info({
       message: 'Sending update webhook for multirespondent submission',
       meta: logMeta,

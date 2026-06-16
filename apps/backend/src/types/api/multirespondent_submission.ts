@@ -9,6 +9,7 @@ import {
 
 import { IPopulatedMultirespondentForm } from '../form'
 import { IMultirespondentSubmissionSchema } from '../submission'
+import { FormKeyContentCopy } from '../submission_history'
 
 export type ParsedMultirespondentSubmissionBody = {
   responses: FieldResponsesV3
@@ -65,4 +66,11 @@ export type MultirespondentSubmissionDto = {
   submitterId?: string
   responses: FieldResponsesV3
   mrfVersion: number
+  /**
+   * Form-key copy of the step content (M5), present only when this step writes
+   * a submission_history snapshot (V4 + webhook URL + retries enabled). Carried
+   * from the middleware (where the plaintext exists) to the service, which
+   * assembles the full snapshot at save time.
+   */
+  formKeyContentCopy?: FormKeyContentCopy
 }

@@ -16,6 +16,7 @@ import mongoose, {
 
 import {
   FindFormsWithSubsAboveResult,
+  FormKeyContentCopy,
   IEmailSubmissionModel,
   IEmailSubmissionSchema,
   IEncryptedSubmissionSchema,
@@ -650,6 +651,7 @@ MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
     submitterId: string,
     zeroIndexedStepNumber: number,
     submissionContent: MultirespondentSubmissionContent,
+    formKeyContentCopy?: FormKeyContentCopy,
   ): Promise<
     (IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }) | null
   > {
@@ -691,6 +693,26 @@ MultirespondentSubmissionSchema.statics.saveIfSubmitterIdIsUnique =
       await session.abortTransaction()
       await session.endSession()
       return null
+    }
+
+    // Write the submission_history snapshot in the same transaction as the
+    // step, so a step and its snapshot are atomic (ADR-0002). Lazily imported
+    // to avoid a circular module dependency on the submission_history model.
+    if (formKeyContentCopy) {
+      const created = afterCreateRes[0]
+      const { default: getSubmissionHistoryModel } =
+        await import('./submission_history.server.model')
+      await getSubmissionHistoryModel(this.db).insertSnapshot(
+        {
+          submissionId: created._id,
+          formId: created.form,
+          submissionIndex: (created.submittedSteps?.length ?? 1) - 1,
+          workflowStep: created.workflowStep,
+          encryptedContent: formKeyContentCopy.encryptedContent,
+          contentFormat: formKeyContentCopy.contentFormat,
+        },
+        { session },
+      )
     }
 
     await session.commitTransaction()

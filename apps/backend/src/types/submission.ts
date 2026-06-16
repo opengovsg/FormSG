@@ -24,6 +24,7 @@ import {
 
 import { IFormSchema } from './form'
 import { IPaymentSchema } from './payment'
+import { FormKeyContentCopy } from './submission_history'
 
 export interface WebhookData {
   formId: string
@@ -97,6 +98,7 @@ type MultirespondentSaveIfSubmitterIdIsUniqueType = (
   submitterId: string,
   zeroIndexedStepNumber: number,
   submissionContent: MultirespondentSubmissionContent,
+  formKeyContentCopy?: FormKeyContentCopy,
 ) => Promise<
   (IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId }) | null
 >

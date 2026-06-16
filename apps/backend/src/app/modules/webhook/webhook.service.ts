@@ -1,6 +1,6 @@
 import axios from 'axios'
 import Bluebird from 'bluebird'
-import { WebhookResponse } from 'formsg-shared/types'
+import { SubmissionType, WebhookResponse } from 'formsg-shared/types'
 import { get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
@@ -15,12 +15,14 @@ import { aws as AwsConfig } from '../../config/config'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 import getSubmissionModel from '../../models/submission.server.model'
+import getSubmissionHistoryModel from '../../models/submission_history.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import { WEBHOOK_MAX_CONTENT_LENGTH } from './webhook.constants'
 import {
+  SubmissionHistoryMissingError,
   WebhookFailedWithAxiosError,
   WebhookFailedWithPresignedUrlGenerationError,
   WebhookFailedWithUnknownError,
@@ -29,6 +31,7 @@ import {
 } from './webhook.errors'
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
+import { reconstructWebhookView } from './webhook.reconstruction'
 import { webhookStatsdClient } from './webhook.statsd-client'
 import { formatWebhookResponse, isSuccessfulResponse } from './webhook.utils'
 import { validateWebhookUrl } from './webhook.validation'
@@ -238,6 +241,48 @@ export const getWebhookType = (webhookUrl: string) => {
 }
 
 /**
+ * Resolves the webhook view to send for the initial delivery.
+ *
+ * For a V4 MRF with retries enabled (where a submission_history snapshot was
+ * written), the payload is reconstructed from the live row + the latest step's
+ * snapshot (M1), so it is byte-identical to any later retry. A missing snapshot
+ * here is a data-integrity error (fail loud) — never a silent fall back to the
+ * stale live-row payload.
+ *
+ * Every other case (storage-mode, V3 / plumber-today, retries-off) resolves to
+ * today's live-row payload unchanged.
+ */
+const resolveWebhookView = async (
+  submission: IEncryptedSubmissionSchema | IMultirespondentSubmissionSchema,
+  webhookUrl: string,
+  isRetryEnabled: boolean,
+): Promise<WebhookView> => {
+  const liveView = await submission.getWebhookView()
+
+  const isSnapshotBacked =
+    submission.submissionType === SubmissionType.Multirespondent &&
+    (submission as IMultirespondentSubmissionSchema).mrfVersion === 2 &&
+    isRetryEnabled
+
+  if (!isSnapshotBacked) {
+    return liveView
+  }
+
+  const mrfSubmission = submission as IMultirespondentSubmissionSchema
+  const submissionIndex = (mrfSubmission.submittedSteps?.length ?? 1) - 1
+  const snapshot = await getSubmissionHistoryModel(
+    mongoose,
+  ).findBySubmissionIdAndIndex(String(submission._id), submissionIndex)
+
+  return reconstructWebhookView({
+    liveView,
+    webhookType: getWebhookType(webhookUrl),
+    submissionIndex,
+    snapshot,
+  })
+}
+
+/**
  * Creates a function which sends a webhook and saves the necessary records.
  * This function sends the INITIAL webhook, which occurs immediately after
  * a submission. If the initial webhook fails and retries are enabled, the
@@ -256,12 +301,16 @@ export const createInitialWebhookSender =
     | PossibleDatabaseError
     | SubmissionNotFoundError
     | WebhookPushToQueueError
+    | SubmissionHistoryMissingError
   > => {
     // Attempt to send webhook
 
     return ResultAsync.fromPromise(
-      submission.getWebhookView(),
-      () => new DatabaseError(),
+      resolveWebhookView(submission, webhookUrl, isRetryEnabled),
+      (error) =>
+        error instanceof SubmissionHistoryMissingError
+          ? error
+          : new DatabaseError(),
     ).andThen((webhookView) =>
       sendWebhook(webhookView, webhookUrl).andThen((webhookResponse) => {
         webhookStatsdClient.increment('sent', 1, 1, {

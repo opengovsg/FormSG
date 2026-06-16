@@ -175,6 +175,8 @@ describe('multirespondent-submission.service', () => {
             }),
           ]),
         }),
+        // No form-key copy on this V3 form (no webhook + V4 + retry).
+        undefined,
       )
       expect(saveProtoSpy).not.toHaveBeenCalled()
       expect(result.isOk()).toBe(true)
