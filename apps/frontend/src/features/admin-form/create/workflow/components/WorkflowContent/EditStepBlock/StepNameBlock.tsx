@@ -2,6 +2,7 @@ import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormHelperText,
@@ -13,6 +14,7 @@ import {
 import { textStyles } from '~theme/textStyles'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
+import Toggle from '~components/Toggle'
 
 import { EditStepInputs } from '../../../types'
 
@@ -23,6 +25,8 @@ type StepNameProps = {
   formMethods: UseFormReturn<EditStepInputs>
   showGuidedHint?: boolean
   guidedHintText?: string
+  guidedEdit?: boolean
+  onToggleGuide?: () => void
 }
 
 const STEP_NAME = 'step_name'
@@ -33,6 +37,8 @@ export const StepNameBlock = ({
   formMethods,
   showGuidedHint,
   guidedHintText,
+  guidedEdit,
+  onToggleGuide,
 }: StepNameProps): JSX.Element => {
   const { t } = useTranslation()
   const {
@@ -51,7 +57,7 @@ export const StepNameBlock = ({
   return (
     <EditStepBlockContainer>
       <Stack spacing="1.5rem">
-        <Box>
+        <Flex justifyContent="space-between" alignItems="center">
           <Text
             display="inline-block"
             py="0.5rem"
@@ -63,7 +69,19 @@ export const StepNameBlock = ({
           >
             {stepNumber + 1}
           </Text>
-        </Box>
+          {onToggleGuide && (
+            <Flex alignItems="center" gap="0.5rem">
+              <Text textStyle="caption-1" color="secondary.400">
+                Guided mode
+              </Text>
+              <Toggle.Switch
+                isChecked={guidedEdit}
+                onChange={onToggleGuide}
+                aria-label="Guided mode"
+              />
+            </Flex>
+          )}
+        </Flex>
         <Box>
           <FormControl
             id={STEP_NAME}

@@ -41,6 +41,7 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
+import { DropdownMappingModal } from './DropdownMappingModal'
 import { useWorkflowTypeValidation } from './hooks'
 import { RespondentOptionProps } from './types'
 
@@ -168,6 +169,11 @@ export const ConditionalRoutingOption = ({
   ])
 
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const {
+    isOpen: isMappingModalOpen,
+    onOpen: onMappingModalOpen,
+    onClose: onMappingModalClose,
+  } = useDisclosure()
 
   const handleCsvDownload = () => {
     if (!selectedConditionalFieldOptionsToRecipientsMap) return
@@ -376,9 +382,31 @@ export const ConditionalRoutingOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
 
-  const handleOpenModal = () => {
+  const handleOpenCsvModal = () => {
     conditionalRoutingConfigSetValue('csvFile', null)
     onOpen()
+  }
+
+  const handleOpenMappingModal = () => {
+    onMappingModalOpen()
+  }
+
+  const handleMappingModalSave = (mapping: Record<string, string[]>) => {
+    if (!selectedConditionalFieldId) return
+    editOptionToRecipientsMutation.mutate(
+      {
+        fieldId: selectedConditionalFieldId,
+        optionsToRecipientsMap: mapping,
+        fieldOptions: selectedConditionalField?.fieldOptions ?? [],
+      },
+      {
+        onSuccess: () => {
+          setCsvFile(placeholderOptionToEmailMappingCsvFile)
+          clearErrors('conditional_field')
+          onMappingModalClose()
+        },
+      },
+    )
   }
 
   return (
@@ -387,6 +415,15 @@ export const ConditionalRoutingOption = ({
         isOpen={isDeleteConfirmModalOpen}
         onClose={() => setIsDeleteConfirmModalOpen(false)}
         handleDelete={removeOptionsToRecipientsMapping}
+      />
+      <DropdownMappingModal
+        isOpen={isMappingModalOpen}
+        onClose={onMappingModalClose}
+        fieldOptions={selectedConditionalField?.fieldOptions ?? []}
+        existingMapping={selectedConditionalFieldOptionsToRecipientsMap}
+        onSave={handleMappingModalSave}
+        isSaving={editOptionToRecipientsMutation.isLoading}
+        onOpenCsvModal={handleOpenCsvModal}
       />
       <ConditionalRoutingOptionModal
         conditionalFieldItems={conditionalFieldItems}
@@ -488,7 +525,7 @@ export const ConditionalRoutingOption = ({
                         handleRemoveFileOverride={() =>
                           setIsDeleteConfirmModalOpen(true)
                         }
-                        handleReplaceFileOverride={handleOpenModal}
+                        handleReplaceFileOverride={handleOpenMappingModal}
                         accept={['.csv']}
                       />
                     ) : (
@@ -496,7 +533,7 @@ export const ConditionalRoutingOption = ({
                         w="100%"
                         variant="outline"
                         leftIcon={<BiPlus fontSize="1.5rem" />}
-                        onClick={handleOpenModal}
+                        onClick={handleOpenMappingModal}
                         isDisabled={!isSelectedConditionalFieldFound}
                       >
                         {t(

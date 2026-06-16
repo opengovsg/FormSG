@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
+import { useParams } from 'react-router-dom'
 import { Box, Container } from '@chakra-ui/react'
 
 import { GuidedWorkflowCreation } from './components/GuidedCreation'
@@ -23,10 +24,14 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
     }, []),
   )
   const { isLoading, formWorkflow } = useAdminFormWorkflow()
+  const { formId } = useParams()
 
   const guidedMode = useGuidedWorkflowStore(guidedModeSelector)
   const currentStepIndex = useGuidedWorkflowStore(currentStepIndexSelector)
+  const storedFormId = useGuidedWorkflowStore((s) => s.formId)
   const resetGuided = useGuidedWorkflowStore((s) => s.reset)
+  const setGuidedFormId = useGuidedWorkflowStore((s) => s.setFormId)
+  const finishWorkflow = useGuidedWorkflowStore((s) => s.finishWorkflow)
 
   const isEmptyWorkflow = useMemo(
     () => formWorkflow?.length === 0 && !createOrEditData,
@@ -37,10 +42,29 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
   const showGuided =
     guidedMode !== 'normal' && (isEmptyWorkflow || guidedMode !== 'intro')
 
-  // Reset guided state when it's stale (doesn't match the actual workflow).
-  // Case 1: workflow is empty but store thinks we're in 'normal' mode (finished a previous form)
-  // Case 2: workflow is empty but store has a non-zero step index (leftover from another form)
+  // Reset guided state when the form changes or state is stale.
   useEffect(() => {
+    if (!formId) return
+
+    // Different form than what the guided store was tracking: reset.
+    if (storedFormId && storedFormId !== formId) {
+      if (formWorkflow && formWorkflow.length > 0) {
+        // Form already has steps, go straight to normal editor
+        finishWorkflow()
+      } else {
+        // Empty form, show intro
+        resetGuided()
+      }
+      setGuidedFormId(formId)
+      return
+    }
+
+    // Same form (or first visit): stamp the formId
+    if (!storedFormId) {
+      setGuidedFormId(formId)
+    }
+
+    // Legacy reset logic for empty workflows with stale state
     if (formWorkflow?.length === 0) {
       if (
         guidedMode === 'normal' ||
@@ -51,9 +75,20 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
         currentStepIndex > 0
       ) {
         resetGuided()
+        setGuidedFormId(formId)
       }
     }
-  }, [formWorkflow?.length, guidedMode, currentStepIndex, resetGuided])
+  }, [
+    formId,
+    storedFormId,
+    formWorkflow,
+    formWorkflow?.length,
+    guidedMode,
+    currentStepIndex,
+    resetGuided,
+    finishWorkflow,
+    setGuidedFormId,
+  ])
 
   useEffect(() => reset, [reset])
 

@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Divider, Flex, Link, Stack } from '@chakra-ui/react'
+import { Box, Divider, Flex, Stack } from '@chakra-ui/react'
 
 import {
   FormWorkflowStep,
@@ -70,7 +70,6 @@ export const GuidedStep = ({
   const completeCurrentStep = useGuidedWorkflowStore(
     (s) => s.completeCurrentStep,
   )
-  const requestGuidedMode = useGuidedWorkflowStore((s) => s.requestGuidedMode)
 
   const { user, isLoading: isUserLoading } = useUser()
   const { createStepMutation } = useWorkflowMutations()
@@ -248,19 +247,8 @@ export const GuidedStep = ({
         {showSkipGuidedHint && (
           <Box px={{ base: '1.5rem', md: '2rem' }} pb="0.5rem">
             <InlineMessage variant="info">
-              <Box as="span">
-                You already know what to do. If you still need help,{' '}
-                <Link
-                  as="button"
-                  color="primary.500"
-                  fontWeight="medium"
-                  textDecoration="underline"
-                  onClick={requestGuidedMode}
-                >
-                  click here
-                </Link>{' '}
-                to switch to guided mode.
-              </Box>
+              You already know what to do. Need help later? Use the guide toggle
+              in the top right when editing any step.
             </InlineMessage>
           </Box>
         )}

@@ -16,6 +16,8 @@ type GuidedWorkflowStore = {
   currentStepIndex: number
   currentSection: number
   completedSteps: number[]
+  /** The form this guided state belongs to. Used to detect stale state. */
+  formId: string | null
 
   // Actions
   startGuided: () => void
@@ -32,6 +34,8 @@ type GuidedWorkflowStore = {
   completeSuccessModal: () => void
   cancelCurrentStep: () => void
   requestGuidedMode: () => void
+  /** Set the form this guided state belongs to */
+  setFormId: (formId: string) => void
   reset: () => void
 }
 
@@ -40,6 +44,7 @@ const INITIAL_STATE = {
   currentStepIndex: 0,
   currentSection: 1,
   completedSteps: [] as number[],
+  formId: null as string | null,
 }
 
 // Selectors
@@ -122,6 +127,7 @@ export const useGuidedWorkflowStore = create<GuidedWorkflowStore>()(
           set({
             currentSection: 1,
           }),
+        setFormId: (formId: string) => set({ formId }),
         reset: () => set(INITIAL_STATE),
       }),
       {
@@ -131,6 +137,7 @@ export const useGuidedWorkflowStore = create<GuidedWorkflowStore>()(
           currentStepIndex: state.currentStepIndex,
           currentSection: state.currentSection,
           completedSteps: state.completedSteps,
+          formId: state.formId,
         }),
       },
     ),

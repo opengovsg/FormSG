@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Divider, Stack } from '@chakra-ui/react'
+import { Box, Divider, Flex, Stack } from '@chakra-ui/react'
 
 import {
   FormWorkflowStep,
@@ -8,6 +8,8 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 
+import Button from '~components/Button'
+import InlineMessage from '~components/InlineMessage'
 import { UnsavedChangesModal } from '~templates/NavigationPrompt'
 
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
@@ -18,6 +20,8 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { EditStepInputs } from '../../../types'
+import { GuidedRespondentBlock } from '../../GuidedCreation/GuidedRespondentBlock'
+import { GuidedWhatTheyDoBlock } from '../../GuidedCreation/GuidedWhatTheyDoBlock'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { QuestionsBlock } from './QuestionsBlock'
@@ -148,9 +152,55 @@ export const EditStepBlock = ({
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
+  // Per-step guidance toggle
+  const [guidedEdit, setGuidedEdit] = useState(false)
+  const totalSections = isFirstStep ? 3 : 4
+  const [guidedSection, setGuidedSection] = useState(1)
+
+  const handleGuidedContinue = () => {
+    setGuidedSection((s) => Math.min(s + 1, totalSections))
+  }
+
+  const handleGuidedBack = () => {
+    setGuidedSection((s) => Math.max(1, s - 1))
+  }
+
+  const isSectionVisible = (sectionIndex: number) => {
+    if (!guidedEdit) return true
+    return sectionIndex <= guidedSection
+  }
+
+  const isLastGuidedSection = guidedSection >= totalSections
+
+  // Sections 2-3 for Step 2+ use GuidedRespondentBlock/GuidedWhatTheyDoBlock
+  // which have their own internal Back/Continue buttons
+  const guidedSectionHasOwnNav =
+    !isFirstStep && guidedSection >= 2 && guidedSection <= 3
+
+  // Info box hints for guided edit (re-entry copy, concise and functional)
+  const GUIDED_HINTS: Record<string, string> = {
+    stepName: "Give this step a name so you know what it's for.",
+    respondent: isFirstStep
+      ? "Step 1 is always filled up by whoever opens your form link. In the next steps, you'll choose specific people to send the form to."
+      : 'Choose who fills up this step.',
+    whatTheyDo: 'Set what this person can do: fill fields, approve, or both.',
+    questions: 'Pick which fields this person needs to fill.',
+  }
+
+  const renderGuidedHint = (key: string, sectionIndex: number) => {
+    if (!guidedEdit) return null
+    if (sectionIndex !== guidedSection) return null
+    return (
+      <Box px={{ base: '1.5rem', md: '2rem' }}>
+        <InlineMessage variant="info">{GUIDED_HINTS[key]}</InlineMessage>
+      </Box>
+    )
+  }
+
   return (
     <Stack
       ref={wrapperRef}
+      w="100%"
       py="2rem"
       spacing="1.5rem"
       borderRadius="4px"
@@ -161,36 +211,117 @@ export const EditStepBlock = ({
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />
-      <Divider />
-      <RespondentBlock
-        user={user}
-        stepNumber={stepNumber}
+      {/* Section 1: Step Name (includes guidance toggle) */}
+      <StepNameBlock
         formMethods={formMethods}
-        isLoading={_isLoading}
+        stepNumber={stepNumber}
+        guidedEdit={guidedEdit}
+        onToggleGuide={() => {
+          setGuidedEdit((v) => !v)
+          if (!guidedEdit) {
+            setGuidedSection(1)
+          }
+        }}
       />
+      {renderGuidedHint('stepName', 1)}
 
-      {!isFirstStep ? (
+      {/* Section 2: Respondent */}
+      {isSectionVisible(2) && (
         <>
           <Divider />
-          <WhatTheyDoBlock formMethods={formMethods} stepNumber={stepNumber} />
+          {guidedEdit && !isFirstStep ? (
+            <GuidedRespondentBlock
+              user={user}
+              stepNumber={stepNumber}
+              formMethods={formMethods}
+              isLoading={_isLoading}
+              onComplete={handleGuidedContinue}
+              onBack={handleGuidedBack}
+              isActive={guidedSection === 2}
+            />
+          ) : (
+            <>
+              <RespondentBlock
+                user={user}
+                stepNumber={stepNumber}
+                formMethods={formMethods}
+                isLoading={_isLoading}
+              />
+              {renderGuidedHint('respondent', 2)}
+            </>
+          )}
         </>
-      ) : null}
-      <Divider />
-      <QuestionsBlock
-        formMethods={formMethods}
-        isLoading={_isLoading}
-        isFirstStep={isFirstStep}
-      />
-      <Divider />
-      <SaveActionGroup
-        isLoading={_isLoading}
-        handleSubmit={handleSubmit}
-        handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
-        handleCancel={handleCancel}
-        submitButtonLabel={submitButtonLabel}
-        ariaLabelName="step"
-      />
+      )}
+
+      {/* Section 3 (Step 2+): WhatTheyDo */}
+      {!isFirstStep && isSectionVisible(3) && (
+        <>
+          <Divider />
+          {guidedEdit ? (
+            <GuidedWhatTheyDoBlock
+              stepNumber={stepNumber}
+              formMethods={formMethods}
+              onComplete={handleGuidedContinue}
+              onBack={handleGuidedBack}
+              isActive={guidedSection === 3}
+            />
+          ) : (
+            <WhatTheyDoBlock
+              formMethods={formMethods}
+              stepNumber={stepNumber}
+            />
+          )}
+        </>
+      )}
+
+      {/* Questions (Section 3 for Step 1, Section 4 for Step 2+) */}
+      {isSectionVisible(isFirstStep ? 3 : 4) && (
+        <>
+          <Divider />
+          <QuestionsBlock
+            formMethods={formMethods}
+            isLoading={_isLoading}
+            isFirstStep={isFirstStep}
+          />
+          {renderGuidedHint('questions', isFirstStep ? 3 : 4)}
+        </>
+      )}
+
+      {/* Footer */}
+      {guidedEdit && guidedSectionHasOwnNav ? null : (
+        <>
+          <Divider />
+          {guidedEdit ? (
+            <Flex
+              px={{ base: '1.5rem', md: '2rem' }}
+              justifyContent="flex-end"
+              gap="0.75rem"
+            >
+              {guidedSection > 1 && (
+                <Button variant="clear" onClick={handleGuidedBack}>
+                  Back
+                </Button>
+              )}
+              {isLastGuidedSection ? (
+                <Button isLoading={_isLoading} onClick={handleSubmit}>
+                  {submitButtonLabel}
+                </Button>
+              ) : (
+                <Button onClick={handleGuidedContinue}>Continue</Button>
+              )}
+            </Flex>
+          ) : (
+            <SaveActionGroup
+              isLoading={_isLoading}
+              handleSubmit={handleSubmit}
+              handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
+              handleCancel={handleCancel}
+              submitButtonLabel={submitButtonLabel}
+              ariaLabelName="step"
+            />
+          )}
+        </>
+      )}
       <UnsavedChangesModal
         isOpen={isDiscardModalOpen}
         onClose={() => setIsDiscardModalOpen(false)}
