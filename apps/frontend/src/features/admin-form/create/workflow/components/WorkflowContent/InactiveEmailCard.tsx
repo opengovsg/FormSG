@@ -1,10 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
-import { Box, chakra, Stack, Text } from '@chakra-ui/react'
+import { Box, chakra, Flex, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { MultirespondentFormSettings } from 'formsg-shared/types'
-
-import IconButton from '~components/IconButton'
 
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
@@ -37,7 +35,7 @@ export const InactiveEmailCard = ({
     hasStepOneField || stepsToNotify.length > 0 || emails.length > 0
 
   return (
-    <Box pos="relative">
+    <Box pos="relative" role="group">
       <chakra.button
         type="button"
         w="100%"
@@ -46,6 +44,11 @@ export const InactiveEmailCard = ({
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
+        _hover={
+          isPreventEdit
+            ? undefined
+            : { borderColor: 'primary.500', bg: 'primary.50' }
+        }
         transitionProperty="common"
         transitionDuration="normal"
         cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
@@ -57,7 +60,9 @@ export const InactiveEmailCard = ({
           <EmailLabel />
 
           <Stack>
-            <Text textStyle="subhead-3">Recipients</Text>
+            <Text textStyle="subhead-3">
+              People who will receive the final email
+            </Text>
             {hasAnyRecipient ? (
               <Stack spacing="0.25rem">
                 {stepOneField && (
@@ -84,16 +89,21 @@ export const InactiveEmailCard = ({
           </Stack>
         </Stack>
       </chakra.button>
-      <IconButton
+      <Flex
+        pos="absolute"
         top={{ base: '0.5rem', md: '2rem' }}
         right={{ base: '0.5rem', md: '2rem' }}
-        pos="absolute"
-        aria-label="Edit email notification"
-        variant="clear"
-        onClick={isPreventEdit ? undefined : onEdit}
-        icon={<BiPencil fontSize="1.5rem" />}
-        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-      />
+        alignItems="center"
+        pointerEvents="none"
+      >
+        <Icon
+          as={BiPencil}
+          boxSize="1.25rem"
+          color="secondary.300"
+          _groupHover={{ color: 'primary.500' }}
+          transition="color 0.15s ease"
+        />
+      </Flex>
     </Box>
   )
 }

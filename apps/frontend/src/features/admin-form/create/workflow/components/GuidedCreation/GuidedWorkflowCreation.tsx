@@ -1,5 +1,5 @@
-import { Fragment, useEffect, useRef } from 'react'
-import { Stack, useDisclosure } from '@chakra-ui/react'
+import { Fragment, useEffect, useLayoutEffect, useRef } from 'react'
+import { Box, Stack, useDisclosure } from '@chakra-ui/react'
 
 import {
   editDataSelector,
@@ -7,23 +7,25 @@ import {
 } from '../../adminWorkflowStore'
 import {
   completedStepsSelector,
-  currentSectionSelector,
   currentStepIndexSelector,
   guidedModeSelector,
   useGuidedWorkflowStore,
 } from '../../guidedWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { DeleteStepModal } from '../DeleteStepModal'
-import { ActiveEmailCard } from '../WorkflowContent/ActiveEmailCard'
 import { ActiveStepBlock } from '../WorkflowContent/ActiveStepBlock'
 import { EndOfWorkflowBlock } from '../WorkflowContent/EndOfWorkflowBlock'
 import { EndOfWorkflowDivider } from '../WorkflowContent/EndOfWorkflowDivider'
 import { InactiveStepBlock } from '../WorkflowContent/InactiveStepBlock'
+import { SortableStepList } from '../WorkflowContent/SortableStepList'
+import { WorkflowCard } from '../WorkflowContent/WorkflowCard'
 import { WorkflowStepBlockDivider } from '../WorkflowContent/WorkflowContent'
 
 import { AddAnotherPrompt } from './AddAnotherPrompt'
+import { GuidedEmailCard } from './GuidedEmailCard'
 import { GuidedStep } from './GuidedStep'
 import { IntroPage } from './IntroPage'
+import { PeekCard } from './PeekCard'
 
 // For steps 3+ (index >= 2), auto-reveal all sections so users see
 // everything at once. They can click "Guide me" to reset to section 1.
@@ -33,12 +35,17 @@ const LATER_STEP_TOTAL_SECTIONS = 4
 export const GuidedWorkflowCreation = (): JSX.Element => {
   const mode = useGuidedWorkflowStore(guidedModeSelector)
   const currentStepIndex = useGuidedWorkflowStore(currentStepIndexSelector)
-  const currentSection = useGuidedWorkflowStore(currentSectionSelector)
   const completedSteps = useGuidedWorkflowStore(completedStepsSelector)
   const { formWorkflow } = useAdminFormWorkflow()
 
   const revealNextSection = useGuidedWorkflowStore((s) => s.revealNextSection)
-  const finishWorkflow = useGuidedWorkflowStore((s) => s.finishWorkflow)
+  const completeEmailSetup = useGuidedWorkflowStore((s) => s.completeEmailSetup)
+  const completeWorkflowPeek = useGuidedWorkflowStore(
+    (s) => s.completeWorkflowPeek,
+  )
+  const completeStatusToggle = useGuidedWorkflowStore(
+    (s) => s.completeStatusToggle,
+  )
   const editState = useAdminWorkflowStore(editDataSelector)
   const {
     isOpen: isDeleteModalOpen,
@@ -96,28 +103,24 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
   })
 
   if (mode === 'guided_step') {
-    const isLaterStep = currentStepIndex >= 2
-    const totalSections =
-      currentStepIndex === 0
-        ? FIRST_STEP_TOTAL_SECTIONS
-        : LATER_STEP_TOTAL_SECTIONS
-    const allSectionsRevealed = currentSection >= totalSections
-
     return (
       <Stack spacing="0">
-        {editingStepNumber !== undefined && (
-          <DeleteStepModal
-            isOpen={isDeleteModalOpen}
-            onClose={onDeleteModalClose}
-            stepNumber={editingStepNumber}
+        <WorkflowCard showSubheader showStatusToggle={false} />
+        <Box mt="2.75rem">
+          {editingStepNumber !== undefined && (
+            <DeleteStepModal
+              isOpen={isDeleteModalOpen}
+              onClose={onDeleteModalClose}
+              stepNumber={editingStepNumber}
+            />
+          )}
+          {completedStepElements}
+          {completedSteps.length > 0 && <WorkflowStepBlockDivider />}
+          <GuidedStep
+            stepIndex={currentStepIndex}
+            isFirstStep={currentStepIndex === 0}
           />
-        )}
-        {completedStepElements}
-        {completedSteps.length > 0 && <WorkflowStepBlockDivider />}
-        <GuidedStep
-          stepIndex={currentStepIndex}
-          isFirstStep={currentStepIndex === 0}
-        />
+        </Box>
       </Stack>
     )
   }
@@ -125,22 +128,101 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
   if (mode === 'add_another') {
     return (
       <Stack spacing="0">
-        {editingStepNumber !== undefined && (
-          <DeleteStepModal
-            isOpen={isDeleteModalOpen}
-            onClose={onDeleteModalClose}
-            stepNumber={editingStepNumber}
-          />
-        )}
-        {completedStepElements}
-        <AddAnotherPrompt stepNumber={currentStepIndex} />
+        <WorkflowCard showSubheader showStatusToggle={false} />
+        <Box mt="2.75rem">
+          {editingStepNumber !== undefined && (
+            <DeleteStepModal
+              isOpen={isDeleteModalOpen}
+              onClose={onDeleteModalClose}
+              stepNumber={editingStepNumber}
+            />
+          )}
+          {completedStepElements}
+          <AddAnotherPrompt stepNumber={currentStepIndex} />
+        </Box>
       </Stack>
     )
   }
+
+  // Shared rendering for all steps as inactive blocks
+  const allStepElements = formWorkflow?.map((step, i) => {
+    const isEditing = editState?.stepNumber === i
+    return (
+      <Fragment key={i}>
+        {i > 0 && <WorkflowStepBlockDivider />}
+        {isEditing ? (
+          <ActiveStepBlock
+            stepNumber={i}
+            step={step}
+            handleOpenDeleteModal={onDeleteModalOpen}
+          />
+        ) : (
+          <InactiveStepBlock stepNumber={i} step={step} />
+        )}
+      </Fragment>
+    )
+  })
 
   if (mode === 'email_setup') {
     return (
       <Stack spacing="0">
+        <WorkflowCard showSubheader showStatusToggle={false} />
+        <Box mt="2.75rem">
+          {editingStepNumber !== undefined && (
+            <DeleteStepModal
+              isOpen={isDeleteModalOpen}
+              onClose={onDeleteModalClose}
+              stepNumber={editingStepNumber}
+            />
+          )}
+          {allStepElements}
+          <EndOfWorkflowDivider />
+          <GuidedEmailCard onDone={completeEmailSetup} />
+        </Box>
+      </Stack>
+    )
+  }
+
+  if (mode === 'workflow_complete') {
+    return (
+      <Stack spacing="0">
+        <WorkflowCard showSubheader showStatusToggle={false} />
+        <Box mt="2.75rem">
+          {editingStepNumber !== undefined && (
+            <DeleteStepModal
+              isOpen={isDeleteModalOpen}
+              onClose={onDeleteModalClose}
+              stepNumber={editingStepNumber}
+            />
+          )}
+          {allStepElements}
+          <EndOfWorkflowBlock />
+          <PeekCard
+            title="You're done setting up the base of your workflow!"
+            onDone={completeWorkflowPeek}
+          />
+        </Box>
+      </Stack>
+    )
+  }
+
+  if (mode === 'status_toggle') {
+    return (
+      <StatusToggleMode
+        allStepElements={allStepElements}
+        editingStepNumber={editingStepNumber}
+        isDeleteModalOpen={isDeleteModalOpen}
+        onDeleteModalClose={onDeleteModalClose}
+        onDone={completeStatusToggle}
+      />
+    )
+  }
+
+  // mode === 'normal' or 'reorder_reveal' — workflow is complete
+  return (
+    <Stack spacing="0">
+      <WorkflowCard />
+      <Box mt="2.75rem">
         {editingStepNumber !== undefined && (
           <DeleteStepModal
             isOpen={isDeleteModalOpen}
@@ -148,57 +230,61 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
             stepNumber={editingStepNumber}
           />
         )}
-        {formWorkflow?.map((step, i) => {
-          const isEditing = editState?.stepNumber === i
-          return (
-            <Fragment key={i}>
-              {i > 0 && <WorkflowStepBlockDivider />}
-              {isEditing ? (
-                <ActiveStepBlock
-                  stepNumber={i}
-                  step={step}
-                  handleOpenDeleteModal={onDeleteModalOpen}
-                />
-              ) : (
-                <InactiveStepBlock stepNumber={i} step={step} />
-              )}
-            </Fragment>
-          )
-        })}
-        <EndOfWorkflowDivider />
-        <ActiveEmailCard onDone={finishWorkflow} />
-      </Stack>
-    )
-  }
+        {formWorkflow?.length ? (
+          <SortableStepList
+            steps={formWorkflow}
+            onDeleteModalOpen={onDeleteModalOpen}
+          />
+        ) : null}
+        {formWorkflow?.length ? <EndOfWorkflowBlock /> : null}
+      </Box>
+    </Stack>
+  )
+}
 
-  // mode === 'normal' — workflow is complete, show all steps + end of workflow
+// Separate component so it can own the scroll-to-top effect
+const StatusToggleMode = ({
+  allStepElements,
+  editingStepNumber,
+  isDeleteModalOpen,
+  onDeleteModalClose,
+  onDone,
+}: {
+  allStepElements: React.ReactNode
+  editingStepNumber: number | undefined
+  isDeleteModalOpen: boolean
+  onDeleteModalClose: () => void
+  onDone: () => void
+}) => {
+  const cardRef = useRef<HTMLDivElement | null>(null)
+
+  useLayoutEffect(() => {
+    cardRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+    })
+  }, [])
+
   return (
     <Stack spacing="0">
-      {editingStepNumber !== undefined && (
-        <DeleteStepModal
-          isOpen={isDeleteModalOpen}
-          onClose={onDeleteModalClose}
-          stepNumber={editingStepNumber}
-        />
-      )}
-      {formWorkflow?.map((step, i) => {
-        const isEditing = editState?.stepNumber === i
-        return (
-          <Fragment key={i}>
-            {i > 0 && <WorkflowStepBlockDivider />}
-            {isEditing ? (
-              <ActiveStepBlock
-                stepNumber={i}
-                step={step}
-                handleOpenDeleteModal={onDeleteModalOpen}
-              />
-            ) : (
-              <InactiveStepBlock stepNumber={i} step={step} />
-            )}
-          </Fragment>
-        )
-      })}
-      {formWorkflow?.length ? <EndOfWorkflowBlock /> : null}
+      <Box ref={cardRef}>
+        <WorkflowCard showSubheader showStatusToggle />
+      </Box>
+      <PeekCard
+        title="Use this to let people who filled up the form view the status of their response."
+        onDone={onDone}
+      />
+      <Box mt="2.75rem">
+        {editingStepNumber !== undefined && (
+          <DeleteStepModal
+            isOpen={isDeleteModalOpen}
+            onClose={onDeleteModalClose}
+            stepNumber={editingStepNumber}
+          />
+        )}
+        {allStepElements}
+        <EndOfWorkflowBlock />
+      </Box>
     </Stack>
   )
 }

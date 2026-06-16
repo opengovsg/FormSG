@@ -1,42 +1,50 @@
-import { Box, Divider, Stack, Text } from '@chakra-ui/react'
+import { Box, Divider, Stack, useDisclosure } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 
-import { StatusTrackerToggle } from '~features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
-
+import {
+  editDataSelector,
+  useAdminWorkflowStore,
+} from '../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { DeleteStepModal } from '../DeleteStepModal'
 
 import { EndOfWorkflowBlock } from './EndOfWorkflowBlock'
 import { NewStepBlock } from './NewStepBlock'
-import { WorkflowBlockFactory } from './WorkflowBlockFactory'
+import { SortableStepList } from './SortableStepList'
+import { WorkflowCard } from './WorkflowCard'
 
 export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
+  const editState = useAdminWorkflowStore(editDataSelector)
+  const {
+    isOpen: isDeleteModalOpen,
+    onClose: onDeleteModalClose,
+    onOpen: onDeleteModalOpen,
+  } = useDisclosure()
+
+  const editingStepNumber = editState?.stepNumber
 
   if (isLoading) return null
   return (
     <Stack color="secondary.500" spacing="2.75rem" mt="1.5rem">
-      {/* <HeaderBlock /> */}
-      <Box
-        bg="white"
-        border="1px solid"
-        borderColor="neutral.300"
-        borderRadius="4px"
-        padding="1.5rem"
-      >
-        <Stack gap={'1.5rem'}>
-          <Text as="h2" textStyle="h2">
-            Workflow
-          </Text>
-          <Divider />
-          <StatusTrackerToggle />
-        </Stack>
-      </Box>
+      <WorkflowCard />
       <Box>
-        <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
-          {formWorkflow?.map((step, i) => (
-            <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
-          ))}
+        {editingStepNumber !== undefined && (
+          <DeleteStepModal
+            isOpen={isDeleteModalOpen}
+            onClose={onDeleteModalClose}
+            stepNumber={editingStepNumber}
+          />
+        )}
+        {formWorkflow?.length ? (
+          <SortableStepList
+            steps={formWorkflow}
+            onDeleteModalOpen={onDeleteModalOpen}
+          />
+        ) : null}
+        <Stack spacing="0" alignItems="center">
+          <WorkflowStepBlockDivider />
           <NewStepBlock />
         </Stack>
         {formWorkflow?.length ? <EndOfWorkflowBlock /> : null}

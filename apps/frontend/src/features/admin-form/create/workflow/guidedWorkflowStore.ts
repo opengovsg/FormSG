@@ -6,6 +6,9 @@ type GuidedMode =
   | 'guided_step'
   | 'add_another'
   | 'email_setup'
+  | 'workflow_complete'
+  | 'status_toggle'
+  | 'reorder_reveal'
   | 'normal'
 
 type GuidedWorkflowStore = {
@@ -23,6 +26,10 @@ type GuidedWorkflowStore = {
   addAnotherStep: () => void
   finishWorkflow: () => void
   startEmailSetup: () => void
+  completeEmailSetup: () => void
+  completeWorkflowPeek: () => void
+  completeStatusToggle: () => void
+  dismissReorderTooltip: () => void
   cancelCurrentStep: () => void
   requestGuidedMode: () => void
   reset: () => void
@@ -90,6 +97,22 @@ export const useGuidedWorkflowStore = create<GuidedWorkflowStore>()(
         startEmailSetup: () =>
           set({
             mode: 'email_setup',
+          }),
+        completeEmailSetup: () =>
+          set({
+            mode: 'workflow_complete',
+          }),
+        completeWorkflowPeek: () =>
+          set({
+            mode: 'status_toggle',
+          }),
+        completeStatusToggle: () =>
+          set({
+            mode: 'reorder_reveal',
+          }),
+        dismissReorderTooltip: () =>
+          set({
+            mode: 'normal',
           }),
         finishWorkflow: () =>
           set({

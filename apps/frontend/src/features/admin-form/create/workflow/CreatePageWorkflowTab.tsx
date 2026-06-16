@@ -45,6 +45,9 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
       if (
         guidedMode === 'normal' ||
         guidedMode === 'email_setup' ||
+        guidedMode === 'workflow_complete' ||
+        guidedMode === 'status_toggle' ||
+        guidedMode === 'reorder_reveal' ||
         currentStepIndex > 0
       ) {
         resetGuided()
@@ -70,7 +73,8 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
       position="relative"
       overflow="auto"
       bg="neutral.100"
-      py={{ base: '2rem', md: '1rem' }}
+      pt={{ base: '2rem', md: '1rem' }}
+      pb={{ base: '6rem', md: '5rem' }}
       px={{ base: '1.5rem', md: '3.75rem' }}
     >
       <Container p={0} maxW="42.5rem">

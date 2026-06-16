@@ -16,6 +16,7 @@ import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import {
   createWorkflowStep,
   deleteWorkflowStep,
+  reorderWorkflowSteps,
   updateWorkflowStep,
 } from './FormWorkflowService'
 
@@ -114,9 +115,54 @@ export const useWorkflowMutations = () => {
     },
   )
 
+  const reorderStepsMutation = useMutation(
+    ({ fromIndex, toIndex }: { fromIndex: number; toIndex: number }) =>
+      reorderWorkflowSteps(formId, fromIndex, toIndex, formWorkflow),
+    {
+      onMutate: async ({ fromIndex, toIndex }) => {
+        // Optimistic update: reorder the cache immediately
+        await queryClient.cancelQueries(adminFormKey)
+        const previous = queryClient.getQueryData<AdminFormDto>(adminFormKey)
+        if (
+          previous &&
+          previous.responseMode === FormResponseMode.Multirespondent
+        ) {
+          const reordered = [...previous.workflow]
+          const [moved] = reordered.splice(fromIndex, 1)
+          reordered.splice(toIndex, 0, moved)
+          queryClient.setQueryData<AdminFormDto>(adminFormKey, {
+            ...previous,
+            workflow: reordered,
+          })
+        }
+        return { previous }
+      },
+      onSuccess: (updatedWorkflow) => {
+        queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
+          if (!prev) throw new Error('Query should have been set')
+          if (prev.responseMode !== FormResponseMode.Multirespondent) {
+            throw new Error('Invalid response mode')
+          }
+          return { ...prev, workflow: updatedWorkflow }
+        })
+        toast({
+          description: 'Steps reordered successfully.',
+        })
+      },
+      onError: (error: Error, _vars, context) => {
+        // Rollback on error
+        if (context?.previous) {
+          queryClient.setQueryData<AdminFormDto>(adminFormKey, context.previous)
+        }
+        handleError(error)
+      },
+    },
+  )
+
   return {
     createStepMutation,
     deleteStepMutation,
     updateStepMutation,
+    reorderStepsMutation,
   }
 }

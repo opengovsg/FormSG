@@ -1,14 +1,12 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiPencil } from 'react-icons/bi'
-import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
+import { BiGridVertical, BiPencil } from 'react-icons/bi'
+import { Box, Flex, Icon, Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
 import { BasicField, FormField } from 'formsg-shared/types'
 import { FormWorkflowStepDto, WorkflowType } from 'formsg-shared/types/form'
 import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
-
-import IconButton from '~components/IconButton'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
@@ -162,21 +160,27 @@ export const InactiveStepBlock = ({
   }, [idToFieldMap, step.edit])
 
   return (
-    <Box pos="relative">
-      <chakra.button
-        type="button"
+    <Box pos="relative" role="group">
+      <Box
+        role="button"
+        tabIndex={0}
         w="100%"
         textAlign="start"
         borderRadius="4px"
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
+        _hover={
+          isPreventEdit
+            ? undefined
+            : { borderColor: 'primary.500', bg: 'primary.50' }
+        }
         transitionProperty="common"
         transitionDuration="normal"
         cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-        disabled={isPreventEdit}
         aria-disabled={isPreventEdit}
         onClick={handleClick}
+        pos="relative"
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
@@ -216,21 +220,29 @@ export const InactiveStepBlock = ({
             </Stack>
           </Stack>
         </Stack>
-      </chakra.button>
-      {
-        <IconButton
+        <Flex
+          pos="absolute"
           top={{ base: '0.5rem', md: '2rem' }}
           right={{ base: '0.5rem', md: '2rem' }}
-          pos="absolute"
-          aria-label={t(
-            'features.adminForm.sidebar.workflow.respondentBlock.clickToEdit',
-          )}
-          variant="clear"
-          onClick={handleClick}
-          icon={<BiPencil fontSize="1.5rem" />}
-          cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-        />
-      }
+          alignItems="center"
+          gap="0.25rem"
+        >
+          <Icon
+            as={BiPencil}
+            boxSize="1.25rem"
+            color="secondary.300"
+            _groupHover={{ color: 'primary.500' }}
+            transition="color 0.15s ease"
+          />
+          <Icon
+            as={BiGridVertical}
+            boxSize="1.25rem"
+            color="secondary.300"
+            _groupHover={{ color: 'primary.500' }}
+            transition="color 0.15s ease"
+          />
+        </Flex>
+      </Box>
     </Box>
   )
 }
