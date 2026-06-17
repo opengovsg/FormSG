@@ -16,6 +16,7 @@ import {
 import {
   CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
   FORM_ORIGIN_OPTIONS,
+  FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
 } from 'formsg-shared/constants'
 
 import Button from '~components/Button'
@@ -24,11 +25,6 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
-
-// Mirrors the form-title cap (200 chars). Soft cap via a react-hook-form rule,
-// matching useFormTitleValidationRules — the admin sees an error rather than
-// being silently truncated. The cap is interpolated into the i18n error string.
-const FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH = 200
 
 const ORIGIN_I18N_PREFIX = 'features.workspace.modals.forms.create.origin'
 
