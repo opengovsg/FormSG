@@ -1,5 +1,5 @@
+import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
-import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants/form-origin'
 import { FormOrigin } from 'formsg-shared/types'
 
 import { clientMetadataValidator } from '../admin-form.controller'
