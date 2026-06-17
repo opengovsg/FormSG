@@ -75,7 +75,7 @@ export const enSG: CreateFormModal = {
     errors: {
       atLeastOne: 'Please select at least 1 option.',
       otherRequired: 'Please specify a value for the "others" option',
-      otherMaxLength: 'Please use {{maxLength}} characters or fewer.',
+      otherMaxLength: 'Please use {maxLength} characters or fewer.',
     },
     cta: {
       next: 'Next step',

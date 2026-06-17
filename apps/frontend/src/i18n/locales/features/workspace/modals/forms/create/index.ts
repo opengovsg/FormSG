@@ -70,7 +70,6 @@ export interface CreateFormModal {
     errors: {
       atLeastOne: string
       otherRequired: string
-      // Interpolates `{{maxLength}}`.
       otherMaxLength: string
     }
     cta: {

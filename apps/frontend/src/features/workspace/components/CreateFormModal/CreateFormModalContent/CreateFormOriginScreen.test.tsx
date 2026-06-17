@@ -32,15 +32,15 @@ vi.mock('react-i18next', () => {
     [`${P}.errors.otherRequired`]:
       'Please specify a value for the "others" option',
     [`${P}.errors.otherMaxLength`]:
-      'Please use {{maxLength}} characters or fewer.',
+      'Please use {maxLength} characters or fewer.',
     [`${P}.cta.next`]: 'Next step',
     [`${P}.cta.back`]: 'Back',
   }
-  // Minimal interpolation so `{{maxLength}}`-style placeholders resolve like i18next.
+  // Minimal interpolation so `{maxLength}`-style placeholders resolve like i18next-icu.
   const interpolate = (s: string, opts?: Record<string, unknown>) =>
     opts
-      ? s.replace(/\{\{(\w+)\}\}/g, (_, key) =>
-          key in opts ? String(opts[key]) : `{{${key}}}`,
+      ? s.replace(/\{(\w+)\}/g, (_, key) =>
+          key in opts ? String(opts[key]) : `{${key}}`,
         )
       : s
   return {
