@@ -99,7 +99,7 @@ export const useUseTemplateWizardContext = (
             responseMode,
             publicKey: keypair.publicKey,
             emails: (emails ?? defaultEmails).filter(Boolean),
-            metadata,
+            ...(metadata && { metadata }),
           },
           {
             onSuccess: () => {
@@ -115,7 +115,7 @@ export const useUseTemplateWizardContext = (
             title,
             responseMode,
             publicKey: keypair.publicKey,
-            metadata,
+            ...(metadata && { metadata }),
           },
           {
             onSuccess: () => {

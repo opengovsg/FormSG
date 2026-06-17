@@ -130,7 +130,7 @@ export const useDupeFormWizardContext = (
             publicKey: keypair.publicKey,
             workspaceId,
             emails: (emails ?? defaultEmails).filter(Boolean),
-            metadata,
+            ...(metadata && { metadata }),
           },
           {
             onSuccess: () => {
@@ -149,7 +149,7 @@ export const useDupeFormWizardContext = (
             responseMode,
             publicKey: keypair.publicKey,
             workspaceId,
-            metadata,
+            ...(metadata && { metadata }),
           },
           {
             onSuccess: () => {
