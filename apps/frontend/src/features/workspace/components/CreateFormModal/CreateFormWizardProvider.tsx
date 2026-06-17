@@ -184,7 +184,7 @@ export const useCreateFormWizardContext = (
             publicKey: keypair.publicKey,
             workspaceId,
             emails: (emails ?? defaultEmails).filter(Boolean),
-            metadata,
+            ...(metadata && { metadata }),
           },
           {
             onSuccess: () => {
@@ -202,7 +202,7 @@ export const useCreateFormWizardContext = (
             responseMode,
             publicKey: keypair.publicKey,
             workspaceId,
-            metadata,
+            ...(metadata && { metadata }),
           },
           {
             onSuccess: () => {
