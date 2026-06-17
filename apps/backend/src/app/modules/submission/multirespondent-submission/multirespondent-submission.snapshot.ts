@@ -1,6 +1,6 @@
+import formsgSdk from '@opengovsg/formsg-sdk'
 import mongoose from 'mongoose'
 
-import formsgSdk from 'src/app/config/formsg-sdk'
 import getSubmissionHistoryModel from 'src/app/models/submission_history.server.model'
 
 import { IMultirespondentSubmissionSchema } from '../../../../types'
