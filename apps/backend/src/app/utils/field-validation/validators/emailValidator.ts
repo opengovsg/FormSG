@@ -21,6 +21,7 @@ import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submi
 import {
   makeSignatureValidator,
   makeSignatureValidatorV3,
+  makeSignatureValidatorV4,
   notEmptySingleAnswerResponse,
   notEmptyVerifiableAnswerResponseV3,
 } from './common'
@@ -192,6 +193,6 @@ export const constructEmailValidatorV4: ResponseValidatorConstructor<
     isEmailFieldTypeV4,
     chain(notEmptyEmailAnswerV4),
     chain(emailFormatValidatorV4),
-    chain(makeSignatureValidatorV3(formField)),
+    chain(makeSignatureValidatorV4(formField)),
     chain(makeEmailDomainValidatorV4(formField)),
   )

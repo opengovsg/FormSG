@@ -24,6 +24,7 @@ import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submi
 import {
   makeSignatureValidator,
   makeSignatureValidatorV3,
+  makeSignatureValidatorV4,
   notEmptySingleAnswerResponse,
   notEmptyVerifiableAnswerResponseV3,
 } from './common'
@@ -196,6 +197,6 @@ export const constructMobileNoValidatorV4: ResponseValidatorConstructor<
     isMobileResponseV4,
     chain(notEmptyMobileAnswerV4),
     chain(mobilePhoneNumberValidatorV4),
-    chain(makeSignatureValidatorV3(mobileNumberField)),
+    chain(makeSignatureValidatorV4(mobileNumberField)),
     chain(makePrefixValidatorV4(mobileNumberField)),
   )
