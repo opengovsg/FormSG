@@ -24,7 +24,7 @@ export const enSG: CreateFormModal = {
     },
     type: {
       label: 'Number of respondents',
-      description: 'How many respondents will fill up each form submission?',
+      description: 'How many people will fill in each form submission?',
       storage: {
         title: 'One respondent',
         subtitle:

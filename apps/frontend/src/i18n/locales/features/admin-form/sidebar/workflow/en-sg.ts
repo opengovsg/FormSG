@@ -11,24 +11,24 @@ import { Workflow } from '.'
 export const enSG: Workflow = {
   title: 'Add workflow',
   respondentBlock: {
-    stepRespondent: 'Respondent in this step',
+    stepRespondent: 'Person in this step',
     anyone: 'Anyone who has access to your form',
-    select: 'Select a respondent',
+    select: 'Select a person',
     fieldsToFill: 'Fields to fill',
     clickToEdit: 'Click to edit',
   },
   dynamicRespondent: {
     title: 'An email field from the form',
     required: 'Please select a field.',
-    mustBeEmail: 'Field is not an email field',
+    mustBeEmail: 'Choose an email field.',
     select: 'Select a field',
   },
   conditionalRouting: {
     title: 'Emails assigned to options in a dropdown field',
-    addEmailsToOptions: 'Add emails to options',
+    addEmailsToOptions: 'Assign emails to options',
     validation: {
       noField: 'Please select a field.',
-      notDropdown: 'Field is not an dropdown field',
+      notDropdown: 'Choose a dropdown field.',
     },
     modals: {
       deleteStep: {
@@ -104,8 +104,8 @@ export const enSG: Workflow = {
     },
     errors: {
       respondentType: {
-        required: 'Please select a respondent type',
-        invalid: 'The selected respondent type is invalid',
+        required: 'Please select how this step receives the form',
+        invalid: 'The selected option is invalid',
       },
       csv: {
         required: 'Please upload a CSV file',
@@ -120,10 +120,9 @@ export const enSG: Workflow = {
     },
   },
   questions: {
-    tooltip:
-      'Respondent will only be able to fill the fields you have selected',
-    label: 'Select field(s) for this person to fill',
-    placeholder: 'Select field(s) from your form',
+    tooltip: 'This person can only fill in the fields you select.',
+    label: 'Choose the fields this person fills in',
+    placeholder: 'Select fields from your form',
   },
   approvals: {
     title: 'Approvals',
@@ -139,16 +138,16 @@ export const enSG: Workflow = {
       placeholder: 'Select a Yes/No field from your form',
     },
     validation: {
-      noField: 'Please select a Yes/No field',
+      noField: 'Select a Yes/No field.',
       fieldAlreadyUsed:
         'The selected field has been assigned to another step. Please choose a different field',
       fieldNotAssignedToUser:
-        'The selected Yes/No field has not been assigned to this respondent',
+        'The selected Yes/No field has not been assigned to this person',
     },
     addStep: 'Add step',
     complete: {
       prefix:
-        'When the workflow is complete, email notifications can be sent to respondents and other parties. Set up',
+        'When the workflow is done, email notifications can be sent to people in the workflow and others. Set up',
       link: 'email notifications',
       suffix: 'in Settings.',
     },

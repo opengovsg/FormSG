@@ -39,7 +39,7 @@ export const ReorderConfirmModal = ({
         <ModalBody whiteSpace="pre-wrap">
           <Text textStyle="body-2" color="secondary.500">
             Step 1 is always filled by whoever opens the form link. Reordering
-            will clear the respondents from both steps.
+            will clear the people assigned to both steps.
           </Text>
         </ModalBody>
         <ModalFooter>

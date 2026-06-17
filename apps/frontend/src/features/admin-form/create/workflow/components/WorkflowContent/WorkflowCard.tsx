@@ -29,8 +29,8 @@ export const WorkflowCard = ({
           </Text>
           {showSubheader && (
             <Text textStyle="body-2" color="secondary.400">
-              A workflow passes your form between people. Each step is handled
-              by a different person.
+              A workflow passes your form between people. Each step has someone
+              who fills in or reviews the form.
             </Text>
           )}
         </Stack>

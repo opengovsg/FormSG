@@ -24,12 +24,11 @@ export const EmptyWorkflow = (): JSX.Element => {
       pt={{ base: '0.5rem', md: '2.75rem' }}
     >
       <Text textStyle="h2" as="h2">
-        Create a workflow to collect responses from multiple respondents in the
-        same form submission
+        Create a workflow to collect responses from multiple people in the same
+        form submission
       </Text>
       <Text textStyle="body-1" mt="1rem">
-        Assign respondents to specific steps, and control which fields they can
-        fill.{' '}
+        Assign people to specific steps, and control which fields they can fill.{' '}
         <Link isExternal href={GUIDE_FORM_MRF}>
           Learn how to create a workflow
         </Link>

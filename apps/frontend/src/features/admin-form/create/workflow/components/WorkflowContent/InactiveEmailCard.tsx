@@ -75,7 +75,7 @@ export const InactiveEmailCard = ({
               </Stack>
             ) : (
               <Text textStyle="body-2" color="secondary.400">
-                No recipients configured
+                No recipients added yet
               </Text>
             )}
           </Stack>

@@ -59,7 +59,7 @@ export const StaticRespondentOption = ({
                     !emails ||
                     emails.length === 0 ||
                     emails.every((email) => isEmail(email)) ||
-                    'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved',
+                    "Enter valid emails separated by commas, like me@example.com. Invalid emails won't be saved.",
                 },
               }}
               render={({ field }) => (

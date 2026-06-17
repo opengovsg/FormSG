@@ -103,11 +103,11 @@ export const QuestionsBlock = ({
       {showGuidedHint && (
         <InlineMessage variant="info">
           {hasFields ? (
-            "Now pick the fields they'll fill up. You can also come back to this later."
+            "Now pick the fields they'll fill in. You can also come back to this later."
           ) : (
             <Stack spacing="0.5rem">
               <Text>
-                Now pick the fields they'll fill up. Looks like you have no
+                Now pick the fields they'll fill in. Looks like you have no
                 fields though. You can add them later or build them now.
               </Text>
               <Button
@@ -115,7 +115,7 @@ export const QuestionsBlock = ({
                 size="sm"
                 onClick={() => handleBuilderClick(false)}
               >
-                Go to Fields
+                Add fields
               </Button>
             </Stack>
           )}

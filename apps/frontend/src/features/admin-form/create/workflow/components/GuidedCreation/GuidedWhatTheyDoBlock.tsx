@@ -33,10 +33,10 @@ const APPROVAL_FIELD_NAME = 'approval_field'
 const SUB_STEP_INFOBOXES = [
   // Sub-step 1: Just the label
   'This is where you decide what the person in this step needs to do.',
-  // Sub-step 2: "Fill up fields" revealed
+  // Sub-step 2: "Fill in fields" revealed
   'Most steps just need people to fill in their assigned fields.',
-  // Sub-step 3: "Fill up fields and approve" revealed
-  'Some steps need an approver to review and approve before the workflow continues. If they reject, the workflow stops.',
+  // Sub-step 3: "Fill in fields and approve" revealed
+  'Choose this when someone needs to approve before the form moves to the next step.',
   // Sub-step 4: All enabled
   '', // placeholder, built dynamically with step number
 ]
@@ -188,7 +188,7 @@ export const GuidedWhatTheyDoBlock = ({
             value={displayedStepType}
             onChange={(val) => handleStepTypeChange(val as StepType)}
           >
-            {/* Sub-step 2: Fill up fields */}
+            {/* Sub-step 2: Fill in fields */}
             {subStep >= 2 && (
               <FadeIn key="collect">
                 <Radio
@@ -199,7 +199,7 @@ export const GuidedWhatTheyDoBlock = ({
                   px="0.5rem"
                   __css={{ _focusWithin: { boxShadow: 'none' } }}
                 >
-                  <Text>Fill up fields only</Text>
+                  <Text>Fill in fields only</Text>
                   {displayedStepType === 'collect' && (
                     <Text textStyle="body-2" color="secondary.400" pt="0.25rem">
                       This person fills in the fields assigned to them.
@@ -209,7 +209,7 @@ export const GuidedWhatTheyDoBlock = ({
               </FadeIn>
             )}
 
-            {/* Sub-step 3: Fill up fields and approve */}
+            {/* Sub-step 3: Fill in fields and approve */}
             {subStep >= 3 && (
               <FadeIn key="review">
                 <Radio
@@ -220,7 +220,7 @@ export const GuidedWhatTheyDoBlock = ({
                   px="0.5rem"
                   __css={{ _focusWithin: { boxShadow: 'none' } }}
                 >
-                  <Text>Fill up fields and approve</Text>
+                  <Text>Fill in fields and approve</Text>
                   {displayedStepType === 'review' && (
                     <Stack spacing="0.5rem" pt="0.25rem">
                       <Text textStyle="body-2" color="secondary.400">

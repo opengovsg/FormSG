@@ -212,7 +212,7 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
           <EndOfWorkflowBlock />
           {!isAnyCardActive && (
             <PeekCard
-              title="You're done setting up the end-of-workflow email! Now learn about some special workflow settings."
+              title="You've set up the completion email. Next, a few extra workflow settings."
               onDone={completeWorkflowPeek}
               doneLabel="Continue"
             />
@@ -315,8 +315,8 @@ const StatusToggleMode = ({
           belowToggle={
             <Stack spacing="0.75rem">
               <InlineMessage variant="info">
-                Use this to let people who filled up the form view the status of
-                their response.
+                Turn this on to let people who filled in the form check the
+                status of their response.
               </InlineMessage>
               <Flex justifyContent="flex-end">
                 <Button onClick={onDone}>Done</Button>

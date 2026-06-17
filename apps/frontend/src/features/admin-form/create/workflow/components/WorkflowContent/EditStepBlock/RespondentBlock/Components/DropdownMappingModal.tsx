@@ -86,18 +86,18 @@ export const DropdownMappingModal = ({
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader color="secondary.700" pr="4rem">
-          Map emails to options
+          Assign emails to options
         </ModalHeader>
         <ModalBody>
           <Stack spacing="1rem">
             {fieldOptions.map((option) => (
               <Box key={option}>
                 <FormLabel mb="0.5rem" textColor="secondary.700">
-                  {`Map emails to "${option}"`}
+                  {`Assign emails to "${option}"`}
                 </FormLabel>
                 <FormControl>
                   <TagInput
-                    placeholder="Add email addresses..."
+                    placeholder="Add emails…"
                     value={mapping[option] ?? []}
                     onChange={handleEmailsChange(option)}
                     tagValidation={isEmail}

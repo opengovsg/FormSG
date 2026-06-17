@@ -275,7 +275,7 @@ export const GuidedStep = ({
           guidedHintText={
             isFirstStep
               ? undefined
-              : 'Rename the step if you feel like it. You know what to do.'
+              : `Name this step, or keep it as 'Step ${stepNumber + 1}'.`
           }
           {...(isLaterStep
             ? {

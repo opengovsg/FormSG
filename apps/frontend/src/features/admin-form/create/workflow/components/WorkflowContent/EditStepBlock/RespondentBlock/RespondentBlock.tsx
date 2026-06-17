@@ -60,12 +60,12 @@ export const RespondentBlock = ({
     <EditStepBlockContainer>
       {isFirstStep ? (
         <Stack spacing="0.5rem">
-          <Text style={textStyles.h4}>People who are filling up this step</Text>
+          <Text style={textStyles.h4}>Who fills in this step?</Text>
           <Text>Anyone with the form link can respond.</Text>
           {showGuidedHint && (
             <InlineMessage variant="info">
-              Step 1 is always filled up by whoever opens your form link. In the
-              next steps, you'll choose specific people to send the form to.
+              Anyone with your form link can fill in Step 1. In later steps,
+              you'll choose who to send the form to.
             </InlineMessage>
           )}
         </Stack>
@@ -75,9 +75,7 @@ export const RespondentBlock = ({
           isRequired
           isInvalid={!!errors.workflow_type}
         >
-          <FormLabel style={textStyles.h4}>
-            People who are filling up this step
-          </FormLabel>
+          <FormLabel style={textStyles.h4}>Who fills in this step?</FormLabel>
           <Stack spacing="0.25rem">
             <Radio.RadioGroup value={selectedWorkflowType}>
               <StaticRespondentOption

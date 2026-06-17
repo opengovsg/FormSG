@@ -11,13 +11,13 @@ export const enSG = {
         'Select who to notify when the form and/or workflow is complete:',
       respondents: {
         step1: {
-          label: 'Person in Step 1',
+          label: 'Person who started the form (optional)',
           placeholder: 'Select an email field from your form',
         },
         stepN: {
           label: {
             overall: 'Other people in your workflow',
-            each: 'Person(s) in Step {stepNumber}',
+            each: 'People in Step {stepNumber}',
           },
           placeholder: 'Select people from your form',
         },
@@ -34,7 +34,7 @@ export const enSG = {
       info: 'Allow respondents to receive a copy of their submission',
       description: 'Separate multiple email addresses with a comma',
       statusTrackerInfo: 'Allow people to track their submission status',
-      statusTrackerDescription: 'View a sample status tracking link',
+      statusTrackerDescription: 'See a sample status tracking page',
     },
   },
 }

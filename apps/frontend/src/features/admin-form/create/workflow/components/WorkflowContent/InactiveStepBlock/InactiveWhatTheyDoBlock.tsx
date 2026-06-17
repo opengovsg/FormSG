@@ -28,7 +28,7 @@ export const InactiveWhatTheyDoBlock = ({
       <Stack direction="column" spacing="0.25rem">
         {hasApprovalField ? (
           <>
-            <LogicBadge>Fill up fields and approve</LogicBadge>
+            <LogicBadge>Fill in fields and approve</LogicBadge>
             {isApprovalFieldDeleted ? (
               <FieldLogicBadge
                 defaults={{
@@ -42,7 +42,7 @@ export const InactiveWhatTheyDoBlock = ({
             )}
           </>
         ) : (
-          <LogicBadge>Fill up fields only</LogicBadge>
+          <LogicBadge>Fill in fields only</LogicBadge>
         )}
       </Stack>
     </Stack>

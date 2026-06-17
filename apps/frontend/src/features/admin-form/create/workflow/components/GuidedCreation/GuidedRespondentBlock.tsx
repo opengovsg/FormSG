@@ -26,23 +26,23 @@ const SUB_STEP_INFOBOXES: React.ReactNode[] = [
   // Sub-step 2: Static option revealed
   <span>
     <span style={{ fontWeight: 600 }}>
-      Best when you already know who should fill this up.
+      Best when you already know who should fill this in.
     </span>{' '}
     You type in their email addresses directly.
   </span>,
   // Sub-step 3: Dynamic option revealed
   <span>
     <span style={{ fontWeight: 600 }}>
-      Best when the previous respondent decides who&apos;s next.
+      Best when the previous person decides who&apos;s next.
     </span>{' '}
-    They&apos;ll enter the email of whoever should fill up the next step.
+    They&apos;ll enter the email of whoever should fill in the next step.
   </span>,
   // Sub-step 4: Conditional option revealed
   <span>
     <span style={{ fontWeight: 600 }}>
       Best for sending to different people based on an answer.
     </span>{' '}
-    You map each dropdown option to a different email.
+    You assign each dropdown option to a different email.
   </span>,
   // Sub-step 5: All enabled
   '', // placeholder, built dynamically with step number
@@ -137,13 +137,13 @@ export const GuidedRespondentBlock = ({
 
   const infoboxText =
     subStep === TOTAL_SUB_STEPS
-      ? `Now pick who will fill up Step ${stepNumber + 1}. You can also come back to this later.`
+      ? `Now pick who will fill in Step ${stepNumber + 1}. You can also come back to this later.`
       : SUB_STEP_INFOBOXES[subStep - 1]
 
   return (
     <EditStepBlockContainer>
       <Stack spacing="0.5rem">
-        <Text style={textStyles.h4}>People who are filling up this step</Text>
+        <Text style={textStyles.h4}>Who fills in this step?</Text>
 
         {subStep >= 2 && (
           <Radio.RadioGroup value={displayedWorkflowType}>

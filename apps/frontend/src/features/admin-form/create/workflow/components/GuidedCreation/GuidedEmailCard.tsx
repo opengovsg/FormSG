@@ -33,7 +33,7 @@ const TOTAL_SUB_STEPS = 5
 
 const SUB_STEP_INFOBOXES = [
   // Sub-step 1: Just the label
-  "When your workflow is complete, you can notify the people involved. Let's set that up.",
+  "When the workflow is done, you can notify the people involved. Let's set that up.",
   // Sub-step 2: Person in Step 1 field
   'This notifies the person who started the form. Pick the email field they filled in so we know where to send it.',
   // Sub-step 3: Other people field

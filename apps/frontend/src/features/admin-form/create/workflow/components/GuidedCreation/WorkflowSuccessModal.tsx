@@ -26,7 +26,7 @@ function getSuccessCopy(doneCount: number, leftCount: number) {
   if (leftCount === 0) {
     return {
       heading: "You've built your workflow!",
-      subheading: 'You can still edit it again later.',
+      subheading: 'You can still edit it later.',
     }
   }
   if (doneCount > leftCount) {
