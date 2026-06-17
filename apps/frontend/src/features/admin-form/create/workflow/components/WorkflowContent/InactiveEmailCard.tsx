@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
-import { Box, chakra, Flex, Icon, Stack, Text } from '@chakra-ui/react'
+import { Box, chakra, Flex, Icon, Stack, Text, Tooltip } from '@chakra-ui/react'
 
 import { MultirespondentFormSettings } from 'formsg-shared/types'
 
@@ -86,15 +86,18 @@ export const InactiveEmailCard = ({
         top={{ base: '0.5rem', md: '2rem' }}
         right={{ base: '0.5rem', md: '2rem' }}
         alignItems="center"
-        pointerEvents="none"
       >
-        <Icon
-          as={BiPencil}
-          boxSize="1.25rem"
-          color="secondary.300"
-          _groupHover={{ color: 'primary.500' }}
-          transition="color 0.15s ease"
-        />
+        <Tooltip label="Edit" placement="top" hasArrow openDelay={300}>
+          <Box display="inline-flex">
+            <Icon
+              as={BiPencil}
+              boxSize="1.25rem"
+              color="secondary.300"
+              _groupHover={{ color: 'primary.500' }}
+              transition="color 0.15s ease"
+            />
+          </Box>
+        </Tooltip>
       </Flex>
     </Box>
   )
