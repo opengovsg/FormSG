@@ -4,7 +4,10 @@ import { ChakraProvider, Modal, ModalContent, theme } from '@chakra-ui/react'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
+import {
+  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+  FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
+} from 'formsg-shared/constants'
 import { FormOrigin, FormResponseMode } from 'formsg-shared/types/form/form'
 
 import {
@@ -14,8 +17,6 @@ import {
 
 import { CreateFormOriginScreen } from './CreateFormOriginScreen'
 
-// Origin copy lives in i18n (keyed by FormOrigin code). Map the keys the screen
-// renders to their English labels so queries read like what the admin sees.
 vi.mock('react-i18next', () => {
   const P = 'features.workspace.modals.forms.create.origin'
   const translations: Record<string, string> = {
@@ -36,7 +37,6 @@ vi.mock('react-i18next', () => {
     [`${P}.cta.next`]: 'Next step',
     [`${P}.cta.back`]: 'Back',
   }
-  // Minimal interpolation so `{maxLength}`-style placeholders resolve like i18next-icu.
   const interpolate = (s: string, opts?: Record<string, unknown>) =>
     opts
       ? s.replace(/\{(\w+)\}/g, (_, key) =>
@@ -53,7 +53,6 @@ vi.mock('react-i18next', () => {
 })
 
 const renderOriginScreen = () => {
-  // Captured so assertions can read what the create handler received.
   const onCreate = vi.fn()
   const goToFormDetails = vi.fn()
 
@@ -146,21 +145,26 @@ describe('CreateFormOriginScreen', () => {
     await user.click(screen.getByLabelText('Other'))
     await user.type(screen.getByLabelText('Other source'), 'Carrier pigeon')
 
-    // "Carrier pigeon" is 14 characters.
-    expect(screen.getByText('(14/200)')).toBeInTheDocument()
+    expect(
+      screen.getByText(`(14/${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH})`),
+    ).toBeInTheDocument()
   })
 
-  it('blocks submission when the "Other" detail exceeds 200 characters', async () => {
+  it(`blocks submission when the "Other" detail exceeds ${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH} characters`, async () => {
     const user = userEvent.setup()
     const { onCreate } = renderOriginScreen()
 
     await user.click(screen.getByLabelText('Other'))
     const input = screen.getByLabelText('Other source')
     await user.click(input)
-    await user.paste('a'.repeat(201))
+    await user.paste('a'.repeat(FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH + 1))
     await clickNext(user)
 
-    expect(await screen.findByText(/200 characters/i)).toBeInTheDocument()
+    expect(
+      await screen.findByText(
+        new RegExp(`${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH} characters`, 'i'),
+      ),
+    ).toBeInTheDocument()
     expect(onCreate).not.toHaveBeenCalled()
   })
 
