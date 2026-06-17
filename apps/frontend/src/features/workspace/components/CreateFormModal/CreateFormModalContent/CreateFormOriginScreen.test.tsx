@@ -55,7 +55,7 @@ vi.mock('react-i18next', () => {
 const renderOriginScreen = () => {
   // Captured so assertions can read what the create handler received.
   const onCreate = vi.fn()
-  const goBackToDetails = vi.fn()
+  const goToFormDetails = vi.fn()
 
   const Harness = () => {
     const formMethods = useForm<CreateFormWizardInputProps>({
@@ -69,7 +69,7 @@ const renderOriginScreen = () => {
         formMethods,
         handleCreateStorageModeOrMultirespondentForm:
           formMethods.handleSubmit(onCreate),
-        goBackToDetails,
+        goToFormDetails,
         isLoading: false,
       }) as unknown as CreateFormWizardContextReturn
 
@@ -85,7 +85,7 @@ const renderOriginScreen = () => {
   }
 
   render(<Harness />)
-  return { onCreate, goBackToDetails }
+  return { onCreate, goToFormDetails }
 }
 
 const clickNext = async (user: ReturnType<typeof userEvent.setup>) => {
@@ -181,10 +181,10 @@ describe('CreateFormOriginScreen', () => {
 
   it('returns to the title step when Back is pressed', async () => {
     const user = userEvent.setup()
-    const { goBackToDetails } = renderOriginScreen()
+    const { goToFormDetails } = renderOriginScreen()
 
     await user.click(screen.getByRole('button', { name: /back/i }))
 
-    expect(goBackToDetails).toHaveBeenCalledTimes(1)
+    expect(goToFormDetails).toHaveBeenCalledTimes(1)
   })
 })

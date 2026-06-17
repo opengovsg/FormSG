@@ -90,7 +90,7 @@ export type CreateFormWizardContextReturn = {
   handleProceedFromDetails: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
-  goBackToDetails: () => void
+  goToFormDetails: () => void
   isPaperTrackingSetUpPageEnabled: boolean
   keypair: ReturnType<typeof formsgSdk.crypto.generate>
   // Whether any async operation is in progress.
