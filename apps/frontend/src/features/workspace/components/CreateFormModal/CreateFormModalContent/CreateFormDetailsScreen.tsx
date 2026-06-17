@@ -57,7 +57,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
     modalHeader,
     hasMyInfoChildren,
     isMrfCutoverEnabled,
-    isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     goToStorageModeDetails,
   } = useCreateFormWizard()
   const {
@@ -163,11 +163,7 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
               responseModeValue,
             )}
           >
-            <Text lineHeight="1.5rem">
-              {isPaperTrackingSetUpPageEnabled
-                ? t('features.workspace.modals.forms.create.details.next')
-                : t('features.workspace.modals.forms.create.details.create')}
-            </Text>
+            <Text lineHeight="1.5rem">{proceedCtaLabel}</Text>
           </Button>
         </Container>
       </ModalBody>

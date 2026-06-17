@@ -36,10 +36,18 @@ interface UseCommonFormWizardProviderProps {
 export const useCommonFormWizardProvider = ({
   defaultValues,
 }: UseCommonFormWizardProviderProps = {}) => {
+  const { t } = useTranslation()
   const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
   const isPaperTrackingSetUpPageEnabled = useFeatureIsOn(
     featureFlags.enablePaperTrackingSetUpPage,
   )
+  // Paper-forms tracking: the title step proceeds to the origin step ("Next
+  // step") when that step is enabled, otherwise it creates the form directly
+  // ("Create form"). The flag is encapsulated here so screens render a label
+  // rather than branching on the flag themselves.
+  const proceedCtaLabel = isPaperTrackingSetUpPageEnabled
+    ? t('features.workspace.modals.forms.create.details.next')
+    : t('features.workspace.modals.forms.create.details.create')
   const [[currentStep, direction], setCurrentStep] =
     useState(INITIAL_STEP_STATE)
 
@@ -98,6 +106,7 @@ export const useCommonFormWizardProvider = ({
     setCurrentStep,
     isMrfCutoverEnabled,
     isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
     goToFormDetails,
@@ -117,6 +126,7 @@ export const useCreateFormWizardContext = (
     setCurrentStep,
     isMrfCutoverEnabled,
     isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
     goToFormDetails,
@@ -273,6 +283,7 @@ export const useCreateFormWizardContext = (
     handleProceedFromDetails,
     goToFormDetails,
     isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     isSingpass: false,
     hasMyInfoChildren: false,
     modalHeader: t('features.workspace.modals.forms.create.title.setup'),

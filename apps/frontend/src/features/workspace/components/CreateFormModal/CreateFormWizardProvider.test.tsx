@@ -182,6 +182,24 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
     )
   })
 
+  it('exposes the "Next step" proceed label when paper tracking is enabled', () => {
+    setFlags({ cutover: true, paperTracking: true })
+    const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))
+
+    expect(result.current.proceedCtaLabel).toBe(
+      'features.workspace.modals.forms.create.details.next',
+    )
+  })
+
+  it('exposes the "Create" proceed label when paper tracking is disabled', () => {
+    setFlags({ cutover: true, paperTracking: false })
+    const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))
+
+    expect(result.current.proceedCtaLabel).toBe(
+      'features.workspace.modals.forms.create.details.create',
+    )
+  })
+
   it('creates directly from the title step without metadata when paper tracking is off', async () => {
     setFlags({ cutover: true, paperTracking: false })
     const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))

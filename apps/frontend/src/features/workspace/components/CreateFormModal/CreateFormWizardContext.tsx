@@ -59,6 +59,10 @@ export type CreateFormWizardContextReturn = {
   >
   goToFormDetails: () => void
   isPaperTrackingSetUpPageEnabled: boolean
+  // Paper-forms tracking: copy for the title-step proceed button — "Next step"
+  // when the origin step is enabled, "Create form" otherwise. Computed by the
+  // provider so screens render it without reading the flag.
+  proceedCtaLabel: string
   keypair: ReturnType<typeof formsgSdk.crypto.generate>
   // Whether any async operation is in progress.
   isFetching: boolean
