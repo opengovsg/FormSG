@@ -44,7 +44,7 @@ export const useUseTemplateWizardContext = (
     isPaperTrackingSetUpPageEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
-    goBackToDetails,
+    goToFormDetails,
     makeHandleProceedFromDetails,
   } = useCommonFormWizardProvider()
 
@@ -199,7 +199,7 @@ export const useUseTemplateWizardContext = (
     formMethods,
     handleCreateStorageModeOrMultirespondentForm,
     handleProceedFromDetails,
-    goBackToDetails,
+    goToFormDetails,
     isPaperTrackingSetUpPageEnabled,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,

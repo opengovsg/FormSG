@@ -71,7 +71,7 @@ export const useCommonFormWizardProvider = ({
   }
   // Paper-forms tracking: return from the origin step to the title step. The
   // entered title (and any selected origins) persist in formMethods.
-  const goBackToDetails = () => {
+  const goToFormDetails = () => {
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
 
@@ -100,7 +100,7 @@ export const useCommonFormWizardProvider = ({
     isPaperTrackingSetUpPageEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
-    goBackToDetails,
+    goToFormDetails,
     makeHandleProceedFromDetails,
   }
 }
@@ -119,7 +119,7 @@ export const useCreateFormWizardContext = (
     isPaperTrackingSetUpPageEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
-    goBackToDetails,
+    goToFormDetails,
     makeHandleProceedFromDetails,
   } = useCommonFormWizardProvider({
     defaultValues: {
@@ -273,7 +273,7 @@ export const useCreateFormWizardContext = (
     handleEmailFeedbackSubmit,
     handleCreateStorageModeOrMultirespondentForm,
     handleProceedFromDetails,
-    goBackToDetails,
+    goToFormDetails,
     isPaperTrackingSetUpPageEnabled,
     isSingpass: false,
     hasMyInfoChildren: false,

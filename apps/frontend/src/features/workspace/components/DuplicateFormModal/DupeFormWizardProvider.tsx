@@ -51,7 +51,7 @@ export const useDupeFormWizardContext = (
     isPaperTrackingSetUpPageEnabled,
     goToStorageModeDetails,
     goToMrfDetails,
-    goBackToDetails,
+    goToFormDetails,
     makeHandleProceedFromDetails,
   } = useCommonFormWizardProvider()
 
@@ -232,7 +232,7 @@ export const useDupeFormWizardContext = (
     formMethods,
     handleCreateStorageModeOrMultirespondentForm,
     handleProceedFromDetails,
-    goBackToDetails,
+    goToFormDetails,
     isPaperTrackingSetUpPageEnabled,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,

@@ -52,7 +52,7 @@ export const CreateFormOriginScreen = ({
   const {
     formMethods,
     handleCreateStorageModeOrMultirespondentForm,
-    goBackToDetails,
+    goToFormDetails,
     isLoading,
   } = useCreateFormWizardParam()
   const {
@@ -165,7 +165,7 @@ export const CreateFormOriginScreen = ({
             {/* Back control sits below "Next step" and centred (placement per
                 PM/design). The Back affordance itself is not in Figma Screen 2a;
                 added to satisfy the slice's back-navigation requirement. */}
-            <Button variant="clear" onClick={goBackToDetails}>
+            <Button variant="clear" onClick={goToFormDetails}>
               <Text lineHeight="1.5rem">
                 {t(`${ORIGIN_I18N_PREFIX}.cta.back`)}
               </Text>

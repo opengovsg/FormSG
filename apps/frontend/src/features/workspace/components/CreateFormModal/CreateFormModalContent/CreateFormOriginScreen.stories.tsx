@@ -47,7 +47,7 @@ const StoryOriginScreen = ({
         handleCreateStorageModeOrMultirespondentForm: formMethods.handleSubmit(
           () => console.log('create form'),
         ),
-        goBackToDetails: () => console.log('back to details'),
+        goToFormDetails: () => console.log('back to details'),
         isLoading: false,
       }) as unknown as CreateFormWizardContextReturn,
     [formMethods],

@@ -57,7 +57,7 @@ describe('DupeFormWizardProvider', () => {
       isPaperTrackingSetUpPageEnabled: false,
       goToStorageModeDetails: vi.fn(),
       goToMrfDetails: vi.fn(),
-      goBackToDetails: vi.fn(),
+      goToFormDetails: vi.fn(),
       makeHandleProceedFromDetails: vi.fn(() => vi.fn()),
     }))
 
