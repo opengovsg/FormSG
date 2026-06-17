@@ -114,8 +114,6 @@ export const clientMetadataValidator = Joi.object({
       .unique()
       .min(1)
       .required(),
-    // Required (trimmed, non-empty, capped) only when the "Other" sentinel is
-    // selected; forbidden otherwise so stale free-text can't ride along.
     othersInput: Joi.when('value', {
       is: Joi.array().has(
         Joi.string().valid(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE),

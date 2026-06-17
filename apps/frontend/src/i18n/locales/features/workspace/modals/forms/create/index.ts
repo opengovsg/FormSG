@@ -51,9 +51,6 @@ export interface CreateFormModal {
     create: string
     next: string
   }
-  // Paper-forms tracking: copy for the form-origin step (Screen 2). Option
-  // labels are keyed by FormOrigin code; `others` is the checkbox's built-in
-  // "Other" option.
   origin: {
     question: string
     options: {
@@ -65,7 +62,6 @@ export interface CreateFormModal {
       'digital-formbuilder': string
       others: string
     }
-    // Accessible name for the "Other" free-text input.
     otherInputLabel: string
     errors: {
       atLeastOne: string

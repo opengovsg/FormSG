@@ -41,10 +41,6 @@ export const useCommonFormWizardProvider = ({
   const isPaperTrackingSetUpPageEnabled = useFeatureIsOn(
     featureFlags.enablePaperTrackingSetUpPage,
   )
-  // Paper-forms tracking: the title step proceeds to the origin step ("Next
-  // step") when that step is enabled, otherwise it creates the form directly
-  // ("Create form"). The flag is encapsulated here so screens render a label
-  // rather than branching on the flag themselves.
   const proceedCtaLabel = isPaperTrackingSetUpPageEnabled
     ? t('features.workspace.modals.forms.create.details.next')
     : t('features.workspace.modals.forms.create.details.create')
@@ -77,24 +73,10 @@ export const useCommonFormWizardProvider = ({
     setValue('responseMode', FormResponseMode.Multirespondent)
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
-  // Paper-forms tracking: return from the origin step to the title step. This
-  // is the SINGLE exit from the origin step that could strand state, and it
-  // deliberately does NOT clear `formOrigins`: the selection is preserved
-  // (the origin screen's Controller re-hydrates it on re-entry), symmetric
-  // with how the entered title is preserved across Back. Data integrity for a
-  // stale/empty selection is enforced at the submit boundary (the provider's
-  // metadata guard) and by the backend Joi guard — not by clearing here.
-  // `goToMrfDetails` / `goToStorageModeDetails` are upstream of the origin
-  // step and so are never an exit from it, which is why they need no clearing.
   const goToFormDetails = () => {
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
 
-  // Paper-forms tracking: builds the "proceed from the title step" handler shared
-  // by the create, duplicate and use-template providers. When the origin step is
-  // enabled it diverts there; otherwise it creates directly via the provider's
-  // own `createForm`. Title validation runs first via handleSubmit; the origin
-  // field is only registered on the origin step, so it is not validated here.
   const makeHandleProceedFromDetails = (
     createForm: (inputs: CreateFormWizardInputProps) => unknown,
   ) =>

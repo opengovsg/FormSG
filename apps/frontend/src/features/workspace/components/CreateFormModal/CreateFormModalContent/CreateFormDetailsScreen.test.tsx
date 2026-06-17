@@ -19,8 +19,6 @@ vi.mock('react-i18next', () => ({
   Trans: ({ children }: PropsWithChildren) => children,
 }))
 
-// The title input and data-classification box pull from queries/SDK we do not
-// exercise here; stub them so the screen renders in isolation.
 vi.mock('./FormTitleInput', () => ({
   FormTitleInput: () => <div data-testid="form-title-input" />,
 }))
@@ -66,8 +64,6 @@ const renderDetailsScreen = (
       isSingpass: false,
       hasMyInfoChildren: false,
       onClose: vi.fn(),
-      // Render the simpler escape-hatch branch so the proceed CTA assertion is
-      // isolated from the response-mode option tiles and their dependencies.
       isMrfCutoverEnabled: true,
       goToStorageModeDetails: vi.fn(),
       goToMrfDetails: vi.fn(),

@@ -28,16 +28,6 @@ import { useCreateFormWizard } from '../CreateFormWizardContext'
 
 const ORIGIN_I18N_PREFIX = 'features.workspace.modals.forms.create.origin'
 
-/**
- * Screen 2 of the post-MRF-cutover create flow (behind
- * `enablePaperTrackingSetUpPage`): asks where the form is being filled today as
- * a multi-select, then creates the form carrying the selected origins.
- *
- * The field is the backend's `CheckboxFieldResponsesV3` shape directly: the
- * selected origin codes (and the CLIENT_CHECKBOX_OTHERS_INPUT_VALUE sentinel
- * when "Other" is ticked) live in `formOrigins.value`, and the "Other" free
- * text in `formOrigins.othersInput`. No mapping happens on submit.
- */
 export const CreateFormOriginScreen = ({
   useCreateFormWizardParam = useCreateFormWizard,
 }: {
@@ -129,9 +119,6 @@ export const CreateFormOriginScreen = ({
                             <FormErrorMessage>
                               {errors.formOrigins?.othersInput?.message}
                             </FormErrorMessage>
-                            {/* Character count helper, mirroring the AI form
-                                builder (magic-form-builder) text prompt: shown
-                                only while there's input and no error. */}
                             {!errors.formOrigins?.othersInput?.message &&
                             otherDetailLength > 0 ? (
                               <FormHelperText>
@@ -164,9 +151,6 @@ export const CreateFormOriginScreen = ({
                 {t(`${ORIGIN_I18N_PREFIX}.cta.next`)}
               </Text>
             </Button>
-            {/* Back control sits below "Next step" and centred (placement per
-                PM/design). The Back affordance itself is not in Figma Screen 2a;
-                added to satisfy the slice's back-navigation requirement. */}
             <Button variant="clear" onClick={goToFormDetails}>
               <Text lineHeight="1.5rem">
                 {t(`${ORIGIN_I18N_PREFIX}.cta.back`)}

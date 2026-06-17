@@ -96,8 +96,6 @@ MrfCutoverOn.decorators = [
   ),
 ]
 
-// Paper-forms tracking: cutover + origin step both on, so "Next step" on the
-// title screen advances to the origin step (Screen 2) before form creation.
 const mrfCutoverAndPaperTrackingOn = new GrowthBook({
   features: {
     [featureFlags.mrfCutover]: { defaultValue: true },

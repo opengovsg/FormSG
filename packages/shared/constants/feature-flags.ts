@@ -43,8 +43,6 @@ export const featureFlags = {
   standardisedEmailTemplate: 'standardised-email-template' as const,
   mrfCutover: 'mrf-cutover' as const,
   answerObjectEncryption: 'answer-object-encryption' as const,
-  // Paper-forms tracking: gates the form-origin step (Screen 2) in the
-  // post-MRF-cutover create flow.
   enablePaperTrackingSetUpPage: 'enable-paper-tracking-set-up-page' as const,
 }
 
