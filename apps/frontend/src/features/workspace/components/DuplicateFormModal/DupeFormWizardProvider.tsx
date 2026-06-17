@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 import { FormId } from 'formsg-shared/types/form/form'
 
@@ -12,6 +11,7 @@ import {
   useEmailModeFeedbackMutation,
 } from '~features/workspace/mutations'
 import { useDashboard } from '~features/workspace/queries'
+import { buildFormClientMetadata } from '~features/workspace/utils/buildFormClientMetadata'
 import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
 
 import {
@@ -113,26 +113,10 @@ export const useDupeFormWizardContext = (
       return
     }
 
-    // Paper-forms tracking: the duplicate flow re-asks the origin question
-    // (origins are never copied from the source form), so the freshly captured
-    // origins are written to the new form's metadata. Submit-boundary guard:
-    // omit metadata when disabled or empty; carry `othersInput` only when the
-    // "Other" sentinel is present with non-empty trimmed text.
-    const formOriginsMetadata =
-      isPaperTrackingSetUpPageEnabled && formOrigins?.value.length
-        ? {
-            metadata: {
-              formOrigins: {
-                value: formOrigins.value,
-                ...(formOrigins.value.includes(
-                  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
-                ) && formOrigins.othersInput?.trim()
-                  ? { othersInput: formOrigins.othersInput.trim() }
-                  : {}),
-              },
-            },
-          }
-        : {}
+    const metadata = buildFormClientMetadata(
+      isPaperTrackingSetUpPageEnabled,
+      formOrigins,
+    )
 
     switch (responseMode) {
       case FormResponseMode.Encrypt: {
@@ -145,7 +129,7 @@ export const useDupeFormWizardContext = (
             publicKey: keypair.publicKey,
             workspaceId,
             emails: (emails ?? defaultEmails).filter(Boolean),
-            ...formOriginsMetadata,
+            metadata,
           },
           {
             onSuccess: () => {
@@ -164,7 +148,7 @@ export const useDupeFormWizardContext = (
             responseMode,
             publicKey: keypair.publicKey,
             workspaceId,
-            ...formOriginsMetadata,
+            metadata,
           },
           {
             onSuccess: () => {
