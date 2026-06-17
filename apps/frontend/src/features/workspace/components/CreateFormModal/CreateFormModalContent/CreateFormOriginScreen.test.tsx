@@ -116,10 +116,12 @@ describe('CreateFormOriginScreen', () => {
     await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
     expect(onCreate.mock.calls[0][0]).toEqual(
       expect.objectContaining({
-        formOrigins: expect.arrayContaining([
-          FormOrigin.Paper,
-          FormOrigin.DigitalSpreadsheet,
-        ]),
+        formOrigins: expect.objectContaining({
+          value: expect.arrayContaining([
+            FormOrigin.Paper,
+            FormOrigin.DigitalSpreadsheet,
+          ]),
+        }),
       }),
     )
   })
@@ -173,8 +175,10 @@ describe('CreateFormOriginScreen', () => {
     await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
     expect(onCreate.mock.calls[0][0]).toEqual(
       expect.objectContaining({
-        formOrigins: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-        formOriginOtherDetail: 'Carrier pigeon',
+        formOrigins: {
+          value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+          othersInput: 'Carrier pigeon',
+        },
       }),
     )
   })

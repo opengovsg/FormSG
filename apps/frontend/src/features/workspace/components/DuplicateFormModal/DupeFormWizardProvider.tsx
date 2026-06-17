@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 import { FormId } from 'formsg-shared/types/form/form'
 
@@ -14,7 +15,6 @@ import { useDashboard } from '~features/workspace/queries'
 import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
 
 import {
-  buildFormOriginsMetadata,
   CreateFormFlowStates,
   CreateFormWizardContext,
   CreateFormWizardContextReturn,
@@ -108,7 +108,6 @@ export const useDupeFormWizardContext = (
     responseMode,
     emails,
     formOrigins,
-    formOriginOtherDetail,
   }: CreateFormWizardInputProps) => {
     if (!sourceFormId) {
       return
@@ -116,12 +115,24 @@ export const useDupeFormWizardContext = (
 
     // Paper-forms tracking: the duplicate flow re-asks the origin question
     // (origins are never copied from the source form), so the freshly captured
-    // origins are written to the new form's metadata.
-    const formOriginsMetadata = buildFormOriginsMetadata(
-      isPaperTrackingSetUpPageEnabled,
-      formOrigins,
-      formOriginOtherDetail,
-    )
+    // origins are written to the new form's metadata. Submit-boundary guard:
+    // omit metadata when disabled or empty; carry `othersInput` only when the
+    // "Other" sentinel is present with non-empty trimmed text.
+    const formOriginsMetadata =
+      isPaperTrackingSetUpPageEnabled && formOrigins?.value.length
+        ? {
+            metadata: {
+              formOrigins: {
+                value: formOrigins.value,
+                ...(formOrigins.value.includes(
+                  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+                ) && formOrigins.othersInput?.trim()
+                  ? { othersInput: formOrigins.othersInput.trim() }
+                  : {}),
+              },
+            },
+          }
+        : {}
 
     switch (responseMode) {
       case FormResponseMode.Encrypt: {

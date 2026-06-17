@@ -102,7 +102,9 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Encrypt,
-        formOrigins: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
+        formOrigins: {
+          value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
+        },
       }),
     )
     await act(async () => {
@@ -129,7 +131,9 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
-        formOrigins: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
+        formOrigins: {
+          value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
+        },
       }),
     )
     await act(async () => {
@@ -156,8 +160,10 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
-        formOrigins: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
-        formOriginOtherDetail: 'Carrier pigeon',
+        formOrigins: {
+          value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+          othersInput: 'Carrier pigeon',
+        },
       }),
     )
     await act(async () => {
@@ -184,7 +190,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
-        formOrigins: [FormOrigin.Paper],
+        formOrigins: { value: [FormOrigin.Paper] },
       }),
     )
     await act(async () => {

@@ -168,9 +168,9 @@ describe('UseTemplateWizardProvider — cutover behaviour', () => {
 
     act(() => {
       result.current.formMethods.setValue('title', 'New title')
-      result.current.formMethods.setValue('formOrigins', [
-        FormOrigin.DigitalSpreadsheet,
-      ])
+      result.current.formMethods.setValue('formOrigins', {
+        value: [FormOrigin.DigitalSpreadsheet],
+      })
     })
     await act(async () => {
       await result.current.handleCreateStorageModeOrMultirespondentForm()
