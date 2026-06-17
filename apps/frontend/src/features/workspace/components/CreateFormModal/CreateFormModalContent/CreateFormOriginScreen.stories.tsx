@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { Modal, ModalContent } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
-import { expect, userEvent, within } from '@storybook/test'
+import { expect, screen, userEvent } from '@storybook/test'
 
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form/form'
@@ -75,12 +75,17 @@ export const WithOtherSelected: StoryFn = () => (
 )
 
 export const ValidationError: StoryFn = () => <StoryOriginScreen />
-ValidationError.play = async ({ canvasElement }) => {
-  const canvas = within(canvasElement)
+ValidationError.play = async () => {
   await userEvent.click(
-    await canvas.findByRole('button', { name: /next step/i }),
+    await screen.findByRole(
+      'button',
+      { name: /next step/i },
+      { timeout: 3000 },
+    ),
   )
   await expect(
-    await canvas.findByText('Please select at least 1 option.'),
+    await screen.findByText('Please select at least 1 option.', undefined, {
+      timeout: 3000,
+    }),
   ).toBeInTheDocument()
 }
