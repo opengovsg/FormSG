@@ -182,9 +182,7 @@ export const InactiveStepBlock = ({
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
 
           <Stack>
-            <Text textStyle="subhead-3">
-              People who are filling up this step
-            </Text>
+            <Text textStyle="subhead-3">Who fills in this step</Text>
             {isFirstStep ? (
               <Text>Anyone with the form link can respond.</Text>
             ) : (

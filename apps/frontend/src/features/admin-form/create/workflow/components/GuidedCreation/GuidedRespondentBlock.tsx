@@ -143,7 +143,7 @@ export const GuidedRespondentBlock = ({
   return (
     <EditStepBlockContainer>
       <Stack spacing="0.5rem">
-        <Text style={textStyles.h4}>Who fills in this step?</Text>
+        <Text style={textStyles.h4}>Who fills in this step</Text>
 
         {subStep >= 2 && (
           <Radio.RadioGroup value={displayedWorkflowType}>

@@ -53,7 +53,7 @@ export const InactiveEmailCard = ({
 
           <Stack>
             <Text textStyle="subhead-3">
-              People who will receive the final email
+              People who will receive the completion email
             </Text>
             {hasAnyRecipient ? (
               <Stack spacing="0.25rem">

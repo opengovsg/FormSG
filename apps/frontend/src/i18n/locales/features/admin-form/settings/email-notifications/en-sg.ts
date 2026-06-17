@@ -11,7 +11,7 @@ export const enSG = {
         'Select who to notify when the form and/or workflow is complete:',
       respondents: {
         step1: {
-          label: 'Person who started the form (optional)',
+          label: 'Person who started the form',
           placeholder: 'Select an email field from your form',
         },
         stepN: {
