@@ -77,8 +77,15 @@ export const useCommonFormWizardProvider = ({
     setValue('responseMode', FormResponseMode.Multirespondent)
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
-  // Paper-forms tracking: return from the origin step to the title step. The
-  // entered title (and any selected origins) persist in formMethods.
+  // Paper-forms tracking: return from the origin step to the title step. This
+  // is the SINGLE exit from the origin step that could strand state, and it
+  // deliberately does NOT clear `formOrigins`: the selection is preserved
+  // (the origin screen's Controller re-hydrates it on re-entry), symmetric
+  // with how the entered title is preserved across Back. Data integrity for a
+  // stale/empty selection is enforced at the submit boundary (the provider's
+  // metadata guard) and by the backend Joi guard — not by clearing here.
+  // `goToMrfDetails` / `goToStorageModeDetails` are upstream of the origin
+  // step and so are never an exit from it, which is why they need no clearing.
   const goToFormDetails = () => {
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
