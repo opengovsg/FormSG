@@ -1,7 +1,4 @@
-import type {
-  FieldResponsesV4,
-  ResponseProvenance,
-} from '@opengovsg/formsg-sdk'
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import { BasicField, FieldResponsesV3, FormAuthType } from 'formsg-shared/types'
 import { hasProp } from 'formsg-shared/utils/has-prop'
 import {
@@ -150,11 +147,9 @@ export const createNdiResponsesV3FromRecord = (
 export const createNdiResponsesV4FromRecord = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ndiResponses: Record<string, any>,
-  stepNumber?: number,
 ): FieldResponsesV4 => {
   const responses: FieldResponsesV4 = {}
-  const provenance: ResponseProvenance =
-    stepNumber !== undefined ? { stepNumber } : {}
+  const provenance = {}
 
   Object.entries(ndiResponses).forEach(([key, value]) => {
     const title = mapVerifiedKeyToSPCPTitle(key)
