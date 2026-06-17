@@ -3,13 +3,13 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
+import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from 'formsg-shared/constants/file'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
-import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants/form-origin'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
