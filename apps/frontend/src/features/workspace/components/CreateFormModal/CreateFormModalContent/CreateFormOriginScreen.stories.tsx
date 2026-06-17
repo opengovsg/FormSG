@@ -68,7 +68,9 @@ export const Default = Template.bind({})
 
 export const WithOtherSelected: StoryFn = () => (
   <StoryOriginScreen
-    defaultValues={{ formOrigins: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE] }}
+    defaultValues={{
+      formOrigins: { value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE] },
+    }}
   />
 )
 

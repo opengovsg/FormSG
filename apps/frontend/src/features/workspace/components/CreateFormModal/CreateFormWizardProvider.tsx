@@ -4,7 +4,10 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { featureFlags } from 'formsg-shared/constants'
+import {
+  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+  featureFlags,
+} from 'formsg-shared/constants'
 import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 
 import formsgSdk from '~utils/formSdk'
@@ -17,7 +20,6 @@ import {
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import {
-  buildFormOriginsMetadata,
   CreateFormFlowStates,
   CreateFormWizardContext,
   CreateFormWizardContextReturn,
@@ -151,13 +153,26 @@ export const useCreateFormWizardContext = (
     responseMode,
     emails,
     formOrigins,
-    formOriginOtherDetail,
   }: CreateFormWizardInputProps) => {
-    const formOriginsMetadata = buildFormOriginsMetadata(
-      isPaperTrackingSetUpPageEnabled,
-      formOrigins,
-      formOriginOtherDetail,
-    )
+    // Paper-forms tracking submit-boundary guard: omit metadata entirely when
+    // the origin step is disabled or nothing was selected, and carry
+    // `othersInput` only when the "Other" sentinel is present with non-empty
+    // trimmed text — so unticking "Other" after typing drops the stray text.
+    const formOriginsMetadata =
+      isPaperTrackingSetUpPageEnabled && formOrigins?.value.length
+        ? {
+            metadata: {
+              formOrigins: {
+                value: formOrigins.value,
+                ...(formOrigins.value.includes(
+                  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+                ) && formOrigins.othersInput?.trim()
+                  ? { othersInput: formOrigins.othersInput.trim() }
+                  : {}),
+              },
+            },
+          }
+        : {}
 
     switch (responseMode) {
       case FormResponseMode.Encrypt: {

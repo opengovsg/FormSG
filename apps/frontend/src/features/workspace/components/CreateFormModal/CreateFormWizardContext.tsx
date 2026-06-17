@@ -3,12 +3,11 @@ import { createContext, useContext } from 'react'
 import { UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import {
-  FormMetadata,
   FormResponseMode,
   PublicFormViewDto,
 } from 'formsg-shared/types/form/form'
+import { CheckboxFieldResponsesV3 } from 'formsg-shared/types/response-v3'
 
 import formsgSdk from '~utils/formSdk'
 import { CheckboxFieldValues } from '~templates/Field'
@@ -33,46 +32,14 @@ export interface CreateFormWizardInputProps {
   storageAck?: boolean
 
   // Paper-forms tracking: the source(s) the form replaced, captured on the
-  // origin step and persisted to the created form's `metadata`. Holds the
-  // selected origin codes plus the CLIENT_CHECKBOX_OTHERS_INPUT_VALUE sentinel
-  // when "Other" is ticked, so it is a plain string[] rather than FormOrigin[].
-  formOrigins?: string[]
-  formOriginOtherDetail?: string
+  // origin step and persisted to the created form's `metadata`. Held as the
+  // exact type the backend persists (`CheckboxFieldResponsesV3`): `value`
+  // carries the selected origin codes plus the CLIENT_CHECKBOX_OTHERS_INPUT_VALUE
+  // sentinel when "Other" is ticked, and `othersInput` carries the "Other" text.
+  formOrigins?: CheckboxFieldResponsesV3
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   reason?: CheckboxFieldValues // for kill email mode
-}
-
-/**
- * Paper-forms tracking: the single point where the wizard's form state crosses
- * into the backend's create-form `metadata` shape. Shared by the create,
- * duplicate and use-template providers so the encoding rule lives in exactly
- * one place. Returns `{ metadata: { formOrigins } }` to spread into the create
- * payload, or `{}` when the origin step is disabled or nothing was selected.
- *
- * The selected codes (incl. the `CLIENT_CHECKBOX_OTHERS_INPUT_VALUE` sentinel)
- * go in `value`; the typed "Other" text goes in `othersInput`, attached only
- * when "Other" is selected and the text is non-empty.
- */
-export const buildFormOriginsMetadata = (
-  isPaperTrackingSetUpPageEnabled: boolean,
-  formOrigins?: string[],
-  formOriginOtherDetail?: string,
-): { metadata?: Pick<FormMetadata, 'formOrigins'> } => {
-  if (!isPaperTrackingSetUpPageEnabled || !formOrigins?.length) {
-    return {}
-  }
-  return {
-    metadata: {
-      formOrigins: {
-        value: formOrigins,
-        ...(formOrigins.includes(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE) &&
-        formOriginOtherDetail?.trim()
-          ? { othersInput: formOriginOtherDetail.trim() }
-          : {}),
-      },
-    },
-  }
 }
 
 export type CreateFormWizardContextReturn = {

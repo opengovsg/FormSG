@@ -1,4 +1,3 @@
-import { Fragment } from 'react'
 import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
@@ -38,10 +37,10 @@ const ORIGIN_I18N_PREFIX = 'features.workspace.modals.forms.create.origin'
  * `enablePaperTrackingSetUpPage`): asks where the form is being filled today as
  * a multi-select, then creates the form carrying the selected origins.
  *
- * The field value is the list of selected origin codes; "Other" is the
- * checkbox's built-in option, carried as the CLIENT_CHECKBOX_OTHERS_INPUT_VALUE
- * sentinel with its free text in `formOriginOtherDetail`. The provider maps
- * this to the backend's `{ value, othersInput }` shape on submit.
+ * The field is the backend's `CheckboxFieldResponsesV3` shape directly: the
+ * selected origin codes (and the CLIENT_CHECKBOX_OTHERS_INPUT_VALUE sentinel
+ * when "Other" is ticked) live in `formOrigins.value`, and the "Other" free
+ * text in `formOrigins.othersInput`. No mapping happens on submit.
  */
 export const CreateFormOriginScreen = ({
   useCreateFormWizardParam = useCreateFormWizard,
@@ -62,10 +61,11 @@ export const CreateFormOriginScreen = ({
     formState: { errors },
   } = formMethods
 
-  const isOthersSelected = (watch('formOrigins') ?? []).includes(
+  const formOrigins = watch('formOrigins')
+  const isOthersSelected = (formOrigins?.value ?? []).includes(
     CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
   )
-  const otherDetailLength = (watch('formOriginOtherDetail') ?? '').length
+  const otherDetailLength = (formOrigins?.othersInput ?? '').length
 
   return (
     <>
@@ -76,9 +76,13 @@ export const CreateFormOriginScreen = ({
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW="42.5rem" p={0}>
-          <FormControl isRequired isInvalid={!!errors.formOrigins} mb="1rem">
+          <FormControl
+            isRequired
+            isInvalid={!!errors.formOrigins?.value}
+            mb="1rem"
+          >
             <Controller
-              name="formOrigins"
+              name="formOrigins.value"
               control={control}
               rules={{
                 validate: (value) =>
@@ -93,7 +97,7 @@ export const CreateFormOriginScreen = ({
                         {t(`${ORIGIN_I18N_PREFIX}.options.${code}`)}
                       </Checkbox>
                     ))}
-                    <Fragment>
+                    <>
                       <Checkbox value={CLIENT_CHECKBOX_OTHERS_INPUT_VALUE}>
                         {t(`${ORIGIN_I18N_PREFIX}.options.others`)}
                       </Checkbox>
@@ -101,13 +105,13 @@ export const CreateFormOriginScreen = ({
                         <Box pl="2.25rem">
                           <FormControl
                             isRequired
-                            isInvalid={!!errors.formOriginOtherDetail}
+                            isInvalid={!!errors.formOrigins?.othersInput}
                           >
                             <Input
                               aria-label={t(
                                 `${ORIGIN_I18N_PREFIX}.otherInputLabel`,
                               )}
-                              {...register('formOriginOtherDetail', {
+                              {...register('formOrigins.othersInput', {
                                 validate: (detail) =>
                                   !isOthersSelected ||
                                   !!detail?.trim() ||
@@ -127,12 +131,12 @@ export const CreateFormOriginScreen = ({
                               })}
                             />
                             <FormErrorMessage>
-                              {errors.formOriginOtherDetail?.message}
+                              {errors.formOrigins?.othersInput?.message}
                             </FormErrorMessage>
                             {/* Character count helper, mirroring the AI form
                                 builder (magic-form-builder) text prompt: shown
                                 only while there's input and no error. */}
-                            {!errors.formOriginOtherDetail?.message &&
+                            {!errors.formOrigins?.othersInput?.message &&
                             otherDetailLength > 0 ? (
                               <FormHelperText>
                                 {`(${otherDetailLength}/${FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH})`}
@@ -141,12 +145,14 @@ export const CreateFormOriginScreen = ({
                           </FormControl>
                         </Box>
                       )}
-                    </Fragment>
+                    </>
                   </Stack>
                 </CheckboxGroup>
               )}
             />
-            <FormErrorMessage>{errors.formOrigins?.message}</FormErrorMessage>
+            <FormErrorMessage>
+              {errors.formOrigins?.value?.message}
+            </FormErrorMessage>
           </FormControl>
 
           <Stack mt="2.5rem" spacing="0.75rem" align="center">

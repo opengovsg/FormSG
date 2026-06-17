@@ -1,12 +1,12 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 
 import { useFormTemplate } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
 import {
-  buildFormOriginsMetadata,
   CreateFormFlowStates,
   CreateFormWizardContext,
   CreateFormWizardContextReturn,
@@ -80,17 +80,29 @@ export const useUseTemplateWizardContext = (
     responseMode,
     emails,
     formOrigins,
-    formOriginOtherDetail,
   }: CreateFormWizardInputProps) => {
     if (!formId) return
 
     // Paper-forms tracking: the use-template flow re-asks the origin question,
     // so the captured origins are written to the new form's metadata.
-    const formOriginsMetadata = buildFormOriginsMetadata(
-      isPaperTrackingSetUpPageEnabled,
-      formOrigins,
-      formOriginOtherDetail,
-    )
+    // Submit-boundary guard: omit metadata when disabled or empty; carry
+    // `othersInput` only when the "Other" sentinel is present with non-empty
+    // trimmed text.
+    const formOriginsMetadata =
+      isPaperTrackingSetUpPageEnabled && formOrigins?.value.length
+        ? {
+            metadata: {
+              formOrigins: {
+                value: formOrigins.value,
+                ...(formOrigins.value.includes(
+                  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+                ) && formOrigins.othersInput?.trim()
+                  ? { othersInput: formOrigins.othersInput.trim() }
+                  : {}),
+              },
+            },
+          }
+        : {}
 
     switch (responseMode) {
       case FormResponseMode.Encrypt: {

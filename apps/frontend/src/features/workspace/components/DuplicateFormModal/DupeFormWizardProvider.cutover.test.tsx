@@ -184,11 +184,10 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
 
     act(() => {
       result.current.formMethods.setValue('title', 'New title')
-      result.current.formMethods.setValue('formOrigins', [
-        FormOrigin.Paper,
-        CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
-      ])
-      result.current.formMethods.setValue('formOriginOtherDetail', 'Fax')
+      result.current.formMethods.setValue('formOrigins', {
+        value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+        othersInput: 'Fax',
+      })
     })
     await act(async () => {
       await result.current.handleCreateStorageModeOrMultirespondentForm()
