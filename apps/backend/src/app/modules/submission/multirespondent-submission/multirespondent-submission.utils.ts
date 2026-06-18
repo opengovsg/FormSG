@@ -528,14 +528,26 @@ export const getQuestionAnswerPairsForMultipleFields = ({
 export const getFormDelimiter = (metadata?: FormMetadata): string =>
   metadata?.delimiter ?? ', '
 
+// Field types that don't carry respondent answers; excluded from JSON dump.
+const NON_RESPONSE_FIELD_TYPES = new Set<string>([
+  BasicField.Section,
+  BasicField.Statement,
+  BasicField.Image,
+])
+
 /**
  * Builds the JSON response payload attached to MRF completion emails.
- * V4-native: delegates to getQuestionAnswerPairsForMultipleFields, then
- * prepends Response ID and Timestamp entries.
+ *
+ * Unlike getQuestionAnswerPairsForMultipleFields (which targets human-facing
+ * email/PDF output), this dump targets machine consumers and so:
+ *   - emits an empty-string entry for every form field without a response
+ *     (schema-complete output), and
+ *   - flattens address answers to one entry per sub-field
+ *     (e.g. "Home Address - blockNumber") so each sub-field is individually
+ *     addressable downstream.
  *
  * Note: the `delimiter` param is accepted for caller compatibility but is
- * currently unused — getQuestionAnswerPairsForMultipleFields uses a fixed
- * table-cell separator post-V4 migration. See follow-up to restore admin
+ * currently unused post-V4 migration. See follow-up to restore admin
  * `metadata.delimiter` customisation if needed.
  */
 export const buildMrfResponseJson = ({
@@ -550,19 +562,59 @@ export const buildMrfResponseJson = ({
   timestamp: string
   delimiter?: string
 }): string => {
-  const pairs = getQuestionAnswerPairsForMultipleFields({
-    formFields,
-    responses,
-    includeSignatureDataPngDataUri: false,
-    // [Verified] prefix is a UX hint for the email body; the JSON dump is
-    // for machine consumers and should carry the raw question text.
-    includeVerifiedPrefix: false,
-  })
-  const entries = [
+  const entries: { question: string; answer: string }[] = [
     { question: 'Response ID', answer: responseId },
     { question: 'Timestamp', answer: timestamp },
-    ...pairs.map(({ question, answer }) => ({ question, answer })),
   ]
+
+  for (const field of formFields) {
+    if (NON_RESPONSE_FIELD_TYPES.has(field.fieldType)) continue
+
+    const response = responses[field._id.toString()]
+
+    if (!response) {
+      entries.push({ question: field.title, answer: '' })
+      continue
+    }
+
+    if (response.fieldType === BasicField.Address) {
+      const addressAnswer = response.answer as Record<string, { value: string }>
+      for (const subField of Object.keys(addressAnswer)) {
+        entries.push({
+          question: `${field.title} - ${subField}`,
+          answer: addressAnswer[subField]?.value ?? '',
+        })
+      }
+      continue
+    }
+
+    // Reuse the V4 pair helper for non-address answered fields. Passing only
+    // this field's response keeps the NDI-key scan inside the helper a no-op;
+    // NDI entries are appended once below.
+    const pairs = getQuestionAnswerPairsForMultipleFields({
+      formFields: [field],
+      responses: {
+        [field._id.toString()]: response,
+      } as unknown as FieldResponsesV4,
+      includeSignatureDataPngDataUri: false,
+      // [Verified] prefix is a UX hint for the email body; the JSON dump is
+      // for machine consumers and should carry the raw question text.
+      includeVerifiedPrefix: false,
+    })
+    for (const p of pairs) {
+      entries.push({ question: p.question, answer: p.answer })
+    }
+  }
+
+  for (const key of Object.keys(responses)) {
+    if (!startsWithSPCPFieldTitle(key)) continue
+    const ndi = responses[key]
+    entries.push({
+      question: key,
+      answer: (ndi.answer as { value: string }).value,
+    })
+  }
+
   return JSON.stringify(entries)
 }
 
