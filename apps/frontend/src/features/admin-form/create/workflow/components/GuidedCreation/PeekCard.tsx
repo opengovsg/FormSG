@@ -18,7 +18,7 @@ export const PeekCard = ({
   return (
     <Box
       bg="primary.100"
-      borderRadius="4px"
+      borderRadius="8px"
       border="1px solid"
       borderColor="primary.200"
       mt="-0.5rem"

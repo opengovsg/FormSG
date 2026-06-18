@@ -19,7 +19,7 @@ export const WorkflowCard = ({
       bg="white"
       border="1px solid"
       borderColor="neutral.300"
-      borderRadius="4px"
+      borderRadius="8px"
       padding="1.5rem"
     >
       <Stack gap="1.5rem">

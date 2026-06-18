@@ -91,7 +91,7 @@ export const ApprovalsBlock = ({
         isLoading={isLoading}
         onChange={onApprovalToggleChange}
         isChecked={isApprovalToggleChecked}
-        labelStyles={textStyles.h4}
+        labelStyles={textStyles['subhead-2']}
         label={t('features.adminForm.sidebar.workflow.approvals.toggle.label')}
         description={t(
           'features.adminForm.sidebar.workflow.approvals.toggle.description',

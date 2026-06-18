@@ -15,14 +15,14 @@ export const StepLabel = ({ stepNumber, stepName }: StepLabelProps) => {
       direction="row"
       spacing="1.5rem"
       alignItems="center"
-      textStyle="subhead-3"
+      textStyle="subhead-1"
     >
       <Text
         py="0.5rem"
         px="1rem"
         borderWidth="1px"
         borderColor="secondary.300"
-        borderRadius="4px"
+        borderRadius="8px"
       >
         {stepNumber + 1}
       </Text>

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore UI: Workflow Success State</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter var', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Toolbar */
+    nav {
+      display: flex;
+      align-items: center;
+      background: #16213e;
+      border-bottom: 1px solid #2a2a4a;
+      padding: 0 1rem;
+      height: 48px;
+      flex-shrink: 0;
+      gap: 0.25rem;
+    }
+
+    nav .title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #8888aa;
+      margin-right: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .tab {
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #8888aa;
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+    .tab:hover { background: #2a2a4a; color: #ccc; }
+    .tab.active { background: #4A61C0; color: white; }
+
+    .ranking-toggle {
+      margin-left: auto;
+      padding: 0.4rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #8888aa;
+      cursor: pointer;
+      border: 1px solid #2a2a4a;
+      background: none;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+    .ranking-toggle:hover { background: #2a2a4a; color: #ccc; }
+
+    /* Main area */
+    #main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Preview area */
+    #preview-area {
+      flex: 1;
+      position: relative;
+    }
+
+    .preview-single {
+      display: none;
+      width: 100%;
+      height: 100%;
+    }
+    .preview-single.active { display: block; }
+
+    .preview-single iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    #preview-all {
+      display: none;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      padding: 1rem;
+      gap: 1rem;
+    }
+    #preview-all.active {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid-cell {
+      background: #0f0f23;
+      border-radius: 6px;
+      border: 1px solid #2a2a4a;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .grid-cell .grid-label {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #8888aa;
+      background: #16213e;
+      border-bottom: 1px solid #2a2a4a;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .grid-cell iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+      min-height: 500px;
+    }
+
+    /* Ranking panel */
+    #ranking-panel {
+      width: 0;
+      overflow: hidden;
+      background: #16213e;
+      border-left: 1px solid #2a2a4a;
+      transition: width 0.25s ease;
+      flex-shrink: 0;
+    }
+    #ranking-panel.open { width: 320px; }
+
+    .ranking-content {
+      padding: 1.25rem;
+      width: 320px;
+      overflow-y: auto;
+      height: 100%;
+    }
+
+    .ranking-content h3 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #ccc;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .rank-item {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 6px;
+      padding: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .rank-item.recommended {
+      border-color: #4A61C0;
+      background: #1a1a3e;
+    }
+
+    .rank-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .rank-number {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #2a2a4a;
+      color: #aaa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .rank-item.recommended .rank-number {
+      background: #4A61C0;
+      color: white;
+    }
+    .rank-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #ddd;
+    }
+    .rank-badge {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: #4A61C0;
+      background: rgba(74, 97, 192, 0.15);
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      margin-left: auto;
+    }
+
+    .rank-desc {
+      font-size: 0.75rem;
+      color: #888;
+      line-height: 1.5;
+      margin-bottom: 0.5rem;
+    }
+
+    .rank-pros, .rank-cons {
+      font-size: 0.7rem;
+      line-height: 1.5;
+      margin-bottom: 0.25rem;
+    }
+    .rank-pros { color: #05CC9A; }
+    .rank-cons { color: #C05050; }
+  </style>
+</head>
+<body>
+  <nav>
+    <span class="title">Explore UI</span>
+    <button class="tab active" data-tab="1">Summary Modal</button>
+    <button class="tab" data-tab="2">Flow Takeover</button>
+    <button class="tab" data-tab="3">Contextual Overlay</button>
+    <button class="tab" data-tab="all">All</button>
+    <button class="ranking-toggle" onclick="toggleRanking()">Rankings</button>
+  </nav>
+
+  <div id="main">
+    <div id="preview-area">
+      <div class="preview-single active" data-panel="1">
+        <iframe src="option-1-summary-modal.html"></iframe>
+      </div>
+      <div class="preview-single" data-panel="2">
+        <iframe src="option-2-flow-takeover.html"></iframe>
+      </div>
+      <div class="preview-single" data-panel="3">
+        <iframe src="option-3-contextual-overlay.html"></iframe>
+      </div>
+      <div id="preview-all" data-panel="all">
+        <div class="grid-cell">
+          <div class="grid-label">Option 1: Summary Modal</div>
+          <iframe src="option-1-summary-modal.html"></iframe>
+        </div>
+        <div class="grid-cell">
+          <div class="grid-label">Option 2: Flow Takeover</div>
+          <iframe src="option-2-flow-takeover.html"></iframe>
+        </div>
+        <div class="grid-cell">
+          <div class="grid-label">Option 3: Contextual Overlay</div>
+          <iframe src="option-3-contextual-overlay.html"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div id="ranking-panel">
+      <div class="ranking-content">
+        <h3>Claude's Rankings</h3>
+
+        <div class="rank-item recommended">
+          <div class="rank-header">
+            <div class="rank-number">1</div>
+            <div class="rank-name">Contextual Overlay</div>
+            <span class="rank-badge">Recommended</span>
+          </div>
+          <div class="rank-desc">Minimal modal over dimmed workflow. User sees their work behind the celebration. Quick to dismiss.</div>
+          <div class="rank-pros">+ Hits excitement + reassurance. They see what they built AND get celebrated.</div>
+          <div class="rank-cons">- Lightest touch of the three. Might not feel like enough of a "moment" for some.</div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-header">
+            <div class="rank-number">2</div>
+            <div class="rank-name">Flow Takeover</div>
+          </div>
+          <div class="rank-desc">Full panel replacement with visual flow diagram showing all steps connected. Biggest emotional impact.</div>
+          <div class="rank-pros">+ Strongest "moment". The flow diagram gives a bird's-eye view they haven't seen. Most empowering.</div>
+          <div class="rank-cons">- More to build. Diagram needs to reflect actual step data. Slightly heavier UX.</div>
+        </div>
+
+        <div class="rank-item">
+          <div class="rank-header">
+            <div class="rank-number">3</div>
+            <div class="rank-name">Summary Modal</div>
+          </div>
+          <div class="rank-desc">Classic modal with checkmark and bullet list summarizing what was configured. Clear and informative.</div>
+          <div class="rank-pros">+ Informative. Confirms everything is set up. Familiar pattern.</div>
+          <div class="rank-cons">- The bullet summary is slightly redundant since they just configured everything. Less emotional.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab');
+    const singles = document.querySelectorAll('.preview-single');
+    const allGrid = document.getElementById('preview-all');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const target = tab.dataset.tab;
+
+        singles.forEach(s => s.classList.remove('active'));
+        allGrid.classList.remove('active');
+
+        if (target === 'all') {
+          allGrid.classList.add('active');
+        } else {
+          document.querySelector(`.preview-single[data-panel="${target}"]`).classList.add('active');
+        }
+      });
+    });
+
+    function toggleRanking() {
+      document.getElementById('ranking-panel').classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

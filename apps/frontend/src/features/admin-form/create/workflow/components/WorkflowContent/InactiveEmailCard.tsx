@@ -38,7 +38,7 @@ export const InactiveEmailCard = ({
         type="button"
         w="100%"
         textAlign="start"
-        borderRadius="4px"
+        borderRadius="8px"
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
@@ -47,12 +47,13 @@ export const InactiveEmailCard = ({
         transitionDuration="normal"
         cursor="pointer"
         onClick={onEdit}
+        pos="relative"
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <EmailLabel />
 
           <Stack>
-            <Text textStyle="subhead-3">
+            <Text textStyle="subhead-2">
               People who will receive the completion email
             </Text>
             {hasAnyRecipient ? (
@@ -80,25 +81,25 @@ export const InactiveEmailCard = ({
             )}
           </Stack>
         </Stack>
+        <Flex
+          pos="absolute"
+          top={{ base: '0.5rem', md: '2rem' }}
+          right={{ base: '0.5rem', md: '2rem' }}
+          alignItems="center"
+        >
+          <Tooltip label="Edit" placement="top" hasArrow openDelay={300}>
+            <Box display="inline-flex">
+              <Icon
+                as={BiPencil}
+                boxSize="1.25rem"
+                color="secondary.300"
+                _groupHover={{ color: 'primary.500' }}
+                transition="color 0.15s ease"
+              />
+            </Box>
+          </Tooltip>
+        </Flex>
       </chakra.button>
-      <Flex
-        pos="absolute"
-        top={{ base: '0.5rem', md: '2rem' }}
-        right={{ base: '0.5rem', md: '2rem' }}
-        alignItems="center"
-      >
-        <Tooltip label="Edit" placement="top" hasArrow openDelay={300}>
-          <Box display="inline-flex">
-            <Icon
-              as={BiPencil}
-              boxSize="1.25rem"
-              color="secondary.300"
-              _groupHover={{ color: 'primary.500' }}
-              transition="color 0.15s ease"
-            />
-          </Box>
-        </Tooltip>
-      </Flex>
     </Box>
   )
 }

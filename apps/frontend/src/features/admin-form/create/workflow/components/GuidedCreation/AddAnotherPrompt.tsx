@@ -19,7 +19,8 @@ export const AddAnotherPrompt = ({
   return (
     <Box
       bg="primary.100"
-      borderRadius="4px"
+      borderTopRadius="0"
+      borderBottomRadius="8px"
       border="1px solid"
       borderColor="primary.200"
       mt="-0.5rem"

@@ -11,8 +11,6 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { textStyles } from '~theme/textStyles'
-import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Toggle from '~components/Toggle'
 
@@ -64,8 +62,8 @@ export const StepNameBlock = ({
             px="1rem"
             borderWidth="1px"
             borderColor="secondary.300"
-            borderRadius="4px"
-            textStyle="subhead-3"
+            borderRadius="8px"
+            textStyle="subhead-1"
           >
             {stepNumber + 1}
           </Text>
@@ -88,9 +86,9 @@ export const StepNameBlock = ({
             isRequired={false}
             isInvalid={!!errors[STEP_NAME]}
           >
-            <FormLabel isRequired style={textStyles.h4} textStyle={'subhead-1'}>
+            <Text textStyle="subhead-2" mb="0.75rem">
               {t('features.adminForm.sidebar.workflow.stepName.label')}
-            </FormLabel>
+            </Text>
             <Controller
               control={control}
               name={STEP_NAME}

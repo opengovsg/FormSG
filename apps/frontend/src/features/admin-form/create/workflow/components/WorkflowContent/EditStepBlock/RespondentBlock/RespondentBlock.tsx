@@ -4,9 +4,7 @@ import { FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { UserDto } from 'formsg-shared/types'
 
-import { textStyles } from '~theme/textStyles'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Radio from '~components/Radio'
 
@@ -60,7 +58,7 @@ export const RespondentBlock = ({
     <EditStepBlockContainer>
       {isFirstStep ? (
         <Stack spacing="0.5rem">
-          <Text style={textStyles.h4}>Who fills in this step</Text>
+          <Text textStyle="subhead-2">Who fills in this step</Text>
           <Text>Anyone with the form link can respond.</Text>
           {showGuidedHint && (
             <InlineMessage variant="info">
@@ -75,7 +73,9 @@ export const RespondentBlock = ({
           isRequired
           isInvalid={!!errors.workflow_type}
         >
-          <FormLabel style={textStyles.h4}>Who fills in this step</FormLabel>
+          <Text textStyle="subhead-2" mb="0.75rem">
+            Who fills in this step
+          </Text>
           <Stack spacing="0.25rem">
             <Radio.RadioGroup value={selectedWorkflowType}>
               <StaticRespondentOption

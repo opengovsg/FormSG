@@ -24,7 +24,7 @@ export const InactiveWhatTheyDoBlock = ({
 
   return (
     <Stack>
-      <Text textStyle="subhead-3">What they do</Text>
+      <Text textStyle="subhead-2">What they do</Text>
       <Stack direction="column" spacing="0.25rem">
         {hasApprovalField ? (
           <>

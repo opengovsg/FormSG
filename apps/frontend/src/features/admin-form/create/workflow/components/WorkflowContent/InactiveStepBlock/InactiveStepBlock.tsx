@@ -167,7 +167,7 @@ export const InactiveStepBlock = ({
         tabIndex={0}
         w="100%"
         textAlign="start"
-        borderRadius="4px"
+        borderRadius="8px"
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
@@ -182,9 +182,11 @@ export const InactiveStepBlock = ({
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
 
           <Stack>
-            <Text textStyle="subhead-3">Who fills in this step</Text>
+            <Text textStyle="subhead-2">Who fills in this step</Text>
             {isFirstStep ? (
-              <Text>Anyone with the form link can respond.</Text>
+              <Text textStyle="body-2">
+                Anyone with the form link can respond.
+              </Text>
             ) : (
               <Flex
                 flexDir={{ base: 'column', md: 'row' }}
@@ -204,7 +206,7 @@ export const InactiveStepBlock = ({
             <InactiveWhatTheyDoBlock step={step} idToFieldMap={idToFieldMap} />
           ) : null}
           <Stack>
-            <Text textStyle="subhead-3">
+            <Text textStyle="subhead-2">
               {t(
                 'features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill',
               )}

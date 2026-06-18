@@ -5,7 +5,6 @@ import { FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
-import { textStyles } from '~theme/textStyles'
 import Button from '~components/Button'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -112,7 +111,7 @@ export const WhatTheyDoBlock = ({
   return (
     <EditStepBlockContainer>
       <Stack spacing="0.5rem">
-        <Text style={textStyles.h4}>What they do</Text>
+        <Text textStyle="subhead-2">What they do</Text>
         <Radio.RadioGroup
           value={stepType}
           onChange={(val) => handleStepTypeChange(val as StepType)}
@@ -150,7 +149,7 @@ export const WhatTheyDoBlock = ({
                 </Text>
 
                 <FormControl isInvalid={!!errors.approval_field?.message}>
-                  <Text style={textStyles.subhead2} mb="0.5rem">
+                  <Text textStyle="subhead-2" mb="0.5rem">
                     Approval field
                   </Text>
                   {hasYesNoFields ? (

@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workflow Complete – Option 2 (Flow Takeover)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary-500: #4A61C0;
+      --primary-600: #3B4E9A;
+      --secondary-500: #445072;
+      --secondary-400: #69738E;
+      --success: #05CC9A;
+      --border: #E1E2E4;
+      --bg: #F5F6F8;
+      --white: #ffffff;
+      --connector: #A2A8B9;
+      --shadow: 0px 0px 10px rgba(216, 222, 235, 0.5);
+      --radius: 4px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    /* ---- SUCCESS PANEL ---- */
+    #success-panel {
+      width: 100%;
+      max-width: 36rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0;
+    }
+
+    /* Checkmark */
+    .check-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      opacity: 0;
+      animation: fadeSlideUp 0.4s ease 0.05s forwards;
+    }
+
+    .check-circle svg {
+      width: 28px;
+      height: 28px;
+    }
+
+    .headline {
+      margin-top: 1rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--secondary-500);
+      opacity: 0;
+      animation: fadeSlideUp 0.4s ease 0.15s forwards;
+    }
+
+    .subheading {
+      margin-top: 0.375rem;
+      font-size: 0.875rem;
+      font-weight: 400;
+      color: var(--secondary-400);
+      opacity: 0;
+      animation: fadeSlideUp 0.4s ease 0.25s forwards;
+    }
+
+    /* ---- FLOW DIAGRAM ---- */
+    .flow-diagram {
+      margin-top: 1.75rem;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .flow-row {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* Step cards */
+    .flow-card {
+      width: 100%;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 0.875rem 1rem;
+      text-align: left;
+      opacity: 0;
+    }
+
+    .flow-card:nth-child(1) { animation: fadeSlideUp 0.4s ease 0.35s forwards; }
+
+    .flow-connector { opacity: 0; }
+    .flow-connector:nth-of-type(1) { animation: fadeIn 0.3s ease 0.55s forwards; }
+    .flow-connector:nth-of-type(2) { animation: fadeIn 0.3s ease 0.8s forwards; }
+    .flow-connector:nth-of-type(3) { animation: fadeIn 0.3s ease 1.05s forwards; }
+
+    .step-label {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: var(--secondary-400);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+    }
+
+    .step-name {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--secondary-500);
+      margin-bottom: 0.25rem;
+    }
+
+    .step-type {
+      font-size: 0.8125rem;
+      color: var(--secondary-400);
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .type-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--connector);
+      flex-shrink: 0;
+    }
+
+    /* Email card */
+    .email-card {
+      width: 100%;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 0.875rem 1rem;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      opacity: 0;
+      animation: fadeSlideUp 0.4s ease 0.7s forwards;
+    }
+
+    .email-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius);
+      background: #EEF0F8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .email-icon svg {
+      width: 16px;
+      height: 16px;
+      color: var(--primary-500);
+    }
+
+    .email-label {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--secondary-500);
+    }
+
+    /* Status badge */
+    .status-badge {
+      margin-top: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.25rem 0.625rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--secondary-500);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      animation: fadeSlideUp 0.4s ease 0.9s forwards;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      flex-shrink: 0;
+    }
+
+    /* Connector arrow */
+    .connector-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.25rem 0;
+      gap: 0;
+    }
+
+    .connector-line {
+      width: 1.5px;
+      height: 18px;
+      background: var(--connector);
+    }
+
+    .connector-chevron svg {
+      display: block;
+      color: var(--connector);
+    }
+
+    /* ---- BOTTOM SECTION ---- */
+    .bottom-section {
+      margin-top: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      opacity: 0;
+      animation: fadeSlideUp 0.4s ease 1s forwards;
+    }
+
+    .reassure-text {
+      font-size: 0.875rem;
+      color: var(--secondary-400);
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: var(--primary-500);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.9375rem;
+      font-weight: 500;
+      padding: 0.625rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-primary:hover { background: var(--primary-600); }
+    .btn-primary:active { transform: scale(0.98); }
+
+    /* ---- EDITOR VIEW ---- */
+    #editor-panel {
+      width: 100%;
+      max-width: 36rem;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    #editor-panel.visible {
+      display: block;
+    }
+
+    #editor-panel.faded-in {
+      opacity: 1;
+    }
+
+    .editor-header {
+      margin-bottom: 1.25rem;
+    }
+
+    .editor-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--secondary-500);
+    }
+
+    .editor-sub {
+      font-size: 0.875rem;
+      color: var(--secondary-400);
+      margin-top: 0.25rem;
+    }
+
+    .editor-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0.625rem;
+    }
+
+    .editor-step {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 0.875rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .editor-step-left { display: flex; flex-direction: column; gap: 0.2rem; }
+
+    .editor-step-label {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: var(--secondary-400);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .editor-step-name {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--secondary-500);
+    }
+
+    .editor-step-type {
+      font-size: 0.8125rem;
+      color: var(--secondary-400);
+    }
+
+    .editor-step-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-ghost {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.8125rem;
+      color: var(--secondary-500);
+      padding: 0.3rem 0.625rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .btn-ghost:hover { background: var(--bg); }
+
+    .editor-email-row {
+      margin-top: 0.625rem;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 0.875rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .editor-email-label {
+      font-size: 0.9375rem;
+      font-weight: 600;
+      color: var(--secondary-500);
+    }
+
+    .editor-email-sub {
+      font-size: 0.8125rem;
+      color: var(--secondary-400);
+    }
+
+    .add-step-btn {
+      margin-top: 0.625rem;
+      width: 100%;
+      background: none;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: var(--primary-500);
+      padding: 0.625rem 1rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .add-step-btn:hover { background: var(--white); }
+
+    /* ---- ANIMATIONS ---- */
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    /* Second flow card stagger via class */
+    .flow-card.card-2 { animation: fadeSlideUp 0.4s ease 0.55s forwards; }
+  </style>
+</head>
+<body>
+
+  <!-- SUCCESS PANEL -->
+  <div id="success-panel">
+
+    <div class="check-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
+    </div>
+
+    <h1 class="headline">Your workflow is ready!</h1>
+    <p class="subheading">Here's what you've set up:</p>
+
+    <!-- FLOW DIAGRAM -->
+    <div class="flow-diagram">
+
+      <!-- Step 1 -->
+      <div class="flow-row">
+        <div class="flow-card">
+          <div class="step-label">Step 1</div>
+          <div class="step-name">Review application</div>
+          <div class="step-type">
+            <span class="type-dot"></span>
+            Static respondents
+          </div>
+        </div>
+      </div>
+
+      <!-- Connector 1 -->
+      <div class="flow-connector connector-arrow">
+        <div class="connector-line"></div>
+        <div class="connector-chevron">
+          <svg width="12" height="7" viewBox="0 0 12 7" fill="none">
+            <path d="M1 1L6 6L11 1" stroke="#A2A8B9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="flow-row">
+        <div class="flow-card card-2">
+          <div class="step-label">Step 2</div>
+          <div class="step-name">Approve request</div>
+          <div class="step-type">
+            <span class="type-dot"></span>
+            Dynamic respondent
+          </div>
+        </div>
+      </div>
+
+      <!-- Connector 2 -->
+      <div class="flow-connector connector-arrow">
+        <div class="connector-line"></div>
+        <div class="connector-chevron">
+          <svg width="12" height="7" viewBox="0 0 12 7" fill="none">
+            <path d="M1 1L6 6L11 1" stroke="#A2A8B9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Email card -->
+      <div class="email-card">
+        <div class="email-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#4A61C0" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <polyline points="2,4 12,13 22,4"/>
+          </svg>
+        </div>
+        <div class="email-label">End-of-workflow Email</div>
+      </div>
+
+      <!-- Status badge -->
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        Status tracking: On
+      </div>
+
+    </div>
+
+    <!-- BOTTOM SECTION -->
+    <div class="bottom-section">
+      <p class="reassure-text">You can always edit, reorder, or add more steps.</p>
+      <button class="btn-primary" id="goto-workflow-btn">Go to my workflow</button>
+    </div>
+
+  </div>
+
+  <!-- EDITOR PANEL (revealed on button click) -->
+  <div id="editor-panel">
+
+    <div class="editor-header">
+      <div class="editor-title">My workflow</div>
+      <div class="editor-sub">2 steps, end-of-workflow email enabled</div>
+    </div>
+
+    <div class="editor-steps">
+
+      <div class="editor-step">
+        <div class="editor-step-left">
+          <span class="editor-step-label">Step 1</span>
+          <span class="editor-step-name">Review application</span>
+          <span class="editor-step-type">Static respondents</span>
+        </div>
+        <div class="editor-step-actions">
+          <button class="btn-ghost">Edit</button>
+          <button class="btn-ghost">Reorder</button>
+        </div>
+      </div>
+
+      <div class="editor-step">
+        <div class="editor-step-left">
+          <span class="editor-step-label">Step 2</span>
+          <span class="editor-step-name">Approve request</span>
+          <span class="editor-step-type">Dynamic respondent</span>
+        </div>
+        <div class="editor-step-actions">
+          <button class="btn-ghost">Edit</button>
+          <button class="btn-ghost">Reorder</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="editor-email-row">
+      <div class="email-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4A61C0" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <polyline points="2,4 12,13 22,4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="editor-email-label">End-of-workflow Email</div>
+        <div class="editor-email-sub">Sent when all steps are complete</div>
+      </div>
+    </div>
+
+    <button class="add-step-btn">+ Add another step</button>
+
+  </div>
+
+  <script>
+    const successPanel = document.getElementById('success-panel');
+    const editorPanel = document.getElementById('editor-panel');
+    const gotoBtn = document.getElementById('goto-workflow-btn');
+
+    gotoBtn.addEventListener('click', () => {
+      // Fade out success panel
+      successPanel.style.transition = 'opacity 0.3s ease';
+      successPanel.style.opacity = '0';
+
+      setTimeout(() => {
+        successPanel.style.display = 'none';
+
+        // Show editor panel
+        editorPanel.style.display = 'block';
+        requestAnimationFrame(() => {
+          editorPanel.classList.add('visible');
+          requestAnimationFrame(() => {
+            editorPanel.classList.add('faded-in');
+          });
+        });
+      }, 300);
+    });
+  </script>
+
+</body>
+</html>

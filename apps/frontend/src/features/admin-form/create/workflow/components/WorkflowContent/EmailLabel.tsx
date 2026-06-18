@@ -6,14 +6,14 @@ export const EmailLabel = () => (
     direction="row"
     spacing="1.5rem"
     alignItems="center"
-    textStyle="subhead-3"
+    textStyle="subhead-1"
   >
     <Flex
       py="0.5rem"
       px="0.75rem"
       borderWidth="1px"
       borderColor="secondary.300"
-      borderRadius="4px"
+      borderRadius="8px"
       alignItems="center"
       justifyContent="center"
     >

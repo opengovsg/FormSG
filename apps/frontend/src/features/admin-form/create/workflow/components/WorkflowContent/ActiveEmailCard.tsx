@@ -218,7 +218,7 @@ export const ActiveEmailCard = ({
     <Stack
       py="2rem"
       spacing="1.5rem"
-      borderRadius="4px"
+      borderRadius="8px"
       bg="white"
       border="1px solid"
       borderColor="primary.500"
@@ -248,11 +248,14 @@ export const ActiveEmailCard = ({
       <Stack spacing="1.5rem" px={{ base: '1.5rem', md: '2rem' }}>
         {/* Section 1: Step 1 respondent notification */}
         <Box>
-          <FormLabel mb="0.75rem" textColor="secondary.700">
+          <Text textStyle="subhead-2" mb="0.75rem" color="secondary.700">
             {t(
               'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.label',
-            )}
-          </FormLabel>
+            )}{' '}
+            <Text as="span" color="secondary.400" fontWeight="normal">
+              (optional)
+            </Text>
+          </Text>
           <Skeleton isLoaded={!isLoading}>
             <Controller
               control={control}
@@ -279,11 +282,14 @@ export const ActiveEmailCard = ({
         {isSectionVisible(2) && (
           <>
             <Box>
-              <FormLabel mb="0.75rem" textColor="secondary.700">
+              <Text textStyle="subhead-2" mb="0.75rem" color="secondary.700">
                 {t(
                   'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
-                )}
-              </FormLabel>
+                )}{' '}
+                <Text as="span" color="secondary.400" fontWeight="normal">
+                  (optional)
+                </Text>
+              </Text>
               <Skeleton isLoaded={!isLoading}>
                 <Controller
                   control={control}
@@ -326,19 +332,14 @@ export const ActiveEmailCard = ({
             <FormControl
               isInvalid={!isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME])}
             >
-              <FormLabel
-                textColor="secondary.700"
-                mb="0.75rem"
-                tooltipVariant="info"
-                tooltipPlacement="top"
-                tooltipText={t(
-                  'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.tooltipText',
-                )}
-              >
+              <Text textStyle="subhead-2" mb="0.75rem" color="secondary.700">
                 {t(
                   'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.label',
-                )}
-              </FormLabel>
+                )}{' '}
+                <Text as="span" color="secondary.400" fontWeight="normal">
+                  (optional)
+                </Text>
+              </Text>
               <Controller<FormData>
                 name={OTHER_PARTIES_EMAIL_INPUT_NAME}
                 control={control}

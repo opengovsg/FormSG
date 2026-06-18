@@ -178,7 +178,7 @@ export const GuidedEmailCard = ({
     <Stack
       py="2rem"
       spacing="1.5rem"
-      borderRadius="4px"
+      borderRadius="8px"
       bg="white"
       border="1px solid"
       borderColor="primary.500"
