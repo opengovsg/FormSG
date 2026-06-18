@@ -3,6 +3,7 @@ import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import {
   BasicField,
   FormFieldDto,
+  FormMetadata,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
   PublicMultirespondentSubmissionDto,
@@ -509,6 +510,44 @@ export const getQuestionAnswerPairsForMultipleFields = ({
     }
   }
   return questionAnswerPairs
+}
+
+export const getFormDelimiter = (metadata?: FormMetadata): string =>
+  metadata?.delimiter ?? ', '
+
+/**
+ * Builds the JSON response payload attached to MRF completion emails.
+ * V4-native: delegates to getQuestionAnswerPairsForMultipleFields, then
+ * prepends Response ID and Timestamp entries.
+ *
+ * Note: the `delimiter` param is accepted for caller compatibility but is
+ * currently unused — getQuestionAnswerPairsForMultipleFields uses a fixed
+ * table-cell separator post-V4 migration. See follow-up to restore admin
+ * `metadata.delimiter` customisation if needed.
+ */
+export const buildMrfResponseJson = ({
+  formFields,
+  responses,
+  responseId,
+  timestamp,
+}: {
+  formFields: FormFieldSchema[] | FormFieldDto[]
+  responses: FieldResponsesV4
+  responseId: string
+  timestamp: string
+  delimiter?: string
+}): string => {
+  const pairs = getQuestionAnswerPairsForMultipleFields({
+    formFields,
+    responses,
+    includeSignatureDataPngDataUri: false,
+  })
+  const entries = [
+    { question: 'Response ID', answer: responseId },
+    { question: 'Timestamp', answer: timestamp },
+    ...pairs.map(({ question, answer }) => ({ question, answer })),
+  ]
+  return JSON.stringify(entries)
 }
 
 /**
