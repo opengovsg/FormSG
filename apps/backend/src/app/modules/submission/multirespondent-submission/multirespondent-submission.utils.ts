@@ -588,11 +588,8 @@ export const buildMrfResponseJson = ({
       continue
     }
 
-    // Reuse the V4 pair helper for non-address answered fields. Passing only
-    // this field's response keeps the NDI-key scan inside the helper a no-op;
-    // NDI entries are appended once below.
     const pairs = getQuestionAnswerPairsForMultipleFields({
-      formFields: [field],
+      formFields: [field] as unknown as FormFieldDto[],
       responses: {
         [field._id.toString()]: response,
       } as unknown as FieldResponsesV4,
