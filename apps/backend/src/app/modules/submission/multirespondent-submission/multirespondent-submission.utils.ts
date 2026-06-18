@@ -567,6 +567,10 @@ export const buildMrfResponseJson = ({
     { question: 'Timestamp', answer: timestamp },
   ]
 
+  if (!formFields || !responses) {
+    return JSON.stringify(entries)
+  }
+
   for (const field of formFields) {
     if (NON_RESPONSE_FIELD_TYPES.has(field.fieldType)) continue
 
