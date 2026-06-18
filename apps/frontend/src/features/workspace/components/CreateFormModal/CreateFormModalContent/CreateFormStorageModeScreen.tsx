@@ -38,8 +38,8 @@ export const CreateFormStorageModeScreen = (): JSX.Element => {
         <Container maxW="45rem" p={0}>
           <Text textStyle="body-2" color="secondary.500" mb="2rem">
             This is the legacy version of FormSG and no longer receives new
-            features. Use it only if you need a feature not yet in the latest
-            version.
+            features. Use it only if you need a feature not yet supported in the
+            latest version.
           </Text>
           <FormTitleInput mb="2.5rem" />
           <Button
