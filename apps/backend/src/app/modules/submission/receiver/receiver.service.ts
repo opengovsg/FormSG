@@ -17,6 +17,7 @@ import {
 } from './receiver.errors'
 import { ParsedMultipartForm } from './receiver.types'
 import {
+  adaptMrfV3BodyToV4,
   addAttachmentToResponses,
   handleDuplicatesInAttachments,
 } from './receiver.utils'
@@ -161,6 +162,7 @@ export const configureMultipartReceiver = (
       })
       .on('close', () => {
         if (body) {
+          adaptMrfV3BodyToV4(body)
           handleDuplicatesInAttachments(attachments)
           addAttachmentToResponses(body, attachments)
           return resolve(body)
