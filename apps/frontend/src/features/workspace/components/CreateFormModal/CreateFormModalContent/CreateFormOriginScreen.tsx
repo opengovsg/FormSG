@@ -151,7 +151,7 @@ export const CreateFormOriginScreen = ({
                 {t(`${ORIGIN_I18N_PREFIX}.cta.next`)}
               </Text>
             </Button>
-            <Button variant="clear" onClick={goToFormDetails}>
+            <Button isFullWidth variant="clear" onClick={goToFormDetails}>
               <Text lineHeight="1.5rem">
                 {t(`${ORIGIN_I18N_PREFIX}.cta.back`)}
               </Text>
