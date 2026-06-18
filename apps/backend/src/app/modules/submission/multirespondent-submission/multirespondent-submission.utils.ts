@@ -310,13 +310,15 @@ const getQuestionAnswerPairsForOneField = ({
   formField,
   response,
   includeSignatureDataPngDataUri,
+  includeVerifiedPrefix = true,
 }: {
   formField: FormFieldSchema | FormFieldDto
   response: FieldResponseV4
   includeSignatureDataPngDataUri: boolean
+  includeVerifiedPrefix?: boolean
 }): QuestionAnswerPair[] => {
   // V4 responses embed question text in response.question
-  const questionTitle = response.question || formField.title
+  let questionTitle = response.question || formField.title
   let answer = ''
   const questionAnswerPairs: QuestionAnswerPair[] = []
 
@@ -357,9 +359,17 @@ const getQuestionAnswerPairsForOneField = ({
       break
     }
     case BasicField.Email:
-    case BasicField.Mobile:
-      answer = (response.answer as { value: string }).value
+    case BasicField.Mobile: {
+      const verifiableAnswer = response.answer as {
+        value: string
+        signature?: string
+      }
+      if (includeVerifiedPrefix && verifiableAnswer.signature) {
+        questionTitle = `[Verified] ${questionTitle}`
+      }
+      answer = verifiableAnswer.value
       break
+    }
     case BasicField.Table: {
       if (formField.fieldType !== BasicField.Table) break
       const tableAnswer = response.answer as Record<
@@ -473,10 +483,12 @@ export const getQuestionAnswerPairsForMultipleFields = ({
   formFields,
   responses,
   includeSignatureDataPngDataUri = false,
+  includeVerifiedPrefix = true,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
   includeSignatureDataPngDataUri?: boolean
+  includeVerifiedPrefix?: boolean
 }): QuestionAnswerPair[] => {
   const questionAnswerPairs: QuestionAnswerPair[] = []
   if (!formFields || !responses) {
@@ -492,6 +504,7 @@ export const getQuestionAnswerPairsForMultipleFields = ({
         formField: currentFormField,
         response,
         includeSignatureDataPngDataUri,
+        includeVerifiedPrefix,
       })
 
     questionAnswerPairs.push(...questionAnswerPairsForCurrentFormField)
@@ -541,6 +554,9 @@ export const buildMrfResponseJson = ({
     formFields,
     responses,
     includeSignatureDataPngDataUri: false,
+    // [Verified] prefix is a UX hint for the email body; the JSON dump is
+    // for machine consumers and should carry the raw question text.
+    includeVerifiedPrefix: false,
   })
   const entries = [
     { question: 'Response ID', answer: responseId },

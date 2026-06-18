@@ -819,12 +819,22 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
+  // Webhook compatibility: forms with webhooks have downstream consumers that
+  // parse the encrypted payload as V3-shaped (mrfVersion: 1). Convert back to
+  // V3 just for the encryption blob; in-process state (encryptedPayload.responses,
+  // emails, NDI handling) stays V4.
+  const hasWebhook = !!formDef.webhook?.url
+  const responsesToEncrypt = hasWebhook
+    ? adaptV4ToV3(strippedAttachmentResponses as unknown as FieldResponsesV4)
+    : strippedAttachmentResponses
+  const mrfVersion: 1 | 2 = hasWebhook ? 1 : 2
+
   const {
     encryptedContent,
     encryptedSubmissionSecretKey,
     submissionSecretKey,
     submissionPublicKey,
-  } = formsgSdk.cryptoV3.encrypt(strippedAttachmentResponses, formPublicKey)
+  } = formsgSdk.cryptoV3.encrypt(responsesToEncrypt, formPublicKey)
 
   // Verify the encrypted content can be decrypted using the generated submission secret key before saving
   const decryptionVerification = formsgSdk.cryptoV3.decryptFromSubmissionKey(
@@ -840,7 +850,7 @@ export const encryptSubmission = async (
         formId: req.params.formId,
         submissionId: req.params.submissionId,
         version: req.body.version,
-        mrfVersion: 2,
+        mrfVersion,
         ...createReqMeta(req),
       },
       error,
@@ -868,9 +878,11 @@ export const encryptSubmission = async (
     workflowStep: req.body.workflowStep,
     responses: responses as FieldResponsesV4,
     /**
-     * MRF Version: 2 — V4 encrypted responses (with provenance)
+     * MRF Version 2 = V4-encrypted responses (with provenance).
+     * MRF Version 1 = V3-encrypted responses (used when form has a webhook
+     * so existing webhook consumers can continue to parse V3 payloads).
      */
-    mrfVersion: 2,
+    mrfVersion,
   }
 
   return next()
