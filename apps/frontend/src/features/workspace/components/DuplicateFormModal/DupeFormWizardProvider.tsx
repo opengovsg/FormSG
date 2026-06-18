@@ -114,10 +114,12 @@ export const useDupeFormWizardContext = (
       return
     }
 
-    const metadata = buildFormClientMetadata(
+    const metadata = buildFormClientMetadata({
       isPaperTrackingSetUpPageEnabled,
+      isMrfCutoverEnabled,
       formOrigins,
-    )
+      formResponseMode: responseMode,
+    })
 
     switch (responseMode) {
       case FormResponseMode.Encrypt: {

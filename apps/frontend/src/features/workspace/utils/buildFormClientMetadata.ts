@@ -1,5 +1,5 @@
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
-import { FormMetadata } from 'formsg-shared/types'
+import { FormMetadata, FormResponseMode } from 'formsg-shared/types'
 import { CheckboxFieldResponsesV3 } from 'formsg-shared/types/response-v3'
 
 /**
@@ -33,14 +33,23 @@ const buildFormOriginsPayload = (
   }
 }
 
-export const buildFormClientMetadata = (
-  isPaperTrackingSetUpPageEnabled: boolean,
-  formOrigins: CheckboxFieldResponsesV3 | undefined,
-): Pick<FormMetadata, 'formOrigins'> | undefined => {
-  const formOriginsPayload = buildFormOriginsPayload(
-    isPaperTrackingSetUpPageEnabled,
-    formOrigins,
-  )
+export const buildFormClientMetadata = ({
+  isPaperTrackingSetUpPageEnabled,
+  isMrfCutoverEnabled,
+  formOrigins,
+  formResponseMode,
+}: {
+  isPaperTrackingSetUpPageEnabled: boolean
+  isMrfCutoverEnabled: boolean
+  formOrigins: CheckboxFieldResponsesV3 | undefined
+  formResponseMode: FormResponseMode
+}): Pick<FormMetadata, 'formOrigins'> | undefined => {
+  const isEscapeHatchFlow =
+    isMrfCutoverEnabled && formResponseMode === FormResponseMode.Encrypt
+  const formOriginsPayload = !isEscapeHatchFlow
+    ? buildFormOriginsPayload(isPaperTrackingSetUpPageEnabled, formOrigins)
+    : undefined
+
   return formOriginsPayload
     ? {
         formOrigins: formOriginsPayload,

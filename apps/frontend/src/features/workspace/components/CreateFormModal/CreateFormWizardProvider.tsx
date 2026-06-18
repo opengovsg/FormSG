@@ -151,10 +151,12 @@ export const useCreateFormWizardContext = (
     emails,
     formOrigins,
   }: CreateFormWizardInputProps) => {
-    const metadata = buildFormClientMetadata(
+    const metadata = buildFormClientMetadata({
       isPaperTrackingSetUpPageEnabled,
+      isMrfCutoverEnabled,
       formOrigins,
-    )
+      formResponseMode: responseMode,
+    })
 
     switch (responseMode) {
       case FormResponseMode.Encrypt: {
