@@ -367,7 +367,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
   const othersEmailsToNotify =
     form.emails && Array.isArray(form.emails) ? form.emails : []
 
-  // Emails to notify under the 'An email field on your form' setting
+  // Emails to notify under the 'An email address collected from an email field' setting
   const stepOneEmailNotificationFieldId = form.stepOneEmailNotificationFieldId
   const respondentInStepOneToNotify = stepOneEmailNotificationFieldId
     ? getEmailFromResponses(stepOneEmailNotificationFieldId, responses)

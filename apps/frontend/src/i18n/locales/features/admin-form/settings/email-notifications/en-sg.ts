@@ -11,7 +11,7 @@ export const enSG = {
         'Select who to notify when the form and/or workflow is complete:',
       respondents: {
         step1: {
-          label: 'An email field on your form',
+          label: 'An email address collected from an email field',
           placeholder: 'Select an email field from your form',
         },
         others: {
@@ -25,6 +25,7 @@ export const enSG = {
             overall: 'People who are filling up a workflow step',
             each: 'Respondent(s) in Step {stepNumber}',
           },
+          description: 'Only if you have a workflow enabled for your form',
           placeholder: 'Select steps from your form',
         },
       },
