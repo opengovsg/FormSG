@@ -176,13 +176,13 @@ export const WorkspacePage = (): JSX.Element => {
             {isMrfCutoverEnabled && (
               <InlineMessage>
                 <Text>
+                  As part of simplifying the platform, most{' '}
                   <Text as="span" fontWeight="bold">
-                    Legacy forms
+                    legacy forms
                   </Text>{' '}
                   (previously labelled Storage mode) will be migrated
-                  automatically to the latest FormSG experience — your existing
-                  forms keep working, with full storage support. New forms
-                  already use the latest experience.{' '}
+                  automatically — your existing forms keep working, with full
+                  storage support. New forms already use the latest experience.{' '}
                   <Link
                     display="inline"
                     href={MRF_CUTOVER_FAQ_LINK}

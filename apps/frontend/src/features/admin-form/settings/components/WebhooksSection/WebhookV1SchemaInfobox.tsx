@@ -20,11 +20,12 @@ export const WebhookV1SchemaInfobox = ({
     <>
       <InlineMessage variant="info">
         <Text>
-          This form uses webhooks V1, which is outdated. Switch to the{' '}
+          This form uses webhooks v1, which will be deprecated in 2027. Switch
+          to the{' '}
           <Link cursor="pointer" onClick={dupeModal.onOpen}>
             latest version of FormSG
           </Link>{' '}
-          unless your system requires v1.
+          early unless your system requires v1.
         </Text>
       </InlineMessage>
       <DuplicateFormModal
