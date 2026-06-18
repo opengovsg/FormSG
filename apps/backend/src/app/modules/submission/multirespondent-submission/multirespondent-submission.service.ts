@@ -363,11 +363,11 @@ const getEmailsToNotifyAboutMrfOutcome = ({
     submissionId,
   }
 
-  // Emails to notify under the 'others' setting
+  // Emails to notify under the 'Any email address you choose' setting
   const othersEmailsToNotify =
     form.emails && Array.isArray(form.emails) ? form.emails : []
 
-  // Emails to notify under the 'Respondent in step 1' setting
+  // Emails to notify under the 'An email field on your form' setting
   const stepOneEmailNotificationFieldId = form.stepOneEmailNotificationFieldId
   const respondentInStepOneToNotify = stepOneEmailNotificationFieldId
     ? getEmailFromResponses(stepOneEmailNotificationFieldId, responses)
@@ -377,7 +377,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
     ? [respondentInStepOneToNotify]
     : []
 
-  // Emails to notify under the 'Other respondents in your workflow' setting
+  // Emails to notify under the 'People who are filling up a workflow step' setting
   const stepsToNotifyUpToCurrentStep = form.workflow.slice(
     1, // exclude first step since notification is indicated by `stepOneEmailNotificationFieldId`
     currentStepNumber + 1,
