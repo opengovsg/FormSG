@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
-import { useGrowthBook } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
 
 import {
@@ -80,20 +79,6 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   const { data: form, isLoading } = useCreateTabForm()
 
   const { user } = useUser()
-
-  // FRM-1444: Remove once rollout is 100% and stable
-  const growthbook = useGrowthBook()
-
-  useEffect(() => {
-    if (growthbook) {
-      growthbook.setAttributes({
-        // Only update the `adminEmail` and `adminAgency` attributes, keep the rest the same
-        ...growthbook.getAttributes(),
-        adminEmail: user?.email,
-        adminAgency: user?.agency.shortName,
-      })
-    }
-  }, [growthbook, user])
 
   /**
    * If sgID is used, checks if the corresponding

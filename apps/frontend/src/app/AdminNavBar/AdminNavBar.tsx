@@ -13,7 +13,6 @@ import {
   Icon,
   useDisclosure,
 } from '@chakra-ui/react'
-import { useGrowthBook } from '@growthbook/growthbook-react'
 import { delay } from 'lodash'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
@@ -93,19 +92,6 @@ export interface AdminNavBarProps {
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { user, removeQuery } = useUser()
   const toast = useToast({ status: 'success', isClosable: true })
-
-  const growthbook = useGrowthBook()
-
-  // Set GrowthBook attributes for targeting rules synchronously
-  useMemo(() => {
-    if (growthbook && user?.email) {
-      growthbook.setAttributes({
-        ...growthbook.getAttributes(),
-        adminEmail: user.email,
-        adminAgency: user.agency?.shortName,
-      })
-    }
-  }, [growthbook, user?.email, user?.agency?.shortName])
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,
