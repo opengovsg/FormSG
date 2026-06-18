@@ -70,6 +70,7 @@ export const CreateFormOriginScreen = ({
             <Controller
               name="formOrigins.value"
               control={control}
+              defaultValue={[]}
               rules={{
                 validate: (value) =>
                   (Array.isArray(value) && value.length > 0) ||
