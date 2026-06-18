@@ -1,4 +1,5 @@
 import { FieldError, useFormContext } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Flex, FormControl, Text } from '@chakra-ui/react'
 
 import {
@@ -26,6 +27,7 @@ export const OptionsTranslationContainer = ({
   formFieldData,
   errors,
 }: OptionsTranslationContainerProps) => {
+  const { t } = useTranslation()
   const { register } = useFormContext<TranslationInput>()
 
   const fieldOptions = formFieldData.fieldOptions || []
@@ -46,7 +48,7 @@ export const OptionsTranslationContainer = ({
           mr="7.5rem"
           width="6.25rem"
         >
-          Default
+          {t('features.common.default')}
         </Text>
         <Textarea
           placeholder={defaultFieldOptions}
