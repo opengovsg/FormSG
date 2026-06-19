@@ -9,7 +9,8 @@ export interface EmailNotifications extends HasTitle {
   }
   section: {
     mrf: {
-      selectRecipient: string
+      selectRecipientWorkflow: string
+      selectRecipientNoWorkflow: string
       respondents: {
         step1: {
           label: string

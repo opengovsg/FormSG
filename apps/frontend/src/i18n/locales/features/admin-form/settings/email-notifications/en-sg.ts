@@ -7,8 +7,10 @@ export const enSG = {
   },
   section: {
     mrf: {
-      selectRecipient:
+      selectRecipientNoWorkflow:
         'Select who to notify when the form and/or workflow is complete:',
+      selectRecipientWorkflow:
+        'Select who to notify when the workflow is complete',
       respondents: {
         step1: {
           label: 'An email address collected from an email field',
