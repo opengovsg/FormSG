@@ -16,6 +16,5 @@ export const KILL_EMAIL_MODE_LINK =
 export const STATUS_TRACKER_PREVIEW_LINK =
   'https://go.gov.sg/mrf-preview-status-tracking'
 
-// TODO [MRF-CUTOVER]: Placeholder FAQ link for the MRF cutover dashboard
-// infobox. Confirm the final go.gov.sg short link before launch.
-export const MRF_CUTOVER_FAQ_LINK = 'https://go.gov.sg/formsg-guide-v4-faq'
+export const MRF_CUTOVER_FAQ_LINK =
+  'https://go.gov.sg/formsg-guide-faq-simplified-modes'
