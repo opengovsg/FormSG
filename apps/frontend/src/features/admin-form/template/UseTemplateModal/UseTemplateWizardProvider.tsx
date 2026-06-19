@@ -9,9 +9,11 @@ import {
   CreateFormFlowStates,
   CreateFormWizardContext,
   CreateFormWizardContextReturn,
+  CreateFormWizardInputProps,
 } from '~features/workspace/components/CreateFormModal/CreateFormWizardContext'
 import { useCommonFormWizardProvider } from '~features/workspace/components/CreateFormModal/CreateFormWizardProvider'
 import { useEmailModeFeedbackMutation } from '~features/workspace/mutations'
+import { buildFormClientMetadata } from '~features/workspace/utils/buildFormClientMetadata'
 
 import { useUseTemplateMutations } from '../mutation'
 
@@ -39,8 +41,12 @@ export const useUseTemplateWizardContext = (
     keypair,
     setCurrentStep,
     isMrfCutoverEnabled,
+    isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToFormDetails,
+    makeHandleProceedFromDetails,
   } = useCommonFormWizardProvider()
 
   const { reset, getValues } = formMethods
@@ -70,51 +76,72 @@ export const useUseTemplateWizardContext = (
 
   const { emailModeFeedbackMutation } = useEmailModeFeedbackMutation()
 
-  const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
-    ({ title, responseMode, emails }) => {
-      if (!formId) return
-      switch (responseMode) {
-        case FormResponseMode.Encrypt: {
-          const defaultEmails = adminEmail ? [adminEmail] : []
-          return useStorageModeFormTemplateMutation.mutate(
-            {
-              formIdToDuplicate: formId,
-              title,
-              responseMode,
-              publicKey: keypair.publicKey,
-              emails: (emails ?? defaultEmails).filter(Boolean),
+  const createFormFromTemplate = ({
+    title,
+    responseMode,
+    emails,
+    formOrigins,
+  }: CreateFormWizardInputProps) => {
+    if (!formId) return
+
+    const metadata = buildFormClientMetadata({
+      isPaperTrackingSetUpPageEnabled,
+      isMrfCutoverEnabled,
+      formOrigins,
+      formResponseMode: responseMode,
+    })
+
+    switch (responseMode) {
+      case FormResponseMode.Encrypt: {
+        const defaultEmails = adminEmail ? [adminEmail] : []
+        return useStorageModeFormTemplateMutation.mutate(
+          {
+            formIdToDuplicate: formId,
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            emails: (emails ?? defaultEmails).filter(Boolean),
+            ...(metadata && { metadata }),
+          },
+          {
+            onSuccess: () => {
+              setCurrentStep([CreateFormFlowStates.Landing, 1])
             },
-            {
-              onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Landing, 1])
-              },
-            },
-          )
-        }
-        case FormResponseMode.Multirespondent: {
-          return useMultirespondentFormTemplateMutation.mutate(
-            {
-              formIdToDuplicate: formId,
-              title,
-              responseMode,
-              publicKey: keypair.publicKey,
-            },
-            {
-              onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Landing, 1])
-              },
-            },
-          )
-        }
-        case FormResponseMode.Email: {
-          return
-        }
-        default: {
-          const _: never = responseMode
-          throw new Error(`Unhandled response mode: ${_}`)
-        }
+          },
+        )
       }
-    },
+      case FormResponseMode.Multirespondent: {
+        return useMultirespondentFormTemplateMutation.mutate(
+          {
+            formIdToDuplicate: formId,
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            ...(metadata && { metadata }),
+          },
+          {
+            onSuccess: () => {
+              setCurrentStep([CreateFormFlowStates.Landing, 1])
+            },
+          },
+        )
+      }
+      case FormResponseMode.Email: {
+        return
+      }
+      default: {
+        const _: never = responseMode
+        throw new Error(`Unhandled response mode: ${_}`)
+      }
+    }
+  }
+
+  const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
+    createFormFromTemplate,
+  )
+
+  const handleProceedFromDetails = makeHandleProceedFromDetails(
+    createFormFromTemplate,
   )
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
@@ -170,6 +197,10 @@ export const useUseTemplateWizardContext = (
     direction,
     formMethods,
     handleCreateStorageModeOrMultirespondentForm,
+    handleProceedFromDetails,
+    goToFormDetails,
+    isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,
     submitEmailModeFeedback,

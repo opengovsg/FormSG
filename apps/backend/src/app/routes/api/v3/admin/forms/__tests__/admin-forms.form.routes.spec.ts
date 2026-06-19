@@ -428,7 +428,7 @@ describe('admin-form.form.routes', () => {
       expect(response.body.message).toEqual('Validation failed')
     })
 
-    it('should return 200 when form origins value is an empty array (best-effort)', async () => {
+    it('should return 400 when form origins value is an empty array', async () => {
       const response = await request.post('/admin/forms').send({
         form: {
           responseMode: FormResponseMode.Multirespondent,
@@ -439,7 +439,7 @@ describe('admin-form.form.routes', () => {
       })
 
       // Assert
-      expect(response.status).toEqual(200)
+      expect(response.status).toEqual(400)
     })
 
     it('should return 400 when body.form.publicKey is missing', async () => {

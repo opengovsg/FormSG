@@ -1,7 +1,11 @@
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { act, renderHook } from '@testing-library/react'
 
-import { FormResponseMode } from 'formsg-shared/types'
+import {
+  CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
+  featureFlags,
+} from 'formsg-shared/constants'
+import { FormOrigin, FormResponseMode } from 'formsg-shared/types'
 
 import { usePreviewForm } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
@@ -10,6 +14,8 @@ import {
   useEmailModeFeedbackMutation,
 } from '~features/workspace/mutations'
 import { useDashboard } from '~features/workspace/queries'
+
+import { CreateFormFlowStates } from '../CreateFormModal/CreateFormWizardContext'
 
 import { useDupeFormWizardContext } from './DupeFormWizardProvider'
 
@@ -23,6 +29,20 @@ vi.mock('~features/workspace/queries')
 vi.mock('~features/admin-form/common/queries')
 vi.mock('~features/workspace/mutations')
 vi.mock('~features/user/queries')
+
+const setFlags = ({
+  cutover,
+  paperTracking,
+}: {
+  cutover: boolean
+  paperTracking: boolean
+}) => {
+  vi.mocked(useFeatureIsOn).mockImplementation((flag: string) => {
+    if (flag === featureFlags.mrfCutover) return cutover
+    if (flag === featureFlags.enablePaperTrackingSetUpPage) return paperTracking
+    return false
+  })
+}
 
 const MOCK_FORM_ID = 'form123'
 const MOCK_USER_EMAIL = 'admin@example.com'
@@ -134,5 +154,55 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
       expect.anything(),
     )
     expect(dupeMultirespondentModeFormMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('diverts to the origin step from details when paper tracking is enabled', async () => {
+    setFlags({ cutover: true, paperTracking: true })
+    const { result } = renderHook(() =>
+      useDupeFormWizardContext(vi.fn(), {
+        formIdToDuplicate: MOCK_FORM_ID as any,
+      }),
+    )
+
+    act(() => result.current.formMethods.setValue('title', 'New title'))
+    await act(async () => {
+      await result.current.handleProceedFromDetails()
+    })
+
+    expect(result.current.currentStep).toBe(CreateFormFlowStates.Origin)
+    expect(dupeMultirespondentModeFormMutation.mutate).not.toHaveBeenCalled()
+    expect(dupeStorageModeFormMutation.mutate).not.toHaveBeenCalled()
+  })
+
+  it('re-asks origins and duplicates with them as metadata', async () => {
+    setFlags({ cutover: true, paperTracking: true })
+    const { result } = renderHook(() =>
+      useDupeFormWizardContext(vi.fn(), {
+        formIdToDuplicate: MOCK_FORM_ID as any,
+      }),
+    )
+
+    act(() => {
+      result.current.formMethods.setValue('title', 'New title')
+      result.current.formMethods.setValue('formOrigins', {
+        value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+        othersInput: 'Fax',
+      })
+    })
+    await act(async () => {
+      await result.current.handleCreateStorageModeOrMultirespondentForm()
+    })
+
+    expect(dupeMultirespondentModeFormMutation.mutate).toHaveBeenCalledTimes(1)
+    expect(dupeMultirespondentModeFormMutation.mutate.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        metadata: {
+          formOrigins: {
+            value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+            othersInput: 'Fax',
+          },
+        },
+      }),
+    )
   })
 })

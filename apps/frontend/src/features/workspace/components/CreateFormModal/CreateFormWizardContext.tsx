@@ -7,6 +7,7 @@ import {
   FormResponseMode,
   PublicFormViewDto,
 } from 'formsg-shared/types/form/form'
+import { CheckboxFieldResponsesV3 } from 'formsg-shared/types/response-v3'
 
 import formsgSdk from '~utils/formSdk'
 import { CheckboxFieldValues } from '~templates/Field'
@@ -14,6 +15,7 @@ import { CheckboxFieldValues } from '~templates/Field'
 export enum CreateFormFlowStates {
   Landing = 'landing',
   Details = 'details',
+  Origin = 'origin',
   StorageModeDetails = 'storageModeDetails',
   EmailFeedback = 'emailFeedback',
   EmailModeCreation = 'emailModeCreation',
@@ -26,7 +28,7 @@ export interface CreateFormWizardInputProps {
   emails?: string[]
   // Storage form props
   storageAck?: boolean
-
+  formOrigins?: CheckboxFieldResponsesV3
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   reason?: CheckboxFieldValues // for kill email mode
 }
@@ -41,6 +43,12 @@ export type CreateFormWizardContextReturn = {
   handleCreateStorageModeOrMultirespondentForm: ReturnType<
     UseFormHandleSubmit<CreateFormWizardInputProps>
   >
+  handleProceedFromDetails: ReturnType<
+    UseFormHandleSubmit<CreateFormWizardInputProps>
+  >
+  goToFormDetails: () => void
+  isPaperTrackingSetUpPageEnabled: boolean
+  proceedCtaLabel: string
   keypair: ReturnType<typeof formsgSdk.crypto.generate>
   // Whether any async operation is in progress.
   isFetching: boolean

@@ -3,6 +3,7 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
+import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
@@ -101,7 +102,7 @@ const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
 
 const logger = createLoggerWithLabel(module)
 
-const clientMetadataValidator = Joi.object({
+export const clientMetadataValidator = Joi.object({
   formOrigins: Joi.object({
     value: Joi.array()
       .items(
@@ -111,8 +112,19 @@ const clientMetadataValidator = Joi.object({
         ),
       )
       .unique()
+      .min(1)
       .required(),
-    othersInput: Joi.string().allow('').max(200),
+    othersInput: Joi.when('value', {
+      is: Joi.array().has(
+        Joi.string().valid(CLIENT_CHECKBOX_OTHERS_INPUT_VALUE),
+      ),
+      then: Joi.string()
+        .trim()
+        .min(1)
+        .max(FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH)
+        .required(),
+      otherwise: Joi.forbidden(),
+    }),
   }),
 })
 

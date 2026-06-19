@@ -51,12 +51,13 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
   const {
     formMethods,
     handleEmailFeedbackSubmit,
-    handleCreateStorageModeOrMultirespondentForm,
+    handleProceedFromDetails,
     isLoading,
     isFetching,
     modalHeader,
     hasMyInfoChildren,
     isMrfCutoverEnabled,
+    proceedCtaLabel,
     goToStorageModeDetails,
   } = useCreateFormWizard()
   const {
@@ -156,15 +157,13 @@ export const CreateFormDetailsScreen = (): JSX.Element => {
             type="submit"
             isLoading={isLoading}
             isDisabled={isFetching}
-            onClick={handleCreateStorageModeOrMultirespondentForm}
+            onClick={handleProceedFromDetails}
             isFullWidth
             data-dd-action-name={getTrackingSubmissionActionName(
               responseModeValue,
             )}
           >
-            <Text lineHeight="1.5rem">
-              {t('features.workspace.modals.forms.create.details.create')}
-            </Text>
+            <Text lineHeight="1.5rem">{proceedCtaLabel}</Text>
           </Button>
         </Container>
       </ModalBody>
