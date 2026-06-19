@@ -55,11 +55,11 @@ export interface CreateFormModal {
     question: string
     options: {
       paper: string
-      'digital-new': string
-      'digital-email': string
-      'digital-document': string
-      'digital-spreadsheet': string
-      'digital-formbuilder': string
+      digitalNew: string
+      digitalEmail: string
+      digitalDocument: string
+      digitalSpreadsheet: string
+      digitalFormbuilder: string
       others: string
     }
     otherInputLabel: string
