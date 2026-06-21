@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
 import { UserDto, WorkflowType } from 'formsg-shared/types'
 
-import { textStyles } from '~theme/textStyles'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import Radio from '~components/Radio'
@@ -18,34 +17,12 @@ import { ConditionalRoutingOption } from '../WorkflowContent/EditStepBlock/Respo
 import { DynamicRespondentOption } from '../WorkflowContent/EditStepBlock/RespondentBlock/Components/DynamicRespondentOption'
 import { StaticRespondentOption } from '../WorkflowContent/EditStepBlock/RespondentBlock/Components/StaticRespondentOption'
 
-const TOTAL_SUB_STEPS = 5
+const TOTAL_SUB_STEPS = 4
 
-const SUB_STEP_INFOBOXES: React.ReactNode[] = [
-  // Sub-step 1: Just the label
-  'This is where you choose how this step of the form reaches the next person.',
-  // Sub-step 2: Static option revealed
-  <span>
-    <span style={{ fontWeight: 600 }}>
-      Best when you already know who should fill this in.
-    </span>{' '}
-    You type in their email addresses directly.
-  </span>,
-  // Sub-step 3: Dynamic option revealed
-  <span>
-    <span style={{ fontWeight: 600 }}>
-      Best when the previous person decides who&apos;s next.
-    </span>{' '}
-    They&apos;ll enter the email of whoever should fill in the next step.
-  </span>,
-  // Sub-step 4: Conditional option revealed
-  <span>
-    <span style={{ fontWeight: 600 }}>
-      Best for sending to different people based on an answer.
-    </span>{' '}
-    You assign each dropdown option to a different email.
-  </span>,
-  // Sub-step 5: All enabled
-  '', // placeholder, built dynamically with step number
+const WALKTHROUGH_MESSAGES = [
+  'Best when you already know who should fill this in. You choose specific email addresses.',
+  "Best when the previous step's respondent decides who's next. They fill in an email field that routes the form.",
+  'Best for routing to different people based on an answer. You map each dropdown option to an email address.',
 ]
 
 interface GuidedRespondentBlockProps {
@@ -58,25 +35,6 @@ interface GuidedRespondentBlockProps {
   isActive: boolean
 }
 
-const FadeIn = ({ children }: { children: React.ReactNode }) => {
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 50)
-    return () => clearTimeout(timer)
-  }, [])
-
-  return (
-    <Box
-      opacity={isVisible ? 1 : 0}
-      transform={isVisible ? 'translateY(0)' : 'translateY(8px)'}
-      transition="opacity 0.3s ease, transform 0.3s ease"
-    >
-      {children}
-    </Box>
-  )
-}
-
 export const GuidedRespondentBlock = ({
   stepNumber,
   isLoading,
@@ -85,7 +43,6 @@ export const GuidedRespondentBlock = ({
   onBack,
   isActive,
 }: GuidedRespondentBlockProps): JSX.Element => {
-  // If this section has already been completed (not active), show all sub-steps
   const [subStep, setSubStep] = useState(isActive ? 1 : TOTAL_SUB_STEPS)
 
   const { emailFormFields = [], dropdownFormFields = [] } =
@@ -101,29 +58,17 @@ export const GuidedRespondentBlock = ({
 
   const selectedWorkflowType = formMethods.watch('workflow_type')
   const allRevealed = subStep >= TOTAL_SUB_STEPS
+  const isWalkthroughDisabled = !allRevealed
 
-  // Map each sub-step to the workflow type being showcased
-  const SUB_STEP_TO_WORKFLOW_TYPE: Record<number, WorkflowType | undefined> = {
-    2: WorkflowType.Static,
-    3: WorkflowType.Dynamic,
-    4: WorkflowType.Conditional,
-  }
+  // During walkthrough, nothing is selected. After, use actual selection.
+  const radioGroupValue = allRevealed ? selectedWorkflowType : undefined
 
-  // During walkthrough, highlight the currently-shown option as selected
-  const displayedWorkflowType = allRevealed
-    ? selectedWorkflowType
-    : (SUB_STEP_TO_WORKFLOW_TYPE[subStep] ?? selectedWorkflowType)
-
-  const handleContinue = () => {
-    if (subStep < TOTAL_SUB_STEPS) {
+  const handleNext = () => {
+    if (subStep < TOTAL_SUB_STEPS - 1) {
       setSubStep((s) => s + 1)
-    } else {
-      // Ensure workflow_type is explicitly set so validation passes
-      formMethods.setValue(
-        'workflow_type',
-        formMethods.getValues('workflow_type') || WorkflowType.Static,
-      )
-      onComplete()
+    } else if (subStep === TOTAL_SUB_STEPS - 1) {
+      formMethods.setValue('workflow_type', WorkflowType.Static)
+      setSubStep(TOTAL_SUB_STEPS)
     }
   }
 
@@ -135,56 +80,70 @@ export const GuidedRespondentBlock = ({
     }
   }
 
-  const infoboxText =
-    subStep === TOTAL_SUB_STEPS
-      ? `Now pick who will fill in Step ${stepNumber + 1}. You can also come back to this later.`
-      : SUB_STEP_INFOBOXES[subStep - 1]
+  const handleComplete = () => {
+    formMethods.setValue(
+      'workflow_type',
+      formMethods.getValues('workflow_type') || WorkflowType.Static,
+    )
+    onComplete()
+  }
+
+  const infoboxText = allRevealed
+    ? `Now pick who fills in Step ${stepNumber + 1}. You can also come back to this later.`
+    : WALKTHROUGH_MESSAGES[subStep - 1]
 
   return (
     <EditStepBlockContainer>
       <Stack spacing="0.5rem">
-        <Text style={textStyles.h4}>Who fills in this step</Text>
+        <Text textStyle="subhead-2">Who fills in this step</Text>
 
-        {subStep >= 2 && (
-          <Radio.RadioGroup value={displayedWorkflowType}>
-            {/* Sub-step 2: Static option */}
-            {subStep >= 2 && (
-              <FadeIn key="static">
-                <StaticRespondentOption
-                  selectedWorkflowType={displayedWorkflowType}
-                  formMethods={formMethods}
-                  isLoading={isLoading}
-                />
-              </FadeIn>
-            )}
+        <Radio.RadioGroup value={radioGroupValue}>
+          <StaticRespondentOption
+            selectedWorkflowType={radioGroupValue ?? WorkflowType.Static}
+            formMethods={formMethods}
+            isLoading={isLoading}
+            isWalkthroughDisabled={isWalkthroughDisabled}
+          />
+          {isActive && subStep === 1 && (
+            <Box px="0.5rem">
+              <InlineMessage variant="info">
+                {WALKTHROUGH_MESSAGES[0]}
+              </InlineMessage>
+            </Box>
+          )}
 
-            {/* Sub-step 3: Dynamic option */}
-            {subStep >= 3 && (
-              <FadeIn key="dynamic">
-                <DynamicRespondentOption
-                  selectedWorkflowType={displayedWorkflowType}
-                  emailFieldItems={emailFieldItems}
-                  formMethods={formMethods}
-                  isLoading={isLoading}
-                />
-              </FadeIn>
-            )}
+          <DynamicRespondentOption
+            selectedWorkflowType={radioGroupValue ?? WorkflowType.Static}
+            emailFieldItems={emailFieldItems}
+            formMethods={formMethods}
+            isLoading={isLoading}
+            isWalkthroughDisabled={isWalkthroughDisabled}
+          />
+          {isActive && subStep === 2 && (
+            <Box px="0.5rem">
+              <InlineMessage variant="info">
+                {WALKTHROUGH_MESSAGES[1]}
+              </InlineMessage>
+            </Box>
+          )}
 
-            {/* Sub-step 4: Conditional option */}
-            {subStep >= 4 && (
-              <FadeIn key="conditional">
-                <ConditionalRoutingOption
-                  selectedWorkflowType={displayedWorkflowType}
-                  conditionalFormFields={dropdownFormFields}
-                  formMethods={formMethods}
-                  isLoading={isLoading}
-                />
-              </FadeIn>
-            )}
-          </Radio.RadioGroup>
-        )}
+          <ConditionalRoutingOption
+            selectedWorkflowType={radioGroupValue ?? WorkflowType.Static}
+            conditionalFormFields={dropdownFormFields}
+            formMethods={formMethods}
+            isLoading={isLoading}
+            isWalkthroughDisabled={isWalkthroughDisabled}
+          />
+          {isActive && subStep === 3 && (
+            <Box px="0.5rem">
+              <InlineMessage variant="info">
+                {WALKTHROUGH_MESSAGES[2]}
+              </InlineMessage>
+            </Box>
+          )}
+        </Radio.RadioGroup>
 
-        {isActive && (
+        {isActive && allRevealed && (
           <InlineMessage variant="info">{infoboxText}</InlineMessage>
         )}
       </Stack>
@@ -195,7 +154,9 @@ export const GuidedRespondentBlock = ({
             <Button variant="clear" onClick={handleBack}>
               Back
             </Button>
-            <Button onClick={handleContinue}>Continue</Button>
+            <Button onClick={allRevealed ? handleComplete : handleNext}>
+              {allRevealed ? 'Continue' : 'Next'}
+            </Button>
           </Flex>
         </Box>
       )}

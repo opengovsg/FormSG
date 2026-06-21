@@ -1,5 +1,5 @@
 import { Controller } from 'react-hook-form'
-import { FormControl, Text } from '@chakra-ui/react'
+import { Box, FormControl, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -16,6 +16,7 @@ export const StaticRespondentOption = ({
   isLoading,
   formMethods,
   selectedWorkflowType,
+  isWalkthroughDisabled,
 }: RespondentOptionProps) => {
   const {
     register,
@@ -26,9 +27,13 @@ export const StaticRespondentOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   return (
-    <>
+    <Box
+      opacity={isWalkthroughDisabled ? 0.6 : 1}
+      pointerEvents={isWalkthroughDisabled ? 'none' : 'auto'}
+      transition="opacity 0.2s ease"
+    >
       <Radio
-        isDisabled={isLoading}
+        isDisabled={isLoading || isWalkthroughDisabled}
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Static}
@@ -40,7 +45,12 @@ export const StaticRespondentOption = ({
           },
         }}
       >
-        <Text>Specific emails that you choose</Text>
+        <Text>You choose who fills in this step</Text>
+        {selectedWorkflowType === WorkflowType.Static ? (
+          <Text textStyle="body-2" color="secondary.400" pt="0.25rem">
+            Choose specific emails
+          </Text>
+        ) : null}
         {selectedWorkflowType === WorkflowType.Static ? (
           <FormControl
             pt="0.5rem"
@@ -80,6 +90,6 @@ export const StaticRespondentOption = ({
           </FormControl>
         ) : null}
       </Radio>
-    </>
+    </Box>
   )
 }

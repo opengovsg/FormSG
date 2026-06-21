@@ -1,6 +1,6 @@
 import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl, Stack, Text } from '@chakra-ui/react'
+import { Box, FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField, WorkflowType } from 'formsg-shared/types'
 
@@ -29,6 +29,7 @@ export const DynamicRespondentOption = ({
   selectedWorkflowType,
   formMethods,
   emailFieldItems,
+  isWalkthroughDisabled,
 }: DynamicRespondentOptionProps) => {
   const { t } = useTranslation()
   const {
@@ -52,9 +53,13 @@ export const DynamicRespondentOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   return (
-    <>
+    <Box
+      opacity={isWalkthroughDisabled ? 0.6 : 1}
+      pointerEvents={isWalkthroughDisabled ? 'none' : 'auto'}
+      transition="opacity 0.2s ease"
+    >
       <Radio
-        isDisabled={isLoading}
+        isDisabled={isLoading || isWalkthroughDisabled}
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Dynamic}
@@ -66,7 +71,12 @@ export const DynamicRespondentOption = ({
           },
         }}
       >
-        <Text>Emails entered into an email field</Text>
+        <Text>A previous step chooses someone for this step</Text>
+        {selectedWorkflowType === WorkflowType.Dynamic ? (
+          <Text textStyle="body-2" color="secondary.400" pt="0.25rem">
+            Pick an email field from a previous step
+          </Text>
+        ) : null}
         {selectedWorkflowType === WorkflowType.Dynamic ? (
           <FormControl
             pt="0.5rem"
@@ -125,6 +135,6 @@ export const DynamicRespondentOption = ({
           </FormControl>
         ) : null}
       </Radio>
-    </>
+    </Box>
   )
 }

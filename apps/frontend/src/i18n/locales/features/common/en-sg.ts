@@ -9,7 +9,7 @@ export const enSG: Common = {
     page: 'page',
     field: 'field',
     changes: 'changes',
-    step: 'step',
+    step: 'Step',
     paymentProof: 'proof of payment',
     credentials: 'credentials',
     product: 'product',
