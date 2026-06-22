@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.31.0](https://github.com/opengovsg/formsg/compare/v7.29.0...v7.31.0) (2026-06-22)
+
+
+### Features
+
+* **backend:** wildcard email domains (#9606) ([#9606](https://github.com/opengovsg/formsg/commit/209c0a59b11416ce834353757278fc6911639ef2))
+* **frontend:** add sidebar navigation labels feature flagged (#9591) ([#9591](https://github.com/opengovsg/formsg/commit/172775ba08491abf24ec560c65537f2be5fcb29b))
+* **paper forms tracking:** form-origin frontend selection (part 2) (#9579) ([#9579](https://github.com/opengovsg/formsg/commit/2161cc1c320f8f31e4df61f9202787d5818368f0))
+
+
+### Bug Fixes
+
+* **frontend:** gate useUser on isAuthenticated to prevent 401 spike (#9650) ([#9650](https://github.com/opengovsg/formsg/commit/ffa56e6c453ee0d6935bf76dd2d73a0aa50b08f0))
+
+
+### Miscellaneous
+
+* Merge pull request #9648 from opengovsg/release_v7.30.0 ([#9648](https://github.com/opengovsg/formsg/commit/64d986b0497a30924e9acadcaca59c717724c78f))
+* Merge remote-tracking branch 'origin/develop' into release-al2 ([893e429](https://github.com/opengovsg/formsg/commit/893e4299423bc06253e1feccc30f8bb397e1a318))
+
 ## [7.30.0](https://github.com/opengovsg/formsg/compare/v7.29.0...v7.30.0) (2026-06-22)
 
 
