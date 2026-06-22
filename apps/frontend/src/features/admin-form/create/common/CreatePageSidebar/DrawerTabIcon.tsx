@@ -62,7 +62,7 @@ export const DrawerTabIcon = ({
           color={isActive ? 'primary.500' : 'secondary.400'}
           whiteSpace="nowrap"
         >
-          {navLabel}
+          <span>{navLabel}</span>
         </Text>
       </Flex>
     )
