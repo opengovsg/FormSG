@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { UseFormReturn } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import _ from 'lodash'
 
@@ -55,6 +56,7 @@ export const useTranslationLogic = ({
   isFormField,
   methods,
 }: UseTranslationLogicProps) => {
+  const { t } = useTranslation()
   const { getValues, setError, clearErrors } = methods
   const [, setSearchParams] = useSearchParams()
   const { editFieldMutation } = useEditFormField()
@@ -142,8 +144,9 @@ export const useTranslationLogic = ({
           ) {
             setError(`tableColumnDropdownTranslations.${index}`, {
               type: 'custom',
-              message:
-                'Make sure the number of translated options match the options in the question.',
+              message: t(
+                'features.adminForm.settings.multiLanguage.errors.optionsCountMismatch',
+              ),
             })
             return
           }
@@ -164,8 +167,9 @@ export const useTranslationLogic = ({
             ) {
               setError(`tableColumnDropdownTranslations.${index}`, {
                 type: 'custom',
-                message:
-                  'Make sure the number of translated options match the options in the question.',
+                message: t(
+                  'features.adminForm.settings.multiLanguage.errors.optionsCountMismatch',
+                ),
               })
               return
             }
@@ -214,8 +218,9 @@ export const useTranslationLogic = ({
           ) {
             setError('fieldOptionsTranslations', {
               type: 'custom',
-              message:
-                'Make sure the number of translated options match the options in the question.',
+              message: t(
+                'features.adminForm.settings.multiLanguage.errors.optionsCountMismatch',
+              ),
             })
             return
           }

@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye, GoEyeClosed } from 'react-icons/go'
 import { useParams, useSearchParams } from 'react-router-dom'
@@ -41,6 +42,7 @@ const LanguageTranslationRow = ({
   isDefaultLanguage,
   isLast,
 }: LanguageTranslationRowProps): JSX.Element => {
+  const { t } = useTranslation()
   const { formId } = useParams()
   const { data: settings } = useAdminFormSettings()
   const [, setSearchParams] = useSearchParams()
@@ -93,13 +95,17 @@ const LanguageTranslationRow = ({
           <Text mr="0.75rem">{languageToDisplay}</Text>
           {isDefaultLanguage && (
             <Badge variant="solid" colorScheme="success" color="secondary.700">
-              Default
+              {t('features.common.default')}
             </Badge>
           )}
         </Flex>
         {!isDefaultLanguage && (
           <HStack spacing="0.75rem">
-            <Tooltip label="Hide/show language on form">
+            <Tooltip
+              label={t(
+                'features.adminForm.settings.multiLanguage.languageRow.hideShowTooltip',
+              )}
+            >
               <IconButton
                 variant="clear"
                 icon={
@@ -110,16 +116,26 @@ const LanguageTranslationRow = ({
                   )
                 }
                 colorScheme="secondary"
-                aria-label={`Select ${unicodeLocale} as the form's default language`}
+                aria-label={t(
+                  'features.adminForm.settings.multiLanguage.languageRow.selectDefaultAriaLabel',
+                  { language: unicodeLocale },
+                )}
                 onClick={() => handleToggleSupportedLanguage(unicodeLocale)}
               />
             </Tooltip>
-            <Tooltip label="Edit translation">
+            <Tooltip
+              label={t(
+                'features.adminForm.settings.multiLanguage.languageRow.editTooltip',
+              )}
+            >
               <IconButton
                 variant="clear"
                 icon={<BiEditAlt width="44px" />}
                 colorScheme="secondary"
-                aria-label={`Add ${unicodeLocale} translations`}
+                aria-label={t(
+                  'features.adminForm.settings.multiLanguage.languageRow.addTranslationsAriaLabel',
+                  { language: unicodeLocale },
+                )}
                 onClick={() =>
                   handleLanguageTranslationEditClick(unicodeLocale)
                 }
@@ -160,6 +176,7 @@ const LanguageTranslationSection = ({
 }
 
 export const FormMultiLanguageToggle = (): JSX.Element => {
+  const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
 
@@ -196,8 +213,10 @@ export const FormMultiLanguageToggle = (): JSX.Element => {
       <Toggle
         onChange={handleToggleMultiLang}
         isChecked={hasMultiLang}
-        label="Enable multi-language"
-        description="This will allow respondents to select a language they prefer to view your form in. Translations are not automated."
+        label={t('features.adminForm.settings.multiLanguage.toggle.label')}
+        description={t(
+          'features.adminForm.settings.multiLanguage.toggle.description',
+        )}
       />
       {settings && hasMultiLang ? (
         <Skeleton isLoaded={true}>
