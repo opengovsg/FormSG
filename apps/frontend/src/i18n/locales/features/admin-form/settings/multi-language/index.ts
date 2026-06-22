@@ -1,7 +1,8 @@
+import { type HasTitle } from '..'
+
 export * from './en-sg'
 
-export interface MultiLanguage {
-  title: string
+export interface MultiLanguage extends HasTitle {
   toggle: {
     label: string
     description: string
