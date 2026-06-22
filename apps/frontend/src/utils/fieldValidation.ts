@@ -49,6 +49,7 @@ import {
   validatePostalCode,
 } from 'formsg-shared/utils/address-validation'
 import { isDateAnInvalidDay } from 'formsg-shared/utils/date-validation'
+import { emailDomainMatchesAllowed } from 'formsg-shared/utils/email-domain-validation'
 import {
   isMFinSeriesValid,
   isNricValid,
@@ -910,11 +911,15 @@ export const baseEmailValidationFn =
     if (!validator.isEmail(trimmedInputValue))
       return t ? t('invalidEmail') : INVALID_EMAIL_ERROR
 
-    // Valid domain check
-    const allowedDomains = new Set(schema.allowedEmailDomains)
-    if (allowedDomains.size !== 0) {
-      const domainInValue = trimmedInputValue.split('@')[1].toLowerCase()
-      if (domainInValue && !allowedDomains.has(`@${domainInValue}`)) {
+    // Valid domain check (supports exact and wildcard patterns like @*.agency.gov.sg)
+    const { allowedEmailDomains } = schema
+    if (allowedEmailDomains.length !== 0) {
+      const domainInValue = '@' + trimmedInputValue.split('@')[1]
+      if (
+        !allowedEmailDomains.some((allowed) =>
+          emailDomainMatchesAllowed(domainInValue, allowed),
+        )
+      ) {
         return validationErrorMessages.domainDisallowed
       }
     }

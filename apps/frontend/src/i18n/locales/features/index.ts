@@ -8,6 +8,7 @@ export {
   type Meta,
   type Modals,
   type Navbar,
+  type NavLabels,
   type ResponsesCharts,
   type ResponsesComponents,
   type ResponsesIndividualResponse,

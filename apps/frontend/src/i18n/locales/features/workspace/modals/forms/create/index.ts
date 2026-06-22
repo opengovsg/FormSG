@@ -49,6 +49,29 @@ export interface CreateFormModal {
       description: string
     }
     create: string
+    next: string
+  }
+  origin: {
+    question: string
+    options: {
+      paper: string
+      digitalNew: string
+      digitalEmail: string
+      digitalDocument: string
+      digitalSpreadsheet: string
+      digitalFormbuilder: string
+      others: string
+    }
+    otherInputLabel: string
+    errors: {
+      atLeastOne: string
+      otherRequired: string
+      otherMaxLength: string
+    }
+    cta: {
+      next: string
+      back: string
+    }
   }
   secretKey: {
     title: string
