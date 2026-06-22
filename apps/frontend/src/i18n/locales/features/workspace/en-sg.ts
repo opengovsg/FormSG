@@ -33,8 +33,8 @@ export const enSG: Workspace = {
     preview: 'Preview',
     duplicate: 'Duplicate',
     share: 'Share form',
-    admins: 'Manage form admins',
-    move: 'Move to Folder',
+    admins: 'Manage collaborators',
+    move: 'Move to folder',
   },
   skeleton: {
     title: 'Loading title... Loading title...',

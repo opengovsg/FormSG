@@ -233,25 +233,18 @@ describe('Form Field Schema', () => {
         expect(fieldObj).toHaveProperty('lockPrefill', true)
       })
 
-      it('should not allow creation of short text field with allowPrefill = false and lockPrefill = true settings', async () => {
+      it('should remember lockPrefill = true even when allowPrefill = false (lock persists independently of prefill)', async () => {
         // Arrange
-        const createField = async () => {
-          const field = await createAndReturnFormField({
-            fieldType: BasicField.ShortText,
-            allowPrefill: false,
-            lockPrefill: true,
-          })
-
-          return field
-        }
-
-        // Act
-        const createFieldPromise = createField()
+        const field = await createAndReturnFormField({
+          fieldType: BasicField.ShortText,
+          allowPrefill: false,
+          lockPrefill: true,
+        })
 
         // Assert
-        await expect(createFieldPromise).rejects.toThrow(
-          'Cannot lock prefill if prefill is not enabled',
-        )
+        const fieldObj = field.toObject()
+        expect(fieldObj).toHaveProperty('allowPrefill', false)
+        expect(fieldObj).toHaveProperty('lockPrefill', true)
       })
     })
   })

@@ -36,6 +36,7 @@ import {
   SubmissionNotFoundError,
 } from '../submission/submission.errors'
 
+import { getPaymentLogMeta } from './payment.service.utils'
 import {
   ConfirmedPaymentNotFoundError,
   PaymentAlreadyConfirmedError,
@@ -57,6 +58,8 @@ import {
   computePayoutDetails,
   getChargeIdFromNestedCharge,
   getMetadataPaymentId,
+  getStripeEventForLogging,
+  getStripeObjectForLogging,
 } from './stripe.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -453,7 +456,7 @@ export const handleStripeEvent = (
 ): ResultAsync<void, HandleStripeEventResultError> => {
   const logMeta = {
     action: 'handleStripeEvent',
-    event,
+    event: getStripeEventForLogging(event),
   }
 
   let result: ResultAsync<void, HandleStripeEventResultError> =
@@ -935,7 +938,11 @@ export const verifyPaymentStatusWithStripe = (
             logger.error({
               message:
                 'Payment state mismatch found (Stripe incomplete, FormSG complete)',
-              meta: { ...logMeta, payment, paymentIntent },
+              meta: {
+                ...logMeta,
+                payment: getPaymentLogMeta(payment),
+                paymentIntent: getStripeObjectForLogging(paymentIntent),
+              },
             })
             return okAsync({
               payment,
@@ -960,7 +967,11 @@ export const verifyPaymentStatusWithStripe = (
               (error) => {
                 logger.error({
                   message: 'Error while canceling stale payment intent',
-                  meta: { ...logMeta, payment, paymentIntent },
+                  meta: {
+                    ...logMeta,
+                    payment: getPaymentLogMeta(payment),
+                    paymentIntent: getStripeObjectForLogging(paymentIntent),
+                  },
                   error,
                 })
                 return new StripeFetchError(String(error))
@@ -996,7 +1007,11 @@ export const verifyPaymentStatusWithStripe = (
             logger.error({
               message:
                 'Payment state mismatch found (Stripe complete, FormSG incomplete)',
-              meta: { ...logMeta, payment, paymentIntent },
+              meta: {
+                ...logMeta,
+                payment: getPaymentLogMeta(payment),
+                paymentIntent: getStripeObjectForLogging(paymentIntent),
+              },
             })
             return okAsync({
               payment,
@@ -1017,7 +1032,11 @@ export const verifyPaymentStatusWithStripe = (
             logger.error({
               message:
                 'Payment state mismatch found (Stripe canceled, FormSG not canceled)',
-              meta: { ...logMeta, payment, paymentIntent },
+              meta: {
+                ...logMeta,
+                payment: getPaymentLogMeta(payment),
+                paymentIntent: getStripeObjectForLogging(paymentIntent),
+              },
             })
             return okAsync({
               payment,

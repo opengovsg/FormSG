@@ -96,6 +96,22 @@ MrfCutoverOn.decorators = [
   ),
 ]
 
+const mrfCutoverAndPaperTrackingOn = new GrowthBook({
+  features: {
+    [featureFlags.mrfCutover]: { defaultValue: true },
+    [featureFlags.enablePaperTrackingSetUpPage]: { defaultValue: true },
+  },
+})
+
+export const MrfCutoverAndPaperTrackingOn = Template.bind({})
+MrfCutoverAndPaperTrackingOn.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={mrfCutoverAndPaperTrackingOn}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+
 export const MrfCutoverOnChildrenBeta = Template.bind({})
 MrfCutoverOnChildrenBeta.decorators = [
   (Story) => (

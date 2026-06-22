@@ -1,6 +1,6 @@
 {
   "name": "@opengovsg/formsg-sdk",
-  "version": "7.2.0",
+  "version": "7.3.1",
   "main": "./cjs-entry.cjs",
   "module": "./dist/esm/index.js",
   "types": "./dist/cjs/index.d.ts",

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import {
@@ -6,7 +6,6 @@ import {
   InputGroup,
   InputRightElement,
   SimpleGrid,
-  useMergeRefs,
 } from '@chakra-ui/react'
 import { extend, isEmpty, pick } from 'lodash'
 
@@ -120,26 +119,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
     'ValidationOptions.selectedValidation',
   )
 
-  const hasLockPrefillRef = useRef<HTMLInputElement>(null)
-
-  const lockPrefillRegister = useMemo(() => register('lockPrefill'), [register])
-
-  const mergedLockPrefillRef = useMergeRefs(
-    hasLockPrefillRef,
-    lockPrefillRegister.ref,
-  )
-
   const watchAllowPrefill = watch('allowPrefill')
-  const watchLockPrefill = watch('lockPrefill')
-
-  useEffect(() => {
-    // Prefill must be enabled for lockPrefill
-    // We cannot simply use setValue as it does not update
-    // the UI
-    if (!watchAllowPrefill && watchLockPrefill) {
-      hasLockPrefillRef.current?.click()
-    }
-  }, [watchAllowPrefill, watchLockPrefill])
 
   const customValValidationOptions: RegisterOptions<
     EditShortTextInputs,
@@ -189,11 +169,7 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
         <Input autoFocus {...register('title', requiredValidationRule)} />
         <FormErrorMessage>{errors?.title?.message}</FormErrorMessage>
       </FormControl>
-      <FormControl
-        isRequired
-        isReadOnly={isLoading}
-        isInvalid={!!errors.description}
-      >
+      <FormControl isReadOnly={isLoading} isInvalid={!!errors.description}>
         <FormLabel>
           {t(
             'features.adminForm.sidebar.fields.commonFieldComponents.description',
@@ -276,15 +252,23 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
           </>
         ) : null}
       </FormControl>
-      <FormControl isReadOnly={isLoading}>
-        <Toggle
-          {...lockPrefillRegister}
-          ref={mergedLockPrefillRef}
-          label="Prevent pre-fill editing"
-          description="This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL."
-          isDisabled={!watchAllowPrefill}
-        />
-      </FormControl>
+      {watchAllowPrefill ? (
+        <FormControl isReadOnly={isLoading}>
+          <Controller
+            name="lockPrefill"
+            control={control}
+            render={({ field: { value, onChange, ...rest } }) => (
+              <Toggle
+                {...rest}
+                isChecked={!!value}
+                onChange={onChange}
+                label="Prevent pre-fill editing"
+                description="This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL."
+              />
+            )}
+          />
+        </FormControl>
+      ) : null}
       <FormFieldDrawerActions
         isLoading={isLoading}
         buttonText={buttonText}

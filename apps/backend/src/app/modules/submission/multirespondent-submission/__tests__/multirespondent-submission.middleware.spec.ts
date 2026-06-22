@@ -5,6 +5,7 @@ import {
 } from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
 import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
+import { StatusCodes } from 'http-status-codes'
 import { errAsync, ok, okAsync } from 'neverthrow'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
@@ -873,6 +874,21 @@ describe('Multirespondent Submission Middleware', () => {
           setAttributes: jest.fn().mockResolvedValue(undefined),
           getAttributes: jest.fn().mockReturnValue({}),
         },
+        get: jest.fn((name: string) => {
+          if (name === 'cf-connecting-ip') return '127.0.0.1'
+          if (name === 'cf-ray') return 'mock-cf-ray'
+          return undefined
+        }),
+        ip: '127.0.0.1',
+        id: 'mock-request-id',
+        headers: {
+          'cf-connecting-ip': '127.0.0.1',
+          'cf-ray': 'mock-cf-ray',
+          'x-request-id': 'mock-request-id',
+        },
+        baseUrl: '/api/v3',
+        path: '/forms/mock-form-id/submissions',
+        originalUrl: '/api/v3/forms/mock-form-id/submissions',
       }) as any
 
     beforeEach(() => {
@@ -884,6 +900,9 @@ describe('Multirespondent Submission Middleware', () => {
         submissionSecretKey: 'mock-ssk',
         submissionPublicKey: 'mock-spk',
       })
+      const mockDecrypt = formsgSdk.cryptoV3
+        .decryptFromSubmissionKey as jest.Mock
+      mockDecrypt.mockReturnValue({ responses: MOCK_RESPONSES })
     })
 
     it('should encrypt responses as V3 and set mrfVersion to 1 when feature flag is off', async () => {
@@ -915,6 +934,24 @@ describe('Multirespondent Submission Middleware', () => {
       )
       expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(2)
       expect(mockNext).toHaveBeenCalled()
+    })
+
+    it('should return 500 and not call next() when decryptFromSubmissionKey returns falsy', async () => {
+      const mockDecrypt = formsgSdk.cryptoV3
+        .decryptFromSubmissionKey as jest.Mock
+      mockDecrypt.mockReturnValue(null)
+
+      const mockReq = createMockEncryptReq(false)
+      const mockNext = jest.fn()
+      const mockRes = createMockRes()
+
+      await encryptSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalled()
+      expect(mockNext).not.toHaveBeenCalled()
     })
   })
 

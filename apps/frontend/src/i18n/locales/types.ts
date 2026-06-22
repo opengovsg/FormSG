@@ -31,7 +31,6 @@ import {
   ThankYou,
   Toasts,
   TransferOwnership,
-  WhatsNew,
   Workflow,
   Workspace,
 } from './features'
@@ -74,7 +73,6 @@ interface Translation {
       publicForm?: PublicForm
       login?: Login
       workspace?: Workspace
-      whatsNew?: WhatsNew
       user?: {
         emergencyContact: EmergencyContact
         transferOwnership: TransferOwnership

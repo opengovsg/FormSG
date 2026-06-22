@@ -17,6 +17,7 @@ import {
   SubmissionType,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
+import _ from 'lodash'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
@@ -60,6 +61,8 @@ import {
   MissingSubmitterIdError,
   MrfWorkflowOverflowError,
   ProcessingError,
+  SubmissionEncryptionMismatchError,
+  SubmissionEncryptionVerificationError,
   SubmissionNotFoundError,
 } from '../submission.errors'
 import * as SubmissionService from '../submission.service'
@@ -756,12 +759,14 @@ export const encryptSubmission = async (
   res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
   next: NextFunction,
 ) => {
+  const formDef = req.formsg.formDef
+
   void req.growthbook?.setAttributes({
     ...req.growthbook.getAttributes(),
     formId: req.params.formId,
+    formCreated: formDef.created?.toISOString(),
   })
 
-  const formDef = req.formsg.formDef
   const formPublicKey = formDef.publicKey
   const responses = req.body.responses
 
@@ -802,7 +807,9 @@ export const encryptSubmission = async (
   }
 
   const useV4Encryption =
-    req.growthbook?.isOn(featureFlags.answerObjectEncryption) ?? false
+    (req.growthbook?.isOn(featureFlags.answerObjectEncryption) &&
+      !formDef.webhook?.url) ??
+    false
 
   let responsesToEncrypt:
     | Record<
@@ -812,6 +819,14 @@ export const encryptSubmission = async (
     | FieldResponsesV4 = strippedAttachmentResponses
 
   if (useV4Encryption) {
+    logger.info({
+      message: 'Using V4 encryption for submission',
+      meta: {
+        action: 'encryptSubmission',
+        formId: req.params.formId,
+        submissionId: req.params.submissionId,
+      },
+    })
     // Build FormFieldMeta map from form definition for question text
     const formFieldMeta: Record<string, FormFieldMeta> = {}
     for (const field of formDef.form_fields) {
@@ -833,6 +848,66 @@ export const encryptSubmission = async (
     submissionSecretKey,
     submissionPublicKey,
   } = formsgSdk.cryptoV3.encrypt(responsesToEncrypt, formPublicKey)
+
+  // Verify the encrypted content can be decrypted using the generated submission secret key before saving
+  // Perform a diff check between original & recently decrypted responses to ensure round trip encryption-decryption
+  const decryptionVerification = formsgSdk.cryptoV3.decryptFromSubmissionKey(
+    submissionSecretKey,
+    { encryptedContent, version: req.body.version },
+  )
+  if (!decryptionVerification) {
+    const error = new SubmissionEncryptionVerificationError()
+    logger.error({
+      message: error.message,
+      meta: {
+        action: 'encryptSubmission',
+        formId: req.params.formId,
+        submissionId: req.params.submissionId,
+        version: req.body.version,
+        mrfVersion: useV4Encryption ? 2 : 1,
+        ...createReqMeta(req),
+      },
+      error,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'An error occurred while processing your submission',
+    })
+  }
+
+  const decryptedResponsesV3 = isFieldResponsesV4(
+    decryptionVerification.responses,
+  )
+    ? adaptV4ToV3(decryptionVerification.responses as FieldResponsesV4)
+    : decryptionVerification.responses
+
+  // cryptoV3.encrypt serializes via JSON.stringify, which drops `undefined` object keys.
+  const normalizedOriginalResponses = JSON.parse(
+    JSON.stringify(strippedAttachmentResponses),
+  ) as typeof strippedAttachmentResponses
+
+  const responseMismatch = !_.isEqual(
+    normalizedOriginalResponses,
+    decryptedResponsesV3,
+  )
+
+  if (responseMismatch) {
+    const mismatchError = new SubmissionEncryptionMismatchError()
+    logger.error({
+      message: mismatchError.message,
+      meta: {
+        action: 'encryptSubmission',
+        formId: req.params.formId,
+        submissionId: req.params.submissionId,
+        version: req.body.version,
+        mrfVersion: useV4Encryption ? 2 : 1,
+        ...createReqMeta(req),
+      },
+      error: mismatchError,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: 'An error occurred while processing your submission',
+    })
+  }
 
   const encryptedAttachments =
     await getEncryptedAttachmentsMapFromAttachmentsMap(

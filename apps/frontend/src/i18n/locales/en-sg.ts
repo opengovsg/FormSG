@@ -9,7 +9,6 @@ import { enSG as login } from './features/login'
 import { enSG as notFoundError } from './features/not-found-error'
 import { enSG as publicForm } from './features/public-form'
 import { enSG as user } from './features/user'
-import { enSG as whatsNew } from './features/whats-new'
 import { enSG as workspace } from './features/workspace'
 import { enSG as fieldValidation } from './utils/field-validation'
 import { enSG as formValidation } from './utils/form-validation'
@@ -28,7 +27,6 @@ export const enSG: FallbackTranslation = {
       login,
       publicForm,
       workspace,
-      whatsNew,
       user,
     },
     utils: {
