@@ -19,7 +19,9 @@ type UseUserReturn = {
   removeQuery: () => void
 }
 
-export const useUser = (): UseUserReturn => {
+export const useUser = ({
+  enabled = true,
+}: { enabled?: boolean } = {}): UseUserReturn => {
   const [, setIsLocalStorageAuthenticated] =
     useLocalStorage<boolean>(LOGGED_IN_KEY)
 
@@ -28,6 +30,7 @@ export const useUser = (): UseUserReturn => {
     isLoading,
     remove,
   } = useQuery(userKeys.base, () => fetchUser(), {
+    enabled,
     onSuccess: () => setIsLocalStorageAuthenticated(true),
     onError: (err) => {
       if (err instanceof HttpError && err.code === StatusCodes.UNAUTHORIZED) {
