@@ -92,8 +92,10 @@ const multirespondentSubmissionBodySchema = Joi.object({
     /^[a-fA-F0-9]{24}$/,
     Joi.object({
       fieldType: Joi.string().valid(...Object.values(BasicField)),
-      //TODO(MRF/FRM-1592): Improve this validation, should match ParsedClearFormFieldResponseV3
       answer: Joi.required(),
+      question: Joi.any().strip(),
+      provenance: Joi.object().optional(),
+      myInfo: Joi.object({ attr: Joi.string().required() }).optional(),
     }),
   ),
   responseMetadata: Joi.object({
@@ -594,7 +596,10 @@ export const validateMultirespondentSubmission = async (
                 /**
                  * Since the incoming client responses are in V4,
                  * if previous submission was encrypted in V3 format, convert to V4
-                 * to facilitate comparison.
+                 * to facilitate comparison. Comparison (isFieldResponseV4Equal)
+                 * only inspects fieldType + answer, so we skip the formFields
+                 * meta — question text and myInfo on the adapted response are
+                 * unused; downstream consumers source both from the form field.
                  */
                 const previousResponses = (() => {
                   const responses = previousSubmissionDecryptedContent.responses

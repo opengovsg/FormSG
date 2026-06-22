@@ -84,7 +84,6 @@ export const adaptMrfV3BodyToV4 = (
   body.responses = adaptV3ToV4(
     body.responses as unknown as FormFieldsV3,
   ) as FieldResponsesV4
-  body.version = 4
 }
 
 /**
