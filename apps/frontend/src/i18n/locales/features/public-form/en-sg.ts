@@ -39,7 +39,7 @@ export const enSG: PublicForm = {
       },
       turnstile: {
         connection:
-          'Error connecting to Turnstile server . Please submit again in a few minutes.',
+          'Error connecting to Turnstile server. Please submit again in a few minutes.',
         incorrectParameters:
           'Incorrect Turnstile parameters. Please refresh and submit again.',
         missingChallenge:

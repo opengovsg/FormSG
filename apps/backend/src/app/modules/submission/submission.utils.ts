@@ -339,7 +339,7 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage:
-          'Error connecting to Turnstile server . Please submit again in a few minutes.',
+          'Error connecting to Turnstile server. Please submit again in a few minutes.',
         errorMessageKey: submissionErrorKey('turnstile.connection'),
       }
     case VerifyTurnstileError:
