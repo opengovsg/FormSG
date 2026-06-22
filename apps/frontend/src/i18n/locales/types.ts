@@ -18,6 +18,7 @@ import {
   Meta,
   Modals,
   Navbar,
+  NavLabels,
   NotFoundError,
   PublicForm,
   ResponsesCharts,
@@ -43,6 +44,7 @@ interface Translation {
           fields?: Fields
           headerAndInstructions?: HeaderAndInstructions
           logic?: Logic
+          navLabels?: NavLabels
           thankYou?: ThankYou
           workflow?: Workflow
         }

@@ -15,6 +15,7 @@ export {
   type Fields,
   type HeaderAndInstructions,
   type Logic,
+  type NavLabels,
   type ThankYou,
   type Workflow,
 } from './sidebar'

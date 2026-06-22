@@ -2,7 +2,9 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Divider, Stack } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, SeenFlags } from 'formsg-shared/types'
 
 import { MultiParty, PhHandsClapping } from '~assets/icons'
@@ -38,6 +40,7 @@ import { DrawerTabIcon } from './DrawerTabIcon'
 export const CreatePageSidebar = (): JSX.Element | null => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
+  const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
 
   const { data } = useAdminForm()
   const { user, isLoading: isUserLoading } = useUser()
@@ -97,21 +100,44 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     isDirty,
   ])
 
+  const isMrf = data?.responseMode === FormResponseMode.Multirespondent
+
+  const workflowTab = isMrf ? (
+    <DrawerTabIcon
+      label={t('features.adminForm.sidebar.workflow.title')}
+      navLabel={
+        showNavLabels
+          ? t('features.adminForm.sidebar.navLabels.workflow')
+          : undefined
+      }
+      trackingLabel="create_builder.drawer_tab.add_workflow"
+      icon={<MultiParty fontSize="1.5rem" />}
+      onClick={handleDrawerWorkflowClick}
+      isActive={activeTab === DrawerTabs.Workflow}
+      showRedDot={shouldShowMrfWorkflowReddot}
+    />
+  ) : null
+
   return (
     <Stack
       bg="white"
       pos="sticky"
       top={0}
-      px="0.5rem"
+      px={showNavLabels ? '0.75rem' : '0.5rem'}
       py="1rem"
       borderRight="1px solid"
       borderColor="neutral.300"
       direction="column"
       justifyContent="space-between"
     >
-      <Stack spacing="0.5rem">
+      <Stack spacing={showNavLabels ? '1rem' : '0.5rem'}>
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.fields.builder.addFields')}
+          navLabel={
+            showNavLabels
+              ? t('features.adminForm.sidebar.navLabels.fields')
+              : undefined
+          }
           trackingLabel="create_builder.drawer_tab.add_fields"
           icon={<BxsWidget fontSize="1.5rem" />}
           onClick={handleDrawerBuilderClick}
@@ -120,14 +146,26 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.headerAndInstructions.title')}
+          navLabel={
+            showNavLabels
+              ? t('features.adminForm.sidebar.navLabels.header')
+              : undefined
+          }
           trackingLabel="create_builder.drawer_tab.edit_header"
           icon={<BxsDockTop fontSize="1.5rem" />}
           onClick={handleDrawerDesignClick}
           isActive={activeTab === DrawerTabs.Design}
           id={FEATURE_TOUR_IDS[1].id}
         />
+        {/* Treatment slots Workflow into the middle, after Header. */}
+        {showNavLabels && workflowTab}
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.logic.addLogicBtn')}
+          navLabel={
+            showNavLabels
+              ? t('features.adminForm.sidebar.navLabels.logic')
+              : undefined
+          }
           trackingLabel="create_builder.drawer_tab.add_logic"
           icon={<BiGitMerge fontSize="1.5rem" />}
           onClick={handleDrawerLogicClick}
@@ -136,23 +174,22 @@ export const CreatePageSidebar = (): JSX.Element | null => {
         />
         <DrawerTabIcon
           label={t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
+          navLabel={
+            showNavLabels
+              ? t('features.adminForm.sidebar.navLabels.thankYou')
+              : undefined
+          }
           trackingLabel="create_builder.drawer_tab.edit_thank_you_page"
           icon={<PhHandsClapping fontSize="1.5rem" />}
           onClick={handleDrawerEndpageClick}
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR_IDS[3].id}
         />
-        {data?.responseMode === FormResponseMode.Multirespondent && (
+        {/* Control keeps production's layout: Workflow at the bottom, below a divider. */}
+        {!showNavLabels && isMrf && (
           <>
             <Divider />
-            <DrawerTabIcon
-              label={t('features.adminForm.sidebar.workflow.title')}
-              trackingLabel="create_builder.drawer_tab.add_workflow"
-              icon={<MultiParty fontSize="1.5rem" />}
-              onClick={handleDrawerWorkflowClick}
-              isActive={activeTab === DrawerTabs.Workflow}
-              showRedDot={shouldShowMrfWorkflowReddot}
-            />
+            {workflowTab}
           </>
         )}
       </Stack>
@@ -161,6 +198,8 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           variant="solid"
           colorScheme="subtle"
           size="lg"
+          // Keep the round button from stretching to the (wider) sidebar width.
+          alignSelf="center"
           icon={<BiQuestionMark />}
           borderRadius="full"
           aria-label="Help"
