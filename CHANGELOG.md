@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.30.0](https://github.com/opengovsg/formsg/compare/v7.29.0...v7.30.0) (2026-06-22)
+
+
+### Features
+
+* **backend:** wildcard email domains (#9606) ([#9606](https://github.com/opengovsg/formsg/commit/209c0a59b11416ce834353757278fc6911639ef2))
+* **frontend:** add sidebar navigation labels feature flagged (#9591) ([#9591](https://github.com/opengovsg/formsg/commit/172775ba08491abf24ec560c65537f2be5fcb29b))
+* **paper forms tracking:** form-origin frontend selection (part 2) (#9579) ([#9579](https://github.com/opengovsg/formsg/commit/2161cc1c320f8f31e4df61f9202787d5818368f0))
+
 ## [7.29.0](https://github.com/opengovsg/formsg/compare/v7.28.1...v7.29.0) (2026-06-15)
 
 
