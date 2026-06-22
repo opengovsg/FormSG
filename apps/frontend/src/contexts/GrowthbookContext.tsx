@@ -8,6 +8,8 @@ import { UserDto } from 'formsg-shared/types/user'
 
 import { createGrowthbookInstance } from '~/growthbook'
 
+import { useAuth } from '~contexts/AuthContext'
+
 import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 
@@ -35,7 +37,9 @@ const injectGrowthBookAttributes = (
 
 export const GrowthBookProvider = ({ children }: { children: ReactNode }) => {
   const { data: { growthbookClientKey } = {} } = useEnv()
-  const { user } = useUser()
+  const { isAuthenticated } = useAuth()
+
+  const { user } = useUser({ enabled: !!isAuthenticated })
 
   const growthbook = useMemo(
     () =>
