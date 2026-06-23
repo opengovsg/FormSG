@@ -4,14 +4,14 @@ describe('composeEscapeHatchCopy', () => {
   it('returns payments-only copy when no extra flags are set', () => {
     expect(composeEscapeHatchCopy()).toEqual({
       prefix: 'Need payments? Use the ',
-      linkText: 'old version of FormSG',
+      linkText: 'legacy version of FormSG',
       suffix: '.',
     })
   })
 
-  it('mentions MyInfo children fields when children flag is set', () => {
+  it('mentions Myinfo Children fields when children flag is set', () => {
     expect(composeEscapeHatchCopy({ children: true }).prefix).toBe(
-      'Need payments or MyInfo children fields? Use the ',
+      'Need payments or Myinfo Children fields? Use the ',
     )
   })
 
@@ -27,7 +27,7 @@ describe('composeEscapeHatchCopy', () => {
         children: true,
         createStorageModeForV1Webhook: true,
       }).prefix,
-    ).toBe('Need payments, MyInfo children fields, or webhooks v1? Use the ')
+    ).toBe('Need payments, Myinfo Children fields, or webhooks v1? Use the ')
   })
 
   it('ignores unrelated falsy flags', () => {

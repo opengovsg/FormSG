@@ -9,14 +9,14 @@ export type EscapeHatchCopy = {
   suffix: string
 }
 
-const LINK_TEXT = 'old version of FormSG'
+const LINK_TEXT = 'legacy version of FormSG'
 const SUFFIX = '.'
 
 export const composeEscapeHatchCopy = (
   betaFlags?: EscapeHatchBetaFlags,
 ): EscapeHatchCopy => {
   const reasons: string[] = ['payments']
-  if (betaFlags?.children) reasons.push('MyInfo children fields')
+  if (betaFlags?.children) reasons.push('Myinfo Children fields')
   if (betaFlags?.createStorageModeForV1Webhook) reasons.push('webhooks v1')
 
   const reasonsString =
