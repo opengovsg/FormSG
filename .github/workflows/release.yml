@@ -34,7 +34,7 @@ permissions:
 env:
   NODE_VERSION: '22.22'
   PNPM_VERSION: '10.30.3'
-  CTV_VERSION: '12.6.1' # commit-and-tag-version, pinned to package.json
+  CTV_VERSION: '12.6.1' # commit-and-tag-version version used by this workflow
 
 jobs:
   release:
@@ -117,9 +117,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "${{ steps.version.outputs.tag }}" \
-            --verify-tag \
-            --generate-notes
+          if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "GitHub release ${{ steps.version.outputs.tag }} already exists; skipping creation."
+          else
+            gh release create "${{ steps.version.outputs.tag }}" \
+              --verify-tag \
+              --generate-notes
+          fi
 
   # ---- Fan-out: every job below runs in this same run via workflow_call. ----
   # Each calling job grants exactly the GITHUB_TOKEN scope its chain needs.

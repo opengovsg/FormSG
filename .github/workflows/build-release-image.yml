@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.3.1
         with:
           # Build the tagged release commit. Both the workflow_call (from the
           # release workflow) and workflow_dispatch paths supply the tag.
