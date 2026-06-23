@@ -25,6 +25,7 @@ import { useCommonFormWizardProvider } from '../CreateFormModal/CreateFormWizard
 interface DupeFormWizardSource {
   formIdToDuplicate: FormId | undefined
   workspaceId?: string
+  initialStep?: CreateFormFlowStates
 }
 
 export const useDupeFormWizardContext = (
@@ -54,7 +55,11 @@ export const useDupeFormWizardContext = (
     goToMrfDetails,
     goToFormDetails,
     makeHandleProceedFromDetails,
-  } = useCommonFormWizardProvider()
+  } = useCommonFormWizardProvider({ initialStep: source.initialStep })
+
+  // The screen the wizard opens on (and the only one we prefill the title on,
+  // so navigating between steps never clobbers a title the admin has typed).
+  const prefillStep = source.initialStep ?? CreateFormFlowStates.Details
 
   const { reset, getValues } = formMethods
 
@@ -70,7 +75,7 @@ export const useDupeFormWizardContext = (
       isWorkspaceLoading ||
       !previewFormData ||
       !dashboardForms ||
-      currentStep !== CreateFormFlowStates.Details
+      currentStep !== prefillStep
     ) {
       return
     }
@@ -87,6 +92,7 @@ export const useDupeFormWizardContext = (
     isWorkspaceLoading,
     dashboardForms,
     currentStep,
+    prefillStep,
   ])
 
   const { handleSubmit, setValue } = formMethods
@@ -251,15 +257,18 @@ export const DupeFormWizardProvider = ({
   onClose,
   formIdToDuplicate,
   workspaceId,
+  initialStep,
 }: {
   children: React.ReactNode
   onClose: () => void
   formIdToDuplicate: FormId | undefined
   workspaceId?: string
+  initialStep?: CreateFormFlowStates
 }): JSX.Element => {
   const values = useDupeFormWizardContext(onClose, {
     formIdToDuplicate,
     workspaceId,
+    initialStep,
   })
   return (
     <CreateFormWizardContext.Provider value={values}>

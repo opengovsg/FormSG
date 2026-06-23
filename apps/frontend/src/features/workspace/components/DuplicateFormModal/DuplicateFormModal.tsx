@@ -9,6 +9,7 @@ import {
 import { FormId } from 'formsg-shared/types/form/form'
 
 import { CreateFormModalContent } from '../CreateFormModal/CreateFormModalContent'
+import { CreateFormFlowStates } from '../CreateFormModal/CreateFormWizardContext'
 
 import { DupeFormWizardProvider } from './DupeFormWizardProvider'
 
@@ -18,6 +19,11 @@ export type DuplicateFormModalProps = Pick<
 > & {
   formIdToDuplicate: FormId | undefined
   workspaceId?: string
+  /**
+   * Step the duplicate wizard opens on. Defaults to the form details screen;
+   * pass `StorageModeDetails` to open straight into the legacy setup.
+   */
+  initialStep?: CreateFormFlowStates
 }
 
 export const DuplicateFormModal = ({
@@ -25,6 +31,7 @@ export const DuplicateFormModal = ({
   onClose,
   formIdToDuplicate,
   workspaceId,
+  initialStep,
 }: DuplicateFormModalProps) => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -43,6 +50,7 @@ export const DuplicateFormModal = ({
             onClose={onClose}
             formIdToDuplicate={formIdToDuplicate}
             workspaceId={workspaceId}
+            initialStep={initialStep}
           >
             <CreateFormModalContent />
           </DupeFormWizardProvider>
