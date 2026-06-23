@@ -56,6 +56,7 @@ jobs:
         uses: actions/checkout@v4.3.1
         with:
           ref: develop
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
           fetch-depth: 0
 
       - name: Configure git identity
@@ -165,7 +166,7 @@ jobs:
 
   deploy-pdf-gen-stg:
     name: Deploy PDF generator to stg
-    needs: release
+    needs: [release, build]
     permissions:
       contents: read
       id-token: write
@@ -176,7 +177,7 @@ jobs:
 
   deploy-pdf-gen-prod:
     name: Deploy PDF generator to production
-    needs: release
+    needs: [release, build]
     permissions:
       contents: read
       id-token: write
@@ -187,7 +188,7 @@ jobs:
 
   deploy-virus-scanner-stg:
     name: Deploy virus scanner to stg
-    needs: release
+    needs: [release, build]
     permissions:
       contents: read
       id-token: write
@@ -198,7 +199,7 @@ jobs:
 
   deploy-virus-scanner-prod:
     name: Deploy virus scanner to production
-    needs: release
+    needs: [release, build]
     permissions:
       contents: read
       id-token: write
