@@ -50,13 +50,14 @@ jobs:
       version: ${{ steps.version.outputs.tag }}
       sdk-tag: ${{ steps.sdk.outputs.tag }}
     steps:
-      # actions/checkout persists the GITHUB_TOKEN for the origin remote, so the
+      # actions/checkout persists the DEPLOY_KEY for the origin remote, so the
       # push steps below can write the bump commit and tags back to develop.
       - name: Checkout develop
         uses: actions/checkout@v4.3.1
         with:
           ref: develop
           ssh-key: ${{ secrets.DEPLOY_KEY }}
+          persist-credentials: true
           fetch-depth: 0
 
       - name: Configure git identity
