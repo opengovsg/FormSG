@@ -17,7 +17,7 @@ export const enSG = {
           placeholder: 'Select an email field from your form',
         },
         others: {
-          label: 'Any email address you choose',
+          label: 'Any email addresses you choose',
           tooltipText:
             "Include the admin's email to notify them whenever a response is submitted",
           description: 'Separate multiple email addresses with a comma',
@@ -25,7 +25,7 @@ export const enSG = {
         stepN: {
           label: {
             overall: 'People who are filling up a workflow step',
-            each: 'Respondent(s) in Step {stepNumber}',
+            each: 'People in Step {stepNumber}',
           },
           placeholder: 'Select steps from your form',
         },
