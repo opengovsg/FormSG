@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.32.0](https://github.com/opengovsg/formsg/compare/v7.31.0...v7.32.0) (2026-06-23)
+
+
+### Features
+
+* **frontend:** update restrict email domains placeholder (#9654) ([#9654](https://github.com/opengovsg/formsg/commit/dbb9ef61574b80b06687c753778d9e8e18228282))
+
+
+### Miscellaneous
+
+* Merge pull request #9656 from opengovsg/copy-change-drag-field-from-left ([#9656](https://github.com/opengovsg/formsg/commit/94011507d0c34e2997bd2a1b39e831986acdcc82))
+
 ## [7.31.0](https://github.com/opengovsg/formsg/compare/v7.29.0...v7.31.0) (2026-06-22)
 
 
