@@ -1,4 +1,5 @@
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
+import { TFunction } from 'i18next'
 
 import { featureFlags } from 'formsg-shared/constants'
 
@@ -37,3 +38,18 @@ export const useDashboardFilterOptions = (): FilterOption[] => {
   if (!isMrfCutoverEnabled) return FILTER_OPTIONS
   return CUTOVER_FILTER_OPTIONS
 }
+
+/**
+ * Resolves the label shown for a filter option. Only the cutover-only "Legacy"
+ * option is translated; every other option renders its enum value as before
+ * (the value doubles as the menu/URL key, which must stay stable).
+ *
+ * TODO [MRF-CUTOVER]: Remove after cutover.
+ */
+export const getFilterOptionLabel = (
+  option: FilterOption,
+  t: TFunction,
+): string =>
+  option === FilterOption.LegacyForms
+    ? t('features.workspace.search.legacyFilterLabel')
+    : option

@@ -14,12 +14,6 @@ import { DuplicateFormModal } from '~features/workspace/components/DuplicateForm
 
 import { usePaymentGuideLink } from './queries'
 
-// TODO [MRF-CUTOVER]: Remove cutover copy overrides after cutover.
-const CUTOVER_SHORT_DESCRIPTION =
-  'Payments are only available in the legacy version of FormSG'
-const CUTOVER_LONG_DESCRIPTION =
-  'Respondents can make payment for fees or services directly on your form.'
-
 export const PaymentsUnsupportedMsg = (): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.settings.payments.paymentUnsupportedMsg',
@@ -32,17 +26,17 @@ export const PaymentsUnsupportedMsg = (): JSX.Element => {
     <Flex justify="center" flexDir="column" textAlign="center">
       <Text textStyle="h2" as="h2" color="primary.500" mb="1rem">
         {isMrfCutoverEnabled
-          ? CUTOVER_SHORT_DESCRIPTION
+          ? t('cutoverShortDescription')
           : t('shortDescription')}
       </Text>
       <Text textStyle="body-1" color="secondary.500" mb="2.5rem">
         {isMrfCutoverEnabled ? (
           <>
-            {CUTOVER_LONG_DESCRIPTION}&nbsp;
+            {t('cutoverLongDescription')}&nbsp;
             <Link cursor="pointer" onClick={dupeModal.onOpen}>
-              Duplicate your form
+              {t('cutoverDuplicateLink')}
             </Link>{' '}
-            to use it.
+            {t('cutoverDuplicateSuffix')}
           </>
         ) : (
           <>

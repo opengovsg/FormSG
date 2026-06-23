@@ -494,7 +494,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
     <Text>
       {/* TODO [MRF-CUTOVER]: Remove cutover copy override after cutover. */}
       {isMrfCutoverEnabled
-        ? 'Payments are only available in the legacy version of FormSG.'
+        ? t('disabled.cutoverLegacyOnly')
         : t('disabled.storageModeOnly')}
     </Text>
   ) : !isStripeConnected ? (

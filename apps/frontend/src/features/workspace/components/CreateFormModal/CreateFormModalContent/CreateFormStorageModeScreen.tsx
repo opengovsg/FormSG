@@ -30,16 +30,14 @@ export const CreateFormStorageModeScreen = (): JSX.Element => {
               onClick={goToMrfDetails}
               mr="0.5rem"
             />
-            Set up a legacy form
+            {t('features.workspace.modals.forms.create.legacy.title')}
           </Flex>
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
         <Container maxW="45rem" p={0}>
           <Text textStyle="body-2" color="secondary.500" mb="2rem">
-            This is the legacy version. Use it only if the latest version of
-            FormSG is missing a feature you need, or you&apos;re running into
-            issues with it.
+            {t('features.workspace.modals.forms.create.legacy.description')}
           </Text>
           <FormTitleInput mb="2.5rem" />
           <Button

@@ -30,7 +30,10 @@ import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
 import { FilterOption } from '~features/workspace/types'
-import { useDashboardFilterOptions } from '~features/workspace/utils/dashboardFilter'
+import {
+  getFilterOptionLabel,
+  useDashboardFilterOptions,
+} from '~features/workspace/utils/dashboardFilter'
 
 import {
   useWorkspaceSearchbar,
@@ -206,7 +209,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
                         ) : (
                           <Box w="1.25rem"> </Box>
                         )}
-                        <Text>{option}</Text>
+                        <Text>{getFilterOptionLabel(option, t)}</Text>
                       </Stack>
                     </Button>
                   ))}

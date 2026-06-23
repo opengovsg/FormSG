@@ -27,7 +27,8 @@ export const useResponseModeBadgeLabel = (
 
   if (isMrfCutoverEnabled) {
     if (responseMode === FormResponseMode.Multirespondent) return null
-    if (responseMode === FormResponseMode.Encrypt) return 'Legacy'
+    if (responseMode === FormResponseMode.Encrypt)
+      return t('features.adminForm.meta.legacyResponseModeText')
   }
 
   return t(`features.adminForm.meta.responseModeText.${responseMode}`)

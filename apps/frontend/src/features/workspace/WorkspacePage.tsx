@@ -191,15 +191,17 @@ export const WorkspacePage = (): JSX.Element => {
             {isMrfCutoverEnabled && hasLegacyForms && (
               <InlineMessage>
                 <Text>
-                  We&apos;re streamlining form set-up and bringing workflows to
-                  all. Legacy forms will be migrated automatically and no action
-                  is required from you.{' '}
+                  {t(
+                    'features.workspace.workspacePage.migrationInfobox.message',
+                  )}{' '}
                   <Link
                     display="inline"
                     href={MRF_CUTOVER_FAQ_LINK}
                     target="_blank"
                   >
-                    Learn more.
+                    {t(
+                      'features.workspace.workspacePage.migrationInfobox.learnMore',
+                    )}
                   </Link>
                 </Text>
               </InlineMessage>

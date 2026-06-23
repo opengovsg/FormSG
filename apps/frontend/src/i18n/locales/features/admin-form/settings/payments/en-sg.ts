@@ -15,6 +15,13 @@ export const enSG: Payments = {
     longDescription:
       'Respondents can now make payment for fees or services directly on your form. This feature is only available in storage mode.',
     learnMore: 'Learn more about payments',
+    // TODO [MRF-CUTOVER]: Remove cutover copy after cutover.
+    cutoverShortDescription:
+      'Payments are only available in the legacy version of FormSG',
+    cutoverLongDescription:
+      'Respondents can make payment for fees or services directly on your form.',
+    cutoverDuplicateLink: 'Duplicate your form',
+    cutoverDuplicateSuffix: 'to use it.',
   },
   stripeConnectBtn: {
     connect: 'Connect my Stripe account',

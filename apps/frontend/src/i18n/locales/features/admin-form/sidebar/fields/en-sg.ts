@@ -253,6 +253,9 @@ export const enSG: Fields = {
     saveField: 'Save field',
     disabled: {
       storageModeOnly: 'Payments are only available in storage mode.',
+      // TODO [MRF-CUTOVER]: Remove after cutover.
+      cutoverLegacyOnly:
+        'Payments are only available in the legacy version of FormSG.',
       stripeNotConnectedBefore: 'Connect your Stripe account in',
       stripeNotConnectedSettings: 'Settings',
       stripeNotConnectedAfter: 'to add payment field.',

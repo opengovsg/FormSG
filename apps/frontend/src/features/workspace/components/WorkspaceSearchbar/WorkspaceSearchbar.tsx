@@ -20,7 +20,10 @@ import Button from '~components/Button'
 import Menu from '~components/Menu'
 
 import { FilterOption } from '~features/workspace/types'
-import { useDashboardFilterOptions } from '~features/workspace/utils/dashboardFilter'
+import {
+  getFilterOptionLabel,
+  useDashboardFilterOptions,
+} from '~features/workspace/utils/dashboardFilter'
 
 export interface WorkspaceSearchbarProps {
   /** Filter selection input will be controlled if provided. */
@@ -164,7 +167,7 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
                 >
                   {filterOptions.map((value, i) => (
                     <MenuItemOption key={i} iconSpacing="1.5rem" value={value}>
-                      {value}
+                      {getFilterOptionLabel(value, t)}
                     </MenuItemOption>
                   ))}
                 </MenuOptionGroup>

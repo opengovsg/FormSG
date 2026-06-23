@@ -240,6 +240,8 @@ export interface Fields {
     saveField: string
     disabled: {
       storageModeOnly: string
+      // TODO [MRF-CUTOVER]: Remove after cutover.
+      cutoverLegacyOnly: string
       stripeNotConnectedBefore: string
       stripeNotConnectedSettings: string
       stripeNotConnectedAfter: string
