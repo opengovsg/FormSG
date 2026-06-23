@@ -198,6 +198,7 @@ export const WorkspacePage = (): JSX.Element => {
                     display="inline"
                     href={MRF_CUTOVER_FAQ_LINK}
                     target="_blank"
+                    rel="noopener noreferrer"
                   >
                     {t(
                       'features.workspace.workspacePage.migrationInfobox.learnMore',

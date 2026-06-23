@@ -21,7 +21,7 @@ export const NEW_FEATURES: NewFeature[] = [
     learnMoreLink: GUIDE_MRF_MODE,
     image: {
       animationData: MrfAnimation,
-      alt: 'Multi-respondent forms',
+      alt: 'Workflows',
     },
   },
   {
