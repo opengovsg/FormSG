@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.33.0](https://github.com/opengovsg/formsg/compare/v7.32.0...v7.33.0) (2026-06-23)
+
+
+### Features
+
+* **ci:** improve release process (#9518) ([#9518](https://github.com/opengovsg/formsg/commit/e709a5bdb3b54843c3e5a59544ba12825381fbe2))
+
+
+### Bug Fixes
+
+* **ci:** add deploy key and fix dependencies (#9661) ([#9661](https://github.com/opengovsg/formsg/commit/37c6633a2307ea97b0e68088c1e15f3b297e3940))
+* **ci:** persist deploy key for tagging and version bump commits (#9662) ([#9662](https://github.com/opengovsg/formsg/commit/7d54dae81fc7441f703cf2c4276847b22f555613))
+
+
+### Builds
+
+* merge release v7.32.0 back to develop (#9660) ([#9660](https://github.com/opengovsg/formsg/commit/ede60f44342cc684b2abe91bbae9660192bbb264))
+
 ## [7.32.0](https://github.com/opengovsg/formsg/compare/v7.31.0...v7.32.0) (2026-06-23)
 
 
