@@ -84,4 +84,4 @@ coverage/
 # Claude Code / Playwright MCP artifacts
 # =======================================
 .github/skills/
-.playwright-mcp/ 
+.playwright-mcp/ .explore-ui/
