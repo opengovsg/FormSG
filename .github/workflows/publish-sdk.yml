@@ -2,16 +2,13 @@ name: Publish SDK
 
 # Release job for @opengovsg/formsg-sdk, published from packages/sdk.
 #
-# Uses npm's OIDC "trusted publisher" flow (no NPM_TOKEN secret). Triggered
-# by pushing a `sdk-v<version>` tag, which is cut separately from the app
-# release: bump packages/sdk/package.json via .external.versionrc.js, then
-# push the matching tag, e.g.
-#
-#   pnpm exec commit-and-tag-version --config .external.versionrc.js
-#   git push origin HEAD:develop && git push origin sdk-v<version>
-#
-# By the time this workflow runs the tag already exists, so all that is left
-# is to build, publish to npm via OIDC, and create the GitHub release.
+# Uses npm's OIDC "trusted publisher" flow (no NPM_TOKEN secret). Called as a
+# job by the release workflow (.github/workflows/release.yml) once it has bumped
+# packages/sdk/package.json via .external.versionrc.js and pushed the
+# sdk-v<version> tag. It is not tag-triggered: the release workflow pushes with
+# GITHUB_TOKEN, which does not start tag-triggered workflows. The caller passes
+# the tag as an input; this workflow checks it out, builds, publishes to npm via
+# OIDC, and creates the GitHub release against it.
 #
 # The version check in the `Resolve SDK version` step makes this job a no-op
 # if the version is already on npm — the subsequent steps are skipped.
@@ -22,9 +19,12 @@ env:
   SDK_PACKAGE: '@opengovsg/formsg-sdk'
 
 on:
-  push:
-    tags:
-      - 'sdk-v*'
+  workflow_call:
+    inputs:
+      tag:
+        description: 'SDK release tag to publish (e.g. sdk-v1.2.3)'
+        required: true
+        type: string
 
 jobs:
   release:
@@ -36,11 +36,14 @@ jobs:
     defaults:
       run:
         shell: bash
+    # This environment is the npm trusted-publisher scope (see release.yml): npm
+    # matches the OIDC environment claim, so only this job may publish to npm.
     environment: 'publish-sdk'
     steps:
       - name: Checkout
         uses: actions/checkout@v4.3.1
         with:
+          ref: ${{ inputs.tag }}
           fetch-depth: 0
 
       - name: Install pnpm

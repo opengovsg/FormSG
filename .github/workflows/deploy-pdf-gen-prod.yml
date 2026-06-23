@@ -1,17 +1,16 @@
 name: Deploy PDF Generator Lambda to production
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   id-token: write
   contents: read
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version tag to deploy (e.g. v7.4.5)'
+        required: true
+        type: string
 
 jobs:
   deploy-pdf-gen-lambda:
@@ -19,7 +18,7 @@ jobs:
     uses: ./.github/workflows/deploy-pdf-gen-lambda.yml
     with:
       gha-environment: 'production'
-      checkoutBranch: ${{ github.ref_name }}
+      checkoutBranch: ${{ inputs.version }}
       environment: 'production'
     secrets:
       cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}
