@@ -149,6 +149,7 @@ SITE_BANNER_CONTENT=hello:This is an invalid banner type, and the full text will
 | `GUARDDUTY_CLEAN_S3_BUCKET`      | Name of S3 bucket for clean files.                                                                                                  |
 | `GUARDDUTY_LAMBDA_FUNCTION_NAME` | Name of AWS Lambda function for GuardDuty malware scanning.                                                                         |
 | `ATTACHMENT_S3_BUCKET`           | Name of S3 bucket for attachment uploads on Storage Mode.                                                                           |
+| `SUBMISSION_HISTORY_S3_BUCKET`   | Name of S3 bucket for multirespondent webhook submission history snapshots.                                                         |
 | `CUSTOM_CLOUDWATCH_LOG_GROUP`    | Name of CloudWatch log group to send custom logs. Use this if you want some logs to have custom settings, e.g. shorter expiry time. |
 
 [**FormSG JavaScript SDK**](https://www.npmjs.com/package/@opengovsg/formsg-sdk)

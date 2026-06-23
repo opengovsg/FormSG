@@ -122,6 +122,12 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'ATTACHMENT_S3_BUCKET',
     },
+    submissionHistoryS3Bucket: {
+      doc: 'S3 Bucket to store multirespondent submission history snapshots',
+      format: String,
+      default: null,
+      env: 'SUBMISSION_HISTORY_S3_BUCKET',
+    },
     paymentProofS3Bucket: {
       doc: 'S3 Bucket to upload payment proof to',
       format: String,
@@ -586,6 +592,12 @@ export const loadS3BucketUrlSchema = ({
       doc: 'Url of attachment S3 bucket derived from S3 endpoint and bucket name',
       format: (val) =>
         validateS3BucketUrl(val, { isDev, hasTrailingSlash: true, region }),
+      default: null,
+    },
+    submissionHistoryS3BucketUrl: {
+      doc: 'Url of submission history S3 bucket.',
+      format: (val) =>
+        validateS3BucketUrl(val, { isDev, hasTrailingSlash: false, region }),
       default: null,
     },
     logoBucketUrl: {

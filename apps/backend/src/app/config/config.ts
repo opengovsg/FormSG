@@ -82,6 +82,7 @@ const s3BucketUrlVars = convict(s3BucketUrlSchema)
     staticAssetsBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.staticAssetsS3Bucket}`,
     // NOTE THE TRAILING / AT THE END OF THIS URL! This is only for attachments!
     attachmentBucketUrl: `${awsEndpoint}/${basicVars.awsConfig.attachmentS3Bucket}/`,
+    submissionHistoryS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.submissionHistoryS3Bucket}`,
     paymentProofS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.paymentProofS3Bucket}`,
     guarddutyQuarantineS3BucketUrl: `${awsEndpoint}/${basicVars.awsConfig.guarddutyQuarantineS3Bucket}`,
   })

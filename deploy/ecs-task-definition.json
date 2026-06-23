@@ -323,6 +323,10 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ATTACHMENT_S3_BUCKET"
         },
         {
+          "name": "SUBMISSION_HISTORY_S3_BUCKET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SUBMISSION_HISTORY_S3_BUCKET"
+        },
+        {
           "name": "FORMSG_SDK_MODE",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/FORMSG_SDK_MODE"
         },

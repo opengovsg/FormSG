@@ -28,9 +28,13 @@ awslocal s3 mb s3://$LOGO_S3_BUCKET
 awslocal s3 mb s3://$ATTACHMENT_S3_BUCKET
 awslocal s3 mb s3://$STATIC_ASSETS_S3_BUCKET
 
+# Bucket for MRF submission history snapshots
+# Set to versioning enabled
+awslocal s3 mb s3://$SUBMISSION_HISTORY_S3_BUCKET
+awslocal s3api put-bucket-versioning --bucket $SUBMISSION_HISTORY_S3_BUCKET --versioning-configuration Status=Enabled
+
 # Buckets for virus scanner
 # Set to versioning enabled
-
 awslocal s3 mb s3://$GUARDDUTY_QUARANTINE_S3_BUCKET 
 awslocal s3api put-bucket-versioning --bucket $GUARDDUTY_QUARANTINE_S3_BUCKET   --versioning-configuration Status=Enabled
 awslocal s3 mb s3://$GUARDDUTY_CLEAN_S3_BUCKET 
