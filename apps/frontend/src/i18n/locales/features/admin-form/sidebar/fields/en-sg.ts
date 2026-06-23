@@ -93,7 +93,7 @@ export const enSG: Fields = {
     restrictEmailDomains: {
       title: 'Restrict email domains',
       inputLabel: 'Domains allowed',
-      placeholder: '@data.gov.sg\n@agency.gov.sg',
+      placeholder: '@*.gov.sg\n@open.gov.sg\n@agency.gov.sg',
     },
     emailConfirmation: {
       title: 'Email confirmation',
