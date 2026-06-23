@@ -11,10 +11,13 @@ import {
   Grid,
   GridItem,
   Stack,
+  Text,
   useDisclosure,
 } from '@chakra-ui/react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 
+import { featureFlags, MRF_CUTOVER_FAQ_LINK } from 'formsg-shared/constants'
+import { FormResponseMode, FormStatus } from 'formsg-shared/types'
 import { Workspace } from 'formsg-shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
@@ -22,6 +25,8 @@ import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
+import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 
 import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
@@ -46,9 +51,27 @@ export const WorkspacePage = (): JSX.Element => {
   const mobileDrawer = useDisclosure()
   const isMobile = useIsMobile()
 
+  // TODO [MRF-CUTOVER]: Remove this infobox (and MRF_CUTOVER_FAQ_LINK) once the
+  // cutover is complete and the flag is retired.
+  const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
+
   const { user } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
   const { data: workspaces, isLoading: isWorkspaceLoading } = useWorkspace()
+
+  // TODO [MRF-CUTOVER]: Remove alongside the infobox once the flag is retired.
+  // Only surface the migration infobox to admins who actually have a legacy
+  // (Encrypt) form that will be migrated; archived forms don't count.
+  const hasLegacyForms = useMemo(
+    () =>
+      !!dashboardForms?.some(
+        (form) =>
+          form.responseMode === FormResponseMode.Encrypt &&
+          (form.status === FormStatus.Public ||
+            form.status === FormStatus.Private),
+      ),
+    [dashboardForms],
+  )
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
@@ -165,6 +188,22 @@ export const WorkspacePage = (): JSX.Element => {
             defaultWorkspace={DEFAULT_WORKSPACE}
             setCurrentWorkspace={setCurrWorkspaceId}
           >
+            {isMrfCutoverEnabled && hasLegacyForms && (
+              <InlineMessage>
+                <Text>
+                  We&apos;re streamlining form set-up and bringing workflows to
+                  all. Legacy forms will be migrated automatically and no action
+                  is required from you.{' '}
+                  <Link
+                    display="inline"
+                    href={MRF_CUTOVER_FAQ_LINK}
+                    target="_blank"
+                  >
+                    Learn more.
+                  </Link>
+                </Text>
+              </InlineMessage>
+            )}
             <WorkspaceContent />
           </WorkspaceProvider>
         </GridItem>
