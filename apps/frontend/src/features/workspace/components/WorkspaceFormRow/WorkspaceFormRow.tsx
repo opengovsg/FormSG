@@ -12,6 +12,8 @@ import {
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Badge from '~components/Badge'
 
+import { useResponseModeBadgeLabel } from '~features/admin-form/common/useResponseModeBadgeLabel'
+
 import { FormStatusLabel } from './FormStatusLabel'
 import { RowActions } from './RowActions'
 
@@ -30,6 +32,9 @@ export const WorkspaceFormRow = ({
   const prettyLastModified = useMemo(() => {
     return dayjs(formMeta.lastModified).calendar(null, relativeDateFormat)
   }, [formMeta.lastModified, relativeDateFormat])
+  const responseModeBadgeLabel = useResponseModeBadgeLabel(
+    formMeta.responseMode,
+  )
 
   return (
     <Box pos="relative">
@@ -86,14 +91,11 @@ export const WorkspaceFormRow = ({
           </Text>
         </Flex>
         <Box gridArea="formType" alignSelf="center">
-          <Badge bgColor="primary.100" color="secondary.500">
-            {t(
-              `features.adminForm.meta.responseModeText.${formMeta.responseMode}`,
-              {
-                prettyLastModified,
-              },
-            )}
-          </Badge>
+          {responseModeBadgeLabel && (
+            <Badge bgColor="primary.100" color="secondary.500">
+              {responseModeBadgeLabel}
+            </Badge>
+          )}
         </Box>
         <Box gridArea="status" alignSelf="center">
           <FormStatusLabel status={formMeta.status} />
