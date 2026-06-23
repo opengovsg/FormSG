@@ -195,9 +195,9 @@ export const ActiveEmailCard = ({
   }
 
   const GUIDED_HINTS: Record<number, string> = {
-    1: 'This notifies the person who started the form. Pick the email field they filled in so we know where to send it.',
-    2: 'Notify people from other steps when the workflow is done. Pick which steps should get a notification.',
-    3: 'Add email addresses for anyone else outside the workflow, like your admin or supervisor.',
+    1: 'Add email addresses for anyone outside the workflow, like your admin or supervisor.',
+    2: 'Pick an email field from your form to notify the person who started it.',
+    3: 'Notify people from other steps when the workflow is done.',
   }
 
   const handleGuidedBack = () => {
@@ -219,67 +219,100 @@ export const ActiveEmailCard = ({
       py="2rem"
       spacing="1.5rem"
       borderRadius="8px"
-      bg="white"
-      border="1px solid"
+      bg="primary.100"
+      border="2px solid"
       borderColor="primary.500"
-      boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
       transitionProperty="common"
       transitionDuration="normal"
     >
-      {/* Header with toggle */}
-      <Stack spacing="0.25rem" px={{ base: '1.5rem', md: '2rem' }}>
-        <Flex justifyContent="space-between" alignItems="center">
-          <EmailLabel />
-          <Flex alignItems="center" gap="0.5rem">
-            <Text textStyle="caption-1" color="secondary.400">
-              Guided mode
-            </Text>
-            <Toggle.Switch
-              isChecked={guidedEdit}
-              onChange={handleToggleGuide}
-              aria-label="Guided mode"
-            />
-          </Flex>
-        </Flex>
-      </Stack>
+      {/* Header */}
+      <Box px={{ base: '1.5rem', md: '2rem' }}>
+        <EmailLabel />
+      </Box>
 
       <Divider />
 
       <Stack spacing="1.5rem" px={{ base: '1.5rem', md: '2rem' }}>
-        {/* Section 1: Step 1 respondent notification */}
-        <Box>
+        {/* Section 1: Any email address you choose (tag input) */}
+        <FormControl
+          isInvalid={!isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME])}
+        >
           <Text textStyle="subhead-2" mb="0.75rem" color="secondary.700">
             {t(
-              'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.label',
+              'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.label',
             )}{' '}
             <Text as="span" color="secondary.400" fontWeight="normal">
               (optional)
             </Text>
           </Text>
-          <Skeleton isLoaded={!isLoading}>
-            <Controller
-              control={control}
-              name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
-              render={({ field: { value, onBlur, ...rest } }) => (
-                <SingleSelect
-                  isDisabled={isLoading}
-                  placeholder={t(
-                    'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.placeholder',
-                  )}
-                  items={emailFieldItems}
-                  onBlur={handleSubmit(onSubmit)}
-                  isClearable
-                  value={value}
-                  {...rest}
-                />
+          <Controller<FormData>
+            name={OTHER_PARTIES_EMAIL_INPUT_NAME}
+            control={control}
+            rules={
+              optionalAdminEmailValidationRules as RegisterOptions<FormData>
+            }
+            render={({ field }) => (
+              <TagInput
+                placeholder={otherPartiesEmailInputPlaceholder}
+                {...field}
+                value={field.value as string[]}
+                onBlur={handleOtherPartiesEmailInputBlur}
+                tagValidation={isEmail}
+              />
+            )}
+          />
+          {isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME]) ? (
+            <FormLabel.Description color="secondary.400" mt="0.5rem">
+              {t(
+                'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
               )}
-            />
-          </Skeleton>
-        </Box>
+            </FormLabel.Description>
+          ) : (
+            <FormErrorMessage>
+              {get(errors, `${OTHER_PARTIES_EMAIL_INPUT_NAME}.message`)}
+            </FormErrorMessage>
+          )}
+        </FormControl>
         {renderGuidedHint(1)}
 
-        {/* Section 2: Steps to notify */}
+        {/* Section 2: An email address collected from an email field (dropdown) */}
         {isSectionVisible(2) && (
+          <>
+            <Box>
+              <Text textStyle="subhead-2" mb="0.75rem" color="secondary.700">
+                {t(
+                  'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.label',
+                )}{' '}
+                <Text as="span" color="secondary.400" fontWeight="normal">
+                  (optional)
+                </Text>
+              </Text>
+              <Skeleton isLoaded={!isLoading}>
+                <Controller
+                  control={control}
+                  name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
+                  render={({ field: { value, onBlur, ...rest } }) => (
+                    <SingleSelect
+                      isDisabled={isLoading}
+                      placeholder={t(
+                        'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.placeholder',
+                      )}
+                      items={emailFieldItems}
+                      onBlur={handleSubmit(onSubmit)}
+                      isClearable
+                      value={value}
+                      {...rest}
+                    />
+                  )}
+                />
+              </Skeleton>
+            </Box>
+            {renderGuidedHint(2)}
+          </>
+        )}
+
+        {/* Section 3: People who are filling up a workflow step (multi-select) */}
+        {isSectionVisible(3) && (
           <>
             <Box>
               <Text textStyle="subhead-2" mb="0.75rem" color="secondary.700">
@@ -322,52 +355,6 @@ export const ActiveEmailCard = ({
                 />
               </Skeleton>
             </Box>
-            {renderGuidedHint(2)}
-          </>
-        )}
-
-        {/* Section 3: Other parties */}
-        {isSectionVisible(3) && (
-          <>
-            <FormControl
-              isInvalid={!isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME])}
-            >
-              <Text textStyle="subhead-2" mb="0.75rem" color="secondary.700">
-                {t(
-                  'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.label',
-                )}{' '}
-                <Text as="span" color="secondary.400" fontWeight="normal">
-                  (optional)
-                </Text>
-              </Text>
-              <Controller<FormData>
-                name={OTHER_PARTIES_EMAIL_INPUT_NAME}
-                control={control}
-                rules={
-                  optionalAdminEmailValidationRules as RegisterOptions<FormData>
-                }
-                render={({ field }) => (
-                  <TagInput
-                    placeholder={otherPartiesEmailInputPlaceholder}
-                    {...field}
-                    value={field.value as string[]}
-                    onBlur={handleOtherPartiesEmailInputBlur}
-                    tagValidation={isEmail}
-                  />
-                )}
-              />
-              {isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME]) ? (
-                <FormLabel.Description color="secondary.400" mt="0.5rem">
-                  {t(
-                    'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
-                  )}
-                </FormLabel.Description>
-              ) : (
-                <FormErrorMessage>
-                  {get(errors, `${OTHER_PARTIES_EMAIL_INPUT_NAME}.message`)}
-                </FormErrorMessage>
-              )}
-            </FormControl>
             {renderGuidedHint(3)}
           </>
         )}

@@ -5,7 +5,6 @@ import { FormControl, Stack, Text } from '@chakra-ui/react'
 import { UserDto } from 'formsg-shared/types'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import InlineMessage from '~components/InlineMessage'
 import Radio from '~components/Radio'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -61,10 +60,10 @@ export const RespondentBlock = ({
           <Text textStyle="subhead-2">Who fills in this step</Text>
           <Text>Anyone with the form link can respond.</Text>
           {showGuidedHint && (
-            <InlineMessage variant="info">
+            <Text textStyle="body-2" color="secondary.400">
               Anyone with your form link can fill in Step 1. In later steps,
-              you'll choose who to send the form to.
-            </InlineMessage>
+              you&apos;ll choose who to send the form to.
+            </Text>
           )}
         </Stack>
       ) : (

@@ -9,13 +9,15 @@ export const EmailLabel = () => (
     textStyle="subhead-1"
   >
     <Flex
-      py="0.5rem"
-      px="0.75rem"
+      w="2.75rem"
+      h="2.75rem"
       borderWidth="1px"
       borderColor="secondary.300"
       borderRadius="8px"
+      bg="white"
       alignItems="center"
       justifyContent="center"
+      flexShrink={0}
     >
       <Icon as={BiMailSend} boxSize="1.25rem" />
     </Flex>

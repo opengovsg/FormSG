@@ -30,10 +30,14 @@ export const AddAnotherPrompt = ({
       <Stack spacing="1rem">
         <Stack spacing="0.25rem">
           <Text textStyle="subhead-1" color="secondary.500">
-            Nice, Step {stepNumber + 1} is all set
+            {stepNumber === 0
+              ? 'Step 1 is the public-facing step. Anyone with your link starts here.'
+              : `Nice, Step ${stepNumber + 1} is all set`}
           </Text>
           <Text textStyle="body-2" color="secondary.400">
-            Would you like to add another step?
+            {stepNumber === 0
+              ? 'Now add the steps that route to specific people.'
+              : 'Would you like to add another step?'}
           </Text>
         </Stack>
         <Flex justify="flex-end" gap="0.75rem">

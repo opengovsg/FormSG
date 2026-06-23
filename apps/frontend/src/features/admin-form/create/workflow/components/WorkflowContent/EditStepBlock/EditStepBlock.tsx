@@ -6,7 +6,7 @@ import {
   useState,
 } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Divider, Flex, Stack } from '@chakra-ui/react'
+import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 
 import {
   FormWorkflowStep,
@@ -15,7 +15,7 @@ import {
 } from 'formsg-shared/types'
 
 import Button from '~components/Button'
-import InlineMessage from '~components/InlineMessage'
+import Toggle from '~components/Toggle'
 import { UnsavedChangesModal } from '~templates/NavigationPrompt'
 
 import { SaveActionGroup } from '~features/admin-form/create/logic/components/LogicContent/EditLogicBlock/EditCondition'
@@ -45,6 +45,32 @@ export interface EditLogicBlockProps {
   submitButtonLabel: string
   handleOpenDeleteModal?: () => void
   isLoading: boolean
+}
+
+const EditSpotlight = ({
+  isActive,
+  isGuided,
+  children,
+}: {
+  isActive: boolean
+  isGuided: boolean
+  children: React.ReactNode
+}) => {
+  if (!isGuided) return <>{children}</>
+  return (
+    <Box
+      bg={isActive ? 'primary.100' : 'transparent'}
+      borderRadius={isActive ? '8px' : '0'}
+      border={isActive ? '2px solid' : '2px solid transparent'}
+      borderColor={isActive ? 'primary.500' : 'transparent'}
+      opacity={isActive ? 1 : 0.5}
+      transition="opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease"
+      mx={isActive ? '2rem' : '0'}
+      py={isActive ? '2rem' : '0.5rem'}
+    >
+      {children}
+    </Box>
+  )
 }
 
 export const FIELDS_TO_EDIT_NAME = 'edit'
@@ -133,20 +159,34 @@ export const EditStepBlock = ({
         break
       }
       case WorkflowType.Dynamic: {
-        if (!inputs.field) return
-        step = {
-          ...workflowStepBase,
-          workflow_type: WorkflowType.Dynamic,
-          field: inputs.field,
+        if (!inputs.field) {
+          step = {
+            ...workflowStepBase,
+            workflow_type: WorkflowType.Static,
+            emails: [],
+          }
+        } else {
+          step = {
+            ...workflowStepBase,
+            workflow_type: WorkflowType.Dynamic,
+            field: inputs.field,
+          }
         }
         break
       }
       case WorkflowType.Conditional: {
-        if (!inputs.conditional_field) return
-        step = {
-          ...workflowStepBase,
-          workflow_type: WorkflowType.Conditional,
-          conditional_field: inputs.conditional_field,
+        if (!inputs.conditional_field) {
+          step = {
+            ...workflowStepBase,
+            workflow_type: WorkflowType.Static,
+            emails: [],
+          }
+        } else {
+          step = {
+            ...workflowStepBase,
+            workflow_type: WorkflowType.Conditional,
+            conditional_field: inputs.conditional_field,
+          }
         }
         break
       }
@@ -259,28 +299,34 @@ export const EditStepBlock = ({
 
   const isLastGuidedSection = guidedSection >= totalSections
 
-  // Sections 2-3 for Step 2+ use GuidedRespondentBlock/GuidedWhatTheyDoBlock
-  // which have their own internal Back/Continue buttons
-  const guidedSectionHasOwnNav =
-    !isFirstStep && guidedSection >= 2 && guidedSection <= 3
+  // Sprint 25 removed internal nav from GuidedRespondentBlock/GuidedWhatTheyDoBlock
+  // so the footer always renders the Back/Continue buttons
+  const guidedSectionHasOwnNav = false
 
-  // Info box hints for guided edit (re-entry copy, concise and functional)
+  // Hint copy for guided edit (re-entry, concise and functional)
   const GUIDED_HINTS: Record<string, string> = {
-    stepName: "Give this step a name so you know what it's for.",
+    stepName:
+      'Edit the step name to tell steps apart. This name shows up in the status tracker too.',
     respondent: isFirstStep
-      ? "Step 1 is always filled up by whoever opens your form link. In the next steps, you'll choose specific people to send the form to."
-      : 'Choose who fills up this step.',
-    whatTheyDo: 'Set what this person can do: fill fields, approve, or both.',
-    questions: 'Pick which fields this person needs to fill.',
+      ? "Anyone with your form link can fill in Step 1. In later steps, you'll choose who to send the form to."
+      : 'Pick who fills in this step. You can always change this later.',
+    whatTheyDo:
+      'Choose what they do in this step. Most steps just need people to fill in fields.',
+    questions:
+      "Pick the fields they'll fill in. You can always change this later.",
   }
 
   const renderGuidedHint = (key: string, sectionIndex: number) => {
     if (!guidedEdit) return null
     if (sectionIndex !== guidedSection) return null
     return (
-      <Box px={{ base: '1.5rem', md: '2rem' }}>
-        <InlineMessage variant="info">{GUIDED_HINTS[key]}</InlineMessage>
-      </Box>
+      <Text
+        textStyle="body-2"
+        color="secondary.400"
+        px={{ base: '1.5rem', md: '2rem' }}
+      >
+        {GUIDED_HINTS[key]}
+      </Text>
     )
   }
 
@@ -291,52 +337,89 @@ export const EditStepBlock = ({
       py="2rem"
       spacing="1.5rem"
       borderRadius="8px"
-      bg="white"
-      border="1px solid"
-      borderColor="primary.500"
-      boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
+      bg={guidedEdit ? 'white' : 'primary.100'}
+      border={guidedEdit ? '1px solid' : '2px solid'}
+      borderColor={guidedEdit ? 'neutral.300' : 'primary.500'}
       transitionProperty="common"
       transitionDuration="normal"
     >
-      {/* Section 1: Step Name (includes guidance toggle) */}
-      <StepNameBlock
-        formMethods={formMethods}
-        stepNumber={stepNumber}
-        guidedEdit={guidedEdit}
-        onToggleGuide={() => {
-          setGuidedEdit((v) => !v)
-          if (!guidedEdit) {
-            setGuidedSection(1)
-          }
-        }}
-      />
-      {renderGuidedHint('stepName', 1)}
+      {/* Step badge + guided toggle (always full opacity) */}
+      <Flex
+        justifyContent="space-between"
+        alignItems="center"
+        px={{ base: '1.5rem', md: '2rem' }}
+      >
+        <Text
+          display="inline-block"
+          py="0.5rem"
+          px="1rem"
+          borderWidth="1px"
+          borderColor="secondary.300"
+          borderRadius="8px"
+          bg="white"
+          textStyle="subhead-1"
+          opacity={guidedEdit && guidedSection > 1 ? 0.5 : 1}
+          transition="opacity 0.3s ease"
+        >
+          {stepNumber + 1}
+        </Text>
+        <Flex alignItems="center" gap="0.5rem">
+          <Text textStyle="caption-1" color="secondary.400">
+            Guided mode
+          </Text>
+          <Toggle.Switch
+            isChecked={guidedEdit}
+            onChange={() => {
+              setGuidedEdit((v) => !v)
+              if (!guidedEdit) {
+                setGuidedSection(1)
+              }
+            }}
+            aria-label="Guided mode"
+          />
+        </Flex>
+      </Flex>
+
+      {/* Section 1: Step Name fields */}
+      <EditSpotlight
+        isActive={guidedEdit && guidedSection === 1}
+        isGuided={guidedEdit}
+      >
+        <StepNameBlock
+          formMethods={formMethods}
+          stepNumber={stepNumber}
+          hideHeader
+          showGuidedHint={guidedEdit && guidedSection === 1}
+        />
+      </EditSpotlight>
 
       {/* Section 2: Respondent */}
       {isSectionVisible(2) && (
         <>
           <Divider />
-          {guidedEdit && !isFirstStep ? (
-            <GuidedRespondentBlock
-              user={user}
-              stepNumber={stepNumber}
-              formMethods={formMethods}
-              isLoading={_isLoading}
-              onComplete={handleGuidedContinue}
-              onBack={handleGuidedBack}
-              isActive={guidedSection === 2}
-            />
-          ) : (
-            <>
-              <RespondentBlock
-                user={user}
+          <EditSpotlight
+            isActive={guidedEdit && guidedSection === 2}
+            isGuided={guidedEdit}
+          >
+            {guidedEdit && !isFirstStep ? (
+              <GuidedRespondentBlock
                 stepNumber={stepNumber}
                 formMethods={formMethods}
                 isLoading={_isLoading}
+                isActive={guidedSection === 2}
               />
-              {renderGuidedHint('respondent', 2)}
-            </>
-          )}
+            ) : (
+              <>
+                <RespondentBlock
+                  user={user}
+                  stepNumber={stepNumber}
+                  formMethods={formMethods}
+                  isLoading={_isLoading}
+                />
+                {renderGuidedHint('respondent', 2)}
+              </>
+            )}
+          </EditSpotlight>
         </>
       )}
 
@@ -344,20 +427,23 @@ export const EditStepBlock = ({
       {!isFirstStep && isSectionVisible(3) && (
         <>
           <Divider />
-          {guidedEdit ? (
-            <GuidedWhatTheyDoBlock
-              stepNumber={stepNumber}
-              formMethods={formMethods}
-              onComplete={handleGuidedContinue}
-              onBack={handleGuidedBack}
-              isActive={guidedSection === 3}
-            />
-          ) : (
-            <WhatTheyDoBlock
-              formMethods={formMethods}
-              stepNumber={stepNumber}
-            />
-          )}
+          <EditSpotlight
+            isActive={guidedEdit && guidedSection === 3}
+            isGuided={guidedEdit}
+          >
+            {guidedEdit ? (
+              <GuidedWhatTheyDoBlock
+                stepNumber={stepNumber}
+                formMethods={formMethods}
+                isActive={guidedSection === 3}
+              />
+            ) : (
+              <WhatTheyDoBlock
+                formMethods={formMethods}
+                stepNumber={stepNumber}
+              />
+            )}
+          </EditSpotlight>
         </>
       )}
 
@@ -365,12 +451,19 @@ export const EditStepBlock = ({
       {isSectionVisible(isFirstStep ? 3 : 4) && (
         <>
           <Divider />
-          <QuestionsBlock
-            formMethods={formMethods}
-            isLoading={_isLoading}
-            isFirstStep={isFirstStep}
-          />
-          {renderGuidedHint('questions', isFirstStep ? 3 : 4)}
+          <EditSpotlight
+            isActive={guidedEdit && guidedSection === (isFirstStep ? 3 : 4)}
+            isGuided={guidedEdit}
+          >
+            <QuestionsBlock
+              formMethods={formMethods}
+              isLoading={_isLoading}
+              isFirstStep={isFirstStep}
+              showGuidedHint={
+                guidedEdit && guidedSection === (isFirstStep ? 3 : 4)
+              }
+            />
+          </EditSpotlight>
         </>
       )}
 

@@ -1,8 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useRef } from 'react'
-import { Box, Flex, Stack, useDisclosure } from '@chakra-ui/react'
+import { Box, Flex, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import Button from '~components/Button'
-import InlineMessage from '~components/InlineMessage'
 
 import {
   editDataSelector,
@@ -29,7 +28,8 @@ import { GuidedEmailCard } from './GuidedEmailCard'
 import { GuidedStep } from './GuidedStep'
 import { IntroPage } from './IntroPage'
 import { PeekCard } from './PeekCard'
-import { WorkflowSuccessModal } from './WorkflowSuccessModal'
+import { SkipGuidanceModal } from './SkipGuidanceModal'
+import { WelcomePage } from './WelcomePage'
 
 // For steps 3+ (index >= 2), auto-reveal all sections so users see
 // everything at once. They can click "Guide me" to reset to section 1.
@@ -43,6 +43,7 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
   const { formWorkflow } = useAdminFormWorkflow()
 
   const revealNextSection = useGuidedWorkflowStore((s) => s.revealNextSection)
+  const finishWorkflow = useGuidedWorkflowStore((s) => s.finishWorkflow)
   const completeEmailSetup = useGuidedWorkflowStore((s) => s.completeEmailSetup)
   const completeWorkflowPeek = useGuidedWorkflowStore(
     (s) => s.completeWorkflowPeek,
@@ -59,6 +60,29 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
     onClose: onDeleteModalClose,
     onOpen: onDeleteModalOpen,
   } = useDisclosure()
+  const {
+    isOpen: isSkipModalOpen,
+    onClose: onSkipModalClose,
+    onOpen: onSkipModalOpen,
+  } = useDisclosure()
+
+  const handleSkipConfirm = () => {
+    onSkipModalClose()
+    finishWorkflow()
+  }
+
+  // Show skip button in all guided modes except success_modal and normal
+  const showSkipGuidance =
+    mode !== 'intro' &&
+    mode !== 'welcome' &&
+    mode !== 'success_modal' &&
+    mode !== 'normal'
+
+  const skipGuidanceButton = showSkipGuidance ? (
+    <Button variant="clear" size="md" onClick={onSkipModalOpen}>
+      Skip guidance
+    </Button>
+  ) : undefined
 
   // Track the previous stepIndex so we can auto-reveal when entering step 3+.
   const prevStepIndexRef = useRef(currentStepIndex)
@@ -90,6 +114,10 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
     return <IntroPage />
   }
 
+  if (mode === 'welcome') {
+    return <WelcomePage />
+  }
+
   const editingStepNumber = editState?.stepNumber
 
   // Render completed steps from the real workflow data
@@ -116,7 +144,16 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
   if (mode === 'guided_step') {
     return (
       <Stack spacing="0">
-        <WorkflowCard showSubheader showStatusToggle={false} />
+        <SkipGuidanceModal
+          isOpen={isSkipModalOpen}
+          onClose={onSkipModalClose}
+          onConfirm={handleSkipConfirm}
+        />
+        <WorkflowCard
+          title="Guided workflow setup"
+          showStatusToggle={false}
+          headerRight={skipGuidanceButton}
+        />
         <Box mt="2.75rem">
           {editingStepNumber !== undefined && (
             <DeleteStepModal
@@ -139,7 +176,16 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
   if (mode === 'add_another') {
     return (
       <Stack spacing="0">
-        <WorkflowCard showSubheader showStatusToggle={false} />
+        <SkipGuidanceModal
+          isOpen={isSkipModalOpen}
+          onClose={onSkipModalClose}
+          onConfirm={handleSkipConfirm}
+        />
+        <WorkflowCard
+          title="Guided workflow setup"
+          showStatusToggle={false}
+          headerRight={skipGuidanceButton}
+        />
         <Box mt="2.75rem">
           {editingStepNumber !== undefined && (
             <DeleteStepModal
@@ -179,7 +225,16 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
   if (mode === 'email_setup') {
     return (
       <Stack spacing="0">
-        <WorkflowCard showSubheader showStatusToggle={false} />
+        <SkipGuidanceModal
+          isOpen={isSkipModalOpen}
+          onClose={onSkipModalClose}
+          onConfirm={handleSkipConfirm}
+        />
+        <WorkflowCard
+          title="Guided workflow setup"
+          showStatusToggle={false}
+          headerRight={skipGuidanceButton}
+        />
         <Box mt="2.75rem">
           {editingStepNumber !== undefined && (
             <DeleteStepModal
@@ -199,7 +254,16 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
   if (mode === 'workflow_complete') {
     return (
       <Stack spacing="0">
-        <WorkflowCard showSubheader showStatusToggle={false} />
+        <SkipGuidanceModal
+          isOpen={isSkipModalOpen}
+          onClose={onSkipModalClose}
+          onConfirm={handleSkipConfirm}
+        />
+        <WorkflowCard
+          title="Guided workflow setup"
+          showStatusToggle={false}
+          headerRight={skipGuidanceButton}
+        />
         <Box mt="2.75rem">
           {editingStepNumber !== undefined && (
             <DeleteStepModal
@@ -212,7 +276,8 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
           <EndOfWorkflowBlock />
           {!isAnyCardActive && (
             <PeekCard
-              title="You've set up the completion email. Next, a few extra workflow settings."
+              title="You've set up the completion email."
+              subtitle="Next, set up an extra workflow setting."
               onDone={completeWorkflowPeek}
               doneLabel="Continue"
             />
@@ -224,38 +289,34 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
 
   if (mode === 'status_toggle') {
     return (
-      <StatusToggleMode
-        allStepElements={allStepElements}
-        editingStepNumber={editingStepNumber}
-        isDeleteModalOpen={isDeleteModalOpen}
-        onDeleteModalClose={onDeleteModalClose}
-        onDone={completeStatusToggle}
-      />
+      <>
+        <SkipGuidanceModal
+          isOpen={isSkipModalOpen}
+          onClose={onSkipModalClose}
+          onConfirm={handleSkipConfirm}
+        />
+        <StatusToggleMode
+          allStepElements={allStepElements}
+          editingStepNumber={editingStepNumber}
+          isDeleteModalOpen={isDeleteModalOpen}
+          onDeleteModalClose={onDeleteModalClose}
+          onDone={completeStatusToggle}
+          skipGuidanceButton={skipGuidanceButton}
+        />
+      </>
     )
   }
 
   if (mode === 'success_modal') {
     return (
-      <Stack spacing="0">
-        <WorkflowCard />
-        <WorkflowSuccessModal isOpen={true} onDone={completeSuccessModal} />
-        <Box mt="2.75rem">
-          {editingStepNumber !== undefined && (
-            <DeleteStepModal
-              isOpen={isDeleteModalOpen}
-              onClose={onDeleteModalClose}
-              stepNumber={editingStepNumber}
-            />
-          )}
-          {formWorkflow?.length ? (
-            <SortableStepList
-              steps={formWorkflow}
-              onDeleteModalOpen={onDeleteModalOpen}
-            />
-          ) : null}
-          {formWorkflow?.length ? <EndOfWorkflowBlock /> : null}
-        </Box>
-      </Stack>
+      <SuccessCompletionMode
+        formWorkflow={formWorkflow}
+        completeSuccessModal={completeSuccessModal}
+        editingStepNumber={editingStepNumber}
+        isDeleteModalOpen={isDeleteModalOpen}
+        onDeleteModalClose={onDeleteModalClose}
+        onDeleteModalOpen={onDeleteModalOpen}
+      />
     )
   }
 
@@ -290,12 +351,14 @@ const StatusToggleMode = ({
   isDeleteModalOpen,
   onDeleteModalClose,
   onDone,
+  skipGuidanceButton,
 }: {
   allStepElements: React.ReactNode
   editingStepNumber: number | undefined
   isDeleteModalOpen: boolean
   onDeleteModalClose: () => void
   onDone: () => void
+  skipGuidanceButton?: React.ReactNode
 }) => {
   const cardRef = useRef<HTMLDivElement | null>(null)
 
@@ -310,18 +373,19 @@ const StatusToggleMode = ({
     <Stack spacing="0">
       <Box ref={cardRef}>
         <WorkflowCard
-          showSubheader
+          title="Guided workflow setup"
           showStatusToggle
+          headerRight={skipGuidanceButton}
           belowToggle={
-            <Stack spacing="0.75rem">
-              <InlineMessage variant="info">
-                Turn this on to let people who filled in the form check the
-                status of their response.
-              </InlineMessage>
-              <Flex justifyContent="flex-end">
-                <Button onClick={onDone}>Done</Button>
-              </Flex>
-            </Stack>
+            <Text textStyle="body-2" color="secondary.400">
+              Turn this on to let people who filled in the form check the status
+              of their response.
+            </Text>
+          }
+          footer={
+            <Flex justifyContent="flex-end">
+              <Button onClick={onDone}>Done</Button>
+            </Flex>
           }
         />
       </Box>
@@ -335,6 +399,72 @@ const StatusToggleMode = ({
         )}
         {allStepElements}
         <EndOfWorkflowBlock />
+      </Box>
+    </Stack>
+  )
+}
+
+// Separate component so confetti fires once on mount
+const SuccessCompletionMode = ({
+  formWorkflow,
+  completeSuccessModal,
+  editingStepNumber,
+  isDeleteModalOpen,
+  onDeleteModalClose,
+  onDeleteModalOpen,
+}: {
+  formWorkflow: ReturnType<typeof useAdminFormWorkflow>['formWorkflow']
+  completeSuccessModal: () => void
+  editingStepNumber: number | undefined
+  isDeleteModalOpen: boolean
+  onDeleteModalClose: () => void
+  onDeleteModalOpen: (stepNumber?: number) => void
+}) => {
+  return (
+    <Stack spacing="0">
+      <Box position="relative" zIndex={1}>
+        <WorkflowCard />
+      </Box>
+      <Box
+        bg="primary.100"
+        borderTopRadius="0"
+        borderBottomRadius="8px"
+        border="1px solid"
+        borderColor="primary.200"
+        mt="-0.5rem"
+        py="1.5rem"
+        px={{ base: '1.5rem', md: '2rem' }}
+      >
+        <Stack spacing="1rem">
+          <Stack spacing="0.25rem">
+            <Text textStyle="subhead-1" color="secondary.500">
+              You&apos;ve finished the guided workflow tour. Congratulations!
+            </Text>
+            <Text textStyle="body-1" color="secondary.400">
+              Use the Preview button on the top right to check what each step
+              looks like.
+            </Text>
+          </Stack>
+          <Flex justify="flex-end">
+            <Button onClick={completeSuccessModal}>Done</Button>
+          </Flex>
+        </Stack>
+      </Box>
+      <Box mt="2.75rem">
+        {editingStepNumber !== undefined && (
+          <DeleteStepModal
+            isOpen={isDeleteModalOpen}
+            onClose={onDeleteModalClose}
+            stepNumber={editingStepNumber}
+          />
+        )}
+        {formWorkflow?.length ? (
+          <SortableStepList
+            steps={formWorkflow}
+            onDeleteModalOpen={onDeleteModalOpen}
+          />
+        ) : null}
+        {formWorkflow?.length ? <EndOfWorkflowBlock /> : null}
       </Box>
     </Stack>
   )

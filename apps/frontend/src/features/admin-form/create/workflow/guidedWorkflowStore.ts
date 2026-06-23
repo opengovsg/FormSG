@@ -3,6 +3,7 @@ import { devtools, persist } from 'zustand/middleware'
 
 type GuidedMode =
   | 'intro'
+  | 'welcome'
   | 'guided_step'
   | 'add_another'
   | 'email_setup'
@@ -21,6 +22,7 @@ type GuidedWorkflowStore = {
 
   // Actions
   startGuided: () => void
+  startBuilding: () => void
   revealNextSection: () => void
   goBackSection: () => void
   setCurrentSection: (section: number) => void
@@ -66,6 +68,12 @@ export const useGuidedWorkflowStore = create<GuidedWorkflowStore>()(
       (set) => ({
         ...INITIAL_STATE,
         startGuided: () =>
+          set({
+            mode: 'welcome',
+            currentStepIndex: 0,
+            currentSection: 1,
+          }),
+        startBuilding: () =>
           set({
             mode: 'guided_step',
             currentStepIndex: 0,

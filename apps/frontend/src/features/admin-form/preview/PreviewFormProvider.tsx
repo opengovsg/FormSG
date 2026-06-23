@@ -338,11 +338,23 @@ export const PreviewFormProvider = ({
 
   const form = data?.form
   const formFields = form?.form_fields
-  const currentWorkflowStepNumber = 0
+
+  // Compute formWorkflow first (only depends on form)
   const formWorkflow =
     form?.responseMode === FormResponseMode.Multirespondent
       ? form.workflow
       : undefined
+
+  // Read step from URL search params, clamp to valid range
+  const currentWorkflowStepNumber = useMemo(() => {
+    const stepParam = searchParams.get('step')
+    if (!stepParam) return 0
+    const parsed = parseInt(stepParam, 10)
+    if (isNaN(parsed) || parsed < 0) return 0
+    const maxStep = formWorkflow ? formWorkflow.length - 1 : 0
+    return Math.min(parsed, maxStep)
+  }, [searchParams, formWorkflow])
+
   const currentStepNumberWorkflowStep =
     formWorkflow && formWorkflow.length > currentWorkflowStepNumber
       ? formWorkflow[currentWorkflowStepNumber]
@@ -386,6 +398,12 @@ export const PreviewFormProvider = ({
     defaultValues: defaultFormValues,
   })
 
+  // Reset form state when switching workflow steps
+  useEffect(() => {
+    formMethods.reset(defaultFormValues)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentWorkflowStepNumber])
+
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -411,6 +429,13 @@ export const PreviewFormProvider = ({
         fieldPrefillMap,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
+        previewWorkflowStepNumber: formWorkflow
+          ? currentWorkflowStepNumber
+          : undefined,
+        previewWorkflowSteps: formWorkflow?.map((step) => ({
+          _id: step._id,
+          step_name: step.step_name,
+        })),
         ...commonFormValues,
         ...data,
         ...rest,

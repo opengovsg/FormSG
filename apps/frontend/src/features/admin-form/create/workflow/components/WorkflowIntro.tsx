@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Box, Flex, HStack, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -10,17 +10,18 @@ import {
 import { useGuidedWorkflowStore } from '../guidedWorkflowStore'
 
 import {
-  WorkflowIntroAnimation,
-  type WorkflowIntroAnimationHandle,
-} from './WorkflowIntroAnimation'
+  FormToWorkflowIllustration,
+  type FormToWorkflowIllustrationHandle,
+} from './FormToWorkflowIllustration'
 
 export const WorkflowIntro = (): JSX.Element => {
   const startGuided = useGuidedWorkflowStore((state) => state.startGuided)
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
 
-  const animHandle = useRef<WorkflowIntroAnimationHandle>(null)
+  const animHandle = useRef<FormToWorkflowIllustrationHandle>(null)
   const autoTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
   const isHoveringRef = useRef(false)
+  const [isGuidedHover, setIsGuidedHover] = useState(false)
 
   // Auto-play on mount: forward after 1.2s, reverse after 5.2s
   useEffect(() => {
@@ -68,11 +69,17 @@ export const WorkflowIntro = (): JSX.Element => {
           Workflows split your form into steps
         </Text>
         <Text textStyle="body-1" mt="1rem" mb="1.5rem">
-          Route each step to a different person. Each step collects only what
-          that person needs to fill.
+          Send each step to a different person. Each person only fills in their
+          own part.
         </Text>
         <HStack spacing="0.75rem" justify="center">
-          <Button onClick={startGuided}>Start with guided setup</Button>
+          <Button
+            onClick={startGuided}
+            onMouseEnter={() => setIsGuidedHover(true)}
+            onMouseLeave={() => setIsGuidedHover(false)}
+          >
+            Start with guided setup
+          </Button>
           <Button variant="outline" onClick={setToCreating}>
             Set up manually
           </Button>
@@ -87,7 +94,10 @@ export const WorkflowIntro = (): JSX.Element => {
         display="flex"
         justifyContent="center"
       >
-        <WorkflowIntroAnimation handleRef={animHandle} />
+        <FormToWorkflowIllustration
+          handleRef={animHandle}
+          showSpotlight={isGuidedHover}
+        />
       </Box>
     </Flex>
   )

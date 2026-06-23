@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Box, Divider, Flex, Stack } from '@chakra-ui/react'
+import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 
 import {
   FormWorkflowStep,
@@ -9,7 +9,7 @@ import {
 } from 'formsg-shared/types'
 
 import Button from '~components/Button'
-import InlineMessage from '~components/InlineMessage'
+import Toggle from '~components/Toggle'
 
 import { useUser } from '~features/user/queries'
 
@@ -33,9 +33,7 @@ interface GuidedStepProps {
 
 // Sections for step 1: StepName, Respondent, Questions
 // Sections for step 2+: StepName, Respondent, WhatTheyDo, Questions
-// currentSection is 1-indexed. Each guided block (Respondent, WhatTheyDo) manages its own sub-steps internally.
-// For step 1: section 1 = StepName, section 2 = Respondent, section 3 = Questions
-// For step 2+: section 1 = StepName, section 2 = Respondent, section 3 = WhatTheyDo, section 4 = Questions
+// currentSection is 1-indexed.
 
 const FIRST_STEP_TOTAL_SECTIONS = 3
 const LATER_STEP_TOTAL_SECTIONS = 4
@@ -58,6 +56,30 @@ const FadeIn = ({ children }: { children: React.ReactNode }) => {
     </Box>
   )
 }
+
+const SpotlightWrapper = ({
+  isActive,
+  isFlowComplete,
+  children,
+}: {
+  isActive: boolean
+  isFlowComplete: boolean
+  children: React.ReactNode
+}) => (
+  <Box
+    bg={isActive && !isFlowComplete ? 'primary.100' : 'transparent'}
+    borderRadius={isActive && !isFlowComplete ? '8px' : '0'}
+    border={isActive && !isFlowComplete ? '2px solid' : '2px solid transparent'}
+    borderColor={isActive && !isFlowComplete ? 'primary.500' : 'transparent'}
+    opacity={isActive || isFlowComplete ? 1 : 0.5}
+    transition="opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease"
+    mx={isActive && !isFlowComplete ? '2rem' : '0'}
+    px="0"
+    py={isActive && !isFlowComplete ? '2rem' : '0.5rem'}
+  >
+    {children}
+  </Box>
+)
 
 export const GuidedStep = ({
   stepIndex,
@@ -132,7 +154,6 @@ export const GuidedStep = ({
   }
 
   // stepIndex is 0-indexed, matching the existing stepNumber convention
-  // (isFirstStepByStepNumber checks stepNumber === 0)
   const stepNumber = stepIndex
 
   const handleDone = formMethods.handleSubmit(
@@ -172,20 +193,35 @@ export const GuidedStep = ({
             break
           }
           case WorkflowType.Dynamic: {
-            if (!values.field) return
-            step = {
-              ...workflowStepBase,
-              workflow_type: WorkflowType.Dynamic,
-              field: values.field,
+            if (!values.field) {
+              // No field selected yet, save as static so the backend accepts it
+              step = {
+                ...workflowStepBase,
+                workflow_type: WorkflowType.Static,
+                emails: [],
+              }
+            } else {
+              step = {
+                ...workflowStepBase,
+                workflow_type: WorkflowType.Dynamic,
+                field: values.field,
+              }
             }
             break
           }
           case WorkflowType.Conditional: {
-            if (!values.conditional_field) return
-            step = {
-              ...workflowStepBase,
-              workflow_type: WorkflowType.Conditional,
-              conditional_field: values.conditional_field,
+            if (!values.conditional_field) {
+              step = {
+                ...workflowStepBase,
+                workflow_type: WorkflowType.Static,
+                emails: [],
+              }
+            } else {
+              step = {
+                ...workflowStepBase,
+                workflow_type: WorkflowType.Conditional,
+                conditional_field: values.conditional_field,
+              }
             }
             break
           }
@@ -261,29 +297,32 @@ export const GuidedStep = ({
     sections.push(
       <Box key="step-name">
         {showSkipGuidedHint && (
-          <Box px={{ base: '1.5rem', md: '2rem' }} pb="0.5rem">
-            <InlineMessage variant="info">
-              You already know what to do. Need help later? Use the guide toggle
-              in the top right when editing any step.
-            </InlineMessage>
-          </Box>
+          <Text
+            textStyle="body-2"
+            color="secondary.400"
+            pb="1rem"
+            px={{ base: '1.5rem', md: '2rem' }}
+          >
+            Now try it yourself! Use the guide toggle in the top right if you
+            need help.
+          </Text>
         )}
-        <StepNameBlock
-          formMethods={formMethods}
-          stepNumber={stepNumber}
-          showGuidedHint={currentSection === 1 && !showSkipGuidedHint}
-          guidedHintText={
-            isFirstStep
-              ? undefined
-              : `Name this step, or keep it as 'Step ${stepNumber + 1}'.`
-          }
-          {...(isLaterStep
-            ? {
-                guidedEdit,
-                onToggleGuide: handleToggleGuide,
-              }
-            : {})}
-        />
+        <SpotlightWrapper
+          isActive={currentSection === 1}
+          isFlowComplete={showSkipGuidedHint}
+        >
+          <StepNameBlock
+            formMethods={formMethods}
+            stepNumber={stepNumber}
+            showGuidedHint={currentSection === 1 && !showSkipGuidedHint}
+            guidedHintText={
+              isFirstStep
+                ? undefined
+                : `Name this step, or keep it as 'Step ${stepNumber + 1}'.`
+            }
+            hideHeader
+          />
+        </SpotlightWrapper>
         {renderContinueButton(1)}
       </Box>,
     )
@@ -295,13 +334,18 @@ export const GuidedStep = ({
       sections.push(<Divider key="divider-1" />)
       sections.push(
         <FadeIn key="respondent">
-          <RespondentBlock
-            user={user}
-            stepNumber={stepNumber}
-            formMethods={formMethods}
-            isLoading={isUserLoading}
-            showGuidedHint={currentSection === 2}
-          />
+          <SpotlightWrapper
+            isActive={currentSection === 2}
+            isFlowComplete={showSkipGuidedHint}
+          >
+            <RespondentBlock
+              user={user}
+              stepNumber={stepNumber}
+              formMethods={formMethods}
+              isLoading={isUserLoading}
+              showGuidedHint={currentSection === 2}
+            />
+          </SpotlightWrapper>
           {renderContinueButton(2)}
         </FadeIn>,
       )
@@ -312,49 +356,61 @@ export const GuidedStep = ({
       sections.push(<Divider key="divider-2" />)
       sections.push(
         <FadeIn key="questions">
-          <QuestionsBlock
-            formMethods={formMethods}
-            isLoading={isUserLoading}
-            isFirstStep={isFirstStep}
-            showGuidedHint
-          />
+          <SpotlightWrapper
+            isActive={currentSection === 3}
+            isFlowComplete={showSkipGuidedHint}
+          >
+            <QuestionsBlock
+              formMethods={formMethods}
+              isLoading={isUserLoading}
+              isFirstStep={isFirstStep}
+              showGuidedHint
+            />
+          </SpotlightWrapper>
           {renderContinueButton(3)}
         </FadeIn>,
       )
     }
   } else {
-    // Step 2+: StepName -> Respondent (guided sub-steps) -> Approvals -> Questions
+    // Step 2+: StepName -> Respondent -> WhatTheyDo -> Questions
 
-    // Section 2: GuidedRespondentBlock (handles its own sub-step reveal + buttons)
+    // Section 2: GuidedRespondentBlock (all options shown at once)
     if (currentSection >= 2) {
       sections.push(<Divider key="divider-1" />)
       sections.push(
         <FadeIn key="respondent">
-          <GuidedRespondentBlock
-            user={user}
-            stepNumber={stepNumber}
-            formMethods={formMethods}
-            isLoading={isUserLoading}
-            onComplete={revealNextSection}
-            onBack={goBackSection}
+          <SpotlightWrapper
             isActive={currentSection === 2}
-          />
+            isFlowComplete={showSkipGuidedHint}
+          >
+            <GuidedRespondentBlock
+              stepNumber={stepNumber}
+              formMethods={formMethods}
+              isLoading={isUserLoading}
+              isActive={currentSection === 2}
+            />
+          </SpotlightWrapper>
+          {renderContinueButton(2)}
         </FadeIn>,
       )
     }
 
-    // Section 3: GuidedWhatTheyDoBlock (handles its own sub-step reveal + buttons)
+    // Section 3: GuidedWhatTheyDoBlock (all options shown at once)
     if (currentSection >= 3) {
       sections.push(<Divider key="divider-2" />)
       sections.push(
         <FadeIn key="what-they-do">
-          <GuidedWhatTheyDoBlock
-            stepNumber={stepNumber}
-            formMethods={formMethods}
-            onComplete={revealNextSection}
-            onBack={goBackSection}
+          <SpotlightWrapper
             isActive={currentSection === 3}
-          />
+            isFlowComplete={showSkipGuidedHint}
+          >
+            <GuidedWhatTheyDoBlock
+              stepNumber={stepNumber}
+              formMethods={formMethods}
+              isActive={currentSection === 3}
+            />
+          </SpotlightWrapper>
+          {renderContinueButton(3)}
         </FadeIn>,
       )
     }
@@ -364,12 +420,17 @@ export const GuidedStep = ({
       sections.push(<Divider key="divider-3" />)
       sections.push(
         <FadeIn key="questions">
-          <QuestionsBlock
-            formMethods={formMethods}
-            isLoading={isUserLoading}
-            isFirstStep={isFirstStep}
-            showGuidedHint={!showSkipGuidedHint}
-          />
+          <SpotlightWrapper
+            isActive={currentSection === 4}
+            isFlowComplete={showSkipGuidedHint}
+          >
+            <QuestionsBlock
+              formMethods={formMethods}
+              isLoading={isUserLoading}
+              isFirstStep={isFirstStep}
+              showGuidedHint={!showSkipGuidedHint}
+            />
+          </SpotlightWrapper>
           {renderContinueButton(4)}
         </FadeIn>,
       )
@@ -382,13 +443,45 @@ export const GuidedStep = ({
       py="2rem"
       spacing="1rem"
       borderRadius="8px"
-      bg="white"
-      border="1px solid"
-      borderColor="primary.500"
-      boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
+      bg={showSkipGuidedHint ? 'primary.100' : 'white'}
+      border={showSkipGuidedHint ? '2px solid' : '1px solid'}
+      borderColor={showSkipGuidedHint ? 'primary.500' : 'neutral.300'}
       transitionProperty="common"
       transitionDuration="normal"
     >
+      {/* Step badge + guided toggle (outside spotlight) */}
+      <Flex
+        justifyContent="space-between"
+        alignItems="center"
+        px={{ base: '1.5rem', md: '2rem' }}
+      >
+        <Text
+          display="inline-block"
+          py="0.5rem"
+          px="1rem"
+          borderWidth="1px"
+          borderColor="secondary.300"
+          borderRadius="8px"
+          bg="white"
+          textStyle="subhead-1"
+          opacity={currentSection > 1 && !showSkipGuidedHint ? 0.5 : 1}
+          transition="opacity 0.3s ease"
+        >
+          {stepNumber + 1}
+        </Text>
+        {isLaterStep && (
+          <Flex alignItems="center" gap="0.5rem">
+            <Text textStyle="caption-1" color="secondary.400">
+              Guided mode
+            </Text>
+            <Toggle.Switch
+              isChecked={guidedEdit}
+              onChange={handleToggleGuide}
+              aria-label="Guided mode"
+            />
+          </Flex>
+        )}
+      </Flex>
       {sections}
     </Stack>
   )

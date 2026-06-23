@@ -9,7 +9,6 @@ export interface RespondentOptionProps {
   isLoading: boolean
   formMethods: UseFormReturn<EditStepInputs>
   selectedWorkflowType: WorkflowType
-  isWalkthroughDisabled?: boolean
 }
 
 export interface FieldItem {

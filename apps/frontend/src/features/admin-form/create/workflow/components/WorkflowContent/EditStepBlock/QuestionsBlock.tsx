@@ -1,11 +1,10 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl, Stack, Text } from '@chakra-ui/react'
+import { FormControl, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import InlineMessage from '~components/InlineMessage'
 
 import { useCreatePageSidebar } from '~features/admin-form/create/common'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -73,45 +72,48 @@ export const QuestionsBlock = ({
         <Text textStyle="subhead-2" mb="0.75rem">
           {t('features.adminForm.sidebar.workflow.questions.label')}
         </Text>
-        <Controller
-          control={control}
-          name={FIELDS_TO_EDIT_NAME}
-          render={({ field: { value = [], ...field } }) => (
-            <MultiSelect
-              isDisabled={isLoading}
-              placeholder={t(
-                'features.adminForm.sidebar.workflow.questions.placeholder',
+        {showGuidedHint && !hasFields ? (
+          <>
+            <Text textStyle="body-2" color="secondary.400" mb="0.5rem">
+              Your form has no fields yet. Add some or skip this for now.
+            </Text>
+            <Button
+              variant="outline"
+              size="sm"
+              w="100%"
+              onClick={() => handleBuilderClick(false)}
+            >
+              Add fields
+            </Button>
+          </>
+        ) : (
+          <>
+            <Controller
+              control={control}
+              name={FIELDS_TO_EDIT_NAME}
+              render={({ field: { value = [], ...field } }) => (
+                <MultiSelect
+                  isDisabled={isLoading}
+                  placeholder={t(
+                    'features.adminForm.sidebar.workflow.questions.placeholder',
+                  )}
+                  items={items}
+                  isSelectedItemFullWidth
+                  values={value}
+                  {...field}
+                />
               )}
-              items={items}
-              isSelectedItemFullWidth
-              values={value}
-              {...field}
             />
-          )}
-        />
+            {showGuidedHint && hasFields && (
+              <Text textStyle="body-2" color="secondary.400" mt="0.5rem">
+                Pick the fields they&apos;ll fill in. You can always change this
+                later.
+              </Text>
+            )}
+          </>
+        )}
         <FormErrorMessage>{errors.edit?.message}</FormErrorMessage>
       </FormControl>
-      {showGuidedHint && (
-        <InlineMessage variant="info">
-          {hasFields ? (
-            "Now pick the fields they'll fill in. You can also come back to this later."
-          ) : (
-            <Stack spacing="0.5rem">
-              <Text>
-                Now pick the fields they'll fill in. Looks like you have no
-                fields though. You can add them later or build them now.
-              </Text>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleBuilderClick(false)}
-              >
-                Add fields
-              </Button>
-            </Stack>
-          )}
-        </InlineMessage>
-      )}
     </EditStepBlockContainer>
   )
 }

@@ -14,7 +14,7 @@ export const enSG: Workflow = {
     stepRespondent: 'Person in this step',
     anyone: 'Anyone who has access to your form',
     select: 'Select a person',
-    fieldsToFill: 'Fields to fill',
+    fieldsToFill: 'Fields they will fill in',
     clickToEdit: 'Click to edit',
   },
   dynamicRespondent: {

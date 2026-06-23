@@ -11,7 +11,6 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import InlineMessage from '~components/InlineMessage'
 import Toggle from '~components/Toggle'
 
 import { EditStepInputs } from '../../../types'
@@ -25,6 +24,7 @@ type StepNameProps = {
   guidedHintText?: string
   guidedEdit?: boolean
   onToggleGuide?: () => void
+  hideHeader?: boolean
 }
 
 const STEP_NAME = 'step_name'
@@ -37,6 +37,7 @@ export const StepNameBlock = ({
   guidedHintText,
   guidedEdit,
   onToggleGuide,
+  hideHeader,
 }: StepNameProps): JSX.Element => {
   const { t } = useTranslation()
   const {
@@ -55,40 +56,54 @@ export const StepNameBlock = ({
   return (
     <EditStepBlockContainer>
       <Stack spacing="1.5rem">
-        <Flex justifyContent="space-between" alignItems="center">
-          <Text
-            display="inline-block"
-            py="0.5rem"
-            px="1rem"
-            borderWidth="1px"
-            borderColor="secondary.300"
-            borderRadius="8px"
-            textStyle="subhead-1"
-          >
-            {stepNumber + 1}
-          </Text>
-          {onToggleGuide && (
-            <Flex alignItems="center" gap="0.5rem">
-              <Text textStyle="caption-1" color="secondary.400">
-                Guided mode
-              </Text>
-              <Toggle.Switch
-                isChecked={guidedEdit}
-                onChange={onToggleGuide}
-                aria-label="Guided mode"
-              />
-            </Flex>
-          )}
-        </Flex>
+        {!hideHeader && (
+          <Flex justifyContent="space-between" alignItems="center">
+            <Text
+              display="inline-block"
+              py="0.5rem"
+              px="1rem"
+              borderWidth="1px"
+              borderColor="secondary.300"
+              borderRadius="8px"
+              bg="white"
+              textStyle="subhead-1"
+            >
+              {stepNumber + 1}
+            </Text>
+            {onToggleGuide && (
+              <Flex alignItems="center" gap="0.5rem">
+                <Text textStyle="caption-1" color="secondary.400">
+                  Guided mode
+                </Text>
+                <Toggle.Switch
+                  isChecked={guidedEdit}
+                  onChange={onToggleGuide}
+                  aria-label="Guided mode"
+                />
+              </Flex>
+            )}
+          </Flex>
+        )}
         <Box>
           <FormControl
             id={STEP_NAME}
             isRequired={false}
             isInvalid={!!errors[STEP_NAME]}
           >
-            <Text textStyle="subhead-2" mb="0.75rem">
+            <Text textStyle="subhead-2" mb={showGuidedHint ? '0' : '0.75rem'}>
               {t('features.adminForm.sidebar.workflow.stepName.label')}
             </Text>
+            {showGuidedHint && (
+              <Text
+                textStyle="body-2"
+                color="secondary.400"
+                mt="0.25rem"
+                mb="0.75rem"
+              >
+                {guidedHintText ||
+                  'Edit the step name to tell steps apart. This name shows up in the status tracker too.'}
+              </Text>
+            )}
             <Controller
               control={control}
               name={STEP_NAME}
@@ -122,20 +137,6 @@ export const StepNameBlock = ({
               </FormHelperText>
             ) : null}
           </FormControl>
-          {showGuidedHint && (
-            <InlineMessage variant="info" mt="0.75rem">
-              {guidedHintText || (
-                <>
-                  Let&apos;s start by naming your first step. It makes it easier
-                  to know what this step is for later.
-                  <br />
-                  <br />
-                  You can also stick to &quot;Step 1&quot;. Simplicity works
-                  too!
-                </>
-              )}
-            </InlineMessage>
-          )}
         </Box>
       </Stack>
     </EditStepBlockContainer>

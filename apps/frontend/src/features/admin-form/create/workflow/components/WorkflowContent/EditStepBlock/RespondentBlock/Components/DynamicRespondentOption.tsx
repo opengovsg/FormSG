@@ -1,6 +1,6 @@
 import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Box, FormControl, Stack, Text } from '@chakra-ui/react'
+import { FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { BasicField, WorkflowType } from 'formsg-shared/types'
 
@@ -29,7 +29,6 @@ export const DynamicRespondentOption = ({
   selectedWorkflowType,
   formMethods,
   emailFieldItems,
-  isWalkthroughDisabled,
 }: DynamicRespondentOptionProps) => {
   const { t } = useTranslation()
   const {
@@ -53,13 +52,9 @@ export const DynamicRespondentOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   return (
-    <Box
-      opacity={isWalkthroughDisabled ? 0.6 : 1}
-      pointerEvents={isWalkthroughDisabled ? 'none' : 'auto'}
-      transition="opacity 0.2s ease"
-    >
+    <>
       <Radio
-        isDisabled={isLoading || isWalkthroughDisabled}
+        isDisabled={isLoading}
         isLabelFullWidth
         allowDeselect={false}
         value={WorkflowType.Dynamic}
@@ -71,10 +66,11 @@ export const DynamicRespondentOption = ({
           },
         }}
       >
-        <Text>A previous step chooses someone for this step</Text>
+        <Text>Someone in a previous step chooses who fills in this step</Text>
         {selectedWorkflowType === WorkflowType.Dynamic ? (
           <Text textStyle="body-2" color="secondary.400" pt="0.25rem">
-            Pick an email field from a previous step
+            Pick an email field from a previous step.{' '}
+            {!hasEmailFields && 'No email fields yet.'}
           </Text>
         ) : null}
         {selectedWorkflowType === WorkflowType.Dynamic ? (
@@ -119,12 +115,10 @@ export const DynamicRespondentOption = ({
               />
             ) : (
               <Stack spacing="0.5rem">
-                <Text textStyle="body-2" color="secondary.400">
-                  You don't have any email fields.
-                </Text>
                 <Button
                   variant="outline"
                   size="sm"
+                  w="100%"
                   onClick={handleCreateEmailField}
                 >
                   Create email field
@@ -135,6 +129,6 @@ export const DynamicRespondentOption = ({
           </FormControl>
         ) : null}
       </Radio>
-    </Box>
+    </>
   )
 }

@@ -23,6 +23,7 @@ export const StepLabel = ({ stepNumber, stepName }: StepLabelProps) => {
         borderWidth="1px"
         borderColor="secondary.300"
         borderRadius="8px"
+        bg="white"
       >
         {stepNumber + 1}
       </Text>

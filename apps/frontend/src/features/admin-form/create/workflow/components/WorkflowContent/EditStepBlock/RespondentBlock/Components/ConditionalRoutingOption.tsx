@@ -86,7 +86,6 @@ export const ConditionalRoutingOption = ({
   formMethods,
   selectedWorkflowType,
   conditionalFormFields,
-  isWalkthroughDisabled,
 }: ConditionalRoutingOptionProps) => {
   const { t } = useTranslation()
   const { handleBuilderClick } = useCreatePageSidebar()
@@ -441,133 +440,128 @@ export const ConditionalRoutingOption = ({
         existingCsv={csvFile}
       />
 
-      <Box
-        opacity={isWalkthroughDisabled ? 0.6 : 1}
-        pointerEvents={isWalkthroughDisabled ? 'none' : 'auto'}
-        transition="opacity 0.2s ease"
+      <Radio
+        isDisabled={isLoading}
+        isLabelFullWidth
+        allowDeselect={false}
+        value={WorkflowType.Conditional}
+        {...register('workflow_type', workflowTypeValidation)}
+        px="0.5rem"
+        __css={{
+          _focusWithin: {
+            boxShadow: 'none',
+          },
+        }}
       >
-        <Radio
-          isDisabled={isLoading || isWalkthroughDisabled}
-          isLabelFullWidth
-          allowDeselect={false}
-          value={WorkflowType.Conditional}
-          {...register('workflow_type', workflowTypeValidation)}
-          px="0.5rem"
-          __css={{
-            _focusWithin: {
-              boxShadow: 'none',
-            },
-          }}
-        >
-          <Text>A previous step chooses from a dropdown field you set up</Text>
-          {selectedWorkflowType === WorkflowType.Conditional ? (
-            <Text
-              textStyle="body-2"
-              color="secondary.400"
-              pt="0.25rem"
-              mb="0.25rem"
-            >
-              Pick a dropdown field from a previous step
-            </Text>
-          ) : null}
-          {selectedWorkflowType === WorkflowType.Conditional ? (
-            <FormControl
-              id="conditional_field"
-              isRequired={hasDropdownFields}
-              isInvalid={
-                !!validateOptionsToRecipientsMapErrorMessage ||
-                !!errors.conditional_field
-              }
-            >
-              <Stack spacing="0.625rem">
-                {hasDropdownFields ? (
-                  <>
-                    <Controller
-                      control={control}
-                      name="conditional_field"
-                      rules={{
-                        validate: (selectedValue) => {
-                          if (!selectedValue) return true
-                          return (
-                            isLoading ||
-                            !conditionalFieldItems ||
-                            conditionalFieldItems.some(
-                              ({ value: fieldValue }) =>
-                                fieldValue === selectedValue,
-                            ) ||
-                            t(
-                              'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdown',
-                            )
+        <Text>
+          Someone in a previous step chooses from a dropdown field you set up
+        </Text>
+        {selectedWorkflowType === WorkflowType.Conditional ? (
+          <Text
+            textStyle="body-2"
+            color="secondary.400"
+            pt="0.25rem"
+            mb="0.25rem"
+          >
+            Pick a dropdown field from a previous step.{' '}
+            {!hasDropdownFields && 'No dropdown fields yet.'}
+          </Text>
+        ) : null}
+        {selectedWorkflowType === WorkflowType.Conditional ? (
+          <FormControl
+            id="conditional_field"
+            isRequired={hasDropdownFields}
+            isInvalid={
+              !!validateOptionsToRecipientsMapErrorMessage ||
+              !!errors.conditional_field
+            }
+          >
+            <Stack spacing="0.625rem">
+              {hasDropdownFields ? (
+                <>
+                  <Controller
+                    control={control}
+                    name="conditional_field"
+                    rules={{
+                      validate: (selectedValue) => {
+                        if (!selectedValue) return true
+                        return (
+                          isLoading ||
+                          !conditionalFieldItems ||
+                          conditionalFieldItems.some(
+                            ({ value: fieldValue }) =>
+                              fieldValue === selectedValue,
+                          ) ||
+                          t(
+                            'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdown',
                           )
-                        },
-                      }}
-                      render={({ field: { value = '', ...rest } }) => (
-                        <SingleSelect
-                          isDisabled={isLoading}
-                          isClearable={false}
-                          placeholder={t(
-                            'features.adminForm.sidebar.workflow.dynamicRespondent.select',
-                          )}
-                          items={conditionalFieldItems}
-                          value={value}
-                          {...rest}
-                        />
-                      )}
-                    />
-                    {isSelectedConditionalFieldFound ? (
-                      isOptionsToRecipientsMapAttached ? (
-                        <Attachment
-                          name={'csvFile'}
-                          onChange={() => {}}
-                          value={csvFile}
-                          showDownload
-                          showRemove={false}
-                          showReplace
-                          handleDownloadFileOverride={handleCsvDownload}
-                          handleRemoveFileOverride={() =>
-                            setIsDeleteConfirmModalOpen(true)
-                          }
-                          handleReplaceFileOverride={handleOpenMappingModal}
-                          accept={['.csv']}
-                        />
-                      ) : (
-                        <Button
-                          w="100%"
-                          variant="outline"
-                          leftIcon={<BiPlus fontSize="1.5rem" />}
-                          onClick={handleOpenMappingModal}
-                          isDisabled={!isSelectedConditionalFieldFound}
-                        >
-                          {t(
-                            'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptions',
-                          )}
-                        </Button>
-                      )
-                    ) : null}
-                  </>
-                ) : (
-                  <Stack spacing="0.5rem">
-                    <Text textStyle="body-2" color="secondary.400">
-                      You don't have any dropdown fields.
-                    </Text>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleCreateDropdownField}
-                    >
-                      Create dropdown field
-                    </Button>
-                  </Stack>
-                )}
-              </Stack>
-              <FormErrorMessage>
-                {validateOptionsToRecipientsMapErrorMessage ||
-                  errors.conditional_field?.message}
-              </FormErrorMessage>
-            </FormControl>
-          ) : null}
-        </Radio>
-      </Box>
+                        )
+                      },
+                    }}
+                    render={({ field: { value = '', ...rest } }) => (
+                      <SingleSelect
+                        isDisabled={isLoading}
+                        isClearable={false}
+                        placeholder={t(
+                          'features.adminForm.sidebar.workflow.dynamicRespondent.select',
+                        )}
+                        items={conditionalFieldItems}
+                        value={value}
+                        {...rest}
+                      />
+                    )}
+                  />
+                  {isSelectedConditionalFieldFound ? (
+                    isOptionsToRecipientsMapAttached ? (
+                      <Attachment
+                        name={'csvFile'}
+                        onChange={() => {}}
+                        value={csvFile}
+                        showDownload
+                        showRemove={false}
+                        showReplace
+                        handleDownloadFileOverride={handleCsvDownload}
+                        handleRemoveFileOverride={() =>
+                          setIsDeleteConfirmModalOpen(true)
+                        }
+                        handleReplaceFileOverride={handleOpenMappingModal}
+                        accept={['.csv']}
+                      />
+                    ) : (
+                      <Button
+                        w="100%"
+                        variant="outline"
+                        leftIcon={<BiPlus fontSize="1.5rem" />}
+                        onClick={handleOpenMappingModal}
+                        isDisabled={!isSelectedConditionalFieldFound}
+                      >
+                        {t(
+                          'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptions',
+                        )}
+                      </Button>
+                    )
+                  ) : null}
+                </>
+              ) : (
+                <Stack spacing="0.5rem">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    w="100%"
+                    onClick={handleCreateDropdownField}
+                  >
+                    Create dropdown field
+                  </Button>
+                </Stack>
+              )}
+            </Stack>
+            <FormErrorMessage>
+              {validateOptionsToRecipientsMapErrorMessage ||
+                errors.conditional_field?.message}
+            </FormErrorMessage>
+          </FormControl>
+        ) : null}
+      </Radio>
     </>
   )
 }

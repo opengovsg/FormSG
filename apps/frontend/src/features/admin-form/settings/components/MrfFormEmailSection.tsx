@@ -162,7 +162,60 @@ const MrfEmailNotificationsForm = ({
             'features.adminForm.settings.emailNotifications.section.mrf.selectRecipient',
           )}
         </Text>
+        {/* 1st: Any email address you choose (tag input) */}
         <Box>
+          <FormControl
+            isInvalid={!isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME])}
+            isDisabled={isDisabled}
+          >
+            <FormLabel
+              textColor="secondary.700"
+              mb="0.75rem"
+              tooltipVariant="info"
+              tooltipPlacement="top"
+              tooltipText={t(
+                'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.tooltipText',
+              )}
+              isHighContrast={isHighContrast}
+            >
+              {t(
+                'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.label',
+              )}
+            </FormLabel>
+            <Controller<FormData>
+              name={OTHER_PARTIES_EMAIL_INPUT_NAME}
+              control={control}
+              rules={
+                optionalAdminEmailValidationRules as RegisterOptions<FormData>
+              }
+              render={({ field }) => (
+                <TagInput
+                  placeholder={
+                    isDisabled ? undefined : otherPartiesEmailInputPlaceholder
+                  }
+                  {...field}
+                  value={field.value as string[]}
+                  isDisabled={isDisabled}
+                  onBlur={handleOtherPartiesEmailInputBlur}
+                  tagValidation={isEmail}
+                />
+              )}
+            />
+            {isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME]) ? (
+              <FormLabel.Description color="secondary.400" mt="0.5rem">
+                {t(
+                  'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
+                )}
+              </FormLabel.Description>
+            ) : (
+              <FormErrorMessage>
+                {get(errors, `${OTHER_PARTIES_EMAIL_INPUT_NAME}.message`)}
+              </FormErrorMessage>
+            )}
+          </FormControl>
+        </Box>
+        {/* 2nd: An email address collected from an email field (dropdown) */}
+        <Box my="1.5rem">
           <FormLabel mb="0.75rem" textColor="secondary.700">
             {t(
               'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.label',
@@ -191,6 +244,7 @@ const MrfEmailNotificationsForm = ({
             />
           </Skeleton>
         </Box>
+        {/* 3rd: People who are filling up a workflow step (multi-select) */}
         <Box my="1.5rem">
           <FormLabel mb="0.75rem" textColor="secondary.700">
             {t(
@@ -234,57 +288,6 @@ const MrfEmailNotificationsForm = ({
             />
           </Skeleton>
         </Box>
-      </Box>
-      <Box my="1.5rem">
-        <FormControl
-          isInvalid={!isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME])}
-          isDisabled={isDisabled}
-        >
-          <FormLabel
-            textColor="secondary.700"
-            mb="0.75rem"
-            tooltipVariant="info"
-            tooltipPlacement="top"
-            tooltipText={t(
-              'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.tooltipText',
-            )}
-            isHighContrast={isHighContrast}
-          >
-            {t(
-              'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.label',
-            )}
-          </FormLabel>
-          <Controller<FormData>
-            name={OTHER_PARTIES_EMAIL_INPUT_NAME}
-            control={control}
-            rules={
-              optionalAdminEmailValidationRules as RegisterOptions<FormData>
-            }
-            render={({ field }) => (
-              <TagInput
-                placeholder={
-                  isDisabled ? undefined : otherPartiesEmailInputPlaceholder
-                }
-                {...field}
-                value={field.value as string[]}
-                isDisabled={isDisabled}
-                onBlur={handleOtherPartiesEmailInputBlur}
-                tagValidation={isEmail}
-              />
-            )}
-          />
-          {isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME]) ? (
-            <FormLabel.Description color="secondary.400" mt="0.5rem">
-              {t(
-                'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
-              )}
-            </FormLabel.Description>
-          ) : (
-            <FormErrorMessage>
-              {get(errors, `${OTHER_PARTIES_EMAIL_INPUT_NAME}.message`)}
-            </FormErrorMessage>
-          )}
-        </FormControl>
       </Box>
     </form>
   )

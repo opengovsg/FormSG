@@ -21,10 +21,9 @@ export const InactiveEmailCard = ({
   const { data: settings } = useAdminFormSettings<MultirespondentFormSettings>()
   const { idToFieldMap, formWorkflow } = useAdminFormWorkflow()
 
-  const hasStepOneField = !!settings?.stepOneEmailNotificationFieldId
-  const stepOneField = hasStepOneField
-    ? idToFieldMap[settings.stepOneEmailNotificationFieldId]
-    : undefined
+  const stepOneFieldId = settings?.stepOneEmailNotificationFieldId
+  const hasStepOneField = !!stepOneFieldId
+  const stepOneField = stepOneFieldId ? idToFieldMap[stepOneFieldId] : undefined
 
   const stepsToNotify = settings?.stepsToNotify ?? []
   const emails = settings?.emails ?? []
