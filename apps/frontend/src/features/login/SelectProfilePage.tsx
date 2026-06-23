@@ -134,19 +134,17 @@ export const SelectProfilePage = (): JSX.Element => {
   // User doesn't have any profiles, should reattempt to login
 
   if (profilesResponse.error) {
-    if (
-      (profilesResponse.error as HttpError).code === StatusCodes.UNAUTHORIZED
-    ) {
+    const err = profilesResponse.error
+    const statusCode = err instanceof HttpError ? err.code : undefined
+
+    if (statusCode === StatusCodes.UNAUTHORIZED) {
       // 401 — session invalid, redirect quietly
       window.location.replace(LOGIN_ROUTE)
     } else {
-      // all other errors (5xx, network failure, etc.) — redirect with status
-      // so LoginPage can surface the generic error toast on arrival.
-      // Fall back to 500 for network failures where no status code is present.
-      const statusCode =
-        (profilesResponse.error as HttpError).code ??
-        StatusCodes.INTERNAL_SERVER_ERROR
-      window.location.replace(`${LOGIN_ROUTE}?status=${statusCode}`)
+      // all other HTTP errors — redirect with status so LoginPage can surface the appropriate toast.
+      // For non-HTTP errors (e.g. network failures), use a non-5xx sentinel so we fall back to the generic toast.
+      const statusParam = statusCode ?? 0
+      window.location.replace(`${LOGIN_ROUTE}?status=${statusParam}`)
     }
   }
 
