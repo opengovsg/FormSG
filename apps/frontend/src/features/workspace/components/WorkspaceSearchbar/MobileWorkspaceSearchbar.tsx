@@ -30,7 +30,7 @@ import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 
 import { FilterOption } from '~features/workspace/types'
-import { FILTER_OPTIONS } from '~features/workspace/utils/dashboardFilter'
+import { useDashboardFilterOptions } from '~features/workspace/utils/dashboardFilter'
 
 import {
   useWorkspaceSearchbar,
@@ -88,6 +88,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
     } = useWorkspaceSearchbar(props)
 
     const isMobile = useIsMobile()
+    const filterOptions = useDashboardFilterOptions()
 
     const { isOpen, onClose, onOpen } = useDisclosure()
 
@@ -158,7 +159,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
                     value={internalFilter}
                     onChange={(val) => setInternalFilter(val as FilterOption)}
                   >
-                    {FILTER_OPTIONS.map((value, i) => (
+                    {filterOptions.map((value, i) => (
                       <MenuItemOption
                         key={i}
                         iconSpacing="1.5rem"
@@ -181,7 +182,7 @@ export const MobileWorkspaceSearchbar = forwardRef<
             <DrawerContent borderTopRadius="0.25rem">
               <DrawerBody px={0} py="0.5rem">
                 <ButtonGroup flexDir="column" spacing={0} w="100%">
-                  {FILTER_OPTIONS.map((option, i) => (
+                  {filterOptions.map((option, i) => (
                     <Button
                       key={i}
                       isFullWidth={true}

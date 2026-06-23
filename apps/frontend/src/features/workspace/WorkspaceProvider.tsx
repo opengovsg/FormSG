@@ -86,7 +86,10 @@ export const WorkspaceProvider = ({
           (form) => form.responseMode === FormResponseMode.Email,
         )
         break
+      // TODO [MRF-CUTOVER]: Remove the LegacyForms case after cutover. "Legacy"
+      // forms are Encrypt (Storage mode) forms, matching the "Legacy" badge.
       case FilterOption.StorageForms:
+      case FilterOption.LegacyForms:
         displayedForms = displayedForms.filter(
           (form) => form.responseMode === FormResponseMode.Encrypt,
         )
