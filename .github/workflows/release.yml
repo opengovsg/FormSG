@@ -1,0 +1,227 @@
+name: Release
+
+# Cuts a release from `develop`, replacing the old laptop flow
+# (scripts/release_prep.sh) and orchestrating the whole fan-out in one run.
+#
+# The `release` job bumps versions, regenerates changelogs, commits back to
+# develop and pushes the vX.Y.Z (and, when the SDK changed, sdk-vX.Y.Z) tags
+# using the built-in GITHUB_TOKEN. Everything downstream then runs as a job in
+# THIS run via workflow_call — nothing is tag-triggered — because a GITHUB_TOKEN
+# push deliberately does not start other workflows:
+#
+#   release ─┬─► build (build-release-image.yml)
+#            │      └─► deploy-stg / deploy-prod (deploy-ecs-*.yml)
+#            ├─► deploy-pdf-gen-stg / -prod
+#            ├─► deploy-virus-scanner-stg / -prod
+#            └─► publish-sdk          (only when the SDK was bumped)
+#
+# NOTE: pushing the bump commit to develop with GITHUB_TOKEN requires develop's
+# branch-protection ruleset to grant a bypass to the github-actions[bot] actor.
+
+on:
+  workflow_dispatch:
+
+# Only one release may be in flight at a time, so two dispatches can't race to
+# bump the version off the same base commit.
+concurrency:
+  group: release
+  cancel-in-progress: true
+
+# Minimal by default; each job escalates to exactly what it needs.
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: '22.22'
+  PNPM_VERSION: '10.30.3'
+  CTV_VERSION: '12.6.1' # commit-and-tag-version version used by this workflow
+
+jobs:
+  release:
+    name: Cut release
+    runs-on: ubuntu-latest
+    # `release` GitHub Environment gates who can cut a tag (required reviewers
+    # configured in repo settings).
+    environment: release
+    # Push the version-bump commit + tags and create the GitHub release.
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.version.outputs.tag }}
+      sdk-tag: ${{ steps.sdk.outputs.tag }}
+    steps:
+      # actions/checkout persists the GITHUB_TOKEN for the origin remote, so the
+      # push steps below can write the bump commit and tags back to develop.
+      - name: Checkout develop
+        uses: actions/checkout@v4.3.1
+        with:
+          ref: develop
+          fetch-depth: 0
+
+      - name: Configure git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Bumps the eight app package.json files, regenerates CHANGELOG.md, and
+      # creates the `chore: bump version to vX.Y.Z` commit + matching vX.Y.Z tag
+      # locally. .internal.versionrc.js excludes packages/sdk, so this commit
+      # never touches the SDK. Same config the laptop flow used.
+      - name: Bump app version, regenerate changelog and tag
+        run: pnpm dlx commit-and-tag-version@${{ env.CTV_VERSION }} --config .internal.versionrc.js
+
+      - name: Resolve release version
+        id: version
+        run: echo "tag=v$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+
+      # Cuts the SDK release the way release_prep.sh did: bump
+      # packages/sdk/package.json, update packages/sdk/CHANGELOG.md and create a
+      # `sdk-vX.Y.Z` tag via .external.versionrc.js — but only when commits have
+      # touched packages/sdk since the last sdk-v* tag. commit-and-tag-version
+      # does not exit non-zero when zero commits match its path filter, so the
+      # guard is explicit. The publish-sdk job below consumes this output.
+      - name: Bump SDK version and tag if changed
+        id: sdk
+        run: |
+          last_sdk_tag=$(git tag --sort=-version:refname -l 'sdk-v*' | head -1)
+          if [[ -n "${last_sdk_tag}" ]] && [[ -z "$(git log "${last_sdk_tag}..HEAD" --oneline -- packages/sdk)" ]]; then
+            echo "No new SDK commits since ${last_sdk_tag}; skipping SDK release."
+            echo "tag=" >> "$GITHUB_OUTPUT"
+          else
+            pnpm dlx commit-and-tag-version@${{ env.CTV_VERSION }} --config .external.versionrc.js
+            echo "tag=sdk-v$(jq -r .version packages/sdk/package.json)" >> "$GITHUB_OUTPUT"
+          fi
+
+      # HEAD now carries the app bump commit and, when the SDK was cut, the SDK
+      # bump commit. The downstream jobs check out these tags, so they must be on
+      # the remote before this job finishes.
+      - name: Push commits and tags
+        run: |
+          git push origin HEAD:develop
+          git push origin "refs/tags/${{ steps.version.outputs.tag }}"
+          if [[ -n "${{ steps.sdk.outputs.tag }}" ]]; then
+            git push origin "refs/tags/${{ steps.sdk.outputs.tag }}"
+          fi
+
+      - name: Update GitHub Releases page
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "GitHub release ${{ steps.version.outputs.tag }} already exists; skipping creation."
+          else
+            gh release create "${{ steps.version.outputs.tag }}" \
+              --verify-tag \
+              --generate-notes
+          fi
+
+  # ---- Fan-out: every job below runs in this same run via workflow_call. ----
+  # Each calling job grants exactly the GITHUB_TOKEN scope its chain needs.
+
+  build:
+    name: Build release image
+    needs: release
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/build-release-image.yml
+    with:
+      tag: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  deploy-stg:
+    name: Deploy app to stg
+    needs: [release, build]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/deploy-ecs-stg.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  deploy-prod:
+    name: Deploy app to production
+    needs: [release, build]
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    uses: ./.github/workflows/deploy-ecs-prod.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  deploy-pdf-gen-stg:
+    name: Deploy PDF generator to stg
+    needs: release
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy-pdf-gen-stg.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  deploy-pdf-gen-prod:
+    name: Deploy PDF generator to production
+    needs: release
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy-pdf-gen-prod.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  deploy-virus-scanner-stg:
+    name: Deploy virus scanner to stg
+    needs: release
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy-virus-scanner-guardduty-stg.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  deploy-virus-scanner-prod:
+    name: Deploy virus scanner to production
+    needs: release
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy-virus-scanner-guardduty-prod.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  # SDK publishing is scoped to the `publish-sdk` GitHub Environment, not the
+  # whole release workflow. Configure npm's trusted publisher as:
+  #   repository: opengovsg/FormSG   workflow: release.yml   environment: publish-sdk
+  # npm validates the top-level workflow (release.yml) AND the OIDC environment
+  # claim, so only this job — which runs publish-sdk.yml in environment
+  # `publish-sdk` — can mint an npm publish token; build/deploy jobs cannot.
+  # No `secrets: inherit`: the publish needs only OIDC (id-token) and the
+  # automatic GITHUB_TOKEN, so it never sees the AWS/Datadog repo secrets.
+  publish-sdk:
+    name: Publish SDK to npm
+    needs: release
+    if: ${{ needs.release.outputs.sdk-tag != '' }}
+    permissions:
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/publish-sdk.yml
+    with:
+      tag: ${{ needs.release.outputs.sdk-tag }}

@@ -83,6 +83,11 @@ on:
         description: 'ECR repository to push image to'
         required: true
         type: string
+      ref:
+        description: 'Git ref (tag/branch/SHA) to check out and deploy. Empty falls back to the ref that triggered the run (used by the branch-triggered stg-alt/uat callers).'
+        required: false
+        default: ''
+        type: string
 
     secrets:
       cicd-role:
@@ -136,11 +141,20 @@ jobs:
         # Required for the frontend build env vars
         uses: actions/checkout@v4.3.1
         with:
+          # When called from the release workflow this is the new vX.Y.Z tag; for
+          # the branch-triggered stg-alt/uat callers inputs.ref is empty and we
+          # fall back to the ref that triggered the run.
+          ref: ${{ inputs.ref || github.ref }}
           fetch-depth: 0
 
       - name: Setup secrets for datadog sourcemap deployment
+        # Derive the version label from the checked-out ref/commit, not the run's
+        # GITHUB_REF/GITHUB_SHA which point at the caller (develop) when the
+        # release workflow drives this deploy.
+        env:
+          REF_NAME: ${{ inputs.ref || github.ref_name }}
         run: |
-          echo "APP_VERSION=$(jq -r .version package.json)-$(echo ${GITHUB_REF##*/})-$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+          echo "APP_VERSION=$(jq -r .version package.json)-${REF_NAME}-$(git rev-parse HEAD | cut -c1-8)" >> "$GITHUB_ENV"
 
       - name: Grant runner AWS credentials
         uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1

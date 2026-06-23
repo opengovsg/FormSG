@@ -1,24 +1,24 @@
 name: Deploy FormSG app to production
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 on:
-  push:
-    branches:
-      - release-al2
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version tag to deploy (e.g. v7.4.5)'
+        required: true
+        type: string
 
 jobs:
   deploy:
     name: Deploy
     uses: ./.github/workflows/deploy-ecs.yml
     with:
-      gha-environment: 'release-al2'
+      gha-environment: 'production'
       # Environment configuration
       environment: 'production'
       environment-site-name: 'prod'
-      app-version: ${{ github.sha }}
+      app-version: ${{ inputs.version }}
+      ref: ${{ inputs.version }}
       app-url: 'https://form.gov.sg'
       react-app-form-sg-sdk-mode: 'production'
       # AWS configuration
