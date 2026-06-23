@@ -25,8 +25,15 @@ export const AdminFeedbackContainer = ({ userId }: { userId: string }) => {
   // capture current time on page load to prevent re-renders from update to current time
   const currentTime = useRef(Date.now())
 
-  // DEV: always show admin feedback (eligibility + frequency gates bypassed)
-  const showAdminFeedback = true
+  // check if admin is eligible in current session
+  // and has yet to seen feedback beyond our stipulated frequency
+  const showAdminFeedback =
+    isAdminFeedbackEligible &&
+    // if feedbackTime has not been seen
+    (!lastFeedbackTime ||
+      // or if last feedback time seen is more than frequency (frequency env var must be defined)
+      (!!adminFeedbackDisplayFrequency &&
+        currentTime.current - lastFeedbackTime > adminFeedbackDisplayFrequency))
 
   // sets display of feedback box
   useEffect(() => {

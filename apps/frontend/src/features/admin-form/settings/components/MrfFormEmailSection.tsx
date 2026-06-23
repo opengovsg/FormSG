@@ -255,16 +255,11 @@ const MrfEmailNotificationsForm = ({
         )}
         {workflowStepCount >= 2 && (
           <Box my="1.5rem">
-            <FormLabel mb="0.25rem" textColor="secondary.700">
+            <FormLabel mb="0.75rem" textColor="secondary.700">
               {t(
                 'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
               )}
             </FormLabel>
-            <FormLabel.Description color="secondary.400" mb="0.75rem">
-              {t(
-                'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.description',
-              )}
-            </FormLabel.Description>
             <Skeleton isLoaded={!isLoading}>
               <Controller
                 control={control}

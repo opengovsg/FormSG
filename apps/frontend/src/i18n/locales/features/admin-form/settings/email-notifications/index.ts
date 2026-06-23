@@ -21,7 +21,6 @@ export interface EmailNotifications extends HasTitle {
             overall: string
             each: string
           }
-          description: string
           placeholder: string
         }
         others: {

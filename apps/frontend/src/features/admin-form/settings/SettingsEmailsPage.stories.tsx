@@ -174,6 +174,60 @@ PrivateMultiRespondentForm.parameters = {
   },
 }
 
+// No workflow (0 steps): only the "Any email address you choose" field shows,
+// with the no-workflow description copy.
+export const PrivateMultiRespondentFormNoWorkflow = Template.bind({})
+PrivateMultiRespondentFormNoWorkflow.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          status: FormStatus.Private,
+          emails: ['admin@example.com'],
+          stepsToNotify: [],
+          stepOneEmailNotificationFieldId: undefined,
+          workflow: [],
+        },
+      }),
+    },
+  },
+}
+
+// One workflow step: shows "Any email address you choose" plus the email-field
+// dropdown, but not the "People who are filling up a workflow step" multi-select.
+export const PrivateMultiRespondentFormSingleStep = Template.bind({})
+PrivateMultiRespondentFormSingleStep.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          form_fields: [
+            {
+              _id: 'email_field_id',
+              fieldType: BasicField.Email,
+              title: 'Respondent 1 Email',
+            } as FormFieldDto,
+          ],
+          status: FormStatus.Private,
+          stepOneEmailNotificationFieldId: 'email_field_id',
+          emails: ['admin@example.com'],
+          stepsToNotify: [],
+          workflow: [
+            {
+              _id: 'field_id_1',
+              workflow_type: WorkflowType.Dynamic,
+              field: 'email_field_id',
+              edit: [],
+            },
+          ],
+        },
+      }),
+    },
+  },
+}
+
 export const PrivateMultiRespondentFormWithInvalidStepOneEmailNotificationFieldId =
   Template.bind({})
 PrivateMultiRespondentFormWithInvalidStepOneEmailNotificationFieldId.parameters =
