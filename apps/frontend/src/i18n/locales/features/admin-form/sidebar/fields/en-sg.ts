@@ -44,8 +44,7 @@ export const enSG: Fields = {
     or: 'OR',
     dropFieldHere: 'Drop your field here',
     tapToAddField: 'Tap here to add a field',
-    dragFromBuilderToStart:
-      'Drag a field from the Builder on the left to start',
+    dragFromBuilderToStart: 'Drag a field from the left to start',
   },
   fieldRowContainer: {
     hiddenByLogicTooltip: 'This field may be hidden by your form logic',
