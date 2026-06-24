@@ -38,7 +38,8 @@ export const ensureSubmitterIdIsWhitelisted: Middleware<
       error,
     })
 
-    return sendRouteError(res, mapRouteError(error))
+    sendRouteError(res, mapRouteError(error))
+    return
   }
 
   const isRespondentNotWhitelisted =
@@ -53,7 +54,8 @@ export const ensureSubmitterIdIsWhitelisted: Middleware<
       error: formRespondentNotWhitelistedError,
     })
 
-    return sendRouteError(res, mapRouteError(formRespondentNotWhitelistedError))
+    sendRouteError(res, mapRouteError(formRespondentNotWhitelistedError))
+    return
   }
 
   return next()

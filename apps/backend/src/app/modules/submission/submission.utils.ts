@@ -1,7 +1,7 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import crypto from 'crypto'
-import { Response } from 'express'
+import type { Response } from 'express'
 import {
   AdminEmailPdfFeatureValue,
   featureFlags,
