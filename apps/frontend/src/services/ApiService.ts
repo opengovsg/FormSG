@@ -33,7 +33,21 @@ export class SingleSubmissionValidationError extends HttpError {
 }
 
 const isErrorDto = (data: unknown): data is ErrorDto => {
-  return typeof data === 'object' && data !== null
+  if (typeof data !== 'object' || data === null) return false
+  const maybe = data as Record<string, unknown>
+  if (typeof maybe.message !== 'string') return false
+  if (maybe.messageKey !== undefined && typeof maybe.messageKey !== 'string') {
+    return false
+  }
+  if (
+    maybe.messageParams !== undefined &&
+    (typeof maybe.messageParams !== 'object' ||
+      maybe.messageParams === null ||
+      Array.isArray(maybe.messageParams))
+  ) {
+    return false
+  }
+  return true
 }
 
 const getTranslatedBackendMessage = (data: unknown): string | undefined => {
@@ -45,7 +59,7 @@ const getTranslatedBackendMessage = (data: unknown): string | undefined => {
     return translatedMessage === messageKey ? message : translatedMessage
   }
 
-  return typeof message === 'string' ? message : undefined
+  return message
 }
 
 const parseJsonSafely = (text: string): unknown => {

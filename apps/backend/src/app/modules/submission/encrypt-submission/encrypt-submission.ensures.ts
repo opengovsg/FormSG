@@ -37,9 +37,16 @@ export const ensureFormWithinSubmissionLimits: Middleware<
       error: formSubmissionLimitResult.error,
     })
     const routeError = mapRouteError(formSubmissionLimitResult.error)
-    return sendRouteError(res, routeError, {
-      message: form.inactiveMessage,
-    })
+    sendRouteError(
+      res,
+      {
+        ...routeError,
+        errorMessageKey: undefined,
+        errorMessageParams: undefined,
+      },
+      { message: form.inactiveMessage },
+    )
+    return
   }
   return next()
 }
@@ -70,7 +77,8 @@ export const ensureValidCaptcha: Middleware<
             meta: logMeta,
             error: turnstileResult.error,
           })
-          return sendRouteError(res, mapRouteError(turnstileResult.error))
+          sendRouteError(res, mapRouteError(turnstileResult.error))
+          return
         }
         break
       }
@@ -86,7 +94,8 @@ export const ensureValidCaptcha: Middleware<
             meta: logMeta,
             error: captchaResult.error,
           })
-          return sendRouteError(res, mapRouteError(captchaResult.error))
+          sendRouteError(res, mapRouteError(captchaResult.error))
+          return
         }
         break
       }
@@ -107,7 +116,8 @@ export const ensurePublicForm: Middleware<FormSubmissionPipelineContext> = (
       meta: logMeta,
       error: formPublicResult.error,
     })
-    return sendRouteError(res, mapRouteError(formPublicResult.error))
+    sendRouteError(res, mapRouteError(formPublicResult.error))
+    return
   }
   return next()
 }
