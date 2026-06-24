@@ -37,9 +37,11 @@ export const ensureFormWithinSubmissionLimits: Middleware<
       error: formSubmissionLimitResult.error,
     })
     const routeError = mapRouteError(formSubmissionLimitResult.error)
-    return sendRouteError(res, routeError, {
-      message: form.inactiveMessage,
-    })
+    return sendRouteError(
+      res,
+      { ...routeError, errorMessageKey: undefined, errorMessageParams: undefined },
+      { message: form.inactiveMessage },
+    )
   }
   return next()
 }
