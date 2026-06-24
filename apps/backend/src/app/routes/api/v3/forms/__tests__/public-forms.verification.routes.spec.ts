@@ -193,6 +193,8 @@ describe('public-forms.verification.routes', () => {
       })
       const expectedResponse = {
         message: 'Your session has expired, please refresh and try again.',
+        messageKey:
+          'features.publicForm.backendErrors.verification.sessionExpired',
       }
 
       // Act
@@ -294,6 +296,7 @@ describe('public-forms.verification.routes', () => {
       const expectedResponse = {
         message:
           'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+        messageKey: 'features.publicForm.backendErrors.verification.mailSend',
       }
 
       // Act
@@ -319,6 +322,8 @@ describe('public-forms.verification.routes', () => {
       })
       const expectedResponse = {
         message: 'Your session has expired, please refresh and try again.',
+        messageKey:
+          'features.publicForm.backendErrors.verification.sessionExpired',
       }
 
       // Act
@@ -367,6 +372,7 @@ describe('public-forms.verification.routes', () => {
       const expectedResponse = {
         message:
           'Sorry, we were unable to send the email out at this time. Please ensure that the email entered is correct. If this problem persists, please refresh and try again later.',
+        messageKey: 'features.publicForm.backendErrors.verification.mailSend',
       }
 
       // Act
@@ -447,6 +453,10 @@ describe('public-forms.verification.routes', () => {
       // Arrange
       const expectedResponse = {
         message: `You must wait for ${WAIT_FOR_OTP_SECONDS} seconds between each OTP request.`,
+        messageKey: 'features.publicForm.backendErrors.verification.waitForOtp',
+        messageParams: {
+          waitForOtpSeconds: WAIT_FOR_OTP_SECONDS,
+        },
       }
 
       // Act
@@ -567,6 +577,8 @@ describe('public-forms.verification.routes', () => {
       })
       const expectedResponse = {
         message: 'Your session has expired, please refresh and try again.',
+        messageKey:
+          'features.publicForm.backendErrors.verification.sessionExpired',
       }
 
       // Act
@@ -674,6 +686,7 @@ describe('public-forms.verification.routes', () => {
       })
       const expectedResponse = {
         message: 'Your OTP has expired, please request for a new one.',
+        messageKey: 'features.publicForm.backendErrors.verification.otpExpired',
       }
 
       // Act
@@ -699,6 +712,8 @@ describe('public-forms.verification.routes', () => {
       const expectedResponse = {
         message:
           'You have entered too many invalid OTPs. Please request for a new OTP and try again.',
+        messageKey:
+          'features.publicForm.backendErrors.verification.otpRetryExceeded',
       }
 
       // Act
@@ -718,6 +733,7 @@ describe('public-forms.verification.routes', () => {
       jest.spyOn(bcrypt, 'compare').mockResolvedValueOnce(false)
       const expectedResponse = {
         message: 'Wrong OTP.',
+        messageKey: 'features.publicForm.backendErrors.verification.wrongOtp',
       }
 
       // Act

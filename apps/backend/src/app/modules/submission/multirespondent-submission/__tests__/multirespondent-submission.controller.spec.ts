@@ -416,7 +416,6 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: inactiveMessage,
-        messageKey: 'features.publicForm.errors.private',
       })
       expect(mockRes.json).toHaveBeenCalledTimes(1)
     })
@@ -792,7 +791,6 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: inactiveMessage,
-        messageKey: 'features.publicForm.errors.private',
       })
       expect(mockRes.json).toHaveBeenCalledTimes(1)
     })
