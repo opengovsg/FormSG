@@ -137,6 +137,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -165,6 +167,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -197,6 +201,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -229,6 +235,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -302,6 +310,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -330,6 +340,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -361,6 +373,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -396,6 +410,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -456,6 +472,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -484,6 +502,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -513,6 +533,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -544,6 +566,8 @@ describe('public-form.submissions.routes', () => {
         expect(response.body).toEqual({
           message:
             'Something went wrong with your login. Please try logging in and submitting again.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.loginFailed',
           spcpSubmissionFailure: true,
         })
       })
@@ -1209,6 +1233,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1237,6 +1263,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1269,6 +1297,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1303,6 +1333,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1363,6 +1395,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1391,6 +1425,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1420,6 +1456,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
@@ -1451,6 +1489,8 @@ describe('public-form.submissions.routes', () => {
           expect(response.body).toEqual({
             message:
               'Something went wrong with your login. Please try logging in and submitting again.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.loginFailed',
             spcpSubmissionFailure: true,
           })
         })
