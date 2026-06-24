@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { Stack } from '@chakra-ui/react'
 import { merge } from 'lodash'
 
@@ -108,6 +109,7 @@ export const EditLogicBlock = ({
   submitButtonLabel,
   handleOpenDeleteModal,
 }: EditLogicBlockProps) => {
+  const { t } = useTranslation()
   const {
     formMethods,
     logicConditionBlocks,
@@ -159,7 +161,9 @@ export const EditLogicBlock = ({
         handleDelete={handleOpenDeleteModal}
         handleCancel={setToInactive}
         submitButtonLabel={submitButtonLabel}
-        ariaLabelName="logic"
+        ariaLabelName={t(
+          'features.adminForm.sidebar.logic.logic',
+        ).toLowerCase()}
       />
     </EditConditionWrapper>
   )

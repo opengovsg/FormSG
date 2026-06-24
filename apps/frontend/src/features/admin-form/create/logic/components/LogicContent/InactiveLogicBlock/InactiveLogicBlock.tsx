@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
 import { Box, Divider, Stack, StackDivider, Text } from '@chakra-ui/react'
 
@@ -24,6 +25,7 @@ interface InactiveLogicBlockProps {
 export const InactiveLogicBlock = ({
   logic,
 }: InactiveLogicBlockProps): JSX.Element | null => {
+  const { t } = useTranslation()
   const { idToFieldMap } = useAdminFormLogic()
   const setToEditing = useAdminLogicStore(setToEditingSelector)
   const stateData = useAdminLogicStore(createOrEditDataSelector)
@@ -41,14 +43,17 @@ export const InactiveLogicBlock = ({
         )
         return (
           <>
-            <Text>then show</Text>
+            <Text>
+              {t('features.adminForm.sidebar.logic.inactiveBlock.thenShow')}
+            </Text>
             <Stack direction="column" spacing="0.25rem">
               {allInvalid ? (
                 <FieldLogicBadge
                   defaults={{
                     variant: 'error',
-                    message:
-                      'All fields were deleted, please select at least one field',
+                    message: t(
+                      'features.adminForm.sidebar.logic.thenBlock.errors.atLeastOneFieldRequired',
+                    ),
                   }}
                 />
               ) : (
@@ -58,8 +63,9 @@ export const InactiveLogicBlock = ({
                     field={idToFieldMap[fieldId]}
                     defaults={{
                       variant: 'info',
-                      message:
-                        'This field was deleted and has been removed from your logic',
+                      message: t(
+                        'features.adminForm.sidebar.logic.inactiveBlock.fieldRemoved',
+                      ),
                     }}
                   />
                 ))
@@ -71,12 +77,16 @@ export const InactiveLogicBlock = ({
       case LogicType.PreventSubmit:
         return (
           <>
-            <Text>then disable submission</Text>
+            <Text>
+              {t(
+                'features.adminForm.sidebar.logic.inactiveBlock.thenDisableSubmission',
+              )}
+            </Text>
             <LogicBadge>{logic.preventSubmitMessage}</LogicBadge>
           </>
         )
     }
-  }, [logic, idToFieldMap])
+  }, [logic, idToFieldMap, t])
 
   const handleClick = useCallback(() => {
     if (isPreventEdit) {
@@ -112,13 +122,18 @@ export const InactiveLogicBlock = ({
               color="secondary.500"
             >
               <Stack>
-                <Text>{index === 0 ? 'If' : 'and'}</Text>
+                <Text>
+                  {index === 0
+                    ? t('features.adminForm.sidebar.logic.inactiveBlock.if')
+                    : t('features.adminForm.sidebar.logic.and')}
+                </Text>
                 <FieldLogicBadge
                   field={idToFieldMap[condition.field]}
                   defaults={{
                     variant: 'error',
-                    message:
-                      'This field was deleted, please select another field',
+                    message: t(
+                      'features.adminForm.sidebar.logic.errors.fieldDeleted',
+                    ),
                   }}
                 />
               </Stack>
@@ -143,7 +158,7 @@ export const InactiveLogicBlock = ({
         top={{ base: '0.5rem', md: '2rem' }}
         right={{ base: '0.5rem', md: '2rem' }}
         pos="absolute"
-        aria-label="Delete logic"
+        aria-label={t('features.adminForm.sidebar.logic.modals.delete.title')}
         variant="clear"
         onClick={handleClick}
         icon={<BiPencil fontSize="1.5rem" />}
