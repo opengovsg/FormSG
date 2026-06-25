@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.34.1](https://github.com/opengovsg/formsg/compare/v7.34.0...v7.34.1) (2026-06-25)
+
+
+### Bug Fixes
+
+* **frontend:** prevent Instructions tab crash (React error #31) (#9667) ([#31](https://github.com/opengovsg/formsg/commit/680cb4fe69b39139f8e695ac59b93680e0a65c4f))
+
 ## [7.34.0](https://github.com/opengovsg/formsg/compare/v7.33.0...v7.34.0) (2026-06-25)
 
 
