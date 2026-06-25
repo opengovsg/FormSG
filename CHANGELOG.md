@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.34.0](https://github.com/opengovsg/formsg/compare/v7.33.0...v7.34.0) (2026-06-25)
+
+
+### Features
+
+* **mrf-cutover:** polish cutover copy, badges, and migration UX (#9621) ([#9621](https://github.com/opengovsg/formsg/commit/b759d75d9c8f4fc45b421dee6e2a4f51650c3b11))
+* progressive disclosure + plain-language copy for email notifications page (#9657) ([#9657](https://github.com/opengovsg/formsg/commit/9904b56e4a8119fa41ad442b4789b7eb4ebde0d4))
+
+
+### Bug Fixes
+
+* replace unused malicious file error with guardduty error (#9663) ([#9663](https://github.com/opengovsg/formsg/commit/8c70cfd1eb42c86a87eb57a5b09429ec7a1c5f89))
+
 ## [7.33.0](https://github.com/opengovsg/formsg/compare/v7.32.0...v7.33.0) (2026-06-23)
 
 
