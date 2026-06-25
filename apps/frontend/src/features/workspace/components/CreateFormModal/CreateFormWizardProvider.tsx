@@ -24,17 +24,18 @@ import {
   CreateFormWizardInputProps,
 } from './CreateFormWizardContext'
 
-const INITIAL_STEP_STATE: [CreateFormFlowStates, -1 | 1 | 0] = [
-  CreateFormFlowStates.Details,
-  -1,
-]
-
 interface UseCommonFormWizardProviderProps {
   defaultValues?: Partial<CreateFormWizardInputProps>
+  /**
+   * Step the wizard opens on. Defaults to the form details screen; pass
+   * `StorageModeDetails` to drop the admin straight into the legacy setup.
+   */
+  initialStep?: CreateFormFlowStates
 }
 
 export const useCommonFormWizardProvider = ({
   defaultValues,
+  initialStep = CreateFormFlowStates.Details,
 }: UseCommonFormWizardProviderProps = {}) => {
   const { t } = useTranslation()
   const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
@@ -44,8 +45,11 @@ export const useCommonFormWizardProvider = ({
   const proceedCtaLabel = isPaperTrackingSetUpPageEnabled
     ? t('features.workspace.modals.forms.create.details.next')
     : t('features.workspace.modals.forms.create.details.create')
-  const [[currentStep, direction], setCurrentStep] =
-    useState(INITIAL_STEP_STATE)
+  const startsInStorageMode =
+    initialStep === CreateFormFlowStates.StorageModeDetails
+  const [[currentStep, direction], setCurrentStep] = useState<
+    [CreateFormFlowStates, -1 | 1 | 0]
+  >([initialStep, -1])
 
   /**
    * Only used for storage mode forms, but generated first so that the key is
@@ -56,9 +60,13 @@ export const useCommonFormWizardProvider = ({
   const formMethods = useForm<CreateFormWizardInputProps>({
     defaultValues: {
       ...defaultValues,
-      ...(isMrfCutoverEnabled
-        ? { responseMode: FormResponseMode.Multirespondent }
-        : {}),
+      // Opening straight into the legacy setup means a storage mode form, so
+      // seed the response mode that screen expects (mirrors goToStorageModeDetails).
+      ...(startsInStorageMode
+        ? { responseMode: FormResponseMode.Encrypt }
+        : isMrfCutoverEnabled
+          ? { responseMode: FormResponseMode.Multirespondent }
+          : {}),
     },
   })
 

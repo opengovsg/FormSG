@@ -1,3 +1,5 @@
+import { TFunction } from 'i18next'
+
 type EscapeHatchBetaFlags = {
   children?: boolean
   createStorageModeForV1Webhook?: boolean
@@ -9,15 +11,17 @@ export type EscapeHatchCopy = {
   suffix: string
 }
 
-const LINK_TEXT = 'old version of FormSG'
-const SUFFIX = '.'
+// TODO [MRF-CUTOVER]: Remove after cutover.
+const KEY = 'features.workspace.modals.forms.create.escapeHatch'
 
 export const composeEscapeHatchCopy = (
+  t: TFunction,
   betaFlags?: EscapeHatchBetaFlags,
 ): EscapeHatchCopy => {
-  const reasons: string[] = ['payments']
-  if (betaFlags?.children) reasons.push('MyInfo children fields')
-  if (betaFlags?.createStorageModeForV1Webhook) reasons.push('webhooks v1')
+  const reasons: string[] = [t(`${KEY}.reasons.payments`)]
+  if (betaFlags?.children) reasons.push(t(`${KEY}.reasons.children`))
+  if (betaFlags?.createStorageModeForV1Webhook)
+    reasons.push(t(`${KEY}.reasons.webhooksV1`))
 
   const reasonsString =
     reasons.length === 1
@@ -27,8 +31,8 @@ export const composeEscapeHatchCopy = (
         : `${reasons.slice(0, -1).join(', ')}, or ${reasons[reasons.length - 1]}`
 
   return {
-    prefix: `Need ${reasonsString}? Use the `,
-    linkText: LINK_TEXT,
-    suffix: SUFFIX,
+    prefix: t(`${KEY}.prefix`, { reasons: reasonsString }),
+    linkText: t(`${KEY}.linkText`),
+    suffix: t(`${KEY}.suffix`),
   }
 }

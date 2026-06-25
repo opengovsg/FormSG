@@ -63,6 +63,11 @@ export interface Payments extends HasTitle {
     shortDescription: string
     longDescription: string
     learnMore: string
+    // TODO [MRF-CUTOVER]: Remove cutover copy after cutover.
+    cutoverShortDescription: string
+    cutoverLongDescription: string
+    cutoverDuplicateLink: string
+    cutoverDuplicateSuffix: string
   }
   stripeConnectBtn: {
     connect: string

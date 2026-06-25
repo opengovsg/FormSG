@@ -60,6 +60,22 @@ export const enSG: CreateFormModal = {
     create: 'Create form',
     next: 'Next step',
   },
+  // TODO [MRF-CUTOVER]: Remove after cutover.
+  legacy: {
+    title: 'Set up a legacy form',
+    description:
+      "This is the legacy version. Use it only if the latest version of FormSG is missing a feature you need, or you're running into issues with it.",
+  },
+  escapeHatch: {
+    reasons: {
+      payments: 'payments',
+      children: 'Myinfo Children fields',
+      webhooksV1: 'webhooks v1',
+    },
+    prefix: 'Need {reasons}? Use the ',
+    linkText: 'legacy version of FormSG',
+    suffix: '.',
+  },
   origin: {
     question: 'How is this being filled today?',
     options: {
