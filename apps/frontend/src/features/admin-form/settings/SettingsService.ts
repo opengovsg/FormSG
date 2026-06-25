@@ -1,6 +1,7 @@
 import Stripe from 'stripe'
 
 import {
+  AdminFormDto,
   EmailFormSettings,
   FormSettings,
   MultirespondentFormSettings,
@@ -265,5 +266,13 @@ export const unlinkStripeAccount = async (formId: string) => {
 export const validateStripeAccount = async (formId: string) => {
   return ApiService.get<{ account: Stripe.Response<Stripe.Account> | null }>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/stripe/validate`,
+  ).then(({ data }) => data)
+}
+
+export const convertEncryptToMrf = async (
+  formId: string,
+): Promise<AdminFormDto> => {
+  return ApiService.post<AdminFormDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/convert-to-mrf`,
   ).then(({ data }) => data)
 }

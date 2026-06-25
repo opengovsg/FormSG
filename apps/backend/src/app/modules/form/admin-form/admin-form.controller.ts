@@ -28,6 +28,7 @@ import {
   FormOrigin,
   FormResponseMode,
   FormSettings,
+  FormStatus,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
   FormWorkflowDto,
@@ -37,6 +38,7 @@ import {
   LogicDto,
   LogicIfValue,
   LogicType,
+  PaymentChannel,
   PermissionsUpdateDto,
   PreviewFormViewDto,
   PrivateFormErrorDto,
@@ -53,7 +55,7 @@ import {
 } from 'formsg-shared/utils/crypto'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { ResultAsync } from 'neverthrow'
+import { errAsync, ResultAsync } from 'neverthrow'
 
 import { IFormDocument, IPopulatedForm } from '../../../../types'
 import { EncryptSubmissionDto, FormUpdateParams } from '../../../../types/api'
@@ -68,6 +70,7 @@ import {
   DatabaseError,
   DatabasePayloadSizeError,
   DatabaseValidationError,
+  MalformedParametersError,
 } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import * as FeedbackService from '../../feedback/feedback.service'
@@ -79,7 +82,7 @@ import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
-import { getSubmissionType } from '../form.utils'
+import { getSubmissionType, isFormEncryptMode } from '../form.utils'
 
 import { EditFieldError, GoGovServerError } from './admin-form.errors'
 import {
@@ -898,6 +901,78 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
           message: 'Error occurred when archiving form',
           meta: {
             action: 'handleArchiveForm',
+            ...createReqMeta(req),
+            userId: sessionUserId,
+            formId,
+          },
+          error,
+        })
+        const { errorMessage, statusCode } = mapRouteError(error)
+        return res.status(statusCode).json({ message: errorMessage })
+      })
+  )
+}
+
+/**
+ * Handler for POST /:formId/convert-to-mrf
+ * Converts a Storage-mode form into a Multi-Respondent Form. Owner-only.
+ *
+ * @returns 200 with the converted MRF form
+ * @returns 400 when the form is not in Storage mode, is not Private, or has payments connected/enabled
+ * @returns 403 when current user is not the form owner
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+export const handleConvertEncryptToMrf: ControllerHandler<{
+  formId: string
+}> = async (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return (
+    UserService.getPopulatedUserById(sessionUserId)
+      .andThen((user) =>
+        AuthService.getFormAfterPermissionChecks({
+          user,
+          formId,
+          level: PermissionLevel.Delete,
+        }),
+      )
+      .andThen((form) => {
+        if (!isFormEncryptMode(form)) {
+          return errAsync(
+            new MalformedParametersError(
+              'Only Storage-mode forms can be converted to Multi-Respondent forms.',
+            ),
+          )
+        }
+        if (form.status !== FormStatus.Private) {
+          return errAsync(
+            new MalformedParametersError(
+              'Close the form before converting to a Multi-Respondent form.',
+            ),
+          )
+        }
+        if (
+          form.payments_channel.channel !== PaymentChannel.Unconnected ||
+          form.payments_field.enabled
+        ) {
+          return errAsync(
+            new MalformedParametersError(
+              'Disconnect payments before converting to a Multi-Respondent form.',
+            ),
+          )
+        }
+        return AdminFormService.convertEncryptToMrf(form)
+      })
+      .map((convertedForm) => res.json(convertedForm))
+      .mapErr((error) => {
+        logger.warn({
+          message: 'Error occurred when converting Encrypt form to MRF',
+          meta: {
+            action: 'handleConvertEncryptToMrf',
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,

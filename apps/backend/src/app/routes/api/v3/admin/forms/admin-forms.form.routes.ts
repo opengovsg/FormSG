@@ -61,6 +61,23 @@ AdminFormsFormRouter.route('/:formId([a-fA-F0-9]{24})')
   .delete(AdminFormController.handleArchiveForm)
 
 /**
+ * Convert a Storage-mode form into a Multi-Respondent Form. Owner-only.
+ * @security session
+ *
+ * @returns 200 with the converted MRF form
+ * @returns 400 when form is not in Storage mode, is not Private, or has payments connected/enabled
+ * @returns 403 when current user is not the form owner
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when database error occurs
+ */
+AdminFormsFormRouter.post(
+  '/:formId([a-fA-F0-9]{24})/convert-to-mrf',
+  AdminFormController.handleConvertEncryptToMrf,
+)
+
+/**
  * Duplicate the specified form.
  * @security session
  *

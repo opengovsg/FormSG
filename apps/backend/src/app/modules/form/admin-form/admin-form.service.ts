@@ -61,6 +61,7 @@ import {
   IMultirespondentFormModel,
   IMultirespondentFormSchema,
   IPopulatedEmailForm,
+  IPopulatedEncryptedForm,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
   IPopulatedUser,
@@ -303,6 +304,81 @@ export const archiveForm = (
     return transformMongoError(error)
     // On success, return form
   }).map((form) => form)
+}
+
+/**
+ * Converts a Storage-mode (Encrypt) form into a Multi-Respondent form (MRF).
+ *
+ * The conversion is one-way: encrypt-only fields are dropped, MRF-required
+ * fields are initialised with safe defaults, `emails` is carried over from the
+ * source form, and `metadata.convertedFromStorageAt` records the conversion
+ * timestamp.
+ *
+ * `responseMode` is a Mongoose discriminator key — `findByIdAndUpdate` on a
+ * discriminator-specific model will not flip it. We use the raw driver
+ * (`FormModel.collection.updateOne`) to perform the flip atomically alongside
+ * the `$set`/`$unset` of mode-specific fields. The discriminator change takes
+ * effect on next read.
+ */
+export const convertEncryptToMrf = (
+  form: IPopulatedEncryptedForm,
+): ResultAsync<
+  IMultirespondentFormSchema,
+  DatabaseError | FormNotFoundError
+> => {
+  return ResultAsync.fromPromise(
+    FormModel.collection.updateOne(
+      { _id: form._id },
+      {
+        $set: {
+          responseMode: FormResponseMode.Multirespondent,
+          emails: form.emails ?? [],
+          workflow: [],
+          stepsToNotify: [],
+          stepOneEmailNotificationFieldId: '',
+          hasStatusTracker: false,
+          'metadata.convertedFromStorageAt': new Date(),
+        },
+        $unset: {
+          payments_channel: '',
+          payments_field: '',
+          business: '',
+          isForceConvertToStorageMode: '',
+        },
+      },
+    ),
+    (error) => {
+      logger.error({
+        message: 'Database error encountered when converting Encrypt form to MRF',
+        meta: {
+          action: 'convertEncryptToMrf',
+          formId: String(form._id),
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen(() => {
+    const MultirespondentFormModel = getFormModelByResponseMode(
+      FormResponseMode.Multirespondent,
+    ) as IMultirespondentFormModel
+    return ResultAsync.fromPromise(
+      MultirespondentFormModel.findById(form._id).exec(),
+      (error) => {
+        logger.error({
+          message: 'Database error encountered when refetching MRF form post-conversion',
+          meta: {
+            action: 'convertEncryptToMrf',
+            formId: String(form._id),
+          },
+          error,
+        })
+        return transformMongoError(error)
+      },
+    ).andThen((updated) =>
+      updated ? okAsync(updated) : errAsync(new FormNotFoundError()),
+    )
+  })
 }
 
 /**

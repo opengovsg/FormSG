@@ -3,6 +3,7 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
+import { ConvertToMrfSection } from './components/ConvertToMrfSection'
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'
 import { FormDetailsSection } from './components/FormDetailsSection'
@@ -30,6 +31,7 @@ export const SettingsGeneralPage = (): JSX.Element => {
       <FormCaptchaToggle />
       <FormIssueNotificationToggle />
       <FormDetailsSection />
+      <ConvertToMrfSection />
     </Stack>
   )
 }

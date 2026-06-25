@@ -24,6 +24,7 @@ import { adminFormKeys } from '../common/queries'
 
 import { adminFormSettingsKeys } from './queries'
 import {
+  convertEncryptToMrf,
   createStripeAccount,
   MrfEmailNotificationSettings,
   unlinkStripeAccount,
@@ -641,4 +642,30 @@ export const useMutateStripeAccount = () => {
     linkStripeAccountMutation,
     unlinkStripeAccountMutation,
   }
+}
+
+export const useMutateConvertEncryptToMrf = () => {
+  const { t } = useTranslation()
+  const { formId } = useParams()
+  if (!formId) {
+    throw new Error(t('features.adminForm.settings.mutations.missingFormId'))
+  }
+  const queryClient = useQueryClient()
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  return useMutation(() => convertEncryptToMrf(formId), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(adminFormKeys.id(formId))
+      queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+      toast({
+        description: 'Form converted to Multi-Respondent Form.',
+      })
+    },
+    onError: (error: ApiError) => {
+      toast({
+        status: 'danger',
+        description: error.message,
+      })
+    },
+  })
 }
