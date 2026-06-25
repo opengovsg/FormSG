@@ -51,7 +51,7 @@ export const SectionSidebar = (): JSX.Element => {
     if (!navigatedSectionId || !form) return
     if (navigatedSectionId === PUBLICFORM_INSTRUCTIONS_SECTIONID) {
       return {
-        title: t('features.publicForm.components.instructions'),
+        title: t('features.publicForm.components.instructions.title'),
         description: form.startPage.paragraph,
       }
     }
