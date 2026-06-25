@@ -65,6 +65,8 @@ const MrfEmailNotificationsForm = ({
       stepNumber: index + 1,
     })) ?? []
 
+  const workflowStepCount = formWorkflowStepsWithStepNumber.length
+
   const emailFieldItems = emailFormFields.map(
     ({ _id, questionNumber, title, fieldType }) => ({
       label: `${questionNumber}. ${title}`,
@@ -151,91 +153,24 @@ const MrfEmailNotificationsForm = ({
       ? undefined
       : 'me@example.com'
 
+  const sectionText: string =
+    workflowStepCount >= 1
+      ? t(
+          'features.adminForm.settings.emailNotifications.section.mrf.selectRecipientWorkflow',
+        )
+      : t(
+          'features.adminForm.settings.emailNotifications.section.mrf.selectRecipientNoWorkflow',
+        )
+
   const optionalAdminEmailValidationRules =
     useOptionalAdminEmailValidationRules()
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Box>
-        <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
-          {t(
-            'features.adminForm.settings.emailNotifications.section.mrf.selectRecipient',
-          )}
-        </Text>
-        <Box>
-          <FormLabel mb="0.75rem" textColor="secondary.700">
-            {t(
-              'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.label',
-            )}
-          </FormLabel>
-          <Skeleton isLoaded={!isLoading}>
-            <Controller
-              control={control}
-              name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
-              render={({
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                field: { value, onBlur, ...rest },
-              }) => (
-                <SingleSelect
-                  isDisabled={isLoading || isDisabled}
-                  placeholder={t(
-                    'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.placeholder',
-                  )}
-                  items={emailFieldItems}
-                  onBlur={handleSubmit(onSubmit)}
-                  isClearable
-                  value={value}
-                  {...rest}
-                />
-              )}
-            />
-          </Skeleton>
-        </Box>
-        <Box my="1.5rem">
-          <FormLabel mb="0.75rem" textColor="secondary.700">
-            {t(
-              'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
-            )}
-          </FormLabel>
-          <Skeleton isLoaded={!isLoading}>
-            <Controller
-              control={control}
-              name={WORKFLOW_EMAIL_MULTISELECT_NAME}
-              render={({
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                field: { value: values = [], onChange, onBlur, ...rest },
-              }) => (
-                <MultiSelect
-                  items={formWorkflowStepsWithStepNumber
-                    .filter((step) => step.stepNumber > 1)
-                    .map(({ step_name, stepNumber, _id: value }) => ({
-                      label:
-                        t(
-                          'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.each',
-                          { stepNumber },
-                        ) + (step_name ? ` (${step_name})` : ''),
-                      value,
-                    }))}
-                  values={values}
-                  onChange={onChange}
-                  onBlur={handleSubmit(onSubmit)}
-                  placeholder={
-                    isDisabled
-                      ? null
-                      : t(
-                          'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.placeholder',
-                        )
-                  }
-                  isSelectedItemFullWidth
-                  isDisabled={isLoading || isDisabled}
-                  {...rest}
-                />
-              )}
-            />
-          </Skeleton>
-        </Box>
-      </Box>
       <Box my="1.5rem">
+        <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
+          {sectionText}
+        </Text>
         <FormControl
           isInvalid={!isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME])}
           isDisabled={isDisabled}
@@ -285,6 +220,84 @@ const MrfEmailNotificationsForm = ({
             </FormErrorMessage>
           )}
         </FormControl>
+      </Box>
+      <Box>
+        {workflowStepCount >= 1 && (
+          <Box>
+            <FormLabel mb="0.75rem" textColor="secondary.700">
+              {t(
+                'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.label',
+              )}
+            </FormLabel>
+            <Skeleton isLoaded={!isLoading}>
+              <Controller
+                control={control}
+                name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
+                render={({
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  field: { value, onBlur, ...rest },
+                }) => (
+                  <SingleSelect
+                    isDisabled={isLoading || isDisabled}
+                    placeholder={t(
+                      'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.placeholder',
+                    )}
+                    items={emailFieldItems}
+                    onBlur={handleSubmit(onSubmit)}
+                    isClearable
+                    value={value}
+                    {...rest}
+                  />
+                )}
+              />
+            </Skeleton>
+          </Box>
+        )}
+        {workflowStepCount >= 2 && (
+          <Box my="1.5rem">
+            <FormLabel mb="0.75rem" textColor="secondary.700">
+              {t(
+                'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
+              )}
+            </FormLabel>
+            <Skeleton isLoaded={!isLoading}>
+              <Controller
+                control={control}
+                name={WORKFLOW_EMAIL_MULTISELECT_NAME}
+                render={({
+                  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                  field: { value: values = [], onChange, onBlur, ...rest },
+                }) => (
+                  <MultiSelect
+                    items={formWorkflowStepsWithStepNumber
+                      .filter((step) => step.stepNumber > 1)
+                      .map(({ step_name, stepNumber, _id: value }) => ({
+                        label:
+                          t(
+                            'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.each',
+                            { stepNumber },
+                          ) + (step_name ? ` (${step_name})` : ''),
+                        value,
+                      }))}
+                    values={values}
+                    onChange={onChange}
+                    onBlur={handleSubmit(onSubmit)}
+                    placeholder={
+                      isDisabled
+                        ? null
+                        : t(
+                            'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.placeholder',
+                          )
+                    }
+                    isSelectedItemFullWidth
+                    isDisabled={isLoading || isDisabled}
+                    {...rest}
+                  />
+                )}
+              />
+            </Skeleton>
+          </Box>
+        )}
       </Box>
     </form>
   )

@@ -7,25 +7,27 @@ export const enSG = {
   },
   section: {
     mrf: {
-      selectRecipient:
-        'Select who to notify when the form and/or workflow is complete:',
+      selectRecipientNoWorkflow:
+        'Select who to notify when a response has been submitted',
+      selectRecipientWorkflow:
+        'Select who to notify when the workflow is complete',
       respondents: {
         step1: {
-          label: 'Respondent in Step 1',
+          label: 'An email address collected from an email field',
           placeholder: 'Select an email field from your form',
+        },
+        others: {
+          label: 'Any email addresses you choose',
+          tooltipText:
+            "Include the admin's email to notify them whenever a response is submitted",
+          description: 'Separate multiple email addresses with a comma',
         },
         stepN: {
           label: {
-            overall: 'Other respondents in your workflow',
-            each: 'Respondent(s) in Step {stepNumber}',
+            overall: 'People who are filling up a workflow step',
+            each: 'People in Step {stepNumber}',
           },
-          placeholder: 'Select respondents from your form',
-        },
-        others: {
-          label: 'Others',
-          tooltipText:
-            "Include the admin's email to inform them whenever a workflow is completed",
-          description: 'Separate multiple email addresses with a comma',
+          placeholder: 'Select steps from your form',
         },
       },
     },
