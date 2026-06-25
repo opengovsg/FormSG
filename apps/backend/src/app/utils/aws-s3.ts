@@ -1,4 +1,4 @@
-import { PresignedPost } from 'aws-sdk/clients/s3'
+import { createPresignedPost, PresignedPost } from '@aws-sdk/s3-presigned-post'
 import crypto from 'crypto'
 import { ResultAsync } from 'neverthrow'
 
@@ -28,37 +28,27 @@ type CreatePresignedPostDataParams = {
 
 export const createPresignedPostDataPromise = (
   params: CreatePresignedPostDataParams,
-) => {
+): ResultAsync<PresignedPost, CreatePresignedPostError> => {
+  const key = params.key ?? crypto.randomUUID()
+
   return ResultAsync.fromPromise(
-    new Promise<PresignedPost>((resolve, reject) => {
-      AwsConfig.s3.createPresignedPost(
-        {
-          Bucket: params.bucketName,
-          Expires: params.expiresSeconds,
-          Conditions: [
-            // Content length restrictions: 1 byte to MAX_UPLOAD_FILE_SIZE.
-            // Minimum is 1 (not 0) so S3 rejects empty uploads at the edge
-            // with EntityTooSmall, keeping 0-byte objects out of quarantine.
-            ['content-length-range', 1, params.size],
-          ],
-          Fields: {
-            key: params.key ?? crypto.randomUUID(),
-            ...(params.acl ? { acl: params.acl } : undefined),
-            ...(params.fileMd5Hash
-              ? { 'Content-MD5': params.fileMd5Hash }
-              : undefined),
-            ...(params.fileType
-              ? { 'Content-Type': params.fileType }
-              : undefined),
-          },
-        },
-        (err, data) => {
-          if (err) {
-            return reject(err)
-          }
-          return resolve(data)
-        },
-      )
+    createPresignedPost(AwsConfig.s3, {
+      Bucket: params.bucketName,
+      Key: key,
+      Expires: params.expiresSeconds,
+      Conditions: [
+        // Content length restrictions: 1 byte to MAX_UPLOAD_FILE_SIZE.
+        // Minimum is 1 (not 0) so S3 rejects empty uploads at the edge
+        // with EntityTooSmall, keeping 0-byte objects out of quarantine.
+        ['content-length-range', 1, params.size],
+      ],
+      Fields: {
+        ...(params.acl ? { acl: params.acl } : undefined),
+        ...(params.fileMd5Hash
+          ? { 'Content-MD5': params.fileMd5Hash }
+          : undefined),
+        ...(params.fileType ? { 'Content-Type': params.fileType } : undefined),
+      },
     }),
     (error) => {
       logger.error({

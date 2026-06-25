@@ -171,14 +171,17 @@ importers:
         specifier: ^3.693.0
         version: 3.693.0
       '@aws-sdk/client-s3':
-        specifier: ^3.775.0
-        version: 3.1000.0
+        specifier: ^3.1075.0
+        version: 3.1075.0
       '@aws-sdk/client-sqs':
         specifier: ^3.775.0
         version: 3.1037.0
       '@aws-sdk/credential-provider-node':
         specifier: ^3.972.36
-        version: 3.972.36
+        version: 3.972.58
+      '@aws-sdk/s3-presigned-post':
+        specifier: ^3.1075.0
+        version: 3.1075.0
       '@azure/msal-node':
         specifier: ^5.0.2
         version: 5.0.2
