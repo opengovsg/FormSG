@@ -72,7 +72,7 @@ export const enSG: CreateFormModal = {
       children: 'Myinfo Children fields',
       webhooksV1: 'webhooks v1',
     },
-    prefix: 'Need {{reasons}}? Use the ',
+    prefix: 'Need {reasons}? Use the ',
     linkText: 'legacy version of FormSG',
     suffix: '.',
   },
