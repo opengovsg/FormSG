@@ -240,18 +240,6 @@ export class GuardDutyParseVirusScannerLambdaPayloadError extends ApplicationErr
   }
 }
 
-export class MaliciousFileDetectedError extends ApplicationError {
-  constructor(filename?: string) {
-    super(
-      `Your ${
-        filename ? `file "${filename}"` : 'attachments(s)'
-      } has failed our virus scan. Try to create and upload it again.`,
-      undefined,
-      ErrorCodes.SUBMISSION_MALICIOUS_FILE_DETECTED,
-    )
-  }
-}
-
 export class GuardDutyMaliciousFileDetectedError extends ApplicationError {
   constructor(filename?: string) {
     super(

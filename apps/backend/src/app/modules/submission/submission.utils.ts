@@ -138,13 +138,13 @@ import {
   ExpectedResponseNotFoundError,
   FeatureDisabledError,
   GuardDutyInvalidFileKeyError,
+  GuardDutyMaliciousFileDetectedError,
   GuardDutyParseVirusScannerLambdaPayloadError,
   GuardDutyVirusScanFailedError,
   InvalidEncodingError,
   InvalidFieldIdError,
   InvalidFileExtensionError,
   InvalidFileKeyError,
-  MaliciousFileDetectedError,
   MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
@@ -375,7 +375,7 @@ const errorMapper: MapRouteError = (
     case AttachmentSizeLimitExceededError:
     case InvalidFileKeyError:
     case GuardDutyInvalidFileKeyError:
-    case MaliciousFileDetectedError:
+    case GuardDutyMaliciousFileDetectedError:
     case ExpectedResponseNotFoundError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
