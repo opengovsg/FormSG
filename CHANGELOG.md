@@ -2,6 +2,98 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.34.1](https://github.com/opengovsg/formsg/compare/v7.34.0...v7.34.1) (2026-06-25)
+
+
+### Bug Fixes
+
+* **frontend:** prevent Instructions tab crash (React error #31) (#9667) ([#31](https://github.com/opengovsg/formsg/commit/680cb4fe69b39139f8e695ac59b93680e0a65c4f))
+
+## [7.34.0](https://github.com/opengovsg/formsg/compare/v7.33.0...v7.34.0) (2026-06-25)
+
+
+### Features
+
+* **mrf-cutover:** polish cutover copy, badges, and migration UX (#9621) ([#9621](https://github.com/opengovsg/formsg/commit/b759d75d9c8f4fc45b421dee6e2a4f51650c3b11))
+* progressive disclosure + plain-language copy for email notifications page (#9657) ([#9657](https://github.com/opengovsg/formsg/commit/9904b56e4a8119fa41ad442b4789b7eb4ebde0d4))
+
+
+### Bug Fixes
+
+* replace unused malicious file error with guardduty error (#9663) ([#9663](https://github.com/opengovsg/formsg/commit/8c70cfd1eb42c86a87eb57a5b09429ec7a1c5f89))
+
+## [7.33.0](https://github.com/opengovsg/formsg/compare/v7.32.0...v7.33.0) (2026-06-23)
+
+
+### Features
+
+* **ci:** improve release process (#9518) ([#9518](https://github.com/opengovsg/formsg/commit/e709a5bdb3b54843c3e5a59544ba12825381fbe2))
+
+
+### Bug Fixes
+
+* **ci:** add deploy key and fix dependencies (#9661) ([#9661](https://github.com/opengovsg/formsg/commit/37c6633a2307ea97b0e68088c1e15f3b297e3940))
+* **ci:** persist deploy key for tagging and version bump commits (#9662) ([#9662](https://github.com/opengovsg/formsg/commit/7d54dae81fc7441f703cf2c4276847b22f555613))
+
+
+### Builds
+
+* merge release v7.32.0 back to develop (#9660) ([#9660](https://github.com/opengovsg/formsg/commit/ede60f44342cc684b2abe91bbae9660192bbb264))
+
+## [7.32.0](https://github.com/opengovsg/formsg/compare/v7.31.0...v7.32.0) (2026-06-23)
+
+
+### Features
+
+* **frontend:** update restrict email domains placeholder (#9654) ([#9654](https://github.com/opengovsg/formsg/commit/dbb9ef61574b80b06687c753778d9e8e18228282))
+
+
+### Miscellaneous
+
+* Merge pull request #9656 from opengovsg/copy-change-drag-field-from-left ([#9656](https://github.com/opengovsg/formsg/commit/94011507d0c34e2997bd2a1b39e831986acdcc82))
+
+## [7.31.0](https://github.com/opengovsg/formsg/compare/v7.29.0...v7.31.0) (2026-06-22)
+
+
+### Features
+
+* **backend:** wildcard email domains (#9606) ([#9606](https://github.com/opengovsg/formsg/commit/209c0a59b11416ce834353757278fc6911639ef2))
+* **frontend:** add sidebar navigation labels feature flagged (#9591) ([#9591](https://github.com/opengovsg/formsg/commit/172775ba08491abf24ec560c65537f2be5fcb29b))
+* **paper forms tracking:** form-origin frontend selection (part 2) (#9579) ([#9579](https://github.com/opengovsg/formsg/commit/2161cc1c320f8f31e4df61f9202787d5818368f0))
+
+
+### Bug Fixes
+
+* **frontend:** gate useUser on isAuthenticated to prevent 401 spike (#9650) ([#9650](https://github.com/opengovsg/formsg/commit/ffa56e6c453ee0d6935bf76dd2d73a0aa50b08f0))
+
+
+### Miscellaneous
+
+* Merge pull request #9648 from opengovsg/release_v7.30.0 ([#9648](https://github.com/opengovsg/formsg/commit/64d986b0497a30924e9acadcaca59c717724c78f))
+* Merge remote-tracking branch 'origin/develop' into release-al2 ([893e429](https://github.com/opengovsg/formsg/commit/893e4299423bc06253e1feccc30f8bb397e1a318))
+
+## [7.30.0](https://github.com/opengovsg/formsg/compare/v7.29.0...v7.30.0) (2026-06-22)
+
+
+### Features
+
+* **backend:** wildcard email domains (#9606) ([#9606](https://github.com/opengovsg/formsg/commit/209c0a59b11416ce834353757278fc6911639ef2))
+* **frontend:** add sidebar navigation labels feature flagged (#9591) ([#9591](https://github.com/opengovsg/formsg/commit/172775ba08491abf24ec560c65537f2be5fcb29b))
+* **paper forms tracking:** form-origin frontend selection (part 2) (#9579) ([#9579](https://github.com/opengovsg/formsg/commit/2161cc1c320f8f31e4df61f9202787d5818368f0))
+
+## [7.29.0](https://github.com/opengovsg/formsg/compare/v7.28.1...v7.29.0) (2026-06-15)
+
+
+### Features
+
+* **paper forms tracking:** form-origin model + backend persistence (part 1) (#9576) ([#9576](https://github.com/opengovsg/formsg/commit/0ae1a540624208dc86c77378b3b064dddddeacfe))
+
+
+### Bug Fixes
+
+* **copy:** align dashboard dropdown menu's copy with rest of platform (#9608) ([#9608](https://github.com/opengovsg/formsg/commit/5fe504743b8051d5e0b581363bfc765f3f8037b1))
+* add require for form (#9610) ([#9610](https://github.com/opengovsg/formsg/commit/3d51cebf9d74f38d839fa9b7bad3c9be5d6f380d))
+
 ## [7.28.1](https://github.com/opengovsg/formsg/compare/v7.28.0...v7.28.1) (2026-06-12)
 
 

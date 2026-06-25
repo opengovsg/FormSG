@@ -2,23 +2,16 @@ name: Publish SDK
 
 # Release job for @opengovsg/formsg-sdk, published from packages/sdk.
 #
-# Modeled after the old non-monorepo publish.yml
-# (github.com/opengovsg/formsg-javascript-sdk), which used npm's OIDC
-# "trusted publisher" flow (no NPM_TOKEN secret) and triggered on push
-# to a dedicated `release` branch. In the monorepo, `release-al2` plays
-# the same role: it is the branch that deploys to prod when a release
-# PR (created by scripts/release_prep.sh) is merged into it.
+# Uses npm's OIDC "trusted publisher" flow (no NPM_TOKEN secret). Called as a
+# job by the release workflow (.github/workflows/release.yml) once it has bumped
+# packages/sdk/package.json via .external.versionrc.js and pushed the
+# sdk-v<version> tag. It is not tag-triggered: the release workflow pushes with
+# GITHUB_TOKEN, which does not start tag-triggered workflows. The caller passes
+# the tag as an input; this workflow checks it out, builds, publishes to npm via
+# OIDC, and creates the GitHub release against it.
 #
-# release_prep.sh bumps packages/sdk/package.json via
-# .external.versionrc.js and pushes a `sdk-v<version>` tag before
-# opening the release PR, so by the time this workflow runs there is
-# already a matching tag on the remote — all that is left to do is
-# build, publish to npm via OIDC, and create the GitHub release.
-#
-# The version check in the `Resolve SDK version` step makes this job a
-# no-op for monorepo releases that did not also bump the SDK — npm will
-# already have the current version and the subsequent steps are
-# skipped.
+# The version check in the `Resolve SDK version` step makes this job a no-op
+# if the version is already on npm — the subsequent steps are skipped.
 
 env:
   NODE_VERSION: '22.22'
@@ -26,12 +19,12 @@ env:
   SDK_PACKAGE: '@opengovsg/formsg-sdk'
 
 on:
-  push:
-    branches:
-      - release-al2
-    paths:
-      - 'packages/sdk/**'
-      - '.github/workflows/publish-sdk.yml'
+  workflow_call:
+    inputs:
+      tag:
+        description: 'SDK release tag to publish (e.g. sdk-v1.2.3)'
+        required: true
+        type: string
 
 jobs:
   release:
@@ -43,11 +36,14 @@ jobs:
     defaults:
       run:
         shell: bash
+    # This environment is the npm trusted-publisher scope (see release.yml): npm
+    # matches the OIDC environment claim, so only this job may publish to npm.
     environment: 'publish-sdk'
     steps:
       - name: Checkout
         uses: actions/checkout@v4.3.1
         with:
+          ref: ${{ inputs.tag }}
           fetch-depth: 0
 
       - name: Install pnpm

@@ -1,8 +1,12 @@
 name: Build Release Image
 
 on:
-  push:
-    tags: ['v*']
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Version tag to build (e.g., v7.4.5)'
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       tag:
@@ -31,16 +35,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.3.1
+        with:
+          # Build the tagged release commit. Both the workflow_call (from the
+          # release workflow) and workflow_dispatch paths supply the tag.
+          ref: ${{ inputs.tag }}
 
       - name: Determine version tag
         id: version
+        env:
+          TAG: ${{ inputs.tag }}
         run: |
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            TAG="${GITHUB_REF#refs/tags/}"
-          else
-            TAG="${{ inputs.tag }}"
-          fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "Building release image for $TAG"
 

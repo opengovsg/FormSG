@@ -1,24 +1,23 @@
 name: Deploy Virus Scanner GuardDuty to stg
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 permissions:
   id-token: write
   contents: read
 
 on:
-  push:
-    branches:
-      - stg
+  workflow_call:
+    inputs:
+      version:
+        description: 'Release version tag to deploy (e.g. v7.4.5)'
+        required: true
+        type: string
 
 jobs:
   deploy-scanner-guardduty:
     name: Deploy Scanner GuardDuty
     uses: ./.github/workflows/aws-deploy-scanner-guardduty-iac.yml
     with:
-      checkoutBranch: 'stg'
+      checkoutBranch: ${{ inputs.version }}
       gha-environment: 'stg'
       environment: 'stg'
       provisionedConcurrency: 1

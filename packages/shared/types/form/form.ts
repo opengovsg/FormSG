@@ -114,11 +114,11 @@ export enum FormResponseMode {
 
 export enum FormOrigin {
   Paper = 'paper',
-  DigitalNew = 'digital-new',
-  DigitalEmail = 'digital-email',
-  DigitalDocument = 'digital-document',
-  DigitalSpreadsheet = 'digital-spreadsheet',
-  DigitalFormBuilder = 'digital-formbuilder',
+  DigitalNew = 'digitalNew',
+  DigitalEmail = 'digitalEmail',
+  DigitalDocument = 'digitalDocument',
+  DigitalSpreadsheet = 'digitalSpreadsheet',
+  DigitalFormBuilder = 'digitalFormbuilder',
 }
 
 export interface FormMetadata {

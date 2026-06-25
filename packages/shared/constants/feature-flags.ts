@@ -43,6 +43,8 @@ export const featureFlags = {
   standardisedEmailTemplate: 'standardised-email-template' as const,
   mrfCutover: 'mrf-cutover' as const,
   answerObjectEncryption: 'answer-object-encryption' as const,
+  enablePaperTrackingSetUpPage: 'enable-paper-tracking-set-up-page' as const,
+  sidebarNavLabels: 'enable-sidebar-nav-labels' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

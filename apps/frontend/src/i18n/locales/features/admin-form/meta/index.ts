@@ -15,4 +15,7 @@ export interface Meta {
   responseModeText: {
     [k in FormResponseMode]: string
   }
+  // TODO [MRF-CUTOVER]: Remove after cutover. Badge label for legacy (Encrypt)
+  // forms while the cutover hides the response-mode distinction.
+  legacyResponseModeText: string
 }

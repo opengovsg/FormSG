@@ -9,10 +9,9 @@ const MagicFormBuilderButton = ({
 }): JSX.Element => {
   return (
     <Button
-      maxW="100%"
+      flexShrink={0}
       rightIcon={<BiSolidMagicWand fontSize="1.5rem" />}
       onClick={onClick}
-      isTruncated
     >
       Create fields with AI
     </Button>

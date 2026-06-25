@@ -29,6 +29,9 @@ export interface Workspace {
       title: string
       subText: string
     }
+    // TODO [MRF-CUTOVER]: Remove after cutover. Label for the Legacy filter
+    // option shown while the flag is on (other options render their enum value).
+    legacyFilterLabel: string
   }
   actions: {
     preview: string
@@ -73,6 +76,12 @@ export interface Workspace {
   }
   workspacePage: {
     defaultTitle: string
+    // TODO [MRF-CUTOVER]: Remove after cutover. Shown only when the flag is on
+    // and the admin has a legacy (Encrypt) form to migrate.
+    migrationInfobox: {
+      message: string
+      learnMore: string
+    }
   }
   sideMenu: SideMenu
   header: Header

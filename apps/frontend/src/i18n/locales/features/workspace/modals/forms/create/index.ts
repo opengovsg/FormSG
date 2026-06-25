@@ -49,6 +49,45 @@ export interface CreateFormModal {
       description: string
     }
     create: string
+    next: string
+  }
+  // TODO [MRF-CUTOVER]: Remove after cutover. Copy for the legacy (storage-mode)
+  // setup screen and the escape-hatch link shown while the flag is on.
+  legacy: {
+    title: string
+    description: string
+  }
+  escapeHatch: {
+    reasons: {
+      payments: string
+      children: string
+      webhooksV1: string
+    }
+    prefix: string
+    linkText: string
+    suffix: string
+  }
+  origin: {
+    question: string
+    options: {
+      paper: string
+      digitalNew: string
+      digitalEmail: string
+      digitalDocument: string
+      digitalSpreadsheet: string
+      digitalFormbuilder: string
+      others: string
+    }
+    otherInputLabel: string
+    errors: {
+      atLeastOne: string
+      otherRequired: string
+      otherMaxLength: string
+    }
+    cta: {
+      next: string
+      back: string
+    }
   }
   secretKey: {
     title: string

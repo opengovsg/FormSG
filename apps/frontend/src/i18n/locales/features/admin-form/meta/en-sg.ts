@@ -15,4 +15,6 @@ export const enSG = {
     [FormResponseMode.Email]: 'Email mode',
     [FormResponseMode.Encrypt]: 'Storage mode',
   },
+  // TODO [MRF-CUTOVER]: Remove after cutover.
+  legacyResponseModeText: 'Legacy',
 }

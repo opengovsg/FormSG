@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight, BiLeftArrowAlt } from 'react-icons/bi'
 import { FaRegFilePdf } from 'react-icons/fa6'
@@ -117,17 +117,6 @@ export const IndividualResponseNavbar = (): JSX.Element => {
   const { t } = useTranslation()
 
   const { user } = useUser()
-  const gb = useGrowthBook()
-
-  useEffect(() => {
-    if (user && gb) {
-      gb.setAttributes({
-        adminEmail: user.email,
-        adminAgency: user.agency,
-        ...gb.getAttributes(),
-      })
-    }
-  }, [gb, user])
 
   const isAdminPrintPdfEnabled = useFeatureIsOn(featureFlags.adminPrintPdf)
 

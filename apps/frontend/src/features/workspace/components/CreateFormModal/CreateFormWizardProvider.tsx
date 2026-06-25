@@ -14,6 +14,7 @@ import {
   useCreateFormMutations,
   useEmailModeFeedbackMutation,
 } from '~features/workspace/mutations'
+import { buildFormClientMetadata } from '~features/workspace/utils/buildFormClientMetadata'
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import {
@@ -23,21 +24,32 @@ import {
   CreateFormWizardInputProps,
 } from './CreateFormWizardContext'
 
-const INITIAL_STEP_STATE: [CreateFormFlowStates, -1 | 1 | 0] = [
-  CreateFormFlowStates.Details,
-  -1,
-]
-
 interface UseCommonFormWizardProviderProps {
   defaultValues?: Partial<CreateFormWizardInputProps>
+  /**
+   * Step the wizard opens on. Defaults to the form details screen; pass
+   * `StorageModeDetails` to drop the admin straight into the legacy setup.
+   */
+  initialStep?: CreateFormFlowStates
 }
 
 export const useCommonFormWizardProvider = ({
   defaultValues,
+  initialStep = CreateFormFlowStates.Details,
 }: UseCommonFormWizardProviderProps = {}) => {
+  const { t } = useTranslation()
   const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
-  const [[currentStep, direction], setCurrentStep] =
-    useState(INITIAL_STEP_STATE)
+  const isPaperTrackingSetUpPageEnabled = useFeatureIsOn(
+    featureFlags.enablePaperTrackingSetUpPage,
+  )
+  const proceedCtaLabel = isPaperTrackingSetUpPageEnabled
+    ? t('features.workspace.modals.forms.create.details.next')
+    : t('features.workspace.modals.forms.create.details.create')
+  const startsInStorageMode =
+    initialStep === CreateFormFlowStates.StorageModeDetails
+  const [[currentStep, direction], setCurrentStep] = useState<
+    [CreateFormFlowStates, -1 | 1 | 0]
+  >([initialStep, -1])
 
   /**
    * Only used for storage mode forms, but generated first so that the key is
@@ -48,9 +60,13 @@ export const useCommonFormWizardProvider = ({
   const formMethods = useForm<CreateFormWizardInputProps>({
     defaultValues: {
       ...defaultValues,
-      ...(isMrfCutoverEnabled
-        ? { responseMode: FormResponseMode.Multirespondent }
-        : {}),
+      // Opening straight into the legacy setup means a storage mode form, so
+      // seed the response mode that screen expects (mirrors goToStorageModeDetails).
+      ...(startsInStorageMode
+        ? { responseMode: FormResponseMode.Encrypt }
+        : isMrfCutoverEnabled
+          ? { responseMode: FormResponseMode.Multirespondent }
+          : {}),
     },
   })
 
@@ -65,6 +81,19 @@ export const useCommonFormWizardProvider = ({
     setValue('responseMode', FormResponseMode.Multirespondent)
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
+  const goToFormDetails = () => {
+    setCurrentStep([CreateFormFlowStates.Details, -1])
+  }
+
+  const makeHandleProceedFromDetails = (
+    createForm: (inputs: CreateFormWizardInputProps) => unknown,
+  ) =>
+    formMethods.handleSubmit((inputs) => {
+      if (isPaperTrackingSetUpPageEnabled) {
+        return setCurrentStep([CreateFormFlowStates.Origin, 1])
+      }
+      return createForm(inputs)
+    })
 
   return {
     formMethods,
@@ -73,12 +102,16 @@ export const useCommonFormWizardProvider = ({
     direction,
     setCurrentStep,
     isMrfCutoverEnabled,
+    isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToFormDetails,
+    makeHandleProceedFromDetails,
   }
 }
 
-const useCreateFormWizardContext = (
+export const useCreateFormWizardContext = (
   onClose: () => void,
 ): CreateFormWizardContextReturn => {
   const { t } = useTranslation()
@@ -89,8 +122,12 @@ const useCreateFormWizardContext = (
     keypair,
     setCurrentStep,
     isMrfCutoverEnabled,
+    isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
+    goToFormDetails,
+    makeHandleProceedFromDetails,
   } = useCommonFormWizardProvider({
     defaultValues: {
       responseMode: FormResponseMode.Encrypt,
@@ -116,53 +153,73 @@ const useCreateFormWizardContext = (
   // as the default workspace contains an empty string as workspaceId
   const workspaceId = isDefaultWorkspace ? undefined : activeWorkspace._id
 
-  const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
-    ({ title, responseMode, emails }) => {
-      switch (responseMode) {
-        case FormResponseMode.Encrypt: {
-          const defaultEmails = adminEmail ? [adminEmail] : []
-          return createStorageModeFormMutation.mutate(
-            {
-              title,
-              responseMode,
-              publicKey: keypair.publicKey,
-              workspaceId,
-              emails: (emails ?? defaultEmails).filter(Boolean),
+  const createStorageModeOrMultirespondentForm = ({
+    title,
+    responseMode,
+    emails,
+    formOrigins,
+  }: CreateFormWizardInputProps) => {
+    const metadata = buildFormClientMetadata({
+      isPaperTrackingSetUpPageEnabled,
+      isMrfCutoverEnabled,
+      formOrigins,
+      formResponseMode: responseMode,
+    })
+
+    switch (responseMode) {
+      case FormResponseMode.Encrypt: {
+        const defaultEmails = adminEmail ? [adminEmail] : []
+        return createStorageModeFormMutation.mutate(
+          {
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            workspaceId,
+            emails: (emails ?? defaultEmails).filter(Boolean),
+            ...(metadata && { metadata }),
+          },
+          {
+            onSuccess: () => {
+              setCurrentStep([CreateFormFlowStates.Landing, 1])
             },
-            {
-              onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Landing, 1])
-              },
-            },
-          )
-        }
-        case FormResponseMode.Email:
-          return
-        case FormResponseMode.Multirespondent:
-          return createMultirespondentModeFormMutation.mutate(
-            {
-              title,
-              responseMode,
-              publicKey: keypair.publicKey,
-              workspaceId,
-            },
-            {
-              onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Landing, 1])
-              },
-            },
-          )
-        default: {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const _: never = responseMode
-          throw new Error(
-            t(
-              'features.workspace.modals.forms.create.errors.responseMode.invalid',
-            ),
-          )
-        }
+          },
+        )
       }
-    },
+      case FormResponseMode.Email:
+        return
+      case FormResponseMode.Multirespondent:
+        return createMultirespondentModeFormMutation.mutate(
+          {
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            workspaceId,
+            ...(metadata && { metadata }),
+          },
+          {
+            onSuccess: () => {
+              setCurrentStep([CreateFormFlowStates.Landing, 1])
+            },
+          },
+        )
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _: never = responseMode
+        throw new Error(
+          t(
+            'features.workspace.modals.forms.create.errors.responseMode.invalid',
+          ),
+        )
+      }
+    }
+  }
+
+  const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
+    createStorageModeOrMultirespondentForm,
+  )
+
+  const handleProceedFromDetails = makeHandleProceedFromDetails(
+    createStorageModeOrMultirespondentForm,
   )
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
@@ -222,6 +279,10 @@ const useCreateFormWizardContext = (
     submitEmailModeFeedback,
     handleEmailFeedbackSubmit,
     handleCreateStorageModeOrMultirespondentForm,
+    handleProceedFromDetails,
+    goToFormDetails,
+    isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     isSingpass: false,
     hasMyInfoChildren: false,
     modalHeader: t('features.workspace.modals.forms.create.title.setup'),

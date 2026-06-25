@@ -28,6 +28,8 @@ export const enSG: Workspace = {
       title: 'No forms found',
       subText: 'Try another search or remove filters',
     },
+    // TODO [MRF-CUTOVER]: Remove after cutover.
+    legacyFilterLabel: 'Legacy forms',
   },
   actions: {
     preview: 'Preview',
@@ -73,6 +75,12 @@ export const enSG: Workspace = {
   },
   workspacePage: {
     defaultTitle: 'All forms',
+    // TODO [MRF-CUTOVER]: Remove after cutover.
+    migrationInfobox: {
+      message:
+        "We're streamlining form set-up and bringing workflows to all. Legacy forms will be migrated automatically and no action is required from you.",
+      learnMore: 'Learn more.',
+    },
   },
   sideMenu,
   header,

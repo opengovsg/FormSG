@@ -44,8 +44,7 @@ export const enSG: Fields = {
     or: 'OR',
     dropFieldHere: 'Drop your field here',
     tapToAddField: 'Tap here to add a field',
-    dragFromBuilderToStart:
-      'Drag a field from the Builder on the left to start',
+    dragFromBuilderToStart: 'Drag a field from the left to start',
   },
   fieldRowContainer: {
     hiddenByLogicTooltip: 'This field may be hidden by your form logic',
@@ -94,7 +93,7 @@ export const enSG: Fields = {
     restrictEmailDomains: {
       title: 'Restrict email domains',
       inputLabel: 'Domains allowed',
-      placeholder: '@data.gov.sg\n@agency.gov.sg',
+      placeholder: '@*.gov.sg\n@open.gov.sg\n@agency.gov.sg',
     },
     emailConfirmation: {
       title: 'Email confirmation',
@@ -253,6 +252,9 @@ export const enSG: Fields = {
     saveField: 'Save field',
     disabled: {
       storageModeOnly: 'Payments are only available in storage mode.',
+      // TODO [MRF-CUTOVER]: Remove after cutover.
+      cutoverLegacyOnly:
+        'Payments are only available in the legacy version of FormSG.',
       stripeNotConnectedBefore: 'Connect your Stripe account in',
       stripeNotConnectedSettings: 'Settings',
       stripeNotConnectedAfter: 'to add payment field.',

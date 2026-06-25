@@ -58,6 +58,45 @@ export const enSG: CreateFormModal = {
         'All email addresses below will be notified. Ensure that inboxes can support the classification and sensitivity.',
     },
     create: 'Create form',
+    next: 'Next step',
+  },
+  // TODO [MRF-CUTOVER]: Remove after cutover.
+  legacy: {
+    title: 'Set up a legacy form',
+    description:
+      "This is the legacy version. Use it only if the latest version of FormSG is missing a feature you need, or you're running into issues with it.",
+  },
+  escapeHatch: {
+    reasons: {
+      payments: 'payments',
+      children: 'Myinfo Children fields',
+      webhooksV1: 'webhooks v1',
+    },
+    prefix: 'Need {reasons}? Use the ',
+    linkText: 'legacy version of FormSG',
+    suffix: '.',
+  },
+  origin: {
+    question: 'How is this being filled today?',
+    options: {
+      paper: 'Paper form',
+      digitalNew: 'This is a new process',
+      digitalEmail: 'Emails',
+      digitalDocument: 'Documents (e.g. PDF, Word)',
+      digitalSpreadsheet: 'Spreadsheets (e.g. Excel, Sheets)',
+      digitalFormbuilder: 'Other form builders',
+      others: 'Other',
+    },
+    otherInputLabel: 'Other source',
+    errors: {
+      atLeastOne: 'Please select at least 1 option.',
+      otherRequired: 'Please specify a value for the "others" option',
+      otherMaxLength: 'Please use {maxLength} characters or fewer.',
+    },
+    cta: {
+      next: 'Next step',
+      back: 'Back',
+    },
   },
   secretKey: {
     title: 'Your form has been created! Download your Secret Key to proceed.',

@@ -11,18 +11,21 @@ import {
   useEmailModeFeedbackMutation,
 } from '~features/workspace/mutations'
 import { useDashboard } from '~features/workspace/queries'
+import { buildFormClientMetadata } from '~features/workspace/utils/buildFormClientMetadata'
 import { makeDuplicateFormTitle } from '~features/workspace/utils/createDuplicateFormTitle'
 
 import {
   CreateFormFlowStates,
   CreateFormWizardContext,
   CreateFormWizardContextReturn,
+  CreateFormWizardInputProps,
 } from '../CreateFormModal/CreateFormWizardContext'
 import { useCommonFormWizardProvider } from '../CreateFormModal/CreateFormWizardProvider'
 
 interface DupeFormWizardSource {
   formIdToDuplicate: FormId | undefined
   workspaceId?: string
+  initialStep?: CreateFormFlowStates
 }
 
 export const useDupeFormWizardContext = (
@@ -46,9 +49,17 @@ export const useDupeFormWizardContext = (
     keypair,
     setCurrentStep,
     isMrfCutoverEnabled,
+    isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
-  } = useCommonFormWizardProvider()
+    goToFormDetails,
+    makeHandleProceedFromDetails,
+  } = useCommonFormWizardProvider({ initialStep: source.initialStep })
+
+  // The screen the wizard opens on (and the only one we prefill the title on,
+  // so navigating between steps never clobbers a title the admin has typed).
+  const prefillStep = source.initialStep ?? CreateFormFlowStates.Details
 
   const { reset, getValues } = formMethods
 
@@ -64,7 +75,7 @@ export const useDupeFormWizardContext = (
       isWorkspaceLoading ||
       !previewFormData ||
       !dashboardForms ||
-      currentStep !== CreateFormFlowStates.Details
+      currentStep !== prefillStep
     ) {
       return
     }
@@ -81,6 +92,7 @@ export const useDupeFormWizardContext = (
     isWorkspaceLoading,
     dashboardForms,
     currentStep,
+    prefillStep,
   ])
 
   const { handleSubmit, setValue } = formMethods
@@ -98,56 +110,74 @@ export const useDupeFormWizardContext = (
 
   const workspaceId = source.workspaceId
 
-  const handleCreateStorageModeOrMultirespondentForm = handleSubmit(
-    ({ title, responseMode, emails }) => {
-      if (!sourceFormId) {
-        return
-      }
+  const createDuplicateForm = ({
+    title,
+    responseMode,
+    emails,
+    formOrigins,
+  }: CreateFormWizardInputProps) => {
+    if (!sourceFormId) {
+      return
+    }
 
-      switch (responseMode) {
-        case FormResponseMode.Encrypt: {
-          const defaultEmails = adminEmail ? [adminEmail] : []
-          return dupeStorageModeFormMutation.mutate(
-            {
-              formIdToDuplicate: sourceFormId,
-              title,
-              responseMode,
-              publicKey: keypair.publicKey,
-              workspaceId,
-              emails: (emails ?? defaultEmails).filter(Boolean),
+    const metadata = buildFormClientMetadata({
+      isPaperTrackingSetUpPageEnabled,
+      isMrfCutoverEnabled,
+      formOrigins,
+      formResponseMode: responseMode,
+    })
+
+    switch (responseMode) {
+      case FormResponseMode.Encrypt: {
+        const defaultEmails = adminEmail ? [adminEmail] : []
+        return dupeStorageModeFormMutation.mutate(
+          {
+            formIdToDuplicate: sourceFormId,
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            workspaceId,
+            emails: (emails ?? defaultEmails).filter(Boolean),
+            ...(metadata && { metadata }),
+          },
+          {
+            onSuccess: () => {
+              setCurrentStep([CreateFormFlowStates.Landing, 1])
             },
-            {
-              onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Landing, 1])
-              },
-            },
-          )
-        }
-        case FormResponseMode.Email:
-          return
-        case FormResponseMode.Multirespondent:
-          return dupeMultirespondentModeFormMutation.mutate(
-            {
-              formIdToDuplicate: sourceFormId,
-              title,
-              responseMode,
-              publicKey: keypair.publicKey,
-              workspaceId,
-            },
-            {
-              onSuccess: () => {
-                setCurrentStep([CreateFormFlowStates.Landing, 1])
-              },
-            },
-          )
-        default: {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const _: never = responseMode
-          throw new Error('Invalid response mode')
-        }
+          },
+        )
       }
-    },
-  )
+      case FormResponseMode.Email:
+        return
+      case FormResponseMode.Multirespondent:
+        return dupeMultirespondentModeFormMutation.mutate(
+          {
+            formIdToDuplicate: sourceFormId,
+            title,
+            responseMode,
+            publicKey: keypair.publicKey,
+            workspaceId,
+            ...(metadata && { metadata }),
+          },
+          {
+            onSuccess: () => {
+              setCurrentStep([CreateFormFlowStates.Landing, 1])
+            },
+          },
+        )
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _: never = responseMode
+        throw new Error('Invalid response mode')
+      }
+    }
+  }
+
+  const handleCreateStorageModeOrMultirespondentForm =
+    handleSubmit(createDuplicateForm)
+
+  const handleProceedFromDetails =
+    makeHandleProceedFromDetails(createDuplicateForm)
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   // Collect email mode usage feedback before creating the form
@@ -205,6 +235,10 @@ export const useDupeFormWizardContext = (
     direction,
     formMethods,
     handleCreateStorageModeOrMultirespondentForm,
+    handleProceedFromDetails,
+    goToFormDetails,
+    isPaperTrackingSetUpPageEnabled,
+    proceedCtaLabel,
     handleEmailFeedbackSubmit,
     handleCreateEmailModeForm,
     submitEmailModeFeedback,
@@ -223,15 +257,18 @@ export const DupeFormWizardProvider = ({
   onClose,
   formIdToDuplicate,
   workspaceId,
+  initialStep,
 }: {
   children: React.ReactNode
   onClose: () => void
   formIdToDuplicate: FormId | undefined
   workspaceId?: string
+  initialStep?: CreateFormFlowStates
 }): JSX.Element => {
   const values = useDupeFormWizardContext(onClose, {
     formIdToDuplicate,
     workspaceId,
+    initialStep,
   })
   return (
     <CreateFormWizardContext.Provider value={values}>

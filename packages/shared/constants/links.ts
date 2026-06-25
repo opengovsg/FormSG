@@ -15,3 +15,6 @@ export const KILL_EMAIL_MODE_LINK =
 
 export const STATUS_TRACKER_PREVIEW_LINK =
   'https://go.gov.sg/mrf-preview-status-tracking'
+
+export const MRF_CUTOVER_FAQ_LINK =
+  'https://go.gov.sg/formsg-guide-faq-simplified-modes'
