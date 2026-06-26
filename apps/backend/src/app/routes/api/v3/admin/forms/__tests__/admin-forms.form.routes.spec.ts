@@ -3162,7 +3162,7 @@ describe('admin-form.form.routes', () => {
 
   describe('POST /admin/forms/feedback', () => {
     const MOCK_COMMENT = 'mock comment'
-    const MOCK_RATING = 0
+    const MOCK_RATING = 3
 
     it('should return 200 when the request is successful', async () => {
       // Act
@@ -3205,7 +3205,7 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.message).toEqual('Validation failed')
     })
 
-    it('should return 400 when rating is not 0 or 1', async () => {
+    it('should return 400 when rating is out of 1-5 range', async () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
@@ -3251,9 +3251,9 @@ describe('admin-form.form.routes', () => {
   })
   describe('PATCH /admin/forms/feedback/:feedbackId', () => {
     const MOCK_COMMENT = 'mock comment'
-    const MOCK_RATING = 0
+    const MOCK_RATING = 3
     const MOCK_NEW_COMMENT = 'new comment'
-    const MOCK_NEW_RATING = 1
+    const MOCK_NEW_RATING = 5
 
     let MOCK_ADMIN_FEEDBACK: IAdminFeedbackSchema
 
