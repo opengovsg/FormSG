@@ -14,7 +14,7 @@ const logger = createLoggerWithLabel(module)
 /**
  * Inserts given admin feedback to the database.
  * @param userId the userId of the admin that provided the feedback
- * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
+ * @param rating the feedback rating to insert (1-5 star scale)
  * @param comment the feedback comment to insert if available
  * @returns ok(IAdminFeedbackSchema) if successfully inserted
  * @returns err(DatabaseError) on database error
@@ -57,11 +57,12 @@ export const insertAdminFeedback = ({
 
 /**
  * Updates admin feedback in the database.
- * Will not update previous value if comment or rating is undefined
+ * Will not update previous value if comment or rating is undefined.
+ * Sets ratingChanged to true when a rating update is included.
  * @param feedbackId the id of the admin feedback to update
  * @param userId the id of the admin
  * @param comment the feedback comment to insert
- * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
+ * @param rating the feedback rating (1-5 star scale)
  * @returns ok(IAdminFeedbackSchema) if successfully inserted
  * @returns err(MissingAdminFeedbackError) if feedback document with the same feedbackId and userId is not found
  * @returns err(DatabaseError) on database error
@@ -77,14 +78,12 @@ export const updateAdminFeedback = ({
   comment?: string
   rating?: number
 }) => {
-  const updateObj = { rating, comment }
-
-  // filter out undefined properties
-  Object.keys(updateObj).forEach(
-    (key) =>
-      updateObj[key as keyof typeof updateObj] === undefined &&
-      delete updateObj[key as keyof typeof updateObj],
-  )
+  const updateObj: Record<string, unknown> = {}
+  if (comment !== undefined) updateObj.comment = comment
+  if (rating !== undefined) {
+    updateObj.rating = rating
+    updateObj.ratingChanged = true
+  }
 
   // if no update to be done, return ok
   if (isEmpty(updateObj)) return okAsync(true)

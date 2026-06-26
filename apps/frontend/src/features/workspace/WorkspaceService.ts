@@ -248,9 +248,10 @@ export const createAdminFeedback = async (
 
 export const updateAdminFeedback = async (
   feedbackId: string,
-  comment: string,
+  params: { comment?: string; rating?: AdminFeedbackRating },
 ): Promise<boolean> => {
-  return ApiService.patch(`${ADMIN_FORM_ENDPOINT}/feedback/${feedbackId}`, {
-    comment,
-  }).then(({ data }) => data)
+  return ApiService.patch(
+    `${ADMIN_FORM_ENDPOINT}/feedback/${feedbackId}`,
+    params,
+  ).then(({ data }) => data)
 }

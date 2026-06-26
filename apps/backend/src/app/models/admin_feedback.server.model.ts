@@ -20,7 +20,7 @@ const AdminFeedbackSchema = new Schema<
     rating: {
       type: Number,
       min: 0,
-      max: 1,
+      max: 5,
       required: true,
     },
     comment: {
@@ -36,6 +36,10 @@ const AdminFeedbackSchema = new Schema<
     formId: {
       type: Schema.Types.ObjectId,
       required: false,
+    },
+    ratingChanged: {
+      type: Boolean,
+      default: false,
     },
   },
   {

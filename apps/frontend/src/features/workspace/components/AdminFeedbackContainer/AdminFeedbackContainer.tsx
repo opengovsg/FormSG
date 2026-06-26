@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { AdminFeedbackTriggerSource } from 'formsg-shared/types'
+
 import { ADMIN_FEEDBACK_HISTORY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 
@@ -8,14 +10,13 @@ import { useEnv } from '~features/env/queries'
 import AdminFeedbackBox from '../AdminFeedbackBox'
 
 import {
-  AdminFeedbackTriggerSource,
   isEligibleSelector,
   resetSelector,
   useAdminFeedbackStore,
 } from './adminFeedbackStore'
 
 const triggerSourceSelector = (state: {
-  triggerSource: AdminFeedbackTriggerSource
+  triggerSource: AdminFeedbackTriggerSource | null
 }) => state.triggerSource
 const formIdSelector = (state: { formId: string | null }) => state.formId
 
@@ -35,7 +36,7 @@ export const AdminFeedbackContainer = ({ userId }: { userId: string }) => {
   // capture current time on page load to prevent re-renders from update to current time
   const currentTime = useRef(Date.now())
   // capture trigger metadata before reset clears the store
-  const capturedTriggerSource = useRef<AdminFeedbackTriggerSource>(null)
+  const capturedTriggerSource = useRef<AdminFeedbackTriggerSource | null>(null)
   const capturedFormId = useRef<string | null>(null)
 
   // check if admin is eligible in current session

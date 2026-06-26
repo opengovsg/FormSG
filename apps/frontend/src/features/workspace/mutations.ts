@@ -237,8 +237,15 @@ export const useAdminFeedbackMutation = () => {
     }) => createAdminFeedback(rating, triggerSource, formId),
   )
   const updateAdminFeedbackMutation = useMutation(
-    ({ feedbackId, comment }: { feedbackId: string; comment: string }) =>
-      updateAdminFeedback(feedbackId, comment),
+    ({
+      feedbackId,
+      comment,
+      rating,
+    }: {
+      feedbackId: string
+      comment?: string
+      rating?: AdminFeedbackRating
+    }) => updateAdminFeedback(feedbackId, { comment, rating }),
   )
 
   return { createAdminFeedbackMutation, updateAdminFeedbackMutation }

@@ -17,7 +17,7 @@ const logger = createLoggerWithLabel(module)
 
 const valdiateSubmitAdminFeedbackParams = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().min(0).max(1).required(),
+    rating: Joi.number().integer().min(1).max(5).required(),
     comment: Joi.string(),
     triggerSource: Joi.string()
       .valid('field-edit', 'publish', 'workflow')
@@ -44,8 +44,16 @@ const submitAdminFeedback: ControllerHandler<
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { rating, comment, triggerSource, formId } = req.body
 
-  // send rating to DD
+  // Dual-emit: old metric kept so existing queries don't lose data, new metric
+  // for Phase 3 (1-5 scale). WARNING: the old metric now receives 1-5 values
+  // instead of the original 0-1 binary. Dashboards consuming the old metric
+  // must migrate to .v2 and update their formulas accordingly.
+  // Remove the old metric once migration is confirmed.
   statsdClient.distribution('formsg.users.feedback.rating', rating, 1, {
+    rating: `${rating}`,
+    ...(triggerSource ? { triggerSource } : {}),
+  })
+  statsdClient.distribution('formsg.users.feedback.rating.v2', rating, 1, {
     rating: `${rating}`,
     ...(triggerSource ? { triggerSource } : {}),
   })
@@ -86,11 +94,13 @@ export const handleSubmitAdminFeedback = [
 
 const validateUpdateAdminFormFeedback = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().min(0).max(1),
+    rating: Joi.number().integer().min(1).max(5),
     comment: Joi.string(),
   }),
 })
 
+// No Datadog metric here. Metric fires on create only to avoid double-counting
+// when an admin changes their star rating.
 const updateAdminFeedback: ControllerHandler<
   { feedbackId: string },
   { message: string } | ErrorDto,

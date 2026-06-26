@@ -1,15 +1,7 @@
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-/**
- * Where the feedback prompt was triggered from. Phase 1 only sets
- * 'field-edit'; 'publish' and 'workflow' are reserved for Phase 2.
- */
-export type AdminFeedbackTriggerSource =
-  | 'field-edit'
-  | 'publish'
-  | 'workflow'
-  | null
+import { AdminFeedbackTriggerSource } from 'formsg-shared/types'
 
 type AdminFeedbackStore = {
   /**
@@ -19,7 +11,7 @@ type AdminFeedbackStore = {
    */
   isEligible: boolean
   /** Which action triggered the feedback prompt. Sent to backend with the rating. */
-  triggerSource: AdminFeedbackTriggerSource
+  triggerSource: AdminFeedbackTriggerSource | null
   /** The form the admin was working on when triggered. Sent to backend with the rating. */
   formId: string | null
   setEligible: (source: AdminFeedbackTriggerSource, formId?: string) => void

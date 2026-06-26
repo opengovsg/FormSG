@@ -1,8 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { GoThumbsdown, GoThumbsup } from 'react-icons/go'
-import { Flex, Link, Stack, Text } from '@chakra-ui/react'
+import { Flex, Stack, Text } from '@chakra-ui/react'
 
 import {
   AdminFeedbackRating,
@@ -12,20 +11,24 @@ import {
 import { BxX } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { Rating } from '~components/Field/Rating/Rating'
 import BottomHugBox from '~components/Hug/BottomHugBox'
 import IconButton from '~components/IconButton'
 import Textarea from '~components/Textarea'
 
 import { useAdminFeedbackMutation } from '~features/workspace/mutations'
 
-enum FeedbackBoxContentState {
-  Rating,
-  CallForComment,
-  CommentBox,
-}
-
 type AdminFeedbackCommentForm = {
   comment: string
+}
+
+const getCommentLabel = (
+  rating: number,
+  labels: { low: string; mid: string; high: string },
+): string => {
+  if (rating <= 2) return labels.low
+  if (rating >= 4) return labels.high
+  return labels.mid
 }
 
 export const AdminFeedbackBox = ({
@@ -37,34 +40,57 @@ export const AdminFeedbackBox = ({
   triggerSource?: AdminFeedbackTriggerSource
   formId?: string
 }) => {
-  const [contentState, setContentState] = useState(
-    FeedbackBoxContentState.Rating,
-  )
+  const { t } = useTranslation()
+  const isMobile = useIsMobile()
+  const [ratingValue, setRatingValue] = useState(0)
   const [feedbackId, setFeedbackId] = useState('')
-  const [ratingValue, setRatingValue] = useState(AdminFeedbackRating.up)
   const { createAdminFeedbackMutation, updateAdminFeedbackMutation } =
     useAdminFeedbackMutation()
+  const { handleSubmit, register } = useForm<AdminFeedbackCommentForm>()
 
-  const handleRatingClick = useCallback(
-    (rating: AdminFeedbackRating) => {
-      createAdminFeedbackMutation
-        .mutateAsync({ rating, triggerSource, formId })
-        .then((data) => setFeedbackId(data._id))
-      setContentState(FeedbackBoxContentState.CallForComment)
-      setRatingValue(rating)
+  const { prompt, fieldTitle } = t('features.workspace.feedback.rating', {
+    returnObjects: true,
+  })
+  const {
+    label: commentLabels,
+    placeholder,
+    aria: { close: closeAriaLabel },
+  } = t('features.workspace.feedback.comment', { returnObjects: true })
+
+  const handleRatingChange = useCallback(
+    (newRating: number | undefined) => {
+      if (!newRating) return
+      setRatingValue(newRating)
+
+      if (!feedbackId) {
+        // First star click: create the feedback record
+        createAdminFeedbackMutation
+          .mutateAsync({
+            rating: newRating as AdminFeedbackRating,
+            triggerSource,
+            formId,
+          })
+          .then((data) => setFeedbackId(data._id))
+      } else {
+        // Subsequent star click: update the rating
+        updateAdminFeedbackMutation.mutateAsync({
+          feedbackId,
+          rating: newRating as AdminFeedbackRating,
+        })
+      }
     },
     [
+      feedbackId,
       createAdminFeedbackMutation,
+      updateAdminFeedbackMutation,
       triggerSource,
       formId,
-      setFeedbackId,
-      setContentState,
     ],
   )
 
-  const handleCommentClick = useCallback(
+  const handleCommentSubmit = useCallback(
     (data: AdminFeedbackCommentForm) => {
-      if (feedbackId && !!data.comment) {
+      if (feedbackId && data.comment) {
         updateAdminFeedbackMutation.mutateAsync({
           feedbackId,
           comment: data.comment,
@@ -75,161 +101,48 @@ export const AdminFeedbackBox = ({
     [feedbackId, updateAdminFeedbackMutation, onClose],
   )
 
-  const handleCallForCommentClick = () =>
-    setContentState(FeedbackBoxContentState.CommentBox)
-
   return (
     <BottomHugBox>
-      <AdminFeedbackBoxContentBuilder
-        state={contentState}
-        onRatingClick={handleRatingClick}
-        onCallForCommentClick={handleCallForCommentClick}
-        onCommentClick={handleCommentClick}
-        onClose={onClose}
-        ratingValue={ratingValue}
-      />
+      <Stack w={isMobile ? undefined : '28.5rem'}>
+        <Flex justifyContent="space-between" alignItems="center">
+          <Text textStyle="h6">{prompt}</Text>
+          <IconButton
+            aria-label={closeAriaLabel}
+            icon={<BxX />}
+            variant="clear"
+            color="black"
+            onClick={onClose}
+          />
+        </Flex>
+
+        <Rating
+          name="admin-feedback-rating"
+          numberOfRatings={5}
+          value={ratingValue}
+          onChange={handleRatingChange}
+          variant="star"
+          isRequired={false}
+          fieldTitle={fieldTitle}
+        />
+
+        {ratingValue > 0 && (
+          <Stack mt="0.5rem">
+            <Text textStyle="subhead-2">
+              {getCommentLabel(ratingValue, commentLabels)}
+            </Text>
+            <Textarea {...register('comment')} placeholder={placeholder} />
+            <Flex alignItems="flex-end" flexDirection="column">
+              <Button
+                mt="0.5rem"
+                float="right"
+                onClick={handleSubmit(handleCommentSubmit)}
+              >
+                {t('features.common.submit')}
+              </Button>
+            </Flex>
+          </Stack>
+        )}
+      </Stack>
     </BottomHugBox>
   )
-}
-
-const AdminFeedbackRatingContent = ({
-  onRatingClick,
-}: {
-  onRatingClick: (rating: AdminFeedbackRating) => void
-}) => {
-  const { t } = useTranslation()
-  const {
-    prompt,
-    aria: { up, down },
-  } = t('features.workspace.feedback.rating', { returnObjects: true })
-  return (
-    <Stack direction="row" alignItems="center" gap="0.75rem">
-      <Text textStyle="h6" mr="0.75rem">
-        {prompt}
-      </Text>
-      <IconButton
-        variant="clear"
-        icon={<GoThumbsup />}
-        colorScheme="theme-blue"
-        aria-label={up}
-        onClick={() => onRatingClick(AdminFeedbackRating.up)}
-      />
-      <IconButton
-        variant="clear"
-        icon={<GoThumbsdown />}
-        colorScheme="theme-red"
-        aria-label={down}
-        onClick={() => onRatingClick(AdminFeedbackRating.down)}
-      />
-    </Stack>
-  )
-}
-
-const AdminFeedbackCallForCommentContent = ({
-  onLinkClick,
-  ratingValue,
-}: {
-  onLinkClick: () => void
-  ratingValue: AdminFeedbackRating
-}) => {
-  const { t } = useTranslation()
-  const { title, link } = t(
-    ratingValue === AdminFeedbackRating.up
-      ? 'features.workspace.feedback.callForComment.up'
-      : 'features.workspace.feedback.callForComment.down',
-    { returnObjects: true },
-  )
-  return (
-    <Text textStyle="h6">
-      {title} <Link onClick={onLinkClick}>{link}</Link>
-    </Text>
-  )
-}
-
-const AdminFeedbackCommentContent = ({
-  onCommentClick,
-  onClose,
-  ratingValue,
-}: {
-  onCommentClick: (data: AdminFeedbackCommentForm) => void
-  onClose: () => void
-  ratingValue: AdminFeedbackRating
-}) => {
-  const { t } = useTranslation()
-  const { handleSubmit, register } = useForm<AdminFeedbackCommentForm>()
-  const isMobile = useIsMobile()
-
-  const ratingName = AdminFeedbackRating[
-    ratingValue
-  ] as keyof typeof AdminFeedbackRating
-  const {
-    title,
-    description,
-    placeholder,
-    aria: { close },
-  } = t('features.workspace.feedback.comment', {
-    returnObjects: true,
-  })
-
-  return (
-    <Stack w={isMobile ? undefined : '28.5rem'}>
-      <Flex justifyContent="space-between" alignItems="center" mb="1rem">
-        <Text textStyle="h2">{title}</Text>
-        <IconButton
-          aria-label={close}
-          icon={<BxX />}
-          variant="clear"
-          color="black"
-          onClick={onClose}
-        />
-      </Flex>
-      <Text textStyle="body-2">{description}</Text>
-      <Textarea
-        mt="1rem"
-        {...register('comment')}
-        placeholder={placeholder[ratingName]}
-      />
-      <Flex alignItems="flex-end" flexDirection="column">
-        <Button mt="1rem" float="right" onClick={handleSubmit(onCommentClick)}>
-          {t('features.common.submit')}
-        </Button>
-      </Flex>
-    </Stack>
-  )
-}
-
-const AdminFeedbackBoxContentBuilder = ({
-  state,
-  onRatingClick,
-  onCallForCommentClick,
-  onCommentClick,
-  onClose,
-  ratingValue,
-}: {
-  state: FeedbackBoxContentState
-  onRatingClick: (rating: AdminFeedbackRating) => void
-  onCallForCommentClick: () => void
-  onCommentClick: (data: AdminFeedbackCommentForm) => void
-  onClose: () => void
-  ratingValue: AdminFeedbackRating
-}) => {
-  switch (state) {
-    case FeedbackBoxContentState.Rating:
-      return <AdminFeedbackRatingContent onRatingClick={onRatingClick} />
-    case FeedbackBoxContentState.CallForComment:
-      return (
-        <AdminFeedbackCallForCommentContent
-          onLinkClick={onCallForCommentClick}
-          ratingValue={ratingValue}
-        />
-      )
-    case FeedbackBoxContentState.CommentBox:
-      return (
-        <AdminFeedbackCommentContent
-          onCommentClick={onCommentClick}
-          onClose={onClose}
-          ratingValue={ratingValue}
-        />
-      )
-  }
 }
