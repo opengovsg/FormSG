@@ -32,7 +32,6 @@ import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 import { WorkspaceContent } from '~features/workspace/WorkspaceContent'
 
-import AdminFeedbackContainer from './components/AdminFeedbackContainer'
 import { WorkspaceMenuHeader } from './components/WorkspaceSideMenu/WorkspaceMenuHeader'
 import { WorkspaceMenuTabs } from './components/WorkspaceSideMenu/WorkspaceMenuTabs'
 import { useDashboard, useWorkspace } from './queries'
@@ -211,7 +210,6 @@ export const WorkspacePage = (): JSX.Element => {
           </WorkspaceProvider>
         </GridItem>
       </Grid>
-      {user && <AdminFeedbackContainer userId={user._id} />}
     </>
   )
 }

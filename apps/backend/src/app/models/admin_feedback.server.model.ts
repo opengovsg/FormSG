@@ -28,6 +28,15 @@ const AdminFeedbackSchema = new Schema<
       required: false,
       trim: true,
     },
+    triggerSource: {
+      type: String,
+      enum: ['field-edit', 'publish', 'workflow'],
+      required: false,
+    },
+    formId: {
+      type: Schema.Types.ObjectId,
+      required: false,
+    },
   },
   {
     timestamps: {

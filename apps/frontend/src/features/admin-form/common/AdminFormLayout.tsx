@@ -11,6 +11,8 @@ import { Banner } from '~components/Banner'
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { useEnv } from '~features/env/queries'
+import { useUser } from '~features/user/queries'
+import AdminFeedbackContainer from '~features/workspace/components/AdminFeedbackContainer'
 
 import { StorageResponsesProvider } from '../responses/ResponsesPage/storage/StorageResponsesProvider'
 
@@ -45,6 +47,7 @@ export const AdminFormLayout = (): JSX.Element => {
   )
 
   const { error } = useAdminForm()
+  const { user } = useUser()
 
   if (get(error, 'code') === 404 || get(error, 'code') === 410) {
     return <NotFoundErrorPage />
@@ -75,6 +78,7 @@ export const AdminFormLayout = (): JSX.Element => {
       <StorageResponsesProvider>
         <Outlet />
       </StorageResponsesProvider>
+      {user && <AdminFeedbackContainer userId={user._id} />}
     </Flex>
   )
 }

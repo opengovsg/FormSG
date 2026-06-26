@@ -4,7 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { GoThumbsdown, GoThumbsup } from 'react-icons/go'
 import { Flex, Link, Stack, Text } from '@chakra-ui/react'
 
-import { AdminFeedbackRating } from 'formsg-shared/types'
+import {
+  AdminFeedbackRating,
+  AdminFeedbackTriggerSource,
+} from 'formsg-shared/types'
 
 import { BxX } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -25,7 +28,15 @@ type AdminFeedbackCommentForm = {
   comment: string
 }
 
-export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
+export const AdminFeedbackBox = ({
+  onClose,
+  triggerSource,
+  formId,
+}: {
+  onClose: () => void
+  triggerSource?: AdminFeedbackTriggerSource
+  formId?: string
+}) => {
   const [contentState, setContentState] = useState(
     FeedbackBoxContentState.Rating,
   )
@@ -37,12 +48,18 @@ export const AdminFeedbackBox = ({ onClose }: { onClose: () => void }) => {
   const handleRatingClick = useCallback(
     (rating: AdminFeedbackRating) => {
       createAdminFeedbackMutation
-        .mutateAsync(rating)
+        .mutateAsync({ rating, triggerSource, formId })
         .then((data) => setFeedbackId(data._id))
       setContentState(FeedbackBoxContentState.CallForComment)
       setRatingValue(rating)
     },
-    [createAdminFeedbackMutation, setFeedbackId, setContentState],
+    [
+      createAdminFeedbackMutation,
+      triggerSource,
+      formId,
+      setFeedbackId,
+      setContentState,
+    ],
   )
 
   const handleCommentClick = useCallback(

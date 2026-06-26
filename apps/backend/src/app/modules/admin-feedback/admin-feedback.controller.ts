@@ -19,6 +19,10 @@ const valdiateSubmitAdminFeedbackParams = celebrate({
   [Segments.BODY]: Joi.object().keys({
     rating: Joi.number().min(0).max(1).required(),
     comment: Joi.string(),
+    triggerSource: Joi.string()
+      .valid('field-edit', 'publish', 'workflow')
+      .optional(),
+    formId: Joi.string().optional(),
   }),
 })
 
@@ -35,20 +39,23 @@ const valdiateSubmitAdminFeedbackParams = celebrate({
 const submitAdminFeedback: ControllerHandler<
   unknown,
   { message: string; feedback: IAdminFeedbackSchema } | ErrorDto,
-  { rating: number; comment?: string }
+  { rating: number; comment?: string; triggerSource?: string; formId?: string }
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { rating, comment } = req.body
+  const { rating, comment, triggerSource, formId } = req.body
 
   // send rating to DD
   statsdClient.distribution('formsg.users.feedback.rating', rating, 1, {
     rating: `${rating}`,
+    ...(triggerSource ? { triggerSource } : {}),
   })
 
   return AdminFeedbackService.insertAdminFeedback({
     userId: sessionUserId,
     rating,
     comment,
+    triggerSource,
+    formId,
   })
     .map((adminFeedback) =>
       res.status(StatusCodes.OK).json({

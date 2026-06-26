@@ -23,16 +23,22 @@ export const insertAdminFeedback = ({
   userId,
   rating,
   comment,
+  triggerSource,
+  formId,
 }: {
   userId: string
   rating: number
   comment?: string
+  triggerSource?: string
+  formId?: string
 }) => {
   return ResultAsync.fromPromise(
     AdminFeedbackModel.create({
       userId,
       rating,
       comment,
+      triggerSource,
+      formId,
     }),
     (error) => {
       logger.error({

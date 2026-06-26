@@ -75,6 +75,42 @@ describe('feedback.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(mock_feedback_no_comment)
     })
 
+    it('should return Admin Feedback document on successful insertion with triggerSource and formId', async () => {
+      const mockTriggerSource = 'publish'
+      const mockFormId = new ObjectId().toHexString()
+      const mockFeedbackWithTrigger = new AdminFeedbackModel({
+        userId: MOCK_USER_ID,
+        rating: MOCK_RATING,
+        comment: MOCK_COMMENT,
+        triggerSource: mockTriggerSource,
+        formId: mockFormId,
+      })
+
+      const insertSpy = jest
+        .spyOn(AdminFeedbackModel, 'create')
+        // @ts-ignore
+        .mockResolvedValueOnce(mockFeedbackWithTrigger)
+
+      const actualResult = await AdminFeedbackService.insertAdminFeedback({
+        userId: MOCK_USER_ID,
+        rating: MOCK_RATING,
+        comment: MOCK_COMMENT,
+        triggerSource: mockTriggerSource,
+        formId: mockFormId,
+      })
+
+      expect(insertSpy).toHaveBeenCalledTimes(1)
+      expect(insertSpy).toHaveBeenCalledWith({
+        userId: MOCK_USER_ID,
+        rating: MOCK_RATING,
+        comment: MOCK_COMMENT,
+        triggerSource: mockTriggerSource,
+        formId: mockFormId,
+      })
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockFeedbackWithTrigger)
+    })
+
     it('should return DatabaseError when error occurs whilst inserting feedback', async () => {
       // Arrange
       // Mock failure

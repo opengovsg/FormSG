@@ -61,5 +61,51 @@ describe('form_feedback.server.model', () => {
         mongoose.Error.ValidationError,
       )
     })
+
+    it('should save successfully with triggerSource and formId', async () => {
+      const paramsWithTrigger = {
+        ...DEFAULT_PARAMS,
+        triggerSource: 'publish',
+        formId: new Types.ObjectId(),
+      }
+      const actual = await FeedbackModel.create(paramsWithTrigger)
+
+      expect(actual).toEqual(
+        expect.objectContaining({
+          ...paramsWithTrigger,
+          created: expect.any(Date),
+          lastModified: expect.any(Date),
+        }),
+      )
+    })
+
+    it('should save successfully without triggerSource and formId (backwards compat)', async () => {
+      const actual = await FeedbackModel.create(DEFAULT_PARAMS)
+
+      expect(actual.triggerSource).toBeUndefined()
+      expect(actual.formId).toBeUndefined()
+    })
+
+    it('should throw validation error for invalid triggerSource enum value', async () => {
+      const paramsWithInvalidTrigger = {
+        ...DEFAULT_PARAMS,
+        triggerSource: 'invalid-source',
+      }
+      const actualPromise = new FeedbackModel(paramsWithInvalidTrigger).save()
+
+      await expect(actualPromise).rejects.toThrow(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should accept all valid triggerSource values', async () => {
+      for (const source of ['field-edit', 'publish', 'workflow']) {
+        const actual = await FeedbackModel.create({
+          ...DEFAULT_PARAMS,
+          triggerSource: source,
+        })
+        expect(actual.triggerSource).toEqual(source)
+      }
+    })
   })
 })
