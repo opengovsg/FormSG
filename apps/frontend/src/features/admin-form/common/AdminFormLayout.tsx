@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 import { get } from 'lodash'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
@@ -46,6 +48,8 @@ export const AdminFormLayout = (): JSX.Element => {
     [bannerContent, bannerContentGB],
   )
 
+  const isFiveStarEnabled = useFeatureIsOn(featureFlags.fiveStarAdminRating)
+
   const { error } = useAdminForm()
   const { user } = useUser()
 
@@ -78,7 +82,9 @@ export const AdminFormLayout = (): JSX.Element => {
       <StorageResponsesProvider>
         <Outlet />
       </StorageResponsesProvider>
-      {user && <AdminFeedbackContainer userId={user._id} />}
+      {user && isFiveStarEnabled && (
+        <AdminFeedbackContainer userId={user._id} />
+      )}
     </Flex>
   )
 }
