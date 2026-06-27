@@ -70,7 +70,7 @@ import restrictedMomLogo from './assets/images/restricted__mom.png'
 import restrictedMsfLogo from './assets/images/restricted__msf.png'
 import restrictedNparksLogo from './assets/images/restricted__nparks.png'
 import restrictedPaLogo from './assets/images/restricted__pa.png'
-import storageModeImg from './assets/images/storage_mode.svg'
+import securityImg from './assets/images/security.svg'
 import { useLanding } from './queries'
 
 export const LandingPage = (): JSX.Element => {
@@ -299,11 +299,11 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <FeatureSection
         direction={{ base: 'column', lg: 'row' }}
-        title={t('features.landingPage.storageModeSection.title')}
-        imgSrc={storageModeImg}
+        title={t('features.landingPage.securitySection.title')}
+        imgSrc={securityImg}
       >
         <SectionBodyText mt="1rem">
-          {t('features.landingPage.storageModeSection.subtitle')}
+          {t('features.landingPage.securitySection.subtitle')}
         </SectionBodyText>
         <SimpleGrid
           columns={2}
@@ -316,25 +316,25 @@ export const LandingPage = (): JSX.Element => {
           <Flex align="center">
             <Text textStyle="subhead-3">
               {t(
-                'features.landingPage.storageModeSection.modes.security.title',
+                'features.landingPage.securitySection.classifications.security.title',
               )}
             </Text>
           </Flex>
           <SectionBodyText mt={0}>
             {t(
-              'features.landingPage.storageModeSection.modes.security.description',
+              'features.landingPage.securitySection.classifications.security.description',
             )}
           </SectionBodyText>
           <Flex align="center">
             <Text textStyle="subhead-3">
               {t(
-                'features.landingPage.storageModeSection.modes.sensitivity.title',
+                'features.landingPage.securitySection.classifications.sensitivity.title',
               )}
             </Text>
           </Flex>
           <SectionBodyText mt={0}>
             {t(
-              'features.landingPage.storageModeSection.modes.sensitivity.description',
+              'features.landingPage.securitySection.classifications.sensitivity.description',
             )}
           </SectionBodyText>
         </SimpleGrid>
@@ -344,7 +344,7 @@ export const LandingPage = (): JSX.Element => {
             <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
           }
         >
-          {t('features.landingPage.storageModeSection.guideCtaLabel')}
+          {t('features.landingPage.securitySection.guideCtaLabel')}
         </FeatureLink>
       </FeatureSection>
       <FeatureSection

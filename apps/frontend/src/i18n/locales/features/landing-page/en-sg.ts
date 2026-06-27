@@ -61,11 +61,11 @@ export const enSG: LandingPage = {
     subtitle:
       'Form is a critical enabler of many agency workflows. Notable forms launched include:',
   },
-  storageModeSection: {
+  securitySection: {
     title: 'Secure collection of responses',
     subtitle:
       'All form responses are encrypted and can be sent directly to your email inbox or exported as a spreadsheet. This means third parties, including FormSG, will not be able to access or view your form data and emails.',
-    modes: {
+    classifications: {
       security: {
         title: 'Security Classification',
         description: 'Up to Confidential (Cloud-Eligible)',

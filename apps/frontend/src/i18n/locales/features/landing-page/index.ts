@@ -52,10 +52,10 @@ export interface LandingPage {
     title: string
     subtitle: string
   }
-  storageModeSection: {
+  securitySection: {
     title: string
     subtitle: string
-    modes: {
+    classifications: {
       security: {
         title: string
         description: string
