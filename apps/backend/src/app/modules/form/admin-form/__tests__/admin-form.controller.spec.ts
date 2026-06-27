@@ -20,6 +20,7 @@ import {
   FormStatus,
   LogicDto,
   SubmissionType,
+  WebhookFormat,
 } from 'formsg-shared/types'
 import * as CryptoUtil from 'formsg-shared/utils/crypto'
 import { StatusCodes } from 'http-status-codes'
@@ -5622,6 +5623,61 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+      )
+    })
+
+    it('should return 403 when compatibilityOptions is set but the webhook-format-toggle flag is off', async () => {
+      // Arrange
+      const mockRes = expressHandler.mockResponse()
+      const req = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        body: { compatibilityOptions: { webhookFormat: WebhookFormat.V1 } },
+        session: { user: { _id: MOCK_USER_ID } },
+        others: { growthbook: { isOn: jest.fn().mockReturnValue(false) } },
+      })
+
+      // Act
+      await AdminFormController._handleUpdateSettings(req, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'This setting is currently unavailable.',
+      })
+      expect(MockAdminFormService.updateFormSettings).not.toHaveBeenCalled()
+    })
+
+    it('should update compatibilityOptions when the webhook-format-toggle flag is on', async () => {
+      // Arrange
+      const mockUpdatedSettings = {
+        compatibilityOptions: { webhookFormat: WebhookFormat.V1 },
+      } as FormSettings
+      const mockRes = expressHandler.mockResponse()
+      MockUserService.getPopulatedUserById.mockReturnValueOnce(
+        okAsync(MOCK_USER),
+      )
+      MockAuthService.getFormAfterPermissionChecks.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockAdminFormService.updateFormSettings.mockReturnValueOnce(
+        okAsync(mockUpdatedSettings),
+      )
+      const req = expressHandler.mockRequest({
+        params: { formId: MOCK_FORM_ID },
+        body: { compatibilityOptions: { webhookFormat: WebhookFormat.V1 } },
+        session: { user: { _id: MOCK_USER_ID } },
+        others: { growthbook: { isOn: jest.fn().mockReturnValue(true) } },
+      })
+
+      // Act
+      await AdminFormController._handleUpdateSettings(req, mockRes, jest.fn())
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith(mockUpdatedSettings)
+      expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
+        MOCK_FORM,
+        req.body,
       )
     })
 

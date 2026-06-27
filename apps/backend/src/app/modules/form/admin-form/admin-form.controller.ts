@@ -3,7 +3,10 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants'
+import {
+  featureFlags,
+  FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
+} from 'formsg-shared/constants'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
@@ -1455,6 +1458,18 @@ export const _handleUpdateSettings: ControllerHandler<
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const settingsToPatch = req.body
+
+  // The webhook format is gated to whitelisted admins via GrowthBook targeting
+  // on this flag. Enforce server-side so the field can't be set by anyone who
+  // crafts the PATCH directly.
+  if (
+    settingsToPatch.compatibilityOptions !== undefined &&
+    !req.growthbook?.isOn(featureFlags.webhookFormatToggle)
+  ) {
+    return res.status(StatusCodes.FORBIDDEN).json({
+      message: 'This setting is currently unavailable.',
+    })
+  }
 
   // Step 1: Retrieve currently logged in user.
   return UserService.getPopulatedUserById(sessionUserId)

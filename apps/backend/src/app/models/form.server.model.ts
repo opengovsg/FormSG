@@ -39,6 +39,7 @@ import {
   PublicMultirespondentFormDto,
   PublicStorageFormDto,
   StorageFormSettings,
+  WebhookFormat,
   WorkflowType,
 } from 'formsg-shared/types'
 import { reorder } from 'formsg-shared/utils/immutable-array-fns'
@@ -809,6 +810,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         isRetryEnabled: {
           type: Boolean,
           default: false,
+        },
+      },
+
+      compatibilityOptions: {
+        // Absent means v4 (the default). Only settable by whitelisted admins
+        // (gated by the `webhook-format-toggle` flag in the settings controller).
+        webhookFormat: {
+          type: String,
+          enum: Object.values(WebhookFormat),
         },
       },
 

@@ -4,6 +4,7 @@ import {
   FormStatus,
   Language,
   SettingsUpdateDto,
+  WebhookFormat,
   WebhookSettingsUpdateDto,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -38,6 +39,9 @@ export const updateSettingsValidator = celebrate({
     submissionLimit: Joi.number().allow(null),
     title: Joi.string(),
     webhook: webhookSettingsValidator,
+    compatibilityOptions: Joi.object({
+      webhookFormat: Joi.string().valid(...Object.values(WebhookFormat)),
+    }).min(1),
     business: Joi.object({
       address: Joi.string().allow(''),
       gstRegNo: Joi.string().allow(''),
