@@ -120,34 +120,17 @@ export const enSG: LandingPage = {
   },
   howItWorksSection: {
     title: 'How it works',
-    modes: {
-      storage: {
-        tab: 'Storage mode',
-        description:
-          'Collect responses from individual respondents. Ideal for one-way submissions. All data is encrypted, which means third parties, including FormSG, will not be able to access or view your form data.',
-        steps: {
-          one: 'Log in to FormSG via Internet or Intranet',
-          two: 'Create a new Storage mode form and store Secret Key safely',
-          three: 'Build form fields',
-          four: 'Share form link with respondents',
-          five: 'Upload Secret Key and view your responses',
-          six: 'Download your responses as a CSV and collect responses at your email address',
-        },
-      },
-      mrf: {
-        tab: 'Multi-respondent mode',
-        description:
-          'Collect responses from multiple respondents in a single workflow. Ideal for sequential submissions. All data is encrypted, which means third parties, including FormSG, will not be able to access or view your form data.',
-        steps: {
-          one: 'Log in to FormSG via Internet or Intranet',
-          two: 'Create a new multi-respondent form and store the Secret Key safely',
-          three:
-            'Build form fields and assign them to various steps in your workflow',
-          four: `Share form link for automatic routing to next respondent(s)`,
-          five: 'Upload Secret Key and view your responses',
-          six: 'Download your responses as a CSV and collect responses at your email address',
-        },
-      },
+    description:
+      'Collect responses from members of the public and public officers. All data is encrypted, so third parties, including FormSG, cannot access or view your form data.',
+    steps: {
+      one: 'Log in to FormSG via Internet or Intranet',
+      two: 'Create your form and store your Secret Key safely',
+      three: 'Build your form fields',
+      four: 'Optionally add logic (branching) and workflow (approvals or multiple respondents)',
+      five: 'Share your form link',
+      six: 'Upload your Secret Key to view responses',
+      seven:
+        'Download your responses as a spreadsheet, or have them emailed to you',
     },
   },
   ogpProductSuiteSection: {

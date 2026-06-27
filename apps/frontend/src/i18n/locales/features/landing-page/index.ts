@@ -100,31 +100,15 @@ export interface LandingPage {
   }
   howItWorksSection: {
     title: string
-    modes: {
-      storage: {
-        tab: string
-        description: string
-        steps: {
-          one: string
-          two: string
-          three: string
-          four: string
-          five: string
-          six: string
-        }
-      }
-      mrf: {
-        tab: string
-        description: string
-        steps: {
-          one: string
-          two: string
-          three: string
-          four: string
-          five: string
-          six: string
-        }
-      }
+    description: string
+    steps: {
+      one: string
+      two: string
+      three: string
+      four: string
+      five: string
+      six: string
+      seven: string
     }
   }
   ogpProductSuiteSection: {

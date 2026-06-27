@@ -11,10 +11,6 @@ import {
   OrderedList,
   SimpleGrid,
   Stack,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   Text,
   VisuallyHidden,
   Wrap,
@@ -40,7 +36,6 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
-import { Tab } from '~components/Tabs'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { ExternalFormLink } from '../components/ExternalFormLink'
@@ -458,121 +453,45 @@ export const LandingPage = (): JSX.Element => {
         title={t('features.landingPage.howItWorksSection.title')}
         animationSrc={howFormsWorksAnimation}
       >
-        <Tabs mt="2.5rem">
-          <TabList>
-            <Tab>
-              {t('features.landingPage.howItWorksSection.modes.storage.tab')}
-            </Tab>
-            <Tab>
-              {t('features.landingPage.howItWorksSection.modes.mrf.tab')}
-            </Tab>
-          </TabList>
-
-          <TabPanels>
-            <TabPanel>
-              <SectionBodyText mt="1.5rem">
-                {t(
-                  'features.landingPage.howItWorksSection.modes.storage.description',
-                )}
-              </SectionBodyText>
-              <OrderedList
-                spacing="1rem"
-                mt="2.5rem"
-                listStyleType="none"
-                ml="2.5rem"
-                color="secondary.500"
-              >
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={1} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.one',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={2} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.two',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={3} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.three',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={4} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.four',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={5} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.five',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={6} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.six',
-                  )}
-                </ListItem>
-              </OrderedList>
-            </TabPanel>
-            <TabPanel>
-              <SectionBodyText mt="1.5rem">
-                {t(
-                  'features.landingPage.howItWorksSection.modes.mrf.description',
-                )}
-              </SectionBodyText>
-              <OrderedList
-                spacing="1rem"
-                mt="2.5rem"
-                listStyleType="none"
-                ml="2.5rem"
-                color="secondary.500"
-              >
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={1} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.one',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={2} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.two',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={3} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.three',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={4} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.four',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={5} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.five',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={6} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.six',
-                  )}
-                </ListItem>
-              </OrderedList>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+        <SectionBodyText mt="1.5rem">
+          {t('features.landingPage.howItWorksSection.description')}
+        </SectionBodyText>
+        <OrderedList
+          spacing="1rem"
+          mt="2.5rem"
+          listStyleType="none"
+          ml="2.5rem"
+          color="secondary.500"
+        >
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={1} />
+            {t('features.landingPage.howItWorksSection.steps.one')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={2} />
+            {t('features.landingPage.howItWorksSection.steps.two')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={3} />
+            {t('features.landingPage.howItWorksSection.steps.three')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={4} />
+            {t('features.landingPage.howItWorksSection.steps.four')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={5} />
+            {t('features.landingPage.howItWorksSection.steps.five')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={6} />
+            {t('features.landingPage.howItWorksSection.steps.six')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={7} />
+            {t('features.landingPage.howItWorksSection.steps.seven')}
+          </ListItem>
+        </OrderedList>
       </FeatureSection>
       <FeatureSection
         title={t('features.landingPage.ogpProductSuiteSection.title')}
