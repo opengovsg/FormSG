@@ -392,6 +392,10 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/PAYMENT_PROOF_S3_BUCKET"
         },
         {
+          "name": "SUBMISSION_HISTORY_S3_BUCKET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SUBMISSION_HISTORY_S3_BUCKET"
+        },
+        {
           "name": "DOWNLOAD_FORM_WHITELIST_RATE_LIMIT",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/DOWNLOAD_FORM_WHITELIST_RATE_LIMIT"
         },
