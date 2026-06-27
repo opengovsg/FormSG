@@ -121,7 +121,7 @@ export const enSG: LandingPage = {
   howItWorksSection: {
     title: 'How it works',
     description:
-      'Collect responses from members of the public and public officers. All data is encrypted, so third parties, including FormSG, cannot access or view your form data.',
+      'Collect responses from members of public and public officers. All data is encrypted, so third parties, including FormSG, cannot access or view your form data.',
     steps: {
       one: 'Log in to FormSG via Internet or Intranet',
       two: 'Create your form and store your Secret Key safely',
