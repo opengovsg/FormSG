@@ -44,6 +44,9 @@ export const featureFlags = {
   mrfCutover: 'mrf-cutover' as const,
   answerObjectEncryption: 'answer-object-encryption' as const,
   enablePaperTrackingSetUpPage: 'enable-paper-tracking-set-up-page' as const,
+  // Gates the webhook format (v1/v4) toggle; GrowthBook targeting on this flag
+  // is the admin whitelist.
+  webhookFormatToggle: 'webhook-format-toggle' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

@@ -106,6 +106,20 @@ export type FormWebhook = {
   isRetryEnabled: boolean
 }
 
+export enum WebhookFormat {
+  V1 = 'v1',
+  V4 = 'v4',
+}
+
+export type FormCompatibilityOptions = {
+  /**
+   * Format the form's webhooks are sent in. Absent means {@link WebhookFormat.V4}.
+   * Only settable by whitelisted admins (gated by the `webhook-format-toggle`
+   * feature flag); consumed by the webhook send path in a later slice.
+   */
+  webhookFormat?: WebhookFormat
+}
+
 export enum FormResponseMode {
   Encrypt = 'encrypt',
   Email = 'email',
@@ -219,6 +233,8 @@ export interface FormBase {
   msgSrvcName?: string
 
   webhook: FormWebhook
+
+  compatibilityOptions?: FormCompatibilityOptions
 
   responseMode: FormResponseMode
 

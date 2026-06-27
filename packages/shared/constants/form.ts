@@ -49,6 +49,7 @@ const FORM_SETTINGS_FIELDS = [
   'submissionLimit',
   'title',
   'webhook',
+  'compatibilityOptions',
   'hasMultiLang',
   'supportedLanguages',
   'hasRespondentCopy',
