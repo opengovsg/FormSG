@@ -99,9 +99,9 @@ export const enSG: LandingPage = {
       },
       highVolume: {
         question: 'Can FormSG handle high volume?',
-        answer: `Yes. Some forms already exceed 1 million responses, and there is no hard cap on the number of responses you can collect.
+        answer: `Yes. Some forms already exceed 1 million responses, and there is no limit on the number of responses you can collect.
 
-            As a best practice, filter responses by date before exporting, and give our support team a heads-up if you expect to collect a very large number of responses.`,
+            As a best practice, filter responses by date before exporting, and give us a heads up if you expect to collect a very large number of responses through our support channels.`,
       },
       isFree: {
         question: 'Is FormSG free?',
