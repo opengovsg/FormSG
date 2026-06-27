@@ -80,19 +80,19 @@ export interface LandingPage {
       sourceLinkLabel: string
     }
     qnaAccordionItem: {
-      loseSecretKey: {
+      whoCanCreate: {
         question: string
         answer: string
       }
-      increaseAttachmentSizeLimit: {
+      highVolume: {
+        question: string
+        answer: string
+      }
+      isFree: {
         question: string
         answer: string
       }
       howDoesE2eWork: {
-        question: string
-        answer: string
-      }
-      howToTransferOwnership: {
         question: string
         answer: string
       }

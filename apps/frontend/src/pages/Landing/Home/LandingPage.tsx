@@ -28,13 +28,9 @@ import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 import { BxlGithub } from '~assets/icons/BxlGithub'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import {
-  CONTACT_US,
   FORM_GUIDE,
-  GUIDE_ATTACHMENT_SIZE_LIMIT,
   GUIDE_DATA_CLASSIFICATION,
   GUIDE_E2EE,
-  GUIDE_SECRET_KEY_LOSS,
-  GUIDE_TRANSFER_OWNERSHIP,
   LANDING_PAGE_EXAMPLE_FORMS,
   OGP_ALL_PRODUCTS,
   OGP_FORMSG_REPO,
@@ -389,42 +385,42 @@ export const LandingPage = (): JSX.Element => {
           >
             <HelpAccordionItem
               title={t(
-                'features.landingPage.helpCenterSection.qnaAccordionItem.loseSecretKey.question',
+                'features.landingPage.helpCenterSection.qnaAccordionItem.whoCanCreate.question',
               )}
             >
               <MarkdownText components={mdComponents}>
                 {dedent(
                   t(
-                    'features.landingPage.helpCenterSection.qnaAccordionItem.loseSecretKey.answer',
-                    {
-                      CONTACT_US,
-                    },
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.whoCanCreate.answer',
                   ),
                 )}
               </MarkdownText>
-              <FeatureLink mt="1rem" href={GUIDE_SECRET_KEY_LOSS}>
-                {t(
-                  'features.landingPage.helpCenterSection.common.sourceLinkLabel',
-                )}
-              </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem
               title={t(
-                'features.landingPage.helpCenterSection.qnaAccordionItem.increaseAttachmentSizeLimit.question',
+                'features.landingPage.helpCenterSection.qnaAccordionItem.highVolume.question',
               )}
             >
               <MarkdownText components={mdComponents}>
                 {dedent(
                   t(
-                    'features.landingPage.helpCenterSection.qnaAccordionItem.increaseAttachmentSizeLimit.answer',
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.highVolume.answer',
                   ),
                 )}
               </MarkdownText>
-              <FeatureLink mt="1rem" href={GUIDE_ATTACHMENT_SIZE_LIMIT}>
-                {t(
-                  'features.landingPage.helpCenterSection.common.sourceLinkLabel',
+            </HelpAccordionItem>
+            <HelpAccordionItem
+              title={t(
+                'features.landingPage.helpCenterSection.qnaAccordionItem.isFree.question',
+              )}
+            >
+              <MarkdownText components={mdComponents}>
+                {dedent(
+                  t(
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.isFree.answer',
+                  ),
                 )}
-              </FeatureLink>
+              </MarkdownText>
             </HelpAccordionItem>
             <HelpAccordionItem
               title={t(
@@ -439,24 +435,6 @@ export const LandingPage = (): JSX.Element => {
                 )}
               </MarkdownText>
               <FeatureLink mt="1rem" href={GUIDE_E2EE}>
-                {t(
-                  'features.landingPage.helpCenterSection.common.sourceLinkLabel',
-                )}
-              </FeatureLink>
-            </HelpAccordionItem>
-            <HelpAccordionItem
-              title={t(
-                'features.landingPage.helpCenterSection.qnaAccordionItem.howToTransferOwnership.question',
-              )}
-            >
-              <MarkdownText components={mdComponents}>
-                {dedent(
-                  t(
-                    'features.landingPage.helpCenterSection.qnaAccordionItem.howToTransferOwnership.answer',
-                  ),
-                )}
-              </MarkdownText>
-              <FeatureLink mt="1rem" href={GUIDE_TRANSFER_OWNERSHIP}>
                 {t(
                   'features.landingPage.helpCenterSection.common.sourceLinkLabel',
                 )}
