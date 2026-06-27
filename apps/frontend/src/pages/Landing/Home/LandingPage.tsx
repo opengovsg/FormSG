@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { BiLockAlt, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
+import { BiRightArrowAlt } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   Accordion,
