@@ -29,6 +29,8 @@ import {
   MrfReminderRecipientEmailsEmptyError,
   SubmissionSaveError,
 } from '../../submission.errors'
+import { SubmissionHistoryUploadError } from '../../submission-history/submission-history.errors'
+import { SubmissionHistoryStore } from '../../submission-history/submission-history.store'
 import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
 import {
   createMultiRespondentFormSubmission,
@@ -308,6 +310,143 @@ describe('multirespondent-submission.service', () => {
 
       saveIfSpy.mockRestore()
       saveProtoSpy.mockRestore()
+    })
+  })
+
+  describe('submission_history snapshot persistence', () => {
+    const snapshotFormId = new ObjectId().toHexString()
+    const snapshotFieldId = new ObjectId().toHexString()
+
+    const buildSnapshotMrfForm = (webhook: {
+      url: string
+      isRetryEnabled: boolean
+    }): IPopulatedMultirespondentForm =>
+      ({
+        _id: snapshotFormId,
+        authType: FormAuthType.NIL,
+        responseMode: FormResponseMode.Multirespondent,
+        title: 'Snapshot form',
+        webhook,
+        form_fields: [
+          {
+            _id: snapshotFieldId,
+            fieldType: BasicField.ShortText,
+            title: 'Q1',
+          },
+        ],
+        form_logics: [],
+        workflow: [
+          {
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [snapshotFieldId],
+          },
+        ],
+        isSingleSubmission: false,
+        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+      }) as unknown as IPopulatedMultirespondentForm
+
+    const buildSnapshotPayload = (
+      mrfVersion: number,
+    ): MultirespondentSubmissionDto => ({
+      submissionPublicKey: 'submission-public-key',
+      encryptedSubmissionSecretKey: 'wrapped-submission-secret-key',
+      encryptedContent: 'encrypted-content',
+      verifiedContent: 'verified-content',
+      submissionSecretKey: 'submission-secret-key',
+      version: 2,
+      workflowStep: 0,
+      responses: {
+        [snapshotFieldId]: {
+          fieldType: BasicField.ShortText,
+          answer: 'answer',
+        },
+      },
+      mrfVersion,
+    })
+
+    const mockSave = () =>
+      jest
+        .spyOn(getMultirespondentSubmissionModel(mongoose).prototype, 'save')
+        .mockImplementation(function (this: IMultirespondentSubmissionSchema) {
+          return Promise.resolve(this)
+        })
+
+    afterEach(() => jest.restoreAllMocks())
+
+    it('persists a v4 snapshot S3-first (before the Mongo save) for a webhook form with retries enabled', async () => {
+      const saveProtoSpy = mockSave()
+      const saveSnapshotSpy = jest
+        .spyOn(SubmissionHistoryStore, 'saveSnapshot')
+        .mockReturnValue(okAsync(true as const))
+
+      const result = await createMultiRespondentFormSubmission({
+        form: buildSnapshotMrfForm({
+          url: 'https://example.com/hook',
+          isRetryEnabled: true,
+        }),
+        encryptedPayload: buildSnapshotPayload(2),
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(saveSnapshotSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          _v: 1,
+          formId: snapshotFormId,
+          submissionIndex: 0,
+          workflowStep: 0,
+          encryptedContent: 'encrypted-content',
+          encryptedSubmissionSecretKey: 'wrapped-submission-secret-key',
+          verifiedContent: 'verified-content',
+        }),
+        'v4',
+      )
+      // S3-first ordering: the snapshot must be written before the row is saved.
+      expect(saveSnapshotSpy.mock.invocationCallOrder[0]).toBeLessThan(
+        saveProtoSpy.mock.invocationCallOrder[0],
+      )
+    })
+
+    it('does not persist a snapshot for a V3 (mrfVersion 1) webhook form, and still saves', async () => {
+      const saveProtoSpy = mockSave()
+      const saveSnapshotSpy = jest.spyOn(SubmissionHistoryStore, 'saveSnapshot')
+
+      const result = await createMultiRespondentFormSubmission({
+        form: buildSnapshotMrfForm({
+          url: 'https://example.com/hook',
+          isRetryEnabled: true,
+        }),
+        encryptedPayload: buildSnapshotPayload(1),
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(saveSnapshotSpy).not.toHaveBeenCalled()
+      expect(saveProtoSpy).toHaveBeenCalled()
+    })
+
+    it('aborts the submission (no Mongo save) when the snapshot upload fails', async () => {
+      const saveProtoSpy = mockSave()
+      jest
+        .spyOn(SubmissionHistoryStore, 'saveSnapshot')
+        .mockReturnValue(errAsync(new SubmissionHistoryUploadError()))
+
+      const result = await createMultiRespondentFormSubmission({
+        form: buildSnapshotMrfForm({
+          url: 'https://example.com/hook',
+          isRetryEnabled: true,
+        }),
+        encryptedPayload: buildSnapshotPayload(2),
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        SubmissionHistoryUploadError,
+      )
+      expect(saveProtoSpy).not.toHaveBeenCalled()
     })
   })
 

@@ -806,9 +806,15 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
+  // V4 encryption is used for unified-mode forms, and — when the
+  // `enable-mrf-webhooks` flag is on — also for webhook-enabled forms, so the
+  // per-step `submission_history` snapshot stores V4 content. The flag is
+  // dormant by default, keeping webhook-enabled forms on V3 (mrfVersion 1) and
+  // behaviour byte-identical to today.
   const useV4Encryption =
     (req.growthbook?.isOn(featureFlags.answerObjectEncryption) &&
-      !formDef.webhook?.url) ??
+      (!formDef.webhook?.url ||
+        req.growthbook?.isOn(featureFlags.enableMrfWebhooks))) ??
     false
 
   let responsesToEncrypt:
