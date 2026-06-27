@@ -99,6 +99,10 @@ export interface SettingsMutationsStrings {
     enabled: string
     disabled: string
   }
+  webhookFormat: {
+    v1: string
+    v4: string
+  }
   businessInfoUpdated: string
   gstUpdated: string
 }

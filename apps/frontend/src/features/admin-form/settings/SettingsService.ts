@@ -6,6 +6,7 @@ import {
   MultirespondentFormSettings,
   SettingsUpdateDto,
   StorageFormSettings,
+  WebhookFormat,
 } from 'formsg-shared/types/form/form'
 import { EncryptedStringsMessageContent } from 'formsg-shared/utils/crypto'
 
@@ -205,6 +206,17 @@ export const updateFormWebhookRetries = async (
   return updateFormSettings(formId, {
     webhook: {
       isRetryEnabled: nextEnabled,
+    },
+  })
+}
+
+export const updateFormWebhookFormat = async (
+  formId: string,
+  webhookFormat: WebhookFormat,
+) => {
+  return updateFormSettings(formId, {
+    compatibilityOptions: {
+      webhookFormat,
     },
   })
 }

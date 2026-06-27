@@ -10,6 +10,7 @@ import {
   FormStatus,
   FormSupportedLanguages,
   StorageFormSettings,
+  WebhookFormat,
 } from 'formsg-shared/types/form/form'
 import { PAYMENT_DELETE_DEFAULT } from 'formsg-shared/utils/payments'
 
@@ -41,6 +42,7 @@ import {
   updateFormStatus,
   updateFormSupportedLanguages,
   updateFormTitle,
+  updateFormWebhookFormat,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
   updateFormWhitelistSetting,
@@ -548,6 +550,22 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateWebhookFormat = useMutation(
+    (nextFormat: WebhookFormat) => updateFormWebhookFormat(formId, nextFormat),
+    {
+      onSuccess: (newData, nextFormat) => {
+        handleSuccess({
+          newData,
+          toastDescription:
+            nextFormat === WebhookFormat.V1
+              ? t('features.adminForm.settings.mutations.webhookFormat.v1')
+              : t('features.adminForm.settings.mutations.webhookFormat.v4'),
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateFormBusiness = useMutation(
     (businessInfo: StorageFormSettings['business']) =>
       updateBusinessInfo(formId, businessInfo),
@@ -582,6 +600,7 @@ export const useMutateFormSettings = () => {
 
   return {
     mutateWebhookRetries,
+    mutateWebhookFormat,
     mutateFormWebhookUrl,
     mutateFormStatus,
     mutateFormLimit,

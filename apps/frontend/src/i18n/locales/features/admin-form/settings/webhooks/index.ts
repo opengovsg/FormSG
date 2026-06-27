@@ -11,4 +11,8 @@ export interface Webhooks extends HasTitle {
     label: string
     description: string
   }
+  format: {
+    label: string
+    description: string
+  }
 }

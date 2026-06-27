@@ -9,4 +9,8 @@ export const enSG = {
     label: 'Enable retries',
     description: `Your system must meet certain requirements before retries can be safely enabled. [Learn more]({url})`,
   },
+  format: {
+    label: 'Send in v1 (storage mode) format',
+    description: `Send webhooks in the legacy v1 (storage mode) format instead of v4. Only enable this if your endpoint requires the v1 payload shape.`,
+  },
 }

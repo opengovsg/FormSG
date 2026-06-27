@@ -104,6 +104,10 @@ export const enSG = {
       enabled: 'Webhook retries have been enabled.',
       disabled: 'Webhook retries have been disabled.',
     },
+    webhookFormat: {
+      v1: 'Webhooks will be sent in v1 format.',
+      v4: 'Webhooks will be sent in v4 format.',
+    },
     businessInfoUpdated: 'Business information has been updated.',
     gstUpdated: 'GST setting has been updated.',
   },
