@@ -31,7 +31,7 @@ export const enSG: LandingPage = {
           'Send confirmation emails to your respondents along with a copy of their responses',
       },
       workflow: {
-        title: 'Workflow',
+        title: 'Workflow and approvals',
         description:
           'Route forms through multiple respondents for approvals and sequential submissions, all within a single form',
       },
