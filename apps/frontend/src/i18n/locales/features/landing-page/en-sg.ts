@@ -111,9 +111,9 @@ export const enSG: LandingPage = {
       howDoesE2eWork: {
         question: 'How does end-to-end encryption work?',
         answer: `
-          When a respondent submits a response, response data is encrypted in the respondent's browser before being sent to our servers for storage. This means that by the time Form's servers receive responses, they have already been scrambled and are stored in this unreadable form. Your response data remains in this encrypted state until you decrypt your responses with your secret key, transforming them into a readable format.
+          When a respondent submits a response, response data is encrypted in the respondent's browser before being sent to our servers for storage. This means that by the time FormSG's servers receive responses, they have already been scrambled and are stored in this unreadable form. Your response data remains in this encrypted state until you decrypt your responses with your secret key, transforming them into a readable format.
 
-          The benefit of end-to-end encryption is that response data enters and remains in Form's servers in an encrypted state. This ensures that even if our servers are compromised by an attack, attackers will still not be able to decrypt and view your response data, as they do not possess your secret key.
+          The benefit of end-to-end encryption is that response data enters and remains in FormSG's servers in an encrypted state. This ensures that even if our servers are compromised by an attack, attackers will still not be able to decrypt and view your response data, as they do not possess your secret key.
         `,
       },
     },
