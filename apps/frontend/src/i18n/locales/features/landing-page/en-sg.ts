@@ -95,7 +95,7 @@ export const enSG: LandingPage = {
       whoCanCreate: {
         question: 'Who can create forms?',
         answer:
-          'Only government agencies and organisations approved by Ministries can create forms on FormSG.',
+          'Only government agencies and organisations approved by their ministries can create forms on FormSG.',
       },
       highVolume: {
         question: 'Can FormSG handle high volume?',
