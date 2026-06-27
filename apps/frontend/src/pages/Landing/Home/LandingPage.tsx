@@ -412,6 +412,19 @@ export const LandingPage = (): JSX.Element => {
           >
             <HelpAccordionItem
               title={t(
+                'features.landingPage.helpCenterSection.qnaAccordionItem.isFree.question',
+              )}
+            >
+              <MarkdownText components={mdComponents}>
+                {dedent(
+                  t(
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.isFree.answer',
+                  ),
+                )}
+              </MarkdownText>
+            </HelpAccordionItem>
+            <HelpAccordionItem
+              title={t(
                 'features.landingPage.helpCenterSection.qnaAccordionItem.whoCanCreate.question',
               )}
             >
@@ -432,19 +445,6 @@ export const LandingPage = (): JSX.Element => {
                 {dedent(
                   t(
                     'features.landingPage.helpCenterSection.qnaAccordionItem.highVolume.answer',
-                  ),
-                )}
-              </MarkdownText>
-            </HelpAccordionItem>
-            <HelpAccordionItem
-              title={t(
-                'features.landingPage.helpCenterSection.qnaAccordionItem.isFree.question',
-              )}
-            >
-              <MarkdownText components={mdComponents}>
-                {dedent(
-                  t(
-                    'features.landingPage.helpCenterSection.qnaAccordionItem.isFree.answer',
                   ),
                 )}
               </MarkdownText>
