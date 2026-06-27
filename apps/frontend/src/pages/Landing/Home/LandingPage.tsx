@@ -348,19 +348,51 @@ export const LandingPage = (): JSX.Element => {
         </FeatureLink>
       </FeatureSection>
       <FeatureSection
-        title={t('features.landingPage.opensourceSection.title')}
-        imgSrc={openSourceImg}
-        direction={{ base: 'column', lg: 'row-reverse' }}
+        align="start"
+        direction={{ base: 'column', lg: 'row' }}
+        bg="primary.100"
+        title={t('features.landingPage.howItWorksSection.title')}
+        animationSrc={howFormsWorksAnimation}
       >
-        <SectionBodyText mt="1rem">
-          {t('features.landingPage.opensourceSection.subtitle')}
+        <SectionBodyText mt="1.5rem">
+          {t('features.landingPage.howItWorksSection.description')}
         </SectionBodyText>
-        <FeatureLink
-          href={OGP_FORMSG_REPO}
-          externalLinkIcon={<BxlGithub ml="0.5rem" fontSize="1.5rem" />}
+        <OrderedList
+          spacing="1rem"
+          mt="2.5rem"
+          listStyleType="none"
+          ml="2.5rem"
+          color="secondary.500"
         >
-          {t('features.landingPage.opensourceSection.forkItCtaLabel')}
-        </FeatureLink>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={1} />
+            {t('features.landingPage.howItWorksSection.steps.one')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={2} />
+            {t('features.landingPage.howItWorksSection.steps.two')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={3} />
+            {t('features.landingPage.howItWorksSection.steps.three')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={4} />
+            {t('features.landingPage.howItWorksSection.steps.four')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={5} />
+            {t('features.landingPage.howItWorksSection.steps.five')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={6} />
+            {t('features.landingPage.howItWorksSection.steps.six')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={7} />
+            {t('features.landingPage.howItWorksSection.steps.seven')}
+          </ListItem>
+        </OrderedList>
       </FeatureSection>
       <FeatureSection
         title={t('features.landingPage.helpCenterSection.title')}
@@ -447,53 +479,6 @@ export const LandingPage = (): JSX.Element => {
         </FeatureLink>
       </FeatureSection>
       <FeatureSection
-        align="start"
-        direction={{ base: 'column', lg: 'row' }}
-        bg="primary.100"
-        title={t('features.landingPage.howItWorksSection.title')}
-        animationSrc={howFormsWorksAnimation}
-      >
-        <SectionBodyText mt="1.5rem">
-          {t('features.landingPage.howItWorksSection.description')}
-        </SectionBodyText>
-        <OrderedList
-          spacing="1rem"
-          mt="2.5rem"
-          listStyleType="none"
-          ml="2.5rem"
-          color="secondary.500"
-        >
-          <ListItem textStyle="body-2">
-            <OrderedListIcon index={1} />
-            {t('features.landingPage.howItWorksSection.steps.one')}
-          </ListItem>
-          <ListItem textStyle="body-2">
-            <OrderedListIcon index={2} />
-            {t('features.landingPage.howItWorksSection.steps.two')}
-          </ListItem>
-          <ListItem textStyle="body-2">
-            <OrderedListIcon index={3} />
-            {t('features.landingPage.howItWorksSection.steps.three')}
-          </ListItem>
-          <ListItem textStyle="body-2">
-            <OrderedListIcon index={4} />
-            {t('features.landingPage.howItWorksSection.steps.four')}
-          </ListItem>
-          <ListItem textStyle="body-2">
-            <OrderedListIcon index={5} />
-            {t('features.landingPage.howItWorksSection.steps.five')}
-          </ListItem>
-          <ListItem textStyle="body-2">
-            <OrderedListIcon index={6} />
-            {t('features.landingPage.howItWorksSection.steps.six')}
-          </ListItem>
-          <ListItem textStyle="body-2">
-            <OrderedListIcon index={7} />
-            {t('features.landingPage.howItWorksSection.steps.seven')}
-          </ListItem>
-        </OrderedList>
-      </FeatureSection>
-      <FeatureSection
         title={t('features.landingPage.ogpProductSuiteSection.title')}
         imgSrc={ogpSuiteImg}
         direction={{ base: 'column', lg: 'row' }}
@@ -508,6 +493,21 @@ export const LandingPage = (): JSX.Element => {
           }
         >
           {t('features.landingPage.ogpProductSuiteSection.ctaLinkLabel')}
+        </FeatureLink>
+      </FeatureSection>
+      <FeatureSection
+        title={t('features.landingPage.opensourceSection.title')}
+        imgSrc={openSourceImg}
+        direction={{ base: 'column', lg: 'row-reverse' }}
+      >
+        <SectionBodyText mt="1rem">
+          {t('features.landingPage.opensourceSection.subtitle')}
+        </SectionBodyText>
+        <FeatureLink
+          href={OGP_FORMSG_REPO}
+          externalLinkIcon={<BxlGithub ml="0.5rem" fontSize="1.5rem" />}
+        >
+          {t('features.landingPage.opensourceSection.forkItCtaLabel')}
         </FeatureLink>
       </FeatureSection>
       <LandingSection bg="secondary.700" align="center">
