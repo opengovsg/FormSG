@@ -66,7 +66,7 @@ import featureDndImg from './assets/images/icon_dnd.svg'
 import featureEmailImg from './assets/images/icon_email.svg'
 import featureIntegrationsImg from './assets/images/icon_integrations.svg'
 import featureLogicImg from './assets/images/icon_logic.svg'
-import featurePrefillImg from './assets/images/icon_prefill.svg'
+import featureWorkflowImg from './assets/images/icon_sections.svg'
 import featureWebhooksImg from './assets/images/icon_webhooks.svg'
 import meetingCollaborationImg from './assets/images/meeting_collaboration.svg'
 import ogpSuiteImg from './assets/images/ogp_suite.svg'
@@ -168,6 +168,15 @@ export const LandingPage = (): JSX.Element => {
             )}
           />
           <FeatureGridItem
+            image={featureWorkflowImg}
+            title={t(
+              'features.landingPage.featureSection.features.workflow.title',
+            )}
+            description={t(
+              'features.landingPage.featureSection.features.workflow.description',
+            )}
+          />
+          <FeatureGridItem
             image={featureLogicImg}
             title={t(
               'features.landingPage.featureSection.features.conditionalLogic.title',
@@ -183,15 +192,6 @@ export const LandingPage = (): JSX.Element => {
             )}
             description={t(
               'features.landingPage.featureSection.features.emailConfirmation.description',
-            )}
-          />
-          <FeatureGridItem
-            image={featurePrefillImg}
-            title={t(
-              'features.landingPage.featureSection.features.prefill.title',
-            )}
-            description={t(
-              'features.landingPage.featureSection.features.prefill.description',
             )}
           />
           <FeatureGridItem

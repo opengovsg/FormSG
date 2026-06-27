@@ -25,7 +25,7 @@ export interface LandingPage {
         title: string
         description: string
       }
-      prefill: {
+      workflow: {
         title: string
         description: string
       }

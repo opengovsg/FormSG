@@ -30,10 +30,10 @@ export const enSG: LandingPage = {
         description:
           'Send confirmation emails to your respondents along with a copy of their responses',
       },
-      prefill: {
-        title: 'Prefill',
+      workflow: {
+        title: 'Workflow',
         description:
-          'Make form filling faster for respondents by pre-filling fields for them',
+          'Route forms through multiple respondents for approvals and sequential submissions, all within a single form',
       },
       webhooks: {
         title: 'Webhooks',
