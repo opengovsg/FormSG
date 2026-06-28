@@ -76,6 +76,19 @@ migration (preserving the field `_id`).
   corrected. The `children_v2` label survives only as the **project/branch
   name**, not a `BasicField` value.
 
+## v2 is the default in Multi-respondent forms (2026-06-28)
+
+Because MRF / unified modes is the definitive home, a children field added to a
+**Multi-respondent** form is stamped `version: 2` automatically (`createFormField`),
+no flag required. The `children-v2` GrowthBook flag now governs v2 **only in
+Storage/Encrypt mode** (the pilot on the old mode). The builder offers the field
+in MRF behind `betaFlags.children` alone.
+
+Watch-out: the MRF *submission* path (picker dedup + per-child `type` threading
++ v4 storage + step-1 assignment + response `type` column) is still WIP, so
+`betaFlags.children` must stay a tight whitelist until that lands — otherwise an
+MRF children field is addable but may not submit/store correctly.
+
 ## North-star (2026-06-28)
 
 This versioned-schema field is a **transitional stepping stone in Storage mode**,
