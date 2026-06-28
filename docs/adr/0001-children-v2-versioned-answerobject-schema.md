@@ -84,8 +84,16 @@ not the destination. The **definitive** children field is intended to live in
 and upgrading their existing children forms onto it (see slice 08 and the
 Converge Storage & MRF Modes effort). answerObject-v4 storage already exists
 only on the MRF side, so MRF is closer to that destination than Storage mode is.
-Consequence: the migration story (slice 06) is ultimately an *upgrade onto the
-unified-modes field*, not merely an in-place `version` bump within Storage mode.
+
+Consequence: the migration (slice 06) is ultimately a **backend flip of the
+form's `responseMode` from `encrypt` to `multirespondent`** — landing the form
+in the unified-modes / v4 world — not merely an in-place `version` bump within
+Storage mode. An MRF form with an empty workflow behaves like a one-respondent
+form, which is the bridge that keeps single-respondent behaviour through the
+flip. Pre-flip encrypt-mode (v3) responses must still decrypt afterward. This
+supersedes the "in-place field `_id` version bump" framing above as the
+*eventual* mechanic; the version bump remains valid for the interim Storage-mode
+v2 rollout (slices 02–05).
 
 ## Notes
 
