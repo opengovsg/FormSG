@@ -298,6 +298,53 @@ describe('adaptV3ToV4', () => {
         },
       })
     })
+
+    // Characterisation test for the children-v2 storage shape (ADR-0001).
+    // The v4 answerObject already produces exactly what v2 needs for a local
+    // child: a single un-numbered `[Myinfo] Children` field whose answer nests
+    // each sub-field under one child key — no `Child 1 / Child 2` numbering in
+    // the question label or the sub-field keys. This locks that shape so it is
+    // ready to flip on when storage-mode v4 lands; the per-child `type`
+    // (nuclear/sponsored) stamp is added with sponsored support (slice 03).
+    it('produces the children-v2 shape: one un-numbered local child, nested per sub-field', () => {
+      const v3: FormFieldsV3 = {
+        childrenField: {
+          fieldType: 'children',
+          answer: {
+            child: [['Tan Wen Jie', 'S1234567A', 'MALE']],
+            childFields: ['childname', 'childbirthcertno', 'childgender'],
+          },
+        },
+      }
+
+      const result = adaptV3ToV4(v3, {
+        formFields: {
+          childrenField: {
+            question: 'Children',
+            myInfo: { attr: 'childrenbirthrecords' },
+          },
+        },
+      })
+
+      expect(result.childrenField.question).toBe('[Myinfo] Children')
+      expect(result.childrenField.question).not.toMatch(/Child\s*\d/)
+      expect(Object.keys(result.childrenField.answer)).toEqual(['child0'])
+      expect(result.childrenField.answer).toEqual({
+        child0: {
+          value: {
+            childname: {
+              value: 'Tan Wen Jie',
+              myInfo: { attr: 'childname' },
+            },
+            childbirthcertno: {
+              value: 'S1234567A',
+              myInfo: { attr: 'childbirthcertno' },
+            },
+            childgender: { value: 'MALE', myInfo: { attr: 'childgender' } },
+          },
+        },
+      })
+    })
   })
 
   describe('address field', () => {
