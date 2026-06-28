@@ -28,6 +28,7 @@ import simplur from 'simplur'
 import { DATE_DISPLAY_FORMAT } from 'formsg-shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
+  ChildrenFieldVersion,
   FormColorTheme,
   MyInfoAttribute,
   MyInfoChildAttributes,
@@ -77,6 +78,11 @@ export const ChildrenCompoundField = ({
     [schema._id],
   )
 
+  // children-v2 has no Allow-Multiple: a v2 field is always single-child here,
+  // regardless of any stale `allowMultiple` left on the field data.
+  const allowAddMultiple =
+    schema.version !== ChildrenFieldVersion.V2 && !!schema.allowMultiple
+
   const formContext = useFormContext<ChildrenCompoundFieldInputs>()
   const { isSubmitting, errors } = useFormState<ChildrenCompoundFieldInputs>({
     name: schema._id,
@@ -113,12 +119,12 @@ export const ChildrenCompoundField = ({
     let description = simplur`This is a children field. There [is|are] ${fields.length} child[|ren].`
     description += `Each child has multiple fields to fill.`
     description += `You can fill the child by selecting the child's name from the child name dropdown.`
-    if (schema.allowMultiple) {
+    if (allowAddMultiple) {
       description += ` You can add another child if you'd like by clicking the "Add another child" button below`
     }
 
     return description
-  }, [fields.length, schema.allowMultiple])
+  }, [fields.length, allowAddMultiple])
 
   const numChild = fields.length ?? 0
 
@@ -160,7 +166,7 @@ export const ChildrenCompoundField = ({
             ))}
           </VStack>
         </>
-        {schema.allowMultiple ? (
+        {allowAddMultiple ? (
           <HStack>
             <Button
               isDisabled={isSubmitting}
