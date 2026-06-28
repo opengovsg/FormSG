@@ -133,7 +133,13 @@ export const RadioField = ({
               >
                 <FormControl
                   isRequired={schema.required}
-                  isDisabled={schema.disabled}
+                  // Grey out the "Others" input unless the "Others" option is
+                  // the selected one. This makes it clear that text typed here
+                  // will not be submitted when another option is selected.
+                  isDisabled={
+                    schema.disabled ||
+                    (!!value && value !== RADIO_OTHERS_INPUT_VALUE)
+                  }
                   isReadOnly={isValid && isSubmitting}
                   isInvalid={!!get(errors, othersInputName)}
                 >

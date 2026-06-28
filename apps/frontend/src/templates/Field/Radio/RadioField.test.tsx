@@ -132,6 +132,29 @@ describe('radio validation', () => {
     ).toBeInTheDocument()
   })
 
+  it('disables the "Others" input when another option is selected', async () => {
+    // Arrange
+    const user = userEvent.setup()
+    const radioOption = ValidationRequired.args?.schema?.fieldOptions?.[0] ?? ''
+    render(<ValidationRequired />)
+    const othersInput = screen.getByLabelText('"Other" response')
+    const otherRadioButton = screen.getByRole('radio', { name: /other/i })
+    const altRadioButton = screen.getByLabelText(radioOption)
+
+    // Act
+    // Select "Others" and type a custom answer; input should be editable.
+    await user.click(otherRadioButton)
+    await user.type(othersInput, 'My custom answer')
+    expect(othersInput).toBeEnabled()
+    // Switch to a different option.
+    await user.click(altRadioButton)
+
+    // Assert
+    // "Others" input should now be greyed out (disabled) to signal that its
+    // content will not be submitted.
+    expect(othersInput).toBeDisabled()
+  })
+
   it('renders success when switching options before submitting', async () => {
     // Arrange
     const user = userEvent.setup()
