@@ -6,6 +6,7 @@ import { merge } from 'lodash'
 
 import {
   BasicField,
+  ChildrenFieldVersion,
   MyInfoChildAttributes,
   MyInfoChildData,
 } from 'formsg-shared/types/field'
@@ -89,4 +90,28 @@ const Template: StoryFn<StoryChildrenCompoundFieldProps> = ({
 export const AllowMultipleChildren = Template.bind({})
 AllowMultipleChildren.args = {
   schema: merge({}, baseSchema, { allowMultiple: true }),
+}
+
+// children-v2 (ADR-0001): a single local child, common-denominator sub-fields,
+// no add-multiple affordance, Secondary Race omitted.
+const childrenV2BirthRecords: MyInfoChildData = {
+  [MyInfoChildAttributes.ChildName]: ['Tan Wen Jie'],
+  [MyInfoChildAttributes.ChildBirthCertNo]: ['S1234567A'],
+  [MyInfoChildAttributes.ChildGender]: ['MALE'],
+  [MyInfoChildAttributes.ChildRace]: ['CHINESE'],
+}
+
+export const ChildrenV2SingleLocalChild = Template.bind({})
+ChildrenV2SingleLocalChild.args = {
+  schema: merge({}, baseSchema, {
+    version: ChildrenFieldVersion.V2,
+    allowMultiple: false,
+    childrenSubFields: [
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildBirthCertNo,
+      MyInfoChildAttributes.ChildGender,
+      MyInfoChildAttributes.ChildRace,
+    ],
+  }),
+  childrenBirthRecords: childrenV2BirthRecords,
 }
