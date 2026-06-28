@@ -22,6 +22,7 @@ import {
   BasicField,
   CheckboxFieldBase,
   ChildrenCompoundFieldBase,
+  ChildrenFieldVersion,
   DateFieldBase,
   DateSelectedValidation,
   DecimalFieldBase,
@@ -29,7 +30,6 @@ import {
   EmailFieldBase,
   FieldBase,
   HomenoFieldBase,
-  isChildrenV2Field,
   LongTextFieldBase,
   MobileFieldBase,
   NricFieldBase,
@@ -948,7 +948,7 @@ export const createChildrenValidationRules: ValidationRuleFn<
         // is identified by the name picker (which keeps its own required rule)
         // plus the unified identifier, so an empty optional sub-field that
         // MyInfo returns must not block submission.
-        if (isChildrenV2Field(schema)) return true
+        if (schema.version === ChildrenFieldVersion.V2) return true
         if (disableRequiredValidation || !schema.required) return true
         if (!value || !value.trim()) return REQUIRED_ERROR
       },
