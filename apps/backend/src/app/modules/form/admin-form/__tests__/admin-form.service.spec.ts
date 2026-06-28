@@ -2252,12 +2252,14 @@ describe('admin-form.service', () => {
     const createChildrenFieldWith = async (opts?: {
       childrenV2Enabled?: boolean
       requestedVersion?: ChildrenFieldVersion
+      responseMode?: FormResponseMode
     }) => {
       const insertFormField = jest.fn().mockResolvedValue({
         form_fields: [generateDefaultField(BasicField.Children)],
       })
       const mockForm = {
         form_fields: [],
+        responseMode: opts?.responseMode ?? FormResponseMode.Encrypt,
         insertFormField,
       } as unknown as IPopulatedForm
       const formCreateParams = {
@@ -2293,6 +2295,18 @@ describe('admin-form.service', () => {
 
       expect(insertFormField).toHaveBeenCalledWith(
         expect.objectContaining({ version: ChildrenFieldVersion.Legacy }),
+        undefined,
+      )
+    })
+
+    it('defaults to version 2 for a Multi-respondent form even when children-v2 is disabled', async () => {
+      const insertFormField = await createChildrenFieldWith({
+        childrenV2Enabled: false,
+        responseMode: FormResponseMode.Multirespondent,
+      })
+
+      expect(insertFormField).toHaveBeenCalledWith(
+        expect.objectContaining({ version: ChildrenFieldVersion.V2 }),
         undefined,
       )
     })

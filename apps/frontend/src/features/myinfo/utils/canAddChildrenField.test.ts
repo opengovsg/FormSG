@@ -4,42 +4,29 @@ import { describe, expect, it } from 'vitest'
 import { canAddChildrenField } from './canAddChildrenField'
 
 describe('canAddChildrenField', () => {
-  it('allows children in Encrypt mode with the beta flag (v2 irrelevant)', () => {
+  it('allows children in Encrypt mode with the beta flag', () => {
     expect(
       canAddChildrenField({
         hasChildrenBetaFlag: true,
         responseMode: FormResponseMode.Encrypt,
-        isChildrenV2Enabled: false,
       }),
     ).toBe(true)
   })
 
-  it('allows children in Multi-respondent mode only when v2 is enabled', () => {
+  it('allows children in Multi-respondent mode with the beta flag (v2 is the default there)', () => {
     expect(
       canAddChildrenField({
         hasChildrenBetaFlag: true,
         responseMode: FormResponseMode.Multirespondent,
-        isChildrenV2Enabled: true,
       }),
     ).toBe(true)
-  })
-
-  it('hides children in Multi-respondent mode when v2 is disabled', () => {
-    expect(
-      canAddChildrenField({
-        hasChildrenBetaFlag: true,
-        responseMode: FormResponseMode.Multirespondent,
-        isChildrenV2Enabled: false,
-      }),
-    ).toBe(false)
   })
 
   it('hides children without the beta flag, regardless of mode', () => {
     expect(
       canAddChildrenField({
         hasChildrenBetaFlag: false,
-        responseMode: FormResponseMode.Encrypt,
-        isChildrenV2Enabled: true,
+        responseMode: FormResponseMode.Multirespondent,
       }),
     ).toBe(false)
   })
@@ -49,7 +36,6 @@ describe('canAddChildrenField', () => {
       canAddChildrenField({
         hasChildrenBetaFlag: true,
         responseMode: FormResponseMode.Email,
-        isChildrenV2Enabled: true,
       }),
     ).toBe(false)
   })

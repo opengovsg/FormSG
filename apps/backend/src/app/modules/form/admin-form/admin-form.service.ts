@@ -1023,13 +1023,17 @@ export const createFormField = (
       MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
   }
 
-  // Children v2 (ADR-0001) is whitelist-gated. Stamp the schema version
-  // server-side from the gating flag so the whitelist is authoritative — a
-  // hand-crafted payload can't opt a non-whitelisted admin into v2.
+  // Children version is stamped server-side (ADR-0001/0002), so the gate is
+  // authoritative — a hand-crafted payload can't opt in. v2 is the **default
+  // in Multi-respondent forms** (the definitive children field lives in unified
+  // modes); in Storage/Encrypt mode it stays whitelist-gated by children-v2.
   if (newField.fieldType === BasicField.Children) {
-    ;(newField as ChildrenCompoundFieldBase).version = opts?.childrenV2Enabled
-      ? ChildrenFieldVersion.V2
-      : ChildrenFieldVersion.Legacy
+    const isMultirespondent =
+      form.responseMode === FormResponseMode.Multirespondent
+    ;(newField as ChildrenCompoundFieldBase).version =
+      isMultirespondent || opts?.childrenV2Enabled
+        ? ChildrenFieldVersion.V2
+        : ChildrenFieldVersion.Legacy
   }
 
   return ResultAsync.fromPromise(

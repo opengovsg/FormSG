@@ -2,10 +2,8 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
 
-import { featureFlags } from 'formsg-shared/constants'
 import {
   AdminFormDto,
   FormAuthType,
@@ -81,13 +79,12 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
 
   const { user } = useUser()
 
-  const isChildrenV2Enabled = useFeatureIsOn(featureFlags.childrenV2)
-  // children-v2 (slice 08): the field is also offered in Multi-respondent forms
-  // once v2 is enabled — the definitive children field lives in unified modes.
+  // children-v2 (slice 08): the field is also offered in Multi-respondent forms,
+  // where v2 is the default (the definitive children field lives in unified
+  // modes). Encrypt-mode availability is unchanged.
   const showChildrenSection = canAddChildrenField({
     hasChildrenBetaFlag: !!user?.betaFlags?.children,
     responseMode: form?.responseMode,
-    isChildrenV2Enabled,
   })
 
   /**
