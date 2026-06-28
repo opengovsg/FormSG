@@ -122,6 +122,56 @@ describe('myinfo.adapter', () => {
         ])
         expect(actual?.type).toEqual([ChildRecordType.Sponsored])
       })
+
+      // Edge-case handling (PRD slice 04, provisional — gated by slice 01's
+      // Singpass filter-vs-disable ruling). Opt-in via excludeIneligible so
+      // legacy (v1) behaviour is unchanged by default.
+      describe('excludeIneligible', () => {
+        const deceasedChild = {
+          name: { value: 'Deceased Child' },
+          birthcertno: { value: 'S3333333C' },
+          sex: { desc: 'MALE' },
+          lifestatus: { code: 'D', desc: 'DECEASED' },
+        }
+        // A >=21 child: MyInfo returns only the identifier, no name.
+        const above21Child = {
+          birthcertno: { value: 'S4444444D' },
+        }
+
+        const response = {
+          uinFin: MOCK_UINFIN,
+          data: {
+            childrenbirthrecords: [localChild, deceasedChild, above21Child],
+          },
+        } as unknown as IPersonResponse
+
+        it('includes deceased and >=21 children by default (legacy behaviour)', () => {
+          const actual = new MyInfoData(response).getChildrenBirthRecords(
+            REQUESTED,
+          )
+
+          expect(actual?.[MyInfoChildAttributes.ChildName]).toEqual([
+            'Local Tan',
+            'Deceased Child',
+            '',
+          ])
+        })
+
+        it('filters out deceased and >=21 children when excludeIneligible is set', () => {
+          const actual = new MyInfoData(response).getChildrenBirthRecords(
+            REQUESTED,
+            { excludeIneligible: true },
+          )
+
+          expect(actual?.[MyInfoChildAttributes.ChildName]).toEqual([
+            'Local Tan',
+          ])
+          expect(actual?.[MyInfoChildAttributes.ChildBirthCertNo]).toEqual([
+            'S1111111A',
+          ])
+          expect(actual?.type).toEqual([ChildRecordType.Nuclear])
+        })
+      })
     })
 
     describe('getFieldValueForAttr', () => {

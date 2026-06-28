@@ -304,8 +304,10 @@ export class MyInfoData implements MyInfoDataTransformer<
           ? ((record as MyInfoSponsoredChildBelow21)?.nric?.value ?? '')
           : ((record as MyInfoChildBirthRecordBelow21)?.birthcertno?.value ?? '')
       case MyInfoChildAttributes.ChildVaxxStatus:
+        // Sponsored records don't carry HPB vaccination data; undefined is
+        // handled by requirementToVaccinationEnum.
         return requirementToVaccinationEnum(
-          record?.vaccinationrequirements,
+          (record as MyInfoChildBirthRecordBelow21)?.vaccinationrequirements,
         ) as string
       case MyInfoChildAttributes.ChildGender:
         return record?.sex?.desc ?? ''
@@ -322,6 +324,7 @@ export class MyInfoData implements MyInfoDataTransformer<
 
   getChildrenBirthRecords(
     allMyInfoAttrs: InternalAttr[],
+    opts: { excludeIneligible?: boolean } = {},
   ): MyInfoChildData | undefined {
     const localRecords = this.#personData
       ?.childrenbirthrecords as Array<MyInfoChildBirthRecordBelow21> | undefined
@@ -337,7 +340,7 @@ export class MyInfoData implements MyInfoDataTransformer<
     // Local (nuclear) records first, then sponsored — each tagged with its
     // record type so the picker can dedupe by the unified identifier and the
     // response can surface the type column (ADR-0002).
-    const taggedRecords = [
+    let taggedRecords = [
       ...(localRecords ?? []).map((record) => ({
         record,
         type: ChildRecordType.Nuclear,
@@ -347,6 +350,17 @@ export class MyInfoData implements MyInfoDataTransformer<
         type: ChildRecordType.Sponsored,
       })),
     ]
+
+    if (opts.excludeIneligible) {
+      // children-v2 edge cases (PRD slice 04, provisional — gated by slice 01).
+      // A >=21 child has only the identifier and no name; a deceased child has
+      // lifestatus DECEASED. Neither should appear in the picker.
+      taggedRecords = taggedRecords.filter(
+        ({ record }) =>
+          !!record?.name?.value &&
+          (record?.lifestatus?.desc ?? '').toUpperCase() !== 'DECEASED',
+      )
+    }
 
     const result: MyInfoChildData = Object.fromEntries(
       MyInfoChildAttributesSorted
