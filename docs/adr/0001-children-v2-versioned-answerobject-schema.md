@@ -76,6 +76,17 @@ migration (preserving the field `_id`).
   corrected. The `children_v2` label survives only as the **project/branch
   name**, not a `BasicField` value.
 
+## North-star (2026-06-28)
+
+This versioned-schema field is a **transitional stepping stone in Storage mode**,
+not the destination. The **definitive** children field is intended to live in
+**Multi-respondent / unified modes** on answerObject v4, with admins migrating
+and upgrading their existing children forms onto it (see slice 08 and the
+Converge Storage & MRF Modes effort). answerObject-v4 storage already exists
+only on the MRF side, so MRF is closer to that destination than Storage mode is.
+Consequence: the migration story (slice 06) is ultimately an *upgrade onto the
+unified-modes field*, not merely an in-place `version` bump within Storage mode.
+
 ## Notes
 
 This supersedes the placeholder filename `0001-children-v2-new-field-type.md`
