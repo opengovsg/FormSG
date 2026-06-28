@@ -45,6 +45,7 @@ export const featureFlags = {
   answerObjectEncryption: 'answer-object-encryption' as const,
   enablePaperTrackingSetUpPage: 'enable-paper-tracking-set-up-page' as const,
   sidebarNavLabels: 'enable-sidebar-nav-labels' as const,
+  childrenV2: 'children-v2' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

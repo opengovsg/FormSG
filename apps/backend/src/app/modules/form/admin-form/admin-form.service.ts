@@ -14,6 +14,8 @@ import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  ChildrenCompoundFieldBase,
+  ChildrenFieldVersion,
   DropdownFieldBase,
   DuplicateFormOverwriteDto,
   EndPageUpdateDto,
@@ -1010,6 +1012,7 @@ export const createFormField = (
   form: IPopulatedForm,
   newField: FieldCreateDto,
   to?: number,
+  opts?: { childrenV2Enabled?: boolean },
 ): ResultAsync<
   FormFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
@@ -1018,6 +1021,15 @@ export const createFormField = (
   if (newField.myInfo?.attr) {
     newField.title =
       MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
+  }
+
+  // Children v2 (ADR-0001) is whitelist-gated. Stamp the schema version
+  // server-side from the gating flag so the whitelist is authoritative — a
+  // hand-crafted payload can't opt a non-whitelisted admin into v2.
+  if (newField.fieldType === BasicField.Children) {
+    ;(newField as ChildrenCompoundFieldBase).version = opts?.childrenV2Enabled
+      ? ChildrenFieldVersion.V2
+      : ChildrenFieldVersion.Legacy
   }
 
   return ResultAsync.fromPromise(

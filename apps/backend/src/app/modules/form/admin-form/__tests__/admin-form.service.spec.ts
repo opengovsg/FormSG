@@ -1,4 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+// `canvas` (pulled in transitively via convert-vector-array-to-png) ships a
+// native binding that fails to load in some sandboxes; it is not exercised by
+// these service tests, so stub it out to let the suite load.
+jest.mock('canvas', () => ({
+  createCanvas: jest.fn(),
+  CanvasRenderingContext2D: class {},
+}))
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson'
@@ -13,6 +20,7 @@ import { VALID_UPLOAD_FILE_TYPES } from 'formsg-shared/constants/file'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  ChildrenFieldVersion,
   CustomFormLogo,
   DropdownFieldBase,
   DuplicateFormBodyDto,
@@ -2239,6 +2247,66 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
+    })
+
+    const createChildrenFieldWith = async (opts?: {
+      childrenV2Enabled?: boolean
+      requestedVersion?: ChildrenFieldVersion
+    }) => {
+      const insertFormField = jest.fn().mockResolvedValue({
+        form_fields: [generateDefaultField(BasicField.Children)],
+      })
+      const mockForm = {
+        form_fields: [],
+        insertFormField,
+      } as unknown as IPopulatedForm
+      const formCreateParams = {
+        fieldType: BasicField.Children,
+        title: 'Children',
+        ...(opts?.requestedVersion !== undefined && {
+          version: opts.requestedVersion,
+        }),
+      } as FieldCreateDto
+
+      await AdminFormService.createFormField(mockForm, formCreateParams, undefined, {
+        childrenV2Enabled: opts?.childrenV2Enabled ?? false,
+      })
+
+      return insertFormField
+    }
+
+    it('stamps version 2 on a children field when children-v2 is enabled', async () => {
+      const insertFormField = await createChildrenFieldWith({
+        childrenV2Enabled: true,
+      })
+
+      expect(insertFormField).toHaveBeenCalledWith(
+        expect.objectContaining({ version: ChildrenFieldVersion.V2 }),
+        undefined,
+      )
+    })
+
+    it('stamps the legacy version when children-v2 is disabled', async () => {
+      const insertFormField = await createChildrenFieldWith({
+        childrenV2Enabled: false,
+      })
+
+      expect(insertFormField).toHaveBeenCalledWith(
+        expect.objectContaining({ version: ChildrenFieldVersion.Legacy }),
+        undefined,
+      )
+    })
+
+    it('ignores a client-supplied version 2 when children-v2 is disabled', async () => {
+      const insertFormField = await createChildrenFieldWith({
+        childrenV2Enabled: false,
+        requestedVersion: ChildrenFieldVersion.V2,
+      })
+
+      expect(insertFormField).toHaveBeenCalledWith(
+        expect.objectContaining({ version: ChildrenFieldVersion.Legacy }),
+        undefined,
+      )
     })
   })
 

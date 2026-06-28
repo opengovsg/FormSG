@@ -4,6 +4,7 @@ import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants'
+import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
@@ -2302,7 +2303,10 @@ export const _handleCreateFormField: ControllerHandler<
       )
       // Step 3: User has permissions, proceed to create form field with provided body.
       .andThen((form) =>
-        AdminFormService.createFormField(form, formFieldToCreate, to),
+        AdminFormService.createFormField(form, formFieldToCreate, to, {
+          childrenV2Enabled:
+            req.growthbook?.isOn(featureFlags.childrenV2) ?? false,
+        }),
       )
       .map((createdFormField) =>
         res.status(StatusCodes.OK).json(createdFormField as FormFieldDto),
