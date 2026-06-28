@@ -105,7 +105,11 @@ export type AllowedMyInfoFieldOption = Exclude<
 
 export type MyInfoChildData = Partial<{
   [key in MyInfoChildAttributes]: string[]
-}>
+}> & {
+  // Per-child record type (parallel to the sub-field arrays), present for
+  // children-v2: 'nuclear' (local) or 'sponsored'. See ChildRecordType.
+  type?: string[]
+}
 
 export type AllowMyInfoBase = {
   myInfo?: {

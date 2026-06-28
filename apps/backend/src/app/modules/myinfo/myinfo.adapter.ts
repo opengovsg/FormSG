@@ -5,8 +5,10 @@ import {
   MyInfoChildBirthRecordBelow21,
   MyInfoScope,
   MyInfoSource,
+  MyInfoSponsoredChildBelow21,
 } from '@opengovsg/myinfo-gov-client'
 import {
+  ChildRecordType,
   MyInfoAttribute as InternalAttr,
   MyInfoChildAttributes,
   MyInfoChildData,
@@ -279,32 +281,38 @@ export class MyInfoData implements MyInfoDataTransformer<
    * @param childAttr The child attribute you're requesting.
    * @returns Array of children's values.
    */
-  #accessChildrenAttrFromMyInfo(childAttr: MyInfoChildAttributes): string[] {
-    const records = this.#personData
-      .childrenbirthrecords as Array<MyInfoChildBirthRecordBelow21>
-    if (records === undefined) {
-      return []
-    }
-    // Note: need ?. operator because above 21 children may
-    // not have these fields.
+  /**
+   * Reads a single child sub-field from one MyInfo record (local or sponsored).
+   * The `ChildBirthCertNo` sub-field is the unified identifier: it resolves to
+   * the birth certificate number for a local (nuclear) record and to the NRIC
+   * for a sponsored record (ADR-0002).
+   *
+   * Note: `?.` is needed because above-21 children may not have these fields.
+   */
+  #accessChildAttr(
+    childAttr: MyInfoChildAttributes,
+    record: MyInfoChildBirthRecordBelow21 | MyInfoSponsoredChildBelow21,
+    type: ChildRecordType,
+  ): string {
     switch (childAttr) {
       case MyInfoChildAttributes.ChildName:
-        return records.map((c) => c?.name?.value ?? '')
+        return record?.name?.value ?? ''
       case MyInfoChildAttributes.ChildDateOfBirth:
-        return records.map((c) => c?.dob?.value ?? '')
+        return record?.dob?.value ?? ''
       case MyInfoChildAttributes.ChildBirthCertNo:
-        return records.map((c) => c?.birthcertno?.value ?? '')
+        return type === ChildRecordType.Sponsored
+          ? ((record as MyInfoSponsoredChildBelow21)?.nric?.value ?? '')
+          : ((record as MyInfoChildBirthRecordBelow21)?.birthcertno?.value ?? '')
       case MyInfoChildAttributes.ChildVaxxStatus:
-        return records.map(
-          (c) =>
-            requirementToVaccinationEnum(c?.vaccinationrequirements) as string,
-        )
+        return requirementToVaccinationEnum(
+          record?.vaccinationrequirements,
+        ) as string
       case MyInfoChildAttributes.ChildGender:
-        return records.map((c) => c?.sex?.desc ?? '')
+        return record?.sex?.desc ?? ''
       case MyInfoChildAttributes.ChildRace:
-        return records.map((c) => c?.race?.desc ?? '')
+        return record?.race?.desc ?? ''
       case MyInfoChildAttributes.ChildSecondaryRace:
-        return records.map((c) => c?.secondaryrace?.desc ?? '')
+        return record?.secondaryrace?.desc ?? ''
       default: {
         const never: never = childAttr
         return never
@@ -315,17 +323,43 @@ export class MyInfoData implements MyInfoDataTransformer<
   getChildrenBirthRecords(
     allMyInfoAttrs: InternalAttr[],
   ): MyInfoChildData | undefined {
-    if (this.#personData?.childrenbirthrecords === undefined) {
+    const localRecords = this.#personData
+      ?.childrenbirthrecords as Array<MyInfoChildBirthRecordBelow21> | undefined
+    const sponsoredRecords = this.#personData
+      ?.sponsoredchildrenrecords as
+      | Array<MyInfoSponsoredChildBelow21>
+      | undefined
+    if (localRecords === undefined && sponsoredRecords === undefined) {
       return
     }
     const myInfoAttrsSet = new Set(allMyInfoAttrs)
 
-    const result = Object.fromEntries(
+    // Local (nuclear) records first, then sponsored — each tagged with its
+    // record type so the picker can dedupe by the unified identifier and the
+    // response can surface the type column (ADR-0002).
+    const taggedRecords = [
+      ...(localRecords ?? []).map((record) => ({
+        record,
+        type: ChildRecordType.Nuclear,
+      })),
+      ...(sponsoredRecords ?? []).map((record) => ({
+        record,
+        type: ChildRecordType.Sponsored,
+      })),
+    ]
+
+    const result: MyInfoChildData = Object.fromEntries(
       MyInfoChildAttributesSorted
         // Filter out records that aren't requested by our scope.
         .filter((attr) => myInfoAttrsSet.has(attr as unknown as InternalAttr))
-        .map((attr) => [attr, this.#accessChildrenAttrFromMyInfo(attr)]),
+        .map((attr) => [
+          attr,
+          taggedRecords.map(({ record, type }) =>
+            this.#accessChildAttr(attr, record, type),
+          ),
+        ]),
     )
+    result.type = taggedRecords.map(({ type }) => type)
     return result
   }
 

@@ -17,6 +17,17 @@ export enum ChildrenFieldVersion {
   V2 = 2,
 }
 
+/**
+ * Record type of a child returned by MyInfo, stamped per child in v2 (ADR-0002).
+ * - `Nuclear`: a local registered birth record (identified by `birthcertno`).
+ * - `Sponsored`: a sponsored child record, typically born overseas
+ *   (identified by `nric`).
+ */
+export enum ChildRecordType {
+  Nuclear = 'nuclear',
+  Sponsored = 'sponsored',
+}
+
 export interface ChildrenCompoundFieldBase extends MyInfoableFieldBase {
   fieldType: BasicField.Children
   // Stores the sub-field data.
