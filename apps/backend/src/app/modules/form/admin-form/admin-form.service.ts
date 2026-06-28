@@ -31,6 +31,7 @@ import {
   FormWorkflowDto,
   FormWorkflowStepDto,
   LogicDto,
+  MyInfoChildAttributes,
   PaymentChannel,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -1028,12 +1029,22 @@ export const createFormField = (
   // in Multi-respondent forms** (the definitive children field lives in unified
   // modes); in Storage/Encrypt mode it stays whitelist-gated by children-v2.
   if (newField.fieldType === BasicField.Children) {
+    const childrenField = newField as ChildrenCompoundFieldBase
     const isMultirespondent =
       form.responseMode === FormResponseMode.Multirespondent
-    ;(newField as ChildrenCompoundFieldBase).version =
-      isMultirespondent || opts?.childrenV2Enabled
-        ? ChildrenFieldVersion.V2
-        : ChildrenFieldVersion.Legacy
+    const isV2 = isMultirespondent || !!opts?.childrenV2Enabled
+    childrenField.version = isV2
+      ? ChildrenFieldVersion.V2
+      : ChildrenFieldVersion.Legacy
+    if (isV2) {
+      // v2 has neither Secondary Race nor Allow-Multiple. Enforce it on the
+      // field data (not just the builder UI) so the invariant holds however the
+      // field became v2 — fresh create, MRF default, duplicate, or migration.
+      childrenField.allowMultiple = false
+      childrenField.childrenSubFields = childrenField.childrenSubFields?.filter(
+        (subField) => subField !== MyInfoChildAttributes.ChildSecondaryRace,
+      )
+    }
   }
 
   return ResultAsync.fromPromise(

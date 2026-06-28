@@ -37,6 +37,7 @@ import {
   LogicDto,
   LogicType,
   MyInfoAttribute,
+  MyInfoChildAttributes,
   PaymentChannel,
   PaymentType,
   SettingsUpdateDto,
@@ -2307,6 +2308,85 @@ describe('admin-form.service', () => {
 
       expect(insertFormField).toHaveBeenCalledWith(
         expect.objectContaining({ version: ChildrenFieldVersion.V2 }),
+        undefined,
+      )
+    })
+
+    it('strips Secondary Race and Allow-Multiple when stamping v2', async () => {
+      const insertFormField = jest.fn().mockResolvedValue({
+        form_fields: [generateDefaultField(BasicField.Children)],
+      })
+      const mockForm = {
+        form_fields: [],
+        responseMode: FormResponseMode.Multirespondent,
+        insertFormField,
+      } as unknown as IPopulatedForm
+      const formCreateParams = {
+        fieldType: BasicField.Children,
+        title: 'Children',
+        allowMultiple: true,
+        childrenSubFields: [
+          MyInfoChildAttributes.ChildName,
+          MyInfoChildAttributes.ChildSecondaryRace,
+          MyInfoChildAttributes.ChildGender,
+        ],
+      } as unknown as FieldCreateDto
+
+      await AdminFormService.createFormField(
+        mockForm,
+        formCreateParams,
+        undefined,
+        { childrenV2Enabled: false },
+      )
+
+      expect(insertFormField).toHaveBeenCalledWith(
+        expect.objectContaining({
+          version: ChildrenFieldVersion.V2,
+          allowMultiple: false,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildGender,
+          ],
+        }),
+        undefined,
+      )
+    })
+
+    it('keeps Secondary Race and Allow-Multiple for a legacy field', async () => {
+      const insertFormField = jest.fn().mockResolvedValue({
+        form_fields: [generateDefaultField(BasicField.Children)],
+      })
+      const mockForm = {
+        form_fields: [],
+        responseMode: FormResponseMode.Encrypt,
+        insertFormField,
+      } as unknown as IPopulatedForm
+      const formCreateParams = {
+        fieldType: BasicField.Children,
+        title: 'Children',
+        allowMultiple: true,
+        childrenSubFields: [
+          MyInfoChildAttributes.ChildName,
+          MyInfoChildAttributes.ChildSecondaryRace,
+        ],
+      } as unknown as FieldCreateDto
+
+      await AdminFormService.createFormField(
+        mockForm,
+        formCreateParams,
+        undefined,
+        { childrenV2Enabled: false },
+      )
+
+      expect(insertFormField).toHaveBeenCalledWith(
+        expect.objectContaining({
+          version: ChildrenFieldVersion.Legacy,
+          allowMultiple: true,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildSecondaryRace,
+          ],
+        }),
         undefined,
       )
     })
