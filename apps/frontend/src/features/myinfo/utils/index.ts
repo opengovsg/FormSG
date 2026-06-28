@@ -1,5 +1,6 @@
 export * from './augmentWithMyInfo'
 export * from './augmentWithMyInfoDisplayValue'
+export * from './canAddChildrenField'
 export * from './extractPreviewValue'
 export * from './hasExistingFieldValue'
 export * from './isMyInfo'
