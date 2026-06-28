@@ -345,6 +345,32 @@ describe('adaptV3ToV4', () => {
         },
       })
     })
+
+    // children-v2 sponsored support (ADR-0002): a per-child record type
+    // (nuclear/sponsored) is threaded into ChildEntryV4.type when the V3
+    // answer carries a parallel `childrenTypes` array.
+    it('stamps per-child record type from childrenTypes', () => {
+      const v3: FormFieldsV3 = {
+        field1: {
+          fieldType: 'children',
+          answer: {
+            child: [
+              ['Local Tan', 'S1111111A'],
+              ['Sponsored Lee', 'T2222222B'],
+            ],
+            childFields: ['childname', 'childbirthcertno'],
+            childrenTypes: ['nuclear', 'sponsored'],
+          },
+        },
+      }
+
+      const result = adaptV3ToV4(v3)
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const answer = result.field1.answer as any
+      expect(answer.child0.type).toBe('nuclear')
+      expect(answer.child1.type).toBe('sponsored')
+    })
   })
 
   describe('address field', () => {
