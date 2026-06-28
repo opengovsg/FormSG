@@ -3,7 +3,7 @@ import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { Box, FormControl, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { extend } from 'lodash'
 
-import { MyInfoChildAttributes } from 'formsg-shared/types'
+import { isChildrenV2Field, MyInfoChildAttributes } from 'formsg-shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'
@@ -33,6 +33,12 @@ const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {
 
 const EDIT_MYINFO_CHILDREN = ['allowMultiple', 'childrenSubFields'] as const
 
+// New field description for children-v2 (ADR-0001). Surfaced in place of the
+// MyInfo metadata details so admins see the v2 scope (sponsored children,
+// below-21 only) and verification sources.
+const CHILDREN_V2_FIELD_DESCRIPTION =
+  "The children birth records of the respondent's children or sponsored children. Only data of children below 21 years old will be available. Vaccination status is verified by HPB. All other data is verified by ICA."
+
 type EditMyInfoChildrenProps = EditFieldProps<ChildrenCompoundFieldMyInfo>
 type EditMyInfoChildrenInputs = Pick<
   ChildrenCompoundFieldMyInfo,
@@ -43,6 +49,14 @@ export const EditMyInfoChildren = ({
   field,
 }: EditMyInfoChildrenProps): JSX.Element => {
   const extendedField = extendWithMyInfo(field)
+  // children-v2 (ADR-0001): drop Secondary Race + Allow-Multiple and show the
+  // new field description; legacy (v1) fields are unchanged.
+  const isV2 = isChildrenV2Field(field)
+  const subFieldOptions = isV2
+    ? CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS.filter(
+        (option) => option.value !== MyInfoChildAttributes.ChildSecondaryRace,
+      )
+    : CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS
   const {
     control,
     register,
@@ -105,7 +119,7 @@ export const EditMyInfoChildren = ({
             name="childrenSubFields"
             render={({ field: { value, onChange, ...rest } }) => (
               <MultiSelect
-                items={CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS}
+                items={subFieldOptions}
                 values={
                   (value ?? [MyInfoChildAttributes.ChildName]) as string[]
                 }
@@ -124,17 +138,19 @@ export const EditMyInfoChildren = ({
           />
         </Box>
       </VStack>
-      <VStack align="flex-start">
-        <FormControl isReadOnly={isLoading}>
-          <Toggle
-            {...register('allowMultiple')}
-            label="Allow respondent to add multiple children"
-          />
-        </FormControl>
-      </VStack>
+      {isV2 ? null : (
+        <VStack align="flex-start">
+          <FormControl isReadOnly={isLoading}>
+            <Toggle
+              {...register('allowMultiple')}
+              label="Allow respondent to add multiple children"
+            />
+          </FormControl>
+        </VStack>
+      )}
       <VStack align="flex-start">
         <Text textStyle="subhead-1">Field details</Text>
-        <Text>{extendedField.details}</Text>
+        <Text>{isV2 ? CHILDREN_V2_FIELD_DESCRIPTION : extendedField.details}</Text>
       </VStack>
       <FormFieldDrawerActions
         isLoading={isLoading}
