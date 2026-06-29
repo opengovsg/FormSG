@@ -75,6 +75,42 @@ describe('feedback.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(mock_feedback_no_comment)
     })
 
+    it('should return Admin Feedback document on successful insertion with triggerSource and formId', async () => {
+      const mockTriggerSource = 'publish'
+      const mockFormId = new ObjectId().toHexString()
+      const mockFeedbackWithTrigger = new AdminFeedbackModel({
+        userId: MOCK_USER_ID,
+        rating: MOCK_RATING,
+        comment: MOCK_COMMENT,
+        triggerSource: mockTriggerSource,
+        formId: mockFormId,
+      })
+
+      const insertSpy = jest
+        .spyOn(AdminFeedbackModel, 'create')
+        // @ts-ignore
+        .mockResolvedValueOnce(mockFeedbackWithTrigger)
+
+      const actualResult = await AdminFeedbackService.insertAdminFeedback({
+        userId: MOCK_USER_ID,
+        rating: MOCK_RATING,
+        comment: MOCK_COMMENT,
+        triggerSource: mockTriggerSource,
+        formId: mockFormId,
+      })
+
+      expect(insertSpy).toHaveBeenCalledTimes(1)
+      expect(insertSpy).toHaveBeenCalledWith({
+        userId: MOCK_USER_ID,
+        rating: MOCK_RATING,
+        comment: MOCK_COMMENT,
+        triggerSource: mockTriggerSource,
+        formId: mockFormId,
+      })
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockFeedbackWithTrigger)
+    })
+
     it('should return DatabaseError when error occurs whilst inserting feedback', async () => {
       // Arrange
       // Mock failure
@@ -114,13 +150,8 @@ describe('feedback.service', () => {
     afterEach(() => jest.clearAllMocks())
 
     it('should update feedback successfully with both rating and comment changes', async () => {
-      const newRating = 0 as number
+      const newRating = 4
       const newComment = 'new comment'
-      const expectedResult = new AdminFeedbackModel({
-        userId: MOCK_USER_ID,
-        rating: newRating,
-        comment: newComment,
-      })
 
       // Act
       const actualResult = await AdminFeedbackService.updateAdminFeedback({
@@ -134,12 +165,39 @@ describe('feedback.service', () => {
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
-      expect(newFeedback?.comment).toEqual(expectedResult.comment)
-      expect(newFeedback?.rating).toEqual(expectedResult.rating)
+      expect(newFeedback?.comment).toEqual(newComment)
+      expect(newFeedback?.rating).toEqual(newRating)
+    })
+
+    it('should set ratingChanged to true when rating is updated', async () => {
+      const newRating = 5
+
+      await AdminFeedbackService.updateAdminFeedback({
+        feedbackId: MOCK_FEEDBACK_ID,
+        userId: MOCK_USER_ID,
+        rating: newRating,
+      })
+
+      const newFeedback = await AdminFeedbackModel.findById(MOCK_FEEDBACK_ID)
+
+      expect(newFeedback?.ratingChanged).toEqual(true)
+      expect(newFeedback?.rating).toEqual(newRating)
+    })
+
+    it('should not set ratingChanged when only comment is updated', async () => {
+      await AdminFeedbackService.updateAdminFeedback({
+        feedbackId: MOCK_FEEDBACK_ID,
+        userId: MOCK_USER_ID,
+        comment: 'just a comment',
+      })
+
+      const newFeedback = await AdminFeedbackModel.findById(MOCK_FEEDBACK_ID)
+
+      expect(newFeedback?.ratingChanged).toEqual(false)
     })
 
     it('should update feedback successfully with only rating change', async () => {
-      const newRating = 0 as number
+      const newRating = 3
       const expectedResult = new AdminFeedbackModel({
         userId: MOCK_USER_ID,
         rating: newRating,

@@ -23,16 +23,22 @@ export const insertAdminFeedback = ({
   userId,
   rating,
   comment,
+  triggerSource,
+  formId,
 }: {
   userId: string
   rating: number
   comment?: string
+  triggerSource?: string
+  formId?: string
 }) => {
   return ResultAsync.fromPromise(
     AdminFeedbackModel.create({
       userId,
       rating,
       comment,
+      triggerSource,
+      formId,
     }),
     (error) => {
       logger.error({
@@ -71,14 +77,12 @@ export const updateAdminFeedback = ({
   comment?: string
   rating?: number
 }) => {
-  const updateObj = { rating, comment }
-
-  // filter out undefined properties
-  Object.keys(updateObj).forEach(
-    (key) =>
-      updateObj[key as keyof typeof updateObj] === undefined &&
-      delete updateObj[key as keyof typeof updateObj],
-  )
+  const updateObj: Record<string, unknown> = {}
+  if (comment !== undefined) updateObj.comment = comment
+  if (rating !== undefined) {
+    updateObj.rating = rating
+    updateObj.ratingChanged = true
+  }
 
   // if no update to be done, return ok
   if (isEmpty(updateObj)) return okAsync(true)

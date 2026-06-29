@@ -17,8 +17,12 @@ const logger = createLoggerWithLabel(module)
 
 const valdiateSubmitAdminFeedbackParams = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().min(0).max(1).required(),
+    rating: Joi.number().integer().min(0).max(5).required(),
     comment: Joi.string(),
+    triggerSource: Joi.string()
+      .valid('field-edit', 'publish', 'workflow')
+      .optional(),
+    formId: Joi.string().optional(),
   }),
 })
 
@@ -35,20 +39,29 @@ const valdiateSubmitAdminFeedbackParams = celebrate({
 const submitAdminFeedback: ControllerHandler<
   unknown,
   { message: string; feedback: IAdminFeedbackSchema } | ErrorDto,
-  { rating: number; comment?: string }
+  { rating: number; comment?: string; triggerSource?: string; formId?: string }
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { rating, comment } = req.body
+  const { rating, comment, triggerSource, formId } = req.body
 
-  // send rating to DD
+  // Dual-emit: old metric kept so existing dashboards don't break during
+  // migration. New metric (.v2) for the 1-5 scale. Remove the old metric
+  // once report card has migrated to .v2.
   statsdClient.distribution('formsg.users.feedback.rating', rating, 1, {
     rating: `${rating}`,
+    ...(triggerSource ? { triggerSource } : {}),
+  })
+  statsdClient.distribution('formsg.users.feedback.rating.v2', rating, 1, {
+    rating: `${rating}`,
+    ...(triggerSource ? { triggerSource } : {}),
   })
 
   return AdminFeedbackService.insertAdminFeedback({
     userId: sessionUserId,
     rating,
     comment,
+    triggerSource,
+    formId,
   })
     .map((adminFeedback) =>
       res.status(StatusCodes.OK).json({
@@ -79,11 +92,13 @@ export const handleSubmitAdminFeedback = [
 
 const validateUpdateAdminFormFeedback = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().min(0).max(1),
+    rating: Joi.number().integer().min(1).max(5),
     comment: Joi.string(),
   }),
 })
 
+// No Datadog metric here. Metric fires on create only to avoid double-counting
+// when an admin changes their star rating.
 const updateAdminFeedback: ControllerHandler<
   { feedbackId: string },
   { message: string } | ErrorDto,
