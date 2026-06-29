@@ -11,7 +11,7 @@ Accepted
 MyInfo Children is a compound `BasicField.Children` field that prefills a
 respondent's children's birth records from MyInfo. It has been in whitelisted
 beta since 2023 and is used heavily (MOE MK registration, SG60 Baby Gift). The
-v2 effort (see PRD *MyInfo Children v2*) addresses three gaps:
+v2 effort (see PRD _MyInfo Children v2_) addresses three gaps:
 
 1. **Sponsored children** are not returned, so a meaningful slice of parents
    cannot find their child.
@@ -65,13 +65,13 @@ migration (preserving the field `_id`).
 
 **Negative / watch-outs**
 
-- "Legacy frozen / decrypt-only" (PRD slice 05) is a *behaviour of version 1*
+- "Legacy frozen / decrypt-only" (PRD slice 05) is a _behaviour of version 1_
   rather than a separate type. Care is needed so version-1 responses keep
   decrypting after version 2 ships — covered by regression tests.
 - Two behaviours now live in one field type and one set of components; the
   `version` branch must be explicit and well-tested to avoid leaking v2 rules
   (e.g. dropping Secondary Race) into version-1 forms.
-- The PRD prose and the issues README originally described a *new field type*
+- The PRD prose and the issues README originally described a _new field type_
   `children_v2`. That framing is superseded by this ADR; the README has been
   corrected. The `children_v2` label survives only as the **project/branch
   name**, not a `BasicField` value.
@@ -84,10 +84,11 @@ no flag required. The `children-v2` GrowthBook flag now governs v2 **only in
 Storage/Encrypt mode** (the pilot on the old mode). The builder offers the field
 in MRF behind `betaFlags.children` alone.
 
-Watch-out: the MRF *submission* path (picker dedup + per-child `type` threading
-+ v4 storage + step-1 assignment + response `type` column) is still WIP, so
-`betaFlags.children` must stay a tight whitelist until that lands — otherwise an
-MRF children field is addable but may not submit/store correctly.
+Watch-out: the MRF _submission_ path (picker dedup + per-child `type` threading
+
+- v4 storage + step-1 assignment + response `type` column) is still WIP, so
+  `betaFlags.children` must stay a tight whitelist until that lands — otherwise an
+  MRF children field is addable but may not submit/store correctly.
 
 ## North-star (2026-06-28)
 
@@ -105,7 +106,7 @@ Storage mode. An MRF form with an empty workflow behaves like a one-respondent
 form, which is the bridge that keeps single-respondent behaviour through the
 flip. Pre-flip encrypt-mode (v3) responses must still decrypt afterward. This
 supersedes the "in-place field `_id` version bump" framing above as the
-*eventual* mechanic; the version bump remains valid for the interim Storage-mode
+_eventual_ mechanic; the version bump remains valid for the interim Storage-mode
 v2 rollout (slices 02–05).
 
 ## Notes

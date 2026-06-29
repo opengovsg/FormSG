@@ -155,7 +155,9 @@ export const EditMyInfoChildren = ({
       )}
       <VStack align="flex-start">
         <Text textStyle="subhead-1">Field details</Text>
-        <Text>{isV2 ? CHILDREN_V2_FIELD_DESCRIPTION : extendedField.details}</Text>
+        <Text>
+          {isV2 ? CHILDREN_V2_FIELD_DESCRIPTION : extendedField.details}
+        </Text>
       </VStack>
       <FormFieldDrawerActions
         isLoading={isLoading}

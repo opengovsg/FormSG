@@ -1,5 +1,6 @@
-import { FormResponseMode } from 'formsg-shared/types'
 import { describe, expect, it } from 'vitest'
+
+import { FormResponseMode } from 'formsg-shared/types'
 
 import { canAddChildrenField } from './canAddChildrenField'
 

@@ -302,7 +302,8 @@ export class MyInfoData implements MyInfoDataTransformer<
       case MyInfoChildAttributes.ChildBirthCertNo:
         return type === ChildRecordType.Sponsored
           ? ((record as MyInfoSponsoredChildBelow21)?.nric?.value ?? '')
-          : ((record as MyInfoChildBirthRecordBelow21)?.birthcertno?.value ?? '')
+          : ((record as MyInfoChildBirthRecordBelow21)?.birthcertno?.value ??
+              '')
       case MyInfoChildAttributes.ChildVaxxStatus:
         // Sponsored records don't carry HPB vaccination data; undefined is
         // handled by requirementToVaccinationEnum.
@@ -326,10 +327,10 @@ export class MyInfoData implements MyInfoDataTransformer<
     allMyInfoAttrs: InternalAttr[],
     opts: { excludeIneligible?: boolean } = {},
   ): MyInfoChildData | undefined {
-    const localRecords = this.#personData
-      ?.childrenbirthrecords as Array<MyInfoChildBirthRecordBelow21> | undefined
-    const sponsoredRecords = this.#personData
-      ?.sponsoredchildrenrecords as
+    const localRecords = this.#personData?.childrenbirthrecords as
+      | Array<MyInfoChildBirthRecordBelow21>
+      | undefined
+    const sponsoredRecords = this.#personData?.sponsoredchildrenrecords as
       | Array<MyInfoSponsoredChildBelow21>
       | undefined
     if (localRecords === undefined && sponsoredRecords === undefined) {

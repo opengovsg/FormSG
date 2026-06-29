@@ -1,9 +1,10 @@
+import { describe, expect, it } from 'vitest'
+
 import {
   BasicField,
   ChildrenCompoundFieldBase,
   ChildrenFieldVersion,
 } from 'formsg-shared/types'
-import { describe, expect, it } from 'vitest'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 

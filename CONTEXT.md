@@ -9,7 +9,7 @@ The source(s) a form replaced, captured once during form creation. A form can ha
 _Avoid_: source, form type, `isFormOrigin` (misleading `is` prefix for a non-boolean).
 
 **Paper form**:
-A form whose **Form Origins** include paper — i.e. the admin indicated the process was (at least partly) on paper before FormSG. A paper form may *also* carry digital origins.
+A form whose **Form Origins** include paper — i.e. the admin indicated the process was (at least partly) on paper before FormSG. A paper form may _also_ carry digital origins.
 _Avoid_: physical form.
 
 **Digital origin**:
@@ -28,7 +28,7 @@ _Avoid_: active, published (publishing is a separate, admin-driven status).
 ## Example dialogue
 
 > **Dev:** "If the admin ticks both 'Paper form' and 'Spreadsheets', what's the **Form Origin**?"
-> **PM:** "Both — it's multi-select. The form is a **Paper form** *and* carries a spreadsheet **Digital origin**. We count it as paper for conversion, and the spreadsheet tag lets us break impact down by medium."
+> **PM:** "Both — it's multi-select. The form is a **Paper form** _and_ carries a spreadsheet **Digital origin**. We count it as paper for conversion, and the spreadsheet tag lets us break impact down by medium."
 > **Dev:** "And does choosing an origin make the form live?"
 > **PM:** "No — **Liveliness** is separate. A form only counts as live once it crosses the submission threshold, regardless of origin."
 
@@ -40,7 +40,7 @@ _Avoid_: active, published (publishing is a separate, admin-driven status).
 - **Duplication & templates** — decided (revised): **Form Origins** are never copied from a source form; **both** the "use template" and the duplicate flow **re-ask** the origin question and write the freshly captured origins to the new form's metadata. (Earlier the duplicate flow was deliberately left un-asked and carried no origins — overturned: a duplicate is a new form and should report its own origin.) Both flows reuse the shared origin step, gated by the same `enablePaperTrackingSetUpPage` flag.
 - **Coupling to MRF cutover** — decided: the origin set-up step is gated by `enablePaperTrackingSetUpPage` **alone**, independent of `mrfCutover`. Decoupled so the page can roll out before cutover completes (cutover may slip), targeted by admin email domain via GrowthBook. Consequence: the origin step now fronts **both** storage- and multirespondent-mode creates, not just the post-cutover MRF flow.
 - **Storage-mode capture** — decided: origins are captured for storage-mode (one-respondent) creates too, not only MRF. The backend `createForm` path already persists `metadata.formOrigins` for storage forms (part-1 widened the DTO), so this is frontend-only.
-- **Escape-hatch gap** — known/accepted: post-cutover, the storage-mode *escape hatch* (`StorageModeDetails`) creates directly and bypasses the origin step, so those forms carry no origins. Pre-existing in the shipped flow; not closed in Part 2.
+- **Escape-hatch gap** — known/accepted: post-cutover, the storage-mode _escape hatch_ (`StorageModeDetails`) creates directly and bypasses the origin step, so those forms carry no origins. Pre-existing in the shipped flow; not closed in Part 2.
 - **Email mode** — n/a: email-mode creation is no longer reachable in the create modal, so the origin step needs no email special-casing.
 
 ---
@@ -52,7 +52,7 @@ How a Multi-Respondent Form (MRF) routes a single submission through an ordered 
 ## Language
 
 **Workflow**:
-The ordered sequence of steps an MRF submission passes through. A form may have **zero** steps (no routing) or many. It is positional — a step's position *is* its number.
+The ordered sequence of steps an MRF submission passes through. A form may have **zero** steps (no routing) or many. It is positional — a step's position _is_ its number.
 _Avoid_: "process", "flow" (overloaded with conditional-logic routing within a single page).
 
 **Workflow step**:

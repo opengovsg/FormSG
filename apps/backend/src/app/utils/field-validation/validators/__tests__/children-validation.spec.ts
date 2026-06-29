@@ -33,9 +33,7 @@ const SUBFIELDS = [
   MyInfoChildAttributes.ChildRace,
 ]
 
-const childrenResponse = (
-  child: string[][],
-): ChildBirthRecordsResponseV3 => ({
+const childrenResponse = (child: string[][]): ChildBirthRecordsResponseV3 => ({
   fieldType: BasicField.Children,
   answer: { child, childFields: SUBFIELDS },
 })
@@ -92,7 +90,9 @@ describe('Children validation V3', () => {
     const result = validateFieldV3({
       formId,
       formField,
-      response: childrenResponse([['Tan Wen Jie', 'S1234567A', 'MALE', 'CHINESE']]),
+      response: childrenResponse([
+        ['Tan Wen Jie', 'S1234567A', 'MALE', 'CHINESE'],
+      ]),
       isVisible: true,
     })
 
@@ -112,7 +112,11 @@ describe('Children validation V3', () => {
         version: ChildrenFieldVersion.V2,
       })
 
-      const result = validateField(formId, formField, selectedChildWithEmptyRace)
+      const result = validateField(
+        formId,
+        formField,
+        selectedChildWithEmptyRace,
+      )
 
       expect(result.isOk()).toBe(true)
       expect(result._unsafeUnwrap()).toEqual(true)
@@ -123,7 +127,11 @@ describe('Children validation V3', () => {
         childrenSubFields: SUBFIELDS,
       })
 
-      const result = validateField(formId, formField, selectedChildWithEmptyRace)
+      const result = validateField(
+        formId,
+        formField,
+        selectedChildWithEmptyRace,
+      )
 
       expect(result.isErr()).toBe(true)
     })

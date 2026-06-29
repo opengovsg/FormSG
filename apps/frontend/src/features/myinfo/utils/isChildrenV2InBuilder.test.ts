@@ -1,9 +1,10 @@
+import { describe, expect, it } from 'vitest'
+
 import {
   BasicField,
   ChildrenFieldVersion,
   FormResponseMode,
 } from 'formsg-shared/types'
-import { describe, expect, it } from 'vitest'
 
 import { isChildrenV2InBuilder } from './isChildrenV2InBuilder'
 

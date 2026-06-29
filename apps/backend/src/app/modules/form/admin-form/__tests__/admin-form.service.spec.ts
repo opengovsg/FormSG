@@ -2,10 +2,6 @@
 // `canvas` (pulled in transitively via convert-vector-array-to-png) ships a
 // native binding that fails to load in some sandboxes; it is not exercised by
 // these service tests, so stub it out to let the suite load.
-jest.mock('canvas', () => ({
-  createCanvas: jest.fn(),
-  CanvasRenderingContext2D: class {},
-}))
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { PresignedPost } from 'aws-sdk/clients/s3'
 import { ObjectId } from 'bson'
@@ -108,6 +104,11 @@ import {
 import * as AdminFormService from '../admin-form.service'
 import { OverrideProps } from '../admin-form.types'
 import * as AdminFormUtils from '../admin-form.utils'
+
+jest.mock('canvas', () => ({
+  createCanvas: jest.fn(),
+  CanvasRenderingContext2D: class {},
+}))
 
 const FormModel = getFormModel(mongoose)
 const EmailFormModel = getEmailFormModel(mongoose)
@@ -2271,9 +2272,14 @@ describe('admin-form.service', () => {
         }),
       } as FieldCreateDto
 
-      await AdminFormService.createFormField(mockForm, formCreateParams, undefined, {
-        childrenV2Enabled: opts?.childrenV2Enabled ?? false,
-      })
+      await AdminFormService.createFormField(
+        mockForm,
+        formCreateParams,
+        undefined,
+        {
+          childrenV2Enabled: opts?.childrenV2Enabled ?? false,
+        },
+      )
 
       return insertFormField
     }
