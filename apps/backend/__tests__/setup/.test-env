@@ -60,7 +60,6 @@ STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket
 GUARDDUTY_QUARANTINE_S3_BUCKET=local-guardduty-quarantine-bucket
 GUARDDUTY_CLEAN_S3_BUCKET=local-guardduty-clean-bucket
 PAYMENT_PROOF_S3_BUCKET=local-payment-proof-bucket
-SUBMISSION_HISTORY_S3_BUCKET=local-submission-history-bucket
 NODE_ENV=test
 FORMSG_SDK_MODE=test
 

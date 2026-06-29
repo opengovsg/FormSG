@@ -39,11 +39,4 @@ awslocal s3api put-bucket-versioning --bucket $GUARDDUTY_CLEAN_S3_BUCKET   --ver
 # Buckets for payment proof
 awslocal s3 mb s3://$PAYMENT_PROOF_S3_BUCKET
 
-# Bucket for MRF submission history snapshots
-# Created with versioning enabled from the start: Object Lock (immutable
-# audit trail) cannot be added to a bucket after creation. The webhook write
-# path itself plain-overwrites.
-awslocal s3 mb s3://$SUBMISSION_HISTORY_S3_BUCKET
-awslocal s3api put-bucket-versioning --bucket $SUBMISSION_HISTORY_S3_BUCKET   --versioning-configuration Status=Enabled
-
 set +x

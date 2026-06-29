@@ -25,7 +25,6 @@ services:
       - FE_APP_URL=http://localhost:5173
       - ATTACHMENT_S3_BUCKET=local-attachment-bucket
       - PAYMENT_PROOF_S3_BUCKET=local-payment-proof-bucket
-      - SUBMISSION_HISTORY_S3_BUCKET=local-submission-history-bucket
       - IMAGE_S3_BUCKET=local-image-bucket
       - LOGO_S3_BUCKET=local-logo-bucket
       - STATIC_ASSETS_S3_BUCKET=local-static-assets-bucket

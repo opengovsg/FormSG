@@ -33,13 +33,11 @@ export type AwsConfig = {
   logoS3Bucket: string
   attachmentS3Bucket: string
   paymentProofS3Bucket: string
-  submissionHistoryS3Bucket: string
   region: string
   logoBucketUrl: string
   imageBucketUrl: string
   attachmentBucketUrl: string
   staticAssetsBucketUrl: string
-  submissionHistoryS3BucketUrl: string
   s3: aws.S3
   endPoint: string
   guarddutyQuarantineS3BucketUrl: string
@@ -151,7 +149,6 @@ export interface ICompulsoryVarsSchema {
     logoS3Bucket: string
     attachmentS3Bucket: string
     paymentProofS3Bucket: string
-    submissionHistoryS3Bucket: string
   }
 }
 
@@ -261,7 +258,6 @@ export interface IBucketUrlSchema {
   imageBucketUrl: string
   staticAssetsBucketUrl: string
   paymentProofS3BucketUrl: string
-  submissionHistoryS3BucketUrl: string
   endPoint: string
   guarddutyQuarantineS3BucketUrl: string
 }
