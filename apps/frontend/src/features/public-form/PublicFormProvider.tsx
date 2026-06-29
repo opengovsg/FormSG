@@ -698,7 +698,7 @@ export const PublicFormProvider = ({
     if (hasPreviousSubmissionDecryptionError) {
       toast({
         status: 'danger',
-        description: 'Failed to decrypt attachment',
+        description: t('features.publicForm.errors.attachmentDecryption'),
       })
     }
   }, [hasMyInfoError, hasPreviousSubmissionDecryptionError, toast, t])
