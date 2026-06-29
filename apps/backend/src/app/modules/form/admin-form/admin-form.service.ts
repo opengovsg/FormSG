@@ -922,6 +922,22 @@ export const updateFormField = (
 ): ResultAsync<FormFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
   const _newField = insertTableShortTextColumnDefaultValidationOptions(newField)
 
+  // children-v2 (ADR-0001/0002): the v2 invariants must hold on edits too, not
+  // only on create. A children field is v2 if the form is Multi-respondent
+  // (where v2 is the default) or the payload is already stamped v2; in that
+  // case strip Secondary Race / Allow-Multiple so a crafted update payload
+  // can't reintroduce them. We never downgrade an existing version here.
+  if (_newField.fieldType === BasicField.Children) {
+    const childrenField = _newField as ChildrenCompoundFieldBase
+    const isV2 =
+      form.responseMode === FormResponseMode.Multirespondent ||
+      childrenField.version === ChildrenFieldVersion.V2
+    if (isV2) {
+      childrenField.version = ChildrenFieldVersion.V2
+      enforceChildrenV2Invariants(childrenField)
+    }
+  }
+
   return ResultAsync.fromPromise(
     form.updateFormFieldById(fieldId, _newField),
     (error) => {
@@ -1002,6 +1018,23 @@ export const duplicateFormField = (
 }
 
 /**
+ * Enforces the children-v2 data invariants (ADR-0001/0002) on a children field
+ * before it is written: v2 has neither Secondary Race nor Allow-Multiple, so we
+ * drop them from the field data — not just from the builder UI — so the
+ * invariant holds however the field became v2 (fresh create, MRF default, or
+ * edit). Cleaning at the data layer (rather than filtering at render) matters
+ * because the render index maps to childFields/answerArray positions.
+ */
+const enforceChildrenV2Invariants = (
+  childrenField: ChildrenCompoundFieldBase,
+): void => {
+  childrenField.allowMultiple = false
+  childrenField.childrenSubFields = childrenField.childrenSubFields?.filter(
+    (subField) => subField !== MyInfoChildAttributes.ChildSecondaryRace,
+  )
+}
+
+/**
  * Inserts a new form field into given form's fields with the field provided
  * @param form the form to insert the new field into
  * @param newField the new field to insert
@@ -1037,13 +1070,7 @@ export const createFormField = (
       ? ChildrenFieldVersion.V2
       : ChildrenFieldVersion.Legacy
     if (isV2) {
-      // v2 has neither Secondary Race nor Allow-Multiple. Enforce it on the
-      // field data (not just the builder UI) so the invariant holds however the
-      // field became v2 — fresh create, MRF default, duplicate, or migration.
-      childrenField.allowMultiple = false
-      childrenField.childrenSubFields = childrenField.childrenSubFields?.filter(
-        (subField) => subField !== MyInfoChildAttributes.ChildSecondaryRace,
-      )
+      enforceChildrenV2Invariants(childrenField)
     }
   }
 

@@ -2147,6 +2147,125 @@ describe('admin-form.service', () => {
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
     })
+
+    it('strips Secondary Race and Allow-Multiple when updating a v2 children field', async () => {
+      // Arrange
+      const fieldToUpdate = generateDefaultField(BasicField.Children)
+      const mockNewField = {
+        ...fieldToUpdate,
+        version: ChildrenFieldVersion.V2,
+        allowMultiple: true,
+        childrenSubFields: [
+          MyInfoChildAttributes.ChildName,
+          MyInfoChildAttributes.ChildSecondaryRace,
+          MyInfoChildAttributes.ChildGender,
+        ],
+      } as unknown as FieldUpdateDto
+      const mockForm = {
+        form_fields: [fieldToUpdate],
+        responseMode: FormResponseMode.Encrypt,
+        updateFormFieldById: jest
+          .fn()
+          .mockResolvedValue({ form_fields: [mockNewField] }),
+      } as unknown as IPopulatedForm
+
+      // Act
+      await AdminFormService.updateFormField(
+        mockForm,
+        fieldToUpdate._id,
+        mockNewField,
+      )
+
+      // Assert
+      expect(mockForm.updateFormFieldById).toHaveBeenCalledWith(
+        fieldToUpdate._id,
+        expect.objectContaining({
+          version: ChildrenFieldVersion.V2,
+          allowMultiple: false,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildGender,
+          ],
+        }),
+      )
+    })
+
+    it('defaults to v2 and strips disallowed options when updating a children field in a Multi-respondent form', async () => {
+      // Arrange
+      const fieldToUpdate = generateDefaultField(BasicField.Children)
+      const mockNewField = {
+        ...fieldToUpdate,
+        version: undefined,
+        allowMultiple: true,
+        childrenSubFields: [
+          MyInfoChildAttributes.ChildName,
+          MyInfoChildAttributes.ChildSecondaryRace,
+        ],
+      } as unknown as FieldUpdateDto
+      const mockForm = {
+        form_fields: [fieldToUpdate],
+        responseMode: FormResponseMode.Multirespondent,
+        updateFormFieldById: jest
+          .fn()
+          .mockResolvedValue({ form_fields: [mockNewField] }),
+      } as unknown as IPopulatedForm
+
+      // Act
+      await AdminFormService.updateFormField(
+        mockForm,
+        fieldToUpdate._id,
+        mockNewField,
+      )
+
+      // Assert
+      expect(mockForm.updateFormFieldById).toHaveBeenCalledWith(
+        fieldToUpdate._id,
+        expect.objectContaining({
+          version: ChildrenFieldVersion.V2,
+          allowMultiple: false,
+          childrenSubFields: [MyInfoChildAttributes.ChildName],
+        }),
+      )
+    })
+
+    it('leaves a legacy children field untouched on update', async () => {
+      // Arrange
+      const fieldToUpdate = generateDefaultField(BasicField.Children)
+      const mockNewField = {
+        ...fieldToUpdate,
+        allowMultiple: true,
+        childrenSubFields: [
+          MyInfoChildAttributes.ChildName,
+          MyInfoChildAttributes.ChildSecondaryRace,
+        ],
+      } as unknown as FieldUpdateDto
+      const mockForm = {
+        form_fields: [fieldToUpdate],
+        responseMode: FormResponseMode.Encrypt,
+        updateFormFieldById: jest
+          .fn()
+          .mockResolvedValue({ form_fields: [mockNewField] }),
+      } as unknown as IPopulatedForm
+
+      // Act
+      await AdminFormService.updateFormField(
+        mockForm,
+        fieldToUpdate._id,
+        mockNewField,
+      )
+
+      // Assert
+      expect(mockForm.updateFormFieldById).toHaveBeenCalledWith(
+        fieldToUpdate._id,
+        expect.objectContaining({
+          allowMultiple: true,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildSecondaryRace,
+          ],
+        }),
+      )
+    })
   })
 
   describe('createFormField', () => {
