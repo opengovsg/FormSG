@@ -6991,6 +6991,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
         undefined,
+        { childrenV2Enabled: false },
       )
     })
 
@@ -7028,6 +7029,7 @@ describe('admin-form.controller', () => {
         MOCK_CREATE_FIELD_BODY,
         // Should pass in position query
         expectedPosition,
+        { childrenV2Enabled: false },
       )
     })
 
@@ -7124,6 +7126,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
         undefined,
+        { childrenV2Enabled: false },
       )
     })
 
@@ -7151,6 +7154,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
         undefined,
+        { childrenV2Enabled: false },
       )
     })
 
@@ -7257,6 +7261,7 @@ describe('admin-form.controller', () => {
         MOCK_FORM,
         MOCK_CREATE_FIELD_BODY,
         undefined,
+        { childrenV2Enabled: false },
       )
     })
   })
