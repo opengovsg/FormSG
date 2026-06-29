@@ -1,5 +1,7 @@
 import { Language } from '../form'
 
+import type { ChildRecordType } from './childrenCompoundField'
+
 export enum BasicField {
   Section = 'section',
   Statement = 'statement',
@@ -107,8 +109,8 @@ export type MyInfoChildData = Partial<{
   [key in MyInfoChildAttributes]: string[]
 }> & {
   // Per-child record type (parallel to the sub-field arrays), present for
-  // children-v2: 'nuclear' (local) or 'sponsored'. See ChildRecordType.
-  type?: string[]
+  // children-v2: 'nuclear' (local) or 'sponsored'.
+  type?: ChildRecordType[]
 }
 
 export type AllowMyInfoBase = {
