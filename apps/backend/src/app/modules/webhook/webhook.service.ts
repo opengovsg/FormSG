@@ -1,7 +1,7 @@
 import axios from 'axios'
 import Bluebird from 'bluebird'
 import { WebhookResponse } from 'formsg-shared/types'
-import { get } from 'lodash'
+import { cloneDeep, get } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
@@ -9,12 +9,16 @@ import {
   IEncryptedSubmissionSchema,
   IMultirespondentSubmissionSchema,
   ISubmissionSchema,
+  RecordWebhookAttemptParams,
+  WebhookAttemptStoreMode,
   WebhookView,
 } from '../../../types'
 import { aws as AwsConfig } from '../../config/config'
+import { webhooksAndVerifiedContentConfig } from '../../config/features/webhook-verified-content.config'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 import getSubmissionModel from '../../models/submission.server.model'
+import getWebhookAttemptModel from '../../models/webhook_attempt.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
@@ -35,6 +39,21 @@ import { validateWebhookUrl } from './webhook.validation'
 
 const logger = createLoggerWithLabel(module)
 const Submission = getSubmissionModel(mongoose)
+const WebhookAttempt = getWebhookAttemptModel(mongoose)
+
+const DAY_IN_MS = 24 * 60 * 60 * 1000
+
+const getSubmissionIndex = (
+  submission: IEncryptedSubmissionSchema | IMultirespondentSubmissionSchema,
+): number => {
+  const submittedSteps = (submission as IMultirespondentSubmissionSchema)
+    .submittedSteps
+  // MRF: the latest submitted step is the one this send is for; storage-mode
+  // submissions are single, so index 0.
+  return Array.isArray(submittedSteps) && submittedSteps.length > 0
+    ? submittedSteps.length - 1
+    : 0
+}
 
 /**
  * Updates the submission in the database with the webhook response
@@ -95,6 +114,86 @@ const createWebhookSubmissionView = (
     submissionWebhookView.data.attachmentDownloadUrls = signedUrls
     return submissionWebhookView
   })
+}
+
+/**
+ * Whether a webhook attempt should be persisted to `webhook_attempts`, per the
+ * configured store mode. Single source of truth shared by the initial send and
+ * the retry consumer.
+ * - `on-every-send`: always.
+ * - `on-failure`: only when the send failed AND a retry is being enqueued (so
+ *   the record exists iff a retry exists, and the replay payload is present).
+ */
+export const shouldRecordWebhookAttempt = (
+  didSucceed: boolean,
+  willRetry: boolean,
+): boolean => {
+  if (
+    webhooksAndVerifiedContentConfig.webhookAttemptStoreMode ===
+    WebhookAttemptStoreMode.OnEverySend
+  ) {
+    return true
+  }
+  return !didSucceed && willRetry
+}
+
+/**
+ * Persists a webhook attempt (outgoing body + outcome) to `webhook_attempts`
+ * with a TTL-driven `expireAt`. Best-effort: a write failure is logged and
+ * swallowed (resolves `false`) so it never aborts delivery; a missing record
+ * just degrades a retry to live reconstruction.
+ */
+export const recordWebhookAttempt = (
+  params: Omit<RecordWebhookAttemptParams, 'expireAt'>,
+): ResultAsync<boolean, never> => {
+  const expireAt = new Date(
+    Date.now() +
+      webhooksAndVerifiedContentConfig.webhookAttemptTtlDays * DAY_IN_MS,
+  )
+  return ResultAsync.fromPromise(
+    WebhookAttempt.recordAttempt({ ...params, expireAt }),
+    (error) => {
+      logger.error({
+        message: 'Failed to record webhook attempt',
+        meta: {
+          action: 'recordWebhookAttempt',
+          submissionId: params.submissionId,
+          submissionIndex: params.submissionIndex,
+          attemptNumber: params.attemptNumber,
+        },
+        error,
+      })
+      return error
+    },
+  )
+    .map(() => true)
+    .orElse(() => okAsync(false))
+}
+
+/**
+ * Reads the stored body to replay for a step's retry (attempt #0).
+ * Resolves `null` if no attempt was stored (caller falls back to
+ * reconstruction).
+ */
+export const getReplayWebhookView = (
+  submissionId: string,
+  submissionIndex: number,
+): ResultAsync<WebhookView | null, never> => {
+  return ResultAsync.fromPromise(
+    WebhookAttempt.getReplayPayload(submissionId, submissionIndex),
+    (error) => {
+      logger.error({
+        message: 'Failed to read stored webhook attempt for replay',
+        meta: {
+          action: 'getReplayWebhookView',
+          submissionId,
+          submissionIndex,
+        },
+        error,
+      })
+      return error
+    },
+  ).orElse(() => okAsync(null))
 }
 
 export const sendWebhook = (
@@ -259,34 +358,57 @@ export const createInitialWebhookSender =
   > => {
     // Attempt to send webhook
 
+    const submissionIndex = getSubmissionIndex(submission)
+
     return ResultAsync.fromPromise(
       submission.getWebhookView(),
       () => new DatabaseError(),
-    ).andThen((webhookView) =>
-      sendWebhook(webhookView, webhookUrl).andThen((webhookResponse) => {
+    ).andThen((webhookView) => {
+      // sendWebhook presigns attachment URLs in place; capture the pre-presign
+      // view (stable S3 keys) for persistence + byte-stable replay before that.
+      const payloadToStore = cloneDeep(webhookView)
+      return sendWebhook(webhookView, webhookUrl).andThen((webhookResponse) => {
         webhookStatsdClient.increment('sent', 1, 1, {
           responseCode: `${webhookResponse.response.status || null}`,
           webhookType: getWebhookType(webhookUrl),
           isRetryEnabled: `${isRetryEnabled}`,
         })
 
+        const didSucceed = isSuccessfulResponse(webhookResponse)
+        const willRetry = !didSucceed && !!producer && isRetryEnabled
+
         // Save record of sending to database
-        return saveWebhookRecord(submission._id, webhookResponse).andThen(
-          () => {
+        return saveWebhookRecord(submission._id, webhookResponse)
+          .andThen(() =>
+            // Record the attempt (the initial send is attempt #0). When a
+            // retry will be enqueued this is the replay payload; the write is
+            // best-effort, so a failure just degrades the retry to live
+            // reconstruction.
+            shouldRecordWebhookAttempt(didSucceed, willRetry)
+              ? recordWebhookAttempt({
+                  submissionId: submission._id,
+                  submissionIndex,
+                  formId: webhookView.data.formId,
+                  webhookUrl,
+                  attemptNumber: 0,
+                  signature: webhookResponse.signature,
+                  payload: payloadToStore,
+                  response: { status: webhookResponse.response.status },
+                  status: didSucceed ? 'success' : 'failure',
+                })
+              : okAsync(false),
+          )
+          .andThen(() => {
             // If webhook successful or retries not enabled, no further action
-            if (
-              isSuccessfulResponse(webhookResponse) ||
-              !producer ||
-              !isRetryEnabled
-            ) {
+            if (didSucceed || !producer || !isRetryEnabled) {
               return okAsync(true as const)
             }
             // Webhook failed and retries enabled, so create initial message and enqueue
-            return WebhookQueueMessage.fromSubmissionId(
+            return WebhookQueueMessage.fromSubmission(
               String(submission._id),
+              submissionIndex,
             ).asyncAndThen((queueMessage) => producer.sendMessage(queueMessage))
-          },
-        )
-      }),
-    )
+          })
+      })
+    })
   }

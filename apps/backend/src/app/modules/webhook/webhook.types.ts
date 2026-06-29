@@ -17,6 +17,9 @@ export interface WebhookParams {
  */
 export const webhookMessageSchema = z.object({
   submissionId: z.string().regex(/^[a-f\d]{24}$/i),
+  // Step index for replaying the right step from `webhook_attempts`. Absent on
+  // legacy (`_v: 0`) messages, which fall back to live reconstruction.
+  submissionIndex: z.number().int().nonnegative().optional(),
   previousAttempts: z.array(z.number()),
   nextAttempt: z.number(),
   _v: z.number(),

@@ -83,17 +83,20 @@ export class WebhookQueueMessage {
    * hence uses the current date as the time of the first
    * webhook attempt.
    * @param submissionId
+   * @param submissionIndex step index, so the retry replays the right step
    * @returns ok(encapsulated message) if retry policy exists
    * @returns err if the retry policy does not allow any retries
    */
-  static fromSubmissionId(
+  static fromSubmission(
     submissionId: string,
+    submissionIndex: number,
   ): Result<WebhookQueueMessage, WebhookNoMoreRetriesError> {
     const initialAttempt = Date.now()
     return getNextAttempt(/* previousAttempts =*/ [initialAttempt]).map(
       (nextAttempt) =>
         new WebhookQueueMessage({
           submissionId,
+          submissionIndex,
           previousAttempts: [initialAttempt],
           nextAttempt,
           _v: QUEUE_MESSAGE_VERSION,
@@ -140,6 +143,7 @@ export class WebhookQueueMessage {
       (nextAttempt) =>
         new WebhookQueueMessage({
           submissionId: this.message.submissionId,
+          submissionIndex: this.message.submissionIndex,
           previousAttempts: updatedPreviousAttempts,
           nextAttempt,
           _v: QUEUE_MESSAGE_VERSION,
@@ -173,6 +177,16 @@ export class WebhookQueueMessage {
 
   get submissionId(): string {
     return this.message.submissionId
+  }
+
+  /** Step index, or undefined for legacy (`_v: 0`) messages. */
+  get submissionIndex(): number | undefined {
+    return this.message.submissionIndex
+  }
+
+  /** Which attempt the next send is: 0 = initial, N = Nth retry. */
+  get attemptNumber(): number {
+    return this.message.previousAttempts.length
   }
 
   get nextAttempt(): number {

@@ -5,14 +5,20 @@ import { WebhookResponse } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { ok, okAsync } from 'neverthrow'
 
+import { webhooksAndVerifiedContentConfig } from 'src/app/config/features/webhook-verified-content.config'
 import formsgSdk from 'src/app/config/formsg-sdk'
 import getSubmissionModel, {
   getEncryptSubmissionModel,
 } from 'src/app/models/submission.server.model'
+import getWebhookAttemptModel from 'src/app/models/webhook_attempt.server.model'
 import { WebhookValidationError } from 'src/app/modules/webhook/webhook.errors'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
-import { IEncryptedSubmissionSchema, WebhookView } from 'src/types'
+import {
+  IEncryptedSubmissionSchema,
+  WebhookAttemptStoreMode,
+  WebhookView,
+} from 'src/types'
 
 import { SubmissionNotFoundError } from '../../submission/submission.errors'
 import { WEBHOOK_MAX_CONTENT_LENGTH } from '../webhook.constants'
@@ -431,7 +437,7 @@ describe('webhook.service', () => {
       )(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ true)
 
       expect(result._unsafeUnwrap()).toBe(true)
-      expect(MockWebhookQueueMessage.fromSubmissionId).not.toHaveBeenCalled()
+      expect(MockWebhookQueueMessage.fromSubmission).not.toHaveBeenCalled()
     })
 
     it('should return true without retrying when webhook fails but retries are not enabled globally', async () => {
@@ -443,7 +449,7 @@ describe('webhook.service', () => {
         ()(testSubmission, MOCK_WEBHOOK_URL, true)
 
       expect(result._unsafeUnwrap()).toBe(true)
-      expect(MockWebhookQueueMessage.fromSubmissionId).not.toHaveBeenCalled()
+      expect(MockWebhookQueueMessage.fromSubmission).not.toHaveBeenCalled()
     })
 
     it('should return true without retrying when webhook fails and retries are not enabled for form', async () => {
@@ -455,13 +461,13 @@ describe('webhook.service', () => {
         ()(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ false)
 
       expect(result._unsafeUnwrap()).toBe(true)
-      expect(MockWebhookQueueMessage.fromSubmissionId).not.toHaveBeenCalled()
+      expect(MockWebhookQueueMessage.fromSubmission).not.toHaveBeenCalled()
     })
 
     it('should return true and retry when webhook fails and retries are enabled', async () => {
       const mockQueueMessage =
         'mockQueueMessage' as unknown as WebhookQueueMessage
-      MockWebhookQueueMessage.fromSubmissionId.mockReturnValueOnce(
+      MockWebhookQueueMessage.fromSubmission.mockReturnValueOnce(
         ok(mockQueueMessage),
       )
       MockAxios.post.mockResolvedValue(MOCK_AXIOS_FAILURE_RESPONSE)
@@ -471,10 +477,99 @@ describe('webhook.service', () => {
       )(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ true)
 
       expect(result._unsafeUnwrap()).toBe(true)
-      expect(MockWebhookQueueMessage.fromSubmissionId).toHaveBeenCalledWith(
+      expect(MockWebhookQueueMessage.fromSubmission).toHaveBeenCalledWith(
         String(testSubmission._id),
+        // storage-mode submission → step index 0
+        0,
       )
       expect(MOCK_PRODUCER.sendMessage).toHaveBeenCalledWith(mockQueueMessage)
+    })
+  })
+
+  describe('webhook attempt recording', () => {
+    const WebhookAttempt = getWebhookAttemptModel(mongoose)
+    const MOCK_VIEW: WebhookView = {
+      data: {
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+        encryptedContent: 'enc-step',
+        verifiedContent: 'verified',
+        version: 1,
+        created: new Date(),
+        attachmentDownloadUrls: {},
+      },
+    }
+    const recordParams = {
+      submissionId: MOCK_SUBMISSION_ID,
+      submissionIndex: 1,
+      formId: MOCK_FORM_ID,
+      webhookUrl: MOCK_WEBHOOK_URL,
+      attemptNumber: 0,
+      signature: 'sig',
+      payload: MOCK_VIEW,
+      response: { status: 400 },
+      status: 'failure' as const,
+    }
+
+    describe('shouldRecordWebhookAttempt', () => {
+      const originalMode =
+        webhooksAndVerifiedContentConfig.webhookAttemptStoreMode
+      afterEach(() => {
+        webhooksAndVerifiedContentConfig.webhookAttemptStoreMode = originalMode
+      })
+
+      it('always records in on-every-send mode', () => {
+        webhooksAndVerifiedContentConfig.webhookAttemptStoreMode =
+          WebhookAttemptStoreMode.OnEverySend
+        expect(WebhookService.shouldRecordWebhookAttempt(true, false)).toBe(
+          true,
+        )
+        expect(WebhookService.shouldRecordWebhookAttempt(false, true)).toBe(
+          true,
+        )
+      })
+
+      it('records only on failed-with-retry in on-failure mode', () => {
+        webhooksAndVerifiedContentConfig.webhookAttemptStoreMode =
+          WebhookAttemptStoreMode.OnFailure
+        expect(WebhookService.shouldRecordWebhookAttempt(false, true)).toBe(
+          true,
+        )
+        expect(WebhookService.shouldRecordWebhookAttempt(true, false)).toBe(
+          false,
+        )
+        expect(WebhookService.shouldRecordWebhookAttempt(false, false)).toBe(
+          false,
+        )
+      })
+    })
+
+    describe('recordWebhookAttempt + getReplayWebhookView', () => {
+      it('persists an attempt with a TTL expireAt and replays attempt #0', async () => {
+        const result = await WebhookService.recordWebhookAttempt(recordParams)
+        expect(result._unsafeUnwrap()).toBe(true)
+
+        const stored = await WebhookAttempt.findOne({
+          submissionId: MOCK_SUBMISSION_ID,
+          submissionIndex: 1,
+        }).lean()
+        expect(stored?.expireAt).toBeInstanceOf(Date)
+        expect((stored?.expireAt as Date).getTime()).toBeGreaterThan(Date.now())
+
+        const replay = await WebhookService.getReplayWebhookView(
+          MOCK_SUBMISSION_ID,
+          1,
+        )
+        expect(replay._unsafeUnwrap()?.data.encryptedContent).toBe('enc-step')
+      })
+
+      it('resolves null when there is no stored attempt to replay', async () => {
+        const replay = await WebhookService.getReplayWebhookView(
+          new ObjectId().toHexString(),
+          0,
+        )
+        expect(replay._unsafeUnwrap()).toBeNull()
+      })
     })
   })
 })

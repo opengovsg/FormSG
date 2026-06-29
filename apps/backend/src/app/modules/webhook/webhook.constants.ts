@@ -4,8 +4,10 @@ import { RetryInterval } from './webhook.types'
 
 /**
  * Current version of queue message format.
+ * v1 adds `submissionIndex` so retries replay the right step from
+ * `webhook_attempts`; v0 messages (no index) fall back to live reconstruction.
  */
-export const QUEUE_MESSAGE_VERSION = 0
+export const QUEUE_MESSAGE_VERSION = 1
 
 // Conversion to seconds
 const hours = (h: number) => h * 60 * 60

@@ -64,9 +64,22 @@ describe('WebhookQueueMessage', () => {
 
       expect(result._unsafeUnwrap().message).toEqual(VALID_MESSAGE)
     })
+
+    it('should preserve submissionIndex for a v1 message', () => {
+      const v1Message: WebhookQueueMessageObject = {
+        ...VALID_MESSAGE,
+        submissionIndex: 3,
+        _v: 1,
+      }
+
+      const result = WebhookQueueMessage.deserialise(JSON.stringify(v1Message))
+
+      expect(result._unsafeUnwrap().message).toEqual(v1Message)
+      expect(result._unsafeUnwrap().submissionIndex).toBe(3)
+    })
   })
 
-  describe('fromSubmissionId', () => {
+  describe('fromSubmission', () => {
     const MOCK_NOW = Date.now()
 
     beforeAll(() => {
@@ -77,10 +90,11 @@ describe('WebhookQueueMessage', () => {
 
     it('should correctly create a WebhookQueueMessage without any retry history', () => {
       const submissionId = new ObjectId().toHexString()
-      const result = WebhookQueueMessage.fromSubmissionId(submissionId)
+      const result = WebhookQueueMessage.fromSubmission(submissionId, 2)
 
       expect(result._unsafeUnwrap().message).toEqual({
         submissionId,
+        submissionIndex: 2,
         previousAttempts: [MOCK_NOW],
         nextAttempt: expect.any(Number),
         _v: QUEUE_MESSAGE_VERSION,

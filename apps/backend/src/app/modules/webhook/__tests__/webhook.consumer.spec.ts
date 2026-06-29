@@ -233,6 +233,73 @@ describe('webhook.consumer', () => {
       expect(SUCCESS_PRODUCER.sendMessage).toHaveBeenCalled()
     })
 
+    it('should replay the stored payload for a v1 message instead of reconstructing from the live row', async () => {
+      const STORED_VIEW = {
+        data: {
+          submissionId: VALID_MESSAGE_BODY.submissionId,
+          encryptedContent: 'stored-step',
+        },
+      } as unknown as SubmissionWebhookInfo['webhookView']
+      const v1SqsMessage: Message = {
+        Body: JSON.stringify({
+          ...VALID_MESSAGE_BODY,
+          submissionIndex: 2,
+          _v: 1,
+        }),
+      }
+      jest
+        .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
+        .mockResolvedValueOnce(MOCK_WEBHOOK_INFO)
+      MockWebhookService.getReplayWebhookView.mockReturnValueOnce(
+        okAsync(STORED_VIEW),
+      )
+      MockWebhookService.shouldRecordWebhookAttempt.mockReturnValue(false)
+      MockWebhookService.sendWebhook.mockReturnValueOnce(
+        okAsync(MOCK_WEBHOOK_SUCCESS_RESPONSE),
+      )
+
+      await expect(
+        createWebhookQueueHandler(SUCCESS_PRODUCER)(v1SqsMessage),
+      ).toResolve()
+
+      expect(MockWebhookService.getReplayWebhookView).toHaveBeenCalledWith(
+        VALID_MESSAGE_BODY.submissionId,
+        2,
+      )
+      // Sends the stored bytes, not the (mutated) live-row reconstruction.
+      expect(MockWebhookService.sendWebhook).toHaveBeenCalledWith(
+        STORED_VIEW,
+        MOCK_WEBHOOK_INFO.webhookUrl,
+      )
+    })
+
+    it('should fall back to reconstruction when a v1 message has no stored payload', async () => {
+      const v1SqsMessage: Message = {
+        Body: JSON.stringify({
+          ...VALID_MESSAGE_BODY,
+          submissionIndex: 2,
+          _v: 1,
+        }),
+      }
+      jest
+        .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
+        .mockResolvedValueOnce(MOCK_WEBHOOK_INFO)
+      MockWebhookService.getReplayWebhookView.mockReturnValueOnce(okAsync(null))
+      MockWebhookService.shouldRecordWebhookAttempt.mockReturnValue(false)
+      MockWebhookService.sendWebhook.mockReturnValueOnce(
+        okAsync(MOCK_WEBHOOK_SUCCESS_RESPONSE),
+      )
+
+      await expect(
+        createWebhookQueueHandler(SUCCESS_PRODUCER)(v1SqsMessage),
+      ).toResolve()
+
+      expect(MockWebhookService.sendWebhook).toHaveBeenCalledWith(
+        MOCK_WEBHOOK_INFO.webhookView,
+        MOCK_WEBHOOK_INFO.webhookUrl,
+      )
+    })
+
     it('should resolve without requeuing when retry fails and there are no retries remaining', async () => {
       jest
         .spyOn(SubmissionModel, 'retrieveWebhookInfoById')

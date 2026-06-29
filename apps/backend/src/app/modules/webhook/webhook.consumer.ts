@@ -1,4 +1,5 @@
 import { Message } from '@aws-sdk/client-sqs'
+import { cloneDeep } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Consumer } from 'sqs-consumer'
@@ -147,24 +148,64 @@ export const createWebhookQueueHandler =
           new WebhookRetriesNotEnabledError(webhookUrl, isRetryEnabled),
         )
 
+      // Determine the payload to send: replay the stored bytes for this step
+      // if available (so a retry ships the failed step's content, not the
+      // mutated live row), else fall back to live reconstruction.
+      const submissionIndex = webhookMessage.submissionIndex
+      const payloadResult =
+        submissionIndex !== undefined
+          ? WebhookService.getReplayWebhookView(
+              webhookMessage.submissionId,
+              submissionIndex,
+            ).map((stored) => stored ?? webhookInfo.webhookView)
+          : okAsync(webhookInfo.webhookView)
+
       // Attempt webhook
-      return WebhookService.sendWebhook(
-        webhookInfo.webhookView,
-        webhookUrl,
-      ).andThen((webhookResponse) => {
-        // Save webhook response to database, but carry on even if it fails
-        void WebhookService.saveWebhookRecord(
-          webhookMessage.submissionId,
-          webhookResponse,
+      return payloadResult.andThen((payload) => {
+        // sendWebhook presigns attachment URLs in place; capture the
+        // pre-presign view (stable S3 keys) for the attempt record.
+        const payloadToStore = cloneDeep(payload)
+        return WebhookService.sendWebhook(payload, webhookUrl).andThen(
+          (webhookResponse) => {
+            // Save webhook response to database, but carry on even if it fails
+            void WebhookService.saveWebhookRecord(
+              webhookMessage.submissionId,
+              webhookResponse,
+            )
+
+            const didSucceed = isSuccessfulResponse(webhookResponse)
+
+            // Record this attempt (best-effort) per the configured store mode.
+            const maybeRecord =
+              submissionIndex !== undefined &&
+              WebhookService.shouldRecordWebhookAttempt(
+                didSucceed,
+                /* willRetry */ !didSucceed,
+              )
+                ? WebhookService.recordWebhookAttempt({
+                    submissionId: webhookMessage.submissionId,
+                    submissionIndex,
+                    formId: payloadToStore.data.formId,
+                    webhookUrl,
+                    attemptNumber: webhookMessage.attemptNumber,
+                    signature: webhookResponse.signature,
+                    payload: payloadToStore,
+                    response: { status: webhookResponse.response.status },
+                    status: didSucceed ? 'success' : 'failure',
+                  })
+                : okAsync(false)
+
+            return maybeRecord.andThen(() => {
+              // Webhook was successful, no further action required
+              if (didSucceed) return okAsync(true)
+
+              // Requeue webhook for subsequent retry
+              return webhookMessage
+                .incrementAttempts()
+                .asyncAndThen((newMessage) => producer.sendMessage(newMessage))
+            })
+          },
         )
-
-        // Webhook was successful, no further action required
-        if (isSuccessfulResponse(webhookResponse)) return okAsync(true)
-
-        // Requeue webhook for subsequent retry
-        return webhookMessage
-          .incrementAttempts()
-          .asyncAndThen((newMessage) => producer.sendMessage(newMessage))
       })
     })
 
