@@ -20,10 +20,12 @@ import {
   ChangeEvent,
   ChangeEventHandler,
   KeyboardEvent,
+  MouseEvent,
   SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
+  useRef,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -152,8 +154,26 @@ export const Radio = forwardRef<RadioProps, 'input'>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [layoutProps, otherProps] = split(htmlProps, layoutPropNames as any)
 
-    const checkboxProps = getCheckboxProps(otherProps)
-    const inputProps = getInputProps({}, ref)
+    const inputRef = useRef<HTMLInputElement>(null)
+    const mergedInputRef = useMergeRefs(inputRef, ref)
+
+    // A selected text range can suppress the label's implicit input activation.
+    const handleControlClick = useCallback(
+      (e: MouseEvent<HTMLSpanElement>) => {
+        if (props.isDisabled || isChecked) return
+        if (!inputRef.current || inputRef.current.disabled) return
+
+        e.preventDefault()
+        inputRef.current.click()
+      },
+      [isChecked, props.isDisabled],
+    )
+
+    const checkboxProps = getCheckboxProps({
+      ...otherProps,
+      onClick: handleControlClick,
+    })
+    const inputProps = getInputProps({}, mergedInputRef)
 
     const handleSelect = useCallback(
       (e: SyntheticEvent) => {
