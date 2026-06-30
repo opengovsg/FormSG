@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 import {
   AdminFeedbackRating,
+  AdminFeedbackTriggerSource,
   AdminUseEmailModeFeedbackDto,
 } from 'formsg-shared/types'
 import {
@@ -225,11 +226,26 @@ export const useDeleteFormMutation = () => {
 }
 export const useAdminFeedbackMutation = () => {
   const createAdminFeedbackMutation = useMutation(
-    (rating: AdminFeedbackRating) => createAdminFeedback(rating),
+    ({
+      rating,
+      triggerSource,
+      formId,
+    }: {
+      rating: AdminFeedbackRating
+      triggerSource?: AdminFeedbackTriggerSource
+      formId?: string
+    }) => createAdminFeedback(rating, triggerSource, formId),
   )
   const updateAdminFeedbackMutation = useMutation(
-    ({ feedbackId, comment }: { feedbackId: string; comment: string }) =>
-      updateAdminFeedback(feedbackId, comment),
+    ({
+      feedbackId,
+      comment,
+      rating,
+    }: {
+      feedbackId: string
+      comment?: string
+      rating?: AdminFeedbackRating
+    }) => updateAdminFeedback(feedbackId, { comment, rating }),
   )
 
   return { createAdminFeedbackMutation, updateAdminFeedbackMutation }
