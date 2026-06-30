@@ -1416,8 +1416,8 @@ importers:
         specifier: ^0.8.1
         version: 0.8.1
       uuid:
-        specifier: ^9.0.0
-        version: 9.0.1
+        specifier: ^14.0.0
+        version: 14.0.0
     devDependencies:
       '@types/aws-lambda':
         specifier: ^8.10.101
@@ -13773,6 +13773,10 @@ packages:
 
   uuid@11.1.1:
     resolution: {integrity: sha512-vIYxrBCC/N/K+Js3qSN88go7kIfNPssr/hHCesKCQNAjmgvYS2oqr69kIufEG+O4+PfezOH4EbIeHCfFov8ZgQ==}
+    hasBin: true
+
+  uuid@14.0.0:
+    resolution: {integrity: sha512-Qo+uWgilfSmAhXCMav1uYFynlQO7fMFiMVZsQqZRMIXp0O7rR7qjkj+cPvBHLgBqi960QCoo/PH2/6ZtVqKvrg==}
     hasBin: true
 
   uuid@3.4.0:
@@ -31352,6 +31356,8 @@ snapshots:
       js-sha1: 0.6.0
 
   uuid@11.1.1: {}
+
+  uuid@14.0.0: {}
 
   uuid@3.4.0: {}
 
