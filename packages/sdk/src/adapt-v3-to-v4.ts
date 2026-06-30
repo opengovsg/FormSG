@@ -85,6 +85,8 @@ const convertTableAnswer = (answer: Record<string, string>[]): TableAnswerV4 => 
 const convertChildrenAnswer = (answer: {
   child: string[][]
   childFields: string[]
+  // children-v2: per-child record type (nuclear/sponsored), parallel to `child`.
+  childrenTypes?: string[]
 }): ChildrenAnswerV4 => {
   const result: ChildrenAnswerV4 = {}
   for (let i = 0; i < answer.child.length; i++) {
@@ -98,7 +100,8 @@ const convertChildrenAnswer = (answer: {
         myInfo: { attr },
       }
     }
-    result[childKey] = { value }
+    const type = answer.childrenTypes?.[i]
+    result[childKey] = { value, ...(type !== undefined && { type }) }
   }
   return result
 }
