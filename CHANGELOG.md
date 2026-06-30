@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.34.3](https://github.com/opengovsg/formsg/compare/v7.34.2...v7.34.3) (2026-06-30)
+
+
+### Dependencies
+
+* **deps:** bump multer from 2.1.1 to 2.2.0 (#9638) ([#9638](https://github.com/opengovsg/formsg/commit/f2792b9cb53981c73c7d5d6b86c78e94de159fe3))
+* **deps:** bump nodemailer from 8.0.7 to 9.0.1 (#9645) ([#9645](https://github.com/opengovsg/formsg/commit/a26524ed6e34106e6489298fb88769923bc3f792))
+
+
+### Dev-Dependencies
+
+* **deps-dev:** bump esbuild from 0.25.9 to 0.28.1 (#9607) ([#9607](https://github.com/opengovsg/formsg/commit/5b49e3ae32d355a92c24ac788c9efc85de779433))
+* **deps-dev:** bump form-data from 4.0.5 to 4.0.6 (#9640) ([#9640](https://github.com/opengovsg/formsg/commit/ba4790e216464b2458a8d34cef6f81ffdfe21b96))
+
+## [7.34.2](https://github.com/opengovsg/formsg/compare/v7.34.1...v7.34.2) (2026-06-30)
+
+
+### Dependencies
+
+* **deps:** bump multiparty from 4.2.3 to 4.3.0 (#9443) ([#9443](https://github.com/opengovsg/formsg/commit/d84b6f546eeca26b9ba5d9d863f62c0ad27a3418))
+* **deps:** bump react-router from 6.30.3 to 6.30.4 (#9548) ([#9548](https://github.com/opengovsg/formsg/commit/a2e0e3b7defae65e380277510b0a4782aff9ad90))
+* **deps:** bump uuid from 9.0.1 to 14.0.0 (#9478) ([#9478](https://github.com/opengovsg/formsg/commit/e6944580928a24be52b16baacfd31c9fc0bc3c9d))
+
+
+### Dev-Dependencies
+
+* **deps-dev:** bump vitest from 3.2.4 to 3.2.6 (#9567) ([#9567](https://github.com/opengovsg/formsg/commit/c80440a87415ba8a4cf4659d67be21bfa94ad36a))
+
 ## [7.34.1](https://github.com/opengovsg/formsg/compare/v7.34.0...v7.34.1) (2026-06-25)
 
 
