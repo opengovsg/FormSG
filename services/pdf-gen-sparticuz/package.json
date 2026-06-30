@@ -23,7 +23,7 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.152",
     "@types/jest": "^30.0.0",
-    "esbuild": "^0.25.9",
+    "esbuild": "^0.28.1",
     "jest": "^30.0.5",
     "ts-jest": "^29.4.1",
     "typescript": "^5.9.2"
