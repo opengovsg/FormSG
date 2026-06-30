@@ -2190,6 +2190,44 @@ describe('admin-form.service', () => {
       )
     })
 
+    it('defaults to v2 and strips disallowed options when updating a children field in a Multi-respondent form', async () => {
+      // Arrange
+      const fieldToUpdate = generateDefaultField(BasicField.Children)
+      const mockNewField = {
+        ...fieldToUpdate,
+        version: undefined,
+        allowMultiple: true,
+        childrenSubFields: [
+          MyInfoChildAttributes.ChildName,
+          MyInfoChildAttributes.ChildSecondaryRace,
+        ],
+      } as unknown as FieldUpdateDto
+      const mockForm = {
+        form_fields: [fieldToUpdate],
+        responseMode: FormResponseMode.Multirespondent,
+        updateFormFieldById: jest
+          .fn()
+          .mockResolvedValue({ form_fields: [mockNewField] }),
+      } as unknown as IPopulatedForm
+
+      // Act
+      await AdminFormService.updateFormField(
+        mockForm,
+        fieldToUpdate._id,
+        mockNewField,
+      )
+
+      // Assert
+      expect(mockForm.updateFormFieldById).toHaveBeenCalledWith(
+        fieldToUpdate._id,
+        expect.objectContaining({
+          version: ChildrenFieldVersion.V2,
+          allowMultiple: false,
+          childrenSubFields: [MyInfoChildAttributes.ChildName],
+        }),
+      )
+    })
+
     it('leaves a legacy children field untouched on update', async () => {
       // Arrange
       const fieldToUpdate = generateDefaultField(BasicField.Children)
@@ -2387,13 +2425,25 @@ describe('admin-form.service', () => {
       )
     })
 
+    it('defaults to version 2 for a Multi-respondent form even when children-v2 is disabled', async () => {
+      const insertFormField = await createChildrenFieldWith({
+        childrenV2Enabled: false,
+        responseMode: FormResponseMode.Multirespondent,
+      })
+
+      expect(insertFormField).toHaveBeenCalledWith(
+        expect.objectContaining({ version: ChildrenFieldVersion.V2 }),
+        undefined,
+      )
+    })
+
     it('strips Secondary Race and Allow-Multiple when stamping v2', async () => {
       const insertFormField = jest.fn().mockResolvedValue({
         form_fields: [generateDefaultField(BasicField.Children)],
       })
       const mockForm = {
         form_fields: [],
-        responseMode: FormResponseMode.Encrypt,
+        responseMode: FormResponseMode.Multirespondent,
         insertFormField,
       } as unknown as IPopulatedForm
       const formCreateParams = {
@@ -2411,7 +2461,7 @@ describe('admin-form.service', () => {
         mockForm,
         formCreateParams,
         undefined,
-        { childrenV2Enabled: true },
+        { childrenV2Enabled: false },
       )
 
       expect(insertFormField).toHaveBeenCalledWith(

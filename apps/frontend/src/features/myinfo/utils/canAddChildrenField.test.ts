@@ -14,19 +14,19 @@ describe('canAddChildrenField', () => {
     ).toBe(true)
   })
 
-  it('hides children without the beta flag', () => {
-    expect(
-      canAddChildrenField({
-        hasChildrenBetaFlag: false,
-        responseMode: FormResponseMode.Encrypt,
-      }),
-    ).toBe(false)
-  })
-
-  it('hides children in Multi-respondent mode (arrives with MRF support)', () => {
+  it('allows children in Multi-respondent mode with the beta flag (v2 is the default there)', () => {
     expect(
       canAddChildrenField({
         hasChildrenBetaFlag: true,
+        responseMode: FormResponseMode.Multirespondent,
+      }),
+    ).toBe(true)
+  })
+
+  it('hides children without the beta flag, regardless of mode', () => {
+    expect(
+      canAddChildrenField({
+        hasChildrenBetaFlag: false,
         responseMode: FormResponseMode.Multirespondent,
       }),
     ).toBe(false)

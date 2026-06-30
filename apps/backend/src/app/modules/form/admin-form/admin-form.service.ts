@@ -922,14 +922,18 @@ export const updateFormField = (
 ): ResultAsync<FormFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
   const _newField = insertTableShortTextColumnDefaultValidationOptions(newField)
 
-  // children-v2 (ADR-0001): the v2 invariants must hold on edits too, not only
-  // on create. If the payload is stamped v2, strip Secondary Race /
-  // Allow-Multiple so a crafted update payload can't reintroduce them. We never
-  // downgrade an existing version here.
+  // children-v2 (ADR-0001/0002): the v2 invariants must hold on edits too, not
+  // only on create. A children field is v2 if the form is Multi-respondent
+  // (where v2 is the default) or the payload is already stamped v2; in that
+  // case strip Secondary Race / Allow-Multiple so a crafted update payload
+  // can't reintroduce them. We never downgrade an existing version here.
   if (_newField.fieldType === BasicField.Children) {
     const childrenField = _newField as ChildrenCompoundFieldBase
-    const isV2 = childrenField.version === ChildrenFieldVersion.V2
+    const isV2 =
+      form.responseMode === FormResponseMode.Multirespondent ||
+      childrenField.version === ChildrenFieldVersion.V2
     if (isV2) {
+      childrenField.version = ChildrenFieldVersion.V2
       enforceChildrenV2Invariants(childrenField)
     }
   }
@@ -1053,12 +1057,15 @@ export const createFormField = (
       MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
   }
 
-  // Children version is stamped server-side (ADR-0001), so the gate is
-  // authoritative — a hand-crafted payload can't opt in. In Storage/Encrypt
-  // mode v2 is whitelist-gated by the children-v2 flag.
+  // Children version is stamped server-side (ADR-0001/0002), so the gate is
+  // authoritative — a hand-crafted payload can't opt in. v2 is the **default
+  // in Multi-respondent forms** (the definitive children field lives in unified
+  // modes); in Storage/Encrypt mode it stays whitelist-gated by children-v2.
   if (newField.fieldType === BasicField.Children) {
     const childrenField = newField as ChildrenCompoundFieldBase
-    const isV2 = !!opts?.childrenV2Enabled
+    const isMultirespondent =
+      form.responseMode === FormResponseMode.Multirespondent
+    const isV2 = isMultirespondent || !!opts?.childrenV2Enabled
     childrenField.version = isV2
       ? ChildrenFieldVersion.V2
       : ChildrenFieldVersion.Legacy

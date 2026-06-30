@@ -3,7 +3,7 @@ import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { Box, FormControl, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { extend } from 'lodash'
 
-import { isChildrenV2Field, MyInfoChildAttributes } from 'formsg-shared/types'
+import { MyInfoChildAttributes } from 'formsg-shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'
@@ -12,6 +12,8 @@ import Link from '~components/Link'
 import { Toggle } from '~components/Toggle/Toggle'
 
 import { CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS } from '~features/admin-form/create/builder-and-design/constants'
+import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
+import { isChildrenV2InBuilder } from '~features/myinfo/utils'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
@@ -49,9 +51,12 @@ export const EditMyInfoChildren = ({
   field,
 }: EditMyInfoChildrenProps): JSX.Element => {
   const extendedField = extendWithMyInfo(field)
-  // children-v2 (ADR-0001): drop Secondary Race + Allow-Multiple and show the
-  // new description when the field is stamped v2.
-  const isV2 = isChildrenV2Field(field)
+  const { data: form } = useCreateTabForm()
+  // children-v2 (ADR-0001/0002): drop Secondary Race + Allow-Multiple and show
+  // the new description. v2 applies when the field is stamped v2 OR the form is
+  // Multi-respondent (v2 is the default there, stamped on save) — so the editor
+  // reflects v2 immediately, not only after the field is persisted.
+  const isV2 = isChildrenV2InBuilder(field, form?.responseMode)
   const subFieldOptions = isV2
     ? CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS.filter(
         (option) => option.value !== MyInfoChildAttributes.ChildSecondaryRace,
