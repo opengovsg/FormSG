@@ -1,4 +1,11 @@
+import {
+  GetObjectCommand,
+  GetObjectCommandInput,
+  PutObjectCommand,
+  PutObjectCommandInput,
+} from '@aws-sdk/client-s3'
 import { createPresignedPost, PresignedPost } from '@aws-sdk/s3-presigned-post'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import crypto from 'crypto'
 import { ResultAsync } from 'neverthrow'
 
@@ -26,13 +33,37 @@ type CreatePresignedPostDataParams = {
   acl?: string
 }
 
+export const s3Operations = {
+  getObject: (params: GetObjectCommandInput) =>
+    AwsConfig.s3.send(new GetObjectCommand(params)),
+  putObject: (params: PutObjectCommandInput) =>
+    AwsConfig.s3.send(new PutObjectCommand(params)),
+  getSignedUrl: (params: GetObjectCommandInput, expiresIn: number) =>
+    getSignedUrl(AwsConfig.s3, new GetObjectCommand(params), {
+      expiresIn,
+    }),
+  createPresignedPost: (params: Parameters<typeof createPresignedPost>[1]) =>
+    createPresignedPost(AwsConfig.s3, params),
+}
+
+export const getS3Object = (params: GetObjectCommandInput) =>
+  s3Operations.getObject(params)
+
+export const putS3Object = (params: PutObjectCommandInput) =>
+  s3Operations.putObject(params)
+
+export const getSignedS3Url = (
+  params: GetObjectCommandInput,
+  expiresIn: number,
+) => s3Operations.getSignedUrl(params, expiresIn)
+
 export const createPresignedPostDataPromise = (
   params: CreatePresignedPostDataParams,
 ): ResultAsync<PresignedPost, CreatePresignedPostError> => {
   const key = params.key ?? crypto.randomUUID()
 
   return ResultAsync.fromPromise(
-    createPresignedPost(AwsConfig.s3, {
+    s3Operations.createPresignedPost({
       Bucket: params.bucketName,
       Key: key,
       Expires: params.expiresSeconds,
