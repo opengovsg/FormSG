@@ -225,7 +225,6 @@
     "@types/validator": "^13.7.0",
     "@typescript-eslint/eslint-plugin": "^8.19.1",
     "@typescript-eslint/parser": "^8.19.1",
-    "aws-sdk": "^2.1692.0",
     "bson": "^5.5.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^10.1.2",
