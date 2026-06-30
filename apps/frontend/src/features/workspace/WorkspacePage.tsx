@@ -32,7 +32,6 @@ import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 import { WorkspaceContent } from '~features/workspace/WorkspaceContent'
 
-import AdminFeedbackContainer from './components/AdminFeedbackContainer'
 import { WorkspaceMenuHeader } from './components/WorkspaceSideMenu/WorkspaceMenuHeader'
 import { WorkspaceMenuTabs } from './components/WorkspaceSideMenu/WorkspaceMenuTabs'
 import { useDashboard, useWorkspace } from './queries'
@@ -54,7 +53,6 @@ export const WorkspacePage = (): JSX.Element => {
   // TODO [MRF-CUTOVER]: Remove this infobox (and MRF_CUTOVER_FAQ_LINK) once the
   // cutover is complete and the flag is retired.
   const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
-  const isFiveStarEnabled = useFeatureIsOn(featureFlags.fiveStarAdminRating)
 
   const { user } = useUser()
   const { data: dashboardForms, isLoading: isDashboardLoading } = useDashboard()
@@ -212,9 +210,6 @@ export const WorkspacePage = (): JSX.Element => {
           </WorkspaceProvider>
         </GridItem>
       </Grid>
-      {user && isFiveStarEnabled && (
-        <AdminFeedbackContainer userId={user._id} />
-      )}
     </>
   )
 }

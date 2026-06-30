@@ -10,6 +10,7 @@ import {
   useWatch,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useParams } from 'react-router-dom'
 import { useDebounce } from 'react-use'
 import { cloneDeep } from 'lodash'
 
@@ -20,11 +21,9 @@ import {
   FormFieldDto,
 } from 'formsg-shared/types/field'
 
-import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
-import { useSessionStorage } from '~hooks/useSessionStorage'
-
 import { useCreateFormField } from '~features/admin-form/create/builder-and-design/mutations/useCreateFormField'
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
+import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
 import {
   setIsDirtySelector,
   useDirtyFieldStore,
@@ -37,7 +36,9 @@ import {
   updateEditStateSelector,
   useFieldBuilderStore,
 } from '~features/admin-form/create/builder-and-design/useFieldBuilderStore'
+import { useEnv } from '~features/env/queries'
 import { isMyInfo } from '~features/myinfo/utils'
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import { EditFieldProps } from './types'
 
@@ -101,9 +102,9 @@ export const useEditFieldForm = <
 
   const { editFieldMutation } = useEditFormField()
   const { createFieldMutation } = useCreateFormField()
-  const [, setIsAdminFeedbackEligible] = useSessionStorage<boolean>(
-    ADMIN_FEEDBACK_SESSION_KEY,
-  )
+  const { formId } = useParams()
+  const { data: formData } = useCreateTabForm()
+  const { data: { adminFeedbackFieldThreshold } = {} } = useEnv()
 
   const isPendingField = useMemo(
     () => stateData.state === FieldBuilderState.CreatingField,
@@ -162,17 +163,33 @@ export const useEditFieldForm = <
       )
     }
 
-    // if field to be updated is MyInfo, enable admin feedback
-    if (isMyInfo(updatedFormField)) setIsAdminFeedbackEligible(true)
+    const isCreating = stateData.state === FieldBuilderState.CreatingField
+    const isMyInfoField = isMyInfo(updatedFormField)
+    // Count of fields already saved on the form. While creating, the pending
+    // field isn't part of this count yet, so we offset the threshold by 1.
+    const savedFieldCount = formData?.form_fields.length ?? 0
+    const meetsFieldThreshold =
+      !!adminFeedbackFieldThreshold &&
+      savedFieldCount >= adminFeedbackFieldThreshold - (isCreating ? 1 : 0)
 
-    if (stateData.state === FieldBuilderState.CreatingField) {
+    // Enable the admin feedback prompt once the save succeeds (onSaveSuccess
+    // closes the drawer), so the prompt appears after the drawer is gone, not
+    // mid-edit. Triggers on crossing the field-count threshold or on a MyInfo
+    // field save.
+    const onMutateSuccess = (newField: FormField) => {
+      onSaveSuccess(newField)
+      if (isMyInfoField || meetsFieldThreshold)
+        useAdminFeedbackStore.getState().setEligible('field-edit', formId)
+    }
+
+    if (isCreating) {
       return createFieldMutation.mutate(updatedFormField, {
-        onSuccess: onSaveSuccess,
+        onSuccess: onMutateSuccess,
       })
     } else if (stateData.state === FieldBuilderState.EditingField) {
       return editFieldMutation.mutate(
         { ...updatedFormField, _id: stateData.field._id } as FormFieldDto,
-        { onSuccess: onSaveSuccess },
+        { onSuccess: onMutateSuccess },
       )
     }
   })
