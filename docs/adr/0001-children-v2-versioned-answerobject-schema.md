@@ -1,0 +1,116 @@
+# 1. MyInfo Children v2 ships as a versioned answerObject schema, not a new field type
+
+Date: 2026-06-27
+
+## Status
+
+Accepted
+
+## Context
+
+MyInfo Children is a compound `BasicField.Children` field that prefills a
+respondent's children's birth records from MyInfo. It has been in whitelisted
+beta since 2023 and is used heavily (MOE MK registration, SG60 Baby Gift). The
+v2 effort (see PRD _MyInfo Children v2_) addresses three gaps:
+
+1. **Sponsored children** are not returned, so a meaningful slice of parents
+   cannot find their child.
+2. The response is stored in the **legacy "exploded" shape** — one response per
+   child-subfield, keyed `childrenbirthrecords.<fieldId>.<subfield>.<childIdx>`,
+   with `[MyInfo] Child 1 …` numbering baked into the question text. This does
+   not fit Multi-Respondent Forms / unified modes, which are moving to the
+   **answerObject v4** shape.
+3. Two underused options (Secondary Race, Allow-Multiple) cause friction and an
+   empty-mandatory-field error.
+
+The platform already has answerObject v4 infrastructure in `packages/sdk`
+(`types-v4.ts`, `adapt-v3-to-v4.ts`, `adapt-v4-to-v3.ts`), currently wired only
+for MRF-without-webhook submissions. Crucially, the v4 children answer type
+(`ChildrenFieldResponseV4`) is **already keyed to `fieldType: 'children'`**, and
+`ChildEntryV4` already carries an optional `type` attribute (for
+`nuclear`/`sponsored`).
+
+The open question (flagged in the PRD): ship v2 as a **new `BasicField`
+(`children_v2`)**, or as a **versioned schema on the existing `children`
+field**?
+
+## Decision
+
+Ship v2 as a **versioned schema on the existing `BasicField.Children` field**.
+The field type string stays `'children'`. A `version` discriminator on the
+children field selects behaviour:
+
+- **version 1 (legacy, default):** exploded v3 storage, Secondary Race and
+  Allow-Multiple available, `[MyInfo] Child N …` numbering. Unchanged.
+- **version 2:** answerObject v4 storage (`ChildrenAnswerV4`), single child per
+  field, no Secondary Race, no Allow-Multiple, new field description, picker
+  deduped by the unified identifier, per-child `type`. Whitelist-gated.
+
+A children field's `version` is set once when created/configured by a
+whitelisted admin, and stamped onto existing whitelisted forms' fields during
+migration (preserving the field `_id`).
+
+## Consequences
+
+**Positive**
+
+- The v4 `ChildrenFieldResponseV4` type already uses `'children'`, so no
+  `FieldType` union change and no second code path in the v4 encrypt/decrypt
+  plumbing.
+- Reuses the existing builder (`EditMyInfoChildren`) and respondent
+  (`ChildrenCompoundField`) components via version branching, rather than
+  duplicating them as `…V2` siblings.
+- Migration (PRD slice 06) is an in-place `version` bump that preserves field
+  `_id`, so logic / webhook / CSV references survive.
+
+**Negative / watch-outs**
+
+- "Legacy frozen / decrypt-only" (PRD slice 05) is a _behaviour of version 1_
+  rather than a separate type. Care is needed so version-1 responses keep
+  decrypting after version 2 ships — covered by regression tests.
+- Two behaviours now live in one field type and one set of components; the
+  `version` branch must be explicit and well-tested to avoid leaking v2 rules
+  (e.g. dropping Secondary Race) into version-1 forms.
+- The PRD prose and the issues README originally described a _new field type_
+  `children_v2`. That framing is superseded by this ADR; the README has been
+  corrected. The `children_v2` label survives only as the **project/branch
+  name**, not a `BasicField` value.
+
+## v2 is the default in Multi-respondent forms (2026-06-28)
+
+Because MRF / unified modes is the definitive home, a children field added to a
+**Multi-respondent** form is stamped `version: 2` automatically (`createFormField`),
+no flag required. The `children-v2` GrowthBook flag now governs v2 **only in
+Storage/Encrypt mode** (the pilot on the old mode). The builder offers the field
+in MRF behind `betaFlags.children` alone.
+
+Watch-out: the MRF _submission_ path (picker dedup + per-child `type` threading
+
+- v4 storage + step-1 assignment + response `type` column) is still WIP, so
+  `betaFlags.children` must stay a tight whitelist until that lands — otherwise an
+  MRF children field is addable but may not submit/store correctly.
+
+## North-star (2026-06-28)
+
+This versioned-schema field is a **transitional stepping stone in Storage mode**,
+not the destination. The **definitive** children field is intended to live in
+**Multi-respondent / unified modes** on answerObject v4, with admins migrating
+and upgrading their existing children forms onto it (see slice 08 and the
+Converge Storage & MRF Modes effort). answerObject-v4 storage already exists
+only on the MRF side, so MRF is closer to that destination than Storage mode is.
+
+Consequence: the migration (slice 06) is ultimately a **backend flip of the
+form's `responseMode` from `encrypt` to `multirespondent`** — landing the form
+in the unified-modes / v4 world — not merely an in-place `version` bump within
+Storage mode. An MRF form with an empty workflow behaves like a one-respondent
+form, which is the bridge that keeps single-respondent behaviour through the
+flip. Pre-flip encrypt-mode (v3) responses must still decrypt afterward. This
+supersedes the "in-place field `_id` version bump" framing above as the
+_eventual_ mechanic; the version bump remains valid for the interim Storage-mode
+v2 rollout (slices 02–05).
+
+## Notes
+
+This supersedes the placeholder filename `0001-children-v2-new-field-type.md`
+referenced in early drafts of the issues README — the decision recorded here is
+the opposite of "new field type".
