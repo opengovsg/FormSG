@@ -3,7 +3,7 @@ import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { Box, FormControl, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { extend } from 'lodash'
 
-import { MyInfoChildAttributes } from 'formsg-shared/types'
+import { isChildrenV2Field, MyInfoChildAttributes } from 'formsg-shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'
@@ -12,7 +12,6 @@ import Link from '~components/Link'
 import { Toggle } from '~components/Toggle/Toggle'
 
 import { CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS } from '~features/admin-form/create/builder-and-design/constants'
-import { isChildrenV2InBuilder } from '~features/myinfo/utils'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
@@ -52,7 +51,7 @@ export const EditMyInfoChildren = ({
   const extendedField = extendWithMyInfo(field)
   // children-v2 (ADR-0001): drop Secondary Race + Allow-Multiple and show the
   // new description when the field is stamped v2.
-  const isV2 = isChildrenV2InBuilder(field)
+  const isV2 = isChildrenV2Field(field)
   const subFieldOptions = isV2
     ? CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS.filter(
         (option) => option.value !== MyInfoChildAttributes.ChildSecondaryRace,
