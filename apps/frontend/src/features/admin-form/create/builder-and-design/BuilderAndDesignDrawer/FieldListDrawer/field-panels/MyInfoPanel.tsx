@@ -7,7 +7,6 @@ import { Droppable } from '@hello-pangea/dnd'
 import {
   AdminFormDto,
   FormAuthType,
-  FormResponseMode,
   MyInfoAttribute,
 } from 'formsg-shared/types'
 
@@ -29,7 +28,7 @@ import {
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
 } from '~features/admin-form/create/builder-and-design/constants'
 import { MYINFO_FIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
-import { isMyInfo } from '~features/myinfo/utils'
+import { canAddChildrenField, isMyInfo } from '~features/myinfo/utils'
 import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
@@ -79,6 +78,14 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   const { data: form, isLoading } = useCreateTabForm()
 
   const { user } = useUser()
+
+  // children-v2 (slice 08): the field is also offered in Multi-respondent forms,
+  // where v2 is the default (the definitive children field lives in unified
+  // modes). Encrypt-mode availability is unchanged.
+  const showChildrenSection = canAddChildrenField({
+    hasChildrenBetaFlag: !!user?.betaFlags?.children,
+    responseMode: form?.responseMode,
+  })
 
   /**
    * If sgID is used, checks if the corresponding
@@ -233,8 +240,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
           </Box>
         )}
       </Droppable>
-      {user?.betaFlags?.children &&
-      form?.responseMode === FormResponseMode.Encrypt ? (
+      {showChildrenSection ? (
         <Droppable isDropDisabled droppableId={CREATE_MYINFO_CHILDREN_DROP_ID}>
           {(provided) => (
             <Box ref={provided.innerRef} {...provided.droppableProps}>
