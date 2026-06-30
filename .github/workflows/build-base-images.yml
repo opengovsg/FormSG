@@ -26,6 +26,7 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 env:
   REGISTRY: ghcr.io
@@ -41,6 +42,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install chainctl + assume identity
+        # setup-chainctl@2cddd35a2f120d9973e58094dc6878c93cf58c28 -> v0.5.1
+        uses: chainguard-dev/setup-chainctl@2cddd35a2f120d9973e58094dc6878c93cf58c28
+        with:
+          identity: ${{ secrets.CGR_ASSUMED_ID }}
+      - name: Generate CGR .npmrc and swap lockfile
+        run: |
+          chainctl auth configure-npm --org-name open.gov.sg
+          ex -sc 'g/javascript\/:/t.|s/javascript/javascript-upstream/|x' .npmrc
+          cp pnpm-lock.cgr.yaml pnpm-lock.yaml
 
       - name: Compute dependency hash
         id: deps-hash
@@ -106,6 +118,8 @@ jobs:
             ${{ env.IMAGE_NAME }}:build-latest
           cache-from: |
             type=registry,ref=${{ env.IMAGE_NAME }}:build-latest
+          secret-files: |
+            npmrc=.npmrc
 
       - name: Build and push runtime-base image
         if: steps.check-exists.outputs.skip != 'true'
@@ -120,6 +134,8 @@ jobs:
             ${{ env.IMAGE_NAME }}:runtime-latest
           cache-from: |
             type=registry,ref=${{ env.IMAGE_NAME }}:runtime-latest
+          secret-files: |
+            npmrc=.npmrc
 
       - name: Set outputs
         id: set-outputs
