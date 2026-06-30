@@ -2,6 +2,7 @@ import {
   BasicField,
   ChildBirthRecordsResponseV3,
   ChildrenCompoundFieldBase,
+  isChildrenV2Field,
   MyInfoChildAttributes,
 } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
@@ -70,30 +71,44 @@ const validChildAnswerConsistency: ChildrenValidator = (response) => {
  * Returns a validation function to check if
  * all the answers are non-empty if first answer subarray has length > 0 and a child is selected
  */
-const validChildAnswersNonEmpty: ChildrenValidator = (response) => {
-  const { childSubFieldsArray, answerArray } = response
+const validChildAnswersNonEmpty: ChildrenValidatorConstructor =
+  (childrenField) => (response) => {
+    const { childSubFieldsArray, answerArray } = response
 
-  const first = answerArray[0]
+    const first = answerArray[0]
 
-  // Account for the case where no child is selected
-  const noOfChildrenSubFields = childSubFieldsArray?.length ?? 1
-  const noChildSelectedAnswerArray = Array(noOfChildrenSubFields).fill('')
-  // Similar to transformToChildOutput in inputTransformation, this is a string of empty strings (which represents number of children subfields).
-  const noChildSelectedAnswer = noChildSelectedAnswerArray[0]
+    // Account for the case where no child is selected
+    const noOfChildrenSubFields = childSubFieldsArray?.length ?? 1
+    const noChildSelectedAnswerArray = Array(noOfChildrenSubFields).fill('')
+    // Similar to transformToChildOutput in inputTransformation, this is a string of empty strings (which represents number of children subfields).
+    const noChildSelectedAnswer = noChildSelectedAnswerArray[0]
 
-  return Array.isArray(first) &&
-    first.length > 0 &&
-    // Check that at least 1 child is selected
-    first[0] !== noChildSelectedAnswer
-    ? answerArray.every((subArr) =>
-        subArr.every((val) => typeof val === 'string' && !!val.trim()),
-      )
+    const isChildSelected =
+      Array.isArray(first) &&
+      first.length > 0 &&
+      // Check that at least 1 child is selected
+      first[0] !== noChildSelectedAnswer
+
+    if (!isChildSelected) {
+      return right(response)
+    }
+
+    // children-v2 (ADR-0001): once a child is selected, an optional sub-field
+    // that MyInfo returns empty must not block submission — the fix for the
+    // legacy empty-mandatory-sub-field error. Legacy (v1) fields keep the
+    // stricter all-sub-fields-non-empty rule.
+    if (isChildrenV2Field(childrenField)) {
+      return right(response)
+    }
+
+    return answerArray.every((subArr) =>
+      subArr.every((val) => typeof val === 'string' && !!val.trim()),
+    )
       ? right(response)
       : left(
           `ChildrenValidator (validChildAnswersNonEmpty):\t inconsistent answer array subarrays`,
         )
-    : right(response)
-}
+  }
 
 /**
  * Returns a validation function to check if the
@@ -168,7 +183,7 @@ export const constructChildrenValidator: ChildrenValidatorConstructor = (
     childrenAnswerValidator,
     chain(validChildAnswerFirstArray),
     chain(validChildAnswerConsistency),
-    chain(validChildAnswersNonEmpty),
+    chain(validChildAnswersNonEmpty(childrenField)),
     chain(validChildAnswerAndSubFields),
     chain(validChildSubFieldsValidator(childrenField)),
     chain(validChildSubFieldsAndResponseSubFieldsMatch(childrenField)),
@@ -239,9 +254,10 @@ const isChildElementsSameLengthV3: ResponseValidator<
  * Returns a validation function to check if
  * all the answers are non-empty if the child answer does not represent no child being selected.
  */
-const isValidChildAnswersNonEmpty: ResponseValidator<
+const isValidChildAnswersNonEmpty: ResponseValidatorConstructor<
+  ChildrenCompoundFieldBase,
   ChildBirthRecordsResponseV3
-> = (response) => {
+> = (childrenField) => (response) => {
   const { childFields, child } = response.answer
 
   const numChildrenSubFields = childFields?.length ?? 1
@@ -251,18 +267,27 @@ const isValidChildAnswersNonEmpty: ResponseValidator<
     child.length === 0 ||
     (child.length === 1 && _.isEqual(child[0], noChildSelectedAnswer))
 
-  return isNoChildSelected
+  if (isNoChildSelected) {
+    return right(response)
+  }
+
+  // children-v2 (ADR-0001): once a child is selected, an optional sub-field
+  // that MyInfo returns empty (e.g. an absent race) must not block submission.
+  // This is the fix for the legacy empty-mandatory-sub-field error. Legacy
+  // (v1) fields keep the stricter all-sub-fields-non-empty rule.
+  if (isChildrenV2Field(childrenField)) {
+    return right(response)
+  }
+
+  return child.every((childAns) =>
+    childAns.every(
+      (subFieldAns) => typeof subFieldAns === 'string' && !!subFieldAns.trim(),
+    ),
+  )
     ? right(response)
-    : child.every((childAns) =>
-          childAns.every(
-            (subFieldAns) =>
-              typeof subFieldAns === 'string' && !!subFieldAns.trim(),
-          ),
-        )
-      ? right(response)
-      : left(
-          `ChildrenValidatorV3.validChildAnswersNonEmpty:\t inconsistent answer array subarrays`,
-        )
+    : left(
+        `ChildrenValidatorV3.validChildAnswersNonEmpty:\t inconsistent answer array subarrays`,
+      )
 }
 
 /**
@@ -344,7 +369,7 @@ export const constructChildrenValidatorV3: ResponseValidatorConstructor<
     chain(isChildAnswerNonEmptyV3),
     chain(isChildFirstElementLengthGtZeroV3),
     chain(isChildElementsSameLengthV3),
-    chain(isValidChildAnswersNonEmpty),
+    chain(isValidChildAnswersNonEmpty(childrenField)),
     chain(isChildrenAnswerAndSubfieldSameLengthV3),
     chain(isChildFieldValidAttributeV3),
     chain(isSubfieldsValidAttributeV3(childrenField)),

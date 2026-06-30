@@ -22,6 +22,7 @@ import {
   BasicField,
   CheckboxFieldBase,
   ChildrenCompoundFieldBase,
+  ChildrenFieldVersion,
   DateFieldBase,
   DateSelectedValidation,
   DecimalFieldBase,
@@ -943,6 +944,11 @@ export const createChildrenValidationRules: ValidationRuleFn<
   return {
     validate: {
       required: (value: string) => {
+        // children-v2 (ADR-0001): individual sub-fields are optional. A child
+        // is identified by the name picker (which keeps its own required rule)
+        // plus the unified identifier, so an empty optional sub-field that
+        // MyInfo returns must not block submission.
+        if (schema.version === ChildrenFieldVersion.V2) return true
         if (disableRequiredValidation || !schema.required) return true
         if (!value || !value.trim()) return REQUIRED_ERROR
       },
