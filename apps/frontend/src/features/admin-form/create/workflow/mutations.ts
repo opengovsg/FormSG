@@ -11,6 +11,7 @@ import {
 import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import {
@@ -18,6 +19,7 @@ import {
   deleteWorkflowStep,
   updateWorkflowStep,
 } from './FormWorkflowService'
+import { isStepCompleted } from './workflow.utils'
 
 export const useWorkflowMutations = () => {
   const { formId } = useParams()
@@ -59,6 +61,12 @@ export const useWorkflowMutations = () => {
         toast({
           description: 'The step was successfully created.',
         })
+
+        // Trigger feedback when 2+ completed steps
+        const completedCount = updatedWorkflow.filter(isStepCompleted).length
+        if (completedCount >= 2) {
+          useAdminFeedbackStore.getState().setEligible('workflow', formId)
+        }
       },
       onError: handleError,
     },
@@ -109,6 +117,12 @@ export const useWorkflowMutations = () => {
         toast({
           description: 'The step was successfully updated.',
         })
+
+        // Trigger feedback when 2+ completed steps
+        const completedCount = updatedWorkflow.filter(isStepCompleted).length
+        if (completedCount >= 2) {
+          useAdminFeedbackStore.getState().setEligible('workflow', formId)
+        }
       },
       onError: handleError,
     },
