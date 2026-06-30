@@ -88,7 +88,7 @@
     "mongodb-memory-server-core": "^9.5.0",
     "mongodb-uri": "^0.9.7",
     "mongoose": "^7.8.7",
-    "multer": "^2.0.0",
+    "multer": "^2.2.0",
     "multiparty": ">=4.3.0",
     "nan": "^2.22.2",
     "neverthrow": "^8.0.0",
