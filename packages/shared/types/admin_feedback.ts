@@ -2,8 +2,10 @@ import { UserDto } from './user'
 
 export type AdminFeedbackTriggerSource = 'field-edit' | 'publish' | 'workflow'
 
+export type AdminFeedbackRating = 1 | 2 | 3 | 4 | 5
+
 export type AdminFeedbackBase = {
-  rating: number
+  rating: AdminFeedbackRating
   comment?: string
   triggerSource?: AdminFeedbackTriggerSource
   formId?: string
@@ -14,9 +16,3 @@ export type AdminFeedbackBase = {
 }
 
 export type AdminFeedbackDto = AdminFeedbackBase & { _id: string }
-
-/** @deprecated Remove when star rating UI PR lands. */
-export enum AdminFeedbackRating {
-  up = 1,
-  down = 0,
-}

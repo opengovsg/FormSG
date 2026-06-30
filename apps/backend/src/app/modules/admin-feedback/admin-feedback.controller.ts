@@ -17,7 +17,7 @@ const logger = createLoggerWithLabel(module)
 
 const valdiateSubmitAdminFeedbackParams = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().integer().min(0).max(5).required(),
+    rating: Joi.number().integer().min(1).max(5).required(),
     comment: Joi.string(),
     triggerSource: Joi.string()
       .valid('field-edit', 'publish', 'workflow')
