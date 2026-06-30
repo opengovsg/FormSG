@@ -14,6 +14,8 @@ import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  ChildrenCompoundFieldBase,
+  ChildrenFieldVersion,
   DropdownFieldBase,
   DuplicateFormOverwriteDto,
   EndPageUpdateDto,
@@ -29,6 +31,7 @@ import {
   FormWorkflowDto,
   FormWorkflowStepDto,
   LogicDto,
+  MyInfoChildAttributes,
   PaymentChannel,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -919,6 +922,18 @@ export const updateFormField = (
 ): ResultAsync<FormFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
   const _newField = insertTableShortTextColumnDefaultValidationOptions(newField)
 
+  // children-v2 (ADR-0001): the v2 invariants must hold on edits too, not only
+  // on create. If the payload is stamped v2, strip Secondary Race /
+  // Allow-Multiple so a crafted update payload can't reintroduce them. We never
+  // downgrade an existing version here.
+  if (_newField.fieldType === BasicField.Children) {
+    const childrenField = _newField as ChildrenCompoundFieldBase
+    const isV2 = childrenField.version === ChildrenFieldVersion.V2
+    if (isV2) {
+      enforceChildrenV2Invariants(childrenField)
+    }
+  }
+
   return ResultAsync.fromPromise(
     form.updateFormFieldById(fieldId, _newField),
     (error) => {
@@ -999,6 +1014,23 @@ export const duplicateFormField = (
 }
 
 /**
+ * Enforces the children-v2 data invariants (ADR-0001/0002) on a children field
+ * before it is written: v2 has neither Secondary Race nor Allow-Multiple, so we
+ * drop them from the field data — not just from the builder UI — so the
+ * invariant holds however the field became v2 (fresh create, MRF default, or
+ * edit). Cleaning at the data layer (rather than filtering at render) matters
+ * because the render index maps to childFields/answerArray positions.
+ */
+const enforceChildrenV2Invariants = (
+  childrenField: ChildrenCompoundFieldBase,
+): void => {
+  childrenField.allowMultiple = false
+  childrenField.childrenSubFields = childrenField.childrenSubFields?.filter(
+    (subField) => subField !== MyInfoChildAttributes.ChildSecondaryRace,
+  )
+}
+
+/**
  * Inserts a new form field into given form's fields with the field provided
  * @param form the form to insert the new field into
  * @param newField the new field to insert
@@ -1010,6 +1042,7 @@ export const createFormField = (
   form: IPopulatedForm,
   newField: FieldCreateDto,
   to?: number,
+  opts?: { childrenV2Enabled?: boolean },
 ): ResultAsync<
   FormFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
@@ -1018,6 +1051,20 @@ export const createFormField = (
   if (newField.myInfo?.attr) {
     newField.title =
       MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
+  }
+
+  // Children version is stamped server-side (ADR-0001), so the gate is
+  // authoritative — a hand-crafted payload can't opt in. In Storage/Encrypt
+  // mode v2 is whitelist-gated by the children-v2 flag.
+  if (newField.fieldType === BasicField.Children) {
+    const childrenField = newField as ChildrenCompoundFieldBase
+    const isV2 = !!opts?.childrenV2Enabled
+    childrenField.version = isV2
+      ? ChildrenFieldVersion.V2
+      : ChildrenFieldVersion.Legacy
+    if (isV2) {
+      enforceChildrenV2Invariants(childrenField)
+    }
   }
 
   return ResultAsync.fromPromise(
