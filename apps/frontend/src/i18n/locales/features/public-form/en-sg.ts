@@ -20,6 +20,7 @@ export const enSG: PublicForm = {
 
     myinfo:
       'Your Myinfo details could not be retrieved. Refresh your browser and log in, or try again later.',
+    attachmentDecryption: 'Failed to decrypt attachment',
     submitFailure:
       'An error occurred whilst processing your submission. Please refresh and try again.',
     verifiedFieldExpired:
