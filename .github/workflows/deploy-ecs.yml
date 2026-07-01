@@ -225,7 +225,8 @@ jobs:
           # above already wrote.
           CRANE_VERSION=0.21.7
           curl -fsSL "https://github.com/google/go-containerregistry/releases/download/v${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz" \
-            | tar -xz -C /usr/local/bin crane
+            | tar -xzf - -C /usr/local/bin crane
+          chmod +x /usr/local/bin/crane
           crane copy "$SRC_IMAGE" "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       - name: Set up Docker Buildx
