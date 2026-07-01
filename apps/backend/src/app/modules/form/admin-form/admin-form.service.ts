@@ -1014,7 +1014,7 @@ export const duplicateFormField = (
 }
 
 /**
- * Enforces the children-v2 data invariants (ADR-0001/0002) on a children field
+ * Enforces the children-v2 data invariants (ADR-0001) on a children field
  * before it is written: v2 has neither Secondary Race nor Allow-Multiple, so we
  * drop them from the field data — not just from the builder UI — so the
  * invariant holds however the field became v2 (fresh create, MRF default, or
