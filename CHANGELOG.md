@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.34.4](https://github.com/opengovsg/formsg/compare/v7.34.3...v7.34.4) (2026-07-01)
+
+
+### Bug Fixes
+
+* **ci:** don't cancel in-flight deploys + speed up release build/deploy (#9690) ([#9690](https://github.com/opengovsg/formsg/commit/33a449d8735d58a99011ab5be1722a0521e592bb))
+
+
+### Dependencies
+
+* **deps:** bump express-request-id and @types/express-request-id (#9417) ([#9417](https://github.com/opengovsg/formsg/commit/2efc878e4fc39542be2a4bf79d79f8062b6d3a77))
+
 ## [7.34.3](https://github.com/opengovsg/formsg/compare/v7.34.2...v7.34.3) (2026-06-30)
 
 
