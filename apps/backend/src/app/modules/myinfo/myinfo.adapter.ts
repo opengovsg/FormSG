@@ -250,6 +250,21 @@ const requirementToVaccinationEnum = (
     : MyInfoChildVaxxStatus.ONEM3D_NOT_FULFILLED
 }
 
+/**
+ * Resolves the unified child identifier (ADR-0002). The single
+ * `childbirthcertno` sub-field is populated from `birthcertno` for a local
+ * (nuclear) record and from `nric` for a sponsored record, so both kinds fill
+ * the same identifier slot without an empty-mandatory error. Keeping this in
+ * one place lets #accessChildAttr stay a straightforward sub-field reader.
+ */
+const resolveChildIdentifier = (
+  record: MyInfoChildBirthRecordBelow21 | MyInfoSponsoredChildBelow21,
+  type: ChildRecordType,
+): string =>
+  type === ChildRecordType.Sponsored
+    ? ((record as MyInfoSponsoredChildBelow21)?.nric?.value ?? '')
+    : ((record as MyInfoChildBirthRecordBelow21)?.birthcertno?.value ?? '')
+
 const MyInfoChildAttributesSorted = Object.values(MyInfoChildAttributes).sort()
 
 /**
@@ -300,10 +315,7 @@ export class MyInfoData implements MyInfoDataTransformer<
       case MyInfoChildAttributes.ChildDateOfBirth:
         return record?.dob?.value ?? ''
       case MyInfoChildAttributes.ChildBirthCertNo:
-        return type === ChildRecordType.Sponsored
-          ? ((record as MyInfoSponsoredChildBelow21)?.nric?.value ?? '')
-          : ((record as MyInfoChildBirthRecordBelow21)?.birthcertno?.value ??
-              '')
+        return resolveChildIdentifier(record, type)
       case MyInfoChildAttributes.ChildVaxxStatus:
         // Sponsored records aren't in HPB's vaccination data at all, so surface
         // Unknown (which prefill/hashing skips, leaving the field for the
