@@ -52,7 +52,7 @@ export const EditMyInfoChildren = ({
 }: EditMyInfoChildrenProps): JSX.Element => {
   const extendedField = extendWithMyInfo(field)
   const { data: form } = useCreateTabForm()
-  // children-v2 (ADR-0001/0002): drop Secondary Race + Allow-Multiple and show
+  // children-v2 (ADR-0001): drop Secondary Race + Allow-Multiple and show
   // the new description. v2 applies when the field is stamped v2 OR the form is
   // Multi-respondent (v2 is the default there, stamped on save) — so the editor
   // reflects v2 immediately, not only after the field is persisted.

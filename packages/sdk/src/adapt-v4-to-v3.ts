@@ -1,4 +1,7 @@
-import { ADDRESS_SUBFIELD_KEYS, GENERIC_STRING_FIELD_TYPES } from './constants-v4'
+import {
+  ADDRESS_SUBFIELD_KEYS,
+  GENERIC_STRING_FIELD_TYPES,
+} from './constants-v4'
 import { FieldType, FormFieldsV3 } from './types'
 import {
   AddressAnswerV4,
@@ -104,6 +107,10 @@ function convertChildrenAnswerToV3(answer: ChildrenAnswerV4): {
     child.push(childValues)
   }
 
+  // children-v2 (ADR-0001): the per-child record `type` that adaptV3ToV4 stamps
+  // onto ChildEntryV4 is intentionally NOT reconstructed here — the v3 answer
+  // shape has no slot for it, and this reverse path is legacy/decrypt-only, so a
+  // v4→v3 conversion deliberately drops `type` rather than round-tripping it.
   return { child, childFields }
 }
 

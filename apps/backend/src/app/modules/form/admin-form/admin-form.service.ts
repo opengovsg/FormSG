@@ -922,11 +922,15 @@ export const updateFormField = (
 ): ResultAsync<FormFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
   const _newField = insertTableShortTextColumnDefaultValidationOptions(newField)
 
-  // children-v2 (ADR-0001/0002): the v2 invariants must hold on edits too, not
-  // only on create. A children field is v2 if the form is Multi-respondent
-  // (where v2 is the default) or the payload is already stamped v2; in that
-  // case strip Secondary Race / Allow-Multiple so a crafted update payload
-  // can't reintroduce them. We never downgrade an existing version here.
+  // children-v2 (ADR-0001): the v2 invariants must hold on edits too, not only
+  // on create. A children field is v2 if the form is Multi-respondent (where v2
+  // is the default) or the payload is already stamped v2; in that case strip
+  // Secondary Race / Allow-Multiple so a crafted update payload can't
+  // reintroduce them. Note the v2 test differs from createFormField on purpose:
+  // create ignores any payload `version` (the flag/MRF is the authoritative
+  // gate, so a crafted create can't opt in), whereas update trusts the
+  // already-stamped `version` and never re-derives v2-ness from the flag. We
+  // never downgrade an existing version here.
   if (_newField.fieldType === BasicField.Children) {
     const childrenField = _newField as ChildrenCompoundFieldBase
     const isV2 =
@@ -1018,7 +1022,7 @@ export const duplicateFormField = (
 }
 
 /**
- * Enforces the children-v2 data invariants (ADR-0001/0002) on a children field
+ * Enforces the children-v2 data invariants (ADR-0001) on a children field
  * before it is written: v2 has neither Secondary Race nor Allow-Multiple, so we
  * drop them from the field data — not just from the builder UI — so the
  * invariant holds however the field became v2 (fresh create, MRF default, or
@@ -1057,7 +1061,7 @@ export const createFormField = (
       MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
   }
 
-  // Children version is stamped server-side (ADR-0001/0002), so the gate is
+  // Children version is stamped server-side (ADR-0001), so the gate is
   // authoritative — a hand-crafted payload can't opt in. v2 is the **default
   // in Multi-respondent forms** (the definitive children field lives in unified
   // modes); in Storage/Encrypt mode it stays whitelist-gated by children-v2.
