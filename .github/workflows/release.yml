@@ -34,11 +34,6 @@ jobs:
   release:
     name: Cut release
     runs-on: ubuntu-latest
-    # Serialize only the version-bump cut so two dispatches can't race to bump
-    # off the same base commit. Scoped to this job (not the whole workflow) and
-    # non-cancelling so a new dispatch (a) never cancels in-flight deploys and
-    # (b) can be cut while a previous release waits at the prod approval gate.
-    # A second dispatch queues behind this cut, then bumps off the new HEAD.
     concurrency:
       group: release-cut
       cancel-in-progress: false
