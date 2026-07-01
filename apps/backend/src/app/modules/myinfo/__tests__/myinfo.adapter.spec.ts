@@ -3,7 +3,11 @@ import {
   IPersonResponse,
   MyInfoVehicleFull,
 } from '@opengovsg/myinfo-gov-client'
-import { MyInfoAttribute } from 'formsg-shared/types'
+import {
+  ChildRecordType,
+  MyInfoAttribute,
+  MyInfoChildAttributes,
+} from 'formsg-shared/types'
 import type { SetRequired } from 'type-fest'
 
 import { MyInfoData } from '../myinfo.adapter'
@@ -33,6 +37,143 @@ import {
 
 describe('myinfo.adapter', () => {
   describe('MyInfoData', () => {
+    describe('getChildrenBirthRecords (sponsored support)', () => {
+      const REQUESTED = [
+        MyInfoAttribute.ChildName,
+        MyInfoAttribute.ChildBirthCertNo,
+        MyInfoAttribute.ChildGender,
+      ]
+
+      const localChild = {
+        name: { value: 'Local Tan' },
+        birthcertno: { value: 'S1111111A' },
+        sex: { code: 'M', desc: 'MALE' },
+      }
+      const sponsoredChild = {
+        nric: { value: 'T2222222B' },
+        name: { value: 'Sponsored Lee' },
+        sex: { code: 'F', desc: 'FEMALE' },
+        // sponsored-only immigration fields must NOT be surfaced
+        residentialstatus: { code: 'PR', desc: 'PR' },
+        nationality: { code: 'MY', desc: 'MALAYSIAN' },
+      }
+
+      it('merges sponsored children after local, with a unified identifier and per-child type', () => {
+        const response = {
+          uinFin: MOCK_UINFIN,
+          data: {
+            childrenbirthrecords: [localChild],
+            sponsoredchildrenrecords: [sponsoredChild],
+          },
+        } as unknown as IPersonResponse
+        const myInfoData = new MyInfoData(response)
+
+        const actual = myInfoData.getChildrenBirthRecords(REQUESTED)
+
+        expect(actual?.[MyInfoChildAttributes.ChildName]).toEqual([
+          'Local Tan',
+          'Sponsored Lee',
+        ])
+        // unified identifier: birthcertno for local, nric for sponsored
+        expect(actual?.[MyInfoChildAttributes.ChildBirthCertNo]).toEqual([
+          'S1111111A',
+          'T2222222B',
+        ])
+        expect(actual?.[MyInfoChildAttributes.ChildGender]).toEqual([
+          'MALE',
+          'FEMALE',
+        ])
+        expect(actual?.type).toEqual([
+          ChildRecordType.Nuclear,
+          ChildRecordType.Sponsored,
+        ])
+      })
+
+      it('still works with only local children (no sponsored records)', () => {
+        const response = {
+          uinFin: MOCK_UINFIN,
+          data: { childrenbirthrecords: [localChild] },
+        } as unknown as IPersonResponse
+        const myInfoData = new MyInfoData(response)
+
+        const actual = myInfoData.getChildrenBirthRecords(REQUESTED)
+
+        expect(actual?.[MyInfoChildAttributes.ChildName]).toEqual(['Local Tan'])
+        expect(actual?.[MyInfoChildAttributes.ChildBirthCertNo]).toEqual([
+          'S1111111A',
+        ])
+        expect(actual?.type).toEqual([ChildRecordType.Nuclear])
+      })
+
+      it('returns sponsored children even when there are no local records', () => {
+        const response = {
+          uinFin: MOCK_UINFIN,
+          data: { sponsoredchildrenrecords: [sponsoredChild] },
+        } as unknown as IPersonResponse
+        const myInfoData = new MyInfoData(response)
+
+        const actual = myInfoData.getChildrenBirthRecords(REQUESTED)
+
+        expect(actual?.[MyInfoChildAttributes.ChildName]).toEqual([
+          'Sponsored Lee',
+        ])
+        expect(actual?.[MyInfoChildAttributes.ChildBirthCertNo]).toEqual([
+          'T2222222B',
+        ])
+        expect(actual?.type).toEqual([ChildRecordType.Sponsored])
+      })
+
+      // Edge-case handling (PRD slice 04, provisional — gated by slice 01's
+      // Singpass filter-vs-disable ruling). Opt-in via excludeIneligible so
+      // legacy (v1) behaviour is unchanged by default.
+      describe('excludeIneligible', () => {
+        const deceasedChild = {
+          name: { value: 'Deceased Child' },
+          birthcertno: { value: 'S3333333C' },
+          sex: { desc: 'MALE' },
+          lifestatus: { code: 'D', desc: 'DECEASED' },
+        }
+        // A >=21 child: MyInfo returns only the identifier, no name.
+        const above21Child = {
+          birthcertno: { value: 'S4444444D' },
+        }
+
+        const response = {
+          uinFin: MOCK_UINFIN,
+          data: {
+            childrenbirthrecords: [localChild, deceasedChild, above21Child],
+          },
+        } as unknown as IPersonResponse
+
+        it('includes deceased and >=21 children by default (legacy behaviour)', () => {
+          const actual = new MyInfoData(response).getChildrenBirthRecords(
+            REQUESTED,
+          )
+
+          expect(actual?.[MyInfoChildAttributes.ChildName]).toEqual([
+            'Local Tan',
+            'Deceased Child',
+            '',
+          ])
+        })
+
+        it('filters out deceased and >=21 children when excludeIneligible is set', () => {
+          const actual = new MyInfoData(response).getChildrenBirthRecords(
+            REQUESTED,
+            { excludeIneligible: true },
+          )
+
+          expect(actual?.[MyInfoChildAttributes.ChildName]).toEqual([
+            'Local Tan',
+          ])
+          expect(actual?.[MyInfoChildAttributes.ChildBirthCertNo]).toEqual([
+            'S1111111A',
+          ])
+          expect(actual?.type).toEqual([ChildRecordType.Nuclear])
+        })
+      })
+    })
+
     describe('getFieldValueForAttr', () => {
       describe('Phone numbers', () => {
         it('should return empty string and readonly as false when key is not present', () => {
