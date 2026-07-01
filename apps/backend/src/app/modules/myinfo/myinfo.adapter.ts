@@ -305,11 +305,16 @@ export class MyInfoData implements MyInfoDataTransformer<
           : ((record as MyInfoChildBirthRecordBelow21)?.birthcertno?.value ??
               '')
       case MyInfoChildAttributes.ChildVaxxStatus:
-        // Sponsored records don't carry HPB vaccination data; undefined is
-        // handled by requirementToVaccinationEnum.
-        return requirementToVaccinationEnum(
-          (record as MyInfoChildBirthRecordBelow21)?.vaccinationrequirements,
-        ) as string
+        // Sponsored records aren't in HPB's vaccination data at all, so surface
+        // Unknown (which prefill/hashing skips, leaving the field for the
+        // respondent) rather than a false "not fulfilled" claim. Local records
+        // keep the documented "missing = not fulfilled" mapping.
+        return type === ChildRecordType.Sponsored
+          ? MyInfoChildVaxxStatus.Unknown
+          : (requirementToVaccinationEnum(
+              (record as MyInfoChildBirthRecordBelow21)
+                ?.vaccinationrequirements,
+            ) as string)
       case MyInfoChildAttributes.ChildGender:
         return record?.sex?.desc ?? ''
       case MyInfoChildAttributes.ChildRace:

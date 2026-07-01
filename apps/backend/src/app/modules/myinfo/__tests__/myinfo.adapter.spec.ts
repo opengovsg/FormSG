@@ -7,6 +7,7 @@ import {
   ChildRecordType,
   MyInfoAttribute,
   MyInfoChildAttributes,
+  MyInfoChildVaxxStatus,
 } from 'formsg-shared/types'
 import type { SetRequired } from 'type-fest'
 
@@ -121,6 +122,30 @@ describe('myinfo.adapter', () => {
           'T2222222B',
         ])
         expect(actual?.type).toEqual([ChildRecordType.Sponsored])
+      })
+
+      it('surfaces Unknown vaccination status for sponsored children (not a false "not fulfilled")', () => {
+        const response = {
+          uinFin: MOCK_UINFIN,
+          data: {
+            childrenbirthrecords: [localChild],
+            sponsoredchildrenrecords: [sponsoredChild],
+          },
+        } as unknown as IPersonResponse
+        const myInfoData = new MyInfoData(response)
+
+        const actual = myInfoData.getChildrenBirthRecords([
+          MyInfoAttribute.ChildName,
+          MyInfoAttribute.ChildVaxxStatus,
+        ])
+
+        // Local child has no HPB data in this fixture → documented
+        // "missing = not fulfilled"; sponsored child isn't in HPB at all → Unknown
+        // (which prefill/hashing skips) rather than a false "not fulfilled".
+        expect(actual?.[MyInfoChildAttributes.ChildVaxxStatus]).toEqual([
+          MyInfoChildVaxxStatus.ONEM3D_NOT_FULFILLED,
+          MyInfoChildVaxxStatus.Unknown,
+        ])
       })
 
       // Edge-case handling (PRD slice 04, provisional — gated by slice 01's
