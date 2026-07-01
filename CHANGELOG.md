@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.35.0](https://github.com/opengovsg/formsg/compare/v7.34.4...v7.35.0) (2026-07-01)
+
+
+### Features
+
+* gate admin feedback behind feature flag (#9683) ([#9683](https://github.com/opengovsg/formsg/commit/ab5541ca38797b8e7db8d4819b982fdd9b1e2994))
+
 ## [7.34.4](https://github.com/opengovsg/formsg/compare/v7.34.3...v7.34.4) (2026-07-01)
 
 
