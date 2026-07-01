@@ -153,7 +153,10 @@ jobs:
           # the branch-triggered stg-alt/uat callers inputs.ref is empty and we
           # fall back to the ref that triggered the run.
           ref: ${{ inputs.ref || github.ref }}
-          fetch-depth: 0
+          # Shallow: the deploy only inspects HEAD and the checked-out tag
+          # (git rev-parse HEAD, git rev-list -n 1 <version>), never older
+          # history, so a full-history clone is wasted time.
+          fetch-depth: 1
 
       - name: Setup secrets for datadog sourcemap deployment
         # Derive the version label from the checked-out ref/commit, not the run's
@@ -208,15 +211,22 @@ jobs:
             echo "No pre-built release image found for tagged commit, will build from scratch"
           fi
 
-      - name: Pull and push pre-built image to ECR
+      - name: Copy pre-built image to ECR
         if: steps.check-release-image.outputs.image != ''
         env:
           ECR_REPOSITORY: ${{ inputs.ecr-repository }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          SRC_IMAGE: ${{ steps.check-release-image.outputs.image }}
         run: |
-          docker pull ${{ steps.check-release-image.outputs.image }}
-          docker tag ${{ steps.check-release-image.outputs.image }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          # Registry-to-registry copy: crane streams the manifest and blobs from
+          # GHCR straight to ECR without pulling the whole image onto the runner,
+          # which is far faster than docker pull + tag + push. crane authenticates
+          # from the ~/.docker/config.json entries the ECR and GHCR login steps
+          # above already wrote.
+          CRANE_VERSION=0.21.7
+          curl -fsSL "https://github.com/google/go-containerregistry/releases/download/v${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz" \
+            | tar -xz -C /usr/local/bin crane
+          crane copy "$SRC_IMAGE" "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       - name: Set up Docker Buildx
         if: steps.check-release-image.outputs.image == ''
