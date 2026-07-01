@@ -115,6 +115,14 @@ on:
         description: 'S3 domain style bucket name for static assets'
         required: true
 
+# Serialize deploys per environment so two releases' deploys can't race the
+# same ECS service. Non-cancelling: a later deploy queues behind an in-flight
+# one rather than cancelling it. Keyed per site so stg/prod/stg-alt/uat are
+# independent of each other.
+concurrency:
+  group: deploy-${{ inputs.environment-site-name }}
+  cancel-in-progress: false
+
 # used to configure IAM to trust Github's OIDC provider
 permissions:
   id-token: write

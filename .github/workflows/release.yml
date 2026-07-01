@@ -21,12 +21,6 @@ name: Release
 on:
   workflow_dispatch:
 
-# Only one release may be in flight at a time, so two dispatches can't race to
-# bump the version off the same base commit.
-concurrency:
-  group: release
-  cancel-in-progress: true
-
 # Minimal by default; each job escalates to exactly what it needs.
 permissions:
   contents: read
@@ -40,6 +34,14 @@ jobs:
   release:
     name: Cut release
     runs-on: ubuntu-latest
+    # Serialize only the version-bump cut so two dispatches can't race to bump
+    # off the same base commit. Scoped to this job (not the whole workflow) and
+    # non-cancelling so a new dispatch (a) never cancels in-flight deploys and
+    # (b) can be cut while a previous release waits at the prod approval gate.
+    # A second dispatch queues behind this cut, then bumps off the new HEAD.
+    concurrency:
+      group: release-cut
+      cancel-in-progress: false
     # `release` GitHub Environment gates who can cut a tag (required reviewers
     # configured in repo settings).
     environment: release
