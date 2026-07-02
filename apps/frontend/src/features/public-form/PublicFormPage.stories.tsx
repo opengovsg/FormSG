@@ -1042,11 +1042,8 @@ WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton.play = async ({
   })
 }
 
-// Regression: only prefilled fields that carry a value should be persisted in
-// the draft. An empty prefill (e.g. `?field=`) must not be saved.
-export const WithSaveDraftEnabledOnlyPersistsPrefilledFieldsWithValues =
-  Template.bind({})
-WithSaveDraftEnabledOnlyPersistsPrefilledFieldsWithValues.parameters = {
+export const WithSaveDraftEnabledPersistsPrefilledFields = Template.bind({})
+WithSaveDraftEnabledPersistsPrefilledFields.parameters = {
   router: {
     path: '/:formId',
     initialEntries: [
@@ -1069,9 +1066,7 @@ WithSaveDraftEnabledOnlyPersistsPrefilledFieldsWithValues.parameters = {
     ...DEFAULT_MSW_HANDLERS,
   ],
 }
-WithSaveDraftEnabledOnlyPersistsPrefilledFieldsWithValues.play = async ({
-  step,
-}) => {
+WithSaveDraftEnabledPersistsPrefilledFields.play = async ({ step }) => {
   const screen = within(document.body)
 
   let formHeaderSaveDraftButton: HTMLElement
@@ -1119,16 +1114,15 @@ WithSaveDraftEnabledOnlyPersistsPrefilledFieldsWithValues.play = async ({
   )
 
   await step(
-    'Assert only the prefilled field with a value is persisted in the draft',
+    'Assert prefilled field even without a value is persisted in the draft',
     async () => {
       const savedDraft = (await _getFromIndexedDBForTest({
         key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
         storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
       })) as DraftSubmission | undefined
-      // The empty-prefill field (5da04eafe397fc0013f63b24) is filtered out, so
-      // only the field prefilled with a value remains.
       expect(savedDraft?.draftResponses).toEqual({
         [PREFILLABLE_NORMAL_SHORTTEXT_FIELD._id]: 'PrefilledValue',
+        [PREFILLABLE_EMPTY_SHORTTEXT_FIELD._id]: '',
       })
     },
   )

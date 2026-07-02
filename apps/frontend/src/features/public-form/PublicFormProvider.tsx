@@ -940,9 +940,7 @@ export const PublicFormProvider = ({
       previousRestoredDraftResponses: draftResponsesToRestore,
       currentFormFieldValues: formMethods.getValues(),
       dirtyFieldIds: Object.keys(dirtyFields),
-      prefilledFieldIds: Object.keys(fieldPrefillMap).filter(
-        (fieldId) => fieldPrefillMap[fieldId].prefillValue !== '',
-      ),
+      prefilledFieldIds: Object.keys(fieldPrefillMap),
       currentStepNumberWorkflowStep,
       formFields,
     })
