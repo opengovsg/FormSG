@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.35.1](https://github.com/opengovsg/formsg/compare/v7.35.0...v7.35.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* localise attachment decryption toast (#9695) ([#9695](https://github.com/opengovsg/formsg/commit/5e0f2f0c52ad7c010e94a35ff6a4564e80db7a6c))
+* support better formatting in desc, messages (#9508) ([#9508](https://github.com/opengovsg/formsg/commit/d2f264dcfe21d814bbcf704ebf35cb993b0c1038))
+
 ## [7.35.0](https://github.com/opengovsg/formsg/compare/v7.34.4...v7.35.0) (2026-07-01)
 
 
