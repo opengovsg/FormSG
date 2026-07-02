@@ -12,11 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import {
-  useFeatureIsOn,
-  useFeatureValue,
-  useGrowthBook,
-} from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, format, isPast } from 'date-fns'
 import { flow, times } from 'lodash'
 import get from 'lodash/get'

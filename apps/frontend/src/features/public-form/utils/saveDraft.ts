@@ -10,7 +10,6 @@ import {
 import {
   BasicField,
   FormFieldDto,
-  StrippedFormFieldDto,
   StrippedFormWorkflowStepDto,
 } from 'formsg-shared/types'
 
