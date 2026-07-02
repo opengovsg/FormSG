@@ -947,6 +947,7 @@ export const PublicFormProvider = ({
       prefilledFieldIds: Object.keys(fieldPrefillMap).filter(
         (fieldId) => fieldPrefillMap[fieldId].prefillValue !== '',
       ),
+      currentWorkflowStep: currentStepNumberWorkflowStep,
       formFields,
     })
 

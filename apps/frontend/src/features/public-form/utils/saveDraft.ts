@@ -7,10 +7,16 @@ import {
   union,
 } from 'lodash'
 
-import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormFieldDto,
+  StrippedFormFieldDto,
+  StrippedFormWorkflowStepDto,
+} from 'formsg-shared/types'
 
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
+import { isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { DraftSubmission } from '../PublicFormContext'
@@ -30,12 +36,14 @@ export const getDraftToSave = ({
   currentFormFieldValues: formFieldValues,
   dirtyFieldIds,
   prefilledFieldIds,
+  currentStepNumberWorkflowStep,
   formFields,
 }: {
   previousRestoredDraftResponses?: FormFieldValues | null
   currentFormFieldValues: FormFieldValues
   dirtyFieldIds: string[]
   prefilledFieldIds: string[]
+  currentStepNumberWorkflowStep: StrippedFormWorkflowStepDto | undefined
   formFields: FormFieldDto[]
 }): DraftSubmission => {
   // Note: payment fields are not included in formFields to keep the implementation simple,
@@ -63,8 +71,16 @@ export const getDraftToSave = ({
     )
     .map((field) => field._id)
 
-  // RATIONALE: Persist dirty (edited) and prefilled fields since they include a value which should be included in the draft.
-  const fieldIdsToSave = union(dirtyFieldIds, prefilledFieldIds)
+  const editableFieldIds = formFields
+    .filter((field) =>
+      isFieldEnabledByMrfWorkflow(currentStepNumberWorkflowStep, field),
+    )
+    .map((field) => field._id)
+  // RATIONALE: Dirty (edited) and prefilled fields that are editable for this workflow step (if exists) should be included in the draft.
+  const fieldIdsToSave = intersection(
+    union(dirtyFieldIds, prefilledFieldIds),
+    editableFieldIds,
+  )
   const fieldValuesToSave = pick(formFieldValues, fieldIdsToSave)
 
   const allFieldValuesToSave = {
