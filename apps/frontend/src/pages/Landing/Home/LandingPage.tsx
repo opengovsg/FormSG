@@ -50,9 +50,9 @@ import { SectionTitleText } from '../components/SectionTitleText'
 import { StatsItem } from '../components/StatsItem'
 
 import formsHeroAnimation from './assets/images/animation-hero.json'
-import howFormsWorksAnimation from './assets/images/animation-mode.json'
 import enterEmailAnimation from './assets/images/animation-typing.json'
 import helpCenterImg from './assets/images/help_center.svg'
+import howItWorksBuilderImg from './assets/images/how-it-works-builder.svg'
 import featureDndImg from './assets/images/icon_dnd.svg'
 import featureEmailImg from './assets/images/icon_email.svg'
 import featureIntegrationsImg from './assets/images/icon_integrations.svg'
@@ -348,11 +348,11 @@ export const LandingPage = (): JSX.Element => {
         </FeatureLink>
       </FeatureSection>
       <FeatureSection
-        align="start"
+        align="center"
         direction={{ base: 'column', lg: 'row' }}
         bg="primary.100"
         title={t('features.landingPage.howItWorksSection.title')}
-        animationSrc={howFormsWorksAnimation}
+        imgSrc={howItWorksBuilderImg}
       >
         <SectionBodyText mt="1.5rem">
           {t('features.landingPage.howItWorksSection.description')}
@@ -482,6 +482,7 @@ export const LandingPage = (): JSX.Element => {
         title={t('features.landingPage.ogpProductSuiteSection.title')}
         imgSrc={ogpSuiteImg}
         direction={{ base: 'column', lg: 'row' }}
+        bg="primary.100"
       >
         <SectionBodyText mt="1rem">
           {t('features.landingPage.ogpProductSuiteSection.subtitle')}
