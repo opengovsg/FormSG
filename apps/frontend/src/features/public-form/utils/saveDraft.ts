@@ -1,4 +1,11 @@
-import { difference, intersection, isEmpty, mapValues, pick } from 'lodash'
+import {
+  difference,
+  intersection,
+  isEmpty,
+  mapValues,
+  pick,
+  union,
+} from 'lodash'
 
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
@@ -22,11 +29,13 @@ export const getDraftToSave = ({
   previousRestoredDraftResponses,
   currentFormFieldValues: formFieldValues,
   dirtyFieldIds,
+  prefilledFieldIds,
   formFields,
 }: {
   previousRestoredDraftResponses?: FormFieldValues | null
   currentFormFieldValues: FormFieldValues
   dirtyFieldIds: string[]
+  prefilledFieldIds: string[]
   formFields: FormFieldDto[]
 }): DraftSubmission => {
   // Note: payment fields are not included in formFields to keep the implementation simple,
@@ -54,18 +63,20 @@ export const getDraftToSave = ({
     )
     .map((field) => field._id)
 
-  const currentDirtyFieldValues = pick(formFieldValues, dirtyFieldIds)
+  // RATIONALE: Persist dirty (edited) and prefilled fields since they include a value which should be included in the draft.
+  const fieldIdsToSave = union(dirtyFieldIds, prefilledFieldIds)
+  const fieldValuesToSave = pick(formFieldValues, fieldIdsToSave)
 
-  const allDirtyFieldValues = {
+  const allFieldValuesToSave = {
     ...(previousRestoredDraftResponses ?? {}),
-    ...currentDirtyFieldValues,
+    ...fieldValuesToSave,
   }
   const fieldIdsToInclude = difference(
     currentlyExistingFieldIds,
     myInfoFieldIds,
   )
 
-  const updatedDraftResponses = pick(allDirtyFieldValues, fieldIdsToInclude)
+  const updatedDraftResponses = pick(allFieldValuesToSave, fieldIdsToInclude)
 
   // Avoid saving 'signature' property values from verifiable fields in the draft.
   // This is to prevent signature from being reused and to force the user to

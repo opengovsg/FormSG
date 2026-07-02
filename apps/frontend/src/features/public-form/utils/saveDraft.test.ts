@@ -92,6 +92,7 @@ describe('saveDraft', () => {
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
         formFields,
       })
 
@@ -128,6 +129,7 @@ describe('saveDraft', () => {
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
         formFields,
       })
 
@@ -158,6 +160,7 @@ describe('saveDraft', () => {
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
         formFields,
       })
 
@@ -191,6 +194,7 @@ describe('saveDraft', () => {
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
         formFields,
       })
 
@@ -226,6 +230,7 @@ describe('saveDraft', () => {
         previousRestoredDraftResponses,
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
         formFields,
       })
 
@@ -250,6 +255,7 @@ describe('saveDraft', () => {
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
         formFields,
       })
 
@@ -277,11 +283,63 @@ describe('saveDraft', () => {
         previousRestoredDraftResponses: null,
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
         formFields,
       })
 
       expect(result.draftResponses).toEqual({
         field1: 'test value 1',
+      })
+    })
+
+    it('should save provided prefilled fields even when they are not dirty', () => {
+      const formFields = [
+        createMockFormField('prefill1', BasicField.ShortText),
+        createMockFormField('field2', BasicField.LongText),
+      ]
+      const formFieldValues = {
+        prefill1: 'prefilled value',
+        field2: 'user typed value',
+      }
+      const dirtyFieldIds = ['field2']
+      const prefilledFieldIds = ['prefill1']
+
+      vi.mocked(isMyInfo).mockReturnValue(false)
+
+      const result = getDraftToSave({
+        currentFormFieldValues: formFieldValues,
+        dirtyFieldIds,
+        prefilledFieldIds,
+        formFields,
+      })
+
+      // Assert: also includes non-dirty prefilled field in the draft
+      expect(result.draftResponses).toEqual({
+        prefill1: 'prefilled value',
+        field2: 'user typed value',
+      })
+    })
+
+    it('should save the latest current form value for a provided prefilled field eg, when user changes the prefilled value', () => {
+      const prefilledValue = 'user edited value'
+      const formFields = [createMockFormField('prefill1', BasicField.ShortText)]
+      const formFieldValues = {
+        prefill1: prefilledValue,
+      }
+      const dirtyFieldIds = ['prefill1']
+      const prefilledFieldIds = ['prefill1']
+
+      vi.mocked(isMyInfo).mockReturnValue(false)
+
+      const result = getDraftToSave({
+        currentFormFieldValues: formFieldValues,
+        dirtyFieldIds,
+        prefilledFieldIds,
+        formFields,
+      })
+
+      expect(result.draftResponses).toEqual({
+        prefill1: prefilledValue,
       })
     })
   })
