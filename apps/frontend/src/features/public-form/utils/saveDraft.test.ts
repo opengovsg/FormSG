@@ -335,7 +335,6 @@ describe('saveDraft', () => {
         formFields,
       })
 
-      // Assert: also includes non-dirty prefilled field in the draft
       expect(result.draftResponses).toEqual({
         prefill1: 'prefilled value',
         field2: 'user typed value',
@@ -375,7 +374,6 @@ describe('saveDraft', () => {
         editable1: 'editable value',
         nonEditable1: 'non-editable value',
       }
-      // Both fields are dirty, but only editable1 is editable in the workflow step.
       const dirtyFieldIds = ['editable1', 'nonEditable1']
       const currentStepNumberWorkflowStep = createMockWorkflowStep([
         'editable1',
@@ -391,7 +389,6 @@ describe('saveDraft', () => {
         formFields,
       })
 
-      // Assert: the field disabled by the workflow step is excluded from the draft.
       expect(result.draftResponses).toEqual({
         editable1: 'editable value',
       })
