@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.35.2](https://github.com/opengovsg/formsg/compare/v7.35.1...v7.35.2) (2026-07-03)
+
+
+### Bug Fixes
+
+* **builder:** allow text input spaces in builder page fields (#9552) (#9553) ([#9552](https://github.com/opengovsg/formsg/commit/20bb8f1a07bcff8a5a4c76e31b08d9093f40c2fe))
+
 ## [7.35.1](https://github.com/opengovsg/formsg/compare/v7.35.0...v7.35.1) (2026-07-02)
 
 
