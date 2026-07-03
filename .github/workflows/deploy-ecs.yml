@@ -211,16 +211,27 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           SRC_IMAGE: ${{ steps.check-release-image.outputs.image }}
         run: |
-          # Registry-to-registry copy: crane streams the manifest and blobs from
-          # GHCR straight to ECR without pulling the whole image onto the runner,
-          # which is far faster than docker pull + tag + push. crane authenticates
-          # from the ~/.docker/config.json entries the ECR and GHCR login steps
-          # above already wrote.
+          # This image is needed in two places: in ECR (for the ECS deploy) and
+          # on the local docker daemon (for the static-assets extract below).
+          # They are independent transfers of the same image, so do them at once.
+          #
+          # crane copies GHCR->ECR registry-to-registry without touching the
+          # local daemon, which beats docker pull + push for the ECR leg. But
+          # that leaves nothing on the daemon, so the later `docker run` to
+          # extract apps/frontend/dist would pull the whole image itself (~90s).
+          # So pull it in the background while crane runs, then tag it as the ECR
+          # ref the static-assets step expects — by then it is already local, so
+          # `docker run` does no pull. crane authenticates from the docker config
+          # the ECR and GHCR login steps above already wrote.
           CRANE_VERSION=0.21.7
           curl -fsSL "https://github.com/google/go-containerregistry/releases/download/v${CRANE_VERSION}/go-containerregistry_Linux_x86_64.tar.gz" \
             | tar -xzf - -C /usr/local/bin crane
           chmod +x /usr/local/bin/crane
+          docker pull "$SRC_IMAGE" &
+          pull_pid=$!
           crane copy "$SRC_IMAGE" "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          wait "$pull_pid"
+          docker tag "$SRC_IMAGE" "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
       - name: Set up Docker Buildx
         if: steps.check-release-image.outputs.image == ''
