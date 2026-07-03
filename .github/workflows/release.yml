@@ -117,7 +117,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "GitHub release ${{ steps.version.outputs.tag }} already exists; skipping creation."
+            echo "Updating existing GitHub release ${{ steps.version.outputs.tag }} with regenerated release notes."
+            gh api "repos/${{ github.repository }}/releases/generate-notes" \
+              -f "tag_name=${{ steps.version.outputs.tag }}" \
+              --jq .body > .release_notes.md
+            gh release edit "${{ steps.version.outputs.tag }}" --notes-file .release_notes.md
           else
             gh release create "${{ steps.version.outputs.tag }}" \
               --verify-tag \
