@@ -43,6 +43,7 @@ jobs:
     # Push the version-bump commit + tags and create the GitHub release.
     permissions:
       contents: write
+      pull-requests: read
     outputs:
       version: ${{ steps.version.outputs.tag }}
       sdk-tag: ${{ steps.sdk.outputs.tag }}
@@ -82,6 +83,14 @@ jobs:
       - name: Resolve release version
         id: version
         run: echo "tag=v$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog and test verification checklist
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${{ steps.version.outputs.tag }}"
+          ./scripts/generate_test_checklist.sh "${version#v}" CHANGELOG.md >> "$GITHUB_STEP_SUMMARY"
 
       # Cuts the SDK release the way release_prep.sh did: bump
       # packages/sdk/package.json, update packages/sdk/CHANGELOG.md and create a
