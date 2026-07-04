@@ -65,8 +65,8 @@ export const enSG: Workspace = {
       description:
         'Tell us about your form building experience in more detail!',
       placeholder: {
-        up: 'string',
-        down: 'string',
+        up: 'Form is awesome',
+        down: 'How can we improve your experience?',
       },
       aria: {
         close: 'close feedback box',
