@@ -7,6 +7,7 @@ import {
   FormFieldDto,
   FormResponseMode,
   FormWorkflowStepDto,
+  SubmittedStep,
   WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -14,6 +15,7 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
+import { DatabaseConflictError } from 'src/app/modules/core/core.errors'
 import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
@@ -29,8 +31,11 @@ import {
   MrfReminderRecipientEmailsEmptyError,
   SubmissionSaveError,
 } from '../../submission.errors'
+import { SubmissionHistoryUploadError } from '../../submission-history/submission-history.errors'
+import { SubmissionHistoryStore } from '../../submission-history/submission-history.store'
 import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
 import {
+  appendSubmittedStep,
   createMultiRespondentFormSubmission,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
@@ -308,6 +313,537 @@ describe('multirespondent-submission.service', () => {
 
       saveIfSpy.mockRestore()
       saveProtoSpy.mockRestore()
+    })
+  })
+
+  describe('appendSubmittedStep', () => {
+    const step = (submittedAt: string): SubmittedStep =>
+      ({ isApproval: false, submittedAt }) as unknown as SubmittedStep
+
+    it('returns submissionIndex 0 for the first step of a fresh submission', () => {
+      const newStep = step('2026-06-17T08:00:00.000Z')
+
+      const { submittedSteps, submissionIndex } = appendSubmittedStep(
+        undefined,
+        newStep,
+      )
+
+      expect(submissionIndex).toBe(0)
+      expect(submittedSteps).toEqual([newStep])
+    })
+
+    it('appends the step last and returns submissionIndex = its position in the resulting array', () => {
+      const existing = [
+        step('2026-06-17T08:00:00.000Z'),
+        step('2026-06-17T08:10:00.000Z'),
+      ]
+      const newStep = step('2026-06-17T08:20:00.000Z')
+
+      const { submittedSteps, submissionIndex } = appendSubmittedStep(
+        existing,
+        newStep,
+      )
+
+      // Reported index must equal the appended step's actual array position.
+      expect(submissionIndex).toBe(2)
+      expect(submittedSteps).toEqual([...existing, newStep])
+      expect(submittedSteps[submissionIndex]).toBe(newStep)
+    })
+
+    it('is monotonic and gap-free across successive appends', () => {
+      let steps: SubmittedStep[] | undefined = undefined
+      const indexes: number[] = []
+
+      for (let i = 0; i < 4; i++) {
+        const result = appendSubmittedStep(
+          steps,
+          step(`2026-06-17T0${i}:00:00.000Z`),
+        )
+        steps = result.submittedSteps
+        indexes.push(result.submissionIndex)
+      }
+
+      expect(indexes).toEqual([0, 1, 2, 3])
+      expect(steps).toHaveLength(4)
+    })
+  })
+
+  describe('submission_history snapshot persistence', () => {
+    const snapshotFormId = new ObjectId().toHexString()
+    const snapshotFieldId = new ObjectId().toHexString()
+
+    const buildSnapshotMrfForm = (webhook: {
+      url: string
+      isRetryEnabled: boolean
+    }): IPopulatedMultirespondentForm =>
+      ({
+        _id: snapshotFormId,
+        authType: FormAuthType.NIL,
+        responseMode: FormResponseMode.Multirespondent,
+        title: 'Snapshot form',
+        webhook,
+        form_fields: [
+          {
+            _id: snapshotFieldId,
+            fieldType: BasicField.ShortText,
+            title: 'Q1',
+          },
+        ],
+        form_logics: [],
+        workflow: [
+          {
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [snapshotFieldId],
+          },
+        ],
+        isSingleSubmission: false,
+        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+      }) as unknown as IPopulatedMultirespondentForm
+
+    const buildSnapshotPayload = (
+      mrfVersion: number,
+    ): MultirespondentSubmissionDto => ({
+      submissionPublicKey: 'submission-public-key',
+      encryptedSubmissionSecretKey: 'wrapped-submission-secret-key',
+      encryptedContent: 'encrypted-content',
+      verifiedContent: 'verified-content',
+      submissionSecretKey: 'submission-secret-key',
+      version: 2,
+      workflowStep: 0,
+      responses: {
+        [snapshotFieldId]: {
+          fieldType: BasicField.ShortText,
+          answer: 'answer',
+        },
+      },
+      mrfVersion,
+    })
+
+    const mockSave = () =>
+      jest
+        .spyOn(getMultirespondentSubmissionModel(mongoose).prototype, 'save')
+        .mockImplementation(function (this: IMultirespondentSubmissionSchema) {
+          return Promise.resolve(this)
+        })
+
+    afterEach(() => jest.restoreAllMocks())
+
+    it('persists a v4 snapshot S3-first (before the Mongo save) for a webhook form with retries enabled', async () => {
+      const saveProtoSpy = mockSave()
+      const saveSnapshotSpy = jest
+        .spyOn(SubmissionHistoryStore, 'saveSnapshot')
+        .mockReturnValue(okAsync({ snapshotToken: 'tok-abc' }))
+
+      const result = await createMultiRespondentFormSubmission({
+        form: buildSnapshotMrfForm({
+          url: 'https://example.com/hook',
+          isRetryEnabled: true,
+        }),
+        encryptedPayload: buildSnapshotPayload(2),
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(saveSnapshotSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          _v: 1,
+          formId: snapshotFormId,
+          submissionIndex: 0,
+          workflowStep: 0,
+          encryptedContent: 'encrypted-content',
+          encryptedSubmissionSecretKey: 'wrapped-submission-secret-key',
+          verifiedContent: 'verified-content',
+        }),
+        'v4',
+      )
+      // S3-first ordering: the snapshot must be written before the row is saved.
+      expect(saveSnapshotSpy.mock.invocationCallOrder[0]).toBeLessThan(
+        saveProtoSpy.mock.invocationCallOrder[0],
+      )
+    })
+
+    it('does not persist a snapshot for a V3 (mrfVersion 1) webhook form, and still saves', async () => {
+      const saveProtoSpy = mockSave()
+      const saveSnapshotSpy = jest.spyOn(SubmissionHistoryStore, 'saveSnapshot')
+
+      const result = await createMultiRespondentFormSubmission({
+        form: buildSnapshotMrfForm({
+          url: 'https://example.com/hook',
+          isRetryEnabled: true,
+        }),
+        encryptedPayload: buildSnapshotPayload(1),
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(saveSnapshotSpy).not.toHaveBeenCalled()
+      expect(saveProtoSpy).toHaveBeenCalled()
+    })
+
+    it('snapshots a subsequent step with submissionIndex = its position in submittedSteps (loop-back safe)', async () => {
+      const MultirespondentSubmission =
+        getMultirespondentSubmissionModel(mongoose)
+      const existingSubmissionId = new ObjectId().toHexString()
+
+      const existingSteps = [
+        { isApproval: false, submittedAt: '2026-06-17T08:00:00.000Z' },
+        { isApproval: false, submittedAt: '2026-06-17T08:10:00.000Z' },
+      ]
+      const submission = {
+        id: existingSubmissionId,
+        submittedSteps: existingSteps,
+        save: jest.fn().mockResolvedValue(undefined),
+      } as unknown as IMultirespondentSubmissionSchema
+
+      jest
+        .spyOn(MultirespondentSubmission, 'findById')
+        .mockResolvedValue(submission)
+      const saveSnapshotSpy = jest
+        .spyOn(SubmissionHistoryStore, 'saveSnapshot')
+        .mockReturnValue(okAsync({ snapshotToken: 'tok-abc' }))
+
+      const snapshottedFormDef = {
+        _id: snapshotFormId,
+        webhook: { url: 'https://example.com/hook', isRetryEnabled: true },
+        form_fields: [
+          { _id: snapshotFieldId, fieldType: BasicField.ShortText },
+        ],
+        workflow: [
+          {
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [snapshotFieldId],
+          },
+        ],
+      } as unknown as SnapshottedFormDef
+
+      const result =
+        await MultirespondentSubmissionService.updateMultiRespondentFormSubmission(
+          {
+            submissionId: existingSubmissionId,
+            snapshottedFormDef,
+            encryptedPayload: buildSnapshotPayload(2),
+            logMeta: { action: 'updateMultiRespondentFormSubmission' },
+          },
+        )
+
+      expect(result.isOk()).toBe(true)
+      expect(saveSnapshotSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          submissionIndex: 2,
+          workflowStep: 0,
+        }),
+        'v4',
+      )
+      // S3-first ordering also holds on the update path.
+      expect(saveSnapshotSpy.mock.invocationCallOrder[0]).toBeLessThan(
+        (submission.save as jest.Mock).mock.invocationCallOrder[0],
+      )
+    })
+
+    it('aborts the submission (no Mongo save) when the snapshot upload fails', async () => {
+      const saveProtoSpy = mockSave()
+      jest
+        .spyOn(SubmissionHistoryStore, 'saveSnapshot')
+        .mockReturnValue(errAsync(new SubmissionHistoryUploadError()))
+
+      const result = await createMultiRespondentFormSubmission({
+        form: buildSnapshotMrfForm({
+          url: 'https://example.com/hook',
+          isRetryEnabled: true,
+        }),
+        encryptedPayload: buildSnapshotPayload(2),
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        SubmissionHistoryUploadError,
+      )
+      expect(saveProtoSpy).not.toHaveBeenCalled()
+    })
+
+    it('records the returned per-format snapshot token on the winning step (create path)', async () => {
+      let savedSteps: SubmittedStep[] | undefined
+      jest
+        .spyOn(getMultirespondentSubmissionModel(mongoose).prototype, 'save')
+        .mockImplementation(function (this: IMultirespondentSubmissionSchema) {
+          savedSteps = this.submittedSteps
+          return Promise.resolve(this)
+        })
+      jest.spyOn(SubmissionHistoryStore, 'saveSnapshot').mockReturnValue(
+        okAsync({
+          snapshotToken: 'tok-create',
+        }),
+      )
+
+      const result = await createMultiRespondentFormSubmission({
+        form: buildSnapshotMrfForm({
+          url: 'https://example.com/hook',
+          isRetryEnabled: true,
+        }),
+        encryptedPayload: buildSnapshotPayload(2),
+        logMeta: { action: 'createMultiRespondentFormSubmission' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(savedSteps?.[0].snapshotTokens?.v4).toBe('tok-create')
+    })
+
+    it('records the returned per-format snapshot token on the new step (update path)', async () => {
+      const MultirespondentSubmission =
+        getMultirespondentSubmissionModel(mongoose)
+      const existingSubmissionId = new ObjectId().toHexString()
+      const submission = {
+        id: existingSubmissionId,
+        submittedSteps: [
+          { isApproval: false, submittedAt: '2026-06-17T08:00:00.000Z' },
+        ],
+        save: jest.fn().mockResolvedValue(undefined),
+      } as unknown as IMultirespondentSubmissionSchema
+      jest
+        .spyOn(MultirespondentSubmission, 'findById')
+        .mockResolvedValue(submission)
+      jest.spyOn(SubmissionHistoryStore, 'saveSnapshot').mockReturnValue(
+        okAsync({
+          snapshotToken: 'tok-update',
+        }),
+      )
+
+      const snapshottedFormDef = {
+        _id: snapshotFormId,
+        webhook: { url: 'https://example.com/hook', isRetryEnabled: true },
+        form_fields: [
+          { _id: snapshotFieldId, fieldType: BasicField.ShortText },
+        ],
+        workflow: [
+          {
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [snapshotFieldId],
+          },
+        ],
+      } as unknown as SnapshottedFormDef
+
+      const result =
+        await MultirespondentSubmissionService.updateMultiRespondentFormSubmission(
+          {
+            submissionId: existingSubmissionId,
+            snapshottedFormDef,
+            encryptedPayload: buildSnapshotPayload(2),
+            logMeta: { action: 'updateMultiRespondentFormSubmission' },
+          },
+        )
+
+      expect(result.isOk()).toBe(true)
+      // The appended step (index 1) carries the token; the prior step does not.
+      expect(submission.submittedSteps?.[1].snapshotTokens?.v4).toBe(
+        'tok-update',
+      )
+      expect(submission.submittedSteps?.[0].snapshotTokens).toBeUndefined()
+    })
+
+    it('maps a non Mongoose VersionError to SubmissionSaveError', async () => {
+      const MultirespondentSubmission =
+        getMultirespondentSubmissionModel(mongoose)
+      const existingSubmissionId = new ObjectId().toHexString()
+      const submission = {
+        id: existingSubmissionId,
+        submittedSteps: [],
+        save: jest.fn().mockRejectedValue(new Error('mongo is down')),
+      } as unknown as IMultirespondentSubmissionSchema
+      jest
+        .spyOn(MultirespondentSubmission, 'findById')
+        .mockResolvedValue(submission)
+      jest.spyOn(SubmissionHistoryStore, 'saveSnapshot').mockReturnValue(
+        okAsync({
+          snapshotToken: 'tok-orphan',
+        }),
+      )
+
+      const snapshottedFormDef = {
+        _id: snapshotFormId,
+        webhook: { url: 'https://example.com/hook', isRetryEnabled: true },
+        form_fields: [
+          { _id: snapshotFieldId, fieldType: BasicField.ShortText },
+        ],
+        workflow: [
+          {
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [snapshotFieldId],
+          },
+        ],
+      } as unknown as SnapshottedFormDef
+
+      const result =
+        await MultirespondentSubmissionService.updateMultiRespondentFormSubmission(
+          {
+            submissionId: existingSubmissionId,
+            snapshottedFormDef,
+            encryptedPayload: buildSnapshotPayload(2),
+            logMeta: { action: 'updateMultiRespondentFormSubmission' },
+          },
+        )
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(SubmissionSaveError)
+    })
+
+    it('maps a Mongoose VersionError to a 409 DatabaseConflictError', async () => {
+      const MultirespondentSubmission =
+        getMultirespondentSubmissionModel(mongoose)
+      const existingSubmissionId = new ObjectId().toHexString()
+      const versionError = new mongoose.Error.VersionError(
+        { _id: existingSubmissionId } as unknown as InstanceType<
+          typeof MultirespondentSubmission
+        >,
+        0,
+        ['submittedSteps'],
+      )
+      const submission = {
+        id: existingSubmissionId,
+        submittedSteps: [],
+        save: jest.fn().mockRejectedValue(versionError),
+      } as unknown as IMultirespondentSubmissionSchema
+      jest
+        .spyOn(MultirespondentSubmission, 'findById')
+        .mockResolvedValue(submission)
+      jest.spyOn(SubmissionHistoryStore, 'saveSnapshot').mockReturnValue(
+        okAsync({
+          snapshotToken: 'tok-loser',
+        }),
+      )
+
+      const snapshottedFormDef = {
+        _id: snapshotFormId,
+        webhook: { url: 'https://example.com/hook', isRetryEnabled: true },
+        form_fields: [
+          { _id: snapshotFieldId, fieldType: BasicField.ShortText },
+        ],
+        workflow: [
+          {
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [snapshotFieldId],
+          },
+        ],
+      } as unknown as SnapshottedFormDef
+
+      const result =
+        await MultirespondentSubmissionService.updateMultiRespondentFormSubmission(
+          {
+            submissionId: existingSubmissionId,
+            snapshottedFormDef,
+            encryptedPayload: buildSnapshotPayload(2),
+            logMeta: { action: 'updateMultiRespondentFormSubmission' },
+          },
+        )
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseConflictError)
+    })
+
+    it('two real concurrent submits to the same step: exactly one commits, the loser gets a 409, and the row carries the winner token', async () => {
+      // Unlike the mocked-VersionError test above, this exercises the real
+      // Mongoose `__v` array guard against two genuinely concurrent saves — the
+      // *emergent* protection ADR-0004 depends on. If a future refactor stops
+      // reassigning `submittedSteps` (e.g. switches to `findOneAndUpdate`/`$push`),
+      // the guard vanishes silently and BOTH writers would commit — this test is
+      // the tripwire for that regression.
+      const MultirespondentSubmission =
+        getMultirespondentSubmissionModel(mongoose)
+
+      // A real persisted submission with one existing step. Two concurrent
+      // updates both append the next step and race on the `__v` predicate.
+      const created = await new MultirespondentSubmission({
+        form: snapshotFormId,
+        authType: FormAuthType.NIL,
+        myInfoFields: [],
+        form_fields: [
+          {
+            _id: snapshotFieldId,
+            fieldType: BasicField.ShortText,
+            title: 'Q1',
+          },
+        ],
+        form_logics: [],
+        workflow: [
+          {
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [snapshotFieldId],
+          },
+        ],
+        submissionPublicKey: 'submission-public-key',
+        encryptedSubmissionSecretKey: 'wrapped-submission-secret-key',
+        encryptedContent: 'encrypted-content',
+        version: 2,
+        workflowStep: 0,
+        mrfVersion: 2,
+        submittedSteps: [
+          { isApproval: false, submittedAt: '2026-06-17T08:00:00.000Z' },
+        ],
+      }).save()
+      const submissionId = created.id
+
+      // A distinct token per snapshot PUT so the winner is identifiable on the row.
+      let tokenCounter = 0
+      jest
+        .spyOn(SubmissionHistoryStore, 'saveSnapshot')
+        .mockImplementation(() =>
+          okAsync({ snapshotToken: `tok-${tokenCounter++}` }),
+        )
+
+      const snapshottedFormDef = {
+        _id: snapshotFormId,
+        webhook: { url: 'https://example.com/hook', isRetryEnabled: true },
+        form_fields: [
+          { _id: snapshotFieldId, fieldType: BasicField.ShortText },
+        ],
+        workflow: [
+          {
+            _id: new ObjectId().toHexString(),
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [snapshotFieldId],
+          },
+        ],
+      } as unknown as SnapshottedFormDef
+
+      const submitOnce = () =>
+        MultirespondentSubmissionService.updateMultiRespondentFormSubmission({
+          submissionId,
+          snapshottedFormDef,
+          encryptedPayload: buildSnapshotPayload(2),
+          logMeta: { action: 'updateMultiRespondentFormSubmission' },
+        })
+
+      const [a, b] = await Promise.all([submitOnce(), submitOnce()])
+
+      // Exactly one winner; exactly one 409 loser (the `__v` guard fired).
+      const oks = [a, b].filter((r) => r.isOk())
+      const errs = [a, b].filter((r) => r.isErr())
+      expect(oks).toHaveLength(1)
+      expect(errs).toHaveLength(1)
+      expect(errs[0]._unsafeUnwrapErr()).toBeInstanceOf(DatabaseConflictError)
+
+      // The committed row reflects the winner only: a single appended step
+      // (index 1, no double-append) carrying the winner's minted token.
+      const winnerToken =
+        oks[0]._unsafeUnwrap().submittedSteps?.[1].snapshotTokens?.v4
+      expect(typeof winnerToken).toBe('string')
+
+      const reloaded = await MultirespondentSubmission.findById(submissionId)
+      expect(reloaded?.submittedSteps).toHaveLength(2)
+      expect(reloaded?.submittedSteps?.[1].snapshotTokens?.v4).toBe(winnerToken)
     })
   })
 

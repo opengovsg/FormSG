@@ -752,6 +752,26 @@ export const setCurrentWorkflowStep = async (
 }
 
 /**
+ * V4 (object-provenance) encryption gate for MRF submissions, and the single
+ * source of truth for it. A form uses V4 when unified-mode encryption is on AND
+ * either it has no webhook consumer, or the `enable-mrf-webhooks` flag is on (so
+ * the per-step `submission_history` snapshot stores V4 content). Webhook forms
+ * stay on V3 (`mrfVersion 1`) while the flag is dormant — byte-identical to
+ * today. Extracted (pure) so the decision table is unit-testable independently
+ * of the encryption handler's crypto/attachment machinery.
+ */
+export const shouldUseV4Encryption = ({
+  answerObjectEncryptionOn,
+  hasWebhookUrl,
+  enableMrfWebhooksOn,
+}: {
+  answerObjectEncryptionOn: boolean
+  hasWebhookUrl: boolean
+  enableMrfWebhooksOn: boolean
+}): boolean =>
+  answerObjectEncryptionOn && (!hasWebhookUrl || enableMrfWebhooksOn)
+
+/**
  * Encrypt submission content before saving to DB.
  */
 export const encryptSubmission = async (
@@ -806,10 +826,18 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
-  const useV4Encryption =
-    (req.growthbook?.isOn(featureFlags.answerObjectEncryption) &&
-      !formDef.webhook?.url) ??
-    false
+  // V4 encryption is used for unified-mode forms, and — when the
+  // `enable-mrf-webhooks` flag is on — also for webhook-enabled forms, so the
+  // per-step `submission_history` snapshot stores V4 content. The flag is
+  // dormant by default, keeping webhook-enabled forms on V3 (mrfVersion 1) and
+  // behaviour byte-identical to today.
+  const useV4Encryption = shouldUseV4Encryption({
+    answerObjectEncryptionOn:
+      req.growthbook?.isOn(featureFlags.answerObjectEncryption) ?? false,
+    hasWebhookUrl: !!formDef.webhook?.url,
+    enableMrfWebhooksOn:
+      req.growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+  })
 
   let responsesToEncrypt:
     | Record<

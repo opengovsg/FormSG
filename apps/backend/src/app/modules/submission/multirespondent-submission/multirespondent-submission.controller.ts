@@ -225,6 +225,9 @@ const updateMultirespondentSubmission = async (
   if (updateMultiRespondentFormSubmissionResult.isErr()) {
     const error = updateMultiRespondentFormSubmissionResult.error
 
+    // A concurrent submission won the same-step version race → VersionError →
+    // DatabaseConflictError, which mapRouteError surfaces as a 409 "refresh and
+    // submit again" (the step is already submitted; the client was too late).
     if (error instanceof SubmissionSaveError) {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
         message: error.message,

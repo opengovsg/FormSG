@@ -24,6 +24,7 @@ import {
   createFormsgAndRetrieveForm,
   encryptSubmission,
   handleNdiResponses,
+  shouldUseV4Encryption,
   validateMultirespondentSubmission,
 } from '../multirespondent-submission.middleware'
 import {
@@ -1146,4 +1147,89 @@ describe('Multirespondent Submission Middleware', () => {
       expect(mockRes.status).toHaveBeenCalledWith(400)
     })
   })
+})
+
+describe('shouldUseV4Encryption', () => {
+  // Full truth table over the three inputs that gate V4 encryption. The
+  // critical rows are the webhook-form ones: V4 turns on for a webhook form
+  // ONLY when the `enable-mrf-webhooks` flag is also on — otherwise a flag flip
+  // would silently switch production webhook forms to V4.
+  const cases: Array<{
+    answerObjectEncryptionOn: boolean
+    hasWebhookUrl: boolean
+    enableMrfWebhooksOn: boolean
+    expected: boolean
+  }> = [
+    // answerObjectEncryption off ⇒ always V3, regardless of the other inputs.
+    {
+      answerObjectEncryptionOn: false,
+      hasWebhookUrl: false,
+      enableMrfWebhooksOn: false,
+      expected: false,
+    },
+    {
+      answerObjectEncryptionOn: false,
+      hasWebhookUrl: false,
+      enableMrfWebhooksOn: true,
+      expected: false,
+    },
+    {
+      answerObjectEncryptionOn: false,
+      hasWebhookUrl: true,
+      enableMrfWebhooksOn: false,
+      expected: false,
+    },
+    {
+      answerObjectEncryptionOn: false,
+      hasWebhookUrl: true,
+      enableMrfWebhooksOn: true,
+      expected: false,
+    },
+    // Unified-mode (no webhook): V4 as soon as answerObjectEncryption is on,
+    // independent of the MRF-webhook flag.
+    {
+      answerObjectEncryptionOn: true,
+      hasWebhookUrl: false,
+      enableMrfWebhooksOn: false,
+      expected: true,
+    },
+    {
+      answerObjectEncryptionOn: true,
+      hasWebhookUrl: false,
+      enableMrfWebhooksOn: true,
+      expected: true,
+    },
+    // Webhook form: gated on the MRF-webhook flag. Flag off ⇒ stays V3
+    // (byte-identical to today); flag on ⇒ V4 so the snapshot stores V4 content.
+    {
+      answerObjectEncryptionOn: true,
+      hasWebhookUrl: true,
+      enableMrfWebhooksOn: false,
+      expected: false,
+    },
+    {
+      answerObjectEncryptionOn: true,
+      hasWebhookUrl: true,
+      enableMrfWebhooksOn: true,
+      expected: true,
+    },
+  ]
+
+  it.each(cases)(
+    'answerObjectEncryption=$answerObjectEncryptionOn hasWebhookUrl=$hasWebhookUrl enableMrfWebhooks=$enableMrfWebhooksOn → $expected',
+    ({
+      answerObjectEncryptionOn,
+      hasWebhookUrl,
+      enableMrfWebhooksOn,
+      expected,
+    }) => {
+      expect(
+        shouldUseV4Encryption({
+          answerObjectEncryptionOn,
+          hasWebhookUrl,
+          enableMrfWebhooksOn,
+        }),
+      ).toBe(expected)
+    },
+  )
 })

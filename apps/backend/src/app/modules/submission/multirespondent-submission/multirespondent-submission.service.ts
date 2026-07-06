@@ -42,7 +42,7 @@ import {
 import MailService from '../../../services/mail/mail.service'
 import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
-import { DatabaseError } from '../../core/core.errors'
+import { DatabaseConflictError, DatabaseError } from '../../core/core.errors'
 import { FormRespondentSingleSubmissionValidationError } from '../../form/form.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
 import { WebhookFactory } from '../../webhook/webhook.factory'
@@ -64,6 +64,8 @@ import {
   getMrfSubmissionWorkflowStatus,
   isAdminEmailPdfEnabled,
 } from '../submission.utils'
+import { SubmissionHistoryUploadError } from '../submission-history/submission-history.errors'
+import { persistMrfSnapshotIfRequired } from '../submission-history/submission-history.producer'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
@@ -700,6 +702,26 @@ const saveAttachmentsToDbIfExists = ({
     : okAsync(new Map<string, string>())
 }
 
+/**
+ * Appends a step's metadata to the append-only `submittedSteps` array and
+ * returns the new array together with that step's `submissionIndex` — its
+ * position in the array.
+ *
+ * Rationale: Deriving the index and performing the append in one place keeps
+ * them ordering-safe: a caller cannot read the index before the append (or
+ * after) and get it wrong.
+ */
+export const appendSubmittedStep = (
+  existingSteps: SubmittedStep[] | undefined,
+  submittedStepMeta: SubmittedStep,
+): { submittedSteps: SubmittedStep[]; submissionIndex: number } => {
+  const steps = existingSteps ?? []
+  return {
+    submittedSteps: [...steps, submittedStepMeta],
+    submissionIndex: steps.length,
+  }
+}
+
 export const createMultiRespondentFormSubmission = ({
   form,
   encryptedPayload,
@@ -710,7 +732,7 @@ export const createMultiRespondentFormSubmission = ({
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<
   IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
-  AttachmentUploadError | SubmissionSaveError
+  AttachmentUploadError | SubmissionSaveError | SubmissionHistoryUploadError
 > => {
   logMeta = {
     ...logMeta,
@@ -769,7 +791,18 @@ export const createMultiRespondentFormSubmission = ({
         submitterId: hashedSubmitterId,
       }
 
-      const submissionContent: MultirespondentSubmissionContent = {
+      const { submittedSteps, submissionIndex } = appendSubmittedStep(
+        undefined,
+        submittedStepMeta,
+      )
+
+      // Pre-generate the submission _id so the S3-first snapshot can be keyed
+      // by submissionId before the Mongo document is persisted.
+      const submissionId = new mongoose.Types.ObjectId()
+      const submissionContent: MultirespondentSubmissionContent & {
+        _id: mongoose.Types.ObjectId
+      } = {
+        _id: submissionId,
         form: form._id,
         authType: form.authType,
         myInfoFields: form.getUniqueMyInfoAttrs(),
@@ -784,7 +817,7 @@ export const createMultiRespondentFormSubmission = ({
         version,
         workflowStep: 0,
         mrfVersion,
-        submittedSteps: [submittedStepMeta],
+        submittedSteps,
       }
 
       const saveSubmission = async () => {
@@ -822,23 +855,55 @@ export const createMultiRespondentFormSubmission = ({
         return submission.save()
       }
 
-      return ResultAsync.fromPromise(
-        saveSubmission().then((submission) => ({
-          submission,
-          responseMetadata,
-        })),
-        (error) => {
-          if (error instanceof FormRespondentSingleSubmissionValidationError) {
-            return error
+      // S3-first ordering: the per-step snapshot must be durable before the
+      // submission row is committed, so a committed step always has a snapshot.
+      // A failure here aborts the submission; a snapshot whose submission later
+      // fails to commit is a benign orphan (resubmit overwrites it).
+      return persistMrfSnapshotIfRequired({
+        formId: String(form._id),
+        submissionId: submissionId.toHexString(),
+        submissionIndex,
+        workflowStep: 0,
+        webhook: form.webhook,
+        mrfVersion,
+        encryptedContent,
+        encryptedSubmissionSecretKey,
+        verifiedContent,
+        attachmentMetadata,
+      }).andThen((snapshotTokens) => {
+        // Record the snapshot identities (per format) on the winning step entry
+        // so the webhook reader resolves the exact immutable object for the
+        // format it needs (ADR-0004). A snapshot whose submission then fails to
+        // commit is a benign orphan (never referenced, so never read); orphan
+        // cleanup is deferred entirely to the age-gated reconciliation sweep
+        // (ADR-0004 §5), so there is no inline wipe here.
+        if (snapshotTokens) {
+          submittedSteps[submissionIndex] = {
+            ...submittedSteps[submissionIndex],
+            snapshotTokens,
           }
-          logger.error({
-            message: 'Multirespondent submission save error',
-            meta: logMeta,
-            error,
-          })
-          return new SubmissionSaveError()
-        },
-      )
+        }
+
+        return ResultAsync.fromPromise(
+          saveSubmission().then((submission) => ({
+            submission,
+            responseMetadata,
+          })),
+          (error) => {
+            if (
+              error instanceof FormRespondentSingleSubmissionValidationError
+            ) {
+              return error
+            }
+            logger.error({
+              message: 'Multirespondent submission save error',
+              meta: logMeta,
+              error,
+            })
+            return new SubmissionSaveError()
+          },
+        )
+      })
     })
     .map(({ submission, responseMetadata }) => {
       const submissionId = submission.id
@@ -1186,7 +1251,11 @@ export const updateMultiRespondentFormSubmission = ({
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<
   IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
-  AttachmentUploadError | SubmissionSaveError | SubmissionNotFoundError
+  | AttachmentUploadError
+  | SubmissionSaveError
+  | DatabaseConflictError
+  | SubmissionNotFoundError
+  | SubmissionHistoryUploadError
 > => {
   logMeta = {
     ...logMeta,
@@ -1287,10 +1356,10 @@ export const updateMultiRespondentFormSubmission = ({
             isApproval: false,
           } as SubmittedNonApprovalStep)
 
-      submission.submittedSteps = [
-        ...(submission.submittedSteps ?? []),
+      const { submittedSteps, submissionIndex } = appendSubmittedStep(
+        submission.submittedSteps,
         submittedStepMeta,
-      ]
+      )
       submission.responseMetadata = responseMetadata
       submission.submissionPublicKey = submissionPublicKey
       submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
@@ -1301,17 +1370,65 @@ export const updateMultiRespondentFormSubmission = ({
       submission.attachmentMetadata = attachmentMetadata
       submission.mrfVersion = mrfVersion
 
-      return ResultAsync.fromPromise(
-        submission.save().then(() => ({ submission, responseMetadata })),
-        (error) => {
-          logger.error({
-            message: 'Multirespondent submission save error',
-            meta: logMeta,
-            error,
-          })
-          return new SubmissionSaveError()
-        },
-      )
+      // S3-first ordering: persist the per-step snapshot before committing the
+      // mutated submission row (which overwrites the prior step's content).
+      return persistMrfSnapshotIfRequired({
+        formId: snapshottedFormDef._id,
+        submissionId,
+        submissionIndex,
+        workflowStep,
+        webhook: snapshottedFormDef.webhook,
+        mrfVersion,
+        encryptedContent,
+        encryptedSubmissionSecretKey,
+        verifiedContent,
+        attachmentMetadata,
+      }).andThen((snapshotTokens) => {
+        // Record the snapshot identities (per format) on the winning step entry
+        // so the webhook reader resolves the exact immutable object for the
+        // format it needs (ADR-0004). Set before assigning the array so Mongoose
+        // tracks it in this save — the same save whose `__v` predicate arbitrates
+        // the concurrent-write winner. A snapshot whose save then loses the CAS
+        // (or otherwise fails to commit) is a benign orphan (never referenced, so
+        // never read); orphan cleanup is deferred to the age-gated reconciliation
+        // sweep (ADR-0004 §5), so there is no inline wipe here.
+        if (snapshotTokens) {
+          submittedSteps[submissionIndex] = {
+            ...submittedSteps[submissionIndex],
+            snapshotTokens,
+          }
+        }
+        submission.submittedSteps = submittedSteps
+
+        return ResultAsync.fromPromise(
+          submission.save().then(() => ({ submission, responseMetadata })),
+          (error) => {
+            // The concurrent-write loser: Mongoose rejected this save because a
+            // rival submission to the same step committed first, stamping a
+            // `VersionError` (the emergent `__v` guard — ADR-0004).
+            // `transformMongoError` maps that to `DatabaseConflictError`, which
+            // `mapRouteError` already surfaces as a 409 "refresh and submit
+            // again" — the step is already submitted, so it is a client-too-late
+            // conflict, not a 500 and not a blind-retry prompt.
+            const dbError = transformMongoError(error)
+            if (dbError instanceof DatabaseConflictError) {
+              logger.warn({
+                message:
+                  'MRF step submission arrived after the step was already submitted',
+                meta: logMeta,
+                error,
+              })
+              return dbError
+            }
+            logger.error({
+              message: 'Multirespondent submission save error',
+              meta: logMeta,
+              error,
+            })
+            return new SubmissionSaveError()
+          },
+        )
+      })
     })
     .map(({ submission, responseMetadata }) => {
       logger.info({
