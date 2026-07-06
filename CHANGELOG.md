@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.0.0](https://github.com/opengovsg/formsg/compare/v7.38.0...v8.0.0) (2026-07-06)
+
+
+### ⚠ BREAKING CHANGE
+
+* remove unused charts specific submission retrieval endpoint (#9395)
+
+### Features
+
+* remove unused charts specific submission retrieval endpoint (#9395) ([#9395](https://github.com/opengovsg/formsg/commit/1793abd28489134e38f2588fdb051a975d98db35))
+
+
+### Chores
+
+* fix lint issue in AdminSubmissionsService.ts (#9706) ([#9706](https://github.com/opengovsg/formsg/commit/ac34d660bea5e8ccafcf9a4c701cb54356cf9b10))
+
 ## [7.38.0](https://github.com/opengovsg/formsg/compare/v7.37.1...v7.38.0) (2026-07-06)
 
 
