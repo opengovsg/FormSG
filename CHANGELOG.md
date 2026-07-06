@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.37.0](https://github.com/opengovsg/formsg/compare/v7.36.1...v7.37.0) (2026-07-06)
+
+
+### Features
+
+* add changelog and pre-release checklist to step summary (#9699) ([#9699](https://github.com/opengovsg/formsg/commit/4a3536de0c1d72e5dd39300c2303fb1e8b2c31dd))
+* instrument virus scanner logs with formid (#9704) ([#9704](https://github.com/opengovsg/formsg/commit/de59a7aa60d33b1cc1036e6557f4f6f128645742))
+
 ## [7.36.1](https://github.com/opengovsg/formsg/compare/v7.36.0...v7.36.1) (2026-07-03)
 
 ## [7.36.0](https://github.com/opengovsg/formsg/compare/v7.35.2...v7.36.0) (2026-07-03)
