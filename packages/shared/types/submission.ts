@@ -102,6 +102,18 @@ const SubmittedNonApprovalStep = z.object({
   submittedAt: z.string().datetime({ precision: 3 }),
   nextStepRecipientEmails: z.array(z.string()).optional(),
   submitterId: z.string().optional(),
+  // Per-attempt nonce tokens identifying this step's submission_history snapshot
+  // objects, keyed by payload format (ADR-0004). A step may snapshot more than
+  // one format (v4 for privileged consumers, v1 for generic), each an
+  // independent object; the webhook reader picks the format it needs and
+  // rebuilds the exact S3 key from that format's token. Present only for
+  // formats that were actually written.
+  snapshotTokens: z
+    .object({
+      v1: z.string().optional(),
+      v4: z.string().optional(),
+    })
+    .optional(),
 })
 
 export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>

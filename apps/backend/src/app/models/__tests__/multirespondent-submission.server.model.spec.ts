@@ -760,4 +760,39 @@ describe('Multirespondent Submission Model', () => {
       })
     })
   })
+
+  describe('submittedSteps schema', () => {
+    it('persists and reads back per-format snapshotTokens on a step', async () => {
+      // Arrange
+      const validFormId = new ObjectId().toHexString()
+      const v4Token = 'ffffffff-ffff-4fff-8fff-ffffffffffff'
+      const v1Token = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+
+      // Act
+      const created = await MultirespondentSubmission.create({
+        form: validFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [YES_NO_FIELD],
+        form_logics: [],
+        workflow: [WORKFLOW_STEP_1],
+        submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+        encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        version: 3,
+        workflowStep: 0,
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: '2024-01-01T00:00:00.000Z',
+            snapshotTokens: { v4: v4Token, v1: v1Token },
+          },
+        ],
+      })
+
+      // Assert
+      const found = await MultirespondentSubmission.findById(created._id)
+      expect(found?.submittedSteps?.[0].snapshotTokens?.v4).toBe(v4Token)
+      expect(found?.submittedSteps?.[0].snapshotTokens?.v1).toBe(v1Token)
+    })
+  })
 })

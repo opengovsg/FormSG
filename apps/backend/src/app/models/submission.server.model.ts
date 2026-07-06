@@ -541,6 +541,14 @@ const submittedStepSchema = new Schema(
       type: String,
       enum: [WorkflowStatus.APPROVED, WorkflowStatus.REJECTED],
     },
+    // Per-attempt nonce tokens identifying this step's submission_history
+    // snapshot objects, keyed by payload format (ADR-0004); recorded on the
+    // winning save so the webhook reader resolves the exact immutable object
+    // for the format it needs. A step may carry both formats.
+    snapshotTokens: {
+      v1: { type: String },
+      v4: { type: String },
+    },
   },
   { _id: false },
 )
