@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.37.1](https://github.com/opengovsg/formsg/compare/v7.37.0...v7.37.1) (2026-07-06)
+
+
+### Bug Fixes
+
+* save prefilled values in draft (#9696) ([#9696](https://github.com/opengovsg/formsg/commit/db35bd534b7ead0e6c258af01e602c4bf1d9a444))
+
 ## [7.37.0](https://github.com/opengovsg/formsg/compare/v7.36.1...v7.37.0) (2026-07-06)
 
 
