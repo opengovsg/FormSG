@@ -1,0 +1,85 @@
+<svg width="530" height="380" viewBox="0 0 530 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs><filter id="s3a"><feDropShadow dx="0" dy="3" stdDeviation="5" flood-opacity="0.12"/></filter></defs>
+  <circle cx="450" cy="70" r="65" fill="#E4E7F6" opacity="0.35"/>
+  <circle cx="60" cy="330" r="60" fill="#d1fae5" opacity="0.35"/>
+
+  <!-- Fields panel -->
+  <rect x="30" y="40" width="180" height="300" rx="4" fill="white" stroke="#293044" stroke-width="1"/>
+  <!-- Panel header -->
+  <rect x="30" y="40" width="180" height="30" rx="4" fill="white" stroke="#293044" stroke-width="0.5"/>
+  <rect x="44" y="50" width="40" height="6" rx="2" fill="#293044"/>
+  <!-- Search bar -->
+  <rect x="44" y="80" width="152" height="22" rx="4" fill="#F6F7FC" stroke="#B7BFE5" stroke-width="0.5"/>
+  <circle cx="56" cy="91" r="4" fill="none" stroke="#B7BFE5" stroke-width="0.5"/>
+  <!-- Tabs -->
+  <rect x="44" y="112" width="28" height="5" rx="1" fill="#4A61C0"/>
+  <line x1="44" y1="120" x2="72" y2="120" stroke="#4A61C0" stroke-width="1"/>
+  <rect x="80" y="112" width="32" height="5" rx="1" fill="#B7BFE5"/>
+  <rect x="120" y="112" width="40" height="5" rx="1" fill="#B7BFE5"/>
+
+  <!-- Row 1 -->
+  <rect x="44" y="138" width="14" height="14" rx="3" fill="#445072"/>
+  <rect x="66" y="141" width="60" height="4" rx="2" fill="#445072"/>
+  <rect x="66" y="149" width="40" height="3" rx="1" fill="#B7BFE5"/>
+  <line x1="44" y1="162" x2="196" y2="162" stroke="#F0F0F1" stroke-width="0.5"/>
+  <!-- Row 2 -->
+  <rect x="44" y="172" width="14" height="14" rx="3" fill="#445072"/>
+  <rect x="66" y="175" width="48" height="4" rx="2" fill="#445072"/>
+  <rect x="66" y="183" width="52" height="3" rx="1" fill="#B7BFE5"/>
+  <line x1="44" y1="196" x2="196" y2="196" stroke="#F0F0F1" stroke-width="0.5"/>
+  <!-- Row 3 -->
+  <rect x="44" y="206" width="14" height="14" rx="3" fill="#445072"/>
+  <rect x="66" y="209" width="56" height="4" rx="2" fill="#445072"/>
+  <rect x="66" y="217" width="36" height="3" rx="1" fill="#B7BFE5"/>
+  <line x1="44" y1="230" x2="196" y2="230" stroke="#F0F0F1" stroke-width="0.5"/>
+  <!-- Row 4 (highlighted / being dragged) -->
+  <rect x="40" y="238" width="166" height="30" rx="3" fill="#E4E7F6" opacity="0.5" stroke="#4A61C0" stroke-width="0.75"/>
+  <rect x="48" y="246" width="14" height="14" rx="3" fill="#4A61C0"/>
+  <rect x="70" y="249" width="52" height="4" rx="2" fill="#4A61C0"/>
+  <rect x="70" y="257" width="44" height="3" rx="1" fill="#8998D6"/>
+  <line x1="44" y1="278" x2="196" y2="278" stroke="#F0F0F1" stroke-width="0.5"/>
+  <!-- Row 5 -->
+  <rect x="44" y="288" width="14" height="14" rx="3" fill="#445072"/>
+  <rect x="66" y="291" width="44" height="4" rx="2" fill="#445072"/>
+  <rect x="66" y="299" width="56" height="3" rx="1" fill="#B7BFE5"/>
+
+  <!-- Canvas -->
+  <rect x="220" y="40" width="280" height="300" rx="4" fill="#F6F7FC" stroke="#293044" stroke-width="1"/>
+  <!-- Blue banner -->
+  <rect x="228" y="56" width="264" height="52" rx="0" fill="#4A61C0"/>
+  <rect x="330" y="76" width="60" height="8" rx="2" fill="white" opacity="0.7"/>
+  <!-- OGP logo -->
+  <circle cx="355" cy="50" r="4" fill="none" stroke="#293044" stroke-width="0.5"/>
+  <rect x="362" y="47" width="16" height="2.5" rx="1" fill="#293044"/>
+
+  <!-- Field 1 -->
+  <rect x="248" y="122" width="232" height="46" rx="0" fill="white"/>
+  <rect x="258" y="130" width="8" height="5" rx="1" fill="#69738E"/>
+  <rect x="270" y="130" width="56" height="5" rx="1" fill="#293044"/>
+  <rect x="258" y="142" width="212" height="18" rx="0" fill="white" stroke="#B7BFE5" stroke-width="0.5"/>
+
+  <!-- Field 2 -->
+  <rect x="248" y="180" width="232" height="56" rx="0" fill="white"/>
+  <rect x="258" y="188" width="8" height="5" rx="1" fill="#69738E"/>
+  <rect x="270" y="188" width="44" height="5" rx="1" fill="#293044"/>
+  <circle cx="264" cy="208" r="4" fill="none" stroke="#B7BFE5" stroke-width="0.5"/>
+  <circle cx="264" cy="208" r="2" fill="#4A61C0"/>
+  <rect x="274" y="205" width="50" height="4" rx="1" fill="#B7BFE5"/>
+  <circle cx="264" cy="222" r="4" fill="none" stroke="#B7BFE5" stroke-width="0.5"/>
+  <rect x="274" y="219" width="40" height="4" rx="1" fill="#B7BFE5"/>
+
+  <!-- Drop zone -->
+  <rect x="248" y="248" width="232" height="40" rx="4" fill="none" stroke="#4A61C0" stroke-width="1" stroke-dasharray="4 3"/>
+
+  <!-- Floating dragged field -->
+  <g filter="url(#s3a)" opacity="0.95">
+    <rect x="165" y="270" width="130" height="34" rx="4" fill="white" stroke="#4A61C0" stroke-width="1.5"/>
+    <rect x="178" y="278" width="14" height="14" rx="3" fill="#4A61C0"/>
+    <rect x="198" y="280" width="48" height="5" rx="1" fill="#293044"/>
+    <rect x="198" y="289" width="80" height="10" rx="2" fill="#F0F0F1"/>
+  </g>
+
+  <!-- Drag arrow -->
+  <path d="M295 287 C310 278 320 272 330 268" stroke="#4A61C0" stroke-width="0.75" stroke-dasharray="3 2" fill="none"/>
+  <path d="M326 264 L332 268 L326 272" stroke="#4A61C0" stroke-width="0.75" fill="none"/>
+</svg>

@@ -25,7 +25,7 @@ export interface LandingPage {
         title: string
         description: string
       }
-      prefill: {
+      workflow: {
         title: string
         description: string
       }
@@ -52,10 +52,10 @@ export interface LandingPage {
     title: string
     subtitle: string
   }
-  storageModeSection: {
+  securitySection: {
     title: string
     subtitle: string
-    modes: {
+    classifications: {
       security: {
         title: string
         description: string
@@ -80,11 +80,15 @@ export interface LandingPage {
       sourceLinkLabel: string
     }
     qnaAccordionItem: {
-      loseSecretKey: {
+      whoCanCreate: {
         question: string
         answer: string
       }
-      increaseAttachmentSizeLimit: {
+      highVolume: {
+        question: string
+        answer: string
+      }
+      isFree: {
         question: string
         answer: string
       }
@@ -92,39 +96,19 @@ export interface LandingPage {
         question: string
         answer: string
       }
-      howToTransferOwnership: {
-        question: string
-        answer: string
-      }
     }
   }
   howItWorksSection: {
     title: string
-    modes: {
-      storage: {
-        tab: string
-        description: string
-        steps: {
-          one: string
-          two: string
-          three: string
-          four: string
-          five: string
-          six: string
-        }
-      }
-      mrf: {
-        tab: string
-        description: string
-        steps: {
-          one: string
-          two: string
-          three: string
-          four: string
-          five: string
-          six: string
-        }
-      }
+    description: string
+    steps: {
+      one: string
+      two: string
+      three: string
+      four: string
+      five: string
+      six: string
+      seven: string
     }
   }
   ogpProductSuiteSection: {
