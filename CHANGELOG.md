@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.38.0](https://github.com/opengovsg/formsg/compare/v7.37.1...v7.38.0) (2026-07-06)
+
+
+### Features
+
+* **landing:** redesign landing page for gov evaluators (#9697) ([#9697](https://github.com/opengovsg/formsg/commit/062e62247d4163ee66b22f35f190019462c61bae))
+
 ## [7.37.1](https://github.com/opengovsg/formsg/compare/v7.37.0...v7.37.1) (2026-07-06)
 
 
