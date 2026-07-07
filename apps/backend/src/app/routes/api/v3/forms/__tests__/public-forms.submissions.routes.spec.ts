@@ -7,8 +7,8 @@ import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import session, { Session } from 'supertest-session'
 
-import { aws } from 'src/app/config/config'
 import * as FeatureFlagsService from 'src/app/modules/feature-flags/feature-flags.service'
+import { s3Operations } from 'src/app/utils/aws-s3'
 import { FormFieldSchema } from 'src/types'
 
 import {
@@ -697,9 +697,9 @@ describe('public-form.submissions.routes', () => {
       jest
         .spyOn(FeatureFlagsService, 'getFeatureFlag')
         .mockReturnValue(okAsync(true))
-      jest.spyOn(aws.s3, 'createPresignedPost').mockImplementationOnce(() => {
-        throw new Error('some error')
-      })
+      jest
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockRejectedValueOnce(new Error('some error'))
 
       const response = await request
         .post(`/forms/${form._id}/submissions/get-s3-presigned-post-data`)
