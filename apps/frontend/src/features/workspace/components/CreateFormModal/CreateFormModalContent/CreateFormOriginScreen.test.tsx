@@ -20,9 +20,9 @@ import { CreateFormOriginScreen } from './CreateFormOriginScreen'
 vi.mock('react-i18next', () => {
   const P = 'features.workspace.modals.forms.create.origin'
   const translations: Record<string, string> = {
-    [`${P}.question`]: 'How is this being filled today?',
+    [`${P}.question`]: 'How is this data being collected today?',
     [`${P}.options.paper`]: 'Paper form',
-    [`${P}.options.digitalNew`]: 'This is a new process',
+    [`${P}.options.digitalNew`]: "This data isn't collected",
     [`${P}.options.digitalEmail`]: 'Emails',
     [`${P}.options.digitalDocument`]: 'Documents (e.g. PDF, Word)',
     [`${P}.options.digitalSpreadsheet`]: 'Spreadsheets (e.g. Excel, Sheets)',
