@@ -1,6 +1,9 @@
-import { InvokeCommandOutput } from '@aws-sdk/client-lambda'
+import type { InvokeCommandOutput } from '@aws-sdk/client-lambda'
+import type {
+  GetObjectCommandOutput,
+  PutObjectCommandOutput,
+} from '@aws-sdk/client-s3'
 import { Uint8ArrayBlobAdapter } from '@smithy/util-stream/dist-types/blob/Uint8ArrayBlobAdapter'
-import { ManagedUpload } from 'aws-sdk/clients/s3'
 import Bluebird from 'bluebird'
 import crypto from 'crypto'
 import {
@@ -18,7 +21,7 @@ import moment from 'moment'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
-import { Transform, Writable } from 'stream'
+import { Transform } from 'stream'
 import { validate } from 'uuid'
 
 import {
@@ -45,6 +48,9 @@ import { AutoReplyMailData } from '../../services/mail/mail.types'
 import {
   createPresignedPostDataPromise,
   CreatePresignedPostError,
+  getS3Object,
+  getSignedS3Url,
+  putS3Object,
 } from '../../utils/aws-s3'
 import { createQueryWithDateParam, isMalformedDate } from '../../utils/date'
 import {
@@ -284,6 +290,17 @@ const parseVirusScannerLambdaPayload = (
 
 type DownloadCleanFileError = DownloadCleanFileFailedError | InvalidFileKeyError
 
+const s3BodyToBuffer = async (
+  body: GetObjectCommandOutput['Body'],
+): Promise<Buffer> => {
+  if (!body) {
+    throw new Error('S3 getObject response is missing Body')
+  }
+
+  const byteArray = await body.transformToByteArray()
+  return Buffer.from(byteArray)
+}
+
 /**
  * Downloads file from clean bucket
  * @param cleanFileKey object key of the file in the clean bucket
@@ -311,50 +328,31 @@ export const downloadCleanFile = (
     return errAsync(new InvalidFileKeyError())
   }
 
-  let buffer = Buffer.alloc(0)
-
-  const writeStream = new Writable({
-    write(chunk, _encoding, callback) {
-      buffer = Buffer.concat([buffer, chunk])
-      callback()
-    },
-  })
-
-  const readStream = AwsConfig.s3
-    .getObject({
-      Bucket: bucketName,
-      Key: cleanFileKey,
-      VersionId: versionId,
-    })
-    .createReadStream()
-
   const downloadStartTime = Date.now()
   logger.info({
     message: 'File download from S3 has started',
     meta: logMeta,
   })
 
-  readStream.pipe(writeStream)
-
   return ResultAsync.fromPromise(
-    new Promise<Buffer>((resolve, reject) => {
-      readStream.on('end', () => {
-        logger.info({
-          message: 'Successfully downloaded file from S3',
-          meta: logMeta,
-        })
-        const downloadEndTime = Date.now()
-        logger.info({
-          message: 'File download from S3 duration',
-          meta: { ...logMeta, time: downloadEndTime - downloadStartTime },
-        })
+    getS3Object({
+      Bucket: bucketName,
+      Key: cleanFileKey,
+      VersionId: versionId,
+    }).then(async ({ Body }) => {
+      const buffer = await s3BodyToBuffer(Body)
 
-        resolve(buffer)
+      logger.info({
+        message: 'Successfully downloaded file from S3',
+        meta: logMeta,
+      })
+      const downloadEndTime = Date.now()
+      logger.info({
+        message: 'File download from S3 duration',
+        meta: { ...logMeta, time: downloadEndTime - downloadStartTime },
       })
 
-      readStream.on('error', (error) => {
-        reject(error)
-      })
+      return buffer
     }),
     (error) => {
       logger.error({
@@ -370,7 +368,7 @@ export const downloadCleanFile = (
 
 type AttachmentReducerData = {
   attachmentMetadata: AttachmentMetadata // type alias for Map<string, string>
-  attachmentUploadPromises: Promise<ManagedUpload.SendData>[]
+  attachmentUploadPromises: Promise<PutObjectCommandOutput>[]
 }
 
 /**
@@ -402,13 +400,11 @@ export const uploadAttachments = (
 
       accumulator.attachmentMetadata.set(fieldId, uploadKey)
       accumulator.attachmentUploadPromises.push(
-        AwsConfig.s3
-          .upload({
-            Bucket: AwsConfig.attachmentS3Bucket,
-            Key: uploadKey,
-            Body: Buffer.from(individualAttachment),
-          })
-          .promise(),
+        putS3Object({
+          Bucket: AwsConfig.attachmentS3Bucket,
+          Key: uploadKey,
+          Body: Buffer.from(individualAttachment),
+        }),
       )
 
       return accumulator
@@ -767,17 +763,30 @@ export const transformAttachmentMetaStream = ({
 
       const transformedMetadata: Record<string, string> = {}
       let processedCount = 0
+      let hasErrored = false
 
       for (const [key, objectPath] of Object.entries(unprocessedMetadata)) {
-        AwsConfig.s3.getSignedUrl(
-          'getObject',
+        getSignedS3Url(
           {
             Bucket: AwsConfig.attachmentS3Bucket,
             Key: objectPath,
-            Expires: urlValidDuration,
           },
-          (error, url) => {
-            if (error) {
+          urlValidDuration,
+        )
+          .then((url) => {
+            transformedMetadata[key] = url
+            processedCount += 1
+
+            // Finished processing, replace current attachment metadata with the
+            // signed URLs.
+            if (processedCount === totalCount) {
+              data.attachmentMetadata = transformedMetadata
+              return callback(null, data)
+            }
+          })
+          .catch((error) => {
+            if (!hasErrored) {
+              hasErrored = true
               logger.error({
                 message: 'Error occured whilst retrieving signed URL from S3',
                 meta: {
@@ -789,18 +798,7 @@ export const transformAttachmentMetaStream = ({
               })
               return callback(error)
             }
-
-            transformedMetadata[key] = url
-            processedCount += 1
-
-            // Finished processing, replace current attachment metadata with the
-            // signed URLs.
-            if (processedCount === totalCount) {
-              data.attachmentMetadata = transformedMetadata
-              return callback(null, data)
-            }
-          },
-        )
+          })
       }
     },
   })
@@ -1118,13 +1116,12 @@ export const transformAttachmentMetasToSignedUrls = (
   const keyToSignedUrlPromises: Record<string, Promise<string>> = {}
 
   for (const [key, objectPath] of attachmentMetadata) {
-    keyToSignedUrlPromises[key] = AwsConfig.s3.getSignedUrlPromise(
-      'getObject',
+    keyToSignedUrlPromises[key] = getSignedS3Url(
       {
         Bucket: AwsConfig.attachmentS3Bucket,
         Key: objectPath,
-        Expires: urlValidDuration,
       },
+      urlValidDuration,
     )
   }
 
