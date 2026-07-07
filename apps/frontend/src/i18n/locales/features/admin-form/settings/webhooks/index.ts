@@ -11,4 +11,5 @@ export interface Webhooks extends HasTitle {
     label: string
     description: string
   }
+  workflowInfobox: string
 }

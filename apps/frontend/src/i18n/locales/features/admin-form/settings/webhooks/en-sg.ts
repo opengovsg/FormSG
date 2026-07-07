@@ -9,4 +9,5 @@ export const enSG = {
     label: 'Enable retries',
     description: `Your system must meet certain requirements before retries can be safely enabled. [Learn more]({url})`,
   },
+  workflowInfobox: `If your form has workflow steps, only [Plumber]({plumberUrl}) will receive workflow data from step 2 onwards. [Learn more]({learnMoreUrl})`,
 }
