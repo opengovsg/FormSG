@@ -1,7 +1,12 @@
 import { PropsWithChildren } from 'react'
 import { screen } from '@testing-library/react'
 
-import { BasicField, FormResponseMode } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormResponseMode,
+  PaymentStatus,
+  SubmissionPaymentDto,
+} from 'formsg-shared/types'
 
 import { isMaskedInReplay, render } from '~/test-utils'
 
@@ -67,12 +72,26 @@ const MOCK_RESPONSES: AugmentedDecryptedResponse[] = [
   },
 ] as AugmentedDecryptedResponse[]
 
+const MOCK_PAYER_EMAIL = 'mock-payer@example.com'
+
+const MOCK_PAYMENT: SubmissionPaymentDto = {
+  id: 'mock-payment-id',
+  paymentIntentId: 'mock-payment-intent-id',
+  email: MOCK_PAYER_EMAIL,
+  amount: 1000,
+  status: PaymentStatus.Succeeded,
+  paymentDate: 'Mon, 6 Jul 2026, 12:00:00 pm',
+  transactionFee: 50,
+  receiptUrl: 'https://example.com/mock-receipt-url',
+}
+
 vi.mock('./queries', () => ({
   useIndividualSubmission: () => ({
     data: {
       refNo: 'mock-submission-id',
       submissionTime: 'Mon, 6 Jul 2026, 12:00:00 pm',
       responses: MOCK_RESPONSES,
+      payment: MOCK_PAYMENT,
     },
     isLoading: false,
     isError: false,
@@ -80,7 +99,7 @@ vi.mock('./queries', () => ({
 }))
 
 describe('IndividualResponsePage', () => {
-  it('masks decrypted answers and attachment names in session replays', () => {
+  it('masks decrypted answers, attachment names and payment details in session replays', () => {
     render(<IndividualResponsePage />)
 
     const answer = screen.getByText(MOCK_DECRYPTED_ANSWER)
@@ -88,5 +107,8 @@ describe('IndividualResponsePage', () => {
 
     const attachmentName = screen.getByText(MOCK_ATTACHMENT_FILENAME)
     expect(isMaskedInReplay(attachmentName)).toBe(true)
+
+    const payerEmail = screen.getByText(MOCK_PAYER_EMAIL)
+    expect(isMaskedInReplay(payerEmail)).toBe(true)
   })
 })
