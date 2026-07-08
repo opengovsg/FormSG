@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.0.1](https://github.com/opengovsg/formsg/compare/v8.0.0...v8.0.1) (2026-07-08)
+
+
+### Bug Fixes
+
+* **paper forms tracking:** reword origin question and new-process option (#9707) ([#9707](https://github.com/opengovsg/formsg/commit/6362d3b11f6b9c53e675af6eabafefeb824c02d9))
+* **rum-privacy:** mask secret key and decrypted responses in session replays (#9708) ([#9708](https://github.com/opengovsg/formsg/commit/7a2030627e046cba57aea1a863d24bc1d10e6d3e))
+
 ## [8.0.0](https://github.com/opengovsg/formsg/compare/v7.38.0...v8.0.0) (2026-07-06)
 
 
