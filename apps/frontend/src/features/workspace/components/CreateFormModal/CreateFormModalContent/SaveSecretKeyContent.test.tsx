@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { Modal, ModalContent } from '@chakra-ui/react'
 import { screen } from '@testing-library/react'
 
-import { isMaskedInReplay, render } from '~/test-utils'
+import { isMaskedInDatadogReplay, render } from '~/test-utils'
 
 import {
   SaveSecretKeyContent,
@@ -55,6 +55,6 @@ describe('SaveSecretKeyContent', () => {
     render(<TestHarness />)
 
     const secretKey = screen.getByText(MOCK_SECRET_KEY)
-    expect(isMaskedInReplay(secretKey)).toBe(true)
+    expect(isMaskedInDatadogReplay(secretKey)).toBe(true)
   })
 })

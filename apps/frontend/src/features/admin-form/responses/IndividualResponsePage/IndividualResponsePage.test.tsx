@@ -8,7 +8,7 @@ import {
   SubmissionPaymentDto,
 } from 'formsg-shared/types'
 
-import { isMaskedInReplay, render } from '~/test-utils'
+import { isMaskedInDatadogReplay, render } from '~/test-utils'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
@@ -103,12 +103,12 @@ describe('IndividualResponsePage', () => {
     render(<IndividualResponsePage />)
 
     const answer = screen.getByText(MOCK_DECRYPTED_ANSWER)
-    expect(isMaskedInReplay(answer)).toBe(true)
+    expect(isMaskedInDatadogReplay(answer)).toBe(true)
 
     const attachmentName = screen.getByText(MOCK_ATTACHMENT_FILENAME)
-    expect(isMaskedInReplay(attachmentName)).toBe(true)
+    expect(isMaskedInDatadogReplay(attachmentName)).toBe(true)
 
     const payerEmail = screen.getByText(MOCK_PAYER_EMAIL)
-    expect(isMaskedInReplay(payerEmail)).toBe(true)
+    expect(isMaskedInDatadogReplay(payerEmail)).toBe(true)
   })
 })

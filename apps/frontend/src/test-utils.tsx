@@ -15,11 +15,8 @@ export { customRender as render }
 
 /**
  * Whether the element is masked in Datadog session replay recordings.
- * Datadog resolves privacy from the nearest ancestor carrying a
- * `data-dd-privacy` attribute; under the global `mask-user-input` privacy
- * level, page text with no such ancestor is recorded verbatim.
  */
-export const isMaskedInReplay = (element: HTMLElement): boolean =>
+export const isMaskedInDatadogReplay = (element: HTMLElement): boolean =>
   element.closest('[data-dd-privacy]')?.getAttribute('data-dd-privacy') ===
   'mask'
 

@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react'
 
 import { BasicField } from 'formsg-shared/types'
 
-import { isMaskedInReplay, render } from '~/test-utils'
+import { isMaskedInDatadogReplay, render } from '~/test-utils'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
@@ -33,6 +33,6 @@ describe('PrintableResponse', () => {
     )
 
     const answer = screen.getByText(MOCK_DECRYPTED_ANSWER)
-    expect(isMaskedInReplay(answer)).toBe(true)
+    expect(isMaskedInDatadogReplay(answer)).toBe(true)
   })
 })
