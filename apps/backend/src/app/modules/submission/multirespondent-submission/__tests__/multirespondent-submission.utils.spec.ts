@@ -1055,14 +1055,25 @@ describe('multirespondent-submission.utils', () => {
   })
 
   describe('buildMrfResponseJson', () => {
-    const BASE_ARGS = { responseId: 'abc123', timestamp: '1 Jan 2025' }
+    const BASE_ARGS = {
+      formId: 'form123',
+      responseId: 'abc123',
+      timestamp: '1 Jan 2025',
+    }
 
-    it('should prepend Response ID and Timestamp as first two entries', () => {
+    it('should prepend Form ID as the first entry, before Response ID and Timestamp', () => {
       const result = JSON.parse(
         buildMrfResponseJson({ ...BASE_ARGS, formFields: [], responses: {} }),
       )
-      expect(result[0]).toEqual({ question: 'Response ID', answer: 'abc123' })
-      expect(result[1]).toEqual({ question: 'Timestamp', answer: '1 Jan 2025' })
+      expect(result[0]).toEqual({ question: 'Form ID', answer: 'form123' })
+    })
+
+    it('should include Response ID and Timestamp after Form ID', () => {
+      const result = JSON.parse(
+        buildMrfResponseJson({ ...BASE_ARGS, formFields: [], responses: {} }),
+      )
+      expect(result[1]).toEqual({ question: 'Response ID', answer: 'abc123' })
+      expect(result[2]).toEqual({ question: 'Timestamp', answer: '1 Jan 2025' })
     })
 
     it('should include question and answer for a basic field', () => {
@@ -1085,7 +1096,7 @@ describe('multirespondent-submission.utils', () => {
           },
         }),
       )
-      expect(result[2]).toEqual({ question: 'Name', answer: 'Alice' })
+      expect(result[3]).toEqual({ question: 'Name', answer: 'Alice' })
     })
 
     it('should output address sub-fields as separate flat entries', () => {
@@ -1117,27 +1128,27 @@ describe('multirespondent-submission.utils', () => {
           },
         }),
       )
-      expect(result[2]).toEqual({
+      expect(result[3]).toEqual({
         question: 'Home Address - blockNumber',
         answer: '161',
       })
-      expect(result[3]).toEqual({
+      expect(result[4]).toEqual({
         question: 'Home Address - streetName',
         answer: 'BUKIT BATOK STREET 11',
       })
-      expect(result[4]).toEqual({
+      expect(result[5]).toEqual({
         question: 'Home Address - buildingName',
         answer: '',
       })
-      expect(result[5]).toEqual({
+      expect(result[6]).toEqual({
         question: 'Home Address - levelNumber',
         answer: '01',
       })
-      expect(result[6]).toEqual({
+      expect(result[7]).toEqual({
         question: 'Home Address - unitNumber',
         answer: '02',
       })
-      expect(result[7]).toEqual({
+      expect(result[8]).toEqual({
         question: 'Home Address - postalCode',
         answer: '650161',
       })
@@ -1163,7 +1174,7 @@ describe('multirespondent-submission.utils', () => {
           },
         }),
       )
-      expect(result[2]).toEqual({
+      expect(result[3]).toEqual({
         question: 'Email',
         answer: 'alice@example.com',
       })
@@ -1183,7 +1194,7 @@ describe('multirespondent-submission.utils', () => {
           responses: {},
         }),
       )
-      expect(result[2]).toEqual({ question: 'Unanswered', answer: '' })
+      expect(result[3]).toEqual({ question: 'Unanswered', answer: '' })
     })
 
     it('should exclude non-response fields (Section, Statement, Image)', () => {
@@ -1220,8 +1231,8 @@ describe('multirespondent-submission.utils', () => {
           },
         }),
       )
-      expect(result).toHaveLength(3) // Response ID + Timestamp + Name
-      expect(result[2]).toEqual({ question: 'Name', answer: 'Alice' })
+      expect(result).toHaveLength(4) // Form ID + Response ID + Timestamp + Name
+      expect(result[3]).toEqual({ question: 'Name', answer: 'Alice' })
     })
 
     it('should not include fieldType in output entries', () => {
@@ -1244,7 +1255,7 @@ describe('multirespondent-submission.utils', () => {
           },
         }),
       )
-      expect(result[2]).not.toHaveProperty('fieldType')
+      expect(result[3]).not.toHaveProperty('fieldType')
     })
   })
 })

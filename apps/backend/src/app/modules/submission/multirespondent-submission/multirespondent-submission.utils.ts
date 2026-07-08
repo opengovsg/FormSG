@@ -573,17 +573,24 @@ export const getResponsesDataFromMrfResponses = ({
 export const buildMrfResponseJson = ({
   formFields,
   responses,
+  formId,
   responseId,
   timestamp,
   delimiter = ', ',
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV3
+  formId: string
   responseId: string
   timestamp: string
   delimiter?: string
 }): string => {
   const entries: Array<{ question: string; answer: string }> = [
+    // Surface the form ID first so admins feeding this JSON through an
+    // automation can tell which form a response came from. Form ID is the
+    // stable identifier automations should route on. Mirrors the regular-form
+    // admin notification (mail.service.ts sendSubmissionToAdmin).
+    { question: 'Form ID', answer: formId },
     { question: 'Response ID', answer: responseId },
     { question: 'Timestamp', answer: timestamp },
   ]
