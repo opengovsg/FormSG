@@ -94,6 +94,47 @@ StorageModeRetryEnabled.parameters = {
   },
 }
 
+const mrfWebhooksGrowthBook = new GrowthBook({
+  features: { [featureFlags.enableMrfWebhooks]: { defaultValue: true } },
+})
+
+export const MrfMode = Template.bind({})
+MrfMode.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={mrfWebhooksGrowthBook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+MrfMode.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          responseMode: FormResponseMode.Multirespondent,
+        },
+      }),
+    },
+  },
+}
+
+const mrfWebhooksAndCutoverGrowthBook = new GrowthBook({
+  features: {
+    [featureFlags.enableMrfWebhooks]: { defaultValue: true },
+    [featureFlags.mrfCutover]: { defaultValue: true },
+  },
+})
+
+export const MrfModeMrfCutoverOn = Template.bind({})
+MrfModeMrfCutoverOn.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={mrfWebhooksAndCutoverGrowthBook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+MrfModeMrfCutoverOn.parameters = MrfMode.parameters
+
 export const UnsupportedEmailMode = Template.bind({})
 
 export const UnsupportedMultirespondentMode = Template.bind({})

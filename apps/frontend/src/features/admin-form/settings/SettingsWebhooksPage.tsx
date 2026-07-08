@@ -47,6 +47,10 @@ export const SettingsWebhooksPage = (): JSX.Element => {
     )
   }
 
+  const showWorkflowInfobox =
+    isMrfCutoverEnabled &&
+    settings?.responseMode === FormResponseMode.Multirespondent
+
   const showV1SchemaInfobox =
     isMrfCutoverEnabled &&
     settings?.responseMode === FormResponseMode.Encrypt &&
@@ -60,7 +64,7 @@ export const SettingsWebhooksPage = (): JSX.Element => {
       {showV1SchemaInfobox && (
         <WebhookV1SchemaInfobox formId={formId as FormId} />
       )}
-      <WebhooksSection />
+      <WebhooksSection showWorkflowInfobox={showWorkflowInfobox} />
     </Skeleton>
   )
 }
