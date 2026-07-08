@@ -10,8 +10,11 @@ export interface Workflow {
   title: string
   respondentBlock: {
     stepRespondent: string
+    stepRespondentRedesign: string
     anyone: string
+    anyoneRedesign: string
     select: string
+    selectRedesign: string
     fieldsToFill: string
     clickToEdit: string
   }
@@ -19,14 +22,17 @@ export interface Workflow {
     title: string
     required: string
     mustBeEmail: string
+    mustBeEmailRedesign: string
     select: string
   }
   conditionalRouting: {
     title: string
     addEmailsToOptions: string
+    addEmailsToOptionsRedesign: string
     validation: {
       noField: string
       notDropdown: string
+      notDropdownRedesign: string
     }
     modals: {
       deleteStep: {
@@ -44,6 +50,7 @@ export interface Workflow {
       addMapping: {
         step1: {
           title: string
+          titleRedesign: string
           nextButton: string
           download: {
             templateCreated: string
@@ -88,7 +95,9 @@ export interface Workflow {
     errors: {
       respondentType: {
         required: string
+        requiredRedesign: string
         invalid: string
+        invalidRedesign: string
       }
       csv: {
         required: string
@@ -103,8 +112,11 @@ export interface Workflow {
   }
   questions: {
     tooltip: string
+    tooltipRedesign: string
     label: string
+    labelRedesign: string
     placeholder: string
+    placeholderRedesign: string
   }
   approvals: {
     title: string
@@ -113,17 +125,21 @@ export interface Workflow {
     toggle: {
       label: string
       description: string
+      descriptionRedesign: string
       tooltip: string
       placeholder: string
     }
     validation: {
       noField: string
+      noFieldRedesign: string
       fieldAlreadyUsed: string
       fieldNotAssignedToUser: string
+      fieldNotAssignedToUserRedesign: string
     }
     addStep: string
     complete: {
       prefix: string
+      prefixRedesign: string
       link: string
       suffix: string
     }
