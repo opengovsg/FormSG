@@ -141,6 +141,7 @@ export const SaveSecretKeyContent = ({
                   color="secondary.500"
                   borderRadius="4px"
                   data-chromatic="ignore" // secret key always changes in Chromatic so this should be ignored
+                  data-dd-privacy="mask"
                 >
                   {secretKey}
                 </Code>
