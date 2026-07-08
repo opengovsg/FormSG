@@ -1,5 +1,5 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
-import { Meta, StoryFn } from '@storybook/react'
+import { Decorator, Meta, StoryFn } from '@storybook/react'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
@@ -53,17 +53,27 @@ StorageModeEmpty.parameters = {
   },
 }
 
-const mrfCutoverOnGrowthBook = new GrowthBook({
-  features: { [featureFlags.mrfCutover]: { defaultValue: true } },
-})
+const withGrowthBookFeatures = (
+  features: Record<string, boolean>,
+): Decorator => {
+  const growthbook = new GrowthBook({
+    features: Object.fromEntries(
+      Object.entries(features).map(([flag, on]) => [
+        flag,
+        { defaultValue: on },
+      ]),
+    ),
+  })
+  return (Story) => (
+    <GrowthBookProvider growthbook={growthbook}>
+      <Story />
+    </GrowthBookProvider>
+  )
+}
 
 export const StorageModeMrfCutoverOn = Template.bind({})
 StorageModeMrfCutoverOn.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={mrfCutoverOnGrowthBook}>
-      <Story />
-    </GrowthBookProvider>
-  ),
+  withGrowthBookFeatures({ [featureFlags.mrfCutover]: true }),
 ]
 StorageModeMrfCutoverOn.parameters = {
   msw: {
@@ -94,17 +104,9 @@ StorageModeRetryEnabled.parameters = {
   },
 }
 
-const mrfWebhooksGrowthBook = new GrowthBook({
-  features: { [featureFlags.enableMrfWebhooks]: { defaultValue: true } },
-})
-
 export const MrfMode = Template.bind({})
 MrfMode.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={mrfWebhooksGrowthBook}>
-      <Story />
-    </GrowthBookProvider>
-  ),
+  withGrowthBookFeatures({ [featureFlags.enableMrfWebhooks]: true }),
 ]
 MrfMode.parameters = {
   msw: {
@@ -118,20 +120,12 @@ MrfMode.parameters = {
   },
 }
 
-const mrfWebhooksAndCutoverGrowthBook = new GrowthBook({
-  features: {
-    [featureFlags.enableMrfWebhooks]: { defaultValue: true },
-    [featureFlags.mrfCutover]: { defaultValue: true },
-  },
-})
-
 export const MrfModeMrfCutoverOn = Template.bind({})
 MrfModeMrfCutoverOn.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={mrfWebhooksAndCutoverGrowthBook}>
-      <Story />
-    </GrowthBookProvider>
-  ),
+  withGrowthBookFeatures({
+    [featureFlags.enableMrfWebhooks]: true,
+    [featureFlags.mrfCutover]: true,
+  }),
 ]
 MrfModeMrfCutoverOn.parameters = MrfMode.parameters
 
