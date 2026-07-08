@@ -202,8 +202,6 @@ export const PrintableResponse = ({
   submissionTime: string
 }) => {
   return (
-    // Mask the whole printable view in Datadog session replays — it renders
-    // every decrypted answer as plain text.
     <Box py="16px" fontFamily="sans-serif" data-dd-privacy="mask">
       <Box
         py="24px"

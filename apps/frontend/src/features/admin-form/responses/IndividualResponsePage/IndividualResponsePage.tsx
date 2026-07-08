@@ -210,9 +210,6 @@ export const IndividualResponsePage = (): JSX.Element => {
     <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>
       <IndividualResponseNavbar />
 
-      {/* Mask the whole response content (metadata, decrypted answers,
-      attachments, payment details) in Datadog session replays — fail closed
-      so every row type and future addition is covered. */}
       <Stack
         px={{ md: '1.75rem', lg: '2rem' }}
         spacing={{ base: '1.5rem', md: '2.5rem' }}
