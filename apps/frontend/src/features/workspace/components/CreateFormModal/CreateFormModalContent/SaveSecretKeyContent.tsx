@@ -73,10 +73,7 @@ export const SaveSecretKeyContent = ({
   return (
     <>
       <ModalBody whiteSpace="pre-wrap">
-        {/* Mask the whole save-secret-key screen (not just the key line) in
-        Datadog session replays — fail closed so future additions inside the
-        screen are covered too. */}
-        <Container maxW="42.5rem" p={0} data-dd-privacy="mask">
+        <Container maxW="42.5rem" p={0}>
           <Box
             bg="white"
             borderRadius="4px"
@@ -144,6 +141,7 @@ export const SaveSecretKeyContent = ({
                   color="secondary.500"
                   borderRadius="4px"
                   data-chromatic="ignore" // secret key always changes in Chromatic so this should be ignored
+                  data-dd-privacy="mask"
                 >
                   {secretKey}
                 </Code>
