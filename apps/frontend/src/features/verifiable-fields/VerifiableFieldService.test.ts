@@ -1,9 +1,11 @@
 import { StatusCodes } from 'http-status-codes'
 
+import i18n from '~/i18n/i18n'
+
 import { ApiService, HttpError } from '~services/ApiService'
 
 import {
-  OTP_RATE_LIMIT_ERROR_MESSAGE,
+  OTP_RATE_LIMIT_ERROR_MESSAGE_KEY,
   triggerSendOtp,
   verifyOtp,
 } from './VerifiableFieldService'
@@ -32,7 +34,7 @@ describe('VerifiableFieldService', () => {
         }),
       ).rejects.toMatchObject({
         code: StatusCodes.TOO_MANY_REQUESTS,
-        message: OTP_RATE_LIMIT_ERROR_MESSAGE,
+        message: i18n.t(OTP_RATE_LIMIT_ERROR_MESSAGE_KEY),
       })
     })
 
@@ -73,7 +75,7 @@ describe('VerifiableFieldService', () => {
         }),
       ).rejects.toMatchObject({
         code: StatusCodes.TOO_MANY_REQUESTS,
-        message: OTP_RATE_LIMIT_ERROR_MESSAGE,
+        message: i18n.t(OTP_RATE_LIMIT_ERROR_MESSAGE_KEY),
       })
     })
 

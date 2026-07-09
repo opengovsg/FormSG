@@ -53,6 +53,10 @@ export const enSG: Fields = {
         verified: 'Verified',
       },
     },
+    error: {
+      rateLimit:
+        'Too many OTP attempts. Please wait a few minutes before trying again.',
+    },
     modal: {
       email: {
         title: 'Verify your email',

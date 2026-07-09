@@ -43,6 +43,9 @@ export interface Fields {
         verified: string
       }
     }
+    error: {
+      rateLimit: string
+    }
     modal: {
       email: {
         title: string

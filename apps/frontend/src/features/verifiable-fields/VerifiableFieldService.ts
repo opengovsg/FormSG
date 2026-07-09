@@ -3,6 +3,8 @@ import { Opaque } from 'type-fest'
 
 import { SendFormOtpResponseDto } from 'formsg-shared/types/form'
 
+import i18n from '~/i18n/i18n'
+
 import { transformAllIsoStringsToDate } from '~utils/date'
 import { ApiService, HttpError } from '~services/ApiService'
 
@@ -18,8 +20,8 @@ type VerifiedFieldSignature = Opaque<string, 'VerifiedFieldSignature'>
 
 const FORM_API_PREFIX = '/forms'
 const VERIFICATION_ENDPOINT = 'fieldverifications'
-export const OTP_RATE_LIMIT_ERROR_MESSAGE =
-  'Too many OTP attempts. Please wait a few minutes before trying again.'
+export const OTP_RATE_LIMIT_ERROR_MESSAGE_KEY =
+  'features.publicForm.components.fields.verification.error.rateLimit'
 
 const mapOtpRateLimitError = (error: unknown): never => {
   if (
@@ -27,7 +29,7 @@ const mapOtpRateLimitError = (error: unknown): never => {
     error.code === StatusCodes.TOO_MANY_REQUESTS
   ) {
     throw new HttpError(
-      OTP_RATE_LIMIT_ERROR_MESSAGE,
+      i18n.t(OTP_RATE_LIMIT_ERROR_MESSAGE_KEY),
       StatusCodes.TOO_MANY_REQUESTS,
     )
   }
