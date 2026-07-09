@@ -4,7 +4,7 @@ import {
   DropdownFieldBase,
   FormFieldWithId,
   ShortTextFieldBase,
-  TableFieldBase,
+  TableFieldDto,
   TableResponseV3,
 } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
@@ -164,7 +164,7 @@ export const constructTableValidator: TableValidatorConstructor = (
   )
 
 interface TableValidatorData {
-  tableField: TableFieldBase
+  tableField: TableFieldDto
   formId: string
   isVisible: boolean
   isDisabled: boolean
@@ -449,9 +449,10 @@ const makeTableCellValidatorV4: ResponseValidatorConstructor<
     const { columns } = tableField
 
     return answerRows.every((row) => {
-      return Object.values(row.value).every((cellValue, i) => {
-        const col = columns[i]
-        const answer = String(cellValue)
+      // Iterate columns in canonical order and look up each cell by columnId.
+      // Do not rely on Object.values(row.value) preserving column order.
+      return columns.every((col) => {
+        const answer = String(row.value[col._id])
         const answerResponse = {
           answer,
           fieldType: col.columnType,
