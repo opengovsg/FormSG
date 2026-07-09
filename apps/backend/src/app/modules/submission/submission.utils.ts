@@ -634,8 +634,8 @@ export const isAttachmentResponseV4 = (
 ): response is ParsedClearAttachmentFieldResponseV4 => {
   return (
     response.fieldType === BasicField.Attachment &&
-    (response as ParsedClearAttachmentFieldResponseV4).answer.content !==
-      undefined
+    'content' in response.answer &&
+    response.answer.content !== undefined
   )
 }
 
