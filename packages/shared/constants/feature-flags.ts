@@ -30,7 +30,6 @@ export const featureFlags = {
   useTemplateWallSubmit: 'use-template-wall-submit' as const,
   ddSampleRateAdmin: 'dd-sample-rate-admin' as const,
   ddSampleRatePublic: 'dd-sample-rate-public' as const,
-  answerObjectDecryption: 'answer-object-decryption' as const,
   standardisedEmailTemplate: 'standardised-email-template' as const,
   mrfCutover: 'mrf-cutover' as const,
   answerObjectEncryption: 'answer-object-encryption' as const,
