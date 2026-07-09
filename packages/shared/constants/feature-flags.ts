@@ -3,20 +3,11 @@ export const featureFlags = {
   goLinks: 'goLinks' as const,
   turnstile: 'turnstile' as const,
   validateStripeEmailDomain: 'validateStripeEmailDomain' as const,
-  /**
-   * @deprecated since 2024-Aug-02
-   * On growthbook, kept permenently ON for all ENV
-   * */
-  myinfoSgid: 'myinfo-sgid' as const,
   chartsMaxResponseCount: 'charts-max-response-count' as const,
   addingTwilioDisabled: 'adding-twilio-disabled' as const,
-  postmanSms: 'postmanSms' as const,
   mfb: 'magic-form-builder' as const,
   mfbVision: 'magic-form-builder-vision' as const,
-  guardduty: 'guardduty' as const,
   saveDraft: 'save-draft' as const,
-  respondentCopy: 'respondent-copy' as const,
-  statusTracker: 'status-tracker' as const,
   designDrawerFormTitle: 'design-drawer-form-title' as const,
   adminPrintPdf: 'admin-print-pdf' as const,
   ogpSuiteSso: 'ogp-suite-sso' as const,
@@ -24,7 +15,6 @@ export const featureFlags = {
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
   lambdaPdfGeneration: 'lambda-pdf-generation' as const,
-  singpassMrf: 'singpass-mrf' as const,
   enableSaveDraftButtonFloating: 'enable-save-draft-button-floating' as const,
   enableSaveDraftButtonHeader: 'enable-save-draft-button-header' as const,
   adminEmailPdf: 'admin-email-pdf' as const,
