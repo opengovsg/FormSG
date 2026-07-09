@@ -97,8 +97,6 @@ const validateUpdateAdminFormFeedback = celebrate({
   }),
 })
 
-// No Datadog metric here. Metric fires on create only to avoid double-counting
-// when an admin changes their star rating.
 const updateAdminFeedback: ControllerHandler<
   { feedbackId: string },
   { message: string } | ErrorDto,

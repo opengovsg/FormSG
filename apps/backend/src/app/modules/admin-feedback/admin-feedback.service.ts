@@ -11,6 +11,12 @@ import { MissingAdminFeedbackError } from './admin-feedback.errors'
 const AdminFeedbackModel = getAdminFeedbackModel(mongoose)
 const logger = createLoggerWithLabel(module)
 
+export type Feedback = {
+  comment?: string
+  rating?: number
+  ratingChanged?: boolean
+}
+
 /**
  * Inserts given admin feedback to the database.
  * @param userId the userId of the admin that provided the feedback
@@ -77,11 +83,10 @@ export const updateAdminFeedback = ({
   comment?: string
   rating?: number
 }) => {
-  const updateObj: Record<string, unknown> = {}
-  if (comment !== undefined) updateObj.comment = comment
-  if (rating !== undefined) {
-    updateObj.rating = rating
-    updateObj.ratingChanged = true
+  const updateObj: Partial<Feedback> = {
+    ...(comment !== undefined && { comment }),
+    ...(rating !== undefined && { rating }),
+    ...(rating !== undefined && { ratingChanged: true }),
   }
 
   // if no update to be done, return ok
