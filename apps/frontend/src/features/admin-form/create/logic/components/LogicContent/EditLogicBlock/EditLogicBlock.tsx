@@ -161,9 +161,7 @@ export const EditLogicBlock = ({
         handleDelete={handleOpenDeleteModal}
         handleCancel={setToInactive}
         submitButtonLabel={submitButtonLabel}
-        ariaLabelName={t(
-          'features.adminForm.sidebar.logic.logic',
-        ).toLowerCase()}
+        ariaLabelName={t('features.adminForm.sidebar.logic.aria.logicName')}
       />
     </EditConditionWrapper>
   )

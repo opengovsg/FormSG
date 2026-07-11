@@ -84,6 +84,7 @@ export interface Logic {
     criteria: string
     condition: string
     delete: string
+    logicName: string
   }
   errors: {
     conditionRequired: string

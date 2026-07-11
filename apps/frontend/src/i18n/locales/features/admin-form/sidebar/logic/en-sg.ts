@@ -94,6 +94,7 @@ export const enSG: Logic = {
     criteria: 'Logic criteria',
     condition: 'Logic condition',
     delete: 'Delete {{name}}',
+    logicName: 'logic',
   },
   errors: {
     conditionRequired: 'Please select a condition',
