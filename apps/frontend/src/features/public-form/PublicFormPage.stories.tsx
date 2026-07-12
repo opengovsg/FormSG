@@ -88,6 +88,20 @@ const PREFILLABLE_LOCKED_SHORTTEXT_FIELD: ShortTextFieldSchema = {
   _id: '5da04eafe397fc0013f63b23',
 }
 
+const PREFILLABLE_EMPTY_SHORTTEXT_FIELD: ShortTextFieldSchema = {
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+  allowPrefill: true, // Prefillable, but supplied an empty value via the URL.
+  title: 'Short Text With Empty Prefill',
+  description: '',
+  required: false,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  _id: '5da04eafe397fc0013f63b24',
+}
+
 const generateMswHandlersForColorTheme = (colorTheme: FormColorTheme) => {
   return [
     ...envHandlers,
@@ -1017,6 +1031,99 @@ WithSaveDraftEnabledAndClickFormHeaderSaveDraftButton.play = async ({
         storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
       })) as DraftSubmission | undefined
       expect(savedDraft).toBeDefined()
+    },
+  )
+
+  await step('Cleanup saved draft', async () => {
+    await _removeFromIndexedDBForTest({
+      key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+      storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+    })
+  })
+}
+
+export const WithSaveDraftEnabledPersistsPrefilledFields = Template.bind({})
+WithSaveDraftEnabledPersistsPrefilledFields.parameters = {
+  router: {
+    path: '/:formId',
+    initialEntries: [
+      `/61540ece3d4a6e50ac0cc6ff?${PREFILLABLE_NORMAL_SHORTTEXT_FIELD._id}=PrefilledValue&${PREFILLABLE_EMPTY_SHORTTEXT_FIELD._id}=`,
+    ],
+  },
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          responseMode: FormResponseMode.Encrypt,
+          isSaveDraftEnabled: true,
+          form_fields: [
+            PREFILLABLE_NORMAL_SHORTTEXT_FIELD,
+            PREFILLABLE_EMPTY_SHORTTEXT_FIELD,
+          ],
+        },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSaveDraftEnabledPersistsPrefilledFields.play = async ({ step }) => {
+  const screen = within(document.body)
+
+  let formHeaderSaveDraftButton: HTMLElement
+
+  await step(
+    'Scroll down the page to reveal the form header save draft button',
+    async () => {
+      await window.scrollBy(0, 500)
+    },
+  )
+
+  await step('Find the form header save draft button', async () => {
+    await waitFor(
+      async () => {
+        const allSaveDraftButtons = screen.getAllByLabelText('Save a draft')
+        const foundFormHeaderSaveDraftButton = allSaveDraftButtons.find(
+          (button) => button.closest('.chakra-slide') !== null,
+        )
+        if (!foundFormHeaderSaveDraftButton) {
+          throw new Error('Form header save draft button not found')
+        }
+        formHeaderSaveDraftButton = foundFormHeaderSaveDraftButton
+        expect(formHeaderSaveDraftButton).toBeInTheDocument()
+      },
+      { timeout: 3000 },
+    )
+  })
+
+  await step('Click the form header save draft button', async () => {
+    await userEvent.click(formHeaderSaveDraftButton)
+  })
+
+  await step(
+    'Assert that the saved draft success toast message appears',
+    async () => {
+      await waitFor(
+        async () => {
+          await expect(document.body).toHaveTextContent(
+            'Draft saved. Reopen this link in this browser to resume filling it.',
+          )
+        },
+        { timeout: 3000 },
+      )
+    },
+  )
+
+  await step(
+    'Assert prefilled field even without a value is persisted in the draft',
+    async () => {
+      const savedDraft = (await _getFromIndexedDBForTest({
+        key: STORAGE_MODE_PUBLIC_FORM_SAVE_DRAFT_KEY,
+        storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
+      })) as DraftSubmission | undefined
+      expect(savedDraft?.draftResponses).toEqual({
+        [PREFILLABLE_NORMAL_SHORTTEXT_FIELD._id]: 'PrefilledValue',
+        [PREFILLABLE_EMPTY_SHORTTEXT_FIELD._id]: '',
+      })
     },
   )
 

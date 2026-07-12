@@ -162,6 +162,7 @@ const FormLabelDescription = ({
 
   const mdComponentsStyles = {
     text: styleProps,
+    list: styleProps,
     link: { display: 'initial' },
   }
   const mdComponents = useMdComponents({

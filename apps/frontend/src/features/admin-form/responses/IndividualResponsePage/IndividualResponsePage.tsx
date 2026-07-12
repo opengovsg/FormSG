@@ -83,7 +83,12 @@ const StackRow = ({
       spacing={{ base: '0', md: '0.5rem' }}
       direction={{ base: 'column', md: 'row' }}
     >
-      <Text as="span" textStyle="subhead-1" whiteSpace="nowrap">
+      <Text
+        as="span"
+        textStyle="subhead-1"
+        whiteSpace="nowrap"
+        data-dd-privacy="allow"
+      >
         {label}:
       </Text>
       <Skeleton isLoaded={!isLoading && !isError}>
@@ -96,6 +101,7 @@ const StackRow = ({
                 display="inline-flex"
                 wordBreak="break-word"
                 gap="0.25rem"
+                data-dd-action-name="Click on status tracker link"
               >
                 {statusTrackerUrl}{' '}
                 <Box fontSize="1.25rem" display="flex" alignItems="center">
@@ -207,6 +213,7 @@ export const IndividualResponsePage = (): JSX.Element => {
       <Stack
         px={{ md: '1.75rem', lg: '2rem' }}
         spacing={{ base: '1.5rem', md: '2.5rem' }}
+        data-dd-privacy="mask"
       >
         <Stack bg="primary.100" p="1.5rem" textStyle="monospace">
           <StackRow
@@ -270,6 +277,7 @@ export const IndividualResponsePage = (): JSX.Element => {
               </Text>
               <Skeleton isLoaded={!isLoading && !isError}>
                 <Button
+                  data-dd-action-name="Click on attachment field download button"
                   variant="link"
                   isDisabled={downloadAttachmentsAsZipMutation.isLoading}
                   onClick={handleDownload}

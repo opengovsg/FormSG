@@ -202,7 +202,7 @@ export const PrintableResponse = ({
   submissionTime: string
 }) => {
   return (
-    <Box py="16px" fontFamily="sans-serif">
+    <Box py="16px" fontFamily="sans-serif" data-dd-privacy="mask">
       <Box
         py="24px"
         w="100%"

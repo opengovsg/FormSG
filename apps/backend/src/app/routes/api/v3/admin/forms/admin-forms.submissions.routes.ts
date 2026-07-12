@@ -2,7 +2,6 @@ import { Router } from 'express'
 
 import { rateLimitConfig } from '../../../../../config/config'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
-import * as EncryptSubmissionController from '../../../../../modules/submission/encrypt-submission/encrypt-submission.controller'
 import * as MultirespondentSubmissionController from '../../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
 import * as SubmissionController from '../../../../../modules/submission/submission.controller'
 import { limitRate } from '../../../../../utils/limit-rate'
@@ -83,14 +82,6 @@ AdminFormsSubmissionsRouter.route(
 AdminFormsSubmissionsRouter.get(
   '/:formId([a-fA-F0-9]{24})/submissions/metadata',
   SubmissionController.handleGetMetadata,
-)
-
-/**
- * Retrieve all encrypted response form a form
- */
-AdminFormsSubmissionsRouter.get(
-  '/:formId([a-fA-F0-9]{24})/submissions',
-  EncryptSubmissionController.handleGetAllEncryptedResponses,
 )
 
 /**

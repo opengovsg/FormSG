@@ -14,6 +14,13 @@ const customRender = (ui: React.ReactElement, options?: RenderOptions) =>
 export { customRender as render }
 
 /**
+ * Whether the element is masked in Datadog session replay recordings.
+ */
+export const isMaskedInDatadogReplay = (element: HTMLElement): boolean =>
+  element.closest('[data-dd-privacy]')?.getAttribute('data-dd-privacy') ===
+  'mask'
+
+/**
  * Extends react-testing-library functions.
  * See https://polvara.me/posts/five-things-you-didnt-know-about-testing-library
  */

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { BiLockAlt, BiMailSend, BiRightArrowAlt } from 'react-icons/bi'
+import { BiRightArrowAlt } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import {
   Accordion,
@@ -11,10 +11,6 @@ import {
   OrderedList,
   SimpleGrid,
   Stack,
-  TabList,
-  TabPanel,
-  TabPanels,
-  Tabs,
   Text,
   VisuallyHidden,
   Wrap,
@@ -28,13 +24,9 @@ import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 import { BxlGithub } from '~assets/icons/BxlGithub'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import {
-  CONTACT_US,
   FORM_GUIDE,
-  GUIDE_ATTACHMENT_SIZE_LIMIT,
   GUIDE_DATA_CLASSIFICATION,
   GUIDE_E2EE,
-  GUIDE_SECRET_KEY_LOSS,
-  GUIDE_TRANSFER_OWNERSHIP,
   LANDING_PAGE_EXAMPLE_FORMS,
   OGP_ALL_PRODUCTS,
   OGP_FORMSG_REPO,
@@ -44,7 +36,6 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
-import { Tab } from '~components/Tabs'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { ExternalFormLink } from '../components/ExternalFormLink'
@@ -59,14 +50,14 @@ import { SectionTitleText } from '../components/SectionTitleText'
 import { StatsItem } from '../components/StatsItem'
 
 import formsHeroAnimation from './assets/images/animation-hero.json'
-import howFormsWorksAnimation from './assets/images/animation-mode.json'
 import enterEmailAnimation from './assets/images/animation-typing.json'
 import helpCenterImg from './assets/images/help_center.svg'
+import howItWorksBuilderImg from './assets/images/how-it-works-builder.svg'
 import featureDndImg from './assets/images/icon_dnd.svg'
 import featureEmailImg from './assets/images/icon_email.svg'
 import featureIntegrationsImg from './assets/images/icon_integrations.svg'
 import featureLogicImg from './assets/images/icon_logic.svg'
-import featurePrefillImg from './assets/images/icon_prefill.svg'
+import featureWorkflowImg from './assets/images/icon_sections.svg'
 import featureWebhooksImg from './assets/images/icon_webhooks.svg'
 import meetingCollaborationImg from './assets/images/meeting_collaboration.svg'
 import ogpSuiteImg from './assets/images/ogp_suite.svg'
@@ -79,7 +70,7 @@ import restrictedMomLogo from './assets/images/restricted__mom.png'
 import restrictedMsfLogo from './assets/images/restricted__msf.png'
 import restrictedNparksLogo from './assets/images/restricted__nparks.png'
 import restrictedPaLogo from './assets/images/restricted__pa.png'
-import storageModeImg from './assets/images/storage_mode.svg'
+import securityImg from './assets/images/security.svg'
 import { useLanding } from './queries'
 
 export const LandingPage = (): JSX.Element => {
@@ -168,6 +159,15 @@ export const LandingPage = (): JSX.Element => {
             )}
           />
           <FeatureGridItem
+            image={featureWorkflowImg}
+            title={t(
+              'features.landingPage.featureSection.features.workflow.title',
+            )}
+            description={t(
+              'features.landingPage.featureSection.features.workflow.description',
+            )}
+          />
+          <FeatureGridItem
             image={featureLogicImg}
             title={t(
               'features.landingPage.featureSection.features.conditionalLogic.title',
@@ -183,15 +183,6 @@ export const LandingPage = (): JSX.Element => {
             )}
             description={t(
               'features.landingPage.featureSection.features.emailConfirmation.description',
-            )}
-          />
-          <FeatureGridItem
-            image={featurePrefillImg}
-            title={t(
-              'features.landingPage.featureSection.features.prefill.title',
-            )}
-            description={t(
-              'features.landingPage.featureSection.features.prefill.description',
             )}
           />
           <FeatureGridItem
@@ -308,11 +299,11 @@ export const LandingPage = (): JSX.Element => {
       </LandingSection>
       <FeatureSection
         direction={{ base: 'column', lg: 'row' }}
-        title={t('features.landingPage.storageModeSection.title')}
-        imgSrc={storageModeImg}
+        title={t('features.landingPage.securitySection.title')}
+        imgSrc={securityImg}
       >
         <SectionBodyText mt="1rem">
-          {t('features.landingPage.storageModeSection.subtitle')}
+          {t('features.landingPage.securitySection.subtitle')}
         </SectionBodyText>
         <SimpleGrid
           columns={2}
@@ -325,25 +316,25 @@ export const LandingPage = (): JSX.Element => {
           <Flex align="center">
             <Text textStyle="subhead-3">
               {t(
-                'features.landingPage.storageModeSection.modes.security.title',
+                'features.landingPage.securitySection.classifications.security.title',
               )}
             </Text>
           </Flex>
           <SectionBodyText mt={0}>
             {t(
-              'features.landingPage.storageModeSection.modes.security.description',
+              'features.landingPage.securitySection.classifications.security.description',
             )}
           </SectionBodyText>
           <Flex align="center">
             <Text textStyle="subhead-3">
               {t(
-                'features.landingPage.storageModeSection.modes.sensitivity.title',
+                'features.landingPage.securitySection.classifications.sensitivity.title',
               )}
             </Text>
           </Flex>
           <SectionBodyText mt={0}>
             {t(
-              'features.landingPage.storageModeSection.modes.sensitivity.description',
+              'features.landingPage.securitySection.classifications.sensitivity.description',
             )}
           </SectionBodyText>
         </SimpleGrid>
@@ -353,23 +344,55 @@ export const LandingPage = (): JSX.Element => {
             <Icon as={BiRightArrowAlt} ml="0.5rem" fontSize="1.5rem" />
           }
         >
-          {t('features.landingPage.storageModeSection.guideCtaLabel')}
+          {t('features.landingPage.securitySection.guideCtaLabel')}
         </FeatureLink>
       </FeatureSection>
       <FeatureSection
-        title={t('features.landingPage.opensourceSection.title')}
-        imgSrc={openSourceImg}
-        direction={{ base: 'column', lg: 'row-reverse' }}
+        align="center"
+        direction={{ base: 'column', lg: 'row' }}
+        bg="primary.100"
+        title={t('features.landingPage.howItWorksSection.title')}
+        imgSrc={howItWorksBuilderImg}
       >
-        <SectionBodyText mt="1rem">
-          {t('features.landingPage.opensourceSection.subtitle')}
+        <SectionBodyText mt="1.5rem">
+          {t('features.landingPage.howItWorksSection.description')}
         </SectionBodyText>
-        <FeatureLink
-          href={OGP_FORMSG_REPO}
-          externalLinkIcon={<BxlGithub ml="0.5rem" fontSize="1.5rem" />}
+        <OrderedList
+          spacing="1rem"
+          mt="2.5rem"
+          listStyleType="none"
+          ml="2.5rem"
+          color="secondary.500"
         >
-          {t('features.landingPage.opensourceSection.forkItCtaLabel')}
-        </FeatureLink>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={1} />
+            {t('features.landingPage.howItWorksSection.steps.one')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={2} />
+            {t('features.landingPage.howItWorksSection.steps.two')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={3} />
+            {t('features.landingPage.howItWorksSection.steps.three')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={4} />
+            {t('features.landingPage.howItWorksSection.steps.four')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={5} />
+            {t('features.landingPage.howItWorksSection.steps.five')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={6} />
+            {t('features.landingPage.howItWorksSection.steps.six')}
+          </ListItem>
+          <ListItem textStyle="body-2">
+            <OrderedListIcon index={7} />
+            {t('features.landingPage.howItWorksSection.steps.seven')}
+          </ListItem>
+        </OrderedList>
       </FeatureSection>
       <FeatureSection
         title={t('features.landingPage.helpCenterSection.title')}
@@ -389,42 +412,42 @@ export const LandingPage = (): JSX.Element => {
           >
             <HelpAccordionItem
               title={t(
-                'features.landingPage.helpCenterSection.qnaAccordionItem.loseSecretKey.question',
+                'features.landingPage.helpCenterSection.qnaAccordionItem.isFree.question',
               )}
             >
               <MarkdownText components={mdComponents}>
                 {dedent(
                   t(
-                    'features.landingPage.helpCenterSection.qnaAccordionItem.loseSecretKey.answer',
-                    {
-                      CONTACT_US,
-                    },
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.isFree.answer',
                   ),
                 )}
               </MarkdownText>
-              <FeatureLink mt="1rem" href={GUIDE_SECRET_KEY_LOSS}>
-                {t(
-                  'features.landingPage.helpCenterSection.common.sourceLinkLabel',
-                )}
-              </FeatureLink>
             </HelpAccordionItem>
             <HelpAccordionItem
               title={t(
-                'features.landingPage.helpCenterSection.qnaAccordionItem.increaseAttachmentSizeLimit.question',
+                'features.landingPage.helpCenterSection.qnaAccordionItem.whoCanCreate.question',
               )}
             >
               <MarkdownText components={mdComponents}>
                 {dedent(
                   t(
-                    'features.landingPage.helpCenterSection.qnaAccordionItem.increaseAttachmentSizeLimit.answer',
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.whoCanCreate.answer',
                   ),
                 )}
               </MarkdownText>
-              <FeatureLink mt="1rem" href={GUIDE_ATTACHMENT_SIZE_LIMIT}>
-                {t(
-                  'features.landingPage.helpCenterSection.common.sourceLinkLabel',
+            </HelpAccordionItem>
+            <HelpAccordionItem
+              title={t(
+                'features.landingPage.helpCenterSection.qnaAccordionItem.highVolume.question',
+              )}
+            >
+              <MarkdownText components={mdComponents}>
+                {dedent(
+                  t(
+                    'features.landingPage.helpCenterSection.qnaAccordionItem.highVolume.answer',
+                  ),
                 )}
-              </FeatureLink>
+              </MarkdownText>
             </HelpAccordionItem>
             <HelpAccordionItem
               title={t(
@@ -444,24 +467,6 @@ export const LandingPage = (): JSX.Element => {
                 )}
               </FeatureLink>
             </HelpAccordionItem>
-            <HelpAccordionItem
-              title={t(
-                'features.landingPage.helpCenterSection.qnaAccordionItem.howToTransferOwnership.question',
-              )}
-            >
-              <MarkdownText components={mdComponents}>
-                {dedent(
-                  t(
-                    'features.landingPage.helpCenterSection.qnaAccordionItem.howToTransferOwnership.answer',
-                  ),
-                )}
-              </MarkdownText>
-              <FeatureLink mt="1rem" href={GUIDE_TRANSFER_OWNERSHIP}>
-                {t(
-                  'features.landingPage.helpCenterSection.common.sourceLinkLabel',
-                )}
-              </FeatureLink>
-            </HelpAccordionItem>
           </Accordion>
         </Box>
         <FeatureLink
@@ -474,132 +479,10 @@ export const LandingPage = (): JSX.Element => {
         </FeatureLink>
       </FeatureSection>
       <FeatureSection
-        align="start"
-        direction={{ base: 'column', lg: 'row' }}
-        bg="primary.100"
-        title={t('features.landingPage.howItWorksSection.title')}
-        animationSrc={howFormsWorksAnimation}
-      >
-        <Tabs mt="2.5rem">
-          <TabList>
-            <Tab>
-              {t('features.landingPage.howItWorksSection.modes.storage.tab')}
-            </Tab>
-            <Tab>
-              {t('features.landingPage.howItWorksSection.modes.mrf.tab')}
-            </Tab>
-          </TabList>
-
-          <TabPanels>
-            <TabPanel>
-              <SectionBodyText mt="1.5rem">
-                {t(
-                  'features.landingPage.howItWorksSection.modes.storage.description',
-                )}
-              </SectionBodyText>
-              <OrderedList
-                spacing="1rem"
-                mt="2.5rem"
-                listStyleType="none"
-                ml="2.5rem"
-                color="secondary.500"
-              >
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={1} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.one',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={2} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.two',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={3} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.three',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={4} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.four',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={5} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.five',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={6} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.storage.steps.six',
-                  )}
-                </ListItem>
-              </OrderedList>
-            </TabPanel>
-            <TabPanel>
-              <SectionBodyText mt="1.5rem">
-                {t(
-                  'features.landingPage.howItWorksSection.modes.mrf.description',
-                )}
-              </SectionBodyText>
-              <OrderedList
-                spacing="1rem"
-                mt="2.5rem"
-                listStyleType="none"
-                ml="2.5rem"
-                color="secondary.500"
-              >
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={1} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.one',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={2} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.two',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={3} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.three',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={4} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.four',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={5} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.five',
-                  )}
-                </ListItem>
-                <ListItem textStyle="body-2">
-                  <OrderedListIcon index={6} />
-                  {t(
-                    'features.landingPage.howItWorksSection.modes.mrf.steps.six',
-                  )}
-                </ListItem>
-              </OrderedList>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </FeatureSection>
-      <FeatureSection
         title={t('features.landingPage.ogpProductSuiteSection.title')}
         imgSrc={ogpSuiteImg}
         direction={{ base: 'column', lg: 'row' }}
+        bg="primary.100"
       >
         <SectionBodyText mt="1rem">
           {t('features.landingPage.ogpProductSuiteSection.subtitle')}
@@ -611,6 +494,21 @@ export const LandingPage = (): JSX.Element => {
           }
         >
           {t('features.landingPage.ogpProductSuiteSection.ctaLinkLabel')}
+        </FeatureLink>
+      </FeatureSection>
+      <FeatureSection
+        title={t('features.landingPage.opensourceSection.title')}
+        imgSrc={openSourceImg}
+        direction={{ base: 'column', lg: 'row-reverse' }}
+      >
+        <SectionBodyText mt="1rem">
+          {t('features.landingPage.opensourceSection.subtitle')}
+        </SectionBodyText>
+        <FeatureLink
+          href={OGP_FORMSG_REPO}
+          externalLinkIcon={<BxlGithub ml="0.5rem" fontSize="1.5rem" />}
+        >
+          {t('features.landingPage.opensourceSection.forkItCtaLabel')}
         </FeatureLink>
       </FeatureSection>
       <LandingSection bg="secondary.700" align="center">

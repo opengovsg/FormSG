@@ -2,6 +2,95 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.0.1](https://github.com/opengovsg/formsg/compare/v8.0.0...v8.0.1) (2026-07-08)
+
+
+### Bug Fixes
+
+* **paper forms tracking:** reword origin question and new-process option (#9707) ([#9707](https://github.com/opengovsg/formsg/commit/6362d3b11f6b9c53e675af6eabafefeb824c02d9))
+* **rum-privacy:** mask secret key and decrypted responses in session replays (#9708) ([#9708](https://github.com/opengovsg/formsg/commit/7a2030627e046cba57aea1a863d24bc1d10e6d3e))
+
+## [8.0.0](https://github.com/opengovsg/formsg/compare/v7.38.0...v8.0.0) (2026-07-06)
+
+
+### ⚠ BREAKING CHANGE
+
+* remove unused charts specific submission retrieval endpoint (#9395)
+
+### Features
+
+* remove unused charts specific submission retrieval endpoint (#9395) ([#9395](https://github.com/opengovsg/formsg/commit/1793abd28489134e38f2588fdb051a975d98db35))
+
+
+### Chores
+
+* fix lint issue in AdminSubmissionsService.ts (#9706) ([#9706](https://github.com/opengovsg/formsg/commit/ac34d660bea5e8ccafcf9a4c701cb54356cf9b10))
+
+## [7.38.0](https://github.com/opengovsg/formsg/compare/v7.37.1...v7.38.0) (2026-07-06)
+
+
+### Features
+
+* **landing:** redesign landing page for gov evaluators (#9697) ([#9697](https://github.com/opengovsg/formsg/commit/062e62247d4163ee66b22f35f190019462c61bae))
+
+## [7.37.1](https://github.com/opengovsg/formsg/compare/v7.37.0...v7.37.1) (2026-07-06)
+
+
+### Bug Fixes
+
+* save prefilled values in draft (#9696) ([#9696](https://github.com/opengovsg/formsg/commit/db35bd534b7ead0e6c258af01e602c4bf1d9a444))
+
+## [7.37.0](https://github.com/opengovsg/formsg/compare/v7.36.1...v7.37.0) (2026-07-06)
+
+
+### Features
+
+* add changelog and pre-release checklist to step summary (#9699) ([#9699](https://github.com/opengovsg/formsg/commit/4a3536de0c1d72e5dd39300c2303fb1e8b2c31dd))
+* instrument virus scanner logs with formid (#9704) ([#9704](https://github.com/opengovsg/formsg/commit/de59a7aa60d33b1cc1036e6557f4f6f128645742))
+
+## [7.36.1](https://github.com/opengovsg/formsg/compare/v7.36.0...v7.36.1) (2026-07-03)
+
+## [7.36.0](https://github.com/opengovsg/formsg/compare/v7.35.2...v7.36.0) (2026-07-03)
+
+
+### Features
+
+* edit release notes on recut (#9698) ([#9698](https://github.com/opengovsg/formsg/commit/d92a73d613d017bdb9acc091de0d2e9990e6ef05))
+
+## [7.35.2](https://github.com/opengovsg/formsg/compare/v7.35.1...v7.35.2) (2026-07-03)
+
+
+### Bug Fixes
+
+* **builder:** allow text input spaces in builder page fields (#9552) (#9553) ([#9552](https://github.com/opengovsg/formsg/commit/20bb8f1a07bcff8a5a4c76e31b08d9093f40c2fe))
+
+## [7.35.1](https://github.com/opengovsg/formsg/compare/v7.35.0...v7.35.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* localise attachment decryption toast (#9695) ([#9695](https://github.com/opengovsg/formsg/commit/5e0f2f0c52ad7c010e94a35ff6a4564e80db7a6c))
+* support better formatting in desc, messages (#9508) ([#9508](https://github.com/opengovsg/formsg/commit/d2f264dcfe21d814bbcf704ebf35cb993b0c1038))
+
+## [7.35.0](https://github.com/opengovsg/formsg/compare/v7.34.4...v7.35.0) (2026-07-01)
+
+
+### Features
+
+* gate admin feedback behind feature flag (#9683) ([#9683](https://github.com/opengovsg/formsg/commit/ab5541ca38797b8e7db8d4819b982fdd9b1e2994))
+
+## [7.34.4](https://github.com/opengovsg/formsg/compare/v7.34.3...v7.34.4) (2026-07-01)
+
+
+### Bug Fixes
+
+* **ci:** don't cancel in-flight deploys + speed up release build/deploy (#9690) ([#9690](https://github.com/opengovsg/formsg/commit/33a449d8735d58a99011ab5be1722a0521e592bb))
+
+
+### Dependencies
+
+* **deps:** bump express-request-id and @types/express-request-id (#9417) ([#9417](https://github.com/opengovsg/formsg/commit/2efc878e4fc39542be2a4bf79d79f8062b6d3a77))
+
 ## [7.34.3](https://github.com/opengovsg/formsg/compare/v7.34.2...v7.34.3) (2026-06-30)
 
 

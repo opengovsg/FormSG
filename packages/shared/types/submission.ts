@@ -143,10 +143,6 @@ export type MultirespondentSubmissionBase = z.infer<
   typeof MultirespondentSubmissionBase
 >
 
-export type StorageModeChartsDto = StorageModeSubmissionBase & {
-  created: DateString
-}
-
 export const SubmissionPaymentDto = z.object({
   id: z.string(),
   paymentIntentId: z.string(),

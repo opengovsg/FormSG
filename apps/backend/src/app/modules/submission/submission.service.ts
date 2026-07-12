@@ -1157,11 +1157,13 @@ type TriggerGuardDutyScanningError =
  */
 export const triggerGuardDutyScanning = (
   quarantineFileKey: string,
+  logMeta: Record<string, unknown> = {},
 ): ResultAsync<
   ParseVirusScannerLambdaPayloadOkType,
   TriggerGuardDutyScanningError
 > => {
-  const logMeta = {
+  const meta = {
+    ...logMeta,
     action: 'triggerGuardDutyScanning',
     quarantineFileKey,
   }
@@ -1169,7 +1171,7 @@ export const triggerGuardDutyScanning = (
   if (!validate(quarantineFileKey)) {
     logger.error({
       message: 'GUARDDUTY Invalid quarantine file key - not a valid uuid',
-      meta: logMeta,
+      meta,
     })
 
     return errAsync(new GuardDutyInvalidFileKeyError())
@@ -1184,7 +1186,7 @@ export const triggerGuardDutyScanning = (
       logger.error({
         message:
           'GUARDDUTY Error encountered when invoking virus scanning lambda',
-        meta: logMeta,
+        meta,
         error,
       })
 
@@ -1196,7 +1198,7 @@ export const triggerGuardDutyScanning = (
         logger.error({
           message:
             'GUARDDUTY Error returned from virus scanning lambda or parsing lambda output',
-          meta: logMeta,
+          meta,
           error: error,
         })
 
@@ -1215,7 +1217,7 @@ export const triggerGuardDutyScanning = (
     // if data or data.Payload is undefined
     logger.error({
       message: 'data or data.Payload from virus scanner lambda is undefined',
-      meta: logMeta,
+      meta,
     })
     return errAsync(new GuardDutyParseVirusScannerLambdaPayloadError())
   })
@@ -1246,7 +1248,7 @@ export const triggerGuardDutyScanThenDownloadCleanFileChain = <
   }
   // Step 3: Trigger lambda to scan attachments.
   return (
-    triggerGuardDutyScanning(response.answer)
+    triggerGuardDutyScanning(response.answer, logMeta)
       .mapErr((error) => {
         if (error instanceof GuardDutyMaliciousFileDetectedError) {
           logger.error({
