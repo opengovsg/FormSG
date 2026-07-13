@@ -836,11 +836,7 @@ export const PublicFormProvider = ({
       storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
     })
 
-  // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta
-  const isSaveDraftFeatureEnabled =
-    useFeatureIsOn(featureFlags.saveDraft) || isTest
-  const isSaveDraftEnabled =
-    isSaveDraftFeatureEnabled && Boolean(form?.isSaveDraftEnabled)
+  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   // RATIONALE: draftSubmission.lastUpdated is used as a source of truth to see if the draftSubmission has changed.
