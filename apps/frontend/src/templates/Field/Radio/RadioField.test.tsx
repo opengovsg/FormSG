@@ -63,14 +63,18 @@ describe('required field', () => {
     range.selectNodeContents(fieldTitle)
     selection?.removeAllRanges()
     selection?.addRange(range)
-    expect(firstRadioControl).toBeInTheDocument()
 
-    // Act
-    await act(async () => fireEvent.click(firstRadioControl as Element))
+    try {
+      expect(firstRadioControl).toBeInTheDocument()
 
-    // Assert
-    expect(firstRadioButton).toBeChecked()
-    selection?.removeAllRanges()
+      // Act
+      await act(async () => fireEvent.click(firstRadioControl as Element))
+
+      // Assert
+      expect(firstRadioButton).toBeChecked()
+    } finally {
+      selection?.removeAllRanges()
+    }
   })
 
   it('renders success when valid radio field selected when submitted (with others option)', async () => {

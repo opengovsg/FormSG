@@ -46,7 +46,7 @@ import {
   useRadioGroupContext,
   UseRadioProps,
 } from '@chakra-ui/react'
-import { callAll, split } from '@chakra-ui/utils'
+import { callAll, callAllHandlers, split } from '@chakra-ui/utils'
 
 import { RADIO_THEME_KEY } from '~/theme/components/Radio'
 import { FieldColorScheme } from '~/theme/foundations/colours'
@@ -171,7 +171,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
 
     const checkboxProps = getCheckboxProps({
       ...otherProps,
-      onClick: handleControlClick,
+      onClick: callAllHandlers(props.onClick, handleControlClick),
     })
     const inputProps = getInputProps({}, mergedInputRef)
 
