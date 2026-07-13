@@ -46,7 +46,6 @@ const FieldSearchBar = ({
 }) => {
   const { toggleIsModalOpen, isModalOpen } = useMagicFormBuilder()
 
-  const isMfbTextEnabled = useFeatureIsOn(featureFlags.mfb)
   const isMfbVisionEnabled = useFeatureIsOn(featureFlags.mfbVision)
 
   return (
@@ -61,7 +60,7 @@ const FieldSearchBar = ({
           onChange={onChange}
           placeholder={placeholder}
         />
-        {(isMfbTextEnabled || isMfbVisionEnabled) && (
+        {isMfbVisionEnabled && (
           <MagicFormBuilderSmallButton
             onClick={toggleIsModalOpen}
             isActive={isModalOpen}

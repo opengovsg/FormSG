@@ -271,7 +271,6 @@ const MagicFormBuilderCreateFormPrompt = ({
 
   const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
 
-  const isMfbTextEnabled = useFeatureIsOn(featureFlags.mfb)
   const isMfbVisionEnabled = useFeatureIsOn(featureFlags.mfbVision)
 
   return (
@@ -281,7 +280,7 @@ const MagicFormBuilderCreateFormPrompt = ({
       </ModalHeader>
       <ModalBody>
         <>
-          {isTest || (isMfbTextEnabled && isMfbVisionEnabled) ? (
+          {isTest || isMfbVisionEnabled ? (
             <Tabs isFitted index={selectedTab} onChange={setSelectedTab}>
               <TabList px="2px" mb="1rem">
                 <Tab
@@ -317,22 +316,14 @@ const MagicFormBuilderCreateFormPrompt = ({
                 </TabPanel>
               </TabPanels>
             </Tabs>
-          ) : isMfbTextEnabled ? (
+          ) : (
             <TextPromptModalBodyContent
               register={register}
               setValue={setValue}
               errors={errors}
               watch={watch}
             />
-          ) : isMfbVisionEnabled ? (
-            <VisionPromptModalBodyContent
-              control={visionControl}
-              errors={visionErrors}
-              clearErrors={clearVisionErrors}
-              setError={setVisionError}
-              isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
-            />
-          ) : null}
+          )}
         </>
       </ModalBody>
       <ModalFooter justifyContent="flex-end">
