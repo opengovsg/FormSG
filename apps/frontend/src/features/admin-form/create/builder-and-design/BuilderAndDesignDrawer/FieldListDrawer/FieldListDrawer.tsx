@@ -15,9 +15,6 @@ import {
   Tabs,
   Text,
 } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants'
 
 import { Tab } from '~components/Tabs'
 
@@ -46,8 +43,6 @@ const FieldSearchBar = ({
 }) => {
   const { toggleIsModalOpen, isModalOpen } = useMagicFormBuilder()
 
-  const isMfbVisionEnabled = useFeatureIsOn(featureFlags.mfbVision)
-
   return (
     <>
       <InputGroup>
@@ -60,12 +55,10 @@ const FieldSearchBar = ({
           onChange={onChange}
           placeholder={placeholder}
         />
-        {isMfbVisionEnabled && (
-          <MagicFormBuilderSmallButton
-            onClick={toggleIsModalOpen}
-            isActive={isModalOpen}
-          />
-        )}
+        <MagicFormBuilderSmallButton
+          onClick={toggleIsModalOpen}
+          isActive={isModalOpen}
+        />
       </InputGroup>
     </>
   )
