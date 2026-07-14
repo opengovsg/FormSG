@@ -12,19 +12,7 @@ import { FloatingIssueFeedbackButton } from './FloatingIssueFeedbackButton'
 import { FloatingSaveDraftButton } from './FloatingSaveDraftButton'
 
 export const FloatingToolBar = (): JSX.Element | null => {
-  const {
-    isPreview,
-    formId,
-    submissionData,
-    isSaveDraftEnabled,
-    onSaveDraft,
-    draftLastSavedDateTimeString,
-  } = usePublicFormContext()
-
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-  const gb = useGrowthBook()
-  const enableFloatingSaveDraftButton =
-    gb?.isOn(featureFlags.enableSaveDraftButtonFloating) || isTest
+  const { isPreview, formId, submissionData } = usePublicFormContext()
 
   if (submissionData) return null
 
@@ -39,24 +27,6 @@ export const FloatingToolBar = (): JSX.Element | null => {
       zIndex="docked"
     >
       <FloatingIssueFeedbackButton isPreview={isPreview} formId={formId} />
-      {isSaveDraftEnabled && enableFloatingSaveDraftButton && (
-        <FloatingSaveDraftButton
-          onSaveDraft={() => {
-            datadogLogs.logger.log(
-              'User clicked save draft from floating toolbar',
-              {
-                meta: {
-                  action: 'saveDraft',
-                  variant: 'FloatingToolbar',
-                  formId,
-                },
-              },
-            )
-            onSaveDraft()
-          }}
-          draftLastSavedDateTimeString={draftLastSavedDateTimeString}
-        />
-      )}
     </Stack>
   )
 }

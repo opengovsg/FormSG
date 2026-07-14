@@ -10,9 +10,6 @@ import {
   Icon,
   Text,
 } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants'
 
 import { BxsWidget } from '~assets/icons/BxsWidget'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -71,9 +68,6 @@ export const EmptyFormPlaceholder = forwardRef<
     return isMobile ? t('tapToAddField') : t('dragFromBuilderToStart')
   }, [isDraggingOver, isMobile, t])
 
-  const isMfbTextEnabled = useFeatureIsOn(featureFlags.mfb)
-  const isMfbVisionEnabled = useFeatureIsOn(featureFlags.mfbVision)
-
   return (
     <Box position="relative" h="13.75rem" m={{ base: 0, lg: '1.625rem' }}>
       <chakra.button
@@ -108,26 +102,20 @@ export const EmptyFormPlaceholder = forwardRef<
           >
             {placeholderText}
           </Text>
-          {isMfbTextEnabled || isMfbVisionEnabled ? (
-            <>
-              <OrDivider isMobile={isMobile} orText={t('or')} />
-              <Box h="2.75rem"></Box>
-            </>
-          ) : null}
+          <OrDivider isMobile={isMobile} orText={t('or')} />
+          <Box h="2.75rem"></Box>
         </Center>
       </chakra.button>
-      {isMfbTextEnabled || isMfbVisionEnabled ? (
-        <Box
-          bottom="2.375rem"
-          w="100%"
-          px={{ base: '1rem', md: '2rem' }}
-          position="absolute"
-          display="flex"
-          justifyContent="center"
-        >
-          <MagicFormBuilderButton onClick={toggleIsModalOpen} />
-        </Box>
-      ) : null}
+      <Box
+        bottom="2.375rem"
+        w="100%"
+        px={{ base: '1rem', md: '2rem' }}
+        position="absolute"
+        display="flex"
+        justifyContent="center"
+      >
+        <MagicFormBuilderButton onClick={toggleIsModalOpen} />
+      </Box>
     </Box>
   )
 })

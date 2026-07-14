@@ -34,13 +34,8 @@ export const adminFormResponsesKeys = {
       ...builtParams,
     ] as const
   },
-  individual: (id: string, submissionId: string, useV4?: boolean) =>
-    [
-      ...adminFormResponsesKeys.id(id),
-      'individual',
-      submissionId,
-      { useV4 },
-    ] as const,
+  individual: (id: string, submissionId: string) =>
+    [...adminFormResponsesKeys.id(id), 'individual', submissionId] as const,
   secretKey: (id: string) => [...adminFormResponsesKeys.id(id), 'secretKey'],
 }
 
