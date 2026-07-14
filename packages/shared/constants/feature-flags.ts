@@ -8,6 +8,7 @@ export const featureFlags = {
   mfb: 'magic-form-builder' as const,
   mfbVision: 'magic-form-builder-vision' as const,
   saveDraft: 'save-draft' as const,
+  postmanSms: 'postmanSms' as const,
   designDrawerFormTitle: 'design-drawer-form-title' as const,
   adminPrintPdf: 'admin-print-pdf' as const,
   ogpSuiteSso: 'ogp-suite-sso' as const,
