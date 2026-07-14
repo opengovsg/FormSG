@@ -1,6 +1,8 @@
 /** @type {import('jest').Config} */
 module.exports = {
-  preset: 'ts-jest',
+  transform: {
+    '^.+\\.(t|j)sx?$': '@swc/jest',
+  },
   rootDir: __dirname,
   moduleDirectories: ['node_modules'],
   testEnvironment: 'node',
