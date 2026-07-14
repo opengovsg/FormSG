@@ -122,6 +122,24 @@ export const compulsoryVarsSchema: Schema<ICompulsoryVarsSchema> = {
       default: null,
       env: 'ATTACHMENT_S3_BUCKET',
     },
+    submissionHistoryV4S3Bucket: {
+      doc: 'S3 Bucket for v4 submission content and verifiedContent JSON snapshots',
+      format: String,
+      default: null,
+      env: 'SUBMISSION_HISTORY_V4_S3_BUCKET',
+    },
+    submissionHistoryV1S3Bucket: {
+      doc: 'S3 Bucket for transitional v1 submission content and verifiedContent JSON snapshots',
+      format: String,
+      default: null,
+      env: 'SUBMISSION_HISTORY_V1_S3_BUCKET',
+    },
+    submissionHistoryV1AttachmentS3Bucket: {
+      doc: 'S3 Bucket for transitional v1 form-key attachment copies',
+      format: String,
+      default: null,
+      env: 'SUBMISSION_HISTORY_V1_ATTACHMENT_S3_BUCKET',
+    },
     paymentProofS3Bucket: {
       doc: 'S3 Bucket to upload payment proof to',
       format: String,
