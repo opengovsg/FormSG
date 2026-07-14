@@ -82,7 +82,7 @@ PreventActivation.parameters = {
         getAdminFormSettings({
           overrides: {
             status: FormStatus.Private,
-            authType: FormAuthType.SP,
+            authType: FormAuthType.MyInfo,
             esrvcId: '',
           },
         }),
