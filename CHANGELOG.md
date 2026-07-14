@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.0.3](https://github.com/opengovsg/formsg/compare/v8.0.2...v8.0.3) (2026-07-14)
+
+
+### Chores
+
+* removing unusued & stale gb flags (#9738) ([#9738](https://github.com/opengovsg/formsg/commit/fc4d6aa1cf0a968522f856690e35f4f833ca36f9))
+
 ## [8.0.2](https://github.com/opengovsg/formsg/compare/v8.0.1...v8.0.2) (2026-07-14)
 
 
