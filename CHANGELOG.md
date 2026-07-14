@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.0.2](https://github.com/opengovsg/formsg/compare/v8.0.1...v8.0.2) (2026-07-14)
+
+
+### Chores
+
+* remove deprecated auth types from form settings UI (#9604) ([#9604](https://github.com/opengovsg/formsg/commit/bf8e9d57dd9ee7458b05d093adc18c0e5c85c7b8))
+
 ## [8.0.1](https://github.com/opengovsg/formsg/compare/v8.0.0...v8.0.1) (2026-07-08)
 
 
