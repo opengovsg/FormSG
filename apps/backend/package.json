@@ -11,7 +11,7 @@
     "test:e2e-v2:server": "env-cmd -f ./__tests__/setup/.test-env pnpm test-e2e-server",
     "test-e2e-server": "concurrently --success last --kill-others \"pnpm exec mockpass\" \"pnpm exec maildev\" \"node dist/src/app/server.js\" \"node ./__tests__/setup/mock-webhook-server.js\"",
     "test": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:ci": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --maxWorkers=2 --logHeapUsage --workerIdleMemoryLimit=0.2",
+    "test:ci": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage --maxWorkers=2 --logHeapUsage --workerIdleMemoryLimit=0.2",
     "test:watch": "env-cmd -f __tests__/setup/.test-env node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "lint": "pnpm exec eslint src/ --quiet --fix",
     "lint-ci": "pnpm exec eslint src/ --quiet"
