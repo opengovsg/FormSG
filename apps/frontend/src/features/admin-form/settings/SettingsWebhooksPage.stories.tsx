@@ -94,6 +94,30 @@ StorageModeRetryEnabled.parameters = {
   },
 }
 
+const mrfWebhooksOnGrowthBook = new GrowthBook({
+  features: { [featureFlags.enableMrfWebhooks]: { defaultValue: true } },
+})
+
+export const MrfMode = Template.bind({})
+MrfMode.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={mrfWebhooksOnGrowthBook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+MrfMode.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          responseMode: FormResponseMode.Multirespondent,
+        },
+      }),
+    },
+  },
+}
+
 export const UnsupportedEmailMode = Template.bind({})
 
 export const UnsupportedMultirespondentMode = Template.bind({})

@@ -31,12 +31,15 @@ export const SettingsWebhooksPage = (): JSX.Element => {
     )
   }
 
+  const showWorkflowInfobox =
+    settings?.responseMode === FormResponseMode.Multirespondent
+
   return (
     <Skeleton isLoaded={!isLoading}>
       <CategoryHeader>
         {t('features.adminForm.settings.webhooks.title')}
       </CategoryHeader>
-      <WebhooksSection />
+      <WebhooksSection showWorkflowInfobox={showWorkflowInfobox} />
     </Skeleton>
   )
 }
