@@ -28,7 +28,7 @@
     "test:backend:watch": "pnpm --filter formsg-backend test:watch",
     "test:frontend": "pnpm --filter formsg-frontend test",
     "test:sdk": "pnpm --filter @opengovsg/formsg-sdk test",
-    "test:sdk:ci": "pnpm --filter @opengovsg/formsg-sdk test:ci",
+    "test:sdk:coverage": "pnpm --filter @opengovsg/formsg-sdk test:coverage",
     "test:e2e-v2": "pnpm build && pnpm exec playwright test",
     "test:e2e-v2:server": "pnpm --filter formsg-backend test:e2e-v2:server",
     "build": "pnpm clean && pnpm --recursive --filter formsg-sdk --filter formsg-shared --filter formsg-frontend --filter formsg-backend build",
