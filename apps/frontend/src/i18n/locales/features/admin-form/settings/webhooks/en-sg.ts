@@ -9,4 +9,5 @@ export const enSG = {
     label: 'Enable retries',
     description: `Your system must meet certain requirements before retries can be safely enabled. [Learn more]({url})`,
   },
+  workflowInfobox: `If workflows are enabled, only [Plumber]({plumberUrl}) can use data from all workflow steps. Other tools can only use data from the first step. [Learn more]({learnMoreUrl})`,
 }
