@@ -89,7 +89,7 @@ jobs:
 
       - name: Test SDK
         if: ${{ steps.version.outputs.should-publish == 'true' }}
-        run: pnpm test:sdk
+        run: pnpm test:sdk:coverage
 
       - name: Publish to npm
         if: ${{ steps.version.outputs.should-publish == 'true' }}

@@ -5,7 +5,7 @@ module.exports = {
   moduleDirectories: ['node_modules'],
   testEnvironment: 'node',
   testPathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/node_modules/'],
-  collectCoverage: true,
+  collectCoverage: false,
   collectCoverageFrom: ['<rootDir>/**/*.{ts,js}', '!<rootDir>/**/__tests__/**'],
   coveragePathIgnorePatterns: [
     '<rootDir>/node_modules/',

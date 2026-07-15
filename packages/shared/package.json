@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "pnpm exec jest --config jest.config.js",
+    "test:ci": "pnpm exec jest --config jest.config.js --coverage",
     "lint": "pnpm exec eslint . --quiet --fix",
     "lint-ci": "pnpm exec eslint . --quiet"
   },
