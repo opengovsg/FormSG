@@ -1,3 +1,4 @@
+import { AddressAnswerV4 } from '@opengovsg/formsg-sdk'
 import { AddressResponseV3, BasicField } from 'formsg-shared/types'
 import {
   validateLevelUnit,
@@ -14,7 +15,10 @@ import {
   OmitUnusedValidatorProps,
 } from 'src/types'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
+} from '../../../../types/api'
 import {
   ResponseValidator,
   ResponseValidatorConstructor,
@@ -171,4 +175,91 @@ export const constructOptionalAddressValidatorV3: ResponseValidatorConstructor<
     isAddressResponseV3,
     chain(addressLevelNumberValidatorV3),
     chain(addressUnitNumberValidatorV3),
+  )
+
+// V4
+// V4 address: answer = { postalCode, blockNumber, streetName, buildingName, levelNumber, unitNumber }
+// each field is { value: string }
+
+type AddressResponseV4 = ParsedClearFormFieldResponseV4 & {
+  fieldType: BasicField.Address
+  answer: AddressAnswerV4
+}
+
+const isAddressResponseV4: ResponseValidator<
+  ParsedClearFormFieldResponseV4,
+  AddressResponseV4
+> = (response) => {
+  if (response.fieldType !== BasicField.Address) {
+    return left(
+      `AddressValidatorV4.fieldTypeMismatch:\tfieldType is not address`,
+    )
+  }
+  return right(response as AddressResponseV4)
+}
+
+const addressPostalCodeValidatorV4: ResponseValidator<AddressResponseV4> = (
+  response,
+) => {
+  return validatePostalCode(response.answer.postalCode.value)
+    ? right(response)
+    : left(`AddressValidatorV4:\t postal code is not valid`)
+}
+
+const addressBlockNumberValidatorV4: ResponseValidator<AddressResponseV4> = (
+  response,
+) => {
+  return validateNoSpecialCharacters(response.answer.blockNumber.value)
+    ? right(response)
+    : left(`AddressValidatorV4:\t block number is not valid`)
+}
+
+const addressUnitNumberValidatorV4: ResponseValidator<AddressResponseV4> = (
+  response,
+) => {
+  const unitNumber = response.answer.unitNumber.value
+  const levelNumber = response.answer.levelNumber.value
+  const validUnitNumber = unitNumber
+    ? validateNoSpecialCharacters(unitNumber)
+    : true
+  return validUnitNumber && validateLevelUnit(unitNumber, levelNumber)
+    ? right(response)
+    : left(`AddressValidatorV4:\t unit number is not valid`)
+}
+
+const addressLevelNumberValidatorV4: ResponseValidator<AddressResponseV4> = (
+  response,
+) => {
+  const unitNumber = response.answer.unitNumber.value
+  const levelNumber = response.answer.levelNumber.value
+  const validLevelNumber = levelNumber
+    ? validateNoNonNumerical(levelNumber)
+    : true
+  return validLevelNumber && validateLevelUnit(levelNumber, unitNumber)
+    ? right(response)
+    : left(`AddressValidatorV4:\t level number is not valid`)
+}
+
+export const constructAddressValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IAddressCompoundFieldSchema>,
+  ParsedClearFormFieldResponseV4,
+  AddressResponseV4
+> = () =>
+  flow(
+    isAddressResponseV4,
+    chain(addressPostalCodeValidatorV4),
+    chain(addressBlockNumberValidatorV4),
+    chain(addressLevelNumberValidatorV4),
+    chain(addressUnitNumberValidatorV4),
+  )
+
+export const constructOptionalAddressValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IAddressCompoundFieldSchema>,
+  ParsedClearFormFieldResponseV4,
+  AddressResponseV4
+> = () =>
+  flow(
+    isAddressResponseV4,
+    chain(addressLevelNumberValidatorV4),
+    chain(addressUnitNumberValidatorV4),
   )

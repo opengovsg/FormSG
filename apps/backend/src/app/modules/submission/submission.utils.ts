@@ -50,10 +50,12 @@ import {
   MapRouteErrors,
 } from '../../../types'
 import {
+  ParsedClearAttachmentFieldResponseV4,
   ParsedClearAttachmentResponse,
   ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponse,
   ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
 } from '../../../types/api'
 import { MapRouteError } from '../../../types/routing'
 import formsgSdk from '../../config/formsg-sdk'
@@ -623,6 +625,16 @@ export const isAttachmentResponseV3 = (
 ): response is ParsedClearAttachmentResponseV3 => {
   return (
     response.fieldType === BasicField.Attachment &&
+    response.answer.content !== undefined
+  )
+}
+
+export const isAttachmentResponseV4 = (
+  response: ParsedClearFormFieldResponseV4,
+): response is ParsedClearAttachmentFieldResponseV4 => {
+  return (
+    response.fieldType === BasicField.Attachment &&
+    'content' in response.answer &&
     response.answer.content !== undefined
   )
 }

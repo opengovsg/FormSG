@@ -1,9 +1,22 @@
+import {
+  AddressAnswerV4,
+  CheckboxAnswerV4,
+  ChildrenAnswerV4,
+  RadioAnswerV4,
+  SignatureAnswerV4,
+  TableAnswerV4,
+  VerifiableAnswerV4,
+} from '@opengovsg/formsg-sdk'
 import { FIELDS_TO_REJECT } from 'formsg-shared/constants/field/basic'
 import { BasicField, FormField, FormFieldDto } from 'formsg-shared/types'
 import { Either, isLeft, left, right } from 'fp-ts/lib/Either'
 import { err, ok, Result } from 'neverthrow'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../types/api/submission'
+import {
+  ParsedClearAttachmentAnswerV4,
+  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
+} from '../../../types/api/submission'
 import {
   FieldValidationSchema,
   ITableFieldSchema,
@@ -14,6 +27,7 @@ import { createLoggerWithLabel } from '../../config/logger'
 import {
   ValidateFieldError,
   ValidateFieldErrorV3,
+  ValidateFieldErrorV4,
 } from '../../modules/submission/submission.errors'
 import {
   ProcessedAddressResponse,
@@ -31,6 +45,7 @@ import {
   constructCheckboxFieldValidator,
   constructChildFieldValidator,
   constructFieldResponseValidatorV3,
+  constructFieldResponseValidatorV4,
   constructOptionalAddressFieldValidator,
   constructSignatureFieldValidator,
   constructSingleAnswerValidator,
@@ -38,6 +53,7 @@ import {
 } from './answerValidator.factory'
 import {
   isGenericStringAnswerResponseV3,
+  isGenericStringAnswerResponseV4,
   isProcessedAddressResponse,
   isProcessedAttachmentResponse,
   isProcessedCheckboxResponse,
@@ -46,7 +62,10 @@ import {
   isProcessedSingleAnswerResponse,
   isProcessedTableResponse,
 } from './field-validation.guards'
-import { checkIsResponseChangedV3 } from './field-validation.utils'
+import {
+  checkIsResponseChangedV3,
+  checkIsResponseChangedV4,
+} from './field-validation.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -562,4 +581,263 @@ export const validateFieldV3 = ({
     isVisible,
   })
   return validateResponseWithValidatorV3(validator, formId, formField, response)
+}
+
+/**
+ * V4 counterpart of {@link isResponsePresentOnHiddenFieldV3}. Rejects
+ * submissions that carry a non-empty answer for a field that logic has hidden.
+ */
+const isResponsePresentOnHiddenFieldV4 = ({
+  formField,
+  response,
+  isVisible,
+  formId,
+}: {
+  formField: FormFieldDto
+  response: ParsedClearFormFieldResponseV4
+  isVisible: boolean
+  formId: string
+}): Result<boolean, ValidateFieldErrorV4> => {
+  if (isVisible) return ok(false)
+
+  if (isGenericStringAnswerResponseV4(response)) {
+    const { value } = response.answer as { value: string }
+    return ok(value.trim() !== '')
+  }
+
+  switch (response.fieldType) {
+    case BasicField.YesNo: {
+      const a = response.answer as { value: string }
+      return ok(a.value.trim() !== '')
+    }
+    case BasicField.Email:
+    case BasicField.Mobile: {
+      const a = response.answer as VerifiableAnswerV4
+      return ok(
+        a.value.trim() !== '' || (!!a.signature && a.signature.trim() !== ''),
+      )
+    }
+    case BasicField.Radio: {
+      const a = response.answer as RadioAnswerV4
+      return ok(a.value.trim() !== '')
+    }
+    case BasicField.Checkbox: {
+      const a = response.answer as CheckboxAnswerV4
+      return ok(
+        a.value.length > 0 || (!!a.othersInput && a.othersInput.trim() !== ''),
+      )
+    }
+    case BasicField.Table: {
+      const a = response.answer as TableAnswerV4
+      return ok(
+        Object.values(a).some((row) =>
+          Object.values(row.value).some((cell) => String(cell).trim() !== ''),
+        ),
+      )
+    }
+    case BasicField.Attachment: {
+      const a = response.answer as ParsedClearAttachmentAnswerV4
+      return ok(
+        a.value.trim() !== '' ||
+          (!!a.filename && a.filename.trim() !== '') ||
+          (!!a.content && a.content.byteLength > 0),
+      )
+    }
+    case BasicField.Children: {
+      const a = response.answer as ChildrenAnswerV4
+      return ok(
+        Object.values(a).some((child) =>
+          Object.values(child.value).some(
+            (subField) => subField.value.trim() !== '',
+          ),
+        ),
+      )
+    }
+    case BasicField.Address: {
+      const a = response.answer as AddressAnswerV4
+      return ok(
+        Object.values(a).some((subField) => subField.value.trim() !== ''),
+      )
+    }
+    case BasicField.Signature: {
+      const a = response.answer as SignatureAnswerV4
+      return ok(a.value.length > 0)
+    }
+  }
+  logInvalidAnswer(formId, formField, 'Invalid response shape')
+  return err(new ValidateFieldErrorV4('Response has invalid shape'))
+}
+
+/**
+ * V4 counterpart of {@link isValidationRequiredV3}. Returns false when the
+ * response is unchanged from a prior submission, or when a non-required
+ * hidden/empty field has nothing to validate.
+ */
+const isValidationRequiredV4 = ({
+  formField,
+  response,
+  prevResponse,
+  isVisible,
+  formId,
+}: {
+  formField: FormFieldDto
+  response: ParsedClearFormFieldResponseV4
+  prevResponse?: ParsedClearFormFieldResponseV4
+  isVisible: boolean
+  formId: string
+}): Result<boolean, ValidateFieldErrorV4> => {
+  if (!checkIsResponseChangedV4({ response, prevResponse })) {
+    return ok(false)
+  }
+
+  const requiredAndVisible = formField.required && isVisible
+
+  if (isGenericStringAnswerResponseV4(response)) {
+    const { value } = response.answer as { value: string }
+    return ok(requiredAndVisible || value.trim() !== '')
+  }
+
+  switch (response.fieldType) {
+    case BasicField.YesNo: {
+      const a = response.answer as { value: string }
+      return ok(requiredAndVisible || a.value.trim() !== '')
+    }
+    case BasicField.Email:
+    case BasicField.Mobile: {
+      const a = response.answer as VerifiableAnswerV4
+      return ok(
+        requiredAndVisible ||
+          a.value.trim() !== '' ||
+          (!!a.signature && a.signature.trim() !== ''),
+      )
+    }
+    case BasicField.Radio: {
+      const a = response.answer as RadioAnswerV4
+      return ok(requiredAndVisible || a.value.trim() !== '')
+    }
+    case BasicField.Checkbox: {
+      const a = response.answer as CheckboxAnswerV4
+      return ok(
+        requiredAndVisible ||
+          a.value.length > 0 ||
+          (!!a.othersInput && a.othersInput.trim() !== ''),
+      )
+    }
+    case BasicField.Table:
+      if (formField.fieldType === BasicField.Table) {
+        const a = response.answer as TableAnswerV4
+        const requiredColumnsVisible =
+          formField.columns.some((column) => column.required) && isVisible
+        const answerPresent = Object.values(a).some((row) =>
+          Object.values(row.value).some((cell) => String(cell).trim() !== ''),
+        )
+        return ok(requiredColumnsVisible || answerPresent)
+      }
+      break
+    case BasicField.Attachment: {
+      const a = response.answer as ParsedClearAttachmentAnswerV4
+      return ok(requiredAndVisible || (!!a.value && a.value.trim() !== ''))
+    }
+    case BasicField.Children: {
+      const a = response.answer as ChildrenAnswerV4
+      return ok(
+        requiredAndVisible ||
+          Object.values(a).some((child) =>
+            Object.values(child.value).some(
+              (subField) => subField.value.trim() !== '',
+            ),
+          ),
+      )
+    }
+    case BasicField.Signature:
+    case BasicField.Address:
+      // Address requires validation regardless (optional address still
+      // validates level/unit sub-fields). Signature likewise.
+      return ok(!!response.answer)
+  }
+  logInvalidAnswer(formId, formField, 'Invalid response shape')
+  return err(new ValidateFieldErrorV4('Response has invalid shape'))
+}
+
+const validateResponseWithValidatorV4 = (
+  validator: ResponseValidator<ParsedClearFormFieldResponseV4>,
+  formId: string,
+  formField: FormFieldDto,
+  response: ParsedClearFormFieldResponseV4,
+): Result<true, ValidateFieldErrorV4> => {
+  const validEither = validator(response)
+  if (isLeft(validEither)) {
+    logInvalidAnswer(formId, formField, validEither.left)
+    return err(new ValidateFieldErrorV4('Invalid answer submitted'))
+  }
+  return ok(true)
+}
+
+export const validateFieldV4 = ({
+  formId,
+  formField,
+  response,
+  prevResponse,
+  isVisible,
+}: {
+  formId: string
+  formField: FormFieldDto
+  response: ParsedClearFormFieldResponseV4
+  prevResponse?: ParsedClearFormFieldResponseV4
+  isVisible: boolean
+}): Result<true, ValidateFieldErrorV4> => {
+  const responseFieldType = response.fieldType as BasicField
+
+  if (!isValidResponseFieldType(responseFieldType)) {
+    return err(
+      new ValidateFieldErrorV4(`Rejected field type "${responseFieldType}"`),
+    )
+  }
+
+  const fieldTypeEither = doFieldTypesMatch(
+    formField.fieldType,
+    responseFieldType,
+  )
+
+  if (isLeft(fieldTypeEither)) {
+    return err(new ValidateFieldErrorV4(fieldTypeEither.left))
+  }
+
+  const isResponsePresentOnHiddenFieldV4Result =
+    isResponsePresentOnHiddenFieldV4({ formField, response, isVisible, formId })
+
+  if (isResponsePresentOnHiddenFieldV4Result.isErr()) {
+    return err(isResponsePresentOnHiddenFieldV4Result.error)
+  }
+
+  if (isResponsePresentOnHiddenFieldV4Result.value) {
+    return err(
+      new ValidateFieldErrorV4(
+        `Attempted to submit response on a hidden field`,
+      ),
+    )
+  }
+
+  const isValidationRequiredV4Result = isValidationRequiredV4({
+    formField,
+    response,
+    prevResponse,
+    isVisible,
+    formId,
+  })
+
+  if (isValidationRequiredV4Result.isErr()) {
+    return err(isValidationRequiredV4Result.error)
+  }
+
+  if (!isValidationRequiredV4Result.value) {
+    return ok(true)
+  }
+
+  const validator = constructFieldResponseValidatorV4({
+    formId,
+    formField,
+    isVisible,
+  })
+  return validateResponseWithValidatorV4(validator, formId, formField, response)
 }
