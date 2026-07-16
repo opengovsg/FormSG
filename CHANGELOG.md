@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.1.0](https://github.com/opengovsg/formsg/compare/v8.0.3...v8.1.0) (2026-07-16)
+
+
+### Features
+
+* **workflow-builder-redesign:** add workflow-builder-redesign feature flag foundation (#9730) ([#9730](https://github.com/opengovsg/formsg/commit/82f5faf35730e6db58554a026b180e7442346d38))
+* extend admin feedback schema for 1-5 rating + triggers (#9684) ([#9684](https://github.com/opengovsg/formsg/commit/7ac910e958921c29dd7735ebbffc4176591136c7))
+
+
+### Chores
+
+* speed up jest runs by removing default local code coverage collection (#9757) ([#9757](https://github.com/opengovsg/formsg/commit/ab6c7015033aa970d633e642d6343c296ec375b2))
+
 ## [8.0.3](https://github.com/opengovsg/formsg/compare/v8.0.2...v8.0.3) (2026-07-14)
 
 
