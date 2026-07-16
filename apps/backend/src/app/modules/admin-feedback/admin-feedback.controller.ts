@@ -1,5 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
+import { featureFlags } from 'formsg-shared/constants'
 import { ErrorDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
@@ -43,18 +44,31 @@ const submitAdminFeedback: ControllerHandler<
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { rating, comment, triggerSource, formId } = req.body
+  const isFiveStarEnabled = req.growthbook?.isOn(
+    featureFlags.fiveStarAdminRating,
+  )
+  const metricTags = {
+    rating: `${rating}`,
+    ...(triggerSource ? { triggerSource } : {}),
+  }
 
-  // Dual-emit: old metric kept so existing dashboards don't break during
-  // migration. New metric (.v2) for the 1-5 scale. Remove the old metric
-  // once report card has migrated to .v2.
-  statsdClient.distribution('formsg.users.feedback.rating', rating, 1, {
-    rating: `${rating}`,
-    ...(triggerSource ? { triggerSource } : {}),
-  })
-  statsdClient.distribution('formsg.users.feedback.rating.v2', rating, 1, {
-    rating: `${rating}`,
-    ...(triggerSource ? { triggerSource } : {}),
-  })
+  // RATIONALE: Emit to the correct metric so that the different rating scales do not pollute each other.
+  // TODO [USER-FEEDBACK-RATING-V2]: Remove the old v1 metric once report card has migrated to .v2.
+  if (!isFiveStarEnabled) {
+    statsdClient.distribution(
+      'formsg.users.feedback.rating',
+      rating,
+      1,
+      metricTags,
+    )
+  } else {
+    statsdClient.distribution(
+      'formsg.users.feedback.rating.v2',
+      rating,
+      1,
+      metricTags,
+    )
+  }
 
   return AdminFeedbackService.insertAdminFeedback({
     userId: sessionUserId,
