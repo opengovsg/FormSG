@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.3.2](https://github.com/opengovsg/formsg/compare/sdk-v7.3.1...sdk-v7.3.2) (2026-07-16)
+
+
+### Chores
+
+* speed up jest runs by removing default local code coverage collection (#9757) ([#9757](https://github.com/opengovsg/formsg/commit/ab6c7015033aa970d633e642d6343c296ec375b2))
+
 ## [7.3.1](https://github.com/opengovsg/formsg/compare/sdk-v7.3.0...sdk-v7.3.1) (2026-06-10)
 
 
