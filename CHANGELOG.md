@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.2.0](https://github.com/opengovsg/formsg/compare/v8.1.0...v8.2.0) (2026-07-16)
+
+
+### Features
+
+* **mrf:** V4 response migration — PR 1/5 foundation (types, utils, validators) (#9633) ([#9633](https://github.com/opengovsg/formsg/commit/7a4a4d42271c4ea1c0b29f981c3883935772b32a))
+
+
+### Bug Fixes
+
+* prevent pollution of v1 and v2 metrics due to different scales (#9763) ([#9763](https://github.com/opengovsg/formsg/commit/23cf1b3b58e5adddd6c33ad865b4e346a46e4836))
+
+
+### Dependencies
+
+* **deps:** resolve critical/high Dependabot alerts (#9764) ([#9764](https://github.com/opengovsg/formsg/commit/7bf093da4ce719f7310b9c1c143d78bacf4d4a90))
+
 ## [8.1.0](https://github.com/opengovsg/formsg/compare/v8.0.3...v8.1.0) (2026-07-16)
 
 
