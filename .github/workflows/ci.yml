@@ -315,7 +315,7 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
-      - run: pnpm test:shared
+      - run: pnpm test:shared:ci
         env:
           DD_TAGS: layer:shared
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
@@ -348,7 +348,7 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
-      - run: pnpm test:sdk
+      - run: pnpm test:sdk:coverage
         env:
           DD_TAGS: layer:sdk
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}

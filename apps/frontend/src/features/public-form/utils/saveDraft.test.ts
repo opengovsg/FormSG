@@ -1,4 +1,9 @@
-import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormFieldDto,
+  StrippedFormWorkflowStepDto,
+  WorkflowType,
+} from 'formsg-shared/types'
 
 import { isMyInfo } from '~features/myinfo/utils'
 
@@ -75,6 +80,15 @@ describe('saveDraft', () => {
     }
   }
 
+  const createMockWorkflowStep = (
+    editableFieldIds: string[],
+  ): StrippedFormWorkflowStepDto => ({
+    _id: 'step1',
+    workflow_type: WorkflowType.Dynamic,
+    field: 'approver1',
+    edit: editableFieldIds,
+  })
+
   describe('getDraftToSave', () => {
     it('should create draft with current form field values', () => {
       const formFields = [
@@ -92,6 +106,8 @@ describe('saveDraft', () => {
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
+        currentStepNumberWorkflowStep: undefined,
         formFields,
       })
 
@@ -128,6 +144,8 @@ describe('saveDraft', () => {
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
+        currentStepNumberWorkflowStep: undefined,
         formFields,
       })
 
@@ -158,6 +176,8 @@ describe('saveDraft', () => {
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
+        currentStepNumberWorkflowStep: undefined,
         formFields,
       })
 
@@ -191,6 +211,8 @@ describe('saveDraft', () => {
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
+        currentStepNumberWorkflowStep: undefined,
         formFields,
       })
 
@@ -226,6 +248,8 @@ describe('saveDraft', () => {
         previousRestoredDraftResponses,
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
+        currentStepNumberWorkflowStep: undefined,
         formFields,
       })
 
@@ -250,6 +274,8 @@ describe('saveDraft', () => {
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
+        currentStepNumberWorkflowStep: undefined,
         formFields,
       })
 
@@ -277,11 +303,124 @@ describe('saveDraft', () => {
         previousRestoredDraftResponses: null,
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
+        prefilledFieldIds: [],
+        currentStepNumberWorkflowStep: undefined,
         formFields,
       })
 
       expect(result.draftResponses).toEqual({
         field1: 'test value 1',
+      })
+    })
+
+    it('should save provided prefilled fields even when they are not dirty', () => {
+      const formFields = [
+        createMockFormField('prefill1', BasicField.ShortText),
+        createMockFormField('field2', BasicField.LongText),
+      ]
+      const formFieldValues = {
+        prefill1: 'prefilled value',
+        field2: 'user typed value',
+      }
+      const dirtyFieldIds = ['field2']
+      const prefilledFieldIds = ['prefill1']
+
+      vi.mocked(isMyInfo).mockReturnValue(false)
+
+      const result = getDraftToSave({
+        currentFormFieldValues: formFieldValues,
+        dirtyFieldIds,
+        prefilledFieldIds,
+        currentStepNumberWorkflowStep: undefined,
+        formFields,
+      })
+
+      expect(result.draftResponses).toEqual({
+        prefill1: 'prefilled value',
+        field2: 'user typed value',
+      })
+    })
+
+    it('should save the latest current form value for a provided prefilled field eg, when user changes the prefilled value', () => {
+      const prefilledValue = 'user edited value'
+      const formFields = [createMockFormField('prefill1', BasicField.ShortText)]
+      const formFieldValues = {
+        prefill1: prefilledValue,
+      }
+      const dirtyFieldIds = ['prefill1']
+      const prefilledFieldIds = ['prefill1']
+
+      vi.mocked(isMyInfo).mockReturnValue(false)
+
+      const result = getDraftToSave({
+        currentFormFieldValues: formFieldValues,
+        dirtyFieldIds,
+        prefilledFieldIds,
+        currentStepNumberWorkflowStep: undefined,
+        formFields,
+      })
+
+      expect(result.draftResponses).toEqual({
+        prefill1: prefilledValue,
+      })
+    })
+
+    it('should only save fields that are editable in the current MRF workflow step', () => {
+      const formFields = [
+        createMockFormField('editable1', BasicField.ShortText),
+        createMockFormField('nonEditable1', BasicField.ShortText),
+      ]
+      const formFieldValues = {
+        editable1: 'editable value',
+        nonEditable1: 'non-editable value',
+      }
+      const dirtyFieldIds = ['editable1', 'nonEditable1']
+      const currentStepNumberWorkflowStep = createMockWorkflowStep([
+        'editable1',
+      ])
+
+      vi.mocked(isMyInfo).mockReturnValue(false)
+
+      const result = getDraftToSave({
+        currentFormFieldValues: formFieldValues,
+        dirtyFieldIds,
+        prefilledFieldIds: [],
+        currentStepNumberWorkflowStep,
+        formFields,
+      })
+
+      expect(result.draftResponses).toEqual({
+        editable1: 'editable value',
+      })
+    })
+
+    it('should exclude a non-editable prefilled field in the current MRF workflow step', () => {
+      const formFields = [
+        createMockFormField('editablePrefill', BasicField.ShortText),
+        createMockFormField('nonEditablePrefill', BasicField.ShortText),
+      ]
+      const formFieldValues = {
+        editablePrefill: 'editable prefill',
+        nonEditablePrefill: 'non-editable prefill',
+      }
+      const dirtyFieldIds: string[] = []
+      const prefilledFieldIds = ['editablePrefill', 'nonEditablePrefill']
+      const currentStepNumberWorkflowStep = createMockWorkflowStep([
+        'editablePrefill',
+      ])
+
+      vi.mocked(isMyInfo).mockReturnValue(false)
+
+      const result = getDraftToSave({
+        currentFormFieldValues: formFieldValues,
+        dirtyFieldIds,
+        prefilledFieldIds,
+        currentStepNumberWorkflowStep,
+        formFields,
+      })
+
+      expect(result.draftResponses).toEqual({
+        editablePrefill: 'editable prefill',
       })
     })
   })

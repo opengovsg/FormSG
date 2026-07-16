@@ -128,7 +128,7 @@ PublicEmailSingpassForm.parameters = {
     handlers: {
       default: buildEmailModeMswRoutes({
         status: FormStatus.Public,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.MyInfo,
         esrvcId: 'STORYBOOK-TEST',
         responseMode: FormResponseMode.Email,
       }),
@@ -188,19 +188,6 @@ PublicEmailMyInfoForm.parameters = {
   },
 }
 
-export const PrivateEmailSingpassFormSubmitterIdCollectionEnabled =
-  Template.bind({})
-PrivateEmailSingpassFormSubmitterIdCollectionEnabled.parameters = {
-  msw: {
-    handlers: {
-      default: buildEmailModeMswRoutes({
-        status: FormStatus.Private,
-        authType: FormAuthType.SGID,
-        isSubmitterIdCollectionEnabled: true,
-      }),
-    },
-  },
-}
 export const PrivateEmailMyInfoFormSubmitterIdCollectionEnabled = Template.bind(
   {},
 )
@@ -228,7 +215,7 @@ PrivateEmailSingpassFormSingleSubmissionEnabled.parameters = {
     handlers: {
       default: buildEmailModeMswRoutes({
         status: FormStatus.Private,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.MyInfo,
         isSingleSubmission: true,
       }),
     },
@@ -242,7 +229,7 @@ PrivateStorageSingpassFormAllTogglesEnabled.parameters = {
     handlers: {
       default: buildEncryptModeMswRoutes({
         status: FormStatus.Private,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.MyInfo,
         isSingleSubmission: true,
         isSubmitterIdCollectionEnabled: true,
       }),
@@ -304,31 +291,15 @@ PublicStorageMyInfoPaymentEnabledForm.parameters = {
   },
 }
 
-export const PrivateStorageSgidPaymentEnabledForm = Template.bind({})
-PrivateStorageSgidPaymentEnabledForm.parameters = {
-  msw: {
-    handlers: {
-      default: [
-        ...buildEncryptModeMswRoutes({
-          status: FormStatus.Private,
-          authType: FormAuthType.SGID,
-          responseMode: FormResponseMode.Encrypt,
-          payments_channel: DUMMY_STRIPE_PAYMENT_CHANNEL_VALUE,
-        }),
-      ],
-    },
-  },
-}
-
 // stories for whitelist setting
-export const PrivateStorageSgidWhitelistEnabledForm = Template.bind({})
-PrivateStorageSgidWhitelistEnabledForm.parameters = {
+export const PrivateStorageMyInfoWhitelistEnabledForm = Template.bind({})
+PrivateStorageMyInfoWhitelistEnabledForm.parameters = {
   msw: {
     handlers: {
       default: [
         ...buildEncryptModeMswRoutes({
           status: FormStatus.Private,
-          authType: FormAuthType.SGID,
+          authType: FormAuthType.MyInfo,
           responseMode: FormResponseMode.Encrypt,
           whitelistedSubmitterIds: {
             isWhitelistEnabled: true,

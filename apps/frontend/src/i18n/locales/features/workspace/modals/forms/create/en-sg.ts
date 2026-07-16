@@ -77,10 +77,10 @@ export const enSG: CreateFormModal = {
     suffix: '.',
   },
   origin: {
-    question: 'How is this being filled today?',
+    question: 'How is this data being collected today?',
     options: {
       paper: 'Paper form',
-      digitalNew: 'This is a new process',
+      digitalNew: "This data isn't collected",
       digitalEmail: 'Emails',
       digitalDocument: 'Documents (e.g. PDF, Word)',
       digitalSpreadsheet: 'Spreadsheets (e.g. Excel, Sheets)',

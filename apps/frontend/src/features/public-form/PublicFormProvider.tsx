@@ -12,11 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import {
-  useFeatureIsOn,
-  useFeatureValue,
-  useGrowthBook,
-} from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, format, isPast } from 'date-fns'
 import { flow, times } from 'lodash'
 import get from 'lodash/get'
@@ -698,7 +694,7 @@ export const PublicFormProvider = ({
     if (hasPreviousSubmissionDecryptionError) {
       toast({
         status: 'danger',
-        description: 'Failed to decrypt attachment',
+        description: t('features.publicForm.errors.attachmentDecryption'),
       })
     }
   }, [hasMyInfoError, hasPreviousSubmissionDecryptionError, toast, t])
@@ -836,11 +832,7 @@ export const PublicFormProvider = ({
       storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
     })
 
-  // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta
-  const isSaveDraftFeatureEnabled =
-    useFeatureIsOn(featureFlags.saveDraft) || isTest
-  const isSaveDraftEnabled =
-    isSaveDraftFeatureEnabled && Boolean(form?.isSaveDraftEnabled)
+  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   // RATIONALE: draftSubmission.lastUpdated is used as a source of truth to see if the draftSubmission has changed.
@@ -944,6 +936,8 @@ export const PublicFormProvider = ({
       previousRestoredDraftResponses: draftResponsesToRestore,
       currentFormFieldValues: formMethods.getValues(),
       dirtyFieldIds: Object.keys(dirtyFields),
+      prefilledFieldIds: Object.keys(fieldPrefillMap),
+      currentStepNumberWorkflowStep,
       formFields,
     })
 

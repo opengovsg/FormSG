@@ -1,4 +1,7 @@
-import { Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Stack, Text } from '@chakra-ui/react'
+
+import { useMdComponents } from '~hooks/useMdComponents'
+import { MarkdownText } from '~components/MarkdownText'
 
 import { FormFooter } from '../FormFooter'
 
@@ -13,6 +16,14 @@ export const FormNotFound = ({
   header = 'This form is not available.',
   message,
 }: FormNotFoundProps): JSX.Element => {
+  const mdComponents = useMdComponents({
+    styles: {
+      text: {
+        textStyle: 'body-1',
+      },
+    },
+  })
+
   return (
     <Flex flex={1} flexDir="column" h="100%">
       <Flex
@@ -41,7 +52,11 @@ export const FormNotFound = ({
           <Text as="h2" textStyle="h2">
             {header}
           </Text>
-          <Text textStyle="body-1">{message}</Text>
+          {message ? (
+            <Box>
+              <MarkdownText components={mdComponents}>{message}</MarkdownText>
+            </Box>
+          ) : null}
         </Stack>
       </Flex>
       <Flex

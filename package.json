@@ -1,6 +1,6 @@
 {
   "name": "formsg-monorepo",
-  "version": "7.34.0",
+  "version": "8.0.3",
   "private": true,
   "description": "Form Manager for Government",
   "homepage": "https://form.gov.sg",
@@ -22,11 +22,13 @@
   "scripts": {
     "test": "pnpm test:backend && pnpm test:shared && pnpm run test:frontend",
     "test:shared": "pnpm --filter formsg-shared test",
+    "test:shared:ci": "pnpm --filter formsg-shared test:ci",
     "test:backend": "pnpm --filter formsg-backend test",
     "test:backend:ci": "pnpm --filter formsg-backend test:ci",
     "test:backend:watch": "pnpm --filter formsg-backend test:watch",
     "test:frontend": "pnpm --filter formsg-frontend test",
     "test:sdk": "pnpm --filter @opengovsg/formsg-sdk test",
+    "test:sdk:coverage": "pnpm --filter @opengovsg/formsg-sdk test:coverage",
     "test:e2e-v2": "pnpm build && pnpm exec playwright test",
     "test:e2e-v2:server": "pnpm --filter formsg-backend test:e2e-v2:server",
     "build": "pnpm clean && pnpm --recursive --filter formsg-sdk --filter formsg-shared --filter formsg-frontend --filter formsg-backend build",

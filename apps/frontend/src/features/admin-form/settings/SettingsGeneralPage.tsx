@@ -1,7 +1,4 @@
 import { Divider, Stack } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'
@@ -13,10 +10,6 @@ import { FormStatusToggle } from './components/FormStatusToggle'
 import { GeneralTabHeader } from './components/GeneralTabHeader'
 
 export const SettingsGeneralPage = (): JSX.Element => {
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-  const isSaveDraftFeatureEnabled =
-    useFeatureIsOn(featureFlags.saveDraft) || isTest
-
   return (
     <Stack divider={<Divider />} spacing="2.5rem">
       <>
@@ -25,8 +18,7 @@ export const SettingsGeneralPage = (): JSX.Element => {
         <FormLimitToggle />
         <FormCustomisationSection />
       </>
-      {/* TODO [Save Draft v1.0]: Remove feature flagonce save draft is out of beta  */}
-      {isSaveDraftFeatureEnabled && <FormSaveDraftToggle />}
+      <FormSaveDraftToggle />
       <FormCaptchaToggle />
       <FormIssueNotificationToggle />
       <FormDetailsSection />

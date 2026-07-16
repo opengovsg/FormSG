@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   testRegex: '/spec/.*\\.(test|spec)?\\.(ts|tsx)$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  collectCoverage: true,
+  collectCoverage: false,
   coverageThreshold: {
     global: {
       statements: 85,
