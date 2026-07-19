@@ -240,11 +240,21 @@ export const ResponsesTableV2 = ({
       <Tbody as="div" {...getTableBodyProps()}>
         {page.map((row) => {
           prepareRow(row)
+          const rowProps = row.getRowProps()
           return (
             <Tr
               as="div"
-              {...row.getRowProps()}
-              key={row.getRowProps().key}
+              {...rowProps}
+              key={rowProps.key}
+              // useFlexLayout sizes the row to the columns' combined min-widths,
+              // so cells overflow and the hover background stops short of the
+              // scrolled-in columns. Grow to content (max-content), but keep it
+              // at least viewport width (100%).
+              style={{
+                ...rowProps.style,
+                minWidth: '100%',
+                width: 'max-content',
+              }}
               px={0}
               // Read from row.original, not row.values: the Response ID column
               // sets an explicit id, so row.values.refNo is undefined.
