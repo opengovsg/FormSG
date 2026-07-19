@@ -78,6 +78,8 @@ export interface ResponsesResponsesPage {
         resultsFound: string
         responsesToDate: string
         noResponsesToDisplay: string
+        tooManyResponsesTitle: string
+        tooManyResponsesBody: string
       }
     }
     storageResponsesTab: {
