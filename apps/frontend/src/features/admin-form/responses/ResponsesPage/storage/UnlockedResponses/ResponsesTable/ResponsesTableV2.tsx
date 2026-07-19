@@ -38,22 +38,23 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<DecryptedResponse>[] = [
     width: 50,
     minWidth: 50,
     maxWidth: 50,
+    // Fixed-width index column; no resize handle.
+    disableResizing: true,
   },
   {
     Header: RESPONSE_ID_LABEL,
     id: RESPONSE_ID_LABEL,
     accessor: 'refNo',
-    width: 300,
-    minWidth: 300,
-    disableResizing: true,
+    // Fits a full 24-char ObjectId; resizable down to minWidth.
+    width: 250,
+    minWidth: 100,
   },
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
     id: MRF_RESPONSE_TIMESTAMP_LABEL,
     accessor: 'submissionTime',
     width: 250,
-    minWidth: 250,
-    disableResizing: true,
+    minWidth: 100,
   },
 ]
 
