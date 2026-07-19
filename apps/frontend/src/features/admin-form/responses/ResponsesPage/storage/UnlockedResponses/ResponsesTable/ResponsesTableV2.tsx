@@ -267,10 +267,13 @@ export const ResponsesTableV2 = ({
                     key={cell.getCellProps().key}
                     display="flex"
                     alignItems="center"
-                    overflow="clip"
-                    textOverflow="ellipsis"
+                    overflow="hidden"
                   >
-                    {cell.render('Cell')}
+                    {/* Truncate long values instead of wrapping; widen the
+                        column to reveal more. */}
+                    <Text isTruncated minW={0}>
+                      {cell.render('Cell')}
+                    </Text>
                   </Td>
                 )
               })}
