@@ -173,6 +173,11 @@ const MRF_REMINDERS_COLUMN: Column<DecryptedResponse> = {
  */
 export const RESPONSES_TABLE_V2_PAGE_SIZE = 50
 
+// Fixed MRF row height so rows with a SendReminderButton (a full-height md
+// button) match rows without one: 2.75rem button + the td's 2 x 0.625rem
+// vertical padding.
+const MRF_ROW_MIN_HEIGHT = '4rem'
+
 export const ResponsesTableV2 = ({
   selectedFields,
   selectedSubmissionMetaFields,
@@ -386,6 +391,9 @@ export const ResponsesTableV2 = ({
                 minWidth: '100%',
                 width: 'max-content',
               }}
+              // Keep every MRF row at the reminder-button height so rows with
+              // and without the button line up.
+              minH={isMrf ? MRF_ROW_MIN_HEIGHT : undefined}
               px={0}
               // Read from row.original, not row.values: the Response ID column
               // sets an explicit id, so row.values.refNo is undefined.
