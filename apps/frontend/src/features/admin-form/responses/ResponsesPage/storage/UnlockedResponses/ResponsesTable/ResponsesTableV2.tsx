@@ -21,14 +21,25 @@ import {
 } from '@chakra-ui/react'
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
+import { FormResponseMode, WorkflowStatus } from 'formsg-shared/types'
+
+import Badge from '~components/Badge'
+
+import { useAdminForm } from '~features/admin-form/common/queries'
+import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_REMINDERS_LABEL,
   MRF_RESPONSE_TIMESTAMP_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
   RESPONSE_ID_LABEL,
 } from '~features/admin-form/responses/constants'
 
 import { DecryptedResponse } from '../../useDecryptedResponsesQuery'
 import { getDecryptedResponseInstance } from '../../utils/getDecryptedResponseInstance'
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
+
+import { SendReminderButton } from './SendReminderButton'
 
 // Base storage-mode columns, rendered alongside the selected field columns.
 const BASE_RESPONSE_TABLE_COLUMNS: Column<DecryptedResponse>[] = [
@@ -58,6 +69,104 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<DecryptedResponse>[] = [
   },
 ]
 
+const WorkflowStatusBadge = ({
+  workflowStatus,
+}: {
+  workflowStatus?: WorkflowStatus
+}) => {
+  const { t } = useTranslation()
+  if (!workflowStatus) return null
+  // Literal translation keys (the typed t() rejects a dynamic key).
+  const badges: Record<
+    WorkflowStatus,
+    { textColor: string; backgroundColor: string; label: string }
+  > = {
+    [WorkflowStatus.PENDING]: {
+      textColor: 'warning.700',
+      backgroundColor: 'warning.100',
+      label: t('features.common.pending'),
+    },
+    [WorkflowStatus.COMPLETED]: {
+      textColor: 'success.700',
+      backgroundColor: 'success.100',
+      label: t('features.common.completed'),
+    },
+    [WorkflowStatus.APPROVED]: {
+      textColor: 'success.700',
+      backgroundColor: 'success.100',
+      label: t('features.common.approved'),
+    },
+    [WorkflowStatus.REJECTED]: {
+      textColor: 'danger.700',
+      backgroundColor: 'danger.100',
+      label: t('features.common.notApproved'),
+    },
+  }
+  const badge = badges[workflowStatus]
+  return (
+    <Badge
+      width="fit-content"
+      display="flex"
+      textColor={badge.textColor}
+      textStyle="caption-1"
+      backgroundColor={badge.backgroundColor}
+    >
+      {badge.label}
+    </Badge>
+  )
+}
+
+// Workflow-status and pending-response columns for MRF forms, read from the
+// decrypted response's mrf metadata.
+const MRF_WORKFLOW_COLUMNS: Column<DecryptedResponse>[] = [
+  {
+    Header: MRF_WORKFLOW_STATUS_LABEL,
+    accessor: ({ mrf }) => (
+      <WorkflowStatusBadge workflowStatus={mrf?.workflowStatus} />
+    ),
+    width: 160,
+    minWidth: 160,
+  },
+  {
+    Header: MRF_PENDING_RESPONSE_AT_LABEL,
+    accessor: ({ mrf }) => {
+      const workflowStatus = mrf?.workflowStatus
+      const workflowCurrentStepNumber = mrf?.workflowCurrentStepNumber
+      const workflowNumTotalSteps = mrf?.workflowNumTotalSteps
+      if (
+        workflowStatus === undefined ||
+        workflowCurrentStepNumber === undefined ||
+        workflowNumTotalSteps === undefined
+      ) {
+        return ''
+      }
+      return getPendingResponseAtString({
+        workflowStatus,
+        workflowCurrentStepNumber,
+        workflowNumTotalSteps,
+      })
+    },
+    width: 180,
+    minWidth: 180,
+  },
+]
+
+// Reminders (Send-reminder action) column for MRF forms.
+const MRF_REMINDERS_COLUMN: Column<DecryptedResponse> = {
+  Header: MRF_REMINDERS_LABEL,
+  Cell: ({ row }) => {
+    const isPending =
+      row.original.mrf?.workflowStatus === WorkflowStatus.PENDING
+    const hasNextStepRecipientEmails =
+      row.original.mrf?.hasNextStepRecipientEmails
+    return isPending && hasNextStepRecipientEmails ? (
+      <SendReminderButton submissionId={row.original.refNo} />
+    ) : null
+  },
+  width: 160,
+  minWidth: 160,
+}
+
 /**
  * Rows per page. The whole working set is decrypted client-side, but the table
  * is not virtualised, so keep the mounted DOM small by paginating it locally.
@@ -82,6 +191,9 @@ export const ResponsesTableV2 = ({
   const { t } = useTranslation()
   const { currentPage: currentPage1Indexed, onRowClick } =
     useUnlockedResponses()
+
+  const { data: form } = useAdminForm()
+  const isMrf = form?.responseMode === FormResponseMode.Multirespondent
 
   const navigate = useNavigate()
 
@@ -121,8 +233,27 @@ export const ResponsesTableV2 = ({
       },
     }))
 
+    if (isMrf) {
+      // Match the column order in production today: #, Response ID, Workflow
+      // status, Pending response at, Response timestamp, Reminders — then the
+      // field-value columns.
+      const timestampColumn = filteredBaseColumns.find(
+        (column) => column.Header === MRF_RESPONSE_TIMESTAMP_LABEL,
+      )
+      const baseWithoutTimestamp = filteredBaseColumns.filter(
+        (column) => column.Header !== MRF_RESPONSE_TIMESTAMP_LABEL,
+      )
+      return [
+        ...baseWithoutTimestamp,
+        ...MRF_WORKFLOW_COLUMNS,
+        ...(timestampColumn ? [timestampColumn] : []),
+        MRF_REMINDERS_COLUMN,
+        ...selectFieldColumns,
+      ]
+    }
+
     return [...filteredBaseColumns, ...selectFieldColumns]
-  }, [selectedSubmissionMetaFields, selectedFields])
+  }, [isMrf, selectedSubmissionMetaFields, selectedFields])
 
   const {
     prepareRow,
