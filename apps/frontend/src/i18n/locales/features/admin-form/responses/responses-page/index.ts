@@ -77,6 +77,7 @@ export interface ResponsesResponsesPage {
       unlockedResponses: {
         resultsFound: string
         responsesToDate: string
+        noResponsesToDisplay: string
       }
     }
     storageResponsesTab: {

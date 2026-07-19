@@ -90,6 +90,7 @@ export const enSG: ResponsesResponsesPage = {
         resultsFound: '{count, plural, =1 {result} other {results}} found',
         responsesToDate:
           '{count, plural, =1 {response} other {responses}} to date',
+        noResponsesToDisplay: 'No responses to display.',
       },
     },
     storageResponsesTab: {
