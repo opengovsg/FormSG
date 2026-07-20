@@ -11,15 +11,18 @@ export const sendReminderForPendingMrfResponse = async ({
   formId,
   submissionId,
   submissionSecretKey,
+  stepToken,
 }: {
   formId: string
   submissionId: string
   submissionSecretKey: string
+  stepToken?: string
 }): Promise<void> => {
   return ApiService.post<void>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/remind`,
     {
       submissionSecretKey,
+      ...(stepToken ? { stepToken } : {}),
     },
   ).then(() => {})
 }

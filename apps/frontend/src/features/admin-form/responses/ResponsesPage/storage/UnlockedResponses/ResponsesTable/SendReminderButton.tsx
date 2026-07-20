@@ -30,6 +30,7 @@ export const SendReminderButton = ({
       submissionId,
     })
   const submissionSecretKey = submissionData?.submissionSecretKey
+  const stepToken = submissionData?.stepToken
 
   if (!formId) {
     return null
@@ -59,6 +60,7 @@ export const SendReminderButton = ({
           formId,
           submissionId,
           submissionSecretKey,
+          stepToken,
         })
         setIsSent(true)
       }}
