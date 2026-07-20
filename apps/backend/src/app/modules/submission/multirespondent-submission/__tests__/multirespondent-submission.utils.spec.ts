@@ -33,6 +33,7 @@ import {
   ITableFieldSchema,
   MultirespondentSubmissionData,
 } from 'src/types'
+import { ParsedClearFormFieldResponsesV4 } from 'src/types/api'
 
 import * as fieldValidation from '../../../../utils/field-validation'
 import { ValidateFieldErrorV4 } from '../../submission.errors'
@@ -479,6 +480,61 @@ describe('multirespondent-submission.utils', () => {
       })
 
       expect(validateFieldV4Mock).toHaveBeenCalledTimes(2)
+    })
+
+    it('should thread previousResponses through to validateFieldV4 as prevResponse', () => {
+      // Regression test: the V4 migration dropped previousResponses, causing
+      // carried-forward verifiable fields (verified in an earlier MRF step,
+      // whose OTP signature has since expired) to be re-authenticated and
+      // rejected. Threading prevResponse lets checkIsResponseChangedV4 skip
+      // fields the current respondent did not change.
+      const validateFieldV4Mock = jest
+        .spyOn(fieldValidation, 'validateFieldV4')
+        .mockReturnValue(ok(true))
+      const mockFormId = 'mockFormId'
+      const emailFieldId = 'emailField'
+      const mockVisibleFieldIds = new Set([emailFieldId])
+      const mockFormFields = [
+        generateDefaultField(BasicField.Email, { _id: emailFieldId }),
+      ]
+      const carriedForwardAnswer = {
+        value: 'alice@example.com',
+        signature: 'stale-but-unchanged-signature',
+      }
+      const mockResponses = {
+        [emailFieldId]: {
+          fieldType: BasicField.Email,
+          question: 'Email',
+          answer: carriedForwardAnswer,
+          provenance: {},
+        },
+      } as unknown as ParsedClearFormFieldResponsesV4
+      const mockPreviousResponses = {
+        [emailFieldId]: {
+          fieldType: BasicField.Email,
+          question: 'Email',
+          answer: carriedForwardAnswer,
+          provenance: {},
+        },
+      } as unknown as ParsedClearFormFieldResponsesV4
+
+      // Act
+      validateMrfFieldResponses({
+        formId: mockFormId,
+        visibleFieldIds: mockVisibleFieldIds,
+        formFields: mockFormFields as FormFieldDto[],
+        responses: mockResponses,
+        previousResponses: mockPreviousResponses,
+      })
+
+      // Assert
+      expect(validateFieldV4Mock).toHaveBeenCalledWith({
+        formId: mockFormId,
+        formField: mockFormFields[0],
+        response: mockResponses[emailFieldId],
+        prevResponse: mockPreviousResponses[emailFieldId],
+        isVisible: true,
+      })
     })
   })
 
