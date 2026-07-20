@@ -29,6 +29,7 @@ export type FormStartPageInput = Omit<
   estTimeTaken: number | ''
   logo: FormLogoBase
   attachment: UploadedImage // Custom logo image
+  title?: string
 }
 
 export type DesignStore = {

@@ -195,7 +195,7 @@ export const StartPageView = () => {
           {...formBannerLogoProps}
         />
         <FormHeader
-          title={form?.title}
+          title={startPageData?.title ?? form?.title}
           showHeader
           loggedInId={
             form && form.authType !== FormAuthType.NIL
