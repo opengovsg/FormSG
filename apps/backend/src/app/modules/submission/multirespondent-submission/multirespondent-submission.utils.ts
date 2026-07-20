@@ -64,6 +64,7 @@ export const createMultirespondentSubmissionDto = (
     encryptedContent: submissionData.encryptedContent,
     verifiedContent: submissionData.verifiedContent,
     encryptedSubmissionSecretKey: submissionData.encryptedSubmissionSecretKey,
+    encryptedStepToken: submissionData.encryptedStepToken,
     attachmentMetadata: attachmentPresignedUrls,
     version: submissionData.version,
     workflowStep: submissionData.workflowStep,
@@ -96,6 +97,7 @@ export const createPublicMultirespondentSubmissionDto = (
       submissionData.form_fields,
     ),
     workflow: stripWorkflowEmails(submissionData.workflow),
+    encryptedStepToken: undefined,
   }
 }
 
