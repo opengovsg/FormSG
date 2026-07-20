@@ -22,7 +22,8 @@ export const CreateFormProgressBar = ({
       aria-label={`Step ${currentStep} of ${numSteps}`}
       h="0.25rem"
       w="100%"
-      bg="neutral.300"
+      bg="neutral.200"
+      borderRadius="2px"
       overflow="hidden"
     >
       <Box
@@ -30,7 +31,8 @@ export const CreateFormProgressBar = ({
         h="100%"
         w={`${progress}%`}
         bg="primary.500"
-        transition="width 0.3s ease"
+        borderRadius="2px"
+        transition="width 0.35s cubic-bezier(0.4, 0, 0.2, 1)"
       />
     </Box>
   )
