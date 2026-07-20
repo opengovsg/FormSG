@@ -47,6 +47,7 @@ export type ProcessedMultirespondentSubmissionHandlerType = ControllerHandler<
   SubmissionResponseDto | SubmissionErrorDto,
   Omit<ParsedMultirespondentSubmissionBody, 'responses'> & {
     submissionSecretKey?: string
+    stepToken?: string
     responses: ParsedClearFormFieldResponsesV4
   },
   { captchaResponse?: unknown; captchaType?: unknown }
@@ -93,6 +94,10 @@ export type MultirespondentSubmissionContent = {
   workflowStep: number
   mrfVersion: number
   submittedSteps: SubmittedStep[]
+  // RATIONALE: optional for backwards compatibility on
+  // in-flight mrf steps which do not have a step token at time of creation.
+  stepTokenHash?: string
+  encryptedStepToken?: string
 }
 
 export type StrippedAttachmentResponseV4 = Omit<

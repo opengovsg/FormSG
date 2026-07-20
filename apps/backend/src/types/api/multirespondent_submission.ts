@@ -65,4 +65,7 @@ export type MultirespondentSubmissionDto = {
   submitterId?: string
   responses: FieldResponsesV4
   mrfVersion: number
+  stepToken?: string
+  stepTokenHash?: string
+  encryptedStepToken?: string
 }

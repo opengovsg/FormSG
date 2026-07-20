@@ -137,6 +137,10 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   workflowStep: z.number(),
   mrfVersion: z.number().optional(),
   submittedSteps: z.array(SubmittedStep).optional(),
+  // RATIONALE: optional for backwards compatibility on
+  // in-flight mrf steps which do not have a step token at time of creation.
+  stepTokenHash: z.string().optional(),
+  encryptedStepToken: z.string().optional(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<
@@ -190,6 +194,7 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   verifiedContent?: string
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
+  encryptedStepToken?: string
   encryptedContent: string
   attachmentMetadata: Record<string, string>
   workflowStep: number
@@ -202,10 +207,11 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
 
 export type PublicMultirespondentSubmissionDto = Omit<
   MultirespondentSubmissionDto,
-  'workflow' | 'form_fields'
+  'workflow' | 'form_fields' | 'encryptedStepToken'
 > & {
   form_fields: StrippedFormFieldDto[]
   workflow: StrippedFormWorkflowDto
+  encryptedStepToken: undefined
 }
 
 export type SubmissionDto =
