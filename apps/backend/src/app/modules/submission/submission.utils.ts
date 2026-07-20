@@ -154,6 +154,7 @@ import {
   ParseVirusScannerLambdaPayloadError,
   ProcessingError,
   ResponseModeError,
+  StepTokenVerificationError,
   SubmissionFailedError,
   SubmissionNotFoundError,
   SubmissionSaveError,
@@ -205,6 +206,11 @@ const errorMapper: MapRouteError = (
         errorMessage: coreErrorMessage,
       }
     case FormRespondentNotWhitelistedError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case StepTokenVerificationError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,

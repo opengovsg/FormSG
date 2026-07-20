@@ -4,9 +4,12 @@ import {
   isFieldResponsesV4,
 } from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
+import { featureFlags } from 'formsg-shared/constants'
 import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, ok, okAsync } from 'neverthrow'
+import nacl from 'tweetnacl'
+import { decodeBase64, encodeBase64, encodeUTF8 } from 'tweetnacl-util'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
@@ -24,6 +27,7 @@ import {
   createFormsgAndRetrieveForm,
   encryptSubmission,
   handleNdiResponses,
+  validateMultirespondentRemindBody,
   validateMultirespondentSubmission,
 } from '../multirespondent-submission.middleware'
 import {
@@ -31,6 +35,7 @@ import {
   getMultirespondentSubmission,
 } from '../multirespondent-submission.service'
 import * as MrfUtils from '../multirespondent-submission.utils'
+import * as stepToken from '../step-token'
 
 jest.mock('../../../feature-flags/feature-flags.service')
 jest.mock('../../../form/form.service')
@@ -59,6 +64,25 @@ jest.mock('src/app/config/formsg-sdk', () => ({
 }))
 
 describe('Multirespondent Submission Middleware', () => {
+  describe('validateMultirespondentRemindBody', () => {
+    const runValidator = (body: Record<string, unknown>): Promise<unknown> =>
+      new Promise((resolve) =>
+        validateMultirespondentRemindBody(
+          { body, method: 'POST', headers: {}, query: {}, params: {} } as any,
+          {} as any,
+          resolve as any,
+        ),
+      )
+
+    it('accepts a reminder body carrying both the secret key and the step token', async () => {
+      const error = await runValidator({
+        submissionSecretKey: 'k',
+        stepToken: 't',
+      })
+      expect(error).toBeFalsy()
+    })
+  })
+
   // Helper function to create fresh mockReq objects for each test
   const createMockReq = (params: { formId: string; submissionId?: string }) =>
     ({
@@ -849,9 +873,13 @@ describe('Multirespondent Submission Middleware', () => {
   describe('encryptSubmission', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
 
+    const MOCK_FORM_KEYPAIR = nacl.box.keyPair()
+    const MOCK_FORM_PUBLIC_KEY = encodeBase64(MOCK_FORM_KEYPAIR.publicKey)
+    const MOCK_FORM_SECRET_KEY = encodeBase64(MOCK_FORM_KEYPAIR.secretKey)
+
     const MOCK_FORM_BASE = {
       _id: MOCK_FORM_ID,
-      publicKey: 'mockPublicKey',
+      publicKey: MOCK_FORM_PUBLIC_KEY,
       form_fields: [
         { _id: 'field1', fieldType: BasicField.ShortText, title: 'Field 1' },
       ],
@@ -951,6 +979,70 @@ describe('Multirespondent Submission Middleware', () => {
       )
       expect(mockRes.json).toHaveBeenCalled()
       expect(mockNext).not.toHaveBeenCalled()
+    })
+
+    describe('step-token mint', () => {
+      const unwrapStepToken = (
+        encryptedStepToken: string,
+        formSecretKey: string,
+      ): string | null => {
+        const [senderPublicKey, nonceAndCipher] = encryptedStepToken.split(';')
+        const [nonce, cipher] = nonceAndCipher.split(':').map(decodeBase64)
+        const opened = nacl.box.open(
+          cipher,
+          nonce,
+          decodeBase64(senderPublicKey),
+          decodeBase64(formSecretKey),
+        )
+        return opened ? encodeUTF8(opened) : null
+      }
+
+      it('should mint a step token whose hash and wrapped copy match the raw token when the flag is on', async () => {
+        const mockReq = createMockEncryptReq(false)
+        mockReq.growthbook.isOn = jest.fn(
+          (flag: string) => flag === featureFlags.mrfStepWriteToken,
+        )
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await encryptSubmission(mockReq, mockRes as any, mockNext)
+
+        const payload = mockReq.formsg.encryptedPayload
+        expect(payload.stepToken).toEqual(expect.any(String))
+        // Hash on the row verifies against the raw token in the link.
+        expect(payload.stepTokenHash).toBe(stepToken.hash(payload.stepToken))
+        // Wrapped copy unwraps (with the form secret key) to the same raw token.
+        expect(
+          unwrapStepToken(payload.encryptedStepToken, MOCK_FORM_SECRET_KEY),
+        ).toBe(payload.stepToken)
+        expect(mockNext).toHaveBeenCalled()
+      })
+
+      it('should not mint a step token when the flag is off (flag-off path unchanged)', async () => {
+        const mockReq = createMockEncryptReq(false)
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await encryptSubmission(mockReq, mockRes as any, mockNext)
+
+        const payload = mockReq.formsg.encryptedPayload
+        expect(payload.stepToken).toBeUndefined()
+        expect(payload.stepTokenHash).toBeUndefined()
+        expect(payload.encryptedStepToken).toBeUndefined()
+        expect(mockNext).toHaveBeenCalled()
+      })
+
+      it('should mint a fresh, unique token on each advance (rotation)', async () => {
+        const run = async () => {
+          const mockReq = createMockEncryptReq(false)
+          mockReq.growthbook.isOn = jest.fn(
+            (flag: string) => flag === featureFlags.mrfStepWriteToken,
+          )
+          await encryptSubmission(mockReq, createMockRes() as any, jest.fn())
+          return mockReq.formsg.encryptedPayload.stepToken as string
+        }
+        expect(await run()).not.toBe(await run())
+      })
     })
   })
 
@@ -1149,6 +1241,153 @@ describe('Multirespondent Submission Middleware', () => {
       )
       expect(mockNext).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(400)
+    })
+
+    describe('step-token write-guard', () => {
+      const RAW_STEP_TOKEN = stepToken.generate()
+
+      // Build a request whose decrypt-gate will pass (matching the beforeEach
+      // mocks), varying only the step-token bits.
+      const createGuardReq = ({
+        flagOn,
+        stepTokenHash,
+        presentedToken,
+      }: {
+        flagOn: boolean
+        stepTokenHash?: string
+        presentedToken?: string
+      }) => {
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.body.responses = {
+          [EDITABLE_FIELD_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'updated' },
+            question: 'Editable Field',
+            provenance: {},
+          },
+          [NON_EDITABLE_FIELD_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'locked-value' },
+            question: 'Non-editable Field',
+            provenance: {},
+          },
+        }
+        mockReq.body.submissionSecretKey = 'submission-secret-key'
+        mockReq.body.stepToken = presentedToken
+        mockReq.growthbook = {
+          isOn: jest.fn(
+            (flag: string) => flagOn && flag === featureFlags.mrfStepWriteToken,
+          ),
+        }
+        mockReq.formsg = {
+          formDef: {
+            _id: MOCK_FORM_ID,
+            form_fields: SNAPSHOT_FORM_FIELDS,
+            form_logics: [],
+            workflow: SNAPSHOT_WORKFLOW,
+          },
+          mrfSubmission: { ...MOCK_MRF_SUBMISSION_V1, stepTokenHash },
+        }
+        return mockReq
+      }
+
+      it('should advance when a valid step token accompanies a valid decrypt', async () => {
+        const mockReq = createGuardReq({
+          flagOn: true,
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: RAW_STEP_TOKEN,
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockRes.status).not.toHaveBeenCalled()
+      })
+
+      it('should return 403 and not advance when the presented token is wrong (decrypt still valid)', async () => {
+        const mockReq = createGuardReq({
+          flagOn: true,
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: stepToken.generate(), // wrong token
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      })
+
+      it('should return 403 when the token is absent but the row carries a hash (decrypt-gate alone no longer advances)', async () => {
+        const mockReq = createGuardReq({
+          flagOn: true,
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: undefined, // absent
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      })
+
+      it('should advance on a legacy row without a hash even with no token (migration grace)', async () => {
+        const mockReq = createGuardReq({
+          flagOn: true,
+          stepTokenHash: undefined, // legacy in-flight row
+          presentedToken: undefined,
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockRes.status).not.toHaveBeenCalled()
+      })
+
+      it('should not require a token when the flag is off, even if the row carries a hash (regression)', async () => {
+        const mockReq = createGuardReq({
+          flagOn: false,
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: undefined,
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockRes.status).not.toHaveBeenCalled()
+      })
     })
   })
 })

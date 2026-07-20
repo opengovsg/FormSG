@@ -7,6 +7,7 @@ import {
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FieldResponsesV3,
@@ -60,6 +61,7 @@ import {
   MissingSubmitterIdError,
   MrfWorkflowOverflowError,
   ProcessingError,
+  StepTokenVerificationError,
   SubmissionEncryptionVerificationError,
   SubmissionNotFoundError,
 } from '../submission.errors'
@@ -84,6 +86,7 @@ import {
   StrippedAttachmentResponseV4,
 } from './multirespondent-submission.types'
 import { validateMrfFieldResponses } from './multirespondent-submission.utils'
+import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
 
@@ -110,17 +113,22 @@ export const validateMultirespondentSubmissionParams = celebrate({
   [Segments.BODY]: multirespondentSubmissionBodySchema,
 })
 
+const multirespondentSubmissionKeySchema = Joi.object({
+  submissionSecretKey: Joi.string().required(),
+  // RATIONALE: step token is optional for backwards compatibility with in-flight submissions
+  // and allow `mrf-step-write-token` gb flag to be off.
+  stepToken: Joi.string().optional(),
+})
+
 const updateMultirespondentSubmissionBodySchema =
-  multirespondentSubmissionBodySchema.append({
-    submissionSecretKey: Joi.string().required(),
-  })
+  multirespondentSubmissionBodySchema.concat(multirespondentSubmissionKeySchema)
 
 export const validateUpdateMultirespondentSubmissionParams = celebrate({
   [Segments.BODY]: updateMultirespondentSubmissionBodySchema,
 })
 
 export const validateMultirespondentRemindBody = celebrate({
-  [Segments.BODY]: Joi.object({ submissionSecretKey: Joi.string().required() }),
+  [Segments.BODY]: multirespondentSubmissionKeySchema,
 })
 
 const retrieveMultirespondentSubmissionIfExists = (
@@ -475,8 +483,23 @@ export const validateMultirespondentSubmission = async (
   return (
     // Step 0: Prepare by retrieving relevant reference data
     ok(mrfSubmission)
+      // Step 0a: Verify write permissions by verifying step bearer token if exists
+      .andThen((mrfSubmission) => {
+        const isStepWriteTokenEnabled =
+          req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
+        if (isStepWriteTokenEnabled && mrfSubmission?.stepTokenHash) {
+          const presentedToken = req.body.stepToken
+          if (
+            !presentedToken ||
+            !stepToken.verify(presentedToken, mrfSubmission.stepTokenHash)
+          ) {
+            return err(new StepTokenVerificationError())
+          }
+        }
+        return ok(mrfSubmission)
+      })
       .andThen((mrfSubmission) =>
-        // Step 0a: If its an existing submission, use the reference data from
+        // Step 0b: If its an existing submission, use the reference data from
         // the submission rather than the form
         mrfSubmission
           ? ok({
@@ -508,7 +531,7 @@ export const validateMultirespondentSubmission = async (
           form_fields,
           form_logics,
         }) => {
-          // Step 0b: Determine editable fields based on the workflow step, if it exists.
+          // Step 0c: Determine editable fields based on the workflow step, if it exists.
           const editableFieldIds = (
             workflow[workflowStep]
               ? workflow[workflowStep].edit
@@ -873,6 +896,24 @@ export const encryptSubmission = async (
       req.body.version,
     )
 
+  const isStepWriteTokenEnabled =
+    req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
+  let mintedStepToken:
+    | {
+        stepToken: string
+        stepTokenHash: string
+        encryptedStepToken: string
+      }
+    | undefined
+  if (isStepWriteTokenEnabled) {
+    const rawStepToken = stepToken.generate()
+    mintedStepToken = {
+      stepToken: rawStepToken,
+      stepTokenHash: stepToken.hash(rawStepToken),
+      encryptedStepToken: stepToken.wrap(rawStepToken, formPublicKey),
+    }
+  }
+
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
     responseMetadata: req.body.responseMetadata,
@@ -889,6 +930,7 @@ export const encryptSubmission = async (
      * so existing webhook consumers can continue to parse V3 payloads).
      */
     mrfVersion,
+    ...mintedStepToken,
   }
 
   return next()
