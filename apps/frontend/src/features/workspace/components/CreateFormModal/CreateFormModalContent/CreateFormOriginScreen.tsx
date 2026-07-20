@@ -56,12 +56,12 @@ export const CreateFormOriginScreen = ({
   return (
     <>
       <ModalHeader color="secondary.700">
-        <Container maxW="42.5rem" p={0}>
+        <Container maxW="45rem" p={0}>
           {t(`${ORIGIN_I18N_PREFIX}.question`)}
         </Container>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap">
-        <Container maxW="42.5rem" p={0}>
+        <Container maxW="45rem" p={0}>
           <FormControl
             isRequired
             isInvalid={!!errors.formOrigins?.value}
