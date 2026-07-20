@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.3.2](https://github.com/opengovsg/formsg/compare/v8.3.1...v8.3.2) (2026-07-20)
+
+
+### Bug Fixes
+
+* **validation:** apply wildcard email domain matching to V4 validator (#9770) ([#9770](https://github.com/opengovsg/formsg/commit/dc000000c5c5b0471d34c3aac788332aff9b48f0))
+
 ## [8.3.1](https://github.com/opengovsg/formsg/compare/v8.3.0...v8.3.1) (2026-07-20)
 
 
