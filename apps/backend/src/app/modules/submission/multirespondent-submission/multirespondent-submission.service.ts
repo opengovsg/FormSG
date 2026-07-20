@@ -1,7 +1,7 @@
 import { GrowthBook } from '@growthbook/growthbook'
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import {
   BasicField,
-  FieldResponsesV3,
   FormAuthType,
   FormFieldDto,
   FormResponseMode,
@@ -122,7 +122,7 @@ const checkIsStepRejected = ({
 }: {
   zeroIndexedStepNumber: number
   form: Pick<IPopulatedMultirespondentForm, 'workflow'>
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
 }): Result<
   boolean,
   ExpectedResponseNotFoundError | InvalidApprovalFieldTypeError
@@ -146,7 +146,7 @@ const checkIsStepRejected = ({
     return err(new InvalidApprovalFieldTypeError())
   }
 
-  return ok(approvalFieldResponse.answer === 'No')
+  return ok((approvalFieldResponse.answer as { value: string }).value === 'No')
 }
 
 interface sendNextStepEmailProps {
@@ -158,7 +158,7 @@ interface sendNextStepEmailProps {
   responseUrl: string
   formId: string
   submissionId: string
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
 }
 
 const sendNextStepEmail = ({
@@ -353,7 +353,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   currentStepNumber: number
   submissionId: string
 }): Result<string[], InvalidWorkflowTypeError> => {
@@ -456,7 +456,7 @@ const sendMrfOutcomeEmails = ({
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   latestSubmissionTimestamp: string
   submissionId: string
   isApproval?: boolean
@@ -605,7 +605,7 @@ const sendMrfRespondentCopyEmails = ({
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   submission: IMultirespondentSubmissionSchema
   attachments?: IAttachmentInfo[]
   formFields: FormFieldSchema[] | FormFieldDto[]
@@ -860,7 +860,7 @@ export const createMultiRespondentFormSubmission = ({
 }
 
 interface CheckIfRespondentFormSummaryIsRequiredArgs {
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   formFields: FormFieldSchema[] | FormFieldDto[]
   currentStepActiveFields: string[]
 }
@@ -893,7 +893,7 @@ interface CheckIsWorkflowCompletionEmailPdfRequiredArgs {
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   isRejected: boolean
   submissionId: string
   growthbook?: GrowthBook
