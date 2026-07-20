@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [7.4.0](https://github.com/opengovsg/formsg/compare/sdk-v7.3.2...sdk-v7.4.0) (2026-07-20)
+
+
+### Features
+
+* **mrf:** V4 response migration — PR 2/5 BE V4-native + V3 wire shim (#9637) ([#9637](https://github.com/opengovsg/formsg/commit/2a47c47e707d5c429257092c9b9ce78f3ff8e118))
+
 ## [7.3.2](https://github.com/opengovsg/formsg/compare/sdk-v7.3.1...sdk-v7.3.2) (2026-07-16)
 
 
