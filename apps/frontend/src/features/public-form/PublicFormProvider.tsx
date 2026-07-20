@@ -528,6 +528,13 @@ export const PublicFormProvider = ({
     console.log(e)
   }
 
+  let stepToken = ''
+  try {
+    stepToken = decodeURIComponent(searchParams.get('token') ?? '')
+  } catch (e) {
+    console.log(e)
+  }
+
   useEffect(() => {
     // Function to decrypt attachments retrieved from S3 using the submission secret key
     const decryptAttachments = async () => {
@@ -772,6 +779,9 @@ export const PublicFormProvider = ({
     formId,
     previousSubmissionId,
     previousSubmission?.submissionSecretKey,
+    // Empty (tokenless / flag-off link) → undefined so JSON.stringify drops
+    // `stepToken` from the PUT body, keeping it byte-identical to today.
+    stepToken || undefined,
   )
 
   const form = data?.form

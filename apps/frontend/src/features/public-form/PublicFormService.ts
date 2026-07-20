@@ -184,6 +184,7 @@ export type SubmitStorageFormWithVirusScanningArgs =
 export type SubmitMultirespondentFormWithVirusScanningArgs =
   SubmitEmailFormArgs & {
     submissionSecretKey?: string
+    stepToken?: string
     fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
   }
 
@@ -427,6 +428,7 @@ export const updateMultirespondentSubmission = async ({
   responseMetadata,
   fieldIdToQuarantineKeyMap,
   submissionSecretKey,
+  stepToken,
   respondentEmails,
 }: SubmitMultirespondentFormWithVirusScanningArgs & {
   submissionId?: string
@@ -443,6 +445,7 @@ export const updateMultirespondentSubmission = async ({
       formInputs: filteredInputs,
       responseMetadata,
       submissionSecretKey,
+      stepToken,
       version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
       respondentEmails: respondentEmails,
     },

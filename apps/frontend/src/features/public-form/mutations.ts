@@ -73,6 +73,7 @@ export const usePublicFormMutations = (
   formId: string,
   submissionId?: string,
   submissionSecretKey?: string,
+  stepToken?: string,
 ) => {
   const submitEmailModeFormMutation = useMutation(
     (args: Omit<SubmitEmailFormArgs, 'formId'>) => {
@@ -175,7 +176,11 @@ export const usePublicFormMutations = (
 
   const updateMultirespondentSubmissionMutation =
     useSubmitMutationWithAttachmentVirusScanning((args) =>
-      updateMultirespondentSubmission({ ...args, submissionSecretKey }),
+      updateMultirespondentSubmission({
+        ...args,
+        submissionSecretKey,
+        stepToken,
+      }),
     )
 
   return {
