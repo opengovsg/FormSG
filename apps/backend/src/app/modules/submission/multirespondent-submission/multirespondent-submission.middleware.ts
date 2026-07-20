@@ -674,12 +674,13 @@ export const validateMultirespondentSubmission = async (
                   return previousResponses
                 })
               })
-              .andThen(() => {
+              .andThen((previousResponses) => {
                 return validateMrfFieldResponses({
                   formId,
                   visibleFieldIds,
                   formFields: form_fields,
                   responses: req.body.responses,
+                  previousResponses,
                 })
               }),
           )
