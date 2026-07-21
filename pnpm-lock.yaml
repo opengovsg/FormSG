@@ -344,12 +344,12 @@ importers:
       intl-tel-input:
         specifier: ~12.4.0
         version: 12.4.0(jquery@4.0.0)
-      ip:
-        specifier: ^1.1.9
-        version: 1.1.9
       ip-address:
         specifier: ^10.1.1
         version: 10.2.0
+      ipaddr.js:
+        specifier: ^1.9.1
+        version: 1.9.1
       jose:
         specifier: ^5.9.6
         version: 5.10.0
@@ -558,9 +558,6 @@ importers:
       '@types/http-errors':
         specifier: ^2.0.4
         version: 2.0.4
-      '@types/ip':
-        specifier: ^1.1.0
-        version: 1.1.0
       '@types/jest':
         specifier: ^29.5.1
         version: 29.5.14
@@ -5703,9 +5700,6 @@ packages:
   '@types/http-errors@2.0.4':
     resolution: {integrity: sha512-D0CFMMtydbJAegzOyHjtiKPLlvnm3iTZyZRSZoLq2mRhDdmLfIWOCYPfQJ4cu2erKghU++QvjcUjp/5h7hESpA==}
 
-  '@types/ip@1.1.0':
-    resolution: {integrity: sha512-dwNe8gOoF70VdL6WJBwVHtQmAX4RMd62M+mAB9HQFjG1/qiCLM/meRy95Pd14FYBbEDwCq7jgJs89cHpLBu4HQ==}
-
   '@types/istanbul-lib-coverage@2.0.6':
     resolution: {integrity: sha512-2QF/t/auWm0lsy8XtKVPG19v3sSOQlJe/YHZgfjb/KBBHOGSV+J2q/S671rcq9uTBrLAXmZpqJiaQbMT+zNU1w==}
 
@@ -9517,9 +9511,6 @@ packages:
   ip-address@10.2.0:
     resolution: {integrity: sha512-/+S6j4E9AHvW9SWMSEY9Xfy66O5PWvVEJ08O0y5JGyEKQpojb0K0GKpz/v5HJ/G0vi3D2sjGK78119oXZeE0qA==}
     engines: {node: '>= 12'}
-
-  ip@1.1.9:
-    resolution: {integrity: sha512-cyRxvOEpNHNtchU3Ln9KC/auJgup87llfQpQ+t5ghoC/UhL16SWzbueiCsdTnWmqAWl7LadfuwhlqmtOaqMHdQ==}
 
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
@@ -20963,10 +20954,6 @@ snapshots:
 
   '@types/http-errors@2.0.4': {}
 
-  '@types/ip@1.1.0':
-    dependencies:
-      '@types/node': 24.0.10
-
   '@types/istanbul-lib-coverage@2.0.6': {}
 
   '@types/istanbul-lib-report@3.0.0':
@@ -25625,8 +25612,6 @@ snapshots:
   iobuffer@5.4.0: {}
 
   ip-address@10.2.0: {}
-
-  ip@1.1.9: {}
 
   ipaddr.js@1.9.1: {}
 

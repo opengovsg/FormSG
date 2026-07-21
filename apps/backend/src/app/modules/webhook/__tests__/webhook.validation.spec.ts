@@ -62,6 +62,17 @@ describe('Webhook URL validation', () => {
     )
   })
 
+  it('should reject URLs which resolve to the link-local metadata IP', async () => {
+    // 169.254.169.254 is the cloud instance metadata endpoint - a classic
+    // SSRF target that must never be reachable via a webhook.
+    MockDns.resolve.mockResolvedValueOnce(['169.254.169.254'])
+    await expect(validateWebhookUrl(MOCK_WEBHOOK_URL)).rejects.toStrictEqual(
+      new WebhookValidationError(
+        `${MOCK_WEBHOOK_URL} resolves to the following private IPs: 169.254.169.254`,
+      ),
+    )
+  })
+
   it('should reject URLs in the same domain as the app URL', async () => {
     await expect(
       validateWebhookUrl(`${MOCK_APP_URL}/test`),
