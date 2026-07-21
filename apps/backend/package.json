@@ -17,7 +17,7 @@
     "lint-ci": "pnpm exec eslint src/ --quiet"
   },
   "dependencies": {
-    "formsg-shared": "workspace:*",
+    "@ai-sdk/openai": "^3.0.63",
     "@aws-sdk/client-cloudwatch-logs": "^3.758.0",
     "@aws-sdk/client-lambda": "^3.693.0",
     "@aws-sdk/client-s3": "^3.775.0",
@@ -34,6 +34,7 @@
     "@smithy/util-stream": "^3.3.4",
     "@stablelib/base64": "^1.0.1",
     "JSONStream": "^1.3.5",
+    "ai": "^6.0.184",
     "aws-info": "^1.2.0",
     "aws-sdk": "^2.1692.0",
     "axios": "^1.15.0",
@@ -64,6 +65,7 @@
     "express-session": "^1.18.2",
     "express-winston": "^4.2.0",
     "file-saver": "^2.0.5",
+    "formsg-shared": "workspace:*",
     "fp-ts": "^2.16.9",
     "helmet": "^8.1.0",
     "hot-shots": "^10.1.1",
@@ -95,7 +97,6 @@
     "node-cache": "^5.1.2",
     "nodemailer": "^9.0.1",
     "oauth4webapi": "^3.6.0",
-    "openai": "^4.70.3",
     "openid-client": "^6.6.2",
     "openid-client-legacy": "npm:openid-client@^5.7.1",
     "opossum": "^8.1.4",

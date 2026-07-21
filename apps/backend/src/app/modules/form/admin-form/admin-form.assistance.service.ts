@@ -25,7 +25,7 @@ import {
   ModelResponseInvalidSyntaxError,
 } from './admin-form.errors'
 import { createFormFields, updateFormMetadata } from './admin-form.service'
-import { Message, Role, sendPromptToModel } from './ai-model'
+import { Message, sendPromptToModel } from './ai-model'
 
 const logger = createLoggerWithLabel(module)
 
@@ -127,7 +127,7 @@ const VERIFICATION_PROMPT = {
 }
 
 const FORM_RULES_TEXT_PROMPT = {
-  role: Role.System,
+  role: 'system',
   content:
     // Provide context to model on when to use each field type
     'You are to generate a JSON output that is a list of form fields that are to be used to create a form. The JSON output must contain a single key named "fields" which is an array of form fields. Every form field must follow the rules and guidelines provided.' +
@@ -162,7 +162,7 @@ const generateFormCreationPrompt = (userPrompt: string) => {
     FORM_RULES_TEXT_PROMPT,
     {
       // Provide general topic + example fields that user wants to collect.
-      role: Role.User,
+      role: 'user',
       content: `Create a form that collects ${userPrompt}. The JSON object containing "fields" key which contains an array of form fields that definitely follows all the given rules and guidelines is `,
     },
     VERIFICATION_PROMPT,
@@ -275,8 +275,8 @@ const generateAndsendTextPromptToModel = ({
     messages: messages,
     formId,
     options: {
-      response_format: {
-        type: 'json_object',
+      providerOptions: {
+        openai: { responseFormat: { type: 'json_object' } },
       },
     },
   }).mapErr((error) => {
@@ -373,7 +373,7 @@ export const createFormFieldsUsingTextPrompt = ({
 }
 
 const FORM_DETAILS_VISION_PROMPT = {
-  role: Role.System,
+  role: 'system',
   content:
     // Provide context to model on when to use each field type
     'You are to generate a JSON output that is a list of form fields that are to be used to create a form. The JSON output must contain a single key named "fields" which is an array of form fields. Every form field must follow the rules and guidelines provided.' +
@@ -422,10 +422,8 @@ const generateFormCreationVisionPrompt = ({
 }) => {
   const imageUrlContents = imageDataUrls.map((dataUrl) => {
     return {
-      type: 'image_url',
-      image_url: {
-        url: dataUrl,
-      },
+      type: 'image',
+      image: dataUrl,
     }
   })
   const userPrompt = {
@@ -457,8 +455,8 @@ const generateAndSendVisionPromptToModel = ({
     messages,
     formId,
     options: {
-      response_format: {
-        type: 'json_object',
+      providerOptions: {
+        openai: { responseFormat: { type: 'json_object' } },
       },
     },
   }).mapErr((error) => {
