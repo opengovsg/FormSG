@@ -135,7 +135,12 @@ describe('radio validation', () => {
   it('disables the "Others" input when another option is selected', async () => {
     // Arrange
     const user = userEvent.setup()
-    const radioOption = ValidationRequired.args?.schema?.fieldOptions?.[0] ?? ''
+    const radioOption = ValidationRequired.args?.schema?.fieldOptions?.[0]
+    if (!radioOption) {
+      throw new Error(
+        'Test setup: ValidationRequired story must define at least one field option',
+      )
+    }
     render(<ValidationRequired />)
     const othersInput = screen.getByLabelText('"Other" response')
     const otherRadioButton = screen.getByRole('radio', { name: /other/i })

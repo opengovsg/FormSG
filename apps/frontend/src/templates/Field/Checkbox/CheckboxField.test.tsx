@@ -146,7 +146,12 @@ describe('radio validation', () => {
     // Arrange
     const user = userEvent.setup()
     const checkboxOptionLabel =
-      ValidationRequired.args?.schema?.fieldOptions?.[0] ?? ''
+      ValidationRequired.args?.schema?.fieldOptions?.[0]
+    if (!checkboxOptionLabel) {
+      throw new Error(
+        'Test setup: ValidationRequired story must define at least one field option',
+      )
+    }
     render(<ValidationRequired />)
     const othersInput = screen.getByLabelText('"Other" response')
     const checkboxOption = screen.getByLabelText(checkboxOptionLabel)
