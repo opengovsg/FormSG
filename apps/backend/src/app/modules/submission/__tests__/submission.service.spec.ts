@@ -49,7 +49,6 @@ import {
   StorageModeSubmissionCursorData,
   StorageModeSubmissionData,
 } from 'src/types'
-import { ParsedClearAttachmentFieldResponseV4 } from 'src/types/api'
 
 import { PaymentNotFoundError } from '../../payments/payments.errors'
 import * as PaymentsService from '../../payments/payments.service'
@@ -72,7 +71,6 @@ import {
   getQuarantinePresignedPostData,
   transformAttachmentMetasToSignedUrls,
   triggerGuardDutyScanning,
-  triggerGuardDutyScanThenDownloadCleanFileChainV4,
 } from '../submission.service'
 import {
   buildMrfMetadata,
@@ -3034,82 +3032,6 @@ describe('submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap().toString()).toEqual(content)
-    })
-  })
-
-  describe('triggerGuardDutyScanThenDownloadCleanFileChainV4', () => {
-    // Regression guard for the MRF V4 wiring: after a clean scan the real
-    // uploaded filename must land in `answer.value`, not just `answer.filename`.
-    // Downstream sinks — email/PDF Q&A, response JSON, the V4->V3 webhook
-    // adapter, the encrypted-at-rest answer, and the admin CSV/attachment
-    // download name — all read `answer.value`. Previously it stayed as the
-    // quarantine bucket key (a bare UUID), which dropped the filename and its
-    // extension. This mirrors the V3 chain's `answer: response.filename`.
-    const MOCK_QUARANTINE_KEY = '1b90195b-ce8a-4590-810b-04ebaef8e4dd'
-    const MOCK_CLEAN_FILE_KEY = '0f3d2e22-d2aa-44f8-965a-27e46102936e'
-    const MOCK_FILENAME = 'my report.pdf'
-    const MOCK_CLEAN_CONTENT = 'clean file contents'
-
-    afterEach(() => jest.restoreAllMocks())
-
-    const makeV4AttachmentResponse = () =>
-      ({
-        fieldType: BasicField.Attachment,
-        question: 'Upload file',
-        answer: {
-          value: MOCK_QUARANTINE_KEY,
-          hasBeenScanned: false,
-          filename: MOCK_FILENAME,
-          content: Buffer.from(''),
-        },
-      }) as unknown as ParsedClearAttachmentFieldResponseV4
-
-    const mockCleanScanAndDownload = () => {
-      // Lambda returns a clean-bucket key (must be a valid UUID for downloadCleanFile).
-      jest.spyOn(aws.guarddutyLambda, 'invoke').mockImplementationOnce(() => {
-        return Promise.resolve({
-          Payload: JSON.stringify({
-            statusCode: 200,
-            body: JSON.stringify({
-              cleanFileKey: MOCK_CLEAN_FILE_KEY,
-              destinationVersionId: 'version-id',
-            }),
-          }),
-        })
-      })
-      // S3 streams back the clean file content.
-      const mockGetObject = jest.fn().mockReturnValue({
-        createReadStream: () =>
-          new Readable({
-            read() {
-              this.push(MOCK_CLEAN_CONTENT)
-              this.push(null)
-            },
-          }),
-      })
-      jest.spyOn(aws.s3, 'getObject').mockImplementationOnce(mockGetObject)
-    }
-
-    it('should promote the real filename (with extension) into answer.value after a clean scan', async () => {
-      // Arrange
-      mockCleanScanAndDownload()
-
-      // Act
-      const actualResult =
-        await triggerGuardDutyScanThenDownloadCleanFileChainV4(
-          makeV4AttachmentResponse(),
-          MOCK_FORM_ID,
-        )
-
-      // Assert
-      expect(actualResult.isOk()).toEqual(true)
-      const scanned = actualResult._unsafeUnwrap()
-      // The canonical, durable answer field must carry the filename — not the
-      // quarantine bucket key that was used only to trigger the scan.
-      expect(scanned.answer.value).toEqual(MOCK_FILENAME)
-      expect(scanned.answer.value).not.toEqual(MOCK_QUARANTINE_KEY)
-      expect(scanned.answer.filename).toEqual(MOCK_FILENAME)
-      expect(scanned.answer.content.toString()).toEqual(MOCK_CLEAN_CONTENT)
     })
   })
 })

@@ -33,7 +33,6 @@ import {
 } from '../../../types'
 import {
   ParsedClearAttachmentFieldResponseV3,
-  ParsedClearAttachmentFieldResponseV4,
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
 } from '../../../types/api'
@@ -1299,80 +1298,4 @@ export const triggerGuardDutyScanThenDownloadCleanFileChain = <
         return error
       })
   )
-}
-
-/**
- * V4 version: Helper function to trigger guardduty scanning and download clean file.
- * In V4, attachment data is nested inside response.answer rather than at the top level.
- * @param response quarantined V4 attachment response
- * @returns modified response with answer.content replaced with clean file buffer,
- * and answer.value/answer.filename set to the real (uploaded) filename.
- */
-export const triggerGuardDutyScanThenDownloadCleanFileChainV4 = (
-  response: ParsedClearAttachmentFieldResponseV4,
-  formId: string,
-): ResultAsync<
-  ParsedClearAttachmentFieldResponseV4,
-  TriggerGuardDutyScanThenDownloadCleanFileChainError
-> => {
-  const quarantineFileKey = response.answer.value
-  const logMeta = {
-    action: 'triggerGuardDutyScanThenDownloadCleanFileChainV4',
-    formId,
-    quarantineFileKey,
-  }
-  return triggerGuardDutyScanning(quarantineFileKey)
-    .mapErr((error) => {
-      if (error instanceof GuardDutyMaliciousFileDetectedError) {
-        logger.error({
-          message: 'GUARDDUTY Malicious file detected during lambda virus scan',
-          meta: logMeta,
-          error,
-        })
-        return new GuardDutyMaliciousFileDetectedError(response.answer.filename)
-      }
-      return error
-    })
-    .map((lambdaOutput) => {
-      logger.info({
-        message:
-          'GUARDDUTY Successfully retrieved clean file from virus scanning lambda',
-        meta: { ...logMeta, cleanFileKey: lambdaOutput.body.cleanFileKey },
-      })
-      return lambdaOutput.body
-    })
-    .andThen((cleanAttachment) =>
-      downloadCleanFile(
-        cleanAttachment.cleanFileKey,
-        cleanAttachment.destinationVersionId,
-        AwsConfig.guarddutyCleanS3Bucket,
-      ).map(
-        (attachmentBuffer) =>
-          ({
-            ...response,
-            answer: {
-              ...response.answer,
-              content: attachmentBuffer,
-              filename: response.answer.filename,
-              // Promote the real filename into `value` (the canonical, durable
-              // answer field). Until now `value` held the quarantine bucket key
-              // (a bare UUID); every downstream sink — email/PDF Q&A, response
-              // JSON, the V4->V3 webhook adapter, the encrypted-at-rest answer,
-              // and the admin CSV/attachment download name — reads `value`, so
-              // leaving it as the UUID drops the filename (and its extension).
-              // This mirrors the V3 chain's `answer: response.filename`.
-              value: response.answer.filename,
-            },
-          }) as ParsedClearAttachmentFieldResponseV4,
-      ),
-    )
-    .mapErr((error) => {
-      if (error instanceof DownloadCleanFileFailedError) {
-        return new GuardDutyDownloadCleanFileFailedError()
-      }
-      if (error instanceof InvalidFileKeyError) {
-        return new GuardDutyInvalidFileKeyError()
-      }
-      return error
-    })
 }

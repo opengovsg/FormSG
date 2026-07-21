@@ -1,14 +1,16 @@
-import type { FieldResponsesV4, FormFieldsV3 } from '@opengovsg/formsg-sdk'
-import { adaptV3ToV4 } from '@opengovsg/formsg-sdk'
 import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
-import { BasicField, FieldResponse } from 'formsg-shared/types'
+import {
+  BasicField,
+  FieldResponse,
+  FieldResponsesV3,
+} from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
 import { IAttachmentInfo, MapRouteError } from '../../../../types'
 import {
-  ParsedClearAttachmentFieldResponseV4,
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
+  ParsedClearFormFieldResponseV3,
 } from '../../../../types/api'
 import { createLoggerWithLabel } from '../../../config/logger'
 
@@ -52,41 +54,6 @@ export const mapRouteError: MapRouteError = (error) => {
 }
 
 /**
- * Stale-FE compatibility shim for MRF submissions.
- *
- * If body.version indicates a V3 MRF submission (>=3 && <4), responses are V3-shaped.
- * Convert them to V4 in place and bump body.version to 4 so downstream code can
- * uniformly treat the body as V4. Runs BEFORE addAttachmentToResponses, so
- * attachment buffers land in V4-shaped answer objects.
- *
- * Question text is left empty here — the form definition isn't yet loaded. Downstream
- * code that needs question text should source it from the form definition.
- */
-export const adaptMrfV3BodyToV4 = (
-  body: ParsedMultipartForm<unknown>,
-): void => {
-  const version = body.version ?? 0
-  if (
-    version < 3 ||
-    version >= 4 ||
-    !body.responses ||
-    Array.isArray(body.responses)
-  ) {
-    return
-  }
-
-  logger.warn({
-    message:
-      'Adapting V3 MRF submission to V4 — client is on a stale build and should refresh',
-    meta: { action: 'adaptMrfV3BodyToV4', version },
-  })
-
-  body.responses = adaptV3ToV4(
-    body.responses as unknown as FormFieldsV3,
-  ) as FieldResponsesV4
-}
-
-/**
  * Adds the attachment's content, filename to each response,
  * based on their fieldId.
  * The response's answer is also changed to the attachment's filename.
@@ -96,7 +63,7 @@ export const adaptMrfV3BodyToV4 = (
  * @returns void. Modifies responses in place.
  */
 export const addAttachmentToResponses = (
-  body: ParsedMultipartForm<FieldResponse[] | FieldResponsesV4>,
+  body: ParsedMultipartForm<FieldResponse[] | FieldResponsesV3>,
   attachments: IAttachmentInfo[],
 ): void => {
   // default to 0 for email mode forms where version is undefined
@@ -136,9 +103,7 @@ export const addAttachmentToResponses = (
 
   if (isBodyVersion3AndAbove(body)) {
     Object.keys(body.responses).forEach((id) => {
-      const response = body.responses[
-        id
-      ] as unknown as ParsedClearAttachmentFieldResponseV4
+      const response = body.responses[id] as ParsedClearFormFieldResponseV3
       if (response.fieldType === BasicField.Attachment && id in attachmentMap) {
         const file = attachmentMap[id]
         response.answer.filename = file.filename
