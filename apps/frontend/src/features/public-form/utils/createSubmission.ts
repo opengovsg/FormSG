@@ -211,11 +211,11 @@ export const createClearSubmissionWithVirusScanningFormData = (
 }
 
 /**
- * Used for MRF submissions v3 (after virus scanning).
+ * Used for MRF submissions v4 (after virus scanning).
  * @returns formData containing form responses and attachments.
  * @throws Error if form inputs are invalid or contain malicious attachment(s).
  */
-export const createClearSubmissionWithVirusScanningFormDataV3 = (
+export const createClearSubmissionWithVirusScanningFormDataV4 = (
   formDataArgs: CreateMultirespondentSubmissionFormDataArgs,
   fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[],
 ) => {
@@ -225,7 +225,7 @@ export const createClearSubmissionWithVirusScanningFormDataV3 = (
   // TODO: Move validation to before response array creation so it can be used for encryption v2-3
   createResponsesArray(formFields, formInputs)
 
-  const responses = createResponsesV3(
+  const responses = createResponsesV4(
     formFields,
     formInputs,
     fieldIdToQuarantineKeyMap,
