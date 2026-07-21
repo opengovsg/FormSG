@@ -148,7 +148,123 @@ describe('CryptoV3', function () {
     })
     // Assert
     expect(decrypted).toHaveProperty('responses', plaintext)
-    expect(decrypted).toHaveProperty('verified', plainVerifiedText)  
-      
+    expect(decrypted).toHaveProperty('verified', plainVerifiedText)
+  })
+
+  describe('decryptToV4', () => {
+    const FIELD_ID_1 = '000000000000000000000001'
+    const FIELD_ID_2 = '000000000000000000000002'
+
+    const formFieldsMeta = {
+      [FIELD_ID_1]: { question: 'What is your name?' },
+      [FIELD_ID_2]: { question: 'Contact number' },
+    }
+
+    const encryptAndDecryptToV4 = (responses: unknown) => {
+      const { publicKey, secretKey } = crypto.generate()
+      const ciphertext = crypto.encrypt(responses, publicKey)
+      return crypto.decryptToV4(
+        secretKey,
+        { ...ciphertext, version: INTERNAL_TEST_VERSION },
+        formFieldsMeta
+      )
+    }
+
+    it('should backfill empty question text on V4 responses from formFields', () => {
+      // Arrange: V4-shaped responses as stored by blobs written from wire
+      // bodies (question empty, provenance present)
+      const v4Responses = {
+        [FIELD_ID_1]: {
+          fieldType: 'textfield',
+          answer: { value: 'A name' },
+          question: '',
+          provenance: {},
+        },
+        [FIELD_ID_2]: {
+          fieldType: 'mobile',
+          answer: { value: '+6598765432' },
+          question: '',
+          provenance: {},
+        },
+      }
+
+      // Act
+      const decrypted = encryptAndDecryptToV4(v4Responses)
+
+      // Assert
+      expect(decrypted).not.toBeNull()
+      expect(decrypted!.responses[FIELD_ID_1].question).toEqual(
+        'What is your name?'
+      )
+      expect(decrypted!.responses[FIELD_ID_2].question).toEqual(
+        'Contact number'
+      )
+      // Answers and provenance untouched
+      expect(decrypted!.responses[FIELD_ID_1].answer).toEqual({
+        value: 'A name',
+      })
+      expect(decrypted!.responses[FIELD_ID_1].provenance).toEqual({})
+    })
+
+    it('should preserve question text already present on V4 responses', () => {
+      // Arrange
+      const v4Responses = {
+        [FIELD_ID_1]: {
+          fieldType: 'textfield',
+          answer: { value: 'A name' },
+          question: 'Original question',
+          provenance: {},
+        },
+      }
+
+      // Act
+      const decrypted = encryptAndDecryptToV4(v4Responses)
+
+      // Assert
+      expect(decrypted!.responses[FIELD_ID_1].question).toEqual(
+        'Original question'
+      )
+    })
+
+    it('should leave question empty when the field is absent from formFields', () => {
+      // Arrange: field not present in formFieldsMeta (e.g. deleted field)
+      const unknownFieldId = '00000000000000000000000f'
+      const v4Responses = {
+        [unknownFieldId]: {
+          fieldType: 'textfield',
+          answer: { value: 'orphan' },
+          question: '',
+          provenance: {},
+        },
+      }
+
+      // Act
+      const decrypted = encryptAndDecryptToV4(v4Responses)
+
+      // Assert
+      expect(decrypted!.responses[unknownFieldId].question).toEqual('')
+    })
+
+    it('should adapt V3 responses to V4 with question text from formFields', () => {
+      // Arrange: V3-shaped responses (no provenance)
+      const v3Responses = {
+        [FIELD_ID_1]: {
+          fieldType: 'textfield',
+          answer: 'A name',
+        },
+      }
+
+      // Act
+      const decrypted = encryptAndDecryptToV4(v3Responses)
+
+      // Assert
+      expect(decrypted!.responses[FIELD_ID_1]).toEqual({
+        fieldType: 'textfield',
+        question: 'What is your name?',
+        answer: { value: 'A name' },
+        // adaptV3ToV4 stamps a default provenance when none is provided
+        provenance: { submittedAt: expect.any(String) },
+      })
+    })
   })
 })
