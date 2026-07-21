@@ -1,5 +1,6 @@
 import type { AttachmentAnswerV4 } from '@opengovsg/formsg-sdk'
 import {
+  AttachmentResponseV3,
   MyInfoAttribute,
   SubmissionErrorDto,
   SubmissionResponseDto,
@@ -12,7 +13,7 @@ import {
   MultirespondentFormCompleteDto,
   MultirespondentFormLoadedDto,
   ParsedClearAttachmentFieldResponseV4,
-  ParsedClearFormFieldResponsesV4,
+  ParsedClearFormFieldResponsesV3,
   ParsedMultirespondentSubmissionBody,
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
@@ -47,7 +48,7 @@ export type ProcessedMultirespondentSubmissionHandlerType = ControllerHandler<
   SubmissionResponseDto | SubmissionErrorDto,
   Omit<ParsedMultirespondentSubmissionBody, 'responses'> & {
     submissionSecretKey?: string
-    responses: ParsedClearFormFieldResponsesV4
+    responses: ParsedClearFormFieldResponsesV3
   },
   { captchaResponse?: unknown; captchaType?: unknown }
 >
@@ -100,6 +101,13 @@ export type StrippedAttachmentResponseV4 = Omit<
   'answer'
 > & {
   answer: AttachmentAnswerV4 & {
+    filename: undefined
+    content: undefined
+  }
+}
+
+export type StrippedAttachmentResponseV3 = AttachmentResponseV3 & {
+  answer: AttachmentResponseV3['answer'] & {
     filename: undefined
     content: undefined
   }

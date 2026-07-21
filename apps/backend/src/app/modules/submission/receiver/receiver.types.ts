@@ -1,5 +1,8 @@
-import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
-import { FieldResponse, ResponseMetadata } from 'formsg-shared/types'
+import {
+  FieldResponse,
+  FieldResponsesV3,
+  ResponseMetadata,
+} from 'formsg-shared/types'
 
 export type ParsedMultipartForm<ResponsesType> = {
   responses: ResponsesType
@@ -21,6 +24,6 @@ export const isBodyVersion2AndBelow = (
  */
 export const isBodyVersion3AndAbove = (
   body: ParsedMultipartForm<unknown>,
-): body is ParsedMultipartForm<FieldResponsesV4> => {
+): body is ParsedMultipartForm<FieldResponsesV3> => {
   return (body.version ?? 0) >= 3
 }

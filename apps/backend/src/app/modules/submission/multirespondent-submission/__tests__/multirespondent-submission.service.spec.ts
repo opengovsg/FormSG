@@ -1509,11 +1509,11 @@ describe('multirespondent-submission.service', () => {
         },
         [yesNoFieldId1]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'Yes' },
+          answer: 'Yes',
         },
         [yesNoFieldId2]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'No' },
+          answer: 'No',
         },
       } as FieldResponsesV3
 
@@ -1648,11 +1648,11 @@ describe('multirespondent-submission.service', () => {
         },
         [yesNoFieldId1]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'Yes' },
+          answer: 'Yes',
         },
         [yesNoFieldId2]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'No' },
+          answer: 'No',
         },
       } as FieldResponsesV3
 
@@ -1801,11 +1801,11 @@ describe('multirespondent-submission.service', () => {
         },
         [yesNoFieldId1]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'Yes' },
+          answer: 'Yes',
         },
         [yesNoFieldId2]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'No' },
+          answer: 'No',
         },
       } as FieldResponsesV3
 
@@ -1948,11 +1948,11 @@ describe('multirespondent-submission.service', () => {
         },
         [yesNoFieldId1]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'Yes' },
+          answer: 'Yes',
         },
         [yesNoFieldId2]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'Yes' },
+          answer: 'Yes',
         },
       }
 
@@ -2094,7 +2094,7 @@ describe('multirespondent-submission.service', () => {
         },
         [yesNoFieldId1]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'No' },
+          answer: 'No',
         },
       } as FieldResponsesV3
 
@@ -2244,7 +2244,7 @@ describe('multirespondent-submission.service', () => {
         },
         [yesNoFieldId1]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'No' },
+          answer: 'No',
         },
       } as FieldResponsesV3
 
@@ -2399,11 +2399,11 @@ describe('multirespondent-submission.service', () => {
         },
         [yesNoFieldId1]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'Yes' },
+          answer: 'Yes',
         },
         [yesNoFieldId2]: {
           fieldType: BasicField.YesNo,
-          answer: { value: 'No' },
+          answer: 'No',
         },
       }
 

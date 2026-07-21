@@ -1,7 +1,10 @@
-import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import { Busboy } from 'busboy'
 import { NextFunction, Request, Response } from 'express-serve-static-core'
-import { FieldResponse, FormResponseMode } from 'formsg-shared/types'
+import {
+  FieldResponse,
+  FieldResponsesV3,
+  FormResponseMode,
+} from 'formsg-shared/types'
 import { Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -79,7 +82,7 @@ export const receiveStorageSubmission: ControllerHandler<
 export const receiveMultirespondentSubmission: ControllerHandler<
   unknown,
   { message: string },
-  { responses: FieldResponsesV4 }
+  { responses: FieldResponsesV3 }
 > = async (req, res, next) => {
   return receiveSubmission(
     req,
@@ -96,7 +99,7 @@ const receiveSubmission = async (
   req: Request<
     unknown,
     { message: string },
-    { responses: FieldResponse[] | FieldResponsesV4 },
+    { responses: FieldResponse[] | FieldResponsesV3 },
     unknown,
     Record<string, unknown>
   >,

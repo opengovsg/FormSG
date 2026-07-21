@@ -176,10 +176,10 @@ const makeEmailDomainValidatorV4: ResponseValidatorConstructor<
   const emailAddress = String(value).trim()
   if (!(hasAllowedEmailDomains && allowedEmailDomains.length))
     return right(response)
-  const emailDomain = '@' + emailAddress.split('@').pop()
+  const emailDomain = ('@' + emailAddress.split('@').pop()).toLowerCase()
 
-  return allowedEmailDomains.some((domain) =>
-    emailDomainMatchesAllowed(emailDomain, domain),
+  return allowedEmailDomains.some(
+    (domain) => domain.toLowerCase() === emailDomain,
   )
     ? right(response)
     : left(`EmailValidatorV4:\t answer value is not a valid email domain`)
