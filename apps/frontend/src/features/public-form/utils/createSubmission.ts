@@ -1,4 +1,13 @@
 import { datadogLogs } from '@datadog/browser-logs'
+import {
+  ADDRESS_SUBFIELD_KEYS,
+  type AddressAnswerV4,
+  type AnswerV4,
+  type ChildrenAnswerV4,
+  generateUUID,
+  type ResponseProvenance,
+  type TableAnswerV4,
+} from '@opengovsg/formsg-sdk'
 import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
@@ -260,7 +269,11 @@ const createResponsesArray = (
   return validateResponses(transformedResponses)
 }
 
-const createResponsesV3 = (
+/**
+ * @deprecated Parity-test collateral for {@link createResponsesV4} — no
+ * production callers. Delete in PR 4 of the MRF V4 migration.
+ */
+export const createResponsesV3 = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
   fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[],
@@ -418,6 +431,218 @@ const createResponsesV3 = (
             fieldType: ff.fieldType,
             answer: input,
           } as FieldResponseV3
+        }
+        break
+      }
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _: never = ff
+      }
+    }
+  }
+  return returnedInputs
+}
+
+/**
+ * Thin V4 wire response for MRF submissions: the FE sends fieldType + answer
+ * and the BE enriches the rest (question is sourced from the form definition).
+ *
+ * `provenance` is intentionally always present, even when empty: the SDK's
+ * isFieldResponsesV4 duck-types V4 responses on its presence at read time
+ * (BE step comparison, FE next-step decrypt, admin viewer). Omitting it would
+ * make stored blobs misdetect as V3 and get double-adapted on read.
+ */
+type MrfWireFieldResponseV4 = {
+  fieldType: BasicField
+  answer: AnswerV4
+  provenance: ResponseProvenance
+}
+
+export type MrfWireResponsesV4 = Record<string, MrfWireFieldResponseV4>
+
+const toWireResponseV4 = (
+  fieldType: BasicField,
+  answer: AnswerV4,
+): MrfWireFieldResponseV4 => ({
+  fieldType,
+  answer,
+  provenance: {},
+})
+
+/**
+ * Builds V4-shaped MRF wire responses directly from form inputs.
+ * Mirrors {@link createResponsesV3}'s per-field empty-skip semantics; answer
+ * shapes follow the SDK's adaptV3ToV4 conversions, which is what the BE
+ * receiver shim produces for stale V3 clients.
+ */
+export const createResponsesV4 = (
+  formFields: FormFieldDto[],
+  formInputs: FormFieldValues,
+  fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[],
+): MrfWireResponsesV4 => {
+  const returnedInputs: MrfWireResponsesV4 = {}
+  for (const ff of formFields) {
+    switch (ff.fieldType) {
+      case BasicField.Number:
+      case BasicField.Decimal:
+      case BasicField.ShortText:
+      case BasicField.LongText:
+      case BasicField.HomeNo:
+      case BasicField.Dropdown:
+      case BasicField.Rating:
+      case BasicField.Nric:
+      case BasicField.Uen:
+      case BasicField.Date:
+      case BasicField.CountryRegion:
+      case BasicField.YesNo: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (!input) break
+        returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, {
+          value: input,
+        })
+        break
+      }
+      case BasicField.Address: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (
+          !input ||
+          Object.values(input.addressSubFields).every((value) => !value)
+        )
+          break
+        const answer: Record<string, { value: string }> = {}
+        for (const key of ADDRESS_SUBFIELD_KEYS) {
+          answer[key] = { value: input.addressSubFields[key] ?? '' }
+        }
+        returnedInputs[ff._id] = toWireResponseV4(
+          ff.fieldType,
+          answer as AddressAnswerV4,
+        )
+        break
+      }
+      case BasicField.Email:
+      case BasicField.Mobile: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (!input?.value) break
+        returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, {
+          value: input.value,
+          ...(input.signature !== undefined && { signature: input.signature }),
+        })
+        break
+      }
+      case BasicField.Table: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (!input) break
+        if (input.every((row) => Object.values(row).every((value) => !value))) {
+          break
+        }
+        const answer: TableAnswerV4 = {}
+        input.forEach((row, rowNum) => {
+          answer[generateUUID()] = { rowNum, value: row }
+        })
+        returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, answer)
+        break
+      }
+      case BasicField.Checkbox: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (
+          (!input?.value || input?.value.length === 0) &&
+          !input?.othersInput
+        ) {
+          break
+        }
+        returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, {
+          // `false` is a react-hook-form artifact of untouched checkboxes;
+          // normalize to an empty selection for the wire.
+          value: input.value === false ? [] : input.value,
+          ...(input.othersInput !== undefined && {
+            othersInput: input.othersInput,
+          }),
+        })
+        break
+      }
+      case BasicField.Children: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (
+          !input ||
+          input.child.every((child) => child.every((value) => !value))
+        ) {
+          break
+        }
+        const answer: ChildrenAnswerV4 = {}
+        input.child.forEach((child, i) => {
+          const value: ChildrenAnswerV4[string]['value'] = {}
+          input.childFields.forEach((attr, j) => {
+            value[attr] = { value: child[j] ?? '', myInfo: { attr } }
+          })
+          answer[`child${i}`] = { value }
+        })
+        returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, answer)
+        break
+      }
+      case BasicField.Attachment: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        if (!input) break
+        // for each attachment response, find the corresponding quarantine bucket key
+        const fieldIdToQuarantineKeyEntry = fieldIdToQuarantineKeyMap.find(
+          (v) => v.fieldId === ff._id,
+        )
+        if (!fieldIdToQuarantineKeyEntry)
+          throw new Error(
+            `Attachment response with fieldId ${ff._id} not found among attachments uploaded to quarantine bucket`,
+          )
+        returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, {
+          value: fieldIdToQuarantineKeyEntry.quarantineBucketKey,
+          hasBeenScanned: false, //TODO: FRM-1839 + FRM-1590 conditionally set to true if not replaced by respondent 2 onwards
+        })
+        break
+      }
+      case BasicField.Radio: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        const isOthersSelected = input?.value === RADIO_OTHERS_INPUT_VALUE
+        if (!isOthersSelected && input?.value) {
+          returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, {
+            value: input.value,
+            isOthersInput: false,
+          })
+        } else if (isOthersSelected && input?.othersInput) {
+          returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, {
+            value: input.othersInput,
+            isOthersInput: true,
+          })
+        }
+        break
+      }
+      case BasicField.Section:
+      case BasicField.Image:
+      case BasicField.Statement: {
+        break
+      }
+      case BasicField.Signature: {
+        const input = formInputs[ff._id] as
+          | FormFieldValue<typeof ff.fieldType>
+          | undefined
+        // since default value is {type: '', value: []}, empty array = no input
+        if (input && input?.value.length > 0) {
+          returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, {
+            value: input.value,
+            type: 'draw',
+          })
         }
         break
       }
