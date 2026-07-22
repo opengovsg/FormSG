@@ -1,5 +1,7 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   AttachmentSize,
   BasicField,
@@ -369,3 +371,34 @@ export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({}, 'infinite') } },
 }
+
+// With the editable-cards-mrf-logic flag on, the whole collapsed card is
+// clickable to edit and shows a hover affordance (border, background, and
+// pencil icon tint toward primary). Hover is interactive; view it in the
+// Storybook canvas. Stories without this decorator render the flag-off,
+// pencil-only behaviour.
+const editableCardsOnGrowthBook = new GrowthBook({
+  features: { [featureFlags.editableCardsMrfLogic]: { defaultValue: true } },
+})
+
+const withEditableCardsFlagOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={editableCardsOnGrowthBook}>
+    <Story />
+  </GrowthBookProvider>
+)
+
+export const WithWorkflowEditableCards = Template.bind({})
+WithWorkflowEditableCards.parameters = {
+  msw: { handlers: { default: buildMswRoutes(FORM_WITH_WORKFLOW) } },
+}
+WithWorkflowEditableCards.decorators = [withEditableCardsFlagOn]
+
+export const MobileWithWorkflowEditableCards = Template.bind({})
+MobileWithWorkflowEditableCards.parameters = {
+  msw: { handlers: { default: buildMswRoutes(FORM_WITH_WORKFLOW) } },
+  viewport: {
+    defaultViewport: 'mobile1',
+  },
+  chromatic: { viewports: [viewports.xs] },
+}
+MobileWithWorkflowEditableCards.decorators = [withEditableCardsFlagOn]
