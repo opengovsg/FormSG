@@ -8,6 +8,7 @@ import { LogicConditionState } from 'formsg-shared/types'
 import {
   cancelPendingSwitchSelector,
   completeSaveSelector,
+  isCreatingStateSelector,
   pendingSwitchToSelector,
   setToInactiveSelector,
   useAdminLogicStore,
@@ -132,6 +133,7 @@ export const EditLogicBlock = ({
 
   const pendingSwitchTo = useAdminLogicStore(pendingSwitchToSelector)
   const completeSave = useAdminLogicStore(completeSaveSelector)
+  const isCreatingState = useAdminLogicStore(isCreatingStateSelector)
 
   // Auto-save when another logic block is clicked while this one is open. The
   // editable-cards-mrf-logic flag gates this at the source (InactiveLogicBlock):
@@ -144,8 +146,11 @@ export const EditLogicBlock = ({
     // Submitting again would double-save and collapse the target.
     if (isLoading) return
 
-    if (!formMethods.formState.isDirty) {
-      // No changes to save, just switch directly.
+    // A new block has nothing persisted yet, so it must always run validation
+    // (like the Add logic button): an incomplete new block blocks the switch.
+    // An existing block that wasn't touched can switch directly without a
+    // redundant save.
+    if (!isCreatingState && !formMethods.formState.isDirty) {
       completeSave()
       return
     }
