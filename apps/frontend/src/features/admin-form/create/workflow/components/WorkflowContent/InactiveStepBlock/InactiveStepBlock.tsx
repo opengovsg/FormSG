@@ -16,6 +16,7 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import {
   createOrEditDataSelector,
+  requestSwitchToSelector,
   setToEditingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
@@ -103,16 +104,16 @@ export const InactiveStepBlock = ({
   const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
-
-  // Prevent editing step if some other step is being edited.
-  const isPreventEdit = useMemo(() => !!stateData, [stateData])
+  const requestSwitchTo = useAdminWorkflowStore(requestSwitchToSelector)
 
   const handleClick = useCallback(() => {
-    if (isPreventEdit) {
+    if (stateData) {
+      // Another step is being edited; request auto-save and switch.
+      requestSwitchTo(stepNumber)
       return
     }
     setToEditing(stepNumber)
-  }, [isPreventEdit, stepNumber, setToEditing])
+  }, [stateData, stepNumber, setToEditing, requestSwitchTo])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
@@ -155,7 +156,7 @@ export const InactiveStepBlock = ({
   }, [idToFieldMap, step.edit])
 
   return (
-    <Box pos="relative">
+    <Box pos="relative" role="group">
       <chakra.button
         type="button"
         w="100%"
@@ -166,9 +167,9 @@ export const InactiveStepBlock = ({
         borderColor="neutral.300"
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={isPreventEdit ? 'not-allowed' : 'auto'}
-        disabled={isPreventEdit}
-        aria-disabled={isPreventEdit}
+        cursor="pointer"
+        _groupHover={{ borderColor: 'primary.500', bg: 'primary.100' }}
+        onClick={handleClick}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
@@ -226,7 +227,9 @@ export const InactiveStepBlock = ({
           variant="clear"
           onClick={handleClick}
           icon={<BiPencil fontSize="1.5rem" />}
-          cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
+          cursor="pointer"
+          color="neutral.500"
+          _groupHover={{ color: 'primary.500' }}
         />
       }
     </Box>
