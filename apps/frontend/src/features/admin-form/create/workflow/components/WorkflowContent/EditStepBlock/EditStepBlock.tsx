@@ -166,7 +166,9 @@ export const EditStepBlock = ({
     cancelPendingSwitch,
   )
 
-  // Auto-save when the user clicks another step while this one is open.
+  // Auto-save when the user clicks another step while this one is open. The
+  // editable-cards-mrf-logic flag is checked at the source in InactiveStepBlock;
+  // when it is off, pendingSwitchTo is never set and this effect stays dormant.
   useEffect(() => {
     if (pendingSwitchTo === null) return
 

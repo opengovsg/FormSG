@@ -32,6 +32,7 @@ export const featureFlags = {
   enablePaperTrackingSetUpPage: 'enable-paper-tracking-set-up-page' as const,
   sidebarNavLabels: 'enable-sidebar-nav-labels' as const,
   fiveStarAdminRating: '5star-admin-rating' as const,
+  editableCardsMrfLogic: 'editable-cards-mrf-logic' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

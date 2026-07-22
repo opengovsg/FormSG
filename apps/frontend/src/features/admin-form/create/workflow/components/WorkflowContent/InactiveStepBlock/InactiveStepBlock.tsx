@@ -2,8 +2,10 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
 import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Dictionary } from 'lodash'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { BasicField, FormField } from 'formsg-shared/types'
 import { FormWorkflowStepDto, WorkflowType } from 'formsg-shared/types/form'
 import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
@@ -106,14 +108,24 @@ export const InactiveStepBlock = ({
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
   const requestSwitchTo = useAdminWorkflowStore(requestSwitchToSelector)
 
+  const isEditableCards = useFeatureIsOn(featureFlags.editableCardsMrfLogic)
+
+  // Flag off: fall back to the old behaviour of blocking edits while another
+  // step is open.
+  const isPreventEdit = !isEditableCards && !!stateData
+
   const handleClick = useCallback(() => {
     if (stateData) {
-      // Another step is being edited; request auto-save and switch.
-      requestSwitchTo(stepNumber)
+      // Another step is already open.
+      if (isEditableCards) {
+        // Auto-save that step and switch to this one.
+        requestSwitchTo(stepNumber)
+      }
+      // Flag off: editing is blocked while another step is open.
       return
     }
     setToEditing(stepNumber)
-  }, [stateData, stepNumber, setToEditing, requestSwitchTo])
+  }, [isEditableCards, stateData, stepNumber, setToEditing, requestSwitchTo])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
@@ -156,7 +168,7 @@ export const InactiveStepBlock = ({
   }, [idToFieldMap, step.edit])
 
   return (
-    <Box pos="relative" role="group">
+    <Box pos="relative" role={isEditableCards ? 'group' : undefined}>
       <chakra.button
         type="button"
         w="100%"
@@ -167,9 +179,17 @@ export const InactiveStepBlock = ({
         borderColor="neutral.300"
         transitionProperty="common"
         transitionDuration="normal"
-        cursor="pointer"
-        _groupHover={{ borderColor: 'primary.500', bg: 'primary.100' }}
-        onClick={handleClick}
+        cursor={
+          isEditableCards ? 'pointer' : isPreventEdit ? 'not-allowed' : 'auto'
+        }
+        disabled={isPreventEdit}
+        aria-disabled={isPreventEdit}
+        _groupHover={
+          isEditableCards
+            ? { borderColor: 'primary.500', bg: 'primary.100' }
+            : undefined
+        }
+        onClick={isEditableCards ? handleClick : undefined}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
@@ -227,9 +247,9 @@ export const InactiveStepBlock = ({
           variant="clear"
           onClick={handleClick}
           icon={<BiPencil fontSize="1.5rem" />}
-          cursor="pointer"
-          color="neutral.500"
-          _groupHover={{ color: 'primary.500' }}
+          cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
+          color={isEditableCards ? 'neutral.500' : undefined}
+          _groupHover={isEditableCards ? { color: 'primary.500' } : undefined}
         />
       }
     </Box>
