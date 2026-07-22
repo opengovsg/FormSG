@@ -40,12 +40,10 @@ export interface EditLogicBlockProps {
 export const FIELDS_TO_EDIT_NAME = 'edit'
 
 /**
- * Builds a workflow step payload from form inputs, or returns undefined when
- * the inputs cannot form a valid step.
- *
- * Inputs are assumed to have passed form validation (both save paths run it
- * via handleSubmit); the field narrowing below is a type-level guarantee, not
- * the validation gate.
+ * Builds a workflow step from form inputs, or undefined if they cannot form a
+ * valid step. Inputs are assumed already validated (both save paths run
+ * handleSubmit first), so the field narrowing here is a type guarantee, not the
+ * validation gate.
  */
 const buildWorkflowStep = (
   rawInputs: EditStepInputs,
@@ -107,8 +105,7 @@ const buildWorkflowStep = (
       }
     }
     default: {
-      // Exhaustiveness check: adding a new WorkflowType fails compilation
-      // here until this builder handles it.
+      // Exhaustiveness check: a new WorkflowType breaks the build here until handled.
       const exhaustiveCheck: never = inputs
       return exhaustiveCheck
     }
@@ -150,25 +147,22 @@ export const EditStepBlock = ({
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
-  // Used by both the Save button and the auto-save-on-switch below. Validates,
-  // then persists via onSubmit (the mutation's onSuccess completes any pending
-  // switch). An invalid submit cancels a pending switch so the card stays open
-  // with its errors shown; on the Save-button path there is no pending switch,
-  // so the cancel is a no-op.
+  // Shared by the Save button and the auto-save-on-switch effect. An invalid
+  // submit cancels any pending switch so the card stays open; the Save-button
+  // path never has a pending switch, so that cancel is a no-op there.
   const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
     const step = buildWorkflowStep(inputs, isFirstStep)
     if (step) onSubmit(step)
   }, cancelPendingSwitch)
 
-  // Auto-save when the user clicks another step while this one is open. The
-  // editable-cards-mrf-logic flag is checked at the source in InactiveStepBlock;
-  // when it is off, pendingSwitchTo is never set and this effect stays dormant.
+  // Auto-save when another step is clicked while this one is open. The
+  // editable-cards-mrf-logic flag gates this at the source (InactiveStepBlock):
+  // when off, pendingSwitchTo is never set and this effect stays dormant.
   useEffect(() => {
     if (pendingSwitchTo === null) return
 
-    // A save is already in flight; its onSuccess reads the latest
-    // pendingSwitchTo from the store and completes the switch. Submitting
-    // again here would double-save and collapse the switch target.
+    // A save is already in flight; its onSuccess completes the switch.
+    // Submitting again would double-save and collapse the target.
     if (isLoading) return
 
     if (!formMethods.formState.isDirty) {

@@ -372,11 +372,9 @@ Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({}, 'infinite') } },
 }
 
-// With the editable-cards-mrf-logic flag on, the whole collapsed card is
-// clickable to edit and shows a hover affordance (border, background, and
-// pencil icon tint toward primary). Hover is interactive; view it in the
-// Storybook canvas. Stories without this decorator render the flag-off,
-// pencil-only behaviour.
+// Flag on: the whole card is clickable and shows a hover affordance (border,
+// background, pencil tint). Hover only appears in the canvas (no pseudo-state
+// addon); stories without this decorator render the flag-off, pencil-only card.
 const editableCardsOnGrowthBook = new GrowthBook({
   features: { [featureFlags.editableCardsMrfLogic]: { defaultValue: true } },
 })

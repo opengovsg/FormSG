@@ -110,18 +110,16 @@ export const InactiveStepBlock = ({
 
   const isEditableCards = useFeatureIsOn(featureFlags.editableCardsMrfLogic)
 
-  // Flag off: fall back to the old behaviour of blocking edits while another
-  // step is open.
+  // Flag off: block editing while another step is open (previous behaviour).
   const isPreventEdit = !isEditableCards && !!stateData
 
   const handleClick = useCallback(() => {
     if (stateData) {
-      // Another step is already open.
+      // Another step is open: auto-save it and switch here when the flag is
+      // on; otherwise editing is blocked.
       if (isEditableCards) {
-        // Auto-save that step and switch to this one.
         requestSwitchTo(stepNumber)
       }
-      // Flag off: editing is blocked while another step is open.
       return
     }
     setToEditing(stepNumber)

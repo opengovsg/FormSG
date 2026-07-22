@@ -58,8 +58,7 @@ export const ActiveStepBlock = ({
         },
         {
           onSuccess: completeSave,
-          // Keep the card open and drop any pending switch so a failed
-          // auto-save cannot redirect a later successful save.
+          // Drop any pending switch so a failed save can't redirect a later one.
           onError: cancelPendingSwitch,
         },
       )

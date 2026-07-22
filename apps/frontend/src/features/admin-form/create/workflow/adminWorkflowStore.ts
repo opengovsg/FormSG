@@ -78,8 +78,7 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
     reset: () => set(INITIAL_STATE),
     requestSwitchTo: (target) => set({ pendingSwitchTo: target }),
     cancelPendingSwitch: () => set({ pendingSwitchTo: null }),
-    // After a save (or a switch away from an untouched card): complete a
-    // pending switch if one was requested, otherwise collapse the open card.
+    // Complete a pending switch if one was requested, else collapse the card.
     completeSave: () => {
       const pending = get().pendingSwitchTo
       if (pending !== null) {
