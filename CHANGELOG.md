@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.4.0](https://github.com/opengovsg/formsg/compare/v8.3.3...v8.4.0) (2026-07-22)
+
+
+### Features
+
+* v4 be cherry pick commits (#9776) ([#9776](https://github.com/opengovsg/formsg/commit/fa29b661a6735ec36335b8873bba3865e549f320))
+
 ## [8.3.3](https://github.com/opengovsg/formsg/compare/v8.3.2...v8.3.3) (2026-07-22)
 
 
