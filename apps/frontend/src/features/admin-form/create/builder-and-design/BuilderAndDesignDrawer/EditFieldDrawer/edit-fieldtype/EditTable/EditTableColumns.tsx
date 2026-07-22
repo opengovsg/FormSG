@@ -129,7 +129,9 @@ export const EditTableColumns = ({
             id={`columns.${index}.columnType`}
           >
             <VisuallyHidden>
-              <FormLabel>Column type</FormLabel>
+              <FormLabel>
+                {t('features.adminForm.sidebar.fields.table.columnType')}
+              </FormLabel>
             </VisuallyHidden>
             <Controller
               name={`columns.${index}.columnType`}
