@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { Divider, Stack } from '@chakra-ui/react'
 
@@ -12,6 +12,9 @@ import { SaveActionGroup } from '~features/admin-form/create/logic/components/Lo
 import { useUser } from '~features/user/queries'
 
 import {
+  cancelPendingSwitchSelector,
+  completeSaveSelector,
+  pendingSwitchToSelector,
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
@@ -40,7 +43,7 @@ export const FIELDS_TO_EDIT_NAME = 'edit'
  * Builds a workflow step payload from form inputs, or returns undefined when
  * the inputs cannot form a valid step.
  *
- * Inputs are assumed to have passed form validation (the save path runs it
+ * Inputs are assumed to have passed form validation (both save paths run it
  * via handleSubmit); the field narrowing below is a type-level guarantee, not
  * the validation gate.
  */
@@ -121,6 +124,9 @@ export const EditStepBlock = ({
   handleOpenDeleteModal,
 }: EditLogicBlockProps) => {
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
+  const pendingSwitchTo = useAdminWorkflowStore(pendingSwitchToSelector)
+  const completeSave = useAdminWorkflowStore(completeSaveSelector)
+  const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
@@ -151,6 +157,33 @@ export const EditStepBlock = ({
   }
 
   const handleSubmit = formMethods.handleSubmit(submitStep)
+
+  // Switching to another step runs the exact same validation as the Save
+  // button: a valid step saves (the mutation's onSuccess then completes the
+  // switch), an invalid one blocks — the errors show and the card stays open.
+  const handleSubmitAndSwitch = formMethods.handleSubmit(
+    submitStep,
+    cancelPendingSwitch,
+  )
+
+  // Auto-save when the user clicks another step while this one is open.
+  useEffect(() => {
+    if (pendingSwitchTo === null) return
+
+    // A save is already in flight; its onSuccess reads the latest
+    // pendingSwitchTo from the store and completes the switch. Submitting
+    // again here would double-save and collapse the switch target.
+    if (isLoading) return
+
+    if (!formMethods.formState.isDirty) {
+      // No changes to save, just switch directly.
+      completeSave()
+      return
+    }
+
+    handleSubmitAndSwitch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSwitchTo])
 
   return (
     <Stack
