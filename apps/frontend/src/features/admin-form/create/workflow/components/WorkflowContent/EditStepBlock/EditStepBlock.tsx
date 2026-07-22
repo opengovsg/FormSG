@@ -150,21 +150,15 @@ export const EditStepBlock = ({
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
-  const submitStep = (inputs: EditStepInputs) => {
+  // Used by both the Save button and the auto-save-on-switch below. Validates,
+  // then persists via onSubmit (the mutation's onSuccess completes any pending
+  // switch). An invalid submit cancels a pending switch so the card stays open
+  // with its errors shown; on the Save-button path there is no pending switch,
+  // so the cancel is a no-op.
+  const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
     const step = buildWorkflowStep(inputs, isFirstStep)
-    if (!step) return
-    onSubmit(step)
-  }
-
-  const handleSubmit = formMethods.handleSubmit(submitStep)
-
-  // Switching to another step runs the exact same validation as the Save
-  // button: a valid step saves (the mutation's onSuccess then completes the
-  // switch), an invalid one blocks — the errors show and the card stays open.
-  const handleSubmitAndSwitch = formMethods.handleSubmit(
-    submitStep,
-    cancelPendingSwitch,
-  )
+    if (step) onSubmit(step)
+  }, cancelPendingSwitch)
 
   // Auto-save when the user clicks another step while this one is open. The
   // editable-cards-mrf-logic flag is checked at the source in InactiveStepBlock;
@@ -183,7 +177,7 @@ export const EditStepBlock = ({
       return
     }
 
-    handleSubmitAndSwitch()
+    handleSubmit()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
 
