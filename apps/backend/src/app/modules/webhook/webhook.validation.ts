@@ -64,9 +64,14 @@ export const validateWebhookUrl = (webhookUrl: string): Promise<void> => {
       )
     }
 
+    // Use dns.lookup with `all: true` so BOTH IPv4 (A) and IPv6 (AAAA)
+    // records are validated. dns.resolve only returns A records, which would
+    // let a host with an internal-only AAAA record slip past the SSRF guard.
+    // It also matches the addresses Node's HTTP client actually connects to.
     dns
-      .resolve(webhookUrlParsed.hostname)
-      .then((addresses) => {
+      .lookup(webhookUrlParsed.hostname, { all: true })
+      .then((lookupAddresses) => {
+        const addresses = lookupAddresses.map(({ address }) => address)
         if (!addresses.length) {
           return reject(
             new WebhookValidationError(
