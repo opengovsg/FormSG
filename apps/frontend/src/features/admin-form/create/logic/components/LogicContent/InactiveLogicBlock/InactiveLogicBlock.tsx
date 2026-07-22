@@ -165,7 +165,7 @@ export const InactiveLogicBlock = ({
         top={{ base: '0.5rem', md: '2rem' }}
         right={{ base: '0.5rem', md: '2rem' }}
         pos="absolute"
-        aria-label="Delete logic"
+        aria-label="Edit logic"
         variant="clear"
         onClick={handleClick}
         icon={<BiPencil fontSize="1.5rem" />}
