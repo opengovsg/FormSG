@@ -36,6 +36,82 @@ export interface EditLogicBlockProps {
 
 export const FIELDS_TO_EDIT_NAME = 'edit'
 
+/**
+ * Builds a workflow step payload from form inputs, or returns undefined when
+ * the inputs cannot form a valid step.
+ *
+ * Inputs are assumed to have passed form validation (the save path runs it
+ * via handleSubmit); the field narrowing below is a type-level guarantee, not
+ * the validation gate.
+ */
+const buildWorkflowStep = (
+  rawInputs: EditStepInputs,
+  isFirstStep: boolean,
+): (FormWorkflowStep & { _id: string }) | undefined => {
+  const inputs = { ...rawInputs }
+  if (inputs.approval_field === '') {
+    inputs.approval_field = undefined
+  }
+  if (inputs.step_name === '') {
+    inputs.step_name = undefined
+  }
+
+  if (isFirstStep) {
+    return inputs.field
+      ? {
+          ...inputs,
+          workflow_type: WorkflowType.Dynamic,
+          field: inputs.field,
+        }
+      : {
+          ...inputs,
+          workflow_type: WorkflowType.Static,
+          emails: inputs.emails ?? [],
+        }
+  }
+
+  const workflowStepBase: FormWorkflowStepBase & { _id: string } = {
+    _id: inputs._id,
+    workflow_type: inputs.workflow_type,
+    edit: inputs.edit,
+    approval_field: inputs.approval_field,
+    step_name: inputs.step_name,
+  }
+
+  switch (inputs.workflow_type) {
+    case WorkflowType.Static: {
+      return {
+        ...workflowStepBase,
+        // Need to explicitly set workflow_type in this object to help with typechecking.
+        workflow_type: WorkflowType.Static,
+        emails: inputs.emails ?? [],
+      }
+    }
+    case WorkflowType.Dynamic: {
+      if (!inputs.field) return undefined
+      return {
+        ...workflowStepBase,
+        workflow_type: WorkflowType.Dynamic,
+        field: inputs.field,
+      }
+    }
+    case WorkflowType.Conditional: {
+      if (!inputs.conditional_field) return undefined
+      return {
+        ...workflowStepBase,
+        workflow_type: WorkflowType.Conditional,
+        conditional_field: inputs.conditional_field,
+      }
+    }
+    default: {
+      // Exhaustiveness check: adding a new WorkflowType fails compilation
+      // here until this builder handles it.
+      const exhaustiveCheck: never = inputs
+      return exhaustiveCheck
+    }
+  }
+}
+
 export const EditStepBlock = ({
   stepNumber,
   onSubmit,
@@ -66,76 +142,15 @@ export const EditStepBlock = ({
     }
   }, [])
 
-  const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
-    if (inputs.approval_field === '') {
-      inputs.approval_field = undefined
-    }
-
-    if (inputs.step_name === '') {
-      inputs.step_name = undefined
-    }
-
-    if (isFirstStepByStepNumber(stepNumber)) {
-      if (inputs.field) {
-        return onSubmit({
-          ...inputs,
-          workflow_type: WorkflowType.Dynamic,
-          field: inputs.field,
-        })
-      }
-      return onSubmit({
-        ...inputs,
-        workflow_type: WorkflowType.Static,
-        emails: inputs.emails ?? [],
-      })
-    }
-
-    let step: FormWorkflowStep & { _id: string }
-
-    const workflowStepBase: FormWorkflowStepBase & { _id: string } = {
-      _id: inputs._id,
-      workflow_type: inputs.workflow_type,
-      edit: inputs.edit,
-      approval_field: inputs.approval_field,
-      step_name: inputs.step_name,
-    }
-
-    switch (inputs.workflow_type) {
-      case WorkflowType.Static: {
-        step = {
-          ...workflowStepBase,
-          // Need to explicitly set workflow_type in this object to help with typechecking.
-          workflow_type: WorkflowType.Static,
-          emails: inputs.emails ?? [],
-        }
-        break
-      }
-      case WorkflowType.Dynamic: {
-        if (!inputs.field) return
-        step = {
-          ...workflowStepBase,
-          workflow_type: WorkflowType.Dynamic,
-          field: inputs.field,
-        }
-        break
-      }
-      case WorkflowType.Conditional: {
-        if (!inputs.conditional_field) return
-        step = {
-          ...workflowStepBase,
-          workflow_type: WorkflowType.Conditional,
-          conditional_field: inputs.conditional_field,
-        }
-        break
-      }
-      default: {
-        throw new Error('Invalid workflow type')
-      }
-    }
-    onSubmit(step)
-  })
-
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+
+  const submitStep = (inputs: EditStepInputs) => {
+    const step = buildWorkflowStep(inputs, isFirstStep)
+    if (!step) return
+    onSubmit(step)
+  }
+
+  const handleSubmit = formMethods.handleSubmit(submitStep)
 
   return (
     <Stack
