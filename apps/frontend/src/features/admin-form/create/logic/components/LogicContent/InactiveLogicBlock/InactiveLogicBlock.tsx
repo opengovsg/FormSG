@@ -1,13 +1,16 @@
 import { useCallback, useMemo } from 'react'
 import { BiPencil } from 'react-icons/bi'
 import { Box, Divider, Stack, StackDivider, Text } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { LogicDto, LogicType } from 'formsg-shared/types/form'
 
 import IconButton from '~components/IconButton'
 
 import {
   createOrEditDataSelector,
+  requestSwitchToSelector,
   setToEditingSelector,
   useAdminLogicStore,
 } from '../../../adminLogicStore'
@@ -27,9 +30,13 @@ export const InactiveLogicBlock = ({
   const { idToFieldMap } = useAdminFormLogic()
   const setToEditing = useAdminLogicStore(setToEditingSelector)
   const stateData = useAdminLogicStore(createOrEditDataSelector)
+  const requestSwitchTo = useAdminLogicStore(requestSwitchToSelector)
 
-  // Prevent editing logic if some other logic block is being edited.
-  const isPreventEdit = useMemo(() => !!stateData, [stateData])
+  const isEditableCards = useFeatureIsOn(featureFlags.editableCardsMrfLogic)
+
+  // Flag off: block editing while another logic block is open (previous
+  // behaviour).
+  const isPreventEdit = !isEditableCards && !!stateData
 
   const renderThenContent = useMemo(() => {
     if (!idToFieldMap) return null
@@ -79,16 +86,21 @@ export const InactiveLogicBlock = ({
   }, [logic, idToFieldMap])
 
   const handleClick = useCallback(() => {
-    if (isPreventEdit) {
+    if (stateData) {
+      // Another logic block is open: auto-save it and switch here when the flag
+      // is on; otherwise editing is blocked.
+      if (isEditableCards) {
+        requestSwitchTo(logic._id)
+      }
       return
     }
     setToEditing(logic._id)
-  }, [isPreventEdit, logic._id, setToEditing])
+  }, [isEditableCards, stateData, logic._id, setToEditing, requestSwitchTo])
 
   if (!idToFieldMap) return null
 
   return (
-    <Box pos="relative">
+    <Box pos="relative" role={isEditableCards ? 'group' : undefined}>
       <Box
         w="100%"
         textAlign="start"
@@ -96,8 +108,18 @@ export const InactiveLogicBlock = ({
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
-        cursor={isPreventEdit ? 'not-allowed' : 'auto'}
+        transitionProperty="common"
+        transitionDuration="normal"
+        cursor={
+          isEditableCards ? 'pointer' : isPreventEdit ? 'not-allowed' : 'auto'
+        }
         aria-disabled={isPreventEdit}
+        _groupHover={
+          isEditableCards
+            ? { borderColor: 'primary.500', bg: 'primary.100' }
+            : undefined
+        }
+        onClick={isEditableCards ? handleClick : undefined}
       >
         <Stack
           spacing="1.5rem"
@@ -149,6 +171,8 @@ export const InactiveLogicBlock = ({
         icon={<BiPencil fontSize="1.5rem" />}
         cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
         aria-disabled={isPreventEdit}
+        color={isEditableCards ? 'neutral.500' : undefined}
+        _groupHover={isEditableCards ? { color: 'primary.500' } : undefined}
       />
     </Box>
   )
