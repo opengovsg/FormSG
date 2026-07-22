@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { LogicDto } from 'formsg-shared/types'
 
 import {
-  setToInactiveSelector,
+  cancelPendingSwitchSelector,
+  completeSaveSelector,
   useAdminLogicStore,
 } from '../../../adminLogicStore'
 import { useLogicMutations } from '../../../mutations'
@@ -22,16 +23,19 @@ export const ActiveLogicBlock = ({
 }: ActiveLogicBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const { updateLogicMutation } = useLogicMutations()
-  const setToInactive = useAdminLogicStore(setToInactiveSelector)
+  const completeSave = useAdminLogicStore(completeSaveSelector)
+  const cancelPendingSwitch = useAdminLogicStore(cancelPendingSwitchSelector)
   const handleSubmit = useCallback(
     (inputs: EditLogicInputs) =>
       updateLogicMutation.mutate(
         { _id: logic._id, ...inputs },
         {
-          onSuccess: () => setToInactive(),
+          onSuccess: completeSave,
+          // Drop any pending switch so a failed save can't redirect a later one.
+          onError: cancelPendingSwitch,
         },
       ),
-    [logic._id, setToInactive, updateLogicMutation],
+    [logic._id, completeSave, cancelPendingSwitch, updateLogicMutation],
   )
 
   return (

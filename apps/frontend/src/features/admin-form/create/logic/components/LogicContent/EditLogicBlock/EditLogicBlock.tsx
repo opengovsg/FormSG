@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { Stack } from '@chakra-ui/react'
 import { merge } from 'lodash'
@@ -6,6 +6,9 @@ import { merge } from 'lodash'
 import { LogicConditionState } from 'formsg-shared/types'
 
 import {
+  cancelPendingSwitchSelector,
+  completeSaveSelector,
+  pendingSwitchToSelector,
   setToInactiveSelector,
   useAdminLogicStore,
 } from '../../../adminLogicStore'
@@ -32,6 +35,7 @@ export const useEditLogicBlock = ({
   onSubmit,
 }: UseEditLogicBlockProps) => {
   const setToInactive = useAdminLogicStore(setToInactiveSelector)
+  const cancelPendingSwitch = useAdminLogicStore(cancelPendingSwitchSelector)
   const { logicableFields, idToFieldMap, formFields } = useAdminFormLogic()
 
   const formMethods = useForm<EditLogicInputs>({
@@ -79,7 +83,12 @@ export const useEditLogicBlock = ({
     [logicConditionBlocks.length, remove],
   )
 
-  const handleSubmit = formMethods.handleSubmit((inputs) => onSubmit(inputs))
+  // An invalid submit cancels any pending switch so the card stays open; the
+  // Save-button path never has a pending switch, so that cancel is a no-op there.
+  const handleSubmit = formMethods.handleSubmit(
+    (inputs) => onSubmit(inputs),
+    cancelPendingSwitch,
+  )
 
   return {
     formMethods,
@@ -120,6 +129,30 @@ export const EditLogicBlock = ({
     idToFieldMap,
     formFields,
   } = useEditLogicBlock({ defaultValues, onSubmit })
+
+  const pendingSwitchTo = useAdminLogicStore(pendingSwitchToSelector)
+  const completeSave = useAdminLogicStore(completeSaveSelector)
+
+  // Auto-save when another logic block is clicked while this one is open. The
+  // editable-cards-mrf-logic flag gates this at the source (InactiveLogicBlock):
+  // when off, pendingSwitchTo is never set and this effect stays dormant. Shared
+  // by both the edit (ActiveLogicBlock) and create (NewLogicBlock) paths.
+  useEffect(() => {
+    if (pendingSwitchTo === null) return
+
+    // A save is already in flight; its onSuccess completes the switch.
+    // Submitting again would double-save and collapse the target.
+    if (isLoading) return
+
+    if (!formMethods.formState.isDirty) {
+      // No changes to save, just switch directly.
+      completeSave()
+      return
+    }
+
+    handleSubmit()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSwitchTo])
 
   return (
     <EditConditionWrapper ref={wrapperRef}>
