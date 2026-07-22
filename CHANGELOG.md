@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.3.3](https://github.com/opengovsg/formsg/compare/v8.3.2...v8.3.3) (2026-07-22)
+
+
+### Dependencies
+
+* **deps:** clear Dependabot alerts + fix ip SSRF bypass (2026-07) (#9774) ([#9774](https://github.com/opengovsg/formsg/commit/b61988ca37faf7b99147232aafae72c53a1b6df1))
+
+
+### Chores
+
+* revert v4 be (#9775) ([#9775](https://github.com/opengovsg/formsg/commit/cdc25de38ec1ac6ed708ecbe612aff30cf5c28ba))
+
 ## [8.3.2](https://github.com/opengovsg/formsg/compare/v8.3.1...v8.3.2) (2026-07-20)
 
 
