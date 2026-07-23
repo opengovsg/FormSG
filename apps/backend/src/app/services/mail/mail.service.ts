@@ -807,6 +807,7 @@ export class MailService {
 
     const refNo = String(submission.id)
     const formTitle = form.title
+    const formId = String(form._id)
     const submissionTime = moment(submission.created)
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
@@ -824,6 +825,13 @@ export class MailService {
     let fullDataCollationData
     if (dataCollationData) {
       fullDataCollationData = [
+        // Surface the form ID first so admins feeding this JSON through an
+        // automation can tell which form a response came from. Form ID is the
+        // stable identifier automations should route on.
+        {
+          question: 'Form ID',
+          answer: formId,
+        },
         {
           question: 'Response ID',
           answer: refNo,
@@ -858,7 +866,7 @@ export class MailService {
 
       return this.#sendEmailWithTemplate({
         emails: adminEmails,
-        formId: String(form._id),
+        formId,
         subject: `Response received - ${formTitle} (${refNo})`,
         htmlData: emailData,
         attachments: attachmentsToInclude,
