@@ -28,7 +28,11 @@ import {
 import expressHandler from '../../../../../__tests__/unit/backend/helpers/jest-express'
 import config from '../../../config/config'
 import { DatabaseError, MalformedParametersError } from '../../core/core.errors'
-import { FormNotFoundError } from '../../form/form.errors'
+import {
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import {
   MOCK_MYINFO_JWT,
@@ -293,6 +297,7 @@ describe('Verification controller', () => {
 
     beforeEach(async () => {
       MockFormService.retrieveFullFormById.mockReturnValue(okAsync(MOCK_FORM))
+      MockFormService.isFormPublic.mockReturnValue(ok(true))
 
       MockOtpUtils.generateOtpWithHash.mockReturnValue(
         okAsync({
@@ -1018,6 +1023,60 @@ describe('Verification controller', () => {
       expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
       expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 404 when form is private', async () => {
+      // Arrange
+      MockFormService.isFormPublic.mockReturnValueOnce(
+        err(new PrivateFormError('Form is private', MOCK_FORM.title)),
+      )
+      const expectedResponse = {
+        message:
+          'This form is no longer active, so OTPs can no longer be requested.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_FORM_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.NOT_FOUND)
+      expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
+    })
+
+    it('should return 410 when form is archived', async () => {
+      // Arrange
+      MockFormService.isFormPublic.mockReturnValueOnce(
+        err(new FormDeletedError()),
+      )
+      const expectedResponse = {
+        message:
+          'This form has been deleted, so OTPs can no longer be requested.',
+      }
+
+      // Act
+      await VerificationController._handleGenerateOtp(
+        MOCK_FORM_REQ,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
+        MOCK_FORM_ID,
+      )
+      expect(MockOtpUtils.generateOtpWithHash).not.toHaveBeenCalled()
+      expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.GONE)
       expect(mockRes.json).toHaveBeenCalledWith(expectedResponse)
     })
 

@@ -28,7 +28,11 @@ import {
   DatabaseValidationError,
   MalformedParametersError,
 } from '../core/core.errors'
-import { FormNotFoundError } from '../form/form.errors'
+import {
+  FormDeletedError,
+  FormNotFoundError,
+  PrivateFormError,
+} from '../form/form.errors'
 import {
   MyInfoCookieStateError,
   MyInfoInvalidLoginCookieError,
@@ -243,6 +247,18 @@ export const mapRouteError: MapRouteError = (
       return {
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.NOT_FOUND,
+      }
+    case PrivateFormError:
+      return {
+        errorMessage:
+          'This form is no longer active, so OTPs can no longer be requested.',
+        statusCode: StatusCodes.NOT_FOUND,
+      }
+    case FormDeletedError:
+      return {
+        errorMessage:
+          'This form has been deleted, so OTPs can no longer be requested.',
+        statusCode: StatusCodes.GONE,
       }
     case SmsLimitExceededError:
     case OtpRequestError:
