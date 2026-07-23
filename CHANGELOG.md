@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.5.0](https://github.com/opengovsg/formsg/compare/v8.4.0...v8.5.0) (2026-07-23)
+
+
+### Features
+
+* extract text from Logic Components (#9737) ([#9737](https://github.com/opengovsg/formsg/commit/a8b128f1c831864524c85628ca842439f1e005ad))
+
+
+### Bug Fixes
+
+* disable Others input when it isn't the selected option (#9784) ([#9784](https://github.com/opengovsg/formsg/commit/40e2db3929c7250b5afdc33963395d8521e33cae))
+* reject OTP generation when form is not public (#9783) ([#9783](https://github.com/opengovsg/formsg/commit/a3df6f3fbbd70bd301d0884c83d8916acc7907f6))
+* replace string placeholder in form feedback dialog (#9703) ([#9703](https://github.com/opengovsg/formsg/commit/7a0e594665655504a62ef3ce298504926a3281f1))
+
 ## [8.4.0](https://github.com/opengovsg/formsg/compare/v8.3.3...v8.4.0) (2026-07-22)
 
 
