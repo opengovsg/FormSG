@@ -5,5 +5,6 @@ export const spcpOidcLoginParamsMiddleware = celebrate({
     state: Joi.string().required(),
     code: Joi.string().required(),
     forwarded: Joi.string().optional(),
+    iss: Joi.string().optional(),
   }),
 })
