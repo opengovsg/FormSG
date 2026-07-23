@@ -251,13 +251,13 @@ export const mapRouteError: MapRouteError = (
     case PrivateFormError:
       return {
         errorMessage:
-          'This form is no longer active, so OTPs can no longer be requested.',
+          'This form has been taken down, so OTPs cannot be requested',
         statusCode: StatusCodes.NOT_FOUND,
       }
     case FormDeletedError:
       return {
         errorMessage:
-          'This form has been deleted, so OTPs can no longer be requested.',
+          'This form is no longer active, so OTPs cannot be requested',
         statusCode: StatusCodes.GONE,
       }
     case SmsLimitExceededError:
