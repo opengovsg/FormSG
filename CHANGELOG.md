@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.6.0](https://github.com/opengovsg/formsg/compare/v8.5.0...v8.6.0) (2026-07-23)
+
+
+### Features
+
+* reland v4 BE handling (reverts #9775) (#9785) ([#9775](https://github.com/opengovsg/formsg/commit/ed6bbd3fa548ce2d3d2d877bc04b398e9a3765ea))
+
 ## [8.5.0](https://github.com/opengovsg/formsg/compare/v8.4.0...v8.5.0) (2026-07-23)
 
 
