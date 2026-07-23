@@ -1,13 +1,22 @@
 import {
+  generateDefaultField,
   generateDefaultFieldV3,
   generateVerifiableAnswerResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { BasicField } from 'formsg-shared/types'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
+import {
+  ValidateFieldError,
+  ValidateFieldErrorV4,
+} from 'src/app/modules/submission/submission.errors'
 import { ProcessedFieldResponse } from 'src/app/modules/submission/submission.types'
-import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
+import {
+  validateField,
+  validateFieldV3,
+  validateFieldV4,
+} from 'src/app/utils/field-validation'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 import {
   FieldValidationSchema,
   IEmailFieldSchema,
@@ -1155,6 +1164,185 @@ describe('Email field validation V3', () => {
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Invalid answer submitted'),
+    )
+  })
+})
+
+describe('Email field validation V4', () => {
+  beforeEach(() => {
+    jest
+      .spyOn(
+        formsgSdk.verification as unknown as VerificationMock,
+        'authenticate',
+      )
+      .mockImplementation(() => true)
+  })
+
+  const makeEmailResponseV4 = (answer: {
+    value: string
+    signature?: string
+  }): ParsedClearFormFieldResponseV4 =>
+    ({
+      fieldType: BasicField.Email,
+      question: 'Email',
+      answer,
+      provenance: {},
+    }) as ParsedClearFormFieldResponseV4
+
+  it('should allow valid emails', () => {
+    const formField = generateDefaultField(BasicField.Email)
+    const response = makeEmailResponseV4({ value: 'valid@email.com' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should disallow invalid emails', () => {
+    const formField = generateDefaultField(BasicField.Email)
+    const response = makeEmailResponseV4({ value: 'invalidemail.com' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should allow email addresses whose email domain belongs to allowedEmailDomains', () => {
+    const formField = generateDefaultField(BasicField.Email, {
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@test.gov.sg'],
+    })
+    const response = makeEmailResponseV4({
+      value: 'volunteer-testing@test.gov.sg',
+    })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow email addresses supplied with a mixed-case domain', () => {
+    const formField = generateDefaultField(BasicField.Email, {
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@test.gov.sg'], // note: domains are always read lowercased from store
+    })
+    const response = makeEmailResponseV4({
+      value: 'volunteer-testing@TeSt.GoV.Sg', // mixed case domain
+    })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  // Regression: V4 previously used exact string equality and rejected valid
+  // wildcard-domain submissions that V3 accepted. See emailValidator.ts.
+  it('should allow email addresses matching a wildcard domain pattern (V4)', () => {
+    const formField = generateDefaultField(BasicField.Email, {
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@*.moe.gov.sg'],
+    })
+    const response = makeEmailResponseV4({ value: 'user@mail.moe.gov.sg' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow email addresses matching a multi-level wildcard subdomain (V4)', () => {
+    const formField = generateDefaultField(BasicField.Email, {
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@*.moe.gov.sg'],
+    })
+    const response = makeEmailResponseV4({ value: 'user@dept.mail.moe.gov.sg' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should not allow the base domain itself against a wildcard pattern (V4)', () => {
+    const formField = generateDefaultField(BasicField.Email, {
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@*.moe.gov.sg'],
+    })
+    const response = makeEmailResponseV4({ value: 'user@moe.gov.sg' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should not allow email addresses whose email domain does not belong to allowedEmailDomains', () => {
+    const formField = generateDefaultField(BasicField.Email, {
+      isVerifiable: false,
+      hasAllowedEmailDomains: true,
+      allowedEmailDomains: ['@example.com'],
+    })
+    const response = makeEmailResponseV4({ value: 'user@test.gov.sg' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should reject email addresses if isVerifiable is true but there is no signature present', () => {
+    const formField = generateDefaultField(BasicField.Email, {
+      isVerifiable: true,
+    })
+    const response = makeEmailResponseV4({ value: 'valid@email.com' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 })
