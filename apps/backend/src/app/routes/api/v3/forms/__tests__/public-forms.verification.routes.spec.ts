@@ -5,7 +5,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import { subMinutes, subYears } from 'date-fns'
-import { BasicField } from 'formsg-shared/types'
+import { BasicField, FormStatus } from 'formsg-shared/types'
 import {
   NUM_OTP_RETRIES,
   WAIT_FOR_OTP_SECONDS,
@@ -18,6 +18,7 @@ import nodemailer from 'nodemailer'
 import Mail from 'nodemailer/lib/mailer'
 import session, { Session } from 'supertest-session'
 
+import { getEmailFormModel } from 'src/app/models/form.server.model'
 import {
   generateFieldParams,
   MOCK_HASHED_OTP,
@@ -91,6 +92,8 @@ describe('public-forms.verification.routes', () => {
       mailDomain: MOCK_VALID_EMAIL_DOMAIN,
       formOptions: {
         form_fields: [emailField, mobileField],
+        // OTP generation requires the form to be public
+        status: FormStatus.Public,
       },
     })
     mockVerifiableFormId = String(verifiableForm._id)
@@ -287,6 +290,31 @@ describe('public-forms.verification.routes', () => {
       // Assert
       expect(response.status).toBe(StatusCodes.CREATED)
       expect(response.body).toContainKey('otpPrefix')
+    })
+
+    it('should return 404 when the form is not public', async () => {
+      // Arrange
+      await getEmailFormModel(mongoose).findByIdAndUpdate(
+        mockVerifiableFormId,
+        { status: FormStatus.Private },
+      )
+      const expectedResponse = {
+        message:
+          'This form is no longer active, so OTPs can no longer be requested.',
+      }
+
+      // Act
+      const response = await request
+        .post(
+          `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/generate`,
+        )
+        .send({
+          answer: 'open@gov.sg',
+        })
+
+      // Assert
+      expect(response.status).toBe(StatusCodes.NOT_FOUND)
+      expect(response.body).toEqual(expectedResponse)
     })
 
     it('should return 400 when fieldType is email but the provided email is not valid', async () => {
