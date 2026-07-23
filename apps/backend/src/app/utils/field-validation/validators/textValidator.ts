@@ -1,3 +1,4 @@
+import { StringAnswerV4 } from '@opengovsg/formsg-sdk'
 import {
   BasicField,
   LongTextResponseV3,
@@ -7,7 +8,10 @@ import {
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
+} from '../../../../types/api'
 import {
   ILongTextFieldSchema,
   IShortTextFieldSchema,
@@ -200,4 +204,104 @@ export const constructTextValidatorV3: ResponseValidatorConstructor<
     isTextFieldV3,
     chain(notEmptySingleAnswerResponseV3),
     chain(makeLengthValidatorV3(textField)),
+  )
+
+// V4
+
+type TextResponseV4 = ParsedClearFormFieldResponseV4 & {
+  fieldType: BasicField.ShortText | BasicField.LongText
+  answer: StringAnswerV4
+}
+
+const isTextFieldV4: ResponseValidator<
+  ParsedClearFormFieldResponseV4,
+  TextResponseV4
+> = (response) => {
+  if (
+    response.fieldType === BasicField.ShortText ||
+    response.fieldType === BasicField.LongText
+  ) {
+    return right(response as TextResponseV4)
+  }
+  return left(
+    `TextValidatorV4.fieldTypeMismatch:\tfield type is not textfield or textarea`,
+  )
+}
+
+const notEmptyTextAnswerV4: ResponseValidator<TextResponseV4> = (response) => {
+  if (!response.answer.value || response.answer.value.trim().length === 0) {
+    return left(
+      'TextValidatorV4.notEmpty:\tanswer is an undefined or empty string',
+    )
+  }
+  return right(response)
+}
+
+const minLengthValidatorV4: ResponseValidatorConstructor<
+  | OmitUnusedValidatorProps<IShortTextFieldSchema>
+  | OmitUnusedValidatorProps<ILongTextFieldSchema>,
+  TextResponseV4
+> = (textField) => (response) => {
+  const { customVal: min } = textField.ValidationOptions
+  if (min === null) return right(response)
+  return response.answer.value.length >= (min || 0)
+    ? right(response)
+    : left(`TextValidatorV4.minLength:\tanswer is less than minimum of ${min}`)
+}
+
+const maxLengthValidatorV4: ResponseValidatorConstructor<
+  | OmitUnusedValidatorProps<IShortTextFieldSchema>
+  | OmitUnusedValidatorProps<ILongTextFieldSchema>,
+  TextResponseV4
+> = (textField) => (response) => {
+  const { customVal: max } = textField.ValidationOptions
+  if (max === null) return right(response)
+  return response.answer.value.length <= (max || 0)
+    ? right(response)
+    : left(
+        `TextValidatorV4.maxLength:\tanswer is greater than maximum of ${max}`,
+      )
+}
+
+const exactLengthValidatorV4: ResponseValidatorConstructor<
+  | OmitUnusedValidatorProps<IShortTextFieldSchema>
+  | OmitUnusedValidatorProps<ILongTextFieldSchema>,
+  TextResponseV4
+> = (textField) => (response) => {
+  const { customVal: exact } = textField.ValidationOptions
+  if (exact === null) return right(response)
+  return response.answer.value.length === exact
+    ? right(response)
+    : left(
+        `TextValidatorV4.exactLength:\tanswer is not exactly equal to ${exact}`,
+      )
+}
+
+const makeLengthValidatorV4: ResponseValidatorConstructor<
+  | OmitUnusedValidatorProps<IShortTextFieldSchema>
+  | OmitUnusedValidatorProps<ILongTextFieldSchema>,
+  TextResponseV4
+> = (textField) => {
+  switch (textField.ValidationOptions.selectedValidation) {
+    case TextSelectedValidation.Exact:
+      return exactLengthValidatorV4(textField)
+    case TextSelectedValidation.Minimum:
+      return minLengthValidatorV4(textField)
+    case TextSelectedValidation.Maximum:
+      return maxLengthValidatorV4(textField)
+    default:
+      return right
+  }
+}
+
+export const constructTextValidatorV4: ResponseValidatorConstructor<
+  | OmitUnusedValidatorProps<IShortTextFieldSchema>
+  | OmitUnusedValidatorProps<ILongTextFieldSchema>,
+  ParsedClearFormFieldResponseV4,
+  TextResponseV4
+> = (textField) =>
+  flow(
+    isTextFieldV4,
+    chain(notEmptyTextAnswerV4),
+    chain(makeLengthValidatorV4(textField)),
   )

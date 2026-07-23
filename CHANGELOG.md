@@ -2,6 +2,76 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.4.0](https://github.com/opengovsg/formsg/compare/v8.3.3...v8.4.0) (2026-07-22)
+
+
+### Features
+
+* v4 be cherry pick commits (#9776) ([#9776](https://github.com/opengovsg/formsg/commit/fa29b661a6735ec36335b8873bba3865e549f320))
+
+## [8.3.3](https://github.com/opengovsg/formsg/compare/v8.3.2...v8.3.3) (2026-07-22)
+
+
+### Dependencies
+
+* **deps:** clear Dependabot alerts + fix ip SSRF bypass (2026-07) (#9774) ([#9774](https://github.com/opengovsg/formsg/commit/b61988ca37faf7b99147232aafae72c53a1b6df1))
+
+
+### Chores
+
+* revert v4 be (#9775) ([#9775](https://github.com/opengovsg/formsg/commit/cdc25de38ec1ac6ed708ecbe612aff30cf5c28ba))
+
+## [8.3.2](https://github.com/opengovsg/formsg/compare/v8.3.1...v8.3.2) (2026-07-20)
+
+
+### Bug Fixes
+
+* **validation:** apply wildcard email domain matching to V4 validator (#9770) ([#9770](https://github.com/opengovsg/formsg/commit/dc000000c5c5b0471d34c3aac788332aff9b48f0))
+
+## [8.3.1](https://github.com/opengovsg/formsg/compare/v8.3.0...v8.3.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **mrf:** re-validate only changed fields on MRF submissions (#9769) ([#9769](https://github.com/opengovsg/formsg/commit/f90658c263c43dd04bbffb466cb3930213088824))
+
+## [8.3.0](https://github.com/opengovsg/formsg/compare/v8.2.0...v8.3.0) (2026-07-20)
+
+
+### Features
+
+* **mrf:** V4 response migration — PR 2/5 BE V4-native + V3 wire shim (#9637) ([#9637](https://github.com/opengovsg/formsg/commit/2a47c47e707d5c429257092c9b9ce78f3ff8e118))
+
+## [8.2.0](https://github.com/opengovsg/formsg/compare/v8.1.0...v8.2.0) (2026-07-16)
+
+
+### Features
+
+* **mrf:** V4 response migration — PR 1/5 foundation (types, utils, validators) (#9633) ([#9633](https://github.com/opengovsg/formsg/commit/7a4a4d42271c4ea1c0b29f981c3883935772b32a))
+
+
+### Bug Fixes
+
+* prevent pollution of v1 and v2 metrics due to different scales (#9763) ([#9763](https://github.com/opengovsg/formsg/commit/23cf1b3b58e5adddd6c33ad865b4e346a46e4836))
+
+
+### Dependencies
+
+* **deps:** resolve critical/high Dependabot alerts (#9764) ([#9764](https://github.com/opengovsg/formsg/commit/7bf093da4ce719f7310b9c1c143d78bacf4d4a90))
+
+## [8.1.0](https://github.com/opengovsg/formsg/compare/v8.0.3...v8.1.0) (2026-07-16)
+
+
+### Features
+
+* **workflow-builder-redesign:** add workflow-builder-redesign feature flag foundation (#9730) ([#9730](https://github.com/opengovsg/formsg/commit/82f5faf35730e6db58554a026b180e7442346d38))
+* extend admin feedback schema for 1-5 rating + triggers (#9684) ([#9684](https://github.com/opengovsg/formsg/commit/7ac910e958921c29dd7735ebbffc4176591136c7))
+
+
+### Chores
+
+* speed up jest runs by removing default local code coverage collection (#9757) ([#9757](https://github.com/opengovsg/formsg/commit/ab6c7015033aa970d633e642d6343c296ec375b2))
+
 ## [8.0.3](https://github.com/opengovsg/formsg/compare/v8.0.2...v8.0.3) (2026-07-14)
 
 

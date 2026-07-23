@@ -20,13 +20,24 @@ const AdminFeedbackSchema = new Schema<
     rating: {
       type: Number,
       min: 0,
-      max: 1,
+      max: 5,
       required: true,
     },
     comment: {
       type: String,
       required: false,
       trim: true,
+    },
+    triggerSource: {
+      type: String,
+      enum: ['field-edit', 'publish', 'workflow'],
+    },
+    formId: {
+      type: Schema.Types.ObjectId,
+    },
+    ratingChanged: {
+      type: Boolean,
+      default: false,
     },
   },
   {

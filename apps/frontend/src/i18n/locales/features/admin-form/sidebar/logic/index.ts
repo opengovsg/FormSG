@@ -6,6 +6,7 @@ export interface Logic {
   title: string
   and: string
   saveChangesBtn: string
+  cancelBtn: string
   helperText: string
   helperTextCta: string
   allowedFields: string
@@ -22,6 +23,20 @@ export interface Logic {
     show: string
     selectField: string
     selectResultType: string
+  }
+  inactiveBlock: {
+    if: string
+    thenShow: string
+    thenDisableSubmission: string
+    fieldRemoved: string
+  }
+  fieldBadge: {
+    fieldLabel: string
+  }
+  mutations: {
+    createSuccess: string
+    updateSuccess: string
+    deleteSuccess: string
   }
   logicCondition: {
     [LogicConditionState.Equal]: string
@@ -68,11 +83,15 @@ export interface Logic {
     removeBlock: string
     criteria: string
     condition: string
+    delete: string
+    logicName: string
   }
   errors: {
     conditionRequired: string
     fieldRequired: string
     fieldInvalid: string
+    fieldDeleted: string
+    formError: string
     disabledSubmissionMessage: string
     missingLogicCriteria: string
     missingLogicType: string
