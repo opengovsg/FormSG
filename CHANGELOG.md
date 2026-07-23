@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.6.2](https://github.com/opengovsg/formsg/compare/v8.6.1...v8.6.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* **spcp:** accept iss param on OIDC login callback (inc-1274) (#9789) ([#9789](https://github.com/opengovsg/formsg/commit/84785ec79af798861b1740200b2ed4132c67c39b))
+
 ## [8.6.1](https://github.com/opengovsg/formsg/compare/v8.6.0...v8.6.1) (2026-07-23)
 
 
