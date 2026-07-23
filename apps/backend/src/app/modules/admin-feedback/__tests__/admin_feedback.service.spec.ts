@@ -26,7 +26,7 @@ describe('feedback.service', () => {
     const MOCK_COMMENT = 'mock comment'
     const MOCK_ADMIN_FEEDBACK = new AdminFeedbackModel({
       userId: MOCK_USER_ID,
-      rating: MOCK_RATING,
+      csat: MOCK_RATING,
       comment: MOCK_COMMENT,
     })
 
@@ -41,7 +41,7 @@ describe('feedback.service', () => {
       // Act
       const actualResult = await AdminFeedbackService.insertAdminFeedback({
         userId: MOCK_USER_ID,
-        rating: MOCK_RATING,
+        csat: MOCK_RATING,
         comment: MOCK_COMMENT,
       })
 
@@ -54,7 +54,7 @@ describe('feedback.service', () => {
     it('should return Admin Feedback document on successful insertion without comment', async () => {
       const mock_feedback_no_comment = new AdminFeedbackModel({
         userId: MOCK_USER_ID,
-        rating: MOCK_RATING,
+        csat: MOCK_RATING,
       })
       // Arrange
       // Mock success.
@@ -66,7 +66,7 @@ describe('feedback.service', () => {
       // Act
       const actualResult = await AdminFeedbackService.insertAdminFeedback({
         userId: MOCK_USER_ID,
-        rating: MOCK_RATING,
+        csat: MOCK_RATING,
       })
 
       // Assert
@@ -80,7 +80,7 @@ describe('feedback.service', () => {
       const mockFormId = new ObjectId().toHexString()
       const mockFeedbackWithTrigger = new AdminFeedbackModel({
         userId: MOCK_USER_ID,
-        rating: MOCK_RATING,
+        csat: MOCK_RATING,
         comment: MOCK_COMMENT,
         triggerSource: mockTriggerSource,
         formId: mockFormId,
@@ -93,7 +93,7 @@ describe('feedback.service', () => {
 
       const actualResult = await AdminFeedbackService.insertAdminFeedback({
         userId: MOCK_USER_ID,
-        rating: MOCK_RATING,
+        csat: MOCK_RATING,
         comment: MOCK_COMMENT,
         triggerSource: mockTriggerSource,
         formId: mockFormId,
@@ -102,7 +102,7 @@ describe('feedback.service', () => {
       expect(insertSpy).toHaveBeenCalledTimes(1)
       expect(insertSpy).toHaveBeenCalledWith({
         userId: MOCK_USER_ID,
-        rating: MOCK_RATING,
+        csat: MOCK_RATING,
         comment: MOCK_COMMENT,
         triggerSource: mockTriggerSource,
         formId: mockFormId,
@@ -122,7 +122,7 @@ describe('feedback.service', () => {
       // Act
       const actualResult = await AdminFeedbackService.insertAdminFeedback({
         userId: MOCK_USER_ID,
-        rating: MOCK_RATING,
+        csat: MOCK_RATING,
       })
 
       // Assert
@@ -143,7 +143,7 @@ describe('feedback.service', () => {
       await AdminFeedbackModel.create({
         _id: MOCK_FEEDBACK_ID,
         userId: MOCK_USER_ID,
-        rating: MOCK_RATING,
+        csat: MOCK_RATING,
         comment: MOCK_COMMENT,
       })
     })
@@ -157,7 +157,7 @@ describe('feedback.service', () => {
       const actualResult = await AdminFeedbackService.updateAdminFeedback({
         feedbackId: MOCK_FEEDBACK_ID,
         userId: MOCK_USER_ID,
-        rating: newRating,
+        csat: newRating,
         comment: newComment,
       })
 
@@ -166,7 +166,7 @@ describe('feedback.service', () => {
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(newFeedback?.comment).toEqual(newComment)
-      expect(newFeedback?.rating).toEqual(newRating)
+      expect(newFeedback?.csat).toEqual(newRating)
     })
 
     it('should set ratingChanged to true when rating is updated', async () => {
@@ -175,13 +175,13 @@ describe('feedback.service', () => {
       await AdminFeedbackService.updateAdminFeedback({
         feedbackId: MOCK_FEEDBACK_ID,
         userId: MOCK_USER_ID,
-        rating: newRating,
+        csat: newRating,
       })
 
       const newFeedback = await AdminFeedbackModel.findById(MOCK_FEEDBACK_ID)
 
       expect(newFeedback?.ratingChanged).toEqual(true)
-      expect(newFeedback?.rating).toEqual(newRating)
+      expect(newFeedback?.csat).toEqual(newRating)
     })
 
     it('should not set ratingChanged when only comment is updated', async () => {
@@ -200,7 +200,7 @@ describe('feedback.service', () => {
       const newRating = 3
       const expectedResult = new AdminFeedbackModel({
         userId: MOCK_USER_ID,
-        rating: newRating,
+        csat: newRating,
         comment: MOCK_COMMENT,
       })
 
@@ -208,7 +208,7 @@ describe('feedback.service', () => {
       const actualResult = await AdminFeedbackService.updateAdminFeedback({
         feedbackId: MOCK_FEEDBACK_ID,
         userId: MOCK_USER_ID,
-        rating: newRating,
+        csat: newRating,
       })
 
       const newFeedback = await AdminFeedbackModel.findById(MOCK_FEEDBACK_ID)
@@ -216,14 +216,14 @@ describe('feedback.service', () => {
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(newFeedback?.comment).toEqual(expectedResult.comment)
-      expect(newFeedback?.rating).toEqual(expectedResult.rating)
+      expect(newFeedback?.csat).toEqual(expectedResult.csat)
     })
 
     it('should update feedback successfully with only comment changes', async () => {
       const newComment = 'new comment'
       const expectedResult = new AdminFeedbackModel({
         userId: MOCK_USER_ID,
-        rating: MOCK_RATING,
+        csat: MOCK_RATING,
         comment: newComment,
       })
 
@@ -239,7 +239,7 @@ describe('feedback.service', () => {
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(newFeedback?.comment).toEqual(expectedResult.comment)
-      expect(newFeedback?.rating).toEqual(expectedResult.rating)
+      expect(newFeedback?.csat).toEqual(expectedResult.csat)
     })
 
     it('should return ok if there are no changes to be made', async () => {

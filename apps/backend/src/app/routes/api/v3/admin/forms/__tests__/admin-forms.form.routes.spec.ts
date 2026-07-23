@@ -24,6 +24,7 @@ import mongoose, { Types } from 'mongoose'
 import { err, errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
+import { statsdClient } from 'src/app/config/datadog-statsd-client'
 import getAdminFeedbackModel from 'src/app/models/admin_feedback.server.model'
 import getFormModel, {
   getEmailFormModel,
@@ -3165,6 +3166,9 @@ describe('admin-form.form.routes', () => {
     const MOCK_RATING = 3
 
     it('should return 200 when the request is successful', async () => {
+      // Arrange
+      const distributionSpy = jest.spyOn(statsdClient, 'distribution')
+
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
@@ -3175,8 +3179,16 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.message).toContain(
         'Successfully submitted admin feedback',
       )
-      expect(resp.body.feedback.rating).toEqual(MOCK_RATING)
+      // Wire sends `rating`; it is stored and returned under the `csat` key.
+      expect(resp.body.feedback.csat).toEqual(MOCK_RATING)
+      expect(resp.body.feedback.rating).toBeUndefined()
       expect(resp.body.feedback.comment).toEqual(MOCK_COMMENT)
+      expect(distributionSpy).toHaveBeenCalledWith(
+        'formsg.users.feedback.csat',
+        MOCK_RATING,
+        1,
+        expect.objectContaining({ csat: `${MOCK_RATING}` }),
+      )
     })
 
     it('should return 200 when the request is successful without comments', async () => {
@@ -3190,7 +3202,7 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.message).toContain(
         'Successfully submitted admin feedback',
       )
-      expect(resp.body.feedback.rating).toEqual(MOCK_RATING)
+      expect(resp.body.feedback.csat).toEqual(MOCK_RATING)
       expect(resp.body.feedback.comment).toBeUndefined()
     })
 
@@ -3279,7 +3291,8 @@ describe('admin-form.form.routes', () => {
       expect(resp.status).toEqual(200)
       expect(resp.body.message).toEqual('Successfully updated admin feedback')
       expect(updatedFeedback?.comment).toEqual(MOCK_NEW_COMMENT)
-      expect(updatedFeedback?.rating).toEqual(MOCK_NEW_RATING)
+      // Wire sends `rating`; it is stored under the `csat` key.
+      expect(updatedFeedback?.csat).toEqual(MOCK_NEW_RATING)
     })
 
     it('should return 200 without changes if request is successful without a body', async () => {
