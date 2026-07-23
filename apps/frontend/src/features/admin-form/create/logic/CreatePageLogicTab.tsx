@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Box, Container, Flex, Spacer } from '@chakra-ui/react'
 
@@ -11,6 +12,7 @@ import { useAdminFormLogic } from './hooks/useAdminFormLogic'
 import { useAdminLogicStore } from './adminLogicStore'
 
 export const CreatePageLogicTab = (): JSX.Element => {
+  const { t } = useTranslation()
   const { createOrEditData, setToCreating, reset } = useAdminLogicStore(
     useCallback((state) => {
       return {
@@ -51,7 +53,7 @@ export const CreatePageLogicTab = (): JSX.Element => {
               bottom={{ base: '5rem', md: undefined }}
               right={{ base: '1rem', md: undefined }}
               icon={<BiPlus fontSize="1.5rem" />}
-              aria-label="Add logic"
+              aria-label={t('features.adminForm.sidebar.logic.addLogicBtn')}
               isDisabled={!!createOrEditData}
               onClick={setToCreating}
             />

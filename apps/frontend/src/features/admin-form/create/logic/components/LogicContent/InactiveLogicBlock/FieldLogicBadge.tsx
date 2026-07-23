@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Box, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { BxsErrorCircle, BxsInfoCircle } from '~assets/icons'
@@ -15,7 +16,7 @@ interface FieldLogicBadgeProps {
   field?: FormFieldWithQuestionNo
   defaults?: {
     variant: 'error' | 'info'
-    message: string
+    message?: string
   }
 }
 
@@ -26,9 +27,17 @@ export const FieldLogicBadge = ({
   field,
   defaults = {
     variant: 'error',
-    message: 'This field was deleted, please select another field',
   },
 }: FieldLogicBadgeProps) => {
+  const { t } = useTranslation()
+
+  const message = useMemo(
+    () =>
+      defaults.message ??
+      t('features.adminForm.sidebar.logic.errors.fieldDeleted'),
+    [defaults.message, t],
+  )
+
   const fieldMeta = useMemo(
     () => (field ? BASICFIELD_TO_DRAWER_META[field.fieldType] : null),
     [field],
@@ -53,8 +62,13 @@ export const FieldLogicBadge = ({
   }, [defaults.variant, fieldMeta])
 
   const tooltipLabel = useMemo(
-    () => (!fieldMeta ? defaults.message : `${fieldMeta.label} field`),
-    [fieldMeta, defaults.message],
+    () =>
+      !fieldMeta
+        ? message
+        : t('features.adminForm.sidebar.logic.fieldBadge.fieldLabel', {
+            label: fieldMeta.label,
+          }),
+    [fieldMeta, message, t],
   )
 
   const tooltipIcon = useMemo(() => {
@@ -79,7 +93,7 @@ export const FieldLogicBadge = ({
           <Text noOfLines={1}>{getLogicFieldLabel(field)}</Text>
         ) : (
           <Text textColor={textColor} noOfLines={1}>
-            {defaults.message}
+            {message}
           </Text>
         )}
       </Stack>

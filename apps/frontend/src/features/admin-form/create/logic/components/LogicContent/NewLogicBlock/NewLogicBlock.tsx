@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import {
   setToInactiveSelector,
@@ -16,6 +17,7 @@ export interface NewLogicBlockProps {
 export const NewLogicBlock = ({
   _defaultValues,
 }: NewLogicBlockProps): JSX.Element => {
+  const { t } = useTranslation()
   const { createLogicMutation } = useLogicMutations()
   const setToInactive = useAdminLogicStore(setToInactiveSelector)
   const handleSubmit = useCallback(
@@ -31,7 +33,7 @@ export const NewLogicBlock = ({
       isLoading={createLogicMutation.isLoading}
       defaultValues={_defaultValues}
       onSubmit={handleSubmit}
-      submitButtonLabel="Add logic"
+      submitButtonLabel={t('features.adminForm.sidebar.logic.addLogicBtn')}
     />
   )
 }
