@@ -5,7 +5,10 @@ export type AdminFeedbackTriggerSource = 'field-edit' | 'publish' | 'workflow'
 export type AdminFeedbackRating = 1 | 2 | 3 | 4 | 5
 
 export type AdminFeedbackBase = {
-  rating: AdminFeedbackRating
+  /** @deprecated Legacy thumbs (0/1) key. Kept for historical rows; new rows use `csat`. */
+  rating?: number
+  /** CSAT: the 1-5 star satisfaction score. Own key so it never mixes with legacy `rating`. */
+  csat?: AdminFeedbackRating
   comment?: string
   triggerSource?: AdminFeedbackTriggerSource
   formId?: string
