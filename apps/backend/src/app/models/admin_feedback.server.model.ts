@@ -17,11 +17,20 @@ const AdminFeedbackSchema = new Schema<
       ref: USER_SCHEMA_ID,
       required: true,
     },
+    // Legacy thumbs (0/1) key. Optional so new rows can omit it in favour of `csat`.
     rating: {
       type: Number,
       min: 0,
       max: 5,
-      required: true,
+      required: false,
+    },
+    // CSAT: the new 1-5 star satisfaction score. Own key to keep it separate from
+    // legacy `rating` data.
+    csat: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: false,
     },
     comment: {
       type: String,
