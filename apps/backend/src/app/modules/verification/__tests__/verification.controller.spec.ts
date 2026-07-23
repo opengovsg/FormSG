@@ -1032,8 +1032,7 @@ describe('Verification controller', () => {
         err(new PrivateFormError('Form is private', MOCK_FORM.title)),
       )
       const expectedResponse = {
-        message:
-          'This form is no longer active, so OTPs can no longer be requested.',
+        message: 'This form has been taken down, so OTPs cannot be requested',
       }
 
       // Act
@@ -1059,8 +1058,7 @@ describe('Verification controller', () => {
         err(new FormDeletedError()),
       )
       const expectedResponse = {
-        message:
-          'This form has been deleted, so OTPs can no longer be requested.',
+        message: 'This form is no longer active, so OTPs cannot be requested',
       }
 
       // Act

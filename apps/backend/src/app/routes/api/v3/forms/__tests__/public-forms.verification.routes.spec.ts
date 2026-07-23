@@ -299,8 +299,7 @@ describe('public-forms.verification.routes', () => {
         { status: FormStatus.Private },
       )
       const expectedResponse = {
-        message:
-          'This form is no longer active, so OTPs can no longer be requested.',
+        message: 'This form has been taken down, so OTPs cannot be requested',
       }
 
       // Act
