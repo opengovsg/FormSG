@@ -14,20 +14,20 @@ const logger = createLoggerWithLabel(module)
 /**
  * Inserts given admin feedback to the database.
  * @param userId the userId of the admin that provided the feedback
- * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
+ * @param csat the 1-5 star satisfaction score to insert
  * @param comment the feedback comment to insert if available
  * @returns ok(IAdminFeedbackSchema) if successfully inserted
  * @returns err(DatabaseError) on database error
  */
 export const insertAdminFeedback = ({
   userId,
-  rating,
+  csat,
   comment,
   triggerSource,
   formId,
 }: {
   userId: string
-  rating: number
+  csat: number
   comment?: string
   triggerSource?: string
   formId?: string
@@ -35,7 +35,7 @@ export const insertAdminFeedback = ({
   return ResultAsync.fromPromise(
     AdminFeedbackModel.create({
       userId,
-      rating,
+      csat,
       comment,
       triggerSource,
       formId,
@@ -57,11 +57,11 @@ export const insertAdminFeedback = ({
 
 /**
  * Updates admin feedback in the database.
- * Will not update previous value if comment or rating is undefined
+ * Will not update previous value if comment or csat is undefined
  * @param feedbackId the id of the admin feedback to update
  * @param userId the id of the admin
  * @param comment the feedback comment to insert
- * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
+ * @param csat the 1-5 star satisfaction score to insert
  * @returns ok(IAdminFeedbackSchema) if successfully inserted
  * @returns err(MissingAdminFeedbackError) if feedback document with the same feedbackId and userId is not found
  * @returns err(DatabaseError) on database error
@@ -70,17 +70,18 @@ export const updateAdminFeedback = ({
   feedbackId,
   userId,
   comment,
-  rating,
+  csat,
 }: {
   feedbackId: string
   userId: string
   comment?: string
-  rating?: number
+  csat?: number
 }) => {
   const updateObj: Record<string, unknown> = {}
   if (comment !== undefined) updateObj.comment = comment
-  if (rating !== undefined) {
-    updateObj.rating = rating
+  if (csat !== undefined) {
+    updateObj.csat = csat
+    // `ratingChanged` is a pre-existing flag; it now reflects a `csat` edit.
     updateObj.ratingChanged = true
   }
 

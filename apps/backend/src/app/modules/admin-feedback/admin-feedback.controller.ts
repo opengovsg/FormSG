@@ -45,20 +45,22 @@ const submitAdminFeedback: ControllerHandler<
   const { rating, comment, triggerSource, formId } = req.body
 
   // Dual-emit: old metric kept so existing dashboards don't break during
-  // migration. New metric (.v2) for the 1-5 scale. Remove the old metric
-  // once report card has migrated to .v2.
+  // migration. New `.csat` metric is the 1-5 CSAT measure. Remove the old
+  // metric once the report card has migrated to `.csat`.
   statsdClient.distribution('formsg.users.feedback.rating', rating, 1, {
     rating: `${rating}`,
     ...(triggerSource ? { triggerSource } : {}),
   })
-  statsdClient.distribution('formsg.users.feedback.rating.v2', rating, 1, {
-    rating: `${rating}`,
+  statsdClient.distribution('formsg.users.feedback.csat', rating, 1, {
+    csat: `${rating}`,
     ...(triggerSource ? { triggerSource } : {}),
   })
 
+  // The wire keeps sending `rating`; store it under its own `csat` key so the
+  // new measure never mixes with legacy thumbs data.
   return AdminFeedbackService.insertAdminFeedback({
     userId: sessionUserId,
-    rating,
+    csat: rating,
     comment,
     triggerSource,
     formId,
@@ -109,11 +111,12 @@ const updateAdminFeedback: ControllerHandler<
 
   const { rating, comment } = req.body
 
+  // The wire keeps sending `rating`; store it under its own `csat` key.
   return AdminFeedbackService.updateAdminFeedback({
     feedbackId,
     userId: sessionUserId,
     comment,
-    rating,
+    csat: rating,
   })
     .map(() =>
       res
