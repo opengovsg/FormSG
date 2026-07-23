@@ -1,6 +1,6 @@
 {
   "name": "formsg-backend",
-  "version": "8.0.3",
+  "version": "8.4.0",
   "private": true,
   "homepage": ".",
   "scripts": {
@@ -72,8 +72,8 @@
     "http-errors": "^2.0.0",
     "http-status-codes": "^2.3.0",
     "intl-tel-input": "~12.4.0",
-    "ip": "^1.1.9",
     "ip-address": "^10.0.1",
+    "ipaddr.js": "^1.9.1",
     "jose": "^5.9.6",
     "jsdom": "^25.0.1",
     "json-stringify-safe": "^5.0.1",
@@ -145,7 +145,6 @@
     "@types/helmet": "4.0.0",
     "@types/html-escaper": "^3.0.2",
     "@types/http-errors": "^2.0.4",
-    "@types/ip": "^1.1.0",
     "@types/jest": "^29.5.1",
     "@types/jsdom": "^20.0.1",
     "@types/json-stringify-safe": "^5.0.3",

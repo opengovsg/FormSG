@@ -1,5 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
+import { featureFlags } from 'formsg-shared/constants'
 import { ErrorDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
@@ -17,8 +18,12 @@ const logger = createLoggerWithLabel(module)
 
 const valdiateSubmitAdminFeedbackParams = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().min(0).max(1).required(),
+    rating: Joi.number().integer().min(0).max(5).required(),
     comment: Joi.string(),
+    triggerSource: Joi.string()
+      .valid('field-edit', 'publish', 'workflow')
+      .optional(),
+    formId: Joi.string().optional(),
   }),
 })
 
@@ -35,20 +40,42 @@ const valdiateSubmitAdminFeedbackParams = celebrate({
 const submitAdminFeedback: ControllerHandler<
   unknown,
   { message: string; feedback: IAdminFeedbackSchema } | ErrorDto,
-  { rating: number; comment?: string }
+  { rating: number; comment?: string; triggerSource?: string; formId?: string }
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { rating, comment } = req.body
-
-  // send rating to DD
-  statsdClient.distribution('formsg.users.feedback.rating', rating, 1, {
+  const { rating, comment, triggerSource, formId } = req.body
+  const isFiveStarEnabled = req.growthbook?.isOn(
+    featureFlags.fiveStarAdminRating,
+  )
+  const metricTags = {
     rating: `${rating}`,
-  })
+    ...(triggerSource ? { triggerSource } : {}),
+  }
+
+  // RATIONALE: Emit to the correct metric so that the different rating scales do not pollute each other.
+  // TODO [USER-FEEDBACK-RATING-V2]: Remove the old v1 metric once report card has migrated to .v2.
+  if (!isFiveStarEnabled) {
+    statsdClient.distribution(
+      'formsg.users.feedback.rating',
+      rating,
+      1,
+      metricTags,
+    )
+  } else {
+    statsdClient.distribution(
+      'formsg.users.feedback.rating.v2',
+      rating,
+      1,
+      metricTags,
+    )
+  }
 
   return AdminFeedbackService.insertAdminFeedback({
     userId: sessionUserId,
     rating,
     comment,
+    triggerSource,
+    formId,
   })
     .map((adminFeedback) =>
       res.status(StatusCodes.OK).json({
@@ -79,7 +106,7 @@ export const handleSubmitAdminFeedback = [
 
 const validateUpdateAdminFormFeedback = celebrate({
   [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().min(0).max(1),
+    rating: Joi.number().integer().min(1).max(5),
     comment: Joi.string(),
   }),
 })

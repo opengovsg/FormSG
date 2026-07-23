@@ -126,3 +126,40 @@ export const makeSignatureValidatorV3 =
           `CommonValidatorV3.makeSignatureValidator:\t answer does not have valid signature. value: ${value}, signature: ${signature}`,
         )
   }
+
+/**
+ * A function which returns a signature validator constructor for mobile and email verified field (V4).
+ * V4 verifiable answer shape matches V3 ({ value, signature? }), but V4 chains should not depend on V3 helpers.
+ */
+export const makeSignatureValidatorV4 =
+  <T extends { answer: { value: string; signature?: string } }>(
+    formField:
+      | OmitUnusedValidatorProps<IEmailFieldSchema>
+      | OmitUnusedValidatorProps<IMobileFieldSchema>,
+  ) =>
+  (response: T) => {
+    const { isVerifiable, _id } = formField
+    if (!isVerifiable) {
+      return right(response) // no validation occurred
+    }
+    const { value, signature } = response.answer
+    if (!signature) {
+      return left(
+        `CommonValidatorV4.makeSignatureValidator:\t answer signature is missing. value: ${value}`,
+      )
+    }
+    const isSigned =
+      formsgSdk.verification.authenticate &&
+      formsgSdk.verification.authenticate({
+        signatureString: signature,
+        submissionCreatedAt: Date.now(),
+        fieldId: _id,
+        answer: value,
+      })
+
+    return isSigned
+      ? right(response)
+      : left(
+          `CommonValidatorV4.makeSignatureValidator:\t answer does not have valid signature. value: ${value}`,
+        )
+  }

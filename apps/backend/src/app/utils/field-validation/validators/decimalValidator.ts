@@ -1,10 +1,14 @@
+import { StringAnswerV4 } from '@opengovsg/formsg-sdk'
 import { BasicField, DecimalResponseV3 } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import isFloat from 'validator/lib/isFloat'
 import isInt from 'validator/lib/isInt'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
+} from '../../../../types/api'
 import {
   IDecimalFieldSchema,
   OmitUnusedValidatorProps,
@@ -159,4 +163,81 @@ export const constructDecimalValidatorV3: ResponseValidatorConstructor<
     chain(notEmptySingleAnswerResponseV3),
     chain(makeDecimalFloatRangeValidatorV3(decimalField)),
     chain(decimalLeadingPatternValidatorV3),
+  )
+
+// V4
+
+type DecimalResponseV4 = ParsedClearFormFieldResponseV4 & {
+  fieldType: BasicField.Decimal
+  answer: StringAnswerV4
+}
+
+const isDecimalFieldV4: ResponseValidator<
+  ParsedClearFormFieldResponseV4,
+  DecimalResponseV4
+> = (response) => {
+  if (response.fieldType !== BasicField.Decimal) {
+    return left(
+      'DecimalValidatorV4.fieldTypeMismatch:\tfield type is not decimal',
+    )
+  }
+  return right(response as DecimalResponseV4)
+}
+
+const notEmptyDecimalAnswerV4: ResponseValidator<DecimalResponseV4> = (
+  response,
+) => {
+  if (!response.answer.value || response.answer.value.trim().length === 0) {
+    return left(
+      'DecimalValidatorV4.notEmpty:\tanswer is an undefined or empty string',
+    )
+  }
+  return right(response)
+}
+
+const makeDecimalFloatRangeValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IDecimalFieldSchema>,
+  DecimalResponseV4
+> = (decimalField) => (response) => {
+  const { customMin, customMax } = decimalField.ValidationOptions
+  const { value } = response.answer
+
+  const isFloatOptions: IIsFloatOptions = {}
+
+  if (customMin || customMin === 0) {
+    isFloatOptions['min'] = customMin
+  }
+  if (customMax || customMax === 0) {
+    isFloatOptions['max'] = customMax
+  }
+
+  return isFloat(value, isFloatOptions)
+    ? right(response)
+    : left(`DecimalValidatorV4:\t answer is not a valid float`)
+}
+
+const decimalLeadingPatternValidatorV4: ResponseValidator<DecimalResponseV4> = (
+  response,
+) => {
+  const { value } = response.answer
+
+  const isLeadingPatternValid = isInt(value.split('.')[0], {
+    allow_leading_zeroes: false,
+  })
+
+  return isLeadingPatternValid
+    ? right(response)
+    : left(`DecimalValidatorV4:\t answer has invalid leading pattern`)
+}
+
+export const constructDecimalValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IDecimalFieldSchema>,
+  ParsedClearFormFieldResponseV4,
+  DecimalResponseV4
+> = (decimalField) =>
+  flow(
+    isDecimalFieldV4,
+    chain(notEmptyDecimalAnswerV4),
+    chain(makeDecimalFloatRangeValidatorV4(decimalField)),
+    chain(decimalLeadingPatternValidatorV4),
   )

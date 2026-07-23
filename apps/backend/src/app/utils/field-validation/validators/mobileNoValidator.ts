@@ -1,3 +1,4 @@
+import { VerifiableAnswerV4 } from '@opengovsg/formsg-sdk'
 import { BasicField, MobileResponseV3 } from 'formsg-shared/types'
 import {
   isMobilePhoneNumber,
@@ -6,7 +7,10 @@ import {
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
+} from '../../../../types/api'
 import {
   IMobileFieldSchema,
   OmitUnusedValidatorProps,
@@ -20,6 +24,7 @@ import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submi
 import {
   makeSignatureValidator,
   makeSignatureValidatorV3,
+  makeSignatureValidatorV4,
   notEmptySingleAnswerResponse,
   notEmptyVerifiableAnswerResponseV3,
 } from './common'
@@ -130,4 +135,68 @@ export const constructMobileNoValidatorV3: ResponseValidatorConstructor<
     chain(mobilePhoneNumberValidatorV3),
     chain(makeSignatureValidatorV3(mobileNumberField)),
     chain(makePrefixValidatorV3(mobileNumberField)),
+  )
+
+// V4
+
+type MobileResponseV4 = ParsedClearFormFieldResponseV4 & {
+  fieldType: BasicField.Mobile
+  answer: VerifiableAnswerV4
+}
+
+const isMobileResponseV4: ResponseValidator<
+  ParsedClearFormFieldResponseV4,
+  MobileResponseV4
+> = (response) => {
+  if (response.fieldType !== BasicField.Mobile) {
+    return left(`MobileValidatorV4.fieldTypeMismatch:\tfieldType is not mobile`)
+  }
+  return right(response as MobileResponseV4)
+}
+
+const notEmptyMobileAnswerV4: ResponseValidator<MobileResponseV4> = (
+  response,
+) => {
+  if (response.answer.value.trim().length === 0) {
+    return left(
+      'MobileNoValidatorV4.notEmpty:\tanswer value is an empty string',
+    )
+  }
+  return right(response)
+}
+
+const mobilePhoneNumberValidatorV4: ResponseValidator<MobileResponseV4> = (
+  response,
+) => {
+  return isMobilePhoneNumber(response.answer.value)
+    ? right(response)
+    : left(`MobileNoValidatorV4:\t answer is not a valid mobile phone number`)
+}
+
+const sgPrefixValidatorV4: ResponseValidator<MobileResponseV4> = (response) => {
+  return startsWithSgPrefix(response.answer.value)
+    ? right(response)
+    : left(
+        `MobileNoValidatorV4:\t answer is not an SG number but intl numbers are not allowed`,
+      )
+}
+
+const makePrefixValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IMobileFieldSchema>,
+  MobileResponseV4
+> = (mobileNumberField) => {
+  return mobileNumberField.allowIntlNumbers ? right : sgPrefixValidatorV4
+}
+
+export const constructMobileNoValidatorV4: ResponseValidatorConstructor<
+  OmitUnusedValidatorProps<IMobileFieldSchema>,
+  ParsedClearFormFieldResponseV4,
+  MobileResponseV4
+> = (mobileNumberField) =>
+  flow(
+    isMobileResponseV4,
+    chain(notEmptyMobileAnswerV4),
+    chain(mobilePhoneNumberValidatorV4),
+    chain(makeSignatureValidatorV4(mobileNumberField)),
+    chain(makePrefixValidatorV4(mobileNumberField)),
   )

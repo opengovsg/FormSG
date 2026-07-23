@@ -6,6 +6,7 @@ export const enSG: Logic = {
   title: 'Start creating logic for your form',
   and: 'and',
   saveChangesBtn: 'Save changes',
+  cancelBtn: 'Cancel',
   helperText:
     'Show or hide fields depending on user input, or disable form submission for invalid answers.',
   helperTextCta: 'Learn to work with logic',
@@ -24,6 +25,21 @@ export const enSG: Logic = {
     show: 'show',
     selectField: 'Select a field',
     selectResultType: 'Select a type of result',
+  },
+  inactiveBlock: {
+    if: 'If',
+    thenShow: 'then show',
+    thenDisableSubmission: 'then disable submission',
+    fieldRemoved: 'This field was deleted and has been removed from your logic',
+    clickToEdit: 'Click to edit',
+  },
+  fieldBadge: {
+    fieldLabel: '{{label}} field',
+  },
+  mutations: {
+    createSuccess: 'The logic was successfully created.',
+    updateSuccess: 'The logic was successfully updated.',
+    deleteSuccess: 'The logic was successfully deleted.',
   },
   logicCondition: {
     [LogicConditionState.Equal]: LogicConditionState.Equal,
@@ -78,11 +94,16 @@ export const enSG: Logic = {
     removeBlock: 'Remove logic condition block',
     criteria: 'Logic criteria',
     condition: 'Logic condition',
+    delete: 'Delete {{name}}',
+    logicName: 'logic',
   },
   errors: {
     conditionRequired: 'Please select a condition',
     fieldRequired: 'Please select a field.',
     fieldInvalid: 'Field is invalid or unable to accept logic.',
+    fieldDeleted: 'This field was deleted, please select another field',
+    formError:
+      "There are errors in your form's logic, please fix them before sharing your form",
     disabledSubmissionMessage:
       'Please enter a message to display when submission is prevented',
     missingLogicCriteria: 'Please enter logic criteria.',

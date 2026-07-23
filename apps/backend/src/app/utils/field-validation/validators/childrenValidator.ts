@@ -8,7 +8,10 @@ import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import _ from 'lodash'
 
-import { ParsedClearFormFieldResponseV3 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
+} from '../../../../types/api'
 import {
   IChildrenCompoundFieldSchema,
   OmitUnusedValidatorProps,
@@ -351,3 +354,13 @@ export const constructChildrenValidatorV3: ResponseValidatorConstructor<
     chain(isChildSubFieldsAndResponseSubFieldsMatchingV3(childrenField)),
   )
 }
+
+// V4
+// Children are not used in MRF — always pass
+export const constructChildrenValidatorV4 =
+  (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _childrenField: ChildrenCompoundFieldBase,
+  ): ResponseValidator<ParsedClearFormFieldResponseV4> =>
+  (response) =>
+    right(response)
