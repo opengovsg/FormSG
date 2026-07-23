@@ -160,6 +160,7 @@ import {
   UnsupportedSettingsError,
   ValidateFieldError,
   ValidateFieldErrorV3,
+  ValidateFieldErrorV4,
   VirusScanFailedError,
 } from './submission.errors'
 import {
@@ -341,6 +342,7 @@ const errorMapper: MapRouteError = (
       }
     case ValidateFieldError:
     case ValidateFieldErrorV3:
+    case ValidateFieldErrorV4:
     case DatabaseValidationError:
     case InvalidFileExtensionError:
     case AttachmentTooLargeError:
