@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.6.1](https://github.com/opengovsg/formsg/compare/v8.6.0...v8.6.1) (2026-07-23)
+
+
+### Bug Fixes
+
+* return 4xx instead of 5xx for MRF V4 field validation errors (#9788) ([#9788](https://github.com/opengovsg/formsg/commit/8c010739445f4598f9dd38e602d24df504a09d6a))
+
 ## [8.6.0](https://github.com/opengovsg/formsg/compare/v8.5.0...v8.6.0) (2026-07-23)
 
 
