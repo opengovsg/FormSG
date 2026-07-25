@@ -22,7 +22,7 @@ import { clone, omit, times } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, ok, okAsync } from 'neverthrow'
 import path from 'path'
-import { PassThrough, Readable, Transform } from 'stream'
+import { PassThrough, Transform } from 'stream'
 
 import { aws } from 'src/app/config/config'
 import getPendingSubmissionModel from 'src/app/models/pending_submission.server.model'
@@ -37,7 +37,7 @@ import {
 import { InvalidSubmissionIdError } from 'src/app/modules/feedback/feedback.errors'
 import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import MailService from 'src/app/services/mail/mail.service'
-import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
+import { CreatePresignedPostError, s3Operations } from 'src/app/utils/aws-s3'
 import { createQueryWithDateParam } from 'src/app/utils/date'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import {
@@ -1571,15 +1571,9 @@ describe('submission.service', () => {
       const actualTransformedData: any[] = []
 
       const awsSpy = jest
-        .spyOn(aws.s3, 'getSignedUrl')
-        // @ts-ignore
-        .mockImplementationOnce((_operation, _params, callback) =>
-          callback(null, mockFirstS3Url),
-        )
-        // @ts-ignore
-        .mockImplementationOnce((_operation, _params, callback) =>
-          callback(null, mockSecondS3Url),
-        )
+        .spyOn(s3Operations, 'getSignedUrl')
+        .mockResolvedValueOnce(mockFirstS3Url)
+        .mockResolvedValueOnce(mockSecondS3Url)
 
       // Act
       // Build pipeline.
@@ -1598,6 +1592,7 @@ describe('submission.service', () => {
       // Emit events.
       mockInput.emit('data', clone(MOCK_SUB_CURSOR_DATA_1))
       mockInput.emit('data', clone(MOCK_SUB_CURSOR_DATA_2))
+      await flushPromises()
 
       // Assert
       // Data from end of pipe should have their attachment metadatas replaced
@@ -1617,27 +1612,19 @@ describe('submission.service', () => {
       // Check external service calls.
       expect(awsSpy).toHaveBeenNthCalledWith(
         1,
-        'getObject',
         {
           Bucket: aws.attachmentS3Bucket,
           Key: MOCK_SUB_CURSOR_DATA_1.attachmentMetadata!['mockId1'],
-          Expires: expectedExpiry,
         },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        expect.any(Function),
+        expectedExpiry,
       )
       expect(awsSpy).toHaveBeenNthCalledWith(
         2,
-        'getObject',
         {
           Bucket: aws.attachmentS3Bucket,
           Key: MOCK_SUB_CURSOR_DATA_2.attachmentMetadata!['mockId2'],
-          Expires: expectedExpiry,
         },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        expect.any(Function),
+        expectedExpiry,
       )
     })
 
@@ -1646,7 +1633,7 @@ describe('submission.service', () => {
       const mockInput = new PassThrough()
       const expectedExpiry = 400
       const actualTransformedData: any[] = []
-      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrl')
+      const awsSpy = jest.spyOn(s3Operations, 'getSignedUrl')
 
       // Act
       // Build pipeline.
@@ -1674,7 +1661,7 @@ describe('submission.service', () => {
     it('should return empty data.attachmentMetadata when nothing to transform', async () => {
       // Arrange
       const mockInput = new PassThrough()
-      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrl')
+      const awsSpy = jest.spyOn(s3Operations, 'getSignedUrl')
       const expectedExpiry = 1
 
       const actualTransformedData: any[] = []
@@ -1706,7 +1693,7 @@ describe('submission.service', () => {
       const mockInput = new PassThrough()
       const expectedExpiry = 400
       const actualTransformedData: any[] = []
-      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrl')
+      const awsSpy = jest.spyOn(s3Operations, 'getSignedUrl')
 
       // Act
       // Build pipeline.
@@ -1736,11 +1723,8 @@ describe('submission.service', () => {
       const expectedExpiry = 1000
       // Mock AWS S3 error.
       const awsSpy = jest
-        .spyOn(aws.s3, 'getSignedUrl')
-        // @ts-ignore
-        .mockImplementationOnce((_operation, _params, callback) => {
-          return callback(expectedError)
-        })
+        .spyOn(s3Operations, 'getSignedUrl')
+        .mockRejectedValueOnce(expectedError)
       const mockInput = new PassThrough()
 
       // Act
@@ -1764,15 +1748,11 @@ describe('submission.service', () => {
       // Should reject since error is returned from callback.
       await expect(streamPromise).rejects.toEqual(expectedError)
       expect(awsSpy).toHaveBeenCalledWith(
-        'getObject',
         {
           Bucket: aws.attachmentS3Bucket,
           Key: MOCK_SUB_CURSOR_DATA_2.attachmentMetadata!['mockId2'],
-          Expires: expectedExpiry,
         },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        expect.any(Function),
+        expectedExpiry,
       )
     })
   })
@@ -2422,10 +2402,10 @@ describe('submission.service', () => {
       // Arrange
       // Mock promise implementation.
       jest
-        .spyOn(aws.s3, 'getSignedUrlPromise')
-        .mockImplementation((_operation, params) => {
+        .spyOn(s3Operations, 'getSignedUrl')
+        .mockImplementation((params, expiresIn) => {
           return Promise.resolve(
-            `https://some-fake-url/${params.Key}/${params.Expires}`,
+            `https://some-fake-url/${params.Key}/${expiresIn}`,
           )
         })
 
@@ -2447,7 +2427,7 @@ describe('submission.service', () => {
     it('should return empty object when given attachmentMetadata is undefined', async () => {
       // Arrange
       // Mock promise implementation.
-      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrlPromise')
+      const awsSpy = jest.spyOn(s3Operations, 'getSignedUrl')
 
       // Act
       const actualResult = await transformAttachmentMetasToSignedUrls(
@@ -2465,7 +2445,7 @@ describe('submission.service', () => {
     it('should return empty object when given attachmentMetadata is empty map', async () => {
       // Arrange
       // Mock promise implementation.
-      const awsSpy = jest.spyOn(aws.s3, 'getSignedUrlPromise')
+      const awsSpy = jest.spyOn(s3Operations, 'getSignedUrl')
 
       // Act
       const actualResult = await transformAttachmentMetasToSignedUrls(
@@ -2483,7 +2463,7 @@ describe('submission.service', () => {
     it('should return CreatePresignedPostError when error occurs during the signed url creation process', async () => {
       // Arrange
       jest
-        .spyOn(aws.s3, 'getSignedUrlPromise')
+        .spyOn(s3Operations, 'getSignedUrl')
         .mockResolvedValueOnce('this passed')
         .mockRejectedValueOnce(new Error('now this fails'))
 
@@ -2517,21 +2497,16 @@ describe('submission.service', () => {
 
     it('should return presigned post data', async () => {
       // Arrange
-      const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
-      const expectedCalledWithSubset = {
-        Bucket: aws.guarddutyQuarantineS3Bucket,
-        Fields: { key: expect.stringMatching(REGEX_UUID) },
-        Expires: 1 * 60, // expires in 1 minutes
-      }
-
-      const expectedPresignedPostDataGuardDuty = expect.objectContaining({
+      const expectedPresignedPostDataGuardDuty = {
         url: `${aws.endPoint}/${aws.guarddutyQuarantineS3Bucket}`,
-        fields: expect.objectContaining({
-          key: expect.stringMatching(REGEX_UUID),
+        fields: {
+          key: 'mock-key',
           bucket: aws.guarddutyQuarantineS3Bucket,
-          'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
-        }),
-      })
+        },
+      }
+      const awsSpy = jest
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockResolvedValue(expectedPresignedPostDataGuardDuty)
 
       // Act
       const actualResult = await getQuarantinePresignedPostData(
@@ -2544,45 +2519,41 @@ describe('submission.service', () => {
       expect(awsSpy.mock.calls).toEqual([
         [
           {
-            ...expectedCalledWithSubset,
             Bucket: aws.guarddutyQuarantineS3Bucket,
-            Fields: { key: uuid1 },
+            Key: uuid1,
+            Expires: 1 * 60, // expires in 1 minutes
             Conditions: [['content-length-range', 1, 1]],
+            Fields: {},
           },
-          expect.any(Function), // anonymous error handling function
         ],
         [
           {
-            ...expectedCalledWithSubset,
             Bucket: aws.guarddutyQuarantineS3Bucket,
-            Fields: { key: uuid2 },
+            Key: uuid2,
+            Expires: 1 * 60, // expires in 1 minutes
             Conditions: [['content-length-range', 1, 2]],
+            Fields: {},
           },
-          expect.any(Function), // anonymous error handling function
         ],
       ])
       const actualResultValue = actualResult._unsafeUnwrap()
-      expect(actualResultValue).toEqual(
-        expect.objectContaining([
-          {
-            id: fieldId1,
-            presignedPostData: expectedPresignedPostDataGuardDuty,
-          },
-          {
-            id: fieldId2,
-            presignedPostData: expectedPresignedPostDataGuardDuty,
-          },
-        ]),
-      )
+      expect(actualResultValue).toEqual([
+        {
+          id: fieldId1,
+          presignedPostData: expectedPresignedPostDataGuardDuty,
+        },
+        {
+          id: fieldId2,
+          presignedPostData: expectedPresignedPostDataGuardDuty,
+        },
+      ])
     })
 
-    it('should return CreatePresignedPostError when aws.s3.createPresignedPost throws error', async () => {
+    it('should return CreatePresignedPostError when s3Operations.createPresignedPost rejects', async () => {
       // Arrange
       const awsSpy = jest
-        .spyOn(aws.s3, 'createPresignedPost')
-        .mockImplementationOnce(() => {
-          throw new Error('some error')
-        })
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockRejectedValue(new Error('some error'))
 
       // Act
       const actualResult = await getQuarantinePresignedPostData(
@@ -2595,20 +2566,18 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new CreatePresignedPostError(),
       )
-      expect(awsSpy).toHaveBeenCalledWith(
-        {
-          Bucket: aws.guarddutyQuarantineS3Bucket,
-          Fields: { key: expect.stringMatching(REGEX_UUID) },
-          Expires: 1 * 60, // expires in 1 minutes
-          Conditions: [['content-length-range', 1, 1]],
-        },
-        expect.any(Function), // anonymous error handling function
-      )
+      expect(awsSpy).toHaveBeenCalledWith({
+        Bucket: aws.guarddutyQuarantineS3Bucket,
+        Key: expect.stringMatching(REGEX_UUID),
+        Expires: 1 * 60, // expires in 1 minutes
+        Conditions: [['content-length-range', 1, 1]],
+        Fields: {},
+      })
     })
 
     it('should return InvalidFieldIdError when ids are not valid mongodb object ids', async () => {
       // Arrange
-      const awsSpy = jest.spyOn(aws.s3, 'createPresignedPost')
+      const awsSpy = jest.spyOn(s3Operations, 'createPresignedPost')
 
       // Act
       const actualResult = await getQuarantinePresignedPostData([
@@ -2963,7 +2932,7 @@ describe('submission.service', () => {
     const MOCK_VALID_UUID = '0f3d2e22-d2aa-44f8-965a-27e46102936e'
     it('should return errAsync(InvalidFileKeyError) if cleanFileKey is invalid', async () => {
       // Arrange
-      const awsSpy = jest.spyOn(aws.s3, 'getObject')
+      const awsSpy = jest.spyOn(s3Operations, 'getObject')
 
       // Act
       // empty string for version id to simulate failure
@@ -2981,7 +2950,9 @@ describe('submission.service', () => {
 
     it('should return errAsync(DownloadCleanFileFailedError) if file download failed', async () => {
       // Arrange
-      const awsSpy = jest.spyOn(aws.s3, 'getObject')
+      const awsSpy = jest
+        .spyOn(s3Operations, 'getObject')
+        .mockRejectedValueOnce(new Error('download failed'))
 
       // Act
       // empty string for version id to simulate failure
@@ -2999,25 +2970,38 @@ describe('submission.service', () => {
       )
     })
 
+    it('should return errAsync(DownloadCleanFileFailedError) if file download has no body', async () => {
+      // Arrange
+      const awsSpy = jest
+        .spyOn(s3Operations, 'getObject')
+        .mockResolvedValueOnce({})
+
+      // Act
+      const actualResult = await downloadCleanFile(
+        MOCK_VALID_UUID,
+        'your-version-id',
+        'mock-bucket-name',
+      )
+
+      // Assert
+      expect(awsSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new DownloadCleanFileFailedError(),
+      )
+    })
+
     it('should return okAsync(buffer) if file has been successfully downloaded from the clean bucket', async () => {
       // Arrange
       const content = 'Mock file with a lot of text content!'
-      // Define a custom mock function for getObject
-      const mockGetObject = jest.fn().mockReturnValue({
-        createReadStream: () => {
-          // Create a readable stream with the desired content
-          const readStream = new Readable({
-            read() {
-              this.push(content)
-              this.push(null) // Indicates the end of the stream
-            },
-          })
-          return readStream
+      const mockGetObject = jest.fn().mockResolvedValue({
+        Body: {
+          transformToByteArray: () => Promise.resolve(Buffer.from(content)),
         },
       })
 
       const awsSpy = jest
-        .spyOn(aws.s3, 'getObject')
+        .spyOn(s3Operations, 'getObject')
         .mockImplementationOnce(mockGetObject)
 
       const versionId = 'your-version-id'
@@ -3117,6 +3101,8 @@ describe('submission.service', () => {
 /**
  * Helper function to create a transform stream that converts Buffers to strings.
  */
+const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
+
 const stringify = () =>
   new Transform({
     objectMode: true,

@@ -15,6 +15,7 @@ import { aws as AwsConfig } from '../../config/config'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
 import getSubmissionModel from '../../models/submission.server.model'
+import { getSignedS3Url } from '../../utils/aws-s3'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
@@ -84,11 +85,13 @@ const createWebhookSubmissionView = (
   // Generate S3 signed urls
   const signedUrlPromises: Record<string, Promise<string>> = {}
   for (const key in submissionWebhookView.data.attachmentDownloadUrls) {
-    signedUrlPromises[key] = AwsConfig.s3.getSignedUrlPromise('getObject', {
-      Bucket: AwsConfig.attachmentS3Bucket,
-      Key: submissionWebhookView.data.attachmentDownloadUrls[key],
-      Expires: 60 * 60, // one hour expiry
-    })
+    signedUrlPromises[key] = getSignedS3Url(
+      {
+        Bucket: AwsConfig.attachmentS3Bucket,
+        Key: submissionWebhookView.data.attachmentDownloadUrls[key],
+      },
+      60 * 60, // one hour expiry
+    )
   }
 
   return Bluebird.props(signedUrlPromises).then((signedUrls) => {
