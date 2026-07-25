@@ -3061,17 +3061,13 @@ describe('submission.service', () => {
           }),
         })
       })
-      // S3 streams back the clean file content.
-      const mockGetObject = jest.fn().mockReturnValue({
-        createReadStream: () =>
-          new Readable({
-            read() {
-              this.push(MOCK_CLEAN_CONTENT)
-              this.push(null)
-            },
-          }),
+      // S3 v3 exposes a transformed response body rather than getObject().createReadStream().
+      const mockGetObject = jest.fn().mockResolvedValue({
+        Body: {
+          transformToByteArray: () => Promise.resolve(Buffer.from(MOCK_CLEAN_CONTENT)),
+        },
       })
-      jest.spyOn(aws.s3, 'getObject').mockImplementationOnce(mockGetObject)
+      jest.spyOn(s3Operations, 'getObject').mockImplementationOnce(mockGetObject)
     }
 
     it('should promote the real filename (with extension) into answer.value after a clean scan', async () => {
