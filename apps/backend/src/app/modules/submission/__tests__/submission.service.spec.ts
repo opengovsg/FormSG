@@ -3064,10 +3064,13 @@ describe('submission.service', () => {
       // S3 v3 exposes a transformed response body rather than getObject().createReadStream().
       const mockGetObject = jest.fn().mockResolvedValue({
         Body: {
-          transformToByteArray: () => Promise.resolve(Buffer.from(MOCK_CLEAN_CONTENT)),
+          transformToByteArray: () =>
+            Promise.resolve(Buffer.from(MOCK_CLEAN_CONTENT)),
         },
       })
-      jest.spyOn(s3Operations, 'getObject').mockImplementationOnce(mockGetObject)
+      jest
+        .spyOn(s3Operations, 'getObject')
+        .mockImplementationOnce(mockGetObject)
     }
 
     it('should promote the real filename (with extension) into answer.value after a clean scan', async () => {
