@@ -44,5 +44,11 @@ export const getCreateFormProgress = ({
     currActiveIdx >= 0 &&
     currActiveIdx < steps.length
 
-  return { show, numIndicators: steps.length, currActiveIdx }
+  // currActiveIdx is only meaningful when shown; default to 0 otherwise so a
+  // consumer that ignores `show` can never read -1.
+  return {
+    show,
+    numIndicators: steps.length,
+    currActiveIdx: show ? currActiveIdx : 0,
+  }
 }
