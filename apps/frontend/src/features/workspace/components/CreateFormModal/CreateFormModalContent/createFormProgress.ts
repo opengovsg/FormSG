@@ -34,7 +34,7 @@ export const getCreateFormProgress = ({
   isPaperTrackingSetUpPageEnabled,
 }: {
   currentStep: CreateFormFlowStates
-  isLegacySetup?: boolean
+  isLegacySetup: boolean
   isPaperTrackingSetUpPageEnabled: boolean
 }): CreateFormProgress => {
   const steps = isLegacySetup ? LEGACY_STEPS : PAPER_TRACKING_STEPS
