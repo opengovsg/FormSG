@@ -1,4 +1,4 @@
-import type { FieldResponsesV4, FormFieldMeta } from '@opengovsg/formsg-sdk'
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import {
   adaptV3ToV4,
   adaptV4ToV3,
@@ -10,6 +10,7 @@ import { NextFunction } from 'express'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
+  FieldResponsesV3,
   FormAuthType,
   FormDto,
   FormFieldDto,
@@ -17,7 +18,6 @@ import {
   SubmissionType,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
-import _ from 'lodash'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
@@ -27,9 +27,9 @@ import {
 } from 'src/types'
 
 import {
-  ParsedClearAttachmentResponseV3,
-  ParsedClearFormFieldResponsesV3,
-  ParsedClearFormFieldResponseV3,
+  ParsedClearAttachmentFieldResponseV4,
+  ParsedClearFormFieldResponsesV4,
+  ParsedClearFormFieldResponseV4,
 } from '../../../../types/api'
 import {
   MultirespondentFormLoadedDto,
@@ -43,7 +43,7 @@ import {
   getVisibleFieldIdsV3,
 } from '../../../utils/logic-adaptor'
 import { createReqMeta } from '../../../utils/request'
-import { isFieldResponseV3Equal } from '../../../utils/response-v3'
+import { isFieldResponseV4Equal } from '../../../utils/response-v4'
 import { DatabaseError } from '../../core/core.errors'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
@@ -51,7 +51,7 @@ import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
-import { createNdiResponsesV3FromRecord } from '../../spcp/spcp.util'
+import { createNdiResponsesV4FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { VerifiedContentV3 } from '../../verified-content/verified-content.types'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
@@ -61,7 +61,7 @@ import {
   MissingSubmitterIdError,
   MrfWorkflowOverflowError,
   ProcessingError,
-  SubmissionEncryptionMismatchError,
+  StepTokenVerificationError,
   SubmissionEncryptionVerificationError,
   SubmissionNotFoundError,
 } from '../submission.errors'
@@ -69,7 +69,7 @@ import * as SubmissionService from '../submission.service'
 import {
   generateHashedSubmitterId,
   getEncryptedAttachmentsMapFromAttachmentsMap,
-  isAttachmentResponseV3,
+  isAttachmentResponseV4,
   mapRouteError,
 } from '../submission.utils'
 
@@ -83,9 +83,10 @@ import {
   MultirespondentSubmissionMiddlewareHandlerType,
   ProcessedMultirespondentSubmissionHandlerRequest,
   ProcessedMultirespondentSubmissionHandlerType,
-  StrippedAttachmentResponseV3,
+  StrippedAttachmentResponseV4,
 } from './multirespondent-submission.types'
 import { validateMrfFieldResponses } from './multirespondent-submission.utils'
+import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
 
@@ -94,8 +95,10 @@ const multirespondentSubmissionBodySchema = Joi.object({
     /^[a-fA-F0-9]{24}$/,
     Joi.object({
       fieldType: Joi.string().valid(...Object.values(BasicField)),
-      //TODO(MRF/FRM-1592): Improve this validation, should match ParsedClearFormFieldResponseV3
       answer: Joi.required(),
+      question: Joi.any().strip(),
+      provenance: Joi.object().optional(),
+      myInfo: Joi.object({ attr: Joi.string().required() }).optional(),
     }),
   ),
   responseMetadata: Joi.object({
@@ -110,17 +113,22 @@ export const validateMultirespondentSubmissionParams = celebrate({
   [Segments.BODY]: multirespondentSubmissionBodySchema,
 })
 
+const multirespondentSubmissionKeySchema = Joi.object({
+  submissionSecretKey: Joi.string().required(),
+  // RATIONALE: step token is optional for backwards compatibility with in-flight submissions
+  // and allow `mrf-step-write-token` gb flag to be off.
+  stepToken: Joi.string().optional(),
+})
+
 const updateMultirespondentSubmissionBodySchema =
-  multirespondentSubmissionBodySchema.append({
-    submissionSecretKey: Joi.string().required(),
-  })
+  multirespondentSubmissionBodySchema.concat(multirespondentSubmissionKeySchema)
 
 export const validateUpdateMultirespondentSubmissionParams = celebrate({
   [Segments.BODY]: updateMultirespondentSubmissionBodySchema,
 })
 
 export const validateMultirespondentRemindBody = celebrate({
-  [Segments.BODY]: Joi.object({ submissionSecretKey: Joi.string().required() }),
+  [Segments.BODY]: multirespondentSubmissionKeySchema,
 })
 
 const retrieveMultirespondentSubmissionIfExists = (
@@ -263,8 +271,8 @@ export const createFormsgAndRetrieveForm = (
     })
 }
 
-type IdTaggedParsedClearAttachmentResponseV3 =
-  ParsedClearAttachmentResponseV3 & { id: string }
+type IdTaggedParsedClearAttachmentResponseV4 =
+  ParsedClearAttachmentFieldResponseV4 & { id: string }
 
 /**
  * Asynchronous virus scanning for storage submissions v2.1+. This is used for non-dev environments.
@@ -272,10 +280,10 @@ type IdTaggedParsedClearAttachmentResponseV3 =
  * @returns all responses with clean attachments and their filename populated for any attachment fields.
  */
 const asyncVirusScanning = (
-  responses: IdTaggedParsedClearAttachmentResponseV3[],
+  responses: IdTaggedParsedClearAttachmentResponseV4[],
   formId: string,
 ): ResultAsync<
-  IdTaggedParsedClearAttachmentResponseV3,
+  IdTaggedParsedClearAttachmentResponseV4,
   SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
 >[] => {
   return responses.map((response) => {
@@ -283,13 +291,17 @@ const asyncVirusScanning = (
     // for us to compare the reliability of the services
 
     // use guardduty scan results
-    return SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
-      response.answer,
+    const { id, ...attachmentResponse } = response
+    return SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChainV4(
+      attachmentResponse,
       formId,
-    ).map((attachmentResponse) => ({
-      ...response,
-      answer: attachmentResponse,
-    }))
+    ).map(
+      (scannedResponse) =>
+        ({
+          ...scannedResponse,
+          id,
+        }) as IdTaggedParsedClearAttachmentResponseV4,
+    )
   })
 }
 
@@ -299,27 +311,33 @@ const asyncVirusScanning = (
  * @returns all responses with clean attachments and their filename populated for any attachment fields.
  */
 const devModeSyncVirusScanning = async (
-  responses: IdTaggedParsedClearAttachmentResponseV3[],
+  responses: IdTaggedParsedClearAttachmentResponseV4[],
   formId: string,
 ): Promise<
   Result<
-    IdTaggedParsedClearAttachmentResponseV3,
+    IdTaggedParsedClearAttachmentResponseV4,
     SubmissionService.TriggerGuardDutyScanThenDownloadCleanFileChainError
   >[]
 > => {
   const results = []
   for (const response of responses) {
     // await to pause for...of loop until the virus scanning and downloading of clean file is completed.
-    const attachmentResponse =
-      await SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChain(
-        response.answer,
+    const { id, ...attachmentResponse } = response
+    const scannedResult =
+      await SubmissionService.triggerGuardDutyScanThenDownloadCleanFileChainV4(
+        attachmentResponse,
         formId,
       )
-    if (attachmentResponse.isErr()) {
-      results.push(err(attachmentResponse.error))
+    if (scannedResult.isErr()) {
+      results.push(err(scannedResult.error))
       break
     }
-    results.push(ok({ ...response, answer: attachmentResponse.value }))
+    results.push(
+      ok({
+        ...scannedResult.value,
+        id,
+      } as IdTaggedParsedClearAttachmentResponseV4),
+    )
   }
   return results
 }
@@ -338,7 +356,7 @@ export const scanAndRetrieveAttachments = async (
   }
 
   // Step 1: Extract attachment responses into an array to prepare for virus scanning.
-  const attachmentResponsesToRetrieve: IdTaggedParsedClearAttachmentResponseV3[] =
+  const attachmentResponsesToRetrieve: IdTaggedParsedClearAttachmentResponseV4[] =
     Object.keys(req.body.responses)
       .map((id) => {
         const response = req.body.responses[id]
@@ -349,10 +367,13 @@ export const scanAndRetrieveAttachments = async (
         ) {
           return null
         }
-        return { id, ...response }
+        return {
+          id,
+          ...response,
+        } as unknown as IdTaggedParsedClearAttachmentResponseV4
       })
       .filter(
-        (value): value is IdTaggedParsedClearAttachmentResponseV3 =>
+        (value): value is IdTaggedParsedClearAttachmentResponseV4 =>
           value !== null,
       )
 
@@ -399,7 +420,9 @@ export const scanAndRetrieveAttachments = async (
 
   // Step 3: Update responses with new values.
   for (const idTaggedAttachmentResponse of scanAndRetrieveFilesResult.value) {
-    const { id, ...attachmentResponse } = idTaggedAttachmentResponse
+    const { id, ...attachmentResponseRaw } = idTaggedAttachmentResponse
+    const attachmentResponse =
+      attachmentResponseRaw as ParsedClearAttachmentFieldResponseV4
     // TODO: FRM-1839 Skip scanning if attachment has already been scanned
     attachmentResponse.answer.hasBeenScanned = true
     // Store the md5 hash in the DB as well for comparison later on.
@@ -408,7 +431,8 @@ export const scanAndRetrieveAttachments = async (
       .update(Buffer.from(attachmentResponse.answer.content))
       .digest()
       .toString()
-    req.body.responses[id] = attachmentResponse
+    req.body.responses[id] =
+      attachmentResponse as unknown as FieldResponsesV4[string]
   }
 
   return next()
@@ -459,8 +483,23 @@ export const validateMultirespondentSubmission = async (
   return (
     // Step 0: Prepare by retrieving relevant reference data
     ok(mrfSubmission)
+      // Step 0a: Verify write permissions by verifying step bearer token if exists
+      .andThen((mrfSubmission) => {
+        const isStepWriteTokenEnabled =
+          req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
+        if (isStepWriteTokenEnabled && mrfSubmission?.stepTokenHash) {
+          const presentedToken = req.body.stepToken
+          if (
+            !presentedToken ||
+            !stepToken.verify(presentedToken, mrfSubmission.stepTokenHash)
+          ) {
+            return err(new StepTokenVerificationError())
+          }
+        }
+        return ok(mrfSubmission)
+      })
       .andThen((mrfSubmission) =>
-        // Step 0a: If its an existing submission, use the reference data from
+        // Step 0b: If its an existing submission, use the reference data from
         // the submission rather than the form
         mrfSubmission
           ? ok({
@@ -492,7 +531,7 @@ export const validateMultirespondentSubmission = async (
           form_fields,
           form_logics,
         }) => {
-          // Step 0b: Determine editable fields based on the workflow step, if it exists.
+          // Step 0c: Determine editable fields based on the workflow step, if it exists.
           const editableFieldIds = (
             workflow[workflowStep]
               ? workflow[workflowStep].edit
@@ -505,14 +544,19 @@ export const validateMultirespondentSubmission = async (
             form_logics,
           } as Pick<FormDto, '_id' | 'form_fields' | 'form_logics'>
 
+          // Convert V4 responses to V3 for logic evaluation (logic engine uses V3 format)
+          const responsesV3ForLogic = adaptV4ToV3(
+            req.body.responses as FieldResponsesV4,
+          ) as unknown as FieldResponsesV3
+
           // Step 0c: Get visible fields based on evaluation of logic
           return getVisibleFieldIdsV3(
-            req.body.responses,
+            responsesV3ForLogic,
             formPropertiesForLogicComputation,
           ).andThen((visibleFieldIds) =>
             // Step 1: Check prevent submission logic
             getLogicUnitPreventingSubmitV3(
-              req.body.responses,
+              responsesV3ForLogic,
               formPropertiesForLogicComputation,
               visibleFieldIds,
             )
@@ -573,19 +617,26 @@ export const validateMultirespondentSubmission = async (
                 }
 
                 /**
-                 * Since the incoming client responses are in V3,
-                 * if previous submission was encrypted in V4 format, convert to V3
-                 * to facilitate comparison.
+                 * Since the incoming client responses are in V4,
+                 * if previous submission was encrypted in V3 format, convert to V4
+                 * to facilitate comparison. Comparison (isFieldResponseV4Equal)
+                 * only inspects fieldType + answer, so we skip the formFields
+                 * meta — question text and myInfo on the adapted response are
+                 * unused; downstream consumers source both from the form field.
                  */
                 const previousResponses = (() => {
                   const responses = previousSubmissionDecryptedContent.responses
-                  if (isFieldResponsesV4(responses)) {
-                    return adaptV4ToV3(
-                      responses as FieldResponsesV4,
-                    ) as ParsedClearFormFieldResponsesV3
+                  if (
+                    !isFieldResponsesV4(responses as Record<string, unknown>)
+                  ) {
+                    // Response is in V3 format, adapt to V4
+                    return adaptV3ToV4(responses, {
+                      formFields: {},
+                      provenance: {},
+                    }) as ParsedClearFormFieldResponsesV4
                   }
-                  // Response is in v3 format, return as is
-                  return responses as ParsedClearFormFieldResponsesV3
+                  // Response is in V4 format, return as is
+                  return responses as unknown as ParsedClearFormFieldResponsesV4
                 })()
 
                 const previousNonEditableFieldIdsWithResponses = Object.keys(
@@ -604,20 +655,9 @@ export const validateMultirespondentSubmission = async (
                     const incomingResField = req.body.responses[fieldId]
                     const prevResField = previousResponses[fieldId]
 
-                    if (
-                      prevResField.fieldType === BasicField.ShortText ||
-                      prevResField.fieldType === BasicField.LongText
-                    ) {
-                      // NOTE: LEGACY ISSUE
-                      // Since text fields were saved without trimming prior to https://github.com/opengovsg/FormSG/pull/7937.
-                      // Without this, isFieldResponseV3Equal fails since the prevResField was not trimmed,
-                      // causing a mismatch between the newly trimmed incomingResField.
-                      prevResField.answer = prevResField.answer.trim()
-                    }
-
-                    const resp = isFieldResponseV3Equal(
-                      incomingResField,
-                      prevResField,
+                    const resp = isFieldResponseV4Equal(
+                      incomingResField as FieldResponsesV4[string],
+                      prevResField as FieldResponsesV4[string],
                     )
 
                     if (!resp) {
@@ -646,11 +686,9 @@ export const validateMultirespondentSubmission = async (
                       incomingResField.fieldType === BasicField.Attachment &&
                       prevResField.fieldType === BasicField.Attachment
                     ) {
-                      incomingResField.answer.answer =
-                        prevResField.answer.answer
-
-                      incomingResField.answer.filename =
-                        prevResField.answer.answer
+                      ;(incomingResField.answer as { value: string }).value = (
+                        prevResField.answer as { value: string }
+                      ).value
                     }
 
                     return ok(undefined)
@@ -759,14 +797,12 @@ export const encryptSubmission = async (
   res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
   next: NextFunction,
 ) => {
-  const formDef = req.formsg.formDef
-
   void req.growthbook?.setAttributes({
     ...req.growthbook.getAttributes(),
     formId: req.params.formId,
-    formCreated: formDef.created?.toISOString(),
   })
 
+  const formDef = req.formsg.formDef
   const formPublicKey = formDef.publicKey
   const responses = req.body.responses
 
@@ -774,7 +810,7 @@ export const encryptSubmission = async (
 
   const strippedAttachmentResponses: Record<
     string,
-    ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
+    ParsedClearFormFieldResponseV4 | StrippedAttachmentResponseV4
   > = {}
 
   const unencryptedAttachments: IAttachmentInfo[] = []
@@ -782,65 +818,45 @@ export const encryptSubmission = async (
   // Populate attachment map
   for (const id of Object.keys(responses)) {
     const response = responses[id]
-    if (response.fieldType !== BasicField.Attachment) {
+    if (!isAttachmentResponseV4(response)) {
       strippedAttachmentResponses[id] = response
       continue
     }
     attachmentsMap[id] = response.answer.content
-    strippedAttachmentResponses[id] = {
-      ...response,
-      answer: { ...response.answer, filename: undefined, content: undefined },
-    }
+    const attachmentRes = response as ParsedClearAttachmentFieldResponseV4
+    const strippedAttachment = {
+      ...attachmentRes,
+      answer: {
+        value: attachmentRes.answer.value,
+        hasBeenScanned: attachmentRes.answer.hasBeenScanned,
+        md5Hash: attachmentRes.answer.md5Hash,
+        filename: undefined,
+        content: undefined,
+      },
+    } as unknown as StrippedAttachmentResponseV4
+    strippedAttachmentResponses[id] = strippedAttachment
 
     // collect unencrypted attachments to include in email notifications
-    if (isAttachmentResponseV3(response)) {
-      unencryptedAttachments.push({
-        filename: response.answer.filename,
-        content: response.answer.content,
-        fieldId: id,
-      })
-    }
+    unencryptedAttachments.push({
+      filename: response.answer.filename,
+      content: response.answer.content,
+      fieldId: id,
+    })
   }
 
   if (req.formsg) {
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
-  const useV4Encryption =
-    (req.growthbook?.isOn(featureFlags.answerObjectEncryption) &&
-      !formDef.webhook?.url) ??
-    false
-
-  let responsesToEncrypt:
-    | Record<
-        string,
-        ParsedClearFormFieldResponseV3 | StrippedAttachmentResponseV3
-      >
-    | FieldResponsesV4 = strippedAttachmentResponses
-
-  if (useV4Encryption) {
-    logger.info({
-      message: 'Using V4 encryption for submission',
-      meta: {
-        action: 'encryptSubmission',
-        formId: req.params.formId,
-        submissionId: req.params.submissionId,
-      },
-    })
-    // Build FormFieldMeta map from form definition for question text
-    const formFieldMeta: Record<string, FormFieldMeta> = {}
-    for (const field of formDef.form_fields) {
-      formFieldMeta[field._id] = {
-        question: field.title,
-        ...(field.myInfo?.attr && { myInfo: { attr: field.myInfo.attr } }),
-      }
-    }
-
-    responsesToEncrypt = adaptV3ToV4(strippedAttachmentResponses, {
-      formFields: formFieldMeta,
-      provenance: {},
-    })
-  }
+  // Webhook compatibility: forms with webhooks have downstream consumers that
+  // parse the encrypted payload as V3-shaped (mrfVersion: 1). Convert back to
+  // V3 just for the encryption blob; in-process state (encryptedPayload.responses,
+  // emails, NDI handling) stays V4.
+  const hasWebhook = !!formDef.webhook?.url
+  const responsesToEncrypt = hasWebhook
+    ? adaptV4ToV3(strippedAttachmentResponses as unknown as FieldResponsesV4)
+    : strippedAttachmentResponses
+  const mrfVersion: 1 | 2 = hasWebhook ? 1 : 2
 
   const {
     encryptedContent,
@@ -850,7 +866,6 @@ export const encryptSubmission = async (
   } = formsgSdk.cryptoV3.encrypt(responsesToEncrypt, formPublicKey)
 
   // Verify the encrypted content can be decrypted using the generated submission secret key before saving
-  // Perform a diff check between original & recently decrypted responses to ensure round trip encryption-decryption
   const decryptionVerification = formsgSdk.cryptoV3.decryptFromSubmissionKey(
     submissionSecretKey,
     { encryptedContent, version: req.body.version },
@@ -864,45 +879,10 @@ export const encryptSubmission = async (
         formId: req.params.formId,
         submissionId: req.params.submissionId,
         version: req.body.version,
-        mrfVersion: useV4Encryption ? 2 : 1,
+        mrfVersion,
         ...createReqMeta(req),
       },
       error,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'An error occurred while processing your submission',
-    })
-  }
-
-  const decryptedResponsesV3 = isFieldResponsesV4(
-    decryptionVerification.responses,
-  )
-    ? adaptV4ToV3(decryptionVerification.responses as FieldResponsesV4)
-    : decryptionVerification.responses
-
-  // cryptoV3.encrypt serializes via JSON.stringify, which drops `undefined` object keys.
-  const normalizedOriginalResponses = JSON.parse(
-    JSON.stringify(strippedAttachmentResponses),
-  ) as typeof strippedAttachmentResponses
-
-  const responseMismatch = !_.isEqual(
-    normalizedOriginalResponses,
-    decryptedResponsesV3,
-  )
-
-  if (responseMismatch) {
-    const mismatchError = new SubmissionEncryptionMismatchError()
-    logger.error({
-      message: mismatchError.message,
-      meta: {
-        action: 'encryptSubmission',
-        formId: req.params.formId,
-        submissionId: req.params.submissionId,
-        version: req.body.version,
-        mrfVersion: useV4Encryption ? 2 : 1,
-        ...createReqMeta(req),
-      },
-      error: mismatchError,
     })
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       message: 'An error occurred while processing your submission',
@@ -916,6 +896,24 @@ export const encryptSubmission = async (
       req.body.version,
     )
 
+  const isStepWriteTokenEnabled =
+    req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
+  let mintedStepToken:
+    | {
+        stepToken: string
+        stepTokenHash: string
+        encryptedStepToken: string
+      }
+    | undefined
+  if (isStepWriteTokenEnabled) {
+    const rawStepToken = stepToken.generate()
+    mintedStepToken = {
+      stepToken: rawStepToken,
+      stepTokenHash: stepToken.hash(rawStepToken),
+      encryptedStepToken: stepToken.wrap(rawStepToken, formPublicKey),
+    }
+  }
+
   req.formsg.encryptedPayload = {
     attachments: encryptedAttachments,
     responseMetadata: req.body.responseMetadata,
@@ -925,12 +923,14 @@ export const encryptSubmission = async (
     submissionSecretKey,
     version: req.body.version,
     workflowStep: req.body.workflowStep,
-    responses,
+    responses: responses as FieldResponsesV4,
     /**
-     * MRF Version: 1 — V3 encrypted responses
-     * MRF Version: 2 — V4 encrypted responses (with provenance)
+     * MRF Version 2 = V4-encrypted responses (with provenance).
+     * MRF Version 1 = V3-encrypted responses (used when form has a webhook
+     * so existing webhook consumers can continue to parse V3 payloads).
      */
-    mrfVersion: useV4Encryption ? 2 : 1,
+    mrfVersion,
+    ...mintedStepToken,
   }
 
   return next()
@@ -1091,7 +1091,7 @@ export const handleNdiResponses = async (
   }
 
   // 3. Add collected Ndi data to responses for email payload
-  const emailNdiResponses = createNdiResponsesV3FromRecord(ndiResponses)
+  const emailNdiResponses = createNdiResponsesV4FromRecord(ndiResponses)
   responses = { ...responses, ...emailNdiResponses }
   req.formsg.encryptedPayload.responses = responses
 

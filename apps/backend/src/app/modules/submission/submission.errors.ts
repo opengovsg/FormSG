@@ -344,3 +344,16 @@ export class SubmissionEncryptionMismatchError extends ApplicationError {
     super(message, undefined, ErrorCodes.SUBMISSION_ENCRYPTION_MISMATCH)
   }
 }
+
+/**
+ * Thrown when an MRF submission currently has a step token to gate write permissions.
+ * token but the submitted step is missing this token or the provided token does not
+ * match the pending step's stored hash.
+ */
+export class StepTokenVerificationError extends ApplicationError {
+  constructor(
+    message = 'You cannot submit this form because the link is invalid. Please check the link and try again.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_TOKEN_INVALID)
+  }
+}

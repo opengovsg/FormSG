@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import { Box, Flex, Stack } from '@chakra-ui/react'
 
@@ -15,13 +16,14 @@ export interface SaveActionGroupProps {
 }
 
 export const SaveActionGroup = ({
-  submitButtonLabel = 'Save changes',
+  submitButtonLabel,
   handleCancel,
   handleDelete,
   handleSubmit,
   isLoading,
   ariaLabelName,
 }: SaveActionGroupProps): JSX.Element => {
+  const { t } = useTranslation()
   const isMobile = useIsMobile()
 
   return (
@@ -34,7 +36,9 @@ export const SaveActionGroup = ({
         <IconButton
           variant="clear"
           colorScheme="danger"
-          aria-label={`Delete ${ariaLabelName}`}
+          aria-label={t('features.adminForm.sidebar.logic.aria.delete', {
+            name: ariaLabelName,
+          })}
           icon={<BiTrash />}
           onClick={handleDelete}
           isDisabled={isLoading}
@@ -52,7 +56,8 @@ export const SaveActionGroup = ({
           onClick={handleSubmit}
           isFullWidth={isMobile}
         >
-          {submitButtonLabel}
+          {submitButtonLabel ??
+            t('features.adminForm.sidebar.logic.saveChangesBtn')}
         </Button>
         <Button
           variant="clear"
@@ -61,7 +66,7 @@ export const SaveActionGroup = ({
           onClick={handleCancel}
           isFullWidth={isMobile}
         >
-          Cancel
+          {t('features.adminForm.sidebar.logic.cancelBtn')}
         </Button>
       </Stack>
     </Flex>

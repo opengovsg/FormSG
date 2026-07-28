@@ -48,8 +48,6 @@ export type CreateFormWizardContextReturn = {
   >
   goToFormDetails: () => void
   isPaperTrackingSetUpPageEnabled: boolean
-  // Only the create-form flow drives the legacy set-up subflow; other flows
-  // (template, duplicate) omit this and the progress indicator treats it as false.
   isLegacySetup?: boolean
   proceedCtaLabel: string
   keypair: ReturnType<typeof formsgSdk.crypto.generate>

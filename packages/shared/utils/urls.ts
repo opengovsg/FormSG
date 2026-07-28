@@ -30,12 +30,16 @@ export const getMultirespondentSubmissionEditPath = (
   submissionId: string,
   options?: {
     key?: string
+    stepToken?: string
   },
 ) => {
   const editPath = `${formId}/edit/${submissionId}`
-  const { key } = options || {}
+  const { key, stepToken } = options || {}
   if (key) {
-    return `${editPath}?key=${encodeURIComponent(key)}`
+    const withKey = `${editPath}?key=${encodeURIComponent(key)}`
+    return stepToken
+      ? `${withKey}&token=${encodeURIComponent(stepToken)}`
+      : withKey
   }
   return editPath
 }

@@ -49,8 +49,7 @@ export const CreateFormModalContent = () => {
             <ProgressIndicator
               numIndicators={numIndicators}
               currActiveIdx={currActiveIdx}
-              // Set-up steps are not freely navigable, so the dots are display-only.
-              onClick={() => undefined}
+              onClick={undefined}
             />
           </Container>
         </Box>

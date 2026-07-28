@@ -2,6 +2,81 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.6.2](https://github.com/opengovsg/formsg/compare/v8.6.1...v8.6.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* **spcp:** accept iss param on OIDC login callback (inc-1274) (#9789) ([#9789](https://github.com/opengovsg/formsg/commit/84785ec79af798861b1740200b2ed4132c67c39b))
+
+## [8.6.1](https://github.com/opengovsg/formsg/compare/v8.6.0...v8.6.1) (2026-07-23)
+
+
+### Bug Fixes
+
+* return 4xx instead of 5xx for MRF V4 field validation errors (#9788) ([#9788](https://github.com/opengovsg/formsg/commit/8c010739445f4598f9dd38e602d24df504a09d6a))
+
+## [8.6.0](https://github.com/opengovsg/formsg/compare/v8.5.0...v8.6.0) (2026-07-23)
+
+
+### Features
+
+* reland v4 BE handling (reverts #9775) (#9785) ([#9775](https://github.com/opengovsg/formsg/commit/ed6bbd3fa548ce2d3d2d877bc04b398e9a3765ea))
+
+## [8.5.0](https://github.com/opengovsg/formsg/compare/v8.4.0...v8.5.0) (2026-07-23)
+
+
+### Features
+
+* extract text from Logic Components (#9737) ([#9737](https://github.com/opengovsg/formsg/commit/a8b128f1c831864524c85628ca842439f1e005ad))
+
+
+### Bug Fixes
+
+* disable Others input when it isn't the selected option (#9784) ([#9784](https://github.com/opengovsg/formsg/commit/40e2db3929c7250b5afdc33963395d8521e33cae))
+* reject OTP generation when form is not public (#9783) ([#9783](https://github.com/opengovsg/formsg/commit/a3df6f3fbbd70bd301d0884c83d8916acc7907f6))
+* replace string placeholder in form feedback dialog (#9703) ([#9703](https://github.com/opengovsg/formsg/commit/7a0e594665655504a62ef3ce298504926a3281f1))
+
+## [8.4.0](https://github.com/opengovsg/formsg/compare/v8.3.3...v8.4.0) (2026-07-22)
+
+
+### Features
+
+* v4 be cherry pick commits (#9776) ([#9776](https://github.com/opengovsg/formsg/commit/fa29b661a6735ec36335b8873bba3865e549f320))
+
+## [8.3.3](https://github.com/opengovsg/formsg/compare/v8.3.2...v8.3.3) (2026-07-22)
+
+
+### Dependencies
+
+* **deps:** clear Dependabot alerts + fix ip SSRF bypass (2026-07) (#9774) ([#9774](https://github.com/opengovsg/formsg/commit/b61988ca37faf7b99147232aafae72c53a1b6df1))
+
+
+### Chores
+
+* revert v4 be (#9775) ([#9775](https://github.com/opengovsg/formsg/commit/cdc25de38ec1ac6ed708ecbe612aff30cf5c28ba))
+
+## [8.3.2](https://github.com/opengovsg/formsg/compare/v8.3.1...v8.3.2) (2026-07-20)
+
+
+### Bug Fixes
+
+* **validation:** apply wildcard email domain matching to V4 validator (#9770) ([#9770](https://github.com/opengovsg/formsg/commit/dc000000c5c5b0471d34c3aac788332aff9b48f0))
+
+## [8.3.1](https://github.com/opengovsg/formsg/compare/v8.3.0...v8.3.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **mrf:** re-validate only changed fields on MRF submissions (#9769) ([#9769](https://github.com/opengovsg/formsg/commit/f90658c263c43dd04bbffb466cb3930213088824))
+
+## [8.3.0](https://github.com/opengovsg/formsg/compare/v8.2.0...v8.3.0) (2026-07-20)
+
+
+### Features
+
+* **mrf:** V4 response migration — PR 2/5 BE V4-native + V3 wire shim (#9637) ([#9637](https://github.com/opengovsg/formsg/commit/2a47c47e707d5c429257092c9b9ce78f3ff8e118))
+
 ## [8.2.0](https://github.com/opengovsg/formsg/compare/v8.1.0...v8.2.0) (2026-07-16)
 
 

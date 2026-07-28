@@ -592,6 +592,14 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: [submittedStepSchema],
     default: [],
   },
+  stepTokenHash: {
+    type: String,
+    trim: true,
+  },
+  encryptedStepToken: {
+    type: String,
+    trim: true,
+  },
 })
 
 type MultiRespondentAggregates = Pick<
@@ -879,6 +887,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       workflowStep: 1,
       mrfVersion: 1,
       submittedSteps: 1,
+      encryptedStepToken: 1,
     })
     .exec()
 }

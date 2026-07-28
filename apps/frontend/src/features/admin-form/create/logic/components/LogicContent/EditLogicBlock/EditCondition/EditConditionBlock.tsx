@@ -88,10 +88,10 @@ export const EditConditionBlock = ({
       resetField(`${name}.field`)
       setError(`${name}.field`, {
         type: 'manual',
-        message: 'This field was deleted, please select another field',
+        message: t('features.adminForm.sidebar.logic.errors.fieldDeleted'),
       })
     }
-  }, [ifFieldIdValue, idToFieldMap, name, resetField, setError])
+  }, [ifFieldIdValue, idToFieldMap, name, resetField, setError, t])
 
   /**
    * Effect to reset the field if the field to apply a condition on is changed.

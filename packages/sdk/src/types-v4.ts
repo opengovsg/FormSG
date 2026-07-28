@@ -1,4 +1,4 @@
-import { FieldType } from './types'
+import { DecryptParamsV3, EncryptedContent, FieldType } from './types'
 
 // TODO: provenance shape may be updated when it is implemented
 export type ResponseProvenance = {
@@ -172,8 +172,13 @@ export type AdaptV3ToV4Options = {
 
 // --------------- Decrypted content V4 ---------------
 
+export interface DecryptParamsV4 extends DecryptParamsV3 {
+  encryptedStepToken?: EncryptedContent
+}
+
 export type DecryptedContentV4 = {
   submissionSecretKey: string
+  stepToken?: string
   responses: FieldResponsesV4
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   verified?: Record<string, any>

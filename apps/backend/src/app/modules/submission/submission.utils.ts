@@ -154,12 +154,14 @@ import {
   ParseVirusScannerLambdaPayloadError,
   ProcessingError,
   ResponseModeError,
+  StepTokenVerificationError,
   SubmissionFailedError,
   SubmissionNotFoundError,
   SubmissionSaveError,
   UnsupportedSettingsError,
   ValidateFieldError,
   ValidateFieldErrorV3,
+  ValidateFieldErrorV4,
   VirusScanFailedError,
 } from './submission.errors'
 import {
@@ -204,6 +206,11 @@ const errorMapper: MapRouteError = (
         errorMessage: coreErrorMessage,
       }
     case FormRespondentNotWhitelistedError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case StepTokenVerificationError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
@@ -341,6 +348,7 @@ const errorMapper: MapRouteError = (
       }
     case ValidateFieldError:
     case ValidateFieldErrorV3:
+    case ValidateFieldErrorV4:
     case DatabaseValidationError:
     case InvalidFileExtensionError:
     case AttachmentTooLargeError:

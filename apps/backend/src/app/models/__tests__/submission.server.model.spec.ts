@@ -26,7 +26,7 @@ import getPaymentModel from '../payment.server.model'
 
 jest.mock('dns', () => ({
   promises: {
-    resolve: jest.fn(),
+    lookup: jest.fn(),
   },
 }))
 const MockDns = jest.mocked(dns)
@@ -41,7 +41,9 @@ const PaymentSubmission = getPaymentModel(mongoose)
 describe('Submission Model', () => {
   beforeAll(async () => {
     await dbHandler.connect()
-    MockDns.resolve.mockResolvedValue(['1.1.1.1'])
+    MockDns.lookup.mockResolvedValue([
+      { address: '1.1.1.1', family: 4 },
+    ] as never)
   })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())

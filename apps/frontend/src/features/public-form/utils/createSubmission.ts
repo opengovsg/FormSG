@@ -105,6 +105,7 @@ type CreateStorageSubmissionFormDataArgs = CreateEmailSubmissionFormDataArgs & {
 type CreateMultirespondentSubmissionFormDataArgs =
   CreateEmailSubmissionFormDataArgs & {
     submissionSecretKey?: string
+    stepToken?: string
     version: number
   }
 

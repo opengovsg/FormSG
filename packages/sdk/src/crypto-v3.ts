@@ -12,7 +12,7 @@ import {
   verifySignedMessage,
 } from './util/crypto'
 import { determineIsFormFieldsV3 } from './util/validate'
-import { adaptV3ToV4 } from './adapt-v3-to-v4'
+import { adaptV3ToV4, deriveQuestionFromMeta } from './adapt-v3-to-v4'
 import CryptoBase from './crypto-base'
 import { MissingPublicKeyError } from './errors'
 import {
@@ -22,7 +22,12 @@ import {
   EncryptedContentV3,
   FormFieldsV3,
 } from './types'
-import { DecryptedContentV4, FieldResponsesV4, FormFieldMeta } from './types-v4'
+import {
+  DecryptedContentV4,
+  DecryptParamsV4,
+  FieldResponsesV4,
+  FormFieldMeta,
+} from './types-v4'
 
 /**
  * Checks whether decrypted responses are already in V4 format.
@@ -35,6 +40,31 @@ export function isFieldResponsesV4(
   if (entries.length === 0) return false
   const first = entries[0] as Record<string, unknown>
   return typeof first.provenance === 'object' && first.provenance !== null
+}
+
+/**
+ * Backfills question text (and myInfo metadata) on V4 responses stored
+ * without them, in place. V4 blobs written from wire bodies lack question
+ * text: the receiver shim adapts V3 bodies without the form definition in
+ * scope, and thin V4 wire bodies omit `question` entirely (the server strips
+ * it). Enrich empty questions from the form definition at read time instead.
+ * Responses that already carry a question are left untouched.
+ */
+function backfillMissingQuestions(
+  responses: FieldResponsesV4,
+  formFields: Record<string, FormFieldMeta>
+): FieldResponsesV4 {
+  for (const [fieldId, response] of Object.entries(responses)) {
+    if (response.question) continue
+    // Tolerate an omitted formFields map from untyped (JS) callers
+    const meta = formFields?.[fieldId]
+    if (!meta) continue
+    response.question = deriveQuestionFromMeta(meta)
+    if (meta.myInfo && !response.myInfo) {
+      response.myInfo = meta.myInfo
+    }
+  }
+  return responses
 }
 
 export default class CryptoV3 extends CryptoBase {
@@ -194,7 +224,8 @@ export default class CryptoV3 extends CryptoBase {
 
   /**
    * Decrypts an encrypted submission and returns it in V4 format.
-   * If the decrypted data is already in V4 format, it is returned directly.
+   * If the decrypted data is already in V4 format, it is returned with any
+   * missing question text backfilled from the provided formFields metadata.
    * If the decrypted data is in V3 format, it is adapted to V4 using the provided formFields metadata.
    * @param formSecretKey The base-64 encoded form secret key for decrypting the submission.
    * @param decryptParams The params containing encrypted content, encrypted submission key and information.
@@ -204,19 +235,32 @@ export default class CryptoV3 extends CryptoBase {
    */
   decryptToV4 = (
     formSecretKey: string,
-    decryptParams: DecryptParamsV3,
+    decryptParams: DecryptParamsV4,
     formFields: Record<string, FormFieldMeta>
   ): DecryptedContentV4 | null => {
     const decrypted = this.decrypt(formSecretKey, decryptParams)
     if (!decrypted) return null
 
-    // If the decrypted responses are already in V4 format, return directly
+    // If the decrypted responses are already in V4 format, return them with
+    // any missing question text backfilled from the form definition.
     const responses = isFieldResponsesV4(decrypted.responses)
-      ? decrypted.responses
+      ? backfillMissingQuestions(decrypted.responses, formFields)
       : adaptV3ToV4(decrypted.responses, { formFields })
+
+    let stepToken: string | undefined = undefined
+    if (decryptParams.encryptedStepToken) {
+      const decryptedStepToken = decryptContent(
+        formSecretKey,
+        decryptParams.encryptedStepToken
+      )
+      if (decryptedStepToken) {
+        stepToken = encodeUTF8(decryptedStepToken)
+      }
+    }
 
     return {
       submissionSecretKey: decrypted.submissionSecretKey,
+      stepToken,
       responses,
       verified: decrypted.verified,
     }

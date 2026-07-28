@@ -187,6 +187,7 @@ export const IndividualResponsePage = (): JSX.Element => {
     window.location.origin
   }/${getMultirespondentSubmissionEditPath(form?._id ?? '', submissionId, {
     key: data?.submissionSecretKey || '',
+    stepToken: data?.stepToken,
   })}`
 
   const workflowStatus = data?.mrf?.workflowStatus

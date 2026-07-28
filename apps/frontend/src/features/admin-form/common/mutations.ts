@@ -573,15 +573,18 @@ export const useFormRemindersMutations = () => {
       formId,
       submissionId,
       submissionSecretKey,
+      stepToken,
     }: {
       formId: string
       submissionId: string
       submissionSecretKey: string
+      stepToken?: string
     }) => {
       return sendReminderForPendingMrfResponse({
         formId,
         submissionId,
         submissionSecretKey,
+        stepToken,
       })
     },
     {

@@ -1,6 +1,5 @@
 import type { AttachmentAnswerV4 } from '@opengovsg/formsg-sdk'
 import {
-  AttachmentResponseV3,
   MyInfoAttribute,
   SubmissionErrorDto,
   SubmissionResponseDto,
@@ -13,7 +12,7 @@ import {
   MultirespondentFormCompleteDto,
   MultirespondentFormLoadedDto,
   ParsedClearAttachmentFieldResponseV4,
-  ParsedClearFormFieldResponsesV3,
+  ParsedClearFormFieldResponsesV4,
   ParsedMultirespondentSubmissionBody,
 } from '../../../../types/api'
 import { ControllerHandler } from '../../core/core.types'
@@ -48,7 +47,8 @@ export type ProcessedMultirespondentSubmissionHandlerType = ControllerHandler<
   SubmissionResponseDto | SubmissionErrorDto,
   Omit<ParsedMultirespondentSubmissionBody, 'responses'> & {
     submissionSecretKey?: string
-    responses: ParsedClearFormFieldResponsesV3
+    stepToken?: string
+    responses: ParsedClearFormFieldResponsesV4
   },
   { captchaResponse?: unknown; captchaType?: unknown }
 >
@@ -94,6 +94,10 @@ export type MultirespondentSubmissionContent = {
   workflowStep: number
   mrfVersion: number
   submittedSteps: SubmittedStep[]
+  // RATIONALE: optional for backwards compatibility on
+  // in-flight mrf steps which do not have a step token at time of creation.
+  stepTokenHash?: string
+  encryptedStepToken?: string
 }
 
 export type StrippedAttachmentResponseV4 = Omit<
@@ -101,13 +105,6 @@ export type StrippedAttachmentResponseV4 = Omit<
   'answer'
 > & {
   answer: AttachmentAnswerV4 & {
-    filename: undefined
-    content: undefined
-  }
-}
-
-export type StrippedAttachmentResponseV3 = AttachmentResponseV3 & {
-  answer: AttachmentResponseV3['answer'] & {
     filename: undefined
     content: undefined
   }
