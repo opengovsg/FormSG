@@ -10,26 +10,13 @@ import {
 
 import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
 import { CreateFormOriginScreen } from './CreateFormOriginScreen'
+import { getCreateFormProgress } from './createFormProgress'
 import { CreateFormStorageModeScreen } from './CreateFormStorageModeScreen'
 import {
   EmailModeCreationScreen,
   EmailModeFeedbackScreen,
 } from './EmailModeFeedbackAndCreateScreen'
 import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
-
-// Set-up pages the progress indicator spans, in order, per subflow. The legacy
-// subflow is its own 2-step sequence; the paper-tracking flow is 3 steps. Both
-// end on Landing, so the sequence is chosen by isLegacySetup rather than the
-// current step.
-const PAPER_TRACKING_STEPS = [
-  CreateFormFlowStates.Details,
-  CreateFormFlowStates.Origin,
-  CreateFormFlowStates.Landing,
-]
-const LEGACY_STEPS = [
-  CreateFormFlowStates.StorageModeDetails,
-  CreateFormFlowStates.Landing,
-]
 
 /**
  * @preconditions Requires CreateFormWizardProvider parent
@@ -43,22 +30,25 @@ export const CreateFormModalContent = () => {
     isLegacySetup,
   } = useCreateFormWizard()
 
-  const progressSteps = isLegacySetup ? LEGACY_STEPS : PAPER_TRACKING_STEPS
-  const progressStepIdx = progressSteps.indexOf(currentStep)
-  const showProgressBar =
-    isPaperTrackingSetUpPageEnabled &&
-    progressStepIdx >= 0 &&
-    progressStepIdx < PROGRESS_STEP_ORDER.length
+  const {
+    show: showProgressIndicator,
+    numIndicators,
+    currActiveIdx,
+  } = getCreateFormProgress({
+    currentStep,
+    isLegacySetup,
+    isPaperTrackingSetUpPageEnabled,
+  })
 
   return (
     <>
       {currentStep !== CreateFormFlowStates.Landing && <ModalCloseButton />}
-      {showProgressBar && (
+      {showProgressIndicator && (
         <Box px="1.5rem" pt="1.5rem">
           <Container maxW="45rem" p={0}>
             <ProgressIndicator
-              numIndicators={progressSteps.length}
-              currActiveIdx={progressStepIdx}
+              numIndicators={numIndicators}
+              currActiveIdx={currActiveIdx}
               // Set-up steps are not freely navigable, so the dots are display-only.
               onClick={() => undefined}
             />
