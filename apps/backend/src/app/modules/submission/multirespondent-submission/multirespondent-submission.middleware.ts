@@ -54,6 +54,7 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { createNdiResponsesV4FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { VerifiedContentV3 } from '../../verified-content/verified-content.types'
+import { getWebhookType } from '../../webhook/webhook.service'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
@@ -848,15 +849,38 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
-  // Webhook compatibility: forms with webhooks have downstream consumers that
-  // parse the encrypted payload as V3-shaped (mrfVersion: 1). Convert back to
-  // V3 just for the encryption blob; in-process state (encryptedPayload.responses,
-  // emails, NDI handling) stays V4.
-  const hasWebhook = !!formDef.webhook?.url
-  const responsesToEncrypt = hasWebhook
-    ? adaptV4ToV3(strippedAttachmentResponses as unknown as FieldResponsesV4)
-    : strippedAttachmentResponses
-  const mrfVersion: 1 | 2 = hasWebhook ? 1 : 2
+  // Also used further down to gate step-token minting.
+  const isStepWriteTokenEnabled =
+    req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
+
+  // V4-encryption gate by consumer class (PRD #9740). V4 is the in-process
+  // shape; only the encryption blob is downgraded to V3 for consumers that
+  // cannot parse V4. Flag-off reduces exactly to `hasWebhook ? 1 : 2`.
+  const webhookUrl = formDef.webhook?.url
+  const webhookType = webhookUrl ? getWebhookType(webhookUrl) : undefined
+  // Per-form admin setting owned by S9; absent ⇒ 'v1' (safe default).
+  const webhookFormat = formDef.webhook?.webhookFormat ?? 'v1'
+  const isMrfWebhooksEnabled =
+    req.growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false
+
+  let useV4Encryption: boolean
+  if (!webhookType) {
+    // No downstream consumer to keep on V3.
+    useV4Encryption = true
+  } else if (webhookType === 'plumber') {
+    // Plumber (privileged) reads V4 once the write-guard flag is on.
+    useV4Encryption = isStepWriteTokenEnabled
+  } else {
+    // Generic consumer (zapier treated as generic): needs an explicit per-form
+    // opt-in, and never ships a V4 read key without the write-guard.
+    useV4Encryption =
+      isMrfWebhooksEnabled && webhookFormat === 'v4' && isStepWriteTokenEnabled
+  }
+
+  const responsesToEncrypt = useV4Encryption
+    ? strippedAttachmentResponses
+    : adaptV4ToV3(strippedAttachmentResponses as unknown as FieldResponsesV4)
+  const mrfVersion: 1 | 2 = useV4Encryption ? 2 : 1
 
   const {
     encryptedContent,
@@ -896,8 +920,6 @@ export const encryptSubmission = async (
       req.body.version,
     )
 
-  const isStepWriteTokenEnabled =
-    req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
   let mintedStepToken:
     | {
         stepToken: string
@@ -926,8 +948,10 @@ export const encryptSubmission = async (
     responses: responses as FieldResponsesV4,
     /**
      * MRF Version 2 = V4-encrypted responses (with provenance).
-     * MRF Version 1 = V3-encrypted responses (used when form has a webhook
-     * so existing webhook consumers can continue to parse V3 payloads).
+     * MRF Version 1 = V3-encrypted responses, used when the form's webhook
+     * consumer class cannot yet read V4: plumber without `mrf-step-write-token`,
+     * or a generic/zapier consumer that has not opted into webhookFormat 'v4'
+     * (with `enable-mrf-webhooks` and `mrf-step-write-token` both on).
      */
     mrfVersion,
     ...mintedStepToken,
