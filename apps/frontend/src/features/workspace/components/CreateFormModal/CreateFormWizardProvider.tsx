@@ -50,6 +50,10 @@ export const useCommonFormWizardProvider = ({
   const [[currentStep, direction], setCurrentStep] = useState<
     [CreateFormFlowStates, -1 | 1 | 0]
   >([initialStep, -1])
+  // Whether the admin is in the legacy set-up subflow, which has its own
+  // (2-step) progress sequence. Landing is shared by both flows, so this can't
+  // be derived from currentStep alone.
+  const [isLegacySetup, setIsLegacySetup] = useState(startsInStorageMode)
 
   /**
    * Only used for storage mode forms, but generated first so that the key is
@@ -75,13 +79,16 @@ export const useCommonFormWizardProvider = ({
   // TODO [MRF-CUTOVER]: Remove after cutover. -1 is used temporarily as there is an existing animation bug with +1.
   const goToStorageModeDetails = () => {
     setValue('responseMode', FormResponseMode.Encrypt)
+    setIsLegacySetup(true)
     setCurrentStep([CreateFormFlowStates.StorageModeDetails, -1])
   }
   const goToMrfDetails = () => {
     setValue('responseMode', FormResponseMode.Multirespondent)
+    setIsLegacySetup(false)
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
   const goToFormDetails = () => {
+    setIsLegacySetup(false)
     setCurrentStep([CreateFormFlowStates.Details, -1])
   }
 
@@ -103,6 +110,7 @@ export const useCommonFormWizardProvider = ({
     setCurrentStep,
     isMrfCutoverEnabled,
     isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
     proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
@@ -123,6 +131,7 @@ export const useCreateFormWizardContext = (
     setCurrentStep,
     isMrfCutoverEnabled,
     isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
     proceedCtaLabel,
     goToStorageModeDetails,
     goToMrfDetails,
@@ -282,6 +291,7 @@ export const useCreateFormWizardContext = (
     handleProceedFromDetails,
     goToFormDetails,
     isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
     proceedCtaLabel,
     isSingpass: false,
     hasMyInfoChildren: false,

@@ -1,5 +1,6 @@
-import { ModalCloseButton } from '@chakra-ui/react'
+import { Box, Container, ModalCloseButton } from '@chakra-ui/react'
 
+import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
 import { XMotionBox } from '~templates/MotionBox'
 
 import {
@@ -9,7 +10,6 @@ import {
 
 import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
 import { CreateFormOriginScreen } from './CreateFormOriginScreen'
-import { CreateFormProgressBar } from './CreateFormProgressBar'
 import { CreateFormStorageModeScreen } from './CreateFormStorageModeScreen'
 import {
   EmailModeCreationScreen,
@@ -17,10 +17,17 @@ import {
 } from './EmailModeFeedbackAndCreateScreen'
 import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
 
-// Set-up pages the progress bar spans, in order.
-const PROGRESS_STEP_ORDER = [
+// Set-up pages the progress indicator spans, in order, per subflow. The legacy
+// subflow is its own 2-step sequence; the paper-tracking flow is 3 steps. Both
+// end on Landing, so the sequence is chosen by isLegacySetup rather than the
+// current step.
+const PAPER_TRACKING_STEPS = [
   CreateFormFlowStates.Details,
   CreateFormFlowStates.Origin,
+  CreateFormFlowStates.Landing,
+]
+const LEGACY_STEPS = [
+  CreateFormFlowStates.StorageModeDetails,
   CreateFormFlowStates.Landing,
 ]
 
@@ -29,10 +36,15 @@ const PROGRESS_STEP_ORDER = [
  * Display screen content depending on the current step (with animation).
  */
 export const CreateFormModalContent = () => {
-  const { direction, currentStep, isPaperTrackingSetUpPageEnabled } =
-    useCreateFormWizard()
+  const {
+    direction,
+    currentStep,
+    isPaperTrackingSetUpPageEnabled,
+    isLegacySetup,
+  } = useCreateFormWizard()
 
-  const progressStepIdx = PROGRESS_STEP_ORDER.indexOf(currentStep)
+  const progressSteps = isLegacySetup ? LEGACY_STEPS : PAPER_TRACKING_STEPS
+  const progressStepIdx = progressSteps.indexOf(currentStep)
   const showProgressBar =
     isPaperTrackingSetUpPageEnabled && progressStepIdx !== -1
 
@@ -40,10 +52,16 @@ export const CreateFormModalContent = () => {
     <>
       {currentStep !== CreateFormFlowStates.Landing && <ModalCloseButton />}
       {showProgressBar && (
-        <CreateFormProgressBar
-          currentStepIdx={progressStepIdx}
-          numSteps={PROGRESS_STEP_ORDER.length}
-        />
+        <Box px="1.5rem" pt="1.5rem">
+          <Container maxW="45rem" p={0}>
+            <ProgressIndicator
+              numIndicators={progressSteps.length}
+              currActiveIdx={progressStepIdx}
+              // Set-up steps are not freely navigable, so the dots are display-only.
+              onClick={() => undefined}
+            />
+          </Container>
+        </Box>
       )}
       <XMotionBox keyProp={currentStep} custom={direction}>
         {currentStep === CreateFormFlowStates.Details && (
