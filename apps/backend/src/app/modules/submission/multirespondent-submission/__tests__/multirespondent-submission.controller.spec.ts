@@ -1158,6 +1158,44 @@ describe('multirespondent-submision.controller', () => {
       })
     })
 
+    it('resends the SAME step token in the reminder link without rotating it', async () => {
+      // Arrange: the admin has unwrapped encryptedStepToken client-side and
+      // passes the RAW token back in the body.
+      const RAW_STEP_TOKEN = 'raw-step-token-abc'
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: mockFormId, submissionId: mockSubmissionId },
+        body: {
+          submissionSecretKey: 'mockSubmissionSecretKey',
+          stepToken: RAW_STEP_TOKEN,
+        },
+        session: { user: { _id: MOCK_USER._id } },
+      })
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      MockMultiRespondentSubmissionService.getPendingStepRecipientEmailsFromSubmittedStepsMeta =
+        jest.fn().mockReturnValue(
+          okAsync({
+            recipientEmails: ['test@example.com'],
+            reminderStepNumber: 1,
+          }),
+        )
+      MockMultiRespondentSubmissionService.sendNextStepReminderEmail = jest
+        .fn()
+        .mockReturnValue(okAsync(true))
+
+      // Act
+      await sendPendingMrfSubmissionReminderForTest(mockReq, mockRes, mockNext)
+
+      // Assert: the reminder link carries the exact same token (no rotation).
+      const call =
+        MockMultiRespondentSubmissionService.sendNextStepReminderEmail.mock
+          .calls[0][0]
+      expect(call.responseUrl).toContain(
+        `&token=${encodeURIComponent(RAW_STEP_TOKEN)}`,
+      )
+    })
+
     it('returns 404 when retrieveFormById encounters FormNotFoundError', async () => {
       // Arrange
       const formNotFoundError = new FormNotFoundError('Form not found')

@@ -689,6 +689,7 @@ describe('Multirespondent Submission Model', () => {
           version: 3,
           attachmentMetadata: { someFileName: 'some url of attachment' },
           workflowStep: 0,
+          encryptedStepToken: 'senderPublicKey;nonce:ciphertext',
         })
 
         // Act
@@ -714,6 +715,7 @@ describe('Multirespondent Submission Model', () => {
           'version',
           'workflowStep',
           'submittedSteps',
+          'encryptedStepToken',
         )
         expect(actual).not.toBeNull()
         expect(actual?.toJSON()).toEqual(expected)
@@ -758,6 +760,68 @@ describe('Multirespondent Submission Model', () => {
         // Should still be null even when formId and submissionIds are valid
         expect(actual).toBeNull()
       })
+    })
+  })
+
+  describe('step-token fields', () => {
+    it('should persist and retrieve stepTokenHash and encryptedStepToken', async () => {
+      // Arrange
+      const validFormId = new ObjectId().toHexString()
+      const MOCK_STEP_TOKEN_HASH = 'a'.repeat(64)
+      const MOCK_ENCRYPTED_STEP_TOKEN =
+        'senderPublicKey;nonce:encryptedStepTokenCiphertext'
+
+      // Act
+      const submission = await MultirespondentSubmission.create({
+        form: validFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: [],
+        submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+        encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        version: 3,
+        workflowStep: 0,
+        stepTokenHash: MOCK_STEP_TOKEN_HASH,
+        encryptedStepToken: MOCK_ENCRYPTED_STEP_TOKEN,
+      })
+      const found = await MultirespondentSubmission.findById(submission._id)
+
+      // Assert
+      expect(found?.stepTokenHash).toBe(MOCK_STEP_TOKEN_HASH)
+      expect(found?.encryptedStepToken).toBe(MOCK_ENCRYPTED_STEP_TOKEN)
+    })
+
+    it('should never expose stepTokenHash or encryptedStepToken in the webhook view', async () => {
+      // Arrange
+      const validFormId = new ObjectId().toHexString()
+      const MOCK_STEP_TOKEN_HASH = 'b'.repeat(64)
+      const MOCK_ENCRYPTED_STEP_TOKEN = 'senderPublicKey;nonce:ciphertext'
+      const submission = await MultirespondentSubmission.create({
+        form: validFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: [],
+        submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+        encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        version: 3,
+        workflowStep: 0,
+        stepTokenHash: MOCK_STEP_TOKEN_HASH,
+        encryptedStepToken: MOCK_ENCRYPTED_STEP_TOKEN,
+      })
+
+      // Act
+      const webhookView = await submission.getWebhookView()
+
+      // Assert: step-token fields are ROW-ONLY, never in any webhook payload.
+      const serialised = JSON.stringify(webhookView)
+      expect(serialised).not.toContain('stepTokenHash')
+      expect(serialised).not.toContain('encryptedStepToken')
+      expect(serialised).not.toContain(MOCK_STEP_TOKEN_HASH)
+      expect(serialised).not.toContain(MOCK_ENCRYPTED_STEP_TOKEN)
     })
   })
 })

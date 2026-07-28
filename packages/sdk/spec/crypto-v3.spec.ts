@@ -1,15 +1,19 @@
 import mockAxios from 'jest-mock-axios'
+import { decodeUTF8 } from 'tweetnacl-util'
+
+import Crypto from '../src/crypto'
+import CryptoV3 from '../src/crypto-v3'
+import { SIGNING_KEYS } from '../src/resource/signing-keys'
+import { encryptMessage } from '../src/util/crypto'
+
 import {
-  plaintext,
   ciphertext,
   formPublicKey,
   formSecretKey,
+  plaintext,
+  plainVerifiedText,
   submissionSecretKey,
-  plainVerifiedText
 } from './resources/crypto-v3-data-20231207'
-import CryptoV3 from '../src/crypto-v3'
-import Crypto from '../src/crypto'
-import { SIGNING_KEYS } from '../src/resource/signing-keys'
 
 const INTERNAL_TEST_VERSION = 3
 
@@ -100,6 +104,72 @@ describe('CryptoV3', function () {
     expect(decrypted).toHaveProperty('responses', plaintext)
   })
 
+  describe('decryptToV4 — MRF step-token recovery', () => {
+    const rawStepToken = 'raw-step-token-value_123'
+
+    it('recovers the raw step token when encryptedStepToken is present', () => {
+      // Arrange
+      const { publicKey, secretKey } = crypto.generate()
+      const ciphertext = crypto.encrypt(plaintext, publicKey)
+      const encryptedStepToken = encryptMessage(
+        decodeUTF8(rawStepToken),
+        publicKey
+      )
+
+      // Act
+      const decrypted = crypto.decryptToV4(
+        secretKey,
+        { ...ciphertext, encryptedStepToken, version: INTERNAL_TEST_VERSION },
+        {}
+      )
+
+      // Assert
+      expect(decrypted?.stepToken).toBe(rawStepToken)
+      expect(decrypted?.responses).toBeDefined()
+    })
+
+    it('returns stepToken undefined when encryptedStepToken is absent', () => {
+      // Arrange
+      const { publicKey, secretKey } = crypto.generate()
+      const ciphertext = crypto.encrypt(plaintext, publicKey)
+
+      // Act
+      const decrypted = crypto.decryptToV4(
+        secretKey,
+        { ...ciphertext, version: INTERNAL_TEST_VERSION },
+        {}
+      )
+
+      // Assert
+      expect(decrypted?.stepToken).toBeUndefined()
+      expect(decrypted?.responses).toBeDefined()
+    })
+
+    it('returns stepToken undefined without failing the decrypt when encryptedStepToken is tampered', () => {
+      // Arrange
+      const { publicKey, secretKey } = crypto.generate()
+      const ciphertext = crypto.encrypt(plaintext, publicKey)
+      // Wrapped to an unrelated key, so it cannot be unwrapped with `secretKey`.
+      const { publicKey: otherPublicKey } = crypto.generate()
+      const encryptedStepToken = encryptMessage(
+        decodeUTF8(rawStepToken),
+        otherPublicKey
+      )
+
+      // Act
+      const decrypted = crypto.decryptToV4(
+        secretKey,
+        { ...ciphertext, encryptedStepToken, version: INTERNAL_TEST_VERSION },
+        {}
+      )
+
+      // Assert: decrypt still succeeds, step token just comes back undefined.
+      expect(decrypted).not.toBeNull()
+      expect(decrypted?.stepToken).toBeUndefined()
+      expect(decrypted?.responses).toBeDefined()
+    })
+  })
+
   it('should be able to encrypt and decrypt files end-to-end', async () => {
     // Arrange
     const { publicKey, secretKey } = crypto.generate()
@@ -134,13 +204,17 @@ describe('CryptoV3', function () {
     expect(decrypted).toBeNull()
   })
 
-    it('should be able to encrypt and decrypt submissions with verifiedContent from 2023-12-07 end-to-end successfully from the form private key', () => {
+  it('should be able to encrypt and decrypt submissions with verifiedContent from 2023-12-07 end-to-end successfully from the form private key', () => {
     // Arrange
     const { publicKey, secretKey } = crypto.generate()
 
     // Act
     const ciphertext = crypto.encrypt(plaintext, publicKey)
-    const verifiedText = cryptoV1.encrypt(plainVerifiedText, ciphertext.submissionPublicKey, signingSecretKey)  
+    const verifiedText = cryptoV1.encrypt(
+      plainVerifiedText,
+      ciphertext.submissionPublicKey,
+      signingSecretKey
+    )
     const decrypted = crypto.decrypt(secretKey, {
       ...ciphertext,
       verifiedContent: verifiedText,

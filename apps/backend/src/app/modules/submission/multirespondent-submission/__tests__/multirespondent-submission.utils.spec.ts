@@ -286,6 +286,36 @@ describe('multirespondent-submission.utils', () => {
       expect(staticWorkflowStep).toBeDefined()
       expect(staticWorkflowStep).not.toContainKey('emails')
     })
+
+    it('should never expose encryptedStepToken in the public DTO', () => {
+      // Arrange
+      const submissionData = {
+        submissionType: SubmissionType.Multirespondent,
+        _id: new ObjectId(),
+        created: new Date(),
+        submissionPublicKey: 'some public key',
+        encryptedSubmissionSecretKey: 'some encrypted secret key',
+        encryptedContent: 'some encrypted content',
+        encryptedStepToken: 'some encrypted step token',
+        workflow: [],
+        workflowStep: 1,
+        form_fields: [],
+        form_logics: [],
+        attachmentMetadata: {},
+        version: 3,
+        mrfVersion: 3,
+      } as unknown as MultirespondentSubmissionData
+
+      // Act
+      const actual = createPublicMultirespondentSubmissionDto(
+        submissionData,
+        {},
+      )
+
+      // Assert
+      expect(actual.encryptedStepToken).toBeUndefined()
+      expect(JSON.stringify(actual)).not.toContain('encryptedStepToken')
+    })
   })
 
   describe('createMultirespondentSubmissionDto', () => {

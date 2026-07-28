@@ -7,6 +7,7 @@ import {
   FormFieldDto,
   FormResponseMode,
   FormWorkflowStepDto,
+  SubmissionType,
   WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -23,12 +24,14 @@ import {
 } from 'src/types'
 import { MultirespondentSubmissionDto, SnapshottedFormDef } from 'src/types/api'
 
+import { DatabaseConflictError } from '../../../core/core.errors'
 import { FormRespondentSingleSubmissionValidationError } from '../../../form/form.errors'
 import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
   SubmissionSaveError,
 } from '../../submission.errors'
+import { mapRouteError } from '../../submission.utils'
 import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
 import {
   createMultiRespondentFormSubmission,
@@ -36,7 +39,9 @@ import {
   performMultiRespondentPostSubmissionCreateActions,
   performMultiRespondentPostSubmissionUpdateActions,
   sendNextStepReminderEmail,
+  updateMultiRespondentFormSubmission,
 } from '../multirespondent-submission.service'
+import * as stepToken from '../step-token'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 jest.mock('src/app/services/mail/mail.utils')
@@ -3388,6 +3393,327 @@ describe('multirespondent-submission.service', () => {
       expect(result.isErr()).toBe(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         MrfReminderRecipientEmailsEmptyError,
+      )
+    })
+  })
+
+  describe('step-token lifecycle', () => {
+    const fieldId = new ObjectId().toHexString()
+    const stepId0 = new ObjectId().toHexString()
+    const stepId1 = new ObjectId().toHexString()
+
+    const twoStepWorkflow: FormWorkflowStepDto[] = [
+      {
+        _id: stepId0,
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [fieldId],
+      },
+      {
+        _id: stepId1,
+        workflow_type: WorkflowType.Static,
+        emails: ['next@example.com'],
+        edit: [fieldId],
+      },
+    ]
+
+    const buildForm = (): IPopulatedMultirespondentForm =>
+      ({
+        _id: mockFormId,
+        authType: FormAuthType.NIL,
+        responseMode: FormResponseMode.Multirespondent,
+        title: 'Test form',
+        form_fields: [
+          { _id: fieldId, fieldType: BasicField.ShortText, title: 'Q1' },
+        ],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        isSingleSubmission: false,
+        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+      }) as unknown as IPopulatedMultirespondentForm
+
+    const buildSnapshottedFormDef = (): SnapshottedFormDef =>
+      ({
+        _id: mockFormId,
+        title: 'Test form',
+        form_fields: [
+          { _id: fieldId, fieldType: BasicField.ShortText, title: 'Q1' },
+        ],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+      }) as unknown as SnapshottedFormDef
+
+    const buildPayload = (
+      overrides: Partial<MultirespondentSubmissionDto> = {},
+    ): MultirespondentSubmissionDto => ({
+      submissionPublicKey: 'submission-public-key',
+      encryptedSubmissionSecretKey: 'encrypted-submission-secret-key',
+      encryptedContent: 'encrypted-content',
+      submissionSecretKey: 'submission-secret-key',
+      version: 2,
+      workflowStep: 0,
+      responses: {
+        [fieldId]: { fieldType: BasicField.ShortText, answer: 'answer' },
+      },
+      mrfVersion: 1,
+      ...overrides,
+    })
+
+    it('persists stepTokenHash and encryptedStepToken on create', async () => {
+      const raw = stepToken.generate()
+      const result = await createMultiRespondentFormSubmission({
+        form: buildForm(),
+        encryptedPayload: buildPayload({
+          stepToken: raw,
+          stepTokenHash: stepToken.hash(raw),
+          encryptedStepToken: 'wrapped-token-A',
+        }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      const saved = await getMultirespondentSubmissionModel(mongoose).findById(
+        result._unsafeUnwrap()._id,
+      )
+      expect(saved?.stepTokenHash).toBe(stepToken.hash(raw))
+      expect(saved?.encryptedStepToken).toBe('wrapped-token-A')
+    })
+
+    it('clears token fields on update when the next step does not generate one', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      // Row already carries the previous step's token (minted under flag ON).
+      const prevRaw = stepToken.generate()
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+        stepTokenHash: stepToken.hash(prevRaw),
+        encryptedStepToken: 'wrapped-token-prev',
+      })
+      expect(row.stepTokenHash).toBe(stepToken.hash(prevRaw))
+      expect(row.encryptedStepToken).toBe('wrapped-token-prev')
+
+      // Flag OFF advance: middleware omits both token fields from the payload.
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildPayload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      const saved = await Model.findById(row._id).lean()
+      expect(saved?.stepTokenHash).toBeUndefined()
+      expect(saved?.encryptedStepToken).toBeUndefined()
+      expect('stepTokenHash' in (saved as object)).toBe(false)
+      expect('encryptedStepToken' in (saved as object)).toBe(false)
+    })
+
+    it('rotates the token on advance, upgrading a legacy row that carried no hash (migration)', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      // Legacy in-flight row: no stepTokenHash / encryptedStepToken.
+      const legacy = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+      expect(legacy.stepTokenHash).toBeUndefined()
+
+      const nextRaw = stepToken.generate()
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: legacy._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildPayload({
+          workflowStep: 1,
+          stepToken: nextRaw,
+          stepTokenHash: stepToken.hash(nextRaw),
+          encryptedStepToken: 'wrapped-token-B',
+        }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      const saved = await Model.findById(legacy._id)
+      expect(saved?.stepTokenHash).toBe(stepToken.hash(nextRaw))
+      expect(saved?.encryptedStepToken).toBe('wrapped-token-B')
+      // The freshly minted token verifies against the rotated hash (loop-back:
+      // a stale/previous token would not).
+      expect(stepToken.verify(nextRaw, saved?.stepTokenHash as string)).toBe(
+        true,
+      )
+      expect(
+        stepToken.verify(stepToken.generate(), saved?.stepTokenHash as string),
+      ).toBe(false)
+    })
+
+    it('rotates both token fields on a flag-on advance from a row that already carried a token (D1)', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const prevRaw = stepToken.generate()
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+        stepTokenHash: stepToken.hash(prevRaw),
+        encryptedStepToken: 'wrapped-token-prev',
+      })
+
+      const nextRaw = stepToken.generate()
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildPayload({
+          workflowStep: 1,
+          stepToken: nextRaw,
+          stepTokenHash: stepToken.hash(nextRaw),
+          encryptedStepToken: 'wrapped-token-next',
+        }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      const saved = await Model.findById(row._id)
+      expect(saved?.stepTokenHash).toBe(stepToken.hash(nextRaw))
+      expect(saved?.encryptedStepToken).toBe('wrapped-token-next')
+      // New token verifies; the previous step's token must not.
+      expect(stepToken.verify(nextRaw, saved?.stepTokenHash as string)).toBe(
+        true,
+      )
+      expect(stepToken.verify(prevRaw, saved?.stepTokenHash as string)).toBe(
+        false,
+      )
+    })
+
+    it('leaves a legacy no-hash row absent after a flag-off advance (no stale key introduced) (D1)', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      // Legacy in-flight row: no token fields at all.
+      const legacy = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: legacy._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildPayload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      const saved = await Model.findById(legacy._id).lean()
+      expect(saved?.stepTokenHash).toBeUndefined()
+      expect(saved?.encryptedStepToken).toBeUndefined()
+      expect('stepTokenHash' in (saved as object)).toBe(false)
+      expect('encryptedStepToken' in (saved as object)).toBe(false)
+    })
+
+    it('surfaces a lost concurrent-write race as a 409 conflict, not a 500', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const doc = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+
+      // Simulate the optimistic-concurrency loser: the save rejects with a
+      // Mongoose VersionError (__v mismatch on the submittedSteps array).
+      const versionError = new mongoose.Error.VersionError(
+        doc as any,
+        (doc as any).__v,
+        ['submittedSteps'],
+      )
+      const saveSpy = jest
+        .spyOn(Model.prototype, 'save')
+        .mockRejectedValueOnce(versionError)
+
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: doc._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildPayload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isErr()).toBe(true)
+      const error = result._unsafeUnwrapErr()
+      expect(error).toBeInstanceOf(DatabaseConflictError)
+      // Non-retryable 409, not a 5xx default.
+      expect(mapRouteError(error).statusCode).toBe(409)
+
+      saveSpy.mockRestore()
+    })
+
+    it('threads the raw step token into the next respondent magic link on create', async () => {
+      const raw = stepToken.generate()
+      const sendSpy = jest
+        .spyOn(MailService, 'sendMRFWorkflowStepEmail')
+        .mockReturnValue(okAsync(true))
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission: {
+          id: mockSubmissionId,
+          submittedSteps: [
+            { isApproval: false, submittedAt: new Date().toISOString() },
+          ],
+        } as unknown as IMultirespondentSubmissionSchema,
+        submissionId: mockSubmissionId,
+        form: buildForm(),
+        encryptedPayload: buildPayload({ stepToken: raw }),
+        logMeta: { action: 'test' } as any,
+      })
+
+      expect(sendSpy).toHaveBeenCalled()
+      expect(sendSpy.mock.calls[0][0].responseUrl).toContain(
+        `&token=${encodeURIComponent(raw)}`,
       )
     })
   })

@@ -100,7 +100,7 @@ export const getDecryptedSubmissionById = async ({
     submissionId,
   })
 
-  let processedContent, submissionSecretKey, mrfVersion
+  let processedContent, submissionSecretKey, mrfVersion, stepToken
   switch (encryptedSubmission.submissionType) {
     case SubmissionType.Encrypt: {
       const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
@@ -126,6 +126,7 @@ export const getDecryptedSubmissionById = async ({
             encryptedSubmission.encryptedSubmissionSecretKey,
           verifiedContent: encryptedSubmission.verifiedContent,
           version: encryptedSubmission.version,
+          encryptedStepToken: encryptedSubmission.encryptedStepToken,
         },
         formFieldsMeta,
       )
@@ -148,6 +149,7 @@ export const getDecryptedSubmissionById = async ({
       )
       submissionSecretKey = decryptedV4.submissionSecretKey
       mrfVersion = encryptedSubmission.mrfVersion
+      stepToken = decryptedV4.stepToken
       break
     }
   }
@@ -174,6 +176,7 @@ export const getDecryptedSubmissionById = async ({
         : undefined,
     responses,
     mrfVersion,
+    stepToken,
   }
 }
 

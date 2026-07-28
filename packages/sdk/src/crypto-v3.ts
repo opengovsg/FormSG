@@ -22,7 +22,12 @@ import {
   EncryptedContentV3,
   FormFieldsV3,
 } from './types'
-import { DecryptedContentV4, FieldResponsesV4, FormFieldMeta } from './types-v4'
+import {
+  DecryptedContentV4,
+  DecryptParamsV4,
+  FieldResponsesV4,
+  FormFieldMeta,
+} from './types-v4'
 
 /**
  * Checks whether decrypted responses are already in V4 format.
@@ -230,7 +235,7 @@ export default class CryptoV3 extends CryptoBase {
    */
   decryptToV4 = (
     formSecretKey: string,
-    decryptParams: DecryptParamsV3,
+    decryptParams: DecryptParamsV4,
     formFields: Record<string, FormFieldMeta>
   ): DecryptedContentV4 | null => {
     const decrypted = this.decrypt(formSecretKey, decryptParams)
@@ -242,8 +247,20 @@ export default class CryptoV3 extends CryptoBase {
       ? backfillMissingQuestions(decrypted.responses, formFields)
       : adaptV3ToV4(decrypted.responses, { formFields })
 
+    let stepToken: string | undefined = undefined
+    if (decryptParams.encryptedStepToken) {
+      const decryptedStepToken = decryptContent(
+        formSecretKey,
+        decryptParams.encryptedStepToken
+      )
+      if (decryptedStepToken) {
+        stepToken = encodeUTF8(decryptedStepToken)
+      }
+    }
+
     return {
       submissionSecretKey: decrypted.submissionSecretKey,
+      stepToken,
       responses,
       verified: decrypted.verified,
     }
