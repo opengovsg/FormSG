@@ -541,6 +541,9 @@ const submittedStepSchema = new Schema(
       type: String,
       enum: [WorkflowStatus.APPROVED, WorkflowStatus.REJECTED],
     },
+    snapshotToken: {
+      type: String,
+    },
   },
   { _id: false },
 )

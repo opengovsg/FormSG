@@ -15,12 +15,15 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
+import { WebhookFactory } from 'src/app/modules/webhook/webhook.factory'
+import { webhookStatsdClient } from 'src/app/modules/webhook/webhook.statsd-client'
 import { AutoreplyPdfGenerationError } from 'src/app/services/mail/mail.errors'
 import MailService from 'src/app/services/mail/mail.service'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
 import {
   IMultirespondentSubmissionSchema,
   IPopulatedMultirespondentForm,
+  WebhookView,
 } from 'src/types'
 import { MultirespondentSubmissionDto, SnapshottedFormDef } from 'src/types/api'
 
@@ -42,9 +45,23 @@ import {
   updateMultiRespondentFormSubmission,
 } from '../multirespondent-submission.service'
 import * as stepToken from '../step-token'
+import { SnapshotDataIntegrityError } from '../webhook/submission-snapshot.schema'
+import * as SnapshotStore from '../webhook/submission-snapshot.store'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 jest.mock('src/app/services/mail/mail.utils')
+
+// Mock only the S3 snapshot I/O so call order/args can be asserted and reads
+// can be steered; keep the real error classes (SnapshotWriteError etc.).
+jest.mock('../webhook/submission-snapshot.store', () => {
+  const actual = jest.requireActual('../webhook/submission-snapshot.store')
+  return {
+    ...actual,
+    writeV4Snapshot: jest.fn(),
+    readV4Snapshot: jest.fn(),
+  }
+})
+const MockSnapshotStore = jest.mocked(SnapshotStore)
 
 const mockFormId = new ObjectId().toHexString()
 const mockSubmissionId = new ObjectId().toHexString()
@@ -3715,6 +3732,618 @@ describe('multirespondent-submission.service', () => {
       expect(sendSpy.mock.calls[0][0].responseUrl).toContain(
         `&token=${encodeURIComponent(raw)}`,
       )
+    })
+  })
+
+  describe('S4 MRF v4 webhook snapshot integration', () => {
+    const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/x'
+    const GENERIC_URL = 'https://example.com/hook'
+    const fieldId = new ObjectId().toHexString()
+    const stepId0 = new ObjectId().toHexString()
+    const stepId1 = new ObjectId().toHexString()
+
+    const twoStepWorkflow: FormWorkflowStepDto[] = [
+      {
+        _id: stepId0,
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [fieldId],
+      },
+      {
+        _id: stepId1,
+        workflow_type: WorkflowType.Static,
+        emails: ['next@example.com'],
+        edit: [fieldId],
+      },
+    ]
+
+    const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
+
+    const growthbookWith = (enableMrfWebhooks: boolean) =>
+      ({
+        isOn: jest.fn().mockReturnValue(enableMrfWebhooks),
+        getFeatureValue: jest.fn((_flag: string, def: unknown) => def),
+      }) as any
+
+    const buildV4Form = (
+      overrides: Partial<IPopulatedMultirespondentForm> = {},
+    ): IPopulatedMultirespondentForm =>
+      ({
+        _id: mockFormId,
+        authType: FormAuthType.NIL,
+        responseMode: FormResponseMode.Multirespondent,
+        title: 'Test form',
+        form_fields: [
+          { _id: fieldId, fieldType: BasicField.ShortText, title: 'Q1' },
+        ],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        isSingleSubmission: false,
+        webhook: { url: PLUMBER_URL, isRetryEnabled: true },
+        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+        ...overrides,
+      }) as unknown as IPopulatedMultirespondentForm
+
+    const buildSnapshottedFormDef = (
+      overrides: Partial<SnapshottedFormDef> = {},
+    ): SnapshottedFormDef =>
+      ({
+        _id: mockFormId,
+        title: 'Test form',
+        form_fields: [
+          { _id: fieldId, fieldType: BasicField.ShortText, title: 'Q1' },
+        ],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        webhook: { url: PLUMBER_URL, isRetryEnabled: true },
+        ...overrides,
+      }) as unknown as SnapshottedFormDef
+
+    const buildV4Payload = (
+      overrides: Partial<MultirespondentSubmissionDto> = {},
+    ): MultirespondentSubmissionDto => ({
+      submissionPublicKey: 'submission-public-key',
+      encryptedSubmissionSecretKey: 'wrapped-read-key-v4',
+      encryptedContent: 'v4-encrypted-content',
+      verifiedContent: 'v4-verified-content',
+      submissionSecretKey: 'submission-secret-key',
+      version: 2,
+      workflowStep: 0,
+      responses: {
+        [fieldId]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'answer' },
+          question: 'Q1',
+          provenance: {},
+        },
+      },
+      mrfVersion: 2,
+      ...overrides,
+    })
+
+    const buildSnapshot = (overrides: Record<string, unknown> = {}) =>
+      ({
+        _v: 1,
+        contentFormat: 'v4',
+        formId: mockFormId,
+        submissionId: 'snap-submission-id',
+        submissionIndex: 0,
+        workflowStep: 0,
+        encryptedContent: 'frozen-content',
+        encryptedSubmissionSecretKey: 'frozen-read-key',
+        verifiedContent: 'frozen-verified',
+        createdAt: new Date().toISOString(),
+        ...overrides,
+      }) as any
+
+    const buildLiveWebhookView = (): WebhookView =>
+      ({
+        data: {
+          formId: mockFormId,
+          submissionId: 'live-submission-id',
+          encryptedContent: 'live-content',
+          encryptedSubmissionSecretKey: 'live-read-key',
+          verifiedContent: 'live-verified',
+          version: 2,
+          created: new Date(),
+          attachmentDownloadUrls: {},
+          paymentContent: {},
+          workflowContent: {
+            workflow: twoStepWorkflow,
+            workflowStep: 0,
+            submittedSteps: [
+              { isApproval: false, submittedAt: new Date().toISOString() },
+            ],
+          },
+        },
+      }) as unknown as WebhookView
+
+    const buildSubmissionWithToken = (
+      token: string | undefined,
+      view: WebhookView = buildLiveWebhookView(),
+    ): IMultirespondentSubmissionSchema =>
+      ({
+        _id: new ObjectId(),
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: new Date().toISOString(),
+            snapshotToken: token,
+          },
+        ],
+        getWebhookView: jest.fn().mockResolvedValue(view),
+      }) as unknown as IMultirespondentSubmissionSchema
+
+    beforeEach(() => {
+      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+        okAsync({ token: 'default-token', key: 'default-key' }),
+      )
+      MockSnapshotStore.readV4Snapshot.mockReturnValue(okAsync(buildSnapshot()))
+      jest
+        .spyOn(webhookStatsdClient, 'increment')
+        .mockImplementation(() => undefined as any)
+      jest
+        .spyOn(WebhookFactory, 'sendInitialWebhook')
+        .mockReturnValue(okAsync(true))
+    })
+
+    // ---- Committed-step-has-a-readable-snapshot (write side) ----
+
+    it('writes a v4 snapshot matching the committed step and records the token on create', async () => {
+      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+        okAsync({ token: 'tok-create', key: 'key-create' }),
+      )
+
+      const result = await createMultiRespondentFormSubmission({
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(MockSnapshotStore.writeV4Snapshot).toHaveBeenCalledTimes(1)
+      const snapshot = MockSnapshotStore.writeV4Snapshot.mock.calls[0][0]
+      expect(snapshot.submissionIndex).toBe(0)
+      expect(snapshot.workflowStep).toBe(0)
+      expect(snapshot.encryptedContent).toBe('v4-encrypted-content')
+      expect(snapshot.encryptedSubmissionSecretKey).toBe('wrapped-read-key-v4')
+
+      const saved = await getMultirespondentSubmissionModel(mongoose).findById(
+        result._unsafeUnwrap()._id,
+      )
+      expect(saved?.submittedSteps?.[0]?.snapshotToken).toBe('tok-create')
+    })
+
+    it('writes a v4 snapshot for the appended step and records the token on update', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+        okAsync({ token: 'tok-update', key: 'key-update' }),
+      )
+
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(MockSnapshotStore.writeV4Snapshot).toHaveBeenCalledTimes(1)
+      const snapshot = MockSnapshotStore.writeV4Snapshot.mock.calls[0][0]
+      expect(snapshot.submissionIndex).toBe(1)
+      expect(snapshot.workflowStep).toBe(1)
+      expect(snapshot.encryptedContent).toBe('v4-encrypted-content')
+
+      const saved = await Model.findById(row._id)
+      expect(saved?.submittedSteps?.[1]?.snapshotToken).toBe('tok-update')
+    })
+
+    it('does not write a snapshot when the write-condition is false (mrfVersion 1)', async () => {
+      const result = await createMultiRespondentFormSubmission({
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload({ mrfVersion: 1 }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(MockSnapshotStore.writeV4Snapshot).not.toHaveBeenCalled()
+    })
+
+    it('does not write a snapshot when retries are disabled', async () => {
+      const result = await createMultiRespondentFormSubmission({
+        form: buildV4Form({
+          webhook: { url: PLUMBER_URL, isRetryEnabled: false } as any,
+        }),
+        encryptedPayload: buildV4Payload(),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      expect(MockSnapshotStore.writeV4Snapshot).not.toHaveBeenCalled()
+    })
+
+    it('aborts the save (fail-loud) when the snapshot write fails', async () => {
+      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+        errAsync(new SnapshotStore.SnapshotWriteError()),
+      )
+      const saveSpy = jest.spyOn(
+        getMultirespondentSubmissionModel(mongoose).prototype,
+        'save',
+      )
+
+      const result = await createMultiRespondentFormSubmission({
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        SnapshotStore.SnapshotWriteError,
+      )
+      expect(saveSpy).not.toHaveBeenCalled()
+      saveSpy.mockRestore()
+    })
+
+    // ---- Send gate table ----
+
+    it.each`
+      label                | url            | flagOn   | expectSent
+      ${'plumber+flagOff'} | ${PLUMBER_URL} | ${false} | ${true}
+      ${'plumber+flagOn'}  | ${PLUMBER_URL} | ${true}  | ${true}
+      ${'generic+flagOff'} | ${GENERIC_URL} | ${false} | ${false}
+      ${'generic+flagOn'}  | ${GENERIC_URL} | ${true}  | ${true}
+    `(
+      'send gate: $label -> sent=$expectSent',
+      async ({ url, flagOn, expectSent }) => {
+        const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+        // No recorded token -> legacy path for both consumer types.
+        const submission = buildSubmissionWithToken(undefined)
+
+        await performMultiRespondentPostSubmissionCreateActions({
+          submission,
+          submissionId: submission._id.toString(),
+          form: buildV4Form({ webhook: { url, isRetryEnabled: true } as any }),
+          encryptedPayload: buildV4Payload(),
+          logMeta: {} as any,
+          growthbook: growthbookWith(flagOn),
+        })
+        await flushPromises()
+
+        expect(sendSpy).toHaveBeenCalledTimes(expectSent ? 1 : 0)
+      },
+    )
+
+    // ---- Reconstruction wired ----
+
+    it('passes a reconstructed pre-built view for a plumber v4 send', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      MockSnapshotStore.readV4Snapshot.mockReturnValue(
+        okAsync(
+          buildSnapshot({ encryptedSubmissionSecretKey: 'frozen-read-key' }),
+        ),
+      )
+      const submission = buildSubmissionWithToken('tok-A')
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        submissionId: submission._id.toString(),
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: {} as any,
+        growthbook: growthbookWith(true),
+      })
+      await flushPromises()
+
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      const view = sendSpy.mock.calls[0][3]
+      expect(view).toBeDefined()
+      expect(view?.data.version).toBe(3)
+      expect(view?.data.encryptedSubmissionSecretKey).toBe('frozen-read-key')
+      // frozen content wins over the live row.
+      expect(view?.data.encryptedContent).toBe('frozen-content')
+    })
+
+    it('takes the legacy path (no 4th arg) for a plumber send without a recorded token', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      const submission = buildSubmissionWithToken(undefined)
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        submissionId: submission._id.toString(),
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: {} as any,
+        growthbook: growthbookWith(false),
+      })
+      await flushPromises()
+
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy.mock.calls[0][3]).toBeUndefined()
+      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+    })
+
+    // ---- Fail-loud on data-integrity ----
+
+    it('fails loud and does not send when the snapshot read errs with a data-integrity error', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      const incrSpy = jest.mocked(webhookStatsdClient.increment)
+      MockSnapshotStore.readV4Snapshot.mockReturnValue(
+        errAsync(new SnapshotDataIntegrityError('missing')),
+      )
+      const submission = buildSubmissionWithToken('tok-A')
+
+      await performMultiRespondentPostSubmissionUpdateActions({
+        submission,
+        submissionId: submission._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        currentStepNumber: 0,
+        encryptedPayload: buildV4Payload(),
+        logMeta: {} as any,
+        growthbook: growthbookWith(true),
+      })
+      await flushPromises()
+
+      expect(sendSpy).not.toHaveBeenCalled()
+      expect(incrSpy).toHaveBeenCalledWith('mrf.snapshot.data_integrity_error')
+    })
+
+    // ---- Payload-size guard ----
+
+    it('does not send and emits the too-large metric when the reconstructed view exceeds the size cap', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      const incrSpy = jest.mocked(webhookStatsdClient.increment)
+      MockSnapshotStore.readV4Snapshot.mockReturnValue(
+        okAsync(buildSnapshot({ encryptedContent: 'x'.repeat(1_000_001) })),
+      )
+      const submission = buildSubmissionWithToken('tok-A')
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        submissionId: submission._id.toString(),
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: {} as any,
+        growthbook: growthbookWith(true),
+      })
+      await flushPromises()
+
+      expect(sendSpy).not.toHaveBeenCalled()
+      expect(incrSpy).toHaveBeenCalledWith('mrf.webhook.payload_too_large')
+    })
+
+    // ---- Case A winner / 409 ----
+
+    it('records the winner token which reconstruction then reads (Case A / 409 winner)', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+        okAsync({ token: 'winner-token', key: 'winner-key' }),
+      )
+
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+      expect(result.isOk()).toBe(true)
+      const winner = result._unsafeUnwrap()
+      expect(winner.submittedSteps?.[1]?.snapshotToken).toBe('winner-token')
+
+      // The send path reads exactly the winner's recorded token.
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      await performMultiRespondentPostSubmissionUpdateActions({
+        submission: winner,
+        submissionId: winner._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        currentStepNumber: 1,
+        encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+        logMeta: {} as any,
+        growthbook: growthbookWith(true),
+      })
+      await flushPromises()
+
+      expect(MockSnapshotStore.readV4Snapshot).toHaveBeenCalledWith(
+        expect.objectContaining({ submissionIndex: 1, token: 'winner-token' }),
+      )
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy.mock.calls[0][3]).toBeDefined()
+    })
+
+    it('surfaces a lost concurrent-write race as a 409 even after a successful snapshot write', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const doc = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+      const versionError = new mongoose.Error.VersionError(
+        doc as any,
+        (doc as any).__v,
+        ['submittedSteps'],
+      )
+      const saveSpy = jest
+        .spyOn(Model.prototype, 'save')
+        .mockRejectedValueOnce(versionError)
+
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: doc._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(MockSnapshotStore.writeV4Snapshot).toHaveBeenCalledTimes(1)
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseConflictError)
+      expect(mapRouteError(result._unsafeUnwrapErr()).statusCode).toBe(409)
+      saveSpy.mockRestore()
+    })
+
+    // ---- Case B/C benign orphan ----
+
+    it('leaves the snapshot as a benign orphan (no delete) when the save fails after a successful write, and a resubmit writes a NEW token', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+      MockSnapshotStore.writeV4Snapshot.mockReturnValueOnce(
+        okAsync({ token: 'orphan-token-1', key: 'orphan-key-1' }),
+      )
+      const saveSpy = jest
+        .spyOn(Model.prototype, 'save')
+        .mockRejectedValueOnce(new Error('transient write failure'))
+
+      const failed = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(failed.isErr()).toBe(true)
+      // The store exposes no delete/wipe primitive at all — an orphan is never
+      // reclaimed inline.
+      expect(
+        (SnapshotStore as Record<string, unknown>).deleteV4Snapshot,
+      ).toBeUndefined()
+      expect(
+        (SnapshotStore as Record<string, unknown>).removeV4Snapshot,
+      ).toBeUndefined()
+
+      saveSpy.mockRestore()
+
+      // Resubmit: a fresh write mints a NEW token, recorded on the row.
+      MockSnapshotStore.writeV4Snapshot.mockReturnValueOnce(
+        okAsync({ token: 'orphan-token-2', key: 'orphan-key-2' }),
+      )
+      const resubmit = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(resubmit.isOk()).toBe(true)
+      const saved = await Model.findById(row._id)
+      expect(saved?.submittedSteps?.[1]?.snapshotToken).toBe('orphan-token-2')
+    })
+
+    // ---- Regression / byte-identity ----
+
+    it('legacy plumber create (flag off, mrfVersion 1) sends via getWebhookView with no 4th arg and no snapshot', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      const submission = buildSubmissionWithToken(undefined)
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        submissionId: submission._id.toString(),
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload({ mrfVersion: 1 }),
+        logMeta: {} as any,
+        growthbook: growthbookWith(false),
+      })
+      await flushPromises()
+
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy.mock.calls[0][3]).toBeUndefined()
+      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+    })
+
+    // ---- Steering: S3-first ordering at the seam ----
+    // @steering-gate: delete after S4 verified & merged
+    describe('[STEERING:S4] S3-first ordering at the seam', () => {
+      it('invokes writeV4Snapshot -> submission.save -> sendInitialWebhook in that order', async () => {
+        const Model = getMultirespondentSubmissionModel(mongoose)
+        const saveSpy = jest.spyOn(Model.prototype, 'save')
+        const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+        MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+          okAsync({ token: 'order-token', key: 'order-key' }),
+        )
+        MockSnapshotStore.readV4Snapshot.mockReturnValue(
+          okAsync(buildSnapshot()),
+        )
+
+        const created = await createMultiRespondentFormSubmission({
+          form: buildV4Form(),
+          encryptedPayload: buildV4Payload(),
+          logMeta: { action: 'test' },
+        })
+        expect(created.isOk()).toBe(true)
+        const submission = created._unsafeUnwrap()
+
+        await performMultiRespondentPostSubmissionCreateActions({
+          submission,
+          submissionId: submission._id.toString(),
+          form: buildV4Form(),
+          encryptedPayload: buildV4Payload(),
+          logMeta: {} as any,
+          growthbook: growthbookWith(true),
+        })
+        await flushPromises()
+
+        const writeOrder =
+          MockSnapshotStore.writeV4Snapshot.mock.invocationCallOrder[0]
+        const saveOrder = saveSpy.mock.invocationCallOrder[0]
+        const sendOrder = sendSpy.mock.invocationCallOrder[0]
+
+        expect(writeOrder).toBeLessThan(saveOrder)
+        expect(saveOrder).toBeLessThan(sendOrder)
+
+        saveSpy.mockRestore()
+      })
     })
   })
 })
