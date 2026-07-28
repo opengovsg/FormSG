@@ -17,7 +17,6 @@ import {
 } from './EmailModeFeedbackAndCreateScreen'
 import { SaveSecretKeyScreen } from './SaveSecretKeyScreen'
 
-// Set-up pages the progress bar spans, in order.
 const PROGRESS_STEP_ORDER = [
   CreateFormFlowStates.Details,
   CreateFormFlowStates.Origin,
