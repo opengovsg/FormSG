@@ -46,7 +46,7 @@ const CircleIndicator = ({
             }
       }
       backgroundClip="content-box"
-      as="button"
+      as={onClick !== undefined ? 'button' : 'div'}
       {...props}
     />
   )
