@@ -104,6 +104,9 @@ export type FormSupportedLanguages = {
 export type FormWebhook = {
   url: string
   isRetryEnabled: boolean
+  // Per-form admin setting (owned by S9): selects the encrypted-payload format
+  // sent to generic webhook consumers. Type-only for now; no schema/UI yet.
+  webhookFormat?: 'v1' | 'v4'
 }
 
 export enum FormResponseMode {
