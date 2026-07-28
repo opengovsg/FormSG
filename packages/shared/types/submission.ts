@@ -102,6 +102,10 @@ const SubmittedNonApprovalStep = z.object({
   submittedAt: z.string().datetime({ precision: 3 }),
   nextStepRecipientEmails: z.array(z.string()).optional(),
   submitterId: z.string().optional(),
+  // RATIONALE: per-attempt S3 snapshot key leaf recorded on the winning step
+  // entry so the send path can point-read the frozen snapshot for THIS step;
+  // never included in a webhook payload.
+  snapshotToken: z.string().optional(),
 })
 
 export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>
