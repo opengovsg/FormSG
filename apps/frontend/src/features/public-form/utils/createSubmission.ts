@@ -270,8 +270,7 @@ const createResponsesArray = (
 }
 
 /**
- * @deprecated Parity-test collateral for {@link createResponsesV4} — no
- * production callers. Delete in PR 4 of the MRF V4 migration.
+ * @deprecated For createResponsesV4
  */
 export const createResponsesV3 = (
   formFields: FormFieldDto[],

@@ -86,8 +86,7 @@ export const extractMrfPreviousStepResponseValue = (
       return { value: answer.value }
     }
     case BasicField.Checkbox: {
-      // CheckboxAnswerV4 has the same shape as CheckboxFieldValues; the
-      // others sentinel is carried inside the value array.
+      // CheckboxAnswerV4 has the same shape as CheckboxFieldValues
       return previousFieldResponse.answer as CheckboxAnswerV4
     }
     case BasicField.Table: {
@@ -121,10 +120,7 @@ export const extractMrfPreviousStepResponseValue = (
     case BasicField.Statement:
       // Children is unsupported for MRF; the rest carry no input value.
       return
-    default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _: never = field
-      return
-    }
+    default:
+      return previousFieldResponse.answer as FormFieldValue
   }
 }
