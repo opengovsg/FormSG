@@ -46,7 +46,9 @@ export const CreateFormModalContent = () => {
   const progressSteps = isLegacySetup ? LEGACY_STEPS : PAPER_TRACKING_STEPS
   const progressStepIdx = progressSteps.indexOf(currentStep)
   const showProgressBar =
-    isPaperTrackingSetUpPageEnabled && progressStepIdx !== -1
+    isPaperTrackingSetUpPageEnabled &&
+    progressStepIdx >= 0 &&
+    progressStepIdx < PROGRESS_STEP_ORDER.length
 
   return (
     <>
