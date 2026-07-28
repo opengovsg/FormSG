@@ -33,7 +33,9 @@ export const CreateFormModalContent = () => {
 
   const progressStepIdx = PROGRESS_STEP_ORDER.indexOf(currentStep)
   const showProgressBar =
-    isPaperTrackingSetUpPageEnabled && progressStepIdx !== -1
+    isPaperTrackingSetUpPageEnabled &&
+    progressStepIdx >= 0 &&
+    progressStepIdx < PROGRESS_STEP_ORDER.length
 
   return (
     <>
