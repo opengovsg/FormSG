@@ -52,7 +52,8 @@ export const useCommonFormWizardProvider = ({
   >([initialStep, -1])
   // Whether the admin is in the legacy set-up subflow, which has its own
   // (2-step) progress sequence. Landing is shared by both flows, so this can't
-  // be derived from currentStep alone.
+  // be derived from currentStep alone. Any step transition that enters or
+  // leaves the legacy subflow must update this alongside setCurrentStep.
   const [isLegacySetup, setIsLegacySetup] = useState(startsInStorageMode)
 
   /**
