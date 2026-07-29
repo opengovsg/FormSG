@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.7.0](https://github.com/opengovsg/formsg/compare/v8.6.2...v8.7.0) (2026-07-29)
+
+
+### Features
+
+* **mrf:** step-token write-guard for MRF next-step submissions (S3) (#9758) ([#9758](https://github.com/opengovsg/formsg/commit/9b124b4018b7eac81de53448d327c185b3839702))
+
 ## [8.6.2](https://github.com/opengovsg/formsg/compare/v8.6.1...v8.6.2) (2026-07-23)
 
 
