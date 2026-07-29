@@ -3172,15 +3172,15 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_CSAT, comment: MOCK_COMMENT })
+        .send({ csat: MOCK_CSAT, comment: MOCK_COMMENT })
 
       // Assert
       expect(resp.status).toBe(200)
       expect(resp.body.message).toContain(
         'Successfully submitted admin feedback',
       )
-      // Wire sends `rating`; it is stored and returned under the `csat` key.
       expect(resp.body.feedback.csat).toEqual(MOCK_CSAT)
+      // The legacy key is never written by a CSAT submission.
       expect(resp.body.feedback.rating).toBeUndefined()
       expect(resp.body.feedback.comment).toEqual(MOCK_COMMENT)
       expect(distributionSpy).toHaveBeenCalledWith(
@@ -3189,7 +3189,7 @@ describe('admin-form.form.routes', () => {
         1,
         expect.objectContaining({ csat: `${MOCK_CSAT}` }),
       )
-      // Legacy `.rating` metric was dropped (feature never shipped).
+      // A CSAT submission must never touch the legacy thumbs metric.
       expect(distributionSpy).not.toHaveBeenCalledWith(
         'formsg.users.feedback.rating',
         expect.anything(),
@@ -3202,7 +3202,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_CSAT })
+        .send({ csat: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toBe(200)
@@ -3213,7 +3213,35 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.feedback.comment).toBeUndefined()
     })
 
-    it('should return 400 when rating is not provided in request body', async () => {
+    it('should store legacy thumbs under `rating` and emit the legacy metric', async () => {
+      // Arrange
+      const distributionSpy = jest.spyOn(statsdClient, 'distribution')
+
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: 1 })
+
+      // Assert
+      expect(resp.status).toBe(200)
+      expect(resp.body.feedback.rating).toEqual(1)
+      // The legacy scale is never translated into the CSAT key.
+      expect(resp.body.feedback.csat).toBeUndefined()
+      expect(distributionSpy).toHaveBeenCalledWith(
+        'formsg.users.feedback.rating',
+        1,
+        1,
+        expect.objectContaining({ rating: '1' }),
+      )
+      expect(distributionSpy).not.toHaveBeenCalledWith(
+        'formsg.users.feedback.csat',
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
+      )
+    })
+
+    it('should return 400 when neither rating nor csat is provided', async () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
@@ -3224,7 +3252,39 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.message).toEqual('Validation failed')
     })
 
-    it('should return 400 when rating is out of 1-5 range', async () => {
+    it('should return 400 when both rating and csat are provided', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: 1, csat: MOCK_CSAT })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when a star value is sent under the legacy rating key', async () => {
+      // Guards the inverted-score trap: a 1-5 value must not be accepted as thumbs.
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: 2 })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when csat is out of 1-5 range', async () => {
+      // Act
+      const resp = await request.post(`/admin/forms/feedback`).send({ csat: 6 })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when rating is out of 0-1 range', async () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
@@ -3242,7 +3302,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_CSAT })
+        .send({ csat: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toEqual(401)
@@ -3259,7 +3319,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_CSAT })
+        .send({ csat: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toEqual(500)
@@ -3288,7 +3348,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
-        .send({ rating: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
+        .send({ csat: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       const updatedFeedback = await AdminFeedbackModel.findById(
         MOCK_ADMIN_FEEDBACK.id.toString(),
@@ -3298,8 +3358,20 @@ describe('admin-form.form.routes', () => {
       expect(resp.status).toEqual(200)
       expect(resp.body.message).toEqual('Successfully updated admin feedback')
       expect(updatedFeedback?.comment).toEqual(MOCK_NEW_COMMENT)
-      // Wire sends `rating`; it is stored under the `csat` key.
       expect(updatedFeedback?.csat).toEqual(MOCK_NEW_CSAT)
+      expect(updatedFeedback?.feedbackChanged).toEqual(true)
+    })
+
+    it('should return 400 when both rating and csat are provided', async () => {
+      // A single row must never carry both scales.
+      // Act
+      const resp = await request
+        .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
+        .send({ rating: 1, csat: MOCK_NEW_CSAT })
+
+      // Assert
+      expect(resp.status).toEqual(400)
+      expect(resp.body.message).toEqual('Validation failed')
     })
 
     it('should return 200 without changes if request is successful without a body', async () => {
@@ -3321,7 +3393,7 @@ describe('admin-form.form.routes', () => {
       )
     })
 
-    it('should return 400 if validation fails because rating is not 0 or 1', async () => {
+    it('should return 400 if validation fails because rating is out of range', async () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
@@ -3350,7 +3422,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${new Types.ObjectId().toString()}`)
-        .send({ rating: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
+        .send({ csat: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       // Assert
       expect(resp.status).toEqual(404)
@@ -3368,7 +3440,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${newFeedback.id.toString()}`)
-        .send({ rating: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
+        .send({ csat: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       // Assert
       expect(resp.status).toEqual(404)
