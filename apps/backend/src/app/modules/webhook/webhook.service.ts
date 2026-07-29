@@ -258,14 +258,19 @@ export const createInitialWebhookSender =
     | SubmissionNotFoundError
     | WebhookPushToQueueError
   > => {
-    // Attempt to send webhook. When a pre-built view is supplied (e.g. an MRF
-    // v4 snapshot-reconstructed payload) use it directly; otherwise derive it
-    // from the live row via getWebhookView (legacy path, byte-identical).
+    // Attempt to send webhook.
 
-    return ResultAsync.fromPromise(
-      webhookView ? Promise.resolve(webhookView) : submission.getWebhookView(),
-      () => new DatabaseError(),
-    ).andThen((webhookView) =>
+    // RATIONALE: When a pre-built view is supplied (e.g. an MRF
+    // v4 snapshot-reconstructed payload) use it directly.
+    // Otherwise, derive it from the live row via getWebhookView (legacy path).
+    const webhookViewToUse = webhookView
+      ? okAsync(webhookView)
+      : ResultAsync.fromPromise(
+          submission.getWebhookView(),
+          () => new DatabaseError(),
+        )
+
+    return webhookViewToUse.andThen((webhookView) =>
       sendWebhook(webhookView, webhookUrl).andThen((webhookResponse) => {
         webhookStatsdClient.increment('sent', 1, 1, {
           responseCode: `${webhookResponse.response.status || null}`,
