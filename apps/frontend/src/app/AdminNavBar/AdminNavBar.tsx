@@ -39,6 +39,7 @@ import { AvatarMenu, AvatarMenuDivider } from '~templates/AvatarMenu/AvatarMenu'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUser } from '~features/user/queries'
 import { TransferOwnershipModal } from '~features/user/transfer-ownership/TransferOwnershipModal'
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import Menu from '../../components/Menu'
 
@@ -150,6 +151,10 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   }, [getWogadLogoutUrlMutation])
 
   const handleLogout = useCallback(() => {
+    // `logout` is an API call, not a page load, so the in-memory feedback store
+    // survives it. Clear it so the next admin in this tab does not inherit the
+    // previous admin's eligibility, triggerSource and formId.
+    useAdminFeedbackStore.getState().reset()
     logout()
     removeQuery()
     if (emergencyContactKey) {
