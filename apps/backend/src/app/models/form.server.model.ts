@@ -475,7 +475,45 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: Boolean,
     default: false,
   },
+
+  payments_channel: formPaymentsChannelSchema,
+
+  payments_field: formPaymentsFieldSchema,
+
+  business: formBusinessSchema,
 })
+
+MultirespondentFormSchema.methods.addPaymentAccountId = function ({
+  accountId,
+  publishableKey,
+}: {
+  accountId: FormPaymentsChannel['target_account_id']
+  publishableKey: FormPaymentsChannel['publishable_key']
+}) {
+  if (this.payments_channel?.channel === PaymentChannel.Unconnected) {
+    this.payments_channel = {
+      // Definitely Stripe for now, may be different later on.
+      channel: PaymentChannel.Stripe,
+      target_account_id: accountId,
+      publishable_key: publishableKey,
+      payment_methods: [],
+    }
+  }
+  return this.save()
+}
+
+MultirespondentFormSchema.methods.removePaymentAccount = async function () {
+  this.payments_channel = {
+    channel: PaymentChannel.Unconnected,
+    target_account_id: '',
+    publishable_key: '',
+    payment_methods: [],
+  }
+  if (this.payments_field) {
+    this.payments_field.enabled = false
+  }
+  return this.save()
+}
 
 MultirespondentFormSchema.methods.getWhitelistedSubmitterIds = function () {
   return this.get('whitelistedSubmitterIds', null, {
