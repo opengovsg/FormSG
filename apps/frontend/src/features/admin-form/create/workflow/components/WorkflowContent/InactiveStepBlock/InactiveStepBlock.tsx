@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
-import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, chakra, Flex, Icon, Stack, Text } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Dictionary } from 'lodash'
 
@@ -234,7 +234,24 @@ export const InactiveStepBlock = ({
           ) : null}
         </Stack>
       </chakra.button>
-      {
+      {isEditableCards ? (
+        // The whole card is the button, so the pencil is a visual affordance
+        // only: no click target, no tab stop, hidden from AT. It reacts to
+        // hover on the card via the wrapper's role="group".
+        <Icon
+          as={BiPencil}
+          aria-hidden
+          pointerEvents="none"
+          top={{ base: '0.5rem', md: '2rem' }}
+          right={{ base: '0.5rem', md: '2rem' }}
+          pos="absolute"
+          fontSize="1.5rem"
+          color="neutral.500"
+          transitionProperty="common"
+          transitionDuration="normal"
+          _groupHover={{ color: 'primary.500' }}
+        />
+      ) : (
         <IconButton
           top={{ base: '0.5rem', md: '2rem' }}
           right={{ base: '0.5rem', md: '2rem' }}
@@ -246,10 +263,8 @@ export const InactiveStepBlock = ({
           onClick={handleClick}
           icon={<BiPencil fontSize="1.5rem" />}
           cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-          color={isEditableCards ? 'neutral.500' : undefined}
-          _groupHover={isEditableCards ? { color: 'primary.500' } : undefined}
         />
-      }
+      )}
     </Box>
   )
 }
