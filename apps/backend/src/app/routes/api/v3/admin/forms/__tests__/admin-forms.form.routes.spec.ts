@@ -19,7 +19,7 @@ import {
   FormStartPage,
   FormStatus,
 } from 'formsg-shared/types'
-import { omit, pick } from 'lodash'
+import { omit } from 'lodash'
 import mongoose, { Types } from 'mongoose'
 import { err, errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
@@ -3162,24 +3162,26 @@ describe('admin-form.form.routes', () => {
 
   describe('POST /admin/forms/feedback', () => {
     const MOCK_COMMENT = 'mock comment'
-    const MOCK_RATING = 3
+    const MOCK_CSAT = 3
+    const MOCK_RATING = 1
 
-    it('should return 200 when the request is successful', async () => {
+    it('should return 200 and store csat with no rating when csat is submitted', async () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING, comment: MOCK_COMMENT })
+        .send({ csat: MOCK_CSAT, comment: MOCK_COMMENT })
 
       // Assert
       expect(resp.status).toBe(200)
       expect(resp.body.message).toContain(
         'Successfully submitted admin feedback',
       )
-      expect(resp.body.feedback.rating).toEqual(MOCK_RATING)
+      expect(resp.body.feedback.csat).toEqual(MOCK_CSAT)
+      expect(resp.body.feedback.rating).toBeUndefined()
       expect(resp.body.feedback.comment).toEqual(MOCK_COMMENT)
     })
 
-    it('should return 200 when the request is successful without comments', async () => {
+    it('should return 200 and store legacy rating with no csat when rating is submitted', async () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
@@ -3187,14 +3189,12 @@ describe('admin-form.form.routes', () => {
 
       // Assert
       expect(resp.status).toBe(200)
-      expect(resp.body.message).toContain(
-        'Successfully submitted admin feedback',
-      )
       expect(resp.body.feedback.rating).toEqual(MOCK_RATING)
+      expect(resp.body.feedback.csat).toBeUndefined()
       expect(resp.body.feedback.comment).toBeUndefined()
     })
 
-    it('should return 400 when rating is not provided in request body', async () => {
+    it('should return 400 when neither rating nor csat is provided', async () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
@@ -3205,11 +3205,84 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.message).toEqual('Validation failed')
     })
 
-    it('should return 400 when rating is out of 1-5 range', async () => {
+    it('should return 400 when both rating and csat are provided', async () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: -1 })
+        .send({ rating: MOCK_RATING, csat: MOCK_CSAT })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when a star value is sent on the legacy rating key', async () => {
+      // Act: rating: 2 must reject, or a thumbs-up would record as one star.
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ rating: 2 })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when csat is below the 1-5 range', async () => {
+      // Act
+      const resp = await request.post(`/admin/forms/feedback`).send({ csat: 0 })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when csat is above the 1-5 range', async () => {
+      // Act
+      const resp = await request.post(`/admin/forms/feedback`).send({ csat: 6 })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when csat is not an integer', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ csat: 2.5 })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when triggerSource is not a known value', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ csat: MOCK_CSAT, triggerSource: 'bogus' })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400, not 500, when formId is not a valid ObjectId', async () => {
+      // Act
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ csat: MOCK_CSAT, formId: 'notanobjectid' })
+
+      // Assert
+      expect(resp.status).toBe(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when formId is a 12-char string previously coerced into an ObjectId', async () => {
+      // Act: 'abcdefghijkl' used to silently cast to a valid ObjectId and 200.
+      const resp = await request
+        .post(`/admin/forms/feedback`)
+        .send({ csat: MOCK_CSAT, formId: 'abcdefghijkl' })
 
       // Assert
       expect(resp.status).toBe(400)
@@ -3223,7 +3296,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING })
+        .send({ csat: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toEqual(401)
@@ -3240,7 +3313,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING })
+        .send({ csat: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toEqual(500)
@@ -3251,25 +3324,25 @@ describe('admin-form.form.routes', () => {
   })
   describe('PATCH /admin/forms/feedback/:feedbackId', () => {
     const MOCK_COMMENT = 'mock comment'
-    const MOCK_RATING = 3
+    const MOCK_CSAT = 3
     const MOCK_NEW_COMMENT = 'new comment'
-    const MOCK_NEW_RATING = 5
+    const MOCK_NEW_CSAT = 5
 
     let MOCK_ADMIN_FEEDBACK: IAdminFeedbackSchema
 
     beforeEach(async () => {
       MOCK_ADMIN_FEEDBACK = await AdminFeedbackModel.create({
         userId: defaultUser.id.toString(),
-        rating: MOCK_RATING,
+        csat: MOCK_CSAT,
         comment: MOCK_COMMENT,
       })
     })
 
-    it('should return 200 when request is successful', async () => {
+    it('should return 200 and set ratingChanged when csat is updated', async () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
-        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+        .send({ csat: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       const updatedFeedback = await AdminFeedbackModel.findById(
         MOCK_ADMIN_FEEDBACK.id.toString(),
@@ -3279,33 +3352,53 @@ describe('admin-form.form.routes', () => {
       expect(resp.status).toEqual(200)
       expect(resp.body.message).toEqual('Successfully updated admin feedback')
       expect(updatedFeedback?.comment).toEqual(MOCK_NEW_COMMENT)
-      expect(updatedFeedback?.rating).toEqual(MOCK_NEW_RATING)
+      expect(updatedFeedback?.csat).toEqual(MOCK_NEW_CSAT)
+      expect(updatedFeedback?.ratingChanged).toEqual(true)
     })
 
-    it('should return 200 without changes if request is successful without a body', async () => {
+    it('should leave ratingChanged false when only the comment is updated', async () => {
+      // Act
+      const resp = await request
+        .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
+        .send({ comment: MOCK_NEW_COMMENT })
+
+      const updatedFeedback = await AdminFeedbackModel.findById(
+        MOCK_ADMIN_FEEDBACK.id.toString(),
+      )
+
+      // Assert
+      expect(resp.status).toEqual(200)
+      expect(updatedFeedback?.comment).toEqual(MOCK_NEW_COMMENT)
+      expect(updatedFeedback?.ratingChanged).toEqual(false)
+    })
+
+    it('should return 400 when the request body is empty', async () => {
       // Act
       const resp = await request.patch(
         `/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`,
       )
 
-      const updatedFeedback = pick(
-        await AdminFeedbackModel.findById(MOCK_ADMIN_FEEDBACK.id.toString()),
-        ['comment', 'rating', 'userId', '__id'],
-      )
-
       // Assert
-      expect(resp.status).toEqual(200)
-      expect(resp.body.message).toEqual('Successfully updated admin feedback')
-      expect(updatedFeedback).toEqual(
-        pick(MOCK_ADMIN_FEEDBACK, ['comment', 'rating', 'userId', '__id']),
-      )
+      expect(resp.status).toEqual(400)
+      expect(resp.body.message).toEqual('Validation failed')
     })
 
-    it('should return 400 if validation fails because rating is not 0 or 1', async () => {
+    it('should return 400 when a star value is sent on the legacy rating key', async () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
-        .send({ rating: -1 })
+        .send({ rating: 2 })
+
+      // Assert
+      expect(resp.status).toEqual(400)
+      expect(resp.body.message).toEqual('Validation failed')
+    })
+
+    it('should return 400 when csat is out of the 1-5 range', async () => {
+      // Act
+      const resp = await request
+        .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
+        .send({ csat: 6 })
 
       // Assert
       expect(resp.status).toEqual(400)
@@ -3319,7 +3412,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
-        .send({ rating: 1, comment: 'new comment' })
+        .send({ csat: MOCK_NEW_CSAT, comment: 'new comment' })
 
       // Assert
       expect(resp.status).toEqual(401)
@@ -3330,7 +3423,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${new Types.ObjectId().toString()}`)
-        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+        .send({ csat: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       // Assert
       expect(resp.status).toEqual(404)
@@ -3341,14 +3434,14 @@ describe('admin-form.form.routes', () => {
       // create new admin feedback with different userId from defaultuser
       const newFeedback = await AdminFeedbackModel.create({
         userId: new Types.ObjectId().toHexString(),
-        rating: MOCK_RATING,
+        csat: MOCK_CSAT,
         comment: MOCK_COMMENT,
       })
 
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${newFeedback.id.toString()}`)
-        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+        .send({ csat: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       // Assert
       expect(resp.status).toEqual(404)

@@ -149,15 +149,15 @@ describe('feedback.service', () => {
     })
     afterEach(() => jest.clearAllMocks())
 
-    it('should update feedback successfully with both rating and comment changes', async () => {
-      const newRating = 4
+    it('should update feedback successfully with both csat and comment changes', async () => {
+      const newCsat = 4
       const newComment = 'new comment'
 
       // Act
       const actualResult = await AdminFeedbackService.updateAdminFeedback({
         feedbackId: MOCK_FEEDBACK_ID,
         userId: MOCK_USER_ID,
-        rating: newRating,
+        csat: newCsat,
         comment: newComment,
       })
 
@@ -166,22 +166,22 @@ describe('feedback.service', () => {
       // Assert
       expect(actualResult.isOk()).toEqual(true)
       expect(newFeedback?.comment).toEqual(newComment)
-      expect(newFeedback?.rating).toEqual(newRating)
+      expect(newFeedback?.csat).toEqual(newCsat)
     })
 
-    it('should set ratingChanged to true when rating is updated', async () => {
-      const newRating = 5
+    it('should set ratingChanged to true when csat is updated', async () => {
+      const newCsat = 5
 
       await AdminFeedbackService.updateAdminFeedback({
         feedbackId: MOCK_FEEDBACK_ID,
         userId: MOCK_USER_ID,
-        rating: newRating,
+        csat: newCsat,
       })
 
       const newFeedback = await AdminFeedbackModel.findById(MOCK_FEEDBACK_ID)
 
       expect(newFeedback?.ratingChanged).toEqual(true)
-      expect(newFeedback?.rating).toEqual(newRating)
+      expect(newFeedback?.csat).toEqual(newCsat)
     })
 
     it('should not set ratingChanged when only comment is updated', async () => {
@@ -196,13 +196,9 @@ describe('feedback.service', () => {
       expect(newFeedback?.ratingChanged).toEqual(false)
     })
 
-    it('should update feedback successfully with only rating change', async () => {
-      const newRating = 3
-      const expectedResult = new AdminFeedbackModel({
-        userId: MOCK_USER_ID,
-        rating: newRating,
-        comment: MOCK_COMMENT,
-      })
+    it('should update feedback successfully with only a legacy rating change', async () => {
+      // Legacy thumbs path still works; rating stays within 0/1.
+      const newRating = 0
 
       // Act
       const actualResult = await AdminFeedbackService.updateAdminFeedback({
@@ -215,8 +211,9 @@ describe('feedback.service', () => {
 
       // Assert
       expect(actualResult.isOk()).toEqual(true)
-      expect(newFeedback?.comment).toEqual(expectedResult.comment)
-      expect(newFeedback?.rating).toEqual(expectedResult.rating)
+      expect(newFeedback?.comment).toEqual(MOCK_COMMENT)
+      expect(newFeedback?.rating).toEqual(newRating)
+      expect(newFeedback?.ratingChanged).toEqual(true)
     })
 
     it('should update feedback successfully with only comment changes', async () => {

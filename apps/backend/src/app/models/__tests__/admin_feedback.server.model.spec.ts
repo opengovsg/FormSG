@@ -50,16 +50,15 @@ describe('form_feedback.server.model', () => {
       )
     })
 
-    it('should throw validation error when rating param is missing', async () => {
-      // Arrange
-      const paramsWithoutRating = omit(DEFAULT_PARAMS, 'rating')
+    it('should save successfully with csat and no rating', async () => {
+      // Arrange: new rows carry csat instead of the legacy rating.
+      const csatParams = { ...omit(DEFAULT_PARAMS, 'rating'), csat: 4 }
       // Act
-      const actualPromise = new FeedbackModel(paramsWithoutRating).save()
+      const actual = await FeedbackModel.create(csatParams)
 
       // Assert
-      await expect(actualPromise).rejects.toThrow(
-        mongoose.Error.ValidationError,
-      )
+      expect(actual.csat).toEqual(4)
+      expect(actual.rating).toBeUndefined()
     })
 
     it('should save successfully with triggerSource and formId', async () => {
@@ -108,20 +107,21 @@ describe('form_feedback.server.model', () => {
       }
     })
 
-    it('should accept rating values 1 through 5', async () => {
-      for (const rating of [1, 2, 3, 4, 5]) {
+    it('should accept csat values 1 through 5', async () => {
+      const baseParams = omit(DEFAULT_PARAMS, 'rating')
+      for (const csat of [1, 2, 3, 4, 5]) {
         const actual = await FeedbackModel.create({
-          ...DEFAULT_PARAMS,
-          rating,
+          ...baseParams,
+          csat,
         })
-        expect(actual.rating).toEqual(rating)
+        expect(actual.csat).toEqual(csat)
       }
     })
 
-    it('should reject rating value of 6', async () => {
+    it('should reject csat value of 0', async () => {
       const actualPromise = new FeedbackModel({
-        ...DEFAULT_PARAMS,
-        rating: 6,
+        ...omit(DEFAULT_PARAMS, 'rating'),
+        csat: 0,
       }).save()
 
       await expect(actualPromise).rejects.toThrow(
@@ -129,12 +129,36 @@ describe('form_feedback.server.model', () => {
       )
     })
 
-    it('should still accept rating value of 0 (backwards compat with old thumbs-down records)', async () => {
-      const actual = await FeedbackModel.create({
+    it('should reject csat value of 6', async () => {
+      const actualPromise = new FeedbackModel({
+        ...omit(DEFAULT_PARAMS, 'rating'),
+        csat: 6,
+      }).save()
+
+      await expect(actualPromise).rejects.toThrow(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject a legacy rating above 1 (thumbs is 0/1 only)', async () => {
+      const actualPromise = new FeedbackModel({
         ...DEFAULT_PARAMS,
-        rating: 0,
-      })
-      expect(actual.rating).toEqual(0)
+        rating: 2,
+      }).save()
+
+      await expect(actualPromise).rejects.toThrow(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should accept legacy rating values 0 and 1', async () => {
+      for (const rating of [0, 1]) {
+        const actual = await FeedbackModel.create({
+          ...DEFAULT_PARAMS,
+          rating,
+        })
+        expect(actual.rating).toEqual(rating)
+      }
     })
 
     it('should default ratingChanged to false', async () => {
