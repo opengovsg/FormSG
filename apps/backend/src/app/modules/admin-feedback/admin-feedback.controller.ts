@@ -44,13 +44,8 @@ const submitAdminFeedback: ControllerHandler<
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { rating, comment, triggerSource, formId } = req.body
 
-  // Dual-emit: old metric kept so existing dashboards don't break during
-  // migration. New `.csat` metric is the 1-5 CSAT measure. Remove the old
-  // metric once the report card has migrated to `.csat`.
-  statsdClient.distribution('formsg.users.feedback.rating', rating, 1, {
-    rating: `${rating}`,
-    ...(triggerSource ? { triggerSource } : {}),
-  })
+  // `.csat` is the 1-5 CSAT measure. The legacy `.rating` emit was dropped:
+  // the star feature never shipped, so no dashboard depends on it at this scale.
   statsdClient.distribution('formsg.users.feedback.csat', rating, 1, {
     csat: `${rating}`,
     ...(triggerSource ? { triggerSource } : {}),

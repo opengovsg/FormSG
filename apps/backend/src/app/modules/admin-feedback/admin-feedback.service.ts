@@ -79,11 +79,9 @@ export const updateAdminFeedback = ({
 }) => {
   const updateObj: Record<string, unknown> = {}
   if (comment !== undefined) updateObj.comment = comment
-  if (csat !== undefined) {
-    updateObj.csat = csat
-    // `ratingChanged` is a pre-existing flag; it now reflects a `csat` edit.
-    updateObj.ratingChanged = true
-  }
+  if (csat !== undefined) updateObj.csat = csat
+  // Any post-creation edit (star or comment) marks the feedback as changed.
+  if (!isEmpty(updateObj)) updateObj.feedbackChanged = true
 
   // if no update to be done, return ok
   if (isEmpty(updateObj)) return okAsync(true)

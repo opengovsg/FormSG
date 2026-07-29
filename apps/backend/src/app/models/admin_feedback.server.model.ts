@@ -44,7 +44,7 @@ const AdminFeedbackSchema = new Schema<
     formId: {
       type: Schema.Types.ObjectId,
     },
-    ratingChanged: {
+    feedbackChanged: {
       type: Boolean,
       default: false,
     },
