@@ -8,6 +8,7 @@ import { decode as decodeBase64 } from '@stablelib/base64'
 
 import {
   BasicField,
+  FieldResponsesV3,
   PublicMultirespondentSubmissionDto,
 } from 'formsg-shared/types'
 
@@ -38,7 +39,7 @@ export type DecryptedSubmission = Omit<
 const normalizeToV4 = (rawResponses: unknown): FieldResponsesV4 =>
   isFieldResponsesV4(rawResponses as Record<string, unknown>)
     ? (rawResponses as FieldResponsesV4)
-    : adaptV3ToV4(rawResponses as FormFieldsV3, { provenance: {} })
+    : adaptV3ToV4(rawResponses as FieldResponsesV3, { provenance: {} })
 
 const harvestLegacyAttachmentContents = (
   rawResponses: Record<string, { fieldType?: string; answer?: unknown }>,
