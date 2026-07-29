@@ -29,6 +29,7 @@ import {
   FormWorkflowDto,
   FormWorkflowStepDto,
   LogicDto,
+  MultirespondentFormSettings,
   PaymentChannel,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -106,6 +107,7 @@ import {
   getLogicById,
   isFormEmailMode,
   isFormEncryptMode,
+  isFormMultirespondent,
 } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
@@ -1582,6 +1584,14 @@ export const createWorkflowStep = (
     )
   }
 
+  if ((originalForm as IPopulatedMultirespondentForm).payments_field?.enabled) {
+    return errAsync(
+      new MalformedParametersError(
+        'Remove the payment field before adding workflow steps',
+      ),
+    )
+  }
+
   if (
     newWorkflowStep.workflow_type === WorkflowType.Dynamic &&
     newWorkflowStep.field
@@ -1680,8 +1690,11 @@ export const createWorkflowStep = (
   ) as IMultirespondentFormModel
 
   return ResultAsync.fromPromise(
-    MultirespondentFormModel.findByIdAndUpdate(
-      originalMrfForm._id,
+    // findOneAndUpdate skips the schema's payment-invariant pre-validate
+    // hook, so the payments precondition rides in the query filter — this
+    // also closes the race against a concurrent enable-payments update.
+    MultirespondentFormModel.findOneAndUpdate(
+      { _id: originalMrfForm._id, 'payments_field.enabled': { $ne: true } },
       { workflow: updatedWorkflow },
       {
         new: true,
@@ -1703,7 +1716,13 @@ export const createWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      // The form exists (it was fetched to enter this function), so a miss
+      // here means the payments precondition failed.
+      return errAsync(
+        new MalformedParametersError(
+          'Remove the payment field before adding workflow steps',
+        ),
+      )
     }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
@@ -1960,6 +1979,27 @@ export const updateFormSettings = (
       return errAsync(
         new MalformedParametersError(
           'Cannot update form settings when payments_field is enabled',
+        ),
+      )
+    }
+  }
+
+  // A payment-enabled multirespondent form sends no form-configured emails
+  // (the payer's receipt is the only email) and cannot enforce single
+  // submission. Unlike encrypt mode above, this arms only on the payment
+  // field being enabled — a merely Stripe-connected MRF keeps full use of
+  // its notification settings.
+  if (isFormMultirespondent(originalForm)) {
+    const mrfBody = body as MultirespondentFormSettings
+    if (
+      originalForm.payments_field?.enabled &&
+      ((mrfBody.emails && mrfBody.emails.length > 0) ||
+        mrfBody.stepOneEmailNotificationFieldId ||
+        body.isSingleSubmission)
+    ) {
+      return errAsync(
+        new MalformedParametersError(
+          'Cannot update email notification or single submission settings when payments are enabled',
         ),
       )
     }

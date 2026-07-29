@@ -1991,6 +1991,86 @@ describe('admin-form.service', () => {
       })
     })
 
+    describe('payment-enabled multirespondent form', () => {
+      const PAYMENT_ENABLED_MRF = jest.mocked({
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Multirespondent,
+        payments_field: { enabled: true },
+      } as unknown as IPopulatedMultirespondentForm)
+
+      const STRIPE_CONNECTED_MRF = jest.mocked({
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Multirespondent,
+        payments_channel: { channel: PaymentChannel.Stripe },
+        payments_field: { enabled: false },
+      } as unknown as IPopulatedMultirespondentForm)
+
+      it.each([
+        [
+          'emails',
+          { emails: ['test@example.com'] } satisfies SettingsUpdateDto,
+        ],
+        [
+          'stepOneEmailNotificationFieldId',
+          {
+            stepOneEmailNotificationFieldId: new ObjectId().toHexString(),
+          } as SettingsUpdateDto,
+        ],
+        [
+          'isSingleSubmission',
+          { isSingleSubmission: true } satisfies SettingsUpdateDto,
+        ],
+      ])(
+        'should not allow %s update when payments are enabled',
+        async (_name, settingsToUpdate) => {
+          // Act
+          const actualResult = await AdminFormService.updateFormSettings(
+            PAYMENT_ENABLED_MRF,
+            settingsToUpdate,
+          )
+
+          // Assert
+          expect(actualResult.isErr()).toBeTrue()
+          expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+            MalformedParametersError,
+          )
+        },
+      )
+
+      it('should allow clearing emails when payments are enabled', async () => {
+        // Arrange
+        const settingsToUpdate: SettingsUpdateDto = { emails: [] }
+
+        // Act
+        const actualResult = await AdminFormService.updateFormSettings(
+          PAYMENT_ENABLED_MRF,
+          settingsToUpdate,
+        )
+
+        // Assert
+        expect(actualResult.isOk()).toBeTrue()
+      })
+
+      it('should allow emails update on a Stripe-connected MRF with payments disabled', async () => {
+        // Arrange: unlike encrypt mode, mere Stripe connection must not
+        // freeze MRF notification settings.
+        const settingsToUpdate: SettingsUpdateDto = {
+          emails: ['test@example.com'],
+        }
+
+        // Act
+        const actualResult = await AdminFormService.updateFormSettings(
+          STRIPE_CONNECTED_MRF,
+          settingsToUpdate,
+        )
+
+        // Assert
+        expect(actualResult.isOk()).toBeTrue()
+      })
+    })
+
     it('should not allow set form to public when form is email mode and isForceConvertToStorageMode is true', async () => {
       // Arrange
       const settingsToUpdate: SettingsUpdateDto = {
@@ -3902,7 +3982,7 @@ describe('admin-form.service', () => {
         } as unknown as IPopulatedForm
 
         jest
-          .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
           // @ts-ignore
           .mockReturnValue({
             exec: jest.fn().mockResolvedValue({
@@ -3945,7 +4025,7 @@ describe('admin-form.service', () => {
         } as unknown as IPopulatedForm
 
         jest
-          .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
           // @ts-ignore
           .mockReturnValue({
             exec: jest.fn().mockResolvedValue({
@@ -3968,6 +4048,103 @@ describe('admin-form.service', () => {
 
         // Assert
         expect(result.isOk()).toBe(true)
+      })
+    })
+
+    describe('payment gate', () => {
+      const NEW_STEP = {
+        workflow_type: WorkflowType.Static,
+        emails: ['step1@example.com'],
+        edit: [],
+      }
+
+      it('should reject adding a workflow step when payments are enabled', async () => {
+        // Arrange
+        const mockForm = {
+          _id: new ObjectId().toHexString(),
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: [],
+          workflow: [],
+          payments_field: { enabled: true },
+        } as unknown as IPopulatedForm
+
+        // Act
+        const result = await AdminFormService.createWorkflowStep(
+          mockForm,
+          NEW_STEP as any,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          MalformedParametersError,
+        )
+      })
+
+      it('should include the payments precondition in the update filter', async () => {
+        // Arrange
+        const mockFormId = new ObjectId().toHexString()
+        const mockForm = {
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: [],
+          workflow: [],
+          payments_field: { enabled: false },
+        } as unknown as IPopulatedForm
+
+        const updateSpy = jest
+          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+          // @ts-ignore
+          .mockReturnValue({
+            exec: jest.fn().mockResolvedValue({
+              _id: mockFormId,
+              workflow: [NEW_STEP],
+            }),
+          })
+
+        // Act
+        const result = await AdminFormService.createWorkflowStep(
+          mockForm,
+          NEW_STEP as any,
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+        expect(updateSpy).toHaveBeenCalledWith(
+          { _id: mockFormId, 'payments_field.enabled': { $ne: true } },
+          { workflow: [NEW_STEP] },
+          { new: true, runValidators: true },
+        )
+      })
+
+      it('should reject when payments were enabled concurrently (filter misses)', async () => {
+        // Arrange
+        const mockForm = {
+          _id: new ObjectId().toHexString(),
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: [],
+          workflow: [],
+          payments_field: { enabled: false },
+        } as unknown as IPopulatedForm
+
+        jest
+          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+          // @ts-ignore
+          .mockReturnValue({
+            exec: jest.fn().mockResolvedValue(null),
+          })
+
+        // Act
+        const result = await AdminFormService.createWorkflowStep(
+          mockForm,
+          NEW_STEP as any,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          MalformedParametersError,
+        )
       })
     })
   })
