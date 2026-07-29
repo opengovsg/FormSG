@@ -22,6 +22,7 @@ export * from './myinfo-occupations'
 export * from './myinfo-races'
 export * from './myinfo-hdb-types'
 export * from './myinfo-housing-types'
+export * from './children'
 
 export type MyInfoVerifiedType = 'SG' | 'PR' | 'F'
 
