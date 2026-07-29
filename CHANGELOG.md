@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.8.0](https://github.com/opengovsg/formsg/compare/v8.7.0...v8.8.0) (2026-07-29)
+
+
+### Features
+
+* give admin CSAT its own db key + metric (#9787) ([#9787](https://github.com/opengovsg/formsg/commit/0affd4703008e5421ee635dd5a5ec72ec27a1a26))
+
 ## [8.7.0](https://github.com/opengovsg/formsg/compare/v8.6.2...v8.7.0) (2026-07-29)
 
 
