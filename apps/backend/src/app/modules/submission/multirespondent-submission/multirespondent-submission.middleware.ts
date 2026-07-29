@@ -94,7 +94,7 @@ const multirespondentSubmissionBodySchema = Joi.object({
       fieldType: Joi.string().valid(...Object.values(BasicField)),
       answer: Joi.required(),
       question: Joi.any().strip(),
-      provenance: Joi.object().optional(),
+      provenance: Joi.object().default({}),
       myInfo: Joi.object({ attr: Joi.string().required() }).optional(),
     }),
   ),
