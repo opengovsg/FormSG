@@ -261,7 +261,7 @@ export interface StorageFormBase extends PaymentFormBase {
   whitelistedSubmitterIds?: WhitelistedSubmitterIds | null
 }
 
-export interface MultirespondentFormBase extends FormBase {
+export interface MultirespondentFormBase extends PaymentFormBase {
   responseMode: FormResponseMode.Multirespondent
   publicKey: string
   workflow: FormWorkflow
