@@ -1,6 +1,10 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { ADMIN_FEEDBACK_TRIGGER_SOURCES, ErrorDto } from 'formsg-shared/types'
+import {
+  ADMIN_FEEDBACK_TRIGGER_SOURCES,
+  AdminCsatScore,
+  ErrorDto,
+} from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
 import { IAdminFeedbackSchema } from 'src/types'
@@ -46,7 +50,7 @@ const submitAdminFeedback: ControllerHandler<
   { message: string; feedback: IAdminFeedbackSchema } | ErrorDto,
   {
     rating?: number
-    csat?: number
+    csat?: AdminCsatScore
     comment?: string
     triggerSource?: string
     formId?: string
@@ -122,7 +126,7 @@ const validateUpdateAdminFormFeedback = celebrate({
 const updateAdminFeedback: ControllerHandler<
   { feedbackId: string },
   { message: string } | ErrorDto,
-  { rating?: number; csat?: number; comment?: string }
+  { rating?: number; csat?: AdminCsatScore; comment?: string }
 > = async (req, res) => {
   const { feedbackId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id

@@ -1,3 +1,4 @@
+import { AdminCsatScore } from 'formsg-shared/types'
 import { isEmpty } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
@@ -14,7 +15,7 @@ const logger = createLoggerWithLabel(module)
 export type Feedback = {
   comment?: string
   rating?: number
-  csat?: number
+  csat?: AdminCsatScore
   ratingChanged?: boolean
 }
 
@@ -37,7 +38,7 @@ export const insertAdminFeedback = ({
 }: {
   userId: string
   rating?: number
-  csat?: number
+  csat?: AdminCsatScore
   comment?: string
   triggerSource?: string
   formId?: string
@@ -89,7 +90,7 @@ export const updateAdminFeedback = ({
   userId: string
   comment?: string
   rating?: number
-  csat?: number
+  csat?: AdminCsatScore
 }) => {
   const scoreChanged = rating !== undefined || csat !== undefined
   const updateObj: Partial<Feedback> = {
