@@ -19,7 +19,7 @@ import {
   deleteWorkflowStep,
   updateWorkflowStep,
 } from './FormWorkflowService'
-import { isStepCompleted } from './workflow.utils'
+import { isWorkflowFeedbackEligible } from './workflow.utils'
 
 export const useWorkflowMutations = () => {
   const { formId } = useParams()
@@ -62,11 +62,7 @@ export const useWorkflowMutations = () => {
           description: 'The step was successfully created.',
         })
 
-        // Trigger feedback when 2+ completed steps
-        const completedCount = updatedWorkflow.filter((step, i) =>
-          isStepCompleted(step, i),
-        ).length
-        if (completedCount >= 2) {
+        if (isWorkflowFeedbackEligible(updatedWorkflow)) {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
@@ -120,11 +116,7 @@ export const useWorkflowMutations = () => {
           description: 'The step was successfully updated.',
         })
 
-        // Trigger feedback when 2+ completed steps
-        const completedCount = updatedWorkflow.filter((step, i) =>
-          isStepCompleted(step, i),
-        ).length
-        if (completedCount >= 2) {
+        if (isWorkflowFeedbackEligible(updatedWorkflow)) {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },

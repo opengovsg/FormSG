@@ -1,99 +1,97 @@
-import { WorkflowType } from 'formsg-shared/types/form'
+import { FormWorkflowStep, WorkflowType } from 'formsg-shared/types/form'
 
-import { isStepCompleted } from './workflow.utils'
+import { isWorkflowFeedbackEligible } from './workflow.utils'
 
-describe('isStepCompleted', () => {
-  it('should return true for a completed static step', () => {
-    expect(
-      isStepCompleted(
-        {
-          workflow_type: WorkflowType.Static,
-          edit: ['field1'],
-          emails: ['user@example.com'],
-        },
-        1,
-      ),
-    ).toBe(true)
+// The first step's respondent is always "anyone who has access to your form",
+// stored as a Static step with no emails, so these fixtures deliberately leave
+// `emails` empty for it.
+const firstStep = (edit: string[] = ['field1']): FormWorkflowStep => ({
+  workflow_type: WorkflowType.Static,
+  edit,
+  emails: [],
+})
+
+const staticStep = (
+  edit: string[] = ['field1'],
+  emails: string[] = ['user@example.com'],
+): FormWorkflowStep => ({
+  workflow_type: WorkflowType.Static,
+  edit,
+  emails,
+})
+
+describe('isWorkflowFeedbackEligible', () => {
+  it('should return true for a first step plus a completed static step', () => {
+    expect(isWorkflowFeedbackEligible([firstStep(), staticStep()])).toBe(true)
   })
 
-  it('should return true for a completed dynamic step', () => {
+  it('should return true for a first step plus a completed dynamic step', () => {
     expect(
-      isStepCompleted(
+      isWorkflowFeedbackEligible([
+        firstStep(),
         {
           workflow_type: WorkflowType.Dynamic,
           edit: ['field1'],
           field: 'emailFieldId',
         },
-        1,
-      ),
+      ]),
     ).toBe(true)
   })
 
-  it('should return true for a completed conditional step', () => {
+  it('should return true for a first step plus a completed conditional step', () => {
     expect(
-      isStepCompleted(
+      isWorkflowFeedbackEligible([
+        firstStep(),
         {
           workflow_type: WorkflowType.Conditional,
           edit: ['field1'],
           conditional_field: 'condFieldId',
         },
-        1,
-      ),
+      ]),
     ).toBe(true)
   })
 
-  it('should return false when edit is empty', () => {
+  it('should return false for the first step alone', () => {
+    expect(isWorkflowFeedbackEligible([firstStep()])).toBe(false)
+  })
+
+  it('should return false for an empty workflow', () => {
+    expect(isWorkflowFeedbackEligible([])).toBe(false)
+  })
+
+  it('should return false when the second step has no fields', () => {
+    expect(isWorkflowFeedbackEligible([firstStep(), staticStep([])])).toBe(
+      false,
+    )
+  })
+
+  it('should return false when the second step has no respondent', () => {
     expect(
-      isStepCompleted(
-        {
-          workflow_type: WorkflowType.Static,
-          edit: [],
-          emails: ['user@example.com'],
-        },
-        1,
-      ),
+      isWorkflowFeedbackEligible([firstStep(), staticStep(['field1'], [])]),
     ).toBe(false)
   })
 
-  it('should return false for a static step with no respondent', () => {
-    expect(
-      isStepCompleted(
-        {
-          workflow_type: WorkflowType.Static,
-          edit: ['field1'],
-          emails: [],
-        },
-        1,
-      ),
-    ).toBe(false)
+  it('should return false when the first step has no fields and only one later step is complete', () => {
+    expect(isWorkflowFeedbackEligible([firstStep([]), staticStep()])).toBe(
+      false,
+    )
   })
 
-  // The first step's respondent is always "anyone who has access to your
-  // form", stored as a Static step with no emails. It counts as completed once
-  // it has fields, otherwise the trigger would need three steps to fire.
-  it('should return true for the first step despite having no emails', () => {
+  it('should return true when the first step has no fields but two later steps are complete', () => {
     expect(
-      isStepCompleted(
-        {
-          workflow_type: WorkflowType.Static,
-          edit: ['field1'],
-          emails: [],
-        },
-        0,
-      ),
+      isWorkflowFeedbackEligible([firstStep([]), staticStep(), staticStep()]),
     ).toBe(true)
   })
 
-  it('should return false for the first step when it has no fields', () => {
+  // The empty-emails exemption is positional. Only index 0 gets it, otherwise
+  // any later Static step left unconfigured would count towards the threshold.
+  it('should not exempt a later static step with no emails', () => {
     expect(
-      isStepCompleted(
-        {
-          workflow_type: WorkflowType.Static,
-          edit: [],
-          emails: [],
-        },
-        0,
-      ),
+      isWorkflowFeedbackEligible([
+        firstStep(),
+        staticStep(['field1'], []),
+        staticStep(['field1'], []),
+      ]),
     ).toBe(false)
   })
 })

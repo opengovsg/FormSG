@@ -2,6 +2,9 @@ import { FormWorkflowStep, WorkflowType } from 'formsg-shared/types/form'
 
 import { isFirstStepByStepNumber } from './components/WorkflowContent/utils/isFirstStepByStepNumber'
 
+/** How many completed steps count as "the admin has set up a workflow". */
+const COMPLETED_STEPS_FOR_FEEDBACK = 2
+
 /**
  * A workflow step is "completed" when it has fields assigned
  * and a respondent configured.
@@ -12,8 +15,10 @@ import { isFirstStepByStepNumber } from './components/WorkflowContent/utils/isFi
  * trigger would need three visible steps to see two completed ones.
  *
  * `stepNumber` must be the step's position in the full, unfiltered workflow.
+ * Callers should prefer `isWorkflowFeedbackEligible`, which owns that
+ * invariant.
  */
-export const isStepCompleted = (
+const isStepCompleted = (
   step: FormWorkflowStep,
   stepNumber: number,
 ): boolean => {
@@ -29,3 +34,13 @@ export const isStepCompleted = (
       return !!step.conditional_field
   }
 }
+
+/**
+ * Whether a workflow has enough completed steps to prompt the admin for
+ * feedback. Takes the whole workflow so the positional first-step rule stays
+ * an implementation detail.
+ */
+export const isWorkflowFeedbackEligible = (
+  workflow: FormWorkflowStep[],
+): boolean =>
+  workflow.filter(isStepCompleted).length >= COMPLETED_STEPS_FOR_FEEDBACK
