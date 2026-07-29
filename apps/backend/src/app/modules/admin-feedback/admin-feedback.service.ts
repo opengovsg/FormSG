@@ -14,13 +14,15 @@ const logger = createLoggerWithLabel(module)
 export type Feedback = {
   comment?: string
   rating?: number
+  csat?: number
   ratingChanged?: boolean
 }
 
 /**
  * Inserts given admin feedback to the database.
  * @param userId the userId of the admin that provided the feedback
- * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
+ * @param rating legacy thumbs value (0 for thumbs down, 1 for thumbs up)
+ * @param csat the 1-5 CSAT score, mutually exclusive with `rating`
  * @param comment the feedback comment to insert if available
  * @returns ok(IAdminFeedbackSchema) if successfully inserted
  * @returns err(DatabaseError) on database error
@@ -28,12 +30,14 @@ export type Feedback = {
 export const insertAdminFeedback = ({
   userId,
   rating,
+  csat,
   comment,
   triggerSource,
   formId,
 }: {
   userId: string
-  rating: number
+  rating?: number
+  csat?: number
   comment?: string
   triggerSource?: string
   formId?: string
@@ -42,6 +46,7 @@ export const insertAdminFeedback = ({
     AdminFeedbackModel.create({
       userId,
       rating,
+      csat,
       comment,
       triggerSource,
       formId,
@@ -67,7 +72,8 @@ export const insertAdminFeedback = ({
  * @param feedbackId the id of the admin feedback to update
  * @param userId the id of the admin
  * @param comment the feedback comment to insert
- * @param rating the feedback rating to insert (0 for thumbs down, 1 for thumbs up)
+ * @param rating legacy thumbs value (0 for thumbs down, 1 for thumbs up)
+ * @param csat the 1-5 CSAT score, mutually exclusive with `rating`
  * @returns ok(IAdminFeedbackSchema) if successfully inserted
  * @returns err(MissingAdminFeedbackError) if feedback document with the same feedbackId and userId is not found
  * @returns err(DatabaseError) on database error
@@ -77,16 +83,20 @@ export const updateAdminFeedback = ({
   userId,
   comment,
   rating,
+  csat,
 }: {
   feedbackId: string
   userId: string
   comment?: string
   rating?: number
+  csat?: number
 }) => {
+  const scoreChanged = rating !== undefined || csat !== undefined
   const updateObj: Partial<Feedback> = {
     ...(comment !== undefined && { comment }),
     ...(rating !== undefined && { rating }),
-    ...(rating !== undefined && { ratingChanged: true }),
+    ...(csat !== undefined && { csat }),
+    ...(scoreChanged && { ratingChanged: true }),
   }
 
   // if no update to be done, return ok
@@ -96,6 +106,7 @@ export const updateAdminFeedback = ({
     AdminFeedbackModel.updateOne(
       { _id: feedbackId, userId: userId },
       { $set: updateObj },
+      { runValidators: true },
     ),
     (error) => {
       logger.error({
