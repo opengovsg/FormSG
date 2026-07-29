@@ -483,6 +483,30 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
   business: formBusinessSchema,
 })
 
+// Overrides the base-schema static: enabling payments on a multirespondent
+// form must be atomic with the zero-step invariant's preconditions, since
+// findOneAndUpdate skips the schema's payment-invariant pre-validate hook.
+// A miss (null) therefore means "preconditions not met", not "form missing".
+MultirespondentFormSchema.statics.updatePaymentsById = async function (
+  formId: string,
+  newPayments: FormPaymentsField,
+) {
+  const filter = newPayments.enabled
+    ? {
+        _id: formId,
+        workflow: { $size: 0 },
+        emails: { $size: 0 },
+        stepOneEmailNotificationFieldId: { $in: [null, ''] },
+        isSingleSubmission: { $ne: true },
+      }
+    : { _id: formId }
+  return this.findOneAndUpdate(
+    filter,
+    { payments_field: newPayments },
+    { new: true, runValidators: true },
+  ).exec()
+}
+
 MultirespondentFormSchema.methods.addPaymentAccountId = function ({
   accountId,
   publishableKey,

@@ -46,6 +46,7 @@ import {
   IFormDocument,
   IFormSchema,
   ILogicSchema,
+  IMultirespondentFormSchema,
   IPopulatedUser,
 } from 'src/types'
 
@@ -1030,7 +1031,7 @@ describe('Form Model', () => {
           })
 
           // Act
-          const saved = await validForm.save()
+          const saved = (await validForm.save()) as IMultirespondentFormSchema
 
           // Assert
           expect(saved._id).toBeDefined()
@@ -1105,11 +1106,11 @@ describe('Form Model', () => {
 
         it('should reject adding a workflow step to a saved payment-enabled form', async () => {
           // Arrange
-          const form = await new MultirespondentForm({
+          const form = (await new MultirespondentForm({
             ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
             workflow: [],
             payments_field: ENABLED_PAYMENTS_FIELD,
-          }).save()
+          }).save()) as IMultirespondentFormSchema
           form.workflow.push({
             _id: new ObjectId().toHexString(),
             workflow_type: WorkflowType.Static,
@@ -1545,6 +1546,133 @@ describe('Form Model', () => {
   })
 
   describe('Statics', () => {
+    describe('updatePaymentsById on multirespondent forms', () => {
+      const ENABLED_PAYMENTS_FIELD = {
+        enabled: true,
+        payment_type: PaymentType.Variable,
+        min_amount: 100,
+        max_amount: 1000,
+      } as FormPaymentsField
+
+      const MOCK_WORKFLOW_STEP = {
+        _id: new ObjectId(),
+        workflow_type: WorkflowType.Static,
+        emails: ['step@open.gov.sg'],
+        edit: [],
+      }
+
+      it('should enable payments on an eligible zero-step form', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [],
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          ENABLED_PAYMENTS_FIELD,
+        )
+
+        // Assert
+        expect(updated?.payments_field.enabled).toBe(true)
+      })
+
+      it('should return null when enabling payments on a form with workflow steps', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [MOCK_WORKFLOW_STEP],
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          ENABLED_PAYMENTS_FIELD,
+        )
+
+        // Assert
+        expect(updated).toBeNull()
+        const reloaded = await MultirespondentForm.findById(form._id)
+        expect(
+          (reloaded as IMultirespondentFormSchema)?.payments_field.enabled,
+        ).toBe(false)
+      })
+
+      it('should return null when enabling payments on a form with email notifications', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [],
+          emails: ['notify@open.gov.sg'],
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          ENABLED_PAYMENTS_FIELD,
+        )
+
+        // Assert
+        expect(updated).toBeNull()
+      })
+
+      it('should return null when enabling payments on a form with a respondent email notification', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [],
+          stepOneEmailNotificationFieldId: new ObjectId().toHexString(),
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          ENABLED_PAYMENTS_FIELD,
+        )
+
+        // Assert
+        expect(updated).toBeNull()
+      })
+
+      it('should return null when enabling payments on a form with single submission enabled', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [],
+          isSingleSubmission: true,
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          ENABLED_PAYMENTS_FIELD,
+        )
+
+        // Assert
+        expect(updated).toBeNull()
+      })
+
+      it('should update a disabled payment config regardless of workflow steps', async () => {
+        // Arrange: a Stripe-connectable MRF that still has a workflow may
+        // hold a draft (disabled) payment config.
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [MOCK_WORKFLOW_STEP],
+        })
+
+        // Act
+        const updated = await MultirespondentForm.updatePaymentsById(form._id, {
+          ...ENABLED_PAYMENTS_FIELD,
+          enabled: false,
+        })
+
+        // Assert
+        expect(updated).not.toBeNull()
+        expect(updated?.payments_field.enabled).toBe(false)
+      })
+    })
+
     describe('deactivateById', () => {
       it('should correctly deactivate form for valid ID', async () => {
         const formParams = merge({}, MOCK_EMAIL_FORM_PARAMS, {
