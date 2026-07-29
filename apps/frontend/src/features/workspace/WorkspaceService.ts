@@ -1,6 +1,6 @@
 import {
+  AdminCsatScore,
   AdminFeedbackDto,
-  AdminFeedbackRating,
   AdminFeedbackTriggerSource,
   AdminUseEmailModeFeedbackDto,
   ErrorDto,
@@ -235,12 +235,12 @@ export const deleteAdminForm = async (formId: string): Promise<void> => {
 }
 
 export const createAdminFeedback = async (
-  rating: AdminFeedbackRating,
+  csat: AdminCsatScore,
   triggerSource?: AdminFeedbackTriggerSource,
   formId?: string,
 ): Promise<AdminFeedbackDto> => {
   return ApiService.post(`${ADMIN_FORM_ENDPOINT}/feedback`, {
-    rating,
+    csat,
     ...(triggerSource ? { triggerSource } : {}),
     ...(formId ? { formId } : {}),
   }).then(({ data }) => data.feedback)
@@ -248,7 +248,7 @@ export const createAdminFeedback = async (
 
 export const updateAdminFeedback = async (
   feedbackId: string,
-  params: { comment?: string; rating?: AdminFeedbackRating },
+  params: { comment?: string; csat?: AdminCsatScore },
 ): Promise<boolean> => {
   return ApiService.patch(
     `${ADMIN_FORM_ENDPOINT}/feedback/${feedbackId}`,

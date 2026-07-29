@@ -3,10 +3,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Flex, Stack, Text } from '@chakra-ui/react'
 
-import {
-  AdminFeedbackRating,
-  AdminFeedbackTriggerSource,
-} from 'formsg-shared/types'
+import { AdminCsatScore, AdminFeedbackTriggerSource } from 'formsg-shared/types'
 
 import { BxX } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -66,7 +63,7 @@ export const AdminFeedbackBox = ({
         // First star click: create the feedback record
         createAdminFeedbackMutation
           .mutateAsync({
-            rating: newRating as AdminFeedbackRating,
+            csat: newRating as AdminCsatScore,
             triggerSource,
             formId,
           })
@@ -75,7 +72,7 @@ export const AdminFeedbackBox = ({
         // Subsequent star click: update the rating
         updateAdminFeedbackMutation.mutateAsync({
           feedbackId,
-          rating: newRating as AdminFeedbackRating,
+          csat: newRating as AdminCsatScore,
         })
       }
     },

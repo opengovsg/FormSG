@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from 'react-query'
 import { useNavigate } from 'react-router-dom'
 
 import {
-  AdminFeedbackRating,
+  AdminCsatScore,
   AdminFeedbackTriggerSource,
   AdminUseEmailModeFeedbackDto,
 } from 'formsg-shared/types'
@@ -227,25 +227,25 @@ export const useDeleteFormMutation = () => {
 export const useAdminFeedbackMutation = () => {
   const createAdminFeedbackMutation = useMutation(
     ({
-      rating,
+      csat,
       triggerSource,
       formId,
     }: {
-      rating: AdminFeedbackRating
+      csat: AdminCsatScore
       triggerSource?: AdminFeedbackTriggerSource
       formId?: string
-    }) => createAdminFeedback(rating, triggerSource, formId),
+    }) => createAdminFeedback(csat, triggerSource, formId),
   )
   const updateAdminFeedbackMutation = useMutation(
     ({
       feedbackId,
       comment,
-      rating,
+      csat,
     }: {
       feedbackId: string
       comment?: string
-      rating?: AdminFeedbackRating
-    }) => updateAdminFeedback(feedbackId, { comment, rating }),
+      csat?: AdminCsatScore
+    }) => updateAdminFeedback(feedbackId, { comment, csat }),
   )
 
   return { createAdminFeedbackMutation, updateAdminFeedbackMutation }
