@@ -50,8 +50,8 @@ export interface ChildrenCompoundFieldProps extends BaseFieldProps {
 }
 
 const ARIA_CHILDREN_DESCRIPTION =
-  `This is a children field. There is 1 child.` +
-  `Each child has multiple fields to fill.` +
+  `This is a children field. There is 1 child. ` +
+  `Each child has multiple fields to fill. ` +
   `You can fill the child by selecting the child's name from the child name dropdown.`
 
 /**
