@@ -1,7 +1,7 @@
 import { Controller } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
-import { Box, FormControl, HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { Box, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { extend } from 'lodash'
 
 import { MyInfoChildAttributes } from 'formsg-shared/types'
@@ -10,7 +10,6 @@ import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
-import { Toggle } from '~components/Toggle/Toggle'
 
 import { CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS } from '~features/admin-form/create/builder-and-design/constants'
 
@@ -32,7 +31,7 @@ const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {
   )
 }
 
-const EDIT_MYINFO_CHILDREN = ['allowMultiple', 'childrenSubFields'] as const
+const EDIT_MYINFO_CHILDREN = ['childrenSubFields'] as const
 
 type EditMyInfoChildrenProps = EditFieldProps<ChildrenCompoundFieldMyInfo>
 type EditMyInfoChildrenInputs = Pick<
@@ -45,23 +44,17 @@ export const EditMyInfoChildren = ({
 }: EditMyInfoChildrenProps): JSX.Element => {
   const { t } = useTranslation()
   const extendedField = extendWithMyInfo(field)
-  const {
-    control,
-    register,
-    buttonText,
-    handleUpdateField,
-    isLoading,
-    handleCancel,
-  } = useEditFieldForm<EditMyInfoChildrenInputs, ChildrenCompoundFieldMyInfo>({
-    field,
-    transform: {
-      // MyInfo fields are not editable (except for Child compound field),
-      // so omit any transformation and output the original field
-      input: (inputField) => inputField,
-      output: (formOutput, originalField) =>
-        extend({}, originalField, formOutput),
-    },
-  })
+  const { control, buttonText, handleUpdateField, isLoading, handleCancel } =
+    useEditFieldForm<EditMyInfoChildrenInputs, ChildrenCompoundFieldMyInfo>({
+      field,
+      transform: {
+        // MyInfo fields are not editable (except for Child compound field),
+        // so omit any transformation and output the original field
+        input: (inputField) => inputField,
+        output: (formOutput, originalField) =>
+          extend({}, originalField, formOutput),
+      },
+    })
 
   return (
     <CreatePageDrawerContentContainer>
@@ -139,16 +132,6 @@ export const EditMyInfoChildren = ({
             )}
           />
         </Box>
-      </VStack>
-      <VStack align="flex-start">
-        <FormControl isReadOnly={isLoading}>
-          <Toggle
-            {...register('allowMultiple')}
-            label={t(
-              'features.adminForm.sidebar.fields.myInfoPreview.children.allowMultiple',
-            )}
-          />
-        </FormControl>
       </VStack>
       <VStack align="flex-start">
         <Text textStyle="subhead-1">
