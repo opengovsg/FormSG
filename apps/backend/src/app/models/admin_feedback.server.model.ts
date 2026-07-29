@@ -1,3 +1,4 @@
+import { ADMIN_FEEDBACK_TRIGGER_SOURCES } from 'formsg-shared/types'
 import { Mongoose, Schema } from 'mongoose'
 
 import { IAdminFeedbackModel, IAdminFeedbackSchema } from '../../types'
@@ -17,11 +18,18 @@ const AdminFeedbackSchema = new Schema<
       ref: USER_SCHEMA_ID,
       required: true,
     },
+    // Legacy thumbs feedback (0/1). Historical rows only; new rows write `csat`.
     rating: {
       type: Number,
       min: 0,
+      max: 1,
+      required: false,
+    },
+    csat: {
+      type: Number,
+      min: 1,
       max: 5,
-      required: true,
+      required: false,
     },
     comment: {
       type: String,
@@ -30,7 +38,7 @@ const AdminFeedbackSchema = new Schema<
     },
     triggerSource: {
       type: String,
-      enum: ['field-edit', 'publish', 'workflow'],
+      enum: [...ADMIN_FEEDBACK_TRIGGER_SOURCES],
     },
     formId: {
       type: Schema.Types.ObjectId,
