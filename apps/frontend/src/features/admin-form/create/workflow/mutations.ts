@@ -63,7 +63,9 @@ export const useWorkflowMutations = () => {
         })
 
         // Trigger feedback when 2+ completed steps
-        const completedCount = updatedWorkflow.filter(isStepCompleted).length
+        const completedCount = updatedWorkflow.filter((step, i) =>
+          isStepCompleted(step, i),
+        ).length
         if (completedCount >= 2) {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
@@ -119,7 +121,9 @@ export const useWorkflowMutations = () => {
         })
 
         // Trigger feedback when 2+ completed steps
-        const completedCount = updatedWorkflow.filter(isStepCompleted).length
+        const completedCount = updatedWorkflow.filter((step, i) =>
+          isStepCompleted(step, i),
+        ).length
         if (completedCount >= 2) {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
