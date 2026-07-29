@@ -1,7 +1,15 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
-import { Box, Divider, Stack, StackDivider, Text } from '@chakra-ui/react'
+import {
+  Box,
+  chakra,
+  Divider,
+  Icon,
+  Stack,
+  StackDivider,
+  Text,
+} from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
@@ -111,7 +119,13 @@ export const InactiveLogicBlock = ({
 
   return (
     <Box pos="relative" role={isEditableCards ? 'group' : undefined}>
-      <Box
+      <chakra.button
+        // With the flag on the whole card is the control, so it must be a real
+        // button to get focus and Enter/Space for free. With the flag off the
+        // card body is inert and the pencil stays the trigger, so keep it a
+        // div rather than adding an empty tab stop.
+        as={isEditableCards ? 'button' : 'div'}
+        type={isEditableCards ? 'button' : undefined}
         w="100%"
         textAlign="start"
         borderRadius="4px"
@@ -175,20 +189,38 @@ export const InactiveLogicBlock = ({
         >
           {renderThenContent}
         </Stack>
-      </Box>
-      <IconButton
-        top={{ base: '0.5rem', md: '2rem' }}
-        right={{ base: '0.5rem', md: '2rem' }}
-        pos="absolute"
-        aria-label={t('features.adminForm.sidebar.logic.inactiveBlock.clickToEdit')}
-        variant="clear"
-        onClick={handleClick}
-        icon={<BiPencil fontSize="1.5rem" />}
-        cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-        aria-disabled={isPreventEdit}
-        color={isEditableCards ? 'neutral.500' : undefined}
-        _groupHover={isEditableCards ? { color: 'primary.500' } : undefined}
-      />
+      </chakra.button>
+      {isEditableCards ? (
+        // Visual affordance only: the whole card is the button, so the pencil
+        // must not swallow clicks or add a second target for AT.
+        <Icon
+          as={BiPencil}
+          aria-hidden
+          pointerEvents="none"
+          top={{ base: '0.5rem', md: '2rem' }}
+          right={{ base: '0.5rem', md: '2rem' }}
+          pos="absolute"
+          fontSize="1.5rem"
+          color="neutral.500"
+          transitionProperty="common"
+          transitionDuration="normal"
+          _groupHover={{ color: 'primary.500' }}
+        />
+      ) : (
+        <IconButton
+          top={{ base: '0.5rem', md: '2rem' }}
+          right={{ base: '0.5rem', md: '2rem' }}
+          pos="absolute"
+          aria-label={t(
+            'features.adminForm.sidebar.logic.inactiveBlock.clickToEdit',
+          )}
+          variant="clear"
+          onClick={handleClick}
+          icon={<BiPencil fontSize="1.5rem" />}
+          cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
+          aria-disabled={isPreventEdit}
+        />
+      )}
     </Box>
   )
 }
