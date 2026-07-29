@@ -238,11 +238,13 @@ export const createAdminFeedback = async (
   csat: AdminCsatScore,
   triggerSource?: AdminFeedbackTriggerSource,
   formId?: string,
+  comment?: string,
 ): Promise<AdminFeedbackDto> => {
   return ApiService.post(`${ADMIN_FORM_ENDPOINT}/feedback`, {
     csat,
     ...(triggerSource ? { triggerSource } : {}),
     ...(formId ? { formId } : {}),
+    ...(comment ? { comment } : {}),
   }).then(({ data }) => data.feedback)
 }
 

@@ -230,11 +230,13 @@ export const useAdminFeedbackMutation = () => {
       csat,
       triggerSource,
       formId,
+      comment,
     }: {
       csat: AdminCsatScore
       triggerSource?: AdminFeedbackTriggerSource
       formId?: string
-    }) => createAdminFeedback(csat, triggerSource, formId),
+      comment?: string
+    }) => createAdminFeedback(csat, triggerSource, formId, comment),
   )
   const updateAdminFeedbackMutation = useMutation(
     ({

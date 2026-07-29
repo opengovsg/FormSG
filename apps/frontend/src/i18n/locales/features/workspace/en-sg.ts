@@ -58,6 +58,10 @@ export const enSG: Workspace = {
         close: 'close feedback box',
       },
     },
+    toast: {
+      success: 'Thank you for your feedback!',
+      submitError: 'Your feedback could not be saved. Please try again.',
+    },
   },
   workspacePage: {
     defaultTitle: 'All forms',

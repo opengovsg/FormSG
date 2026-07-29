@@ -1,12 +1,17 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Flex, Stack, Text } from '@chakra-ui/react'
 
-import { AdminCsatScore, AdminFeedbackTriggerSource } from 'formsg-shared/types'
+import {
+  AdminCsatScore,
+  AdminFeedbackDto,
+  AdminFeedbackTriggerSource,
+} from 'formsg-shared/types'
 
 import { BxX } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
+import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
 import { Rating } from '~components/Field/Rating/Rating'
 import BottomHugBox from '~components/Hug/BottomHugBox'
@@ -39,8 +44,10 @@ export const AdminFeedbackBox = ({
 }) => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
+  const toast = useToast({ isClosable: true })
   const [ratingValue, setRatingValue] = useState(0)
   const [feedbackId, setFeedbackId] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { createAdminFeedbackMutation, updateAdminFeedbackMutation } =
     useAdminFeedbackMutation()
   const { handleSubmit, register } = useForm<AdminFeedbackCommentForm>()
@@ -53,33 +60,77 @@ export const AdminFeedbackBox = ({
     placeholder,
     aria: { close: closeAriaLabel },
   } = t('features.workspace.feedback.comment', { returnObjects: true })
+  const { success: successMessage, submitError: submitErrorMessage } = t(
+    'features.workspace.feedback.toast',
+    { returnObjects: true },
+  )
+
+  const showSubmitError = useCallback(
+    () => toast({ description: submitErrorMessage, status: 'danger' }),
+    [toast, submitErrorMessage],
+  )
+  const showSuccess = useCallback(
+    () => toast({ description: successMessage, status: 'success' }),
+    [toast, successMessage],
+  )
+
+  // `feedbackId` is only set once the create resolves, so it is empty for a
+  // moment after the first star click. Anything firing in that window must reuse
+  // the in-flight create rather than starting a second one, or we write a
+  // duplicate row and a duplicate `.csat` metric. Correcting a rating (3 then 4)
+  // lands in that window routinely, so this is the common path, not an edge case.
+  const createPromiseRef = useRef<Promise<AdminFeedbackDto> | null>(null)
+  const latestRatingRef = useRef(0)
+
+  const syncRating = useCallback(
+    (id: string) =>
+      updateAdminFeedbackMutation
+        .mutateAsync({
+          feedbackId: id,
+          csat: latestRatingRef.current as AdminCsatScore,
+        })
+        .catch(() => undefined),
+    [updateAdminFeedbackMutation],
+  )
 
   const handleRatingChange = useCallback(
     (newRating: number | undefined) => {
       if (!newRating) return
       setRatingValue(newRating)
+      latestRatingRef.current = newRating
 
-      if (!feedbackId) {
-        // First star click: create the feedback record
-        createAdminFeedbackMutation
-          .mutateAsync({
-            csat: newRating as AdminCsatScore,
-            triggerSource,
-            formId,
-          })
-          .then((data) => setFeedbackId(data._id))
-      } else {
-        // Subsequent star click: update the rating
-        updateAdminFeedbackMutation.mutateAsync({
-          feedbackId,
-          csat: newRating as AdminCsatScore,
-        })
+      if (feedbackId) {
+        syncRating(feedbackId)
+        return
       }
+
+      // A create is already covering this prompt; its handler syncs the final
+      // rating once it lands.
+      if (createPromiseRef.current) return
+
+      const pending = createAdminFeedbackMutation.mutateAsync({
+        csat: newRating as AdminCsatScore,
+        triggerSource,
+        formId,
+      })
+      createPromiseRef.current = pending
+      pending
+        .then((created) => {
+          setFeedbackId(created._id)
+          // The admin may have moved the rating while this was in flight.
+          if (latestRatingRef.current !== newRating) syncRating(created._id)
+        })
+        // Deliberately silent. The admin did not ask to save yet, so a failure
+        // here should not interrupt them. Submit retries the create, so a
+        // transient failure repairs itself.
+        .catch(() => {
+          createPromiseRef.current = null
+        })
     },
     [
       feedbackId,
       createAdminFeedbackMutation,
-      updateAdminFeedbackMutation,
+      syncRating,
       triggerSource,
       formId,
     ],
@@ -87,15 +138,70 @@ export const AdminFeedbackBox = ({
 
   const handleCommentSubmit = useCallback(
     (data: AdminFeedbackCommentForm) => {
-      if (feedbackId && data.comment) {
-        updateAdminFeedbackMutation.mutateAsync({
-          feedbackId,
-          comment: data.comment,
-        })
+      if (isSubmitting) return
+      setIsSubmitting(true)
+
+      // The box closes on success, so the confirmation has to outlive it. That
+      // rules out an inline success state and is why this is a toast. On
+      // failure the box stays open so nothing typed is lost.
+      const onSaved = () => {
+        showSuccess()
+        onClose()
       }
-      onClose()
+      const onFailed = () => {
+        showSubmitError()
+        setIsSubmitting(false)
+      }
+      const addComment = (id: string): Promise<void> =>
+        data.comment
+          ? updateAdminFeedbackMutation
+              .mutateAsync({ feedbackId: id, comment: data.comment })
+              .then(() => undefined)
+          : Promise.resolve()
+
+      if (feedbackId) {
+        addComment(feedbackId).then(onSaved).catch(onFailed)
+        return
+      }
+
+      // Still creating. Wait for that record rather than starting a second one.
+      const pending = createPromiseRef.current
+      if (pending) {
+        pending
+          .then((created) => addComment(created._id))
+          .then(onSaved)
+          .catch(onFailed)
+        return
+      }
+
+      // No record and nothing in flight, so the star click's create never
+      // landed. Create it now with the rating and comment together rather than
+      // reporting a failure the admin was never told about.
+      createAdminFeedbackMutation
+        .mutateAsync({
+          csat: ratingValue as AdminCsatScore,
+          comment: data.comment || undefined,
+          triggerSource,
+          formId,
+        })
+        .then((created) => {
+          setFeedbackId(created._id)
+          onSaved()
+        })
+        .catch(onFailed)
     },
-    [feedbackId, updateAdminFeedbackMutation, onClose],
+    [
+      isSubmitting,
+      feedbackId,
+      ratingValue,
+      createAdminFeedbackMutation,
+      updateAdminFeedbackMutation,
+      triggerSource,
+      formId,
+      onClose,
+      showSuccess,
+      showSubmitError,
+    ],
   )
 
   return (
@@ -132,6 +238,7 @@ export const AdminFeedbackBox = ({
               <Button
                 mt="0.5rem"
                 float="right"
+                isLoading={isSubmitting}
                 onClick={handleSubmit(handleCommentSubmit)}
               >
                 {t('features.common.submit')}

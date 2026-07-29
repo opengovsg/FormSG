@@ -60,6 +60,10 @@ export interface Workspace {
         close: string
       }
     }
+    toast: {
+      success: string
+      submitError: string
+    }
   }
   workspacePage: {
     defaultTitle: string
