@@ -548,6 +548,54 @@ MultirespondentFormWorkflowPath.discriminator(
   WorkflowStepConditionalSchema,
 )
 
+// Payments on multirespondent forms are only supported when the form behaves
+// as a single-submission form: no workflow steps, no form-configured email
+// notifications, no single-submission enforcement. This document-level guard
+// covers every save() path (creation, duplication, instance methods); update
+// paths that bypass document validation (findByIdAndUpdate) must enforce the
+// same conditions atomically via their query filter.
+MultirespondentFormSchema.pre<IMultirespondentFormSchema>(
+  'validate',
+  function (next) {
+    if (!this.payments_field?.enabled) {
+      return next()
+    }
+    if ((this.workflow?.length ?? 0) > 0) {
+      return next(
+        this.invalidate(
+          'payments_field.enabled',
+          'Payments cannot be enabled on a multirespondent form with workflow steps',
+        ) as mongoose.Error.ValidationError,
+      )
+    }
+    if ((this.emails?.length ?? 0) > 0) {
+      return next(
+        this.invalidate(
+          'payments_field.enabled',
+          'Payments cannot be enabled on a multirespondent form with email notifications',
+        ) as mongoose.Error.ValidationError,
+      )
+    }
+    if (this.stepOneEmailNotificationFieldId) {
+      return next(
+        this.invalidate(
+          'payments_field.enabled',
+          'Payments cannot be enabled on a multirespondent form with a respondent email notification',
+        ) as mongoose.Error.ValidationError,
+      )
+    }
+    if (this.isSingleSubmission) {
+      return next(
+        this.invalidate(
+          'payments_field.enabled',
+          'Payments cannot be enabled on a multirespondent form with single submission enforcement',
+        ) as mongoose.Error.ValidationError,
+      )
+    }
+    return next()
+  },
+)
+
 const compileFormModel = (db: Mongoose): IFormModel => {
   const User = getUserModel(db)
 
