@@ -215,6 +215,35 @@ export const formPaymentsFieldSchema = {
   },
 }
 
+export const formPaymentsChannelSchema = {
+  channel: {
+    type: String,
+    enum: Object.values(PaymentChannel),
+    default: PaymentChannel.Unconnected,
+  },
+  target_account_id: {
+    type: String,
+    default: '',
+    validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
+  },
+  publishable_key: {
+    type: String,
+    default: '',
+    validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
+  },
+  payment_methods: {
+    type: [String],
+    default: [],
+  },
+}
+
+export const formBusinessSchema = {
+  type: {
+    address: { type: String, default: '', trim: true },
+    gstRegNo: { type: String, default: '', trim: true },
+  },
+}
+
 const whitelistedSubmitterIdNestedPath = new Schema(
   {
     isWhitelistEnabled: {
@@ -268,36 +297,11 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       isWhitelistEnabled: false,
     }),
   },
-  payments_channel: {
-    channel: {
-      type: String,
-      enum: Object.values(PaymentChannel),
-      default: PaymentChannel.Unconnected,
-    },
-    target_account_id: {
-      type: String,
-      default: '',
-      validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
-    },
-    publishable_key: {
-      type: String,
-      default: '',
-      validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
-    },
-    payment_methods: {
-      type: [String],
-      default: [],
-    },
-  },
+  payments_channel: formPaymentsChannelSchema,
 
   payments_field: formPaymentsFieldSchema,
 
-  business: {
-    type: {
-      address: { type: String, default: '', trim: true },
-      gstRegNo: { type: String, default: '', trim: true },
-    },
-  },
+  business: formBusinessSchema,
 
   isForceConvertToStorageMode: {
     type: Boolean,
