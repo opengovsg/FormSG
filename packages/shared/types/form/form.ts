@@ -244,13 +244,20 @@ export interface WhitelistedSubmitterIdsWithReferenceOid extends WhitelistedSubm
   encryptedWhitelistedSubmitterIds: string // Object id of the encrypted whitelist
 }
 
-export interface StorageFormBase extends FormBase {
-  responseMode: FormResponseMode.Encrypt
-  publicKey: string
-  emails: string[]
+/**
+ * Base for response modes that can collect payments. A form having these
+ * fields does not mean it charges respondents — see `payments_field.enabled`.
+ */
+export interface PaymentFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
+}
+
+export interface StorageFormBase extends PaymentFormBase {
+  responseMode: FormResponseMode.Encrypt
+  publicKey: string
+  emails: string[]
   whitelistedSubmitterIds?: WhitelistedSubmitterIds | null
 }
 
