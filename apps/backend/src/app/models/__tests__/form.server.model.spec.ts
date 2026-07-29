@@ -16,6 +16,7 @@ import {
   FormFieldDto,
   FormLogoState,
   FormPaymentsField,
+  FormPaymentsField,
   FormPermission,
   FormResponseMode,
   FormStartPage,
@@ -46,6 +47,7 @@ import {
   IFormDocument,
   IFormSchema,
   ILogicSchema,
+  IMultirespondentFormSchema,
   IMultirespondentFormSchema,
   IPopulatedUser,
 } from 'src/types'
@@ -1032,6 +1034,7 @@ describe('Form Model', () => {
 
           // Act
           const saved = (await validForm.save()) as IMultirespondentFormSchema
+          const saved = (await validForm.save()) as IMultirespondentFormSchema
 
           // Assert
           expect(saved._id).toBeDefined()
@@ -1107,9 +1110,11 @@ describe('Form Model', () => {
         it('should reject adding a workflow step to a saved payment-enabled form', async () => {
           // Arrange
           const form = (await new MultirespondentForm({
+          const form = (await new MultirespondentForm({
             ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
             workflow: [],
             payments_field: ENABLED_PAYMENTS_FIELD,
+          }).save()) as IMultirespondentFormSchema
           }).save()) as IMultirespondentFormSchema
           form.workflow.push({
             _id: new ObjectId().toHexString(),
@@ -1555,7 +1560,7 @@ describe('Form Model', () => {
       } as FormPaymentsField
 
       const MOCK_WORKFLOW_STEP = {
-        _id: new ObjectId().toHexString(),
+        _id: new ObjectId(),
         workflow_type: WorkflowType.Static,
         emails: ['step@open.gov.sg'],
         edit: [],
