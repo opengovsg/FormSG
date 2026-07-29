@@ -60,9 +60,14 @@ const submitAdminFeedback: ControllerHandler<
     ? { triggerSource }
     : {}
 
-  // Separate keys, separate metrics. The two scales can no longer pollute each
+  // Separate keys, separate metrics. The scales can no longer pollute each
   // other, which is the problem #9763's feature-flag gate was working around,
   // so that gate is no longer needed here.
+  //
+  // Note vs #9795: that PR dropped the `.rating` emit because the transitional
+  // code pushed 1-5 values into a metric whose history is 0/1 thumbs. The xor
+  // contract makes that impossible by construction, so `.rating` is kept and
+  // now only ever receives genuine thumbs from the still-live legacy UI.
   if (csat !== undefined) {
     statsdClient.distribution('formsg.users.feedback.csat', csat, 1, {
       ...sourceTag,

@@ -171,17 +171,17 @@ describe('form_feedback.server.model', () => {
       )
     })
 
-    it('should default ratingChanged to false', async () => {
+    it('should default feedbackChanged to false', async () => {
       const actual = await FeedbackModel.create(DEFAULT_PARAMS)
-      expect(actual.ratingChanged).toEqual(false)
+      expect(actual.feedbackChanged).toEqual(false)
     })
 
-    it('should save with ratingChanged set to true', async () => {
+    it('should save with feedbackChanged set to true', async () => {
       const actual = await FeedbackModel.create({
         ...DEFAULT_PARAMS,
-        ratingChanged: true,
+        feedbackChanged: true,
       })
-      expect(actual.ratingChanged).toEqual(true)
+      expect(actual.feedbackChanged).toEqual(true)
     })
   })
 })

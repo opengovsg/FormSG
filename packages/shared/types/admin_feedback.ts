@@ -13,7 +13,8 @@ export type AdminFeedbackBase = {
   comment?: string
   triggerSource?: AdminFeedbackTriggerSource
   formId?: string
-  ratingChanged?: boolean
+  /** True if the feedback was edited (star or comment) after creation. */
+  feedbackChanged?: boolean
   userId?: UserDto['_id']
   created?: Date
   lastModified?: Date

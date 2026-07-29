@@ -3163,7 +3163,7 @@ describe('admin-form.form.routes', () => {
 
   describe('POST /admin/forms/feedback', () => {
     const MOCK_COMMENT = 'mock comment'
-    const MOCK_RATING = 3
+    const MOCK_CSAT = 3
 
     it('should return 200 when the request is successful', async () => {
       // Arrange
@@ -3172,7 +3172,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING, comment: MOCK_COMMENT })
+        .send({ rating: MOCK_CSAT, comment: MOCK_COMMENT })
 
       // Assert
       expect(resp.status).toBe(200)
@@ -3180,14 +3180,21 @@ describe('admin-form.form.routes', () => {
         'Successfully submitted admin feedback',
       )
       // Wire sends `rating`; it is stored and returned under the `csat` key.
-      expect(resp.body.feedback.csat).toEqual(MOCK_RATING)
+      expect(resp.body.feedback.csat).toEqual(MOCK_CSAT)
       expect(resp.body.feedback.rating).toBeUndefined()
       expect(resp.body.feedback.comment).toEqual(MOCK_COMMENT)
       expect(distributionSpy).toHaveBeenCalledWith(
         'formsg.users.feedback.csat',
-        MOCK_RATING,
+        MOCK_CSAT,
         1,
-        expect.objectContaining({ csat: `${MOCK_RATING}` }),
+        expect.objectContaining({ csat: `${MOCK_CSAT}` }),
+      )
+      // Legacy `.rating` metric was dropped (feature never shipped).
+      expect(distributionSpy).not.toHaveBeenCalledWith(
+        'formsg.users.feedback.rating',
+        expect.anything(),
+        expect.anything(),
+        expect.anything(),
       )
     })
 
@@ -3195,14 +3202,14 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING })
+        .send({ rating: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toBe(200)
       expect(resp.body.message).toContain(
         'Successfully submitted admin feedback',
       )
-      expect(resp.body.feedback.csat).toEqual(MOCK_RATING)
+      expect(resp.body.feedback.csat).toEqual(MOCK_CSAT)
       expect(resp.body.feedback.comment).toBeUndefined()
     })
 
@@ -3235,7 +3242,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING })
+        .send({ rating: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toEqual(401)
@@ -3252,7 +3259,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .post(`/admin/forms/feedback`)
-        .send({ rating: MOCK_RATING })
+        .send({ rating: MOCK_CSAT })
 
       // Assert
       expect(resp.status).toEqual(500)
@@ -3263,16 +3270,16 @@ describe('admin-form.form.routes', () => {
   })
   describe('PATCH /admin/forms/feedback/:feedbackId', () => {
     const MOCK_COMMENT = 'mock comment'
-    const MOCK_RATING = 3
+    const MOCK_CSAT = 3
     const MOCK_NEW_COMMENT = 'new comment'
-    const MOCK_NEW_RATING = 5
+    const MOCK_NEW_CSAT = 5
 
     let MOCK_ADMIN_FEEDBACK: IAdminFeedbackSchema
 
     beforeEach(async () => {
       MOCK_ADMIN_FEEDBACK = await AdminFeedbackModel.create({
         userId: defaultUser.id.toString(),
-        rating: MOCK_RATING,
+        csat: MOCK_CSAT,
         comment: MOCK_COMMENT,
       })
     })
@@ -3281,7 +3288,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${MOCK_ADMIN_FEEDBACK.id.toString()}`)
-        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+        .send({ rating: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       const updatedFeedback = await AdminFeedbackModel.findById(
         MOCK_ADMIN_FEEDBACK.id.toString(),
@@ -3292,7 +3299,7 @@ describe('admin-form.form.routes', () => {
       expect(resp.body.message).toEqual('Successfully updated admin feedback')
       expect(updatedFeedback?.comment).toEqual(MOCK_NEW_COMMENT)
       // Wire sends `rating`; it is stored under the `csat` key.
-      expect(updatedFeedback?.csat).toEqual(MOCK_NEW_RATING)
+      expect(updatedFeedback?.csat).toEqual(MOCK_NEW_CSAT)
     })
 
     it('should return 200 without changes if request is successful without a body', async () => {
@@ -3343,7 +3350,7 @@ describe('admin-form.form.routes', () => {
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${new Types.ObjectId().toString()}`)
-        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+        .send({ rating: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       // Assert
       expect(resp.status).toEqual(404)
@@ -3354,14 +3361,14 @@ describe('admin-form.form.routes', () => {
       // create new admin feedback with different userId from defaultuser
       const newFeedback = await AdminFeedbackModel.create({
         userId: new Types.ObjectId().toHexString(),
-        rating: MOCK_RATING,
+        csat: MOCK_CSAT,
         comment: MOCK_COMMENT,
       })
 
       // Act
       const resp = await request
         .patch(`/admin/forms/feedback/${newFeedback.id.toString()}`)
-        .send({ rating: MOCK_NEW_RATING, comment: MOCK_NEW_COMMENT })
+        .send({ rating: MOCK_NEW_CSAT, comment: MOCK_NEW_COMMENT })
 
       // Assert
       expect(resp.status).toEqual(404)

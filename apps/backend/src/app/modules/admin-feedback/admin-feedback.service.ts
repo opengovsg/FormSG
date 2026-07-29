@@ -17,7 +17,8 @@ export type Feedback = {
   /** @deprecated Legacy thumbs (0/1). New rows write `csat`. */
   rating?: number
   csat?: AdminCsatScore
-  ratingChanged?: boolean
+  /** True if the feedback was edited (score or comment) after creation. */
+  feedbackChanged?: boolean
 }
 
 /**
@@ -100,11 +101,9 @@ export const updateAdminFeedback = ({
     ...(comment !== undefined && { comment }),
     ...(rating !== undefined && { rating }),
     ...(csat !== undefined && { csat }),
-    // Set when either scale is edited, matching the pre-existing behaviour.
-    ...((rating !== undefined || csat !== undefined) && {
-      ratingChanged: true,
-    }),
   }
+  // Any post-creation edit (score or comment) marks the feedback as changed.
+  if (!isEmpty(updateObj)) updateObj.feedbackChanged = true
 
   // if no update to be done, return ok
   if (isEmpty(updateObj)) return okAsync(true)
