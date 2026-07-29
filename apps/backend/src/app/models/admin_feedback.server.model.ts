@@ -17,11 +17,22 @@ const AdminFeedbackSchema = new Schema<
       ref: USER_SCHEMA_ID,
       required: true,
     },
+    // Legacy thumbs (0/1) key. Optional so new rows can omit it in favour of
+    // `csat`. `max` stays at 5 rather than 1 until we can confirm no historical
+    // rows exceed 1; the API layer already restricts new writes to 0-1.
     rating: {
       type: Number,
       min: 0,
       max: 5,
-      required: true,
+      required: false,
+    },
+    // CSAT: the new 1-5 star satisfaction score. Own key to keep it separate from
+    // legacy `rating` data.
+    csat: {
+      type: Number,
+      min: 1,
+      max: 5,
+      required: false,
     },
     comment: {
       type: String,
@@ -35,7 +46,7 @@ const AdminFeedbackSchema = new Schema<
     formId: {
       type: Schema.Types.ObjectId,
     },
-    ratingChanged: {
+    feedbackChanged: {
       type: Boolean,
       default: false,
     },

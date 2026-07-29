@@ -1,7 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { featureFlags } from 'formsg-shared/constants'
-import { ErrorDto } from 'formsg-shared/types'
+import { AdminCsatScore, ErrorDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
 import { IAdminFeedbackSchema } from 'src/types'
@@ -17,14 +16,21 @@ import { mapRouteError } from './admin-feedback.util'
 const logger = createLoggerWithLabel(module)
 
 const valdiateSubmitAdminFeedbackParams = celebrate({
-  [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().integer().min(0).max(5).required(),
-    comment: Joi.string(),
-    triggerSource: Joi.string()
-      .valid('field-edit', 'publish', 'workflow')
-      .optional(),
-    formId: Joi.string().optional(),
-  }),
+  [Segments.BODY]: Joi.object()
+    .keys({
+      // Legacy thumbs (0/1). Still sent by the live UI on develop; remove once
+      // the star rating UI fully replaces it.
+      rating: Joi.number().integer().min(0).max(1),
+      // The new 1-5 CSAT measure, on its own key.
+      csat: Joi.number().integer().min(1).max(5),
+      comment: Joi.string(),
+      triggerSource: Joi.string()
+        .valid('field-edit', 'publish', 'workflow')
+        .optional(),
+      formId: Joi.string().optional(),
+    })
+    // Exactly one of the two scales. Never translate between them.
+    .xor('rating', 'csat'),
 })
 
 /**
@@ -40,39 +46,45 @@ const valdiateSubmitAdminFeedbackParams = celebrate({
 const submitAdminFeedback: ControllerHandler<
   unknown,
   { message: string; feedback: IAdminFeedbackSchema } | ErrorDto,
-  { rating: number; comment?: string; triggerSource?: string; formId?: string }
+  {
+    rating?: number
+    csat?: AdminCsatScore
+    comment?: string
+    triggerSource?: string
+    formId?: string
+  }
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { rating, comment, triggerSource, formId } = req.body
-  const isFiveStarEnabled = req.growthbook?.isOn(
-    featureFlags.fiveStarAdminRating,
-  )
-  const metricTags = {
-    rating: `${rating}`,
-    ...(triggerSource ? { triggerSource } : {}),
+  const { rating, csat, comment, triggerSource, formId } = req.body
+  const sourceTag: Record<string, string> = triggerSource
+    ? { triggerSource }
+    : {}
+
+  // Separate keys, separate metrics. The scales can no longer pollute each
+  // other, which is the problem #9763's feature-flag gate was working around,
+  // so that gate is no longer needed here.
+  //
+  // Note vs #9795: that PR dropped the `.rating` emit because the transitional
+  // code pushed 1-5 values into a metric whose history is 0/1 thumbs. The xor
+  // contract makes that impossible by construction, so `.rating` is kept and
+  // now only ever receives genuine thumbs from the still-live legacy UI.
+  if (csat !== undefined) {
+    statsdClient.distribution('formsg.users.feedback.csat', csat, 1, {
+      ...sourceTag,
+      csat: `${csat}`,
+    })
+  } else if (rating !== undefined) {
+    statsdClient.distribution('formsg.users.feedback.rating', rating, 1, {
+      ...sourceTag,
+      rating: `${rating}`,
+    })
   }
 
-  // RATIONALE: Emit to the correct metric so that the different rating scales do not pollute each other.
-  // TODO [USER-FEEDBACK-RATING-V2]: Remove the old v1 metric once report card has migrated to .v2.
-  if (!isFiveStarEnabled) {
-    statsdClient.distribution(
-      'formsg.users.feedback.rating',
-      rating,
-      1,
-      metricTags,
-    )
-  } else {
-    statsdClient.distribution(
-      'formsg.users.feedback.rating.v2',
-      rating,
-      1,
-      metricTags,
-    )
-  }
-
+  // Each scale is stored under its own key. Never translated between them.
   return AdminFeedbackService.insertAdminFeedback({
     userId: sessionUserId,
     rating,
+    csat,
     comment,
     triggerSource,
     formId,
@@ -105,27 +117,34 @@ export const handleSubmitAdminFeedback = [
 ] as ControllerHandler[]
 
 const validateUpdateAdminFormFeedback = celebrate({
-  [Segments.BODY]: Joi.object().keys({
-    rating: Joi.number().integer().min(1).max(5),
-    comment: Joi.string(),
-  }),
+  [Segments.BODY]: Joi.object()
+    .keys({
+      // Legacy thumbs (0/1).
+      rating: Joi.number().integer().min(0).max(1),
+      csat: Joi.number().integer().min(1).max(5),
+      comment: Joi.string(),
+    })
+    // At most one scale. A comment-only edit stays valid, but a single row can
+    // never carry both scales.
+    .oxor('rating', 'csat'),
 })
 
 const updateAdminFeedback: ControllerHandler<
   { feedbackId: string },
   { message: string } | ErrorDto,
-  { rating?: number; comment?: string }
+  { rating?: number; csat?: AdminCsatScore; comment?: string }
 > = async (req, res) => {
   const { feedbackId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
-  const { rating, comment } = req.body
+  const { rating, csat, comment } = req.body
 
   return AdminFeedbackService.updateAdminFeedback({
     feedbackId,
     userId: sessionUserId,
     comment,
     rating,
+    csat,
   })
     .map(() =>
       res

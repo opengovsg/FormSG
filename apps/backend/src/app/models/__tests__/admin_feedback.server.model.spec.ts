@@ -50,16 +50,18 @@ describe('form_feedback.server.model', () => {
       )
     })
 
-    it('should throw validation error when rating param is missing', async () => {
+    it('should save successfully when rating param is missing (now optional; new rows use csat)', async () => {
       // Arrange
       const paramsWithoutRating = omit(DEFAULT_PARAMS, 'rating')
       // Act
-      const actualPromise = new FeedbackModel(paramsWithoutRating).save()
+      const actual = await FeedbackModel.create({
+        ...paramsWithoutRating,
+        csat: 4,
+      })
 
       // Assert
-      await expect(actualPromise).rejects.toThrow(
-        mongoose.Error.ValidationError,
-      )
+      expect(actual.rating).toBeUndefined()
+      expect(actual.csat).toEqual(4)
     })
 
     it('should save successfully with triggerSource and formId', async () => {
@@ -137,17 +139,49 @@ describe('form_feedback.server.model', () => {
       expect(actual.rating).toEqual(0)
     })
 
-    it('should default ratingChanged to false', async () => {
-      const actual = await FeedbackModel.create(DEFAULT_PARAMS)
-      expect(actual.ratingChanged).toEqual(false)
+    it('should accept csat values 1 through 5', async () => {
+      for (const csat of [1, 2, 3, 4, 5] as const) {
+        const actual = await FeedbackModel.create({
+          ...omit(DEFAULT_PARAMS, 'rating'),
+          csat,
+        })
+        expect(actual.csat).toEqual(csat)
+      }
     })
 
-    it('should save with ratingChanged set to true', async () => {
+    it('should reject csat value of 6', async () => {
+      const actualPromise = new FeedbackModel({
+        ...omit(DEFAULT_PARAMS, 'rating'),
+        csat: 6,
+      }).save()
+
+      await expect(actualPromise).rejects.toThrow(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should reject csat value of 0 (csat is 1-5, unlike legacy rating)', async () => {
+      const actualPromise = new FeedbackModel({
+        ...omit(DEFAULT_PARAMS, 'rating'),
+        csat: 0,
+      }).save()
+
+      await expect(actualPromise).rejects.toThrow(
+        mongoose.Error.ValidationError,
+      )
+    })
+
+    it('should default feedbackChanged to false', async () => {
+      const actual = await FeedbackModel.create(DEFAULT_PARAMS)
+      expect(actual.feedbackChanged).toEqual(false)
+    })
+
+    it('should save with feedbackChanged set to true', async () => {
       const actual = await FeedbackModel.create({
         ...DEFAULT_PARAMS,
-        ratingChanged: true,
+        feedbackChanged: true,
       })
-      expect(actual.ratingChanged).toEqual(true)
+      expect(actual.feedbackChanged).toEqual(true)
     })
   })
 })
