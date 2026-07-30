@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.9.0](https://github.com/opengovsg/formsg/compare/v8.8.0...v8.9.0) (2026-07-30)
+
+
+### Features
+
+* zustand store + move feedback modal to builder page (#9688) ([#9688](https://github.com/opengovsg/formsg/commit/16cbfbc0c3a1c4c7e64b5ffab3b53f7959e7bd12))
+
 ## [8.8.0](https://github.com/opengovsg/formsg/compare/v8.7.0...v8.8.0) (2026-07-29)
 
 
