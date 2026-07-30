@@ -48,6 +48,7 @@ jobs:
               - apps/backend/__tests__/**
               - apps/backend/package.json
               - pnpm-lock.yaml
+              - .github/workflows/ci.yml
             shared:
               - packages/shared/constants/**
               - packages/shared/modules/**
