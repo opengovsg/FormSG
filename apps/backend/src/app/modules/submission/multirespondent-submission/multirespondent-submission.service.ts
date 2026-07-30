@@ -36,6 +36,7 @@ import {
   createLoggerWithLabel,
   CustomLoggerParams,
 } from '../../../config/logger'
+import { getMultirespondentPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
 import {
   AutoreplyPdfGenerationError,
@@ -97,6 +98,8 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
+const MultirespondentPendingSubmission =
+  getMultirespondentPendingSubmissionModel(mongoose)
 const appUrl =
   process.env.NODE_ENV === Environment.Dev
     ? config.app.feAppUrl
@@ -938,6 +941,109 @@ export const createMultiRespondentFormSubmission = ({
 
       return { submission, snapshot }
     })
+}
+
+/**
+ * Saves an incoming payment-form submission as a *pending* submission: it is
+ * only promoted to a real submission when the Stripe webhook confirms the
+ * payment. Payment-enabled multirespondent forms are necessarily zero-step
+ * (no next-step recipients) and cannot enforce single submission, so this is
+ * a simpler variant of createMultiRespondentFormSubmission.
+ */
+export const createMultiRespondentFormPendingSubmission = ({
+  form,
+  encryptedPayload,
+  paymentId,
+  logMeta,
+}: {
+  form: IPopulatedMultirespondentForm
+  encryptedPayload: MultirespondentSubmissionDto
+  paymentId: string
+  logMeta: CustomLoggerParams['meta']
+}): ResultAsync<
+  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
+  AttachmentUploadError | SubmissionSaveError
+> => {
+  logMeta = {
+    ...logMeta,
+    action: 'createMultiRespondentFormPendingSubmission',
+  }
+
+  return saveAttachmentsToDbIfExists({
+    formId: form._id,
+    attachments: encryptedPayload.attachments,
+  }).andThen((attachmentMetadata) => {
+    const {
+      submissionPublicKey,
+      encryptedSubmissionSecretKey,
+      encryptedContent,
+      verifiedContent,
+      responseMetadata,
+      version,
+      mrfVersion,
+      hashedSubmitterId,
+      stepTokenHash,
+      encryptedStepToken,
+    } = encryptedPayload
+
+    const submittedStepMeta: SubmittedNonApprovalStep = {
+      isApproval: false, // first step cannot be approval step
+      submittedAt: new Date().toISOString(),
+      submitterId: hashedSubmitterId,
+    }
+
+    const submissionContent: MultirespondentSubmissionContent = {
+      form: form._id,
+      authType: form.authType,
+      myInfoFields: form.getUniqueMyInfoAttrs(),
+      form_fields: form.form_fields,
+      form_logics: form.form_logics,
+      workflow: form.workflow,
+      submissionPublicKey,
+      encryptedSubmissionSecretKey,
+      encryptedContent,
+      verifiedContent,
+      attachmentMetadata,
+      version,
+      workflowStep: 0,
+      mrfVersion,
+      submittedSteps: [submittedStepMeta],
+      stepTokenHash,
+      encryptedStepToken,
+      paymentId,
+    }
+
+    const pendingSubmission = new MultirespondentPendingSubmission(
+      submissionContent,
+    )
+
+    return ResultAsync.fromPromise(pendingSubmission.save(), (error) => {
+      logger.error({
+        message: 'Multirespondent pending submission save error',
+        meta: logMeta,
+        error,
+      })
+      return new SubmissionSaveError()
+    }).map((pendingSubmission) => {
+      logger.info({
+        message: 'Saved pending submission to MongoDB',
+        meta: {
+          ...logMeta,
+          pendingSubmissionId: pendingSubmission.id,
+          responseMetadata,
+        },
+      })
+
+      if (responseMetadata) {
+        reportSubmissionResponseTime(responseMetadata, {
+          mode: 'multirespodent',
+          payment: 'true',
+        })
+      }
+
+      return pendingSubmission
+    })
+  })
 }
 
 interface CheckIfRespondentFormSummaryIsRequiredArgs {
