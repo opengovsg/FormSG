@@ -91,15 +91,13 @@ const isNoSuchKey = (error: unknown): boolean => {
  */
 export const writeV4Snapshot = (
   snapshot: SubmissionSnapshotV4,
-  deps?: { generateToken?: () => string },
 ): ResultAsync<{ token: string; key: string }, SnapshotWriteError> => {
-  const generateToken = deps?.generateToken ?? (() => crypto.randomUUID())
   const body = JSON.stringify(snapshot)
 
   const attempt = (
     attemptsLeft: number,
   ): ResultAsync<{ token: string; key: string }, SnapshotWriteError> => {
-    const token = generateToken()
+    const token = crypto.randomUUID()
     const key = buildSnapshotKey({
       formId: snapshot.formId,
       submissionId: snapshot.submissionId,

@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+
 import { aws as AwsConfig } from 'src/app/config/config'
 
 import { buildV4Snapshot } from '../submission-snapshot.producer'
@@ -51,11 +53,29 @@ const putRejectsThen = (
   return fn
 }
 
+type Uuid = ReturnType<typeof crypto.randomUUID>
+
+/**
+ * Pins the tokens writeV4Snapshot generates so the keys under test are
+ * deterministic. Attempts beyond the supplied list get a distinct `tok-<n>`.
+ */
+const mockTokens = (...tokens: string[]) => {
+  let i = 0
+  return jest.spyOn(crypto, 'randomUUID').mockImplementation(() => {
+    const n = i++
+    return (tokens[n] ?? `tok-${n}`) as Uuid
+  })
+}
+
 beforeEach(() => {
   jest.clearAllMocks()
   ;(
     AwsConfig as unknown as { submissionHistoryV4S3Bucket: string }
   ).submissionHistoryV4S3Bucket = TEST_BUCKET
+})
+
+afterEach(() => {
+  jest.restoreAllMocks()
 })
 
 describe('buildSnapshotKey', () => {
@@ -72,11 +92,10 @@ describe('writeV4Snapshot', () => {
     const snapshot = makeSnapshot()
     const putObject = putResolves()
     ;(AwsConfig.s3.putObject as jest.Mock) = putObject
+    mockTokens('tok-1')
 
     // Act
-    const result = await writeV4Snapshot(snapshot, {
-      generateToken: () => 'tok-1',
-    })
+    const result = await writeV4Snapshot(snapshot)
 
     // Assert
     expect(result.isOk()).toBe(true)
@@ -102,13 +121,10 @@ describe('writeV4Snapshot', () => {
       { resolve: {} },
     )
     ;(AwsConfig.s3.putObject as jest.Mock) = putObject
-    const tokens = ['tok-collide', 'tok-win']
-    let i = 0
+    mockTokens('tok-collide', 'tok-win')
 
     // Act
-    const result = await writeV4Snapshot(snapshot, {
-      generateToken: () => tokens[i++],
-    })
+    const result = await writeV4Snapshot(snapshot)
 
     // Assert
     expect(result.isOk()).toBe(true)
@@ -130,10 +146,9 @@ describe('writeV4Snapshot', () => {
       reject: { code: 'AccessDenied', statusCode: 403 },
     })
     ;(AwsConfig.s3.putObject as jest.Mock) = putObject
+    mockTokens('tok-1')
 
-    const result = await writeV4Snapshot(snapshot, {
-      generateToken: () => 'tok-1',
-    })
+    const result = await writeV4Snapshot(snapshot)
 
     expect(result.isErr()).toBe(true)
     expect(putObject).toHaveBeenCalledTimes(1) // no retry on non-412
@@ -144,9 +159,6 @@ describe('writeV4Snapshot', () => {
   describe('[STEERING:S4] same-token collision', () => {
     it('should retry with a fresh UUID when the generator repeats a token, land bytes at distinct keys, never overwrite, and stay bounded', async () => {
       const snapshot = makeSnapshot()
-      // Generator returns the SAME token twice, then a fresh one.
-      const tokens = ['dup', 'dup', 'fresh']
-      let i = 0
       // Second PUT (same key 'dup') 412s; third (fresh) succeeds.
       const putObject = putRejectsThen(
         { reject: { code: 'PreconditionFailed', statusCode: 412 } },
@@ -154,10 +166,10 @@ describe('writeV4Snapshot', () => {
         { resolve: {} },
       )
       ;(AwsConfig.s3.putObject as jest.Mock) = putObject
+      // Generator returns the SAME token twice, then a fresh one.
+      mockTokens('dup', 'dup', 'fresh')
 
-      const result = await writeV4Snapshot(snapshot, {
-        generateToken: () => tokens[i++],
-      })
+      const result = await writeV4Snapshot(snapshot)
 
       expect(result.isOk()).toBe(true)
       // Bounded: did not loop forever; landed on the fresh token.
@@ -181,11 +193,10 @@ describe('writeV4Snapshot', () => {
           Promise.reject({ code: 'PreconditionFailed', statusCode: 412 }),
       })
       ;(AwsConfig.s3.putObject as jest.Mock) = putObject
-      let i = 0
+      // Every attempt gets a distinct fresh token (tok-0, tok-1, ...).
+      mockTokens()
 
-      const result = await writeV4Snapshot(snapshot, {
-        generateToken: () => `tok-${i++}`,
-      })
+      const result = await writeV4Snapshot(snapshot)
 
       expect(result.isErr()).toBe(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotWriteError)
@@ -284,10 +295,9 @@ describe('[STEERING:S4] single key-builder / single parser', () => {
         Promise.resolve({ Body: Buffer.from(JSON.stringify(snapshot)) }),
     })
     ;(AwsConfig.s3.getObject as jest.Mock) = getObject
+    mockTokens('tok-single')
 
-    const written = await writeV4Snapshot(snapshot, {
-      generateToken: () => 'tok-single',
-    })
+    const written = await writeV4Snapshot(snapshot)
     const token = written._unsafeUnwrap().token
     await readV4Snapshot({ ...COORDS, token })
 
