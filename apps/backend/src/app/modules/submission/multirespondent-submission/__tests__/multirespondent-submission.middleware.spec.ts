@@ -1542,6 +1542,35 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
       })
 
+      it('should keep a paid zero-step submission immutable: no one holds a token, so any update is rejected', async () => {
+        // A payment-enabled form is necessarily zero-step: the step token is
+        // minted at creation but its raw value is only ever delivered via
+        // next-step email links, of which a zero-step form sends none. This
+        // pins the payment-terminality guarantee (no refunds, no post-payment
+        // edits) to the write-guard.
+        const mockReq = createGuardReq({
+          flagOn: true,
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: undefined, // nobody ever received the raw token
+        })
+        mockReq.formsg.mrfSubmission = {
+          ...mockReq.formsg.mrfSubmission,
+          workflow: [], // zero-step, as all payment-enabled MRFs are
+          workflowStep: 0,
+        }
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      })
+
       it('should advance on a legacy row without a hash even with no token (migration grace)', async () => {
         const mockReq = createGuardReq({
           flagOn: true,
