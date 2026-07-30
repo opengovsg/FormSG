@@ -7,6 +7,7 @@ import {
   IPaymentSchema,
   IPopulatedEncryptedForm,
   IPopulatedForm,
+  IPopulatedMultirespondentForm,
 } from '../../../types'
 import { aws as AwsConfig } from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -180,7 +181,7 @@ export const _retrieveReceiptUrlFromStripe = (
 
 const _generatePaymentInvoiceAsPdf = (
   payment: ICompletedPaymentSchema,
-  populatedForm: IPopulatedEncryptedForm,
+  populatedForm: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
   receiptUrl: string,
 ): ResultAsync<Buffer, StripeFetchError | InvoicePdfGenerationError> => {
   if (!payment.completedPayment?.receiptUrl) {
@@ -237,7 +238,7 @@ const _generatePaymentInvoiceAsPdf = (
 
 export const generatePaymentInvoiceUrl = (
   payment: IPaymentSchema,
-  populatedForm: IPopulatedEncryptedForm,
+  populatedForm: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
 ): ResultAsync<
   string,
   | StripeFetchError

@@ -25,7 +25,6 @@ import { InvalidDomainError } from '../auth/auth.errors'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
-import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
 import { checkFormIsEncryptModeOrMultirespondent } from '../submission/submission.utils'
 
 import { getPaymentLogMeta } from './payment.service.utils'
@@ -180,7 +179,7 @@ export const getPaymentInfo: ControllerHandler<
         .andThen((submission) =>
           FormService.retrieveFullFormById(submission.form),
         )
-        .andThen(checkFormIsEncryptMode) // Payment forms are encrypted
+        .andThen(checkFormIsEncryptModeOrMultirespondent) // Payment-capable modes
         .andThen((form) => {
           const stripeAccount = payment.targetAccountId
           // Early termination to prevent consumption of QPS limit to stripe
