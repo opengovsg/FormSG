@@ -21,7 +21,7 @@ const logger = createLoggerWithLabel(module)
  * astronomically unlikely, so exhausting the bound means something is wrong
  * (e.g. a persistent non-collision 412) — we fail loud rather than loop.
  */
-const MAX_WRITE_ATTEMPTS = 5
+const MAX_WRITE_ATTEMPTS = 2
 
 export const SNAPSHOT_WRITE_ERROR_CODE = 'MRF_WEBHOOK_SNAPSHOT_WRITE'
 
