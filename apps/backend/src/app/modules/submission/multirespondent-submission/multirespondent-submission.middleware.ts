@@ -36,6 +36,7 @@ import {
   SnapshottedFormDef,
 } from '../../../../types/api/multirespondent_submission'
 import { isDev } from '../../../config/config'
+import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -46,6 +47,7 @@ import { createReqMeta } from '../../../utils/request'
 import { isFieldResponseV4Equal } from '../../../utils/response-v4'
 import { DatabaseError } from '../../core/core.errors'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
+import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.constants'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
@@ -114,8 +116,29 @@ const multirespondentSubmissionBodySchema = Joi.object({
   respondentEmails: Joi.array().items(Joi.string()),
 })
 
+// Payment fields are only accepted on submission creation: a payment-enabled
+// form is necessarily zero-step, so there are no later steps to update.
+const submitMultirespondentSubmissionBodySchema =
+  multirespondentSubmissionBodySchema.keys({
+    paymentProducts: Joi.array().items(
+      Joi.object().keys({
+        data: JoiPaymentProduct.required(),
+        selected: Joi.boolean(),
+        quantity: Joi.number().integer().positive().required(),
+      }),
+    ),
+    paymentReceiptEmail: Joi.string(),
+    payments: Joi.object({
+      amount_cents: Joi.number()
+        .integer()
+        .positive()
+        .min(paymentConfig.minPaymentAmountCents)
+        .max(paymentConfig.maxPaymentAmountCents),
+    }),
+  })
+
 export const validateMultirespondentSubmissionParams = celebrate({
-  [Segments.BODY]: multirespondentSubmissionBodySchema,
+  [Segments.BODY]: submitMultirespondentSubmissionBodySchema,
 })
 
 const multirespondentSubmissionKeySchema = Joi.object({
@@ -920,6 +943,9 @@ export const encryptSubmission = async (
     responses: responses as FieldResponsesV4,
     mrfVersion,
     ...mintedStepToken,
+    paymentReceiptEmail: req.body.paymentReceiptEmail,
+    paymentProducts: req.body.paymentProducts,
+    payments: req.body.payments,
   }
 
   return next()
