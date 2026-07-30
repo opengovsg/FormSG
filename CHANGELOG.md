@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.0.0](https://github.com/opengovsg/formsg/compare/v8.9.0...v9.0.0) (2026-07-30)
+
+
+### ⚠ BREAKING CHANGE
+
+* **mrf:** MRF submissions are sent with version: 4 and
+V4-shaped responses on the wire.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+* feat(frontend): make V4 the FE working format for previous MRF responses
+
+decryptSubmission now serves previous-step responses as V4: V4 blobs
+(mrfVersion 2) pass through untouched and V3 blobs (mrfVersion 1 /
+legacy) are adapted up via the SDK's adaptV3ToV4 — the inverse of the
+old behavior, which downgraded V4 to V3 as the working format.
+
+extractMrfPreviousStepResponseValue is rewritten as the inverse of
+createResponsesV4 (V4 answer shapes → form input values); the old
+version relied on V3 shapes coinciding with input values, which does
+not hold for V4. A round-trip test pins inputs → createResponsesV4 →
+extract as the identity for every prefillable field type, since step
+N+1 re-submits non-editable values through this exact loop.
+
+Legacy pre-mrfVersion submissions embed attachment content inside the
+encrypted blob; adaptV3ToV4 drops that key, so decryptSubmission now
+harvests it pre-adaptation (legacyAttachmentContents) for the
+provider's backward-compat path.
+
+Also drops the previousResponses prop on FormFields, which was unused.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+* chore: clean up comments
+
+* feat: make joi validation for provenance default to {}
+
+* feat: Update apps/frontend/src/features/public-form/utils/decryptSubmission.ts
+
+Co-authored-by: Eliot Lim <eliotlim@users.noreply.github.com>
+
+### Features
+
+* **mrf:** V4 response migration — PR 3/5 FE sends and works in V4 (#9782) ([#9782](https://github.com/opengovsg/formsg/commit/8929c1dce7379d2ab0e847719bb383ec13c41f32))
+
 ## [8.9.0](https://github.com/opengovsg/formsg/compare/v8.8.0...v8.9.0) (2026-07-30)
 
 
