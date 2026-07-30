@@ -1115,8 +1115,9 @@ describe('Multirespondent Submission Middleware', () => {
           expected: 2,
         },
         {
-          // Security: never ship a V4 read key to a generic consumer without
-          // the step-token write-guard, even with every other v4 condition met.
+          // Security: never ship a V4 encryptedSubmissionSecretKey to a generic
+          // consumer without the step-token write-guard, even with every other
+          // v4 condition met.
           name: 'generic webhook stays V3 when mrfStepWriteToken is off',
           webhookUrl: GENERIC_URL,
           webhookFormat: 'v4' as const,

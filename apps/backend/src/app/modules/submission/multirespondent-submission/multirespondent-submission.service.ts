@@ -1174,8 +1174,8 @@ const sendMrfInitialWebhookIfEligible = ({
           submissionIndex,
           submittedStepsLength: submission.submittedSteps?.length ?? 0,
         })
-        // S4 ships NO step token even if policy.includeStepToken is true —
-        // reconstruction does not add one and neither do we.
+        // S4 ships NO step token even if policy.includeEncryptedStepToken is
+        // true — reconstruction does not add one and neither do we.
         const data = reconstructMrfWebhookData({
           liveData: liveView.data,
           snapshot,
