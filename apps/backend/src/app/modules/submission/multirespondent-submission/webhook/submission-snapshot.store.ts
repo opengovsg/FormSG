@@ -193,7 +193,7 @@ export const readV4Snapshot = ({
       const body = data.Body?.toString()
       if (body === undefined) {
         return errAsync(
-          new SnapshotDataIntegrityError('Snapshot body is empty'),
+          new SnapshotDataIntegrityError('Submission snapshot body is empty'),
         )
       }
       try {
@@ -213,7 +213,12 @@ export const readV4Snapshot = ({
         return errAsync(error)
       }
       if (isNoSuchKey(error)) {
-        return errAsync(new SnapshotDataIntegrityError('missing', error))
+        return errAsync(
+          new SnapshotDataIntegrityError(
+            'Submission snapshot is missing',
+            error,
+          ),
+        )
       }
       logger.error({
         message: 'Snapshot read failed',
