@@ -70,7 +70,10 @@ export const STORAGE_FORM_SETTINGS_FIELDS = [
 
 export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   ...FORM_SETTINGS_FIELDS,
+  'payments_channel',
+  'payments_field',
   'publicKey',
+  'business',
   'emails',
   'stepsToNotify',
   'stepOneEmailNotificationFieldId',

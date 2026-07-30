@@ -147,4 +147,5 @@ export interface Workflow {
   stepName: {
     label: string
   }
+  paymentEnabledNoSteps: string
 }

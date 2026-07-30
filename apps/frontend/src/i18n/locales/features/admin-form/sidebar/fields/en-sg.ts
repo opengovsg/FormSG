@@ -301,6 +301,8 @@ export const enSG: Fields = {
       // TODO [MRF-CUTOVER]: Remove after cutover.
       cutoverLegacyOnly:
         'Payments are only available in the legacy version of FormSG.',
+      mrfWorkflowSteps:
+        'Remove all workflow steps to enable payments. A form cannot have both a payment field and a workflow.',
       stripeNotConnectedBefore: 'Connect your Stripe account in',
       stripeNotConnectedSettings: 'Settings',
       stripeNotConnectedAfter: 'to add payment field.',

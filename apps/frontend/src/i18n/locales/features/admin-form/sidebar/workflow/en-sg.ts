@@ -175,4 +175,6 @@ export const enSG: Workflow = {
   stepName: {
     label: 'Step name',
   },
+  paymentEnabledNoSteps:
+    'Remove the payment field to add workflow steps. A form cannot have both a payment field and a workflow.',
 }
