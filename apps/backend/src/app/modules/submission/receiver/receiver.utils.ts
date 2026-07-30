@@ -55,8 +55,9 @@ export const mapRouteError: MapRouteError = (error) => {
  * Stale-FE compatibility shim for MRF submissions.
  *
  * If body.version indicates a V3 MRF submission (>=3 && <4), responses are V3-shaped.
- * Convert them to V4 in place and bump body.version to 4 so downstream code can
- * uniformly treat the body as V4. Runs BEFORE addAttachmentToResponses, so
+ * Convert them to V4 in place. body.version is left untouched (still 3), so
+ * downstream version checks must treat 3 and 4 alike; only body.responses is
+ * uniformly V4 after this point. Runs BEFORE addAttachmentToResponses, so
  * attachment buffers land in V4-shaped answer objects.
  *
  * Question text is left empty here — the form definition isn't yet loaded. Downstream

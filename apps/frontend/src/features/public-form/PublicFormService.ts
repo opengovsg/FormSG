@@ -40,7 +40,7 @@ import { FormFieldValues } from '~templates/Field'
 import {
   createClearSubmissionFormData,
   createClearSubmissionWithVirusScanningFormData,
-  createClearSubmissionWithVirusScanningFormDataV3,
+  createClearSubmissionWithVirusScanningFormDataV4,
   getAttachmentsMap,
 } from './utils/createSubmission'
 import { convertEncryptedAttachmentToFileContent } from './utils/decryptSubmission'
@@ -372,7 +372,7 @@ export const submitEmailModeFormWithFetch = async ({
   return processFetchResponse(response)
 }
 
-// Submit storage mode form with virus scanning (storage v2.1+)
+// Submit multirespondent form with virus scanning
 export const submitMultirespondentForm = async ({
   formFields,
   formLogics,
@@ -391,7 +391,7 @@ export const submitMultirespondentForm = async ({
     formLogics,
   })
 
-  const formData = createClearSubmissionWithVirusScanningFormDataV3(
+  const formData = createClearSubmissionWithVirusScanningFormDataV4(
     {
       formFields,
       formInputs: filteredInputs,
@@ -439,7 +439,7 @@ export const updateMultirespondentSubmission = async ({
     formLogics,
   })
 
-  const formData = createClearSubmissionWithVirusScanningFormDataV3(
+  const formData = createClearSubmissionWithVirusScanningFormDataV4(
     {
       formFields,
       formInputs: filteredInputs,

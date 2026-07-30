@@ -63,7 +63,6 @@ export const FormFieldsContainer = (): JSX.Element | null => {
 
     return (
       <FormFields
-        previousResponses={previousSubmission?.responses}
         previousAttachments={previousAttachments}
         formFields={form.form_fields}
         formLogics={form.form_logics}
@@ -84,7 +83,6 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     isLoading,
     form,
     isAuthRequired,
-    previousSubmission?.responses,
     previousAttachments,
     workflowStep,
     handleSubmitForm,
