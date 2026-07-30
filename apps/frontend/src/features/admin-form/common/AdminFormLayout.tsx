@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
 import { Outlet, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 import { get } from 'lodash'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
@@ -11,6 +13,8 @@ import { Banner } from '~components/Banner'
 import AdminForbiddenErrorPage from '~pages/AdminForbiddenError'
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { useEnv } from '~features/env/queries'
+import { useUser } from '~features/user/queries'
+import AdminFeedbackContainer from '~features/workspace/components/AdminFeedbackContainer'
 
 import { StorageResponsesProvider } from '../responses/ResponsesPage/storage/StorageResponsesProvider'
 
@@ -44,7 +48,10 @@ export const AdminFormLayout = (): JSX.Element => {
     [bannerContent, bannerContentGB],
   )
 
+  const isFiveStarEnabled = useFeatureIsOn(featureFlags.fiveStarAdminRating)
+
   const { error } = useAdminForm()
+  const { user } = useUser()
 
   if (get(error, 'code') === 404 || get(error, 'code') === 410) {
     return <NotFoundErrorPage />
@@ -75,6 +82,9 @@ export const AdminFormLayout = (): JSX.Element => {
       <StorageResponsesProvider>
         <Outlet />
       </StorageResponsesProvider>
+      {user && isFiveStarEnabled && (
+        <AdminFeedbackContainer userId={user._id} />
+      )}
     </Flex>
   )
 }

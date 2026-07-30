@@ -10,7 +10,7 @@ import {
   useWatch,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Link as ReactLink } from 'react-router-dom'
+import { Link as ReactLink, useParams } from 'react-router-dom'
 import { useDebounce } from 'react-use'
 import {
   Box,
@@ -34,8 +34,6 @@ import {
 import { centsToDollars, dollarsToCents } from 'formsg-shared/utils/payments'
 
 import { ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE } from '~constants/routes'
-import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
-import { useSessionStorage } from '~hooks/useSessionStorage'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -45,6 +43,7 @@ import Toggle from '~components/Toggle'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import { useCreatePageSidebar } from '../../../../../common'
 import { FieldListTabIndex } from '../../../../constants'
@@ -242,9 +241,7 @@ const PaymentInputFields = ({
 
   const handleClose = () => setFieldListTabIndex(FieldListTabIndex.Basic)
 
-  const [, setisAdminFeedbackEligible] = useSessionStorage<boolean>(
-    ADMIN_FEEDBACK_SESSION_KEY,
-  )
+  const { formId } = useParams()
 
   // unpack payment data for paymentAmount if it exists
   const formDefaultValues =
@@ -318,14 +315,14 @@ const PaymentInputFields = ({
       }
     }
 
-    // update sessionStorage to enable admin feedback
-    setisAdminFeedbackEligible(true)
     return paymentsMutation.mutate(
       { ...paymentsData, enabled: true },
       {
         onSuccess: () => {
           setToInactive()
           handleClose()
+          // enable admin feedback after the panel closes
+          useAdminFeedbackStore.getState().setEligible('field-edit', formId)
         },
       },
     )
