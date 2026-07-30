@@ -17,6 +17,7 @@ import {
   IEncryptedFormSchema,
   IPaymentSchema,
   IPopulatedEncryptedForm,
+  IPopulatedMultirespondentForm,
 } from '../../../types'
 import config from '../../config/config'
 import { paymentConfig } from '../../config/features/payment.config'
@@ -644,7 +645,9 @@ export const handleStripeEvent = (
   return result
 }
 
-export const getStripeOauthUrl = (form: IPopulatedEncryptedForm) => {
+export const getStripeOauthUrl = (
+  form: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
+) => {
   const state = `${form._id}.${cuid()}`
 
   return ok({
@@ -694,7 +697,7 @@ export const exchangeCodeForAccessToken = (
 }
 
 export const linkStripeAccountToForm = (
-  form: IPopulatedEncryptedForm,
+  form: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
   {
     accountId,
     publishableKey,
@@ -785,7 +788,7 @@ export const linkStripeAccountToForm = (
 }
 
 export const unlinkStripeAccountFromForm = (
-  form: IPopulatedEncryptedForm,
+  form: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
 ): ResultAsync<IEncryptedFormSchema, DatabaseError> =>
   ResultAsync.fromPromise(form.removePaymentAccount(), (error) => {
     const errMsg = 'Failed to remove payment account from form'
