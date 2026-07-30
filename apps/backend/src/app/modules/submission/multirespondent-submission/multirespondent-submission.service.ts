@@ -71,14 +71,13 @@ import {
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
+import {
+  SnapshotDataIntegrityError,
+  SnapshotWriteError,
+} from './webhook/submission-snapshot.errors'
 import { buildV4Snapshot } from './webhook/submission-snapshot.producer'
 import {
-  SNAPSHOT_DATA_INTEGRITY_ERROR_CODE,
-  SnapshotDataIntegrityError,
-} from './webhook/submission-snapshot.schema'
-import {
   readV4Snapshot,
-  SnapshotWriteError,
   writeV4Snapshot,
 } from './webhook/submission-snapshot.store'
 import { getWebhookPayloadPolicy } from './webhook/webhook-payload-policy'
@@ -1206,15 +1205,13 @@ const sendMrfInitialWebhookIfEligible = ({
       }),
     )
     .mapErr((error) => {
-      // Data-integrity failure: fail loud on the stable alarmable code. Never
-      // fall back to the live-row view.
+      // Data-integrity failure: fail loud. Never fall back to the live-row view.
       if (error instanceof SnapshotDataIntegrityError) {
         logger.error({
           message: 'MRF webhook snapshot data integrity error',
           meta: {
             ...logMeta,
             submissionIndex,
-            code: SNAPSHOT_DATA_INTEGRITY_ERROR_CODE,
           },
           error,
         })

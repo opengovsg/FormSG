@@ -45,7 +45,10 @@ import {
   updateMultiRespondentFormSubmission,
 } from '../multirespondent-submission.service'
 import * as stepToken from '../step-token'
-import { SnapshotDataIntegrityError } from '../webhook/submission-snapshot.schema'
+import {
+  SnapshotDataIntegrityError,
+  SnapshotWriteError,
+} from '../webhook/submission-snapshot.errors'
 import * as SnapshotStore from '../webhook/submission-snapshot.store'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
@@ -3979,7 +3982,7 @@ describe('multirespondent-submission.service', () => {
 
     it('aborts the save (fail-loud) when the snapshot write fails', async () => {
       MockSnapshotStore.writeV4Snapshot.mockReturnValue(
-        errAsync(new SnapshotStore.SnapshotWriteError()),
+        errAsync(new SnapshotWriteError()),
       )
       const saveSpy = jest.spyOn(
         getMultirespondentSubmissionModel(mongoose).prototype,
@@ -3993,9 +3996,7 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result.isErr()).toBe(true)
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-        SnapshotStore.SnapshotWriteError,
-      )
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotWriteError)
       expect(saveSpy).not.toHaveBeenCalled()
       saveSpy.mockRestore()
     })

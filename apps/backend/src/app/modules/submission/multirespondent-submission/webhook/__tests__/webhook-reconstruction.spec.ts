@@ -1,7 +1,7 @@
 import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 import { WebhookData } from 'src/types/submission'
 
-import { SnapshotDataIntegrityError } from '../submission-snapshot.schema'
+import { SnapshotDataIntegrityError } from '../submission-snapshot.errors'
 import { WebhookPayloadPolicy } from '../webhook-payload-policy'
 import { reconstructMrfWebhookData } from '../webhook-reconstruction'
 
