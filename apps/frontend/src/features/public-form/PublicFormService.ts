@@ -186,6 +186,9 @@ export type SubmitMultirespondentFormWithVirusScanningArgs =
     submissionSecretKey?: string
     stepToken?: string
     fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[]
+    paymentReceiptEmail?: string
+    paymentProducts?: Array<ProductItem>
+    payments?: PaymentFieldsDto
   }
 
 export const submitEmailModeForm = async ({
@@ -384,6 +387,9 @@ export const submitMultirespondentForm = async ({
   fieldIdToQuarantineKeyMap,
   respondentEmails,
   selectedFormLanguage = Language.ENGLISH,
+  paymentReceiptEmail,
+  paymentProducts,
+  payments,
 }: SubmitMultirespondentFormWithVirusScanningArgs) => {
   const filteredInputs = filterHiddenInputs({
     formFields,
@@ -398,6 +404,9 @@ export const submitMultirespondentForm = async ({
       responseMetadata,
       version: MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
       respondentEmails: respondentEmails,
+      paymentReceiptEmail,
+      paymentProducts,
+      payments,
     },
     fieldIdToQuarantineKeyMap,
   )

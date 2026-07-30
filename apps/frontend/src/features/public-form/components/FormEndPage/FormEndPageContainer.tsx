@@ -22,8 +22,9 @@ export const FormEndPageContainer = (): JSX.Element | null => {
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
   const isPaymentEnabled =
-    form?.responseMode === FormResponseMode.Encrypt &&
-    form.payments_field.enabled
+    (form?.responseMode === FormResponseMode.Encrypt ||
+      form?.responseMode === FormResponseMode.Multirespondent) &&
+    form.payments_field?.enabled
 
   const isMrf = form?.responseMode === FormResponseMode.Multirespondent
   /**
