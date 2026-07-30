@@ -163,6 +163,8 @@ export interface IMultirespondentSubmissionSchema
   // Allows for population and correct typing
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  paymentId: any
   submissionType: SubmissionType.Multirespondent
   getWebhookView(): Promise<WebhookView>
   mrfVersion: number
