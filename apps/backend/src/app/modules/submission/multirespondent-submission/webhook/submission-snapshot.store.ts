@@ -39,32 +39,44 @@ export class SnapshotWriteError extends ApplicationError {
   }
 }
 
+type SnapshotKeyParams = {
+  formId: string
+  submissionId: string
+  submissionIndex: number
+  token: string
+}
+
 /**
  * The ONLY place a snapshot S3 key is constructed. Writer and reader both go
  * through this so a key can never be built two different ways.
  *
  * submissionIndex is emitted raw (NOT zero-padded).
  */
-export const buildSnapshotKey = (p: {
-  formId: string
-  submissionId: string
-  submissionIndex: number
-  token: string
-}): string =>
-  `${p.formId}/${p.submissionId}/${p.submissionIndex}/${p.token}.json`
+export const buildSnapshotKey = ({
+  formId,
+  submissionId,
+  submissionIndex,
+  token,
+}: SnapshotKeyParams): string =>
+  `${formId}/${submissionId}/${submissionIndex}/${token}.json`
 
 /**
  * Returns true if the S3 error signals a create-if-absent precondition failure
  * (the key already exists), i.e. a token collision we should retry.
  */
 const isPreconditionFailed = (error: unknown): boolean => {
-  const e = error as { code?: string; statusCode?: number } | null
-  return !!e && (e.code === 'PreconditionFailed' || e.statusCode === 412)
+  const s3Error = error as { code?: string; statusCode?: number } | null
+  return (
+    !!s3Error &&
+    (s3Error.code === 'PreconditionFailed' || s3Error.statusCode === 412)
+  )
 }
 
 const isNoSuchKey = (error: unknown): boolean => {
-  const e = error as { code?: string; statusCode?: number } | null
-  return !!e && (e.code === 'NoSuchKey' || e.statusCode === 404)
+  const s3Error = error as { code?: string; statusCode?: number } | null
+  return (
+    !!s3Error && (s3Error.code === 'NoSuchKey' || s3Error.statusCode === 404)
+  )
 }
 
 /**
@@ -157,13 +169,21 @@ export const writeV4Snapshot = (
  * object (NoSuchKey / 404) or a malformed body / unknown `_v` both surface the
  * SAME SnapshotDataIntegrityError. Never falls back to anything.
  */
-export const readV4Snapshot = (p: {
-  formId: string
-  submissionId: string
-  submissionIndex: number
-  token: string
-}): ResultAsync<SubmissionSnapshot, SnapshotDataIntegrityError> => {
-  const key = buildSnapshotKey(p)
+export const readV4Snapshot = ({
+  formId,
+  submissionId,
+  submissionIndex,
+  token,
+}: SnapshotKeyParams): ResultAsync<
+  SubmissionSnapshot,
+  SnapshotDataIntegrityError
+> => {
+  const key = buildSnapshotKey({
+    formId,
+    submissionId,
+    submissionIndex,
+    token,
+  })
 
   return ResultAsync.fromPromise(
     AwsConfig.s3
