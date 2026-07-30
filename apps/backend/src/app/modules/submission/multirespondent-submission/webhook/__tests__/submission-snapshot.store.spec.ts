@@ -159,24 +159,23 @@ describe('writeV4Snapshot', () => {
   describe('[STEERING:S4] same-token collision', () => {
     it('should retry with a fresh UUID when the generator repeats a token, land bytes at distinct keys, never overwrite, and stay bounded', async () => {
       const snapshot = makeSnapshot()
-      // Second PUT (same key 'dup') 412s; third (fresh) succeeds.
+      // First PUT (token 'dup') 412s; second (the 2-attempt bound) succeeds.
       const putObject = putRejectsThen(
-        { reject: { code: 'PreconditionFailed', statusCode: 412 } },
         { reject: { code: 'PreconditionFailed', statusCode: 412 } },
         { resolve: {} },
       )
       ;(AwsConfig.s3.putObject as jest.Mock) = putObject
-      // Generator returns the SAME token twice, then a fresh one.
-      mockTokens('dup', 'dup', 'fresh')
+      // Generator returns a colliding token first, then a fresh one.
+      mockTokens('dup', 'fresh')
 
       const result = await writeV4Snapshot(snapshot)
 
       expect(result.isOk()).toBe(true)
       // Bounded: did not loop forever; landed on the fresh token.
-      expect(putObject).toHaveBeenCalledTimes(3)
+      expect(putObject).toHaveBeenCalledTimes(2)
       expect(result._unsafeUnwrap().token).toBe('fresh')
       // Winning bytes at a DISTINCT key from the duplicated one.
-      const winningKey = putObject.mock.calls[2][0].Key
+      const winningKey = putObject.mock.calls[1][0].Key
       expect(winningKey).toBe(buildSnapshotKey({ ...COORDS, token: 'fresh' }))
       expect(winningKey).not.toBe(buildSnapshotKey({ ...COORDS, token: 'dup' }))
       // IfNoneMatch on every attempt => first object never overwritten.
@@ -200,8 +199,8 @@ describe('writeV4Snapshot', () => {
 
       expect(result.isErr()).toBe(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotWriteError)
-      // Bounded: capped at MAX_WRITE_ATTEMPTS (5), not infinite.
-      expect(putObject).toHaveBeenCalledTimes(5)
+      // Bounded: capped at MAX_WRITE_ATTEMPTS (2), not infinite.
+      expect(putObject).toHaveBeenCalledTimes(2)
       // Every attempt kept IfNoneMatch — no silent overwrite even at exhaustion.
       putObject.mock.calls.forEach((call) =>
         expect(call[0].IfNoneMatch).toBe('*'),
