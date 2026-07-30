@@ -2,7 +2,8 @@ import { SubmissionSnapshotV4 } from './submission-snapshot.schema'
 
 /**
  * Pure v4 snapshot producer. Freezes the row's encrypted content, THIS step's
- * wrapped read key, and the native (submission-key) verifiedContent VERBATIM.
+ * encryptedSubmissionSecretKey, and the native (submission-key) verifiedContent
+ * VERBATIM.
  *
  * There is NO form-key re-encryption: the snapshot preserves exactly the bytes
  * the submission was written with, so a later read decrypts identically. The

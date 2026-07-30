@@ -47,8 +47,8 @@ const makeV4Snapshot = () =>
 
 const PLUMBER_LATEST: WebhookPayloadPolicy = {
   contentShape: 'v4',
-  includeReadKey: true,
-  includeStepToken: true,
+  includeEncryptedSubmissionSecretKey: true,
+  includeEncryptedStepToken: true,
 }
 
 describe('reconstructMrfWebhookData', () => {
@@ -93,14 +93,17 @@ describe('reconstructMrfWebhookData', () => {
       expect(output.version).toBe(3)
     })
 
-    it('sources the wrapped read key from the FROZEN snapshot, not the live row', () => {
+    it('sources encryptedSubmissionSecretKey from the FROZEN snapshot, not the live row', () => {
       const output = reconstructMrfWebhookData({
         liveData: makeLiveData({
           encryptedSubmissionSecretKey: 'LIVE_ROW_KEY',
         }),
         snapshot: makeV4Snapshot(),
         submissionIndex: 1,
-        policy: { ...PLUMBER_LATEST, includeReadKey: true },
+        policy: {
+          ...PLUMBER_LATEST,
+          includeEncryptedSubmissionSecretKey: true,
+        },
       })
 
       expect(output.encryptedSubmissionSecretKey).toBe('FROZEN_KEY')
@@ -111,7 +114,10 @@ describe('reconstructMrfWebhookData', () => {
         liveData: makeLiveData(),
         snapshot: makeV4Snapshot(),
         submissionIndex: 1,
-        policy: { ...PLUMBER_LATEST, includeReadKey: false },
+        policy: {
+          ...PLUMBER_LATEST,
+          includeEncryptedSubmissionSecretKey: false,
+        },
       })
 
       expect('encryptedSubmissionSecretKey' in output).toBe(false)

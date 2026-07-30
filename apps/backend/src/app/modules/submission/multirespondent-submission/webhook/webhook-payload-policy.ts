@@ -22,9 +22,9 @@ export interface WebhookPayloadPolicyInput {
 
 export interface WebhookPayloadPolicy {
   contentShape: WebhookContentShape
-  // wrapped submission secret key — included on EVERY v4 delivery, all steps.
-  includeReadKey: boolean
-  includeStepToken: boolean
+  // encryptedSubmissionSecretKey — included on EVERY v4 delivery, all steps.
+  includeEncryptedSubmissionSecretKey: boolean
+  includeEncryptedStepToken: boolean
 }
 
 export const getWebhookPayloadPolicy = ({
@@ -36,14 +36,18 @@ export const getWebhookPayloadPolicy = ({
   const contentShape: WebhookContentShape =
     webhookType === 'plumber' ? 'v4' : webhookFormat
 
-  const includeReadKey = contentShape === 'v4'
+  const includeEncryptedSubmissionSecretKey = contentShape === 'v4'
 
-  const includeStepToken =
+  const includeEncryptedStepToken =
     contentShape === 'v4' &&
     webhookType === 'plumber' &&
     submissionIndex === submittedStepsLength - 1
 
-  return { contentShape, includeReadKey, includeStepToken }
+  return {
+    contentShape,
+    includeEncryptedSubmissionSecretKey,
+    includeEncryptedStepToken,
+  }
 }
 
 /**

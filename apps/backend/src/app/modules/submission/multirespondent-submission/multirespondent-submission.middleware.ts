@@ -872,7 +872,8 @@ export const encryptSubmission = async (
     useV4Encryption = isStepWriteTokenEnabled
   } else {
     // Generic consumer (zapier treated as generic): needs an explicit per-form
-    // opt-in, and never ships a V4 read key without the write-guard.
+    // opt-in, and never ships a V4 encryptedSubmissionSecretKey without the
+    // write-guard.
     useV4Encryption =
       isMrfWebhooksEnabled && webhookFormat === 'v4' && isStepWriteTokenEnabled
   }

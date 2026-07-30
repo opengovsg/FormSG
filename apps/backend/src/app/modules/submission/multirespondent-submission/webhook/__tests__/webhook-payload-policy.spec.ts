@@ -16,8 +16,8 @@ describe('getWebhookPayloadPolicy', () => {
     latest: boolean
     expected: {
       contentShape: WebhookContentShape
-      includeReadKey: boolean
-      includeStepToken: boolean
+      includeEncryptedSubmissionSecretKey: boolean
+      includeEncryptedStepToken: boolean
     }
   }>([
     {
@@ -27,8 +27,8 @@ describe('getWebhookPayloadPolicy', () => {
       latest: true,
       expected: {
         contentShape: 'v4',
-        includeReadKey: true,
-        includeStepToken: true,
+        includeEncryptedSubmissionSecretKey: true,
+        includeEncryptedStepToken: true,
       },
     },
     {
@@ -38,8 +38,8 @@ describe('getWebhookPayloadPolicy', () => {
       latest: false,
       expected: {
         contentShape: 'v4',
-        includeReadKey: true,
-        includeStepToken: false,
+        includeEncryptedSubmissionSecretKey: true,
+        includeEncryptedStepToken: false,
       },
     },
     {
@@ -49,8 +49,8 @@ describe('getWebhookPayloadPolicy', () => {
       latest: true,
       expected: {
         contentShape: 'v4',
-        includeReadKey: true,
-        includeStepToken: false,
+        includeEncryptedSubmissionSecretKey: true,
+        includeEncryptedStepToken: false,
       },
     },
     {
@@ -62,8 +62,8 @@ describe('getWebhookPayloadPolicy', () => {
       latest: true,
       expected: {
         contentShape: 'v1',
-        includeReadKey: false,
-        includeStepToken: false,
+        includeEncryptedSubmissionSecretKey: false,
+        includeEncryptedStepToken: false,
       },
     },
   ])(
@@ -80,18 +80,18 @@ describe('getWebhookPayloadPolicy', () => {
     },
   )
 
-  it('includes the read key on a NON-latest plumber step', () => {
+  it('includes encryptedSubmissionSecretKey on a NON-latest plumber step', () => {
     const policy = getWebhookPayloadPolicy({
       webhookType: 'plumber',
       webhookFormat: 'v4',
       submissionIndex: 0,
       submittedStepsLength: 5,
     })
-    expect(policy.includeReadKey).toBe(true)
-    expect(policy.includeStepToken).toBe(false)
+    expect(policy.includeEncryptedSubmissionSecretKey).toBe(true)
+    expect(policy.includeEncryptedStepToken).toBe(false)
   })
 
-  it('does NOT include a step token for generic v4 even at the latest step', () => {
+  it('does NOT include an encryptedStepToken for generic v4 even at the latest step', () => {
     const policy = getWebhookPayloadPolicy({
       webhookType: 'generic',
       webhookFormat: 'v4',
@@ -99,11 +99,11 @@ describe('getWebhookPayloadPolicy', () => {
       submittedStepsLength: 3,
     })
     expect(policy.contentShape).toBe('v4')
-    expect(policy.includeReadKey).toBe(true)
-    expect(policy.includeStepToken).toBe(false)
+    expect(policy.includeEncryptedSubmissionSecretKey).toBe(true)
+    expect(policy.includeEncryptedStepToken).toBe(false)
   })
 
-  it('includes a step token for plumber ONLY at the latest step', () => {
+  it('includes an encryptedStepToken for plumber ONLY at the latest step', () => {
     const submittedStepsLength = 4
     const latest = getWebhookPayloadPolicy({
       webhookType: 'plumber',
@@ -117,8 +117,8 @@ describe('getWebhookPayloadPolicy', () => {
       submissionIndex: submittedStepsLength - 2,
       submittedStepsLength,
     })
-    expect(latest.includeStepToken).toBe(true)
-    expect(notLatest.includeStepToken).toBe(false)
+    expect(latest.includeEncryptedStepToken).toBe(true)
+    expect(notLatest.includeEncryptedStepToken).toBe(false)
   })
 
   it('treats zapier as generic (generic v1 yields v1/false/false)', () => {
@@ -132,8 +132,8 @@ describe('getWebhookPayloadPolicy', () => {
     })
     expect(policy).toEqual({
       contentShape: 'v1',
-      includeReadKey: false,
-      includeStepToken: false,
+      includeEncryptedSubmissionSecretKey: false,
+      includeEncryptedStepToken: false,
     })
   })
 })

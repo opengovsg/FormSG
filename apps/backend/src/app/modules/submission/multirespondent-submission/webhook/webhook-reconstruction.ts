@@ -17,8 +17,8 @@ import {
  *
  * The source-of-each-field split is the S4 contract:
  *  - identity / definition / payment / attachments come from the LIVE row,
- *  - encrypted content, verified content, version, and the wrapped read key
- *    come FROZEN from the snapshot,
+ *  - encrypted content, verified content, version, and the
+ *    encryptedSubmissionSecretKey come FROZEN from the snapshot,
  *  - submittedSteps is reconstructed as the prefix up to this step.
  */
 export const reconstructMrfWebhookData = (input: {
@@ -81,10 +81,14 @@ export const reconstructMrfWebhookData = (input: {
     reconstructed.paymentContent = liveData.paymentContent
   }
 
-  // The wrapped read key is sourced from the FROZEN snapshot, never the live
-  // row. Only v4 snapshots carry it; policy.includeReadKey is only true for
-  // v4 content. When the policy excludes it, the field is omitted entirely.
-  if (policy.includeReadKey && snapshot.contentFormat === 'v4') {
+  // encryptedSubmissionSecretKey is sourced from the FROZEN snapshot, never
+  // the live row. Only v4 snapshots carry it;
+  // policy.includeEncryptedSubmissionSecretKey is only true for v4 content.
+  // When the policy excludes it, the field is omitted entirely.
+  if (
+    policy.includeEncryptedSubmissionSecretKey &&
+    snapshot.contentFormat === 'v4'
+  ) {
     reconstructed.encryptedSubmissionSecretKey =
       snapshot.encryptedSubmissionSecretKey
   }
