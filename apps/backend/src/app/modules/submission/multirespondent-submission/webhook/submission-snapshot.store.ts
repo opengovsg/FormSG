@@ -4,11 +4,13 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
-import { ApplicationError } from '../../../core/core.errors'
 
 import {
-  parseSnapshot,
   SnapshotDataIntegrityError,
+  SnapshotWriteError,
+} from './submission-snapshot.errors'
+import {
+  parseSnapshot,
   SubmissionSnapshot,
   SubmissionSnapshotV4,
 } from './submission-snapshot.schema'
@@ -22,22 +24,6 @@ const logger = createLoggerWithLabel(module)
  * (e.g. a persistent non-collision 412) — we fail loud rather than loop.
  */
 const MAX_WRITE_ATTEMPTS = 2
-
-export const SNAPSHOT_WRITE_ERROR_CODE = 'MRF_WEBHOOK_SNAPSHOT_WRITE'
-
-/**
- * Raised when a snapshot cannot be durably written — either S3 rejected the
- * PUT for a non-collision reason, or the bounded create-if-absent retry loop
- * exhausted its attempts. NEVER raised by silently overwriting: `IfNoneMatch`
- * is on every attempt, so an existing object is never clobbered.
- */
-export class SnapshotWriteError extends ApplicationError {
-  readonly writeCode = SNAPSHOT_WRITE_ERROR_CODE
-
-  constructor(message = 'Failed to write submission snapshot', meta?: unknown) {
-    super(`[${SNAPSHOT_WRITE_ERROR_CODE}] ${message}`, meta)
-  }
-}
 
 type SnapshotKeyParams = {
   formId: string

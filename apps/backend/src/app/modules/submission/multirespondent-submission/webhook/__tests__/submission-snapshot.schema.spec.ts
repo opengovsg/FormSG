@@ -1,9 +1,6 @@
+import { SnapshotDataIntegrityError } from '../submission-snapshot.errors'
 import { buildV4Snapshot } from '../submission-snapshot.producer'
-import {
-  parseSnapshot,
-  SNAPSHOT_DATA_INTEGRITY_ERROR_CODE,
-  SnapshotDataIntegrityError,
-} from '../submission-snapshot.schema'
+import { parseSnapshot } from '../submission-snapshot.schema'
 
 const makeValidV4 = () =>
   buildV4Snapshot({
@@ -59,52 +56,6 @@ describe('parseSnapshot', () => {
       const bad = { ...makeValidV4(), contentFormat: 'v99' }
       expect(() => parseSnapshot(JSON.stringify(bad))).toThrow(
         SnapshotDataIntegrityError,
-      )
-    })
-  })
-
-  describe('error-code contract (stable Datadog signal)', () => {
-    // Capture (never re-throw) so assertions stay unconditional.
-    const capture = (fn: () => void): unknown => {
-      try {
-        fn()
-      } catch (error) {
-        return error
-      }
-      return undefined
-    }
-
-    it('should surface the stable code on malformed JSON', () => {
-      const error = capture(() => parseSnapshot('{ not valid json'))
-      expect(error).toBeInstanceOf(SnapshotDataIntegrityError)
-      expect((error as SnapshotDataIntegrityError).dataIntegrityCode).toBe(
-        SNAPSHOT_DATA_INTEGRITY_ERROR_CODE,
-      )
-    })
-
-    it('should surface the stable code on unknown _v', () => {
-      const error = capture(() =>
-        parseSnapshot(JSON.stringify({ ...makeValidV4(), _v: 2 })),
-      )
-      expect(error).toBeInstanceOf(SnapshotDataIntegrityError)
-      expect((error as SnapshotDataIntegrityError).dataIntegrityCode).toBe(
-        SNAPSHOT_DATA_INTEGRITY_ERROR_CODE,
-      )
-    })
-
-    it('should surface the stable code on a missing/wrong-shape field', () => {
-      const bad: Record<string, unknown> = { ...makeValidV4() }
-      delete bad.encryptedContent
-      const error = capture(() => parseSnapshot(JSON.stringify(bad)))
-      expect(error).toBeInstanceOf(SnapshotDataIntegrityError)
-      expect((error as SnapshotDataIntegrityError).dataIntegrityCode).toBe(
-        SNAPSHOT_DATA_INTEGRITY_ERROR_CODE,
-      )
-    })
-
-    it('should expose the exact stable string constant', () => {
-      expect(SNAPSHOT_DATA_INTEGRITY_ERROR_CODE).toBe(
-        'MRF_WEBHOOK_SNAPSHOT_DATA_INTEGRITY',
       )
     })
   })

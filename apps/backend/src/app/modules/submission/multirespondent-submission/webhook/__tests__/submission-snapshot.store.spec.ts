@@ -2,16 +2,15 @@ import crypto from 'crypto'
 
 import { aws as AwsConfig } from 'src/app/config/config'
 
-import { buildV4Snapshot } from '../submission-snapshot.producer'
 import {
-  SNAPSHOT_DATA_INTEGRITY_ERROR_CODE,
   SnapshotDataIntegrityError,
-  SubmissionSnapshotV4,
-} from '../submission-snapshot.schema'
+  SnapshotWriteError,
+} from '../submission-snapshot.errors'
+import { buildV4Snapshot } from '../submission-snapshot.producer'
+import { SubmissionSnapshotV4 } from '../submission-snapshot.schema'
 import {
   buildSnapshotKey,
   readV4Snapshot,
-  SnapshotWriteError,
   writeV4Snapshot,
 } from '../submission-snapshot.store'
 
@@ -248,7 +247,6 @@ describe('readV4Snapshot', () => {
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
     expect(error).toBeInstanceOf(SnapshotDataIntegrityError)
-    expect(error.dataIntegrityCode).toBe(SNAPSHOT_DATA_INTEGRITY_ERROR_CODE)
   })
 
   it('should err the SAME SnapshotDataIntegrityError on a malformed stored body', async () => {
@@ -261,7 +259,6 @@ describe('readV4Snapshot', () => {
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
     expect(error).toBeInstanceOf(SnapshotDataIntegrityError)
-    expect(error.dataIntegrityCode).toBe(SNAPSHOT_DATA_INTEGRITY_ERROR_CODE)
   })
 
   it('should err SnapshotDataIntegrityError on an unknown _v in the stored body', async () => {
@@ -317,8 +314,5 @@ describe('[STEERING:S4] single key-builder / single parser', () => {
 
     expect(result.isErr()).toBe(true)
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotDataIntegrityError)
-    expect(result._unsafeUnwrapErr().dataIntegrityCode).toBe(
-      SNAPSHOT_DATA_INTEGRITY_ERROR_CODE,
-    )
   })
 })

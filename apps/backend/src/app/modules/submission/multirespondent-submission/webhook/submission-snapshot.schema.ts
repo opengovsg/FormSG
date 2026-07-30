@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { ApplicationError } from '../../../core/core.errors'
+import { SnapshotDataIntegrityError } from './submission-snapshot.errors'
 
 /**
  * Snapshot schema — zod is the single source of truth for the on-disk shape of
@@ -36,34 +36,6 @@ export const SubmissionSnapshot = z.discriminatedUnion('contentFormat', [
 ])
 export type SubmissionSnapshot = z.infer<typeof SubmissionSnapshot>
 export type SubmissionSnapshotV4 = z.infer<typeof SnapshotV4>
-
-/**
- * Stable error-code string for the fail-loud data-integrity error. A Datadog
- * monitor keys on this exact string, so it must NOT change.
- */
-export const SNAPSHOT_DATA_INTEGRITY_ERROR_CODE =
-  'MRF_WEBHOOK_SNAPSHOT_DATA_INTEGRITY'
-
-/**
- * Raised whenever a submission snapshot is missing, malformed, or otherwise
- * fails to parse. Deliberately opaque: any parse failure surfaces the SAME
- * stable code so the monitor can alert on a single signal.
- *
- * NOTE: ApplicationError's third constructor arg is a numeric error code used
- * for the global registry / Datadog error-count metric. The stable string code
- * lives on `dataIntegrityCode` (and in the message) so it is queryable without
- * colliding with the numeric registry.
- */
-export class SnapshotDataIntegrityError extends ApplicationError {
-  readonly dataIntegrityCode = SNAPSHOT_DATA_INTEGRITY_ERROR_CODE
-
-  constructor(
-    message = 'Submission snapshot is missing or malformed',
-    meta?: unknown,
-  ) {
-    super(`[${SNAPSHOT_DATA_INTEGRITY_ERROR_CODE}] ${message}`, meta)
-  }
-}
 
 /**
  * The ONLY way anything turns bytes into a snapshot. Fail-loud: any failure
