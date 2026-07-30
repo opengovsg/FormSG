@@ -1,3 +1,4 @@
+import { err, ok, Result } from 'neverthrow'
 import { z } from 'zod'
 
 import { SnapshotDataIntegrityError } from './submission-snapshot.errors'
@@ -39,35 +40,29 @@ export type SubmissionSnapshotV4 = z.infer<typeof SnapshotV4>
 
 /**
  * The ONLY way anything turns bytes into a snapshot. Fail-loud: any failure
- * (malformed JSON, unknown `_v`, wrong shape) throws SnapshotDataIntegrityError.
- * Never returns a partial or invalid object.
+ * (malformed JSON, unknown `_v`, wrong shape) resolves to a
+ * SnapshotDataIntegrityError. Never returns a partial or invalid object.
  */
-export function parseSnapshot(raw: unknown): SubmissionSnapshot {
-  let candidate: unknown = raw
-  if (typeof raw === 'string') {
-    try {
-      candidate = JSON.parse(raw)
-    } catch (error) {
-      // Fail-loud by contract: parseSnapshot is the single trust boundary that
-      // turns bytes into a snapshot, so any failure MUST throw the stable
-      // data-integrity error rather than return a partial/invalid object.
-      // eslint-disable-next-line typesafe/no-throw-sync-func
-      throw new SnapshotDataIntegrityError(
-        'Snapshot body is not valid JSON',
-        error,
-      )
-    }
-  }
-
-  const result = SubmissionSnapshot.safeParse(candidate)
-  if (!result.success) {
-    // Fail-loud by contract (see above): unknown `_v`, wrong shape, or any
-    // other schema violation surfaces the SAME stable error.
-    // eslint-disable-next-line typesafe/no-throw-sync-func
-    throw new SnapshotDataIntegrityError(
-      'Snapshot failed schema validation',
-      result.error.issues,
+export function parseSnapshot(
+  rawSnapshot: string,
+): Result<SubmissionSnapshot, SnapshotDataIntegrityError> {
+  let jsonParsedSnapshot: unknown
+  try {
+    jsonParsedSnapshot = JSON.parse(rawSnapshot)
+  } catch (error) {
+    return err(
+      new SnapshotDataIntegrityError('Snapshot body is not valid JSON', error),
     )
   }
-  return result.data
+
+  const result = SubmissionSnapshot.safeParse(jsonParsedSnapshot)
+  if (!result.success) {
+    return err(
+      new SnapshotDataIntegrityError(
+        'Snapshot failed schema validation',
+        result.error.issues,
+      ),
+    )
+  }
+  return ok(result.data)
 }

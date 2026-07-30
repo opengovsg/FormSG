@@ -1,6 +1,6 @@
 import { PutObjectRequest } from 'aws-sdk/clients/s3'
 import crypto from 'crypto'
-import { errAsync, okAsync, ResultAsync } from 'neverthrow'
+import { errAsync, ResultAsync } from 'neverthrow'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -182,15 +182,7 @@ export const readV4Snapshot = ({
           new SnapshotDataIntegrityError('Submission snapshot body is empty'),
         )
       }
-      try {
-        return okAsync(parseSnapshot(body))
-      } catch (parseError) {
-        return errAsync(
-          parseError instanceof SnapshotDataIntegrityError
-            ? parseError
-            : new SnapshotDataIntegrityError(undefined, parseError),
-        )
-      }
+      return parseSnapshot(body)
     })
     .orElse((error) => {
       // andThen already produced a SnapshotDataIntegrityError for parse failures;

@@ -19,42 +19,46 @@ describe('parseSnapshot', () => {
     const snapshot = makeValidV4()
 
     // Act
-    const parsed = parseSnapshot(JSON.stringify(snapshot))
+    const result = parseSnapshot(JSON.stringify(snapshot))
 
     // Assert
-    expect(parsed).toEqual(snapshot)
-  })
-
-  it('should parse a valid v4 object passed directly (not stringified)', () => {
-    const snapshot = makeValidV4()
-    expect(parseSnapshot(snapshot)).toEqual(snapshot)
+    expect(result.isOk()).toBe(true)
+    expect(result._unsafeUnwrap()).toEqual(snapshot)
   })
 
   describe('fail-loud failure modes', () => {
-    it('should throw SnapshotDataIntegrityError on malformed JSON', () => {
-      expect(() => parseSnapshot('{ not valid json')).toThrow(
+    it('should return a SnapshotDataIntegrityError on malformed JSON', () => {
+      const result = parseSnapshot('{ not valid json')
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         SnapshotDataIntegrityError,
       )
     })
 
-    it('should throw SnapshotDataIntegrityError on an unknown _v', () => {
+    it('should return a SnapshotDataIntegrityError on an unknown _v', () => {
       const bad = { ...makeValidV4(), _v: 2 }
-      expect(() => parseSnapshot(JSON.stringify(bad))).toThrow(
+      const result = parseSnapshot(JSON.stringify(bad))
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         SnapshotDataIntegrityError,
       )
     })
 
-    it('should throw SnapshotDataIntegrityError on a missing required field', () => {
+    it('should return a SnapshotDataIntegrityError on a missing required field', () => {
       const bad: Record<string, unknown> = { ...makeValidV4() }
       delete bad.encryptedContent
-      expect(() => parseSnapshot(JSON.stringify(bad))).toThrow(
+      const result = parseSnapshot(JSON.stringify(bad))
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         SnapshotDataIntegrityError,
       )
     })
 
-    it('should throw on an unknown contentFormat discriminant', () => {
+    it('should return an error on an unknown contentFormat discriminant', () => {
       const bad = { ...makeValidV4(), contentFormat: 'v99' }
-      expect(() => parseSnapshot(JSON.stringify(bad))).toThrow(
+      const result = parseSnapshot(JSON.stringify(bad))
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         SnapshotDataIntegrityError,
       )
     })
