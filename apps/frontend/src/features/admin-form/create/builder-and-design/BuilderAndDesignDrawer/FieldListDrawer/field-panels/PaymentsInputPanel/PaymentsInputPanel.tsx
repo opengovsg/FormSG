@@ -158,12 +158,12 @@ const ProductsPaymentSection = ({
 }
 
 const PaymentTypeSelector = ({
-  isEncryptMode,
+  isSelectorDisabled,
   control,
   paymentsMutation,
   showFixedPaymentSelection,
 }: {
-  isEncryptMode: boolean
+  isSelectorDisabled: boolean
   control: Control<FormPaymentsInput>
   paymentsMutation: ReturnType<typeof useMutateFormPage>['paymentsMutation']
   showFixedPaymentSelection: boolean
@@ -175,7 +175,7 @@ const PaymentTypeSelector = ({
     <PaymentInnerContainer>
       <FormControl
         isRequired
-        isDisabled={!isEncryptMode} // only encrypt mode forms can be payment forms
+        isDisabled={isSelectorDisabled} // only payment-capable forms can configure payments
         isReadOnly={paymentsMutation.isLoading}
       >
         <FormLabel>{t('paymentType.label')}</FormLabel>
@@ -219,10 +219,10 @@ const PaymentTypeSelector = ({
 
 const PaymentInputFields = ({
   isDisabled,
-  isEncryptMode,
+  isSelectorDisabled,
 }: {
   isDisabled: boolean
-  isEncryptMode: boolean
+  isSelectorDisabled: boolean
 }) => {
   const { t: tPayments } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.paymentsInputPanel',
@@ -335,7 +335,7 @@ const PaymentInputFields = ({
   return (
     <PaymentContainer>
       <PaymentTypeSelector
-        isEncryptMode={isEncryptMode}
+        isSelectorDisabled={isSelectorDisabled}
         control={control}
         paymentsMutation={paymentsMutation}
         showFixedPaymentSelection={isFixed}
@@ -458,11 +458,18 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   })
   const { data: form } = useAdminForm()
   const isMrfCutoverEnabled = useFeatureIsOn(featureFlags.mrfCutover)
+  const isMrfPaymentsEnabled = useFeatureIsOn(featureFlags.mrfPayments)
 
   const isEncryptMode = form?.responseMode === FormResponseMode.Encrypt
+  const isMrfMode = form?.responseMode === FormResponseMode.Multirespondent
+  // Multirespondent forms may only collect payments when they have no
+  // workflow steps; the payment field and workflow steps are mutually
+  // exclusive.
+  const hasWorkflowSteps = isMrfMode && (form.workflow?.length ?? 0) > 0
+  const isPaymentCapable = isEncryptMode || (isMrfMode && isMrfPaymentsEnabled)
   const isStripeConnected =
-    isEncryptMode && form.payments_channel.channel === PaymentChannel.Stripe
-  const paymentsField = isEncryptMode ? form.payments_field : undefined
+    isPaymentCapable && form.payments_channel.channel === PaymentChannel.Stripe
+  const paymentsField = isPaymentCapable ? form.payments_field : undefined
 
   const {
     paymentsData,
@@ -487,13 +494,15 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
     }
   }, [paymentsField, resetData, setData, setToEditingPayment, setToInactive])
 
-  const paymentDisabledMessage = !isEncryptMode ? (
+  const paymentDisabledMessage = !isPaymentCapable ? (
     <Text>
       {/* TODO [MRF-CUTOVER]: Remove cutover copy override after cutover. */}
       {isMrfCutoverEnabled
         ? t('disabled.cutoverLegacyOnly')
         : t('disabled.storageModeOnly')}
     </Text>
+  ) : hasWorkflowSteps ? (
+    <Text>{t('disabled.mrfWorkflowSteps')}</Text>
   ) : !isStripeConnected ? (
     <Text>
       {t('disabled.stripeNotConnectedBefore')}{' '}
@@ -507,7 +516,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   // payment eligibility will be dependent on whether paymentDisabledMessage is non empty
   const isPaymentDisabled = !!paymentDisabledMessage
 
-  if (isEncryptMode && !paymentsData) return null
+  if (isPaymentCapable && !paymentsData) return null
 
   return (
     <>
@@ -518,7 +527,7 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
       )}
       <PaymentInputFields
         isDisabled={isPaymentDisabled}
-        isEncryptMode={isEncryptMode}
+        isSelectorDisabled={!isPaymentCapable || hasWorkflowSteps}
       />
     </>
   )
