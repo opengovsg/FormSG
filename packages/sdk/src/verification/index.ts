@@ -3,7 +3,6 @@
  * @author Jean Tan
  */
 import nacl from 'tweetnacl'
-import { decodeBase64, decodeUTF8, encodeBase64 } from 'tweetnacl-util'
 
 import { MissingPublicKeyError, MissingSecretKeyError } from '../errors'
 import {
@@ -11,6 +10,7 @@ import {
   VerificationOptions,
   VerificationSignatureOptions,
 } from '../types'
+import { decodeBase64, decodeUTF8, encodeBase64 } from '../util/encoding'
 import { parseVerificationSignature } from '../util/parser'
 
 import { formatToBaseString, isSignatureTimeValid } from './utils'

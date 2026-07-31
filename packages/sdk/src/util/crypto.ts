@@ -1,5 +1,4 @@
 import nacl from 'tweetnacl'
-import { decodeBase64, encodeBase64, encodeUTF8 } from 'tweetnacl-util'
 
 import {
   EncryptedAttachmentContent,
@@ -7,6 +6,8 @@ import {
   EncryptedFileContent,
   Keypair,
 } from '../types'
+
+import { decodeBase64, encodeBase64, encodeUTF8 } from './encoding'
 
 /**
  * Helper method to generate a new keypair for encryption.
