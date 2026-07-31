@@ -1,5 +1,5 @@
 import mockAxios from 'jest-mock-axios'
-import { decodeUTF8 } from 'tweetnacl-util'
+import { decodeUTF8 } from '../src/util/encoding'
 
 import Crypto from '../src/crypto'
 import CryptoV3 from '../src/crypto-v3'

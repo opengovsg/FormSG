@@ -65,9 +65,10 @@
     "directory": "packages/sdk"
   },
   "dependencies": {
+    "@stablelib/base64": "^1.0.1",
+    "@stablelib/utf8": "^1.0.2",
     "axios": "^1.15.2",
-    "tweetnacl": "^1.0.3",
-    "tweetnacl-util": "^0.15.1"
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",

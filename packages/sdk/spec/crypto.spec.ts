@@ -2,9 +2,7 @@ import mockAxios from 'jest-mock-axios'
 import Crypto from '../src/crypto'
 import { SIGNING_KEYS } from '../src/resource/signing-keys'
 
-import {
-  encodeBase64,
-} from 'tweetnacl-util'
+import { encodeBase64 } from '../src/util/encoding'
 
 import {
   plaintext,
