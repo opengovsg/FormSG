@@ -104,6 +104,7 @@ export type FormSupportedLanguages = {
 export type FormWebhook = {
   url: string
   isRetryEnabled: boolean
+  webhookFormat?: 'v1' | 'v4'
 }
 
 export enum FormResponseMode {
