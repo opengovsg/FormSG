@@ -75,10 +75,6 @@ import {
 } from '../submission.utils'
 
 import {
-  getRowContentVersion,
-  RowConsumerClass,
-} from './webhook/row-content-version'
-import {
   checkFormIsMultirespondent,
   getMultirespondentSubmission,
 } from './multirespondent-submission.service'
@@ -90,7 +86,10 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV4,
 } from './multirespondent-submission.types'
-import { validateMrfFieldResponses } from './multirespondent-submission.utils'
+import {
+  getMrfVersion,
+  validateMrfFieldResponses,
+} from './multirespondent-submission.utils'
 import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
@@ -853,25 +852,12 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
-  // Also used further down to gate step-token minting.
   const isStepWriteTokenEnabled =
     req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
 
-  // Row content-version gate by consumer class (PRD #9803 D3). V4 is the
-  // in-process shape; only the encryption blob is downgraded to V3 for
-  // consumers that cannot parse V4. The decision table itself lives in
-  // `getRowContentVersion`; all this does is classify the consumer.
   const webhookUrl = formDef.webhook?.url
-  const webhookType = webhookUrl ? getWebhookType(webhookUrl) : undefined
-  const consumerClass: RowConsumerClass = !webhookType
-    ? 'none'
-    : webhookType === 'plumber'
-      ? 'plumber'
-      : // zapier is a generic consumer.
-        'generic'
-
-  const mrfVersion = getRowContentVersion({
-    consumerClass,
+  const mrfVersion = getMrfVersion({
+    webhookType: webhookUrl ? getWebhookType(webhookUrl) : undefined,
     isStepWriteTokenEnabled,
   })
   const useV4Encryption = mrfVersion === 2
@@ -947,9 +933,8 @@ export const encryptSubmission = async (
     /**
      * MRF Version 2 = V4-encrypted responses (with provenance).
      * MRF Version 1 = V3-encrypted responses, used when the form's webhook
-     * consumer class cannot read V4: plumber without `mrf-step-write-token`,
-     * or any generic/zapier consumer (pinned to V3 until S6 ships the v1
-     * producer — see `getRowContentVersion`).
+     * consumer cannot read V4: plumber without `mrf-step-write-token`, or any
+     * generic/zapier consumer (pinned to V3 until S6 ships the v1 producer).
      */
     mrfVersion,
     ...mintedStepToken,

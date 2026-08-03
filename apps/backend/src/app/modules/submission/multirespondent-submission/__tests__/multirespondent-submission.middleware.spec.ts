@@ -1047,10 +1047,9 @@ describe('Multirespondent Submission Middleware', () => {
 
     describe('row content-version gate', () => {
       // PRD #9803 D3: V4 is the in-process shape; the encryption blob is only
-      // downgraded to V3 for consumer classes that cannot read V4 yet. The
-      // table itself is unit-tested in `webhook/__tests__/row-content-version`;
-      // these cases pin how the middleware classifies a consumer and that the
-      // gate ignores `enable-mrf-webhooks` entirely.
+      // downgraded to V3 for consumers that cannot read V4 yet. Decision table
+      // lives in `getMrfVersion`; these cases pin middleware wiring and that
+      // the gate ignores `enable-mrf-webhooks`.
       const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/abc'
       const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/123/abc'
       const GENERIC_URL = 'https://example.com/hook'
