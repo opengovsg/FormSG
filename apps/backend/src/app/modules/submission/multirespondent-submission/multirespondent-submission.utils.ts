@@ -686,6 +686,30 @@ export const getMrfCookieName = ({
   return `Mrf_${formId}_${previousSubmissionId}`
 }
 
+/**
+ * Decides the Mongo submission row's `mrfVersion`.
+ * `2` = V4 responses (answer objects with provenance), `1` = V3 responses.
+ */
+export type MrfVersion = 1 | 2
+
+export const getMrfVersion = ({
+  webhookType,
+  isStepWriteTokenEnabled,
+}: {
+  webhookType?: 'zapier' | 'plumber' | 'generic'
+  isStepWriteTokenEnabled: boolean
+}): MrfVersion => {
+  switch (webhookType) {
+    case undefined:
+      return 2
+    case 'plumber':
+      return isStepWriteTokenEnabled ? 2 : 1
+    case 'zapier': // zapier is treated as a generic consumer.
+    case 'generic':
+      return 1
+  }
+}
+
 export const formatSubmittedStepTimestamp = ({
   submittedSteps,
   stepIndex,
