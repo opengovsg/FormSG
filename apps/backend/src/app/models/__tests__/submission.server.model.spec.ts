@@ -553,7 +553,7 @@ describe('Submission Model', () => {
               encryptedContent: MOCK_ENCRYPTED_CONTENT,
               encryptedSubmissionSecretKey: 'test secret key',
               verifiedContent: undefined,
-              version: 1,
+              version: 3,
               created: submission.created,
               paymentContent: {},
               workflowContent: {

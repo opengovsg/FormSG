@@ -37,6 +37,10 @@ import {
 } from '../../types'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
 import { MultirespondentSubmissionContent } from '../modules/submission/multirespondent-submission/multirespondent-submission.types'
+import {
+  contentFormatToWebhookVersion,
+  mrfVersionToContentFormat,
+} from '../modules/submission/multirespondent-submission/webhook/webhook-payload-policy'
 import { buildMrfMetadata } from '../modules/submission/submission.utils'
 import {
   buildAdminSubmittedStepsMongoProjection,
@@ -645,7 +649,9 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     encryptedContent: this.encryptedContent,
     encryptedSubmissionSecretKey: this.encryptedSubmissionSecretKey,
     verifiedContent: this.verifiedContent,
-    version: this.version,
+    version: contentFormatToWebhookVersion(
+      mrfVersionToContentFormat(this.mrfVersion),
+    ),
     created: this.created,
     attachmentDownloadUrls: attachmentRecords,
     paymentContent,
