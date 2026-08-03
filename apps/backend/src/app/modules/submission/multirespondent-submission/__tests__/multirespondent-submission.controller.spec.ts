@@ -48,11 +48,13 @@ import {
 import {
   handleGetMultirespondentSubmissionForRespondent,
   sendPendingMrfSubmissionReminderForTest,
+  SNAPSHOT_WRITE_ERROR_MESSAGE,
   submitMultirespondentFormForTest,
   updateMultirespondentSubmissionForTest,
 } from '../multirespondent-submission.controller'
 import * as MultiRespondentSubmissionService from '../multirespondent-submission.service'
 import * as MultirespondentSubmissionUtils from '../multirespondent-submission.utils'
+import { SnapshotWriteError } from '../webhook/submission-snapshot.errors'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 
@@ -448,6 +450,57 @@ describe('multirespondent-submision.controller', () => {
       })
     })
 
+    it('returns 503 service unavailable when the snapshot write fails, distinctly from a save failure', async () => {
+      // Arrange
+      MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission =
+        jest.fn().mockReturnValue(errAsync(new SnapshotWriteError()))
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {} as any,
+      })
+      const mockSubmitMrfReq = merge(mockReq, {
+        formsg: {
+          formDef: {
+            _id: mockFormId,
+            authType: FormAuthType.NIL,
+            getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+          },
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {},
+            workflowStep: 0,
+          },
+        } as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitMultirespondentFormForTest(mockSubmitMrfReq, mockRes)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.SERVICE_UNAVAILABLE,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: SNAPSHOT_WRITE_ERROR_MESSAGE,
+      })
+      // Distinct from the SubmissionSaveError response, which is a 500 carrying
+      // the error's own message.
+      expect(mockRes.status).not.toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(SNAPSHOT_WRITE_ERROR_MESSAGE).not.toBe(
+        new SubmissionSaveError().message,
+      )
+    })
+
     it('returns 200 ok when step has invalid workflow type', async () => {
       // Arrange
       const invalidWorkflowTypeError = new InvalidWorkflowTypeError()
@@ -834,6 +887,70 @@ describe('multirespondent-submision.controller', () => {
         message: submissionSaveError.message,
         submissionId: mockSubmissionId,
       })
+    })
+
+    it('returns 503 service unavailable when the snapshot write fails, distinctly from a save failure', async () => {
+      // Arrange
+      MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission =
+        jest.fn().mockReturnValue(errAsync(new SnapshotWriteError()))
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {} as any,
+      })
+      const mockSubmitMrfReq = merge(mockReq, {
+        formsg: {
+          formDef: {
+            _id: mockFormId,
+            authType: FormAuthType.NIL,
+            getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+          },
+          snapshottedFormDef: {
+            _id: mockFormId,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            emails: [],
+            stepOneEmailNotificationFieldId: '',
+            stepsToNotify: [],
+            hasRespondentCopy: false,
+            title: 'Mock snapshotted form def',
+            webhook: {
+              url: 'https://plumber.gov.sg/webhook',
+              isRetryEnabled: true,
+            },
+          } as SnapshottedFormDef,
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {},
+            workflowStep: 1,
+          },
+        } as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await updateMultirespondentSubmissionForTest(mockSubmitMrfReq, mockRes)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.SERVICE_UNAVAILABLE,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: SNAPSHOT_WRITE_ERROR_MESSAGE,
+      })
+      expect(mockRes.status).not.toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      // The post-submission actions must not fire for an aborted save.
+      expect(
+        MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionUpdateActions,
+      ).not.toHaveBeenCalled()
     })
 
     it('returns 404 not found when submission id not found', async () => {
