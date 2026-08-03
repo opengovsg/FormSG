@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.2.0](https://github.com/opengovsg/formsg/compare/v9.1.0...v9.2.0) (2026-08-03)
+
+
+### Features
+
+* **i18n:** extract text from MultiLanguageSection components (#9647) ([#9647](https://github.com/opengovsg/formsg/commit/ad08ccc33a75afff093dc637678732602f79aa80))
+
+
+### Bug Fixes
+
+* **admin-form:** show error state when webhook settings fetch fails (#9524) ([#9524](https://github.com/opengovsg/formsg/commit/94977db80f6de483df5892e938ba209cb44d93e6))
+* **login:** show toast for non-401 errors on sgID profile (#9768) ([#9768](https://github.com/opengovsg/formsg/commit/38ee7c439d917afc0aa319eeb247749df06183ff))
+* add title to disabled table text cells  (#9582) ([#9582](https://github.com/opengovsg/formsg/commit/b35824b08af96c781c4570fdde2011576d6cc3d9))
+
+
+### Chores
+
+* **ci:** shard backend tests across 3 runners (#9796) ([#9796](https://github.com/opengovsg/formsg/commit/ea8ff4f89a10f083ec5892cc32dde93150479f46))
+
 ## [9.1.0](https://github.com/opengovsg/formsg/compare/v9.0.1...v9.1.0) (2026-08-03)
 
 
