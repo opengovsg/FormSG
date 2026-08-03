@@ -47,7 +47,6 @@ import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
 import { FormRespondentSingleSubmissionValidationError } from '../../form/form.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
-import { WEBHOOK_MAX_CONTENT_LENGTH } from '../../webhook/webhook.constants'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType } from '../../webhook/webhook.service'
 import { webhookStatsdClient } from '../../webhook/webhook.statsd-client'
@@ -1183,18 +1182,6 @@ const sendMrfInitialWebhookIfEligible = ({
           policy,
         })
         const view: WebhookView = { data }
-
-        // Payload-size guard: alarmable, no silent truncation, do not send.
-        if (
-          Buffer.byteLength(JSON.stringify(view)) > WEBHOOK_MAX_CONTENT_LENGTH
-        ) {
-          logger.error({
-            message: 'MRF webhook payload exceeds maximum content length',
-            meta: { ...logMeta, submissionIndex },
-          })
-          webhookStatsdClient.increment('mrf.webhook.payload_too_large')
-          return okAsync(undefined)
-        }
 
         return WebhookFactory.sendInitialWebhook(
           submission,

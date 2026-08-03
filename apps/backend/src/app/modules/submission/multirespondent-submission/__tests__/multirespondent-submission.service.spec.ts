@@ -4104,30 +4104,6 @@ describe('multirespondent-submission.service', () => {
       expect(incrSpy).toHaveBeenCalledWith('mrf.snapshot.data_integrity_error')
     })
 
-    // ---- Payload-size guard ----
-
-    it('does not send and emits the too-large metric when the reconstructed view exceeds the size cap', async () => {
-      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-      const incrSpy = jest.mocked(webhookStatsdClient.increment)
-      MockSnapshotStore.readV4Snapshot.mockReturnValue(
-        okAsync(buildSnapshot({ encryptedContent: 'x'.repeat(1_000_001) })),
-      )
-      const submission = buildSubmissionWithToken('tok-A')
-
-      await performMultiRespondentPostSubmissionCreateActions({
-        submission,
-        submissionId: submission._id.toString(),
-        form: buildV4Form(),
-        encryptedPayload: buildV4Payload(),
-        logMeta: {} as any,
-        growthbook: growthbookWith(true),
-      })
-      await flushPromises()
-
-      expect(sendSpy).not.toHaveBeenCalled()
-      expect(incrSpy).toHaveBeenCalledWith('mrf.webhook.payload_too_large')
-    })
-
     // ---- Case A winner / 409 ----
 
     it('records the winner token which reconstruction then reads (Case A / 409 winner)', async () => {
