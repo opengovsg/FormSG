@@ -44,7 +44,6 @@ import {
 } from '../submission.service'
 import { mapRouteError } from '../submission.utils'
 
-import { SnapshotWriteError } from './webhook/submission-snapshot.errors'
 import { ensureSubmitterIdIsWhitelisted } from './multirespondent-submission.ensures'
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
 import {
@@ -74,36 +73,6 @@ const appUrl =
   process.env.NODE_ENV === Environment.Dev
     ? config.app.feAppUrl
     : config.app.appUrl
-
-/**
- * Respondent-facing copy for a failed submission-snapshot PUT.
- *
- * The S3-first ordering means a failed PUT aborts the save, so nothing was
- * recorded and re-submitting is safe. The PUT failure is almost always a
- * transient S3 blip, so the copy invites a retry rather than sending the
- * respondent to the form admin. No internals are named — "storage" and "S3"
- * mean nothing to a respondent.
- */
-export const SNAPSHOT_WRITE_ERROR_MESSAGE =
-  'We could not save your submission just now. Nothing was recorded, so please try submitting again in a few minutes.'
-
-/**
- * Logs a failed submission-snapshot PUT with its stable error code, so the
- * signal is queryable in Datadog independently of the respondent-facing copy.
- */
-const logSnapshotWriteError = ({
-  error,
-  logMeta,
-}: {
-  error: SnapshotWriteError
-  logMeta: Record<string, unknown>
-}) => {
-  logger.error({
-    message: 'MRF submission snapshot write failed; submission aborted',
-    meta: { ...logMeta, errorCode: error.code },
-    error,
-  })
-}
 
 const submitMultirespondentForm = async (
   req: SubmitMultirespondentFormHandlerRequest,
@@ -164,13 +133,6 @@ const submitMultirespondentForm = async (
 
   if (createMultiRespondentFormSubmissionResult.isErr()) {
     const error = createMultiRespondentFormSubmissionResult.error
-
-    if (error instanceof SnapshotWriteError) {
-      logSnapshotWriteError({ error, logMeta })
-      return res
-        .status(StatusCodes.SERVICE_UNAVAILABLE)
-        .json({ message: SNAPSHOT_WRITE_ERROR_MESSAGE })
-    }
 
     const { errorMessage, statusCode } = mapRouteError(error)
     return res.status(statusCode).json({ message: errorMessage })
@@ -262,13 +224,6 @@ const updateMultirespondentSubmission = async (
 
   if (updateMultiRespondentFormSubmissionResult.isErr()) {
     const error = updateMultiRespondentFormSubmissionResult.error
-
-    if (error instanceof SnapshotWriteError) {
-      logSnapshotWriteError({ error, logMeta: { ...logMeta, submissionId } })
-      return res
-        .status(StatusCodes.SERVICE_UNAVAILABLE)
-        .json({ message: SNAPSHOT_WRITE_ERROR_MESSAGE })
-    }
 
     if (error instanceof SubmissionSaveError) {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
