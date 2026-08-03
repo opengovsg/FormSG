@@ -11,4 +11,12 @@ export interface Webhooks extends HasTitle {
     label: string
     description: string
   }
+  error: {
+    title: string
+    body: string
+    button: {
+      label: string
+      loadingText: string
+    }
+  }
 }
