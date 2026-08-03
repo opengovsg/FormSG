@@ -138,7 +138,10 @@ const submitMultirespondentForm = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  const submission = createMultiRespondentFormSubmissionResult.value
+  // The snapshot the save just PUT travels with the row across the HTTP
+  // response so the send path can reconstruct from it without an S3 read-back.
+  const { submission, snapshot } =
+    createMultiRespondentFormSubmissionResult.value
 
   // Send success back to client
   res.json({
@@ -150,6 +153,7 @@ const submitMultirespondentForm = async (
 
   await performMultiRespondentPostSubmissionCreateActions({
     submission,
+    snapshot,
     submissionId: submission._id.toString(),
     form,
     encryptedPayload,
@@ -236,7 +240,10 @@ const updateMultirespondentSubmission = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  const submission = updateMultiRespondentFormSubmissionResult.value
+  // The snapshot the save just PUT travels with the row across the HTTP
+  // response so the send path can reconstruct from it without an S3 read-back.
+  const { submission, snapshot } =
+    updateMultiRespondentFormSubmissionResult.value
 
   // Send success back to client
   res.json({
@@ -250,6 +257,7 @@ const updateMultirespondentSubmission = async (
 
   await performMultiRespondentPostSubmissionUpdateActions({
     submission,
+    snapshot,
     submissionId,
     snapshottedFormDef,
     currentStepNumber,
