@@ -476,5 +476,69 @@ describe('webhook.service', () => {
       )
       expect(MOCK_PRODUCER.sendMessage).toHaveBeenCalledWith(mockQueueMessage)
     })
+
+    it('should send an oversized payload, record the non-2xx and retry', async () => {
+      // A view far larger than WEBHOOK_MAX_CONTENT_LENGTH, which caps the
+      // response and must not gate the request.
+      const oversizedView: WebhookView = {
+        data: {
+          ...MOCK_WEBHOOK_VIEW.data,
+          encryptedContent: 'x'.repeat(WEBHOOK_MAX_CONTENT_LENGTH + 1),
+        },
+      }
+      const MOCK_AXIOS_PAYLOAD_TOO_LARGE_ERROR: AxiosError = {
+        name: '',
+        message: 'Request Entity Too Large',
+        config: {},
+        code: '',
+        response: {
+          data: { result: 'too large' },
+          status: 413,
+          statusText: 'Payload Too Large',
+          headers: {},
+          config: {},
+        },
+        isAxiosError: true,
+        toJSON: () => jest.fn(),
+      }
+      MockAxios.post.mockRejectedValue(MOCK_AXIOS_PAYLOAD_TOO_LARGE_ERROR)
+      MockAxios.isAxiosError.mockReturnValue(true)
+      const mockQueueMessage =
+        'mockQueueMessage' as unknown as WebhookQueueMessage
+      MockWebhookQueueMessage.fromSubmissionId.mockReturnValueOnce(
+        ok(mockQueueMessage),
+      )
+      const MOCK_PRODUCER = generateMockProducer()
+
+      const result = await WebhookService.createInitialWebhookSender(
+        MOCK_PRODUCER,
+      )(
+        testSubmission,
+        MOCK_WEBHOOK_URL,
+        /* isRetryEnabled= */ true,
+        oversizedView,
+      )
+
+      expect(result._unsafeUnwrap()).toBe(true)
+      // The oversized payload went on the wire.
+      expect(MockAxios.post).toHaveBeenCalledWith(
+        MOCK_WEBHOOK_URL,
+        oversizedView,
+        expect.anything(),
+      )
+      // The 413 is recorded against the submission...
+      expect(SubmissionModel.addWebhookResponse).toHaveBeenCalledWith(
+        testSubmission._id,
+        expect.objectContaining({
+          webhookUrl: MOCK_WEBHOOK_URL,
+          response: expect.objectContaining({ status: 413 }),
+        }),
+      )
+      // ...and retried through the existing queue.
+      expect(MockWebhookQueueMessage.fromSubmissionId).toHaveBeenCalledWith(
+        String(testSubmission._id),
+      )
+      expect(MOCK_PRODUCER.sendMessage).toHaveBeenCalledWith(mockQueueMessage)
+    })
   })
 })
