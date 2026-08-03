@@ -1,4 +1,5 @@
 import {
+  StatusTrackerSubmittedStep,
   SUBMITTED_STEP_VISIBILITY,
   SubmittedStep,
   SubmittedStepBoundary,
@@ -37,3 +38,8 @@ export const projectSubmittedStepForWebhook = (
   step: SubmittedStep,
 ): WebhookSubmittedStep =>
   projectSubmittedStep(step, 'webhook') as WebhookSubmittedStep
+
+export const projectSubmittedStepForStatusTracker = (
+  step: SubmittedStep,
+): StatusTrackerSubmittedStep =>
+  projectSubmittedStep(step, 'statusTracker') as StatusTrackerSubmittedStep

@@ -4,7 +4,10 @@ import {
   SubmittedStepField,
   WorkflowStatus,
 } from '../../types/submission'
-import { projectSubmittedStepForWebhook } from '../submitted-step-visibility'
+import {
+  projectSubmittedStepForStatusTracker,
+  projectSubmittedStepForWebhook,
+} from '../submitted-step-visibility'
 
 /**
  * A step subdocument with EVERY field populated, including the internal ones.
@@ -31,6 +34,22 @@ describe('projectSubmittedStepForWebhook', () => {
       submitterId: 'SUBMITTER_ID_HASH',
     })
     expect(JSON.stringify(out)).not.toContain('SNAPSHOT_TOKEN_LEAF_VALUE')
+  })
+})
+
+describe('projectSubmittedStepForStatusTracker', () => {
+  it('drops snapshotToken and respondent emails from the public response', () => {
+    const out = projectSubmittedStepForStatusTracker(fullApprovalStep)
+
+    expect(out).toEqual({
+      isApproval: true,
+      submittedAt: '2026-07-22T00:00:00.000Z',
+      status: WorkflowStatus.APPROVED,
+      submitterId: 'SUBMITTER_ID_HASH',
+    })
+    const serialised = JSON.stringify(out)
+    expect(serialised).not.toContain('SNAPSHOT_TOKEN_LEAF_VALUE')
+    expect(serialised).not.toContain('next@example.com')
   })
 })
 
