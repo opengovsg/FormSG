@@ -52,7 +52,15 @@ jest.mock('@opengovsg/formsg-sdk/adapters', () => ({
   isFieldResponsesV4: jest.fn(),
 }))
 jest.mock('src/app/utils/logic-adaptor')
-jest.mock('../multirespondent-submission.utils')
+jest.mock('../multirespondent-submission.utils', () => {
+  const actual = jest.requireActual(
+    '../multirespondent-submission.utils',
+  ) as typeof import('../multirespondent-submission.utils')
+  return {
+    ...actual,
+    validateMrfFieldResponses: jest.fn(),
+  }
+})
 jest.mock('src/app/config/formsg-sdk', () => ({
   __esModule: true,
   default: {
@@ -1045,11 +1053,7 @@ describe('Multirespondent Submission Middleware', () => {
       })
     })
 
-    describe('row content-version gate', () => {
-      // PRD #9803 D3: V4 is the in-process shape; the encryption blob is only
-      // downgraded to V3 for consumers that cannot read V4 yet. Decision table
-      // lives in `getMrfVersion`; these cases pin middleware wiring and that
-      // the gate ignores `enable-mrf-webhooks`.
+    describe('mrf version gate', () => {
       const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/abc'
       const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/123/abc'
       const GENERIC_URL = 'https://example.com/hook'
@@ -1066,7 +1070,9 @@ describe('Multirespondent Submission Middleware', () => {
         webhookFormat?: 'v1' | 'v4'
         flags?: string[]
       }) => {
+        jest.mocked(adaptV4ToV3).mockClear()
         jest.mocked(adaptV4ToV3).mockReturnValue(V3_ADAPTED as any)
+        jest.mocked(formsgSdk.cryptoV3.encrypt).mockClear()
         const mockReq = createMockEncryptReq(false)
         if (webhookUrl) {
           mockReq.formsg.formDef = {
@@ -1081,116 +1087,113 @@ describe('Multirespondent Submission Middleware', () => {
         return mockReq
       }
 
-      const BOTH_FLAGS = [
-        featureFlags.enableMrfWebhooks,
-        featureFlags.mrfStepWriteToken,
-      ]
-
-      it.each([
-        {
-          name: 'no-webhook form is V4 with both flags off',
-          flags: [],
-          expected: 2,
-        },
-        {
-          name: 'no-webhook form is V4 with both flags on',
-          flags: BOTH_FLAGS,
-          expected: 2,
-        },
-        {
-          name: 'plumber webhook is V4 when mrfStepWriteToken is on',
-          webhookUrl: PLUMBER_URL,
-          flags: [featureFlags.mrfStepWriteToken],
-          expected: 2,
-        },
-        {
-          name: 'plumber webhook stays V3 when mrfStepWriteToken is off',
-          webhookUrl: PLUMBER_URL,
-          flags: [featureFlags.enableMrfWebhooks],
-          expected: 1,
-        },
-        {
-          name: 'plumber webhook is V4 when both flags are on',
-          webhookUrl: PLUMBER_URL,
-          flags: BOTH_FLAGS,
-          expected: 2,
-        },
-        {
-          // Security (#9803 R7): a generic consumer is pinned to V3 in this
-          // slice regardless of its opt-in and of both flags — a V4 row would
-          // be delivered through the legacy live-row view and leak an
-          // encryptedSubmissionSecretKey.
-          name: 'generic webhook stays V3 even when it opts into v4 with both flags on',
-          webhookUrl: GENERIC_URL,
-          webhookFormat: 'v4' as const,
-          flags: BOTH_FLAGS,
-          expected: 1,
-        },
-        {
-          name: 'generic webhook stays V3 when only mrfStepWriteToken is on',
-          webhookUrl: GENERIC_URL,
-          webhookFormat: 'v4' as const,
-          flags: [featureFlags.mrfStepWriteToken],
-          expected: 1,
-        },
-        {
-          name: 'generic webhook stays V3 when only enableMrfWebhooks is on',
-          webhookUrl: GENERIC_URL,
-          webhookFormat: 'v4' as const,
-          flags: [featureFlags.enableMrfWebhooks],
-          expected: 1,
-        },
-        {
-          name: 'generic webhook stays V3 when webhookFormat is v1',
-          webhookUrl: GENERIC_URL,
-          webhookFormat: 'v1' as const,
-          flags: BOTH_FLAGS,
-          expected: 1,
-        },
-        {
-          name: 'generic webhook stays V3 when webhookFormat is absent',
-          webhookUrl: GENERIC_URL,
-          flags: BOTH_FLAGS,
-          expected: 1,
-        },
-        {
-          name: 'treats a zapier webhook as generic (opted in, both flags on => V3)',
-          webhookUrl: ZAPIER_URL,
-          webhookFormat: 'v4' as const,
-          flags: BOTH_FLAGS,
-          expected: 1,
-        },
-        {
-          name: 'treats a zapier webhook as generic (not opted in => V3)',
-          webhookUrl: ZAPIER_URL,
-          flags: BOTH_FLAGS,
-          expected: 1,
-        },
-      ])('$name', async ({ webhookUrl, webhookFormat, flags, expected }) => {
-        const mockReq = await runGate({ webhookUrl, webhookFormat, flags })
-
+      const expectEncryptedAs = (
+        mockReq: Awaited<ReturnType<typeof runGate>>,
+        expected: 1 | 2,
+      ) => {
         expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(expected)
-        // V4 encrypts the responses as-is; V3 encrypts the adapted (downgraded) shape.
-        expect(jest.mocked(formsgSdk.cryptoV3.encrypt)).toHaveBeenCalledWith(
-          expected === 2 ? MOCK_RESPONSES : V3_ADAPTED,
-          MOCK_FORM_PUBLIC_KEY,
-        )
+        if (expected === 2) {
+          // V4: encrypt the in-process responses as-is; do not downgrade.
+          expect(jest.mocked(adaptV4ToV3)).not.toHaveBeenCalled()
+          expect(jest.mocked(formsgSdk.cryptoV3.encrypt)).toHaveBeenCalledWith(
+            MOCK_RESPONSES,
+            MOCK_FORM_PUBLIC_KEY,
+          )
+        } else {
+          // V3: downgrade via adaptV4ToV3, then encrypt the adapted shape.
+          expect(jest.mocked(adaptV4ToV3)).toHaveBeenCalledWith(MOCK_RESPONSES)
+          expect(jest.mocked(formsgSdk.cryptoV3.encrypt)).toHaveBeenCalledWith(
+            V3_ADAPTED,
+            MOCK_FORM_PUBLIC_KEY,
+          )
+        }
+      }
+
+      describe('URL → consumer class via getWebhookType', () => {
+        it('classifies plumber.gov.sg as plumber (V4 when write-guard on)', async () => {
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: PLUMBER_URL,
+              flags: [featureFlags.mrfStepWriteToken],
+            }),
+            2,
+          )
+        })
+
+        it('classifies example.com as generic (V3 even with write-guard on)', async () => {
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: GENERIC_URL,
+              flags: [featureFlags.mrfStepWriteToken],
+            }),
+            1,
+          )
+        })
+
+        it('classifies hooks.zapier.com as generic (V3 even with write-guard on)', async () => {
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: ZAPIER_URL,
+              flags: [featureFlags.mrfStepWriteToken],
+            }),
+            1,
+          )
+        })
+
+        it('no webhook URL is treated as none (V4)', async () => {
+          expectEncryptedAs(await runGate({ flags: [] }), 2)
+        })
       })
 
-      // Parity invariant: with both flags off the gate reduces exactly to the
-      // pre-existing `hasWebhook ? 1 : 2`.
-      it('with both flags off, reduces exactly to hasWebhook ? 1 : 2', async () => {
-        for (const webhookUrl of [PLUMBER_URL, GENERIC_URL, ZAPIER_URL]) {
-          const mockReq = await runGate({ webhookUrl })
-          expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(1)
-        }
-        // Even a form that has opted into v4 stays V3 while the flags are off.
-        for (const webhookUrl of [PLUMBER_URL, GENERIC_URL, ZAPIER_URL]) {
-          const mockReq = await runGate({ webhookUrl, webhookFormat: 'v4' })
-          expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(1)
-        }
-        const noWebhookReq = await runGate({})
-        expect(noWebhookReq.formsg.encryptedPayload.mrfVersion).toBe(2)
+      describe('ignored inputs that never reach getMrfVersion', () => {
+        it('does not treat enableMrfWebhooks as a substitute for mrfStepWriteToken on plumber', async () => {
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: PLUMBER_URL,
+              flags: [featureFlags.enableMrfWebhooks],
+            }),
+            1,
+          )
+        })
+
+        it('ignores webhookFormat on plumber (v1 + write-guard still V4)', async () => {
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: PLUMBER_URL,
+              webhookFormat: 'v1',
+              flags: [featureFlags.mrfStepWriteToken],
+            }),
+            2,
+          )
+        })
+
+        it('ignores webhookFormat and enableMrfWebhooks on generic (v4 + both flags still V3)', async () => {
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: GENERIC_URL,
+              webhookFormat: 'v4',
+              flags: [
+                featureFlags.enableMrfWebhooks,
+                featureFlags.mrfStepWriteToken,
+              ],
+            }),
+            1,
+          )
+        })
+
+        it('ignores webhookFormat and enableMrfWebhooks on zapier (v4 + both flags still V3)', async () => {
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: ZAPIER_URL,
+              webhookFormat: 'v4',
+              flags: [
+                featureFlags.enableMrfWebhooks,
+                featureFlags.mrfStepWriteToken,
+              ],
+            }),
+            1,
+          )
+        })
       })
     })
   })
