@@ -138,8 +138,6 @@ const submitMultirespondentForm = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // The snapshot the save just PUT travels with the row across the HTTP
-  // response so the send path can reconstruct from it without an S3 read-back.
   const { submission, snapshot } =
     createMultiRespondentFormSubmissionResult.value
 
@@ -240,8 +238,6 @@ const updateMultirespondentSubmission = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // The snapshot the save just PUT travels with the row across the HTTP
-  // response so the send path can reconstruct from it without an S3 read-back.
   const { submission, snapshot } =
     updateMultiRespondentFormSubmissionResult.value
 
