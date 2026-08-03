@@ -153,7 +153,7 @@ describe('[GATE] v4 initial-send route parity', () => {
         {
           isApproval: false,
           submittedAt: new Date().toISOString(),
-          snapshotToken: 'tok-parity',
+          snapshotTokens: { v4: 'tok-parity' },
         },
       ],
     })

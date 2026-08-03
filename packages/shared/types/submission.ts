@@ -97,6 +97,14 @@ export const ApprovalStatus = z.enum([
   WorkflowStatus.REJECTED,
 ])
 
+const SubmittedStepSnapshotTokens = z.object({
+  v4: z.string().optional(),
+})
+
+export type SubmittedStepSnapshotTokens = z.infer<
+  typeof SubmittedStepSnapshotTokens
+>
+
 const SubmittedNonApprovalStep = z.object({
   isApproval: z.literal(false),
   submittedAt: z.string().datetime({ precision: 3 }),
@@ -105,7 +113,7 @@ const SubmittedNonApprovalStep = z.object({
   // RATIONALE: per-attempt S3 snapshot key leaf recorded on the winning step
   // entry so the send path can point-read the frozen snapshot for THIS step;
   // never included in a webhook payload.
-  snapshotToken: z.string().optional(),
+  snapshotTokens: SubmittedStepSnapshotTokens.optional(),
 })
 
 export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>
@@ -146,7 +154,7 @@ export const SUBMITTED_STEP_VISIBILITY = {
     admin: true,
   },
   submitterId: { webhook: true, public: true, admin: false },
-  snapshotToken: { webhook: false, public: false, admin: false },
+  snapshotTokens: { webhook: false, public: false, admin: false },
 } as const satisfies Record<
   SubmittedStepField,
   Record<SubmittedStepBoundary, boolean>

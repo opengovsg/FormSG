@@ -20,7 +20,7 @@ const makeStoredStep = (index: number): SubmittedStep => ({
   status: WorkflowStatus.APPROVED,
   nextStepRecipientEmails: [`step-${index}@example.com`],
   submitterId: `SUBMITTER_ID_HASH_${index}`,
-  snapshotToken: `SNAPSHOT_TOKEN_LEAF_${index}`,
+  snapshotTokens: { v4: `SNAPSHOT_TOKEN_LEAF_${index}` },
 })
 
 const makeLiveData = (overrides: Partial<WebhookData> = {}): WebhookData => ({
@@ -205,7 +205,7 @@ describe('reconstructMrfWebhookData', () => {
     it.each([
       'stepTokenHash',
       'encryptedStepToken',
-      'snapshotToken',
+      'snapshotTokens',
       'SNAPSHOT_TOKEN_LEAF_0',
       'SNAPSHOT_TOKEN_LEAF_1',
       'SNAPSHOT_TOKEN_LEAF_2',

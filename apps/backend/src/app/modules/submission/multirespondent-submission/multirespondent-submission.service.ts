@@ -898,7 +898,7 @@ export const createMultiRespondentFormSubmission = ({
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
         snapshot
           ? writeV4Snapshot(snapshot).map(({ token }) => {
-              submittedStepMeta.snapshotToken = token
+              submittedStepMeta.snapshotTokens = { v4: token }
               return undefined
             })
           : okAsync(undefined)
@@ -1523,7 +1523,7 @@ export const updateMultiRespondentFormSubmission = ({
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
         snapshot
           ? writeV4Snapshot(snapshot).map(({ token }) => {
-              submittedStepMeta.snapshotToken = token
+              submittedStepMeta.snapshotTokens = { v4: token }
               return undefined
             })
           : okAsync(undefined)

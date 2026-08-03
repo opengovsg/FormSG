@@ -17,11 +17,11 @@ const fullApprovalStep = {
   status: WorkflowStatus.APPROVED,
   nextStepRecipientEmails: ['next@example.com'],
   submitterId: 'SUBMITTER_ID_HASH',
-  snapshotToken: 'SNAPSHOT_TOKEN_LEAF_VALUE',
+  snapshotTokens: { v4: 'SNAPSHOT_TOKEN_LEAF_VALUE' },
 } satisfies SubmittedStep
 
 describe('projectSubmittedStepForWebhook', () => {
-  it('drops snapshotToken but keeps the fields webhook consumers receive today', () => {
+  it('drops snapshotTokens but keeps the fields webhook consumers receive today', () => {
     const out = projectSubmittedStepForWebhook(fullApprovalStep)
 
     expect(out).toEqual({
@@ -45,7 +45,7 @@ describe('projecting a mongoose subdocument', () => {
       status: String,
       nextStepRecipientEmails: [String],
       submitterId: String,
-      snapshotToken: String,
+      snapshotTokens: { v4: String },
     },
     { _id: false },
   )
@@ -73,7 +73,7 @@ describe('projecting a mongoose subdocument', () => {
 })
 
 describe('projectSubmittedStepForPublic', () => {
-  it('drops snapshotToken and respondent emails from the public response', () => {
+  it('drops snapshotTokens and respondent emails from the public response', () => {
     const out = projectSubmittedStepForPublic(fullApprovalStep)
 
     expect(out).toEqual({

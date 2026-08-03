@@ -793,14 +793,14 @@ describe('Submission Model', () => {
           status: WorkflowStatus.APPROVED,
           nextStepRecipientEmails: ['next@example.com'],
           submitterId: 'SUBMITTER_ID_HASH',
-          snapshotToken: 'SNAPSHOT_TOKEN_LEAF_VALUE',
+          snapshotTokens: { v4: 'SNAPSHOT_TOKEN_LEAF_VALUE' },
         },
       ],
     })
 
     // The admin-visible set is derived from the classification table:
     // nextStepRecipientEmails is read server-side by buildMrfMetadata, so it
-    // must still load; submitterId and snapshotToken are unread here.
+    // must still load; submitterId and snapshotTokens are unread here.
     const EXPECTED_ADMIN_STEP = {
       isApproval: true,
       submittedAt: '2026-07-22T00:00:00.000Z',
@@ -901,7 +901,7 @@ describe('Submission Model', () => {
           },
         })
       })
-      it('should project submittedSteps for multirespondent submissions, omitting the internal snapshotToken', async () => {
+      it('should project submittedSteps for multirespondent submissions, omitting the internal snapshotTokens', async () => {
         // Arrange
         const formId = new ObjectId()
         const submission = await MultirespondentSubmission.create({
@@ -922,7 +922,7 @@ describe('Submission Model', () => {
               status: WorkflowStatus.APPROVED,
               nextStepRecipientEmails: ['next@example.com'],
               submitterId: 'SUBMITTER_ID_HASH',
-              snapshotToken: 'SNAPSHOT_TOKEN_LEAF_VALUE',
+              snapshotTokens: { v4: 'SNAPSHOT_TOKEN_LEAF_VALUE' },
             },
           ],
         })

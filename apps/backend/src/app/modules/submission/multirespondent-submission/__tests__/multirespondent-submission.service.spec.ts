@@ -3871,7 +3871,7 @@ describe('multirespondent-submission.service', () => {
           {
             isApproval: false,
             submittedAt: new Date().toISOString(),
-            snapshotToken: token,
+            snapshotTokens: token ? { v4: token } : undefined,
           },
         ],
         getWebhookView: jest.fn().mockResolvedValue(view),
@@ -3914,7 +3914,7 @@ describe('multirespondent-submission.service', () => {
       const saved = await getMultirespondentSubmissionModel(mongoose).findById(
         result._unsafeUnwrap().submission._id,
       )
-      expect(saved?.submittedSteps?.[0]?.snapshotToken).toBe('tok-create')
+      expect(saved?.submittedSteps?.[0]?.snapshotTokens?.v4).toBe('tok-create')
     })
 
     it('writes a v4 snapshot for the appended step and records the token on update', async () => {
@@ -3953,7 +3953,7 @@ describe('multirespondent-submission.service', () => {
       expect(snapshot.encryptedContent).toBe('v4-encrypted-content')
 
       const saved = await Model.findById(row._id)
-      expect(saved?.submittedSteps?.[1]?.snapshotToken).toBe('tok-update')
+      expect(saved?.submittedSteps?.[1]?.snapshotTokens?.v4).toBe('tok-update')
     })
 
     it('does not write a snapshot when the write-condition is false (mrfVersion 1)', async () => {
@@ -4217,7 +4217,9 @@ describe('multirespondent-submission.service', () => {
       expect(result.isOk()).toBe(true)
       const { submission: winner, snapshot: winnerSnapshot } =
         result._unsafeUnwrap()
-      expect(winner.submittedSteps?.[1]?.snapshotToken).toBe('winner-token')
+      expect(winner.submittedSteps?.[1]?.snapshotTokens?.v4).toBe(
+        'winner-token',
+      )
       // The winner's own object is what travels to reconstruction — the token
       // is recorded for the RETRY path, not consumed by the initial send.
       expect(winnerSnapshot?.submissionIndex).toBe(1)
@@ -4340,7 +4342,9 @@ describe('multirespondent-submission.service', () => {
 
       expect(resubmit.isOk()).toBe(true)
       const saved = await Model.findById(row._id)
-      expect(saved?.submittedSteps?.[1]?.snapshotToken).toBe('orphan-token-2')
+      expect(saved?.submittedSteps?.[1]?.snapshotTokens?.v4).toBe(
+        'orphan-token-2',
+      )
     })
 
     // ---- Regression / byte-identity ----

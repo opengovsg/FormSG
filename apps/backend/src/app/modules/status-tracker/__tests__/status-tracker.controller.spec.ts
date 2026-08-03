@@ -18,7 +18,7 @@ const getStatusTrackerSubmissionData = handleGetStatusTracker[
 describe('status-tracker.controller', () => {
   afterEach(() => jest.restoreAllMocks())
 
-  it('omits the internal snapshotToken and respondent emails from the response body', async () => {
+  it('omits the internal snapshotTokens and respondent emails from the response body', async () => {
     // Arrange: a real (unsaved) mongoose document, so the controller sees the
     // subdocument shape it sees in production.
     const submission = new MultirespondentSubmission({
@@ -38,7 +38,7 @@ describe('status-tracker.controller', () => {
           status: WorkflowStatus.APPROVED,
           nextStepRecipientEmails: ['next@example.com'],
           submitterId: 'SUBMITTER_ID_HASH',
-          snapshotToken: 'SNAPSHOT_TOKEN_LEAF_VALUE',
+          snapshotTokens: { v4: 'SNAPSHOT_TOKEN_LEAF_VALUE' },
         },
       ],
     })
