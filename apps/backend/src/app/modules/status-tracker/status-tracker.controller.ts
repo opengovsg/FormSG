@@ -1,9 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-import {
-  StatusTrackerData,
-  StrippedFormWorkflowDto,
-  SubmittedStep,
-} from 'formsg-shared/types'
+import { StatusTrackerData, StrippedFormWorkflowDto } from 'formsg-shared/types'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
 import { okAsync } from 'neverthrow'
@@ -13,6 +9,7 @@ import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { getMultirespondentSubmission } from '../submission/multirespondent-submission/multirespondent-submission.service'
 import { mapRouteError } from '../submission/submission.utils'
+import { projectSubmittedStepForPublic } from '../submission/submitted-step-visibility'
 
 const logger = createLoggerWithLabel(module)
 
@@ -39,12 +36,9 @@ const getStatusTrackerSubmissionData: ControllerHandler<
     .map((submissionData) => {
       // strip emails from submitted steps and workflow
       // drop mongoose internals to extract documentFields (e.g. submittedAt, etc.)
-      const strippedSubmittedSteps = submissionData
-        .toObject()
-        .submittedSteps?.map(
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          ({ nextStepRecipientEmails, ...rest }: SubmittedStep) => rest,
-        )
+      const strippedSubmittedSteps = submissionData.submittedSteps?.map(
+        projectSubmittedStepForPublic,
+      )
 
       const strippedWorkflow: StrippedFormWorkflowDto = stripWorkflowEmails(
         submissionData.workflow,

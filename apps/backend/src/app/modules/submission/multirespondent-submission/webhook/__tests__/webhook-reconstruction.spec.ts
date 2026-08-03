@@ -1,3 +1,6 @@
+import { SubmittedStep, WorkflowStatus } from 'formsg-shared/types'
+
+import { projectSubmittedStepForWebhook } from 'src/app/modules/submission/submitted-step-visibility'
 import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 import { WebhookData } from 'src/types/submission'
 
@@ -5,7 +8,21 @@ import { SnapshotDataIntegrityError } from '../submission-snapshot.errors'
 import { WebhookPayloadPolicy } from '../webhook-payload-policy'
 import { reconstructMrfWebhookData } from '../webhook-reconstruction'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+/**
+ * The real step-subdocument shape with EVERY field populated, including the
+ * internal ones.
+ *
+ * RATIONALE: Allows internal field leak to be detected by tests.
+ */
+const makeStoredStep = (index: number): SubmittedStep => ({
+  isApproval: true,
+  submittedAt: `2026-07-2${index}T00:00:00.000Z`,
+  status: WorkflowStatus.APPROVED,
+  nextStepRecipientEmails: [`step-${index}@example.com`],
+  submitterId: `SUBMITTER_ID_HASH_${index}`,
+  snapshotToken: `SNAPSHOT_TOKEN_LEAF_${index}`,
+})
+
 const makeLiveData = (overrides: Partial<WebhookData> = {}): WebhookData => ({
   formId: 'form-1',
   submissionId: 'sub-1',
@@ -18,14 +35,9 @@ const makeLiveData = (overrides: Partial<WebhookData> = {}): WebhookData => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     workflow: [{ _id: 'step-def' }] as any,
     workflowStep: 2,
-    submittedSteps: [
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { stepNumber: 0 } as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { stepNumber: 1 } as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      { stepNumber: 2 } as any,
-    ],
+    submittedSteps: [0, 1, 2].map((index) =>
+      projectSubmittedStepForWebhook(makeStoredStep(index)),
+    ),
   },
   encryptedSubmissionSecretKey: 'LIVE_ROW_KEY',
   ...overrides,
@@ -190,27 +202,31 @@ describe('reconstructMrfWebhookData', () => {
   })
 
   describe('secrecy — no step-token fields ever leak', () => {
-    it.each(['stepTokenHash', 'encryptedStepToken', 'snapshotToken'])(
-      'never emits %s on the snapshot path or the live path',
-      (forbidden) => {
-        const snapshotPath = JSON.stringify(
-          reconstructMrfWebhookData({
-            liveData: makeLiveData(),
-            snapshot: makeV4Snapshot(),
-            submissionIndex: 1,
-            policy: PLUMBER_LATEST,
-          }),
-        )
-        const livePath = JSON.stringify(
-          reconstructMrfWebhookData({
-            liveData: makeLiveData(),
-            policy: PLUMBER_LATEST,
-          }),
-        )
+    it.each([
+      'stepTokenHash',
+      'encryptedStepToken',
+      'snapshotToken',
+      'SNAPSHOT_TOKEN_LEAF_0',
+      'SNAPSHOT_TOKEN_LEAF_1',
+      'SNAPSHOT_TOKEN_LEAF_2',
+    ])('never emits %s on the snapshot path or the live path', (forbidden) => {
+      const snapshotPath = JSON.stringify(
+        reconstructMrfWebhookData({
+          liveData: makeLiveData(),
+          snapshot: makeV4Snapshot(),
+          submissionIndex: 1,
+          policy: PLUMBER_LATEST,
+        }),
+      )
+      const livePath = JSON.stringify(
+        reconstructMrfWebhookData({
+          liveData: makeLiveData(),
+          policy: PLUMBER_LATEST,
+        }),
+      )
 
-        expect(snapshotPath).not.toContain(forbidden)
-        expect(livePath).not.toContain(forbidden)
-      },
-    )
+      expect(snapshotPath).not.toContain(forbidden)
+      expect(livePath).not.toContain(forbidden)
+    })
   })
 })

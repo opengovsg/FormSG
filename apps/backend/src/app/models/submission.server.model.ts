@@ -38,6 +38,10 @@ import {
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
 import { MultirespondentSubmissionContent } from '../modules/submission/multirespondent-submission/multirespondent-submission.types'
 import { buildMrfMetadata } from '../modules/submission/submission.utils'
+import {
+  buildAdminSubmittedStepsMongoProjection,
+  projectSubmittedStepForWebhook,
+} from '../modules/submission/submitted-step-visibility'
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
@@ -646,7 +650,9 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     workflowContent: {
       workflow: this.workflow,
       workflowStep: this.workflowStep,
-      submittedSteps: this.submittedSteps,
+      submittedSteps: (this.submittedSteps ?? []).map(
+        projectSubmittedStepForWebhook,
+      ),
     },
   }
 
@@ -837,7 +843,7 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     form_logics: 1,
     workflow: 1,
     workflowStep: 1,
-    submittedSteps: 1,
+    ...buildAdminSubmittedStepsMongoProjection(),
     encryptedSubmissionSecretKey: 1,
     encryptedContent: 1,
     verifiedContent: 1,
@@ -889,7 +895,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       version: 1,
       workflowStep: 1,
       mrfVersion: 1,
-      submittedSteps: 1,
+      ...buildAdminSubmittedStepsMongoProjection(),
       encryptedStepToken: 1,
     })
     .exec()
