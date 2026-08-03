@@ -1407,8 +1407,6 @@ describe('multirespondent-submission.utils', () => {
         expected: 1,
       },
       {
-        // Security: a generic consumer must never get a V4 row while the send
-        // path would deliver it via the legacy live-row view.
         name: 'generic, write-guard on => V3',
         webhookType: 'generic',
         isStepWriteTokenEnabled: true,

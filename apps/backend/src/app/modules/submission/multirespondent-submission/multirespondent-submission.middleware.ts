@@ -930,12 +930,6 @@ export const encryptSubmission = async (
     version: req.body.version,
     workflowStep: req.body.workflowStep,
     responses: responses as FieldResponsesV4,
-    /**
-     * MRF Version 2 = V4-encrypted responses (with provenance).
-     * MRF Version 1 = V3-encrypted responses, used when the form's webhook
-     * consumer cannot read V4: plumber without `mrf-step-write-token`, or any
-     * generic/zapier consumer (pinned to V3 until S6 ships the v1 producer).
-     */
     mrfVersion,
     ...mintedStepToken,
   }
