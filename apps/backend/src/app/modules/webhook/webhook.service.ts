@@ -252,6 +252,7 @@ export const createInitialWebhookSender =
     submission: IEncryptedSubmissionSchema | IMultirespondentSubmissionSchema,
     webhookUrl: string,
     isRetryEnabled: boolean,
+    webhookView?: WebhookView,
   ): ResultAsync<
     true,
     | WebhookValidationError
@@ -261,10 +262,17 @@ export const createInitialWebhookSender =
   > => {
     // Attempt to send webhook
 
-    return ResultAsync.fromPromise(
-      submission.getWebhookView(),
-      () => new DatabaseError(),
-    ).andThen((webhookView) =>
+    // RATIONALE: When a pre-built view is supplied (e.g. an MRF
+    // v4 snapshot-reconstructed payload) use it directly.
+    // Otherwise, derive it from the live row via getWebhookView (legacy path).
+    const webhookViewToUse = webhookView
+      ? okAsync(webhookView)
+      : ResultAsync.fromPromise(
+          submission.getWebhookView(),
+          () => new DatabaseError(),
+        )
+
+    return webhookViewToUse.andThen((webhookView) =>
       sendWebhook(webhookView, webhookUrl).andThen((webhookResponse) => {
         webhookStatsdClient.increment('sent', 1, 1, {
           responseCode: `${webhookResponse.response.status || null}`,
