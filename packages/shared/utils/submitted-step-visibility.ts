@@ -39,6 +39,21 @@ export const projectSubmittedStepForWebhook = (
 ): WebhookSubmittedStep =>
   projectSubmittedStep(step, 'webhook') as WebhookSubmittedStep
 
+/**
+ * The Mongo sub-field projection for the two admin queries, derived from the
+ * `admin` column.
+ *
+ * RATIONALE: projecting at the query rather than in JS keeps the internal
+ * fields from loading at all, and keeps the export cursor free of per-document
+ * work.
+ */
+export const buildSubmittedStepsMongoProjection = (): Record<string, 1> =>
+  Object.fromEntries(
+    SUBMITTED_STEP_FIELDS.filter(
+      (field) => SUBMITTED_STEP_VISIBILITY[field].admin,
+    ).map((field) => [`submittedSteps.${field}`, 1] as const),
+  )
+
 export const projectSubmittedStepForStatusTracker = (
   step: SubmittedStep,
 ): StatusTrackerSubmittedStep =>

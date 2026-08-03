@@ -7,6 +7,7 @@ import {
   WorkflowStatus,
 } from '../../types/submission'
 import {
+  buildSubmittedStepsMongoProjection,
   projectSubmittedStepForStatusTracker,
   projectSubmittedStepForWebhook,
 } from '../submitted-step-visibility'
@@ -89,6 +90,17 @@ describe('projectSubmittedStepForStatusTracker', () => {
     const serialised = JSON.stringify(out)
     expect(serialised).not.toContain('SNAPSHOT_TOKEN_LEAF_VALUE')
     expect(serialised).not.toContain('next@example.com')
+  })
+})
+
+describe('buildSubmittedStepsMongoProjection', () => {
+  it('selects exactly the admin-visible sub-fields, so the rest never load', () => {
+    expect(buildSubmittedStepsMongoProjection()).toEqual({
+      'submittedSteps.isApproval': 1,
+      'submittedSteps.submittedAt': 1,
+      'submittedSteps.status': 1,
+      'submittedSteps.nextStepRecipientEmails': 1,
+    })
   })
 })
 
