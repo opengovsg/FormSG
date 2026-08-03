@@ -10,8 +10,9 @@ import { reconstructMrfWebhookData } from '../webhook-reconstruction'
 
 /**
  * The real step-subdocument shape with EVERY field populated, including the
- * internal ones. Distinctive values so a leak is unmistakable in the
- * stringified payload the secrecy assertions below scan.
+ * internal ones.
+ *
+ * RATIONALE: Allows internal field leak to be detected by tests.
  */
 const makeStoredStep = (index: number): SubmittedStep => ({
   isApproval: true,
@@ -22,8 +23,6 @@ const makeStoredStep = (index: number): SubmittedStep => ({
   snapshotToken: `SNAPSHOT_TOKEN_LEAF_${index}`,
 })
 
-// Mirrors production: getWebhookView projects each step before it ever reaches
-// reconstruction, so reconstruction only ever slices an already-clean array.
 const makeLiveData = (overrides: Partial<WebhookData> = {}): WebhookData => ({
   formId: 'form-1',
   submissionId: 'sub-1',

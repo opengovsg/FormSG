@@ -11,7 +11,6 @@ import { handleGetStatusTracker } from '../status-tracker.controller'
 
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
 
-// The controller is exported as a celebrate array; the handler is last.
 const getStatusTrackerSubmissionData = handleGetStatusTracker[
   handleGetStatusTracker.length - 1
 ] as (req: unknown, res: unknown) => Promise<unknown>

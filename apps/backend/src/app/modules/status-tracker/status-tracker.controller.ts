@@ -34,9 +34,8 @@ const getStatusTrackerSubmissionData: ControllerHandler<
   return okAsync(submissionId)
     .andThen((submissionId) => getMultirespondentSubmission(submissionId))
     .map((submissionData) => {
-      // Project each step down to the fields classified visible at this
-      // boundary. The projection also drops mongoose internals, since it
-      // copies named fields into a fresh object rather than spreading.
+      // strip emails from submitted steps and workflow
+      // drop mongoose internals to extract documentFields (e.g. submittedAt, etc.)
       const strippedSubmittedSteps = submissionData.submittedSteps?.map(
         projectSubmittedStepForPublic,
       )
