@@ -6,6 +6,7 @@ import {
   WebhookResponse,
   WorkflowStatus,
 } from 'formsg-shared/types'
+import { projectSubmittedStepForWebhook } from 'formsg-shared/utils/submitted-step-visibility'
 import moment from 'moment-timezone'
 import mongoose, {
   Cursor as QueryCursor,
@@ -646,7 +647,9 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     workflowContent: {
       workflow: this.workflow,
       workflowStep: this.workflowStep,
-      submittedSteps: this.submittedSteps,
+      submittedSteps: (this.submittedSteps ?? []).map(
+        projectSubmittedStepForWebhook,
+      ),
     },
   }
 

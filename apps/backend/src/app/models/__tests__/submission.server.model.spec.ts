@@ -8,6 +8,7 @@ import {
   PaymentType,
   SubmissionType,
   WebhookResponse,
+  WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
 import { merge, omit, times } from 'lodash'
@@ -20,6 +21,7 @@ import getSubmissionModel, {
   getMultirespondentSubmissionModel,
 } from 'src/app/models/submission.server.model'
 import { buildMrfMetadata } from 'src/app/modules/submission/submission.utils'
+import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 
 import { ISubmissionSchema } from '../../../types'
 import getPaymentModel from '../payment.server.model'
@@ -834,6 +836,54 @@ describe('Submission Model', () => {
           },
         })
       })
+      it('should project submittedSteps for multirespondent submissions, omitting the internal snapshotToken', async () => {
+        // Arrange
+        const formId = new ObjectId()
+        const submission = await MultirespondentSubmission.create({
+          form: formId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: [],
+          submissionPublicKey: 'test public key',
+          encryptedSubmissionSecretKey: 'test secret key',
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          workflowStep: 1,
+          submittedSteps: [
+            {
+              isApproval: true,
+              submittedAt: '2026-07-22T00:00:00.000Z',
+              status: WorkflowStatus.APPROVED,
+              nextStepRecipientEmails: ['next@example.com'],
+              submitterId: 'SUBMITTER_ID_HASH',
+              snapshotToken: 'SNAPSHOT_TOKEN_LEAF_VALUE',
+            },
+          ],
+        })
+
+        // Act
+        const actualWebhookView = await submission.getWebhookView()
+
+        // Assert
+        const { submittedSteps } = actualWebhookView!.data
+          .workflowContent as WorkflowWebhookEventObject
+        expect(submittedSteps).toEqual([
+          {
+            isApproval: true,
+            submittedAt: '2026-07-22T00:00:00.000Z',
+            status: WorkflowStatus.APPROVED,
+            // Still ships to webhook consumers — narrowing it here would be a
+            // silent breaking change.
+            nextStepRecipientEmails: ['next@example.com'],
+            submitterId: 'SUBMITTER_ID_HASH',
+          },
+        ])
+        expect(JSON.stringify(actualWebhookView)).not.toContain(
+          'SNAPSHOT_TOKEN_LEAF_VALUE',
+        )
+      })
+
       it('should return non-null view with encryptedSubmission type when submission has no verified content', async () => {
         // Arrange
         const formId = new ObjectId()
