@@ -1,3 +1,5 @@
+import { model, Schema } from 'mongoose'
+
 import {
   SubmittedStep,
   SubmittedStepBoundary,
@@ -26,6 +28,43 @@ describe('projectSubmittedStepForWebhook', () => {
   it('drops snapshotToken but keeps the fields webhook consumers receive today', () => {
     const out = projectSubmittedStepForWebhook(fullApprovalStep)
 
+    expect(out).toEqual({
+      isApproval: true,
+      submittedAt: '2026-07-22T00:00:00.000Z',
+      status: WorkflowStatus.APPROVED,
+      nextStepRecipientEmails: ['next@example.com'],
+      submitterId: 'SUBMITTER_ID_HASH',
+    })
+    expect(JSON.stringify(out)).not.toContain('SNAPSHOT_TOKEN_LEAF_VALUE')
+  })
+})
+
+describe('projecting a mongoose subdocument', () => {
+  // `getWebhookView` hands the projection live mongoose subdocuments, so the
+  // output must be a fresh plain object rather than the document itself.
+  const StepSchema = new Schema<SubmittedStep>(
+    {
+      isApproval: Boolean,
+      submittedAt: String,
+      status: String,
+      nextStepRecipientEmails: [String],
+      submitterId: String,
+      snapshotToken: String,
+    },
+    { _id: false },
+  )
+  const Holder = model(
+    'SubmittedStepHolder',
+    new Schema({ submittedSteps: [StepSchema] }),
+  )
+
+  it('returns a plain object carrying no mongoose internals', () => {
+    const holder = new Holder({ submittedSteps: [fullApprovalStep] })
+    const subdoc = holder.submittedSteps[0]
+
+    const out = projectSubmittedStepForWebhook(subdoc)
+
+    expect(Object.getPrototypeOf(out)).toBe(Object.prototype)
     expect(out).toEqual({
       isApproval: true,
       submittedAt: '2026-07-22T00:00:00.000Z',
