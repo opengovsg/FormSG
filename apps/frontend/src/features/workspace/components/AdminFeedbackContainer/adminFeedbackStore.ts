@@ -20,6 +20,11 @@ const INITIAL_STATE = {
 export const isEligibleSelector = (state: AdminFeedbackStore) =>
   state.isEligible
 
+export const triggerSourceSelector = (state: AdminFeedbackStore) =>
+  state.triggerSource
+
+export const formIdSelector = (state: AdminFeedbackStore) => state.formId
+
 export const resetSelector = (state: AdminFeedbackStore) => state.reset
 
 export const useAdminFeedbackStore = create<AdminFeedbackStore>()(
