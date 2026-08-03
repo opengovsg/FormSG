@@ -12,11 +12,7 @@ import { encode as encodeBase64 } from '@stablelib/base64'
 import { chain, forOwn, isEmpty, keyBy, omit, pick } from 'lodash'
 
 import { E2EE_SUBMISSION_VERSION } from 'formsg-shared/constants'
-import {
-  FieldResponsesV3,
-  FieldResponseV3,
-  ProductItem,
-} from 'formsg-shared/types'
+import { ProductItem } from 'formsg-shared/types'
 import {
   BasicField,
   FormFieldDto,
@@ -271,179 +267,6 @@ const createResponsesArray = (
 }
 
 /**
- * @deprecated For createResponsesV4
- */
-export const createResponsesV3 = (
-  formFields: FormFieldDto[],
-  formInputs: FormFieldValues,
-  fieldIdToQuarantineKeyMap: FieldIdToQuarantineKeyType[],
-): FieldResponsesV3 => {
-  const returnedInputs: FieldResponsesV3 = {}
-  for (const ff of formFields) {
-    switch (ff.fieldType) {
-      case BasicField.Number:
-      case BasicField.Decimal:
-      case BasicField.ShortText:
-      case BasicField.LongText:
-      case BasicField.HomeNo:
-      case BasicField.Dropdown:
-      case BasicField.Rating:
-      case BasicField.Nric:
-      case BasicField.Uen:
-      case BasicField.Date:
-      case BasicField.CountryRegion:
-      case BasicField.YesNo: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        if (!input) break
-        returnedInputs[ff._id] = {
-          fieldType: ff.fieldType,
-          answer: input,
-        } as FieldResponseV3
-        break
-      }
-      case BasicField.Address: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        if (
-          !input ||
-          Object.values(input.addressSubFields).every((value) => !value)
-        )
-          break
-        returnedInputs[ff._id] = {
-          fieldType: ff.fieldType,
-          answer: input,
-        } as FieldResponseV3
-        break
-      }
-      case BasicField.Email:
-      case BasicField.Mobile: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        if (!input?.value) break
-        returnedInputs[ff._id] = {
-          fieldType: ff.fieldType,
-          answer: input,
-        } as FieldResponseV3
-        break
-      }
-      case BasicField.Table: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        if (!input) break
-        if (input.every((row) => Object.values(row).every((value) => !value))) {
-          break
-        }
-        returnedInputs[ff._id] = {
-          fieldType: ff.fieldType,
-          answer: input,
-        } as FieldResponseV3
-        break
-      }
-      case BasicField.Checkbox: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        if (
-          (!input?.value || input?.value.length === 0) &&
-          !input?.othersInput
-        ) {
-          break
-        }
-        returnedInputs[ff._id] = {
-          fieldType: ff.fieldType,
-          answer: input,
-        } as FieldResponseV3
-        break
-      }
-      case BasicField.Children: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        if (
-          !input ||
-          input.child.every((child) => child.every((value) => !value))
-        ) {
-          break
-        }
-        returnedInputs[ff._id] = {
-          fieldType: ff.fieldType,
-          answer: input,
-        } as FieldResponseV3
-        break
-      }
-      case BasicField.Attachment: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        if (!input) break
-        // for each attachment response, find the corresponding quarantine bucket key
-        const fieldIdToQuarantineKeyEntry = fieldIdToQuarantineKeyMap.find(
-          (v) => v.fieldId === ff._id,
-        )
-        if (!fieldIdToQuarantineKeyEntry)
-          throw new Error(
-            `Attachment response with fieldId ${ff._id} not found among attachments uploaded to quarantine bucket`,
-          )
-        returnedInputs[ff._id] = {
-          fieldType: ff.fieldType,
-          answer: {
-            hasBeenScanned: false, //TODO: FRM-1839 + FRM-1590 conditionally set to true if not replaced by respondent 2 onwards
-            answer: fieldIdToQuarantineKeyEntry.quarantineBucketKey,
-          },
-        }
-        break
-      }
-      case BasicField.Radio: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        const isOthersSelected = input?.value === RADIO_OTHERS_INPUT_VALUE
-        if (!isOthersSelected && input?.value) {
-          returnedInputs[ff._id] = {
-            fieldType: ff.fieldType,
-            answer: { value: input.value },
-          }
-        } else if (isOthersSelected && input?.othersInput) {
-          returnedInputs[ff._id] = {
-            fieldType: ff.fieldType,
-            answer: { othersInput: input.othersInput },
-          }
-        }
-        break
-      }
-      case BasicField.Section:
-      case BasicField.Image:
-      case BasicField.Statement: {
-        break
-      }
-      case BasicField.Signature: {
-        const input = formInputs[ff._id] as
-          | FormFieldValue<typeof ff.fieldType>
-          | undefined
-        // since default value is {type: '', value: []}, empty array = no input
-        if (input && input?.value.length > 0) {
-          returnedInputs[ff._id] = {
-            fieldType: ff.fieldType,
-            answer: input,
-          } as FieldResponseV3
-        }
-        break
-      }
-      default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const _: never = ff
-      }
-    }
-  }
-  return returnedInputs
-}
-
-/**
  * Thin V4 wire response for MRF submissions: the FE sends fieldType + answer
  * and the BE enriches the rest (question is sourced from the form definition).
  *
@@ -471,9 +294,9 @@ const toWireResponseV4 = (
 
 /**
  * Builds V4-shaped MRF wire responses directly from form inputs.
- * Mirrors {@link createResponsesV3}'s per-field empty-skip semantics; answer
- * shapes follow the SDK's adaptV3ToV4 conversions, which is what the BE
- * receiver shim produces for stale V3 clients.
+ * Applies per-field empty-skip semantics; answer shapes follow the SDK's
+ * adaptV3ToV4 conversions, which is what the BE receiver shim produces for
+ * stale V3 clients.
  */
 export const createResponsesV4 = (
   formFields: FormFieldDto[],

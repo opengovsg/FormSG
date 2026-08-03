@@ -1,4 +1,4 @@
-import { adaptV3ToV4, type TableAnswerV4 } from '@opengovsg/formsg-sdk'
+import { type TableAnswerV4 } from '@opengovsg/formsg-sdk'
 
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
@@ -7,7 +7,7 @@ import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
 
 import { FieldIdToQuarantineKeyType } from '../PublicFormService'
 
-import { createResponsesV3, createResponsesV4 } from './createSubmission'
+import { createResponsesV4 } from './createSubmission'
 
 const fieldId = (n: number) => n.toString(16).padStart(24, '0')
 
@@ -240,82 +240,5 @@ describe('createResponsesV4', () => {
     for (const response of Object.values(responses)) {
       expect(response.provenance).toEqual({})
     }
-  })
-
-  describe('parity with adaptV3ToV4(createResponsesV3(x))', () => {
-    it('produces the same fieldType and answer for every field type', () => {
-      const formFields = [
-        mockField(TEXT_ID, BasicField.ShortText),
-        mockField(YESNO_ID, BasicField.YesNo),
-        mockField(EMAIL_ID, BasicField.Email),
-        mockField(MOBILE_ID, BasicField.Mobile),
-        mockField(RADIO_ID, BasicField.Radio),
-        mockField(CHECKBOX_ID, BasicField.Checkbox),
-        mockField(TABLE_ID, BasicField.Table),
-        mockField(ADDRESS_ID, BasicField.Address),
-        mockField(ATTACHMENT_ID, BasicField.Attachment),
-        mockField(SIGNATURE_ID, BasicField.Signature),
-      ]
-      const formInputs = {
-        [TEXT_ID]: 'hello',
-        [YESNO_ID]: 'No',
-        [EMAIL_ID]: { value: 'a@example.com', signature: 'sig' },
-        [MOBILE_ID]: { value: '+6598765432' },
-        [RADIO_ID]: {
-          value: RADIO_OTHERS_INPUT_VALUE,
-          othersInput: 'custom radio',
-        },
-        [CHECKBOX_ID]: { value: ['A', 'B'], othersInput: 'custom checkbox' },
-        [TABLE_ID]: [
-          { col1: 'r1c1', col2: 'r1c2' },
-          { col1: 'r2c1', col2: 'r2c2' },
-        ],
-        [ADDRESS_ID]: {
-          addressSubFields: {
-            postalCode: '123456',
-            blockNumber: '12A',
-            streetName: 'Main Street',
-            buildingName: 'Tower 1',
-            levelNumber: '05',
-            unitNumber: '01',
-          },
-        },
-        [ATTACHMENT_ID]: new File(['content'], 'file.pdf'),
-        [SIGNATURE_ID]: {
-          type: 'draw',
-          value: [
-            [
-              [1, 2, 0.5],
-              [3, 4, 0.6],
-            ],
-          ],
-        },
-      } as unknown as FormFieldValues
-
-      const v4 = createResponsesV4(formFields, formInputs, QUARANTINE_MAP)
-      const adapted = adaptV3ToV4(
-        createResponsesV3(
-          formFields,
-          formInputs,
-          QUARANTINE_MAP,
-        ) as unknown as Parameters<typeof adaptV3ToV4>[0],
-      )
-
-      expect(Object.keys(v4).sort()).toEqual(Object.keys(adapted).sort())
-
-      for (const id of Object.keys(v4)) {
-        expect(v4[id].fieldType as string).toEqual(adapted[id].fieldType)
-        if (v4[id].fieldType === BasicField.Table) {
-          // rowIds are freshly generated on both sides; compare row contents
-          const normalize = (answer: TableAnswerV4) =>
-            Object.values(answer).sort((a, b) => a.rowNum - b.rowNum)
-          expect(normalize(v4[id].answer as TableAnswerV4)).toEqual(
-            normalize(adapted[id].answer as TableAnswerV4),
-          )
-        } else {
-          expect(v4[id].answer).toEqual(adapted[id].answer)
-        }
-      }
-    })
   })
 })
