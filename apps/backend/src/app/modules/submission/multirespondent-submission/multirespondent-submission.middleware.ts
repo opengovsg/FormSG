@@ -75,6 +75,10 @@ import {
 } from '../submission.utils'
 
 import {
+  getRowContentVersion,
+  RowConsumerClass,
+} from './webhook/row-content-version'
+import {
   checkFormIsMultirespondent,
   getMultirespondentSubmission,
 } from './multirespondent-submission.service'
@@ -853,35 +857,28 @@ export const encryptSubmission = async (
   const isStepWriteTokenEnabled =
     req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
 
-  // V4-encryption gate by consumer class (PRD #9740). V4 is the in-process
-  // shape; only the encryption blob is downgraded to V3 for consumers that
-  // cannot parse V4. Flag-off reduces exactly to `hasWebhook ? 1 : 2`.
+  // Row content-version gate by consumer class (PRD #9803 D3). V4 is the
+  // in-process shape; only the encryption blob is downgraded to V3 for
+  // consumers that cannot parse V4. The decision table itself lives in
+  // `getRowContentVersion`; all this does is classify the consumer.
   const webhookUrl = formDef.webhook?.url
   const webhookType = webhookUrl ? getWebhookType(webhookUrl) : undefined
-  // Per-form admin setting owned by S9; absent ⇒ 'v1' (safe default).
-  const webhookFormat = formDef.webhook?.webhookFormat ?? 'v1'
-  const isMrfWebhooksEnabled =
-    req.growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false
+  const consumerClass: RowConsumerClass = !webhookType
+    ? 'none'
+    : webhookType === 'plumber'
+      ? 'plumber'
+      : // zapier is a generic consumer.
+        'generic'
 
-  let useV4Encryption: boolean
-  if (!webhookType) {
-    // No downstream consumer to keep on V3.
-    useV4Encryption = true
-  } else if (webhookType === 'plumber') {
-    // Plumber (privileged) reads V4 once the write-guard flag is on.
-    useV4Encryption = isStepWriteTokenEnabled
-  } else {
-    // Generic consumer (zapier treated as generic): needs an explicit per-form
-    // opt-in, and never ships a V4 encryptedSubmissionSecretKey without the
-    // write-guard.
-    useV4Encryption =
-      isMrfWebhooksEnabled && webhookFormat === 'v4' && isStepWriteTokenEnabled
-  }
+  const mrfVersion = getRowContentVersion({
+    consumerClass,
+    isStepWriteTokenEnabled,
+  })
+  const useV4Encryption = mrfVersion === 2
 
   const responsesToEncrypt = useV4Encryption
     ? strippedAttachmentResponses
     : adaptV4ToV3(strippedAttachmentResponses as unknown as FieldResponsesV4)
-  const mrfVersion: 1 | 2 = useV4Encryption ? 2 : 1
 
   const {
     encryptedContent,
@@ -950,9 +947,9 @@ export const encryptSubmission = async (
     /**
      * MRF Version 2 = V4-encrypted responses (with provenance).
      * MRF Version 1 = V3-encrypted responses, used when the form's webhook
-     * consumer class cannot yet read V4: plumber without `mrf-step-write-token`,
-     * or a generic/zapier consumer that has not opted into webhookFormat 'v4'
-     * (with `enable-mrf-webhooks` and `mrf-step-write-token` both on).
+     * consumer class cannot read V4: plumber without `mrf-step-write-token`,
+     * or any generic/zapier consumer (pinned to V3 until S6 ships the v1
+     * producer — see `getRowContentVersion`).
      */
     mrfVersion,
     ...mintedStepToken,

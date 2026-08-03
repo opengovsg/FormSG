@@ -1045,9 +1045,12 @@ describe('Multirespondent Submission Middleware', () => {
       })
     })
 
-    describe('V4-encryption gate', () => {
-      // PRD #9740: V4 is the in-process shape; the encryption blob is only
-      // downgraded to V3 for consumer classes that cannot read V4 yet.
+    describe('row content-version gate', () => {
+      // PRD #9803 D3: V4 is the in-process shape; the encryption blob is only
+      // downgraded to V3 for consumer classes that cannot read V4 yet. The
+      // table itself is unit-tested in `webhook/__tests__/row-content-version`;
+      // these cases pin how the middleware classifies a consumer and that the
+      // gate ignores `enable-mrf-webhooks` entirely.
       const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/abc'
       const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/123/abc'
       const GENERIC_URL = 'https://example.com/hook'
@@ -1108,17 +1111,31 @@ describe('Multirespondent Submission Middleware', () => {
           expected: 1,
         },
         {
-          name: 'generic webhook is V4 when it opts into v4 and both flags are on',
-          webhookUrl: GENERIC_URL,
-          webhookFormat: 'v4' as const,
+          name: 'plumber webhook is V4 when both flags are on',
+          webhookUrl: PLUMBER_URL,
           flags: BOTH_FLAGS,
           expected: 2,
         },
         {
-          // Security: never ship a V4 encryptedSubmissionSecretKey to a generic
-          // consumer without the step-token write-guard, even with every other
-          // v4 condition met.
-          name: 'generic webhook stays V3 when mrfStepWriteToken is off',
+          // Security (#9803 R7): a generic consumer is pinned to V3 in this
+          // slice regardless of its opt-in and of both flags — a V4 row would
+          // be delivered through the legacy live-row view and leak an
+          // encryptedSubmissionSecretKey.
+          name: 'generic webhook stays V3 even when it opts into v4 with both flags on',
+          webhookUrl: GENERIC_URL,
+          webhookFormat: 'v4' as const,
+          flags: BOTH_FLAGS,
+          expected: 1,
+        },
+        {
+          name: 'generic webhook stays V3 when only mrfStepWriteToken is on',
+          webhookUrl: GENERIC_URL,
+          webhookFormat: 'v4' as const,
+          flags: [featureFlags.mrfStepWriteToken],
+          expected: 1,
+        },
+        {
+          name: 'generic webhook stays V3 when only enableMrfWebhooks is on',
           webhookUrl: GENERIC_URL,
           webhookFormat: 'v4' as const,
           flags: [featureFlags.enableMrfWebhooks],
@@ -1138,11 +1155,11 @@ describe('Multirespondent Submission Middleware', () => {
           expected: 1,
         },
         {
-          name: 'treats a zapier webhook as generic (opted in => V4)',
+          name: 'treats a zapier webhook as generic (opted in, both flags on => V3)',
           webhookUrl: ZAPIER_URL,
           webhookFormat: 'v4' as const,
           flags: BOTH_FLAGS,
-          expected: 2,
+          expected: 1,
         },
         {
           name: 'treats a zapier webhook as generic (not opted in => V3)',
