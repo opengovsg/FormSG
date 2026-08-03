@@ -203,7 +203,7 @@ describe('multirespondent-submission.service', () => {
       )
       expect(saveProtoSpy).not.toHaveBeenCalled()
       expect(result.isOk()).toBe(true)
-      expect(result._unsafeUnwrap()).toEqual(mockSavedDoc)
+      expect(result._unsafeUnwrap().submission).toEqual(mockSavedDoc)
 
       saveIfSpy.mockRestore()
       saveProtoSpy.mockRestore()
@@ -241,7 +241,7 @@ describe('multirespondent-submission.service', () => {
       expect(saveIfSpy).not.toHaveBeenCalled()
       expect(saveProtoSpy).toHaveBeenCalled()
       expect(result.isOk()).toBe(true)
-      const savedSubmission = result._unsafeUnwrap()
+      const savedSubmission = result._unsafeUnwrap().submission
       expect(savedSubmission).toEqual(mockSavedSubmission)
 
       saveIfSpy.mockRestore()
@@ -3493,7 +3493,7 @@ describe('multirespondent-submission.service', () => {
 
       expect(result.isOk()).toBe(true)
       const saved = await getMultirespondentSubmissionModel(mongoose).findById(
-        result._unsafeUnwrap()._id,
+        result._unsafeUnwrap().submission._id,
       )
       expect(saved?.stepTokenHash).toBe(stepToken.hash(raw))
       expect(saved?.encryptedStepToken).toBe('wrapped-token-A')
@@ -3912,7 +3912,7 @@ describe('multirespondent-submission.service', () => {
       expect(snapshot.encryptedSubmissionSecretKey).toBe('wrapped-read-key-v4')
 
       const saved = await getMultirespondentSubmissionModel(mongoose).findById(
-        result._unsafeUnwrap()._id,
+        result._unsafeUnwrap().submission._id,
       )
       expect(saved?.submittedSteps?.[0]?.snapshotToken).toBe('tok-create')
     })
@@ -4030,19 +4030,59 @@ describe('multirespondent-submission.service', () => {
       },
     )
 
+    // ---- D10: no S3 GET on the initial send ----
+
+    it('reconstructs from the in-memory snapshot, with the S3 read path stubbed to fail', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      // Any S3 GET on the initial send is a defect: stub the read path to fail
+      // so a surviving read-back would drop the webhook.
+      MockSnapshotStore.readV4Snapshot.mockReturnValue(
+        errAsync(new SnapshotDataIntegrityError('S3 GET must not be reached')),
+      )
+      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+        okAsync({ token: 'tok-inmem', key: 'key-inmem' }),
+      )
+
+      const created = await createMultiRespondentFormSubmission({
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: { action: 'test' },
+      })
+      expect(created.isOk()).toBe(true)
+      const { submission, snapshot } = created._unsafeUnwrap()
+      expect(snapshot?.encryptedContent).toBe('v4-encrypted-content')
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        snapshot,
+        submissionId: submission._id.toString(),
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: {} as any,
+        growthbook: growthbookWith(true),
+      })
+      await flushPromises()
+
+      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      const view = sendSpy.mock.calls[0][3]
+      expect(view?.data.encryptedContent).toBe('v4-encrypted-content')
+      expect(view?.data.encryptedSubmissionSecretKey).toBe(
+        'wrapped-read-key-v4',
+      )
+    })
+
     // ---- Reconstruction wired ----
 
     it('passes a reconstructed pre-built view for a plumber v4 send', async () => {
       const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-      MockSnapshotStore.readV4Snapshot.mockReturnValue(
-        okAsync(
-          buildSnapshot({ encryptedSubmissionSecretKey: 'frozen-read-key' }),
-        ),
-      )
       const submission = buildSubmissionWithToken('tok-A')
 
       await performMultiRespondentPostSubmissionCreateActions({
         submission,
+        snapshot: buildSnapshot({
+          encryptedSubmissionSecretKey: 'frozen-read-key',
+        }),
         submissionId: submission._id.toString(),
         form: buildV4Form(),
         encryptedPayload: buildV4Payload(),
@@ -4060,7 +4100,7 @@ describe('multirespondent-submission.service', () => {
       expect(view?.data.encryptedContent).toBe('frozen-content')
     })
 
-    it('takes the legacy path (no 4th arg) for a plumber send without a recorded token', async () => {
+    it('takes the legacy path (no 4th arg) for a plumber send with no snapshot', async () => {
       const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
       const submission = buildSubmissionWithToken(undefined)
 
@@ -4079,18 +4119,17 @@ describe('multirespondent-submission.service', () => {
       expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
     })
 
-    // ---- Fail-loud on data-integrity ----
+    // ---- D10: a recorded token never triggers a read on the initial send ----
 
-    it('fails loud and does not send when the snapshot read errs with a data-integrity error', async () => {
+    it('ignores the recorded token on the initial send and never reads S3', async () => {
       const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-      const incrSpy = jest.mocked(webhookStatsdClient.increment)
-      MockSnapshotStore.readV4Snapshot.mockReturnValue(
-        errAsync(new SnapshotDataIntegrityError('missing')),
-      )
+      // A token IS recorded on the row, yet the send must still not read S3 —
+      // the object it needs is already in hand.
       const submission = buildSubmissionWithToken('tok-A')
 
       await performMultiRespondentPostSubmissionUpdateActions({
         submission,
+        snapshot: buildSnapshot(),
         submissionId: submission._id.toString(),
         snapshottedFormDef: buildSnapshottedFormDef(),
         currentStepNumber: 0,
@@ -4100,13 +4139,16 @@ describe('multirespondent-submission.service', () => {
       })
       await flushPromises()
 
-      expect(sendSpy).not.toHaveBeenCalled()
-      expect(incrSpy).toHaveBeenCalledWith('mrf.snapshot.data_integrity_error')
+      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      expect(sendSpy.mock.calls[0][3]?.data.encryptedContent).toBe(
+        'frozen-content',
+      )
     })
 
     // ---- Case A winner / 409 ----
 
-    it('records the winner token which reconstruction then reads (Case A / 409 winner)', async () => {
+    it("records the winner token and hands the winner's own snapshot to reconstruction (Case A / 409 winner)", async () => {
       const Model = getMultirespondentSubmissionModel(mongoose)
       const row = await Model.create({
         form: mockFormId,
@@ -4134,13 +4176,17 @@ describe('multirespondent-submission.service', () => {
         logMeta: { action: 'test' },
       })
       expect(result.isOk()).toBe(true)
-      const winner = result._unsafeUnwrap()
+      const { submission: winner, snapshot: winnerSnapshot } =
+        result._unsafeUnwrap()
       expect(winner.submittedSteps?.[1]?.snapshotToken).toBe('winner-token')
+      // The winner's own object is what travels to reconstruction — the token
+      // is recorded for the RETRY path, not consumed by the initial send.
+      expect(winnerSnapshot?.submissionIndex).toBe(1)
 
-      // The send path reads exactly the winner's recorded token.
       const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
       await performMultiRespondentPostSubmissionUpdateActions({
         submission: winner,
+        snapshot: winnerSnapshot,
         submissionId: winner._id.toString(),
         snapshottedFormDef: buildSnapshottedFormDef(),
         currentStepNumber: 1,
@@ -4150,11 +4196,11 @@ describe('multirespondent-submission.service', () => {
       })
       await flushPromises()
 
-      expect(MockSnapshotStore.readV4Snapshot).toHaveBeenCalledWith(
-        expect.objectContaining({ submissionIndex: 1, token: 'winner-token' }),
-      )
+      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
       expect(sendSpy).toHaveBeenCalledTimes(1)
-      expect(sendSpy.mock.calls[0][3]).toBeDefined()
+      expect(sendSpy.mock.calls[0][3]?.data.encryptedContent).toBe(
+        'v4-encrypted-content',
+      )
     })
 
     it('surfaces a lost concurrent-write race as a 409 even after a successful snapshot write', async () => {
@@ -4289,9 +4335,6 @@ describe('multirespondent-submission.service', () => {
         MockSnapshotStore.writeV4Snapshot.mockReturnValue(
           okAsync({ token: 'order-token', key: 'order-key' }),
         )
-        MockSnapshotStore.readV4Snapshot.mockReturnValue(
-          okAsync(buildSnapshot()),
-        )
 
         const created = await createMultiRespondentFormSubmission({
           form: buildV4Form(),
@@ -4299,10 +4342,11 @@ describe('multirespondent-submission.service', () => {
           logMeta: { action: 'test' },
         })
         expect(created.isOk()).toBe(true)
-        const submission = created._unsafeUnwrap()
+        const { submission, snapshot } = created._unsafeUnwrap()
 
         await performMultiRespondentPostSubmissionCreateActions({
           submission,
+          snapshot,
           submissionId: submission._id.toString(),
           form: buildV4Form(),
           encryptedPayload: buildV4Payload(),

@@ -49,7 +49,6 @@ import { FormRespondentSingleSubmissionValidationError } from '../../form/form.e
 import { isFormMultirespondent } from '../../form/form.utils'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType } from '../../webhook/webhook.service'
-import { webhookStatsdClient } from '../../webhook/webhook.statsd-client'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
@@ -70,15 +69,10 @@ import {
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
-import {
-  SnapshotDataIntegrityError,
-  SnapshotWriteError,
-} from './webhook/submission-snapshot.errors'
+import { SnapshotWriteError } from './webhook/submission-snapshot.errors'
 import { buildV4Snapshot } from './webhook/submission-snapshot.producer'
-import {
-  readV4Snapshot,
-  writeV4Snapshot,
-} from './webhook/submission-snapshot.store'
+import { SubmissionSnapshotV4 } from './webhook/submission-snapshot.schema'
+import { writeV4Snapshot } from './webhook/submission-snapshot.store'
 import { getWebhookPayloadPolicy } from './webhook/webhook-payload-policy'
 import { reconstructMrfWebhookData } from './webhook/webhook-reconstruction'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
@@ -100,6 +94,27 @@ const appUrl =
   process.env.NODE_ENV === Environment.Dev
     ? config.app.feAppUrl
     : config.app.appUrl
+
+/**
+ * What a save returns: the committed row, plus the snapshot object that was
+ * PUT for the step it just committed.
+ *
+ * D10 — the initial send reconstructs from THIS object. It is never read back
+ * out of S3 (a transient GET would drop the webhook for a healthy submission)
+ * and never re-derived from the row (that only works for v4 and would become a
+ * live-row fallback for v1). The producer and the sender sit either side of the
+ * HTTP response, so the object travels: save -> controller -> post-submission
+ * actions -> reconstruction.
+ *
+ * `snapshot` is absent exactly when no snapshot was written (the write-condition
+ * is false), which is also when the send takes the legacy live-row path.
+ */
+export type SavedMultirespondentSubmission = {
+  submission: IMultirespondentSubmissionSchema & {
+    _id: mongoose.Types.ObjectId
+  }
+  snapshot?: SubmissionSnapshotV4
+}
 
 export const checkFormIsMultirespondent = (
   form: IPopulatedForm,
@@ -724,7 +739,7 @@ export const createMultiRespondentFormSubmission = ({
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<
-  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
+  SavedMultirespondentSubmission,
   AttachmentUploadError | SubmissionSaveError | SnapshotWriteError
 > => {
   logMeta = {
@@ -861,23 +876,28 @@ export const createMultiRespondentFormSubmission = ({
       // step entry BEFORE committing the row. A write failure aborts the save
       // (fail-loud, no commit-first). When the write-condition is false, behave
       // exactly as before (no snapshot, no token).
+      //
+      // The object is kept so it can be returned to the caller and handed
+      // straight to reconstruction — the send path never reads it back (D10).
+      const snapshot = shouldWriteSnapshot
+        ? buildV4Snapshot({
+            formId: String(form._id),
+            submissionId: String(submissionObjectId),
+            submissionIndex: 0,
+            workflowStep: 0,
+            encryptedContent,
+            encryptedSubmissionSecretKey,
+            verifiedContent,
+            attachmentMetadata: Object.fromEntries(
+              attachmentMetadata ?? new Map(),
+            ),
+            createdAt: submittedStepMeta.submittedAt,
+          })
+        : undefined
+
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
-        shouldWriteSnapshot
-          ? writeV4Snapshot(
-              buildV4Snapshot({
-                formId: String(form._id),
-                submissionId: String(submissionObjectId),
-                submissionIndex: 0,
-                workflowStep: 0,
-                encryptedContent,
-                encryptedSubmissionSecretKey,
-                verifiedContent,
-                attachmentMetadata: Object.fromEntries(
-                  attachmentMetadata ?? new Map(),
-                ),
-                createdAt: submittedStepMeta.submittedAt,
-              }),
-            ).map(({ token }) => {
+        snapshot
+          ? writeV4Snapshot(snapshot).map(({ token }) => {
               submittedStepMeta.snapshotToken = token
               return undefined
             })
@@ -888,6 +908,7 @@ export const createMultiRespondentFormSubmission = ({
           saveSubmission().then((submission) => ({
             submission,
             responseMetadata,
+            snapshot,
           })),
           (error) => {
             if (
@@ -905,7 +926,7 @@ export const createMultiRespondentFormSubmission = ({
         ),
       )
     })
-    .map(({ submission, responseMetadata }) => {
+    .map(({ submission, responseMetadata, snapshot }) => {
       const submissionId = submission.id
       logger.info({
         message: 'Saved submission to MongoDB',
@@ -920,7 +941,7 @@ export const createMultiRespondentFormSubmission = ({
         })
       }
 
-      return submission
+      return { submission, snapshot }
     })
 }
 
@@ -1090,31 +1111,34 @@ const generatePdfAttachmentIfRequired = ({
 }
 
 /**
- * Fire-and-forget the initial MRF webhook, applying the S4 send gate, v4
- * snapshot reconstruction, and payload-size guard. Errors are logged (and, for
- * the alarmable seams, emitted as statsd metrics) rather than propagated — the
+ * Fire-and-forget the initial MRF webhook, applying the S4 send gate and v4
+ * snapshot reconstruction. Errors are logged rather than propagated — the
  * caller's response has already been sent.
  *
  * Send gate: plumber is always sent; generic (== zapier) is gated behind the
  * `enable-mrf-webhooks` flag (default off ⇒ not sent).
  *
- * v4 path (plumber + a recorded snapshot token): point-read the frozen
- * snapshot, reconstruct the wire payload from it + the live row, and deliver a
- * pre-built view. A data-integrity failure or an over-sized payload fails loud
- * (no live-row fallback, no silent truncation). All other consumers (generic,
- * or plumber without a token i.e. flag-off legacy V3) take the legacy
- * getWebhookView path unchanged.
+ * v4 path (plumber + the in-memory snapshot the save just wrote): reconstruct
+ * the wire payload from that object + the live row and deliver a pre-built
+ * view. D10 — there is NO S3 read here. The object is threaded down from the
+ * save; a read-back would only re-verify what the create-if-absent PUT already
+ * guaranteed, while adding a failure surface that drops the webhook for a
+ * healthy submission. The retry path (S5) still reads S3, because it has no
+ * in-memory object.
+ *
+ * All other consumers (generic, or plumber with no snapshot i.e. flag-off
+ * legacy V3) take the legacy getWebhookView path unchanged.
  */
 const sendMrfInitialWebhookIfEligible = ({
   submission,
-  formId,
+  snapshot,
   webhookUrl,
   isRetryEnabled,
   growthbook,
   logMeta,
 }: {
   submission: IMultirespondentSubmissionSchema
-  formId: string
+  snapshot?: SubmissionSnapshotV4
   webhookUrl: string
   isRetryEnabled: boolean
   growthbook?: GrowthBook
@@ -1135,12 +1159,10 @@ const sendMrfInitialWebhookIfEligible = ({
   })
 
   const submissionIndex = (submission.submittedSteps?.length ?? 1) - 1
-  const recordedToken =
-    submission.submittedSteps?.[submissionIndex]?.snapshotToken
 
-  // Legacy path: generic consumers, or plumber without a recorded token
+  // Legacy path: generic consumers, or plumber with no snapshot for this step
   // (flag-off legacy V3). Byte-identical to the pre-S4 behaviour.
-  if (!(webhookType === 'plumber' && recordedToken)) {
+  if (!(webhookType === 'plumber' && snapshot)) {
     WebhookFactory.sendInitialWebhook(
       submission,
       webhookUrl,
@@ -1155,56 +1177,36 @@ const sendMrfInitialWebhookIfEligible = ({
     return
   }
 
-  // v4 snapshot-reconstruction path.
-  readV4Snapshot({
-    formId,
-    submissionId: String(submission._id),
-    submissionIndex,
-    token: recordedToken,
-  })
-    .andThen((snapshot) =>
-      ResultAsync.fromPromise(
-        submission.getWebhookView(),
-        () => new DatabaseError(),
-      ).andThen((liveView) => {
-        const policy = getWebhookPayloadPolicy({
-          webhookType: 'plumber',
-          webhookFormat: 'v4',
-          submissionIndex,
-          submittedStepsLength: submission.submittedSteps?.length ?? 0,
-        })
-        // S4 ships NO step token even if policy.includeEncryptedStepToken is
-        // true — reconstruction does not add one and neither do we.
-        const data = reconstructMrfWebhookData({
-          liveData: liveView.data,
-          snapshot,
-          submissionIndex,
-          policy,
-        })
-        const view: WebhookView = { data }
+  // v4 snapshot-reconstruction path, straight from the in-memory object.
+  ResultAsync.fromPromise(
+    submission.getWebhookView(),
+    () => new DatabaseError(),
+  )
+    .andThen((liveView) => {
+      const policy = getWebhookPayloadPolicy({
+        webhookType: 'plumber',
+        webhookFormat: 'v4',
+        submissionIndex,
+        submittedStepsLength: submission.submittedSteps?.length ?? 0,
+      })
+      // S4 ships NO step token even if policy.includeEncryptedStepToken is
+      // true — reconstruction does not add one and neither do we.
+      const data = reconstructMrfWebhookData({
+        liveData: liveView.data,
+        snapshot,
+        submissionIndex,
+        policy,
+      })
+      const view: WebhookView = { data }
 
-        return WebhookFactory.sendInitialWebhook(
-          submission,
-          webhookUrl,
-          isRetryEnabled,
-          view,
-        ).map(() => undefined)
-      }),
-    )
+      return WebhookFactory.sendInitialWebhook(
+        submission,
+        webhookUrl,
+        isRetryEnabled,
+        view,
+      ).map(() => undefined)
+    })
     .mapErr((error) => {
-      // Data-integrity failure: fail loud. Never fall back to the live-row view.
-      if (error instanceof SnapshotDataIntegrityError) {
-        logger.error({
-          message: 'MRF webhook snapshot data integrity error',
-          meta: {
-            ...logMeta,
-            submissionIndex,
-          },
-          error,
-        })
-        webhookStatsdClient.increment('mrf.snapshot.data_integrity_error')
-        return
-      }
       logger.error({
         message: 'Multirespondent submission webhook error',
         meta: logMeta,
@@ -1215,6 +1217,7 @@ const sendMrfInitialWebhookIfEligible = ({
 
 export const performMultiRespondentPostSubmissionCreateActions = ({
   submission,
+  snapshot,
   submissionId,
   form,
   encryptedPayload,
@@ -1223,6 +1226,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
+  snapshot?: SubmissionSnapshotV4
   submissionId: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
@@ -1303,7 +1307,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   if (webhookUrl) {
     sendMrfInitialWebhookIfEligible({
       submission,
-      formId: String(form._id),
+      snapshot,
       webhookUrl,
       isRetryEnabled: !!form.webhook?.isRetryEnabled,
       growthbook,
@@ -1364,7 +1368,7 @@ export const updateMultiRespondentFormSubmission = ({
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<
-  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
+  SavedMultirespondentSubmission,
   | AttachmentUploadError
   | SubmissionSaveError
   | SubmissionNotFoundError
@@ -1497,23 +1501,28 @@ export const updateMultiRespondentFormSubmission = ({
         !!snapshottedFormDef.webhook?.url &&
         !!snapshottedFormDef.webhook?.isRetryEnabled
 
+      //
+      // The object is kept so it can be returned to the caller and handed
+      // straight to reconstruction — the send path never reads it back (D10).
+      const snapshot = shouldWriteSnapshot
+        ? buildV4Snapshot({
+            formId: String(snapshottedFormDef._id),
+            submissionId: String(submission._id),
+            submissionIndex,
+            workflowStep,
+            encryptedContent,
+            encryptedSubmissionSecretKey,
+            verifiedContent,
+            attachmentMetadata: Object.fromEntries(
+              attachmentMetadata ?? new Map(),
+            ),
+            createdAt: submittedStepMeta.submittedAt,
+          })
+        : undefined
+
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
-        shouldWriteSnapshot
-          ? writeV4Snapshot(
-              buildV4Snapshot({
-                formId: String(snapshottedFormDef._id),
-                submissionId: String(submission._id),
-                submissionIndex,
-                workflowStep,
-                encryptedContent,
-                encryptedSubmissionSecretKey,
-                verifiedContent,
-                attachmentMetadata: Object.fromEntries(
-                  attachmentMetadata ?? new Map(),
-                ),
-                createdAt: submittedStepMeta.submittedAt,
-              }),
-            ).map(({ token }) => {
+        snapshot
+          ? writeV4Snapshot(snapshot).map(({ token }) => {
               submittedStepMeta.snapshotToken = token
               return undefined
             })
@@ -1528,7 +1537,9 @@ export const updateMultiRespondentFormSubmission = ({
         ]
 
         return ResultAsync.fromPromise(
-          submission.save().then(() => ({ submission, responseMetadata })),
+          submission
+            .save()
+            .then(() => ({ submission, responseMetadata, snapshot })),
           (error) => {
             if (error instanceof mongoose.Error.VersionError) {
               return transformMongoError(error)
@@ -1543,18 +1554,19 @@ export const updateMultiRespondentFormSubmission = ({
         )
       })
     })
-    .map(({ submission, responseMetadata }) => {
+    .map(({ submission, responseMetadata, snapshot }) => {
       logger.info({
         message: 'Saved submission to MongoDB',
         meta: { ...logMeta, submissionId: submission.id, responseMetadata },
       })
 
-      return submission
+      return { submission, snapshot }
     })
 }
 
 export const performMultiRespondentPostSubmissionUpdateActions = ({
   submission,
+  snapshot,
   submissionId,
   snapshottedFormDef,
   currentStepNumber,
@@ -1564,6 +1576,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
+  snapshot?: SubmissionSnapshotV4
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
   currentStepNumber: number
@@ -1616,7 +1629,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   if (webhookUrl) {
     sendMrfInitialWebhookIfEligible({
       submission,
-      formId: String(snapshottedFormDef._id),
+      snapshot,
       webhookUrl,
       isRetryEnabled: !!snapshottedFormDef.webhook?.isRetryEnabled,
       growthbook,

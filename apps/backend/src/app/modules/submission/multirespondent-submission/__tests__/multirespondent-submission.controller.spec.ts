@@ -108,10 +108,13 @@ describe('multirespondent-submision.controller', () => {
       .fn()
       .mockReturnValue(ok(mockMrfForm))
 
+    // Both saves return the committed row together with the snapshot object
+    // they PUT, so the controller can thread it into the post-submission
+    // actions without a read-back.
     MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission =
-      jest.fn().mockReturnValue(okAsync(mockMrfSubmission))
+      jest.fn().mockReturnValue(okAsync({ submission: mockMrfSubmission }))
     MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission =
-      jest.fn().mockReturnValue(okAsync(mockMrfSubmission))
+      jest.fn().mockReturnValue(okAsync({ submission: mockMrfSubmission }))
     MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionCreateActions =
       jest.fn().mockReturnValue(okAsync(true))
     MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionUpdateActions =
