@@ -124,22 +124,6 @@ export const SubmittedStep = z.discriminatedUnion('isApproval', [
 
 export type SubmittedStep = z.infer<typeof SubmittedStep>
 
-/**
- * Every field of the step subdocument.
- *
- * RATIONALE: this is the UNION of both members' keys, not `keyof
- * SubmittedStep`. `SubmittedStep` is a discriminated union, and `keyof` over a
- * union yields the *intersection* of its members' keys — so approval-only
- * fields such as `status` would silently escape classification and leak by
- * default.
- *
- * The obvious spelling `keyof (SubmittedNonApprovalStep &
- * SubmittedApprovalStep)` does not work either: the two members disagree on the
- * discriminant, so `isApproval: false & true` is `never`, TypeScript reduces
- * the whole intersection to `never`, and `keyof never` widens to `string |
- * number | symbol` — which any object literal satisfies, silently disabling the
- * exhaustiveness check below.
- */
 export type SubmittedStepField =
   | keyof SubmittedNonApprovalStep
   | keyof SubmittedApprovalStep
@@ -147,39 +131,22 @@ export type SubmittedStepField =
 /**
  * The boundaries at which `submittedSteps` leaves the server.
  * - `webhook`: the array shipped verbatim inside `workflowContent`.
- * - `statusTracker`: the public, submission-id-reachable tracker response.
- * - `admin`: the two authenticated admin queries, projected in Mongo.
+ * - `public`: unauthenticated responses reachable by submission id (eg, status tracking link).
+ * - `admin`: authenticated admin queries.
  */
-export type SubmittedStepBoundary = 'webhook' | 'statusTracker' | 'admin'
+export type SubmittedStepBoundary = 'webhook' | 'public' | 'admin'
 
-/**
- * The single source of truth for which step fields cross which boundary.
- *
- * A field added to the subdocument above without a row here fails to compile
- * (see the `satisfies` below), so new fields are private until classified
- * rather than public by default.
- */
 export const SUBMITTED_STEP_VISIBILITY = {
-  // Ships today; the workflow status is derived from it.
-  isApproval: { webhook: true, statusTracker: true, admin: true },
-  // Ships today; `lastSubmittedAt` in the admin metadata is derived from it.
-  submittedAt: { webhook: true, statusTracker: true, admin: true },
-  // Ships today; the workflow status is derived from it.
-  status: { webhook: true, statusTracker: true, admin: true },
-  // Respondent emails. Ship to webhook consumers today (narrowing them would be
-  // a silent breaking change) and are already stripped from the unauthenticated
-  // status tracker. Read server-side by `buildMrfMetadata`, so admin keeps them.
+  isApproval: { webhook: true, public: true, admin: true },
+  submittedAt: { webhook: true, public: true, admin: true },
+  status: { webhook: true, public: true, admin: true },
   nextStepRecipientEmails: {
     webhook: true,
-    statusTracker: false,
+    public: false,
     admin: true,
   },
-  // Ships today at both public boundaries; deliberately left as-is — it
-  // predates this table and needs its own consumer audit. Unread on the admin
-  // paths, so it is not loaded there.
-  submitterId: { webhook: true, statusTracker: true, admin: false },
-  // Internal per-attempt S3 snapshot key leaf. Never crosses any boundary.
-  snapshotToken: { webhook: false, statusTracker: false, admin: false },
+  submitterId: { webhook: true, public: true, admin: false },
+  snapshotToken: { webhook: false, public: false, admin: false },
 } as const satisfies Record<
   SubmittedStepField,
   Record<SubmittedStepBoundary, boolean>
@@ -208,13 +175,8 @@ export type WebhookSubmittedStep = ProjectSubmittedStep<
   'webhook'
 >
 
-/** The step shape the public status tracker returns. */
-export type StatusTrackerSubmittedStep = ProjectSubmittedStep<
-  SubmittedStep,
-  'statusTracker'
->
+export type PublicSubmittedStep = ProjectSubmittedStep<SubmittedStep, 'public'>
 
-/** The step shape the admin queries load out of Mongo. */
 export type AdminSubmittedStep = ProjectSubmittedStep<SubmittedStep, 'admin'>
 
 export const MultirespondentSubmissionBase = SubmissionBase.extend({
@@ -472,7 +434,7 @@ export type PaymentSubmissionData = {
 }
 
 export type StatusTrackerData = {
-  submittedSteps: StatusTrackerSubmittedStep[] | undefined
+  submittedSteps: PublicSubmittedStep[] | undefined
   workflow: StrippedFormWorkflowDto
   responseId: string | undefined
   form: string

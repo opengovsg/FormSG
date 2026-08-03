@@ -1,6 +1,6 @@
 import { SubmittedStep, WorkflowStatus } from 'formsg-shared/types'
-import { projectSubmittedStepForWebhook } from 'formsg-shared/utils/submitted-step-visibility'
 
+import { projectSubmittedStepForWebhook } from 'src/app/modules/submission/submitted-step-visibility'
 import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 import { WebhookData } from 'src/types/submission'
 

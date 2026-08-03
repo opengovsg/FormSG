@@ -175,10 +175,6 @@
       "require": "./dist/utils/strip-dropdown-field-optionsToRecipientsMap.js",
       "default": "./utils/strip-dropdown-field-optionsToRecipientsMap.ts"
     },
-    "./utils/submitted-step-visibility": {
-      "require": "./dist/utils/submitted-step-visibility.js",
-      "default": "./utils/submitted-step-visibility.ts"
-    },
     "./utils/strip-workflow-emails": {
       "require": "./dist/utils/strip-workflow-emails.js",
       "default": "./utils/strip-workflow-emails.ts"

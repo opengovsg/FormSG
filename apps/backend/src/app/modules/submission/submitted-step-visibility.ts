@@ -1,11 +1,11 @@
 import {
-  StatusTrackerSubmittedStep,
+  PublicSubmittedStep,
   SUBMITTED_STEP_VISIBILITY,
   SubmittedStep,
   SubmittedStepBoundary,
   SubmittedStepField,
   WebhookSubmittedStep,
-} from '../types/submission'
+} from 'formsg-shared/types'
 
 const SUBMITTED_STEP_FIELDS = Object.keys(
   SUBMITTED_STEP_VISIBILITY,
@@ -18,6 +18,9 @@ const SUBMITTED_STEP_FIELDS = Object.keys(
  * RATIONALE: builds up rather than deletes down. `getWebhookView` hands us
  * mongoose subdocuments, so spreading or deleting would carry mongoose
  * internals (and any future subdocument field) across the boundary.
+ *
+ * Field classification lives in shared (`SUBMITTED_STEP_VISIBILITY`); this
+ * module is the server-side enforcer at each exit boundary.
  */
 const projectSubmittedStep = (
   step: SubmittedStep,
@@ -39,6 +42,11 @@ export const projectSubmittedStepForWebhook = (
 ): WebhookSubmittedStep =>
   projectSubmittedStep(step, 'webhook') as WebhookSubmittedStep
 
+export const projectSubmittedStepForPublic = (
+  step: SubmittedStep,
+): PublicSubmittedStep =>
+  projectSubmittedStep(step, 'public') as PublicSubmittedStep
+
 /**
  * The Mongo sub-field projection for the two admin queries, derived from the
  * `admin` column.
@@ -53,8 +61,3 @@ export const buildSubmittedStepsMongoProjection = (): Record<string, 1> =>
       (field) => SUBMITTED_STEP_VISIBILITY[field].admin,
     ).map((field) => [`submittedSteps.${field}`, 1] as const),
   )
-
-export const projectSubmittedStepForStatusTracker = (
-  step: SubmittedStep,
-): StatusTrackerSubmittedStep =>
-  projectSubmittedStep(step, 'statusTracker') as StatusTrackerSubmittedStep

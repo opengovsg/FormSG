@@ -6,10 +6,6 @@ import {
   WebhookResponse,
   WorkflowStatus,
 } from 'formsg-shared/types'
-import {
-  buildSubmittedStepsMongoProjection,
-  projectSubmittedStepForWebhook,
-} from 'formsg-shared/utils/submitted-step-visibility'
 import moment from 'moment-timezone'
 import mongoose, {
   Cursor as QueryCursor,
@@ -42,6 +38,10 @@ import {
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
 import { MultirespondentSubmissionContent } from '../modules/submission/multirespondent-submission/multirespondent-submission.types'
 import { buildMrfMetadata } from '../modules/submission/submission.utils'
+import {
+  buildSubmittedStepsMongoProjection,
+  projectSubmittedStepForWebhook,
+} from '../modules/submission/submitted-step-visibility'
 import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'

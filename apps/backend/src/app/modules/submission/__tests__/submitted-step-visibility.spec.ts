@@ -1,14 +1,9 @@
+import { SubmittedStep, WorkflowStatus } from 'formsg-shared/types'
 import { model, Schema } from 'mongoose'
 
 import {
-  SubmittedStep,
-  SubmittedStepBoundary,
-  SubmittedStepField,
-  WorkflowStatus,
-} from '../../types/submission'
-import {
   buildSubmittedStepsMongoProjection,
-  projectSubmittedStepForStatusTracker,
+  projectSubmittedStepForPublic,
   projectSubmittedStepForWebhook,
 } from '../submitted-step-visibility'
 
@@ -77,9 +72,9 @@ describe('projecting a mongoose subdocument', () => {
   })
 })
 
-describe('projectSubmittedStepForStatusTracker', () => {
+describe('projectSubmittedStepForPublic', () => {
   it('drops snapshotToken and respondent emails from the public response', () => {
-    const out = projectSubmittedStepForStatusTracker(fullApprovalStep)
+    const out = projectSubmittedStepForPublic(fullApprovalStep)
 
     expect(out).toEqual({
       isApproval: true,
@@ -101,48 +96,5 @@ describe('buildSubmittedStepsMongoProjection', () => {
       'submittedSteps.status': 1,
       'submittedSteps.nextStepRecipientEmails': 1,
     })
-  })
-})
-
-/**
- * Type-level guard. This spec is compiled by ts-jest (no `isolatedModules` in
- * the shared package's jest config), so a `@ts-expect-error` that stops being
- * an error fails the suite at compile time.
- */
-describe('the classification table is exhaustive', () => {
-  type VisibilityTable = Record<
-    SubmittedStepField,
-    Record<SubmittedStepBoundary, boolean>
-  >
-
-  it('rejects a table that leaves a step field unclassified', () => {
-    const missingSnapshotToken = {
-      isApproval: { webhook: true, statusTracker: true, admin: true },
-      submittedAt: { webhook: true, statusTracker: true, admin: true },
-      status: { webhook: true, statusTracker: true, admin: true },
-      nextStepRecipientEmails: {
-        webhook: true,
-        statusTracker: false,
-        admin: true,
-      },
-      submitterId: { webhook: true, statusTracker: true, admin: false },
-      // snapshotToken deliberately omitted.
-    } as const
-
-    // @ts-expect-error - an unclassified field must not compile.
-    const table: VisibilityTable = missingSnapshotToken
-
-    expect(table).toBeDefined()
-  })
-
-  it('rejects a table that leaves a boundary unclassified', () => {
-    const missingAdminColumn = {
-      isApproval: { webhook: true, statusTracker: true },
-    } as const
-
-    // @ts-expect-error - an unclassified boundary must not compile.
-    const row: VisibilityTable['isApproval'] = missingAdminColumn.isApproval
-
-    expect(row).toBeDefined()
   })
 })

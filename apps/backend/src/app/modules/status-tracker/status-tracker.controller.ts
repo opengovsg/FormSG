@@ -1,7 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { StatusTrackerData, StrippedFormWorkflowDto } from 'formsg-shared/types'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
-import { projectSubmittedStepForStatusTracker } from 'formsg-shared/utils/submitted-step-visibility'
 import { StatusCodes } from 'http-status-codes'
 import { okAsync } from 'neverthrow'
 
@@ -10,6 +9,7 @@ import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { getMultirespondentSubmission } from '../submission/multirespondent-submission/multirespondent-submission.service'
 import { mapRouteError } from '../submission/submission.utils'
+import { projectSubmittedStepForPublic } from '../submission/submitted-step-visibility'
 
 const logger = createLoggerWithLabel(module)
 
@@ -38,7 +38,7 @@ const getStatusTrackerSubmissionData: ControllerHandler<
       // boundary. The projection also drops mongoose internals, since it
       // copies named fields into a fresh object rather than spreading.
       const strippedSubmittedSteps = submissionData.submittedSteps?.map(
-        projectSubmittedStepForStatusTracker,
+        projectSubmittedStepForPublic,
       )
 
       const strippedWorkflow: StrippedFormWorkflowDto = stripWorkflowEmails(
