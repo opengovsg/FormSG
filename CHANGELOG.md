@@ -2,6 +2,96 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.2.0](https://github.com/opengovsg/formsg/compare/v9.1.0...v9.2.0) (2026-08-03)
+
+
+### Features
+
+* **i18n:** extract text from MultiLanguageSection components (#9647) ([#9647](https://github.com/opengovsg/formsg/commit/ad08ccc33a75afff093dc637678732602f79aa80))
+
+
+### Bug Fixes
+
+* **admin-form:** show error state when webhook settings fetch fails (#9524) ([#9524](https://github.com/opengovsg/formsg/commit/94977db80f6de483df5892e938ba209cb44d93e6))
+* **login:** show toast for non-401 errors on sgID profile (#9768) ([#9768](https://github.com/opengovsg/formsg/commit/38ee7c439d917afc0aa319eeb247749df06183ff))
+* add title to disabled table text cells  (#9582) ([#9582](https://github.com/opengovsg/formsg/commit/b35824b08af96c781c4570fdde2011576d6cc3d9))
+
+
+### Chores
+
+* **ci:** shard backend tests across 3 runners (#9796) ([#9796](https://github.com/opengovsg/formsg/commit/ea8ff4f89a10f083ec5892cc32dde93150479f46))
+
+## [9.1.0](https://github.com/opengovsg/formsg/compare/v9.0.1...v9.1.0) (2026-08-03)
+
+
+### Features
+
+* **workflow-builder-redesign:** copy changes across workflow builder (#9733) ([#9733](https://github.com/opengovsg/formsg/commit/912d8682d03614aa3d5d1a24de96e61449a71f1f))
+
+
+### Refactors
+
+* **paper-forms:** reuse ProgressIndicator for set-up progress (#9793) ([#9793](https://github.com/opengovsg/formsg/commit/94fe9ae5127b55e0572810b29e1ee0e5c047f698))
+
+## [9.0.1](https://github.com/opengovsg/formsg/compare/v9.0.0...v9.0.1) (2026-07-31)
+
+
+### Bug Fixes
+
+* **sdk:** improve large attachment decryption and handling (#9802) ([#9802](https://github.com/opengovsg/formsg/commit/a44f1e9cd351d951de61d888d76616b073e40b35))
+
+## [9.0.0](https://github.com/opengovsg/formsg/compare/v8.9.0...v9.0.0) (2026-07-30)
+
+
+### ⚠ BREAKING CHANGE
+
+* **mrf:** MRF submissions are sent with version: 4 and
+V4-shaped responses on the wire.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+* feat(frontend): make V4 the FE working format for previous MRF responses
+
+decryptSubmission now serves previous-step responses as V4: V4 blobs
+(mrfVersion 2) pass through untouched and V3 blobs (mrfVersion 1 /
+legacy) are adapted up via the SDK's adaptV3ToV4 — the inverse of the
+old behavior, which downgraded V4 to V3 as the working format.
+
+extractMrfPreviousStepResponseValue is rewritten as the inverse of
+createResponsesV4 (V4 answer shapes → form input values); the old
+version relied on V3 shapes coinciding with input values, which does
+not hold for V4. A round-trip test pins inputs → createResponsesV4 →
+extract as the identity for every prefillable field type, since step
+N+1 re-submits non-editable values through this exact loop.
+
+Legacy pre-mrfVersion submissions embed attachment content inside the
+encrypted blob; adaptV3ToV4 drops that key, so decryptSubmission now
+harvests it pre-adaptation (legacyAttachmentContents) for the
+provider's backward-compat path.
+
+Also drops the previousResponses prop on FormFields, which was unused.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+* chore: clean up comments
+
+* feat: make joi validation for provenance default to {}
+
+* feat: Update apps/frontend/src/features/public-form/utils/decryptSubmission.ts
+
+Co-authored-by: Eliot Lim <eliotlim@users.noreply.github.com>
+
+### Features
+
+* **mrf:** V4 response migration — PR 3/5 FE sends and works in V4 (#9782) ([#9782](https://github.com/opengovsg/formsg/commit/8929c1dce7379d2ab0e847719bb383ec13c41f32))
+
+## [8.9.0](https://github.com/opengovsg/formsg/compare/v8.8.0...v8.9.0) (2026-07-30)
+
+
+### Features
+
+* zustand store + move feedback modal to builder page (#9688) ([#9688](https://github.com/opengovsg/formsg/commit/16cbfbc0c3a1c4c7e64b5ffab3b53f7959e7bd12))
+
 ## [8.8.0](https://github.com/opengovsg/formsg/compare/v8.7.0...v8.8.0) (2026-07-29)
 
 

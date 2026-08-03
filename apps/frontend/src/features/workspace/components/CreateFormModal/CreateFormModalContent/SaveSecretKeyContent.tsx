@@ -73,7 +73,7 @@ export const SaveSecretKeyContent = ({
   return (
     <>
       <ModalBody whiteSpace="pre-wrap">
-        <Container maxW="42.5rem" p={0}>
+        <Container maxW="45rem" p={0}>
           <Box
             bg="white"
             borderRadius="4px"

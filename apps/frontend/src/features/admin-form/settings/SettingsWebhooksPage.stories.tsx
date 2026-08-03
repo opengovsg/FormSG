@@ -1,5 +1,6 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
+import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
@@ -112,6 +113,22 @@ UnsupportedMultirespondentMode.parameters = {
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({ delay: 'infinite' }) } },
+}
+
+export const Error = Template.bind({})
+Error.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        http.get('/api/v3/admin/forms/:formId/settings', () =>
+          HttpResponse.json(
+            { message: 'Internal Server Error' },
+            { status: 500 },
+          ),
+        ),
+      ],
+    },
+  },
 }
 
 export const Mobile = Template.bind({})

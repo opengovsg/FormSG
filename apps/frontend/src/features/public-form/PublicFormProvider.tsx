@@ -571,22 +571,12 @@ export const PublicFormProvider = ({
     if (encryptedPreviousSubmission?.mrfVersion != null) {
       if (submissionSecretKey) decryptAttachments()
     } else {
-      // Backward compatibility to retrieve attachments from the DB itself once
-      // the previous submission responses are decrypted.
-      if (previousSubmission) {
-        // Backward compatibility
-        const previousAttachments: Record<string, Uint8Array<ArrayBuffer>> = {}
-        Object.keys(previousSubmission.responses).forEach((id) => {
-          const response = previousSubmission.responses[id]
-          if (response.fieldType === BasicField.Attachment) {
-            previousAttachments[id] = Uint8Array.from(
-              //@ts-expect-error 'content' required for backward compatibility, but
-              // does not exist on AttachmentFieldResponseV3 in mrfVersion >= 1 versions
-              response.answer.content.data,
-            )
-          }
-        })
-        setPreviousAttachments(previousAttachments)
+      // Backward compatibility to retrieve attachments embedded in the
+      // encrypted blob itself (legacy submissions predating mrfVersion).
+      // These are harvested pre-adaptation by decryptSubmission, since the
+      // embedded content is dropped when responses are adapted to V4.
+      if (previousSubmission?.legacyAttachmentContents) {
+        setPreviousAttachments(previousSubmission.legacyAttachmentContents)
       }
     }
   }, [encryptedPreviousSubmission, previousSubmission, submissionSecretKey])

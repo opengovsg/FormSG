@@ -15,11 +15,6 @@ import {
   useAdminFeedbackStore,
 } from './adminFeedbackStore'
 
-const triggerSourceSelector = (state: {
-  triggerSource: AdminFeedbackTriggerSource | null
-}) => state.triggerSource
-const formIdSelector = (state: { formId: string | null }) => state.formId
-
 export const AdminFeedbackContainer = ({ userId }: { userId: string }) => {
   const { data: { adminFeedbackDisplayFrequency } = {} } = useEnv()
   const [isDisplayFeedback, setIsDisplayFeedback] = useState(false)
@@ -29,8 +24,6 @@ export const AdminFeedbackContainer = ({ userId }: { userId: string }) => {
   const [lastFeedbackTime, setLastFeedbackTime] =
     useLocalStorage<number>(adminFeedbackKey)
   const isAdminFeedbackEligible = useAdminFeedbackStore(isEligibleSelector)
-  const triggerSource = useAdminFeedbackStore(triggerSourceSelector)
-  const feedbackFormId = useAdminFeedbackStore(formIdSelector)
   const resetAdminFeedbackEligible = useAdminFeedbackStore(resetSelector)
 
   // capture current time on page load to prevent re-renders from update to current time
@@ -51,13 +44,7 @@ export const AdminFeedbackContainer = ({ userId }: { userId: string }) => {
 
   // sets display of feedback box
   useEffect(() => {
-    if (
-      // whether to show admin the feedback box
-      showAdminFeedback
-    ) {
-      // capture trigger metadata before reset clears them
-      capturedTriggerSource.current = triggerSource
-      capturedFormId.current = feedbackFormId
+    if (showAdminFeedback) {
       setIsDisplayFeedback(true)
       // reset local storage and admin feedback eligibility when admin feedback is displayed
       setLastFeedbackTime(currentTime.current)

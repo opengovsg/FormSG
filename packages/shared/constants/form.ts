@@ -115,7 +115,9 @@ export const E2EE_SUBMISSION_VERSION = 1
 // Encryption boundary shift implementation PR: https://github.com/opengovsg/FormSG/pull/6587
 export const VIRUS_SCANNER_SUBMISSION_VERSION = 2.1
 // MRF RFC: https://www.notion.so/opengov/RFC-Multi-respondent-forms-8ab40a8c17674937b345450d9dd2c81d?pvs=4
-export const MULTIRESPONDENT_FORM_SUBMISSION_VERSION = 3
+// Version 4: FE sends V4-shaped responses natively. The BE receiver shim
+// still adapts version-3 bodies from stale clients (adaptMrfV3BodyToV4).
+export const MULTIRESPONDENT_FORM_SUBMISSION_VERSION = 4
 
 // TODO: (Kill Email Mode) Remove this form after kill email mode is fully implemented.
 export const TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID =

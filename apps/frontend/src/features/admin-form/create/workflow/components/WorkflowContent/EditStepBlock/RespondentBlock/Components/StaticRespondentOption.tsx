@@ -9,6 +9,8 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 import { TagInput } from '~components/TagInput'
 
+import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+
 import { useWorkflowTypeValidation } from './hooks'
 import { RespondentOptionProps } from './types'
 
@@ -25,6 +27,7 @@ export const StaticRespondentOption = ({
   const staticTagInputErrorMessage = get(errors, 'emails.message')
 
   const workflowTypeValidation = useWorkflowTypeValidation()
+  const isRedesign = useIsWorkflowBuilderRedesign()
   return (
     <>
       <Radio
@@ -40,7 +43,7 @@ export const StaticRespondentOption = ({
           },
         }}
       >
-        <Text>Specific email(s)</Text>
+        <Text>{isRedesign ? 'Specific emails' : 'Specific email(s)'}</Text>
         {selectedWorkflowType === WorkflowType.Static ? (
           <FormControl
             pt="0.5rem"
@@ -62,7 +65,9 @@ export const StaticRespondentOption = ({
                   isEmails: (emails) =>
                     !emails ||
                     emails.every((email) => isEmail(email)) ||
-                    'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved',
+                    (isRedesign
+                      ? "Enter valid emails separated by commas, like me@example.com. Invalid emails won't be saved."
+                      : 'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved'),
                 },
               }}
               render={({ field }) => (

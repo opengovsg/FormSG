@@ -62,6 +62,7 @@ export const enSG: Common = {
     },
     pageNotFound: 'This page could not be found.',
     generic: 'Something went wrong. Please try again later.',
+    serverError: 'A server error occurred. Please try again later.',
   },
   tooltip: {
     deleteField: 'Delete field',

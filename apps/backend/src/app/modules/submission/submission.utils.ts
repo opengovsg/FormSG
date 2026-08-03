@@ -4,7 +4,6 @@ import crypto from 'crypto'
 import {
   AdminEmailPdfFeatureValue,
   featureFlags,
-  MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
 } from 'formsg-shared/constants'
 import { FIELDS_TO_REJECT } from 'formsg-shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
@@ -758,10 +757,11 @@ const encryptAttachment = async (
     const fileContentsView = new Uint8Array(attachment)
 
     label = 'Encrypt content'
-    const formsgSdkCrypto =
-      version < MULTIRESPONDENT_FORM_SUBMISSION_VERSION
-        ? formsgSdk.crypto
-        : formsgSdk.cryptoV3
+    // Crypto floor is fixed at the V3 cutover: submissions below wire version 3
+    // predate cryptoV3. Deliberately a literal — the MRF wire version constant
+    // moves on (4+), and shim-adapted stale-FE bodies keep version 3, so tying
+    // this to the constant would flip their crypto class as the wire advances.
+    const formsgSdkCrypto = version < 3 ? formsgSdk.crypto : formsgSdk.cryptoV3
     const encryptedAttachment = await formsgSdkCrypto.encryptFile(
       fileContentsView,
       publicKey,

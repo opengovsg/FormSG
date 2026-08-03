@@ -11,6 +11,7 @@ import Toggle from '~components/Toggle'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
 
 import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
@@ -27,6 +28,7 @@ export const ApprovalsBlock = ({
   stepNumber,
 }: ApprovalsBlockProps): JSX.Element => {
   const { t } = useTranslation()
+  const isRedesign = useIsWorkflowBuilderRedesign()
   const {
     control,
     setValue,
@@ -94,7 +96,9 @@ export const ApprovalsBlock = ({
         labelStyles={textStyles.h4}
         label={t('features.adminForm.sidebar.workflow.approvals.toggle.label')}
         description={t(
-          'features.adminForm.sidebar.workflow.approvals.toggle.description',
+          isRedesign
+            ? 'features.adminForm.sidebar.workflow.approvals.toggle.descriptionRedesign'
+            : 'features.adminForm.sidebar.workflow.approvals.toggle.description',
         )}
         tooltipText={t(
           'features.adminForm.sidebar.workflow.approvals.toggle.tooltip',
@@ -111,7 +115,9 @@ export const ApprovalsBlock = ({
               validate: (value) => {
                 if (!value && isApprovalToggleChecked) {
                   return t(
-                    'features.adminForm.sidebar.workflow.approvals.validation.noField',
+                    isRedesign
+                      ? 'features.adminForm.sidebar.workflow.approvals.validation.noFieldRedesign'
+                      : 'features.adminForm.sidebar.workflow.approvals.validation.noField',
                   )
                 }
                 if (value && approvalFieldsFromOtherSteps.includes(value)) {
@@ -121,7 +127,9 @@ export const ApprovalsBlock = ({
                 }
                 if (value && !selectedEditFields.includes(value)) {
                   return t(
-                    'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
+                    isRedesign
+                      ? 'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUserRedesign'
+                      : 'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
                   )
                 }
               },
