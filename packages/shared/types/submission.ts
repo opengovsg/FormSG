@@ -124,6 +124,61 @@ export const SubmittedStep = z.discriminatedUnion('isApproval', [
 
 export type SubmittedStep = z.infer<typeof SubmittedStep>
 
+export type SubmittedStepField =
+  | keyof SubmittedNonApprovalStep
+  | keyof SubmittedApprovalStep
+
+/**
+ * The boundaries at which `submittedSteps` leaves the server.
+ * - `webhook`: the array shipped verbatim inside `workflowContent`.
+ * - `public`: unauthenticated responses reachable by submission id (eg, status tracking link).
+ * - `admin`: authenticated admin queries.
+ */
+export type SubmittedStepBoundary = 'webhook' | 'public' | 'admin'
+
+export const SUBMITTED_STEP_VISIBILITY = {
+  isApproval: { webhook: true, public: true, admin: true },
+  submittedAt: { webhook: true, public: true, admin: true },
+  status: { webhook: true, public: true, admin: true },
+  nextStepRecipientEmails: {
+    webhook: true,
+    public: false,
+    admin: true,
+  },
+  submitterId: { webhook: true, public: true, admin: false },
+  snapshotToken: { webhook: false, public: false, admin: false },
+} as const satisfies Record<
+  SubmittedStepField,
+  Record<SubmittedStepBoundary, boolean>
+>
+
+type SubmittedStepVisibility = typeof SUBMITTED_STEP_VISIBILITY
+
+type VisibleFieldsAt<B extends SubmittedStepBoundary> = {
+  [K in keyof SubmittedStepVisibility]: SubmittedStepVisibility[K][B] extends true
+    ? K
+    : never
+}[keyof SubmittedStepVisibility]
+
+/**
+ * Distributes over the discriminated union so each member keeps only the fields
+ * it actually declares that are visible at `B`.
+ */
+type ProjectSubmittedStep<
+  S,
+  B extends SubmittedStepBoundary,
+> = S extends unknown ? Pick<S, Extract<keyof S, VisibleFieldsAt<B>>> : never
+
+/** The step shape webhook consumers receive. */
+export type WebhookSubmittedStep = ProjectSubmittedStep<
+  SubmittedStep,
+  'webhook'
+>
+
+export type PublicSubmittedStep = ProjectSubmittedStep<SubmittedStep, 'public'>
+
+export type AdminSubmittedStep = ProjectSubmittedStep<SubmittedStep, 'admin'>
+
 export const MultirespondentSubmissionBase = SubmissionBase.extend({
   // Store the form fields and logic here, to use as reference for future
   // submitters. Don't bother to validate since this is injected by the backend.
@@ -379,7 +434,7 @@ export type PaymentSubmissionData = {
 }
 
 export type StatusTrackerData = {
-  submittedSteps: SubmittedStep[] | undefined
+  submittedSteps: PublicSubmittedStep[] | undefined
   workflow: StrippedFormWorkflowDto
   responseId: string | undefined
   form: string

@@ -1,4 +1,4 @@
-import { FormWorkflowDto, SubmittedStep } from 'formsg-shared/types'
+import { FormWorkflowDto, WebhookSubmittedStep } from 'formsg-shared/types'
 import * as z from 'zod'
 
 import { IFormSchema, ISubmissionSchema, WebhookView } from '../../../types'
@@ -65,5 +65,5 @@ export type PaymentWebhookEventObject = {
 export type WorkflowWebhookEventObject = {
   workflow: FormWorkflowDto
   workflowStep: number
-  submittedSteps: SubmittedStep[]
+  submittedSteps: WebhookSubmittedStep[]
 }
