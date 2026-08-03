@@ -6,7 +6,10 @@ import {
   WebhookResponse,
   WorkflowStatus,
 } from 'formsg-shared/types'
-import { projectSubmittedStepForWebhook } from 'formsg-shared/utils/submitted-step-visibility'
+import {
+  buildSubmittedStepsMongoProjection,
+  projectSubmittedStepForWebhook,
+} from 'formsg-shared/utils/submitted-step-visibility'
 import moment from 'moment-timezone'
 import mongoose, {
   Cursor as QueryCursor,
@@ -840,7 +843,7 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     form_logics: 1,
     workflow: 1,
     workflowStep: 1,
-    submittedSteps: 1,
+    ...buildSubmittedStepsMongoProjection(),
     encryptedSubmissionSecretKey: 1,
     encryptedContent: 1,
     verifiedContent: 1,
@@ -892,7 +895,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       version: 1,
       workflowStep: 1,
       mrfVersion: 1,
-      submittedSteps: 1,
+      ...buildSubmittedStepsMongoProjection(),
       encryptedStepToken: 1,
     })
     .exec()

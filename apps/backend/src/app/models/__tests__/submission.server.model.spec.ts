@@ -774,6 +774,70 @@ describe('Submission Model', () => {
     })
   })
 
+  describe('Multirespondent admin queries', () => {
+    const MOCK_MRF_SUBMISSION = () => ({
+      form: MOCK_FORM_ID,
+      submissionType: SubmissionType.Multirespondent,
+      form_fields: [],
+      form_logics: [],
+      workflow: [],
+      submissionPublicKey: 'test public key',
+      encryptedSubmissionSecretKey: 'test secret key',
+      encryptedContent: MOCK_ENCRYPTED_CONTENT,
+      version: 1,
+      workflowStep: 1,
+      submittedSteps: [
+        {
+          isApproval: true,
+          submittedAt: '2026-07-22T00:00:00.000Z',
+          status: WorkflowStatus.APPROVED,
+          nextStepRecipientEmails: ['next@example.com'],
+          submitterId: 'SUBMITTER_ID_HASH',
+          snapshotToken: 'SNAPSHOT_TOKEN_LEAF_VALUE',
+        },
+      ],
+    })
+
+    // The admin-visible set is derived from the classification table:
+    // nextStepRecipientEmails is read server-side by buildMrfMetadata, so it
+    // must still load; submitterId and snapshotToken are unread here.
+    const EXPECTED_ADMIN_STEP = {
+      isApproval: true,
+      submittedAt: '2026-07-22T00:00:00.000Z',
+      status: WorkflowStatus.APPROVED,
+      nextStepRecipientEmails: ['next@example.com'],
+    }
+
+    it('findEncryptedSubmissionById should not load unclassified step sub-fields', async () => {
+      const created = await MultirespondentSubmission.create(
+        MOCK_MRF_SUBMISSION(),
+      )
+
+      const actual = await MultirespondentSubmission.findEncryptedSubmissionById(
+        String(MOCK_FORM_ID),
+        String(created._id),
+      )
+
+      expect(actual!.submittedSteps!.map((s) => s.toObject())).toEqual([
+        EXPECTED_ADMIN_STEP,
+      ])
+    })
+
+    it('getSubmissionCursorByFormId should not load unclassified step sub-fields', async () => {
+      await MultirespondentSubmission.create(MOCK_MRF_SUBMISSION())
+
+      const cursor = MultirespondentSubmission.getSubmissionCursorByFormId(
+        String(MOCK_FORM_ID),
+        {},
+      )
+      const docs = []
+      for await (const doc of cursor) docs.push(doc)
+
+      expect(docs).toHaveLength(1)
+      expect(docs[0].submittedSteps).toEqual([EXPECTED_ADMIN_STEP])
+    })
+  })
+
   describe('Methods', () => {
     describe('getWebhookView', () => {
       it('should returnt non-null view with paymentContent when submission has paymentId', async () => {
