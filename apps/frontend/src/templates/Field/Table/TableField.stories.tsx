@@ -249,3 +249,23 @@ DisabledWithLongDropdownOption.args = {
   schema: { ...longDropdownSchema, disabled: true },
   defaultValue: longDropdownDefaultValues,
 }
+
+const LONG_SHORT_TEXT_VALUE =
+  'This is a very long text column value that should be available when disabled'
+
+const longShortTextDefaultValues = baseSchema.columns.reduce<
+  Record<string, string>
+>((acc, c) => {
+  if (c.columnType === BasicField.ShortText) {
+    acc[c._id] = LONG_SHORT_TEXT_VALUE
+  } else if (c.columnType === BasicField.Dropdown) {
+    acc[c._id] = STORYBOOK_DROPDOWN_OPTIONS[1]
+  }
+  return acc
+}, {})
+
+export const DisabledWithLongShortTextValue = Template.bind({})
+DisabledWithLongShortTextValue.args = {
+  schema: { ...baseSchema, disabled: true },
+  defaultValue: longShortTextDefaultValues,
+}
