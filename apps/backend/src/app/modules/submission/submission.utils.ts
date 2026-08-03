@@ -195,15 +195,11 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
       }
-    // A failed submission-snapshot PUT aborts the save before the row is
-    // committed, so from the respondent's side it is indistinguishable from a
-    // save failure: nothing was recorded and re-submitting is safe. Treated
-    // identically, down to the copy, rather than surfacing snapshot internals.
     case SnapshotWriteError:
     case SubmissionSaveError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: new SubmissionSaveError().message,
+        errorMessage: error.message,
       }
     case CreateRedirectUrlError:
       return {

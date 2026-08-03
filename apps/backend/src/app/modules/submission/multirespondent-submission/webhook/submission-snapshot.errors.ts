@@ -7,7 +7,10 @@ import { ApplicationError, ErrorCodes } from '../../../core/core.errors'
  * is on every attempt, so an existing object is never clobbered.
  */
 export class SnapshotWriteError extends ApplicationError {
-  constructor(message = 'Failed to write submission snapshot', meta?: unknown) {
+  constructor(
+    message = 'Failed to save submission. Please try again later.',
+    meta?: unknown,
+  ) {
     super(message, meta, ErrorCodes.SUBMISSION_MRF_SNAPSHOT_WRITE)
   }
 }

@@ -449,7 +449,7 @@ describe('multirespondent-submision.controller', () => {
       })
     })
 
-    it('returns the same 500 as a save failure when the snapshot write fails', async () => {
+    it('returns 500 when the snapshot write fails', async () => {
       // Arrange
       MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission =
         jest.fn().mockReturnValue(errAsync(new SnapshotWriteError()))
@@ -484,14 +484,11 @@ describe('multirespondent-submision.controller', () => {
       await submitMultirespondentFormForTest(mockSubmitMrfReq, mockRes)
 
       // Assert
-      // An aborted snapshot write is indistinguishable from a save failure to
-      // the respondent, so it carries the save-failure status and copy — never
-      // the generic unmapped-error copy.
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
       expect(mockRes.json).toHaveBeenCalledWith({
-        message: new SubmissionSaveError().message,
+        message: new SnapshotWriteError().message,
       })
     })
 
@@ -883,7 +880,7 @@ describe('multirespondent-submision.controller', () => {
       })
     })
 
-    it('returns the same 500 as a save failure when the snapshot write fails', async () => {
+    it('returns 500 when the snapshot write fails', async () => {
       // Arrange
       MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission =
         jest.fn().mockReturnValue(errAsync(new SnapshotWriteError()))
@@ -936,7 +933,7 @@ describe('multirespondent-submision.controller', () => {
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
       expect(mockRes.json).toHaveBeenCalledWith({
-        message: new SubmissionSaveError().message,
+        message: new SnapshotWriteError().message,
       })
       // The post-submission actions must not fire for an aborted save.
       expect(
