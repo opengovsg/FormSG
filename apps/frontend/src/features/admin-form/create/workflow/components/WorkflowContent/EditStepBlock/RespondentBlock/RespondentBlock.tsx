@@ -13,6 +13,7 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 
 import { useAdminFormWorkflow } from '../../../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowBuilderRedesign } from '../../../../hooks/useIsWorkflowBuilderRedesign'
 import { isFirstStepByStepNumber } from '../../utils/isFirstStepByStepNumber'
 import { EditStepBlockContainer } from '../EditStepBlockContainer'
 
@@ -40,6 +41,7 @@ export const RespondentBlock = ({
 
   const { emailFormFields = [], dropdownFormFields = [] } =
     useAdminFormWorkflow()
+  const isRedesign = useIsWorkflowBuilderRedesign()
 
   const emailFieldItems = emailFormFields.map(
     ({ _id, questionNumber, title, fieldType }) => ({
@@ -59,11 +61,17 @@ export const RespondentBlock = ({
         <Stack spacing="0.5rem">
           <Text style={textStyles.h4}>
             {t(
-              'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
+              isRedesign
+                ? 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondentRedesign'
+                : 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
             )}
           </Text>
           <Text>
-            {t('features.adminForm.sidebar.workflow.respondentBlock.anyone')}
+            {t(
+              isRedesign
+                ? 'features.adminForm.sidebar.workflow.respondentBlock.anyoneRedesign'
+                : 'features.adminForm.sidebar.workflow.respondentBlock.anyone',
+            )}
           </Text>
         </Stack>
       ) : (
@@ -73,7 +81,11 @@ export const RespondentBlock = ({
           isInvalid={!!errors.workflow_type}
         >
           <FormLabel style={textStyles.h4}>
-            {t('features.adminForm.sidebar.workflow.respondentBlock.select')}
+            {t(
+              isRedesign
+                ? 'features.adminForm.sidebar.workflow.respondentBlock.selectRedesign'
+                : 'features.adminForm.sidebar.workflow.respondentBlock.select',
+            )}
           </FormLabel>
           <Stack spacing="0.25rem">
             <Radio.RadioGroup value={selectedWorkflowType}>

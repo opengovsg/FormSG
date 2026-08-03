@@ -8,6 +8,8 @@ import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
+import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+
 import { useWorkflowTypeValidation } from './hooks'
 import { FieldItem, RespondentOptionProps } from './types'
 
@@ -29,6 +31,7 @@ export const DynamicRespondentOption = ({
   } = formMethods
 
   const workflowTypeValidation = useWorkflowTypeValidation()
+  const isRedesign = useIsWorkflowBuilderRedesign()
   return (
     <>
       <Radio
@@ -70,7 +73,9 @@ export const DynamicRespondentOption = ({
                       ({ value: fieldValue }) => fieldValue === selectedValue,
                     ) ||
                     t(
-                      'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmail',
+                      isRedesign
+                        ? 'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmailRedesign'
+                        : 'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmail',
                     )
                   )
                 },

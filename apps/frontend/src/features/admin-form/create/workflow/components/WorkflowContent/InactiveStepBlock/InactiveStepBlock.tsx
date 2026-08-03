@@ -20,6 +20,7 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -100,6 +101,7 @@ export const InactiveStepBlock = ({
   step,
 }: InactiveStepBlockProps): JSX.Element | null => {
   const { t } = useTranslation()
+  const isRedesign = useIsWorkflowBuilderRedesign()
   const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
@@ -176,13 +178,17 @@ export const InactiveStepBlock = ({
           <Stack>
             <Text textStyle="subhead-3">
               {t(
-                'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
+                isRedesign
+                  ? 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondentRedesign'
+                  : 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
               )}
             </Text>
             {isFirstStep ? (
               <Text>
                 {t(
-                  'features.adminForm.sidebar.workflow.respondentBlock.anyone',
+                  isRedesign
+                    ? 'features.adminForm.sidebar.workflow.respondentBlock.anyoneRedesign'
+                    : 'features.adminForm.sidebar.workflow.respondentBlock.anyone',
                 )}
               </Text>
             ) : (

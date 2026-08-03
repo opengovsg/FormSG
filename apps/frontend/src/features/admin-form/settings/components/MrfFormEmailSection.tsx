@@ -20,6 +20,7 @@ import { TagInput } from '~components/TagInput'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks/useAdminFormWorkflow'
+import { useIsWorkflowBuilderRedesign } from '~features/admin-form/create/workflow/hooks/useIsWorkflowBuilderRedesign'
 import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../mutations'
@@ -49,6 +50,7 @@ const MrfEmailNotificationsForm = ({
   isHighContrast,
 }: MrfEmailNotificationsFormProps) => {
   const { t } = useTranslation()
+  const isRedesign = useIsWorkflowBuilderRedesign()
   const {
     isLoading,
     formWorkflow,
@@ -211,7 +213,9 @@ const MrfEmailNotificationsForm = ({
           {isEmpty(errors[OTHER_PARTIES_EMAIL_INPUT_NAME]) ? (
             <FormLabel.Description color="secondary.400" mt="0.5rem">
               {t(
-                'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
+                isRedesign
+                  ? 'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.descriptionRedesign'
+                  : 'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.description',
               )}
             </FormLabel.Description>
           ) : (
@@ -257,7 +261,9 @@ const MrfEmailNotificationsForm = ({
           <Box my="1.5rem">
             <FormLabel mb="0.75rem" textColor="secondary.700">
               {t(
-                'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
+                isRedesign
+                  ? 'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overallRedesign'
+                  : 'features.adminForm.settings.emailNotifications.section.mrf.respondents.stepN.label.overall',
               )}
             </FormLabel>
             <Skeleton isLoaded={!isLoading}>
