@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.1.0](https://github.com/opengovsg/formsg/compare/v9.0.1...v9.1.0) (2026-08-03)
+
+
+### Features
+
+* **workflow-builder-redesign:** copy changes across workflow builder (#9733) ([#9733](https://github.com/opengovsg/formsg/commit/912d8682d03614aa3d5d1a24de96e61449a71f1f))
+
+
+### Refactors
+
+* **paper-forms:** reuse ProgressIndicator for set-up progress (#9793) ([#9793](https://github.com/opengovsg/formsg/commit/94fe9ae5127b55e0572810b29e1ee0e5c047f698))
+
 ## [9.0.1](https://github.com/opengovsg/formsg/compare/v9.0.0...v9.0.1) (2026-07-31)
 
 
