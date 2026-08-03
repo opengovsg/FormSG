@@ -39,7 +39,7 @@ import { getPaymentWebhookEventObject } from '../modules/payments/payment.servic
 import { MultirespondentSubmissionContent } from '../modules/submission/multirespondent-submission/multirespondent-submission.types'
 import { buildMrfMetadata } from '../modules/submission/submission.utils'
 import {
-  buildSubmittedStepsMongoProjection,
+  buildAdminSubmittedStepsMongoProjection,
   projectSubmittedStepForWebhook,
 } from '../modules/submission/submitted-step-visibility'
 import { createQueryWithDateParam } from '../utils/date'
@@ -843,7 +843,7 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     form_logics: 1,
     workflow: 1,
     workflowStep: 1,
-    ...buildSubmittedStepsMongoProjection(),
+    ...buildAdminSubmittedStepsMongoProjection(),
     encryptedSubmissionSecretKey: 1,
     encryptedContent: 1,
     verifiedContent: 1,
@@ -895,7 +895,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       version: 1,
       workflowStep: 1,
       mrfVersion: 1,
-      ...buildSubmittedStepsMongoProjection(),
+      ...buildAdminSubmittedStepsMongoProjection(),
       encryptedStepToken: 1,
     })
     .exec()

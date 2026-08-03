@@ -2,7 +2,7 @@ import { SubmittedStep, WorkflowStatus } from 'formsg-shared/types'
 import { model, Schema } from 'mongoose'
 
 import {
-  buildSubmittedStepsMongoProjection,
+  buildAdminSubmittedStepsMongoProjection,
   projectSubmittedStepForPublic,
   projectSubmittedStepForWebhook,
 } from '../submitted-step-visibility'
@@ -88,9 +88,9 @@ describe('projectSubmittedStepForPublic', () => {
   })
 })
 
-describe('buildSubmittedStepsMongoProjection', () => {
+describe('buildAdminSubmittedStepsMongoProjection', () => {
   it('selects exactly the admin-visible sub-fields, so the rest never load', () => {
-    expect(buildSubmittedStepsMongoProjection()).toEqual({
+    expect(buildAdminSubmittedStepsMongoProjection()).toEqual({
       'submittedSteps.isApproval': 1,
       'submittedSteps.submittedAt': 1,
       'submittedSteps.status': 1,

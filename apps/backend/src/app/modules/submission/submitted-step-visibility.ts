@@ -55,7 +55,7 @@ export const projectSubmittedStepForPublic = (
  * fields from loading at all, and keeps the export cursor free of per-document
  * work.
  */
-export const buildSubmittedStepsMongoProjection = (): Record<string, 1> =>
+export const buildAdminSubmittedStepsMongoProjection = (): Record<string, 1> =>
   Object.fromEntries(
     SUBMITTED_STEP_FIELDS.filter(
       (field) => SUBMITTED_STEP_VISIBILITY[field].admin,
