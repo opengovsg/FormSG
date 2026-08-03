@@ -472,7 +472,7 @@ export type PaymentSubmissionData = {
 }
 
 export type StatusTrackerData = {
-  submittedSteps: SubmittedStep[] | undefined
+  submittedSteps: StatusTrackerSubmittedStep[] | undefined
   workflow: StrippedFormWorkflowDto
   responseId: string | undefined
   form: string

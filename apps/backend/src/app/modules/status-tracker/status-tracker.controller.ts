@@ -2,9 +2,9 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import {
   StatusTrackerData,
   StrippedFormWorkflowDto,
-  SubmittedStep,
 } from 'formsg-shared/types'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
+import { projectSubmittedStepForStatusTracker } from 'formsg-shared/utils/submitted-step-visibility'
 import { StatusCodes } from 'http-status-codes'
 import { okAsync } from 'neverthrow'
 
@@ -37,14 +37,12 @@ const getStatusTrackerSubmissionData: ControllerHandler<
   return okAsync(submissionId)
     .andThen((submissionId) => getMultirespondentSubmission(submissionId))
     .map((submissionData) => {
-      // strip emails from submitted steps and workflow
-      // drop mongoose internals to extract documentFields (e.g. submittedAt, etc.)
-      const strippedSubmittedSteps = submissionData
-        .toObject()
-        .submittedSteps?.map(
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          ({ nextStepRecipientEmails, ...rest }: SubmittedStep) => rest,
-        )
+      // Project each step down to the fields classified visible at this
+      // boundary. The projection also drops mongoose internals, since it
+      // copies named fields into a fresh object rather than spreading.
+      const strippedSubmittedSteps = submissionData.submittedSteps?.map(
+        projectSubmittedStepForStatusTracker,
+      )
 
       const strippedWorkflow: StrippedFormWorkflowDto = stripWorkflowEmails(
         submissionData.workflow,
