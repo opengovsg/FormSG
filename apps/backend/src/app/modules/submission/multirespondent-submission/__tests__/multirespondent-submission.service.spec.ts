@@ -4001,6 +4001,45 @@ describe('multirespondent-submission.service', () => {
       saveSpy.mockRestore()
     })
 
+    it('does not commit the appended step when the snapshot write fails on update', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+        errAsync(new SnapshotWriteError()),
+      )
+
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotWriteError)
+
+      // S3-first ordering: the row is untouched, so the respondent's retry
+      // starts from the same committed state.
+      const saved = await Model.findById(row._id)
+      expect(saved?.submittedSteps).toHaveLength(1)
+      expect(saved?.workflowStep).toBe(0)
+      expect(saved?.encryptedContent).toBe('ec')
+    })
+
     // ---- Send gate table ----
 
     it.each`
