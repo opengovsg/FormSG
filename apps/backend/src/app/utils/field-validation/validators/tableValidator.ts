@@ -27,7 +27,7 @@ import {
   ProcessedTableResponse,
 } from '../../../modules/submission/submission.types'
 import { createAnswerFieldFromColumn } from '../answerField.factory'
-import { validateField, validateFieldV3 } from '..'
+import { validateField, validateFieldV3, validateFieldV4 } from '..'
 
 const ALLOWED_COLUMN_TYPES = [BasicField.ShortText, BasicField.Dropdown]
 
@@ -453,9 +453,13 @@ const makeTableCellValidatorV4: ResponseValidatorConstructor<
       // Do not rely on Object.values(row.value) preserving column order.
       return columns.every((col) => {
         const answer = String(row.value[col._id])
-        const answerResponse = {
-          answer,
+        // Each cell is validated as a standalone V4 single-answer response
+        // of the column's field type.
+        const answerResponse: ParsedClearFormFieldResponseV4 = {
           fieldType: col.columnType,
+          answer: { value: answer },
+          question: col.title,
+          provenance: {},
         }
 
         if (col.columnType === BasicField.Dropdown) {
@@ -467,7 +471,7 @@ const makeTableCellValidatorV4: ResponseValidatorConstructor<
             _id: '',
           } as FormFieldWithId<DropdownFieldBase>
 
-          return validateFieldV3({
+          return validateFieldV4({
             formId,
             formField,
             response: answerResponse,
@@ -482,7 +486,7 @@ const makeTableCellValidatorV4: ResponseValidatorConstructor<
             _id: '',
           } as FormFieldWithId<ShortTextFieldBase>
 
-          return validateFieldV3({
+          return validateFieldV4({
             formId,
             formField,
             response: answerResponse,
