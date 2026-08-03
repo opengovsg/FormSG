@@ -1,5 +1,6 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FormAuthType,
@@ -24,6 +25,7 @@ import {
   IMultirespondentSubmissionSchema,
   IPopulatedForm,
   IPopulatedMultirespondentForm,
+  WebhookView,
 } from '../../../../types'
 import {
   MultirespondentSubmissionDto,
@@ -46,6 +48,7 @@ import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
 import { FormRespondentSingleSubmissionValidationError } from '../../form/form.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
 import { WebhookFactory } from '../../webhook/webhook.factory'
+import { getWebhookType } from '../../webhook/webhook.service'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
@@ -66,6 +69,19 @@ import {
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
+import { SnapshotWriteError } from './webhook/submission-snapshot.errors'
+import { buildV4Snapshot } from './webhook/submission-snapshot.producer'
+import { SubmissionSnapshotV4 } from './webhook/submission-snapshot.schema'
+import { writeV4Snapshot } from './webhook/submission-snapshot.store'
+import {
+  getWebhookPayloadPolicy,
+  mrfVersionToContentFormat,
+} from './webhook/webhook-payload-policy'
+import { reconstructMrfWebhookData } from './webhook/webhook-reconstruction'
+import {
+  shouldSendMrfWebhook,
+  shouldWriteV4Snapshot,
+} from './webhook/webhook-send-eligibility'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
   buildMrfResponseJson,
@@ -85,6 +101,13 @@ const appUrl =
   process.env.NODE_ENV === Environment.Dev
     ? config.app.feAppUrl
     : config.app.appUrl
+
+export type SavedMultirespondentSubmission = {
+  submission: IMultirespondentSubmissionSchema & {
+    _id: mongoose.Types.ObjectId
+  }
+  snapshot?: SubmissionSnapshotV4
+}
 
 export const checkFormIsMultirespondent = (
   form: IPopulatedForm,
@@ -704,13 +727,15 @@ export const createMultiRespondentFormSubmission = ({
   form,
   encryptedPayload,
   logMeta,
+  growthbook,
 }: {
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
+  growthbook?: GrowthBook
 }): ResultAsync<
-  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
-  AttachmentUploadError | SubmissionSaveError
+  SavedMultirespondentSubmission,
+  AttachmentUploadError | SubmissionSaveError | SnapshotWriteError
 > => {
   logMeta = {
     ...logMeta,
@@ -771,7 +796,16 @@ export const createMultiRespondentFormSubmission = ({
         submitterId: hashedSubmitterId,
       }
 
-      const submissionContent: MultirespondentSubmissionContent = {
+      // Generate the submissionId up front so the S3 snapshot key can be built
+      // BEFORE the row is persisted (the S3-first ordering contract). The same
+      // id is persisted on the row via both the plain-save and
+      // saveIfSubmitterIdIsUnique paths.
+      const submissionObjectId = new mongoose.Types.ObjectId()
+
+      const submissionContent: MultirespondentSubmissionContent & {
+        _id: mongoose.Types.ObjectId
+      } = {
+        _id: submissionObjectId,
         form: form._id,
         authType: form.authType,
         myInfoFields: form.getUniqueMyInfoAttrs(),
@@ -790,6 +824,15 @@ export const createMultiRespondentFormSubmission = ({
         stepTokenHash,
         encryptedStepToken,
       }
+
+      const shouldWriteSnapshot = shouldWriteV4Snapshot({
+        mrfVersion,
+        webhook: form.webhook,
+        isMrfWebhooksEnabled:
+          growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+        isStepWriteTokenEnabled:
+          growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false,
+      })
 
       const saveSubmission = async () => {
         if (form.isSingleSubmission && form.authType !== FormAuthType.NIL) {
@@ -826,25 +869,54 @@ export const createMultiRespondentFormSubmission = ({
         return submission.save()
       }
 
-      return ResultAsync.fromPromise(
-        saveSubmission().then((submission) => ({
-          submission,
-          responseMetadata,
-        })),
-        (error) => {
-          if (error instanceof FormRespondentSingleSubmissionValidationError) {
-            return error
-          }
-          logger.error({
-            message: 'Multirespondent submission save error',
-            meta: logMeta,
-            error,
+      const snapshot = shouldWriteSnapshot
+        ? buildV4Snapshot({
+            formId: String(form._id),
+            submissionId: String(submissionObjectId),
+            submissionIndex: 0,
+            workflowStep: 0,
+            encryptedContent,
+            encryptedSubmissionSecretKey,
+            verifiedContent,
+            attachmentMetadata: Object.fromEntries(
+              attachmentMetadata ?? new Map(),
+            ),
+            createdAt: submittedStepMeta.submittedAt,
           })
-          return new SubmissionSaveError()
-        },
+        : undefined
+
+      const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
+        snapshot
+          ? writeV4Snapshot(snapshot).map(({ token }) => {
+              submittedStepMeta.snapshotTokens = { v4: token }
+              return undefined
+            })
+          : okAsync(undefined)
+
+      return writeSnapshotIfNeeded.andThen(() =>
+        ResultAsync.fromPromise(
+          saveSubmission().then((submission) => ({
+            submission,
+            responseMetadata,
+            snapshot,
+          })),
+          (error) => {
+            if (
+              error instanceof FormRespondentSingleSubmissionValidationError
+            ) {
+              return error
+            }
+            logger.error({
+              message: 'Multirespondent submission save error',
+              meta: logMeta,
+              error,
+            })
+            return new SubmissionSaveError()
+          },
+        ),
       )
     })
-    .map(({ submission, responseMetadata }) => {
+    .map(({ submission, responseMetadata, snapshot }) => {
       const submissionId = submission.id
       logger.info({
         message: 'Saved submission to MongoDB',
@@ -859,7 +931,7 @@ export const createMultiRespondentFormSubmission = ({
         })
       }
 
-      return submission
+      return { submission, snapshot }
     })
 }
 
@@ -1028,8 +1100,100 @@ const generatePdfAttachmentIfRequired = ({
   return pdfResult
 }
 
+const sendMrfInitialWebhookIfEligible = ({
+  submission,
+  snapshot,
+  webhookUrl,
+  isRetryEnabled,
+  growthbook,
+  logMeta,
+}: {
+  submission: IMultirespondentSubmissionSchema
+  snapshot?: SubmissionSnapshotV4
+  webhookUrl: string
+  isRetryEnabled: boolean
+  growthbook?: GrowthBook
+  logMeta: CustomLoggerParams['meta']
+}): void => {
+  const webhookType = getWebhookType(webhookUrl)
+  const isStepWriteTokenEnabled =
+    growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
+
+  const shouldSend = shouldSendMrfWebhook({
+    webhookType,
+    isMrfWebhooksEnabled:
+      growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+    isStepWriteTokenEnabled,
+  })
+  if (!shouldSend) {
+    return
+  }
+
+  logger.info({
+    message: 'Sending initial webhook for multirespondent submission',
+    meta: { ...logMeta, webhookType },
+  })
+
+  const submissionIndex = (submission.submittedSteps?.length ?? 1) - 1
+
+  // Legacy path: the row is shipped verbatim by `getWebhookView`, without
+  // consulting the payload policy. Only ever correct for a V3 row.
+  if (mrfVersionToContentFormat(submission.mrfVersion) === 'v3') {
+    WebhookFactory.sendInitialWebhook(
+      submission,
+      webhookUrl,
+      isRetryEnabled,
+    ).mapErr((error) => {
+      logger.error({
+        message: 'Multirespondent submission webhook error',
+        meta: logMeta,
+        error,
+      })
+    })
+    return
+  }
+
+  ResultAsync.fromPromise(
+    submission.getWebhookView(),
+    () => new DatabaseError(),
+  )
+    .andThen((liveView) => {
+      const policy = getWebhookPayloadPolicy({
+        webhookType: webhookType === 'plumber' ? 'plumber' : 'generic',
+        isStepWriteTokenEnabled,
+        submissionIndex,
+        submittedStepsLength: submission.submittedSteps?.length ?? 0,
+      })
+      return reconstructMrfWebhookData({
+        liveData: liveView.data,
+        snapshot,
+        // Passed only when a snapshot exists; reconstruction fails loud
+        // otherwise.
+        submissionIndex: snapshot ? submissionIndex : undefined,
+        policy,
+      }).asyncAndThen((data) => {
+        const webhookView: WebhookView = { data }
+
+        return WebhookFactory.sendInitialWebhook(
+          submission,
+          webhookUrl,
+          isRetryEnabled,
+          webhookView,
+        ).map(() => undefined)
+      })
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Multirespondent submission webhook error',
+        meta: logMeta,
+        error,
+      })
+    })
+}
+
 export const performMultiRespondentPostSubmissionCreateActions = ({
   submission,
+  snapshot,
   submissionId,
   form,
   encryptedPayload,
@@ -1038,6 +1202,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
+  snapshot?: SubmissionSnapshotV4
   submissionId: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
@@ -1116,24 +1281,14 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
 
   const webhookUrl = form.webhook?.url
   if (webhookUrl) {
-    logger.info({
-      message: 'Sending initial webhook for multirespondent submission',
-      meta: logMeta,
-    })
-
-    WebhookFactory.sendInitialWebhook(
+    sendMrfInitialWebhookIfEligible({
       submission,
+      snapshot,
       webhookUrl,
-      !!form.webhook?.isRetryEnabled,
-    )
-      .andThen(() => okAsync(form))
-      .mapErr((error) => {
-        logger.error({
-          message: 'Multirespondent submission webhook error',
-          meta: logMeta,
-          error,
-        })
-      })
+      isRetryEnabled: !!form.webhook?.isRetryEnabled,
+      growthbook,
+      logMeta,
+    })
   }
 
   return sendNextStepEmail({
@@ -1183,17 +1338,20 @@ export const updateMultiRespondentFormSubmission = ({
   snapshottedFormDef,
   encryptedPayload,
   logMeta,
+  growthbook,
 }: {
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
   encryptedPayload: MultirespondentSubmissionDto
   logMeta: CustomLoggerParams['meta']
+  growthbook?: GrowthBook
 }): ResultAsync<
-  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
+  SavedMultirespondentSubmission,
   | AttachmentUploadError
   | SubmissionSaveError
   | SubmissionNotFoundError
   | PossibleDatabaseError
+  | SnapshotWriteError
 > => {
   logMeta = {
     ...logMeta,
@@ -1296,10 +1454,9 @@ export const updateMultiRespondentFormSubmission = ({
             isApproval: false,
           } as SubmittedNonApprovalStep)
 
-      submission.submittedSteps = [
-        ...(submission.submittedSteps ?? []),
-        submittedStepMeta,
-      ]
+      // Index of the entry about to be appended (before the append below).
+      const submissionIndex = submission.submittedSteps?.length ?? 0
+
       submission.responseMetadata = responseMetadata
       submission.submissionPublicKey = submissionPublicKey
       submission.encryptedSubmissionSecretKey = encryptedSubmissionSecretKey
@@ -1312,33 +1469,78 @@ export const updateMultiRespondentFormSubmission = ({
       submission.stepTokenHash = stepTokenHash
       submission.encryptedStepToken = encryptedStepToken
 
-      return ResultAsync.fromPromise(
-        submission.save().then(() => ({ submission, responseMetadata })),
-        (error) => {
-          if (error instanceof mongoose.Error.VersionError) {
-            return transformMongoError(error)
-          }
-          logger.error({
-            message: 'Multirespondent submission save error',
-            meta: logMeta,
-            error,
+      const shouldWriteSnapshot = shouldWriteV4Snapshot({
+        mrfVersion,
+        webhook: snapshottedFormDef.webhook,
+        isMrfWebhooksEnabled:
+          growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+        isStepWriteTokenEnabled:
+          growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false,
+      })
+
+      const snapshot = shouldWriteSnapshot
+        ? buildV4Snapshot({
+            formId: String(snapshottedFormDef._id),
+            submissionId: String(submission._id),
+            submissionIndex,
+            workflowStep,
+            encryptedContent,
+            encryptedSubmissionSecretKey,
+            verifiedContent,
+            attachmentMetadata: Object.fromEntries(
+              attachmentMetadata ?? new Map(),
+            ),
+            createdAt: submittedStepMeta.submittedAt,
           })
-          return new SubmissionSaveError()
-        },
-      )
+        : undefined
+
+      const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
+        snapshot
+          ? writeV4Snapshot(snapshot).map(({ token }) => {
+              submittedStepMeta.snapshotTokens = { v4: token }
+              return undefined
+            })
+          : okAsync(undefined)
+
+      return writeSnapshotIfNeeded.andThen(() => {
+        // NOTE: Append AFTER the token is recorded so the value survives mongoose's
+        // subdocument cast (which copies the plain object into the array).
+        submission.submittedSteps = [
+          ...(submission.submittedSteps ?? []),
+          submittedStepMeta,
+        ]
+
+        return ResultAsync.fromPromise(
+          submission
+            .save()
+            .then(() => ({ submission, responseMetadata, snapshot })),
+          (error) => {
+            if (error instanceof mongoose.Error.VersionError) {
+              return transformMongoError(error)
+            }
+            logger.error({
+              message: 'Multirespondent submission save error',
+              meta: logMeta,
+              error,
+            })
+            return new SubmissionSaveError()
+          },
+        )
+      })
     })
-    .map(({ submission, responseMetadata }) => {
+    .map(({ submission, responseMetadata, snapshot }) => {
       logger.info({
         message: 'Saved submission to MongoDB',
         meta: { ...logMeta, submissionId: submission.id, responseMetadata },
       })
 
-      return submission
+      return { submission, snapshot }
     })
 }
 
 export const performMultiRespondentPostSubmissionUpdateActions = ({
   submission,
+  snapshot,
   submissionId,
   snapshottedFormDef,
   currentStepNumber,
@@ -1348,6 +1550,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
+  snapshot?: SubmissionSnapshotV4
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
   currentStepNumber: number
@@ -1398,24 +1601,14 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
 
   const webhookUrl = snapshottedFormDef.webhook?.url
   if (webhookUrl) {
-    logger.info({
-      message: 'Sending update webhook for multirespondent submission',
-      meta: logMeta,
-    })
-
-    WebhookFactory.sendInitialWebhook(
+    sendMrfInitialWebhookIfEligible({
       submission,
+      snapshot,
       webhookUrl,
-      !!snapshottedFormDef.webhook?.isRetryEnabled,
-    )
-      .andThen(() => okAsync(undefined))
-      .mapErr((error) => {
-        logger.error({
-          message: 'Multirespondent submission webhook error',
-          meta: logMeta,
-          error,
-        })
-      })
+      isRetryEnabled: !!snapshottedFormDef.webhook?.isRetryEnabled,
+      growthbook,
+      logMeta,
+    })
   }
 
   const pdfResult = generatePdfAttachmentIfRequired({

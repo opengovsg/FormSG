@@ -53,6 +53,7 @@ import {
 } from '../multirespondent-submission.controller'
 import * as MultiRespondentSubmissionService from '../multirespondent-submission.service'
 import * as MultirespondentSubmissionUtils from '../multirespondent-submission.utils'
+import { SnapshotWriteError } from '../webhook/submission-snapshot.errors'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
 
@@ -108,10 +109,13 @@ describe('multirespondent-submision.controller', () => {
       .fn()
       .mockReturnValue(ok(mockMrfForm))
 
+    // Both saves return the committed row together with the snapshot object
+    // they PUT, so the controller can thread it into the post-submission
+    // actions without a read-back.
     MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission =
-      jest.fn().mockReturnValue(okAsync(mockMrfSubmission))
+      jest.fn().mockReturnValue(okAsync({ submission: mockMrfSubmission }))
     MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission =
-      jest.fn().mockReturnValue(okAsync(mockMrfSubmission))
+      jest.fn().mockReturnValue(okAsync({ submission: mockMrfSubmission }))
     MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionCreateActions =
       jest.fn().mockReturnValue(okAsync(true))
     MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionUpdateActions =
@@ -445,6 +449,49 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: submissionSaveError.message,
+      })
+    })
+
+    it('returns 500 when the snapshot write fails', async () => {
+      // Arrange
+      MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission =
+        jest.fn().mockReturnValue(errAsync(new SnapshotWriteError()))
+
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {} as any,
+      })
+      const mockSubmitMrfReq = merge(mockReq, {
+        formsg: {
+          formDef: {
+            _id: mockFormId,
+            authType: FormAuthType.NIL,
+            getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+          },
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {},
+            workflowStep: 0,
+          },
+        } as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await submitMultirespondentFormForTest(mockSubmitMrfReq, mockRes)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: new SnapshotWriteError().message,
       })
     })
 
@@ -834,6 +881,67 @@ describe('multirespondent-submision.controller', () => {
         message: submissionSaveError.message,
         submissionId: mockSubmissionId,
       })
+    })
+
+    it('returns 500 when the snapshot write fails', async () => {
+      // Arrange
+      MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission =
+        jest.fn().mockReturnValue(errAsync(new SnapshotWriteError()))
+      const mockReq = expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        body: {} as any,
+      })
+      const mockSubmitMrfReq = merge(mockReq, {
+        formsg: {
+          formDef: {
+            _id: mockFormId,
+            authType: FormAuthType.NIL,
+            getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+          },
+          snapshottedFormDef: {
+            _id: mockFormId,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            emails: [],
+            stepOneEmailNotificationFieldId: '',
+            stepsToNotify: [],
+            hasRespondentCopy: false,
+            title: 'Mock snapshotted form def',
+            webhook: {
+              url: 'https://plumber.gov.sg/webhook',
+              isRetryEnabled: true,
+            },
+          } as SnapshottedFormDef,
+          encryptedPayload: {
+            encryptedContent: 'encryptedContent',
+            version: 1,
+            submissionPublicKey: 'submissionPublicKey',
+            encryptedSubmissionSecretKey: 'encryptedSubmissionSecretKey',
+            responses: {},
+            workflowStep: 1,
+          },
+        } as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+
+      // Act
+      await updateMultirespondentSubmissionForTest(mockSubmitMrfReq, mockRes)
+
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: new SnapshotWriteError().message,
+      })
+      // The post-submission actions must not fire for an aborted save.
+      expect(
+        MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionUpdateActions,
+      ).not.toHaveBeenCalled()
     })
 
     it('returns 404 not found when submission id not found', async () => {

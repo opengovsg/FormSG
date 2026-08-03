@@ -129,6 +129,7 @@ const submitMultirespondentForm = async (
       form,
       encryptedPayload,
       logMeta,
+      growthbook: req.growthbook,
     })
 
   if (createMultiRespondentFormSubmissionResult.isErr()) {
@@ -138,7 +139,8 @@ const submitMultirespondentForm = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  const submission = createMultiRespondentFormSubmissionResult.value
+  const { submission, snapshot } =
+    createMultiRespondentFormSubmissionResult.value
 
   // Send success back to client
   res.json({
@@ -150,6 +152,7 @@ const submitMultirespondentForm = async (
 
   await performMultiRespondentPostSubmissionCreateActions({
     submission,
+    snapshot,
     submissionId: submission._id.toString(),
     form,
     encryptedPayload,
@@ -220,6 +223,7 @@ const updateMultirespondentSubmission = async (
       snapshottedFormDef,
       encryptedPayload,
       logMeta,
+      growthbook: req.growthbook,
     })
 
   if (updateMultiRespondentFormSubmissionResult.isErr()) {
@@ -236,7 +240,8 @@ const updateMultirespondentSubmission = async (
     return res.status(statusCode).json({ message: errorMessage })
   }
 
-  const submission = updateMultiRespondentFormSubmissionResult.value
+  const { submission, snapshot } =
+    updateMultiRespondentFormSubmissionResult.value
 
   // Send success back to client
   res.json({
@@ -250,6 +255,7 @@ const updateMultirespondentSubmission = async (
 
   await performMultiRespondentPostSubmissionUpdateActions({
     submission,
+    snapshot,
     submissionId,
     snapshottedFormDef,
     currentStepNumber,
