@@ -1,8 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
-import {
-  StatusTrackerData,
-  StrippedFormWorkflowDto,
-} from 'formsg-shared/types'
+import { StatusTrackerData, StrippedFormWorkflowDto } from 'formsg-shared/types'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { projectSubmittedStepForStatusTracker } from 'formsg-shared/utils/submitted-step-visibility'
 import { StatusCodes } from 'http-status-codes'

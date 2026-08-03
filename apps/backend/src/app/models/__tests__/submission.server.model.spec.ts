@@ -813,10 +813,11 @@ describe('Submission Model', () => {
         MOCK_MRF_SUBMISSION(),
       )
 
-      const actual = await MultirespondentSubmission.findEncryptedSubmissionById(
-        String(MOCK_FORM_ID),
-        String(created._id),
-      )
+      const actual =
+        await MultirespondentSubmission.findEncryptedSubmissionById(
+          String(MOCK_FORM_ID),
+          String(created._id),
+        )
 
       expect(actual!.submittedSteps!.map((s) => s.toObject())).toEqual([
         EXPECTED_ADMIN_STEP,

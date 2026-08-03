@@ -210,27 +210,24 @@ describe('reconstructMrfWebhookData', () => {
       'SNAPSHOT_TOKEN_LEAF_0',
       'SNAPSHOT_TOKEN_LEAF_1',
       'SNAPSHOT_TOKEN_LEAF_2',
-    ])(
-      'never emits %s on the snapshot path or the live path',
-      (forbidden) => {
-        const snapshotPath = JSON.stringify(
-          reconstructMrfWebhookData({
-            liveData: makeLiveData(),
-            snapshot: makeV4Snapshot(),
-            submissionIndex: 1,
-            policy: PLUMBER_LATEST,
-          }),
-        )
-        const livePath = JSON.stringify(
-          reconstructMrfWebhookData({
-            liveData: makeLiveData(),
-            policy: PLUMBER_LATEST,
-          }),
-        )
+    ])('never emits %s on the snapshot path or the live path', (forbidden) => {
+      const snapshotPath = JSON.stringify(
+        reconstructMrfWebhookData({
+          liveData: makeLiveData(),
+          snapshot: makeV4Snapshot(),
+          submissionIndex: 1,
+          policy: PLUMBER_LATEST,
+        }),
+      )
+      const livePath = JSON.stringify(
+        reconstructMrfWebhookData({
+          liveData: makeLiveData(),
+          policy: PLUMBER_LATEST,
+        }),
+      )
 
-        expect(snapshotPath).not.toContain(forbidden)
-        expect(livePath).not.toContain(forbidden)
-      },
-    )
+      expect(snapshotPath).not.toContain(forbidden)
+      expect(livePath).not.toContain(forbidden)
+    })
   })
 })
