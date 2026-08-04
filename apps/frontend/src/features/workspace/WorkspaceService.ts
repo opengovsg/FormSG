@@ -1,6 +1,7 @@
 import {
+  AdminCsatScore,
   AdminFeedbackDto,
-  AdminFeedbackRating,
+  AdminFeedbackTriggerSource,
   AdminUseEmailModeFeedbackDto,
   ErrorDto,
 } from 'formsg-shared/types'
@@ -234,18 +235,25 @@ export const deleteAdminForm = async (formId: string): Promise<void> => {
 }
 
 export const createAdminFeedback = async (
-  rating: AdminFeedbackRating,
+  csat: AdminCsatScore,
+  triggerSource?: AdminFeedbackTriggerSource,
+  formId?: string,
+  comment?: string,
 ): Promise<AdminFeedbackDto> => {
-  return ApiService.post(`${ADMIN_FORM_ENDPOINT}/feedback`, { rating }).then(
-    ({ data }) => data.feedback,
-  )
+  return ApiService.post(`${ADMIN_FORM_ENDPOINT}/feedback`, {
+    csat,
+    ...(triggerSource ? { triggerSource } : {}),
+    ...(formId ? { formId } : {}),
+    ...(comment ? { comment } : {}),
+  }).then(({ data }) => data.feedback)
 }
 
 export const updateAdminFeedback = async (
   feedbackId: string,
-  comment: string,
+  params: { comment?: string; csat?: AdminCsatScore },
 ): Promise<boolean> => {
-  return ApiService.patch(`${ADMIN_FORM_ENDPOINT}/feedback/${feedbackId}`, {
-    comment,
-  }).then(({ data }) => data)
+  return ApiService.patch(
+    `${ADMIN_FORM_ENDPOINT}/feedback/${feedbackId}`,
+    params,
+  ).then(({ data }) => data)
 }

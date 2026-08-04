@@ -2,7 +2,7 @@ import { UserDto } from './user'
 
 export type AdminFeedbackTriggerSource = 'field-edit' | 'publish' | 'workflow'
 
-/** The 1-5 CSAT scale. Deliberately distinct from the legacy thumbs enum. */
+/** The 1-5 CSAT scale. Deliberately distinct from the legacy thumbs data. */
 export type AdminCsatScore = 1 | 2 | 3 | 4 | 5
 
 export type AdminFeedbackBase = {
@@ -21,12 +21,3 @@ export type AdminFeedbackBase = {
 }
 
 export type AdminFeedbackDto = AdminFeedbackBase & { _id: string }
-
-/**
- * @deprecated Legacy thumbs UI. Still live on develop, so this enum must stay a
- * runtime value until the star rating UI (#9692) replaces it.
- */
-export enum AdminFeedbackRating {
-  up = 1,
-  down = 0,
-}
