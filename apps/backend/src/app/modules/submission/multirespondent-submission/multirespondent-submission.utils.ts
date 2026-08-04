@@ -32,6 +32,7 @@ import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-arra
 import { validateFieldV4 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
+import { WebhookType } from '../../webhook/webhook.service'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
@@ -692,7 +693,7 @@ export const getMrfVersion = ({
   webhookType,
   isStepWriteTokenEnabled,
 }: {
-  webhookType?: 'zapier' | 'plumber' | 'generic'
+  webhookType?: WebhookType
   isStepWriteTokenEnabled: boolean
 }): MrfVersion => {
   switch (webhookType) {
