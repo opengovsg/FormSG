@@ -4,6 +4,7 @@ import { aws as AwsConfig } from 'src/app/config/config'
 
 import {
   SnapshotDataIntegrityError,
+  SnapshotReadError,
   SnapshotWriteError,
 } from '../submission-snapshot.errors'
 import { buildV4Snapshot } from '../submission-snapshot.producer'
@@ -217,6 +218,30 @@ describe('readV4Snapshot', () => {
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
     expect(error).toBeInstanceOf(SnapshotDataIntegrityError)
+  })
+
+  it('should err SnapshotReadError, NOT an integrity error, on an operational S3 failure (AccessDenied)', async () => {
+    ;(AwsConfig.s3.getObject as jest.Mock) = jest.fn().mockReturnValue({
+      promise: () => Promise.reject({ code: 'AccessDenied', statusCode: 403 }),
+    })
+
+    const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+
+    expect(result.isErr()).toBe(true)
+    const error = result._unsafeUnwrapErr()
+    expect(error).toBeInstanceOf(SnapshotReadError)
+    expect(error).not.toBeInstanceOf(SnapshotDataIntegrityError)
+  })
+
+  it('should err SnapshotReadError on a throttled S3 read', async () => {
+    ;(AwsConfig.s3.getObject as jest.Mock) = jest.fn().mockReturnValue({
+      promise: () => Promise.reject({ code: 'SlowDown', statusCode: 503 }),
+    })
+
+    const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotReadError)
   })
 
   it('should err the SAME SnapshotDataIntegrityError on a malformed stored body', async () => {

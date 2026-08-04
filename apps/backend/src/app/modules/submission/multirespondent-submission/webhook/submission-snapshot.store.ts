@@ -7,6 +7,7 @@ import { createLoggerWithLabel } from '../../../../config/logger'
 
 import {
   SnapshotDataIntegrityError,
+  SnapshotReadError,
   SnapshotWriteError,
 } from './submission-snapshot.errors'
 import {
@@ -134,7 +135,7 @@ export const readV4Snapshot = ({
   token,
 }: SnapshotKeyParams): ResultAsync<
   SubmissionSnapshot,
-  SnapshotDataIntegrityError
+  SnapshotDataIntegrityError | SnapshotReadError
 > => {
   const key = buildSnapshotKey({
     formId,
@@ -175,6 +176,6 @@ export const readV4Snapshot = ({
         meta: { action: 'readV4Snapshot', key },
         error: error as Error,
       })
-      return errAsync(new SnapshotDataIntegrityError(undefined, error))
+      return errAsync(new SnapshotReadError(undefined, error))
     })
 }
