@@ -34,7 +34,7 @@ export const reconstructMrfWebhookData = (input: {
   const liveWorkflow = (liveData.workflowContent ??
     {}) as Partial<WorkflowWebhookEventObject>
   const workflowContent: WebhookData['workflowContent'] = {
-    ...(liveData.workflowContent as object),
+    ...liveWorkflow,
     workflowStep: snapshot.workflowStep,
     ...(Array.isArray(liveWorkflow.submittedSteps)
       ? {
