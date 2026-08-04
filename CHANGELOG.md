@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.3.0](https://github.com/opengovsg/formsg/compare/v9.2.0...v9.3.0) (2026-08-04)
+
+
+### Features
+
+* add publish and workflow feedback triggers (#9689) ([#9689](https://github.com/opengovsg/formsg/commit/0842828703d942ac980e059081c3b02eae773d74))
+* replace thumbs up/down with 5-star rating UI (#9692) ([#9692](https://github.com/opengovsg/formsg/commit/0b0b4dc105dfcf08db1e4994dddbb0c2fabcd950))
+
+
+### Dependencies
+
+* **deps:** bump ip-address from 10.2.0 to 10.3.1 (#9824) ([#9824](https://github.com/opengovsg/formsg/commit/4c6a7863d2a147b764691a6ed33ec171ee701928))
+
 ## [9.2.0](https://github.com/opengovsg/formsg/compare/v9.1.0...v9.2.0) (2026-08-03)
 
 
