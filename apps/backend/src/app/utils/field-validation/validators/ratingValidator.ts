@@ -1,13 +1,10 @@
 import { StringAnswerV4 } from '@opengovsg/formsg-sdk'
-import { BasicField, RatingResponseV3 } from 'formsg-shared/types'
+import { BasicField } from 'formsg-shared/types'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import isInt from 'validator/lib/isInt'
 
-import {
-  ParsedClearFormFieldResponseV3,
-  ParsedClearFormFieldResponseV4,
-} from '../../../../types/api'
+import { ParsedClearFormFieldResponseV4 } from '../../../../types/api'
 import {
   IRatingFieldSchema,
   OmitUnusedValidatorProps,
@@ -55,47 +52,6 @@ export const constructRatingValidator: RatingValidatorConstructor = (
     notEmptySingleAnswerResponse,
     chain(makeRatingLimitsValidator(ratingField)),
   )
-
-const isRatingResponseV3: ResponseValidator<
-  ParsedClearFormFieldResponseV3,
-  RatingResponseV3
-> = (response) => {
-  if (response.fieldType !== BasicField.Rating) {
-    return left(
-      `RatingValidatorV3.fieldTypeMismatch:\t fieldType is not rating`,
-    )
-  }
-  return right(response)
-}
-
-/**
- * Returns a validation function to check if the
- * selected rating option is a valid option.
- */
-const makeRatingLimitsValidatorV3: ResponseValidatorConstructor<
-  OmitUnusedValidatorProps<IRatingFieldSchema>,
-  RatingResponseV3
-> = (ratingField) => (response) => {
-  const { answer } = response
-  const { steps } = ratingField.ratingOptions
-
-  const isValid = isInt(answer, {
-    min: 1,
-    max: steps,
-    allow_leading_zeroes: false,
-  })
-
-  return isValid
-    ? right(response)
-    : left(`RatingValidatorV3:\t answer is not a valid rating`)
-}
-
-export const constructRatingValidatorV3: ResponseValidatorConstructor<
-  OmitUnusedValidatorProps<IRatingFieldSchema>,
-  ParsedClearFormFieldResponseV3,
-  RatingResponseV3
-> = (formField) =>
-  flow(isRatingResponseV3, chain(makeRatingLimitsValidatorV3(formField)))
 
 // V4
 
