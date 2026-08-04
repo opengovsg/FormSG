@@ -19,6 +19,8 @@ import { useToast } from '~hooks/useToast'
 import { convertUnicodeLocaleToLanguage } from '~utils/multiLanguage'
 import { formatOrdinal } from '~utils/stringFormat'
 
+import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
+
 import { updateFormPayments } from '../common/AdminFormPageService'
 import { adminFormKeys } from '../common/queries'
 
@@ -142,6 +144,11 @@ export const useMutateFormSettings = () => {
           : toastStatusClosedMessage
 
         handleSuccess({ newData, toastDescription: toastStatusMessage })
+
+        // Trigger admin feedback prompt when form goes public
+        if (isNowPublic) {
+          useAdminFeedbackStore.getState().setEligible('publish', formId)
+        }
       },
       onError: handleError,
     },
