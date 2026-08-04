@@ -1442,8 +1442,7 @@ describe('multirespondent-submission.utils', () => {
   })
 
   describe('getMrfVersion', () => {
-    type WebhookType = 'zapier' | 'plumber' | 'generic' | undefined
-
+    type WebhookType = Parameters<typeof getMrfVersion>[0]['webhookType']
     it.each<{
       name: string
       webhookType: WebhookType
