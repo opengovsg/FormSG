@@ -1,5 +1,18 @@
 /* eslint-disable typesafe/no-throw-sync-func */
 import { ObjectId } from 'bson'
+import {
+  AddressResponse,
+  AllowMyInfoBase,
+  AttachmentSize,
+  BasicField,
+  CheckboxResponse,
+  Column,
+  DropdownFieldBase,
+  FormField,
+  FormFieldDto,
+  ShortTextFieldBase,
+  TableRow,
+} from 'formsg-shared/types'
 import { pick } from 'lodash'
 
 import {
@@ -28,39 +41,6 @@ import {
   ITableFieldSchema,
   SingleAnswerFieldResponse,
 } from 'src/types'
-import {
-  ParsedClearAttachmentFieldResponseV3,
-  ParsedClearAttachmentResponseV3,
-} from 'src/types/api'
-
-import {
-  AddressCompoundFieldResponseV3,
-  AddressResponse,
-  AddressResponseV3,
-  AllowMyInfoBase,
-  AttachmentSize,
-  BasicField,
-  CheckboxFieldResponsesV3,
-  CheckboxResponse,
-  CheckboxResponseV3,
-  Column,
-  DropdownFieldBase,
-  EmailResponseV3,
-  FormField,
-  FormFieldDto,
-  GenericStringAnswerFieldResponseV3,
-  MobileResponseV3,
-  RadioFieldResponsesV3,
-  RadioResponseV3,
-  ShortTextFieldBase,
-  StringAnswerResponseV3,
-  TableFieldResponsesV3,
-  TableResponseV3,
-  TableRow,
-  VerifiableFieldResponseV3,
-  YesNoFieldResponseV3,
-  YesNoResponseV3,
-} from 'formsg-shared/types'
 
 export const generateDefaultFieldV3 = (
   fieldType: BasicField,
@@ -498,89 +478,4 @@ export const generateTableShortTextColumn = (
       }
     },
   } as Column
-}
-
-export const generateGenericStringAnswerResponseV3 = ({
-  fieldType,
-  answer = 'answer',
-}: {
-  fieldType: GenericStringAnswerFieldResponseV3['fieldType']
-  answer: StringAnswerResponseV3
-}): GenericStringAnswerFieldResponseV3 => {
-  return {
-    fieldType,
-    answer,
-  }
-}
-
-export const generateYesNoAnswerResponseV3 = (
-  answer: YesNoFieldResponseV3 = 'Yes',
-): YesNoResponseV3 => {
-  return {
-    fieldType: BasicField.YesNo,
-    answer: answer,
-  }
-}
-
-export const generateAttachmentResponseV3 = (
-  answer: ParsedClearAttachmentFieldResponseV3 = {
-    filename: 'Attachment filename',
-    content: Buffer.from('Attachment content'),
-    answer: 'Attachment answer',
-    hasBeenScanned: false,
-  },
-): ParsedClearAttachmentResponseV3 => {
-  return {
-    fieldType: BasicField.Attachment,
-    answer,
-  }
-}
-
-export const generateVerifiableAnswerResponseV3 = ({
-  fieldType,
-  answer,
-}: {
-  fieldType: BasicField.Email | BasicField.Mobile
-  answer: VerifiableFieldResponseV3
-}): EmailResponseV3 | MobileResponseV3 => {
-  return {
-    fieldType,
-    answer,
-  }
-}
-
-export const generateTableResponseV3 = (
-  answer: TableFieldResponsesV3,
-): TableResponseV3 => {
-  return {
-    fieldType: BasicField.Table,
-    answer,
-  }
-}
-
-export const generateRadioResponseV3 = (
-  answer: RadioFieldResponsesV3,
-): RadioResponseV3 => {
-  return {
-    fieldType: BasicField.Radio,
-    answer,
-  }
-}
-
-export const generateCheckboxResponseV3 = (
-  answer: CheckboxFieldResponsesV3,
-): CheckboxResponseV3 => {
-  return {
-    fieldType: BasicField.Checkbox,
-    answer,
-  }
-}
-
-export const generateAddressResponseV3 = (
-  answer: AddressCompoundFieldResponseV3,
-): AddressResponseV3 => {
-  return {
-    fieldType: BasicField.Address,
-    answer,
-  }
 }
