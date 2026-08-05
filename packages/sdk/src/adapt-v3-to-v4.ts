@@ -1,6 +1,9 @@
-import { ADDRESS_SUBFIELD_KEYS, GENERIC_STRING_FIELD_TYPES } from './constants-v4'
-import { FieldType, FormFieldsV3 } from './types'
 import { generateUUID } from './util/crypto'
+import {
+  ADDRESS_SUBFIELD_KEYS,
+  GENERIC_STRING_FIELD_TYPES,
+} from './constants-v4'
+import { FieldType, FormFieldsV3 } from './types'
 import {
   AdaptV3ToV4Options,
   AddressAnswerV4,
@@ -73,7 +76,9 @@ const convertAttachmentAnswer = (answer: {
   }
 }
 
-const convertTableAnswer = (answer: Record<string, string>[]): TableAnswerV4 => {
+const convertTableAnswer = (
+  answer: Record<string, string>[]
+): TableAnswerV4 => {
   const result: TableAnswerV4 = {}
   for (let i = 0; i < answer.length; i++) {
     const rowId = generateUUID()
@@ -109,7 +114,7 @@ const convertAddressAnswer = (answer: {
   const subFields = answer.addressSubFields
   const result: Record<string, StringAnswerV4> = {}
   for (const key of ADDRESS_SUBFIELD_KEYS) {
-    result[key] = { value: subFields[key] ?? ''}
+    result[key] = { value: subFields[key] ?? '' }
   }
   return result as AddressAnswerV4
 }
