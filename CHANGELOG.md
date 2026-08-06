@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.6.1](https://github.com/opengovsg/formsg/compare/v9.6.0...v9.6.1) (2026-08-06)
+
+
+### Refactors
+
+* **mrf:** remove dead V3 field validators and response builders (#9825) ([#9825](https://github.com/opengovsg/formsg/commit/dc6d49b0250e80934e1293085e3a1afb833d1771))
+
 ## [9.6.0](https://github.com/opengovsg/formsg/compare/v9.5.0...v9.6.0) (2026-08-06)
 
 
