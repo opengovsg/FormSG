@@ -34,12 +34,12 @@ export const msSG: PartialDeep<Fields> = {
       email: {
         title: 'Sahkan e-mel anda',
         description:
-          'E-mel dengan kod pengesahan 6 digit telah dihantar kepada anda. Kod itu sah selama 30 minit.',
+          'E-mel dengan kod pengesahan telah dihantar kepada anda. Kod itu sah selama 30 minit.',
       },
       mobile: {
         title: 'Sahkan nombor telefon bimbit anda',
         description:
-          'SMS dengan kod pengesahan 6 digit telah dihantar kepada anda. Kod itu sah selama 30 minit.',
+          'SMS dengan kod pengesahan telah dihantar kepada anda. Kod itu sah selama 30 minit.',
       },
     },
   },

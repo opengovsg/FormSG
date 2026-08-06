@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
 
+import { useOtpConfig } from '~hooks/useOtpConfig'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -33,11 +34,18 @@ export const OtpForm = ({
 
   const isMobile = useBreakpointValue({ base: true, xs: true, lg: false })
 
+  const { otpLength, isExpandedOtp } = useOtpConfig()
+
   const validateOtp = useCallback(
     (value: string) =>
-      value.length === 6 ||
-      t('features.login.components.OTPForm.otpLengthCheck'),
-    [],
+      value.length === otpLength ||
+      t(
+        isExpandedOtp
+          ? 'features.login.components.OTPForm.otpLengthCheckExpanded'
+          : 'features.login.components.OTPForm.otpLengthCheck',
+        { otpLength },
+      ),
+    [isExpandedOtp, otpLength, t],
   )
 
   const onSubmitForm = async (inputs: OtpFormInputs) => {
@@ -56,15 +64,19 @@ export const OtpForm = ({
         </FormLabel>
         <Input
           type="text"
-          maxLength={6}
-          inputMode="numeric"
+          maxLength={otpLength}
+          inputMode={isExpandedOtp ? 'text' : 'numeric'}
           autoComplete="one-time-code"
           autoFocus
           {...register('otp', {
             required: t('features.login.components.OTPForm.otpRequired'),
             pattern: {
-              value: /^[0-9\b]+$/,
-              message: t('features.login.components.OTPForm.otpTypeCheck'),
+              value: isExpandedOtp ? /^[a-zA-Z0-9]+$/ : /^[0-9\b]+$/,
+              message: t(
+                isExpandedOtp
+                  ? 'features.login.components.OTPForm.otpTypeCheckExpanded'
+                  : 'features.login.components.OTPForm.otpTypeCheck',
+              ),
             },
             validate: validateOtp,
           })}
