@@ -1,6 +1,6 @@
 import {
   generateDefaultField,
-  generateDefaultFieldV3,
+  generateDefaultFieldV4,
   generateNewTableResponse,
   generateTableDropdownColumn,
   generateTableShortTextColumn,
@@ -331,7 +331,7 @@ describe('Table validation V4', () => {
 
   describe('Dropdown column', () => {
     it('should disallow empty submissions if columns are required', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [generateTableDropdownColumn({ _id: COL1_ID })],
       })
       const response = generateTableResponseV4([{ [COL1_ID]: '' }])
@@ -348,7 +348,7 @@ describe('Table validation V4', () => {
     })
 
     it('should allow empty submissions for not required columns', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({ _id: COL1_ID, required: false }),
         ],
@@ -365,7 +365,7 @@ describe('Table validation V4', () => {
     })
 
     it('should allow valid submission for dropdown column', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({
             _id: COL1_ID,
@@ -385,7 +385,7 @@ describe('Table validation V4', () => {
     })
 
     it('should disallow values not found in field options for dropdown column', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({
             _id: COL1_ID,
@@ -409,7 +409,7 @@ describe('Table validation V4', () => {
 
   describe('Textfield column', () => {
     it('should disallow empty submissions if columns are required', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [generateTableShortTextColumn({ _id: COL1_ID })],
       })
       const response = generateTableResponseV4([{ [COL1_ID]: '' }])
@@ -426,7 +426,7 @@ describe('Table validation V4', () => {
     })
 
     it('should allow empty submissions for not required columns', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableShortTextColumn({ _id: COL1_ID, required: false }),
         ],
@@ -443,7 +443,7 @@ describe('Table validation V4', () => {
     })
 
     it('should allow valid submission for textfield column', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [generateTableShortTextColumn({ _id: COL1_ID })],
       })
       const response = generateTableResponseV4([{ [COL1_ID]: 'Hello!' }])
@@ -460,7 +460,7 @@ describe('Table validation V4', () => {
 
   describe('Multiple columns and rows', () => {
     it('should allow valid submissions for multiple columns', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({
             _id: COL1_ID,
@@ -484,7 +484,7 @@ describe('Table validation V4', () => {
 
     it('should disallow input with number of columns that do not match', () => {
       const extraColumnId = '000000000000000000000003'
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({ _id: COL1_ID }),
           generateTableShortTextColumn({ _id: COL2_ID }),
@@ -510,7 +510,7 @@ describe('Table validation V4', () => {
     })
 
     it('should allow valid submissions for multiple rows', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({ _id: COL1_ID }),
           generateTableShortTextColumn({ _id: COL2_ID }),
@@ -532,7 +532,7 @@ describe('Table validation V4', () => {
     })
 
     it('should disallow invalid submissions for multiple rows', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({ _id: COL1_ID }),
           generateTableShortTextColumn({ _id: COL2_ID }),
@@ -558,7 +558,7 @@ describe('Table validation V4', () => {
 
   describe('Number of rows', () => {
     it('should allow submissions with zero rows if minimum rows not set', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({ _id: COL1_ID }),
           generateTableShortTextColumn({ _id: COL2_ID }),
@@ -577,7 +577,7 @@ describe('Table validation V4', () => {
     })
 
     it('should disallow submissions with zero rows if minimum rows set to 1', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({ _id: COL1_ID }),
           generateTableShortTextColumn({ _id: COL2_ID }),
@@ -598,7 +598,7 @@ describe('Table validation V4', () => {
     })
 
     it('should disallow submissions with fewer than min rows', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({ _id: COL1_ID }),
           generateTableShortTextColumn({ _id: COL2_ID }),
@@ -621,7 +621,7 @@ describe('Table validation V4', () => {
     })
 
     it('should disallow submissions with more rows than min rows if addMoreRows is not set', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({ _id: COL1_ID }),
           generateTableShortTextColumn({ _id: COL2_ID }),
@@ -646,7 +646,7 @@ describe('Table validation V4', () => {
     })
 
     it('should disallow submissions with more than max rows if max rows is set and addMoreRows is configured for that field', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [
           generateTableDropdownColumn({ _id: COL1_ID }),
           generateTableShortTextColumn({ _id: COL2_ID }),
@@ -674,7 +674,7 @@ describe('Table validation V4', () => {
     })
 
     it('should allow submissions with unlimited rows if max rows is not set and addMoreRows is configured for that field', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [generateTableShortTextColumn({ _id: COL1_ID })],
         maximumRows: undefined,
         addMoreRows: true,
@@ -695,7 +695,7 @@ describe('Table validation V4', () => {
 
   describe('Invalid input', () => {
     it('should disallow null input for dropdown col', () => {
-      const formField = generateDefaultFieldV3(BasicField.Table, {
+      const formField = generateDefaultFieldV4(BasicField.Table, {
         columns: [generateTableDropdownColumn({ _id: COL1_ID })],
       })
       const response = generateTableResponseV4([
@@ -715,7 +715,7 @@ describe('Table validation V4', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultFieldV3(BasicField.Table, {
+    const formField = generateDefaultFieldV4(BasicField.Table, {
       columns: [generateTableShortTextColumn({ _id: COL1_ID })],
     })
     const response = generateTableResponseV4([{ [COL1_ID]: 'hello' }])

@@ -142,18 +142,18 @@ export const constructDateValidator: DateValidatorConstructor = (dateField) =>
     chain(makeInvalidDaysValidator(dateField)),
   )
 
+// V4
+// V4 date: answer = { value: string } where value is in 'DD/MM/YYYY' format
+
 /**
  * @param date
  * @returns a moment with the date in the format 'DD/MM/YYYY'
  */
-const createMomentFromDateStringV3 = (date: string): moment.Moment => {
+const createMomentFromDateStringV4 = (date: string): moment.Moment => {
   const DATE_FORMAT = 'DD/MM/YYYY'
 
   return moment(date, DATE_FORMAT, true)
 }
-
-// V4
-// V4 date: answer = { value: string } where value is in 'DD/MM/YYYY' format
 
 type DateResponseV4 = ParsedClearFormFieldResponseV4 & {
   fieldType: BasicField.Date
@@ -181,14 +181,14 @@ const notEmptyDateAnswerV4: ResponseValidator<DateResponseV4> = (response) => {
 
 const dateFormatValidatorV4: ResponseValidator<DateResponseV4> = (response) => {
   const { value } = response.answer
-  return createMomentFromDateStringV3(value).isValid()
+  return createMomentFromDateStringV4(value).isValid()
     ? right(response)
     : left(`DateValidatorV4:\t answer is not a valid date`)
 }
 
 const pastOnlyValidatorV4: ResponseValidator<DateResponseV4> = (response) => {
   const todayMax = moment().utc().add(14, 'hours').startOf('day')
-  const answerDate = createMomentFromDateStringV3(response.answer.value)
+  const answerDate = createMomentFromDateStringV4(response.answer.value)
 
   return answerDate.isAfter(todayMax)
     ? left(
@@ -199,7 +199,7 @@ const pastOnlyValidatorV4: ResponseValidator<DateResponseV4> = (response) => {
 
 const futureOnlyValidatorV4: ResponseValidator<DateResponseV4> = (response) => {
   const todayMin = moment().utc().subtract(12, 'hours').startOf('day')
-  const answerDate = createMomentFromDateStringV3(response.answer.value)
+  const answerDate = createMomentFromDateStringV4(response.answer.value)
 
   return answerDate.isBefore(todayMin)
     ? left(
@@ -212,7 +212,7 @@ const makeCustomDateValidatorV4: ResponseValidatorConstructor<
   OmitUnusedValidatorProps<IDateFieldSchema>,
   DateResponseV4
 > = (dateField) => (response) => {
-  const answerDate = createMomentFromDateStringV3(response.answer.value)
+  const answerDate = createMomentFromDateStringV4(response.answer.value)
   const { customMinDate, customMaxDate } = dateField.dateValidation || {}
 
   return (customMinDate && answerDate.isBefore(customMinDate)) ||
@@ -246,7 +246,7 @@ const makeInvalidDaysValidatorV4: ResponseValidatorConstructor<
 > = (dateField) => (response) => {
   const { value } = response.answer
   const invalidDays = convertInvalidDaysToNumberSet(dateField.invalidDays ?? [])
-  const dayOfWeekNumber = createMomentFromDateStringV3(value).isoWeekday()
+  const dayOfWeekNumber = createMomentFromDateStringV4(value).isoWeekday()
 
   return invalidDays.has(dayOfWeekNumber)
     ? left(`DateValidatorV4:\t answer is an invalid day`)

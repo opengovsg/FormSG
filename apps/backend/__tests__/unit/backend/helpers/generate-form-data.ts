@@ -42,7 +42,7 @@ import {
   SingleAnswerFieldResponse,
 } from 'src/types'
 
-export const generateDefaultFieldV3 = (
+export const generateDefaultFieldV4 = (
   fieldType: BasicField,
   customParams?: Partial<FormField> & { _id?: string },
 ): FormFieldDto => {
