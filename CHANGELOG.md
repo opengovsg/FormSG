@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.5.0](https://github.com/opengovsg/formsg/compare/v9.4.0...v9.5.0) (2026-08-06)
+
+
+### Features
+
+* alphanumeric OTPs behind otp-entropy-expanded feature flag (#9831) ([#9831](https://github.com/opengovsg/formsg/commit/ccfbaeec4942e1cc7d48fbd8d43900067058e5d7))
+
 ## [9.4.0](https://github.com/opengovsg/formsg/compare/v9.3.0...v9.4.0) (2026-08-06)
 
 
