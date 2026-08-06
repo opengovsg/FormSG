@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.0.2](https://github.com/opengovsg/formsg/compare/sdk-v8.0.1...sdk-v8.0.2) (2026-08-06)
+
+
+### Bug Fixes
+
+* use tsconfigRootDir in SDK eslint config so pre-commit hook works (#9828) ([#9828](https://github.com/opengovsg/formsg/commit/b050e6ac899893b8d7618043e897189a9707f062))
+
 ## [8.0.1](https://github.com/opengovsg/formsg/compare/sdk-v8.0.0...sdk-v8.0.1) (2026-07-31)
 
 
