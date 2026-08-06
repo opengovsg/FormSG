@@ -1,4 +1,4 @@
-import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import { generateDefaultFieldV4 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { BasicField } from 'formsg-shared/types'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
@@ -649,7 +649,7 @@ describe('Email field validation V4', () => {
     }) as ParsedClearFormFieldResponseV4
 
   it('should allow valid emails', () => {
-    const formField = generateDefaultField(BasicField.Email)
+    const formField = generateDefaultFieldV4(BasicField.Email)
     const response = makeEmailResponseV4({ value: 'valid@email.com' })
     const validateResult = validateFieldV4({
       formId: 'formId',
@@ -662,7 +662,7 @@ describe('Email field validation V4', () => {
   })
 
   it('should disallow invalid emails', () => {
-    const formField = generateDefaultField(BasicField.Email)
+    const formField = generateDefaultFieldV4(BasicField.Email)
     const response = makeEmailResponseV4({ value: 'invalidemail.com' })
     const validateResult = validateFieldV4({
       formId: 'formId',
@@ -677,7 +677,7 @@ describe('Email field validation V4', () => {
   })
 
   it('should allow email addresses whose email domain belongs to allowedEmailDomains', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV4(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@test.gov.sg'],
@@ -696,7 +696,7 @@ describe('Email field validation V4', () => {
   })
 
   it('should allow email addresses supplied with a mixed-case domain', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV4(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@test.gov.sg'], // note: domains are always read lowercased from store
@@ -717,7 +717,7 @@ describe('Email field validation V4', () => {
   // Regression: V4 previously used exact string equality and rejected valid
   // wildcard-domain submissions that V3 accepted. See emailValidator.ts.
   it('should allow email addresses matching a wildcard domain pattern (V4)', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV4(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@*.moe.gov.sg'],
@@ -734,7 +734,7 @@ describe('Email field validation V4', () => {
   })
 
   it('should allow email addresses matching a multi-level wildcard subdomain (V4)', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV4(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@*.moe.gov.sg'],
@@ -751,7 +751,7 @@ describe('Email field validation V4', () => {
   })
 
   it('should not allow the base domain itself against a wildcard pattern (V4)', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV4(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@*.moe.gov.sg'],
@@ -770,7 +770,7 @@ describe('Email field validation V4', () => {
   })
 
   it('should not allow email addresses whose email domain does not belong to allowedEmailDomains', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV4(BasicField.Email, {
       isVerifiable: false,
       hasAllowedEmailDomains: true,
       allowedEmailDomains: ['@example.com'],
@@ -789,7 +789,7 @@ describe('Email field validation V4', () => {
   })
 
   it('should reject email addresses if isVerifiable is true but there is no signature present', () => {
-    const formField = generateDefaultField(BasicField.Email, {
+    const formField = generateDefaultFieldV4(BasicField.Email, {
       isVerifiable: true,
     })
     const response = makeEmailResponseV4({ value: 'valid@email.com' })

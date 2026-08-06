@@ -1,11 +1,16 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV4,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { BasicField } from 'formsg-shared/types'
 
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
-import { validateField } from 'src/app/utils/field-validation'
+import {
+  ValidateFieldError,
+  ValidateFieldErrorV4,
+} from 'src/app/modules/submission/submission.errors'
+import { validateField, validateFieldV4 } from 'src/app/utils/field-validation'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
 describe('NRIC field validation', () => {
   it('should allow valid NRIC with S prefix', () => {
@@ -136,6 +141,190 @@ describe('NRIC field validation', () => {
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
+  })
+})
+
+describe('NRIC field validation V4', () => {
+  const makeNricResponseV4 = (answer: {
+    value: string
+  }): ParsedClearFormFieldResponseV4 =>
+    ({
+      fieldType: BasicField.Nric,
+      question: 'Nric',
+      answer,
+      provenance: {},
+    }) as ParsedClearFormFieldResponseV4
+
+  it('should allow valid NRIC with S prefix', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric)
+    const response = makeNricResponseV4({ value: 'S9912345A' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow valid NRIC with T prefix', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric)
+    const response = makeNricResponseV4({ value: 'T1394524H' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow valid NRIC with F prefix', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric)
+    const response = makeNricResponseV4({ value: 'F0477844T' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow valid NRIC with G prefix', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric)
+    const response = makeNricResponseV4({ value: 'G9592927W' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should disallow invalid NRIC with S prefix', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric)
+    const response = makeNricResponseV4({ value: 'S9912345B' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should disallow invalid NRIC with T prefix', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric)
+    const response = makeNricResponseV4({ value: 'T1394524I' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should disallow invalid NRIC with F prefix', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric)
+    const response = makeNricResponseV4({ value: 'F0477844U' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should disallow invalid NRIC with G prefix', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric)
+    const response = makeNricResponseV4({ value: 'G9592927X' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should allow empty string for not required NRIC', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric, {
+      required: false,
+    })
+    const response = makeNricResponseV4({ value: '' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should disallow empty string for required NRIC', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric, {
+      required: true,
+    })
+    const response = makeNricResponseV4({ value: '' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should disallow responses submitted for hidden fields', () => {
+    const formField = generateDefaultFieldV4(BasicField.Nric)
+    const response = makeNricResponseV4({ value: 'S9912345A' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: false,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4(
+        'Attempted to submit response on a hidden field',
+      ),
     )
   })
 })

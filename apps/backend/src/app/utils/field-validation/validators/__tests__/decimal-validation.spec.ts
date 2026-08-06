@@ -1,11 +1,16 @@
 import {
   generateDefaultField,
+  generateDefaultFieldV4,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { BasicField } from 'formsg-shared/types'
 
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
-import { validateField } from 'src/app/utils/field-validation'
+import {
+  ValidateFieldError,
+  ValidateFieldErrorV4,
+} from 'src/app/modules/submission/submission.errors'
+import { validateField, validateFieldV4 } from 'src/app/utils/field-validation'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
 describe('Decimal Validation', () => {
   it('should allow decimal with valid maximum', () => {
@@ -272,6 +277,340 @@ describe('Decimal Validation', () => {
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldError('Attempted to submit response on a hidden field'),
+    )
+  })
+})
+
+describe('Decimal field validation V4', () => {
+  const makeDecimalResponseV4 = (answer: {
+    value: string
+  }): ParsedClearFormFieldResponseV4 =>
+    ({
+      fieldType: BasicField.Decimal,
+      question: 'Decimal',
+      answer,
+      provenance: {},
+    }) as ParsedClearFormFieldResponseV4
+
+  it('should allow decimal with valid maximum', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: null,
+        customMax: 5,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '4' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow decimal with valid maximum (inclusive)', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: null,
+        customMax: 5,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '5' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should disallow decimal with invalid maximum', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: null,
+        customMax: 5,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '6' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should allow decimal with valid minimum', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: 2,
+        customMax: null,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '5' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow decimal with valid minimum (inclusive)', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: 2,
+        customMax: null,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '2' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should disallow decimal with invalid minimum', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: 2,
+        customMax: null,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '1' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should allow decimal with no custom validation', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: null,
+        customMax: null,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '55' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow empty answer with optional field', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      required: false,
+    })
+    const response = makeDecimalResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow answer to be zero', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal)
+    const response = makeDecimalResponseV4({ value: '0' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should allow negative answers', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal)
+    const response = makeDecimalResponseV4({ value: '-5.0' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+    expect(validateResult._unsafeUnwrap()).toEqual(true)
+  })
+
+  it('should disallow leading zeroes', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal)
+    const response = makeDecimalResponseV4({ value: '001.3' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should disallow decimal points with no leading numbers', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal)
+    const response = makeDecimalResponseV4({ value: '.3' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should disallow negative answers with no leading number', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal)
+    const response = makeDecimalResponseV4({ value: '-.3' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should disallow floats (<16 decimal places) that are out of range (min)', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: 2,
+        customMax: null,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '1.999999999999999' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should disallow floats (<16 decimal places) that are out of range (max)', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: null,
+        customMax: 2,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '2.000000000000001' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should disallow floats less than 0 when customMin is 0', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: 0,
+        customMax: null,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '-0.2' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+  it('should disallow floats more than 0 when customMax is 0', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal, {
+      ValidationOptions: {
+        customMin: null,
+        customMax: 0,
+      },
+    })
+    const response = makeDecimalResponseV4({ value: '0.1' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
+    )
+  })
+
+  it('should disallow responses submitted for hidden fields', () => {
+    const formField = generateDefaultFieldV4(BasicField.Decimal)
+    const response = makeDecimalResponseV4({ value: '3' })
+
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: false,
+    })
+    expect(validateResult.isErr()).toBe(true)
+    expect(validateResult._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4(
+        'Attempted to submit response on a hidden field',
+      ),
     )
   })
 })
