@@ -554,16 +554,16 @@ export const createResponsesV4 = (
         const input = formInputs[ff._id] as
           | FormFieldValue<typeof ff.fieldType>
           | undefined
-        if (
-          (!input?.value || input?.value.length === 0) &&
-          !input?.othersInput
-        ) {
-          break
-        }
+        // `false` is a react-hook-form artifact of untouched checkbox groups,
+        // and `undefined` occurs when othersInput is set without the group
+        // ever firing a change event. Either way nothing is selected — and
+        // othersInput text is only submitted when the Others sentinel is
+        // selected — so the field is unanswered and must be omitted. Sending
+        // `value: undefined` would JSON-serialize to an answer with no
+        // `value` key at all, which the BE rejects.
+        if (!input?.value || input.value.length === 0) break
         returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, {
-          // `false` is a react-hook-form artifact of untouched checkboxes;
-          // normalize to an empty selection for the wire.
-          value: input.value === false ? [] : input.value,
+          value: input.value,
           ...(input.othersInput !== undefined && {
             othersInput: input.othersInput,
           }),

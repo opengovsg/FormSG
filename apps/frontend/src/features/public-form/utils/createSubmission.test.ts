@@ -102,18 +102,26 @@ describe('createResponsesV4', () => {
     })
   })
 
-  it('normalizes untouched checkbox value `false` to an empty selection', () => {
+  it('omits a checkbox with no selection even when othersInput has text', () => {
     const formFields = [mockField(CHECKBOX_ID, BasicField.Checkbox)]
-    const formInputs = {
-      [CHECKBOX_ID]: { value: false, othersInput: 'other only' },
-    } as unknown as FormFieldValues
 
-    const responses = createResponsesV4(formFields, formInputs, [])
-
-    expect(responses[CHECKBOX_ID].answer).toEqual({
-      value: [],
-      othersInput: 'other only',
-    })
+    // othersInput text is only submitted when the Others sentinel is
+    // selected, so every no-selection state is unanswered: `false` (untouched
+    // group artifact), `undefined` (othersInput set without a group change
+    // event) and an emptied-out selection.
+    const noSelectionInputs = [
+      { value: false, othersInput: 'other only' },
+      { othersInput: 'other only' },
+      { value: [], othersInput: 'other only' },
+    ]
+    for (const input of noSelectionInputs) {
+      const responses = createResponsesV4(
+        formFields,
+        { [CHECKBOX_ID]: input } as unknown as FormFieldValues,
+        [],
+      )
+      expect(responses).toEqual({})
+    }
   })
 
   it('keys table rows by generated rowId with rowNum ordering', () => {

@@ -622,9 +622,12 @@ const isResponsePresentOnHiddenFieldV4 = ({
       return ok(a.value.trim() !== '')
     }
     case BasicField.Checkbox: {
-      const a = response.answer as CheckboxAnswerV4
+      // Optional-chain: malformed bodies can send a null answer or omit
+      // `value` entirely; treat as an empty selection rather than throwing.
+      const a = response.answer as CheckboxAnswerV4 | null
       return ok(
-        a.value.length > 0 || (!!a.othersInput && a.othersInput.trim() !== ''),
+        (a?.value?.length ?? 0) > 0 ||
+          (typeof a?.othersInput === 'string' && a.othersInput.trim() !== ''),
       )
     }
     case BasicField.Table: {
@@ -716,11 +719,13 @@ const isValidationRequiredV4 = ({
       return ok(requiredAndVisible || a.value.trim() !== '')
     }
     case BasicField.Checkbox: {
-      const a = response.answer as CheckboxAnswerV4
+      // Optional-chain: malformed bodies can send a null answer or omit
+      // `value` entirely; treat as an empty selection rather than throwing.
+      const a = response.answer as CheckboxAnswerV4 | null
       return ok(
         requiredAndVisible ||
-          a.value.length > 0 ||
-          (!!a.othersInput && a.othersInput.trim() !== ''),
+          (a?.value?.length ?? 0) > 0 ||
+          (typeof a?.othersInput === 'string' && a.othersInput.trim() !== ''),
       )
     }
     case BasicField.Table:
