@@ -6,6 +6,7 @@ import { isEmpty } from 'lodash'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ADMIN_LOGIN_SESSION_COOKIE_NAME } from '../../loaders/express/session'
 import MailService from '../../services/mail/mail.service'
+import { getExpandedOtpLength } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as UserService from '../user/user.service'
@@ -74,7 +75,8 @@ export const _handleLoginSendOtp: ControllerHandler<
   // Step 1: Validate email domain.
   const loginOtpResult = await AuthService.validateEmailDomain(email).andThen(
     // Step 2: Create login OTP.
-    () => AuthService.createLoginOtp(email),
+    () =>
+      AuthService.createLoginOtp(email, getExpandedOtpLength(req.growthbook)),
   )
   // Step 3a: Successfully created login otp.
   if (loginOtpResult.isOk()) {

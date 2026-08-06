@@ -370,11 +370,11 @@ describe('auth.routes', () => {
       )
     })
 
-    it('should return 400 when body.otp is 6 characters but does not consist purely of digits', async () => {
+    it('should return 400 when body.otp is 6 characters but does not consist purely of alphanumeric characters', async () => {
       // Act
       const response = await request.post('/auth/otp/verify').send({
         email: VALID_EMAIL,
-        otp: '123abc',
+        otp: '123ab!',
       })
 
       // Assert

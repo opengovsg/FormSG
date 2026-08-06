@@ -96,6 +96,7 @@ export const validateEmailDomain = (
 /**
  * Creates a login OTP and saves its hash into the Token collection.
  * @param email the email to link the generated otp to
+ * @param expandedOtpLength if positive, generates an uppercase alphanumeric OTP of this length
  * @returns ok(the generated OTP) if saving into DB is successful
  * @returns err(InvalidDomainError) if the given email is invalid
  * @returns err(HashingError) if any error occur whilst hashing the OTP
@@ -103,6 +104,7 @@ export const validateEmailDomain = (
  */
 export const createLoginOtp = (
   email: string,
+  expandedOtpLength = 0,
 ): ResultAsync<
   { otp: string; otpPrefix: string },
   HashingError | DatabaseError | InvalidDomainError
@@ -113,7 +115,7 @@ export const createLoginOtp = (
 
   return (
     // Step 1: Generate and hash OTP.
-    generateOtpWithHash({ email })
+    generateOtpWithHash({ logMeta: { email }, expandedOtpLength })
       // Step 2: Upsert otp hash into database.
       .andThen(({ otp, hashedOtp, otpPrefix }) =>
         upsertOtp(email, hashedOtp)

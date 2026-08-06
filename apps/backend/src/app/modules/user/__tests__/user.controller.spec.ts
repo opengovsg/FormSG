@@ -61,6 +61,7 @@ describe('user.controller', () => {
       expect(MockUserService.createContactOtp).toHaveBeenCalledWith(
         MOCK_REQ.body.userId,
         MOCK_REQ.body.contact,
+        0,
       )
       expect(MockPostmanSmsService.sendAdminContactOtp).toHaveBeenCalledWith({
         recipientPhoneNumber: MOCK_REQ.body.contact,

@@ -12,7 +12,7 @@ import { errAsync, okAsync, Result } from 'neverthrow'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { generateOtpWithHash } from '../../utils/otp'
+import { generateOtpWithHash, getExpandedOtpLength } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { setFormTags } from '../datadog/datadog.utils'
@@ -262,25 +262,28 @@ export const _handleGenerateOtp: ControllerHandler<
       })
       // Step 4: Generate OTP
       .andThen((form) =>
-        generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
-          ({ otp, hashedOtp, otpPrefix }) =>
-            // Step 5: Send Otp
-            {
-              return VerificationService.sendNewOtp({
-                fieldId,
-                hashedOtp,
-                otp,
+        generateOtpWithHash({
+          logMeta,
+          saltRounds: SALT_ROUNDS,
+          expandedOtpLength: getExpandedOtpLength(req.growthbook),
+        }).andThen(({ otp, hashedOtp, otpPrefix }) =>
+          // Step 5: Send Otp
+          {
+            return VerificationService.sendNewOtp({
+              fieldId,
+              hashedOtp,
+              otp,
+              otpPrefix,
+              recipient: answer,
+              transactionId,
+              senderIp,
+            }) // Return the required data for next steps.
+              .map((updatedTransaction) => ({
+                updatedTransaction,
+                form,
                 otpPrefix,
-                recipient: answer,
-                transactionId,
-                senderIp,
-              }) // Return the required data for next steps.
-                .map((updatedTransaction) => ({
-                  updatedTransaction,
-                  form,
-                  otpPrefix,
-                }))
-            },
+              }))
+          },
         ),
       )
       .map(({ otpPrefix }) => {
@@ -376,7 +379,8 @@ export const handleOtpVerification = [
     [Segments.BODY]: Joi.object({
       otp: Joi.string()
         .required()
-        .regex(/^\d{6}$/)
+        .uppercase()
+        .regex(/^[A-Z0-9]{6,12}$/)
         .message('Please enter a valid OTP'),
     }),
   }),
