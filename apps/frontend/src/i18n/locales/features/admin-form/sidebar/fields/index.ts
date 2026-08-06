@@ -179,8 +179,10 @@ export interface Fields {
       description: string
       fieldIdPlaceholder: string
       copyFieldIdAriaLabel: string
-      lockLabel: string
-      lockDescription: string
+      lock: {
+        label: string
+        description: string
+      }
     }
   }
   number: {

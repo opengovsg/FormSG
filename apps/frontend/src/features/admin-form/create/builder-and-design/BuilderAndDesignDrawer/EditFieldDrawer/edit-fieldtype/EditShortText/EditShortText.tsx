@@ -284,10 +284,10 @@ export const EditShortText = ({ field }: EditShortTextProps): JSX.Element => {
                 isChecked={!!value}
                 onChange={onChange}
                 label={t(
-                  'features.adminForm.sidebar.fields.shortText.prefill.lockLabel',
+                  'features.adminForm.sidebar.fields.shortText.prefill.lock.label',
                 )}
                 description={t(
-                  'features.adminForm.sidebar.fields.shortText.prefill.lockDescription',
+                  'features.adminForm.sidebar.fields.shortText.prefill.lock.description',
                 )}
               />
             )}

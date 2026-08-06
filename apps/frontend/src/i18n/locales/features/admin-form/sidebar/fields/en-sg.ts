@@ -188,9 +188,11 @@ export const enSG: Fields = {
       fieldIdPlaceholder:
         'Field ID will be generated after this field is saved',
       copyFieldIdAriaLabel: 'Copy field ID value',
-      lockLabel: 'Prevent pre-fill editing',
-      lockDescription:
-        'This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL.',
+      lock: {
+        label: 'Prevent pre-fill editing',
+        description:
+          'This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL.',
+      },
     },
   },
   number: {
