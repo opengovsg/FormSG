@@ -717,9 +717,11 @@ const isValidationRequiredV4 = ({
     }
     case BasicField.Checkbox: {
       const a = response.answer as CheckboxAnswerV4
+      // Optional-chain: malformed bodies can omit `value` entirely; treat as
+      // an empty selection rather than throwing.
       return ok(
         requiredAndVisible ||
-          a.value.length > 0 ||
+          (a.value?.length ?? 0) > 0 ||
           (!!a.othersInput && a.othersInput.trim() !== ''),
       )
     }
