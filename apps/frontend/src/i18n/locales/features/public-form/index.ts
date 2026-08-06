@@ -68,6 +68,7 @@ export interface PublicForm {
     notFound: string
     deleted: string
     private: string
+    takenDown: string
 
     submissionSecretKeyInvalid: {
       title: string

@@ -314,7 +314,7 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage:
           'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
-        errorMessageKey: 'features.publicForm.errors.private',
+        errorMessageKey: 'features.publicForm.errors.takenDown',
       }
     case CaptchaConnectionError:
       return {

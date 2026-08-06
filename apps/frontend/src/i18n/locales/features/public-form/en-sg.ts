@@ -95,6 +95,8 @@ export const enSG: PublicForm = {
     deleted: 'This form is no longer active',
     private:
       'If you require further assistance, please contact the agency that gave you the form link.',
+    takenDown:
+      'This form has been taken down. For assistance, please contact the person who asked you to fill in this form.',
 
     submissionSecretKeyInvalid: {
       title: 'Invalid form link',
