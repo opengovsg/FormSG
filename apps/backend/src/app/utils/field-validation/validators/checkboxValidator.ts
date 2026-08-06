@@ -358,14 +358,15 @@ const isCheckboxFieldTypeV4: ResponseValidator<
 }
 
 /**
- * The answer is a blind cast from an unvalidated request body, so `value` may
- * be missing or not an array. Reject the shape before any validator
- * dereferences it.
+ * The answer is a blind cast from an unvalidated request body, so it may be
+ * null or a primitive, and `value` may be missing or not an array. Reject the
+ * shape before any validator dereferences it.
  */
 const isCheckboxAnswerShapeV4: ResponseValidator<CheckboxResponseV4> = (
   response,
 ) => {
-  return Array.isArray(response.answer.value)
+  const answer = response.answer as CheckboxAnswerV4 | null
+  return Array.isArray(answer?.value)
     ? right(response)
     : left(`CheckboxValidatorV4:\t answer value is not an array`)
 }

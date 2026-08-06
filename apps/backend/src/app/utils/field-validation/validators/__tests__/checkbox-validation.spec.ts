@@ -960,6 +960,25 @@ describe('Checkbox validation V4', () => {
       )
     })
 
+    it('should reject (not throw) on a hidden field', () => {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = makeCheckboxResponseV4({ othersInput: 'other only' })
+      const validateResult = validateFieldV4({
+        formId,
+        formField,
+        response,
+        isVisible: false,
+      })
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldErrorV4(
+          'Attempted to submit response on a hidden field',
+        ),
+      )
+    })
+
     it('should treat an empty-object answer on an optional field as unanswered', () => {
       const formField = generateDefaultField(BasicField.Checkbox, {
         fieldOptions,
@@ -974,6 +993,76 @@ describe('Checkbox validation V4', () => {
       })
       expect(validateResult.isOk()).toBe(true)
       expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+  })
+
+  // Regression: the middleware only validates that `answer` is present
+  // (Joi.required()), so it can be null or a primitive, which used to throw
+  // on the `.value` dereference instead of returning err.
+  describe('answers that are null or not objects', () => {
+    it('should reject (not throw) a null answer on a required visible field', () => {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = makeCheckboxResponseV4(null)
+      const validateResult = validateFieldV4({
+        formId,
+        formField,
+        response,
+        isVisible: true,
+      })
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldErrorV4('Invalid answer submitted'),
+      )
+    })
+
+    it('should treat a null answer on an optional visible field as unanswered', () => {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+        required: false,
+      })
+      const response = makeCheckboxResponseV4(null)
+      const validateResult = validateFieldV4({
+        formId,
+        formField,
+        response,
+        isVisible: true,
+      })
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should treat a null answer on a hidden field as unanswered (not throw)', () => {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = makeCheckboxResponseV4(null)
+      const validateResult = validateFieldV4({
+        formId,
+        formField,
+        response,
+        isVisible: false,
+      })
+      expect(validateResult.isOk()).toBe(true)
+      expect(validateResult._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should reject (not throw) a string answer on a required visible field', () => {
+      const formField = generateDefaultField(BasicField.Checkbox, {
+        fieldOptions,
+      })
+      const response = makeCheckboxResponseV4('not an object')
+      const validateResult = validateFieldV4({
+        formId,
+        formField,
+        response,
+        isVisible: true,
+      })
+      expect(validateResult.isErr()).toBe(true)
+      expect(validateResult._unsafeUnwrapErr()).toEqual(
+        new ValidateFieldErrorV4('Invalid answer submitted'),
+      )
     })
   })
 

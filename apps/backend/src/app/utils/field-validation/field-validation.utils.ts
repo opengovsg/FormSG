@@ -138,10 +138,15 @@ export const checkIsResponseChangedV4 = ({
       return a.value !== p.value || a.isOthersInput !== p.isOthersInput
     }
     case BasicField.Checkbox: {
-      const a = response.answer as CheckboxAnswerV4
-      const p = prevResponse.answer as CheckboxAnswerV4
-      const setsDiffer = !isEqual(new Set(a.value), new Set(p.value))
-      const othersDiffer = (a.othersInput ?? '') !== (p.othersInput ?? '')
+      // Optional-chain: malformed bodies can send a null answer or omit
+      // `value` entirely; treat as an empty selection rather than throwing.
+      const a = response.answer as CheckboxAnswerV4 | null
+      const p = prevResponse.answer as CheckboxAnswerV4 | null
+      const setsDiffer = !isEqual(
+        new Set(a?.value ?? []),
+        new Set(p?.value ?? []),
+      )
+      const othersDiffer = (a?.othersInput ?? '') !== (p?.othersInput ?? '')
       return setsDiffer || othersDiffer
     }
     case BasicField.Table:
