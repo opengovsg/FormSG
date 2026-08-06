@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.6.0](https://github.com/opengovsg/formsg/compare/v9.5.0...v9.6.0) (2026-08-06)
+
+
+### Features
+
+* **mrf:** classify submittedSteps sub-fields per egress boundary (#9817) ([#9817](https://github.com/opengovsg/formsg/commit/5ad22167012d195a7b6e45660e539883a815b55b))
+* **mrf:** send-time payload policy, reconstruction, and gates (M4 + M3) (#9819) ([#9819](https://github.com/opengovsg/formsg/commit/46c0c17522e61bcea9e4781926dfd6ebfc61594d))
+* **mrf:** v4 submission-snapshot storage layer (M6 + M7) (#9818) ([#9818](https://github.com/opengovsg/formsg/commit/7c25fba4ac7ed87c8f4112af1f73f96289f2931d))
+
 ## [9.5.0](https://github.com/opengovsg/formsg/compare/v9.4.0...v9.5.0) (2026-08-06)
 
 
