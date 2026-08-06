@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.4.0](https://github.com/opengovsg/formsg/compare/v9.3.0...v9.4.0) (2026-08-06)
+
+
+### Features
+
+* **security:** pnpm defaults to harden against supply chain attacks (#9826) ([#9826](https://github.com/opengovsg/formsg/commit/c1b854db5882586ad769e34554d77398a4901307))
+
+
+### Bug Fixes
+
+* prevent MRF checkbox answers without a value from crashing the app (#9830) ([#9830](https://github.com/opengovsg/formsg/commit/9a46176bd764b669f0d41e3cc6faf1a24f468f2c))
+
 ## [9.3.0](https://github.com/opengovsg/formsg/compare/v9.2.0...v9.3.0) (2026-08-04)
 
 
