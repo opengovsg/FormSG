@@ -1,13 +1,16 @@
 import {
   generateDefaultField,
-  generateDefaultFieldV3,
-  generateGenericStringAnswerResponseV3,
+  generateDefaultFieldV4,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { BasicField, RatingShape } from 'formsg-shared/types'
 
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
-import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
+import {
+  ValidateFieldError,
+  ValidateFieldErrorV4,
+} from 'src/app/modules/submission/submission.errors'
+import { validateField, validateFieldV4 } from 'src/app/utils/field-validation'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
 describe('Rating field validation', () => {
   it('should allow answer within range', () => {
@@ -174,20 +177,27 @@ describe('Rating field validation', () => {
   })
 })
 
-describe('Rating field validation V3', () => {
+describe('Rating field validation V4', () => {
+  const makeRatingResponseV4 = (answer: {
+    value: string
+  }): ParsedClearFormFieldResponseV4 =>
+    ({
+      fieldType: BasicField.Rating,
+      question: 'Rating',
+      answer,
+      provenance: {},
+    }) as ParsedClearFormFieldResponseV4
+
   it('should allow answer within range', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: '4',
-    })
+    const response = makeRatingResponseV4({ value: '4' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -198,17 +208,14 @@ describe('Rating field validation V3', () => {
   })
 
   it('should allow number with valid maximum (inclusive)', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: '5',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeRatingResponseV4({ value: '5' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -219,17 +226,14 @@ describe('Rating field validation V3', () => {
   })
 
   it('should disallow number with invalid maximum', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: '6',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeRatingResponseV4({ value: '6' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -237,22 +241,19 @@ describe('Rating field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow number with valid minimum (inclusive)', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: '1',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeRatingResponseV4({ value: '1' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -263,18 +264,15 @@ describe('Rating field validation V3', () => {
   })
 
   it('should allow number with optional answer', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       required: false,
       ratingOptions: {
         steps: 5,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: '4',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeRatingResponseV4({ value: '4' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -285,17 +283,14 @@ describe('Rating field validation V3', () => {
   })
 
   it('should disallow negative answers', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: '-1',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeRatingResponseV4({ value: '-1' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -303,22 +298,19 @@ describe('Rating field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow leading zeroes in answer', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: '04',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeRatingResponseV4({ value: '04' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -326,23 +318,20 @@ describe('Rating field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow empty answer if optional', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       required: false,
       ratingOptions: {
         steps: 5,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: '',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeRatingResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -353,18 +342,15 @@ describe('Rating field validation V3', () => {
   })
 
   it('should disallow empty answer if required', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       required: true,
       ratingOptions: {
         steps: 5,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: '',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeRatingResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -372,22 +358,19 @@ describe('Rating field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow strings not representing numbers as answer', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       ratingOptions: {
         steps: 10,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: 'dongpo rou',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeRatingResponseV4({ value: 'dongpo rou' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -395,22 +378,19 @@ describe('Rating field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultFieldV3(BasicField.Rating, {
+    const formField = generateDefaultFieldV4(BasicField.Rating, {
       ratingOptions: {
         steps: 5,
         shape: RatingShape.Heart,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Rating,
-      answer: '5',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeRatingResponseV4({ value: '5' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -418,7 +398,9 @@ describe('Rating field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
+      new ValidateFieldErrorV4(
+        'Attempted to submit response on a hidden field',
+      ),
     )
   })
 })

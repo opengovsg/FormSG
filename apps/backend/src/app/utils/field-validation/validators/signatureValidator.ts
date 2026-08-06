@@ -1,15 +1,12 @@
 import { SignatureAnswerV4 } from '@opengovsg/formsg-sdk'
-import { BasicField, SignatureResponseV3 } from 'formsg-shared/types'
+import { BasicField } from 'formsg-shared/types'
 import { left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
 import { ProcessedSignatureResponse } from 'src/app/modules/submission/submission.types'
 import { ISignatureFieldSchema, OmitUnusedValidatorProps } from 'src/types'
 
-import {
-  ParsedClearFormFieldResponseV3,
-  ParsedClearFormFieldResponseV4,
-} from '../../../../types/api'
+import { ParsedClearFormFieldResponseV4 } from '../../../../types/api'
 import {
   ResponseValidator,
   ResponseValidatorConstructor,
@@ -27,26 +24,6 @@ const signatureAnswerValidator: SignatureValidator = (response) => {
 
 export const constructSignatureValidator: SignatureValidatorConstructor = () =>
   flow(signatureAnswerValidator)
-
-// v3
-
-const isSignatureResponseV3: ResponseValidator<
-  ParsedClearFormFieldResponseV3,
-  SignatureResponseV3
-> = (response) => {
-  if (response.fieldType !== BasicField.Signature) {
-    return left(
-      `SignatureValidatorV3.fieldTypeMismatch:\tfieldType is not signature`,
-    )
-  }
-  return right(response)
-}
-
-export const constructSignatureValidatorV3: ResponseValidatorConstructor<
-  OmitUnusedValidatorProps<ISignatureFieldSchema>,
-  ParsedClearFormFieldResponseV3,
-  SignatureResponseV3
-> = () => flow(isSignatureResponseV3)
 
 // V4
 // V4 signature: answer = { value: [number, number, number][][], type: 'draw' }

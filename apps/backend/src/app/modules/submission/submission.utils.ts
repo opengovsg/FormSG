@@ -51,9 +51,7 @@ import {
 import {
   ParsedClearAttachmentFieldResponseV4,
   ParsedClearAttachmentResponse,
-  ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponse,
-  ParsedClearFormFieldResponseV3,
   ParsedClearFormFieldResponseV4,
 } from '../../../types/api'
 import { MapRouteError } from '../../../types/routing'
@@ -160,7 +158,6 @@ import {
   SubmissionSaveError,
   UnsupportedSettingsError,
   ValidateFieldError,
-  ValidateFieldErrorV3,
   ValidateFieldErrorV4,
   VirusScanFailedError,
 } from './submission.errors'
@@ -348,7 +345,6 @@ const errorMapper: MapRouteError = (
           'Submission too large to be saved. Please reduce the size of your submission and try again.',
       }
     case ValidateFieldError:
-    case ValidateFieldErrorV3:
     case ValidateFieldErrorV4:
     case DatabaseValidationError:
     case InvalidFileExtensionError:
@@ -629,15 +625,6 @@ export const isAttachmentResponse = (
   )
 }
 
-export const isAttachmentResponseV3 = (
-  response: ParsedClearFormFieldResponseV3,
-): response is ParsedClearAttachmentResponseV3 => {
-  return (
-    response.fieldType === BasicField.Attachment &&
-    response.answer.content !== undefined
-  )
-}
-
 export const isAttachmentResponseV4 = (
   response: ParsedClearFormFieldResponseV4,
 ): response is ParsedClearAttachmentFieldResponseV4 => {
@@ -655,18 +642,6 @@ export const isQuarantinedAttachmentResponse = (
   response: ParsedClearFormFieldResponse,
 ): response is ParsedClearAttachmentResponse => {
   return response.fieldType === BasicField.Attachment && response.answer !== ''
-}
-
-/**
- * Checks if a response is a quarantined attachment response to be processed by the virus scanner.
- */
-export const isQuarantinedAttachmentResponseV3 = (
-  response: ParsedClearFormFieldResponseV3,
-): response is ParsedClearAttachmentResponseV3 => {
-  return (
-    response.fieldType === BasicField.Attachment &&
-    response.answer.answer !== ''
-  )
 }
 
 /**

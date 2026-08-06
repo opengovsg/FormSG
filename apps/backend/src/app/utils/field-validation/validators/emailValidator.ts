@@ -1,14 +1,11 @@
 import { VerifiableAnswerV4 } from '@opengovsg/formsg-sdk'
-import { BasicField, EmailResponseV3 } from 'formsg-shared/types'
+import { BasicField } from 'formsg-shared/types'
 import { emailDomainMatchesAllowed } from 'formsg-shared/utils/email-domain-validation'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 import isEmail from 'validator/lib/isEmail'
 
-import {
-  ParsedClearFormFieldResponseV3,
-  ParsedClearFormFieldResponseV4,
-} from '../../../../types/api'
+import { ParsedClearFormFieldResponseV4 } from '../../../../types/api'
 import {
   IEmailFieldSchema,
   OmitUnusedValidatorProps,
@@ -21,10 +18,8 @@ import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submi
 
 import {
   makeSignatureValidator,
-  makeSignatureValidatorV3,
   makeSignatureValidatorV4,
   notEmptySingleAnswerResponse,
-  notEmptyVerifiableAnswerResponseV3,
 } from './common'
 
 type EmailValidator = ResponseValidator<ProcessedSingleAnswerResponse>
@@ -73,63 +68,6 @@ export const constructEmailValidator: EmailValidatorConstructor = (
     chain(emailFormatValidator),
     chain(makeSignatureValidator(emailField)),
     chain(makeEmailDomainValidator(emailField)),
-  )
-
-const isEmailFieldTypeV3: ResponseValidator<
-  ParsedClearFormFieldResponseV3,
-  EmailResponseV3
-> = (response) => {
-  if (response.fieldType !== BasicField.Email) {
-    return left(`EmailValidatorV3.fieldTypeMismatch:\tfield type is not email`)
-  }
-  return right(response)
-}
-
-/**
- * Returns a validator to check if email format is correct.
- */
-const emailFormatValidatorV3: ResponseValidator<EmailResponseV3> = (
-  response,
-) => {
-  const { value } = response.answer
-  return isEmail(value.trim())
-    ? right(response)
-    : left(`EmailValidatorV3:\t answer value is not a valid email`)
-}
-
-/**
- * Returns a validation function
- * to check if email domain is valid.
- */
-const makeEmailDomainValidatorV3: ResponseValidatorConstructor<
-  OmitUnusedValidatorProps<IEmailFieldSchema>,
-  EmailResponseV3
-> = (emailField) => (response) => {
-  const { hasAllowedEmailDomains, allowedEmailDomains } = emailField
-  const { value } = response.answer
-  const emailAddress = String(value).trim()
-  if (!(hasAllowedEmailDomains && allowedEmailDomains.length))
-    return right(response)
-  const emailDomain = '@' + emailAddress.split('@').pop()
-
-  return allowedEmailDomains.some((domain) =>
-    emailDomainMatchesAllowed(emailDomain, domain),
-  )
-    ? right(response)
-    : left(`EmailValidatorV3:\t answer value is not a valid email domain`)
-}
-
-export const constructEmailValidatorV3: ResponseValidatorConstructor<
-  OmitUnusedValidatorProps<IEmailFieldSchema>,
-  ParsedClearFormFieldResponseV3,
-  EmailResponseV3
-> = (formField) =>
-  flow(
-    isEmailFieldTypeV3,
-    chain(notEmptyVerifiableAnswerResponseV3),
-    chain(emailFormatValidatorV3),
-    chain(makeSignatureValidatorV3(formField)),
-    chain(makeEmailDomainValidatorV3(formField)),
   )
 
 // V4

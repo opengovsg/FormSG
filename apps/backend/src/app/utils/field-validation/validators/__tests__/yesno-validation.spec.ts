@@ -1,13 +1,16 @@
 import {
   generateDefaultField,
-  generateDefaultFieldV3,
+  generateDefaultFieldV4,
   generateNewSingleAnswerResponse,
-  generateYesNoAnswerResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
-import { BasicField, YesNoFieldResponseV3 } from 'formsg-shared/types'
+import { BasicField } from 'formsg-shared/types'
 
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
-import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
+import {
+  ValidateFieldError,
+  ValidateFieldErrorV4,
+} from 'src/app/modules/submission/submission.errors'
+import { validateField, validateFieldV4 } from 'src/app/utils/field-validation'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
 describe('Yes/No field validation', () => {
   it('should allow yes', () => {
@@ -87,12 +90,22 @@ describe('Yes/No field validation', () => {
   })
 })
 
-describe('Yes/No field validation V3', () => {
-  it('should allow Yes', () => {
-    const formField = generateDefaultFieldV3(BasicField.YesNo)
-    const response = generateYesNoAnswerResponseV3('Yes')
+describe('YesNo field validation V4', () => {
+  const makeYesNoResponseV4 = (answer: {
+    value: string
+  }): ParsedClearFormFieldResponseV4 =>
+    ({
+      fieldType: BasicField.YesNo,
+      question: 'Yes/No',
+      answer,
+      provenance: {},
+    }) as ParsedClearFormFieldResponseV4
 
-    const validateResult = validateFieldV3({
+  it('should allow Yes', () => {
+    const formField = generateDefaultFieldV4(BasicField.YesNo)
+    const response = makeYesNoResponseV4({ value: 'Yes' })
+
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -103,10 +116,10 @@ describe('Yes/No field validation V3', () => {
   })
 
   it('should allow No', () => {
-    const formField = generateDefaultFieldV3(BasicField.YesNo)
-    const response = generateYesNoAnswerResponseV3('No')
+    const formField = generateDefaultFieldV4(BasicField.YesNo)
+    const response = makeYesNoResponseV4({ value: 'No' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -117,14 +130,12 @@ describe('Yes/No field validation V3', () => {
   })
 
   it('should allow empty string when not required', () => {
-    const formField = generateDefaultFieldV3(BasicField.YesNo, {
+    const formField = generateDefaultFieldV4(BasicField.YesNo, {
       required: false,
     })
-    const response = generateYesNoAnswerResponseV3(
-      '' as unknown as YesNoFieldResponseV3,
-    )
+    const response = makeYesNoResponseV4({ value: '' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -135,14 +146,12 @@ describe('Yes/No field validation V3', () => {
   })
 
   it('should disallow empty string when required', () => {
-    const formField = generateDefaultFieldV3(BasicField.YesNo, {
+    const formField = generateDefaultFieldV4(BasicField.YesNo, {
       required: true,
     })
-    const response = generateYesNoAnswerResponseV3(
-      '' as unknown as YesNoFieldResponseV3,
-    )
+    const response = makeYesNoResponseV4({ value: '' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -150,18 +159,17 @@ describe('Yes/No field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow invalid input', () => {
-    const formField = generateDefaultFieldV3(BasicField.YesNo, {
+    const formField = generateDefaultFieldV4(BasicField.YesNo, {
       required: true,
     })
-    const response = generateYesNoAnswerResponseV3(
-      'Some answer' as unknown as YesNoFieldResponseV3,
-    )
-    const validateResult = validateFieldV3({
+    const response = makeYesNoResponseV4({ value: 'Some answer' })
+
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -169,18 +177,17 @@ describe('Yes/No field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should perform validation and disallow invalid field even when not required', () => {
-    const formField = generateDefaultFieldV3(BasicField.YesNo, {
+    const formField = generateDefaultFieldV4(BasicField.YesNo, {
       required: false,
     })
-    const response = generateYesNoAnswerResponseV3(
-      'Some answer' as unknown as YesNoFieldResponseV3,
-    )
-    const validateResult = validateFieldV3({
+    const response = makeYesNoResponseV4({ value: 'Some answer' })
+
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -188,15 +195,15 @@ describe('Yes/No field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultFieldV3(BasicField.YesNo)
-    const response = generateYesNoAnswerResponseV3('No')
+    const formField = generateDefaultFieldV4(BasicField.YesNo)
+    const response = makeYesNoResponseV4({ value: 'No' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -204,7 +211,9 @@ describe('Yes/No field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
+      new ValidateFieldErrorV4(
+        'Attempted to submit response on a hidden field',
+      ),
     )
   })
 })

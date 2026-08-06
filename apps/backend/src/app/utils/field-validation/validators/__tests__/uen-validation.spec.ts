@@ -1,22 +1,26 @@
-import {
-  generateDefaultFieldV3,
-  generateGenericStringAnswerResponseV3,
-} from '__tests__/unit/backend/helpers/generate-form-data'
+import { generateDefaultFieldV4 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { BasicField } from 'formsg-shared/types'
 
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
+import { ValidateFieldErrorV4 } from 'src/app/modules/submission/submission.errors'
+import { validateFieldV4 } from 'src/app/utils/field-validation'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
-import { validateFieldV3 } from '../..'
-
-describe('UEN field validation V3', () => {
-  it('should allow valid UEN', () => {
-    const formField = generateDefaultFieldV3(BasicField.Uen)
-    const response = generateGenericStringAnswerResponseV3({
+describe('Uen field validation V4', () => {
+  const makeUenResponseV4 = (answer: {
+    value: string
+  }): ParsedClearFormFieldResponseV4 =>
+    ({
       fieldType: BasicField.Uen,
-      answer: '53308948D',
-    })
+      question: 'Uen',
+      answer,
+      provenance: {},
+    }) as ParsedClearFormFieldResponseV4
 
-    const validateResult = validateFieldV3({
+  it('should allow valid UEN', () => {
+    const formField = generateDefaultFieldV4(BasicField.Uen)
+    const response = makeUenResponseV4({ value: '53308948D' })
+
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -27,13 +31,10 @@ describe('UEN field validation V3', () => {
   })
 
   it('should disallow invalid UEN', () => {
-    const formField = generateDefaultFieldV3(BasicField.Uen)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Uen,
-      answer: 'notavaliduen',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Uen)
+    const response = makeUenResponseV4({ value: 'notavaliduen' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -42,19 +43,16 @@ describe('UEN field validation V3', () => {
 
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow empty string for not required UEN', () => {
-    const formField = generateDefaultFieldV3(BasicField.Uen, {
+    const formField = generateDefaultFieldV4(BasicField.Uen, {
       required: false,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Uen,
-      answer: '',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeUenResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -65,14 +63,11 @@ describe('UEN field validation V3', () => {
   })
 
   it('should disallow empty string for required UEN', () => {
-    const formField = generateDefaultFieldV3(BasicField.Uen, {
+    const formField = generateDefaultFieldV4(BasicField.Uen, {
       required: true,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Uen,
-      answer: '',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeUenResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -80,17 +75,14 @@ describe('UEN field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultFieldV3(BasicField.Uen)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Uen,
-      answer: '53308948D',
-    })
-    const validateResult = validateFieldV3({
+    const formField = generateDefaultFieldV4(BasicField.Uen)
+    const response = makeUenResponseV4({ value: '53308948D' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -98,7 +90,9 @@ describe('UEN field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
+      new ValidateFieldErrorV4(
+        'Attempted to submit response on a hidden field',
+      ),
     )
   })
 })

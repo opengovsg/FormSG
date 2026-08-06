@@ -1,13 +1,16 @@
 import {
   generateDefaultField,
-  generateDefaultFieldV3,
-  generateGenericStringAnswerResponseV3,
+  generateDefaultFieldV4,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { BasicField } from 'formsg-shared/types'
 
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
-import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
+import {
+  ValidateFieldError,
+  ValidateFieldErrorV4,
+} from 'src/app/modules/submission/submission.errors'
+import { validateField, validateFieldV4 } from 'src/app/utils/field-validation'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
 describe('Home phone number validation tests', () => {
   it('should allow empty answer for required logic field that is not visible', () => {
@@ -141,15 +144,22 @@ describe('Home phone number validation tests', () => {
   })
 })
 
-describe('Home phone number validation tests V3', () => {
-  it('should allow empty answer for required field that is not visible', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo)
-    const response = generateGenericStringAnswerResponseV3({
+describe('Home number field validation V4', () => {
+  const makeHomeNoResponseV4 = (answer: {
+    value: string
+  }): ParsedClearFormFieldResponseV4 =>
+    ({
       fieldType: BasicField.HomeNo,
-      answer: '',
-    })
+      question: 'Home number',
+      answer,
+      provenance: {},
+    }) as ParsedClearFormFieldResponseV4
 
-    const validateResult = validateFieldV3({
+  it('should allow empty answer for required field that is not visible', () => {
+    const formField = generateDefaultFieldV4(BasicField.HomeNo)
+    const response = makeHomeNoResponseV4({ value: '' })
+
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -160,15 +170,12 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should allow empty answer for not required field', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo, {
+    const formField = generateDefaultFieldV4(BasicField.HomeNo, {
       required: false,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.HomeNo,
-      answer: '',
-    })
+    const response = makeHomeNoResponseV4({ value: '' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -179,14 +186,11 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should not allow empty answer for required field', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo, {
+    const formField = generateDefaultFieldV4(BasicField.HomeNo, {
       required: true,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.HomeNo,
-      answer: '',
-    })
-    const validateResult = validateFieldV3({
+    const response = makeHomeNoResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -194,17 +198,14 @@ describe('Home phone number validation tests V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow valid home numbers for homeno fieldType', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.HomeNo,
-      answer: '+6563334444',
-    })
-    const validateResult = validateFieldV3({
+    const formField = generateDefaultFieldV4(BasicField.HomeNo)
+    const response = makeHomeNoResponseV4({ value: '+6563334444' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -215,12 +216,9 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should allow valid sg home numbers starting with 666 for homeno fieldType', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.HomeNo,
-      answer: '+6566634424',
-    })
-    const validateResult = validateFieldV3({
+    const formField = generateDefaultFieldV4(BasicField.HomeNo)
+    const response = makeHomeNoResponseV4({ value: '+6566634424' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -231,12 +229,9 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should allow valid sg home numbers starting with 3 for homeno fieldType', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.HomeNo,
-      answer: '+6536634424',
-    })
-    const validateResult = validateFieldV3({
+    const formField = generateDefaultFieldV4(BasicField.HomeNo)
+    const response = makeHomeNoResponseV4({ value: '+6536634424' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -247,12 +242,9 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should disallow home numbers without "+" prefix', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.HomeNo,
-      answer: '6563334444',
-    })
-    const validateResult = validateFieldV3({
+    const formField = generateDefaultFieldV4(BasicField.HomeNo)
+    const response = makeHomeNoResponseV4({ value: '6563334444' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -260,17 +252,14 @@ describe('Home phone number validation tests V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow mobile numbers on homeno fieldType', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.HomeNo,
-      answer: '+6598765432',
-    })
-    const validateResult = validateFieldV3({
+    const formField = generateDefaultFieldV4(BasicField.HomeNo)
+    const response = makeHomeNoResponseV4({ value: '+6598765432' })
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -278,20 +267,17 @@ describe('Home phone number validation tests V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow international numbers when field does not allow for it', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo, {
+    const formField = generateDefaultFieldV4(BasicField.HomeNo, {
       allowIntlNumbers: false,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.HomeNo,
-      answer: '+441285291028',
-    })
+    const response = makeHomeNoResponseV4({ value: '+441285291028' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -299,20 +285,17 @@ describe('Home phone number validation tests V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow international numbers when field allows for it', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo, {
+    const formField = generateDefaultFieldV4(BasicField.HomeNo, {
       allowIntlNumbers: true,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.HomeNo,
-      answer: '+441285291028',
-    })
+    const response = makeHomeNoResponseV4({ value: '+441285291028' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -323,15 +306,12 @@ describe('Home phone number validation tests V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultFieldV3(BasicField.HomeNo, {
+    const formField = generateDefaultFieldV4(BasicField.HomeNo, {
       required: true,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.HomeNo,
-      answer: '+6563334444',
-    })
+    const response = makeHomeNoResponseV4({ value: '+6563334444' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -339,7 +319,9 @@ describe('Home phone number validation tests V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
+      new ValidateFieldErrorV4(
+        'Attempted to submit response on a hidden field',
+      ),
     )
   })
 })

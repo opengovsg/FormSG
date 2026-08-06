@@ -1,7 +1,6 @@
 import {
   generateDefaultField,
-  generateDefaultFieldV3,
-  generateGenericStringAnswerResponseV3,
+  generateDefaultFieldV4,
   generateNewSingleAnswerResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import {
@@ -10,8 +9,12 @@ import {
   InvalidDaysOptions,
 } from 'formsg-shared/types'
 
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
-import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
+import {
+  ValidateFieldError,
+  ValidateFieldErrorV4,
+} from 'src/app/modules/submission/submission.errors'
+import { validateField, validateFieldV4 } from 'src/app/utils/field-validation'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
 describe('Date field validation', () => {
   beforeAll(() => {
@@ -408,21 +411,29 @@ describe('Date field validation', () => {
   })
 })
 
-describe('Date field validation V3', () => {
+describe('Date field validation V4', () => {
   beforeAll(() => {
     Date.now = jest.fn(() => new Date('2020-01-01').valueOf())
   })
   afterAll(() => {
     jest.clearAllMocks()
   })
-  it('should allow valid date <DD/MM/YYYY>', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '09/01/2019',
-    })
 
-    const validateResult = validateFieldV3({
+  const makeDateResponseV4 = (answer: {
+    value: string
+  }): ParsedClearFormFieldResponseV4 =>
+    ({
+      fieldType: BasicField.Date,
+      question: 'Date',
+      answer,
+      provenance: {},
+    }) as ParsedClearFormFieldResponseV4
+
+  it('should allow valid date <DD/MM/YYYY>', () => {
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '09/01/2019' })
+
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -433,15 +444,12 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow empty string when not required', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       required: false,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '',
-    })
+    const response = makeDateResponseV4({ value: '' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -452,15 +460,12 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow valid leap year date', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       required: false,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '29/02/2016',
-    })
+    const response = makeDateResponseV4({ value: '29/02/2016' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -471,13 +476,10 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow 00 date', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '00/01/2019',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '00/01/2019' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -485,18 +487,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow date less than 2 char', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '9/01/2019',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '9/01/2019' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -504,18 +503,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow date more than 2 char', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '009/01/2019',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '009/01/2019' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -523,18 +519,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow date not in month', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '39/01/2019',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '39/01/2019' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -542,18 +535,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow invalid month', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '09/13/2019',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '09/13/2019' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -561,18 +551,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow month less then 2 chars', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '09/1/2019',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '09/1/2019' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -580,18 +567,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow month more then 2 chars', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '09/001/2019',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '09/001/2019' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -599,18 +583,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow text year', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '09/01/beans',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '09/01/beans' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -618,18 +599,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow year less than 4 chars', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '09/01/19',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '09/01/19' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -637,18 +615,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow year more than 4 chars', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '09/01/02019',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '09/01/02019' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -656,20 +631,17 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow empty string when required', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       required: true,
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '',
-    })
+    const response = makeDateResponseV4({ value: '' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -677,18 +649,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow invalid leap year date', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '29/02/2019',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '29/02/2019' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -696,18 +665,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow past dates for normal date fields', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '01/01/2017',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '01/01/2017' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -718,13 +684,10 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow past dates if disallow past dates is not set', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '01/01/2017',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '01/01/2017' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -735,19 +698,16 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow past dates if disallow past dates is set', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.NoPast,
         customMaxDate: null,
         customMinDate: null,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '01/01/2017',
-    })
+    const response = makeDateResponseV4({ value: '01/01/2017' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -755,18 +715,15 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow future dates if disallow future dates is not set', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date)
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '01/01/2022',
-    })
+    const formField = generateDefaultFieldV4(BasicField.Date)
+    const response = makeDateResponseV4({ value: '01/01/2022' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -777,19 +734,16 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow future dates if disallow future dates is set', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.NoFuture,
         customMaxDate: null,
         customMinDate: null,
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '01/01/2022',
-    })
+    const response = makeDateResponseV4({ value: '01/01/2022' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -797,24 +751,21 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow dates inside of Custom Date Range if set', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.Custom,
         customMinDate: new Date('2020-06-25'),
         customMaxDate: new Date('2020-06-28'),
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '26/06/2020',
-    })
+    const response = makeDateResponseV4({ value: '26/06/2020' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -825,19 +776,16 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow dates earlier than Custom Date Range if set', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.Custom,
         customMinDate: new Date('2020-06-25'),
         customMaxDate: new Date('2020-06-28'),
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '22/06/2020',
-    })
+    const response = makeDateResponseV4({ value: '22/06/2020' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -845,24 +793,21 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow dates later than of Custom Date Range if set', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.Custom,
         customMinDate: new Date('2020-06-25'),
         customMaxDate: new Date('2020-06-28'),
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '22/07/2020',
-    })
+    const response = makeDateResponseV4({ value: '22/07/2020' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -870,24 +815,21 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: DateSelectedValidation.Custom,
         customMinDate: new Date('2020-06-25'),
         customMaxDate: new Date('2020-06-28'),
       },
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '26/06/2020',
-    })
+    const response = makeDateResponseV4({ value: '26/06/2020' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -895,12 +837,14 @@ describe('Date field validation V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
+      new ValidateFieldErrorV4(
+        'Attempted to submit response on a hidden field',
+      ),
     )
   })
 
   it('should allow dates if invalid day array is empty', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: null,
         customMinDate: null,
@@ -908,12 +852,9 @@ describe('Date field validation V3', () => {
       },
       invalidDays: [],
     })
-    const response = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '26/07/2020',
-    })
+    const response = makeDateResponseV4({ value: '26/07/2020' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -924,7 +865,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should allow dates that is not an invalid day', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: null,
         customMinDate: null,
@@ -939,12 +880,9 @@ describe('Date field validation V3', () => {
         InvalidDaysOptions.Thursday,
       ],
     })
-    const mockFriResponse = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '29/07/2022', // Friday
-    })
+    const mockFriResponse = makeDateResponseV4({ value: '29/07/2022' }) // Friday
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response: mockFriResponse,
@@ -955,7 +893,7 @@ describe('Date field validation V3', () => {
   })
 
   it('should disallow dates that is an invalid day', () => {
-    const formField = generateDefaultFieldV3(BasicField.Date, {
+    const formField = generateDefaultFieldV4(BasicField.Date, {
       dateValidation: {
         selectedDateValidation: null,
         customMinDate: null,
@@ -963,12 +901,9 @@ describe('Date field validation V3', () => {
       },
       invalidDays: [InvalidDaysOptions.Wednesday, InvalidDaysOptions.Thursday],
     })
-    const mockWedResponse = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '27/07/2022', // Wednesday
-    })
+    const mockWedResponse = makeDateResponseV4({ value: '27/07/2022' }) // Wednesday
 
-    const validateWedResult = validateFieldV3({
+    const validateWedResult = validateFieldV4({
       formId: 'formId',
       formField,
       response: mockWedResponse,
@@ -976,23 +911,20 @@ describe('Date field validation V3', () => {
     })
     expect(validateWedResult.isErr()).toBe(true)
     expect(validateWedResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
 
-    const mockThursResponse = generateGenericStringAnswerResponseV3({
-      fieldType: BasicField.Date,
-      answer: '28/07/2022', // Thursday
-    })
+    const mockThursResponse = makeDateResponseV4({ value: '28/07/2022' }) // Thursday
 
-    const validateThursResult = validateFieldV3({
+    const validateThursResultV4 = validateFieldV4({
       formId: 'formId',
       formField,
       response: mockThursResponse,
       isVisible: true,
     })
-    expect(validateThursResult.isErr()).toBe(true)
-    expect(validateThursResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+    expect(validateThursResultV4.isErr()).toBe(true)
+    expect(validateThursResultV4._unsafeUnwrapErr()).toEqual(
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 })

@@ -1,14 +1,17 @@
 import {
   generateDefaultField,
-  generateDefaultFieldV3,
+  generateDefaultFieldV4,
   generateNewSingleAnswerResponse,
-  generateVerifiableAnswerResponseV3,
 } from '__tests__/unit/backend/helpers/generate-form-data'
 import { BasicField } from 'formsg-shared/types'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
-import { ValidateFieldError } from 'src/app/modules/submission/submission.errors'
-import { validateField, validateFieldV3 } from 'src/app/utils/field-validation'
+import {
+  ValidateFieldError,
+  ValidateFieldErrorV4,
+} from 'src/app/modules/submission/submission.errors'
+import { validateField, validateFieldV4 } from 'src/app/utils/field-validation'
+import { ParsedClearFormFieldResponseV4 } from 'src/types/api'
 
 type VerificationMock = {
   authenticate: () => boolean
@@ -195,7 +198,7 @@ describe('Mobile number validation tests', () => {
   })
 })
 
-describe('Mobile number validation tests V3', () => {
+describe('Mobile number field validation V4', () => {
   beforeEach(() => {
     jest
       .spyOn(
@@ -205,16 +208,22 @@ describe('Mobile number validation tests V3', () => {
       .mockImplementation(() => true)
   })
 
-  it('should allow empty answer for required logic field that is not visible', () => {
-    const formField = generateDefaultFieldV3(BasicField.Mobile)
-    const response = generateVerifiableAnswerResponseV3({
+  const makeMobileResponseV4 = (answer: {
+    value: string
+    signature?: string
+  }): ParsedClearFormFieldResponseV4 =>
+    ({
       fieldType: BasicField.Mobile,
-      answer: {
-        value: '',
-      },
-    })
+      question: 'Mobile',
+      answer,
+      provenance: {},
+    }) as ParsedClearFormFieldResponseV4
 
-    const validateResult = validateFieldV3({
+  it('should allow empty answer for required logic field that is not visible', () => {
+    const formField = generateDefaultFieldV4(BasicField.Mobile)
+    const response = makeMobileResponseV4({ value: '' })
+
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -225,17 +234,12 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should allow empty answer for not required field', () => {
-    const formField = generateDefaultFieldV3(BasicField.Mobile, {
+    const formField = generateDefaultFieldV4(BasicField.Mobile, {
       required: false,
     })
-    const response = generateVerifiableAnswerResponseV3({
-      fieldType: BasicField.Mobile,
-      answer: {
-        value: '',
-      },
-    })
+    const response = makeMobileResponseV4({ value: '' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -246,15 +250,10 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should not allow empty answer for required field', () => {
-    const formField = generateDefaultFieldV3(BasicField.Mobile)
-    const response = generateVerifiableAnswerResponseV3({
-      fieldType: BasicField.Mobile,
-      answer: {
-        value: '',
-      },
-    })
+    const formField = generateDefaultFieldV4(BasicField.Mobile)
+    const response = makeMobileResponseV4({ value: '' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -262,20 +261,15 @@ describe('Mobile number validation tests V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow valid mobile numbers for mobile fieldType', () => {
-    const formField = generateDefaultFieldV3(BasicField.Mobile)
-    const response = generateVerifiableAnswerResponseV3({
-      fieldType: BasicField.Mobile,
-      answer: {
-        value: '+6598765432',
-      },
-    })
+    const formField = generateDefaultFieldV4(BasicField.Mobile)
+    const response = makeMobileResponseV4({ value: '+6598765432' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -286,15 +280,10 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should disallow mobile numbers without "+" prefix', () => {
-    const formField = generateDefaultFieldV3(BasicField.Mobile)
-    const response = generateVerifiableAnswerResponseV3({
-      fieldType: BasicField.Mobile,
-      answer: {
-        value: '6598765432',
-      },
-    })
+    const formField = generateDefaultFieldV4(BasicField.Mobile)
+    const response = makeMobileResponseV4({ value: '6598765432' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -302,20 +291,15 @@ describe('Mobile number validation tests V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow home numbers on mobile fieldType', () => {
-    const formField = generateDefaultFieldV3(BasicField.Mobile)
-    const response = generateVerifiableAnswerResponseV3({
-      fieldType: BasicField.Mobile,
-      answer: {
-        value: '+6565656565',
-      },
-    })
+    const formField = generateDefaultFieldV4(BasicField.Mobile)
+    const response = makeMobileResponseV4({ value: '+6565656565' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -323,22 +307,17 @@ describe('Mobile number validation tests V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should disallow international numbers when field does not allow for it', () => {
-    const formField = generateDefaultFieldV3(BasicField.Mobile, {
+    const formField = generateDefaultFieldV4(BasicField.Mobile, {
       allowIntlNumbers: false,
     })
-    const response = generateVerifiableAnswerResponseV3({
-      fieldType: BasicField.Mobile,
-      answer: {
-        value: '+447851315617',
-      },
-    })
+    const response = makeMobileResponseV4({ value: '+447851315617' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -346,22 +325,17 @@ describe('Mobile number validation tests V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Invalid answer submitted'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
   it('should allow international numbers when field allows for it', () => {
-    const formField = generateDefaultFieldV3(BasicField.Mobile, {
+    const formField = generateDefaultFieldV4(BasicField.Mobile, {
       allowIntlNumbers: true,
     })
-    const response = generateVerifiableAnswerResponseV3({
-      fieldType: BasicField.Mobile,
-      answer: {
-        value: '+447851315617',
-      },
-    })
+    const response = makeMobileResponseV4({ value: '+447851315617' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -372,17 +346,12 @@ describe('Mobile number validation tests V3', () => {
   })
 
   it('should disallow responses submitted for hidden fields', () => {
-    const formField = generateDefaultFieldV3(BasicField.Mobile, {
+    const formField = generateDefaultFieldV4(BasicField.Mobile, {
       allowIntlNumbers: true,
     })
-    const response = generateVerifiableAnswerResponseV3({
-      fieldType: BasicField.Mobile,
-      answer: {
-        value: '+447851315617',
-      },
-    })
+    const response = makeMobileResponseV4({ value: '+447851315617' })
 
-    const validateResult = validateFieldV3({
+    const validateResult = validateFieldV4({
       formId: 'formId',
       formField,
       response,
@@ -390,24 +359,23 @@ describe('Mobile number validation tests V3', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldError('Attempted to submit response on a hidden field'),
+      new ValidateFieldErrorV4(
+        'Attempted to submit response on a hidden field',
+      ),
     )
   })
 
   describe('signature validation', () => {
     it('should allow mobile numbers if isVerifiable is true and signature is present and valid', () => {
-      const formField = generateDefaultFieldV3(BasicField.Mobile, {
+      const formField = generateDefaultFieldV4(BasicField.Mobile, {
         isVerifiable: true,
       })
-      const response = generateVerifiableAnswerResponseV3({
-        fieldType: BasicField.Mobile,
-        answer: {
-          value: '+6598765432',
-          signature: 'some signature',
-        },
+      const response = makeMobileResponseV4({
+        value: '+6598765432',
+        signature: 'some signature',
       })
 
-      const validateResult = validateFieldV3({
+      const validateResult = validateFieldV4({
         formId: 'formId',
         formField,
         response,
@@ -418,18 +386,15 @@ describe('Mobile number validation tests V3', () => {
     })
 
     it('should reject mobile numbers if isVerifiable is true but there is no signature present', () => {
-      const formField = generateDefaultFieldV3(BasicField.Mobile, {
+      const formField = generateDefaultFieldV4(BasicField.Mobile, {
         isVerifiable: true,
       })
-      const response = generateVerifiableAnswerResponseV3({
-        fieldType: BasicField.Mobile,
-        answer: {
-          value: '+6598765432',
-          signature: '',
-        },
+      const response = makeMobileResponseV4({
+        value: '+6598765432',
+        signature: '',
       })
 
-      const validateResult = validateFieldV3({
+      const validateResult = validateFieldV4({
         formId: 'formId',
         formField,
         response,
@@ -437,7 +402,7 @@ describe('Mobile number validation tests V3', () => {
       })
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
-        new ValidateFieldError('Invalid answer submitted'),
+        new ValidateFieldErrorV4('Invalid answer submitted'),
       )
     })
 
@@ -449,18 +414,15 @@ describe('Mobile number validation tests V3', () => {
         )
         .mockImplementation(() => false)
 
-      const formField = generateDefaultFieldV3(BasicField.Mobile, {
+      const formField = generateDefaultFieldV4(BasicField.Mobile, {
         isVerifiable: true,
       })
-      const response = generateVerifiableAnswerResponseV3({
-        fieldType: BasicField.Mobile,
-        answer: {
-          value: '+6598765432',
-          signature: 'some invalid signature',
-        },
+      const response = makeMobileResponseV4({
+        value: '+6598765432',
+        signature: 'some invalid signature',
       })
 
-      const validateResult = validateFieldV3({
+      const validateResult = validateFieldV4({
         formId: 'formId',
         formField,
         response,
@@ -468,7 +430,7 @@ describe('Mobile number validation tests V3', () => {
       })
       expect(validateResult.isErr()).toBe(true)
       expect(validateResult._unsafeUnwrapErr()).toEqual(
-        new ValidateFieldError('Invalid answer submitted'),
+        new ValidateFieldErrorV4('Invalid answer submitted'),
       )
     })
   })
