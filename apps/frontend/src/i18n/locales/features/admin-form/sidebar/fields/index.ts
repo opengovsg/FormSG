@@ -70,6 +70,17 @@ export interface Fields {
       minimum: string
       maximum: string
     }
+    error: {
+      selectionLimitRequired: string
+      min: string
+      max: string
+      minLargerThanMax: string
+      maxLessThanMin: string
+      moreThanNumOptions: string
+    }
+  }
+  dropdown: {
+    conditionalRoutingWarning: string
   }
   paragraph: string
   section: {
@@ -92,6 +103,11 @@ export interface Fields {
       title: string
       inputLabel: string
       placeholder: string
+      error: {
+        duplicate: string
+        empty: string
+        invalid: string
+      }
     }
     emailConfirmation: {
       title: string
@@ -153,8 +169,21 @@ export interface Fields {
       maxRowGreaterThanMin: string
     }
     column: string
+    columnType: string
     ariaLabelDelete: string
     addColumn: string
+  }
+  shortText: {
+    prefill: {
+      label: string
+      description: string
+      fieldIdPlaceholder: string
+      copyFieldIdAriaLabel: string
+      lock: {
+        label: string
+        description: string
+      }
+    }
   }
   number: {
     validation: string
@@ -171,6 +200,7 @@ export interface Fields {
       validationType: string
       numOfCharacter: string
       validDecimal: string
+      validNumber: string
       min: string
       max: string
       rangeValue: string
@@ -187,6 +217,18 @@ export interface Fields {
   }
   fieldListOption: {
     useForApprovals: string
+  }
+  myInfoPreview: {
+    dataSource: string
+    verifiedFor: string
+    singaporeans: string
+    permanentResidents: string
+    foreignersWithSingpass: string
+    fieldDetails: string
+    children: {
+      collectChildData: string
+      allowMultiple: string
+    }
   }
   myInfoPanel: {
     sections: {

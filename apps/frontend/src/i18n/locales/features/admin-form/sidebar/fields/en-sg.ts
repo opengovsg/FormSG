@@ -72,6 +72,18 @@ export const enSG: Fields = {
       minimum: 'Minimum',
       maximum: 'Maximum',
     },
+    error: {
+      selectionLimitRequired: 'Please enter selection limits',
+      min: 'Cannot be less than 1',
+      max: 'Cannot be more than 10,000',
+      minLargerThanMax: 'Minimum cannot be larger than maximum',
+      maxLessThanMin: 'Maximum cannot be less than minimum',
+      moreThanNumOptions: 'Cannot be more than number of options',
+    },
+  },
+  dropdown: {
+    conditionalRoutingWarning:
+      'This field is linked to a step in your workflow. If you make any changes, ensure that the options and emails are updated in your CSV file.',
   },
   paragraph: 'Paragraph',
   section: {
@@ -94,6 +106,11 @@ export const enSG: Fields = {
       title: 'Restrict email domains',
       inputLabel: 'Domains allowed',
       placeholder: '@*.gov.sg\n@open.gov.sg\n@agency.gov.sg',
+      error: {
+        duplicate: 'Please remove duplicate email domains',
+        empty: 'Please enter at least one email domain',
+        invalid: 'Please enter only valid email domains starting with @',
+      },
     },
     emailConfirmation: {
       title: 'Email confirmation',
@@ -159,8 +176,24 @@ export const enSG: Fields = {
       maxRowGreaterThanMin: 'Maximum rows must be greater than minimum rows',
     },
     column: 'Column',
+    columnType: 'Column type',
     ariaLabelDelete: 'Delete column',
     addColumn: 'Add column',
+  },
+  shortText: {
+    prefill: {
+      label: 'Enable pre-fill',
+      description:
+        'Use Field ID in the form URL to pre-fill this field for respondents. [Learn how]({guidePrefill})',
+      fieldIdPlaceholder:
+        'Field ID will be generated after this field is saved',
+      copyFieldIdAriaLabel: 'Copy field ID value',
+      lock: {
+        label: 'Prevent pre-fill editing',
+        description:
+          'This prevents respondents from clicking the field to edit it. However, field content can still be modified via the URL.',
+      },
+    },
   },
   number: {
     validation: 'Number validation',
@@ -177,6 +210,7 @@ export const enSG: Fields = {
       validationType: 'Please select a validation type',
       numOfCharacter: 'Please enter number of characters',
       validDecimal: 'Please enter a valid decimal',
+      validNumber: 'Please enter a valid number',
       min: 'Cannot be less than 1',
       max: 'Cannot be more than 10000',
       rangeValue: 'Please enter range values',
@@ -194,6 +228,18 @@ export const enSG: Fields = {
   },
   fieldListOption: {
     useForApprovals: 'Use for approvals',
+  },
+  myInfoPreview: {
+    dataSource: 'Data source',
+    verifiedFor: 'Verified for',
+    singaporeans: 'Singaporeans',
+    permanentResidents: 'Permanent Residents',
+    foreignersWithSingpass: 'Foreigners with <link>Singpass</link>',
+    fieldDetails: 'Field details',
+    children: {
+      collectChildData: 'Collect the following child data',
+      allowMultiple: 'Allow respondent to add multiple children',
+    },
   },
   myInfoPanel: {
     sections: {

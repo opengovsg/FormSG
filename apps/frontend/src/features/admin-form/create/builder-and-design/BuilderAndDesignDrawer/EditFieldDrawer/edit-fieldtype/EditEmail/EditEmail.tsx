@@ -115,23 +115,32 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
           const split = SPLIT_TEXTAREA_TRANSFORM.output(value)
           return (
             new Set(split).size === split.length ||
-            'Please remove duplicate email domains'
+            t(
+              'features.adminForm.sidebar.fields.email.restrictEmailDomains.error.duplicate',
+            )
           )
         },
         noEmpty: (value) => {
           const split = SPLIT_TEXTAREA_TRANSFORM.output(value)
-          return split.length > 0 || 'Please enter at least one email domain'
+          return (
+            split.length > 0 ||
+            t(
+              'features.adminForm.sidebar.fields.email.restrictEmailDomains.error.empty',
+            )
+          )
         },
         validEmailDomains: (value) => {
           const split = SPLIT_TEXTAREA_TRANSFORM.output(value)
           return (
             validateEmailDomains(split) ||
-            'Please enter only valid email domains starting with @'
+            t(
+              'features.adminForm.sidebar.fields.email.restrictEmailDomains.error.invalid',
+            )
           )
         },
       },
     }),
-    [requiredValidationRule],
+    [requiredValidationRule, t],
   )
 
   const { data: form } = useCreateTabForm()
@@ -201,7 +210,11 @@ export const EditEmail = ({ field }: EditEmailProps): JSX.Element => {
               />
             </FormControl>
             <FormControl isRequired isReadOnly={isLoading} mt="1.5rem">
-              <FormLabel>Subject</FormLabel>
+              <FormLabel>
+                {t(
+                  'features.adminForm.sidebar.fields.email.emailConfirmation.subject.title',
+                )}
+              </FormLabel>
               <Input
                 autoFocus
                 placeholder={t(

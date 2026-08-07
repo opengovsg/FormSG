@@ -130,15 +130,17 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
         value:
           watchedInputs.validateByValue &&
           !watchedInputs.ValidationOptions.customMax,
-        message: 'Please enter selection limits',
+        message: t(
+          'features.adminForm.sidebar.fields.checkbox.error.selectionLimitRequired',
+        ),
       },
       min: {
         value: 1,
-        message: 'Cannot be less than 1',
+        message: t('features.adminForm.sidebar.fields.checkbox.error.min'),
       },
       max: {
         value: 10000,
-        message: 'Cannot be more than 10,000',
+        message: t('features.adminForm.sidebar.fields.checkbox.error.max'),
       },
       validate: {
         minLargerThanMax: (val) => {
@@ -147,7 +149,9 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
             !watchedInputs.validateByValue ||
             !watchedInputs.ValidationOptions.customMax ||
             Number(val) <= Number(watchedInputs.ValidationOptions.customMax) ||
-            'Minimum cannot be larger than maximum'
+            t(
+              'features.adminForm.sidebar.fields.checkbox.error.minLargerThanMax',
+            )
           )
         },
         max: (val) => {
@@ -160,12 +164,14 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
           return (
             !val ||
             Number(val) <= numOptions ||
-            'Cannot be more than number of options'
+            t(
+              'features.adminForm.sidebar.fields.checkbox.error.moreThanNumOptions',
+            )
           )
         },
       },
     }),
-    [watchedInputs],
+    [watchedInputs, t],
   )
 
   const customMaxValidationOptions: RegisterOptions<
@@ -177,15 +183,17 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
         value:
           watchedInputs.validateByValue &&
           !watchedInputs.ValidationOptions.customMin,
-        message: 'Please enter selection limits',
+        message: t(
+          'features.adminForm.sidebar.fields.checkbox.error.selectionLimitRequired',
+        ),
       },
       min: {
         value: 1,
-        message: 'Cannot be less than 1',
+        message: t('features.adminForm.sidebar.fields.checkbox.error.min'),
       },
       max: {
         value: 10000,
-        message: 'Cannot be more than 10,000',
+        message: t('features.adminForm.sidebar.fields.checkbox.error.max'),
       },
       validate: {
         maxLargerThanMin: (val) => {
@@ -194,7 +202,7 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
             !watchedInputs.validateByValue ||
             !watchedInputs.ValidationOptions.customMin ||
             Number(val) >= Number(watchedInputs.ValidationOptions.customMin) ||
-            'Maximum cannot be less than minimum'
+            t('features.adminForm.sidebar.fields.checkbox.error.maxLessThanMin')
           )
         },
         max: (val) => {
@@ -208,12 +216,14 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
           return (
             !val ||
             Number(val) <= numOptions ||
-            'Cannot be more than number of options'
+            t(
+              'features.adminForm.sidebar.fields.checkbox.error.moreThanNumOptions',
+            )
           )
         },
       },
     }),
-    [watchedInputs],
+    [watchedInputs, t],
   )
 
   // Effect to clear validation option errors when selection limit is toggled off.
@@ -242,7 +252,12 @@ export const EditCheckbox = ({ field }: EditCheckboxProps): JSX.Element => {
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('required')} label="Required" />
+        <Toggle
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
+        />
       </FormControl>
       <FormControl isReadOnly={isLoading}>
         <Toggle
