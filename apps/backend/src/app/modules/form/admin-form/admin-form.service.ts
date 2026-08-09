@@ -494,7 +494,8 @@ type MultirespondentFormToCreate = Merge<
  * @returns err(Database*Error) on database errors
  */
 export const createForm = (
-  formParams: Merge<IForm, { admin: string }>,
+  // isSaveDraftEnabled omitted: creation decides it, not the caller.
+  formParams: Omit<Merge<IForm, { admin: string }>, 'isSaveDraftEnabled'>,
   workspaceId?: string,
 ): ResultAsync<
   IFormDocument,
