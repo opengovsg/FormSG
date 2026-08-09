@@ -231,6 +231,23 @@ describe('admin-form.form.routes', () => {
       )
     })
 
+    it('should offer save draft on a form created from scratch', async () => {
+      // Act
+      const response = await request.post('/admin/forms').send({
+        form: {
+          emails: defaultUser.email,
+          responseMode: FormResponseMode.Email,
+          title: 'new form gets save draft',
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body.isSaveDraftEnabled).toEqual(true)
+      const saved = await FormModel.findById(response.body._id)
+      expect(saved?.isSaveDraftEnabled).toEqual(true)
+    })
+
     it('should return 200 with newly created storage mode form', async () => {
       // Arrange
       const createStorageParams = {

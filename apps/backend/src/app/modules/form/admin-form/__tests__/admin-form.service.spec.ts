@@ -1215,6 +1215,11 @@ describe('admin-form.service', () => {
   })
 
   describe('createForm', () => {
+    const withCreationDefaults = <T>(formParams: T) => ({
+      ...formParams,
+      isSaveDraftEnabled: true,
+    })
+
     it('should successfully create form', async () => {
       // Arrange
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
@@ -1236,7 +1241,7 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
-      expect(createSpy).toHaveBeenCalledWith(formParams)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     it('should return DatabaseValidationError on invalid form params whilst creating form', async () => {
@@ -1260,7 +1265,7 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
         DatabaseValidationError,
       )
-      expect(createSpy).toHaveBeenCalledWith(formParams)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     it('should return DatabaseConflictError on mongoose version error', async () => {
@@ -1283,7 +1288,7 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
         DatabaseConflictError,
       )
-      expect(createSpy).toHaveBeenCalledWith(formParams)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     it('should return DatabasePayloadError on form size error', async () => {
@@ -1311,7 +1316,7 @@ describe('admin-form.service', () => {
           formatErrorRecoveryMessage(mockErrorString),
         ),
       )
-      expect(createSpy).toHaveBeenCalledWith(formParams)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     it('should return DatabaseError on database error whilst creating form', async () => {
@@ -1334,7 +1339,7 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
-      expect(createSpy).toHaveBeenCalledWith(formParams)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     // Creating into Workspace tests
@@ -1380,10 +1385,13 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
       expect(createFormInWorkspaceTransactionSpy).toHaveBeenCalledWith(
-        formParams,
+        withCreationDefaults(formParams),
         mockWorkspaceId,
       )
-      expect(createSpy).toHaveBeenCalledWith([formParams], { session: null })
+      expect(createSpy).toHaveBeenCalledWith(
+        [withCreationDefaults(formParams)],
+        { session: null },
+      )
       expect(addFormIdsToWorkspaceSpy).toHaveBeenCalledWith({
         workspaceId: mockWorkspaceId,
         formIds: [expectedForm._id],
@@ -1425,10 +1433,13 @@ describe('admin-form.service', () => {
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(createFormInWorkspaceTransactionSpy).toHaveBeenCalledWith(
-        formParams,
+        withCreationDefaults(formParams),
         mockWorkspaceId,
       )
-      expect(createSpy).toHaveBeenCalledWith([formParams], { session: null })
+      expect(createSpy).toHaveBeenCalledWith(
+        [withCreationDefaults(formParams)],
+        { session: null },
+      )
     })
 
     it('should return DatabaseError on database error whilst moving form into a workspace', async () => {
@@ -1473,10 +1484,13 @@ describe('admin-form.service', () => {
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(createFormInWorkspaceTransactionSpy).toHaveBeenCalledWith(
-        formParams,
+        withCreationDefaults(formParams),
         mockWorkspaceId,
       )
-      expect(createSpy).toHaveBeenCalledWith([formParams], { session: null })
+      expect(createSpy).toHaveBeenCalledWith(
+        [withCreationDefaults(formParams)],
+        { session: null },
+      )
       expect(addFormIdsToWorkspaceSpy).toHaveBeenCalledWith({
         workspaceId: mockWorkspaceId,
         formIds: [expectedForm._id],

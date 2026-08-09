@@ -580,9 +580,13 @@ export const createForm = (
     }
   }
 
+  // Copied forms bypass createForm, so they keep inheriting their source's
+  // setting; the schema default stays false for forms predating the field.
+  const newFormParams = { ...formParams, isSaveDraftEnabled: true }
+
   if (workspaceId)
     return ResultAsync.fromPromise(
-      createFormInWorkspaceTransaction(formParams, workspaceId),
+      createFormInWorkspaceTransaction(newFormParams, workspaceId),
       (error) => {
         logger.error({
           message:
@@ -598,7 +602,7 @@ export const createForm = (
       },
     )
   return ResultAsync.fromPromise(
-    FormModel.create(formParams) as Promise<IFormDocument>,
+    FormModel.create(newFormParams) as Promise<IFormDocument>,
     (error) => {
       logger.error({
         message: 'Database error encountered when creating form',
