@@ -92,3 +92,11 @@ AdminFormsSubmissionsRouter.post(
   limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
   MultirespondentSubmissionController.handlePendingMrfSubmissionRemind,
 )
+
+/**
+ * Cancel the pending MRF submission with the given submissionId
+ */
+AdminFormsSubmissionsRouter.post(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/cancel',
+  MultirespondentSubmissionController.handleCancelPendingMrfSubmission,
+)

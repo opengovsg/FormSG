@@ -55,12 +55,15 @@ import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
   ResponseModeError,
+  SubmissionCancelledError,
+  SubmissionNotCancellableError,
   SubmissionNotFoundError,
   SubmissionSaveError,
 } from '../submission.errors'
 import { uploadAttachments } from '../submission.service'
 import { AttachmentMetadata } from '../submission.types'
 import {
+  assertSubmissionEditable,
   getMrfSubmissionWorkflowStatus,
   isAdminEmailPdfEnabled,
 } from '../submission.utils'
@@ -285,6 +288,98 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
       return okAsync({ recipientEmails, reminderStepNumber })
     },
   )
+}
+
+/**
+ * Cancels a pending multirespondent submission via an atomic conditional
+ * write, so a concurrent cancel and final-step submit have exactly one
+ * winner. See ADR-0001 in the workflow-cancellation initiative.
+ */
+export const cancelMultirespondentSubmission = ({
+  submissionId,
+  actorEmail,
+}: {
+  submissionId: string
+  actorEmail: string
+}): ResultAsync<
+  IMultirespondentSubmissionSchema,
+  DatabaseError | SubmissionNotFoundError | SubmissionNotCancellableError
+> => {
+  const logMeta = {
+    action: 'cancelMultirespondentSubmission',
+    submissionId,
+  }
+
+  return ResultAsync.fromPromise(
+    MultirespondentSubmission.findOneAndUpdate(
+      {
+        _id: submissionId,
+        cancelledAt: { $exists: false },
+        $expr: {
+          $and: [
+            { $gt: [{ $size: { $ifNull: ['$submittedSteps', []] } }, 0] },
+            { $gt: [{ $size: '$workflow' }, 0] },
+            {
+              $lt: [
+                { $size: { $ifNull: ['$submittedSteps', []] } },
+                { $size: '$workflow' },
+              ],
+            },
+            {
+              $ne: [
+                { $arrayElemAt: ['$submittedSteps.status', -1] },
+                WorkflowStatus.REJECTED,
+              ],
+            },
+          ],
+        },
+      },
+      {
+        $set: { cancelledAt: new Date(), cancelledBy: actorEmail },
+        // Bump the optimistic-concurrency version, same as a document .save()
+        // would. This is what makes the race against a concurrent final-step
+        // submission safe: that path's own save() is conditioned on the __v
+        // it read at fetch time, so it fails with a VersionError (surfaced as
+        // a clean conflict, not a silent overwrite) if this cancellation
+        // commits first.
+        $inc: { __v: 1 },
+      },
+      { new: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message:
+          'Error encountered while cancelling multirespondent submission',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updated) => {
+    if (updated) {
+      return okAsync(updated)
+    }
+    // The conditional update matched nothing: either the submission does not
+    // exist, or it exists but is not currently pending (already cancelled,
+    // completed, approved or rejected). Disambiguate with a direct read.
+    return ResultAsync.fromPromise(
+      MultirespondentSubmission.findById(submissionId).exec(),
+      (error) => {
+        logger.error({
+          message: 'Error encountered while disambiguating failed cancellation',
+          meta: logMeta,
+          error,
+        })
+        return transformMongoError(error)
+      },
+    ).andThen((submission) =>
+      errAsync(
+        submission
+          ? new SubmissionNotCancellableError()
+          : new SubmissionNotFoundError(),
+      ),
+    )
+  })
 }
 
 interface SendNextStepReminderEmailProps {
@@ -1193,6 +1288,7 @@ export const updateMultiRespondentFormSubmission = ({
   | AttachmentUploadError
   | SubmissionSaveError
   | SubmissionNotFoundError
+  | SubmissionCancelledError
   | PossibleDatabaseError
 > => {
   logMeta = {
@@ -1218,6 +1314,12 @@ export const updateMultiRespondentFormSubmission = ({
       }
       return okAsync({ submission, attachmentMetadata })
     })
+    .andThen(({ submission, attachmentMetadata }) =>
+      assertSubmissionEditable(submission).map(() => ({
+        submission,
+        attachmentMetadata,
+      })),
+    )
     .andThen(({ submission, attachmentMetadata }) => {
       const {
         responseMetadata,

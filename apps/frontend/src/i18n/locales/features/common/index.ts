@@ -109,5 +109,6 @@ export interface Common {
   completed: string
   approved: string
   notApproved: string
+  cancelled: string
   logout: string
 }

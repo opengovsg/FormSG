@@ -609,11 +609,19 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: String,
     trim: true,
   },
+  // Presence of cancelledAt means the submission has been cancelled and can
+  // no longer be edited. See ADR-0001 in the workflow-cancellation initiative.
+  cancelledAt: {
+    type: Date,
+  },
+  cancelledBy: {
+    type: String,
+  },
 })
 
 type MultiRespondentAggregates = Pick<
   IMultirespondentSubmissionSchema,
-  'workflowStep' | 'workflow' | 'submittedSteps'
+  'workflowStep' | 'workflow' | 'submittedSteps' | 'cancelledAt'
 >
 type MultiRespondentAggregateResult = MetadataAggregateResult &
   MultiRespondentAggregates
@@ -744,6 +752,7 @@ MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
       workflowStep: result.workflowStep,
       workflow: result.workflow,
       submittedSteps: result.submittedSteps,
+      cancelledAt: result.cancelledAt,
     }
     // Build submissionMetadata object.
     const metadata = buildSubmissionMetadata({
@@ -784,6 +793,7 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
           workflowStep: 1,
           workflow: 1,
           submittedSteps: 1,
+          cancelledAt: 1,
         },
       },
     ],
@@ -804,6 +814,7 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
         workflowStep: result.workflowStep,
         workflow: result.workflow,
         submittedSteps: result.submittedSteps,
+        cancelledAt: result.cancelledAt,
       }
       const metadataEntry = buildSubmissionMetadata({
         result,
@@ -991,6 +1002,7 @@ const buildSubmissionMetadata = ({
           workflow: mrfMeta.workflow,
           workflowStep: mrfMeta.workflowStep,
           submittedSteps: mrfMeta.submittedSteps,
+          cancelledAt: mrfMeta.cancelledAt,
         })
       : undefined,
   }

@@ -29,11 +29,15 @@ import { FormRespondentSingleSubmissionValidationError } from '../../../form/for
 import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  SubmissionCancelledError,
+  SubmissionNotCancellableError,
+  SubmissionNotFoundError,
   SubmissionSaveError,
 } from '../../submission.errors'
 import { mapRouteError } from '../../submission.utils'
 import * as MultirespondentSubmissionService from '../multirespondent-submission.service'
 import {
+  cancelMultirespondentSubmission,
   createMultiRespondentFormSubmission,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
@@ -3207,6 +3211,12 @@ describe('multirespondent-submission.service', () => {
   })
 
   describe('getPendingStepRecipientEmailsFromSubmittedStepsMeta', () => {
+    afterEach(() => {
+      jest
+        .mocked(MultirespondentSubmissionService.getMultirespondentSubmission)
+        .mockRestore()
+    })
+
     it('gets correct recipient emails for 2nd step of 5-step mrf submission', async () => {
       // Arrange
       const mockEmails = ['test@example.com']
@@ -3715,6 +3725,311 @@ describe('multirespondent-submission.service', () => {
       expect(sendSpy.mock.calls[0][0].responseUrl).toContain(
         `&token=${encodeURIComponent(raw)}`,
       )
+    })
+  })
+
+  describe('cancellation gate', () => {
+    const fieldId = new ObjectId().toHexString()
+
+    const oneStepWorkflow: FormWorkflowStepDto[] = [
+      {
+        _id: new ObjectId().toHexString(),
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [fieldId],
+      },
+      {
+        _id: new ObjectId().toHexString(),
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [fieldId],
+      },
+    ]
+
+    const buildSnapshottedFormDef = (): SnapshottedFormDef =>
+      ({
+        _id: mockFormId,
+        title: 'Test form',
+        form_fields: [
+          { _id: fieldId, fieldType: BasicField.ShortText, title: 'Q1' },
+        ],
+        form_logics: [],
+        workflow: oneStepWorkflow,
+      }) as unknown as SnapshottedFormDef
+
+    const buildPayload = (
+      overrides: Partial<MultirespondentSubmissionDto> = {},
+    ): MultirespondentSubmissionDto => ({
+      submissionPublicKey: 'submission-public-key',
+      encryptedSubmissionSecretKey: 'encrypted-submission-secret-key',
+      encryptedContent: 'encrypted-content',
+      submissionSecretKey: 'submission-secret-key',
+      version: 2,
+      workflowStep: 1,
+      responses: {
+        [fieldId]: { fieldType: BasicField.ShortText, answer: 'answer' },
+      },
+      mrfVersion: 1,
+      ...overrides,
+    })
+
+    it('refuses a step submission for a submission that has been cancelled directly in the DB (datafix), regardless of feature flag state', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: oneStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+
+      // Simulate an incident datafix: set the marker directly in the DB,
+      // bypassing any API or feature flag.
+      await Model.updateOne(
+        { _id: row._id },
+        { $set: { cancelledAt: new Date(), cancelledBy: 'ops@open.gov.sg' } },
+      )
+
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildPayload(),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(SubmissionCancelledError)
+
+      // The submission must remain unchanged: no new step was appended.
+      const saved = await Model.findById(row._id)
+      expect(saved?.submittedSteps).toHaveLength(1)
+    })
+
+    it('behaves exactly as before for a submission with no cancellation marker', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: oneStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildPayload(),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result.isOk()).toBe(true)
+      const saved = await Model.findById(row._id)
+      expect(saved?.submittedSteps).toHaveLength(2)
+    })
+  })
+
+  describe('cancelMultirespondentSubmission', () => {
+    const fieldId = new ObjectId().toHexString()
+    const twoStepWorkflow: FormWorkflowStepDto[] = [
+      {
+        _id: new ObjectId().toHexString(),
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [fieldId],
+      },
+      {
+        _id: new ObjectId().toHexString(),
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [fieldId],
+      },
+    ]
+
+    const createPendingSubmission = async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      return Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+    }
+
+    it('cancels a pending submission, recording the actor and timestamp', async () => {
+      const row = await createPendingSubmission()
+
+      const result = await cancelMultirespondentSubmission({
+        submissionId: row._id.toString(),
+        actorEmail: 'admin@open.gov.sg',
+      })
+
+      expect(result.isOk()).toBe(true)
+      const saved = await getMultirespondentSubmissionModel(mongoose).findById(
+        row._id,
+      )
+      expect(saved?.cancelledAt).toBeInstanceOf(Date)
+      expect(saved?.cancelledBy).toBe('admin@open.gov.sg')
+    })
+
+    it('fails with SubmissionNotFoundError for a submission that does not exist', async () => {
+      const result = await cancelMultirespondentSubmission({
+        submissionId: new ObjectId().toHexString(),
+        actorEmail: 'admin@open.gov.sg',
+      })
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(SubmissionNotFoundError)
+    })
+
+    it('fails with SubmissionNotCancellableError for an already-cancelled submission, and does not clear the original marker', async () => {
+      const row = await createPendingSubmission()
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const firstCancelledAt = new Date('2026-01-01T00:00:00.000Z')
+      await Model.updateOne(
+        { _id: row._id },
+        {
+          $set: {
+            cancelledAt: firstCancelledAt,
+            cancelledBy: 'first-admin@open.gov.sg',
+          },
+        },
+      )
+
+      const result = await cancelMultirespondentSubmission({
+        submissionId: row._id.toString(),
+        actorEmail: 'second-admin@open.gov.sg',
+      })
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        SubmissionNotCancellableError,
+      )
+      const saved = await Model.findById(row._id)
+      expect(saved?.cancelledAt?.toISOString()).toBe(
+        firstCancelledAt.toISOString(),
+      )
+      expect(saved?.cancelledBy).toBe('first-admin@open.gov.sg')
+    })
+
+    it('fails with SubmissionNotCancellableError for a completed submission', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 1,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+
+      const result = await cancelMultirespondentSubmission({
+        submissionId: row._id.toString(),
+        actorEmail: 'admin@open.gov.sg',
+      })
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        SubmissionNotCancellableError,
+      )
+      const saved = await Model.findById(row._id)
+      expect(saved?.cancelledAt).toBeUndefined()
+    })
+
+    it('exactly one of a concurrent cancel and final-step submit wins, the loser gets a clean error', async () => {
+      const row = await createPendingSubmission()
+
+      const buildSnapshottedFormDef = (): SnapshottedFormDef =>
+        ({
+          _id: mockFormId,
+          title: 'Test form',
+          form_fields: [
+            { _id: fieldId, fieldType: BasicField.ShortText, title: 'Q1' },
+          ],
+          form_logics: [],
+          workflow: twoStepWorkflow,
+        }) as unknown as SnapshottedFormDef
+
+      const buildPayload = (): MultirespondentSubmissionDto => ({
+        submissionPublicKey: 'submission-public-key',
+        encryptedSubmissionSecretKey: 'encrypted-submission-secret-key',
+        encryptedContent: 'encrypted-content',
+        submissionSecretKey: 'submission-secret-key',
+        version: 2,
+        workflowStep: 1,
+        responses: {
+          [fieldId]: { fieldType: BasicField.ShortText, answer: 'answer' },
+        },
+        mrfVersion: 1,
+      })
+
+      const [cancelResult, submitResult] = await Promise.all([
+        cancelMultirespondentSubmission({
+          submissionId: row._id.toString(),
+          actorEmail: 'admin@open.gov.sg',
+        }),
+        updateMultiRespondentFormSubmission({
+          submissionId: row._id.toString(),
+          snapshottedFormDef: buildSnapshottedFormDef(),
+          encryptedPayload: buildPayload(),
+          logMeta: { action: 'test' },
+        }),
+      ])
+
+      // Exactly one of the two operations succeeds.
+      const outcomes = [cancelResult.isOk(), submitResult.isOk()]
+      expect(outcomes.filter(Boolean)).toHaveLength(1)
+
+      const saved = await getMultirespondentSubmissionModel(mongoose).findById(
+        row._id,
+      )
+      /* eslint-disable jest/no-conditional-expect -- which branch runs
+         depends on which side of the race won, which is the outcome under
+         test. */
+      if (cancelResult.isOk()) {
+        // Cancel won: the step submission must not have been appended.
+        expect(saved?.cancelledAt).toBeInstanceOf(Date)
+        expect(saved?.submittedSteps).toHaveLength(1)
+        expect(submitResult.isErr()).toBe(true)
+      } else {
+        // Submit won: no cancellation marker should have landed.
+        expect(saved?.cancelledAt).toBeUndefined()
+        expect(saved?.submittedSteps).toHaveLength(2)
+        expect(cancelResult.isErr()).toBe(true)
+      }
+      /* eslint-enable jest/no-conditional-expect */
     })
   })
 })

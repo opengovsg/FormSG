@@ -34,8 +34,10 @@ import {
 } from '../encrypt-submission/encrypt-submission.ensures'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import {
+  FeatureDisabledError,
   InvalidSubmissionTypeError,
   SubmissionFailedError,
+  SubmissionNotCancellableError,
   SubmissionSaveError,
 } from '../submission.errors'
 import {
@@ -47,6 +49,7 @@ import { mapRouteError } from '../submission.utils'
 import { ensureSubmitterIdIsWhitelisted } from './multirespondent-submission.ensures'
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
 import {
+  cancelMultirespondentSubmission,
   checkFormIsMultirespondent,
   createMultiRespondentFormSubmission,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
@@ -496,4 +499,94 @@ export const sendPendingMrfSubmissionReminderForTest =
 export const handlePendingMrfSubmissionRemind = [
   MultirespondentSubmissionMiddleware.validateMultirespondentRemindBody,
   sendPendingMrfSubmissionReminder,
+] as ControllerHandler[]
+
+const cancelPendingMrfSubmission: ControllerHandler<{
+  formId: string
+  submissionId: string
+}> = async (req, res) => {
+  const { formId, submissionId } = req.params
+  const authedUserId = (req.session as AuthedSessionData).user._id
+
+  const logMeta = {
+    action: 'cancelPendingMrfSubmission',
+    formId,
+    submissionId,
+    ...createReqMeta(req),
+  }
+
+  return UserService.findUserById(authedUserId)
+    .andThen((user) => {
+      return AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }).map((form) => ({ form, user }))
+    })
+    .andThen(({ form, user }) => {
+      if (form.responseMode !== FormResponseMode.Multirespondent) {
+        return errAsync(
+          new FormInvalidResponseModeError(
+            'Cannot cancel pending submission for non-multirespondent mode forms',
+          ),
+        )
+      }
+      if (!req.growthbook?.isOn(featureFlags.workflowTermination)) {
+        return errAsync(new FeatureDisabledError())
+      }
+      return okAsync(user)
+    })
+    .andThen((user) => {
+      return cancelMultirespondentSubmission({
+        submissionId,
+        actorEmail: user.email,
+      })
+    })
+    .map(() => {
+      logger.info({
+        message: 'Submission cancelled successfully',
+        meta: logMeta,
+      })
+      res.json({
+        message: 'Submission cancelled successfully.',
+        submissionId,
+      })
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error cancelling pending mrf submission',
+        meta: logMeta,
+        error,
+      })
+      if (
+        error instanceof FeatureDisabledError ||
+        error instanceof SubmissionNotCancellableError
+      ) {
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          message: error.message,
+        })
+      }
+      const { statusCode, errorMessage } = mapRouteError(error)
+      return res.status(statusCode).json({
+        message: errorMessage,
+      })
+    })
+}
+
+export const cancelPendingMrfSubmissionForTest = cancelPendingMrfSubmission
+
+/**
+ * Handler for POST /:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/cancel
+ * @security session
+ *
+ * @returns 200 with feedback response
+ * @returns 400 when the workflow termination feature flag is off
+ * @returns 403 when user does not have permissions to read form
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 422 when user in session cannot be retrieved from the database
+ * @returns 500 when encountering database error
+ */
+export const handleCancelPendingMrfSubmission = [
+  cancelPendingMrfSubmission,
 ] as ControllerHandler[]

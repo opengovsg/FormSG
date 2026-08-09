@@ -153,6 +153,7 @@ import {
   ProcessingError,
   ResponseModeError,
   StepTokenVerificationError,
+  SubmissionCancelledError,
   SubmissionFailedError,
   SubmissionNotFoundError,
   SubmissionSaveError,
@@ -399,6 +400,11 @@ const errorMapper: MapRouteError = (
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage:
           'The link you used is no longer valid. Please contact the form admin that gave you this link.',
+      }
+    case SubmissionCancelledError:
+      return {
+        statusCode: StatusCodes.GONE,
+        errorMessage: error.message,
       }
     case MailSendError:
       return {
@@ -884,6 +890,20 @@ export const getCookieNameByAuthType = (
 }
 
 /**
+ * The single predicate that decides whether an MRF submission may still be
+ * edited. This is the seam future edit-eligibility gates (field-level
+ * locking, developer APIs) extend, rather than adding new enforcement points.
+ */
+export const assertSubmissionEditable = (
+  submission: Pick<IMultirespondentSubmissionSchema, 'cancelledAt'>,
+): Result<typeof submission, SubmissionCancelledError> => {
+  if (submission.cancelledAt) {
+    return err(new SubmissionCancelledError())
+  }
+  return ok(submission)
+}
+
+/**
  * Determines the workflow status of a submission based on the submitted steps and the total number of steps.
  * @param submittedSteps - The submitted steps of the submission.
  * @param numTotalSteps - The total number of steps in the workflow.
@@ -928,16 +948,16 @@ export const buildMrfMetadata = ({
   workflow,
   workflowStep,
   submittedSteps,
+  cancelledAt,
 }: Pick<
   IMultirespondentSubmissionSchema,
-  'workflow' | 'workflowStep' | 'submittedSteps'
+  'workflow' | 'workflowStep' | 'submittedSteps' | 'cancelledAt'
 >): SubmissionMrfMetadata => {
   const workflowCurrentStepNumber = workflowStep + 1 // since workflowStep is zero indexed.
   const workflowNumTotalSteps = workflow.length
-  const workflowStatus = getMrfSubmissionWorkflowStatus(
-    submittedSteps ?? [],
-    workflow.length,
-  )
+  const workflowStatus = cancelledAt
+    ? WorkflowStatus.CANCELLED
+    : getMrfSubmissionWorkflowStatus(submittedSteps ?? [], workflow.length)
 
   const lastSubmittedAt =
     submittedSteps && submittedSteps.length > 0

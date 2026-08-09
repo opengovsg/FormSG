@@ -68,6 +68,9 @@ export const enSG: ResponsesResponsesPage = {
           sendReminder: 'Send reminder',
           reminderSent: 'Reminder sent',
         },
+        cancelSubmissionButton: {
+          cancelSubmission: 'Cancel',
+        },
       },
       submissionSearchbarPlaceholder: 'Search by response ID',
       downloadButton: {

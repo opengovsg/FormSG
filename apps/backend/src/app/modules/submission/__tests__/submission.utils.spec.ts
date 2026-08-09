@@ -14,8 +14,10 @@ import {
   IMultirespondentSubmissionSchema,
   SingleAnswerFieldResponse,
 } from '../../../../types'
+import { SubmissionCancelledError } from '../submission.errors'
 import {
   areAttachmentsMoreThanLimit,
+  assertSubmissionEditable,
   buildMrfMetadata,
   getInvalidFileExtensions,
   getResponseModeFilter,
@@ -80,6 +82,32 @@ const getResponse = (_id: string, answer: string): SingleAnswerFieldResponse =>
   }) as unknown as SingleAnswerFieldResponse
 
 describe('submission.utils', () => {
+  describe('assertSubmissionEditable', () => {
+    it('should return err(SubmissionCancelledError) when the submission has a cancelledAt marker', () => {
+      const cancelledSubmission = {
+        cancelledAt: new Date(),
+        cancelledBy: 'admin@open.gov.sg',
+      } as unknown as IMultirespondentSubmissionSchema
+
+      const result = assertSubmissionEditable(cancelledSubmission)
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(SubmissionCancelledError)
+    })
+
+    it('should return ok(submission) when the submission has no cancelledAt marker', () => {
+      const uncancelledSubmission = {
+        cancelledAt: undefined,
+        cancelledBy: undefined,
+      } as unknown as IMultirespondentSubmissionSchema
+
+      const result = assertSubmissionEditable(uncancelledSubmission)
+
+      expect(result.isOk()).toBe(true)
+      expect(result._unsafeUnwrap()).toBe(uncancelledSubmission)
+    })
+  })
+
   describe('buildMrfMetadata', () => {
     const YES_NO_FIELD = {
       _id: 'yes_no_field_id',
@@ -221,6 +249,23 @@ describe('submission.utils', () => {
         lastSubmittedAt: submittedAt,
         hasNextStepRecipientEmails: false,
       })
+    })
+
+    it('should return workflowStatus CANCELLED when cancelledAt is set, overriding the step-derived status', () => {
+      const submittedAt = '2024-01-01T00:00:00.000Z'
+      const metadata = buildMrfMetadata({
+        workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2],
+        workflowStep: 0,
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt,
+          },
+        ],
+        cancelledAt: new Date('2024-01-02T00:00:00.000Z'),
+      })
+
+      expect(metadata!.workflowStatus).toBe(WorkflowStatus.CANCELLED)
     })
 
     it('should build mrf metadata successfully for completed submission without approval step', () => {

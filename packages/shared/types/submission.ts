@@ -90,6 +90,7 @@ export enum WorkflowStatus {
   REJECTED = 'REJECTED',
   PENDING = 'PENDING',
   COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
 }
 
 export const ApprovalStatus = z.enum([
@@ -204,6 +205,10 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   // in-flight mrf steps which do not have a step token at time of creation.
   stepTokenHash: z.string().optional(),
   encryptedStepToken: z.string().optional(),
+  // Presence of cancelledAt means the submission has been cancelled and can
+  // no longer be edited. See ADR-0001 in the workflow-cancellation initiative.
+  cancelledAt: z.date().optional(),
+  cancelledBy: z.string().optional(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<

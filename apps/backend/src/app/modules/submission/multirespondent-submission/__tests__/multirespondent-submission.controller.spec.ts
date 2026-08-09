@@ -39,13 +39,16 @@ import { SnapshottedFormDef } from 'src/types/api'
 
 import {
   AttachmentUploadError,
+  FeatureDisabledError,
   InvalidWorkflowTypeError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  SubmissionNotCancellableError,
   SubmissionNotFoundError,
   SubmissionSaveError,
 } from '../../submission.errors'
 import {
+  cancelPendingMrfSubmissionForTest,
   handleGetMultirespondentSubmissionForRespondent,
   sendPendingMrfSubmissionReminderForTest,
   submitMultirespondentFormForTest,
@@ -1481,6 +1484,124 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: mailSendError.message,
+      })
+    })
+  })
+
+  describe('cancelPendingMrfSubmissionForTest', () => {
+    const MOCK_USER = {
+      _id: 'mockUserId',
+      email: 'admin@open.gov.sg',
+    }
+
+    beforeEach(() => {
+      const mockedFindUserById = UserService.findUserById as jest.Mock
+      mockedFindUserById.mockReturnValue(
+        okAsync({
+          _id: MOCK_USER._id,
+          email: MOCK_USER.email,
+        }),
+      )
+
+      const mockedGetFormAfterPermissionChecks =
+        AuthService.getFormAfterPermissionChecks as jest.Mock
+      mockedGetFormAfterPermissionChecks.mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+        }),
+      )
+
+      MockMultiRespondentSubmissionService.cancelMultirespondentSubmission =
+        jest.fn().mockReturnValue(okAsync(mockMrfSubmission))
+    })
+
+    const buildReq = (growthbookIsOn: boolean) =>
+      expressHandler.mockRequest({
+        params: {
+          formId: mockFormId,
+          submissionId: mockSubmissionId,
+        },
+        session: {
+          user: {
+            _id: MOCK_USER._id,
+          },
+        },
+        others: {
+          growthbook: { isOn: jest.fn().mockReturnValue(growthbookIsOn) },
+        },
+      })
+
+    it('returns 200 and cancels the submission when the flag is on', async () => {
+      const mockReq = buildReq(true)
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      await cancelPendingMrfSubmissionForTest(mockReq, mockRes, mockNext)
+
+      expect(
+        MockMultiRespondentSubmissionService.cancelMultirespondentSubmission,
+      ).toHaveBeenCalledWith({
+        submissionId: mockSubmissionId,
+        actorEmail: MOCK_USER.email,
+      })
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'Submission cancelled successfully.',
+        submissionId: mockSubmissionId,
+      })
+    })
+
+    it('returns a clean error and does not cancel when the flag is off', async () => {
+      const mockReq = buildReq(false)
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      await cancelPendingMrfSubmissionForTest(mockReq, mockRes, mockNext)
+
+      expect(
+        MockMultiRespondentSubmissionService.cancelMultirespondentSubmission,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: new FeatureDisabledError().message,
+      })
+    })
+
+    it('returns 403 when getFormAfterPermissionChecks returns ForbiddenFormError', async () => {
+      const mockedGetFormAfterPermissionChecks =
+        AuthService.getFormAfterPermissionChecks as jest.Mock
+      mockedGetFormAfterPermissionChecks.mockReturnValue(
+        errAsync(new ForbiddenFormError('User not authorized to access form')),
+      )
+
+      const mockReq = buildReq(true)
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      await cancelPendingMrfSubmissionForTest(mockReq, mockRes, mockNext)
+
+      expect(
+        MockMultiRespondentSubmissionService.cancelMultirespondentSubmission,
+      ).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(403)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: 'User not authorized to access form',
+      })
+    })
+
+    it('returns a distinct error when the submission is not cancellable', async () => {
+      MockMultiRespondentSubmissionService.cancelMultirespondentSubmission =
+        jest.fn().mockReturnValue(errAsync(new SubmissionNotCancellableError()))
+
+      const mockReq = buildReq(true)
+      const mockRes = expressHandler.mockResponse()
+      const mockNext = jest.fn()
+
+      await cancelPendingMrfSubmissionForTest(mockReq, mockRes, mockNext)
+
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: new SubmissionNotCancellableError().message,
       })
     })
   })
