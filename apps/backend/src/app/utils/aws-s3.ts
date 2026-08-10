@@ -4,8 +4,11 @@ import {
   PutObjectCommand,
   PutObjectCommandInput,
 } from '@aws-sdk/client-s3'
-import { createPresignedPost, PresignedPost } from '@aws-sdk/s3-presigned-post'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+import {
+  createPresignedPost as presignedPostCreator,
+  PresignedPost,
+} from '@aws-sdk/s3-presigned-post'
+import { getSignedUrl as presignedGetSignedUrl } from '@aws-sdk/s3-request-presigner'
 import crypto from 'crypto'
 import { ResultAsync } from 'neverthrow'
 
@@ -39,11 +42,11 @@ export const s3Operations = {
   putObject: (params: PutObjectCommandInput) =>
     AwsConfig.s3.send(new PutObjectCommand(params)),
   getSignedUrl: (params: GetObjectCommandInput, expiresIn: number) =>
-    getSignedUrl(AwsConfig.s3, new GetObjectCommand(params), {
+    presignedGetSignedUrl(AwsConfig.s3, new GetObjectCommand(params), {
       expiresIn,
     }),
-  createPresignedPost: (params: Parameters<typeof createPresignedPost>[1]) =>
-    createPresignedPost(AwsConfig.s3, params),
+  createPresignedPost: (params: Parameters<typeof presignedPostCreator>[1]) =>
+    presignedPostCreator(AwsConfig.s3, params),
 }
 
 export const getS3Object = (params: GetObjectCommandInput) =>
