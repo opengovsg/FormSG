@@ -93,6 +93,9 @@ const hasR2Buckets = Object.values(s3BucketUrlVars).some((url) =>
   /https:\/\/\w+\.r2\.cloudflarestorage\.com/i.test(url),
 )
 
+// Shared across configureAws() and AWS clients below so that credentials are resolved once only and reused
+const credentialsProvider = defaultProvider()
+
 const s3 = new S3Client({
   region: basicVars.awsConfig.region,
   // Unset and use default if not in development mode
@@ -103,10 +106,12 @@ const s3 = new S3Client({
   // However, due to backwards compatibility, some of our existing buckets and our CSP connect-url config use path style.
   // This param ensures that the signed url uses path style.
   forcePathStyle: true,
+  credentials: credentialsProvider,
 })
 
 const guarddutyLambda = new Lambda({
   region: basicVars.awsConfig.region,
+  credentials: credentialsProvider,
   // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
@@ -121,6 +126,7 @@ const guarddutyLambda = new Lambda({
 
 const pdfGeneratorLambda = new Lambda({
   region: basicVars.awsConfig.region,
+  credentials: credentialsProvider,
   // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
@@ -225,7 +231,7 @@ const cookieSettings: SessionOptions['cookie'] = {
  */
 const configureAws = async () => {
   if (!isDevOrTest) {
-    const getCredentials = await defaultProvider()()
+    const getCredentials = await credentialsProvider()
     if (!getCredentials.accessKeyId) {
       throw new Error(`AWS Access Key Id is missing`)
     }
