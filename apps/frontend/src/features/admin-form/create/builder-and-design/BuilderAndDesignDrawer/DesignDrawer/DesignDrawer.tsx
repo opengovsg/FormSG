@@ -74,6 +74,10 @@ type DesignDrawerProps = {
   startPage: FormStartPage
 }
 
+interface DesignFormInput extends FormStartPageInput {
+  title: string
+}
+
 export const DesignInput = (): JSX.Element | null => {
   const { t } = useTranslation()
   const toast = useToast({ status: 'danger' })
@@ -126,10 +130,17 @@ export const DesignInput = (): JSX.Element | null => {
     clearErrors,
     setError,
     setFocus,
-  } = useForm<FormStartPageInput & { title: string }>({
+    setValue,
+  } = useForm<DesignFormInput>({
     mode: 'onBlur',
     defaultValues: { ...startPageData, title: settings?.title },
   })
+
+  useEffect(() => {
+    if (settings?.title) {
+      setValue('title', settings.title)
+    }
+  }, [settings?.title, setValue])
 
   // Update dirty state of builder so confirmation modal can be shown
   useEffect(() => {
@@ -195,13 +206,13 @@ export const DesignInput = (): JSX.Element | null => {
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
   const handleUpdateDesign = handleSubmit(
-    async (startPageData: FormStartPageInput & { title: string }) => {
+    async (startPageData: DesignFormInput) => {
       const { logo, attachment, estTimeTaken, title, ...rest } = startPageData
       const estTimeTakenTransformed =
         estTimeTaken === '' ? undefined : estTimeTaken
 
       if (title !== settings?.title) {
-        mutateFormTitle.mutate(title)
+        await mutateFormTitle.mutateAsync(title)
       }
 
       if (logo.state !== FormLogoState.Custom) {
@@ -358,7 +369,7 @@ export const DesignInput = (): JSX.Element | null => {
 
       {showDesignDrawerFormTitle && (
         <FormControl
-          isReadOnly={startPageMutation.isLoading}
+          isReadOnly={startPageMutation.isLoading || mutateFormTitle.isLoading}
           isInvalid={!!errors.title}
           isRequired
         >
