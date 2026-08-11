@@ -12,6 +12,7 @@ import {
   FormFieldSchema,
   IEncryptedFormSchema,
   IFormSchema,
+  IMultirespondentFormSchema,
   IVerificationFieldSchema,
   IVerificationModel,
   IVerificationSchema,
@@ -133,11 +134,19 @@ const compileVerificationModel = (db: Mongoose): IVerificationModel => {
   }
 
   VerificationSchema.statics.createTransactionFromForm = async function (
-    form: IFormSchema | IEncryptedFormSchema,
+    form: IFormSchema | IEncryptedFormSchema | IMultirespondentFormSchema,
   ): Promise<IVerificationSchema | null> {
     const formFields = getVerifiableFormFields(form.form_fields)
-    if (form.responseMode === FormResponseMode.Encrypt) {
-      const { payments_field } = form as IEncryptedFormSchema
+    // Encrypt and multirespondent forms may be payment-enabled, in which
+    // case the payment contact email is verifiable even when no form field
+    // is — a transaction must still be created for it.
+    if (
+      form.responseMode === FormResponseMode.Encrypt ||
+      form.responseMode === FormResponseMode.Multirespondent
+    ) {
+      const { payments_field } = form as
+        | IEncryptedFormSchema
+        | IMultirespondentFormSchema
       const paymentField = getVerifiablePaymentContactField(payments_field)
       if (!formFields && !paymentField) return null
       return this.create({
