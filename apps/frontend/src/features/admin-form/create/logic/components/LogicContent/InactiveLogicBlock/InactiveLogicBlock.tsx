@@ -120,11 +120,6 @@ export const InactiveLogicBlock = ({
         transitionDuration="normal"
         cursor="pointer"
         _groupHover={{ borderColor: 'primary.500', bg: 'primary.100' }}
-        // chakra.button is unstyled, and the card is now the only control on
-        // the block, so it has to supply its own focus ring.
-        _focusVisible={{
-          boxShadow: '0 0 0 2px var(--chakra-colors-neutral-500)',
-        }}
         onClick={handleClick}
       >
         <Stack
