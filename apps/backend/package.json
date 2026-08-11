@@ -19,10 +19,10 @@
   "dependencies": {
     "formsg-shared": "workspace:*",
     "@aws-sdk/client-cloudwatch-logs": "^3.775.0",
-    "@aws-sdk/client-lambda": "3.775.0",
-    "@aws-sdk/client-s3": "3.775.0",
+    "@aws-sdk/client-lambda": "^3.775.0",
+    "@aws-sdk/client-s3": "^3.775.0",
     "@aws-sdk/client-sqs": "^3.775.0",
-    "@aws-sdk/credential-provider-node": "3.775.0",
+    "@aws-sdk/credential-provider-node": "^3.775.0",
     "@aws-sdk/s3-presigned-post": "^3.775.0",
     "@aws-sdk/s3-request-presigner": "^3.775.0",
     "@azure/msal-node": "^5.0.2",

@@ -177,17 +177,17 @@ importers:
         specifier: ^3.775.0
         version: 3.775.0
       '@aws-sdk/client-lambda':
-        specifier: 3.775.0
+        specifier: ^3.775.0
         version: 3.775.0
       '@aws-sdk/client-s3':
-        specifier: 3.775.0
+        specifier: ^3.775.0
         version: 3.775.0
       '@aws-sdk/client-sqs':
         specifier: ^3.775.0
         version: 3.775.0
       '@aws-sdk/credential-provider-node':
-        specifier: 3.775.0
-        version: 3.775.0
+        specifier: ^3.775.0
+        version: 3.972.78
       '@aws-sdk/s3-presigned-post':
         specifier: ^3.775.0
         version: 3.775.0
@@ -1307,7 +1307,7 @@ importers:
         version: 3.25.34
     devDependencies:
       '@aws-sdk/client-s3':
-        specifier: 3.775.0
+        specifier: ^3.775.0
         version: 3.775.0
       '@aws-sdk/s3-presigned-post':
         specifier: ^3.775.0
