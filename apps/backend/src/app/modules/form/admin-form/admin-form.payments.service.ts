@@ -100,6 +100,16 @@ export const updatePayments = (
   // and notification settings, so disabling or editing a disabled config
   // must not be blocked by them.
   if (isMultirespondent && enabled) {
+    // Fixed payments are deprecated and not offered on new surfaces; MRF
+    // supports variable and products payments only. The builder never
+    // offers Fixed for a new form, so this guards direct API calls.
+    if (newPayments.payment_type === PaymentType.Fixed) {
+      return errAsync(
+        new PaymentConfigurationError(
+          'Fixed payments are not available on multirespondent forms',
+        ),
+      )
+    }
     if ((form.workflow?.length ?? 0) > 0) {
       return errAsync(
         new PaymentConfigurationError(

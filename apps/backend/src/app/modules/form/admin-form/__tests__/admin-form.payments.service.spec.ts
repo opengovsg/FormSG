@@ -488,6 +488,32 @@ describe('admin-form.payment.service', () => {
       },
     )
 
+    it('should return PaymentConfigurationError when enabling fixed payments', async () => {
+      // Arrange
+      const putSpy = jest.spyOn(MultirespondentFormModel, 'updatePaymentsById')
+      const enableFixedPayments: PaymentsUpdateDto = {
+        enabled: true,
+        payment_type: PaymentType.Fixed,
+        amount_cents: 100,
+        description: 'some description',
+        name: 'some name',
+      }
+
+      // Act
+      const actualResult = await AdminFormPaymentService.updatePayments(
+        mockFormId,
+        MOCK_ELIGIBLE_MRF,
+        enableFixedPayments,
+      )
+
+      // Assert
+      expect(putSpy).not.toHaveBeenCalled()
+      expect(actualResult.isErr()).toBeTrue()
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        PaymentConfigurationError,
+      )
+    })
+
     it('should allow disabling payments on a form with workflow steps', async () => {
       // Arrange
       const disablePayments = { ...ENABLE_PAYMENTS, enabled: false }
