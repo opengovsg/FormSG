@@ -159,7 +159,11 @@ export const StripePaymentBlock = ({
     return 'Please make payment.'
   }, [formTitle])
 
-  if (!form || form.responseMode !== FormResponseMode.Encrypt) {
+  if (
+    !form ||
+    (form.responseMode !== FormResponseMode.Encrypt &&
+      form.responseMode !== FormResponseMode.Multirespondent)
+  ) {
     return <></>
   }
 

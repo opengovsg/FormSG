@@ -78,7 +78,10 @@ export const PaymentSummary = ({
   colorTheme: FormColorTheme
   paymentInfoData: GetPaymentInfoDto
 }) => {
-  if (form.responseMode !== FormResponseMode.Encrypt) {
+  if (
+    form.responseMode !== FormResponseMode.Encrypt &&
+    form.responseMode !== FormResponseMode.Multirespondent
+  ) {
     return <></>
   }
   if (form.payments_field.payment_type === PaymentType.Products) {
