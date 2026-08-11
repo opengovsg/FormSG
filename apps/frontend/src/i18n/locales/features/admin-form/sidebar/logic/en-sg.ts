@@ -31,7 +31,6 @@ export const enSG: Logic = {
     thenShow: 'then show',
     thenDisableSubmission: 'then disable submission',
     fieldRemoved: 'This field was deleted and has been removed from your logic',
-    clickToEdit: 'Click to edit',
   },
   fieldBadge: {
     fieldLabel: '{{label}} field',

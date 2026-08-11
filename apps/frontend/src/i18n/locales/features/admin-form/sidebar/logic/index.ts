@@ -29,7 +29,6 @@ export interface Logic {
     thenShow: string
     thenDisableSubmission: string
     fieldRemoved: string
-    clickToEdit: string
   }
   fieldBadge: {
     fieldLabel: string

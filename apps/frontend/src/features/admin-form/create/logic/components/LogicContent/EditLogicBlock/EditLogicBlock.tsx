@@ -137,10 +137,10 @@ export const EditLogicBlock = ({
   const completeSave = useAdminLogicStore(completeSaveSelector)
   const isCreatingState = useAdminLogicStore(isCreatingStateSelector)
 
-  // Auto-save when another logic block is clicked while this one is open. The
-  // editable-cards-mrf-logic flag gates this at the source (InactiveLogicBlock):
-  // when off, pendingSwitchTo is never set and this effect stays dormant. Shared
-  // by both the edit (ActiveLogicBlock) and create (NewLogicBlock) paths.
+  // Auto-save when another logic block is clicked while this one is open.
+  // InactiveLogicBlock sets pendingSwitchTo; this effect is dormant until it
+  // does. Shared by both the edit (ActiveLogicBlock) and create (NewLogicBlock)
+  // paths.
   useEffect(() => {
     if (pendingSwitchTo === null) return
 

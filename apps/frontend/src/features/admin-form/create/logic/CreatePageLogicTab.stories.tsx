@@ -1,7 +1,5 @@
-import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { featureFlags } from 'formsg-shared/constants'
 import {
   AttachmentSize,
   BasicField,
@@ -153,6 +151,10 @@ MobileNoLogic.parameters = {
 export const WithLogic = Template.bind({})
 WithLogic.parameters = {
   msw: { handlers: { default: buildMswRoutes(FORM_WITH_LOGIC) } },
+  documentation: {
+    storyDescription:
+      'The whole logic card is clickable and shows a hover affordance (border, background, pencil tint). Hover only appears in the canvas, as there is no pseudo-state addon.',
+  },
 }
 
 export const MobileWithLogic = Template.bind({})
@@ -211,32 +213,3 @@ export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({}, 'infinite') } },
 }
-
-// Flag on: the whole card is clickable and shows a hover affordance (border,
-// background, pencil tint). Hover only appears in the canvas (no pseudo-state
-// addon); stories without this decorator render the flag-off, pencil-only card.
-const editableCardsOnGrowthBook = new GrowthBook({
-  features: { [featureFlags.editableCardsMrfLogic]: { defaultValue: true } },
-})
-
-const withEditableCardsFlagOn = (Story: StoryFn) => (
-  <GrowthBookProvider growthbook={editableCardsOnGrowthBook}>
-    <Story />
-  </GrowthBookProvider>
-)
-
-export const WithLogicEditableCards = Template.bind({})
-WithLogicEditableCards.parameters = {
-  msw: { handlers: { default: buildMswRoutes(FORM_WITH_LOGIC) } },
-}
-WithLogicEditableCards.decorators = [withEditableCardsFlagOn]
-
-export const MobileWithLogicEditableCards = Template.bind({})
-MobileWithLogicEditableCards.parameters = {
-  msw: { handlers: { default: buildMswRoutes(FORM_WITH_LOGIC) } },
-  viewport: {
-    defaultViewport: 'mobile1',
-  },
-  chromatic: { viewports: [viewports.xs] },
-}
-MobileWithLogicEditableCards.decorators = [withEditableCardsFlagOn]
