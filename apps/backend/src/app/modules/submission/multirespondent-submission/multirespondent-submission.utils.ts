@@ -586,10 +586,6 @@ export const buildMrfResponseJson = ({
   delimiter?: string
 }): string => {
   const entries: Array<{ question: string; answer: string }> = [
-    // Form ID must be the first variable for stable identified automations to route on. See: https://github.com/opengovsg/FormSG/pull/9732
-    // automation can tell which form a response came from. Form ID is the
-    // stable identifier automations should route on. Mirrors the regular-form
-    // admin notification (mail.service.ts sendSubmissionToAdmin).
     { question: 'Form ID', answer: formId },
     { question: 'Response ID', answer: responseId },
     { question: 'Timestamp', answer: timestamp },
