@@ -14,6 +14,7 @@ import { useUser } from '~features/user/queries'
 import {
   cancelPendingSwitchSelector,
   completeSaveSelector,
+  isCreatingStateSelector,
   pendingSwitchToSelector,
   setToInactiveSelector,
   useAdminWorkflowStore,
@@ -124,6 +125,7 @@ export const EditStepBlock = ({
   const pendingSwitchTo = useAdminWorkflowStore(pendingSwitchToSelector)
   const completeSave = useAdminWorkflowStore(completeSaveSelector)
   const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
+  const isCreatingState = useAdminWorkflowStore(isCreatingStateSelector)
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
@@ -152,7 +154,13 @@ export const EditStepBlock = ({
   // path never has a pending switch, so that cancel is a no-op there.
   const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
     const step = buildWorkflowStep(inputs, isFirstStep)
-    if (step) onSubmit(step)
+    if (!step) {
+      // Inputs passed validation but cannot form a step. Without this the
+      // pending switch would never resolve and the card would be stuck open.
+      cancelPendingSwitch()
+      return
+    }
+    onSubmit(step)
   }, cancelPendingSwitch)
 
   // Auto-save when another step is clicked while this one is open.
@@ -164,8 +172,11 @@ export const EditStepBlock = ({
     // Submitting again would double-save and collapse the target.
     if (isLoading) return
 
-    if (!formMethods.formState.isDirty) {
-      // No changes to save, just switch directly.
+    // A new step has nothing persisted yet, so it must always run validation
+    // (like the Add step button): an incomplete new step blocks the switch. An
+    // existing step that wasn't touched can switch directly without a
+    // redundant save.
+    if (!isCreatingState && !formMethods.formState.isDirty) {
       completeSave()
       return
     }
