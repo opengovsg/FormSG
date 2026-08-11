@@ -46,8 +46,16 @@ import MailService from '../../../services/mail/mail.service'
 import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
-import { FormRespondentSingleSubmissionValidationError } from '../../form/form.errors'
+import {
+  FormNotFoundError,
+  FormRespondentSingleSubmissionValidationError,
+} from '../../form/form.errors'
+import * as FormService from '../../form/form.service'
 import { isFormMultirespondent } from '../../form/form.utils'
+import {
+  WebhookPushToQueueError,
+  WebhookValidationError,
+} from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType } from '../../webhook/webhook.service'
 import {
@@ -1456,6 +1464,54 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       })
       return error
     })
+}
+
+/**
+ * Performs post-submission actions for a multirespondent submission promoted
+ * from a pending submission on payment confirmation. A payment-enabled MRF
+ * sends no form-configured emails, so the only action mirrored from
+ * submission creation is the initial webhook; the payer's receipt email is
+ * sent by the payments machinery.
+ * @param submission the promoted multirespondent submission
+ */
+export const performMultirespondentPaymentPostSubmissionActions = (
+  submission: IMultirespondentSubmissionSchema,
+): ResultAsync<
+  true,
+  | FormNotFoundError
+  | PossibleDatabaseError
+  | WebhookValidationError
+  | SubmissionNotFoundError
+  | WebhookPushToQueueError
+> => {
+  const logMeta = {
+    action: 'performMultirespondentPaymentPostSubmissionActions',
+    submissionId: submission.id,
+  }
+
+  return FormService.retrieveFullFormById(submission.form).andThen((form) => {
+    const webhookUrl = form.webhook?.url
+    if (!webhookUrl) return okAsync(true as const)
+
+    logger.info({
+      message:
+        'Sending initial webhook for payment-confirmed multirespondent submission',
+      meta: logMeta,
+    })
+
+    return WebhookFactory.sendInitialWebhook(
+      submission,
+      webhookUrl,
+      !!form.webhook?.isRetryEnabled,
+    ).mapErr((error) => {
+      logger.error({
+        message: 'Multirespondent payment submission webhook error',
+        meta: logMeta,
+        error,
+      })
+      return error
+    })
+  })
 }
 
 export const updateMultiRespondentFormSubmission = ({

@@ -23,6 +23,7 @@ import MailService from 'src/app/services/mail/mail.service'
 import * as MailUtils from 'src/app/services/mail/mail.utils'
 import {
   IMultirespondentSubmissionSchema,
+  IPopulatedForm,
   IPopulatedMultirespondentForm,
   WebhookView,
 } from 'src/types'
@@ -30,6 +31,8 @@ import { MultirespondentSubmissionDto, SnapshottedFormDef } from 'src/types/api'
 
 import { DatabaseConflictError } from '../../../core/core.errors'
 import { FormRespondentSingleSubmissionValidationError } from '../../../form/form.errors'
+import * as FormService from '../../../form/form.service'
+import { WebhookValidationError } from '../../../webhook/webhook.errors'
 import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
@@ -4681,6 +4684,85 @@ describe('multirespondent-submission.service', () => {
       expect(sendSpy).toHaveBeenCalledTimes(1)
       expect(sendSpy.mock.calls[0][3]).toBeUndefined()
       expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('performMultirespondentPaymentPostSubmissionActions', () => {
+    const MOCK_WEBHOOK_URL = 'https://example.com/webhook'
+    const mockSubmission = {
+      id: mockSubmissionId,
+      form: mockFormId,
+      submissionType: SubmissionType.Multirespondent,
+    } as unknown as IMultirespondentSubmissionSchema
+
+    afterEach(() => jest.restoreAllMocks())
+
+    it('should fire the initial webhook when the form has a webhook url', async () => {
+      // Arrange
+      jest.spyOn(FormService, 'retrieveFullFormById').mockReturnValue(
+        okAsync({
+          webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: true },
+        } as IPopulatedForm),
+      )
+      const webhookSpy = jest
+        .spyOn(WebhookFactory, 'sendInitialWebhook')
+        .mockReturnValue(okAsync(true))
+
+      // Act
+      const actualResult =
+        await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
+          mockSubmission,
+        )
+
+      // Assert
+      expect(webhookSpy).toHaveBeenCalledWith(
+        mockSubmission,
+        MOCK_WEBHOOK_URL,
+        true,
+      )
+      expect(actualResult.isOk()).toBeTrue()
+    })
+
+    it('should not fire a webhook when the form has none configured', async () => {
+      // Arrange
+      jest
+        .spyOn(FormService, 'retrieveFullFormById')
+        .mockReturnValue(okAsync({ webhook: { url: '' } } as IPopulatedForm))
+      const webhookSpy = jest.spyOn(WebhookFactory, 'sendInitialWebhook')
+
+      // Act
+      const actualResult =
+        await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
+          mockSubmission,
+        )
+
+      // Assert
+      expect(webhookSpy).not.toHaveBeenCalled()
+      expect(actualResult.isOk()).toBeTrue()
+    })
+
+    it('should return the webhook error when sending fails', async () => {
+      // Arrange
+      jest.spyOn(FormService, 'retrieveFullFormById').mockReturnValue(
+        okAsync({
+          webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: false },
+        } as IPopulatedForm),
+      )
+      jest
+        .spyOn(WebhookFactory, 'sendInitialWebhook')
+        .mockReturnValue(errAsync(new WebhookValidationError()))
+
+      // Act
+      const actualResult =
+        await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
+          mockSubmission,
+        )
+
+      // Assert
+      expect(actualResult.isErr()).toBeTrue()
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        WebhookValidationError,
+      )
     })
   })
 })
