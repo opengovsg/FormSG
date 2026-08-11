@@ -1,4 +1,5 @@
 import {
+  AdminMultirespondentFormDto,
   AdminStorageFormDto,
   FormResponseMode,
   PaymentType,
@@ -6,7 +7,7 @@ import {
 } from 'formsg-shared/types'
 
 export const paymentTypeSelection = (
-  form: AdminStorageFormDto,
+  form: AdminStorageFormDto | AdminMultirespondentFormDto,
 ): { paymentProducts: ProductItemForReceipt[]; totalAmount: number } => {
   let paymentProducts: ProductItemForReceipt[] = []
   let totalAmount = 0

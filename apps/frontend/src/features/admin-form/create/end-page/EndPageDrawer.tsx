@@ -245,8 +245,9 @@ export const EndPageDrawer = (): JSX.Element | null => {
   const { t } = useTranslation()
 
   const isPaymentEnabled =
-    form?.responseMode === FormResponseMode.Encrypt &&
-    form?.payments_field.enabled
+    (form?.responseMode === FormResponseMode.Encrypt ||
+      form?.responseMode === FormResponseMode.Multirespondent) &&
+    form.payments_field.enabled
 
   useEffect(() => {
     setData(form?.endPage)

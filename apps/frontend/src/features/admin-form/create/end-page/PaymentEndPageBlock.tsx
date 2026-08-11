@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
 import {
+  AdminMultirespondentFormDto,
   AdminStorageFormDto,
   FormDto,
   FormResponseMode,
@@ -34,7 +35,8 @@ export const PaymentEndPageBlock = ({
   }, [focusOnMount])
 
   const isPaymentEnabled =
-    form?.responseMode === FormResponseMode.Encrypt &&
+    (form?.responseMode === FormResponseMode.Encrypt ||
+      form?.responseMode === FormResponseMode.Multirespondent) &&
     form.payments_field.enabled
 
   const submittedAriaText = useMemo(() => {
@@ -53,7 +55,7 @@ export const PaymentEndPageBlock = ({
   }
 
   const { paymentProducts, totalAmount } = paymentTypeSelection(
-    form as AdminStorageFormDto,
+    form as AdminStorageFormDto | AdminMultirespondentFormDto,
   )
 
   return (
