@@ -6,6 +6,7 @@ import { FormControl } from '@chakra-ui/react'
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
 import Toggle from '~components/Toggle'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -14,15 +15,15 @@ import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
 
-import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
+import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
+import { addApprovalFieldToEdit } from './reconcileApprovalField'
 
 interface ApprovalsBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
   stepNumber: number
 }
 
-const APPROVAL_FIELD_NAME = 'approval_field'
 export const ApprovalsBlock = ({
   formMethods,
   stepNumber,
@@ -32,6 +33,7 @@ export const ApprovalsBlock = ({
   const {
     control,
     setValue,
+    getValues,
     formState: { errors },
     clearErrors,
     watch,
@@ -94,20 +96,38 @@ export const ApprovalsBlock = ({
         onChange={onApprovalToggleChange}
         isChecked={isApprovalToggleChecked}
         labelStyles={textStyles.h4}
-        label={t('features.adminForm.sidebar.workflow.approvals.toggle.label')}
+        label={t(
+          isRedesign
+            ? 'features.adminForm.sidebar.workflow.approvals.toggle.labelRedesign'
+            : 'features.adminForm.sidebar.workflow.approvals.toggle.label',
+        )}
         description={t(
           isRedesign
             ? 'features.adminForm.sidebar.workflow.approvals.toggle.descriptionRedesign'
             : 'features.adminForm.sidebar.workflow.approvals.toggle.description',
         )}
-        tooltipText={t(
-          'features.adminForm.sidebar.workflow.approvals.toggle.tooltip',
-        )}
-        tooltipVariant="info"
-        tooltipPlacement="top"
+        {...(isRedesign
+          ? {}
+          : {
+              tooltipText: t(
+                'features.adminForm.sidebar.workflow.approvals.toggle.tooltip',
+              ),
+              tooltipVariant: 'info' as const,
+              tooltipPlacement: 'top' as const,
+            })}
       />
       {isApprovalToggleChecked ? (
-        <FormControl isInvalid={!!errors.approval_field?.message}>
+        <FormControl
+          isInvalid={!!errors.approval_field?.message}
+          {...(isRedesign ? { isRequired: true, mt: '1rem' } : {})}
+        >
+          {isRedesign ? (
+            <FormLabel style={textStyles.h4}>
+              {t(
+                'features.adminForm.sidebar.workflow.approvals.toggle.selectorLabelRedesign',
+              )}
+            </FormLabel>
+          ) : null}
           <Controller
             name={APPROVAL_FIELD_NAME}
             control={control}
@@ -125,7 +145,11 @@ export const ApprovalsBlock = ({
                     'features.adminForm.sidebar.workflow.approvals.validation.fieldAlreadyUsed',
                   )
                 }
-                if (value && !selectedEditFields.includes(value)) {
+                // Read `edit` live rather than via the watched closure: the
+                // sibling QuestionsBlock calls trigger() synchronously in its
+                // onChange, before this component re-renders, so a closed-over
+                // value would be one change stale.
+                if (value && !getValues(FIELDS_TO_EDIT_NAME).includes(value)) {
                   return t(
                     isRedesign
                       ? 'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUserRedesign'
@@ -134,8 +158,20 @@ export const ApprovalsBlock = ({
                 }
               },
             }}
-            render={({ field: { value = '', ...rest } }) => (
-              <>
+            render={({ field: { value = '', onChange, ...rest } }) => {
+              // Auto-assign (§4.3): picking the approval field also adds it
+              // to this step's `edit` list. One-way only — never removes an
+              // id from `edit` on switch/clear/toggle-off (see plan §4.5).
+              const handleApprovalFieldChange = (newValue: string) => {
+                onChange(newValue)
+                if (isRedesign && newValue) {
+                  setValue(
+                    FIELDS_TO_EDIT_NAME,
+                    addApprovalFieldToEdit(selectedEditFields, newValue),
+                  )
+                }
+              }
+              return (
                 <SingleSelect
                   placeholder={t(
                     'features.adminForm.sidebar.workflow.approvals.toggle.placeholder',
@@ -144,10 +180,11 @@ export const ApprovalsBlock = ({
                   value={getValueIfNotDeleted(value)}
                   isClearable
                   isDisabled={isLoading}
+                  onChange={handleApprovalFieldChange}
                   {...rest}
                 />
-              </>
-            )}
+              )
+            }}
           />
           <FormErrorMessage>{errors.approval_field?.message}</FormErrorMessage>
         </FormControl>
