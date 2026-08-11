@@ -285,6 +285,7 @@ export interface Fields {
       // TODO [MRF-CUTOVER]: Remove after cutover.
       cutoverLegacyOnly: string
       mrfWorkflowSteps: string
+      mrfEmailNotifications: string
       stripeNotConnectedBefore: string
       stripeNotConnectedSettings: string
       stripeNotConnectedAfter: string

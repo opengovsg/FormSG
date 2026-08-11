@@ -303,6 +303,8 @@ export const enSG: Fields = {
         'Payments are only available in the legacy version of FormSG.',
       mrfWorkflowSteps:
         'Remove all workflow steps to enable payments. A form cannot have both a payment field and a workflow.',
+      mrfEmailNotifications:
+        'Remove email notifications in Settings to enable payments. A payment-enabled form does not send email notifications.',
       stripeNotConnectedBefore: 'Connect your Stripe account in',
       stripeNotConnectedSettings: 'Settings',
       stripeNotConnectedAfter: 'to add payment field.',

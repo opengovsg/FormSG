@@ -466,6 +466,12 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   // workflow steps; the payment field and workflow steps are mutually
   // exclusive.
   const hasWorkflowSteps = isMrfMode && (form.workflow?.length ?? 0) > 0
+  // A payment-enabled MRF sends no form-configured emails, so email
+  // notifications must be removed before payments can be enabled. Encrypt
+  // mode enforces the equivalent at the Stripe connection stage instead.
+  const hasMrfEmailNotifications =
+    isMrfMode &&
+    ((form.emails?.length ?? 0) > 0 || !!form.stepOneEmailNotificationFieldId)
   const isPaymentCapable = isEncryptMode || (isMrfMode && isMrfPaymentsEnabled)
   const isStripeConnected =
     isPaymentCapable && form.payments_channel.channel === PaymentChannel.Stripe
@@ -503,6 +509,8 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
     </Text>
   ) : hasWorkflowSteps ? (
     <Text>{t('disabled.mrfWorkflowSteps')}</Text>
+  ) : hasMrfEmailNotifications ? (
+    <Text>{t('disabled.mrfEmailNotifications')}</Text>
   ) : !isStripeConnected ? (
     <Text>
       {t('disabled.stripeNotConnectedBefore')}{' '}
@@ -527,7 +535,9 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
       )}
       <PaymentInputFields
         isDisabled={isPaymentDisabled}
-        isSelectorDisabled={!isPaymentCapable || hasWorkflowSteps}
+        isSelectorDisabled={
+          !isPaymentCapable || hasWorkflowSteps || hasMrfEmailNotifications
+        }
       />
     </>
   )
