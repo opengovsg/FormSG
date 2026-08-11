@@ -12,7 +12,7 @@ import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 import validator from 'validator'
 
-import { FormEndPage, FormResponseMode } from 'formsg-shared/types'
+import { FormEndPage } from 'formsg-shared/types'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -244,10 +244,10 @@ export const EndPageDrawer = (): JSX.Element | null => {
   )
   const { t } = useTranslation()
 
+  // All supported response modes carry payment config; the structural check
+  // exists only to narrow away the deprecated email mode.
   const isPaymentEnabled =
-    (form?.responseMode === FormResponseMode.Encrypt ||
-      form?.responseMode === FormResponseMode.Multirespondent) &&
-    form.payments_field.enabled
+    !!form && 'payments_field' in form && form.payments_field.enabled
 
   useEffect(() => {
     setData(form?.endPage)
