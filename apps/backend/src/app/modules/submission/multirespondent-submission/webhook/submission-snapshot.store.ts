@@ -1,6 +1,11 @@
-import { PutObjectRequest } from 'aws-sdk/clients/s3'
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  PutObjectRequest,
+} from '@aws-sdk/client-s3'
 import crypto from 'crypto'
 import { errAsync, ResultAsync } from 'neverthrow'
+import { Readable } from 'stream'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -76,14 +81,14 @@ export const writeV4Snapshot = (
     const params: PutObjectRequest = {
       Bucket: AwsConfig.submissionHistoryV4S3Bucket,
       Key: key,
-      Body: body,
+      Body: Readable.from([body]),
       ContentType: 'application/json',
       // Create-if-absent: S3 returns 412 PreconditionFailed if the key exists.
       IfNoneMatch: '*',
     }
 
     return ResultAsync.fromPromise(
-      AwsConfig.s3.putObject(params).promise(),
+      AwsConfig.s3.send(new PutObjectCommand(params)),
       (error) => error,
     )
       .map(() => ({ token, key }))
@@ -145,9 +150,12 @@ export const readV4Snapshot = ({
   })
 
   return ResultAsync.fromPromise(
-    AwsConfig.s3
-      .getObject({ Bucket: AwsConfig.submissionHistoryV4S3Bucket, Key: key })
-      .promise(),
+    AwsConfig.s3.send(
+      new GetObjectCommand({
+        Bucket: AwsConfig.submissionHistoryV4S3Bucket,
+        Key: key,
+      }),
+    ),
     (error) => error,
   )
     .andThen((data) => {

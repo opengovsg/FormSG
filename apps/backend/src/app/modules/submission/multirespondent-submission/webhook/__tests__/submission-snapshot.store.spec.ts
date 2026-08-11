@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { text } from 'stream/consumers'
 
 import { aws as AwsConfig } from 'src/app/config/config'
 
@@ -34,20 +35,19 @@ const makeSnapshot = (): SubmissionSnapshotV4 =>
     createdAt: '2026-07-22T00:00:00.000Z',
   })
 
-// Helper to make a resolved/rejected aws-sdk v2 `.promise()` shape.
-const putResolves = () =>
-  jest.fn().mockReturnValue({ promise: () => Promise.resolve({}) })
+// Helper to make a resolved/rejected aws-sdk promise shape.
+const putResolves = () => jest.fn().mockReturnValue(Promise.resolve({}))
 const putRejectsThen = (
   ...outcomes: Array<{ reject?: unknown } | { resolve?: unknown }>
 ) => {
   const fn = jest.fn()
   outcomes.forEach((o) => {
     if ('reject' in o) {
-      fn.mockReturnValueOnce({ promise: () => Promise.reject(o.reject) })
+      fn.mockReturnValueOnce(Promise.reject(o.reject))
     } else {
-      fn.mockReturnValueOnce({
-        promise: () => Promise.resolve((o as { resolve?: unknown }).resolve),
-      })
+      fn.mockReturnValueOnce(
+        Promise.resolve((o as { resolve?: unknown }).resolve),
+      )
     }
   })
   return fn
@@ -91,7 +91,7 @@ describe('writeV4Snapshot', () => {
     // Arrange
     const snapshot = makeSnapshot()
     const putObject = putResolves()
-    ;(AwsConfig.s3.putObject as jest.Mock) = putObject
+    ;(AwsConfig.s3.send as jest.Mock) = putObject
     mockTokens('tok-1')
 
     // Act
@@ -100,13 +100,14 @@ describe('writeV4Snapshot', () => {
     // Assert
     expect(result.isOk()).toBe(true)
     expect(putObject).toHaveBeenCalledTimes(1)
-    const params = putObject.mock.calls[0][0]
+    const { input: params } = putObject.mock.calls[0][0]
     expect(params.Bucket).toBe(TEST_BUCKET)
     expect(params.Key).toBe(buildSnapshotKey({ ...COORDS, token: 'tok-1' }))
     expect(params.IfNoneMatch).toBe('*')
     expect(params.ContentType).toBe('application/json')
     // Body round-trips through parse back to the input snapshot.
-    expect(JSON.parse(params.Body)).toEqual(snapshot)
+    const body = await text(params.Body as ReadableStream)
+    expect(JSON.parse(body)).toEqual(snapshot)
     expect(result._unsafeUnwrap().token).toBe('tok-1')
     expect(result._unsafeUnwrap().key).toBe(
       buildSnapshotKey({ ...COORDS, token: 'tok-1' }),
@@ -120,7 +121,7 @@ describe('writeV4Snapshot', () => {
       { reject: { code: 'PreconditionFailed', statusCode: 412 } },
       { resolve: {} },
     )
-    ;(AwsConfig.s3.putObject as jest.Mock) = putObject
+    ;(AwsConfig.s3.send as jest.Mock) = putObject
     mockTokens('tok-collide', 'tok-win')
 
     // Act
@@ -129,14 +130,14 @@ describe('writeV4Snapshot', () => {
     // Assert
     expect(result.isOk()).toBe(true)
     expect(putObject).toHaveBeenCalledTimes(2)
-    const firstKey = putObject.mock.calls[0][0].Key
-    const secondKey = putObject.mock.calls[1][0].Key
+    const firstKey = putObject.mock.calls[0][0].input.Key
+    const secondKey = putObject.mock.calls[1][0].input.Key
     expect(firstKey).not.toBe(secondKey) // fresh token => distinct key
     expect(firstKey).toBe(buildSnapshotKey({ ...COORDS, token: 'tok-collide' }))
     expect(secondKey).toBe(buildSnapshotKey({ ...COORDS, token: 'tok-win' }))
     // IfNoneMatch on EVERY attempt => the first object's bytes are never clobbered.
-    expect(putObject.mock.calls[0][0].IfNoneMatch).toBe('*')
-    expect(putObject.mock.calls[1][0].IfNoneMatch).toBe('*')
+    expect(putObject.mock.calls[0][0].input.IfNoneMatch).toBe('*')
+    expect(putObject.mock.calls[1][0].input.IfNoneMatch).toBe('*')
     expect(result._unsafeUnwrap().token).toBe('tok-win')
   })
 
@@ -145,7 +146,7 @@ describe('writeV4Snapshot', () => {
     const putObject = putRejectsThen({
       reject: { code: 'AccessDenied', statusCode: 403 },
     })
-    ;(AwsConfig.s3.putObject as jest.Mock) = putObject
+    ;(AwsConfig.s3.send as jest.Mock) = putObject
     mockTokens('tok-1')
 
     const result = await writeV4Snapshot(snapshot)
@@ -158,11 +159,12 @@ describe('writeV4Snapshot', () => {
   it('should fail loud when a persistent 412 exceeds the retry bound', async () => {
     const snapshot = makeSnapshot()
     // Persistent 412 on every fresh token — must stop and fail loud.
-    const putObject = jest.fn().mockReturnValue({
-      promise: () =>
+    const putObject = jest
+      .fn()
+      .mockReturnValue(
         Promise.reject({ code: 'PreconditionFailed', statusCode: 412 }),
-    })
-    ;(AwsConfig.s3.putObject as jest.Mock) = putObject
+      )
+    ;(AwsConfig.s3.send as jest.Mock) = putObject
     // Every attempt gets a distinct fresh token (tok-0, tok-1, ...).
     mockTokens()
 
@@ -174,7 +176,7 @@ describe('writeV4Snapshot', () => {
     expect(putObject).toHaveBeenCalledTimes(2)
     // Every attempt kept IfNoneMatch — no silent overwrite even at exhaustion.
     putObject.mock.calls.forEach((call) =>
-      expect(call[0].IfNoneMatch).toBe('*'),
+      expect(call[0].input.IfNoneMatch).toBe('*'),
     )
   })
 })
@@ -182,25 +184,27 @@ describe('writeV4Snapshot', () => {
 describe('readV4Snapshot', () => {
   it('should use buildSnapshotKey for the getObject Key (single key source)', async () => {
     const snapshot = makeSnapshot()
-    const getObject = jest.fn().mockReturnValue({
-      promise: () =>
+    const getObject = jest
+      .fn()
+      .mockReturnValue(
         Promise.resolve({ Body: Buffer.from(JSON.stringify(snapshot)) }),
-    })
-    ;(AwsConfig.s3.getObject as jest.Mock) = getObject
+      )
+    ;(AwsConfig.s3.send as jest.Mock) = getObject
 
     await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
-    const params = getObject.mock.calls[0][0]
+    const { input: params } = getObject.mock.calls[0][0]
     expect(params.Bucket).toBe(TEST_BUCKET)
     expect(params.Key).toBe(buildSnapshotKey({ ...COORDS, token: 'tok-1' }))
   })
 
   it('should resolve the parsed snapshot on a present read', async () => {
     const snapshot = makeSnapshot()
-    ;(AwsConfig.s3.getObject as jest.Mock) = jest.fn().mockReturnValue({
-      promise: () =>
+    ;(AwsConfig.s3.send as jest.Mock) = jest
+      .fn()
+      .mockReturnValue(
         Promise.resolve({ Body: Buffer.from(JSON.stringify(snapshot)) }),
-    })
+      )
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
@@ -209,9 +213,9 @@ describe('readV4Snapshot', () => {
   })
 
   it('should err SnapshotDataIntegrityError with NO fallback on a missing object (NoSuchKey/404)', async () => {
-    ;(AwsConfig.s3.getObject as jest.Mock) = jest.fn().mockReturnValue({
-      promise: () => Promise.reject({ code: 'NoSuchKey', statusCode: 404 }),
-    })
+    ;(AwsConfig.s3.send as jest.Mock) = jest
+      .fn()
+      .mockReturnValue(Promise.reject({ code: 'NoSuchKey', statusCode: 404 }))
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
@@ -221,9 +225,11 @@ describe('readV4Snapshot', () => {
   })
 
   it('should err SnapshotReadError, NOT an integrity error, on an operational S3 failure (AccessDenied)', async () => {
-    ;(AwsConfig.s3.getObject as jest.Mock) = jest.fn().mockReturnValue({
-      promise: () => Promise.reject({ code: 'AccessDenied', statusCode: 403 }),
-    })
+    ;(AwsConfig.s3.send as jest.Mock) = jest
+      .fn()
+      .mockReturnValue(
+        Promise.reject({ code: 'AccessDenied', statusCode: 403 }),
+      )
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
@@ -234,9 +240,9 @@ describe('readV4Snapshot', () => {
   })
 
   it('should err SnapshotReadError on a throttled S3 read', async () => {
-    ;(AwsConfig.s3.getObject as jest.Mock) = jest.fn().mockReturnValue({
-      promise: () => Promise.reject({ code: 'SlowDown', statusCode: 503 }),
-    })
+    ;(AwsConfig.s3.send as jest.Mock) = jest
+      .fn()
+      .mockReturnValue(Promise.reject({ code: 'SlowDown', statusCode: 503 }))
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
@@ -245,9 +251,11 @@ describe('readV4Snapshot', () => {
   })
 
   it('should err the SAME SnapshotDataIntegrityError on a malformed stored body', async () => {
-    ;(AwsConfig.s3.getObject as jest.Mock) = jest.fn().mockReturnValue({
-      promise: () => Promise.resolve({ Body: Buffer.from('{ not valid json') }),
-    })
+    ;(AwsConfig.s3.send as jest.Mock) = jest
+      .fn()
+      .mockReturnValue(
+        Promise.resolve({ Body: Buffer.from('{ not valid json') }),
+      )
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
@@ -258,10 +266,11 @@ describe('readV4Snapshot', () => {
 
   it('should err SnapshotDataIntegrityError on an unknown _v in the stored body', async () => {
     const bad = { ...makeSnapshot(), _v: 2 }
-    ;(AwsConfig.s3.getObject as jest.Mock) = jest.fn().mockReturnValue({
-      promise: () =>
+    ;(AwsConfig.s3.send as jest.Mock) = jest
+      .fn()
+      .mockReturnValue(
         Promise.resolve({ Body: Buffer.from(JSON.stringify(bad)) }),
-    })
+      )
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
