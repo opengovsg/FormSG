@@ -155,6 +155,22 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
+  // Mirrors the edit form's ordering (see EditStepBlock): the redesign shows
+  // approval above the fields. Only the sequence differs between flag states.
+  const fieldsSection = (
+    <Stack>
+      <Text textStyle="subhead-3">
+        {t('features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill')}
+      </Text>
+      <Stack direction="column" spacing="0.25rem">
+        {questionBadges}
+      </Stack>
+    </Stack>
+  )
+  const approvalsSection = isFirstStep ? null : (
+    <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
+  )
+
   return (
     <Box pos="relative" role="group">
       <chakra.button
@@ -205,19 +221,17 @@ export const InactiveStepBlock = ({
             )}
           </Stack>
 
-          <Stack>
-            <Text textStyle="subhead-3">
-              {t(
-                'features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill',
-              )}
-            </Text>
-            <Stack direction="column" spacing="0.25rem">
-              {questionBadges}
-            </Stack>
-          </Stack>
-          {!isFirstStep ? (
-            <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
-          ) : null}
+          {isRedesign ? (
+            <>
+              {approvalsSection}
+              {fieldsSection}
+            </>
+          ) : (
+            <>
+              {fieldsSection}
+              {approvalsSection}
+            </>
+          )}
         </Stack>
       </chakra.button>
       {/* The whole card is the button, so the pencil is a visual affordance

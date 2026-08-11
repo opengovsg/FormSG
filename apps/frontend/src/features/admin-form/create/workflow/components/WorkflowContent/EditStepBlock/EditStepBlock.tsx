@@ -19,6 +19,7 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
+import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -39,6 +40,7 @@ export interface EditLogicBlockProps {
 }
 
 export const FIELDS_TO_EDIT_NAME = 'edit'
+export const APPROVAL_FIELD_NAME = 'approval_field'
 
 /**
  * Builds a workflow step from form inputs, or undefined if they cannot form a
@@ -126,6 +128,7 @@ export const EditStepBlock = ({
   const completeSave = useAdminWorkflowStore(completeSaveSelector)
   const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
   const isCreatingState = useAdminWorkflowStore(isCreatingStateSelector)
+  const isRedesign = useIsWorkflowBuilderRedesign()
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
@@ -203,6 +206,26 @@ export const EditStepBlock = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
 
+  // The redesign puts approval above the fields it feeds into. Only the order
+  // differs, so build both blocks once and swap their sequence rather than
+  // duplicating the subtree per flag branch.
+  const questionsSection = (
+    <>
+      <Divider />
+      <QuestionsBlock
+        formMethods={formMethods}
+        isLoading={_isLoading}
+        isFirstStep={isFirstStep}
+      />
+    </>
+  )
+  const approvalsSection = isFirstStep ? null : (
+    <>
+      <Divider />
+      <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+    </>
+  )
+
   return (
     <Stack
       ref={wrapperRef}
@@ -224,18 +247,17 @@ export const EditStepBlock = ({
         formMethods={formMethods}
         isLoading={_isLoading}
       />
-      <Divider />
-      <QuestionsBlock
-        formMethods={formMethods}
-        isLoading={_isLoading}
-        isFirstStep={isFirstStep}
-      />
-      {!isFirstStep ? (
+      {isRedesign ? (
         <>
-          <Divider />
-          <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
+          {approvalsSection}
+          {questionsSection}
         </>
-      ) : null}
+      ) : (
+        <>
+          {questionsSection}
+          {approvalsSection}
+        </>
+      )}
       <Divider />
       <SaveActionGroup
         isLoading={_isLoading}
