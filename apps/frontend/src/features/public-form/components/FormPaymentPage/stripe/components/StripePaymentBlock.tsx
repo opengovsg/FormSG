@@ -11,7 +11,7 @@ import {
 import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 
 import { GetPaymentInfoDto } from 'formsg-shared/types'
-import { FormColorTheme, FormResponseMode } from 'formsg-shared/types/form'
+import { FormColorTheme } from 'formsg-shared/types/form'
 
 import { useBrowserStm } from '~hooks/payments'
 import Button from '~components/Button'
@@ -159,11 +159,9 @@ export const StripePaymentBlock = ({
     return 'Please make payment.'
   }, [formTitle])
 
-  if (
-    !form ||
-    (form.responseMode !== FormResponseMode.Encrypt &&
-      form.responseMode !== FormResponseMode.Multirespondent)
-  ) {
+  // All supported response modes carry payment config; the structural check
+  // exists only to narrow away the deprecated email mode.
+  if (!form || !('payments_field' in form)) {
     return <></>
   }
 
