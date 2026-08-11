@@ -117,11 +117,11 @@ export interface Workflow {
   }
   questions: {
     tooltip: string
-    tooltipRedesign: string
     label: string
     labelRedesign: string
     placeholder: string
     placeholderRedesign: string
+    autoAddHelperTextRedesign: string
   }
   approvals: {
     title: string
@@ -129,10 +129,12 @@ export interface Workflow {
     notRequired: string
     toggle: {
       label: string
+      labelRedesign: string
       description: string
       descriptionRedesign: string
       tooltip: string
       placeholder: string
+      selectorLabelRedesign: string
     }
     validation: {
       noField: string
