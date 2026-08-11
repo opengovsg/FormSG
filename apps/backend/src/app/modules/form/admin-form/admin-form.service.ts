@@ -1,4 +1,4 @@
-import { PresignedPost } from 'aws-sdk/clients/s3'
+import type { PresignedPost } from '@aws-sdk/s3-presigned-post'
 import {
   CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,

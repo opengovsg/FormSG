@@ -1,6 +1,6 @@
 import { Lambda } from '@aws-sdk/client-lambda'
+import type { S3Client } from '@aws-sdk/client-s3'
 import { PackageMode } from '@opengovsg/formsg-sdk/dist/types'
-import aws from 'aws-sdk'
 import { SessionOptions } from 'express-session'
 import { ConnectOptions } from 'mongoose'
 import Mail from 'nodemailer/lib/mailer'
@@ -39,7 +39,7 @@ export type AwsConfig = {
   imageBucketUrl: string
   attachmentBucketUrl: string
   staticAssetsBucketUrl: string
-  s3: aws.S3
+  s3: S3Client
   endPoint: string
   guarddutyQuarantineS3BucketUrl: string
   guarddutyQuarantineS3Bucket: string

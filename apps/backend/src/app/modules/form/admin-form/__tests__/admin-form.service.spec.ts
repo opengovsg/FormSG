@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
-import { PresignedPost } from 'aws-sdk/clients/s3'
+import { PresignedPost } from '@aws-sdk/s3-presigned-post'
 import { ObjectId } from 'bson'
 import {
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
@@ -67,7 +67,7 @@ import {
 } from 'src/app/modules/core/core.errors'
 import { MissingUserError } from 'src/app/modules/user/user.errors'
 import * as UserService from 'src/app/modules/user/user.service'
-import { CreatePresignedPostError } from 'src/app/utils/aws-s3'
+import { CreatePresignedPostError, s3Operations } from 'src/app/utils/aws-s3'
 import { formatErrorRecoveryMessage } from 'src/app/utils/handle-mongo-error'
 import { EditFieldActions } from 'src/shared/constants'
 import {
@@ -207,12 +207,8 @@ describe('admin-form.service', () => {
       }
       // Mock external service success.
       const s3Spy = jest
-        .spyOn(aws.s3, 'createPresignedPost')
-
-        // @ts-ignore
-        .mockImplementationOnce((_obj, cb) => {
-          cb(null, expectedPresignedPostUrl)
-        })
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockResolvedValueOnce(expectedPresignedPostUrl)
 
       // Act
       const actualResult =
@@ -226,9 +222,6 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.imageS3Bucket }),
-
-        // @ts-ignore
-        expect.any(Function),
       )
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedPresignedPostUrl)
@@ -260,10 +253,8 @@ describe('admin-form.service', () => {
       // Arrange
       // Mock external service failure.
       const s3Spy = jest
-        .spyOn(aws.s3, 'createPresignedPost')
-        .mockImplementationOnce(() => {
-          throw new Error('boom')
-        })
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockRejectedValueOnce(new Error('boom'))
 
       // Act
       const actualResult =
@@ -277,9 +268,6 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.imageS3Bucket }),
-
-        // @ts-ignore
-        expect.any(Function),
       )
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
@@ -300,12 +288,8 @@ describe('admin-form.service', () => {
       }
       // Mock external service success.
       const s3Spy = jest
-        .spyOn(aws.s3, 'createPresignedPost')
-
-        // @ts-ignore
-        .mockImplementationOnce((_obj, cb) => {
-          cb(null, expectedPresignedPostUrl)
-        })
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockResolvedValueOnce(expectedPresignedPostUrl)
 
       // Act
       const actualResult =
@@ -319,9 +303,6 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.logoS3Bucket }),
-
-        // @ts-ignore
-        expect.any(Function),
       )
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedPresignedPostUrl)
@@ -353,10 +334,8 @@ describe('admin-form.service', () => {
       // Arrange
       // Mock external service failure.
       const s3Spy = jest
-        .spyOn(aws.s3, 'createPresignedPost')
-        .mockImplementationOnce(() => {
-          throw new Error('boom')
-        })
+        .spyOn(s3Operations, 'createPresignedPost')
+        .mockRejectedValueOnce(new Error('boom'))
 
       // Act
       const actualResult =
@@ -370,9 +349,6 @@ describe('admin-form.service', () => {
       // Check that the correct bucket was used.
       expect(s3Spy).toHaveBeenCalledWith(
         expect.objectContaining({ Bucket: aws.logoS3Bucket }),
-
-        // @ts-ignore
-        expect.any(Function),
       )
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
