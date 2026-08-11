@@ -2,15 +2,11 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
 import { Box, chakra, Flex, Icon, Stack, Text } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Dictionary } from 'lodash'
 
-import { featureFlags } from 'formsg-shared/constants'
 import { BasicField, FormField } from 'formsg-shared/types'
 import { FormWorkflowStepDto, WorkflowType } from 'formsg-shared/types/form'
 import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
-
-import IconButton from '~components/IconButton'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
@@ -108,22 +104,14 @@ export const InactiveStepBlock = ({
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
   const requestSwitchTo = useAdminWorkflowStore(requestSwitchToSelector)
 
-  const isEditableCards = useFeatureIsOn(featureFlags.editableCardsMrfLogic)
-
-  // Flag off: block editing while another step is open (previous behaviour).
-  const isPreventEdit = !isEditableCards && !!stateData
-
   const handleClick = useCallback(() => {
     if (stateData) {
-      // Another step is open: auto-save it and switch here when the flag is
-      // on; otherwise editing is blocked.
-      if (isEditableCards) {
-        requestSwitchTo(stepNumber)
-      }
+      // Another step is open: auto-save it and switch here.
+      requestSwitchTo(stepNumber)
       return
     }
     setToEditing(stepNumber)
-  }, [isEditableCards, stateData, stepNumber, setToEditing, requestSwitchTo])
+  }, [stateData, stepNumber, setToEditing, requestSwitchTo])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
@@ -166,7 +154,7 @@ export const InactiveStepBlock = ({
   }, [idToFieldMap, step.edit])
 
   return (
-    <Box pos="relative" role={isEditableCards ? 'group' : undefined}>
+    <Box pos="relative" role="group">
       <chakra.button
         type="button"
         w="100%"
@@ -177,17 +165,9 @@ export const InactiveStepBlock = ({
         borderColor="neutral.300"
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={
-          isEditableCards ? 'pointer' : isPreventEdit ? 'not-allowed' : 'auto'
-        }
-        disabled={isPreventEdit}
-        aria-disabled={isPreventEdit}
-        _groupHover={
-          isEditableCards
-            ? { borderColor: 'primary.500', bg: 'primary.100' }
-            : undefined
-        }
-        onClick={isEditableCards ? handleClick : undefined}
+        cursor="pointer"
+        _groupHover={{ borderColor: 'primary.500', bg: 'primary.100' }}
+        onClick={handleClick}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
@@ -234,37 +214,22 @@ export const InactiveStepBlock = ({
           ) : null}
         </Stack>
       </chakra.button>
-      {isEditableCards ? (
-        // The whole card is the button, so the pencil is a visual affordance
-        // only: no click target, no tab stop, hidden from AT. It reacts to
-        // hover on the card via the wrapper's role="group".
-        <Icon
-          as={BiPencil}
-          aria-hidden
-          pointerEvents="none"
-          top={{ base: '0.5rem', md: '2rem' }}
-          right={{ base: '0.5rem', md: '2rem' }}
-          pos="absolute"
-          fontSize="1.5rem"
-          color="neutral.500"
-          transitionProperty="common"
-          transitionDuration="normal"
-          _groupHover={{ color: 'primary.500' }}
-        />
-      ) : (
-        <IconButton
-          top={{ base: '0.5rem', md: '2rem' }}
-          right={{ base: '0.5rem', md: '2rem' }}
-          pos="absolute"
-          aria-label={t(
-            'features.adminForm.sidebar.workflow.respondentBlock.clickToEdit',
-          )}
-          variant="clear"
-          onClick={handleClick}
-          icon={<BiPencil fontSize="1.5rem" />}
-          cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-        />
-      )}
+      {/* The whole card is the button, so the pencil is a visual affordance
+      only: no click target, no tab stop, hidden from AT. It reacts to hover on
+      the card via the wrapper's role="group". */}
+      <Icon
+        as={BiPencil}
+        aria-hidden
+        pointerEvents="none"
+        top={{ base: '0.5rem', md: '2rem' }}
+        right={{ base: '0.5rem', md: '2rem' }}
+        pos="absolute"
+        fontSize="1.5rem"
+        color="neutral.500"
+        transitionProperty="common"
+        transitionDuration="normal"
+        _groupHover={{ color: 'primary.500' }}
+      />
     </Box>
   )
 }
