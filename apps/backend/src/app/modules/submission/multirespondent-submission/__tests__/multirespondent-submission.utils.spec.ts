@@ -1399,29 +1399,31 @@ describe('multirespondent-submission.utils', () => {
         isStepWriteTokenEnabled: false,
         expected: 1,
       },
+      // Non-plumber consumers are v3-only, so their rows always store V3 —
+      // the write-guard flag governs plumber's cutover, not theirs.
       {
-        name: 'generic, write-guard off => V4',
+        name: 'generic, write-guard off => V3',
         webhookType: 'generic',
         isStepWriteTokenEnabled: false,
-        expected: 2,
+        expected: 1,
       },
       {
-        name: 'generic, write-guard on => V4',
+        name: 'generic, write-guard on => V3',
         webhookType: 'generic',
         isStepWriteTokenEnabled: true,
-        expected: 2,
+        expected: 1,
       },
       {
-        name: 'zapier is treated as generic, write-guard off => V4',
+        name: 'zapier is treated as generic, write-guard off => V3',
         webhookType: 'zapier',
         isStepWriteTokenEnabled: false,
-        expected: 2,
+        expected: 1,
       },
       {
-        name: 'zapier is treated as generic, write-guard on => V4',
+        name: 'zapier is treated as generic, write-guard on => V3',
         webhookType: 'zapier',
         isStepWriteTokenEnabled: true,
-        expected: 2,
+        expected: 1,
       },
     ])('$name', ({ webhookType, isStepWriteTokenEnabled, expected }) => {
       expect(getMrfVersion({ webhookType, isStepWriteTokenEnabled })).toBe(
