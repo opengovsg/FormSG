@@ -47,6 +47,31 @@ export class MrfWorkflowOverflowError extends ApplicationError {
 }
 
 /**
+ * A custom error class returned when a step submission is attempted against
+ * a submission that has been cancelled.
+ */
+export class SubmissionCancelledError extends ApplicationError {
+  constructor(
+    message = 'This submission has been cancelled and can no longer be edited.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_CANCELLED)
+  }
+}
+
+/**
+ * A custom error class returned when a cancellation is attempted against a
+ * submission that is not currently pending (already cancelled, completed,
+ * approved or rejected).
+ */
+export class SubmissionNotCancellableError extends ApplicationError {
+  constructor(
+    message = 'This submission is not pending and can no longer be cancelled.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_NOT_CANCELLABLE)
+  }
+}
+
+/**
  * A custom error class returned when given submission has invalid encryption encoding
  */
 export class InvalidEncodingError extends ApplicationError {

@@ -37,6 +37,11 @@ export const featureFlags = {
   // Number-valued flag: length of expanded alphanumeric OTPs (0 or unset =
   // legacy 6-digit numeric OTPs). Recommended value: 8.
   otpEntropyExpanded: 'otp-entropy-expanded' as const,
+  // Gates whether a new cancellation can be *created* (the results-page
+  // action and the cancel endpoint) — never whether an existing cancellation
+  // is enforced or displayed. See ADR-0001 in the workflow-cancellation
+  // initiative.
+  workflowTermination: 'workflow-termination' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

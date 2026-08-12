@@ -9,6 +9,7 @@ export enum MRF_STATUS {
   PENDING = 'Pending',
   APPROVED = 'Approved',
   REJECTED = 'Not approved',
+  CANCELLED = 'Cancelled',
 }
 
 interface CurrentWorkflowInfo {
@@ -66,6 +67,8 @@ export const getStatusFromWorkflowStatus = (
       return MRF_STATUS.REJECTED
     case WorkflowStatus.PENDING:
       return MRF_STATUS.PENDING
+    case WorkflowStatus.CANCELLED:
+      return MRF_STATUS.CANCELLED
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const _: never = workflowStatus

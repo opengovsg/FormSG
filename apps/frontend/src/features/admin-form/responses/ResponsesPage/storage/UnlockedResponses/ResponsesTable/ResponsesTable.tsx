@@ -31,6 +31,7 @@ import Badge from '~components/Badge'
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
+  MRF_ACTIONS_LABEL,
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_REMINDERS_LABEL,
   MRF_RESPONSE_TIMESTAMP_LABEL,
@@ -39,6 +40,7 @@ import {
 
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
+import { CancelSubmissionButton } from './cancellation/CancelSubmissionButton'
 import { SendReminderButton } from './SendReminderButton'
 import { getNetAmount } from './utils'
 
@@ -104,6 +106,17 @@ function NotApprovedBadge() {
       textColor="danger.700"
       backgroundColor="danger.100"
       statusText={t('features.common.notApproved')}
+    />
+  )
+}
+
+function CancelledBadge() {
+  const { t } = useTranslation()
+  return (
+    <StatusBadge
+      textColor="neutral.700"
+      backgroundColor="neutral.200"
+      statusText={t('features.common.cancelled')}
     />
   )
 }
@@ -227,6 +240,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
       if (mrf.workflowStatus === WorkflowStatus.COMPLETED) {
         return <CompletedBadge />
       }
+      if (mrf.workflowStatus === WorkflowStatus.CANCELLED) {
+        return <CancelledBadge />
+      }
     },
     width: 160,
     minWidth: 160,
@@ -285,6 +301,19 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     },
     minWidth: 160,
     width: 160,
+  },
+  {
+    Header: MRF_ACTIONS_LABEL,
+    Cell: ({ row }) => {
+      const isPending =
+        row.original.mrf?.workflowStatus === WorkflowStatus.PENDING
+      const submissionId = row.original.refNo
+      return isPending ? (
+        <CancelSubmissionButton submissionId={submissionId} />
+      ) : null
+    },
+    minWidth: 120,
+    width: 120,
   },
 ]
 

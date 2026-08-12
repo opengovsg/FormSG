@@ -31,6 +31,8 @@ import {
 } from '../common/AdminViewFormService'
 import { downloadFormIssue } from '../responses/FeedbackPage/issue/IssueService'
 import { downloadFormReview } from '../responses/FeedbackPage/review/ReviewService'
+import { adminFormResponsesKeys } from '../responses/queries'
+import { cancelPendingMrfResponse } from '../responses/ResponsesPage/storage/UnlockedResponses/ResponsesTable/cancellation/CancellationService'
 import { sendReminderForPendingMrfResponse } from '../responses/ResponsesPage/storage/UnlockedResponses/ResponsesTable/reminders/ReminderService'
 
 import { useCollaboratorWizard } from './components/CollaboratorModal/CollaboratorWizardContext'
@@ -598,4 +600,36 @@ export const useFormRemindersMutations = () => {
   )
 
   return { sendReminderForResponseMutation }
+}
+
+export const useCancelMrfSubmissionMutation = () => {
+  const queryClient = useQueryClient()
+  const toast = useToast({ status: 'success', isClosable: true })
+  const handleError = useCallback(
+    (error: Error) => {
+      toast.closeAll()
+      toast({
+        description: error.message,
+        status: 'danger',
+      })
+    },
+    [toast],
+  )
+
+  const cancelSubmissionMutation = useMutation(
+    ({ formId, submissionId }: { formId: string; submissionId: string }) => {
+      return cancelPendingMrfResponse({ formId, submissionId })
+    },
+    {
+      onSuccess: (_data, { formId }) => {
+        toast({
+          description: 'The submission has been cancelled',
+        })
+        queryClient.invalidateQueries(adminFormResponsesKeys.id(formId))
+      },
+      onError: handleError,
+    },
+  )
+
+  return { cancelSubmissionMutation }
 }

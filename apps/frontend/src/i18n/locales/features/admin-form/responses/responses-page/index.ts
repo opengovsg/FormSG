@@ -58,6 +58,9 @@ export interface ResponsesResponsesPage {
           sendReminder: string
           reminderSent: string
         }
+        cancelSubmissionButton: {
+          cancelSubmission: string
+        }
       }
       submissionSearchbarPlaceholder: string
       downloadButton: {

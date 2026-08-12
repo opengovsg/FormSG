@@ -18,6 +18,7 @@ const statusColor: Record<WorkflowStatus, BackgroundProps['bg']> = {
   [WorkflowStatus.COMPLETED]: '#05CC9A', // green
   [WorkflowStatus.APPROVED]: '#05CC9A',
   [WorkflowStatus.REJECTED]: '#C03434', // red
+  [WorkflowStatus.CANCELLED]: '#E5E9F8', // grey
 }
 
 const statusTextMap: Record<WorkflowStatus, string | undefined> = {
@@ -25,6 +26,7 @@ const statusTextMap: Record<WorkflowStatus, string | undefined> = {
   [WorkflowStatus.REJECTED]: 'Not approved',
   [WorkflowStatus.PENDING]: undefined,
   [WorkflowStatus.COMPLETED]: undefined,
+  [WorkflowStatus.CANCELLED]: 'Cancelled',
 }
 
 const StatusIcon = ({
