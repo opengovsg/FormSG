@@ -16,10 +16,12 @@ import {
 } from 'formsg-shared/types'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
-import { err, ok, okAsync, Result } from 'neverthrow'
+import * as jose from 'jose'
+import mongoose from 'mongoose'
+import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import { IPopulatedMultirespondentForm } from '../../../../types'
-import { isTest } from '../../../config/config'
+import config, { isTest } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
 import { createReqMeta, getRequestIp } from '../../../utils/request'
@@ -32,6 +34,8 @@ import {
   MYINFO_AUTH_CODE_COOKIE_OPTIONS,
   MYINFO_LOGIN_COOKIE_NAME,
   MYINFO_LOGIN_COOKIE_OPTIONS,
+  MYINFO_V5_SESSION_COOKIE_NAME,
+  MYINFO_V5_SESSION_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
@@ -39,6 +43,22 @@ import {
   extractAuthCode,
   getMyInfoEserviceIdInForm,
 } from '../../myinfo/myinfo.util'
+import {
+  internalAttrListToV5Scopes,
+  v5ClaimsToMyInfoData,
+} from '../../myinfo/v5/myinfo.v5.adapter'
+import {
+  decryptJwkAtRest,
+  encryptJwkAtRest,
+} from '../../myinfo/v5/myinfo.v5.crypto'
+import {
+  type DpopKeyPair,
+  generateDpopKeyPair,
+  importDpopKeyPair,
+} from '../../myinfo/v5/myinfo.v5.dpop'
+import { MyInfoV5UserinfoError } from '../../myinfo/v5/myinfo.v5.errors'
+import { MyInfoV5Service } from '../../myinfo/v5/myinfo.v5.factory'
+import getMyInfoV5SessionModel from '../../myinfo/v5/myinfo.v5.session.model'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import {
   SGID_CODE_VERIFIER_COOKIE_NAME,
@@ -72,6 +92,39 @@ import * as PublicFormService from './public-form.service'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
+
+/**
+ * Create the per-session v5 OAuth scratch row (PKCE verifier + optional DPoP
+ * private JWK) and return its opaque id. The id is what the cookie carries —
+ * keeping the private key off the wire.
+ *
+ * The DPoP private JWK is encrypted at rest with AES-256-GCM under a key
+ * derived from `config.sessionSecret`. A DB-only compromise therefore can't
+ * extract the keypair without also lifting the application secret.
+ */
+async function persistV5Session({
+  codeVerifier,
+  dpopEnabled,
+  nonce,
+}: {
+  codeVerifier: string
+  dpopEnabled: boolean
+  nonce: string
+}): Promise<string> {
+  const SessionModel = getMyInfoV5SessionModel(mongoose)
+  let dpopPrivateJwkEnc: string | undefined
+  if (dpopEnabled) {
+    const keypair = await generateDpopKeyPair()
+    const privateJwk = await jose.exportJWK(keypair.privateKey)
+    dpopPrivateJwkEnc = encryptJwkAtRest(privateJwk, config.sessionSecret)
+  }
+  const session = await SessionModel.createSession({
+    codeVerifier,
+    dpopPrivateJwkEnc,
+    nonce,
+  })
+  return session._id
+}
 
 /**
  * Handler for GET /:formId/publicform endpoint
@@ -216,6 +269,121 @@ export const handleGetPublicForm: ControllerHandler<
         MYINFO_AUTH_CODE_COOKIE_NAME,
         MYINFO_AUTH_CODE_COOKIE_OPTIONS,
       )
+
+      // Dispatch v3 vs v5 on the session cookie. The v5 redirect handler sets
+      // it when starting a v5 login; v3 forms never set it. The cookie is
+      // HMAC-signed via cookie-parser with config.sessionSecret, so we read
+      // from `signedCookies` — cookie-parser surfaces tampered values as
+      // `false`, which falls through to v3 below.
+      const sessionIdCookie: unknown =
+        req.signedCookies[MYINFO_V5_SESSION_COOKIE_NAME]
+      if (typeof sessionIdCookie === 'string' && sessionIdCookie.length > 0) {
+        res.clearCookie(
+          MYINFO_V5_SESSION_COOKIE_NAME,
+          MYINFO_V5_SESSION_COOKIE_OPTIONS,
+        )
+        const SessionModel = getMyInfoV5SessionModel(mongoose)
+        const session = await SessionModel.consumeSession(sessionIdCookie)
+        if (!session) {
+          logger.error({
+            message: 'MyInfo v5 session not found or expired',
+            meta: logMeta,
+          })
+          return res.json({
+            form: publicForm,
+            errorCodes: [ErrorCode.myInfo],
+            isIntranetUser,
+          })
+        }
+        let dpopKeypair: DpopKeyPair | undefined
+        if (MyInfoV5Service.dpopEnabled) {
+          if (!session.dpopPrivateJwkEnc) {
+            logger.error({
+              message:
+                'MyInfo v5 session missing DPoP private JWK while DPoP is enabled',
+              meta: logMeta,
+            })
+            return res.json({
+              form: publicForm,
+              errorCodes: [ErrorCode.myInfo],
+              isIntranetUser,
+            })
+          }
+          try {
+            const privateJwk = decryptJwkAtRest(
+              session.dpopPrivateJwkEnc,
+              config.sessionSecret,
+            )
+            dpopKeypair = await importDpopKeyPair(privateJwk)
+          } catch (error) {
+            logger.error({
+              message:
+                'Failed to decrypt or import DPoP private JWK from session',
+              meta: logMeta,
+              error,
+            })
+            return res.json({
+              form: publicForm,
+              errorCodes: [ErrorCode.myInfo],
+              isIntranetUser,
+            })
+          }
+        }
+        const v5Result = await extractAuthCode(authCodeCookie)
+          .asyncAndThen((authCode) =>
+            MyInfoV5Service.exchangeCodeForTokens({
+              code: authCode,
+              codeVerifier: session.codeVerifier,
+              dpopKeypair,
+            }),
+          )
+          .andThen((tokenResp) => {
+            // OIDC §3.1.3.7: the id_token's nonce MUST equal the one we sent on
+            // the authorize request. Hard-fail if either side of the pair is
+            // missing — without nonce verification we lose the only defense
+            // against auth-code/id_token replay. (No backward-compat path:
+            // every session this controller produces persists a nonce, and
+            // sessions older than 5 min have already been TTL-expired.)
+            const sessionNonce =
+              typeof session.nonce === 'string' && session.nonce.length > 0
+                ? session.nonce
+                : undefined
+            const idToken = tokenResp.id_token
+            if (!sessionNonce || !idToken) {
+              return errAsync(
+                new MyInfoV5UserinfoError(
+                  'id_token nonce verification not possible — missing session nonce or id_token',
+                ),
+              )
+            }
+            return MyInfoV5Service.verifyIdToken({
+              idToken,
+              expectedNonce: sessionNonce,
+            }).andThen(() =>
+              MyInfoV5Service.fetchUserinfo({
+                accessToken: tokenResp.access_token,
+                dpopKeypair,
+              }),
+            )
+          })
+          .map((claims) => v5ClaimsToMyInfoData(claims))
+        if (v5Result.isErr()) {
+          logger.error({
+            message: 'MyInfo v5 login error',
+            meta: logMeta,
+            error: v5Result.error,
+          })
+          return res.json({
+            form: publicForm,
+            errorCodes: [ErrorCode.myInfo],
+            isIntranetUser,
+          })
+        }
+        myInfoFields = v5Result.value
+        spcpSession = { userName: myInfoFields.getUinFin() }
+        break
+      }
+
       const useEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
       const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
         .asyncAndThen((authCode) => MyInfoService.retrieveAccessToken(authCode))
@@ -676,7 +844,46 @@ export const _handleFormAuthRedirect: ControllerHandler<
         featureFlags.useFormsgEsrvcId,
       )
       switch (form.authType) {
-        case FormAuthType.MyInfo:
+        case FormAuthType.MyInfo: {
+          // Flag-gated dispatch to MyInfo v5. We check both the flag AND
+          // whether v5 is fully provisioned; if either is missing we fall
+          // back to v3 so a half-configured v5 deploy doesn't break logins.
+          const useV5 =
+            Boolean(req.growthbook?.isOn(featureFlags.switchMyinfoV5)) &&
+            MyInfoV5Service.isConfigured
+          if (useV5) {
+            return MyInfoV5Service.createRedirectURL({
+              formId,
+              scopes: internalAttrListToV5Scopes(form.getUniqueMyInfoAttrs()),
+              encodedQuery,
+            }).andThen(({ redirectURL, codeVerifier, nonce }) =>
+              ResultAsync.fromPromise(
+                persistV5Session({
+                  codeVerifier,
+                  dpopEnabled: MyInfoV5Service.dpopEnabled,
+                  nonce,
+                }).then((sessionId) => {
+                  // Cookie carries an opaque session id; the actual PKCE
+                  // verifier + DPoP private JWK live server-side so the round
+                  // trip survives a load-balancer pod hop.
+                  res.cookie(
+                    MYINFO_V5_SESSION_COOKIE_NAME,
+                    sessionId,
+                    MYINFO_V5_SESSION_COOKIE_OPTIONS,
+                  )
+                  return redirectURL
+                }),
+                (error) => {
+                  logger.error({
+                    message: 'Failed to save v5 session',
+                    meta: { action: 'handleFormAuthRedirect', formId },
+                    error,
+                  })
+                  return new AuthTypeMismatchError(FormAuthType.MyInfo)
+                },
+              ),
+            )
+          }
           return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
             ([form, eserviceId]) =>
               MyInfoService.createRedirectURL({
@@ -686,6 +893,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
                 encodedQuery,
               }),
           )
+        }
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
             const target = getRedirectTargetSpcpOidc(

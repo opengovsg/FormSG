@@ -1,0 +1,551 @@
+import axios, { AxiosResponse } from 'axios'
+import type { JSONWebKeySet } from 'jose'
+import * as jose from 'jose'
+import { err, errAsync, okAsync, Result, ResultAsync } from 'neverthrow'
+
+import { createLoggerWithLabel } from '../../../config/logger'
+
+import {
+  createClientAssertion,
+  deriveCodeChallenge,
+  generateNonce,
+  generatePkceVerifier,
+} from './myinfo.v5.crypto'
+import { createDpopProof, type DpopKeyPair } from './myinfo.v5.dpop'
+import {
+  MyInfoV5ConfigError,
+  MyInfoV5TokenError,
+  MyInfoV5UserinfoError,
+} from './myinfo.v5.errors'
+import type {
+  MyInfoV5DiscoveryDocument,
+  MyInfoV5RpKeyset,
+  MyInfoV5TokenResponse,
+  MyInfoV5UserinfoClaims,
+} from './myinfo.v5.types'
+
+/**
+ * Number of seconds of clock skew to tolerate when verifying JWTs from
+ * Singpass. Pods and the IdP can drift by a handful of seconds; without this
+ * tolerance, well-formed tokens at the boundary of their validity window
+ * surface as verification failures.
+ */
+const JWT_CLOCK_TOLERANCE_SECONDS = 30
+
+/**
+ * RFC 9449 §8 dance: an AS or RS can demand that DPoP proofs include a
+ * server-issued nonce. The first request is sent without one; if the server
+ * responds 4xx with a `DPoP-Nonce` header (token endpoint uses 400 +
+ * `error: "use_dpop_nonce"`, resource endpoints use 401 +
+ * `WWW-Authenticate: DPoP error="use_dpop_nonce"`), retry once with the
+ * supplied nonce baked into the proof. A failure on the second attempt
+ * propagates without further retry — the lambda is only invoked twice at
+ * most, so this can't loop.
+ */
+async function withDpopNonceRetry<T>(
+  attempt: (dpopNonce?: string) => Promise<AxiosResponse<T>>,
+): Promise<AxiosResponse<T>> {
+  try {
+    return await attempt()
+  } catch (e) {
+    if (!axios.isAxiosError(e)) throw e
+    const resp = e.response
+    if (!resp || (resp.status !== 400 && resp.status !== 401)) throw e
+    const headers = resp.headers as Record<string, string | undefined>
+    const dpopNonce = headers['dpop-nonce']
+    if (typeof dpopNonce !== 'string' || dpopNonce.length === 0) throw e
+    return attempt(dpopNonce)
+  }
+}
+
+const logger = createLoggerWithLabel(module)
+
+/**
+ * Service that implements the Singpass Auth API v5 / MyInfo v5 OIDC flow.
+ *
+ * Design notes:
+ * - The `issuer` URL is fully parameterized — mockpass and prod share one
+ *   code path. The discovery doc at `${issuer}/.well-known/openid-configuration`
+ *   provides every other endpoint.
+ * - The service deliberately uses `Bearer` userinfo auth, matching mockpass.
+ *   Production Singpass v5 requires DPoP (RFC 9449); a TODO marker is left at
+ *   the call site so we don't accidentally flip prod traffic before DPoP lands.
+ * - The RP keyset (sig + enc EC keys) is loaded once at boot. The public half
+ *   is served at `${appUrl}/api/v3/mi/v5/.well-known/jwks.json` so the IdP can
+ *   fetch it to verify our client_assertion and encrypt the userinfo JWE.
+ * - The discovery document is cached in-memory after first fetch. Mockpass and
+ *   prod both expose long-lived endpoints; we re-fetch on token/userinfo
+ *   failures by clearing the cache (TODO: explicit invalidation).
+ */
+export class MyInfoV5ServiceClass {
+  readonly #issuer: string
+  readonly #clientId: string
+  readonly #redirectUri: string
+  readonly #rpKeyset: MyInfoV5RpKeyset | null
+  readonly #dpopEnabled: boolean
+  #discoveryDoc: MyInfoV5DiscoveryDocument | null = null
+  #idpJwks: ReturnType<typeof jose.createRemoteJWKSet> | null = null
+
+  /**
+   * Whether v5 has the minimum config needed to operate. Returned to callers
+   * so the dispatcher can fall back to v3 gracefully when the flag is on but
+   * v5 hasn't been provisioned (e.g. CI environments where keys aren't set).
+   */
+  get isConfigured(): boolean {
+    return Boolean(this.#issuer && this.#clientId && this.#rpKeyset)
+  }
+
+  /** Exposed for tests + diagnostics. */
+  get dpopEnabled(): boolean {
+    return this.#dpopEnabled
+  }
+
+  constructor({
+    issuer,
+    clientId,
+    redirectUri,
+    rpKeyset,
+    dpopEnabled = false,
+  }: {
+    issuer: string
+    clientId: string
+    redirectUri: string
+    rpKeyset: MyInfoV5RpKeyset | null
+    /**
+     * RFC 9449 DPoP — required by Singpass v5 in production. Off by default to
+     * match mockpass (which uses Bearer). Configurable per-instance so the
+     * same code path serves both.
+     *
+     * When enabled, callers MUST pass a per-session DPoP keypair into
+     * `exchangeCodeForTokens` and `fetchUserinfo`. The same keypair binds the
+     * access token (token endpoint) to its use on the resource endpoint, so
+     * losing it between calls invalidates the token. Sessions persist the
+     * private JWK in Mongo (see `myinfo.v5.session.model.ts`) keyed by a
+     * session-id cookie so the flow survives load-balancer pod hops.
+     */
+    dpopEnabled?: boolean
+  }) {
+    this.#issuer = issuer
+    this.#clientId = clientId
+    this.#redirectUri = redirectUri
+    this.#rpKeyset = rpKeyset
+    this.#dpopEnabled = dpopEnabled
+  }
+
+  /**
+   * Public JWKS (sig + enc), served at the configured endpoint for the IdP to
+   * fetch. Strips private material defensively.
+   */
+  getPublicJwks(): JSONWebKeySet {
+    if (!this.#rpKeyset) return { keys: [] }
+    return {
+      keys: this.#rpKeyset.publicJwks.keys.map((k) => ({ ...k })),
+    }
+  }
+
+  /**
+   * Lazily fetch the OIDC discovery document.
+   */
+  async #fetchDiscovery(): Promise<MyInfoV5DiscoveryDocument> {
+    if (this.#discoveryDoc) return this.#discoveryDoc
+    const url = `${this.#issuer.replace(/\/$/, '')}/.well-known/openid-configuration`
+    const response = await axios.get<MyInfoV5DiscoveryDocument>(url, {
+      timeout: 5000,
+    })
+    this.#discoveryDoc = response.data
+    return response.data
+  }
+
+  async #getIdpJwks(): Promise<ReturnType<typeof jose.createRemoteJWKSet>> {
+    if (this.#idpJwks) return this.#idpJwks
+    const disc = await this.#fetchDiscovery()
+    this.#idpJwks = jose.createRemoteJWKSet(new URL(disc.jwks_uri))
+    return this.#idpJwks
+  }
+
+  /**
+   * Build the URL to which the user agent should be redirected to begin the
+   * Singpass v5 login. Returns the URL plus PKCE/nonce/state material that
+   * the caller must persist (in cookies) and validate on callback.
+   */
+  createRedirectURL({
+    formId,
+    scopes,
+    encodedQuery,
+  }: {
+    formId: string
+    scopes: string[]
+    encodedQuery?: string
+  }): ResultAsync<
+    {
+      redirectURL: string
+      codeVerifier: string
+      nonce: string
+      state: string
+    },
+    MyInfoV5ConfigError
+  > {
+    if (!this.isConfigured) {
+      return errAsync(new MyInfoV5ConfigError())
+    }
+    return ResultAsync.fromPromise(this.#fetchDiscovery(), (error) => {
+      logger.error({
+        message: 'Failed to fetch v5 discovery document',
+        meta: { action: 'createRedirectURL', issuer: this.#issuer },
+        error,
+      })
+      return new MyInfoV5ConfigError('Could not fetch discovery document')
+    }).map((disc) => {
+      const codeVerifier = generatePkceVerifier()
+      const nonce = generateNonce()
+      const state = encodeState({ formId, encodedQuery })
+
+      const url = new URL(disc.authorization_endpoint)
+      url.searchParams.set('client_id', this.#clientId)
+      url.searchParams.set('scope', scopes.join(' '))
+      url.searchParams.set('response_type', 'code')
+      url.searchParams.set('redirect_uri', this.#redirectUri)
+      url.searchParams.set('state', state)
+      url.searchParams.set('nonce', nonce)
+      url.searchParams.set('code_challenge', deriveCodeChallenge(codeVerifier))
+      url.searchParams.set('code_challenge_method', 'S256')
+
+      return {
+        redirectURL: url.toString(),
+        codeVerifier,
+        nonce,
+        state,
+      }
+    })
+  }
+
+  /**
+   * Exchange the auth code for an access token, authenticating with
+   * `private_key_jwt` per RFC 7523.
+   *
+   * Returns the raw token response so the caller can pass `access_token`
+   * straight to the userinfo call.
+   */
+  exchangeCodeForTokens({
+    code,
+    codeVerifier,
+    dpopKeypair,
+  }: {
+    code: string
+    codeVerifier: string
+    /**
+     * Required when `dpopEnabled` is true. The same keypair MUST be reused
+     * when calling `fetchUserinfo`, because the access token will be bound to
+     * its thumbprint.
+     */
+    dpopKeypair?: DpopKeyPair
+  }): ResultAsync<MyInfoV5TokenResponse, MyInfoV5TokenError> {
+    if (!this.#rpKeyset) return errAsync(new MyInfoV5TokenError('No keyset'))
+    if (this.#dpopEnabled && !dpopKeypair) {
+      return errAsync(
+        new MyInfoV5TokenError('DPoP enabled but no keypair supplied'),
+      )
+    }
+    const sigJwk = this.#rpKeyset.privateJwks.keys.find((k) => k.use === 'sig')
+    if (!sigJwk) return errAsync(new MyInfoV5TokenError('No sig key'))
+    return ResultAsync.fromPromise(
+      this.#fetchDiscovery().then(async (disc) => {
+        const signingKey = (await jose.importJWK(
+          sigJwk,
+          'ES256',
+        )) as jose.KeyLike
+        const clientAssertion = await createClientAssertion({
+          clientId: this.#clientId,
+          audience: disc.issuer,
+          signingKey,
+          signingKid: sigJwk.kid ?? 'sig-1',
+          signingAlg: 'ES256',
+        })
+
+        const body = new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: this.#redirectUri,
+          client_id: this.#clientId,
+          client_assertion_type:
+            'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+          client_assertion: clientAssertion,
+          code_verifier: codeVerifier,
+        })
+
+        // RFC 9449 §5: attach a DPoP proof to the token request so the AS
+        // binds the issued access token to our session keypair's thumbprint.
+        // RFC 9449 §8: the AS may demand a server-provided nonce — `withDpopNonceRetry`
+        // catches `use_dpop_nonce` and retries once with the supplied nonce.
+        const response = await withDpopNonceRetry<MyInfoV5TokenResponse>(
+          async (dpopNonce) => {
+            const headers: Record<string, string> = {
+              'content-type': 'application/x-www-form-urlencoded',
+            }
+            if (this.#dpopEnabled && dpopKeypair) {
+              headers.dpop = await createDpopProof({
+                keypair: dpopKeypair,
+                htm: 'POST',
+                htu: disc.token_endpoint,
+                nonce: dpopNonce,
+              })
+            }
+            return axios.post<MyInfoV5TokenResponse>(
+              disc.token_endpoint,
+              body.toString(),
+              { headers, timeout: 10000 },
+            )
+          },
+        )
+        return response.data
+      }),
+      (error) => {
+        logger.error({
+          message: 'v5 token exchange failed',
+          meta: { action: 'exchangeCodeForTokens' },
+          error,
+        })
+        return new MyInfoV5TokenError()
+      },
+    )
+  }
+
+  /**
+   * Fetch + decrypt the userinfo response, returning the JWS claims.
+   *
+   * Wire: GET ${userinfo_endpoint}
+   *   Authorization: {Bearer|DPoP} ${access_token}
+   *   DPoP: <proof JWT>            (only when dpopEnabled)
+   * Response: application/jwt — a JWE wrapping a JWS whose payload is the
+   *   set of MyInfo claims.
+   */
+  fetchUserinfo({
+    accessToken,
+    dpopKeypair,
+  }: {
+    accessToken: string
+    /**
+     * Required when `dpopEnabled` is true. MUST be the same keypair that was
+     * passed to `exchangeCodeForTokens` — Singpass rejects userinfo calls
+     * whose DPoP proof key doesn't match the thumbprint bound to the token.
+     */
+    dpopKeypair?: DpopKeyPair
+  }): ResultAsync<MyInfoV5UserinfoClaims, MyInfoV5UserinfoError> {
+    if (!this.#rpKeyset) {
+      return errAsync(new MyInfoV5UserinfoError('No keyset'))
+    }
+    if (this.#dpopEnabled && !dpopKeypair) {
+      return errAsync(
+        new MyInfoV5UserinfoError('DPoP enabled but no keypair supplied'),
+      )
+    }
+    const encJwk = this.#rpKeyset.privateJwks.keys.find((k) => k.use === 'enc')
+    if (!encJwk) return errAsync(new MyInfoV5UserinfoError('No enc key'))
+    return ResultAsync.fromPromise(
+      (async () => {
+        const disc = await this.#fetchDiscovery()
+        // RFC 9449 §7: present the access token under the `DPoP` scheme and
+        // attach a proof that includes `ath` so the RS can confirm the token
+        // is being used by the same keypair that was DPoP-bound at issuance.
+        // RFC 9449 §8: the RS may also demand a server-provided nonce — handled
+        // by the retry helper.
+        const response = await withDpopNonceRetry<string>(async (dpopNonce) => {
+          const headers: Record<string, string> = {
+            accept: 'application/jwt',
+          }
+          if (this.#dpopEnabled && dpopKeypair) {
+            headers.authorization = `DPoP ${accessToken}`
+            headers.dpop = await createDpopProof({
+              keypair: dpopKeypair,
+              htm: 'GET',
+              htu: disc.userinfo_endpoint,
+              accessToken,
+              nonce: dpopNonce,
+            })
+          } else {
+            headers.authorization = `Bearer ${accessToken}`
+          }
+          return axios.get<string>(disc.userinfo_endpoint, {
+            headers,
+            // userinfo body is a JWT string; let axios keep it as text.
+            transformResponse: (raw) => raw,
+            timeout: 10000,
+          })
+        })
+        const jweCompact: string =
+          typeof response.data === 'string'
+            ? response.data
+            : String(response.data)
+
+        // Step 1: decrypt the JWE with our private encryption key.
+        const encKey = (await jose.importJWK(
+          encJwk,
+          (encJwk.alg as string) ?? 'ECDH-ES+A256KW',
+        )) as jose.KeyLike
+        const { plaintext } = await jose.compactDecrypt(jweCompact, encKey)
+
+        // Step 2: the JWE payload is a JWS (compact). Verify it against the
+        //         IdP's published signing key, and pin `iss` + `aud` to the
+        //         discovery doc's values so a JWT signed by the same JWKS but
+        //         minted for a different RP cannot pass.
+        const jws = new TextDecoder().decode(plaintext)
+        const idpJwks = await this.#getIdpJwks()
+        const { payload } = await jose.jwtVerify(jws, idpJwks, {
+          issuer: disc.issuer,
+          audience: this.#clientId,
+          clockTolerance: JWT_CLOCK_TOLERANCE_SECONDS,
+        })
+
+        return payload as MyInfoV5UserinfoClaims
+      })(),
+      (error) => {
+        logger.error({
+          message: 'v5 userinfo fetch/decrypt failed',
+          meta: { action: 'fetchUserinfo' },
+          error,
+        })
+        return new MyInfoV5UserinfoError()
+      },
+    )
+  }
+
+  /**
+   * OIDC §3.1.3.7: the `nonce` claim in the ID Token MUST equal the nonce we
+   * generated for the authorize request. This defeats replay of a leaked auth
+   * code: an attacker who didn't observe our nonce cannot get a matching ID
+   * Token. `iss` is pinned to the discovery doc's issuer and `aud` to our
+   * client_id at the same time, so a token signed by Singpass for a different
+   * RP cannot satisfy the check either.
+   *
+   * The ID Token from Singpass arrives as either a JWE wrapping a JWS, or a
+   * bare JWS (depending on `id_token_encryption_alg_values_supported` and the
+   * mockpass profile). We detect by segment count and handle both.
+   */
+  verifyIdToken({
+    idToken,
+    expectedNonce,
+  }: {
+    idToken: string
+    expectedNonce: string
+  }): ResultAsync<{ nonce?: string; sub?: string }, MyInfoV5UserinfoError> {
+    if (!this.#rpKeyset) {
+      return errAsync(new MyInfoV5UserinfoError('No keyset'))
+    }
+    // A JOSE compact JWE has 5 base64url segments; a JWS has 3.
+    const segments = idToken.split('.').length
+    const encJwk = this.#rpKeyset.privateJwks.keys.find((k) => k.use === 'enc')
+    if (segments === 5 && !encJwk) {
+      return errAsync(
+        new MyInfoV5UserinfoError(
+          'id_token is encrypted but no enc key available',
+        ),
+      )
+    }
+    if (segments !== 3 && segments !== 5) {
+      return errAsync(
+        new MyInfoV5UserinfoError(
+          `Unexpected id_token segment count: ${segments}`,
+        ),
+      )
+    }
+    return ResultAsync.fromPromise(
+      (async () => {
+        const disc = await this.#fetchDiscovery()
+        let jws: string
+        if (segments === 5 && encJwk) {
+          const encKey = (await jose.importJWK(
+            encJwk,
+            (encJwk.alg as string) ?? 'ECDH-ES+A256KW',
+          )) as jose.KeyLike
+          const { plaintext } = await jose.compactDecrypt(idToken, encKey)
+          jws = new TextDecoder().decode(plaintext)
+        } else {
+          jws = idToken
+        }
+        const idpJwks = await this.#getIdpJwks()
+        // OIDC §3.1.3.7: `iss` MUST match the discovery doc, `aud` MUST contain
+        // our client_id, `exp` MUST be in the future. `jose` checks exp by
+        // default; iss + aud need to be passed explicitly.
+        const { payload } = await jose.jwtVerify(jws, idpJwks, {
+          issuer: disc.issuer,
+          audience: this.#clientId,
+          clockTolerance: JWT_CLOCK_TOLERANCE_SECONDS,
+        })
+        return payload
+      })(),
+      (error) => {
+        logger.error({
+          message: 'v5 id_token verification failed',
+          meta: { action: 'verifyIdToken' },
+          error,
+        })
+        return new MyInfoV5UserinfoError()
+      },
+    ).andThen((payload) =>
+      payload.nonce === expectedNonce
+        ? okAsync({
+            nonce:
+              typeof payload.nonce === 'string' ? payload.nonce : undefined,
+            sub: typeof payload.sub === 'string' ? payload.sub : undefined,
+          })
+        : errAsync(
+            new MyInfoV5UserinfoError(
+              'id_token nonce mismatch — possible replay',
+            ),
+          ),
+    )
+  }
+}
+
+/**
+ * Encode formId + encodedQuery into the OAuth `state` parameter.
+ * v3 uses a JSON string for this; we keep the same shape so error logging
+ * and downstream parsing look familiar.
+ */
+function encodeState({
+  formId,
+  encodedQuery,
+}: {
+  formId: string
+  encodedQuery?: string
+}): string {
+  return Buffer.from(
+    JSON.stringify({ formId, encodedQuery, v: 5 }),
+    'utf8',
+  ).toString('base64url')
+}
+
+export function decodeV5State(
+  state: string,
+): Result<{ formId: string; encodedQuery?: string }, Error> {
+  // JSON.parse is the only throw source — wrap it with fromThrowable and
+  // narrow the shape afterwards so we never throw ourselves.
+  const parsed = Result.fromThrowable(
+    () =>
+      JSON.parse(Buffer.from(state, 'base64url').toString('utf8')) as {
+        formId?: unknown
+        encodedQuery?: unknown
+        v?: unknown
+      },
+    (e) => e as Error,
+  )()
+  return parsed.andThen((decoded) =>
+    typeof decoded.formId === 'string'
+      ? Result.fromThrowable<
+          () => { formId: string; encodedQuery?: string },
+          Error
+        >(
+          () => ({
+            formId: decoded.formId as string,
+            encodedQuery:
+              typeof decoded.encodedQuery === 'string'
+                ? decoded.encodedQuery
+                : undefined,
+          }),
+          (e) => e as Error,
+        )()
+      : err<{ formId: string; encodedQuery?: string }, Error>(
+          new Error('formId missing'),
+        ),
+  )
+}
