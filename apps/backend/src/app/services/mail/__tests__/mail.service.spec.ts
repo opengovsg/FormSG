@@ -71,7 +71,7 @@ describe('mail.service', () => {
   })
 
   describe('sendVerificationOtp', () => {
-    const MOCK_OTP = '123456'
+    const MOCK_OTP = 'A1B2C3D4'
 
     const expectedArg = expect.objectContaining({
       to: MOCK_VALID_EMAIL,
@@ -201,7 +201,7 @@ describe('mail.service', () => {
   })
 
   describe('sendLoginOtp', () => {
-    const MOCK_OTP = '123456'
+    const MOCK_OTP = 'A1B2C3D4'
     const MOCK_IP = 'mock:5000'
     const MOCK_OTP_PREFIX = 'ABC'
 

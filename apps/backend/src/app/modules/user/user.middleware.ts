@@ -1,5 +1,6 @@
 import JoiDate from '@joi/date'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
+import { OTP_REGEX } from 'formsg-shared/constants'
 import { SeenFlags } from 'formsg-shared/types'
 
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
@@ -20,10 +21,7 @@ export const validateContactSendOtpParams = celebrate({
 export const validateContactOtpVerificationParams = celebrate({
   [Segments.BODY]: Joi.object({
     userId: Joi.string().required(),
-    otp: Joi.string()
-      .required()
-      .uppercase()
-      .regex(/^[A-Z0-9]{6,12}$/),
+    otp: Joi.string().required().uppercase().regex(OTP_REGEX),
     contact: Joi.string().required(),
   }),
 })

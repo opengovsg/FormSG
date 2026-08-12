@@ -80,8 +80,8 @@ test.describe('login', () => {
     // Get OTP
     const otp = await extractOtp(legitUserEmail)
 
-    // Increment OTP by 1, keep to 6 digits
-    const newOtp = String(parseInt(otp!, 10) + 1).slice(0, 6)
+    // Change the last character so the OTP stays well-formed but incorrect
+    const newOtp = otp!.slice(0, -1) + (otp!.endsWith('A') ? 'B' : 'A')
 
     await page.locator('input[name="otp"]').fill(newOtp)
 

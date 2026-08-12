@@ -1,6 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { AuthedSessionData } from 'express-session'
+import { OTP_REGEX } from 'formsg-shared/constants'
 import { StatusCodes } from 'http-status-codes'
 
 import { GrowthbookFeature } from '../../config/features/growthbook.config'
@@ -112,7 +113,7 @@ export const validateVerifyOtpParams = celebrate({
     otp: Joi.string()
       .required()
       .uppercase()
-      .regex(/^[A-Z0-9]{6,12}$/)
+      .regex(OTP_REGEX)
       .message('Please enter a valid OTP'),
   }),
 })

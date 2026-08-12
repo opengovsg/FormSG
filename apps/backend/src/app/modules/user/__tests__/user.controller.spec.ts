@@ -45,7 +45,7 @@ describe('user.controller', () => {
 
     it('should return 200 when successful', async () => {
       const mockRes = expressHandler.mockResponse()
-      const expectedOtp = '123456'
+      const expectedOtp = 'A1B2C3D4'
 
       // Mock UserService and SmsFactory to pass without errors.
       MockUserService.createContactOtp.mockReturnValueOnce(okAsync(expectedOtp))
@@ -61,7 +61,6 @@ describe('user.controller', () => {
       expect(MockUserService.createContactOtp).toHaveBeenCalledWith(
         MOCK_REQ.body.userId,
         MOCK_REQ.body.contact,
-        0,
       )
       expect(MockPostmanSmsService.sendAdminContactOtp).toHaveBeenCalledWith({
         recipientPhoneNumber: MOCK_REQ.body.contact,
@@ -135,7 +134,7 @@ describe('user.controller', () => {
       const mockErrorString = 'otp send failure'
 
       // Mock UserService to pass without errors.
-      MockUserService.createContactOtp.mockReturnValueOnce(okAsync('123456'))
+      MockUserService.createContactOtp.mockReturnValueOnce(okAsync('A1B2C3D4'))
       // Mock SmsFactory to return error.
       MockPostmanSmsService.sendAdminContactOtp.mockReturnValueOnce(
         errAsync(new SmsSendError(mockErrorString)),
@@ -185,7 +184,7 @@ describe('user.controller', () => {
       body: {
         contact: 'abc',
         userId: VALID_SESSION_USER_ID,
-        otp: '123456',
+        otp: 'A1B2C3D4',
       },
       session: {
         user: {
@@ -228,7 +227,7 @@ describe('user.controller', () => {
         body: {
           contact: 'abc',
           userId: VALID_SESSION_USER_ID,
-          otp: '123456',
+          otp: 'A1B2C3D4',
         },
       })
       const mockRes = expressHandler.mockResponse()
@@ -254,7 +253,7 @@ describe('user.controller', () => {
         body: {
           contact: 'abc',
           userId: INVALID_SESSION_USER,
-          otp: '123456',
+          otp: 'A1B2C3D4',
         },
         session: {
           user: {

@@ -64,7 +64,7 @@ describe('auth.controller', () => {
   })
 
   describe('handleLoginSendOtp', () => {
-    const MOCK_OTP = '123456'
+    const MOCK_OTP = 'A1B2C3D4'
     const MOCK_OTP_PREFIX = 'ABC'
     const MOCK_REQ = expressHandler.mockRequest({
       body: { email: VALID_EMAIL },
@@ -169,7 +169,7 @@ describe('auth.controller', () => {
   })
 
   describe('handleLoginVerifyOtp', () => {
-    const MOCK_OTP = '123456'
+    const MOCK_OTP = 'A1B2C3D4'
     const MOCK_REQ = expressHandler.mockRequest({
       body: { email: VALID_EMAIL, otp: MOCK_OTP },
     })

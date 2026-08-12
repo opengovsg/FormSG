@@ -9,11 +9,11 @@ import {
   InputLeftAddon,
 } from '@chakra-ui/react'
 
+import { OTP_LENGTH, OTP_REGEX } from 'formsg-shared/constants'
 import { BasicField } from 'formsg-shared/types'
 
 import ResendOtpButton from '~/templates/ResendOtpButton'
 
-import { useOtpConfig } from '~hooks/useOtpConfig'
 import { HttpError } from '~services/ApiService'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -79,7 +79,6 @@ export const VerificationBox = ({
 }: VerificationBoxProps): JSX.Element => {
   const { t } = useTranslation()
   const colorScheme = useFormColorScheme()
-  const { otpLength, isExpandedOtp } = useOtpConfig()
   const {
     formMethods: {
       register,
@@ -132,23 +131,18 @@ export const VerificationBox = ({
                 ) : null}
                 <Input
                   type="text"
-                  maxLength={otpLength}
-                  inputMode={isExpandedOtp ? 'text' : 'numeric'}
+                  inputMode="text"
+                  autoCapitalize="characters"
+                  spellCheck={false}
+                  maxLength={OTP_LENGTH}
                   autoComplete="one-time-code"
                   autoFocus
                   {...register('otp', {
                     required: 'OTP is required.',
                     pattern: {
-                      value: isExpandedOtp ? /^[a-zA-Z0-9]+$/ : /^\d+$/,
-                      message: isExpandedOtp
-                        ? 'Only letters and numbers are allowed.'
-                        : 'Only numbers are allowed.',
+                      value: new RegExp(OTP_REGEX.source, 'i'),
+                      message: `Please enter a ${OTP_LENGTH} character OTP.`,
                     },
-                    validate: (value) =>
-                      value.length === otpLength ||
-                      (isExpandedOtp
-                        ? `Please enter a ${otpLength} character OTP.`
-                        : 'Please enter a 6 digit OTP.'),
                   })}
                   onKeyDown={handleKeyDown}
                 />

@@ -8,7 +8,6 @@ import { StatusCodes } from 'http-status-codes'
 import { IPopulatedUser } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import PostmanSmsService from '../../services/postman-sms/postman-sms.service'
-import { getExpandedOtpLength } from '../../utils/otp'
 import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
@@ -55,11 +54,7 @@ export const _handleContactSendOtp: ControllerHandler<
   }
 
   // Step 1: Create OTP for contact verification.
-  const createResult = await createContactOtp(
-    userId,
-    contact,
-    getExpandedOtpLength(req.growthbook),
-  )
+  const createResult = await createContactOtp(userId, contact)
 
   // Error creating OTP.
   if (createResult.isErr()) {

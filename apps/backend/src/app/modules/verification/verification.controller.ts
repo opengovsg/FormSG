@@ -1,4 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import { OTP_REGEX } from 'formsg-shared/constants'
 import {
   ErrorDto,
   FormAuthType,
@@ -12,7 +13,7 @@ import { errAsync, okAsync, Result } from 'neverthrow'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { generateOtpWithHash, getExpandedOtpLength } from '../../utils/otp'
+import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { setFormTags } from '../datadog/datadog.utils'
@@ -265,7 +266,6 @@ export const _handleGenerateOtp: ControllerHandler<
         generateOtpWithHash({
           logMeta,
           saltRounds: SALT_ROUNDS,
-          expandedOtpLength: getExpandedOtpLength(req.growthbook),
         }).andThen(({ otp, hashedOtp, otpPrefix }) =>
           // Step 5: Send Otp
           {
@@ -380,7 +380,7 @@ export const handleOtpVerification = [
       otp: Joi.string()
         .required()
         .uppercase()
-        .regex(/^[A-Z0-9]{6,12}$/)
+        .regex(OTP_REGEX)
         .message('Please enter a valid OTP'),
     }),
   }),

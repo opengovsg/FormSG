@@ -16,10 +16,7 @@ export interface EmergencyContact {
     description: string
     errors: {
       required: string
-      numbersOnly: string
-      charactersOnly: string
       invalid: string
-      invalidExpanded: string
     }
   }
 }

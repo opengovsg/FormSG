@@ -13,9 +13,6 @@ export interface Login {
       signin: string
       otpRequired: string
       otpLengthCheck: string
-      otpLengthCheckExpanded: string
-      otpTypeCheck: string
-      otpTypeCheckExpanded: string
       otpFromEmail: string
     }
     SgidLoginButton: {
