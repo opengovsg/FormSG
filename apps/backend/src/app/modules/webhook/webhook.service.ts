@@ -31,6 +31,7 @@ import {
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
 import { webhookStatsdClient } from './webhook.statsd-client'
+import { QueueMessageContentFormat } from './webhook.types'
 import { formatWebhookResponse, isSuccessfulResponse } from './webhook.utils'
 import { validateWebhookUrl } from './webhook.validation'
 
@@ -256,6 +257,15 @@ export const createInitialWebhookSender =
     webhookUrl: string,
     isRetryEnabled: boolean,
     webhookView?: WebhookView,
+    // Supplied only when this step submission froze a snapshot, which is what
+    // makes a per-step retry replayable. Without it the retry is enqueued at
+    // the legacy version and falls back to the live row, so a form toggling
+    // retries mid-workflow can never produce a snapshot-naming retry for a
+    // step that has no snapshot.
+    snapshotRef?: {
+      submissionIndex: number
+      contentFormat: QueueMessageContentFormat
+    },
   ): ResultAsync<
     true,
     | WebhookValidationError
@@ -297,6 +307,7 @@ export const createInitialWebhookSender =
             // Webhook failed and retries enabled, so create initial message and enqueue
             return WebhookQueueMessage.fromSubmissionId(
               String(submission._id),
+              snapshotRef,
             ).asyncAndThen((queueMessage) => producer.sendMessage(queueMessage))
           },
         )

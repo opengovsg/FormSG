@@ -1182,6 +1182,15 @@ const sendMrfInitialWebhookIfEligible = ({
           webhookUrl,
           isRetryEnabled,
           webhookView,
+          // A retry can only replay a step submission that froze a snapshot,
+          // so the reference is threaded from the snapshot itself rather than
+          // re-derived from the row or the flags at retry time.
+          snapshot
+            ? {
+                submissionIndex,
+                contentFormat: snapshot.contentFormat,
+              }
+            : undefined,
         ).map(() => undefined)
       })
     })
