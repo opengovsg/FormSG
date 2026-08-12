@@ -34,6 +34,7 @@ export const featureFlags = {
   sidebarNavLabels: 'enable-sidebar-nav-labels' as const,
   fiveStarAdminRating: '5star-admin-rating' as const,
   workflowBuilderRedesign: 'workflow-builder-redesign' as const,
+  delightfulDashboard: 'delightful-dashboard' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
