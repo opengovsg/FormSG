@@ -2,8 +2,10 @@ import crypto from 'crypto'
 import { text } from 'stream/consumers'
 
 import { aws as AwsConfig } from 'src/app/config/config'
+import { ErrorCodes } from 'src/app/modules/core/core.errors'
 
 import {
+  SnapshotAccessDeniedError,
   SnapshotDataIntegrityError,
   SnapshotReadError,
   SnapshotWriteError,
@@ -224,7 +226,7 @@ describe('readV4Snapshot', () => {
     expect(error).toBeInstanceOf(SnapshotDataIntegrityError)
   })
 
-  it('should err SnapshotReadError, NOT an integrity error, on an operational S3 failure (AccessDenied)', async () => {
+  it('should err its own SnapshotAccessDeniedError, neither transient nor integrity, on AccessDenied', async () => {
     ;(AwsConfig.s3.send as jest.Mock) = jest
       .fn()
       .mockReturnValue(
@@ -235,19 +237,41 @@ describe('readV4Snapshot', () => {
 
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
-    expect(error).toBeInstanceOf(SnapshotReadError)
+    expect(error).toBeInstanceOf(SnapshotAccessDeniedError)
+    expect(error).not.toBeInstanceOf(SnapshotReadError)
     expect(error).not.toBeInstanceOf(SnapshotDataIntegrityError)
+    expect(error.code).toBe(ErrorCodes.SUBMISSION_MRF_SNAPSHOT_ACCESS_DENIED)
   })
 
-  it('should err SnapshotReadError on a throttled S3 read', async () => {
+  it.each([
+    ['a throttled read', { code: 'SlowDown', statusCode: 503 }],
+    ['a server-side failure', { code: 'InternalError', statusCode: 500 }],
+    ['a request timeout', { code: 'RequestTimeout', statusCode: 400 }],
+    ['a networking failure', { code: 'NetworkingError' }],
+  ])(
+    'should err a transient SnapshotReadError on %s',
+    async (_case, s3Error) => {
+      ;(AwsConfig.s3.send as jest.Mock) = jest
+        .fn()
+        .mockReturnValue(Promise.reject(s3Error))
+
+      const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+
+      expect(result.isErr()).toBe(true)
+      const error = result._unsafeUnwrapErr()
+      expect(error).toBeInstanceOf(SnapshotReadError)
+      expect(error).not.toBeInstanceOf(SnapshotDataIntegrityError)
+    },
+  )
+
+  it('should err SnapshotDataIntegrityError on an empty stored body', async () => {
     ;(AwsConfig.s3.send as jest.Mock) = jest
       .fn()
-      .mockReturnValue(Promise.reject({ code: 'SlowDown', statusCode: 503 }))
+      .mockReturnValue(Promise.resolve({}))
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
-    expect(result.isErr()).toBe(true)
-    expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotReadError)
+    expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotDataIntegrityError)
   })
 
   it('should err the SAME SnapshotDataIntegrityError on a malformed stored body', async () => {
