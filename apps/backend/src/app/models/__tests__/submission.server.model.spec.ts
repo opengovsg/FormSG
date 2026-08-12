@@ -295,6 +295,58 @@ describe('Submission Model', () => {
         })
       })
 
+      it('should surface the per-step snapshot tokens a retry resolves against, alongside a view that omits them', async () => {
+        const MultirespondentForm = getMultirespondentFormModel(mongoose)
+        const { user } = await dbHandler.insertFormCollectionReqs()
+        const form = await MultirespondentForm.create({
+          title: 'mrf retry form',
+          admin: user._id,
+          responseMode: FormResponseMode.Multirespondent,
+          publicKey: 'mockPublicKey',
+          webhook: {
+            url: MOCK_WEBHOOK_URL,
+            isRetryEnabled: true,
+          },
+        })
+        const submission = await MultirespondentSubmission.create({
+          form: form._id,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: [],
+          submissionPublicKey: 'test public key',
+          encryptedSubmissionSecretKey: 'test secret key',
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          workflowStep: 1,
+          mrfVersion: 2,
+          submittedSteps: [
+            {
+              isApproval: false,
+              submittedAt: '2026-07-22T00:00:00.000Z',
+              snapshotTokens: { v4: 'SNAPSHOT_TOKEN_STEP_0' },
+            },
+            {
+              isApproval: false,
+              submittedAt: '2026-07-22T01:00:00.000Z',
+              snapshotTokens: { v4: 'SNAPSHOT_TOKEN_STEP_1' },
+            },
+          ],
+        })
+
+        const result = await Submission.retrieveWebhookInfoById(
+          String(submission._id),
+        )
+
+        expect(result?.snapshotTokens).toEqual([
+          { v4: 'SNAPSHOT_TOKEN_STEP_0' },
+          { v4: 'SNAPSHOT_TOKEN_STEP_1' },
+        ])
+        expect(JSON.stringify(result?.webhookView)).not.toContain(
+          'SNAPSHOT_TOKEN_STEP_0',
+        )
+      })
+
       it('should return the paymentContent when the submission, payment, and webhook URL exist', async () => {
         const { form } = await dbHandler.insertEncryptForm({
           formOptions: {

@@ -5,6 +5,7 @@ import {
   SubmissionBase,
   SubmissionMetadata,
   SubmissionType,
+  SubmittedStepSnapshotTokens,
   WebhookResponse,
 } from 'formsg-shared/types/submission'
 import mongoose, {
@@ -46,6 +47,13 @@ export type SubmissionWebhookInfo = {
   webhookUrl: string
   isRetryEnabled: boolean
   webhookView: WebhookView
+  /**
+   * Snapshot tokens recorded on the submission's step submissions, indexed by
+   * `submissionIndex`. Present only for a multirespondent submission. Kept out
+   * of `webhookView` on purpose: a token is a read credential for the frozen
+   * snapshot and must never reach a webhook consumer.
+   */
+  snapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
 }
 
 export type FindFormsWithSubsAboveResult = {
