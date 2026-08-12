@@ -163,14 +163,26 @@ export const EditStepBlock = ({
     onSubmit(step)
   }, cancelPendingSwitch)
 
+  // Guards the auto-save effect against re-entry: the mutation's isLoading
+  // only flips true on the render after mutate() is called, and handleSubmit's
+  // validation is promise-based, so a second card click landing in that window
+  // would pass the isLoading check and submit again (double-saving an existing
+  // step, or creating a new step twice). Set synchronously before submitting;
+  // cleared when the pending switch resolves (pendingSwitchTo returns to null
+  // on cancel, or this card unmounts on success).
+  const hasSubmittedForPendingSwitch = useRef(false)
+
   // Auto-save when another step is clicked while this one is open.
   // InactiveStepBlock sets pendingSwitchTo; this effect is dormant until it does.
   useEffect(() => {
-    if (pendingSwitchTo === null) return
+    if (pendingSwitchTo === null) {
+      hasSubmittedForPendingSwitch.current = false
+      return
+    }
 
     // A save is already in flight; its onSuccess completes the switch.
     // Submitting again would double-save and collapse the target.
-    if (isLoading) return
+    if (isLoading || hasSubmittedForPendingSwitch.current) return
 
     // A new step has nothing persisted yet, so it must always run validation
     // (like the Add step button): an incomplete new step blocks the switch. An
@@ -181,6 +193,7 @@ export const EditStepBlock = ({
       return
     }
 
+    hasSubmittedForPendingSwitch.current = true
     handleSubmit()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])

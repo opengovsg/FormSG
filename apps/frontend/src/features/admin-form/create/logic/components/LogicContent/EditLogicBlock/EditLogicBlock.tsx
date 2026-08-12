@@ -137,16 +137,28 @@ export const EditLogicBlock = ({
   const completeSave = useAdminLogicStore(completeSaveSelector)
   const isCreatingState = useAdminLogicStore(isCreatingStateSelector)
 
+  // Guards the auto-save effect against re-entry: the mutation's isLoading
+  // only flips true on the render after mutate() is called, and handleSubmit's
+  // validation is promise-based, so a second card click landing in that window
+  // would pass the isLoading check and submit again (double-saving an existing
+  // block, or creating a new block twice). Set synchronously before submitting;
+  // cleared when the pending switch resolves (pendingSwitchTo returns to null
+  // on cancel, or this card unmounts on success).
+  const hasSubmittedForPendingSwitch = useRef(false)
+
   // Auto-save when another logic block is clicked while this one is open.
   // InactiveLogicBlock sets pendingSwitchTo; this effect is dormant until it
   // does. Shared by both the edit (ActiveLogicBlock) and create (NewLogicBlock)
   // paths.
   useEffect(() => {
-    if (pendingSwitchTo === null) return
+    if (pendingSwitchTo === null) {
+      hasSubmittedForPendingSwitch.current = false
+      return
+    }
 
     // A save is already in flight; its onSuccess completes the switch.
     // Submitting again would double-save and collapse the target.
-    if (isLoading) return
+    if (isLoading || hasSubmittedForPendingSwitch.current) return
 
     // A new block has nothing persisted yet, so it must always run validation
     // (like the Add logic button): an incomplete new block blocks the switch.
@@ -157,6 +169,7 @@ export const EditLogicBlock = ({
       return
     }
 
+    hasSubmittedForPendingSwitch.current = true
     handleSubmit()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
