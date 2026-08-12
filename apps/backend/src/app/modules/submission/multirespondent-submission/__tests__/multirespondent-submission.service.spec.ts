@@ -3767,9 +3767,11 @@ describe('multirespondent-submission.service', () => {
     const growthbookWithFlags = ({
       enableMrfWebhooks = false,
       mrfStepWriteToken = false,
+      mrfWebhooksV3Generic = false,
     }: {
       enableMrfWebhooks?: boolean
       mrfStepWriteToken?: boolean
+      mrfWebhooksV3Generic?: boolean
     }) =>
       ({
         isOn: jest.fn((flag: string) =>
@@ -3777,7 +3779,9 @@ describe('multirespondent-submission.service', () => {
             ? enableMrfWebhooks
             : flag === featureFlags.mrfStepWriteToken
               ? mrfStepWriteToken
-              : false,
+              : flag === featureFlags.mrfWebhooksV3Generic
+                ? mrfWebhooksV3Generic
+                : false,
         ),
         getFeatureValue: jest.fn((_flag: string, def: unknown) => def),
       }) as any
@@ -3983,15 +3987,18 @@ describe('multirespondent-submission.service', () => {
       expect(MockSnapshotStore.writeV4Snapshot).not.toHaveBeenCalled()
     })
 
+    // A generic V4 row (only reachable when the row was encrypted while the
+    // form had no/other webhook config) is never delivered to a v3-only
+    // consumer, so it never snapshots — no flag combination changes that.
     it.each`
-      label                          | enableMrfWebhooks | mrfStepWriteToken | expectWritten
-      ${'no flags'}                  | ${false}          | ${false}          | ${false}
-      ${'enable-mrf-webhooks only'}  | ${true}           | ${false}          | ${false}
-      ${'mrf-step-write-token only'} | ${false}          | ${true}           | ${false}
-      ${'both flags'}                | ${true}           | ${true}           | ${true}
+      label                             | mrfWebhooksV3Generic | mrfStepWriteToken
+      ${'no flags'}                     | ${false}             | ${false}
+      ${'mrf-webhooks-v3-generic only'} | ${true}              | ${false}
+      ${'mrf-step-write-token only'}    | ${false}             | ${true}
+      ${'both flags'}                   | ${true}              | ${true}
     `(
-      'generic V4 create snapshot write ($label) -> written=$expectWritten',
-      async ({ enableMrfWebhooks, mrfStepWriteToken, expectWritten }) => {
+      'generic V4 create never snapshots ($label)',
+      async ({ mrfWebhooksV3Generic, mrfStepWriteToken }) => {
         const result = await createMultiRespondentFormSubmission({
           form: buildV4Form({
             webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
@@ -3999,15 +4006,13 @@ describe('multirespondent-submission.service', () => {
           encryptedPayload: buildV4Payload(),
           logMeta: { action: 'test' },
           growthbook: growthbookWithFlags({
-            enableMrfWebhooks,
+            mrfWebhooksV3Generic,
             mrfStepWriteToken,
           }),
         })
 
         expect(result.isOk()).toBe(true)
-        expect(MockSnapshotStore.writeV4Snapshot).toHaveBeenCalledTimes(
-          expectWritten ? 1 : 0,
-        )
+        expect(MockSnapshotStore.writeV4Snapshot).not.toHaveBeenCalled()
       },
     )
 
@@ -4036,7 +4041,7 @@ describe('multirespondent-submission.service', () => {
         }),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
-        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
+        growthbook: growthbookWithFlags({ mrfWebhooksV3Generic: true }),
       })
 
       expect(result.isOk()).toBe(true)
@@ -4131,33 +4136,35 @@ describe('multirespondent-submission.service', () => {
     // ---- Send gate table ----
 
     it.each`
-      label                          | url            | enableMrfWebhooks | mrfStepWriteToken | expectSent
-      ${'plumber, no flags'}         | ${PLUMBER_URL} | ${false}          | ${false}          | ${true}
-      ${'plumber, webhooks only'}    | ${PLUMBER_URL} | ${true}           | ${false}          | ${true}
-      ${'plumber, write-token only'} | ${PLUMBER_URL} | ${false}          | ${true}           | ${true}
-      ${'plumber, both'}             | ${PLUMBER_URL} | ${true}           | ${true}           | ${true}
-      ${'generic, no flags'}         | ${GENERIC_URL} | ${false}          | ${false}          | ${false}
-      ${'generic, webhooks only'}    | ${GENERIC_URL} | ${true}           | ${false}          | ${false}
-      ${'generic, write-token only'} | ${GENERIC_URL} | ${false}          | ${true}           | ${false}
-      ${'generic, both'}             | ${GENERIC_URL} | ${true}           | ${true}           | ${true}
-      ${'zapier, webhooks only'}     | ${ZAPIER_URL}  | ${true}           | ${false}          | ${false}
-      ${'zapier, both'}              | ${ZAPIER_URL}  | ${true}           | ${true}           | ${true}
+      label                                 | url            | mrfVersion | mrfWebhooksV3Generic | expectSent
+      ${'plumber V3, flag off'}             | ${PLUMBER_URL} | ${1}       | ${false}             | ${true}
+      ${'plumber V3, flag on'}              | ${PLUMBER_URL} | ${1}       | ${true}              | ${true}
+      ${'plumber V4, flag off'}             | ${PLUMBER_URL} | ${2}       | ${false}             | ${true}
+      ${'plumber V4, flag on'}              | ${PLUMBER_URL} | ${2}       | ${true}              | ${true}
+      ${'generic V3, flag off'}             | ${GENERIC_URL} | ${1}       | ${false}             | ${false}
+      ${'generic V3, flag on'}              | ${GENERIC_URL} | ${1}       | ${true}              | ${true}
+      ${'generic V4 never delivered (off)'} | ${GENERIC_URL} | ${2}       | ${false}             | ${false}
+      ${'generic V4 never delivered (on)'}  | ${GENERIC_URL} | ${2}       | ${true}              | ${false}
+      ${'zapier V3, flag off'}              | ${ZAPIER_URL}  | ${1}       | ${false}             | ${false}
+      ${'zapier V3, flag on'}               | ${ZAPIER_URL}  | ${1}       | ${true}              | ${true}
+      ${'zapier V4 never delivered (on)'}   | ${ZAPIER_URL}  | ${2}       | ${true}              | ${false}
     `(
       'send gate: $label -> sent=$expectSent',
-      async ({ url, enableMrfWebhooks, mrfStepWriteToken, expectSent }) => {
+      async ({ url, mrfVersion, mrfWebhooksV3Generic, expectSent }) => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-        const submission = buildSubmissionWithToken(undefined)
+        const submission = buildSubmissionWithToken(
+          undefined,
+          buildLiveWebhookView(),
+          mrfVersion,
+        )
 
         await performMultiRespondentPostSubmissionCreateActions({
           submission,
           submissionId: submission._id.toString(),
           form: buildV4Form({ webhook: { url, isRetryEnabled: true } as any }),
-          encryptedPayload: buildV4Payload(),
+          encryptedPayload: buildV4Payload({ mrfVersion }),
           logMeta: {} as any,
-          growthbook: growthbookWithFlags({
-            enableMrfWebhooks,
-            mrfStepWriteToken,
-          }),
+          growthbook: growthbookWithFlags({ mrfWebhooksV3Generic }),
         })
         await flushPromises()
 
@@ -4165,52 +4172,46 @@ describe('multirespondent-submission.service', () => {
       },
     )
 
-    // ---- Generic never takes the legacy raw-getWebhookView path ----
+    // ---- Generic is v3-only end to end ----
 
-    it.each([
-      ['with a snapshot', true],
-      ['without a snapshot', false],
-    ])(
-      'routes a generic V4 send through reconstruction, never the legacy live-row path (%s)',
-      async (_label, withSnapshot) => {
-        const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-        const submission = buildSubmissionWithToken(
-          withSnapshot ? 'tok-generic' : undefined,
-        )
+    it('sends a generic V3 row down the legacy live-row path (well-formed v3, no reconstruction)', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      const submission = buildSubmissionWithToken(
+        undefined,
+        buildLiveWebhookView(),
+        1,
+      )
 
-        await performMultiRespondentPostSubmissionCreateActions({
-          submission,
-          snapshot: withSnapshot ? buildSnapshot() : undefined,
-          submissionId: submission._id.toString(),
-          form: buildV4Form({
-            webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
-          }),
-          encryptedPayload: buildV4Payload(),
-          logMeta: {} as any,
-          growthbook: growthbookWithFlags({
-            enableMrfWebhooks: true,
-            mrfStepWriteToken: true,
-          }),
-        })
-        await flushPromises()
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        submissionId: submission._id.toString(),
+        form: buildV4Form({
+          webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+        }),
+        encryptedPayload: buildV4Payload({ mrfVersion: 1 }),
+        logMeta: {} as any,
+        growthbook: growthbookWithFlags({ mrfWebhooksV3Generic: true }),
+      })
+      await flushPromises()
 
-        expect(sendSpy).toHaveBeenCalledTimes(1)
-        // The legacy branch is identified by the absent 4th argument.
-        expect(sendSpy.mock.calls[0][3]).toBeDefined()
-      },
-    )
+      expect(sendSpy).toHaveBeenCalledTimes(1)
+      // The legacy v3 branch is identified by the absent 4th argument: the
+      // webhook module derives the view (and version 3) from the live row.
+      expect(sendSpy.mock.calls[0][3]).toBeUndefined()
+      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+    })
 
-    // ---- Generic never receives the step token (write credential) ----
+    // ---- Generic never receives a v4-shaped payload (or a step token) ----
 
     it.each`
-      enableMrfWebhooks | mrfStepWriteToken
-      ${false}          | ${false}
-      ${true}           | ${false}
-      ${false}          | ${true}
-      ${true}           | ${true}
+      mrfWebhooksV3Generic | mrfStepWriteToken
+      ${false}             | ${false}
+      ${true}              | ${false}
+      ${false}             | ${true}
+      ${true}              | ${true}
     `(
-      'never sends encryptedStepToken to a generic consumer (webhooks=$enableMrfWebhooks, writeToken=$mrfStepWriteToken)',
-      async ({ enableMrfWebhooks, mrfStepWriteToken }) => {
+      'never sends a V4 row to a generic consumer (v3Generic=$mrfWebhooksV3Generic, writeToken=$mrfStepWriteToken)',
+      async ({ mrfWebhooksV3Generic, mrfStepWriteToken }) => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
 
         for (const url of [GENERIC_URL, ZAPIER_URL]) {
@@ -4226,20 +4227,17 @@ describe('multirespondent-submission.service', () => {
             encryptedPayload: buildV4Payload(),
             logMeta: {} as any,
             growthbook: growthbookWithFlags({
-              enableMrfWebhooks,
+              mrfWebhooksV3Generic,
               mrfStepWriteToken,
             }),
           })
         }
         await flushPromises()
 
-        for (const call of sendSpy.mock.calls) {
-          expect(
-            (call[3]?.data as Record<string, unknown> | undefined)?.[
-              'encryptedStepToken'
-            ],
-          ).toBeUndefined()
-        }
+        // The rows above are V4 (mrfVersion 2): a v3-only consumer must not
+        // receive them under any flag combination, which also means the step
+        // token (a write credential) can never leak to it.
+        expect(sendSpy).not.toHaveBeenCalled()
       },
     )
 

@@ -12,95 +12,96 @@ const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/1/x'
 describe('shouldSendMrfWebhook', () => {
   it.each<{
     webhookType: WebhookType
-    isMrfWebhooksEnabled: boolean
-    isStepWriteTokenEnabled: boolean
+    mrfVersion: number
+    isMrfWebhooksV3GenericEnabled: boolean
     expected: boolean
   }>([
+    // Plumber is always delivered; its wire cutover lives in getMrfVersion
+    // (mrf-step-write-token decides the stored version, wire follows).
     {
       webhookType: 'plumber',
-      isMrfWebhooksEnabled: false,
-      isStepWriteTokenEnabled: false,
-      expected: true,
-    },
-    {
-      webhookType: 'plumber',
-      isMrfWebhooksEnabled: false,
-      isStepWriteTokenEnabled: true,
+      mrfVersion: 1,
+      isMrfWebhooksV3GenericEnabled: false,
       expected: true,
     },
     {
       webhookType: 'plumber',
-      isMrfWebhooksEnabled: true,
-      isStepWriteTokenEnabled: false,
+      mrfVersion: 1,
+      isMrfWebhooksV3GenericEnabled: true,
       expected: true,
     },
     {
       webhookType: 'plumber',
-      isMrfWebhooksEnabled: true,
-      isStepWriteTokenEnabled: true,
+      mrfVersion: 2,
+      isMrfWebhooksV3GenericEnabled: false,
       expected: true,
     },
     {
+      webhookType: 'plumber',
+      mrfVersion: 2,
+      isMrfWebhooksV3GenericEnabled: true,
+      expected: true,
+    },
+    // Generic: v3-only, behind its own release flag.
+    {
       webhookType: 'generic',
-      isMrfWebhooksEnabled: false,
-      isStepWriteTokenEnabled: false,
+      mrfVersion: 1,
+      isMrfWebhooksV3GenericEnabled: false,
       expected: false,
     },
     {
       webhookType: 'generic',
-      isMrfWebhooksEnabled: false,
-      isStepWriteTokenEnabled: true,
+      mrfVersion: 1,
+      isMrfWebhooksV3GenericEnabled: true,
+      expected: true,
+    },
+    // A V4 row (e.g. written while the form had no webhook URL) must never
+    // reach a v3 consumer, flag or no flag.
+    {
+      webhookType: 'generic',
+      mrfVersion: 2,
+      isMrfWebhooksV3GenericEnabled: false,
       expected: false,
     },
     {
       webhookType: 'generic',
-      isMrfWebhooksEnabled: true,
-      isStepWriteTokenEnabled: false,
+      mrfVersion: 2,
+      isMrfWebhooksV3GenericEnabled: true,
+      expected: false,
+    },
+    // Zapier is treated as generic.
+    {
+      webhookType: 'zapier',
+      mrfVersion: 1,
+      isMrfWebhooksV3GenericEnabled: false,
       expected: false,
     },
     {
-      webhookType: 'generic',
-      isMrfWebhooksEnabled: true,
-      isStepWriteTokenEnabled: true,
+      webhookType: 'zapier',
+      mrfVersion: 1,
+      isMrfWebhooksV3GenericEnabled: true,
       expected: true,
     },
     {
       webhookType: 'zapier',
-      isMrfWebhooksEnabled: false,
-      isStepWriteTokenEnabled: false,
+      mrfVersion: 2,
+      isMrfWebhooksV3GenericEnabled: false,
       expected: false,
     },
     {
       webhookType: 'zapier',
-      isMrfWebhooksEnabled: false,
-      isStepWriteTokenEnabled: true,
+      mrfVersion: 2,
+      isMrfWebhooksV3GenericEnabled: true,
       expected: false,
-    },
-    {
-      webhookType: 'zapier',
-      isMrfWebhooksEnabled: true,
-      isStepWriteTokenEnabled: false,
-      expected: false,
-    },
-    {
-      webhookType: 'zapier',
-      isMrfWebhooksEnabled: true,
-      isStepWriteTokenEnabled: true,
-      expected: true,
     },
   ])(
-    '$webhookType with enable-mrf-webhooks=$isMrfWebhooksEnabled, mrf-step-write-token=$isStepWriteTokenEnabled => $expected',
-    ({
-      webhookType,
-      isMrfWebhooksEnabled,
-      isStepWriteTokenEnabled,
-      expected,
-    }) => {
+    '$webhookType mrfVersion=$mrfVersion with mrf-webhooks-v3-generic=$isMrfWebhooksV3GenericEnabled => $expected',
+    ({ webhookType, mrfVersion, isMrfWebhooksV3GenericEnabled, expected }) => {
       expect(
         shouldSendMrfWebhook({
           webhookType,
-          isMrfWebhooksEnabled,
-          isStepWriteTokenEnabled,
+          mrfVersion,
+          isMrfWebhooksV3GenericEnabled,
         }),
       ).toBe(expected)
     },
@@ -108,109 +109,84 @@ describe('shouldSendMrfWebhook', () => {
 })
 
 describe('shouldWriteV4Snapshot', () => {
-  const bothFlagsOn = {
-    isMrfWebhooksEnabled: true,
-    isStepWriteTokenEnabled: true,
-  }
-
   it.each<{
     name: string
     mrfVersion: number
     webhook?: { url?: string; isRetryEnabled?: boolean }
-    isMrfWebhooksEnabled: boolean
-    isStepWriteTokenEnabled: boolean
+    isMrfWebhooksV3GenericEnabled: boolean
     expected: boolean
   }>([
     {
       name: 'a V3 row never snapshots',
       mrfVersion: 1,
       webhook: { url: PLUMBER_URL, isRetryEnabled: true },
-      ...bothFlagsOn,
+      isMrfWebhooksV3GenericEnabled: true,
       expected: false,
     },
     {
       name: 'no webhook url',
       mrfVersion: 2,
       webhook: undefined,
-      ...bothFlagsOn,
+      isMrfWebhooksV3GenericEnabled: true,
       expected: false,
     },
     {
       name: 'retries disabled',
       mrfVersion: 2,
       webhook: { url: PLUMBER_URL, isRetryEnabled: false },
-      ...bothFlagsOn,
+      isMrfWebhooksV3GenericEnabled: true,
       expected: false,
     },
     {
-      name: 'plumber needs no flags',
+      name: 'plumber V4 snapshots, no flags needed',
       mrfVersion: 2,
       webhook: { url: PLUMBER_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: false,
-      isStepWriteTokenEnabled: false,
+      isMrfWebhooksV3GenericEnabled: false,
       expected: true,
     },
     {
-      name: 'generic with no flags is never delivered, so never snapshots',
+      name: 'generic V4 is never delivered, so never snapshots (flag off)',
       mrfVersion: 2,
       webhook: { url: GENERIC_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: false,
-      isStepWriteTokenEnabled: false,
+      isMrfWebhooksV3GenericEnabled: false,
       expected: false,
     },
     {
-      name: 'generic with only enable-mrf-webhooks is not delivered',
+      name: 'generic V4 is never delivered, so never snapshots (flag on)',
       mrfVersion: 2,
       webhook: { url: GENERIC_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: true,
-      isStepWriteTokenEnabled: false,
+      isMrfWebhooksV3GenericEnabled: true,
       expected: false,
     },
     {
-      name: 'generic with only mrf-step-write-token is not delivered',
-      mrfVersion: 2,
-      webhook: { url: GENERIC_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: false,
-      isStepWriteTokenEnabled: true,
-      expected: false,
-    },
-    {
-      name: 'generic with both flags snapshots',
-      mrfVersion: 2,
-      webhook: { url: GENERIC_URL, isRetryEnabled: true },
-      ...bothFlagsOn,
-      expected: true,
-    },
-    {
-      name: 'zapier with only enable-mrf-webhooks is not delivered',
+      name: 'zapier V4 is never delivered, so never snapshots (flag off)',
       mrfVersion: 2,
       webhook: { url: ZAPIER_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: true,
-      isStepWriteTokenEnabled: false,
+      isMrfWebhooksV3GenericEnabled: false,
       expected: false,
     },
     {
-      name: 'zapier with both flags snapshots',
+      name: 'zapier V4 is never delivered, so never snapshots (flag on)',
       mrfVersion: 2,
       webhook: { url: ZAPIER_URL, isRetryEnabled: true },
-      ...bothFlagsOn,
-      expected: true,
+      isMrfWebhooksV3GenericEnabled: true,
+      expected: false,
+    },
+    {
+      name: 'a generic V3 row (the delivered non-plumber shape) never snapshots',
+      mrfVersion: 1,
+      webhook: { url: GENERIC_URL, isRetryEnabled: true },
+      isMrfWebhooksV3GenericEnabled: true,
+      expected: false,
     },
   ])(
     '$name',
-    ({
-      mrfVersion,
-      webhook,
-      isMrfWebhooksEnabled,
-      isStepWriteTokenEnabled,
-      expected,
-    }) => {
+    ({ mrfVersion, webhook, isMrfWebhooksV3GenericEnabled, expected }) => {
       expect(
         shouldWriteV4Snapshot({
           mrfVersion,
           webhook,
-          isMrfWebhooksEnabled,
-          isStepWriteTokenEnabled,
+          isMrfWebhooksV3GenericEnabled,
         }),
       ).toBe(expected)
     },
