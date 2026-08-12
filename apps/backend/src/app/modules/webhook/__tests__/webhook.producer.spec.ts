@@ -2,10 +2,14 @@ import { ObjectId } from 'bson'
 import { addHours, addMinutes, subMinutes } from 'date-fns'
 import { Producer } from 'sqs-producer'
 
-import { MAX_DELAY_SECONDS } from '../webhook.constants'
+import {
+  MAX_DELAY_SECONDS,
+  QUEUE_MESSAGE_VERSION_LEGACY,
+} from '../webhook.constants'
 import { WebhookPushToQueueError } from '../webhook.errors'
 import { WebhookQueueMessage } from '../webhook.message'
 import { WebhookProducer } from '../webhook.producer'
+import { WebhookQueueMessageObject } from '../webhook.types'
 
 jest.mock('sqs-producer')
 const MockSqsProducer = jest.mocked(Producer)
@@ -16,11 +20,11 @@ describe('WebhookProducer', () => {
 
   const MOCK_NOW = Date.now()
 
-  const MESSAGE_BODY = {
+  const MESSAGE_BODY: WebhookQueueMessageObject = {
     submissionId: new ObjectId().toHexString(),
     previousAttempts: [MOCK_NOW],
     nextAttempt: MOCK_NOW,
-    _v: 0,
+    _v: QUEUE_MESSAGE_VERSION_LEGACY,
   }
 
   beforeAll(() => {

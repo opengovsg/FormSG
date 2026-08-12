@@ -3,13 +3,21 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Consumer } from 'sqs-consumer'
 
-import { SubmissionWebhookInfo } from '../../../types'
+import { SubmissionWebhookInfo, WebhookView } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel, CustomLoggerParams } from '../../config/logger'
 import getSubmissionModel from '../../models/submission.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../core/core.errors'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
+import {
+  SnapshotDataIntegrityError,
+  SnapshotFormatNotRecordedError,
+} from '../submission/multirespondent-submission/webhook/submission-snapshot.errors'
+import {
+  resolveSnapshotRetryView,
+  SnapshotRetryError,
+} from '../submission/multirespondent-submission/webhook/webhook-retry-view'
 
 import {
   WebhookNoMoreRetriesError,
@@ -18,6 +26,7 @@ import {
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
 import * as WebhookService from './webhook.service'
+import { webhookStatsdClient } from './webhook.statsd-client'
 import { isSuccessfulResponse } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -148,24 +157,25 @@ export const createWebhookQueueHandler =
         )
 
       // Attempt webhook
-      return WebhookService.sendWebhook(
-        webhookInfo.webhookView,
-        webhookUrl,
-      ).andThen((webhookResponse) => {
-        // Save webhook response to database, but carry on even if it fails
-        void WebhookService.saveWebhookRecord(
-          webhookMessage.submissionId,
-          webhookResponse,
+      return resolveWebhookView(webhookMessage, webhookInfo)
+        .andThen((webhookView) =>
+          WebhookService.sendWebhook(webhookView, webhookUrl),
         )
+        .andThen((webhookResponse) => {
+          // Save webhook response to database, but carry on even if it fails
+          void WebhookService.saveWebhookRecord(
+            webhookMessage.submissionId,
+            webhookResponse,
+          )
 
-        // Webhook was successful, no further action required
-        if (isSuccessfulResponse(webhookResponse)) return okAsync(true)
+          // Webhook was successful, no further action required
+          if (isSuccessfulResponse(webhookResponse)) return okAsync(true)
 
-        // Requeue webhook for subsequent retry
-        return webhookMessage
-          .incrementAttempts()
-          .asyncAndThen((newMessage) => producer.sendMessage(newMessage))
-      })
+          // Requeue webhook for subsequent retry
+          return webhookMessage
+            .incrementAttempts()
+            .asyncAndThen((newMessage) => producer.sendMessage(newMessage))
+        })
     })
 
     if (retryResult.isOk()) return sqsMessage
@@ -191,7 +201,26 @@ export const createWebhookQueueHandler =
       })
       return sqsMessage
     }
-    // Remaining cases are unexpected errors, move to DLQ
+    // Special handling for a snapshot that cannot be replayed. Retrying never
+    // fixes either case, so the message is deleted rather than left to churn
+    // through redelivery into the DLQ. The stable error code is what alarms.
+    if (
+      retryResult.error instanceof SnapshotDataIntegrityError ||
+      retryResult.error instanceof SnapshotFormatNotRecordedError
+    ) {
+      logger.error({
+        message: 'Webhook retry could not replay the recorded step submission',
+        meta: logMeta,
+        error: retryResult.error,
+      })
+      webhookStatsdClient.increment('retry.replay_aborted', 1, 1, {
+        errorCode: `${retryResult.error.code}`,
+      })
+      return sqsMessage
+    }
+    // Remaining cases are unexpected errors, move to DLQ. A transient or denied
+    // snapshot read lands here: both happen before any HTTP call, so no webhook
+    // attempt is burned and the retry schedule is preserved.
     logger.error({
       message: 'Error while attempting to retry webhook',
       meta: logMeta,
@@ -201,6 +230,35 @@ export const createWebhookQueueHandler =
     // if redrive policy is exceeded
     return Promise.reject()
   }
+
+/**
+ * Decides what an attempt delivers, from the message alone.
+ *
+ * A message naming a step submission is replayed from that step's frozen
+ * snapshot, in the wire shape the message recorded — the payload policy is
+ * deliberately NOT consulted here, so nothing that happened to the row or the
+ * form since the initial send can change what this attempt delivers.
+ *
+ * A legacy message names no step submission, so it keeps the pre-snapshot
+ * behaviour of shipping the live row.
+ */
+const resolveWebhookView = (
+  webhookMessage: WebhookQueueMessage,
+  webhookInfo: SubmissionWebhookInfo,
+): ResultAsync<WebhookView, SnapshotRetryError> => {
+  const { submissionIndex, contentFormat } = webhookMessage
+  if (submissionIndex === undefined || contentFormat === undefined) {
+    return okAsync(webhookInfo.webhookView)
+  }
+
+  return resolveSnapshotRetryView({
+    liveView: webhookInfo.webhookView,
+    submissionId: webhookMessage.submissionId,
+    submissionIndex,
+    contentFormat,
+    snapshotTokens: webhookInfo.snapshotTokens,
+  })
+}
 
 /**
  * Retrieves all relevant information to send webhook for a given submission.
