@@ -34,9 +34,6 @@ export const featureFlags = {
   sidebarNavLabels: 'enable-sidebar-nav-labels' as const,
   fiveStarAdminRating: '5star-admin-rating' as const,
   workflowBuilderRedesign: 'workflow-builder-redesign' as const,
-  // Number-valued flag: length of expanded alphanumeric OTPs (0 or unset =
-  // legacy 6-digit numeric OTPs). Recommended value: 8.
-  otpEntropyExpanded: 'otp-entropy-expanded' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
