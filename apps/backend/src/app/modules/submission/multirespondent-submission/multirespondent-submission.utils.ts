@@ -698,10 +698,20 @@ export const getMrfVersion = ({
 }): MrfVersion => {
   switch (webhookType) {
     case 'plumber':
+      // mrf-step-write-token doubles as plumber's v4 release flag: the wire
+      // version follows the stored mrfVersion, so storing V4 is what moves
+      // plumber to v4 payloads. Flag off => stored V3 => v3 wire (legacy).
       return isStepWriteTokenEnabled ? 2 : 1
-    case undefined:
     case 'zapier':
     case 'generic':
+      // Non-plumber consumers only ever understand v3 payloads, and the
+      // server cannot transcode encrypted content, so their rows are always
+      // stored V3 — unconditionally, so the invariant holds across flag
+      // flips mid-workflow (delivery is gated separately by
+      // mrf-webhooks-v3-generic at send time).
+      return 1
+    case undefined:
+      // No webhook consumer: store in the V4 target format.
       return 2
   }
 }

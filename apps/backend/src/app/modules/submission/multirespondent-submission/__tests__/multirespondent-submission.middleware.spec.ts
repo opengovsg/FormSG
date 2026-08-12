@@ -955,7 +955,7 @@ describe('Multirespondent Submission Middleware', () => {
       mockDecrypt.mockReturnValue({ responses: MOCK_RESPONSES })
     })
 
-    it('should encrypt responses as V4 and set mrfVersion to 2 when the form has a generic webhook url', async () => {
+    it('should encrypt responses as V3 and set mrfVersion to 1 when the form has a generic webhook url', async () => {
       jest.mocked(adaptV4ToV3).mockReturnValue({
         field1: { fieldType: BasicField.ShortText, answer: 'hello' },
       } as any)
@@ -966,8 +966,9 @@ describe('Multirespondent Submission Middleware', () => {
 
       await encryptSubmission(mockReq, mockRes as any, mockNext)
 
-      expect(jest.mocked(adaptV4ToV3)).not.toHaveBeenCalled()
-      expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(2)
+      // Generic consumers are v3-only, so the row is downgraded and stored V3.
+      expect(jest.mocked(adaptV4ToV3)).toHaveBeenCalled()
+      expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(1)
       expect(mockNext).toHaveBeenCalled()
     })
 
@@ -1120,26 +1121,26 @@ describe('Multirespondent Submission Middleware', () => {
           )
         })
 
-        it('classifies example.com as generic (V4 regardless of the flags)', async () => {
+        it('classifies example.com as generic (V3 regardless of the flags)', async () => {
           expectEncryptedAs(
             await runGate({
               webhookUrl: GENERIC_URL,
               flags: [featureFlags.mrfStepWriteToken],
             }),
-            2,
+            1,
           )
-          expectEncryptedAs(await runGate({ webhookUrl: GENERIC_URL }), 2)
+          expectEncryptedAs(await runGate({ webhookUrl: GENERIC_URL }), 1)
         })
 
-        it('classifies hooks.zapier.com as generic (V4 regardless of the flags)', async () => {
+        it('classifies hooks.zapier.com as generic (V3 regardless of the flags)', async () => {
           expectEncryptedAs(
             await runGate({
               webhookUrl: ZAPIER_URL,
               flags: [featureFlags.mrfStepWriteToken],
             }),
-            2,
+            1,
           )
-          expectEncryptedAs(await runGate({ webhookUrl: ZAPIER_URL }), 2)
+          expectEncryptedAs(await runGate({ webhookUrl: ZAPIER_URL }), 1)
         })
 
         it('no webhook URL is treated as none (V4)', async () => {
@@ -1169,14 +1170,14 @@ describe('Multirespondent Submission Middleware', () => {
           )
         })
 
-        it('ignores webhookFormat and enableMrfWebhooks on generic (V4 either way)', async () => {
+        it('ignores webhookFormat and enableMrfWebhooks on generic (V3 either way)', async () => {
           expectEncryptedAs(
             await runGate({
               webhookUrl: GENERIC_URL,
               webhookFormat: 'v1',
               flags: [featureFlags.enableMrfWebhooks],
             }),
-            2,
+            1,
           )
           expectEncryptedAs(
             await runGate({
@@ -1184,18 +1185,18 @@ describe('Multirespondent Submission Middleware', () => {
               webhookFormat: 'v4',
               flags: [],
             }),
-            2,
+            1,
           )
         })
 
-        it('ignores webhookFormat and enableMrfWebhooks on zapier (V4 either way)', async () => {
+        it('ignores webhookFormat and enableMrfWebhooks on zapier (V3 either way)', async () => {
           expectEncryptedAs(
             await runGate({
               webhookUrl: ZAPIER_URL,
               webhookFormat: 'v1',
               flags: [featureFlags.enableMrfWebhooks],
             }),
-            2,
+            1,
           )
           expectEncryptedAs(
             await runGate({
@@ -1203,6 +1204,44 @@ describe('Multirespondent Submission Middleware', () => {
               webhookFormat: 'v4',
               flags: [],
             }),
+            1,
+          )
+        })
+
+        it('ignores the mrf-webhooks-v3-generic delivery flag at storage time (generic stores V3 either way)', async () => {
+          // The delivery flag must not influence the stored version: storage
+          // is unconditional V3 for non-plumber so the wire invariant holds
+          // across flag flips mid-workflow.
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: GENERIC_URL,
+              flags: [featureFlags.mrfWebhooksV3Generic],
+            }),
+            1,
+          )
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: GENERIC_URL,
+              flags: [
+                featureFlags.mrfWebhooksV3Generic,
+                featureFlags.mrfStepWriteToken,
+              ],
+            }),
+            1,
+          )
+          // ...and it must not gate plumber's or the no-webhook V4 storage.
+          expectEncryptedAs(
+            await runGate({
+              webhookUrl: PLUMBER_URL,
+              flags: [
+                featureFlags.mrfWebhooksV3Generic,
+                featureFlags.mrfStepWriteToken,
+              ],
+            }),
+            2,
+          )
+          expectEncryptedAs(
+            await runGate({ flags: [featureFlags.mrfWebhooksV3Generic] }),
             2,
           )
         })

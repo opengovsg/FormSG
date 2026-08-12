@@ -826,10 +826,8 @@ export const createMultiRespondentFormSubmission = ({
       const shouldWriteSnapshot = shouldWriteV4Snapshot({
         mrfVersion,
         webhook: form.webhook,
-        isMrfWebhooksEnabled:
-          growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-        isStepWriteTokenEnabled:
-          growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false,
+        isMrfWebhooksV3GenericEnabled:
+          growthbook?.isOn(featureFlags.mrfWebhooksV3Generic) ?? false,
       })
 
       const saveSubmission = async () => {
@@ -1119,9 +1117,9 @@ const sendMrfInitialWebhookIfEligible = ({
 
   const shouldSend = shouldSendMrfWebhook({
     webhookType,
-    isMrfWebhooksEnabled:
-      growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-    isStepWriteTokenEnabled,
+    mrfVersion: submission.mrfVersion,
+    isMrfWebhooksV3GenericEnabled:
+      growthbook?.isOn(featureFlags.mrfWebhooksV3Generic) ?? false,
   })
   if (!shouldSend) {
     return
@@ -1467,10 +1465,8 @@ export const updateMultiRespondentFormSubmission = ({
       const shouldWriteSnapshot = shouldWriteV4Snapshot({
         mrfVersion,
         webhook: snapshottedFormDef.webhook,
-        isMrfWebhooksEnabled:
-          growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-        isStepWriteTokenEnabled:
-          growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false,
+        isMrfWebhooksV3GenericEnabled:
+          growthbook?.isOn(featureFlags.mrfWebhooksV3Generic) ?? false,
       })
 
       const snapshot = shouldWriteSnapshot
