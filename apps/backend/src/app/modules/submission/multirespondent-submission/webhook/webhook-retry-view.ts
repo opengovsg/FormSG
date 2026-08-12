@@ -1,8 +1,8 @@
 import { SubmittedStepSnapshotTokens } from 'formsg-shared/types'
 import { errAsync, ResultAsync } from 'neverthrow'
 
-import { QueueMessageContentFormat } from '../../../webhook/webhook.types'
 import { WebhookView } from '../../../../../types'
+import { QueueMessageContentFormat } from '../../../webhook/webhook.types'
 
 import {
   SnapshotAccessDeniedError,

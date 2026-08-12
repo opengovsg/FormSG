@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson'
 import { readFileSync } from 'fs'
+import { omit } from 'lodash'
 import { resolve } from 'path'
 
 import {
@@ -99,37 +100,18 @@ describe('WebhookQueueMessage', () => {
       expect(message.contentFormat).toBe('v4')
     })
 
-    it('should return WebhookQueueMessageParsingError when a snapshot message omits submissionIndex', () => {
-      const { submissionIndex: _omitted, ...withoutIndex } =
-        VALID_SNAPSHOT_MESSAGE as Extract<
-          WebhookQueueMessageObject,
-          { submissionIndex: number }
-        >
+    it.each(['submissionIndex', 'contentFormat'] as const)(
+      'should return WebhookQueueMessageParsingError when a snapshot message omits %s',
+      (field) => {
+        const result = WebhookQueueMessage.deserialise(
+          JSON.stringify(omit(VALID_SNAPSHOT_MESSAGE, field)),
+        )
 
-      const result = WebhookQueueMessage.deserialise(
-        JSON.stringify(withoutIndex),
-      )
-
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-        WebhookQueueMessageParsingError,
-      )
-    })
-
-    it('should return WebhookQueueMessageParsingError when a snapshot message omits contentFormat', () => {
-      const { contentFormat: _omitted, ...withoutFormat } =
-        VALID_SNAPSHOT_MESSAGE as Extract<
-          WebhookQueueMessageObject,
-          { contentFormat: string }
-        >
-
-      const result = WebhookQueueMessage.deserialise(
-        JSON.stringify(withoutFormat),
-      )
-
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-        WebhookQueueMessageParsingError,
-      )
-    })
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          WebhookQueueMessageParsingError,
+        )
+      },
+    )
 
     it('should fail loud on an unknown message version rather than defaulting to a path', () => {
       const result = WebhookQueueMessage.deserialise(

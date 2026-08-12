@@ -9,7 +9,6 @@ import { createLoggerWithLabel, CustomLoggerParams } from '../../config/logger'
 import getSubmissionModel from '../../models/submission.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../core/core.errors'
-import { SubmissionNotFoundError } from '../submission/submission.errors'
 import {
   SnapshotDataIntegrityError,
   SnapshotFormatNotRecordedError,
@@ -18,6 +17,7 @@ import {
   resolveSnapshotRetryView,
   SnapshotRetryError,
 } from '../submission/multirespondent-submission/webhook/webhook-retry-view'
+import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import {
   WebhookNoMoreRetriesError,

@@ -15,6 +15,7 @@ import {
   SubmittedStepSnapshotTokens,
   WorkflowType,
 } from 'formsg-shared/types'
+import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
@@ -107,7 +108,9 @@ const comparablePayload = (data: WebhookData): unknown => {
   }
 }
 
-const capturePostedPayload = async (view: WebhookView): Promise<WebhookData> => {
+const capturePostedPayload = async (
+  view: WebhookView,
+): Promise<WebhookData> => {
   MockAxios.post.mockClear()
   MockAxios.post.mockResolvedValue(MOCK_AXIOS_RESPONSE)
 
@@ -351,9 +354,11 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       submissionIndex: 0,
       workflowStep: 0,
     })
-    const { encryptedSubmissionSecretKey: _dropped, ...base } = v4Snapshot
     MockSnapshotStore.readV4Snapshot.mockReturnValue(
-      okAsync({ ...base, contentFormat: 'v1' as const }),
+      okAsync({
+        ...omit(v4Snapshot, 'encryptedSubmissionSecretKey'),
+        contentFormat: 'v1' as const,
+      }),
     )
 
     const liveView = await submission.getWebhookView()

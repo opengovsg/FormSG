@@ -397,7 +397,10 @@ describe('webhook.consumer', () => {
 
       it.each([
         ['a data-integrity failure', new SnapshotDataIntegrityError()],
-        ['a produce/deliver disagreement', new SnapshotFormatNotRecordedError()],
+        [
+          'a produce/deliver disagreement',
+          new SnapshotFormatNotRecordedError(),
+        ],
       ])(
         'should delete the message without attempting the webhook on %s',
         async (_case, storeError) => {
