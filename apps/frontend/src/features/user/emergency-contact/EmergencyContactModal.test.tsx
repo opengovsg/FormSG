@@ -65,7 +65,7 @@ describe('User has no verified contact number', () => {
     expect(otpInput).toBeInTheDocument()
 
     // Act
-    await act(async () => userEvent.type(otpInput, '123456'))
+    await act(async () => userEvent.type(otpInput, 'A1B2C3D4'))
     await act(async () => userEvent.click(otpSubmitButton))
 
     // Assert

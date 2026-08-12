@@ -3,9 +3,9 @@ import { RegisterOptions, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Flex, FormControl } from '@chakra-ui/react'
 
+import { OTP_LENGTH } from 'formsg-shared/constants'
 import { UserDto } from 'formsg-shared/types/user'
 
-import { useOtpConfig } from '~hooks/useOtpConfig'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -40,7 +40,6 @@ const useVerificationBox = ({
   } = useForm<VfnFieldValues>()
 
   const { verifyOtpMutation, generateOtpMutation } = useUserMutations()
-  const { otpLength, isExpandedOtp } = useOtpConfig()
 
   const onSubmitForm = handleSubmit(
     useCallback(
@@ -84,23 +83,18 @@ const useVerificationBox = ({
         'features.user.emergencyContact.verification.errors.required',
       ),
       pattern: {
-        value: isExpandedOtp ? /^[a-zA-Z0-9]+$/ : /^[0-9\b]+$/,
+        value: /^[a-zA-Z0-9]+$/,
         message: t(
-          isExpandedOtp
-            ? 'features.user.emergencyContact.verification.errors.charactersOnly'
-            : 'features.user.emergencyContact.verification.errors.numbersOnly',
+          'features.user.emergencyContact.verification.errors.charactersOnly',
         ),
       },
       validate: (value) =>
-        value.length === otpLength ||
-        t(
-          isExpandedOtp
-            ? 'features.user.emergencyContact.verification.errors.invalidExpanded'
-            : 'features.user.emergencyContact.verification.errors.invalid',
-          { otpLength },
-        ),
+        value.length === OTP_LENGTH ||
+        t('features.user.emergencyContact.verification.errors.invalid', {
+          otpLength: OTP_LENGTH,
+        }),
     }
-  }, [isExpandedOtp, otpLength, t])
+  }, [t])
 
   return {
     onSubmitForm,
@@ -110,8 +104,6 @@ const useVerificationBox = ({
     otpValidationRules,
     otpInputError: errors.otp,
     otpInputRegister: register,
-    otpLength,
-    isExpandedOtp,
   }
 }
 
@@ -125,8 +117,6 @@ export const VerificationBox = (props: VerificationBoxProps): JSX.Element => {
     otpValidationRules,
     isOtpButtonLoading,
     otpInputRegister,
-    otpLength,
-    isExpandedOtp,
   } = useVerificationBox(props)
 
   return (
@@ -161,8 +151,7 @@ export const VerificationBox = (props: VerificationBoxProps): JSX.Element => {
               <Input
                 data-testid="otp-input"
                 type="text"
-                maxLength={otpLength}
-                inputMode={isExpandedOtp ? 'text' : 'numeric'}
+                maxLength={OTP_LENGTH}
                 autoComplete="one-time-code"
                 autoFocus
                 {...otpInputRegister('otp', otpValidationRules)}
