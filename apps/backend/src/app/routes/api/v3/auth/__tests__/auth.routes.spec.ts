@@ -296,7 +296,7 @@ describe('auth.routes', () => {
   })
 
   describe('POST /auth/otp/verify', () => {
-    const MOCK_VALID_OTP = '123456'
+    const MOCK_VALID_OTP = 'A1B2C3D4'
     const VALID_DOMAIN = 'example.com'
     const VALID_EMAIL = `test@${VALID_DOMAIN}`
     const INVALID_DOMAIN = 'example.org'
@@ -354,11 +354,11 @@ describe('auth.routes', () => {
       )
     })
 
-    it('should return 400 when body.otp is less than 6 digits', async () => {
+    it('should return 400 when body.otp is not 8 characters long', async () => {
       // Act
       const response = await request.post('/auth/otp/verify').send({
         email: VALID_EMAIL,
-        otp: '12345',
+        otp: 'A1B2C3D',
       })
 
       // Assert
@@ -370,11 +370,11 @@ describe('auth.routes', () => {
       )
     })
 
-    it('should return 400 when body.otp is 6 characters but does not consist purely of alphanumeric characters', async () => {
+    it('should return 400 when body.otp is 8 characters but does not consist purely of alphanumeric characters', async () => {
       // Act
       const response = await request.post('/auth/otp/verify').send({
         email: VALID_EMAIL,
-        otp: '123ab!',
+        otp: '123ab!@#',
       })
 
       // Assert
@@ -437,7 +437,7 @@ describe('auth.routes', () => {
 
     it('should return 422 when body.otp is invalid', async () => {
       // Arrange
-      const invalidOtp = '654321'
+      const invalidOtp = 'ZZZZZZZZ'
       // Request for OTP so the hash exists.
       await requestForOtp(VALID_EMAIL)
 
@@ -453,7 +453,7 @@ describe('auth.routes', () => {
 
     it('should return 422 when invalid body.otp has been attempted too many times', async () => {
       // Arrange
-      const invalidOtp = '654321'
+      const invalidOtp = 'ZZZZZZZZ'
       // Request for OTP so the hash exists.
       await requestForOtp(VALID_EMAIL)
 
@@ -570,7 +570,7 @@ describe('auth.routes', () => {
   })
 
   describe('GET /auth/logout', () => {
-    const MOCK_VALID_OTP = '123456'
+    const MOCK_VALID_OTP = 'A1B2C3D4'
     const VALID_DOMAIN = 'example.com'
     const VALID_EMAIL = `test@${VALID_DOMAIN}`
 

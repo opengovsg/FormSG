@@ -242,7 +242,7 @@ describe('user.routes', () => {
   })
 
   describe('POST /user/contact/otp/verify', () => {
-    const MOCK_VALID_OTP = '123456'
+    const MOCK_VALID_OTP = 'A1B2C3D4'
 
     beforeEach(async () => {
       jest.spyOn(OtpUtils, 'generateOtp').mockReturnValue(MOCK_VALID_OTP)
@@ -375,7 +375,7 @@ describe('user.routes', () => {
       // Act
       const response = await session.post('/user/contact/otp/verify').send({
         contact: VALID_CONTACT,
-        otp: '999999',
+        otp: 'ZZZZZZZZ',
         userId: defaultUser._id,
       })
 
@@ -408,7 +408,7 @@ describe('user.routes', () => {
       // Arrange
       const session = await createAuthedSession(defaultUser.email, request)
       await requestForContactOtp(defaultUser, VALID_CONTACT, session)
-      const invalidOtp = '999999'
+      const invalidOtp = 'ZZZZZZZZ'
 
       // Act
       // Attempt invalid OTP for MAX_OTP_ATTEMPTS.

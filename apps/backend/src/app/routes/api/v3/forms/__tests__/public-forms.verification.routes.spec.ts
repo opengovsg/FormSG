@@ -752,7 +752,7 @@ describe('public-forms.verification.routes', () => {
         .post(
           `/forms/${mockVerifiableFormId}/fieldverifications/${mockTransactionId}/fields/${mockEmailFieldId}/otp/verify`,
         )
-        .send({ otp: '000000' })
+        .send({ otp: '00000000' })
 
       // Assert
       expect(response.status).toBe(StatusCodes.UNPROCESSABLE_ENTITY)

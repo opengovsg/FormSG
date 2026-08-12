@@ -112,7 +112,7 @@ export const validateVerifyOtpParams = celebrate({
     otp: Joi.string()
       .required()
       .uppercase()
-      .regex(/^[A-Z0-9]{6,12}$/)
+      .regex(/^[A-Z0-9]{8}$/)
       .message('Please enter a valid OTP'),
   }),
 })
