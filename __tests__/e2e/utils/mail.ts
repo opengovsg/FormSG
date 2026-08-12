@@ -71,7 +71,8 @@ export const extractOtp = async (recipient: string): Promise<string> => {
   const lastEmail = emails.pop()
   if (!lastEmail) throw Error(`mailbox for ${recipient} is empty`)
 
-  const otp = lastEmail.html.match(/\d{6}/)?.[0]
+  // OTP emails render the code as `{3-letter prefix}-<strong|b>{OTP}</...>`.
+  const otp = lastEmail.html.match(/[A-Z]{3}-<(?:strong|b)[^>]*>([A-Z0-9]{8})</)?.[1]
   if (!otp) throw Error('otp was not found in email')
 
   return otp
