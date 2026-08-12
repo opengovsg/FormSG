@@ -3,6 +3,8 @@ import { Navigate, NavigateProps, useLocation } from 'react-router-dom'
 import { useAuth } from '~contexts/AuthContext'
 import { LOGIN_ROUTE } from '~constants/routes'
 
+import { ForceRefreshModal } from '~features/version-check/ForceRefreshModal'
+
 interface PrivateElementProps {
   /**
    * Route to redirect to when user is not authenticated. Defaults to
@@ -21,7 +23,12 @@ export const PrivateElement = ({
   const { isAuthenticated } = useAuth()
 
   return isAuthenticated ? (
-    element
+    <>
+      {element}
+      {/* Mounted on authenticated admin routes only: forcing a refresh must
+      never interrupt an in-progress public form submission. */}
+      <ForceRefreshModal />
+    </>
   ) : (
     <Navigate replace to={redirectTo} state={{ from: location }} />
   )
