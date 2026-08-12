@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.7.0](https://github.com/opengovsg/formsg/compare/v9.6.1...v9.7.0) (2026-08-12)
+
+
+### Features
+
+* include Form ID as first entry of admin notification JSON (#9732) ([#9732](https://github.com/opengovsg/formsg/commit/da03ccbc6dcbe2e7464cfd0214b90d1b70ac1a3b))
+
 ## [9.6.1](https://github.com/opengovsg/formsg/compare/v9.6.0...v9.6.1) (2026-08-06)
 
 
