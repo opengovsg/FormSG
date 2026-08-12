@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.7.1](https://github.com/opengovsg/formsg/compare/v9.7.0...v9.7.1) (2026-08-12)
+
+
+### Refactors
+
+* make 8-char alphanumeric OTP permanent, remove otp-entropy-expanded flag (#9841) ([#9841](https://github.com/opengovsg/formsg/commit/a25335782ce49447cdf4182b6a3fb711d1dfe4c5))
+
 ## [9.7.0](https://github.com/opengovsg/formsg/compare/v9.6.1...v9.7.0) (2026-08-12)
 
 
