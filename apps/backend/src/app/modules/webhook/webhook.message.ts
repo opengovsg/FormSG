@@ -6,14 +6,16 @@ import { createLoggerWithLabel } from '../../config/logger'
 import {
   DUE_TIME_TOLERANCE_SECONDS,
   QUEUE_MESSAGE_VERSION,
+  QUEUE_MESSAGE_VERSION_LEGACY,
 } from './webhook.constants'
 import {
   WebhookNoMoreRetriesError,
   WebhookQueueMessageParsingError,
 } from './webhook.errors'
 import {
+  QueueMessageContentFormat,
   WebhookFailedQueueMessage,
-  webhookMessageSchema,
+  WebhookQueueMessage as webhookMessageSchema,
   WebhookQueueMessageObject,
   WebhookQueueMessagePrettified,
 } from './webhook.types'
@@ -83,21 +85,39 @@ export class WebhookQueueMessage {
    * hence uses the current date as the time of the first
    * webhook attempt.
    * @param submissionId
+   * @param snapshotRef the step submission a retry must reproduce, and the wire
+   * shape it must reproduce it in. Supplied only when a snapshot was recorded
+   * for that step; without it the retry falls back to the live submission row.
    * @returns ok(encapsulated message) if retry policy exists
    * @returns err if the retry policy does not allow any retries
    */
   static fromSubmissionId(
     submissionId: string,
+    snapshotRef?: {
+      submissionIndex: number
+      contentFormat: QueueMessageContentFormat
+    },
   ): Result<WebhookQueueMessage, WebhookNoMoreRetriesError> {
     const initialAttempt = Date.now()
     return getNextAttempt(/* previousAttempts =*/ [initialAttempt]).map(
       (nextAttempt) =>
-        new WebhookQueueMessage({
-          submissionId,
-          previousAttempts: [initialAttempt],
-          nextAttempt,
-          _v: QUEUE_MESSAGE_VERSION,
-        }),
+        new WebhookQueueMessage(
+          snapshotRef
+            ? {
+                submissionId,
+                previousAttempts: [initialAttempt],
+                nextAttempt,
+                _v: QUEUE_MESSAGE_VERSION,
+                submissionIndex: snapshotRef.submissionIndex,
+                contentFormat: snapshotRef.contentFormat,
+              }
+            : {
+                submissionId,
+                previousAttempts: [initialAttempt],
+                nextAttempt,
+                _v: QUEUE_MESSAGE_VERSION_LEGACY,
+              },
+        ),
     )
   }
 
@@ -138,11 +158,13 @@ export class WebhookQueueMessage {
     ]
     return getNextAttempt(updatedPreviousAttempts).map(
       (nextAttempt) =>
+        // RATIONALE: the message version and the step submission it names are
+        // carried forward untouched. A subsequent attempt must deliver exactly
+        // what this attempt would have.
         new WebhookQueueMessage({
-          submissionId: this.message.submissionId,
+          ...this.message,
           previousAttempts: updatedPreviousAttempts,
           nextAttempt,
-          _v: QUEUE_MESSAGE_VERSION,
         }),
     )
   }
@@ -159,6 +181,7 @@ export class WebhookQueueMessage {
         this.nextAttempt,
       ].map(prettifyEpoch),
       _v: this.message._v,
+      ...this.snapshotRefForLogs(),
     }
   }
 
@@ -168,7 +191,20 @@ export class WebhookQueueMessage {
       previousAttempts: this.message.previousAttempts.map(prettifyEpoch),
       nextAttempt: prettifyEpoch(this.nextAttempt),
       _v: this.message._v,
+      ...this.snapshotRefForLogs(),
     }
+  }
+
+  private snapshotRefForLogs(): {
+    submissionIndex?: number
+    contentFormat?: QueueMessageContentFormat
+  } {
+    return this.message._v === QUEUE_MESSAGE_VERSION
+      ? {
+          submissionIndex: this.message.submissionIndex,
+          contentFormat: this.message.contentFormat,
+        }
+      : {}
   }
 
   get submissionId(): string {
@@ -177,5 +213,25 @@ export class WebhookQueueMessage {
 
   get nextAttempt(): number {
     return this.message.nextAttempt
+  }
+
+  /**
+   * The step submission this message must redeliver, or undefined for a legacy
+   * message, which is redelivered from the live submission row instead.
+   */
+  get submissionIndex(): number | undefined {
+    return this.message._v === QUEUE_MESSAGE_VERSION
+      ? this.message.submissionIndex
+      : undefined
+  }
+
+  /**
+   * The wire shape this message must be delivered in, fixed at enqueue time.
+   * Never re-derived from the form or a feature flag at send.
+   */
+  get contentFormat(): QueueMessageContentFormat | undefined {
+    return this.message._v === QUEUE_MESSAGE_VERSION
+      ? this.message.contentFormat
+      : undefined
   }
 }
