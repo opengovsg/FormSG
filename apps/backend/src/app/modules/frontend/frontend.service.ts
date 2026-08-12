@@ -1,5 +1,7 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { ClientEnvVars, FrontendRuntimeEnv } from 'formsg-shared/types/core'
+import { readFileSync } from 'fs'
+import path from 'path'
 
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
@@ -11,6 +13,24 @@ import {
 import { paymentConfig } from '../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { turnstileConfig } from '../../config/features/turnstile.config'
+
+// Version of the deployed backend, read once at startup from the backend's
+// own package.json. Resolved relative to cwd (apps/backend), matching how the
+// controller resolves the frontend dist; present in both dev and the
+// production image (see Dockerfile.production). The frontend compares this
+// against the version baked into its bundle to detect stale bundles after a
+// deploy.
+const readAppVersion = (): string => {
+  try {
+    const { version } = JSON.parse(
+      readFileSync(path.resolve('package.json'), { encoding: 'utf8' }),
+    ) as { version?: string }
+    return version ?? ''
+  } catch {
+    return ''
+  }
+}
+export const appVersion = readAppVersion()
 
 export const getFrontendRuntimeEnv = (
   growthbook?: GrowthBook,
@@ -54,6 +74,9 @@ export const getEnvScriptHtml = ({
 
 export const getClientEnvVars = (): ClientEnvVars => {
   return {
+    // Used by the frontend to detect when its loaded bundle is a breaking
+    // (major) version behind the deployed backend, and prompt a refresh.
+    appVersion,
     isGeneralMaintenance: config.isGeneralMaintenance,
     isLoginBanner: config.isLoginBanner,
     siteBannerContent: config.siteBannerContent,
