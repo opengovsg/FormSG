@@ -4319,6 +4319,55 @@ describe('multirespondent-submission.service', () => {
       expect(view?.data.encryptedContent).toBe('frozen-content')
     })
 
+    // ---- S5: what a retry of this send would replay ----
+
+    it('names the frozen step submission and its format for the retry', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      const submission = buildSubmissionWithToken('tok-A')
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        snapshot: buildSnapshot(),
+        submissionId: submission._id.toString(),
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: {} as any,
+        growthbook: growthbookWithFlags({
+          enableMrfWebhooks: true,
+          mrfStepWriteToken: true,
+        }),
+      })
+      await flushPromises()
+
+      expect(sendSpy.mock.calls[0][4]).toEqual({
+        submissionIndex: (submission.submittedSteps?.length ?? 1) - 1,
+        contentFormat: 'v4',
+      })
+    })
+
+    it('names nothing for the retry when the step froze no snapshot', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      const submission = buildSubmissionWithToken(
+        undefined,
+        buildLiveWebhookView(),
+      )
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        submissionId: submission._id.toString(),
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: {} as any,
+        growthbook: growthbookWithFlags({
+          enableMrfWebhooks: true,
+          mrfStepWriteToken: true,
+        }),
+      })
+      await flushPromises()
+
+      expect(sendSpy.mock.calls[0][4]).toBeUndefined()
+    })
+
     it('takes the legacy path (no 4th arg) for a plumber V3 row', async () => {
       const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
       const submission = buildSubmissionWithToken(
