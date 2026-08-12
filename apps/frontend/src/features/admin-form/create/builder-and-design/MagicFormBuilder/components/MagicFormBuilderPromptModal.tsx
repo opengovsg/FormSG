@@ -36,10 +36,8 @@ import {
   Text,
   Textarea,
 } from '@chakra-ui/react'
-import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import {
-  featureFlags,
   MFB_TEXT_PROMPT_MAX_CHAR,
   MFB_VISION_MAX_IMAGES_COUNT,
 } from 'formsg-shared/constants'
@@ -269,71 +267,47 @@ const MagicFormBuilderCreateFormPrompt = ({
     isVisionPromptSubmitLoading ? PROMPT_TYPE.VISION : PROMPT_TYPE.TEXT,
   )
 
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-
-  const isMfbTextEnabled = useFeatureIsOn(featureFlags.mfb)
-  const isMfbVisionEnabled = useFeatureIsOn(featureFlags.mfbVision)
-
   return (
     <>
       <ModalHeader display="flex" alignItems="center">
         <Text textStyle="h2">Create fields with AI</Text>
       </ModalHeader>
       <ModalBody>
-        <>
-          {isTest || (isMfbTextEnabled && isMfbVisionEnabled) ? (
-            <Tabs isFitted index={selectedTab} onChange={setSelectedTab}>
-              <TabList px="2px" mb="1rem">
-                <Tab
-                  isDisabled={isVisionPromptSubmitLoading}
-                  value={PROMPT_TYPE.TEXT}
-                >
-                  Text
-                </Tab>
-                <Tab
-                  isDisabled={isTextPromptSubmitLoading}
-                  value={PROMPT_TYPE.VISION}
-                >
-                  Pdf
-                </Tab>
-              </TabList>
-              <TabPanels>
-                <TabPanel>
-                  <TextPromptModalBodyContent
-                    register={register}
-                    setValue={setValue}
-                    errors={errors}
-                    watch={watch}
-                  />
-                </TabPanel>
-                <TabPanel>
-                  <VisionPromptModalBodyContent
-                    control={visionControl}
-                    errors={visionErrors}
-                    clearErrors={clearVisionErrors}
-                    setError={setVisionError}
-                    isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
-                  />
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          ) : isMfbTextEnabled ? (
-            <TextPromptModalBodyContent
-              register={register}
-              setValue={setValue}
-              errors={errors}
-              watch={watch}
-            />
-          ) : isMfbVisionEnabled ? (
-            <VisionPromptModalBodyContent
-              control={visionControl}
-              errors={visionErrors}
-              clearErrors={clearVisionErrors}
-              setError={setVisionError}
-              isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
-            />
-          ) : null}
-        </>
+        <Tabs isFitted index={selectedTab} onChange={setSelectedTab}>
+          <TabList px="2px" mb="1rem">
+            <Tab
+              isDisabled={isVisionPromptSubmitLoading}
+              value={PROMPT_TYPE.TEXT}
+            >
+              Text
+            </Tab>
+            <Tab
+              isDisabled={isTextPromptSubmitLoading}
+              value={PROMPT_TYPE.VISION}
+            >
+              Pdf
+            </Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              <TextPromptModalBodyContent
+                register={register}
+                setValue={setValue}
+                errors={errors}
+                watch={watch}
+              />
+            </TabPanel>
+            <TabPanel>
+              <VisionPromptModalBodyContent
+                control={visionControl}
+                errors={visionErrors}
+                clearErrors={clearVisionErrors}
+                setError={setVisionError}
+                isVisionPromptSubmitLoading={isVisionPromptSubmitLoading}
+              />
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </ModalBody>
       <ModalFooter justifyContent="flex-end">
         <NextAndBackButtonGroup

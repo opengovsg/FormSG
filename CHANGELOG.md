@@ -2,6 +2,394 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.6.1](https://github.com/opengovsg/formsg/compare/v9.6.0...v9.6.1) (2026-08-06)
+
+
+### Refactors
+
+* **mrf:** remove dead V3 field validators and response builders (#9825) ([#9825](https://github.com/opengovsg/formsg/commit/dc6d49b0250e80934e1293085e3a1afb833d1771))
+
+## [9.6.0](https://github.com/opengovsg/formsg/compare/v9.5.0...v9.6.0) (2026-08-06)
+
+
+### Features
+
+* **mrf:** classify submittedSteps sub-fields per egress boundary (#9817) ([#9817](https://github.com/opengovsg/formsg/commit/5ad22167012d195a7b6e45660e539883a815b55b))
+* **mrf:** send-time payload policy, reconstruction, and gates (M4 + M3) (#9819) ([#9819](https://github.com/opengovsg/formsg/commit/46c0c17522e61bcea9e4781926dfd6ebfc61594d))
+* **mrf:** v4 submission-snapshot storage layer (M6 + M7) (#9818) ([#9818](https://github.com/opengovsg/formsg/commit/7c25fba4ac7ed87c8f4112af1f73f96289f2931d))
+
+## [9.5.0](https://github.com/opengovsg/formsg/compare/v9.4.0...v9.5.0) (2026-08-06)
+
+
+### Features
+
+* alphanumeric OTPs behind otp-entropy-expanded feature flag (#9831) ([#9831](https://github.com/opengovsg/formsg/commit/ccfbaeec4942e1cc7d48fbd8d43900067058e5d7))
+
+## [9.4.0](https://github.com/opengovsg/formsg/compare/v9.3.0...v9.4.0) (2026-08-06)
+
+
+### Features
+
+* **security:** pnpm defaults to harden against supply chain attacks (#9826) ([#9826](https://github.com/opengovsg/formsg/commit/c1b854db5882586ad769e34554d77398a4901307))
+
+
+### Bug Fixes
+
+* prevent MRF checkbox answers without a value from crashing the app (#9830) ([#9830](https://github.com/opengovsg/formsg/commit/9a46176bd764b669f0d41e3cc6faf1a24f468f2c))
+
+## [9.3.0](https://github.com/opengovsg/formsg/compare/v9.2.0...v9.3.0) (2026-08-04)
+
+
+### Features
+
+* add publish and workflow feedback triggers (#9689) ([#9689](https://github.com/opengovsg/formsg/commit/0842828703d942ac980e059081c3b02eae773d74))
+* replace thumbs up/down with 5-star rating UI (#9692) ([#9692](https://github.com/opengovsg/formsg/commit/0b0b4dc105dfcf08db1e4994dddbb0c2fabcd950))
+
+
+### Dependencies
+
+* **deps:** bump ip-address from 10.2.0 to 10.3.1 (#9824) ([#9824](https://github.com/opengovsg/formsg/commit/4c6a7863d2a147b764691a6ed33ec171ee701928))
+
+## [9.2.0](https://github.com/opengovsg/formsg/compare/v9.1.0...v9.2.0) (2026-08-03)
+
+
+### Features
+
+* **i18n:** extract text from MultiLanguageSection components (#9647) ([#9647](https://github.com/opengovsg/formsg/commit/ad08ccc33a75afff093dc637678732602f79aa80))
+
+
+### Bug Fixes
+
+* **admin-form:** show error state when webhook settings fetch fails (#9524) ([#9524](https://github.com/opengovsg/formsg/commit/94977db80f6de483df5892e938ba209cb44d93e6))
+* **login:** show toast for non-401 errors on sgID profile (#9768) ([#9768](https://github.com/opengovsg/formsg/commit/38ee7c439d917afc0aa319eeb247749df06183ff))
+* add title to disabled table text cells  (#9582) ([#9582](https://github.com/opengovsg/formsg/commit/b35824b08af96c781c4570fdde2011576d6cc3d9))
+
+
+### Chores
+
+* **ci:** shard backend tests across 3 runners (#9796) ([#9796](https://github.com/opengovsg/formsg/commit/ea8ff4f89a10f083ec5892cc32dde93150479f46))
+
+## [9.1.0](https://github.com/opengovsg/formsg/compare/v9.0.1...v9.1.0) (2026-08-03)
+
+
+### Features
+
+* **workflow-builder-redesign:** copy changes across workflow builder (#9733) ([#9733](https://github.com/opengovsg/formsg/commit/912d8682d03614aa3d5d1a24de96e61449a71f1f))
+
+
+### Refactors
+
+* **paper-forms:** reuse ProgressIndicator for set-up progress (#9793) ([#9793](https://github.com/opengovsg/formsg/commit/94fe9ae5127b55e0572810b29e1ee0e5c047f698))
+
+## [9.0.1](https://github.com/opengovsg/formsg/compare/v9.0.0...v9.0.1) (2026-07-31)
+
+
+### Bug Fixes
+
+* **sdk:** improve large attachment decryption and handling (#9802) ([#9802](https://github.com/opengovsg/formsg/commit/a44f1e9cd351d951de61d888d76616b073e40b35))
+
+## [9.0.0](https://github.com/opengovsg/formsg/compare/v8.9.0...v9.0.0) (2026-07-30)
+
+
+### ⚠ BREAKING CHANGE
+
+* **mrf:** MRF submissions are sent with version: 4 and
+V4-shaped responses on the wire.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+* feat(frontend): make V4 the FE working format for previous MRF responses
+
+decryptSubmission now serves previous-step responses as V4: V4 blobs
+(mrfVersion 2) pass through untouched and V3 blobs (mrfVersion 1 /
+legacy) are adapted up via the SDK's adaptV3ToV4 — the inverse of the
+old behavior, which downgraded V4 to V3 as the working format.
+
+extractMrfPreviousStepResponseValue is rewritten as the inverse of
+createResponsesV4 (V4 answer shapes → form input values); the old
+version relied on V3 shapes coinciding with input values, which does
+not hold for V4. A round-trip test pins inputs → createResponsesV4 →
+extract as the identity for every prefillable field type, since step
+N+1 re-submits non-editable values through this exact loop.
+
+Legacy pre-mrfVersion submissions embed attachment content inside the
+encrypted blob; adaptV3ToV4 drops that key, so decryptSubmission now
+harvests it pre-adaptation (legacyAttachmentContents) for the
+provider's backward-compat path.
+
+Also drops the previousResponses prop on FormFields, which was unused.
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+
+* chore: clean up comments
+
+* feat: make joi validation for provenance default to {}
+
+* feat: Update apps/frontend/src/features/public-form/utils/decryptSubmission.ts
+
+Co-authored-by: Eliot Lim <eliotlim@users.noreply.github.com>
+
+### Features
+
+* **mrf:** V4 response migration — PR 3/5 FE sends and works in V4 (#9782) ([#9782](https://github.com/opengovsg/formsg/commit/8929c1dce7379d2ab0e847719bb383ec13c41f32))
+
+## [8.9.0](https://github.com/opengovsg/formsg/compare/v8.8.0...v8.9.0) (2026-07-30)
+
+
+### Features
+
+* zustand store + move feedback modal to builder page (#9688) ([#9688](https://github.com/opengovsg/formsg/commit/16cbfbc0c3a1c4c7e64b5ffab3b53f7959e7bd12))
+
+## [8.8.0](https://github.com/opengovsg/formsg/compare/v8.7.0...v8.8.0) (2026-07-29)
+
+
+### Features
+
+* give admin CSAT its own db key + metric (#9787) ([#9787](https://github.com/opengovsg/formsg/commit/0affd4703008e5421ee635dd5a5ec72ec27a1a26))
+
+## [8.7.0](https://github.com/opengovsg/formsg/compare/v8.6.2...v8.7.0) (2026-07-29)
+
+
+### Features
+
+* **mrf:** step-token write-guard for MRF next-step submissions (S3) (#9758) ([#9758](https://github.com/opengovsg/formsg/commit/9b124b4018b7eac81de53448d327c185b3839702))
+
+## [8.6.2](https://github.com/opengovsg/formsg/compare/v8.6.1...v8.6.2) (2026-07-23)
+
+
+### Bug Fixes
+
+* **spcp:** accept iss param on OIDC login callback (inc-1274) (#9789) ([#9789](https://github.com/opengovsg/formsg/commit/84785ec79af798861b1740200b2ed4132c67c39b))
+
+## [8.6.1](https://github.com/opengovsg/formsg/compare/v8.6.0...v8.6.1) (2026-07-23)
+
+
+### Bug Fixes
+
+* return 4xx instead of 5xx for MRF V4 field validation errors (#9788) ([#9788](https://github.com/opengovsg/formsg/commit/8c010739445f4598f9dd38e602d24df504a09d6a))
+
+## [8.6.0](https://github.com/opengovsg/formsg/compare/v8.5.0...v8.6.0) (2026-07-23)
+
+
+### Features
+
+* reland v4 BE handling (reverts #9775) (#9785) ([#9775](https://github.com/opengovsg/formsg/commit/ed6bbd3fa548ce2d3d2d877bc04b398e9a3765ea))
+
+## [8.5.0](https://github.com/opengovsg/formsg/compare/v8.4.0...v8.5.0) (2026-07-23)
+
+
+### Features
+
+* extract text from Logic Components (#9737) ([#9737](https://github.com/opengovsg/formsg/commit/a8b128f1c831864524c85628ca842439f1e005ad))
+
+
+### Bug Fixes
+
+* disable Others input when it isn't the selected option (#9784) ([#9784](https://github.com/opengovsg/formsg/commit/40e2db3929c7250b5afdc33963395d8521e33cae))
+* reject OTP generation when form is not public (#9783) ([#9783](https://github.com/opengovsg/formsg/commit/a3df6f3fbbd70bd301d0884c83d8916acc7907f6))
+* replace string placeholder in form feedback dialog (#9703) ([#9703](https://github.com/opengovsg/formsg/commit/7a0e594665655504a62ef3ce298504926a3281f1))
+
+## [8.4.0](https://github.com/opengovsg/formsg/compare/v8.3.3...v8.4.0) (2026-07-22)
+
+
+### Features
+
+* v4 be cherry pick commits (#9776) ([#9776](https://github.com/opengovsg/formsg/commit/fa29b661a6735ec36335b8873bba3865e549f320))
+
+## [8.3.3](https://github.com/opengovsg/formsg/compare/v8.3.2...v8.3.3) (2026-07-22)
+
+
+### Dependencies
+
+* **deps:** clear Dependabot alerts + fix ip SSRF bypass (2026-07) (#9774) ([#9774](https://github.com/opengovsg/formsg/commit/b61988ca37faf7b99147232aafae72c53a1b6df1))
+
+
+### Chores
+
+* revert v4 be (#9775) ([#9775](https://github.com/opengovsg/formsg/commit/cdc25de38ec1ac6ed708ecbe612aff30cf5c28ba))
+
+## [8.3.2](https://github.com/opengovsg/formsg/compare/v8.3.1...v8.3.2) (2026-07-20)
+
+
+### Bug Fixes
+
+* **validation:** apply wildcard email domain matching to V4 validator (#9770) ([#9770](https://github.com/opengovsg/formsg/commit/dc000000c5c5b0471d34c3aac788332aff9b48f0))
+
+## [8.3.1](https://github.com/opengovsg/formsg/compare/v8.3.0...v8.3.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* **mrf:** re-validate only changed fields on MRF submissions (#9769) ([#9769](https://github.com/opengovsg/formsg/commit/f90658c263c43dd04bbffb466cb3930213088824))
+
+## [8.3.0](https://github.com/opengovsg/formsg/compare/v8.2.0...v8.3.0) (2026-07-20)
+
+
+### Features
+
+* **mrf:** V4 response migration — PR 2/5 BE V4-native + V3 wire shim (#9637) ([#9637](https://github.com/opengovsg/formsg/commit/2a47c47e707d5c429257092c9b9ce78f3ff8e118))
+
+## [8.2.0](https://github.com/opengovsg/formsg/compare/v8.1.0...v8.2.0) (2026-07-16)
+
+
+### Features
+
+* **mrf:** V4 response migration — PR 1/5 foundation (types, utils, validators) (#9633) ([#9633](https://github.com/opengovsg/formsg/commit/7a4a4d42271c4ea1c0b29f981c3883935772b32a))
+
+
+### Bug Fixes
+
+* prevent pollution of v1 and v2 metrics due to different scales (#9763) ([#9763](https://github.com/opengovsg/formsg/commit/23cf1b3b58e5adddd6c33ad865b4e346a46e4836))
+
+
+### Dependencies
+
+* **deps:** resolve critical/high Dependabot alerts (#9764) ([#9764](https://github.com/opengovsg/formsg/commit/7bf093da4ce719f7310b9c1c143d78bacf4d4a90))
+
+## [8.1.0](https://github.com/opengovsg/formsg/compare/v8.0.3...v8.1.0) (2026-07-16)
+
+
+### Features
+
+* **workflow-builder-redesign:** add workflow-builder-redesign feature flag foundation (#9730) ([#9730](https://github.com/opengovsg/formsg/commit/82f5faf35730e6db58554a026b180e7442346d38))
+* extend admin feedback schema for 1-5 rating + triggers (#9684) ([#9684](https://github.com/opengovsg/formsg/commit/7ac910e958921c29dd7735ebbffc4176591136c7))
+
+
+### Chores
+
+* speed up jest runs by removing default local code coverage collection (#9757) ([#9757](https://github.com/opengovsg/formsg/commit/ab6c7015033aa970d633e642d6343c296ec375b2))
+
+## [8.0.3](https://github.com/opengovsg/formsg/compare/v8.0.2...v8.0.3) (2026-07-14)
+
+
+### Chores
+
+* removing unusued & stale gb flags (#9738) ([#9738](https://github.com/opengovsg/formsg/commit/fc4d6aa1cf0a968522f856690e35f4f833ca36f9))
+
+## [8.0.2](https://github.com/opengovsg/formsg/compare/v8.0.1...v8.0.2) (2026-07-14)
+
+
+### Chores
+
+* remove deprecated auth types from form settings UI (#9604) ([#9604](https://github.com/opengovsg/formsg/commit/bf8e9d57dd9ee7458b05d093adc18c0e5c85c7b8))
+
+## [8.0.1](https://github.com/opengovsg/formsg/compare/v8.0.0...v8.0.1) (2026-07-08)
+
+
+### Bug Fixes
+
+* **paper forms tracking:** reword origin question and new-process option (#9707) ([#9707](https://github.com/opengovsg/formsg/commit/6362d3b11f6b9c53e675af6eabafefeb824c02d9))
+* **rum-privacy:** mask secret key and decrypted responses in session replays (#9708) ([#9708](https://github.com/opengovsg/formsg/commit/7a2030627e046cba57aea1a863d24bc1d10e6d3e))
+
+## [8.0.0](https://github.com/opengovsg/formsg/compare/v7.38.0...v8.0.0) (2026-07-06)
+
+
+### ⚠ BREAKING CHANGE
+
+* remove unused charts specific submission retrieval endpoint (#9395)
+
+### Features
+
+* remove unused charts specific submission retrieval endpoint (#9395) ([#9395](https://github.com/opengovsg/formsg/commit/1793abd28489134e38f2588fdb051a975d98db35))
+
+
+### Chores
+
+* fix lint issue in AdminSubmissionsService.ts (#9706) ([#9706](https://github.com/opengovsg/formsg/commit/ac34d660bea5e8ccafcf9a4c701cb54356cf9b10))
+
+## [7.38.0](https://github.com/opengovsg/formsg/compare/v7.37.1...v7.38.0) (2026-07-06)
+
+
+### Features
+
+* **landing:** redesign landing page for gov evaluators (#9697) ([#9697](https://github.com/opengovsg/formsg/commit/062e62247d4163ee66b22f35f190019462c61bae))
+
+## [7.37.1](https://github.com/opengovsg/formsg/compare/v7.37.0...v7.37.1) (2026-07-06)
+
+
+### Bug Fixes
+
+* save prefilled values in draft (#9696) ([#9696](https://github.com/opengovsg/formsg/commit/db35bd534b7ead0e6c258af01e602c4bf1d9a444))
+
+## [7.37.0](https://github.com/opengovsg/formsg/compare/v7.36.1...v7.37.0) (2026-07-06)
+
+
+### Features
+
+* add changelog and pre-release checklist to step summary (#9699) ([#9699](https://github.com/opengovsg/formsg/commit/4a3536de0c1d72e5dd39300c2303fb1e8b2c31dd))
+* instrument virus scanner logs with formid (#9704) ([#9704](https://github.com/opengovsg/formsg/commit/de59a7aa60d33b1cc1036e6557f4f6f128645742))
+
+## [7.36.1](https://github.com/opengovsg/formsg/compare/v7.36.0...v7.36.1) (2026-07-03)
+
+## [7.36.0](https://github.com/opengovsg/formsg/compare/v7.35.2...v7.36.0) (2026-07-03)
+
+
+### Features
+
+* edit release notes on recut (#9698) ([#9698](https://github.com/opengovsg/formsg/commit/d92a73d613d017bdb9acc091de0d2e9990e6ef05))
+
+## [7.35.2](https://github.com/opengovsg/formsg/compare/v7.35.1...v7.35.2) (2026-07-03)
+
+
+### Bug Fixes
+
+* **builder:** allow text input spaces in builder page fields (#9552) (#9553) ([#9552](https://github.com/opengovsg/formsg/commit/20bb8f1a07bcff8a5a4c76e31b08d9093f40c2fe))
+
+## [7.35.1](https://github.com/opengovsg/formsg/compare/v7.35.0...v7.35.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* localise attachment decryption toast (#9695) ([#9695](https://github.com/opengovsg/formsg/commit/5e0f2f0c52ad7c010e94a35ff6a4564e80db7a6c))
+* support better formatting in desc, messages (#9508) ([#9508](https://github.com/opengovsg/formsg/commit/d2f264dcfe21d814bbcf704ebf35cb993b0c1038))
+
+## [7.35.0](https://github.com/opengovsg/formsg/compare/v7.34.4...v7.35.0) (2026-07-01)
+
+
+### Features
+
+* gate admin feedback behind feature flag (#9683) ([#9683](https://github.com/opengovsg/formsg/commit/ab5541ca38797b8e7db8d4819b982fdd9b1e2994))
+
+## [7.34.4](https://github.com/opengovsg/formsg/compare/v7.34.3...v7.34.4) (2026-07-01)
+
+
+### Bug Fixes
+
+* **ci:** don't cancel in-flight deploys + speed up release build/deploy (#9690) ([#9690](https://github.com/opengovsg/formsg/commit/33a449d8735d58a99011ab5be1722a0521e592bb))
+
+
+### Dependencies
+
+* **deps:** bump express-request-id and @types/express-request-id (#9417) ([#9417](https://github.com/opengovsg/formsg/commit/2efc878e4fc39542be2a4bf79d79f8062b6d3a77))
+
+## [7.34.3](https://github.com/opengovsg/formsg/compare/v7.34.2...v7.34.3) (2026-06-30)
+
+
+### Dependencies
+
+* **deps:** bump multer from 2.1.1 to 2.2.0 (#9638) ([#9638](https://github.com/opengovsg/formsg/commit/f2792b9cb53981c73c7d5d6b86c78e94de159fe3))
+* **deps:** bump nodemailer from 8.0.7 to 9.0.1 (#9645) ([#9645](https://github.com/opengovsg/formsg/commit/a26524ed6e34106e6489298fb88769923bc3f792))
+
+
+### Dev-Dependencies
+
+* **deps-dev:** bump esbuild from 0.25.9 to 0.28.1 (#9607) ([#9607](https://github.com/opengovsg/formsg/commit/5b49e3ae32d355a92c24ac788c9efc85de779433))
+* **deps-dev:** bump form-data from 4.0.5 to 4.0.6 (#9640) ([#9640](https://github.com/opengovsg/formsg/commit/ba4790e216464b2458a8d34cef6f81ffdfe21b96))
+
+## [7.34.2](https://github.com/opengovsg/formsg/compare/v7.34.1...v7.34.2) (2026-06-30)
+
+
+### Dependencies
+
+* **deps:** bump multiparty from 4.2.3 to 4.3.0 (#9443) ([#9443](https://github.com/opengovsg/formsg/commit/d84b6f546eeca26b9ba5d9d863f62c0ad27a3418))
+* **deps:** bump react-router from 6.30.3 to 6.30.4 (#9548) ([#9548](https://github.com/opengovsg/formsg/commit/a2e0e3b7defae65e380277510b0a4782aff9ad90))
+* **deps:** bump uuid from 9.0.1 to 14.0.0 (#9478) ([#9478](https://github.com/opengovsg/formsg/commit/e6944580928a24be52b16baacfd31c9fc0bc3c9d))
+
+
+### Dev-Dependencies
+
+* **deps-dev:** bump vitest from 3.2.4 to 3.2.6 (#9567) ([#9567](https://github.com/opengovsg/formsg/commit/c80440a87415ba8a4cf4659d67be21bfa94ad36a))
+
 ## [7.34.1](https://github.com/opengovsg/formsg/compare/v7.34.0...v7.34.1) (2026-06-25)
 
 

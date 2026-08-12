@@ -4,9 +4,12 @@ import {
   isFieldResponsesV4,
 } from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
+import { featureFlags } from 'formsg-shared/constants'
 import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, ok, okAsync } from 'neverthrow'
+import nacl from 'tweetnacl'
+import { decodeBase64, encodeBase64, encodeUTF8 } from 'tweetnacl-util'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
@@ -24,6 +27,7 @@ import {
   createFormsgAndRetrieveForm,
   encryptSubmission,
   handleNdiResponses,
+  validateMultirespondentRemindBody,
   validateMultirespondentSubmission,
 } from '../multirespondent-submission.middleware'
 import {
@@ -31,6 +35,7 @@ import {
   getMultirespondentSubmission,
 } from '../multirespondent-submission.service'
 import * as MrfUtils from '../multirespondent-submission.utils'
+import * as stepToken from '../step-token'
 
 jest.mock('../../../feature-flags/feature-flags.service')
 jest.mock('../../../form/form.service')
@@ -59,6 +64,25 @@ jest.mock('src/app/config/formsg-sdk', () => ({
 }))
 
 describe('Multirespondent Submission Middleware', () => {
+  describe('validateMultirespondentRemindBody', () => {
+    const runValidator = (body: Record<string, unknown>): Promise<unknown> =>
+      new Promise((resolve) =>
+        validateMultirespondentRemindBody(
+          { body, method: 'POST', headers: {}, query: {}, params: {} } as any,
+          {} as any,
+          resolve as any,
+        ),
+      )
+
+    it('accepts a reminder body carrying both the secret key and the step token', async () => {
+      const error = await runValidator({
+        submissionSecretKey: 'k',
+        stepToken: 't',
+      })
+      expect(error).toBeFalsy()
+    })
+  })
+
   // Helper function to create fresh mockReq objects for each test
   const createMockReq = (params: { formId: string; submissionId?: string }) =>
     ({
@@ -694,12 +718,14 @@ describe('Multirespondent Submission Middleware', () => {
         responses: {},
       })
 
-      jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord).mockReturnValue({
+      jest.mocked(SpcpUtil.createNdiResponsesV4FromRecord).mockReturnValue({
         'SingPass Validated NRIC': {
           fieldType: BasicField.Nric,
-          answer: 'S9812379B',
+          answer: { value: 'S9812379B' },
+          question: 'SingPass Validated NRIC',
+          provenance: {},
         },
-      })
+      } as any)
 
       const mockNext = jest.fn()
 
@@ -722,7 +748,7 @@ describe('Multirespondent Submission Middleware', () => {
 
       // Assert
       expect(
-        jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord),
+        jest.mocked(SpcpUtil.createNdiResponsesV4FromRecord),
       ).toHaveBeenCalled()
       expect(mockReq.formsg.encryptedPayload.responses).toHaveProperty(
         'SingPass Validated NRIC',
@@ -774,12 +800,14 @@ describe('Multirespondent Submission Middleware', () => {
         },
       })
 
-      jest.mocked(SpcpUtil.createNdiResponsesV3FromRecord).mockReturnValue({
+      jest.mocked(SpcpUtil.createNdiResponsesV4FromRecord).mockReturnValue({
         'SingPass Validated NRIC': {
           fieldType: BasicField.Nric,
-          answer: 'S1234567A',
+          answer: { value: 'S1234567A' },
+          question: 'SingPass Validated NRIC',
+          provenance: {},
         },
-      })
+      } as any)
 
       jest
         .mocked(VerifiedContentService.getVerifiedContent)
@@ -845,19 +873,28 @@ describe('Multirespondent Submission Middleware', () => {
   describe('encryptSubmission', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
 
-    const MOCK_FORM = {
+    const MOCK_FORM_KEYPAIR = nacl.box.keyPair()
+    const MOCK_FORM_PUBLIC_KEY = encodeBase64(MOCK_FORM_KEYPAIR.publicKey)
+    const MOCK_FORM_SECRET_KEY = encodeBase64(MOCK_FORM_KEYPAIR.secretKey)
+
+    const MOCK_FORM_BASE = {
       _id: MOCK_FORM_ID,
-      publicKey: 'mockPublicKey',
+      publicKey: MOCK_FORM_PUBLIC_KEY,
       form_fields: [
         { _id: 'field1', fieldType: BasicField.ShortText, title: 'Field 1' },
       ],
     } as any
 
     const MOCK_RESPONSES = {
-      field1: { fieldType: BasicField.ShortText, answer: 'hello' },
+      field1: {
+        fieldType: BasicField.ShortText,
+        answer: 'hello',
+        question: 'Field 1',
+        provenance: {},
+      },
     }
 
-    const createMockEncryptReq = (isV4FlagOn: boolean) =>
+    const createMockEncryptReq = (hasWebhook: boolean) =>
       ({
         params: { formId: MOCK_FORM_ID },
         body: {
@@ -867,10 +904,15 @@ describe('Multirespondent Submission Middleware', () => {
           responseMetadata: {},
         },
         formsg: {
-          formDef: MOCK_FORM,
+          formDef: hasWebhook
+            ? {
+                ...MOCK_FORM_BASE,
+                webhook: { url: 'https://example.com/webhook' },
+              }
+            : MOCK_FORM_BASE,
         },
         growthbook: {
-          isOn: jest.fn().mockReturnValue(isV4FlagOn),
+          isOn: jest.fn().mockReturnValue(false),
           setAttributes: jest.fn().mockResolvedValue(undefined),
           getAttributes: jest.fn().mockReturnValue({}),
         },
@@ -905,21 +947,9 @@ describe('Multirespondent Submission Middleware', () => {
       mockDecrypt.mockReturnValue({ responses: MOCK_RESPONSES })
     })
 
-    it('should encrypt responses as V3 and set mrfVersion to 1 when feature flag is off', async () => {
-      const mockReq = createMockEncryptReq(false)
-      const mockNext = jest.fn()
-      const mockRes = createMockRes()
-
-      await encryptSubmission(mockReq, mockRes as any, mockNext)
-
-      expect(jest.mocked(adaptV3ToV4)).not.toHaveBeenCalled()
-      expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(1)
-      expect(mockNext).toHaveBeenCalled()
-    })
-
-    it('should adapt V3 responses to V4 format and set mrfVersion to 2 when feature flag is on', async () => {
-      jest.mocked(adaptV3ToV4).mockReturnValue({
-        field1: { answer: 'hello', question: 'Field 1', provenance: {} },
+    it('should encrypt responses as V3 and set mrfVersion to 1 when form has a webhook url', async () => {
+      jest.mocked(adaptV4ToV3).mockReturnValue({
+        field1: { fieldType: BasicField.ShortText, answer: 'hello' },
       } as any)
 
       const mockReq = createMockEncryptReq(true)
@@ -928,11 +958,8 @@ describe('Multirespondent Submission Middleware', () => {
 
       await encryptSubmission(mockReq, mockRes as any, mockNext)
 
-      expect(jest.mocked(adaptV3ToV4)).toHaveBeenCalledWith(
-        { field1: { fieldType: BasicField.ShortText, answer: 'hello' } },
-        { formFields: { field1: { question: 'Field 1' } }, provenance: {} },
-      )
-      expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(2)
+      expect(jest.mocked(adaptV4ToV3)).toHaveBeenCalledWith(MOCK_RESPONSES)
+      expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(1)
       expect(mockNext).toHaveBeenCalled()
     })
 
@@ -952,6 +979,70 @@ describe('Multirespondent Submission Middleware', () => {
       )
       expect(mockRes.json).toHaveBeenCalled()
       expect(mockNext).not.toHaveBeenCalled()
+    })
+
+    describe('step-token mint', () => {
+      const unwrapStepToken = (
+        encryptedStepToken: string,
+        formSecretKey: string,
+      ): string | null => {
+        const [senderPublicKey, nonceAndCipher] = encryptedStepToken.split(';')
+        const [nonce, cipher] = nonceAndCipher.split(':').map(decodeBase64)
+        const opened = nacl.box.open(
+          cipher,
+          nonce,
+          decodeBase64(senderPublicKey),
+          decodeBase64(formSecretKey),
+        )
+        return opened ? encodeUTF8(opened) : null
+      }
+
+      it('should mint a step token whose hash and wrapped copy match the raw token when the flag is on', async () => {
+        const mockReq = createMockEncryptReq(false)
+        mockReq.growthbook.isOn = jest.fn(
+          (flag: string) => flag === featureFlags.mrfStepWriteToken,
+        )
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await encryptSubmission(mockReq, mockRes as any, mockNext)
+
+        const payload = mockReq.formsg.encryptedPayload
+        expect(payload.stepToken).toEqual(expect.any(String))
+        // Hash on the row verifies against the raw token in the link.
+        expect(payload.stepTokenHash).toBe(stepToken.hash(payload.stepToken))
+        // Wrapped copy unwraps (with the form secret key) to the same raw token.
+        expect(
+          unwrapStepToken(payload.encryptedStepToken, MOCK_FORM_SECRET_KEY),
+        ).toBe(payload.stepToken)
+        expect(mockNext).toHaveBeenCalled()
+      })
+
+      it('should not mint a step token when the flag is off (flag-off path unchanged)', async () => {
+        const mockReq = createMockEncryptReq(false)
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await encryptSubmission(mockReq, mockRes as any, mockNext)
+
+        const payload = mockReq.formsg.encryptedPayload
+        expect(payload.stepToken).toBeUndefined()
+        expect(payload.stepTokenHash).toBeUndefined()
+        expect(payload.encryptedStepToken).toBeUndefined()
+        expect(mockNext).toHaveBeenCalled()
+      })
+
+      it('should mint a fresh, unique token on each advance (rotation)', async () => {
+        const run = async () => {
+          const mockReq = createMockEncryptReq(false)
+          mockReq.growthbook.isOn = jest.fn(
+            (flag: string) => flag === featureFlags.mrfStepWriteToken,
+          )
+          await encryptSubmission(mockReq, createMockRes() as any, jest.fn())
+          return mockReq.formsg.encryptedPayload.stepToken as string
+        }
+        expect(await run()).not.toBe(await run())
+      })
     })
   })
 
@@ -980,13 +1071,13 @@ describe('Multirespondent Submission Middleware', () => {
       { step: 1, edit: [EDITABLE_FIELD_ID] }, // only field1 editable at step 1
     ]
 
-    // mrfVersion: 2 means responses were encrypted in V4 format
+    // mrfVersion: 1 means previous submission was encrypted in V3 format
     // workflowStep: 0 means the current incoming submission is at step 1
-    const MOCK_MRF_SUBMISSION_V2 = {
+    const MOCK_MRF_SUBMISSION_V1 = {
       form: MOCK_FORM_ID,
-      encryptedContent: 'v4-encrypted-content',
+      encryptedContent: 'v3-encrypted-content',
       version: 1,
-      mrfVersion: 2,
+      mrfVersion: 1,
       form_fields: SNAPSHOT_FORM_FIELDS,
       form_logics: [],
       workflow: SNAPSHOT_WORKFLOW,
@@ -999,29 +1090,31 @@ describe('Multirespondent Submission Middleware', () => {
       getWebhookView: jest.fn(),
     } as any
 
-    // V4 decrypted responses (each entry has provenance)
-    const MOCK_V4_DECRYPTED_RESPONSES = {
+    // V3 decrypted responses returned by decryptFromSubmissionKey for a V3-encrypted previous submission
+    const MOCK_V3_DECRYPTED_RESPONSES = {
       [EDITABLE_FIELD_ID]: {
+        fieldType: BasicField.ShortText,
         answer: 'original',
+      },
+      [NON_EDITABLE_FIELD_ID]: {
+        fieldType: BasicField.ShortText,
+        answer: 'locked-value',
+      },
+    }
+
+    // V4 responses produced by adaptV3ToV4 (V4 shape with provenance)
+    const MOCK_V4_ADAPTED_RESPONSES = {
+      [EDITABLE_FIELD_ID]: {
+        fieldType: BasicField.ShortText,
+        answer: { value: 'original' },
         question: 'Editable Field',
         provenance: {},
       },
       [NON_EDITABLE_FIELD_ID]: {
-        answer: 'locked-value',
+        fieldType: BasicField.ShortText,
+        answer: { value: 'locked-value' },
         question: 'Non-editable Field',
         provenance: {},
-      },
-    }
-
-    // V3 responses produced by adaptV4ToV3
-    const MOCK_V3_CONVERTED_RESPONSES = {
-      [EDITABLE_FIELD_ID]: {
-        fieldType: BasicField.ShortText,
-        answer: 'original',
-      },
-      [NON_EDITABLE_FIELD_ID]: {
-        fieldType: BasicField.ShortText,
-        answer: 'locked-value',
       },
     }
 
@@ -1036,16 +1129,21 @@ describe('Multirespondent Submission Middleware', () => {
       ;(
         formsgSdk.cryptoV3.decryptFromSubmissionKey as jest.Mock
       ).mockReturnValue({
-        responses: MOCK_V4_DECRYPTED_RESPONSES,
+        responses: MOCK_V3_DECRYPTED_RESPONSES,
         verified: {},
         submissionSecretKey: '',
       })
 
-      jest.mocked(isFieldResponsesV4).mockReturnValue(true)
+      // Previous decrypted responses are V3-shaped, so isFieldResponsesV4 must return false
+      // to trigger the V3->V4 adaptation path
+      jest.mocked(isFieldResponsesV4).mockReturnValue(false)
 
+      jest.mocked(adaptV3ToV4).mockReturnValue(MOCK_V4_ADAPTED_RESPONSES as any)
+
+      // adaptV4ToV3 is still called once on req.body.responses for logic evaluation
       jest
         .mocked(adaptV4ToV3)
-        .mockReturnValue(MOCK_V3_CONVERTED_RESPONSES as any)
+        .mockReturnValue(MOCK_V3_DECRYPTED_RESPONSES as any)
 
       jest
         .mocked(LogicAdaptor.getVisibleFieldIdsV3)
@@ -1057,10 +1155,10 @@ describe('Multirespondent Submission Middleware', () => {
 
       jest
         .mocked(MrfUtils.validateMrfFieldResponses)
-        .mockReturnValue(ok(MOCK_V3_CONVERTED_RESPONSES) as any)
+        .mockReturnValue(ok(MOCK_V4_ADAPTED_RESPONSES) as any)
     })
 
-    it('should call adaptV4ToV3 and call next when previous mrfVersion is 2 and non-editable fields match', async () => {
+    it('should call adaptV3ToV4 and call next when previous mrfVersion is 1 and non-editable fields match', async () => {
       const mockReq = createMockReq({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
@@ -1068,11 +1166,15 @@ describe('Multirespondent Submission Middleware', () => {
       mockReq.body.responses = {
         [EDITABLE_FIELD_ID]: {
           fieldType: BasicField.ShortText,
-          answer: 'updated',
+          answer: { value: 'updated' },
+          question: 'Editable Field',
+          provenance: {},
         },
         [NON_EDITABLE_FIELD_ID]: {
           fieldType: BasicField.ShortText,
-          answer: 'locked-value',
+          answer: { value: 'locked-value' },
+          question: 'Non-editable Field',
+          provenance: {},
         },
       }
       mockReq.body.submissionSecretKey = 'submission-secret-key'
@@ -1083,7 +1185,7 @@ describe('Multirespondent Submission Middleware', () => {
           form_logics: [],
           workflow: SNAPSHOT_WORKFLOW,
         },
-        mrfSubmission: MOCK_MRF_SUBMISSION_V2,
+        mrfSubmission: MOCK_MRF_SUBMISSION_V1,
       }
 
       const mockNext = jest.fn()
@@ -1091,24 +1193,14 @@ describe('Multirespondent Submission Middleware', () => {
 
       await validateMultirespondentSubmission(mockReq, mockRes as any, mockNext)
 
-      expect(jest.mocked(adaptV4ToV3)).toHaveBeenCalledWith(
-        MOCK_V4_DECRYPTED_RESPONSES,
+      expect(jest.mocked(adaptV3ToV4)).toHaveBeenCalledWith(
+        MOCK_V3_DECRYPTED_RESPONSES,
+        { formFields: {}, provenance: {} },
       )
       expect(mockNext).toHaveBeenCalled()
     })
 
-    it('should reject submission when a non-editable field is tampered after V4-to-V3 conversion', async () => {
-      jest.mocked(adaptV4ToV3).mockReturnValue({
-        [EDITABLE_FIELD_ID]: {
-          fieldType: BasicField.ShortText,
-          answer: 'original',
-        },
-        [NON_EDITABLE_FIELD_ID]: {
-          fieldType: BasicField.ShortText,
-          answer: 'locked-value',
-        },
-      } as any)
-
+    it('should reject submission when a non-editable field is tampered after V3-to-V4 conversion', async () => {
       const mockReq = createMockReq({
         formId: MOCK_FORM_ID,
         submissionId: MOCK_SUBMISSION_ID,
@@ -1116,11 +1208,15 @@ describe('Multirespondent Submission Middleware', () => {
       mockReq.body.responses = {
         [EDITABLE_FIELD_ID]: {
           fieldType: BasicField.ShortText,
-          answer: 'updated',
+          answer: { value: 'updated' },
+          question: 'Editable Field',
+          provenance: {},
         },
         [NON_EDITABLE_FIELD_ID]: {
           fieldType: BasicField.ShortText,
-          answer: 'tampered', // differs from 'locked-value'
+          answer: { value: 'tampered' }, // differs from 'locked-value'
+          question: 'Non-editable Field',
+          provenance: {},
         },
       }
       mockReq.body.submissionSecretKey = 'submission-secret-key'
@@ -1131,7 +1227,7 @@ describe('Multirespondent Submission Middleware', () => {
           form_logics: [],
           workflow: SNAPSHOT_WORKFLOW,
         },
-        mrfSubmission: MOCK_MRF_SUBMISSION_V2,
+        mrfSubmission: MOCK_MRF_SUBMISSION_V1,
       }
 
       const mockNext = jest.fn()
@@ -1139,11 +1235,159 @@ describe('Multirespondent Submission Middleware', () => {
 
       await validateMultirespondentSubmission(mockReq, mockRes as any, mockNext)
 
-      expect(jest.mocked(adaptV4ToV3)).toHaveBeenCalledWith(
-        MOCK_V4_DECRYPTED_RESPONSES,
+      expect(jest.mocked(adaptV3ToV4)).toHaveBeenCalledWith(
+        MOCK_V3_DECRYPTED_RESPONSES,
+        { formFields: {}, provenance: {} },
       )
       expect(mockNext).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(400)
+    })
+
+    describe('step-token write-guard', () => {
+      const RAW_STEP_TOKEN = stepToken.generate()
+
+      // Build a request whose decrypt-gate will pass (matching the beforeEach
+      // mocks), varying only the step-token bits.
+      const createGuardReq = ({
+        flagOn,
+        stepTokenHash,
+        presentedToken,
+      }: {
+        flagOn: boolean
+        stepTokenHash?: string
+        presentedToken?: string
+      }) => {
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.body.responses = {
+          [EDITABLE_FIELD_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'updated' },
+            question: 'Editable Field',
+            provenance: {},
+          },
+          [NON_EDITABLE_FIELD_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'locked-value' },
+            question: 'Non-editable Field',
+            provenance: {},
+          },
+        }
+        mockReq.body.submissionSecretKey = 'submission-secret-key'
+        mockReq.body.stepToken = presentedToken
+        mockReq.growthbook = {
+          isOn: jest.fn(
+            (flag: string) => flagOn && flag === featureFlags.mrfStepWriteToken,
+          ),
+        }
+        mockReq.formsg = {
+          formDef: {
+            _id: MOCK_FORM_ID,
+            form_fields: SNAPSHOT_FORM_FIELDS,
+            form_logics: [],
+            workflow: SNAPSHOT_WORKFLOW,
+          },
+          mrfSubmission: { ...MOCK_MRF_SUBMISSION_V1, stepTokenHash },
+        }
+        return mockReq
+      }
+
+      it('should advance when a valid step token accompanies a valid decrypt', async () => {
+        const mockReq = createGuardReq({
+          flagOn: true,
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: RAW_STEP_TOKEN,
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockRes.status).not.toHaveBeenCalled()
+      })
+
+      it('should return 403 and not advance when the presented token is wrong (decrypt still valid)', async () => {
+        const mockReq = createGuardReq({
+          flagOn: true,
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: stepToken.generate(), // wrong token
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      })
+
+      it('should return 403 when the token is absent but the row carries a hash (decrypt-gate alone no longer advances)', async () => {
+        const mockReq = createGuardReq({
+          flagOn: true,
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: undefined, // absent
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      })
+
+      it('should advance on a legacy row without a hash even with no token (migration grace)', async () => {
+        const mockReq = createGuardReq({
+          flagOn: true,
+          stepTokenHash: undefined, // legacy in-flight row
+          presentedToken: undefined,
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockRes.status).not.toHaveBeenCalled()
+      })
+
+      it('should not require a token when the flag is off, even if the row carries a hash (regression)', async () => {
+        const mockReq = createGuardReq({
+          flagOn: false,
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: undefined,
+        })
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(mockRes.status).not.toHaveBeenCalled()
+      })
     })
   })
 })

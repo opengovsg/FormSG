@@ -33,6 +33,7 @@ import {
 } from '../../../types'
 import {
   ParsedClearAttachmentFieldResponseV3,
+  ParsedClearAttachmentFieldResponseV4,
   ParsedClearAttachmentResponse,
   ParsedClearFormFieldResponse,
 } from '../../../types/api'
@@ -1160,11 +1161,13 @@ type TriggerGuardDutyScanningError =
  */
 export const triggerGuardDutyScanning = (
   quarantineFileKey: string,
+  logMeta: Record<string, unknown> = {},
 ): ResultAsync<
   ParseVirusScannerLambdaPayloadOkType,
   TriggerGuardDutyScanningError
 > => {
-  const logMeta = {
+  const meta = {
+    ...logMeta,
     action: 'triggerGuardDutyScanning',
     quarantineFileKey,
   }
@@ -1172,7 +1175,7 @@ export const triggerGuardDutyScanning = (
   if (!validate(quarantineFileKey)) {
     logger.error({
       message: 'GUARDDUTY Invalid quarantine file key - not a valid uuid',
-      meta: logMeta,
+      meta,
     })
 
     return errAsync(new GuardDutyInvalidFileKeyError())
@@ -1187,7 +1190,7 @@ export const triggerGuardDutyScanning = (
       logger.error({
         message:
           'GUARDDUTY Error encountered when invoking virus scanning lambda',
-        meta: logMeta,
+        meta,
         error,
       })
 
@@ -1199,7 +1202,7 @@ export const triggerGuardDutyScanning = (
         logger.error({
           message:
             'GUARDDUTY Error returned from virus scanning lambda or parsing lambda output',
-          meta: logMeta,
+          meta,
           error: error,
         })
 
@@ -1218,7 +1221,7 @@ export const triggerGuardDutyScanning = (
     // if data or data.Payload is undefined
     logger.error({
       message: 'data or data.Payload from virus scanner lambda is undefined',
-      meta: logMeta,
+      meta,
     })
     return errAsync(new GuardDutyParseVirusScannerLambdaPayloadError())
   })
@@ -1249,7 +1252,7 @@ export const triggerGuardDutyScanThenDownloadCleanFileChain = <
   }
   // Step 3: Trigger lambda to scan attachments.
   return (
-    triggerGuardDutyScanning(response.answer)
+    triggerGuardDutyScanning(response.answer, logMeta)
       .mapErr((error) => {
         if (error instanceof GuardDutyMaliciousFileDetectedError) {
           logger.error({
@@ -1296,4 +1299,80 @@ export const triggerGuardDutyScanThenDownloadCleanFileChain = <
         return error
       })
   )
+}
+
+/**
+ * V4 version: Helper function to trigger guardduty scanning and download clean file.
+ * In V4, attachment data is nested inside response.answer rather than at the top level.
+ * @param response quarantined V4 attachment response
+ * @returns modified response with answer.content replaced with clean file buffer,
+ * and answer.value/answer.filename set to the real (uploaded) filename.
+ */
+export const triggerGuardDutyScanThenDownloadCleanFileChainV4 = (
+  response: ParsedClearAttachmentFieldResponseV4,
+  formId: string,
+): ResultAsync<
+  ParsedClearAttachmentFieldResponseV4,
+  TriggerGuardDutyScanThenDownloadCleanFileChainError
+> => {
+  const quarantineFileKey = response.answer.value
+  const logMeta = {
+    action: 'triggerGuardDutyScanThenDownloadCleanFileChainV4',
+    formId,
+    quarantineFileKey,
+  }
+  return triggerGuardDutyScanning(quarantineFileKey)
+    .mapErr((error) => {
+      if (error instanceof GuardDutyMaliciousFileDetectedError) {
+        logger.error({
+          message: 'GUARDDUTY Malicious file detected during lambda virus scan',
+          meta: logMeta,
+          error,
+        })
+        return new GuardDutyMaliciousFileDetectedError(response.answer.filename)
+      }
+      return error
+    })
+    .map((lambdaOutput) => {
+      logger.info({
+        message:
+          'GUARDDUTY Successfully retrieved clean file from virus scanning lambda',
+        meta: { ...logMeta, cleanFileKey: lambdaOutput.body.cleanFileKey },
+      })
+      return lambdaOutput.body
+    })
+    .andThen((cleanAttachment) =>
+      downloadCleanFile(
+        cleanAttachment.cleanFileKey,
+        cleanAttachment.destinationVersionId,
+        AwsConfig.guarddutyCleanS3Bucket,
+      ).map(
+        (attachmentBuffer) =>
+          ({
+            ...response,
+            answer: {
+              ...response.answer,
+              content: attachmentBuffer,
+              filename: response.answer.filename,
+              // Promote the real filename into `value` (the canonical, durable
+              // answer field). Until now `value` held the quarantine bucket key
+              // (a bare UUID); every downstream sink — email/PDF Q&A, response
+              // JSON, the V4->V3 webhook adapter, the encrypted-at-rest answer,
+              // and the admin CSV/attachment download name — reads `value`, so
+              // leaving it as the UUID drops the filename (and its extension).
+              // This mirrors the V3 chain's `answer: response.filename`.
+              value: response.answer.filename,
+            },
+          }) as ParsedClearAttachmentFieldResponseV4,
+      ),
+    )
+    .mapErr((error) => {
+      if (error instanceof DownloadCleanFileFailedError) {
+        return new GuardDutyDownloadCleanFileFailedError()
+      }
+      if (error instanceof InvalidFileKeyError) {
+        return new GuardDutyInvalidFileKeyError()
+      }
+      return error
+    })
 }

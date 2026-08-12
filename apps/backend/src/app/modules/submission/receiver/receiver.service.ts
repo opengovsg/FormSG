@@ -1,10 +1,7 @@
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import Busboy from 'busboy'
 import { MB } from 'formsg-shared/constants/file'
-import {
-  FieldResponse,
-  FieldResponsesV3,
-  FormResponseMode,
-} from 'formsg-shared/types'
+import { FieldResponse, FormResponseMode } from 'formsg-shared/types'
 import { IncomingHttpHeaders } from 'http'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 
@@ -20,6 +17,7 @@ import {
 } from './receiver.errors'
 import { ParsedMultipartForm } from './receiver.types'
 import {
+  adaptMrfV3BodyToV4,
   addAttachmentToResponses,
   handleDuplicatesInAttachments,
 } from './receiver.utils'
@@ -79,17 +77,17 @@ export const createMultipartReceiver = (
 export const configureMultipartReceiver = (
   busboy: Busboy.Busboy,
 ): ResultAsync<
-  ParsedMultipartForm<FieldResponse[] | FieldResponsesV3>,
+  ParsedMultipartForm<FieldResponse[] | FieldResponsesV4>,
   MultipartError
 > => {
   const logMeta = {
     action: 'configureMultipartReceiver',
   }
   const responsePromise = new Promise<
-    ParsedMultipartForm<FieldResponse[] | FieldResponsesV3>
+    ParsedMultipartForm<FieldResponse[] | FieldResponsesV4>
   >((resolve, reject) => {
     const attachments: IAttachmentInfo[] = []
-    let body: ParsedMultipartForm<FieldResponse[] | FieldResponsesV3>
+    let body: ParsedMultipartForm<FieldResponse[] | FieldResponsesV4>
 
     busboy
       .on('file', (fieldname, file, { filename }) => {
@@ -164,6 +162,7 @@ export const configureMultipartReceiver = (
       })
       .on('close', () => {
         if (body) {
+          adaptMrfV3BodyToV4(body)
           handleDuplicatesInAttachments(attachments)
           addAttachmentToResponses(body, attachments)
           return resolve(body)

@@ -76,12 +76,12 @@ export class ValidateFieldError extends ApplicationError {
 /**
  * A custom error class returned when given submission has field level response validation failure
  */
-export class ValidateFieldErrorV3 extends ApplicationError {
+export class ValidateFieldErrorV4 extends ApplicationError {
   constructor(
-    message = 'Error when validating V3 field response',
+    message = 'Error when validating V4 field response',
     status = 400,
   ) {
-    super(message, status, ErrorCodes.SUBMISSION_VALIDATE_FIELD_V3)
+    super(message, status, ErrorCodes.SUBMISSION_VALIDATE_FIELD_V4)
   }
 }
 
@@ -330,5 +330,18 @@ export class SubmissionEncryptionMismatchError extends ApplicationError {
     message = 'Round-trip encryption-decryption mismatch. Submission not saved.',
   ) {
     super(message, undefined, ErrorCodes.SUBMISSION_ENCRYPTION_MISMATCH)
+  }
+}
+
+/**
+ * Thrown when an MRF submission currently has a step token to gate write permissions.
+ * token but the submitted step is missing this token or the provided token does not
+ * match the pending step's stored hash.
+ */
+export class StepTokenVerificationError extends ApplicationError {
+  constructor(
+    message = 'You cannot submit this form because the link is invalid. Please check the link and try again.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_TOKEN_INVALID)
   }
 }

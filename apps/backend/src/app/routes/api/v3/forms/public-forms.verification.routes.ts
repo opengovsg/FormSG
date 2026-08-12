@@ -59,8 +59,10 @@ PublicFormsVerificationRouter.route(
  * @returns 400 when the provided phone number is not valid
  * @returns 400 when the field type is not supported for validation
  * @returns 404 when the requested form was not found
+ * @returns 404 when the form is not public
  * @returns 404 when the transaction was not found
  * @returns 404 when the field was not found
+ * @returns 410 when the form has been deleted
  * @returns 422 when the user requested for a new otp without waiting
  * @returns 500 when the otp could not be hashed
  * @returns 500 when there is a database error

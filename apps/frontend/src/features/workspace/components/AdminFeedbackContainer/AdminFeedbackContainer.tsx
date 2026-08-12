@@ -1,29 +1,40 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
+import { AdminFeedbackTriggerSource } from 'formsg-shared/types'
+
 import { ADMIN_FEEDBACK_HISTORY_PREFIX } from '~constants/localStorage'
-import { ADMIN_FEEDBACK_SESSION_KEY } from '~constants/sessionStorage'
-import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import { useSessionStorage } from '~hooks/useSessionStorage'
 
 import { useEnv } from '~features/env/queries'
 
 import AdminFeedbackBox from '../AdminFeedbackBox'
 
+import {
+  formIdSelector,
+  isEligibleSelector,
+  resetSelector,
+  triggerSourceSelector,
+  useAdminFeedbackStore,
+} from './adminFeedbackStore'
+
 export const AdminFeedbackContainer = ({ userId }: { userId: string }) => {
   const { data: { adminFeedbackDisplayFrequency } = {} } = useEnv()
   const [isDisplayFeedback, setIsDisplayFeedback] = useState(false)
-  const isMobile = useIsMobile()
 
   const adminFeedbackKey = ADMIN_FEEDBACK_HISTORY_PREFIX + userId
 
   const [lastFeedbackTime, setLastFeedbackTime] =
     useLocalStorage<number>(adminFeedbackKey)
-  const [isAdminFeedbackEligible, setIsAdminFeedbackEligible] =
-    useSessionStorage<boolean>(ADMIN_FEEDBACK_SESSION_KEY, false)
+  const isAdminFeedbackEligible = useAdminFeedbackStore(isEligibleSelector)
+  const triggerSource = useAdminFeedbackStore(triggerSourceSelector)
+  const feedbackFormId = useAdminFeedbackStore(formIdSelector)
+  const resetAdminFeedbackEligible = useAdminFeedbackStore(resetSelector)
 
   // capture current time on page load to prevent re-renders from update to current time
   const currentTime = useRef(Date.now())
+  // capture trigger metadata before reset clears the store
+  const capturedTriggerSource = useRef<AdminFeedbackTriggerSource | null>(null)
+  const capturedFormId = useRef<string | null>(null)
 
   // check if admin is eligible in current session
   // and has yet to seen feedback beyond our stipulated frequency
@@ -37,24 +48,24 @@ export const AdminFeedbackContainer = ({ userId }: { userId: string }) => {
 
   // sets display of feedback box
   useEffect(() => {
-    if (
-      // TODO: create mobile version of admin feedback
-      !isMobile &&
-      // whether to show admin the feedback box
-      showAdminFeedback
-    ) {
+    if (showAdminFeedback) {
+      // copy trigger metadata into refs before reset clears the store, so the
+      // feedback box still knows what prompted it
+      capturedTriggerSource.current = triggerSource
+      capturedFormId.current = feedbackFormId
       setIsDisplayFeedback(true)
       // reset local storage and admin feedback eligibility when admin feedback is displayed
       setLastFeedbackTime(currentTime.current)
-      setIsAdminFeedbackEligible(false)
+      resetAdminFeedbackEligible()
     }
   }, [
     currentTime,
     showAdminFeedback,
+    triggerSource,
+    feedbackFormId,
     setIsDisplayFeedback,
     setLastFeedbackTime,
-    setIsAdminFeedbackEligible,
-    isMobile,
+    resetAdminFeedbackEligible,
   ])
 
   const closeAdminFeedback = useCallback(
@@ -63,7 +74,13 @@ export const AdminFeedbackContainer = ({ userId }: { userId: string }) => {
   )
   return (
     <>
-      {isDisplayFeedback && <AdminFeedbackBox onClose={closeAdminFeedback} />}
+      {isDisplayFeedback && (
+        <AdminFeedbackBox
+          onClose={closeAdminFeedback}
+          triggerSource={capturedTriggerSource.current ?? undefined}
+          formId={capturedFormId.current ?? undefined}
+        />
+      )}
     </>
   )
 }

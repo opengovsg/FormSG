@@ -2,7 +2,7 @@ import { BasicField, FormFieldDto } from 'formsg-shared/types'
 import { left } from 'fp-ts/lib/Either'
 
 import { FieldValidationSchema } from '../../../types'
-import { ParsedClearFormFieldResponseV3 } from '../../../types/api'
+import { ParsedClearFormFieldResponseV4 } from '../../../types/api'
 import { ResponseValidator } from '../../../types/field/utils/validation'
 import {
   ProcessedAddressResponse,
@@ -16,88 +16,88 @@ import {
 
 import {
   constructAddressValidator,
-  constructAddressValidatorV3,
+  constructAddressValidatorV4,
   constructOptionalAddressValidator,
-  constructOptionalAddressValidatorV3,
+  constructOptionalAddressValidatorV4,
 } from './validators/addressValidator'
 import {
-  constructAttachmentFieldValidatorV3,
+  constructAttachmentFieldValidatorV4,
   constructAttachmentValidator,
 } from './validators/attachmentValidator'
 import {
   constructCheckboxValidator,
-  constructCheckboxValidatorV3,
+  constructCheckboxValidatorV4,
 } from './validators/checkboxValidator'
 import {
   constructChildrenValidator,
-  constructChildrenValidatorV3,
+  constructChildrenValidatorV4,
 } from './validators/childrenValidator'
 import {
   constructCountryRegionValidator,
-  constructCountryRegionValidatorV3,
+  constructCountryRegionValidatorV4,
 } from './validators/countryRegionValidator'
 import {
   constructDateValidator,
-  constructDateValidatorV3,
+  constructDateValidatorV4,
 } from './validators/dateValidator'
 import {
   constructDecimalValidator,
-  constructDecimalValidatorV3,
+  constructDecimalValidatorV4,
 } from './validators/decimalValidator'
 import {
   constructDropdownValidator,
-  constructDropdownValidatorV3,
+  constructDropdownValidatorV4,
 } from './validators/dropdownValidator'
 import {
   constructEmailValidator,
-  constructEmailValidatorV3,
+  constructEmailValidatorV4,
 } from './validators/emailValidator'
 import {
   constructHomeNoValidator,
-  constructHomeNoValidatorV3,
+  constructHomeNoValidatorV4,
 } from './validators/homeNoValidator'
 import {
   constructMobileNoValidator,
-  constructMobileNoValidatorV3,
+  constructMobileNoValidatorV4,
 } from './validators/mobileNoValidator'
 import {
   constructNricValidator,
-  constructNricValidatorV3,
+  constructNricValidatorV4,
 } from './validators/nricValidator'
 import {
   constructNumberValidator,
-  constructNumberValidatorV3,
+  constructNumberValidatorV4,
 } from './validators/numberValidator'
 import {
   constructRadioButtonValidator,
-  constructRadioButtonValidatorV3,
+  constructRadioButtonValidatorV4,
 } from './validators/radioButtonValidator'
 import {
   constructRatingValidator,
-  constructRatingValidatorV3,
+  constructRatingValidatorV4,
 } from './validators/ratingValidator'
 import {
   constructSectionValidator,
-  constructSectionValidatorV3,
+  constructSectionValidatorV4,
 } from './validators/sectionValidator'
 import {
   constructSignatureValidator,
-  constructSignatureValidatorV3,
+  constructSignatureValidatorV4,
 } from './validators/signatureValidator'
 import {
   constructTableValidator,
-  constructTableValidatorV3,
+  constructTableValidatorV4,
 } from './validators/tableValidator'
 import constructTextValidator, {
-  constructTextValidatorV3,
+  constructTextValidatorV4,
 } from './validators/textValidator'
 import {
   constructUenValidator,
-  constructUenValidatorV3,
+  constructUenValidatorV4,
 } from './validators/uenValidator'
 import {
   constructYesNoValidator,
-  constructYesNoValidatorV3,
+  constructYesNoValidatorV4,
 } from './validators/yesNoValidator'
 
 /**
@@ -209,7 +209,7 @@ export const constructSignatureFieldValidator = (
   return () => left('Unsupported field type')
 }
 
-export const constructFieldResponseValidatorV3 = ({
+export const constructFieldResponseValidatorV4 = ({
   formId,
   formField,
   isVisible,
@@ -217,57 +217,57 @@ export const constructFieldResponseValidatorV3 = ({
   formId: string
   formField: FormFieldDto
   isVisible: boolean
-}): ResponseValidator<ParsedClearFormFieldResponseV3> => {
+}): ResponseValidator<ParsedClearFormFieldResponseV4> => {
   switch (formField.fieldType) {
     case BasicField.Number:
-      return constructNumberValidatorV3(formField)
+      return constructNumberValidatorV4(formField)
     case BasicField.Decimal:
-      return constructDecimalValidatorV3(formField)
+      return constructDecimalValidatorV4(formField)
     case BasicField.ShortText:
     case BasicField.LongText:
-      return constructTextValidatorV3(formField)
+      return constructTextValidatorV4(formField)
     case BasicField.HomeNo:
-      return constructHomeNoValidatorV3(formField)
+      return constructHomeNoValidatorV4(formField)
     case BasicField.Dropdown:
-      return constructDropdownValidatorV3(formField)
+      return constructDropdownValidatorV4(formField)
     case BasicField.Rating:
-      return constructRatingValidatorV3(formField)
+      return constructRatingValidatorV4(formField)
     case BasicField.Nric:
-      return constructNricValidatorV3()
+      return constructNricValidatorV4()
     case BasicField.Uen:
-      return constructUenValidatorV3()
+      return constructUenValidatorV4()
     case BasicField.Date:
-      return constructDateValidatorV3(formField)
+      return constructDateValidatorV4(formField)
     case BasicField.CountryRegion:
-      return constructCountryRegionValidatorV3()
+      return constructCountryRegionValidatorV4()
     case BasicField.Section:
-      return constructSectionValidatorV3()
+      return constructSectionValidatorV4()
     case BasicField.YesNo:
-      return constructYesNoValidatorV3()
+      return constructYesNoValidatorV4()
     case BasicField.Email:
-      return constructEmailValidatorV3(formField)
+      return constructEmailValidatorV4(formField)
     case BasicField.Mobile:
-      return constructMobileNoValidatorV3(formField)
+      return constructMobileNoValidatorV4(formField)
     case BasicField.Table:
-      return constructTableValidatorV3({
+      return constructTableValidatorV4({
         tableField: formField,
         formId,
         isVisible,
         isDisabled: formField.disabled,
       })
     case BasicField.Radio:
-      return constructRadioButtonValidatorV3(formField)
+      return constructRadioButtonValidatorV4(formField)
     case BasicField.Checkbox:
-      return constructCheckboxValidatorV3(formField)
+      return constructCheckboxValidatorV4(formField)
     case BasicField.Attachment:
-      return constructAttachmentFieldValidatorV3(formField)
+      return constructAttachmentFieldValidatorV4(formField)
     case BasicField.Children:
-      return constructChildrenValidatorV3(formField)
+      return constructChildrenValidatorV4(formField)
     case BasicField.Address:
-      if (formField.required) return constructAddressValidatorV3(formField)
-      return constructOptionalAddressValidatorV3(formField)
+      if (formField.required) return constructAddressValidatorV4(formField)
+      return constructOptionalAddressValidatorV4(formField)
     case BasicField.Signature:
-      return constructSignatureValidatorV3(formField)
+      return constructSignatureValidatorV4(formField)
     case BasicField.Image: // fall-through
     case BasicField.Statement:
       return () =>

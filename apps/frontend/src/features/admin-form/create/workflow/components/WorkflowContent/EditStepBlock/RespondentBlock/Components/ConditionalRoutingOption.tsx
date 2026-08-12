@@ -31,6 +31,8 @@ import { useEditFormField } from '~features/admin-form/create/builder-and-design
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
+import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
 import { useWorkflowTypeValidation } from './hooks'
@@ -354,6 +356,7 @@ export const ConditionalRoutingOption = ({
   }
 
   const workflowTypeValidation = useWorkflowTypeValidation()
+  const isRedesign = useIsWorkflowBuilderRedesign()
 
   const handleOpenModal = () => {
     conditionalRoutingConfigSetValue('csvFile', null)
@@ -435,7 +438,9 @@ export const ConditionalRoutingOption = ({
                         ({ value: fieldValue }) => fieldValue === selectedValue,
                       ) ||
                       t(
-                        'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdown',
+                        isRedesign
+                          ? 'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdownRedesign'
+                          : 'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdown',
                       )
                     )
                   },
@@ -478,7 +483,9 @@ export const ConditionalRoutingOption = ({
                     isDisabled={!isSelectedConditionalFieldFound}
                   >
                     {t(
-                      'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptions',
+                      isRedesign
+                        ? 'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptionsRedesign'
+                        : 'features.adminForm.sidebar.workflow.conditionalRouting.addEmailsToOptions',
                     )}
                   </Button>
                 )

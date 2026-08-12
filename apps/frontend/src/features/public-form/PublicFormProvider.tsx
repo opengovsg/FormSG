@@ -12,11 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import {
-  useFeatureIsOn,
-  useFeatureValue,
-  useGrowthBook,
-} from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, format, isPast } from 'date-fns'
 import { flow, times } from 'lodash'
 import get from 'lodash/get'
@@ -532,6 +528,13 @@ export const PublicFormProvider = ({
     console.log(e)
   }
 
+  let stepToken = ''
+  try {
+    stepToken = decodeURIComponent(searchParams.get('token') ?? '')
+  } catch (e) {
+    console.log(e)
+  }
+
   useEffect(() => {
     // Function to decrypt attachments retrieved from S3 using the submission secret key
     const decryptAttachments = async () => {
@@ -568,22 +571,12 @@ export const PublicFormProvider = ({
     if (encryptedPreviousSubmission?.mrfVersion != null) {
       if (submissionSecretKey) decryptAttachments()
     } else {
-      // Backward compatibility to retrieve attachments from the DB itself once
-      // the previous submission responses are decrypted.
-      if (previousSubmission) {
-        // Backward compatibility
-        const previousAttachments: Record<string, Uint8Array<ArrayBuffer>> = {}
-        Object.keys(previousSubmission.responses).forEach((id) => {
-          const response = previousSubmission.responses[id]
-          if (response.fieldType === BasicField.Attachment) {
-            previousAttachments[id] = Uint8Array.from(
-              //@ts-expect-error 'content' required for backward compatibility, but
-              // does not exist on AttachmentFieldResponseV3 in mrfVersion >= 1 versions
-              response.answer.content.data,
-            )
-          }
-        })
-        setPreviousAttachments(previousAttachments)
+      // Backward compatibility to retrieve attachments embedded in the
+      // encrypted blob itself (legacy submissions predating mrfVersion).
+      // These are harvested pre-adaptation by decryptSubmission, since the
+      // embedded content is dropped when responses are adapted to V4.
+      if (previousSubmission?.legacyAttachmentContents) {
+        setPreviousAttachments(previousSubmission.legacyAttachmentContents)
       }
     }
   }, [encryptedPreviousSubmission, previousSubmission, submissionSecretKey])
@@ -698,7 +691,7 @@ export const PublicFormProvider = ({
     if (hasPreviousSubmissionDecryptionError) {
       toast({
         status: 'danger',
-        description: 'Failed to decrypt attachment',
+        description: t('features.publicForm.errors.attachmentDecryption'),
       })
     }
   }, [hasMyInfoError, hasPreviousSubmissionDecryptionError, toast, t])
@@ -776,6 +769,9 @@ export const PublicFormProvider = ({
     formId,
     previousSubmissionId,
     previousSubmission?.submissionSecretKey,
+    // Empty (tokenless / flag-off link) → undefined so JSON.stringify drops
+    // `stepToken` from the PUT body, keeping it byte-identical to today.
+    stepToken || undefined,
   )
 
   const form = data?.form
@@ -836,11 +832,7 @@ export const PublicFormProvider = ({
       storeName: SAVE_DRAFT_INDEXEDDB_STORE_NAME,
     })
 
-  // TODO [Save Draft v1.0]: Remove feature flag once save draft is out of beta
-  const isSaveDraftFeatureEnabled =
-    useFeatureIsOn(featureFlags.saveDraft) || isTest
-  const isSaveDraftEnabled =
-    isSaveDraftFeatureEnabled && Boolean(form?.isSaveDraftEnabled)
+  const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   // RATIONALE: draftSubmission.lastUpdated is used as a source of truth to see if the draftSubmission has changed.
@@ -944,6 +936,8 @@ export const PublicFormProvider = ({
       previousRestoredDraftResponses: draftResponsesToRestore,
       currentFormFieldValues: formMethods.getValues(),
       dirtyFieldIds: Object.keys(dirtyFields),
+      prefilledFieldIds: Object.keys(fieldPrefillMap),
+      currentStepNumberWorkflowStep,
       formFields,
     })
 

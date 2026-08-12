@@ -389,10 +389,10 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
 const sendPendingMrfSubmissionReminder: ControllerHandler<
   { formId: string; submissionId: string },
   unknown,
-  { submissionSecretKey: string }
+  { submissionSecretKey: string; stepToken?: string }
 > = async (req, res) => {
   const { formId, submissionId } = req.params
-  const { submissionSecretKey } = req.body
+  const { submissionSecretKey, stepToken } = req.body
   const authedUserId = (req.session as AuthedSessionData).user._id
 
   const logMeta = {
@@ -443,7 +443,7 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
         responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
           form._id,
           submissionId,
-          { key: submissionSecretKey },
+          { key: submissionSecretKey, stepToken },
         )}`,
         formTitle: form.title,
         formId,

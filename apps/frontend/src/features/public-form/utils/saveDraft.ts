@@ -1,9 +1,21 @@
-import { difference, intersection, isEmpty, mapValues, pick } from 'lodash'
+import {
+  difference,
+  intersection,
+  isEmpty,
+  mapValues,
+  pick,
+  union,
+} from 'lodash'
 
-import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormFieldDto,
+  StrippedFormWorkflowStepDto,
+} from 'formsg-shared/types'
 
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
+import { isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { DraftSubmission } from '../PublicFormContext'
@@ -22,11 +34,15 @@ export const getDraftToSave = ({
   previousRestoredDraftResponses,
   currentFormFieldValues: formFieldValues,
   dirtyFieldIds,
+  prefilledFieldIds,
+  currentStepNumberWorkflowStep,
   formFields,
 }: {
   previousRestoredDraftResponses?: FormFieldValues | null
   currentFormFieldValues: FormFieldValues
   dirtyFieldIds: string[]
+  prefilledFieldIds: string[]
+  currentStepNumberWorkflowStep: StrippedFormWorkflowStepDto | undefined
   formFields: FormFieldDto[]
 }): DraftSubmission => {
   // Note: payment fields are not included in formFields to keep the implementation simple,
@@ -54,18 +70,28 @@ export const getDraftToSave = ({
     )
     .map((field) => field._id)
 
-  const currentDirtyFieldValues = pick(formFieldValues, dirtyFieldIds)
+  const editableFieldIds = formFields
+    .filter((field) =>
+      isFieldEnabledByMrfWorkflow(currentStepNumberWorkflowStep, field),
+    )
+    .map((field) => field._id)
+  // RATIONALE: Dirty (edited) and prefilled fields that are editable for this workflow step (if exists) should be included in the draft.
+  const fieldIdsToSave = intersection(
+    union(dirtyFieldIds, prefilledFieldIds),
+    editableFieldIds,
+  )
+  const fieldValuesToSave = pick(formFieldValues, fieldIdsToSave)
 
-  const allDirtyFieldValues = {
+  const allFieldValuesToSave = {
     ...(previousRestoredDraftResponses ?? {}),
-    ...currentDirtyFieldValues,
+    ...fieldValuesToSave,
   }
   const fieldIdsToInclude = difference(
     currentlyExistingFieldIds,
     myInfoFieldIds,
   )
 
-  const updatedDraftResponses = pick(allDirtyFieldValues, fieldIdsToInclude)
+  const updatedDraftResponses = pick(allFieldValuesToSave, fieldIdsToInclude)
 
   // Avoid saving 'signature' property values from verifiable fields in the draft.
   // This is to prevent signature from being reused and to force the user to

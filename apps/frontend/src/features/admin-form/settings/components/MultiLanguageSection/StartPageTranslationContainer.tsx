@@ -1,4 +1,5 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 import { Flex, Text } from '@chakra-ui/react'
 
 import { FormStartPage, Language } from 'formsg-shared/types'
@@ -16,6 +17,8 @@ export const StartPageTranslationContainer = ({
   capitalisedLanguage,
   unicodeLocale,
 }: StartPageTranslationContainerProps) => {
+  const { t } = useTranslation()
+
   if (!startPage) return null
 
   const currentTranslations = startPage.paragraphTranslations ?? []
@@ -27,7 +30,7 @@ export const StartPageTranslationContainer = ({
   return (
     <Flex justifyContent="flex-start" mb="2.5rem" direction="column">
       <Text color="secondary.500" fontSize="1.25rem" fontWeight="600" mb="1rem">
-        Question
+        {t('features.adminForm.settings.multiLanguage.sections.question')}
       </Text>
       <TranslationContainer
         language={capitalisedLanguage}

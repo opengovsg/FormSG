@@ -97,11 +97,20 @@ export const ApprovalStatus = z.enum([
   WorkflowStatus.REJECTED,
 ])
 
+const SubmittedStepSnapshotTokens = z.object({
+  v4: z.string().optional(),
+})
+
+export type SubmittedStepSnapshotTokens = z.infer<
+  typeof SubmittedStepSnapshotTokens
+>
+
 const SubmittedNonApprovalStep = z.object({
   isApproval: z.literal(false),
   submittedAt: z.string().datetime({ precision: 3 }),
   nextStepRecipientEmails: z.array(z.string()).optional(),
   submitterId: z.string().optional(),
+  snapshotTokens: SubmittedStepSnapshotTokens.optional(),
 })
 
 export type SubmittedNonApprovalStep = z.infer<typeof SubmittedNonApprovalStep>
@@ -120,6 +129,60 @@ export const SubmittedStep = z.discriminatedUnion('isApproval', [
 
 export type SubmittedStep = z.infer<typeof SubmittedStep>
 
+export type SubmittedStepField =
+  | keyof SubmittedNonApprovalStep
+  | keyof SubmittedApprovalStep
+
+/**
+ * The boundaries at which `submittedSteps` leaves the server.
+ * - `webhook`: the array shipped verbatim inside `workflowContent`.
+ * - `public`: unauthenticated responses reachable by submission id (eg, status tracking link).
+ * - `admin`: authenticated admin queries.
+ */
+export type SubmittedStepBoundary = 'webhook' | 'public' | 'admin'
+
+export const SUBMITTED_STEP_VISIBILITY = {
+  isApproval: { webhook: true, public: true, admin: true },
+  submittedAt: { webhook: true, public: true, admin: true },
+  status: { webhook: true, public: true, admin: true },
+  nextStepRecipientEmails: {
+    webhook: true,
+    public: false,
+    admin: true,
+  },
+  submitterId: { webhook: true, public: true, admin: false },
+  snapshotTokens: { webhook: false, public: false, admin: false },
+} as const satisfies Record<
+  SubmittedStepField,
+  Record<SubmittedStepBoundary, boolean>
+>
+
+type SubmittedStepVisibility = typeof SUBMITTED_STEP_VISIBILITY
+
+type VisibleFieldsAt<B extends SubmittedStepBoundary> = {
+  [K in keyof SubmittedStepVisibility]: SubmittedStepVisibility[K][B] extends true
+    ? K
+    : never
+}[keyof SubmittedStepVisibility]
+
+/**
+ * Distributes over the discriminated union so each member keeps only the fields
+ * it actually declares that are visible at boundary `B`.
+ */
+type ProjectSubmittedStep<
+  S,
+  B extends SubmittedStepBoundary,
+> = S extends unknown ? Pick<S, Extract<keyof S, VisibleFieldsAt<B>>> : never
+
+export type WebhookSubmittedStep = ProjectSubmittedStep<
+  SubmittedStep,
+  'webhook'
+>
+
+export type PublicSubmittedStep = ProjectSubmittedStep<SubmittedStep, 'public'>
+
+export type AdminSubmittedStep = ProjectSubmittedStep<SubmittedStep, 'admin'>
+
 export const MultirespondentSubmissionBase = SubmissionBase.extend({
   // Store the form fields and logic here, to use as reference for future
   // submitters. Don't bother to validate since this is injected by the backend.
@@ -137,15 +200,15 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   workflowStep: z.number(),
   mrfVersion: z.number().optional(),
   submittedSteps: z.array(SubmittedStep).optional(),
+  // RATIONALE: optional for backwards compatibility on
+  // in-flight mrf steps which do not have a step token at time of creation.
+  stepTokenHash: z.string().optional(),
+  encryptedStepToken: z.string().optional(),
 })
 
 export type MultirespondentSubmissionBase = z.infer<
   typeof MultirespondentSubmissionBase
 >
-
-export type StorageModeChartsDto = StorageModeSubmissionBase & {
-  created: DateString
-}
 
 export const SubmissionPaymentDto = z.object({
   id: z.string(),
@@ -194,6 +257,7 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   verifiedContent?: string
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
+  encryptedStepToken?: string
   encryptedContent: string
   attachmentMetadata: Record<string, string>
   workflowStep: number
@@ -206,10 +270,11 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
 
 export type PublicMultirespondentSubmissionDto = Omit<
   MultirespondentSubmissionDto,
-  'workflow' | 'form_fields'
+  'workflow' | 'form_fields' | 'encryptedStepToken'
 > & {
   form_fields: StrippedFormFieldDto[]
   workflow: StrippedFormWorkflowDto
+  encryptedStepToken: undefined
 }
 
 export type SubmissionDto =
@@ -373,7 +438,7 @@ export type PaymentSubmissionData = {
 }
 
 export type StatusTrackerData = {
-  submittedSteps: SubmittedStep[] | undefined
+  submittedSteps: PublicSubmittedStep[] | undefined
   workflow: StrippedFormWorkflowDto
   responseId: string | undefined
   form: string

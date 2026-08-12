@@ -44,33 +44,23 @@ export const enSG: Workspace = {
   },
   feedback: {
     rating: {
-      prompt: 'How was your form building experience?',
-      aria: {
-        up: 'Good',
-        down: 'Bad',
-      },
-    },
-    callForComment: {
-      up: {
-        title: "Thank you, you're the best!",
-        link: 'Want to tell us more?',
-      },
-      down: {
-        title: 'Thank you for your feedback.',
-        link: 'Tell us more so we can improve!',
-      },
+      prompt: 'How is your experience using FormSG?',
+      fieldTitle: 'Rate your experience',
     },
     comment: {
-      title: 'Great!',
-      description:
-        'Tell us about your form building experience in more detail!',
-      placeholder: {
-        up: 'string',
-        down: 'string',
+      label: {
+        low: 'What went wrong?',
+        mid: 'What could we improve?',
+        high: 'What did you enjoy most?',
       },
+      placeholder: 'Tell us more...',
       aria: {
         close: 'close feedback box',
       },
+    },
+    toast: {
+      success: 'Thank you for your feedback!',
+      submitError: 'Your feedback could not be saved. Please try again.',
     },
   },
   workspacePage: {

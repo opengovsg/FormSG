@@ -4,7 +4,6 @@ import crypto from 'crypto'
 import {
   AdminEmailPdfFeatureValue,
   featureFlags,
-  MULTIRESPONDENT_FORM_SUBMISSION_VERSION,
 } from 'formsg-shared/constants'
 import { FIELDS_TO_REJECT } from 'formsg-shared/constants/field/basic'
 import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
@@ -50,10 +49,10 @@ import {
   MapRouteErrors,
 } from '../../../types'
 import {
+  ParsedClearAttachmentFieldResponseV4,
   ParsedClearAttachmentResponse,
-  ParsedClearAttachmentResponseV3,
   ParsedClearFormFieldResponse,
-  ParsedClearFormFieldResponseV3,
+  ParsedClearFormFieldResponseV4,
 } from '../../../types/api'
 import { MapRouteError } from '../../../types/routing'
 import formsgSdk from '../../config/formsg-sdk'
@@ -129,6 +128,7 @@ import { MalformedVerifiedContentError } from '../verified-content/verified-cont
 
 import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
 import { ResponseFormattedForEmail } from './email-submission/email-submission.types'
+import { SnapshotWriteError } from './multirespondent-submission/webhook/submission-snapshot.errors'
 import {
   AttachmentSizeLimitExceededError,
   AttachmentTooLargeError,
@@ -152,12 +152,13 @@ import {
   ParseVirusScannerLambdaPayloadError,
   ProcessingError,
   ResponseModeError,
+  StepTokenVerificationError,
   SubmissionFailedError,
   SubmissionNotFoundError,
   SubmissionSaveError,
   UnsupportedSettingsError,
   ValidateFieldError,
-  ValidateFieldErrorV3,
+  ValidateFieldErrorV4,
   VirusScanFailedError,
 } from './submission.errors'
 import {
@@ -191,6 +192,7 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
       }
+    case SnapshotWriteError:
     case SubmissionSaveError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
@@ -202,6 +204,11 @@ const errorMapper: MapRouteError = (
         errorMessage: coreErrorMessage,
       }
     case FormRespondentNotWhitelistedError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case StepTokenVerificationError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
@@ -338,7 +345,7 @@ const errorMapper: MapRouteError = (
           'Submission too large to be saved. Please reduce the size of your submission and try again.',
       }
     case ValidateFieldError:
-    case ValidateFieldErrorV3:
+    case ValidateFieldErrorV4:
     case DatabaseValidationError:
     case InvalidFileExtensionError:
     case AttachmentTooLargeError:
@@ -618,11 +625,12 @@ export const isAttachmentResponse = (
   )
 }
 
-export const isAttachmentResponseV3 = (
-  response: ParsedClearFormFieldResponseV3,
-): response is ParsedClearAttachmentResponseV3 => {
+export const isAttachmentResponseV4 = (
+  response: ParsedClearFormFieldResponseV4,
+): response is ParsedClearAttachmentFieldResponseV4 => {
   return (
     response.fieldType === BasicField.Attachment &&
+    'content' in response.answer &&
     response.answer.content !== undefined
   )
 }
@@ -634,18 +642,6 @@ export const isQuarantinedAttachmentResponse = (
   response: ParsedClearFormFieldResponse,
 ): response is ParsedClearAttachmentResponse => {
   return response.fieldType === BasicField.Attachment && response.answer !== ''
-}
-
-/**
- * Checks if a response is a quarantined attachment response to be processed by the virus scanner.
- */
-export const isQuarantinedAttachmentResponseV3 = (
-  response: ParsedClearFormFieldResponseV3,
-): response is ParsedClearAttachmentResponseV3 => {
-  return (
-    response.fieldType === BasicField.Attachment &&
-    response.answer.answer !== ''
-  )
 }
 
 /**
@@ -738,10 +734,11 @@ const encryptAttachment = async (
     const fileContentsView = new Uint8Array(attachment)
 
     label = 'Encrypt content'
-    const formsgSdkCrypto =
-      version < MULTIRESPONDENT_FORM_SUBMISSION_VERSION
-        ? formsgSdk.crypto
-        : formsgSdk.cryptoV3
+    // Crypto floor is fixed at the V3 cutover: submissions below wire version 3
+    // predate cryptoV3. Deliberately a literal — the MRF wire version constant
+    // moves on (4+), and shim-adapted stale-FE bodies keep version 3, so tying
+    // this to the constant would flip their crypto class as the wire advances.
+    const formsgSdkCrypto = version < 3 ? formsgSdk.crypto : formsgSdk.cryptoV3
     const encryptedAttachment = await formsgSdkCrypto.encryptFile(
       fileContentsView,
       publicKey,

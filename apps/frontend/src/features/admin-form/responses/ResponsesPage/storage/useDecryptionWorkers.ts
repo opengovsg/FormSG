@@ -79,7 +79,6 @@ const useDecryptionWorkers = ({
 
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
-  const useV4 = useFeatureIsOn(featureFlags.answerObjectDecryption)
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -200,7 +199,6 @@ const useDecryptionWorkers = ({
                 // Resolved here (on the main thread) so the worker doesn't
                 // need to import env.ts (which references window).
                 formsgSdkMode: env.formsgSdkMode,
-                useV4,
               })
               // Step 2: Update the Csv record status based on the decryption result.
               .then(async (decryptResult) => {
@@ -495,7 +493,6 @@ const useDecryptionWorkers = ({
       onDecryptionProgress,
       onPdfGenerationProgress,
       user?._id,
-      useV4,
       workers,
     ],
   )

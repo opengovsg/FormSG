@@ -1,6 +1,9 @@
-import { ADDRESS_SUBFIELD_KEYS, GENERIC_STRING_FIELD_TYPES } from './constants-v4'
-import { FieldType, FormFieldsV3 } from './types'
 import { generateUUID } from './util/crypto'
+import {
+  ADDRESS_SUBFIELD_KEYS,
+  GENERIC_STRING_FIELD_TYPES,
+} from './constants-v4'
+import { FieldType, FormFieldsV3 } from './types'
 import {
   AdaptV3ToV4Options,
   AddressAnswerV4,
@@ -73,7 +76,9 @@ const convertAttachmentAnswer = (answer: {
   }
 }
 
-const convertTableAnswer = (answer: Record<string, string>[]): TableAnswerV4 => {
+const convertTableAnswer = (
+  answer: Record<string, string>[]
+): TableAnswerV4 => {
   const result: TableAnswerV4 = {}
   for (let i = 0; i < answer.length; i++) {
     const rowId = generateUUID()
@@ -109,7 +114,7 @@ const convertAddressAnswer = (answer: {
   const subFields = answer.addressSubFields
   const result: Record<string, StringAnswerV4> = {}
   for (const key of ADDRESS_SUBFIELD_KEYS) {
-    result[key] = { value: subFields[key] ?? ''}
+    result[key] = { value: subFields[key] ?? '' }
   }
   return result as AddressAnswerV4
 }
@@ -123,6 +128,14 @@ const convertSignatureAnswer = (answer: {
     type: 'draw',
   }
 }
+
+/**
+ * Derives question text from form field metadata, prefixing MyInfo fields.
+ * Shared between V3→V4 adaptation and the V4 question backfill in
+ * CryptoV3.decryptToV4 so the two stay consistent.
+ */
+export const deriveQuestionFromMeta = (meta?: FormFieldMeta): string =>
+  meta?.myInfo ? `[Myinfo] ${meta.question ?? ''}` : (meta?.question ?? '')
 
 // since v3 answer types when decrypted in sdk are not well-typed, we do best-effort conversion based on field type
 const convertAnswer = (fieldType: FieldType, answer: any): AnswerV4 => {
@@ -177,9 +190,7 @@ export function adaptV3ToV4(
   for (const [fieldId, field] of Object.entries(v3Responses)) {
     const meta = formFields[fieldId]
     const myInfo = meta?.myInfo
-    const question = myInfo
-      ? `[Myinfo] ${meta?.question ?? ''}`
-      : (meta?.question ?? '')
+    const question = deriveQuestionFromMeta(meta)
 
     v4Responses[fieldId] = {
       fieldType: field.fieldType,

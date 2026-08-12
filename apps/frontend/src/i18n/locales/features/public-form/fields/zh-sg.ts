@@ -32,11 +32,11 @@ export const zhSG: PartialDeep<Fields> = {
     modal: {
       email: {
         title: '验证您的电子邮箱',
-        description: '已通过电邮发送6位数的验证码，30分钟内有效。',
+        description: '已通过电邮发送验证码，30分钟内有效。',
       },
       mobile: {
         title: '验证您的手机号码',
-        description: '已通过短信发送6 位数的验证码，30分钟内有效。',
+        description: '已通过短信发送验证码，30分钟内有效。',
       },
     },
   },

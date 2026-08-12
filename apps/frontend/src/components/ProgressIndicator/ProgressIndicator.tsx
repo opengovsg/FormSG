@@ -16,7 +16,7 @@ const ActiveIndicator = (): JSX.Element => (
 )
 
 interface CircleIndicatorProps extends BoxProps {
-  onClick: () => void
+  onClick?: () => void
   isActiveIndicator: boolean
 }
 
@@ -34,7 +34,9 @@ const CircleIndicator = ({
       backgroundColor="secondary.200"
       marginRight={isActiveIndicator ? '1.25rem' : '0.25rem'}
       onClick={onClick}
-      _hover={{ backgroundColor: 'secondary.300' }}
+      _hover={
+        onClick !== undefined ? { backgroundColor: 'secondary.300' } : undefined
+      }
       _focus={
         isActiveIndicator
           ? undefined
@@ -44,7 +46,7 @@ const CircleIndicator = ({
             }
       }
       backgroundClip="content-box"
-      as="button"
+      as={onClick !== undefined ? 'button' : 'div'}
       {...props}
     />
   )
@@ -53,7 +55,7 @@ const CircleIndicator = ({
 interface ProgressIndicatorProps {
   numIndicators: number
   currActiveIdx: number
-  onClick: (indicatorIdx: number) => void
+  onClick?: (indicatorIdx: number) => void
 }
 
 export const ProgressIndicator = ({
@@ -76,7 +78,7 @@ export const ProgressIndicator = ({
         <CircleIndicator
           key={idx}
           isActiveIndicator={idx === currActiveIdx}
-          onClick={() => onClick(idx)}
+          onClick={onClick !== undefined ? () => onClick(idx) : undefined}
           aria-label={`Page ${idx + 1} of ${numIndicators}`}
         />
       ))}

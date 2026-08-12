@@ -1,6 +1,6 @@
 {
   "name": "formsg-virus-scanner-guardduty",
-  "version": "7.34.1",
+  "version": "9.6.1",
   "private": true,
   "description": "",
   "scripts": {
@@ -22,7 +22,7 @@
     "lodash": "^4.17.23",
     "pino": "8.1.0",
     "ts-retry-promise": "^0.8.1",
-    "uuid": "^9.0.0"
+    "uuid": "^14.0.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.101",

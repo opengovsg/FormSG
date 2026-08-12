@@ -1,11 +1,6 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { featureFlags } from 'formsg-shared/constants/feature-flags'
-import {
-  DateString,
-  FormResponseMode,
-  PaymentChannel,
-  SubmissionType,
-} from 'formsg-shared/types'
+import { FormResponseMode, PaymentChannel } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
@@ -25,9 +20,7 @@ import { AutoreplyPdfGenerationError } from '../../../services/mail/mail.errors'
 import MailService from '../../../services/mail/mail.service'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
-import { createQueryWithDateParam } from '../../../utils/date'
-import { getMongoErrorMessage } from '../../../utils/handle-mongo-error'
-import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
+import { PossibleDatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { isFormEncryptMode } from '../../form/form.utils'
@@ -52,48 +45,10 @@ import {
   isAdminEmailPdfEnabled,
 } from '../submission.utils'
 
-import { CHARTS_MAX_SUBMISSION_RESULTS } from './encrypt-submission.constants'
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
 
 const logger = createLoggerWithLabel(module)
 const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
-
-/**
- * Retrieves all encrypted submission data from the database
- * - up to the 1000th submission, sorted in reverse chronological order
- * - this query uses 'form_1_submissionType_1_created_-1' index
- * @param formId the id of the form to filter submissions for
- * @returns ok(SubmissionData)
- * @returns err(DatabaseError) when error occurs during query
- */
-export const getAllEncryptedSubmissionData = (
-  formId: string,
-  startDate?: DateString,
-  endDate?: DateString,
-) => {
-  const findQuery = {
-    form: formId,
-    submissionType: SubmissionType.Encrypt,
-    ...createQueryWithDateParam(startDate, endDate),
-  }
-  return ResultAsync.fromPromise(
-    EncryptSubmissionModel.find(findQuery)
-      .limit(CHARTS_MAX_SUBMISSION_RESULTS)
-      .sort({ created: -1 }),
-    (error) => {
-      logger.error({
-        message: 'Failure retrieving encrypted submission from database',
-        meta: {
-          action: 'getEncryptedSubmissionData',
-          formId,
-        },
-        error,
-      })
-
-      return new DatabaseError(getMongoErrorMessage(error))
-    },
-  )
-}
 
 export const checkFormIsEncryptMode = (
   form: IPopulatedForm,

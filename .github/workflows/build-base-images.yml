@@ -47,13 +47,8 @@ jobs:
         run: |
           HASH=$(cat \
             pnpm-lock.yaml \
-            package.json \
             pnpm-workspace.yaml \
             Dockerfile.base \
-            apps/backend/package.json \
-            apps/frontend/package.json \
-            packages/shared/package.json \
-            packages/sdk/package.json \
             | sha256sum | cut -c1-16)
           echo "hash=$HASH" >> "$GITHUB_OUTPUT"
           echo "Dependency hash: $HASH"

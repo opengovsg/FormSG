@@ -1,6 +1,5 @@
 import axios from 'axios'
 import nacl from 'tweetnacl'
-import { decodeBase64, decodeUTF8, encodeUTF8 } from 'tweetnacl-util'
 
 import {
   areAttachmentFieldIdsValid,
@@ -9,6 +8,7 @@ import {
   encryptMessage,
   verifySignedMessage,
 } from './util/crypto'
+import { decodeBase64, decodeUTF8, encodeUTF8 } from './util/encoding'
 import { determineIsFormFields } from './util/validate'
 import CryptoBase from './crypto-base'
 import { AttachmentDecryptionError, MissingPublicKeyError } from './errors'

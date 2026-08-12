@@ -105,8 +105,8 @@ export const CheckboxField = ({
           name={checkboxInputName}
           control={control}
           rules={validationRules}
-          render={({ field: { ref, onBlur, ...field } }) => (
-            <CheckboxGroup {...field}>
+          render={({ field: { ref, onBlur, value, ...field } }) => (
+            <CheckboxGroup {...field} value={value}>
               {fieldOptions.map((o, idx) => (
                 <Checkbox
                   name={checkboxInputName}
@@ -155,6 +155,15 @@ export const CheckboxField = ({
                     <Checkbox.OthersInput
                       colorScheme={fieldColorScheme}
                       aria-label='"Other" response'
+                      // Grey out the "Others" input when the user has selected
+                      // option(s) that do not include "Others", to make it clear
+                      // that text typed here will not be submitted.
+                      isDisabled={
+                        schema.disabled ||
+                        (Array.isArray(value) &&
+                          value.length > 0 &&
+                          !value.includes(CHECKBOX_OTHERS_INPUT_VALUE))
+                      }
                       {...register(othersInputName, othersValidationRules)}
                       {...(isHighContrast && { variant: 'highContrast' })}
                     />

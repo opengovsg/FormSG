@@ -8,6 +8,7 @@ import {
   PaymentType,
   SubmissionType,
   WebhookResponse,
+  WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
 import { merge, omit, times } from 'lodash'
@@ -20,13 +21,14 @@ import getSubmissionModel, {
   getMultirespondentSubmissionModel,
 } from 'src/app/models/submission.server.model'
 import { buildMrfMetadata } from 'src/app/modules/submission/submission.utils'
+import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 
 import { ISubmissionSchema } from '../../../types'
 import getPaymentModel from '../payment.server.model'
 
 jest.mock('dns', () => ({
   promises: {
-    resolve: jest.fn(),
+    lookup: jest.fn(),
   },
 }))
 const MockDns = jest.mocked(dns)
@@ -41,7 +43,9 @@ const PaymentSubmission = getPaymentModel(mongoose)
 describe('Submission Model', () => {
   beforeAll(async () => {
     await dbHandler.connect()
-    MockDns.resolve.mockResolvedValue(['1.1.1.1'])
+    MockDns.lookup.mockResolvedValue([
+      { address: '1.1.1.1', family: 4 },
+    ] as never)
   })
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
@@ -770,6 +774,66 @@ describe('Submission Model', () => {
     })
   })
 
+  describe('Multirespondent admin queries', () => {
+    const MOCK_MRF_SUBMISSION = () => ({
+      form: MOCK_FORM_ID,
+      submissionType: SubmissionType.Multirespondent,
+      form_fields: [],
+      form_logics: [],
+      workflow: [],
+      submissionPublicKey: 'test public key',
+      encryptedSubmissionSecretKey: 'test secret key',
+      encryptedContent: MOCK_ENCRYPTED_CONTENT,
+      version: 1,
+      workflowStep: 1,
+      submittedSteps: [
+        {
+          isApproval: true,
+          submittedAt: '2026-07-22T00:00:00.000Z',
+          status: WorkflowStatus.APPROVED,
+          nextStepRecipientEmails: ['next@example.com'],
+          submitterId: 'SUBMITTER_ID_HASH',
+          snapshotTokens: { v4: 'SNAPSHOT_TOKEN_LEAF_VALUE' },
+        },
+      ],
+    })
+
+    const EXPECTED_ADMIN_STEP = {
+      isApproval: true,
+      submittedAt: '2026-07-22T00:00:00.000Z',
+      status: WorkflowStatus.APPROVED,
+      nextStepRecipientEmails: ['next@example.com'],
+    }
+
+    it('findEncryptedSubmissionById should not load unclassified step sub-fields', async () => {
+      const created = await MultirespondentSubmission.create(
+        MOCK_MRF_SUBMISSION(),
+      )
+
+      const actual =
+        await MultirespondentSubmission.findEncryptedSubmissionById(
+          String(MOCK_FORM_ID),
+          String(created._id),
+        )
+
+      expect(actual!.toObject().submittedSteps).toEqual([EXPECTED_ADMIN_STEP])
+    })
+
+    it('getSubmissionCursorByFormId should not load unclassified step sub-fields', async () => {
+      await MultirespondentSubmission.create(MOCK_MRF_SUBMISSION())
+
+      const cursor = MultirespondentSubmission.getSubmissionCursorByFormId(
+        String(MOCK_FORM_ID),
+        {},
+      )
+      const docs = []
+      for await (const doc of cursor) docs.push(doc)
+
+      expect(docs).toHaveLength(1)
+      expect(docs[0].submittedSteps).toEqual([EXPECTED_ADMIN_STEP])
+    })
+  })
+
   describe('Methods', () => {
     describe('getWebhookView', () => {
       it('should returnt non-null view with paymentContent when submission has paymentId', async () => {
@@ -832,6 +896,52 @@ describe('Submission Model', () => {
           },
         })
       })
+      it('should project submittedSteps for multirespondent submissions, omitting the internal snapshotTokens', async () => {
+        // Arrange
+        const formId = new ObjectId()
+        const submission = await MultirespondentSubmission.create({
+          form: formId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: [],
+          submissionPublicKey: 'test public key',
+          encryptedSubmissionSecretKey: 'test secret key',
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          workflowStep: 1,
+          submittedSteps: [
+            {
+              isApproval: true,
+              submittedAt: '2026-07-22T00:00:00.000Z',
+              status: WorkflowStatus.APPROVED,
+              nextStepRecipientEmails: ['next@example.com'],
+              submitterId: 'SUBMITTER_ID_HASH',
+              snapshotTokens: { v4: 'SNAPSHOT_TOKEN_LEAF_VALUE' },
+            },
+          ],
+        })
+
+        // Act
+        const actualWebhookView = await submission.getWebhookView()
+
+        // Assert
+        const { submittedSteps } = actualWebhookView!.data
+          .workflowContent as WorkflowWebhookEventObject
+        expect(submittedSteps).toEqual([
+          {
+            isApproval: true,
+            submittedAt: '2026-07-22T00:00:00.000Z',
+            status: WorkflowStatus.APPROVED,
+            nextStepRecipientEmails: ['next@example.com'],
+            submitterId: 'SUBMITTER_ID_HASH',
+          },
+        ])
+        expect(JSON.stringify(actualWebhookView)).not.toContain(
+          'SNAPSHOT_TOKEN_LEAF_VALUE',
+        )
+      })
+
       it('should return non-null view with encryptedSubmission type when submission has no verified content', async () => {
         // Arrange
         const formId = new ObjectId()

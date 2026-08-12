@@ -8,11 +8,14 @@ import { MultirespondentFormSettings } from 'formsg-shared/types'
 
 import Toggle from '~components/Toggle'
 
+import { useIsWorkflowBuilderRedesign } from '~features/admin-form/create/workflow/hooks/useIsWorkflowBuilderRedesign'
+
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
 
 export const StatusTrackerToggle = (): JSX.Element => {
   const { t } = useTranslation()
+  const isRedesign = useIsWorkflowBuilderRedesign()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings<MultirespondentFormSettings>()
 
@@ -24,6 +27,20 @@ export const StatusTrackerToggle = (): JSX.Element => {
   const { mutateMrfStatusTracker } = useMutateFormSettings()
 
   const ToggleDescription = () => {
+    if (isRedesign) {
+      return (
+        <Text textStyle="body-2" color="secondary.400">
+          <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
+            {t(
+              'features.adminForm.settings.emailNotifications.section.regular.statusTrackerDescriptionRedesign',
+            )}
+          </Link>{' '}
+          <Link target="_blank" href={STATUS_TRACKER_PREVIEW_LINK}>
+            <Icon as={BiLinkExternal} verticalAlign="middle" />
+          </Link>
+        </Text>
+      )
+    }
     return (
       <Text textStyle="body-2" color="secondary.400">
         {t(
@@ -52,7 +69,9 @@ export const StatusTrackerToggle = (): JSX.Element => {
         isLoading={mutateMrfStatusTracker.isLoading}
         isChecked={hasStatusTracker}
         label={t(
-          'features.adminForm.settings.emailNotifications.section.regular.statusTrackerInfo',
+          isRedesign
+            ? 'features.adminForm.settings.emailNotifications.section.regular.statusTrackerInfoRedesign'
+            : 'features.adminForm.settings.emailNotifications.section.regular.statusTrackerInfo',
         )}
         onChange={() => handleToggleStatusTracker()}
       />

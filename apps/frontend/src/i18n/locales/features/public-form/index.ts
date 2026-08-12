@@ -17,6 +17,7 @@ export interface PublicForm {
       message: string
     }
     myinfo: string
+    attachmentDecryption: string
     submitFailure: string
     verifiedFieldExpired: string
   }

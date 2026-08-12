@@ -12,7 +12,7 @@ import { errAsync, okAsync, Result } from 'neverthrow'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { generateOtpWithHash } from '../../utils/otp'
+import { generateOtpWithHash, getExpandedOtpLength } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import { setFormTags } from '../datadog/datadog.utils'
@@ -88,8 +88,10 @@ export const handleCreateVerificationTransaction: ControllerHandler<
  * @returns 400 when the provided phone number is not valid
  * @returns 400 when the field type is not supported for validation
  * @returns 404 when the requested form was not found
+ * @returns 404 when the form is not public
  * @returns 404 when the transaction was not found
  * @returns 404 when the field was not found
+ * @returns 410 when the form has been deleted
  * @returns 422 when the user requested for a new otp without waiting
  * @returns 500 when the otp could not be hashed
  * @returns 500 when there is a database error
@@ -112,7 +114,10 @@ export const _handleGenerateOtp: ControllerHandler<
   // Step 1: Ensure that the form for the specified transaction exists
   return (
     FormService.retrieveFullFormById(formId)
-      // Step 2: Verify SPCP/MyInfo, if form requires it
+      // Step 2: Ensure that the form is public; OTPs must not be issued for
+      // forms that are private or archived
+      .andThen((form) => FormService.isFormPublic(form).map(() => form))
+      // Step 3: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
         // If previousSubmissionId exists, this means it is coming from a 2+ step MRF workflow
         // verify MRF JWT and skip SPCP/MyInfo since Singpass is currently only enabled for MRF first step
@@ -255,27 +260,30 @@ export const _handleGenerateOtp: ControllerHandler<
             return okAsync(form)
         }
       })
-      // Step 3: Generate OTP
+      // Step 4: Generate OTP
       .andThen((form) =>
-        generateOtpWithHash(logMeta, SALT_ROUNDS).andThen(
-          ({ otp, hashedOtp, otpPrefix }) =>
-            // Step 3: Send Otp
-            {
-              return VerificationService.sendNewOtp({
-                fieldId,
-                hashedOtp,
-                otp,
+        generateOtpWithHash({
+          logMeta,
+          saltRounds: SALT_ROUNDS,
+          expandedOtpLength: getExpandedOtpLength(req.growthbook),
+        }).andThen(({ otp, hashedOtp, otpPrefix }) =>
+          // Step 5: Send Otp
+          {
+            return VerificationService.sendNewOtp({
+              fieldId,
+              hashedOtp,
+              otp,
+              otpPrefix,
+              recipient: answer,
+              transactionId,
+              senderIp,
+            }) // Return the required data for next steps.
+              .map((updatedTransaction) => ({
+                updatedTransaction,
+                form,
                 otpPrefix,
-                recipient: answer,
-                transactionId,
-                senderIp,
-              }) // Return the required data for next steps.
-                .map((updatedTransaction) => ({
-                  updatedTransaction,
-                  form,
-                  otpPrefix,
-                }))
-            },
+              }))
+          },
         ),
       )
       .map(({ otpPrefix }) => {
@@ -371,7 +379,8 @@ export const handleOtpVerification = [
     [Segments.BODY]: Joi.object({
       otp: Joi.string()
         .required()
-        .regex(/^\d{6}$/)
+        .uppercase()
+        .regex(/^[A-Z0-9]{6,12}$/)
         .message('Please enter a valid OTP'),
     }),
   }),

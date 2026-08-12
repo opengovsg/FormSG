@@ -1,6 +1,6 @@
 {
   "name": "@opengovsg/formsg-sdk",
-  "version": "7.3.1",
+  "version": "8.0.2",
   "main": "./cjs-entry.cjs",
   "module": "./dist/esm/index.js",
   "types": "./dist/cjs/index.d.ts",
@@ -55,6 +55,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "lint": "eslint src/ --quiet --fix",
     "lint-ci": "eslint src/ --quiet"
   },
@@ -64,9 +65,10 @@
     "directory": "packages/sdk"
   },
   "dependencies": {
+    "@stablelib/base64": "^1.0.1",
+    "@stablelib/utf8": "^1.0.2",
     "axios": "^1.15.2",
-    "tweetnacl": "^1.0.3",
-    "tweetnacl-util": "^0.15.1"
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "@types/jest": "^29.5.8",

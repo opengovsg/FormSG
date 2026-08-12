@@ -48,6 +48,7 @@ jobs:
               - apps/backend/__tests__/**
               - apps/backend/package.json
               - pnpm-lock.yaml
+              - .github/workflows/ci.yml
             shared:
               - packages/shared/constants/**
               - packages/shared/modules/**
@@ -198,10 +199,14 @@ jobs:
         run: pnpm install
       - run: pnpm lint:frontend
 
-  backend_test:
+  backend_test_shards:
     needs: [changes, install, build]
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v4.3.1
         with:
@@ -242,11 +247,28 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
-      - run: pnpm test:backend:ci
+      - run: pnpm test:backend:ci --shard=${{ matrix.shard }}/3
         env:
           DD_TAGS: layer:backend
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
+
+  backend_test:
+    # Aggregator preserving the stable `backend_test` check name for branch
+    # protection. Must also pass when shards are skipped (paths-filter gate),
+    # since a skipped required check counts as passing.
+    if: always()
+    needs: backend_test_shards
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify backend test shards
+        env:
+          SHARDS_RESULT: ${{ needs.backend_test_shards.result }}
+        run: |
+          if [ "$SHARDS_RESULT" != "success" ] && [ "$SHARDS_RESULT" != "skipped" ]; then
+            echo "Backend test shards finished with: $SHARDS_RESULT"
+            exit 1
+          fi
 
   backend_lint:
     needs: [changes, install]
@@ -315,7 +337,7 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
-      - run: pnpm test:shared
+      - run: pnpm test:shared:ci
         env:
           DD_TAGS: layer:shared
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
@@ -348,7 +370,7 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
-      - run: pnpm test:sdk
+      - run: pnpm test:sdk:coverage
         env:
           DD_TAGS: layer:sdk
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}

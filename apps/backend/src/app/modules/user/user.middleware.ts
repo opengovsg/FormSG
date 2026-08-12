@@ -22,7 +22,8 @@ export const validateContactOtpVerificationParams = celebrate({
     userId: Joi.string().required(),
     otp: Joi.string()
       .required()
-      .regex(/^\d{6}$/),
+      .uppercase()
+      .regex(/^[A-Z0-9]{6,12}$/),
     contact: Joi.string().required(),
   }),
 })

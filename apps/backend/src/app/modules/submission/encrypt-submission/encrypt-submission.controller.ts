@@ -1,10 +1,5 @@
-import JoiDate from '@joi/date'
-import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
-import { AuthedSessionData } from 'express-session'
 import {
-  DateString,
   ErrorCode,
-  ErrorDto,
   FormAuthType,
   Payment,
   PaymentChannel,
@@ -17,7 +12,6 @@ import Stripe from 'stripe'
 
 import {
   IAttachmentInfo,
-  IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
   StripePaymentMetadataDto,
 } from '../../../../types'
@@ -37,11 +31,9 @@ import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
 import { createReqMeta } from '../../../utils/request'
-import { getFormAfterPermissionChecks } from '../../auth/auth.service'
 import { ApplicationError } from '../../core/core.errors'
 import { ControllerHandler } from '../../core/core.types'
 import { setFormTags } from '../../datadog/datadog.utils'
-import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import {
   FormRespondentNotWhitelistedError,
   FormRespondentSingleSubmissionValidationError,
@@ -51,7 +43,6 @@ import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import { SgidService } from '../../sgid/sgid.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
-import { getPopulatedUserById } from '../../user/user.service'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
@@ -71,11 +62,7 @@ import {
   ensureValidCaptcha,
 } from './encrypt-submission.ensures'
 import * as EncryptSubmissionMiddleware from './encrypt-submission.middleware'
-import {
-  checkFormIsEncryptMode,
-  getAllEncryptedSubmissionData,
-  performEncryptPostSubmissionActions,
-} from './encrypt-submission.service'
+import { performEncryptPostSubmissionActions } from './encrypt-submission.service'
 import {
   EncryptSubmissionContent,
   SubmitEncryptModeFormHandlerRequest,
@@ -91,9 +78,6 @@ const logger = createLoggerWithLabel(module)
 const EncryptSubmission = getEncryptSubmissionModel(mongoose)
 const EncryptPendingSubmission = getEncryptPendingSubmissionModel(mongoose)
 const Payment = getPaymentModel(mongoose)
-
-// NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
-const Joi = BaseJoi.extend(JoiDate)
 
 const submitEncryptModeForm = async (
   req: SubmitEncryptModeFormHandlerRequest,
@@ -819,80 +803,4 @@ export const handleStorageSubmission = [
   EncryptSubmissionMiddleware.validatePaymentSubmission,
   EncryptSubmissionMiddleware.encryptSubmission,
   submitEncryptModeForm,
-] as ControllerHandler[]
-
-const _getAllEncryptedResponse: ControllerHandler<
-  { formId: string },
-  unknown,
-  IEncryptedSubmissionSchema[] | ErrorDto,
-  { startDate?: DateString; endDate?: DateString }
-> = async (req, res) => {
-  const sessionUserId = (req.session as AuthedSessionData).user._id
-  const { formId } = req.params
-  // extract startDate and endDate from query
-  const { startDate, endDate } = req.query
-
-  const logMeta = {
-    action: 'handleGetAllEncryptedResponse',
-    formId,
-    sessionUserId,
-    ...createReqMeta(req),
-  }
-
-  logger.info({
-    message: 'Get all encrypted response start',
-    meta: logMeta,
-  })
-
-  return (
-    // Step 1: Retrieve logged in user.
-    getPopulatedUserById(sessionUserId)
-      // Step 2: Check whether user has read permissions to form.
-      .andThen((user) =>
-        getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Read,
-        }),
-      )
-      // Step 3: Check whether form is encrypt mode.
-      .andThen(checkFormIsEncryptMode)
-      // Step 4: Is encrypt mode form, retrieve submission data.
-      .andThen(() => getAllEncryptedSubmissionData(formId, startDate, endDate))
-      .map((responseData) => {
-        logger.info({
-          message: 'Get encrypted response using submissionId success',
-          meta: logMeta,
-        })
-        return res.json(responseData)
-      })
-      .mapErr((error) => {
-        logger.error({
-          message: 'Failure retrieving encrypted submission response',
-          meta: logMeta,
-          error,
-        })
-
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
-      })
-  )
-}
-
-// Handler for GET /:formId([a-fA-F0-9]{24})/submissions
-export const handleGetAllEncryptedResponses = [
-  celebrate({
-    [Segments.QUERY]: Joi.object()
-      .keys({
-        startDate: Joi.date().format('YYYY-MM-DD').raw(),
-        endDate: Joi.date()
-          .format('YYYY-MM-DD')
-          .min(Joi.ref('startDate'))
-          .raw(),
-      })
-      .and('startDate', 'endDate'),
-  }),
-  _getAllEncryptedResponse,
 ] as ControllerHandler[]

@@ -13,6 +13,7 @@ import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 
 import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
@@ -29,6 +30,7 @@ export const QuestionsBlock = ({
   isFirstStep,
 }: QuestionsBlockProps): JSX.Element => {
   const { t } = useTranslation()
+  const isRedesign = useIsWorkflowBuilderRedesign()
   const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
   const {
     formState: { errors },
@@ -69,10 +71,16 @@ export const QuestionsBlock = ({
           tooltipVariant="info"
           tooltipPlacement="top"
           tooltipText={t(
-            'features.adminForm.sidebar.workflow.questions.tooltip',
+            isRedesign
+              ? 'features.adminForm.sidebar.workflow.questions.tooltipRedesign'
+              : 'features.adminForm.sidebar.workflow.questions.tooltip',
           )}
         >
-          {t('features.adminForm.sidebar.workflow.questions.label')}
+          {t(
+            isRedesign
+              ? 'features.adminForm.sidebar.workflow.questions.labelRedesign'
+              : 'features.adminForm.sidebar.workflow.questions.label',
+          )}
         </FormLabel>
         <Controller
           control={control}
@@ -81,7 +89,9 @@ export const QuestionsBlock = ({
             <MultiSelect
               isDisabled={isLoading}
               placeholder={t(
-                'features.adminForm.sidebar.workflow.questions.placeholder',
+                isRedesign
+                  ? 'features.adminForm.sidebar.workflow.questions.placeholderRedesign'
+                  : 'features.adminForm.sidebar.workflow.questions.placeholder',
               )}
               items={items}
               isSelectedItemFullWidth

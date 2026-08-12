@@ -1,9 +1,7 @@
 import { datadogLogs } from '@datadog/browser-logs'
 
-import { DateString } from 'formsg-shared/types'
 import {
   FormSubmissionMetadataQueryDto,
-  StorageModeChartsDto,
   SubmissionCountQueryDto,
   SubmissionDto,
   SubmissionMetadataList,
@@ -102,7 +100,7 @@ export const getDecryptedSubmissionById = async ({
     submissionId,
   })
 
-  let processedContent, submissionSecretKey, mrfVersion
+  let processedContent, submissionSecretKey, mrfVersion, stepToken
   switch (encryptedSubmission.submissionType) {
     case SubmissionType.Encrypt: {
       const decryptedContent = formsgSdk.crypto.decrypt(secretKey, {
@@ -128,6 +126,7 @@ export const getDecryptedSubmissionById = async ({
             encryptedSubmission.encryptedSubmissionSecretKey,
           verifiedContent: encryptedSubmission.verifiedContent,
           version: encryptedSubmission.version,
+          encryptedStepToken: encryptedSubmission.encryptedStepToken,
         },
         formFieldsMeta,
       )
@@ -150,6 +149,7 @@ export const getDecryptedSubmissionById = async ({
       )
       submissionSecretKey = decryptedV4.submissionSecretKey
       mrfVersion = encryptedSubmission.mrfVersion
+      stepToken = decryptedV4.stepToken
       break
     }
   }
@@ -176,28 +176,8 @@ export const getDecryptedSubmissionById = async ({
         : undefined,
     responses,
     mrfVersion,
+    stepToken,
   }
-}
-
-const getAllEncryptedSubmission = async ({
-  formId,
-  startDate,
-  endDate,
-}: {
-  formId: string
-  startDate?: DateString
-  endDate?: DateString
-}): Promise<StorageModeChartsDto[]> => {
-  const queryUrl = `${ADMIN_FORM_ENDPOINT}/${formId}/submissions`
-  if (startDate && endDate) {
-    return ApiService.get(queryUrl, {
-      params: {
-        startDate,
-        endDate,
-      },
-    }).then(({ data }) => data)
-  }
-  return ApiService.get(queryUrl).then(({ data }) => data)
 }
 
 type DecryptedContent = NonNullable<ReturnType<typeof formsgSdk.crypto.decrypt>>

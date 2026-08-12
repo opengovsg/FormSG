@@ -21,12 +21,6 @@ name: Release
 on:
   workflow_dispatch:
 
-# Only one release may be in flight at a time, so two dispatches can't race to
-# bump the version off the same base commit.
-concurrency:
-  group: release
-  cancel-in-progress: true
-
 # Minimal by default; each job escalates to exactly what it needs.
 permissions:
   contents: read
@@ -40,12 +34,16 @@ jobs:
   release:
     name: Cut release
     runs-on: ubuntu-latest
+    concurrency:
+      group: release-cut
+      cancel-in-progress: false
     # `release` GitHub Environment gates who can cut a tag (required reviewers
     # configured in repo settings).
     environment: release
     # Push the version-bump commit + tags and create the GitHub release.
     permissions:
       contents: write
+      pull-requests: read
     outputs:
       version: ${{ steps.version.outputs.tag }}
       sdk-tag: ${{ steps.sdk.outputs.tag }}
@@ -86,6 +84,14 @@ jobs:
         id: version
         run: echo "tag=v$(jq -r .version package.json)" >> "$GITHUB_OUTPUT"
 
+      - name: Generate changelog and test verification checklist
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${{ steps.version.outputs.tag }}"
+          ./scripts/generate_test_checklist.sh "${version#v}" CHANGELOG.md >> "$GITHUB_STEP_SUMMARY"
+
       # Cuts the SDK release the way release_prep.sh did: bump
       # packages/sdk/package.json, update packages/sdk/CHANGELOG.md and create a
       # `sdk-vX.Y.Z` tag via .external.versionrc.js — but only when commits have
@@ -120,7 +126,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
-            echo "GitHub release ${{ steps.version.outputs.tag }} already exists; skipping creation."
+            echo "Updating existing GitHub release ${{ steps.version.outputs.tag }} with regenerated release notes."
+            gh api "repos/${{ github.repository }}/releases/generate-notes" \
+              -f "tag_name=${{ steps.version.outputs.tag }}" \
+              --jq .body > .release_notes.md
+            gh release edit "${{ steps.version.outputs.tag }}" --notes-file .release_notes.md
           else
             gh release create "${{ steps.version.outputs.tag }}" \
               --verify-tag \

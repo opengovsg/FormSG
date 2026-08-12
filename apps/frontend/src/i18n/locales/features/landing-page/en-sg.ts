@@ -30,10 +30,10 @@ export const enSG: LandingPage = {
         description:
           'Send confirmation emails to your respondents along with a copy of their responses',
       },
-      prefill: {
-        title: 'Prefill',
+      workflow: {
+        title: 'Workflow and approvals',
         description:
-          'Make form filling faster for respondents by pre-filling fields for them',
+          'Route forms through multiple respondents for approvals and sequential submissions, all within a single form',
       },
       webhooks: {
         title: 'Webhooks',
@@ -61,11 +61,11 @@ export const enSG: LandingPage = {
     subtitle:
       'Form is a critical enabler of many agency workflows. Notable forms launched include:',
   },
-  storageModeSection: {
+  securitySection: {
     title: 'Secure collection of responses',
     subtitle:
       'All form responses are encrypted and can be sent directly to your email inbox or exported as a spreadsheet. This means third parties, including FormSG, will not be able to access or view your form data and emails.',
-    modes: {
+    classifications: {
       security: {
         title: 'Security Classification',
         description: 'Up to Confidential (Cloud-Eligible)',
@@ -92,78 +92,45 @@ export const enSG: LandingPage = {
       sourceLinkLabel: 'Read more',
     },
     qnaAccordionItem: {
-      loseSecretKey: {
-        question: 'What happens if I lose my Secret Key?',
-        answer: `
-          If you have lost your secret key, take these steps immediately:
-
-          1. If your form is live, duplicate your form, save the new secret key securely and replace the original form's link with the new form's link to continue collecting responses. Deactivate the original form as soon as possible to avoid losing further responses.
-
-          2. On the computer you used to create the original form, search for 'Form Secret Key'. Secret keys typically downloaded into your Downloads folder as .txt files with 'Form Secret Key' in the filename.
-
-          3. If you have created multiple forms with similar titles in the past, it is possible that you have confused the different forms' secret keys with each other, as form titles are in the secret keys' filenames. Try all secret keys with similar filenames on your form.
-
-          4. If you remember sending an email to share your secret key with collaborators, search the Sent folder in your email for the keyword 'secret key' and your form title.
-
-          5. If you still cannot find your secret key and would like our help to debug this further, contact us on our [help form]({CONTACT_US}).
-
-          Without your secret key, you will not be able to access your existing response data. Additionally, it's not possible for us to recover your lost secret key or response data on your behalf. This is because Form does not retain your secret key or any other way to unlock your encrypted data - the only way to ensure response data is truly private to agencies only. This is an important security benefit, because that means even if our server were to be compromised, an attacker would never be able to unlock your encrypted responses.
-        `,
+      whoCanCreate: {
+        question: 'Who can create forms?',
+        answer:
+          'Only government agencies and organisations approved by their ministries can create forms on FormSG.',
       },
-      increaseAttachmentSizeLimit: {
-        question: 'How do I increase attachment size limit?',
-        answer: `The current size limit is 20 MB for storage mode forms.
+      highVolume: {
+        question: 'Can FormSG handle high volume?',
+        answer: `Yes. Some forms already exceed 1 million responses, and there is no limit on the number of responses you can collect.
 
-            Because the smallest unit you can attach per attachment field is 1 MB, you can have a max of 20 attachments. If your user has to submit more documents, you may create one 20MB attachment field, and advise your user to zip documents up and submit them as one attachment.`,
+            As a best practice, filter responses by date before exporting, and give us a heads up if you expect to collect a very large number of responses through our support channels.`,
+      },
+      isFree: {
+        question: 'Is FormSG free?',
+        answer:
+          'Yes, FormSG is completely free. Admins can get started and self-help without involving our team.',
       },
       howDoesE2eWork: {
         question: 'How does end-to-end encryption work?',
         answer: `
-          When a respondent submits a response, response data is encrypted in the respondent's browser before being sent to our servers for storage. This means that by the time Form's servers receive responses, they have already been scrambled and are stored in this unreadable form. Your response data remains in this encrypted state until you decrypt your responses with your secret key, transforming them into a readable format.
+          When a respondent submits a response, response data is encrypted in the respondent's browser before being sent to our servers for storage. This means that by the time FormSG's servers receive responses, they have already been scrambled and are stored in this unreadable form. Your response data remains in this encrypted state until you decrypt your responses with your secret key, transforming them into a readable format.
 
-          The benefit of end-to-end encryption is that response data enters and remains in Form's servers in an encrypted state. This ensures that even if our servers are compromised by an attack, attackers will still not be able to decrypt and view your response data, as they do not possess your secret key.
-        `,
-      },
-      howToTransferOwnership: {
-        question: 'How do I transfer ownership of my forms?',
-        answer: `
-          You can transfer ownership on the top right hand corner of each form by clicking the Add Collaborator button.
-
-          Note that you might not need to transfer ownership of your form. You may simply add your colleague as a collaborator. Collaborators have the same rights as form creators, except they cannot delete the form.
+          The benefit of end-to-end encryption is that response data enters and remains in FormSG's servers in an encrypted state. This ensures that even if our servers are compromised by an attack, attackers will still not be able to decrypt and view your response data, as they do not possess your secret key.
         `,
       },
     },
   },
   howItWorksSection: {
     title: 'How it works',
-    modes: {
-      storage: {
-        tab: 'Storage mode',
-        description:
-          'Collect responses from individual respondents. Ideal for one-way submissions. All data is encrypted, which means third parties, including FormSG, will not be able to access or view your form data.',
-        steps: {
-          one: 'Log in to FormSG via Internet or Intranet',
-          two: 'Create a new Storage mode form and store Secret Key safely',
-          three: 'Build form fields',
-          four: 'Share form link with respondents',
-          five: 'Upload Secret Key and view your responses',
-          six: 'Download your responses as a CSV and collect responses at your email address',
-        },
-      },
-      mrf: {
-        tab: 'Multi-respondent mode',
-        description:
-          'Collect responses from multiple respondents in a single workflow. Ideal for sequential submissions. All data is encrypted, which means third parties, including FormSG, will not be able to access or view your form data.',
-        steps: {
-          one: 'Log in to FormSG via Internet or Intranet',
-          two: 'Create a new multi-respondent form and store the Secret Key safely',
-          three:
-            'Build form fields and assign them to various steps in your workflow',
-          four: `Share form link for automatic routing to next respondent(s)`,
-          five: 'Upload Secret Key and view your responses',
-          six: 'Download your responses as a CSV and collect responses at your email address',
-        },
-      },
+    description:
+      'Collect responses from members of public and public officers. All data is encrypted, so third parties, including FormSG, cannot access or view your form data.',
+    steps: {
+      one: 'Log in to FormSG via Internet or Intranet',
+      two: 'Create your form and store your Secret Key safely',
+      three: 'Build your form fields',
+      four: 'Optionally add logic (branching) and workflow (approvals or multiple respondents)',
+      five: 'Share your form link',
+      six: 'Upload your Secret Key to view responses',
+      seven:
+        'Download your responses as a spreadsheet, or have them emailed to you',
     },
   },
   ogpProductSuiteSection: {

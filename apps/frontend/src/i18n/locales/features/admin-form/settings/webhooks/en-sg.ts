@@ -9,4 +9,12 @@ export const enSG = {
     label: 'Enable retries',
     description: `Your system must meet certain requirements before retries can be safely enabled. [Learn more]({url})`,
   },
+  error: {
+    title: "Couldn't load webhook settings",
+    body: "Something went wrong while loading this form's settings. This does not affect your form or its responses. Please try again.",
+    button: {
+      label: 'Try again',
+      loadingText: 'Trying again…',
+    },
+  },
 }

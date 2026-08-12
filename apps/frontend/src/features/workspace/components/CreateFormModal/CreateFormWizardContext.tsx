@@ -48,6 +48,7 @@ export type CreateFormWizardContextReturn = {
   >
   goToFormDetails: () => void
   isPaperTrackingSetUpPageEnabled: boolean
+  isLegacySetup: boolean
   proceedCtaLabel: string
   keypair: ReturnType<typeof formsgSdk.crypto.generate>
   // Whether any async operation is in progress.

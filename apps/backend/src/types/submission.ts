@@ -231,6 +231,7 @@ export type MultirespondentSubmissionData = {
   | 'workflowStep'
   | 'mrfVersion'
   | 'submittedSteps'
+  | 'encryptedStepToken'
 > &
   Document
 

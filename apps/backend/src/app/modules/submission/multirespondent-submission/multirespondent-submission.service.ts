@@ -1,7 +1,7 @@
 import { GrowthBook } from '@growthbook/growthbook'
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import {
   BasicField,
-  FieldResponsesV3,
   FormAuthType,
   FormFieldDto,
   FormResponseMode,
@@ -42,7 +42,7 @@ import {
 import MailService from '../../../services/mail/mail.service'
 import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
-import { DatabaseError } from '../../core/core.errors'
+import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
 import { FormRespondentSingleSubmissionValidationError } from '../../form/form.errors'
 import { isFormMultirespondent } from '../../form/form.utils'
 import { WebhookFactory } from '../../webhook/webhook.factory'
@@ -122,7 +122,7 @@ const checkIsStepRejected = ({
 }: {
   zeroIndexedStepNumber: number
   form: Pick<IPopulatedMultirespondentForm, 'workflow'>
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
 }): Result<
   boolean,
   ExpectedResponseNotFoundError | InvalidApprovalFieldTypeError
@@ -146,7 +146,7 @@ const checkIsStepRejected = ({
     return err(new InvalidApprovalFieldTypeError())
   }
 
-  return ok(approvalFieldResponse.answer === 'No')
+  return ok((approvalFieldResponse.answer as { value: string }).value === 'No')
 }
 
 interface sendNextStepEmailProps {
@@ -158,7 +158,7 @@ interface sendNextStepEmailProps {
   responseUrl: string
   formId: string
   submissionId: string
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
 }
 
 const sendNextStepEmail = ({
@@ -353,7 +353,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   currentStepNumber: number
   submissionId: string
 }): Result<string[], InvalidWorkflowTypeError> => {
@@ -456,7 +456,7 @@ const sendMrfOutcomeEmails = ({
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   latestSubmissionTimestamp: string
   submissionId: string
   isApproval?: boolean
@@ -606,7 +606,7 @@ const sendMrfRespondentCopyEmails = ({
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   submission: IMultirespondentSubmissionSchema
   attachments?: IAttachmentInfo[]
   formFields: FormFieldSchema[] | FormFieldDto[]
@@ -733,6 +733,8 @@ export const createMultiRespondentFormSubmission = ({
         version,
         mrfVersion,
         hashedSubmitterId,
+        stepTokenHash,
+        encryptedStepToken,
       } = encryptedPayload
 
       const nextStepNumber = 1 // since current step is 0
@@ -786,6 +788,8 @@ export const createMultiRespondentFormSubmission = ({
         workflowStep: 0,
         mrfVersion,
         submittedSteps: [submittedStepMeta],
+        stepTokenHash,
+        encryptedStepToken,
       }
 
       const saveSubmission = async () => {
@@ -861,7 +865,7 @@ export const createMultiRespondentFormSubmission = ({
 }
 
 interface CheckIfRespondentFormSummaryIsRequiredArgs {
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   formFields: FormFieldSchema[] | FormFieldDto[]
   currentStepActiveFields: string[]
 }
@@ -894,7 +898,7 @@ interface CheckIsWorkflowCompletionEmailPdfRequiredArgs {
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
-  responses: FieldResponsesV3
+  responses: FieldResponsesV4
   isRejected: boolean
   submissionId: string
   growthbook?: GrowthBook
@@ -1042,7 +1046,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   attachments?: IAttachmentInfo[]
   growthbook?: GrowthBook
 }): ResultAsync<boolean, InvalidWorkflowTypeError | MailSendError> => {
-  const { submissionSecretKey, responses } = encryptedPayload
+  const { submissionSecretKey, responses, stepToken } = encryptedPayload
   const currentStepNumber = 0
 
   // if there is no workflow, every field is an active field
@@ -1140,7 +1144,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
     responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
       form._id,
       submissionId,
-      { key: submissionSecretKey },
+      { key: submissionSecretKey, stepToken },
     )}`,
     formId: form._id,
     submissionId,
@@ -1187,7 +1191,10 @@ export const updateMultiRespondentFormSubmission = ({
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<
   IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
-  AttachmentUploadError | SubmissionSaveError | SubmissionNotFoundError
+  | AttachmentUploadError
+  | SubmissionSaveError
+  | SubmissionNotFoundError
+  | PossibleDatabaseError
 > => {
   logMeta = {
     ...logMeta,
@@ -1222,6 +1229,8 @@ export const updateMultiRespondentFormSubmission = ({
         version,
         workflowStep,
         mrfVersion,
+        stepTokenHash,
+        encryptedStepToken,
       } = encryptedPayload
 
       const nextStepNumber = workflowStep + 1
@@ -1301,10 +1310,15 @@ export const updateMultiRespondentFormSubmission = ({
       submission.workflowStep = workflowStep
       submission.attachmentMetadata = attachmentMetadata
       submission.mrfVersion = mrfVersion
+      submission.stepTokenHash = stepTokenHash
+      submission.encryptedStepToken = encryptedStepToken
 
       return ResultAsync.fromPromise(
         submission.save().then(() => ({ submission, responseMetadata })),
         (error) => {
+          if (error instanceof mongoose.Error.VersionError) {
+            return transformMongoError(error)
+          }
           logger.error({
             message: 'Multirespondent submission save error',
             meta: logMeta,
@@ -1349,7 +1363,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   | ExpectedResponseNotFoundError
   | InvalidApprovalFieldTypeError
 > => {
-  const { responses, submissionSecretKey } = encryptedPayload
+  const { responses, submissionSecretKey, stepToken } = encryptedPayload
 
   logMeta = {
     ...logMeta,
@@ -1507,7 +1521,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
         responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
           snapshottedFormDef._id,
           submissionId,
-          { key: submissionSecretKey },
+          { key: submissionSecretKey, stepToken },
         )}`,
         formId: snapshottedFormDef._id,
         submissionId,

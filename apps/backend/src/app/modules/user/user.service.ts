@@ -36,6 +36,7 @@ export const MAX_OTP_ATTEMPTS = 10
  * Creates a contact OTP and saves it into the AdminVerification collection.
  * @param userId the user ID the contact is to be linked to
  * @param contact the contact number to send the generated OTP to
+ * @param expandedOtpLength if positive, generates an uppercase alphanumeric OTP of this length
  * @returns ok(the generated OTP) if saving into DB is successful
  * @returns err(DatabaseError) if error occurs whilst insertion of OTP into the database
  * @returns err(HashingError) if error occurs whilst hashing the OTP or contact
@@ -44,12 +45,13 @@ export const MAX_OTP_ATTEMPTS = 10
 export const createContactOtp = (
   userId: IUserSchema['_id'],
   contact: string,
+  expandedOtpLength = 0,
 ): ResultAsync<string, HashingError | DatabaseError | MissingUserError> => {
   // Step 1: Verify existence of userId.
   return (
     findUserById(userId)
       // Step 2: Generate and hash OTP
-      .andThen(() => generateOtpWithHash())
+      .andThen(() => generateOtpWithHash({ expandedOtpLength }))
       // Step 3: Hash contact number.
       .andThen(({ otp, hashedOtp }) =>
         hashData(contact)

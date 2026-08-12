@@ -19,7 +19,9 @@ export const enSG: EmergencyContact = {
     errors: {
       required: 'OTP is required.',
       numbersOnly: 'Only numbers are allowed.',
+      charactersOnly: 'Only letters and numbers are allowed.',
       invalid: 'Please enter a 6 digit OTP.',
+      invalidExpanded: 'Please enter a {otpLength} character OTP.',
     },
   },
 }
