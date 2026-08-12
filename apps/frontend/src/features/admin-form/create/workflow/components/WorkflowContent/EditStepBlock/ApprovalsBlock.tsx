@@ -14,10 +14,10 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
+import { nextEditFieldsForApproval } from '../utils/nextEditFieldsForApproval'
 
 import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
-import { addApprovalFieldToEdit } from './reconcileApprovalField'
 
 interface ApprovalsBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
@@ -39,7 +39,6 @@ export const ApprovalsBlock = ({
     watch,
   } = formMethods
   const selectedApprovalField = watch(APPROVAL_FIELD_NAME)
-  const selectedEditFields = watch(FIELDS_TO_EDIT_NAME)
   const [isApprovalToggleChecked, setIsApprovalToggleChecked] = useState(
     !!selectedApprovalField,
   )
@@ -106,15 +105,13 @@ export const ApprovalsBlock = ({
             ? 'features.adminForm.sidebar.workflow.approvals.toggle.descriptionRedesign'
             : 'features.adminForm.sidebar.workflow.approvals.toggle.description',
         )}
-        {...(isRedesign
-          ? {}
-          : {
-              tooltipText: t(
-                'features.adminForm.sidebar.workflow.approvals.toggle.tooltip',
-              ),
-              tooltipVariant: 'info' as const,
-              tooltipPlacement: 'top' as const,
-            })}
+        tooltipText={
+          isRedesign
+            ? undefined
+            : t('features.adminForm.sidebar.workflow.approvals.toggle.tooltip')
+        }
+        tooltipVariant="info"
+        tooltipPlacement="top"
       />
       {isApprovalToggleChecked ? (
         <FormControl
@@ -159,17 +156,16 @@ export const ApprovalsBlock = ({
               },
             }}
             render={({ field: { value = '', onChange, ...rest } }) => {
-              // Auto-assign (§4.3): picking the approval field also adds it
-              // to this step's `edit` list. One-way only — never removes an
-              // id from `edit` on switch/clear/toggle-off (see plan §4.5).
               const handleApprovalFieldChange = (newValue: string) => {
                 onChange(newValue)
-                if (isRedesign && newValue) {
-                  setValue(
-                    FIELDS_TO_EDIT_NAME,
-                    addApprovalFieldToEdit(selectedEditFields, newValue),
-                  )
-                }
+                setValue(
+                  FIELDS_TO_EDIT_NAME,
+                  nextEditFieldsForApproval({
+                    edit: getValues(FIELDS_TO_EDIT_NAME),
+                    approvalFieldId: newValue,
+                    isEnabled: isRedesign,
+                  }),
+                )
               }
               return (
                 <SingleSelect

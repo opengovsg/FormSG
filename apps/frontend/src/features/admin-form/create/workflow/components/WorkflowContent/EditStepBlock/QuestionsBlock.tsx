@@ -71,15 +71,13 @@ export const QuestionsBlock = ({
       >
         <FormLabel
           style={textStyles.h4}
-          {...(isRedesign
-            ? {}
-            : {
-                tooltipVariant: 'info' as const,
-                tooltipPlacement: 'top' as const,
-                tooltipText: t(
-                  'features.adminForm.sidebar.workflow.questions.tooltip',
-                ),
-              })}
+          tooltipVariant="info"
+          tooltipPlacement="top"
+          tooltipText={
+            isRedesign
+              ? undefined
+              : t('features.adminForm.sidebar.workflow.questions.tooltip')
+          }
         >
           {t(
             isRedesign
