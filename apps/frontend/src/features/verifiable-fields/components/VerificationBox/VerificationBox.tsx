@@ -9,7 +9,7 @@ import {
   InputLeftAddon,
 } from '@chakra-ui/react'
 
-import { OTP_LENGTH } from 'formsg-shared/constants'
+import { OTP_LENGTH, OTP_REGEX } from 'formsg-shared/constants'
 import { BasicField } from 'formsg-shared/types'
 
 import ResendOtpButton from '~/templates/ResendOtpButton'
@@ -131,18 +131,18 @@ export const VerificationBox = ({
                 ) : null}
                 <Input
                   type="text"
+                  inputMode="text"
+                  autoCapitalize="characters"
+                  spellCheck={false}
                   maxLength={OTP_LENGTH}
                   autoComplete="one-time-code"
                   autoFocus
                   {...register('otp', {
                     required: 'OTP is required.',
                     pattern: {
-                      value: /^[a-zA-Z0-9]+$/,
-                      message: 'Only letters and numbers are allowed.',
+                      value: new RegExp(OTP_REGEX.source, 'i'),
+                      message: `Please enter a ${OTP_LENGTH} character OTP.`,
                     },
-                    validate: (value) =>
-                      value.length === OTP_LENGTH ||
-                      `Please enter a ${OTP_LENGTH} character OTP.`,
                   })}
                   onKeyDown={handleKeyDown}
                 />

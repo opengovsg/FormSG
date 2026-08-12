@@ -1,4 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import { OTP_REGEX } from 'formsg-shared/constants'
 import {
   ErrorDto,
   FormAuthType,
@@ -379,7 +380,7 @@ export const handleOtpVerification = [
       otp: Joi.string()
         .required()
         .uppercase()
-        .regex(/^[A-Z0-9]{8}$/)
+        .regex(OTP_REGEX)
         .message('Please enter a valid OTP'),
     }),
   }),

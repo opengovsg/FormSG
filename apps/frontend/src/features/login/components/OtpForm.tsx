@@ -1,9 +1,8 @@
-import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
 
-import { OTP_LENGTH } from 'formsg-shared/constants'
+import { OTP_LENGTH, OTP_REGEX } from 'formsg-shared/constants'
 
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -35,15 +34,6 @@ export const OtpForm = ({
 
   const isMobile = useBreakpointValue({ base: true, xs: true, lg: false })
 
-  const validateOtp = useCallback(
-    (value: string) =>
-      value.length === OTP_LENGTH ||
-      t('features.login.components.OTPForm.otpLengthCheck', {
-        otpLength: OTP_LENGTH,
-      }),
-    [t],
-  )
-
   const onSubmitForm = async (inputs: OtpFormInputs) => {
     return onSubmit(inputs).catch((e) => {
       setError('otp', { type: 'server', message: e.message })
@@ -60,16 +50,20 @@ export const OtpForm = ({
         </FormLabel>
         <Input
           type="text"
+          inputMode="text"
+          autoCapitalize="characters"
+          spellCheck={false}
           maxLength={OTP_LENGTH}
           autoComplete="one-time-code"
           autoFocus
           {...register('otp', {
             required: t('features.login.components.OTPForm.otpRequired'),
             pattern: {
-              value: /^[a-zA-Z0-9]+$/,
-              message: t('features.login.components.OTPForm.otpTypeCheck'),
+              value: new RegExp(OTP_REGEX.source, 'i'),
+              message: t('features.login.components.OTPForm.otpLengthCheck', {
+                otpLength: OTP_LENGTH,
+              }),
             },
-            validate: validateOtp,
           })}
           prefix={otpPrefix === undefined ? undefined : `${otpPrefix} -`}
         />

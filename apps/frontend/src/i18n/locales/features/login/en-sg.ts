@@ -32,7 +32,6 @@ export const enSG: Login = {
       signin: 'Sign in',
       otpRequired: 'OTP is required.',
       otpLengthCheck: 'Please enter a {otpLength} character OTP.',
-      otpTypeCheck: 'Only letters and numbers are allowed.',
       otpFromEmail: 'Enter OTP sent to {email}',
     },
     SgidLoginButton: {
