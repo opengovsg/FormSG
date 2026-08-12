@@ -522,6 +522,7 @@ const sendMrfOutcomeEmails = ({
         const responseJson = buildMrfResponseJson({
           formFields: form.form_fields,
           responses,
+          formId: String(form._id),
           responseId: submissionId,
           timestamp: latestSubmissionTimestamp,
           delimiter: getFormDelimiter(form.metadata),
