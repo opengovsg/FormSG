@@ -12,6 +12,11 @@ export const featureFlags = {
   enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   mrfStepWriteToken: 'mrf-step-write-token' as const,
+  // Delivery flag for non-plumber (generic/zapier) MRF webhook consumers,
+  // which only ever receive v3-format payloads. Plumber's v4 release is
+  // governed separately by mrf-step-write-token (storage and wire format are
+  // one decision, since the wire version follows the stored mrfVersion).
+  mrfWebhooksV3Generic: 'mrf-webhooks-v3-generic' as const,
   useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
   lambdaPdfGeneration: 'lambda-pdf-generation' as const,
   enableSaveDraftButtonHeader: 'enable-save-draft-button-header' as const,
