@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.8.0](https://github.com/opengovsg/formsg/compare/v9.7.2...v9.8.0) (2026-08-13)
+
+
+### Features
+
+* **logic:** click-to-edit logic cards (2/2) (#9786) ([#9786](https://github.com/opengovsg/formsg/commit/ea7559c23eb0f666e44e757eb21072cb117f2616))
+* **workflow:** click-to-edit step cards (1/2) (#9781) ([#9781](https://github.com/opengovsg/formsg/commit/2c925823f43186b20e60b87a8e67a5c69f68589c))
+
+
+### Bug Fixes
+
+* **workflow,logic:** guard auto-save effect against double submit (#9838) ([#9838](https://github.com/opengovsg/formsg/commit/140d5e1acf44b10b423e803e9383787d59831283))
+
 ## [9.7.2](https://github.com/opengovsg/formsg/compare/v9.7.1...v9.7.2) (2026-08-13)
 
 
