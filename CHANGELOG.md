@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.7.2](https://github.com/opengovsg/formsg/compare/v9.7.1...v9.7.2) (2026-08-13)
+
+
+### Bug Fixes
+
+* gate Form ID in admin notification JSON under formid-json feature flag (#9845) ([#9845](https://github.com/opengovsg/formsg/commit/eebbe00e5ce1998cd835d16fa7943010e55c5c62))
+
 ## [9.7.1](https://github.com/opengovsg/formsg/compare/v9.7.0...v9.7.1) (2026-08-12)
 
 
