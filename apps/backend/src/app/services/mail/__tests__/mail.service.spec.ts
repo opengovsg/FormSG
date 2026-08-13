@@ -388,6 +388,7 @@ describe('mail.service', () => {
         },
       ],
       formData: [],
+      includeFormIdInResponseJson: true,
     }
 
     const FORMATTED_SUBMISSION_TIME = moment(
@@ -396,7 +397,8 @@ describe('mail.service', () => {
       .tz('Asia/Singapore')
       .format('ddd, DD MMM YYYY hh:mm:ss A')
 
-    // Should include the metadata in the front, with the form ID first.
+    // Should include the metadata in the front, with the form ID first
+    // since includeFormIdInResponseJson is enabled in the mock params.
     const EXPECTED_JSON_DATA = [
       {
         question: 'Form ID',

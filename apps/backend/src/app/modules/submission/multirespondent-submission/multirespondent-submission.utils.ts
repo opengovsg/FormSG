@@ -564,13 +564,13 @@ export const buildMrfResponseJson = ({
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
-  formId: string
+  formId?: string
   responseId: string
   timestamp: string
   delimiter?: string
 }): string => {
   const entries: { question: string; answer: string }[] = [
-    { question: 'Form ID', answer: formId },
+    ...(formId !== undefined ? [{ question: 'Form ID', answer: formId }] : []),
     { question: 'Response ID', answer: responseId },
     { question: 'Timestamp', answer: timestamp },
   ]
