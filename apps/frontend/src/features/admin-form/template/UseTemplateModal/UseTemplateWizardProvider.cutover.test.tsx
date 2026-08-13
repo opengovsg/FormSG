@@ -160,6 +160,34 @@ describe('UseTemplateWizardProvider — cutover behaviour', () => {
     expect(useStorageModeFormTemplateMutation.mutate).not.toHaveBeenCalled()
   })
 
+  it('submits only the new-process value when formOriginProcess is "new", discarding stale Q2 ticks', async () => {
+    setFlags({ cutover: true, paperTracking: true })
+    const { result } = renderHook(() =>
+      useUseTemplateWizardContext(MOCK_FORM_ID, vi.fn()),
+    )
+
+    act(() => {
+      result.current.formMethods.setValue('title', 'New title')
+      result.current.formMethods.setValue('formOriginProcess', 'new')
+      result.current.formMethods.setValue('formOrigins', {
+        value: [FormOrigin.DigitalSpreadsheet],
+      })
+    })
+    await act(async () => {
+      await result.current.handleCreateStorageModeOrMultirespondentForm()
+    })
+
+    expect(
+      useMultirespondentFormTemplateMutation.mutate.mock.calls[0][0],
+    ).toEqual(
+      expect.objectContaining({
+        metadata: {
+          formOrigins: { value: [FormOrigin.DigitalNew] },
+        },
+      }),
+    )
+  })
+
   it('re-asks origins and creates from template with them as metadata', async () => {
     setFlags({ cutover: true, paperTracking: true })
     const { result } = renderHook(() =>
