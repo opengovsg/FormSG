@@ -67,7 +67,11 @@ export const ApprovalsBlock = ({
   const onApprovalToggleChange = () => {
     const nextIsApprovalToggleChecked = !isApprovalToggleChecked
     if (!nextIsApprovalToggleChecked) {
-      setValue(APPROVAL_FIELD_NAME, '')
+      // shouldDirty is required for auto-save-on-switch to notice this change:
+      // the toggle's own state is React state, not RHF, so clearing the field
+      // is the only thing that marks the form dirty. Without it, toggling
+      // approval off and clicking another card discards the change silently.
+      setValue(APPROVAL_FIELD_NAME, '', { shouldDirty: true })
       clearErrors(APPROVAL_FIELD_NAME)
     }
     setIsApprovalToggleChecked(nextIsApprovalToggleChecked)
@@ -165,6 +169,7 @@ export const ApprovalsBlock = ({
                     approvalFieldId: newValue,
                     isEnabled: isRedesign,
                   }),
+                  { shouldDirty: true },
                 )
               }
               return (
