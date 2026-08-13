@@ -166,9 +166,14 @@ export const InactiveStepBlock = ({
       </Stack>
     </Stack>
   )
-  const approvalsSection = isFirstStep ? null : (
-    <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
-  )
+  // A step without approval says nothing worth a heading, and the reorder puts
+  // this at the top of the card where the noise is most costly. Steps whose
+  // approval field was deleted still render, to keep showing the error.
+  const hideEmptyApprovals = isRedesign && !step.approval_field
+  const approvalsSection =
+    isFirstStep || hideEmptyApprovals ? null : (
+      <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
+    )
 
   return (
     <Box pos="relative" role="group">
