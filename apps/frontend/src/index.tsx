@@ -6,12 +6,15 @@ import * as React from 'react'
 import { createRoot } from 'react-dom/client'
 
 import { App } from './app/App'
+import { registerChunkPreloadErrorListener } from './app/chunkPreloadError'
 import * as dayjs from './utils/dayjs'
 import { env } from './env'
 
 if (import.meta.env.MODE === 'test') {
   import('./mocks/msw/browser').then(({ worker }) => worker.start())
 }
+
+registerChunkPreloadErrorListener()
 
 // Init Google Analytics
 declare global {
