@@ -149,6 +149,11 @@ export const EditStepBlock = ({
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
+  // Read during render, not inside the effect below: RHF's formState is a Proxy
+  // that only tracks a flag once something reads it while rendering. Read only
+  // from the effect it stays false, and edits were discarded on switch.
+  const { isDirty } = formMethods.formState
+
   // Shared by the Save button and the auto-save-on-switch effect. An invalid
   // submit cancels any pending switch so the card stays open; the Save-button
   // path never has a pending switch, so that cancel is a no-op there.
@@ -188,7 +193,7 @@ export const EditStepBlock = ({
     // (like the Add step button): an incomplete new step blocks the switch. An
     // existing step that wasn't touched can switch directly without a
     // redundant save.
-    if (!isCreatingState && !formMethods.formState.isDirty) {
+    if (!isCreatingState && !isDirty) {
       completeSave()
       return
     }
