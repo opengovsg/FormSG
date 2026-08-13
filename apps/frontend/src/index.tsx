@@ -5,13 +5,17 @@ import './polyfills'
 import * as React from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { App } from './app/App'
+import { App, queryClient } from './app/App'
+import { registerChunkPreloadErrorHandler } from './app/chunkPreloadError'
 import * as dayjs from './utils/dayjs'
 import { env } from './env'
 
 if (import.meta.env.MODE === 'test') {
   import('./mocks/msw/browser').then(({ worker }) => worker.start())
 }
+
+// Registered before render so it is listening before any lazy route resolves.
+registerChunkPreloadErrorHandler(queryClient)
 
 // Init Google Analytics
 declare global {
