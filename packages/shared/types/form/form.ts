@@ -119,6 +119,7 @@ export enum FormOrigin {
   DigitalEmail = 'digitalEmail',
   DigitalDocument = 'digitalDocument',
   DigitalSpreadsheet = 'digitalSpreadsheet',
+  DigitalFormsg = 'digitalFormsg',
   DigitalFormBuilder = 'digitalFormbuilder',
 }
 
