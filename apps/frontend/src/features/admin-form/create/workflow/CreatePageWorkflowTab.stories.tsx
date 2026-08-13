@@ -252,6 +252,10 @@ MobileNoWorkflow.parameters = {
 export const WithWorkflow = Template.bind({})
 WithWorkflow.parameters = {
   msw: { handlers: { default: buildMswRoutes(FORM_WITH_WORKFLOW) } },
+  documentation: {
+    storyDescription:
+      'The whole step card is clickable and shows a hover affordance (border, background, pencil tint). Hover only appears in the canvas, as there is no pseudo-state addon.',
+  },
 }
 
 export const MobileWithWorkflow = Template.bind({})

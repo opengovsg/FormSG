@@ -12,10 +12,15 @@ type AdminWorkflowStore = {
     | { state: AdminEditWorkflowState.CreatingStep }
     | { state: AdminEditWorkflowState.EditingStep; stepNumber: number }
     | null
+  pendingSwitchTo: number | null
+  requestSwitchTo: (target: number) => void
+  cancelPendingSwitch: () => void
+  completeSave: () => void
 }
 
 const INITIAL_STATE = {
   createOrEditData: null,
+  pendingSwitchTo: null,
 }
 
 export const isCreatingStateSelector = (state: AdminWorkflowStore) =>
@@ -40,9 +45,22 @@ export const setToEditingSelector = (state: AdminWorkflowStore) =>
 export const setToInactiveSelector = (state: AdminWorkflowStore) =>
   state.setToInactive
 
+export const pendingSwitchToSelector = (state: AdminWorkflowStore) =>
+  state.pendingSwitchTo
+
+export const requestSwitchToSelector = (state: AdminWorkflowStore) =>
+  state.requestSwitchTo
+
+export const cancelPendingSwitchSelector = (state: AdminWorkflowStore) =>
+  state.cancelPendingSwitch
+
+export const completeSaveSelector = (state: AdminWorkflowStore) =>
+  state.completeSave
+
 export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
-  devtools((set) => ({
+  devtools((set, get) => ({
     createOrEditData: null,
+    pendingSwitchTo: null,
     setToCreating: () =>
       set({
         createOrEditData: {
@@ -58,5 +76,22 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
       }),
     setToInactive: () => set({ createOrEditData: null }),
     reset: () => set(INITIAL_STATE),
+    requestSwitchTo: (target) => set({ pendingSwitchTo: target }),
+    cancelPendingSwitch: () => set({ pendingSwitchTo: null }),
+    // Complete a pending switch if one was requested, else collapse the card.
+    completeSave: () => {
+      const pending = get().pendingSwitchTo
+      if (pending !== null) {
+        set({
+          createOrEditData: {
+            state: AdminEditWorkflowState.EditingStep,
+            stepNumber: pending,
+          },
+          pendingSwitchTo: null,
+        })
+      } else {
+        set({ createOrEditData: null })
+      }
+    },
   })),
 )

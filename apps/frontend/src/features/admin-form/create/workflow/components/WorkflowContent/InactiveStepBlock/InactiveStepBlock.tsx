@@ -1,14 +1,12 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
-import { Box, chakra, Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, chakra, Flex, Icon, Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
 import { BasicField, FormField } from 'formsg-shared/types'
 import { FormWorkflowStepDto, WorkflowType } from 'formsg-shared/types/form'
 import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
-
-import IconButton from '~components/IconButton'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
@@ -16,6 +14,7 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import {
   createOrEditDataSelector,
+  requestSwitchToSelector,
   setToEditingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
@@ -105,16 +104,16 @@ export const InactiveStepBlock = ({
   const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
-
-  // Prevent editing step if some other step is being edited.
-  const isPreventEdit = useMemo(() => !!stateData, [stateData])
+  const requestSwitchTo = useAdminWorkflowStore(requestSwitchToSelector)
 
   const handleClick = useCallback(() => {
-    if (isPreventEdit) {
+    if (stateData) {
+      // Another step is open: auto-save it and switch here.
+      requestSwitchTo(stepNumber)
       return
     }
     setToEditing(stepNumber)
-  }, [isPreventEdit, stepNumber, setToEditing])
+  }, [stateData, stepNumber, setToEditing, requestSwitchTo])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
@@ -157,7 +156,7 @@ export const InactiveStepBlock = ({
   }, [idToFieldMap, step.edit])
 
   return (
-    <Box pos="relative">
+    <Box pos="relative" role="group">
       <chakra.button
         type="button"
         w="100%"
@@ -168,9 +167,9 @@ export const InactiveStepBlock = ({
         borderColor="neutral.300"
         transitionProperty="common"
         transitionDuration="normal"
-        cursor={isPreventEdit ? 'not-allowed' : 'auto'}
-        disabled={isPreventEdit}
-        aria-disabled={isPreventEdit}
+        cursor="pointer"
+        _groupHover={{ borderColor: 'primary.500', bg: 'primary.100' }}
+        onClick={handleClick}
       >
         <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
@@ -221,20 +220,22 @@ export const InactiveStepBlock = ({
           ) : null}
         </Stack>
       </chakra.button>
-      {
-        <IconButton
-          top={{ base: '0.5rem', md: '2rem' }}
-          right={{ base: '0.5rem', md: '2rem' }}
-          pos="absolute"
-          aria-label={t(
-            'features.adminForm.sidebar.workflow.respondentBlock.clickToEdit',
-          )}
-          variant="clear"
-          onClick={handleClick}
-          icon={<BiPencil fontSize="1.5rem" />}
-          cursor={isPreventEdit ? 'not-allowed' : 'pointer'}
-        />
-      }
+      {/* The whole card is the button, so the pencil is a visual affordance
+      only: no click target, no tab stop, hidden from AT. It reacts to hover on
+      the card via the wrapper's role="group". */}
+      <Icon
+        as={BiPencil}
+        aria-hidden
+        pointerEvents="none"
+        top={{ base: '0.5rem', md: '2rem' }}
+        right={{ base: '0.5rem', md: '2rem' }}
+        pos="absolute"
+        fontSize="1.5rem"
+        color="neutral.500"
+        transitionProperty="common"
+        transitionDuration="normal"
+        _groupHover={{ color: 'primary.500' }}
+      />
     </Box>
   )
 }

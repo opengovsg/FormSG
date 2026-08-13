@@ -7,9 +7,10 @@ import { FormWorkflowStep } from 'formsg-shared/types'
 import Button from '~components/Button'
 
 import {
+  cancelPendingSwitchSelector,
+  completeSaveSelector,
   isCreatingStateSelector,
   setToCreatingSelector,
-  setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
@@ -20,18 +21,21 @@ export const NewStepBlock = () => {
   const { t } = useTranslation()
   const { formWorkflow } = useAdminFormWorkflow()
   const { createStepMutation } = useWorkflowMutations()
-  const { isCreatingState, setToInactive, setToCreating } =
+  const { isCreatingState, setToCreating, completeSave, cancelPendingSwitch } =
     useAdminWorkflowStore((state) => ({
       isCreatingState: isCreatingStateSelector(state),
-      setToInactive: setToInactiveSelector(state),
       setToCreating: setToCreatingSelector(state),
+      completeSave: completeSaveSelector(state),
+      cancelPendingSwitch: cancelPendingSwitchSelector(state),
     }))
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) =>
       createStepMutation.mutate(step, {
-        onSuccess: () => setToInactive(),
+        onSuccess: completeSave,
+        // Drop any pending switch so a failed save can't redirect a later one.
+        onError: cancelPendingSwitch,
       }),
-    [createStepMutation, setToInactive],
+    [createStepMutation, completeSave, cancelPendingSwitch],
   )
 
   if (!formWorkflow) return null
