@@ -1,3 +1,5 @@
+import { WebhookType } from 'src/app/modules/webhook/webhook.service'
+
 import {
   shouldSendMrfWebhook,
   shouldWriteV4Snapshot,
@@ -9,7 +11,7 @@ const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/1/x'
 
 describe('shouldSendMrfWebhook', () => {
   it.each<{
-    webhookType: 'plumber' | 'generic' | 'zapier'
+    webhookType: WebhookType
     isMrfWebhooksEnabled: boolean
     isStepWriteTokenEnabled: boolean
     expected: boolean

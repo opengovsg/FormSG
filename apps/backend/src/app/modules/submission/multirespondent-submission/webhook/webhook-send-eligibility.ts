@@ -1,11 +1,11 @@
-import { getWebhookType } from '../../../webhook/webhook.service'
+import { getWebhookType, WebhookType } from '../../../webhook/webhook.service'
 
 export const shouldSendMrfWebhook = ({
   webhookType,
   isMrfWebhooksEnabled,
   isStepWriteTokenEnabled,
 }: {
-  webhookType: 'zapier' | 'plumber' | 'generic'
+  webhookType: WebhookType
   isMrfWebhooksEnabled: boolean
   isStepWriteTokenEnabled: boolean
 }): boolean => {

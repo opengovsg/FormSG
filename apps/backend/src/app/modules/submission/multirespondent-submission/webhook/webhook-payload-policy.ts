@@ -1,6 +1,7 @@
 // 'v1' is unused: no policy input yields it, pending the S6 (#9746) rescope.
 export type WebhookContentFormat = 'v1' | 'v3' | 'v4'
 
+// This is not the same as WebhookType, this is the classes of webhook consumers (ie, internal or external)
 export type WebhookConsumerType = 'plumber' | 'generic'
 
 export interface WebhookPayloadPolicyInput {

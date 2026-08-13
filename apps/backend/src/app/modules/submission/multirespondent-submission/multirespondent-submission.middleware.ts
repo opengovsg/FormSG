@@ -54,6 +54,7 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { createNdiResponsesV4FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { VerifiedContentV3 } from '../../verified-content/verified-content.types'
+import { getWebhookType } from '../../webhook/webhook.service'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
@@ -85,7 +86,10 @@ import {
   ProcessedMultirespondentSubmissionHandlerType,
   StrippedAttachmentResponseV4,
 } from './multirespondent-submission.types'
-import { validateMrfFieldResponses } from './multirespondent-submission.utils'
+import {
+  getMrfVersion,
+  validateMrfFieldResponses,
+} from './multirespondent-submission.utils'
 import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
@@ -848,15 +852,19 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
-  // Webhook compatibility: forms with webhooks have downstream consumers that
-  // parse the encrypted payload as V3-shaped (mrfVersion: 1). Convert back to
-  // V3 just for the encryption blob; in-process state (encryptedPayload.responses,
-  // emails, NDI handling) stays V4.
-  const hasWebhook = !!formDef.webhook?.url
-  const responsesToEncrypt = hasWebhook
-    ? adaptV4ToV3(strippedAttachmentResponses as unknown as FieldResponsesV4)
-    : strippedAttachmentResponses
-  const mrfVersion: 1 | 2 = hasWebhook ? 1 : 2
+  const isStepWriteTokenEnabled =
+    req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
+
+  const webhookUrl = formDef.webhook?.url
+  const mrfVersion = getMrfVersion({
+    webhookType: webhookUrl ? getWebhookType(webhookUrl) : undefined,
+    isStepWriteTokenEnabled,
+  })
+  const useV4Encryption = mrfVersion === 2
+
+  const responsesToEncrypt = useV4Encryption
+    ? strippedAttachmentResponses
+    : adaptV4ToV3(strippedAttachmentResponses as unknown as FieldResponsesV4)
 
   const {
     encryptedContent,
@@ -896,8 +904,6 @@ export const encryptSubmission = async (
       req.body.version,
     )
 
-  const isStepWriteTokenEnabled =
-    req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
   let mintedStepToken:
     | {
         stepToken: string
@@ -924,11 +930,6 @@ export const encryptSubmission = async (
     version: req.body.version,
     workflowStep: req.body.workflowStep,
     responses: responses as FieldResponsesV4,
-    /**
-     * MRF Version 2 = V4-encrypted responses (with provenance).
-     * MRF Version 1 = V3-encrypted responses (used when form has a webhook
-     * so existing webhook consumers can continue to parse V3 payloads).
-     */
     mrfVersion,
     ...mintedStepToken,
   }

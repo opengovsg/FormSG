@@ -42,7 +42,9 @@ import {
   createMultirespondentSubmissionDto,
   createPublicMultirespondentSubmissionDto,
   extractRespondentCopyEmailDatas,
+  getMrfVersion,
   getQuestionAnswerPairsForMultipleFields,
+  MrfVersion,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
@@ -1373,6 +1375,69 @@ describe('multirespondent-submission.utils', () => {
         }),
       )
       expect(result[3]).not.toHaveProperty('fieldType')
+    })
+  })
+
+  describe('getMrfVersion', () => {
+    type WebhookType = Parameters<typeof getMrfVersion>[0]['webhookType']
+    it.each<{
+      name: string
+      webhookType: WebhookType
+      isStepWriteTokenEnabled: boolean
+      expected: MrfVersion
+    }>([
+      {
+        name: 'no webhook, write-guard off => V4',
+        webhookType: undefined,
+        isStepWriteTokenEnabled: false,
+        expected: 2,
+      },
+      {
+        name: 'no webhook, write-guard on => V4',
+        webhookType: undefined,
+        isStepWriteTokenEnabled: true,
+        expected: 2,
+      },
+      {
+        name: 'plumber, write-guard on => V4',
+        webhookType: 'plumber',
+        isStepWriteTokenEnabled: true,
+        expected: 2,
+      },
+      {
+        name: 'plumber, write-guard off => V3',
+        webhookType: 'plumber',
+        isStepWriteTokenEnabled: false,
+        expected: 1,
+      },
+      {
+        name: 'generic, write-guard off => V4',
+        webhookType: 'generic',
+        isStepWriteTokenEnabled: false,
+        expected: 2,
+      },
+      {
+        name: 'generic, write-guard on => V4',
+        webhookType: 'generic',
+        isStepWriteTokenEnabled: true,
+        expected: 2,
+      },
+      {
+        name: 'zapier is treated as generic, write-guard off => V4',
+        webhookType: 'zapier',
+        isStepWriteTokenEnabled: false,
+        expected: 2,
+      },
+      {
+        name: 'zapier is treated as generic, write-guard on => V4',
+        webhookType: 'zapier',
+        isStepWriteTokenEnabled: true,
+        expected: 2,
+      },
+    ])('$name', ({ webhookType, isStepWriteTokenEnabled, expected }) => {
+      expect(getMrfVersion({ webhookType, isStepWriteTokenEnabled })).toBe(
+        expected,
+      )
     })
   })
 })
