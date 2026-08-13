@@ -20,14 +20,18 @@ import { CreateFormOriginScreen } from './CreateFormOriginScreen'
 vi.mock('react-i18next', () => {
   const P = 'features.workspace.modals.forms.create.origin'
   const translations: Record<string, string> = {
-    [`${P}.question`]: 'How is this data being collected today?',
-    [`${P}.options.paper`]: 'Paper form',
-    [`${P}.options.digitalNew`]: "This data isn't collected",
-    [`${P}.options.digitalEmail`]: 'Emails',
-    [`${P}.options.digitalDocument`]: 'Documents (e.g. PDF, Word)',
-    [`${P}.options.digitalSpreadsheet`]: 'Spreadsheets (e.g. Excel, Sheets)',
-    [`${P}.options.digitalFormbuilder`]: 'Other form builders',
-    [`${P}.options.others`]: 'Other',
+    [`${P}.topicSentence`]: 'Tell us about your process',
+    [`${P}.q1.label`]: 'Is this form based on a new or existing process?',
+    [`${P}.q1.options.new`]: 'New',
+    [`${P}.q1.options.existing`]: 'Existing',
+    [`${P}.q2.label`]: 'How is this data being collected today?',
+    [`${P}.q2.options.paper`]: 'Paper form',
+    [`${P}.q2.options.digitalEmail`]: 'Emails',
+    [`${P}.q2.options.digitalDocument`]: 'Documents (e.g. PDF, Word)',
+    [`${P}.q2.options.digitalSpreadsheet`]: 'Spreadsheets (e.g. Excel, Sheets)',
+    [`${P}.q2.options.digitalFormsg`]: 'Another FormSG form',
+    [`${P}.q2.options.digitalFormbuilder`]: 'Other form builders',
+    [`${P}.q2.options.others`]: 'Other',
     [`${P}.otherInputLabel`]: 'Other source',
     [`${P}.errors.atLeastOne`]: 'Please select at least 1 option.',
     [`${P}.errors.otherRequired`]:
@@ -91,7 +95,31 @@ const clickNext = async (user: ReturnType<typeof userEvent.setup>) => {
   await user.click(screen.getByRole('button', { name: /next step/i }))
 }
 
+const selectExisting = async (user: ReturnType<typeof userEvent.setup>) => {
+  await user.click(screen.getByRole('radio', { name: 'Existing' }))
+}
+
 describe('CreateFormOriginScreen', () => {
+  it('renders the topic sentence as the header and Q1 as a radio with New/Existing, with Q2 absent', () => {
+    renderOriginScreen()
+
+    expect(screen.getByText('Tell us about your process')).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'New' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: 'Existing' })).toBeInTheDocument()
+    expect(screen.queryByLabelText('Paper form')).not.toBeInTheDocument()
+  })
+
+  it('keeps Q2 hidden when Q1 = New is actively selected, and shows it when Q1 = Existing is selected', async () => {
+    const user = userEvent.setup()
+    renderOriginScreen()
+
+    await user.click(screen.getByRole('radio', { name: 'New' }))
+    expect(screen.queryByLabelText('Paper form')).not.toBeInTheDocument()
+
+    await selectExisting(user)
+    expect(screen.getByLabelText('Paper form')).toBeInTheDocument()
+  })
+
   it('blocks submission and shows an error when no origin is selected', async () => {
     const user = userEvent.setup()
     const { onCreate } = renderOriginScreen()
@@ -104,10 +132,25 @@ describe('CreateFormOriginScreen', () => {
     expect(onCreate).not.toHaveBeenCalled()
   })
 
+  it("shows only Q2's error (not Q1's) when Q1 = Existing but Q2 is left empty", async () => {
+    const user = userEvent.setup()
+    const { onCreate } = renderOriginScreen()
+
+    await selectExisting(user)
+    await clickNext(user)
+
+    const errors = await screen.findAllByText(
+      'Please select at least 1 option.',
+    )
+    expect(errors).toHaveLength(1)
+    expect(onCreate).not.toHaveBeenCalled()
+  })
+
   it('creates the form with the selected origins when at least one is chosen', async () => {
     const user = userEvent.setup()
     const { onCreate } = renderOriginScreen()
 
+    await selectExisting(user)
     await user.click(screen.getByLabelText('Paper form'))
     await user.click(screen.getByLabelText('Spreadsheets (e.g. Excel, Sheets)'))
     await clickNext(user)
@@ -125,10 +168,59 @@ describe('CreateFormOriginScreen', () => {
     )
   })
 
+  it('offers "Another FormSG form" as its own option, distinct from "Other form builders"', async () => {
+    const user = userEvent.setup()
+    const { onCreate } = renderOriginScreen()
+
+    await selectExisting(user)
+    expect(screen.getByLabelText('Another FormSG form')).toBeInTheDocument()
+    expect(screen.getByLabelText('Other form builders')).toBeInTheDocument()
+
+    await user.click(screen.getByLabelText('Another FormSG form'))
+    await clickNext(user)
+
+    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
+    expect(onCreate.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        formOrigins: expect.objectContaining({
+          value: [FormOrigin.DigitalFormsg],
+        }),
+      }),
+    )
+  })
+
+  it('creates the form when Q1 = New is selected, without requiring an answer to Q2', async () => {
+    const user = userEvent.setup()
+    const { onCreate } = renderOriginScreen()
+
+    await user.click(screen.getByRole('radio', { name: 'New' }))
+    await clickNext(user)
+
+    await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
+    expect(onCreate.mock.calls[0][0]).toEqual(
+      expect.objectContaining({ formOriginProcess: 'new' }),
+    )
+  })
+
+  it('restores previously ticked Q2 options after switching to New and back to Existing', async () => {
+    const user = userEvent.setup()
+    renderOriginScreen()
+
+    await selectExisting(user)
+    await user.click(screen.getByLabelText('Paper form'))
+
+    await user.click(screen.getByRole('radio', { name: 'New' }))
+    expect(screen.queryByLabelText('Paper form')).not.toBeInTheDocument()
+
+    await selectExisting(user)
+    expect(screen.getByLabelText('Paper form')).toBeChecked()
+  })
+
   it('requires the free-text detail when "Other" is selected', async () => {
     const user = userEvent.setup()
     const { onCreate } = renderOriginScreen()
 
+    await selectExisting(user)
     await user.click(screen.getByLabelText('Other'))
     await clickNext(user)
 
@@ -142,6 +234,7 @@ describe('CreateFormOriginScreen', () => {
     const user = userEvent.setup()
     renderOriginScreen()
 
+    await selectExisting(user)
     await user.click(screen.getByLabelText('Other'))
     await user.type(screen.getByLabelText('Other source'), 'Carrier pigeon')
 
@@ -154,6 +247,7 @@ describe('CreateFormOriginScreen', () => {
     const user = userEvent.setup()
     const { onCreate } = renderOriginScreen()
 
+    await selectExisting(user)
     await user.click(screen.getByLabelText('Other'))
     const input = screen.getByLabelText('Other source')
     await user.click(input)
@@ -172,6 +266,7 @@ describe('CreateFormOriginScreen', () => {
     const user = userEvent.setup()
     const { onCreate } = renderOriginScreen()
 
+    await selectExisting(user)
     await user.click(screen.getByLabelText('Other'))
     await user.type(screen.getByLabelText('Other source'), 'Carrier pigeon')
     await clickNext(user)

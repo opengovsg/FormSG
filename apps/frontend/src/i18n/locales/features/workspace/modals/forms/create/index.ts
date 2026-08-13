@@ -68,15 +68,25 @@ export interface CreateFormModal {
     suffix: string
   }
   origin: {
-    question: string
-    options: {
-      paper: string
-      digitalNew: string
-      digitalEmail: string
-      digitalDocument: string
-      digitalSpreadsheet: string
-      digitalFormbuilder: string
-      others: string
+    topicSentence: string
+    q1: {
+      label: string
+      options: {
+        new: string
+        existing: string
+      }
+    }
+    q2: {
+      label: string
+      options: {
+        paper: string
+        digitalEmail: string
+        digitalDocument: string
+        digitalSpreadsheet: string
+        digitalFormsg: string
+        digitalFormbuilder: string
+        others: string
+      }
     }
     otherInputLabel: string
     errors: {

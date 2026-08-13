@@ -77,15 +77,25 @@ export const enSG: CreateFormModal = {
     suffix: '.',
   },
   origin: {
-    question: 'How is this data being collected today?',
-    options: {
-      paper: 'Paper form',
-      digitalNew: "This data isn't collected",
-      digitalEmail: 'Emails',
-      digitalDocument: 'Documents (e.g. PDF, Word)',
-      digitalSpreadsheet: 'Spreadsheets (e.g. Excel, Sheets)',
-      digitalFormbuilder: 'Other form builders',
-      others: 'Other',
+    topicSentence: 'Tell us about your process',
+    q1: {
+      label: 'Is this form based on a new or existing process?',
+      options: {
+        new: 'New',
+        existing: 'Existing',
+      },
+    },
+    q2: {
+      label: 'How is this data being collected today?',
+      options: {
+        paper: 'Paper form',
+        digitalEmail: 'Emails',
+        digitalDocument: 'Documents (e.g. PDF, Word)',
+        digitalSpreadsheet: 'Spreadsheets (e.g. Excel, Sheets)',
+        digitalFormsg: 'Another FormSG form',
+        digitalFormbuilder: 'Other form builders',
+        others: 'Other',
+      },
     },
     otherInputLabel: 'Other source',
     errors: {
