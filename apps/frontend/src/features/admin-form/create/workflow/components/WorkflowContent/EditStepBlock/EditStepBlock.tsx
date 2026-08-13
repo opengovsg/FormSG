@@ -150,8 +150,9 @@ export const EditStepBlock = ({
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
   // Read during render, not inside the effect below: RHF's formState is a Proxy
-  // that only tracks a flag once something reads it while rendering. Read only
-  // from the effect it stays false, and edits were discarded on switch.
+  // that only tracks a flag once something reads it while rendering. Read for
+  // the first time inside the effect, it stays false, and edits were discarded
+  // on switch.
   const { isDirty } = formMethods.formState
 
   // Shared by the Save button and the auto-save-on-switch effect. An invalid

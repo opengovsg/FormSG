@@ -138,8 +138,9 @@ export const EditLogicBlock = ({
   const isCreatingState = useAdminLogicStore(isCreatingStateSelector)
 
   // Read during render, not inside the effect below: RHF's formState is a Proxy
-  // that only tracks a flag once something reads it while rendering. Read only
-  // from the effect it stays false, and edits were discarded on switch.
+  // that only tracks a flag once something reads it while rendering. Read for
+  // the first time inside the effect, it stays false, and edits were discarded
+  // on switch.
   const { isDirty } = formMethods.formState
 
   // Guards the auto-save effect against re-entry: the mutation's isLoading
