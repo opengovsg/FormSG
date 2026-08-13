@@ -771,6 +771,7 @@ export class MailService {
     formData,
     pdfAttachment,
     useStandardisedEmailTemplate,
+    includeFormIdInResponseJson,
   }: {
     replyToEmails?: string[]
     form: Pick<IFormHasEmailSchema, '_id' | 'title' | 'emails'>
@@ -783,6 +784,7 @@ export class MailService {
     }[]
     pdfAttachment?: Mail.Attachment
     useStandardisedEmailTemplate?: boolean
+    includeFormIdInResponseJson?: boolean
   }): ResultAsync<true, MailGenerationError | MailSendError> => {
     const logMeta = {
       action: 'sendSubmissionToAdmin',
@@ -828,10 +830,14 @@ export class MailService {
         // Surface the form ID first so admins feeding this JSON through an
         // automation can tell which form a response came from. Form ID is the
         // stable identifier automations should route on.
-        {
-          question: 'Form ID',
-          answer: formId,
-        },
+        ...(includeFormIdInResponseJson
+          ? [
+              {
+                question: 'Form ID',
+                answer: formId,
+              },
+            ]
+          : []),
         {
           question: 'Response ID',
           answer: refNo,

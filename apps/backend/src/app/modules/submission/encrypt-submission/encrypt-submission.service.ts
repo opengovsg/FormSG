@@ -297,6 +297,10 @@ export const performEncryptPostSubmissionActions = ({
           false,
         ) ?? false
 
+      // TODO (formid-json): remove when Form ID in response JSON is GA
+      const includeFormIdInResponseJson: boolean =
+        growthbook?.getFeatureValue(featureFlags.formIdJson, false) ?? false
+
       return pdfAttachmentResult.andThen((pdfAttachment) => {
         return ResultAsync.combine([
           MailService.sendSubmissionToAdmin({
@@ -318,6 +322,7 @@ export const performEncryptPostSubmissionActions = ({
               ? pdfAttachment
               : undefined,
             useStandardisedEmailTemplate,
+            includeFormIdInResponseJson,
           }).mapErr((error) => {
             logger.error({
               message:

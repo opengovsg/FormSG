@@ -1,5 +1,6 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
+import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import {
   BasicField,
   FormAuthType,
@@ -442,6 +443,7 @@ const sendMrfOutcomeEmails = ({
   isRejected = false,
   attachments,
   pdfResult,
+  growthbook,
 }: {
   currentStepNumber: number
   form: Pick<
@@ -466,6 +468,7 @@ const sendMrfOutcomeEmails = ({
     Mail.Attachment | undefined,
     AutoreplyPdfGenerationError
   >
+  growthbook?: GrowthBook
 }): ResultAsync<
   true,
   InvalidWorkflowTypeError | MailSendError | AutoreplyPdfGenerationError
@@ -519,10 +522,14 @@ const sendMrfOutcomeEmails = ({
           responses,
         })
 
+        // TODO (formid-json): remove when Form ID in response JSON is GA
+        const includeFormIdInResponseJson: boolean =
+          growthbook?.getFeatureValue(featureFlags.formIdJson, false) ?? false
+
         const responseJson = buildMrfResponseJson({
           formFields: form.form_fields,
           responses,
-          formId: String(form._id),
+          formId: includeFormIdInResponseJson ? String(form._id) : undefined,
           responseId: submissionId,
           timestamp: latestSubmissionTimestamp,
           delimiter: getFormDelimiter(form.metadata),
@@ -1167,6 +1174,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
         submissionId,
         attachments,
         pdfResult: sendMrfOutcomeEmailsPdfResult,
+        growthbook,
       })
     })
     .mapErr((error) => {
@@ -1486,6 +1494,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       isRejected: true,
       attachments: attachments,
       pdfResult: sendMrfOutcomeEmailsPdfResult,
+      growthbook,
     }).mapErr((error) => {
       logger.error({
         message: 'Send mrf outcome email error',
@@ -1504,6 +1513,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
     isApproval: checkIsFormApproval(snapshottedFormDef),
     attachments: attachments,
     pdfResult: sendMrfOutcomeEmailsPdfResult,
+    growthbook,
   })
     .mapErr((error) => {
       logger.error({
