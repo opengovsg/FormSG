@@ -21,6 +21,8 @@ export enum CreateFormFlowStates {
   EmailModeCreation = 'emailModeCreation',
 }
 
+export type FormOriginProcessAnswer = 'new' | 'existing'
+
 export interface CreateFormWizardInputProps {
   title: string
   responseMode: FormResponseMode
@@ -28,6 +30,10 @@ export interface CreateFormWizardInputProps {
   emails?: string[]
   // Storage form props
   storageAck?: boolean
+  // Q1: whether the data collection is a new or existing process.
+  formOriginProcess?: FormOriginProcessAnswer
+  // Q2: mediums already used to collect this data today (only answered when
+  // formOriginProcess is 'existing').
   formOrigins?: CheckboxFieldResponsesV3
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
   reason?: CheckboxFieldValues // for kill email mode
