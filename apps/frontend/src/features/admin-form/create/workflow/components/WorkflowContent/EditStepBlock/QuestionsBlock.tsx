@@ -89,9 +89,8 @@ export const QuestionsBlock = ({
           control={control}
           name={FIELDS_TO_EDIT_NAME}
           render={({ field: { value = [], onChange, ...field } }) => {
-            // §4.5.4: re-run approval_field validation the moment `edit`
-            // changes, so removing the auto-added chip surfaces the
-            // "not assigned to this person" error inline instead of at save.
+            // Re-validate approval_field as soon as `edit` changes, so removing
+            // the auto-added chip errors inline rather than at save.
             const handleFieldsChange = (newValue: string[]) => {
               onChange(newValue)
               if (isRedesign && selectedApprovalField) {

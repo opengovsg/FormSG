@@ -155,8 +155,7 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
-  // Mirrors the edit form's ordering (see EditStepBlock): the redesign shows
-  // approval above the fields. Only the sequence differs between flag states.
+  // Mirrors EditStepBlock's ordering; only the sequence differs by flag.
   const fieldsSection = (
     <Stack>
       <Text textStyle="subhead-3">

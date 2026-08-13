@@ -206,9 +206,8 @@ export const EditStepBlock = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
 
-  // The redesign puts approval above the fields it feeds into. Only the order
-  // differs, so build both blocks once and swap their sequence rather than
-  // duplicating the subtree per flag branch.
+  // Only the order differs between flag states, so build each section once and
+  // swap the sequence rather than duplicating the subtree per branch.
   const questionsSection = (
     <>
       <Divider />
