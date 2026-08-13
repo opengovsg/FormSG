@@ -151,6 +151,10 @@ MobileNoLogic.parameters = {
 export const WithLogic = Template.bind({})
 WithLogic.parameters = {
   msw: { handlers: { default: buildMswRoutes(FORM_WITH_LOGIC) } },
+  documentation: {
+    storyDescription:
+      'The whole logic card is clickable and shows a hover affordance (border, background, pencil tint). Hover only appears in the canvas, as there is no pseudo-state addon.',
+  },
 }
 
 export const MobileWithLogic = Template.bind({})
