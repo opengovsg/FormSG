@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.9.0](https://github.com/opengovsg/formsg/compare/v9.8.0...v9.9.0) (2026-08-13)
+
+
+### Features
+
+* **mrf:** derive the wire webhook version from the content format (#9820) ([#9820](https://github.com/opengovsg/formsg/commit/5f95cfa180e373bc4a7b12c3318c074650177fb9))
+* **mrf:** freeze a v4 snapshot before commit and send the reconstructed payload (S4) (#9822) ([#9822](https://github.com/opengovsg/formsg/commit/de84e33edd15645b3bd31ace101e901ca5bed626))
+* **mrf:** widen the row content-version gate by consumer class (#9821) ([#9821](https://github.com/opengovsg/formsg/commit/8dc1f680ee53fa4715b6b8e6d9e939a06a50b87f))
+
 ## [9.8.0](https://github.com/opengovsg/formsg/compare/v9.7.2...v9.8.0) (2026-08-13)
 
 
