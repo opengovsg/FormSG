@@ -56,11 +56,15 @@ export const WorkflowStepStaticSchema = new Schema<IWorkflowStepStaticSchema>({
   },
 })
 
+// `field` and `conditional_field` are deliberately optional: a half-built step
+// on a Private form must be able to persist without one. Completeness is
+// enforced by `isStepComplete` in the service layer, not here, so that the rule
+// can depend on the form's status. See FRM-2489.
 export const WorkflowStepDynamicSchema = new Schema<IWorkflowStepDynamicSchema>(
   {
     field: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
     },
   },
 )
@@ -69,7 +73,7 @@ export const WorkflowStepConditionalSchema =
   new Schema<IWorkflowStepConditionalSchema>({
     conditional_field: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
     },
   })
 
