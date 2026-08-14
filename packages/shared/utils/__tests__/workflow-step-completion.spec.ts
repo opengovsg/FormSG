@@ -1,3 +1,5 @@
+import { ObjectId } from 'bson'
+
 import {
   getIncompleteStepNumbers,
   isStepComplete,
@@ -199,6 +201,43 @@ describe('isStepComplete', () => {
           0,
         ),
       ).toBe(false)
+    })
+  })
+
+  // The backend passes Mongoose ObjectIds, not strings. `===` and `includes`
+  // compare object identity, so every id comparison must go through String().
+  describe('object ids', () => {
+    const objectId = (hex: string) => new ObjectId(hex)
+    const EDIT_HEX = '6a7de1810000000000000001'
+    const DROPDOWN_HEX = '6a7de1810000000000000002'
+
+    it('should match an approval field given as an ObjectId', () => {
+      const step = {
+        workflow_type: WorkflowType.Static,
+        edit: [objectId(EDIT_HEX)],
+        emails: ['someone@example.com'],
+        approval_field: objectId(EDIT_HEX),
+      } as unknown as FormWorkflowStep
+
+      expect(isStepComplete(step, [], 1)).toBe(true)
+    })
+
+    it('should match a conditional field given as an ObjectId', () => {
+      const step = {
+        workflow_type: WorkflowType.Conditional,
+        edit: [objectId(EDIT_HEX)],
+        conditional_field: objectId(DROPDOWN_HEX),
+      } as unknown as FormWorkflowStep
+      const fields = [
+        {
+          _id: objectId(DROPDOWN_HEX),
+          fieldType: BasicField.Dropdown,
+          fieldOptions: ['a'],
+          optionsToRecipientsMap: { a: ['someone@example.com'] },
+        },
+      ] as unknown as FormFieldDto[]
+
+      expect(isStepComplete(step, fields, 1)).toBe(true)
     })
   })
 

@@ -44,6 +44,7 @@ import {
   isNricValid,
 } from 'formsg-shared/utils/nric-validation'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
+import { getIncompleteStepNumbers } from 'formsg-shared/utils/workflow-step-completion'
 import { assignIn, last, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -1570,9 +1571,65 @@ export const updateFormWhitelistSetting = (
   })
 }
 
+/**
+ * Names the incomplete steps for an admin, 1-indexed the way the builder shows
+ * them.
+ */
+const describeIncompleteSteps = (stepNumbers: number[]): string => {
+  const labels = stepNumbers.map((stepNumber) => `step ${stepNumber + 1}`)
+  if (labels.length === 1) return labels[0]
+  return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`
+}
+
+/**
+ * Rejects a workflow mutation that would leave the form in a state it is not
+ * allowed to be in. Checks the **resulting** workflow rather than the single
+ * step being mutated, which covers deletions for free: removing the step that
+ * held the only recipient is caught the same way as emptying it.
+ *
+ * ⚠️ The flag selects how strict the rule is, never whether it runs (P17). Joi
+ * and Mongoose no longer check completeness at all, so skipping this when the
+ * flag is off would leave a live form with **no** guard rather than the three
+ * it had before.
+ *
+ * @param workflow the workflow as it would be after the mutation
+ * @param formFields the form's fields, needed for conditional routing
+ * @param formStatus the form's current status
+ * @param isRedesignEnabled whether the workflow builder redesign flag is on
+ */
+const checkResultingWorkflowIsAllowed = ({
+  workflow,
+  formFields,
+  formStatus,
+  isRedesignEnabled,
+}: {
+  workflow: FormWorkflowDto
+  formFields: FormFieldDto[]
+  formStatus: FormStatus
+  isRedesignEnabled: boolean
+}): Result<true, MalformedParametersError> => {
+  // Flag off reproduces today's behaviour: every step must be complete
+  // whatever the form's status. Flag on permits incompleteness while the form
+  // is not live. So the `?? false` default in the controllers fails safe.
+  const mustBeComplete = !isRedesignEnabled || formStatus === FormStatus.Public
+  if (!mustBeComplete) return ok(true)
+
+  const incompleteStepNumbers = getIncompleteStepNumbers(workflow, formFields)
+  if (incompleteStepNumbers.length === 0) return ok(true)
+
+  return err(
+    new MalformedParametersError(
+      `Please complete ${describeIncompleteSteps(
+        incompleteStepNumbers,
+      )} before saving.`,
+    ),
+  )
+}
+
 export const createWorkflowStep = (
   originalForm: IPopulatedForm,
   newWorkflowStep: FormWorkflowStepDto,
+  isRedesignEnabled: boolean,
 ): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1675,6 +1732,14 @@ export const createWorkflowStep = (
   // Create new workflow step
   const updatedWorkflow = originalWorkflow.concat(newWorkflowStep)
 
+  const completenessCheck = checkResultingWorkflowIsAllowed({
+    workflow: updatedWorkflow,
+    formFields: originalForm.form_fields as unknown as FormFieldDto[],
+    formStatus: originalForm.status,
+    isRedesignEnabled,
+  })
+  if (completenessCheck.isErr()) return errAsync(completenessCheck.error)
+
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
   ) as IMultirespondentFormModel
@@ -1713,6 +1778,7 @@ export const updateFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
   updatedWorkflowStep: FormWorkflowStepDto,
+  isRedesignEnabled: boolean,
 ): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1821,6 +1887,14 @@ export const updateFormWorkflowStep = (
     index === stepNumber ? updatedWorkflowStep : step,
   )
 
+  const completenessCheck = checkResultingWorkflowIsAllowed({
+    workflow: updatedWorkflow,
+    formFields: originalForm.form_fields as unknown as FormFieldDto[],
+    formStatus: originalForm.status,
+    isRedesignEnabled,
+  })
+  if (completenessCheck.isErr()) return errAsync(completenessCheck.error)
+
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
   ) as IMultirespondentFormModel
@@ -1860,6 +1934,7 @@ export const updateFormWorkflowStep = (
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
+  isRedesignEnabled: boolean,
 ): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1878,9 +1953,22 @@ export const deleteFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  // Remove step with stepNumber from workflow
-  const updatedWorkflow = originalWorkflow
-  updatedWorkflow.splice(stepNumber, 1)
+  // Remove step with stepNumber from workflow. Built as a copy rather than by
+  // splicing in place, so a rejection below cannot leave the caller holding a
+  // form object whose workflow was already mutated.
+  const updatedWorkflow = originalWorkflow.filter(
+    (_step, index) => index !== stepNumber,
+  )
+
+  // Deleting the step that held the only recipient leaves the workflow just as
+  // incomplete as emptying it, so the same check covers both.
+  const completenessCheck = checkResultingWorkflowIsAllowed({
+    workflow: updatedWorkflow,
+    formFields: originalForm.form_fields as unknown as FormFieldDto[],
+    formStatus: originalForm.status,
+    isRedesignEnabled,
+  })
+  if (completenessCheck.isErr()) return errAsync(completenessCheck.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
