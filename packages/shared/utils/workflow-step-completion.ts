@@ -20,7 +20,7 @@ const isConditionalRoutingComplete = (
   if (!conditionalFieldId) return false
 
   const conditionalField = formFields.find(
-    (field) => field._id === conditionalFieldId,
+    (field) => String(field._id) === String(conditionalFieldId),
   )
   // A deleted field leaves an orphaned reference behind, with no cascade to
   // clean it up. Such a step cannot route, so it is not complete.
@@ -54,6 +54,10 @@ const isConditionalRoutingComplete = (
  *
  * `stepNumber` must be the step's position in the full, unfiltered workflow.
  *
+ * Field ids are compared as strings throughout: the frontend holds them as
+ * strings and Mongoose hands them over as ObjectIds, where `===` compares
+ * object identity and would never match.
+ *
  * @param step the workflow step to check
  * @param formFields the form's fields, needed for conditional routing mappings
  * @param stepNumber the step's position in the full workflow
@@ -67,7 +71,10 @@ export const isStepComplete = (
 
   // An approval field the assigned person cannot see leaves them nothing to
   // answer, and the workflow stops at their step permanently.
-  if (step.approval_field && !step.edit.includes(step.approval_field)) {
+  if (
+    step.approval_field &&
+    !step.edit.map(String).includes(String(step.approval_field))
+  ) {
     return false
   }
 
