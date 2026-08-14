@@ -103,9 +103,12 @@ export const createPublicMultirespondentSubmissionDto = (
 }
 
 export const getEmailFromResponses = (
-  fieldId: string,
+  // See the note in `getConditionalFieldEmailRecipient` — absent since FRM-2489.
+  fieldId: string | undefined,
   responses: FieldResponsesV4,
 ): string | null => {
+  if (!fieldId) return null // Not an error, the step was never finished.
+
   const field = responses[fieldId]
   if (!field || field.fieldType !== BasicField.Email) return null // Not an error, misconfigured or respondent has not filled.
   return (field.answer as { value: string }).value
@@ -123,9 +126,15 @@ export const extractEmailAnswersFromResponses = (
 
 const getConditionalFieldEmailRecipient = (
   form_fields: FormFieldSchema[] | FormFieldDto[],
-  fieldId: string,
+  // Typed as required on the step, but a half-built step can omit it since
+  // FRM-2489 relaxed the schema. Publishing is gated on completeness, so this
+  // should be unreachable on a live form; guard anyway rather than throw on the
+  // submission path.
+  fieldId: string | undefined,
   responses: FieldResponsesV4,
 ): string[] => {
+  if (!fieldId) return [] // Not an error, the step was never finished.
+
   const conditionalField = form_fields.find(
     (field) => field._id.toString() === fieldId.toString(),
   )
