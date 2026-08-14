@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.10.0](https://github.com/opengovsg/formsg/compare/v9.9.0...v9.10.0) (2026-08-14)
+
+
+### Features
+
+* **growthbook:** add adminEmail attribute for formid-json targeting (#9851) ([#9851](https://github.com/opengovsg/formsg/commit/51e670f2bf8ac4ce642978e0433cc132e9fa9094))
+
+
+### Bug Fixes
+
+* **workflow,logic:** auto-save on card switch discards edits (#9849) ([#9849](https://github.com/opengovsg/formsg/commit/dea502f7b1d04a2ec3758650cf71df166c5fe893))
+
 ## [9.9.0](https://github.com/opengovsg/formsg/compare/v9.8.0...v9.9.0) (2026-08-13)
 
 
