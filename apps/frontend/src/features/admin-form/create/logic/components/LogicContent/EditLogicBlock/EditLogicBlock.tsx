@@ -137,6 +137,11 @@ export const EditLogicBlock = ({
   const completeSave = useAdminLogicStore(completeSaveSelector)
   const isCreatingState = useAdminLogicStore(isCreatingStateSelector)
 
+  // RATIONALE: Returned formState is wrapped with a Proxy to improve
+  // render performance, we must ead it before a render in order to enable
+  // the state update.
+  const { isDirty } = formMethods.formState
+
   // Guards the auto-save effect against re-entry: the mutation's isLoading
   // only flips true on the render after mutate() is called, and handleSubmit's
   // validation is promise-based, so a second card click landing in that window
@@ -164,7 +169,7 @@ export const EditLogicBlock = ({
     // (like the Add logic button): an incomplete new block blocks the switch.
     // An existing block that wasn't touched can switch directly without a
     // redundant save.
-    if (!isCreatingState && !formMethods.formState.isDirty) {
+    if (!isCreatingState && !isDirty) {
       completeSave()
       return
     }

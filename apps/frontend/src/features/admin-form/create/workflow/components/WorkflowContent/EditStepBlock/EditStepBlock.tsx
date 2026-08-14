@@ -149,6 +149,11 @@ export const EditStepBlock = ({
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
+  // RATIONALE: Returned formState is wrapped with a Proxy to improve
+  // render performance, we must ead it before a render in order to enable
+  // the state update.
+  const { isDirty } = formMethods.formState
+
   // Shared by the Save button and the auto-save-on-switch effect. An invalid
   // submit cancels any pending switch so the card stays open; the Save-button
   // path never has a pending switch, so that cancel is a no-op there.
@@ -188,7 +193,7 @@ export const EditStepBlock = ({
     // (like the Add step button): an incomplete new step blocks the switch. An
     // existing step that wasn't touched can switch directly without a
     // redundant save.
-    if (!isCreatingState && !formMethods.formState.isDirty) {
+    if (!isCreatingState && !isDirty) {
       completeSave()
       return
     }
