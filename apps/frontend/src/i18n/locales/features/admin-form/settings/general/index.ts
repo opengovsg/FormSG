@@ -13,6 +13,12 @@ export interface General extends HasTitle {
       closed: string
     }
     ariaLabel: string
+    incompleteWorkflowModal: {
+      title: string
+      description: string
+      confirm: string
+      cancel: string
+    }
   }
   limit: {
     label: string

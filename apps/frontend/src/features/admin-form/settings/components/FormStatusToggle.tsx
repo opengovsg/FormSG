@@ -13,11 +13,13 @@ import InlineMessage from '~components/InlineMessage'
 import { Switch } from '~components/Toggle/Switch'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useIncompleteWorkflowStepLabels } from '~features/admin-form/create/workflow/hooks/useIncompleteWorkflowStepLabels'
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
 import { EmailModeConvertModal } from './EmailModeConvertModal'
+import { IncompleteWorkflowModal } from './IncompleteWorkflowModal'
 import { SecretKeyActivationModal } from './SecretKeyActivationModal'
 import { isEsrvcidRequired } from './utils'
 
@@ -83,16 +85,28 @@ export const FormStatusToggle = (): JSX.Element => {
   const emailModeConvertModalProps = useDisclosure()
   const { onOpen: onOpenEmailModeConvertModal } = emailModeConvertModalProps
 
+  // FRM-2489: block the publish before it is attempted, so the admin gets the
+  // steps named rather than a toast from the backend's rejection. The backend
+  // enforces the same rule regardless; this is the part they see.
+  const incompleteWorkflowModalProps = useDisclosure()
+  const { onOpen: onOpenIncompleteWorkflowModal } = incompleteWorkflowModalProps
+  const incompleteStepLabels = useIncompleteWorkflowStepLabels()
+
   const onFormToggleStatusClick = useCallback(() => {
+    if (!isFormPublic && incompleteStepLabels.length > 0) {
+      return onOpenIncompleteWorkflowModal()
+    }
     if (!isFormPublic && isForceConvertFromEmailToStorage) {
       return onOpenEmailModeConvertModal()
     }
     return handleToggleStatus()
   }, [
     handleToggleStatus,
+    incompleteStepLabels.length,
     isForceConvertFromEmailToStorage,
     isFormPublic,
     onOpenEmailModeConvertModal,
+    onOpenIncompleteWorkflowModal,
   ])
 
   return (
@@ -105,6 +119,13 @@ export const FormStatusToggle = (): JSX.Element => {
             formId={formId!}
           />
         )}
+        {formId ? (
+          <IncompleteWorkflowModal
+            {...incompleteWorkflowModalProps}
+            formId={formId}
+            incompleteStepLabels={incompleteStepLabels}
+          />
+        ) : null}
         {(formSettings?.responseMode === FormResponseMode.Encrypt ||
           formSettings?.responseMode === FormResponseMode.Multirespondent) && (
           <SecretKeyActivationModal
