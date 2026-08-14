@@ -32,6 +32,7 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
@@ -357,6 +358,7 @@ export const ConditionalRoutingOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isSavePermissive = useIsWorkflowSavePermissive()
 
   const handleOpenModal = () => {
     conditionalRoutingConfigSetValue('csvFile', null)
@@ -410,7 +412,7 @@ export const ConditionalRoutingOption = ({
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <FormControl
             id="conditional_field"
-            isRequired
+            isRequired={!isSavePermissive}
             isInvalid={
               !!validateOptionsToRecipientsMapErrorMessage ||
               !!errors.conditional_field
@@ -421,15 +423,28 @@ export const ConditionalRoutingOption = ({
                 control={control}
                 name="conditional_field"
                 rules={{
-                  required: t(
-                    'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
-                  ),
+                  // FRM-2489: routing must be finished before the form goes
+                  // live, not before it can be saved.
+                  required: isSavePermissive
+                    ? false
+                    : t(
+                        'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
+                      ),
                   validate: (selectedValue) => {
+                    // No dropdown chosen yet. When the form is live `required`
+                    // has already rejected this.
+                    if (!selectedValue) return true
+                    // A part-built mapping is still shown as an error inline,
+                    // but it does not block the save while the form is private.
                     if (noEmailToOptionsMappingErrorMessage) {
-                      return noEmailToOptionsMappingErrorMessage
+                      return isSavePermissive
+                        ? true
+                        : noEmailToOptionsMappingErrorMessage
                     }
                     if (validateOptionsToRecipientsMapErrorMessage) {
-                      return validateOptionsToRecipientsMapErrorMessage
+                      return isSavePermissive
+                        ? true
+                        : validateOptionsToRecipientsMapErrorMessage
                     }
                     return (
                       isLoading ||

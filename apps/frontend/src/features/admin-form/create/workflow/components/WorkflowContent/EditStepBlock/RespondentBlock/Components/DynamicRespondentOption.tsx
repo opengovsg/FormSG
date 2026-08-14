@@ -9,6 +9,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 
 import { useWorkflowTypeValidation } from './hooks'
 import { FieldItem, RespondentOptionProps } from './types'
@@ -32,6 +33,7 @@ export const DynamicRespondentOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isSavePermissive = useIsWorkflowSavePermissive()
   return (
     <>
       <Radio
@@ -55,17 +57,24 @@ export const DynamicRespondentOption = ({
             pt="0.5rem"
             isReadOnly={isLoading}
             id="field"
-            isRequired
+            isRequired={!isSavePermissive}
             isInvalid={!!errors.field}
           >
             <Controller
               control={control}
               name="field"
               rules={{
-                required: t(
-                  'features.adminForm.sidebar.workflow.dynamicRespondent.required',
-                ),
+                // FRM-2489: a respondent is still needed before the form goes
+                // live, just not before it can be saved.
+                required: isSavePermissive
+                  ? false
+                  : t(
+                      'features.adminForm.sidebar.workflow.dynamicRespondent.required',
+                    ),
                 validate: (selectedValue) => {
+                  // Nothing chosen yet. When the form is live `required` has
+                  // already rejected this, so reaching here means it is allowed.
+                  if (!selectedValue) return true
                   return (
                     isLoading ||
                     !emailFieldItems ||
