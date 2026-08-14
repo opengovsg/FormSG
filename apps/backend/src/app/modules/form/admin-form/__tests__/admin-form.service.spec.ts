@@ -2039,6 +2039,104 @@ describe('admin-form.service', () => {
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
     })
+
+    // FRM-2489. Not flag-gated: a form saved half-built while the flag was on
+    // must not become publishable by rolling the flag back.
+    describe('publish gate', () => {
+      const FIELD_ID = new ObjectId().toHexString()
+
+      const makeMrfForm = (status: FormStatus, workflow: unknown[]) =>
+        jest.mocked({
+          _id: new ObjectId(),
+          status,
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: [
+            { _id: FIELD_ID, fieldType: BasicField.ShortText, title: 'A' },
+          ],
+          workflow,
+        } as unknown as IPopulatedForm)
+
+      const firstStep = {
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [FIELD_ID],
+      }
+      const incompleteSecondStep = {
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [FIELD_ID],
+      }
+
+      it('should block publishing a form with an incomplete step', async () => {
+        // Act
+        const actualResult = await AdminFormService.updateFormSettings(
+          makeMrfForm(FormStatus.Private, [firstStep, incompleteSecondStep]),
+          { status: FormStatus.Public } as FormSettings,
+        )
+
+        // Assert
+        expect(actualResult.isErr()).toBeTrue()
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          MalformedParametersError,
+        )
+        expect(actualResult._unsafeUnwrapErr().message).toContain('step 2')
+      })
+
+      // Re-opening a closed form runs the same code path as first publish.
+      it('should block re-opening a closed form with an incomplete step', async () => {
+        // Arrange: a closed form is Private, same as one never published.
+        const closedForm = makeMrfForm(FormStatus.Private, [
+          firstStep,
+          incompleteSecondStep,
+        ])
+
+        // Act
+        const actualResult = await AdminFormService.updateFormSettings(
+          closedForm,
+          { status: FormStatus.Public } as FormSettings,
+        )
+
+        // Assert
+        expect(actualResult.isErr()).toBeTrue()
+      })
+
+      it('should not block a settings change that leaves the form private', async () => {
+        // Act
+        const actualResult = await AdminFormService.updateFormSettings(
+          makeMrfForm(FormStatus.Private, [firstStep, incompleteSecondStep]),
+          { title: 'a new title' } as FormSettings,
+        )
+
+        // Assert: rejected by the gate is the only outcome under test; the DB
+        // call is mocked elsewhere in this suite.
+        expect(actualResult.isErr()).toBeFalse()
+      })
+
+      it('should not block publishing a complete workflow', async () => {
+        // Act
+        const actualResult = await AdminFormService.updateFormSettings(
+          makeMrfForm(FormStatus.Private, [
+            firstStep,
+            { ...incompleteSecondStep, emails: ['someone@example.com'] },
+          ]),
+          { status: FormStatus.Public } as FormSettings,
+        )
+
+        // Assert
+        expect(actualResult.isErr()).toBeFalse()
+      })
+
+      it('should not block publishing a form with no workflow at all', async () => {
+        // Act
+        const actualResult = await AdminFormService.updateFormSettings(
+          makeMrfForm(FormStatus.Private, []),
+          { status: FormStatus.Public } as FormSettings,
+        )
+
+        // Assert
+        expect(actualResult.isErr()).toBeFalse()
+      })
+    })
   })
 
   describe('updateFormField', () => {

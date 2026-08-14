@@ -2037,6 +2037,32 @@ export const updateFormSettings = (
     }
   }
 
+  // FRM-2489: a form must not go live holding a workflow that cannot run.
+  // Re-opening a closed form takes this same path, so both routes into Public
+  // are covered by one check.
+  //
+  // ⚠️ Deliberately not flag-gated (P8). The *relaxation* sits behind the flag;
+  // the gate does not. Otherwise a form whose steps were left half-built while
+  // the flag was on could be published after the flag was rolled back.
+  if (
+    body.status === FormStatus.Public &&
+    originalForm.responseMode === FormResponseMode.Multirespondent
+  ) {
+    const incompleteStepNumbers = getIncompleteStepNumbers(
+      (originalForm as IPopulatedMultirespondentForm).workflow ?? [],
+      originalForm.form_fields as unknown as FormFieldDto[],
+    )
+    if (incompleteStepNumbers.length > 0) {
+      return errAsync(
+        new MalformedParametersError(
+          `Please complete ${describeIncompleteSteps(
+            incompleteStepNumbers,
+          )} before opening your form to responses.`,
+        ),
+      )
+    }
+  }
+
   // Don't allow emails updates or single response per submitterId
   // if payments_field is enabled on the form
   if (isFormEncryptMode(originalForm)) {
