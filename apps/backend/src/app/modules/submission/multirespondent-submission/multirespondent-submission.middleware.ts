@@ -804,6 +804,7 @@ export const encryptSubmission = async (
   void req.growthbook?.setAttributes({
     ...req.growthbook.getAttributes(),
     formId: req.params.formId,
+    adminEmail: req.formsg.formDef.admin.email,
   })
 
   const formDef = req.formsg.formDef

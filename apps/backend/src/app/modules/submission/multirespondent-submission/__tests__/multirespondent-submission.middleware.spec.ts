@@ -888,6 +888,7 @@ describe('Multirespondent Submission Middleware', () => {
     const MOCK_FORM_BASE = {
       _id: MOCK_FORM_ID,
       publicKey: MOCK_FORM_PUBLIC_KEY,
+      admin: { email: 'admin@example.com' },
       form_fields: [
         { _id: 'field1', fieldType: BasicField.ShortText, title: 'Field 1' },
       ],
@@ -969,6 +970,12 @@ describe('Multirespondent Submission Middleware', () => {
       expect(jest.mocked(adaptV4ToV3)).not.toHaveBeenCalled()
       expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(2)
       expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.growthbook.setAttributes).toHaveBeenCalledWith(
+        expect.objectContaining({
+          formId: MOCK_FORM_ID,
+          adminEmail: 'admin@example.com',
+        }),
+      )
     })
 
     it('should return 500 and not call next() when decryptFromSubmissionKey returns falsy', async () => {
