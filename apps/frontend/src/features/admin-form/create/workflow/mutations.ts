@@ -25,7 +25,7 @@ export const useWorkflowMutations = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const { formWorkflow } = useAdminFormWorkflow()
+  const { formWorkflow, formFields } = useAdminFormWorkflow()
   if (!formWorkflow) throw new Error('No form workflow found')
 
   const queryClient = useQueryClient()
@@ -62,7 +62,7 @@ export const useWorkflowMutations = () => {
           description: 'The step was successfully created.',
         })
 
-        if (isWorkflowFeedbackEligible(updatedWorkflow)) {
+        if (isWorkflowFeedbackEligible(updatedWorkflow, formFields ?? [])) {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
@@ -116,7 +116,7 @@ export const useWorkflowMutations = () => {
           description: 'The step was successfully updated.',
         })
 
-        if (isWorkflowFeedbackEligible(updatedWorkflow)) {
+        if (isWorkflowFeedbackEligible(updatedWorkflow, formFields ?? [])) {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
