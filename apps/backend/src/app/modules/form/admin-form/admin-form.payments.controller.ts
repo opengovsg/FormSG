@@ -33,6 +33,7 @@ import * as UserService from '../../user/user.service'
 import { ForbiddenFormError } from '../form.errors'
 
 import { PaymentChannelNotFoundError } from './admin-form.errors'
+import { buildAdminFormErrorDto } from './admin-form.i18n'
 import { JoiPaymentProduct } from './admin-form.payments.constants'
 import * as AdminFormPaymentService from './admin-form.payments.service'
 import { PermissionLevel } from './admin-form.types'
@@ -313,7 +314,7 @@ const _handleUpdatePayments: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -365,7 +366,7 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }

@@ -14,6 +14,7 @@ import { ControllerHandler } from '../../core/core.types'
 import * as IssueService from '../../issue/issue.service'
 import * as UserService from '../../user/user.service'
 
+import { buildAdminFormErrorDto } from './admin-form.i18n'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -61,7 +62,7 @@ export const handleGetFormIssues: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -110,7 +111,7 @@ export const handleStreamFormIssues: ControllerHandler<
     const { errorMessage, statusCode } = mapRouteError(
       hasReadPermissionResult.error,
     )
-    return res.status(statusCode).json({ message: errorMessage })
+    return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
   }
 
   // No errors, start stream.
@@ -123,9 +124,9 @@ export const handleStreamFormIssues: ControllerHandler<
         meta: logMeta,
         error,
       })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error retrieving from database.',
-      })
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json(buildAdminFormErrorDto('Error retrieving from database.'))
     })
     .pipe(JSONStream.stringify())
     .on('error', (error) => {
@@ -134,9 +135,9 @@ export const handleStreamFormIssues: ControllerHandler<
         meta: logMeta,
         error,
       })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error converting issue to JSON.',
-      })
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json(buildAdminFormErrorDto('Error converting issue to JSON.'))
     })
     .pipe(res.type('json'))
     .on('error', (error) => {
