@@ -16,6 +16,7 @@ import {
   createFormFieldsUsingTextPrompt,
   createFormFieldsUsingVisionPrompt,
 } from './admin-form.assistance.service'
+import { buildAdminFormErrorDto } from './admin-form.i18n'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -94,7 +95,7 @@ const _handleTextPrompt: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -183,7 +184,7 @@ const _handleVisionPrompt: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
