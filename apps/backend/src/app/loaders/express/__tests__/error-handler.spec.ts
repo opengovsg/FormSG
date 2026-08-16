@@ -1,3 +1,4 @@
+import { celebrate, Joi, Segments } from 'celebrate'
 import express from 'express'
 import supertest, { Session } from 'supertest-session'
 
@@ -30,6 +31,46 @@ describe('error-handler.loader', () => {
       // Assert
       expect(response.status).toEqual(400)
       expect(response.text).toContain('"message":"Expected \':\'')
+    })
+  })
+
+  describe('Celebrate errors', () => {
+    const app = express()
+    app
+      .use(express.json())
+      .post(
+        '/',
+        celebrate({
+          [Segments.BODY]: Joi.object({
+            buttonLink: Joi.string()
+              .uri({ scheme: ['http', 'https'] })
+              .message('Please enter a valid HTTP or HTTPS URI'),
+          }),
+        }),
+        (_req, res) => res.sendStatus(200),
+      )
+      .use(errorHandlerMiddlewares())
+
+    beforeEach(() => {
+      request = supertest(app)
+    })
+
+    it('adds i18n metadata while retaining the Celebrate payload', async () => {
+      const response = await request
+        .post('/')
+        .send({ buttonLink: 'not-a-url' })
+        .type('json')
+
+      expect(response.status).toEqual(400)
+      expect(response.body).toMatchObject({
+        message: 'Please enter a valid HTTP or HTTPS URI',
+        messageKey: 'features.adminForm.backendErrors.endPage.invalidUrl',
+        validation: {
+          body: {
+            message: 'Please enter a valid HTTP or HTTPS URI',
+          },
+        },
+      })
     })
   })
 })
