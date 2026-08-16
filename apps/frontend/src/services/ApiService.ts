@@ -95,16 +95,16 @@ export const transformAxiosError = (error: Error): ApiError => {
       if (typeof error.response.data === 'string') {
         return new HttpError(error.response.data, statusCode)
       }
-      // handle celebrate errors
+      const backendMessage = getTranslatedBackendMessage(error.response.data)
+      if (backendMessage) {
+        return new HttpError(backendMessage, statusCode)
+      }
+      // handle celebrate errors without an i18n-enabled top-level message
       if (error.response.data?.validation?.body?.message) {
         return new HttpError(
           error.response.data.validation.body.message,
           statusCode,
         )
-      }
-      const backendMessage = getTranslatedBackendMessage(error.response.data)
-      if (backendMessage) {
-        return new HttpError(backendMessage, statusCode)
       }
       if (error.response.statusText) {
         return new HttpError(error.response.statusText, statusCode)
