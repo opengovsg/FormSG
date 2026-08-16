@@ -100,6 +100,7 @@ import {
   EditFieldError,
   GoGovServerError,
 } from './admin-form.errors'
+import { buildAdminFormErrorDto } from './admin-form.i18n'
 import {
   createWorkflowStepValidator,
   deleteWorkflowStepValidator,
@@ -298,7 +299,7 @@ export const handleListDashboardForms: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -343,7 +344,7 @@ export const handleGetAdminForm: ControllerHandler<{ formId: string }> = (
         })
 
         const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -391,7 +392,7 @@ export const handleGetFormCollaborators: ControllerHandler<
         })
 
         const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -441,7 +442,7 @@ export const handlePreviewAdminForm: ControllerHandler<{ formId: string }> = (
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -504,7 +505,7 @@ export const createPresignedPostUrlForImages: ControllerHandler<
         })
 
         const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -572,7 +573,7 @@ export const createPresignedPostUrlForLogos: ControllerHandler<
         })
 
         const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -640,7 +641,7 @@ export const countFormSubmissions: ControllerHandler<
       error: formResult.error,
     })
     const { errorMessage, statusCode } = mapRouteError(formResult.error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
   }
 
   // Step 3: Has permissions, continue to retrieve submission counts.
@@ -665,7 +666,7 @@ export const countFormSubmissions: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -720,7 +721,7 @@ export const handleCountFormFeedback: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -770,7 +771,7 @@ export const handleStreamFormFeedback: ControllerHandler<{
     const { errorMessage, statusCode } = mapRouteError(
       hasReadPermissionResult.error,
     )
-    return res.status(statusCode).json({ message: errorMessage })
+    return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
   }
 
   // No errors, start stream.
@@ -783,9 +784,9 @@ export const handleStreamFormFeedback: ControllerHandler<{
         meta: logMeta,
         error,
       })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error retrieving from database.',
-      })
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json(buildAdminFormErrorDto('Error retrieving from database.'))
     })
     .pipe(JSONStream.stringify())
     .on('error', (error) => {
@@ -794,9 +795,9 @@ export const handleStreamFormFeedback: ControllerHandler<{
         meta: logMeta,
         error,
       })
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: 'Error converting feedback to JSON',
-      })
+      return res
+        .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .json(buildAdminFormErrorDto('Error converting feedback to JSON'))
     })
     .pipe(res.type('json'))
     .on('error', (error) => {
@@ -859,7 +860,7 @@ export const handleGetFormFeedback: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -924,7 +925,7 @@ export const handleArchiveForm: ControllerHandler<{ formId: string }> = async (
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -1019,7 +1020,7 @@ export const duplicateAdminForm: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -1080,7 +1081,7 @@ export const handleGetTemplateForm: ControllerHandler<
             formTitle: error.formTitle,
           })
         }
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -1147,11 +1148,11 @@ export const copyTemplateForm: ControllerHandler<
 
         // Specialized error response for PrivateFormError.
         if (error instanceof PrivateFormError) {
-          return res.status(statusCode).json({
-            message: 'Form must be public to be copied',
-          })
+          return res
+            .status(statusCode)
+            .json(buildAdminFormErrorDto('Form must be public to be copied'))
         }
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -1201,7 +1202,7 @@ export const transferAllFormsOwnership: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -1264,7 +1265,7 @@ export const transferFormOwnership: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -1331,7 +1332,7 @@ export const createForm: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -1408,7 +1409,7 @@ export const handleUpdateForm: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -1461,7 +1462,7 @@ export const handleDuplicateFormField: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -1513,7 +1514,7 @@ export const _handleUpdateSettings: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -1755,7 +1756,7 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -1835,7 +1836,7 @@ export const _handleCreateWorkflowStep: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -1897,7 +1898,7 @@ const _handleUpdateWorkflowStep: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -2057,7 +2058,7 @@ export const _handleDeleteWorkflowStep: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -2129,7 +2130,7 @@ const _handleUpdateWhitelistSetting: ControllerHandler<
       error,
     })
     const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
   }
 
   const form = formResult.value
@@ -2162,9 +2163,9 @@ const _handleUpdateWhitelistSetting: ControllerHandler<
       message: 'Form does not have a public key',
       meta: logMeta,
     })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'Form does not have a public key',
-    })
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json(buildAdminFormErrorDto('Form does not have a public key'))
   }
   const formPublicKey = form.publicKey
   const encryptedWhitelistSubmitterIdsContent = upperCaseWhitelistedSubmitterIds
@@ -2190,7 +2191,7 @@ const _handleUpdateWhitelistSetting: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -2251,7 +2252,7 @@ export const _handleUpdateFormField: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -2295,7 +2296,7 @@ export const handleGetSettings: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -2340,7 +2341,7 @@ export const handleGetWhitelistSetting: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -2402,7 +2403,7 @@ export const _handleGetWebhookSettings: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -2478,7 +2479,7 @@ export const submitEncryptPreview: ControllerHandler<
     })
     .mapErr((error) => {
       const { errorMessage, statusCode } = mapSubmissionError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -2578,7 +2579,7 @@ const _handleUpdateOptionsToRecipientsMap: ControllerHandler<
         error,
       })
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -2657,7 +2658,7 @@ export const _handleCreateFormField: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -2714,7 +2715,7 @@ export const _handleCreateLogic: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -2991,7 +2992,7 @@ export const handleDeleteLogic: ControllerHandler<{
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3079,7 +3080,7 @@ export const _handleReorderFormField: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3149,7 +3150,7 @@ export const _handleUpdateLogic: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3220,7 +3221,7 @@ export const handleDeleteFormField: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3272,7 +3273,7 @@ export const handleDeleteFormFields: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3326,7 +3327,7 @@ export const _handleUpdateEndPage: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3422,7 +3423,7 @@ export const handleGetFormField: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3478,7 +3479,7 @@ export const _handleUpdateCollaborators: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3560,7 +3561,7 @@ export const handleRemoveSelfFromCollaborators: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3615,7 +3616,7 @@ export const _handleUpdateStartPage: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3706,7 +3707,7 @@ export const handleGetGoLinkSuffix: ControllerHandler<{ formId: string }> = (
             error,
           })
         }
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3774,7 +3775,7 @@ export const handleSetGoLinkSuffix: ControllerHandler<
           error,
         })
         const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
@@ -3814,7 +3815,7 @@ export const handleConvertEmailToStorageMode: ControllerHandler<
     })
     .mapErr((error) => {
       const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
     })
 }
 
@@ -3860,7 +3861,7 @@ export const handleGetSmsCountForFormAdmin: ControllerHandler<
           error,
         })
         const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
       })
   )
 }
