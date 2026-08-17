@@ -3,14 +3,36 @@ import { ObjectId } from 'bson'
 import {
   getIncompleteStepNumbers,
   isStepComplete,
+  mustWorkflowBeComplete,
 } from '../workflow-step-completion'
 
 import {
   BasicField,
   FormFieldDto,
+  FormStatus,
   FormWorkflowStep,
   WorkflowType,
 } from '../../types'
+
+describe('mustWorkflowBeComplete', () => {
+  // Only Private is permissive. Anything else is strict, so an unloaded form
+  // on the client fails safe rather than guessing.
+  it.each<[FormStatus | undefined, boolean, boolean]>([
+    [FormStatus.Private, true, false],
+    [FormStatus.Public, true, true],
+    [FormStatus.Archived, true, true],
+    [undefined, true, true],
+    [FormStatus.Private, false, true],
+    [FormStatus.Public, false, true],
+  ])(
+    'status=%s flag=%s -> mustBeComplete=%s',
+    (formStatus, isRedesignEnabled, expected) => {
+      expect(mustWorkflowBeComplete({ formStatus, isRedesignEnabled })).toBe(
+        expected,
+      )
+    },
+  )
+})
 
 describe('isStepComplete', () => {
   const FIELD_ID = 'field-1'

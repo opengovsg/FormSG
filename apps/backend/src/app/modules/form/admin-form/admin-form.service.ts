@@ -44,7 +44,10 @@ import {
   isNricValid,
 } from 'formsg-shared/utils/nric-validation'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
-import { getIncompleteStepNumbers } from 'formsg-shared/utils/workflow-step-completion'
+import {
+  getIncompleteStepNumbers,
+  mustWorkflowBeComplete,
+} from 'formsg-shared/utils/workflow-step-completion'
 import { assignIn, last, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -1571,14 +1574,27 @@ export const updateFormWhitelistSetting = (
   })
 }
 
-/**
- * Names the incomplete steps for an admin, 1-indexed the way the builder shows
- * them.
- */
-const describeIncompleteSteps = (stepNumbers: number[]): string => {
+/** The one place the form-fields cast lives, rather than at each call site. */
+const findIncompleteSteps = (
+  form: IPopulatedForm,
+  workflow: FormWorkflowDto,
+): number[] =>
+  getIncompleteStepNumbers(
+    workflow,
+    form.form_fields as unknown as FormFieldDto[],
+  )
+
+/** Names the steps for an admin, 1-indexed the way the builder shows them. */
+const incompleteStepsError = (
+  stepNumbers: number[],
+  action: string,
+): MalformedParametersError => {
   const labels = stepNumbers.map((stepNumber) => `step ${stepNumber + 1}`)
-  if (labels.length === 1) return labels[0]
-  return `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`
+  const described =
+    labels.length === 1
+      ? labels[0]
+      : `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`
+  return new MalformedParametersError(`Please complete ${described} ${action}.`)
 }
 
 /**
@@ -1587,43 +1603,25 @@ const describeIncompleteSteps = (stepNumbers: number[]): string => {
  * step being mutated, which covers deletions for free: removing the step that
  * held the only recipient is caught the same way as emptying it.
  *
- * ⚠️ The flag selects how strict the rule is, never whether it runs (P17). Joi
- * and Mongoose no longer check completeness at all, so skipping this when the
- * flag is off would leave a live form with **no** guard rather than the three
- * it had before.
- *
- * @param workflow the workflow as it would be after the mutation
- * @param formFields the form's fields, needed for conditional routing
- * @param formStatus the form's current status
- * @param isRedesignEnabled whether the workflow builder redesign flag is on
+ * ⚠️ The flag selects how strict the rule is, never whether it runs. Joi and
+ * Mongoose no longer check completeness at all, so skipping this when the flag
+ * is off would leave a live form with **no** guard rather than the three it had
+ * before. It is stricter than pre-FRM-2489 for the same reason, so a flag
+ * rollback is not a full revert.
  */
-const checkResultingWorkflowIsAllowed = ({
-  workflow,
-  formFields,
-  formStatus,
-  isRedesignEnabled,
-}: {
-  workflow: FormWorkflowDto
-  formFields: FormFieldDto[]
-  formStatus: FormStatus
-  isRedesignEnabled: boolean
-}): Result<true, MalformedParametersError> => {
-  // Flag off reproduces today's behaviour: every step must be complete
-  // whatever the form's status. Flag on permits incompleteness while the form
-  // is not live. So the `?? false` default in the controllers fails safe.
-  const mustBeComplete = !isRedesignEnabled || formStatus === FormStatus.Public
-  if (!mustBeComplete) return ok(true)
+const checkResultingWorkflowIsAllowed = (
+  form: IPopulatedForm,
+  workflow: FormWorkflowDto,
+  isRedesignEnabled: boolean,
+): Result<true, MalformedParametersError> => {
+  if (!mustWorkflowBeComplete({ formStatus: form.status, isRedesignEnabled })) {
+    return ok(true)
+  }
 
-  const incompleteStepNumbers = getIncompleteStepNumbers(workflow, formFields)
-  if (incompleteStepNumbers.length === 0) return ok(true)
-
-  return err(
-    new MalformedParametersError(
-      `Please complete ${describeIncompleteSteps(
-        incompleteStepNumbers,
-      )} before saving.`,
-    ),
-  )
+  const incompleteStepNumbers = findIncompleteSteps(form, workflow)
+  return incompleteStepNumbers.length === 0
+    ? ok(true)
+    : err(incompleteStepsError(incompleteStepNumbers, 'before saving'))
 }
 
 export const createWorkflowStep = (
@@ -1732,13 +1730,12 @@ export const createWorkflowStep = (
   // Create new workflow step
   const updatedWorkflow = originalWorkflow.concat(newWorkflowStep)
 
-  const completenessCheck = checkResultingWorkflowIsAllowed({
-    workflow: updatedWorkflow,
-    formFields: originalForm.form_fields as unknown as FormFieldDto[],
-    formStatus: originalForm.status,
+  const check = checkResultingWorkflowIsAllowed(
+    originalForm,
+    updatedWorkflow,
     isRedesignEnabled,
-  })
-  if (completenessCheck.isErr()) return errAsync(completenessCheck.error)
+  )
+  if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
@@ -1887,13 +1884,12 @@ export const updateFormWorkflowStep = (
     index === stepNumber ? updatedWorkflowStep : step,
   )
 
-  const completenessCheck = checkResultingWorkflowIsAllowed({
-    workflow: updatedWorkflow,
-    formFields: originalForm.form_fields as unknown as FormFieldDto[],
-    formStatus: originalForm.status,
+  const check = checkResultingWorkflowIsAllowed(
+    originalForm,
+    updatedWorkflow,
     isRedesignEnabled,
-  })
-  if (completenessCheck.isErr()) return errAsync(completenessCheck.error)
+  )
+  if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
@@ -1962,13 +1958,12 @@ export const deleteFormWorkflowStep = (
 
   // Deleting the step that held the only recipient leaves the workflow just as
   // incomplete as emptying it, so the same check covers both.
-  const completenessCheck = checkResultingWorkflowIsAllowed({
-    workflow: updatedWorkflow,
-    formFields: originalForm.form_fields as unknown as FormFieldDto[],
-    formStatus: originalForm.status,
+  const check = checkResultingWorkflowIsAllowed(
+    originalForm,
+    updatedWorkflow,
     isRedesignEnabled,
-  })
-  if (completenessCheck.isErr()) return errAsync(completenessCheck.error)
+  )
+  if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
@@ -2041,23 +2036,22 @@ export const updateFormSettings = (
   // Re-opening a closed form takes this same path, so both routes into Public
   // are covered by one check.
   //
-  // ⚠️ Deliberately not flag-gated (P8). The *relaxation* sits behind the flag;
+  // ⚠️ Deliberately not flag-gated. The *relaxation* sits behind the flag;
   // the gate does not. Otherwise a form whose steps were left half-built while
   // the flag was on could be published after the flag was rolled back.
   if (
     body.status === FormStatus.Public &&
     originalForm.responseMode === FormResponseMode.Multirespondent
   ) {
-    const incompleteStepNumbers = getIncompleteStepNumbers(
+    const incompleteStepNumbers = findIncompleteSteps(
+      originalForm,
       (originalForm as IPopulatedMultirespondentForm).workflow ?? [],
-      originalForm.form_fields as unknown as FormFieldDto[],
     )
     if (incompleteStepNumbers.length > 0) {
       return errAsync(
-        new MalformedParametersError(
-          `Please complete ${describeIncompleteSteps(
-            incompleteStepNumbers,
-          )} before opening your form to responses.`,
+        incompleteStepsError(
+          incompleteStepNumbers,
+          'before opening your form to responses',
         ),
       )
     }

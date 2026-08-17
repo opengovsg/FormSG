@@ -1,7 +1,27 @@
 import { BasicField, FormFieldDto } from '../types/field'
-import { FormWorkflowStep, WorkflowType } from '../types/form'
+import { FormStatus, FormWorkflowStep, WorkflowType } from '../types/form'
 
 import { checkIsOptionsMismatched } from './options-recipients-map-validation'
+
+/**
+ * Whether a workflow has to be complete before it may be saved.
+ *
+ * Building a workflow is not linear: an admin often knows which fields a step
+ * needs before they know who fills them in. Only a `Private` form may hold a
+ * half-built step, since nobody can submit to it mid-build.
+ *
+ * Lives here, next to the predicate it gates, so the client and the server
+ * cannot state the same policy two different ways. Anything other than
+ * `Private` is strict, including an unknown status, so a form that has not
+ * loaded yet fails safe.
+ */
+export const mustWorkflowBeComplete = ({
+  formStatus,
+  isRedesignEnabled,
+}: {
+  formStatus?: FormStatus
+  isRedesignEnabled: boolean
+}): boolean => !isRedesignEnabled || formStatus !== FormStatus.Private
 
 /**
  * Conditional routing is only usable once every option of the selected dropdown
