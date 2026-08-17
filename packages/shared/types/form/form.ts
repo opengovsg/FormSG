@@ -244,10 +244,6 @@ export interface WhitelistedSubmitterIdsWithReferenceOid extends WhitelistedSubm
   encryptedWhitelistedSubmitterIds: string // Object id of the encrypted whitelist
 }
 
-/**
- * Base for response modes that can collect payments. A form having these
- * fields does not mean it charges respondents — see `payments_field.enabled`.
- */
 export interface PaymentFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField

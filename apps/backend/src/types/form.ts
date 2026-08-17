@@ -340,8 +340,6 @@ export interface IPopulatedForm extends Omit<IFormDocument, 'toJSON'> {
 
 export interface IEncryptedForm extends IForm {
   publicKey: string
-  // Nested objects will always be returned from mongoose finds, even if they
-  // are not defined in DB. See https://github.com/Automattic/mongoose/issues/5310
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
