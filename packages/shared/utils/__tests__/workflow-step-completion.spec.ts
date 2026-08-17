@@ -15,23 +15,18 @@ import {
 } from '../../types'
 
 describe('mustWorkflowBeComplete', () => {
-  // Only Private is permissive. Anything else is strict, so an unloaded form
-  // on the client fails safe rather than guessing.
-  it.each<[FormStatus | undefined, boolean, boolean]>([
-    [FormStatus.Private, true, false],
-    [FormStatus.Public, true, true],
-    [FormStatus.Archived, true, true],
-    [undefined, true, true],
-    [FormStatus.Private, false, true],
-    [FormStatus.Public, false, true],
-  ])(
-    'status=%s flag=%s -> mustBeComplete=%s',
-    (formStatus, isRedesignEnabled, expected) => {
-      expect(mustWorkflowBeComplete({ formStatus, isRedesignEnabled })).toBe(
-        expected,
-      )
-    },
-  )
+  // Only a live form needs a runnable workflow. Private is the whole point of
+  // the ticket; Archived cannot be edited; an unknown status defers to the
+  // server. The redesign flag is deliberately not an input, so that rolling it
+  // back cannot start rejecting mutations on forms that saved legally.
+  it.each<[FormStatus | undefined, boolean]>([
+    [FormStatus.Public, true],
+    [FormStatus.Private, false],
+    [FormStatus.Archived, false],
+    [undefined, false],
+  ])('status=%s -> mustBeComplete=%s', (formStatus, expected) => {
+    expect(mustWorkflowBeComplete({ formStatus })).toBe(expected)
+  })
 })
 
 describe('isStepComplete', () => {

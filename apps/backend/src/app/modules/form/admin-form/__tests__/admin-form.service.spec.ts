@@ -3967,8 +3967,6 @@ describe('admin-form.service', () => {
         const result = await AdminFormService.createWorkflowStep(
           mockForm,
           newStep as any,
-          // Flag off is the stricter rule; these workflows are complete.
-          false,
         )
 
         // Assert
@@ -4021,8 +4019,6 @@ describe('admin-form.service', () => {
         const result = await AdminFormService.createWorkflowStep(
           mockForm,
           newStep as any,
-          // Flag off is the stricter rule; these workflows are complete.
-          false,
         )
 
         // Assert
@@ -4066,8 +4062,6 @@ describe('admin-form.service', () => {
         const result = await AdminFormService.createWorkflowStep(
           mockForm,
           newStep as any,
-          // Flag off is the stricter rule; these workflows are complete.
-          false,
         )
 
         // Assert
@@ -4129,7 +4123,6 @@ describe('admin-form.service', () => {
           mockForm,
           1,
           updatedStep as any,
-          false,
         )
 
         // Assert
@@ -4185,7 +4178,6 @@ describe('admin-form.service', () => {
           mockForm,
           1,
           updatedStep as any,
-          false,
         )
 
         // Assert
@@ -4249,66 +4241,60 @@ describe('admin-form.service', () => {
           }),
         })
 
-    // The flag selects how strict the rule is, never whether it runs. If the
-    // flag-off rows return ok, flag-off requests have no completeness guard
-    // left anywhere in the stack.
-    it.each<[string, FormStatus, boolean, unknown[], unknown, boolean]>([
+    // Only a live form is guarded, whatever the redesign flag says. Applying
+    // the check to a Private form would reject mutations on forms that saved
+    // legally before this check existed, and since the guard inspects the whole
+    // resulting workflow, a form with two such steps could not be repaired.
+    it.each<[string, FormStatus, unknown[], unknown, boolean]>([
       [
-        'flag on, private, incomplete',
+        'private, incomplete',
         FormStatus.Private,
-        true,
         [completeFirstStep],
         incompleteSecondStep,
         true,
       ],
       [
-        'flag on, public, incomplete',
+        'archived, incomplete',
+        FormStatus.Archived,
+        [completeFirstStep],
+        incompleteSecondStep,
+        true,
+      ],
+      [
+        'public, incomplete',
         FormStatus.Public,
-        true,
         [completeFirstStep],
         incompleteSecondStep,
         false,
       ],
       [
-        'flag off, private, incomplete',
-        FormStatus.Private,
-        false,
-        [completeFirstStep],
-        incompleteSecondStep,
-        false,
-      ],
-      [
-        'flag off, private, complete',
-        FormStatus.Private,
-        false,
+        'public, complete',
+        FormStatus.Public,
         [completeFirstStep],
         completeSecondStep,
         true,
       ],
       [
-        'step 0 with no respondent',
+        'public, step 0 with no respondent',
         FormStatus.Public,
-        true,
         [],
         completeFirstStep,
         true,
       ],
       [
-        'step 0 with no fields',
+        'public, step 0 with no fields',
         FormStatus.Public,
-        true,
         [],
         { ...completeFirstStep, edit: [] },
         true,
       ],
     ])(
       'createWorkflowStep: %s -> ok=%s',
-      async (_name, status, isRedesignEnabled, workflow, step, expectOk) => {
+      async (_name, status, workflow, step, expectOk) => {
         mockDbSuccess()
         const result = await AdminFormService.createWorkflowStep(
           makeForm(status, workflow),
           step as any,
-          isRedesignEnabled,
         )
         expect(result.isOk()).toBe(expectOk)
       },
@@ -4318,7 +4304,6 @@ describe('admin-form.service', () => {
       const result = await AdminFormService.createWorkflowStep(
         makeForm(FormStatus.Public, [completeFirstStep]),
         incompleteSecondStep as any,
-        true,
       )
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
       expect(result._unsafeUnwrapErr().message).toContain('step 2')
@@ -4329,7 +4314,6 @@ describe('admin-form.service', () => {
         makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
         1,
         incompleteSecondStep as any,
-        true,
       )
       expect(result.isErr()).toBe(true)
     })
@@ -4346,7 +4330,6 @@ describe('admin-form.service', () => {
       const result = await AdminFormService.deleteFormWorkflowStep(
         makeForm(FormStatus.Public, workflow),
         1,
-        true,
       )
       expect(result.isErr()).toBe(true)
       expect(workflow).toHaveLength(3)
@@ -4357,7 +4340,6 @@ describe('admin-form.service', () => {
       const result = await AdminFormService.deleteFormWorkflowStep(
         makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
         1,
-        true,
       )
       expect(result.isOk()).toBe(true)
     })

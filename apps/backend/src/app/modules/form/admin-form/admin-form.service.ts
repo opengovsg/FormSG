@@ -1603,18 +1603,17 @@ const incompleteStepsError = (
  * step being mutated, which covers deletions for free: removing the step that
  * held the only recipient is caught the same way as emptying it.
  *
- * ⚠️ The flag selects how strict the rule is, never whether it runs. Joi and
- * Mongoose no longer check completeness at all, so skipping this when the flag
- * is off would leave a live form with **no** guard rather than the three it had
- * before. It is stricter than pre-FRM-2489 for the same reason, so a flag
- * rollback is not a full revert.
+ * Not gated on the redesign flag. Joi and Mongoose no longer check
+ * completeness, so a live form would otherwise be left unguarded whenever the
+ * flag was off. `mustWorkflowBeComplete` limits that to live forms only, which
+ * is why this can run unconditionally without penalising forms saved before
+ * the check existed.
  */
 const checkResultingWorkflowIsAllowed = (
   form: IPopulatedForm,
   workflow: FormWorkflowDto,
-  isRedesignEnabled: boolean,
 ): Result<true, MalformedParametersError> => {
-  if (!mustWorkflowBeComplete({ formStatus: form.status, isRedesignEnabled })) {
+  if (!mustWorkflowBeComplete({ formStatus: form.status })) {
     return ok(true)
   }
 
@@ -1627,7 +1626,6 @@ const checkResultingWorkflowIsAllowed = (
 export const createWorkflowStep = (
   originalForm: IPopulatedForm,
   newWorkflowStep: FormWorkflowStepDto,
-  isRedesignEnabled: boolean,
 ): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1730,11 +1728,7 @@ export const createWorkflowStep = (
   // Create new workflow step
   const updatedWorkflow = originalWorkflow.concat(newWorkflowStep)
 
-  const check = checkResultingWorkflowIsAllowed(
-    originalForm,
-    updatedWorkflow,
-    isRedesignEnabled,
-  )
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
   if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
@@ -1775,7 +1769,6 @@ export const updateFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
   updatedWorkflowStep: FormWorkflowStepDto,
-  isRedesignEnabled: boolean,
 ): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1884,11 +1877,7 @@ export const updateFormWorkflowStep = (
     index === stepNumber ? updatedWorkflowStep : step,
   )
 
-  const check = checkResultingWorkflowIsAllowed(
-    originalForm,
-    updatedWorkflow,
-    isRedesignEnabled,
-  )
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
   if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
@@ -1930,7 +1919,6 @@ export const updateFormWorkflowStep = (
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
-  isRedesignEnabled: boolean,
 ): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1958,11 +1946,7 @@ export const deleteFormWorkflowStep = (
 
   // Deleting the step that held the only recipient leaves the workflow just as
   // incomplete as emptying it, so the same check covers both.
-  const check = checkResultingWorkflowIsAllowed(
-    originalForm,
-    updatedWorkflow,
-    isRedesignEnabled,
-  )
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
   if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
@@ -2036,7 +2020,7 @@ export const updateFormSettings = (
   // Re-opening a closed form takes this same path, so both routes into Public
   // are covered by one check.
   //
-  // ⚠️ Deliberately not flag-gated. The *relaxation* sits behind the flag;
+  // Deliberately not flag-gated. The *relaxation* sits behind the flag;
   // the gate does not. Otherwise a form whose steps were left half-built while
   // the flag was on could be published after the flag was rolled back.
   if (

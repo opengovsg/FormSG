@@ -6,22 +6,28 @@ import { checkIsOptionsMismatched } from './options-recipients-map-validation'
 /**
  * Whether a workflow has to be complete before it may be saved.
  *
- * Building a workflow is not linear: an admin often knows which fields a step
- * needs before they know who fills them in. Only a `Private` form may hold a
- * half-built step, since nobody can submit to it mid-build.
+ * Only a live form needs a runnable workflow. Building one is not linear: an
+ * admin often knows which fields a step needs before they know who fills them
+ * in, and a form nobody can submit to is safe to leave half-built.
  *
- * Lives here, next to the predicate it gates, so the client and the server
- * cannot state the same policy two different ways. Anything other than
- * `Private` is strict, including an unknown status, so a form that has not
- * loaded yet fails safe.
+ * Deliberately does **not** consult the redesign flag. An earlier version made
+ * flag-off strict for every status, reasoning that a rollback should not leave
+ * a live form unguarded. But this ticket is what introduced the check at all:
+ * before it, no layer required a Static step to have a recipient. Applying the
+ * new rule to Private forms under flag-off would therefore reject workflow
+ * mutations on forms that saved legally, and since the guard checks the whole
+ * resulting workflow, a form with two such steps could not be repaired at all.
+ * Gating on `Public` keeps live forms guarded in both flag states, which was
+ * the actual concern.
+ *
+ * An unknown status is treated as not-live. The server always knows the status;
+ * on the client this only defers to the server's answer on save.
  */
 export const mustWorkflowBeComplete = ({
   formStatus,
-  isRedesignEnabled,
 }: {
   formStatus?: FormStatus
-  isRedesignEnabled: boolean
-}): boolean => !isRedesignEnabled || formStatus !== FormStatus.Private
+}): boolean => formStatus === FormStatus.Public
 
 /**
  * Conditional routing is only usable once every option of the selected dropdown

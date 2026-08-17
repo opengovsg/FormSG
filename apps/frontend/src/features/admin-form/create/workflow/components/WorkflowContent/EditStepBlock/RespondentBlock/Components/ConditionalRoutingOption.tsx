@@ -304,8 +304,13 @@ export const ConditionalRoutingOption = ({
       selectedConditionalField?.fieldOptions || [],
     )
 
+  // An empty object counts as no mapping. `{}` is truthy, and it is exactly
+  // what `removeOptionsToRecipientsMapping` writes, so testing only for the
+  // map's presence let a step with no routing at all pass every inline check
+  // while the shared predicate rightly called it incomplete (FRM-2489).
   const noEmailToOptionsMappingErrorMessage =
-    !selectedConditionalFieldOptionsToRecipientsMap
+    !selectedConditionalFieldOptionsToRecipientsMap ||
+    Object.keys(selectedConditionalFieldOptionsToRecipientsMap).length === 0
       ? t(
           'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.addEmailsBeforeSave',
         )
