@@ -518,7 +518,9 @@ export type IEncryptedFormModel = Model<IEncryptedFormSchema> & IFormModel
 
 export type IEmailFormModel = IFormModel & Model<IEmailFormSchema>
 
-export type IMultirespondentFormModel = IFormModel &
-  Model<IMultirespondentFormSchema>
+// Model first so `new MultirespondentForm()` documents are typed as
+// IMultirespondentFormSchema, mirroring IEncryptedFormModel above.
+export type IMultirespondentFormModel = Model<IMultirespondentFormSchema> &
+  IFormModel
 
 export type IOnboardedForm<T extends IForm> = T

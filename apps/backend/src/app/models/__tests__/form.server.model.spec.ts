@@ -1110,7 +1110,7 @@ describe('Form Model', () => {
             payments_field: ENABLED_PAYMENTS_FIELD,
           }).save()
           form.workflow.push({
-            _id: new ObjectId(),
+            _id: new ObjectId().toHexString(),
             workflow_type: WorkflowType.Static,
             emails: ['test@open.gov.sg'],
             edit: [],
@@ -1120,6 +1120,86 @@ describe('Form Model', () => {
           await expect(form.save()).rejects.toThrow(
             'Payments cannot be enabled on a multirespondent form with workflow steps',
           )
+        })
+      })
+
+      describe('payment account methods', () => {
+        const MOCK_STRIPE_ACCOUNT = {
+          accountId: 'acct_mockAccountId',
+          publishableKey: 'pk_mockPublishableKey',
+        }
+
+        it('addPaymentAccountId should connect Stripe when channel is unconnected', async () => {
+          // Arrange
+          const form = await new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+          }).save()
+
+          // Act
+          const updated = await form.addPaymentAccountId(MOCK_STRIPE_ACCOUNT)
+
+          // Assert
+          expect(updated.payments_channel).toEqual(
+            expect.objectContaining({
+              channel: PaymentChannel.Stripe,
+              target_account_id: MOCK_STRIPE_ACCOUNT.accountId,
+              publishable_key: MOCK_STRIPE_ACCOUNT.publishableKey,
+              payment_methods: [],
+            }),
+          )
+        })
+
+        it('addPaymentAccountId should not overwrite an already connected channel', async () => {
+          // Arrange
+          const form = await new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+          }).save()
+          await form.addPaymentAccountId(MOCK_STRIPE_ACCOUNT)
+
+          // Act
+          const updated = await form.addPaymentAccountId({
+            accountId: 'acct_anotherAccountId',
+            publishableKey: 'pk_anotherPublishableKey',
+          })
+
+          // Assert
+          expect(updated.payments_channel.target_account_id).toEqual(
+            MOCK_STRIPE_ACCOUNT.accountId,
+          )
+          expect(updated.payments_channel.publishable_key).toEqual(
+            MOCK_STRIPE_ACCOUNT.publishableKey,
+          )
+        })
+
+        it('removePaymentAccount should reset the channel and disable payments', async () => {
+          // Arrange
+          const form = await new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [],
+            payments_field: {
+              enabled: true,
+              payment_type: PaymentType.Variable,
+              min_amount: 100,
+              max_amount: 1000,
+            },
+          }).save()
+          await form.addPaymentAccountId(MOCK_STRIPE_ACCOUNT)
+
+          // Act
+          const updated = await form.removePaymentAccount()
+
+          // Assert
+          expect(updated.payments_channel).toEqual(
+            expect.objectContaining({
+              channel: PaymentChannel.Unconnected,
+              target_account_id: '',
+              publishable_key: '',
+              payment_methods: [],
+            }),
+          )
+          expect(updated.payments_field.enabled).toBe(false)
         })
       })
     })
