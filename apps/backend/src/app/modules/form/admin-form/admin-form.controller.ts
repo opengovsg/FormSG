@@ -3,10 +3,7 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import {
-  featureFlags,
-  FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
-} from 'formsg-shared/constants'
+import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
@@ -1609,12 +1606,7 @@ export const _handleCreateWorkflowStep: ControllerHandler<
       )
       // Step 3: User has permissions, proceed to create form field with provided body.
       .andThen((form) =>
-        AdminFormService.createWorkflowStep(
-          form,
-          workflowStepToCreate,
-          // Defaults to off, which is the *stricter* rule.
-          req.growthbook?.isOn(featureFlags.workflowBuilderRedesign) ?? false,
-        ),
+        AdminFormService.createWorkflowStep(form, workflowStepToCreate),
       )
       .map((updatedWorkflow) =>
         res.status(StatusCodes.OK).json(updatedWorkflow),
@@ -1669,7 +1661,6 @@ const _handleUpdateWorkflowStep: ControllerHandler<
         retrievedForm,
         stepNumber,
         updatedWorkflowStep,
-        req.growthbook?.isOn(featureFlags.workflowBuilderRedesign) ?? false,
       ),
     )
     .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
@@ -1718,11 +1709,7 @@ export const handleDeleteWorkflowStep: ControllerHandler<
       )
       // Step 3: Delete workflow step.
       .andThen((retrievedForm) =>
-        AdminFormService.deleteFormWorkflowStep(
-          retrievedForm,
-          stepNumber,
-          req.growthbook?.isOn(featureFlags.workflowBuilderRedesign) ?? false,
-        ),
+        AdminFormService.deleteFormWorkflowStep(retrievedForm, stepNumber),
       )
       .map((updatedWorkflow) =>
         res.status(StatusCodes.OK).json(updatedWorkflow),
