@@ -30,10 +30,6 @@ jest.mock('axios')
 jest.mock('src/app/modules/payments/stripe.utils')
 jest.mock('src/app/utils/convert-html-to-pdf')
 
-jest.mock(
-  'src/app/modules/submission/encrypt-submission/encrypt-submission.service',
-)
-
 jest.mock('../../form/form.service')
 const MockFormService = jest.mocked(FormService)
 
