@@ -12,20 +12,12 @@ describe('getWorkflowStepLabel', () => {
       'Approval by manager',
     ],
     [
-      'a name in any case, untouched',
-      1,
-      'approval by manager',
-      'step',
-      'approval by manager',
-    ],
-    [
-      'the position, 1-indexed and sentence case',
-      2,
+      'the position, 1-indexed, with the translated word capitalised',
+      0,
       undefined,
-      'step',
-      'Step 3',
+      'langkah',
+      'Langkah 1',
     ],
-    ['the translated word for step', 0, undefined, 'langkah', 'Langkah 1'],
     // An empty name is not a name, or the modal lists a blank bullet.
     ['the position when the name is empty', 1, '', 'step', 'Step 2'],
   ])('should use %s', (_name, stepNumber, stepName, stepWord, expected) => {

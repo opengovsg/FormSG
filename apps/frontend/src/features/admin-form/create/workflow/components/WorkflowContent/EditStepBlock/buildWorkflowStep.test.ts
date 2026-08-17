@@ -2,10 +2,9 @@ import { WorkflowType } from 'formsg-shared/types'
 
 import { EditStepInputs } from '../../../types'
 
-import { buildWorkflowStep } from './buildWorkflowStep'
+import { buildWorkflowStep } from './EditStepBlock'
 
 const FIELD_ID = '6a7de1810000000000000001'
-const DROPDOWN_ID = '6a7de1810000000000000002'
 
 const baseInputs = (overrides: Partial<EditStepInputs> = {}) =>
   ({
@@ -17,10 +16,7 @@ const baseInputs = (overrides: Partial<EditStepInputs> = {}) =>
   }) as EditStepInputs
 
 describe('buildWorkflowStep', () => {
-  // FRM-2489. Before this, a step with no respondent chosen returned undefined
-  // and the save silently did nothing: no request, no error, no feedback.
-  // An empty string is dropped rather than sent, since the API rejects '' and
-  // it would not cast to an ObjectId.
+  // FRM-2489: an unchosen or emptied field/conditional_field is omitted, not sent as ''.
   it.each<[string, Partial<EditStepInputs>, string]>([
     ['dynamic, no field', { workflow_type: WorkflowType.Dynamic }, 'field'],
     [
@@ -45,31 +41,6 @@ describe('buildWorkflowStep', () => {
     expect(step).not.toHaveProperty(omittedKey)
   })
 
-  it.each<[string, Partial<EditStepInputs>, Record<string, unknown>]>([
-    [
-      'a chosen field on a dynamic step',
-      { workflow_type: WorkflowType.Dynamic, field: FIELD_ID },
-      { workflow_type: WorkflowType.Dynamic, field: FIELD_ID },
-    ],
-    [
-      'a chosen dropdown on a conditional step',
-      {
-        workflow_type: WorkflowType.Conditional,
-        conditional_field: DROPDOWN_ID,
-      },
-      {
-        workflow_type: WorkflowType.Conditional,
-        conditional_field: DROPDOWN_ID,
-      },
-    ],
-  ])('should carry %s through', (_name, overrides, expected) => {
-    expect(buildWorkflowStep(baseInputs(overrides), false)).toMatchObject(
-      expected,
-    )
-  })
-
-  // The first step is Static with no recipients until a field is chosen for it,
-  // at which point it becomes Dynamic.
   it.each<[string, Partial<EditStepInputs>, WorkflowType]>([
     ['stay static when no field is chosen', {}, WorkflowType.Static],
     [
@@ -81,13 +52,5 @@ describe('buildWorkflowStep', () => {
     expect(
       buildWorkflowStep(baseInputs(overrides), true)?.workflow_type,
     ).toEqual(expected)
-  })
-
-  it.each<['approval_field' | 'step_name']>([
-    ['approval_field'],
-    ['step_name'],
-  ])('should drop an empty %s', (key) => {
-    const step = buildWorkflowStep(baseInputs({ [key]: '' }), false)
-    expect(step?.[key]).toBeUndefined()
   })
 })

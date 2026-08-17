@@ -1,11 +1,6 @@
 /**
  * How a workflow step is named to an admin: the name they gave it, or its
- * position if they never named it. Shared so the builder and the publish-block
- * modal cannot drift into two labelling schemes.
- *
- * `stepWord` arrives already translated, so this stays a plain function.
- * `features.common.entities.step` is lowercase for composing sentences, so the
- * capital belongs here rather than in the locale.
+ * position if they never named it. Shared between the builder and the publish-block modal.
  */
 export const getWorkflowStepLabel = ({
   stepNumber,

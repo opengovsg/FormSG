@@ -9,12 +9,8 @@ import { getWorkflowStepLabel } from '../utils/getWorkflowStepLabel'
 import { useAdminFormWorkflow } from './useAdminFormWorkflow'
 
 /**
- * Names of the workflow steps that are not finished, in step order. Empty when
- * the workflow is complete, so callers can treat a non-empty result as "publish
- * is blocked" (FRM-2489).
- *
- * Runs the same predicate the backend uses, on the form already in the cache,
- * so the publish pre-check costs no extra request.
+ * Names of the workflow steps that are not finished, in step order (FRM-2489).
+ * Runs the same predicate the backend uses, on the form already in the cache.
  */
 export const useIncompleteWorkflowStepLabels = (): string[] => {
   const { t } = useTranslation()

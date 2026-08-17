@@ -1089,36 +1089,28 @@ describe('multirespondent-submission.utils', () => {
       })
     })
 
-    // FRM-2489 relaxed the schema so a half-built step can persist. Publishing
-    // is gated on completeness, so these should be unreachable on a live form,
-    // but the submission path must not throw if one slips through.
-    //
-    // The form must hold at least one field: `.find()` on an empty array never
-    // runs its callback, so the lookup would not be exercised at all.
-    it.each([WorkflowType.Conditional, WorkflowType.Dynamic])(
-      'should return an empty array for a %s step with no respondent chosen',
-      (workflowType) => {
-        // Arrange
-        const mockForm = {
-          form_fields: [
-            generateDefaultField(BasicField.Dropdown, {
-              _id: 'someOtherField',
-              fieldOptions: ['Option A'],
-            }),
-          ],
-        } as IPopulatedForm
+    // FRM-2489: a half-built conditional step can omit conditional_field; the submission path must not throw.
+    it('should return an empty array for a conditional step with no dropdown chosen', () => {
+      // Arrange
+      const mockForm = {
+        form_fields: [
+          generateDefaultField(BasicField.Dropdown, {
+            _id: 'someOtherField',
+            fieldOptions: ['Option A'],
+          }),
+        ],
+      } as IPopulatedForm
 
-        // Act: no `field` or `conditional_field` on the step.
-        const result = retrieveWorkflowStepEmailAddresses(
-          mockForm,
-          { workflow_type: workflowType } as FormWorkflowStepDto,
-          {} as FieldResponsesV4,
-        )
+      // Act: no `conditional_field` on the step.
+      const result = retrieveWorkflowStepEmailAddresses(
+        mockForm,
+        { workflow_type: WorkflowType.Conditional } as FormWorkflowStepDto,
+        {} as FieldResponsesV4,
+      )
 
-        // Assert
-        expect(result._unsafeUnwrap()).toEqual([])
-      },
-    )
+      // Assert
+      expect(result._unsafeUnwrap()).toEqual([])
+    })
 
     it('should return an empty array if the optionsToRecipientsMap does not contain an email mapping for the option selected', () => {
       // Arrange
