@@ -1575,7 +1575,10 @@ export const updateFormWhitelistSetting = (
 export const createWorkflowStep = (
   originalForm: IPopulatedForm,
   newWorkflowStep: FormWorkflowStepDto,
-): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+): ResultAsync<
+  FormWorkflowDto,
+  DatabaseError | FormNotFoundError | MalformedParametersError
+> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new FormInvalidResponseModeError(
