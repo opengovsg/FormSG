@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
@@ -7,6 +7,7 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, PublicFormViewDto } from 'formsg-shared/types'
 
+import { sendDdFormCreationSelectionAction } from '~utils/datadog'
 import formsgSdk from '~utils/formSdk'
 
 import { useUser } from '~features/user/queries'
@@ -92,8 +93,10 @@ export const useCommonFormWizardProvider = ({
 
   const makeHandleProceedFromDetails = (
     createForm: (inputs: CreateFormWizardInputProps) => unknown,
+    onValidProceed?: (inputs: CreateFormWizardInputProps) => void,
   ) =>
     formMethods.handleSubmit((inputs) => {
+      onValidProceed?.(inputs)
       if (isPaperTrackingSetUpPageEnabled) {
         return setCurrentStep([CreateFormFlowStates.Origin, 1])
       }
@@ -225,8 +228,24 @@ export const useCreateFormWizardContext = (
     createStorageModeOrMultirespondentForm,
   )
 
+  // Time spent on the selection (details) screen, restarted on every entry so
+  // returning from the MRF escape hatch does not inflate the measurement.
+  const detailsScreenStartMs = useRef<number | null>(null)
+  useEffect(() => {
+    if (currentStep === CreateFormFlowStates.Details) {
+      detailsScreenStartMs.current = performance.now()
+    }
+  }, [currentStep])
+
   const handleProceedFromDetails = makeHandleProceedFromDetails(
     createStorageModeOrMultirespondentForm,
+    ({ responseMode }) => {
+      if (detailsScreenStartMs.current === null) return
+      void sendDdFormCreationSelectionAction(
+        responseMode,
+        performance.now() - detailsScreenStartMs.current,
+      )
+    },
   )
 
   // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
