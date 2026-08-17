@@ -561,36 +561,32 @@ MultirespondentFormSchema.pre<IMultirespondentFormSchema>(
       return next()
     }
     if ((this.workflow?.length ?? 0) > 0) {
-      return next(
-        this.invalidate(
-          'payments_field.enabled',
-          'Payments cannot be enabled on a multirespondent form with workflow steps',
-        ) as mongoose.Error.ValidationError,
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with workflow steps',
       )
+      return next()
     }
     if ((this.emails?.length ?? 0) > 0) {
-      return next(
-        this.invalidate(
-          'payments_field.enabled',
-          'Payments cannot be enabled on a multirespondent form with email notifications',
-        ) as mongoose.Error.ValidationError,
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with email notifications',
       )
+      return next()
     }
     if (this.stepOneEmailNotificationFieldId) {
-      return next(
-        this.invalidate(
-          'payments_field.enabled',
-          'Payments cannot be enabled on a multirespondent form with a respondent email notification',
-        ) as mongoose.Error.ValidationError,
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with a respondent email notification',
       )
+      return next()
     }
     if (this.isSingleSubmission) {
-      return next(
-        this.invalidate(
-          'payments_field.enabled',
-          'Payments cannot be enabled on a multirespondent form with single submission enforcement',
-        ) as mongoose.Error.ValidationError,
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with single submission enforcement',
       )
+      return next()
     }
     return next()
   },
