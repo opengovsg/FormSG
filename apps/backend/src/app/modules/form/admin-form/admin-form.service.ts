@@ -1989,9 +1989,7 @@ export const updateFormSettings = (
 
   // A payment-enabled multirespondent form sends no form-configured emails
   // (the payer's receipt is the only email) and cannot enforce single
-  // submission. Unlike encrypt mode above, this arms only on the payment
-  // field being enabled — a merely Stripe-connected MRF keeps full use of
-  // its notification settings.
+  // submission.
   if (isFormMultirespondent(originalForm)) {
     const mrfBody = body as MultirespondentFormSettings
     if (
