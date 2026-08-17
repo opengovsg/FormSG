@@ -1542,20 +1542,25 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
       })
 
-      it('should keep a paid zero-step submission immutable: no one holds a token, so any update is rejected', async () => {
-        // A payment-enabled form is necessarily zero-step: the step token is
-        // minted at creation but its raw value is only ever delivered via
-        // next-step email links, of which a zero-step form sends none. This
-        // pins the payment-terminality guarantee (no refunds, no post-payment
-        // edits) to the write-guard.
+      it('should reject a tokenless update to a zero-step submission (hash on row, raw token never delivered)', async () => {
+        // The guard itself is purely token-based — it knows nothing about
+        // payments. The payment-terminality guarantee (no post-payment edits)
+        // falls out of it structurally: a payment-enabled form is necessarily
+        // zero-step, the step token is minted at creation but its raw value
+        // is only ever delivered via next-step email links, and a zero-step
+        // form sends none — so no caller can ever present a valid token.
         const mockReq = createGuardReq({
           flagOn: true,
           stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
           presentedToken: undefined, // nobody ever received the raw token
         })
+        // Zero-step everywhere it is recorded: the form definition and the
+        // submission's workflow snapshot must agree for the fixture to
+        // describe a real row (updates read the snapshot, creates the form).
+        mockReq.formsg.formDef.workflow = []
         mockReq.formsg.mrfSubmission = {
           ...mockReq.formsg.mrfSubmission,
-          workflow: [], // zero-step, as all payment-enabled MRFs are
+          workflow: [],
           workflowStep: 0,
         }
         const mockNext = jest.fn()
