@@ -146,6 +146,20 @@ const submitMultirespondentForm = async (
     form.payments_field?.enabled &&
     form.payments_channel?.channel === PaymentChannel.Stripe
   ) {
+    // Kill switch: with the flag off the submission is blocked outright — a
+    // payment submission must never fall through to the non-payment path.
+    const isMrfPaymentsEnabled = gb?.isOn(featureFlags.mrfPayments) ?? false
+    if (!isMrfPaymentsEnabled) {
+      logger.warn({
+        message:
+          'Blocked MRF payment submission: mrf-payments feature flag is off',
+        meta: logMeta,
+      })
+      return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        message:
+          'Payments are currently unavailable for this form. Please try again later, or contact the form admin.',
+      })
+    }
     return _createPaymentSubmission({
       req,
       res,
