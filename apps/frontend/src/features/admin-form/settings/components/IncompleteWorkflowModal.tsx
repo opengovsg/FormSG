@@ -36,7 +36,7 @@ export interface IncompleteWorkflowModalProps extends Pick<
  *
  * Names the steps rather than explaining what each one is missing: a step can
  * be unfinished for more than one reason, and pointing the admin at the step
- * lets them see for themselves once they arrive (FRM-2489, P16).
+ * lets them see for themselves once they arrive (FRM-2489).
  */
 export const IncompleteWorkflowModal = ({
   isOpen,

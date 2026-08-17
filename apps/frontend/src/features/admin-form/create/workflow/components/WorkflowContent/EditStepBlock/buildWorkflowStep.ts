@@ -61,7 +61,7 @@ export const buildWorkflowStep = (
     //
     // The cast is needed because the shared types still declare these keys as
     // required, while the schema and validators no longer do. Whether to make
-    // the types optional is still open; see the plan's §5b.
+    // the types optional is still open.
     case WorkflowType.Dynamic: {
       return {
         ...workflowStepBase,
