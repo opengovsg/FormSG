@@ -42,7 +42,7 @@ import {
   getEncryptedSubmissionData,
   transformAttachmentMetasToSignedUrls,
 } from '../submission.service'
-import { mapRouteError } from '../submission.utils'
+import { mapRouteError, sendRouteError } from '../submission.utils'
 
 import { ensureSubmitterIdIsWhitelisted } from './multirespondent-submission.ensures'
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
@@ -114,10 +114,7 @@ const submitMultirespondentForm = async (
 
   if (!hasEnsuredAll) {
     if (!res.headersSent) {
-      const { errorMessage, statusCode } = mapRouteError(
-        new SubmissionFailedError(),
-      )
-      return res.status(statusCode).json({ message: errorMessage })
+      return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
     }
     return // required to stop submission processing
   }
@@ -135,8 +132,7 @@ const submitMultirespondentForm = async (
   if (createMultiRespondentFormSubmissionResult.isErr()) {
     const error = createMultiRespondentFormSubmissionResult.error
 
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(error))
   }
 
   const { submission, snapshot } =
@@ -179,10 +175,7 @@ const updateMultirespondentSubmission = async (
   const { formDef: currentForm, snapshottedFormDef } = req.formsg
 
   if (!snapshottedFormDef) {
-    const { errorMessage, statusCode } = mapRouteError(
-      new SubmissionFailedError(),
-    )
-    return res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
   }
 
   setFormTags(currentForm)
@@ -207,10 +200,7 @@ const updateMultirespondentSubmission = async (
 
   if (!hasEnsuredAll) {
     if (!res.headersSent) {
-      const { errorMessage, statusCode } = mapRouteError(
-        new SubmissionFailedError(),
-      )
-      return res.status(statusCode).json({ message: errorMessage })
+      return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
     }
     return // required to stop submission processing
   }
@@ -230,14 +220,19 @@ const updateMultirespondentSubmission = async (
     const error = updateMultiRespondentFormSubmissionResult.error
 
     if (error instanceof SubmissionSaveError) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        message: error.message,
-        submissionId,
-      })
+      return sendRouteError(
+        res,
+        {
+          statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
+          errorMessage: error.message,
+          errorMessageKey:
+            'features.publicForm.backendErrors.submission.saveFailed',
+        },
+        { submissionId },
+      )
     }
 
-    const { errorMessage, statusCode } = mapRouteError(error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(error))
   }
 
   const { submission, snapshot } =
@@ -384,10 +379,7 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
           error,
         })
 
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
+        return sendRouteError(res, mapRouteError(error))
       })
   )
 }
@@ -477,10 +469,7 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
       return
     })
     .mapErr((err) => {
-      const { errorMessage, statusCode } = mapRouteError(err)
-      return res.status(statusCode).json({
-        message: errorMessage,
-      })
+      return sendRouteError(res, mapRouteError(err))
     })
 }
 

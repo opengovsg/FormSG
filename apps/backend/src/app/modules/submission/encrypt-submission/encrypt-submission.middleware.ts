@@ -37,6 +37,7 @@ import {
   isAttachmentResponse,
   isQuarantinedAttachmentResponse,
   mapRouteError,
+  sendRouteError,
 } from '../submission.utils'
 
 import {
@@ -263,12 +264,7 @@ export const scanAndRetrieveAttachments = async (
       error: scanAndRetrieveFilesResult.error,
     })
 
-    const { statusCode, errorMessage } = mapRouteError(
-      scanAndRetrieveFilesResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
+    return sendRouteError(res, mapRouteError(scanAndRetrieveFilesResult.error))
   }
 
   logger.info({
@@ -311,9 +307,12 @@ export const validatePaymentSubmission = async (
         meta: logMeta,
       })
 
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message:
+      return sendRouteError(res, {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
           'The payment settings in this form have been updated. Please refresh and try again.',
+        errorMessageKey:
+          'features.publicForm.backendErrors.submission.payment.settingsUpdated',
       })
     }
     return PaymentsService.validatePaymentProducts(
@@ -327,10 +326,7 @@ export const validatePaymentSubmission = async (
           meta: logMeta,
           error,
         })
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
+        return sendRouteError(res, mapRouteError(error))
       })
   }
   return next()
@@ -437,9 +433,7 @@ export const validateStorageSubmission = async (
         meta: logMeta,
         error,
       })
-      const { statusCode, errorMessage } = mapRouteError(error)
-      return res.status(statusCode).json({
-        message: errorMessage,
+      return sendRouteError(res, mapRouteError(error), {
         spcpSubmissionFailure,
       })
     })
@@ -563,12 +557,7 @@ export const validateEncryptSubmission = async (
       meta: logMeta,
       error: incomingSubmissionResult.error,
     })
-    const { statusCode, errorMessage } = mapRouteError(
-      incomingSubmissionResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
+    return sendRouteError(res, mapRouteError(incomingSubmissionResult.error))
   }
 
   logger.info({
@@ -625,8 +614,7 @@ export const createFormsgAndRetrieveForm = async (
       meta: logMeta,
       error: formResult.error,
     })
-    const { errorMessage, statusCode } = mapRouteError(formResult.error)
-    return res.status(statusCode).json({ message: errorMessage })
+    return sendRouteError(res, mapRouteError(formResult.error))
   }
 
   // Step 3b: Set formsg.formDef in req.body
@@ -641,12 +629,10 @@ export const createFormsgAndRetrieveForm = async (
         'Trying to submit non-encrypt mode submission on encrypt-form submission endpoint',
       meta: logMeta,
     })
-    const { statusCode, errorMessage } = mapRouteError(
-      checkFormIsEncryptModeResult.error,
+    return sendRouteError(
+      res,
+      mapRouteError(checkFormIsEncryptModeResult.error),
     )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
   }
 
   // Step 4b: Set formsg.encryptedFormDef in req.body

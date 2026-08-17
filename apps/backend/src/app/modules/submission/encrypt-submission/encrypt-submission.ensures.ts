@@ -10,7 +10,7 @@ import * as TurnstileService from '../../../services/turnstile/turnstile.service
 import { Middleware } from '../../../utils/pipeline-middleware'
 import { getRequestIp } from '../../../utils/request'
 import * as FormService from '../../form/form.service'
-import { mapRouteError } from '../submission.utils'
+import { mapRouteError, sendRouteError } from '../submission.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -36,10 +36,17 @@ export const ensureFormWithinSubmissionLimits: Middleware<
       meta: logMeta,
       error: formSubmissionLimitResult.error,
     })
-    const { statusCode } = mapRouteError(formSubmissionLimitResult.error)
-    return res.status(statusCode).json({
-      message: form.inactiveMessage,
-    })
+    const routeError = mapRouteError(formSubmissionLimitResult.error)
+    sendRouteError(
+      res,
+      {
+        ...routeError,
+        errorMessageKey: undefined,
+        errorMessageParams: undefined,
+      },
+      { message: form.inactiveMessage },
+    )
+    return
   }
   return next()
 }
@@ -70,10 +77,8 @@ export const ensureValidCaptcha: Middleware<
             meta: logMeta,
             error: turnstileResult.error,
           })
-          const { errorMessage, statusCode } = mapRouteError(
-            turnstileResult.error,
-          )
-          return res.status(statusCode).json({ message: errorMessage })
+          sendRouteError(res, mapRouteError(turnstileResult.error))
+          return
         }
         break
       }
@@ -89,10 +94,8 @@ export const ensureValidCaptcha: Middleware<
             meta: logMeta,
             error: captchaResult.error,
           })
-          const { errorMessage, statusCode } = mapRouteError(
-            captchaResult.error,
-          )
-          return res.status(statusCode).json({ message: errorMessage })
+          sendRouteError(res, mapRouteError(captchaResult.error))
+          return
         }
         break
       }
@@ -113,10 +116,8 @@ export const ensurePublicForm: Middleware<FormSubmissionPipelineContext> = (
       meta: logMeta,
       error: formPublicResult.error,
     })
-    const { statusCode, errorMessage } = mapRouteError(formPublicResult.error)
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
+    sendRouteError(res, mapRouteError(formPublicResult.error))
+    return
   }
   return next()
 }

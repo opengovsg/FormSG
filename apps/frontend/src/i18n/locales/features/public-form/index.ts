@@ -5,11 +5,70 @@ import { Table } from './table'
 export * from './en-sg'
 
 export interface PublicForm {
+  backendErrors: {
+    verification: {
+      sessionExpired: string
+      otpExpired: string
+      otpRetryExceeded: string
+      wrongOtp: string
+      waitForOtp: string
+      otpRequestCountExceeded: string
+      invalidNumber: string
+      mailSend: string
+      outdatedForm: string
+    }
+    submission: {
+      saveFailed: string
+      loginFailed: string
+      myInfo: {
+        expired: string
+        failed: string
+        unavailable: string
+      }
+      captcha: {
+        connection: string
+        incorrect: string
+        missing: string
+      }
+      turnstile: {
+        connection: string
+        incorrectParameters: string
+        missingChallenge: string
+      }
+      validation: {
+        invalidData: string
+        submissionTooLarge: string
+        invalidSubmission: string
+        formUpdated: string
+      }
+      files: {
+        uploadFailed: string
+        totalSizeExceeded: string
+        virusScanFailed: string
+        cleanFileDownloadFailed: string
+      }
+      mrf: {
+        missingSubmitterId: string
+        invalidLink: string
+        invalidWorkflowType: string
+        expectedResponseNotFound: string
+      }
+      payment: {
+        invalidSettings: string
+        pendingSubmissionSaveFailed: string
+        intentCreateFailed: string
+        documentUpdateFailed: string
+        settingsUpdated: string
+      }
+      generic: string
+    }
+  }
   errors: {
     notAvailable: string
     notFound: string
     deleted: string
     private: string
+    takenDown: string
 
     submissionSecretKeyInvalid: {
       title: string

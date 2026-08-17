@@ -72,6 +72,7 @@ import {
   getEncryptedAttachmentsMapFromAttachmentsMap,
   isAttachmentResponseV4,
   mapRouteError,
+  sendRouteError,
 } from '../submission.utils'
 
 import {
@@ -208,8 +209,7 @@ export const createFormsgAndRetrieveForm = (
             meta: logMeta,
             error,
           })
-          const { statusCode, errorMessage } = mapRouteError(error)
-          return res.status(statusCode).json({ message: errorMessage })
+          return sendRouteError(res, mapRouteError(error))
         })
         .map((mrfSubmission) => {
           formsg.mrfSubmission = mrfSubmission
@@ -224,8 +224,7 @@ export const createFormsgAndRetrieveForm = (
                 meta: logMeta,
                 error,
               })
-              const { errorMessage, statusCode } = mapRouteError(error)
-              return res.status(statusCode).json({ message: errorMessage })
+              return sendRouteError(res, mapRouteError(error))
             })
             .andThen((latestFormDef) => {
               // Step 4a: Check form is multirespondent form
@@ -237,10 +236,7 @@ export const createFormsgAndRetrieveForm = (
                     meta: logMeta,
                     error,
                   })
-                  const { statusCode, errorMessage } = mapRouteError(error)
-                  return res.status(statusCode).json({
-                    message: errorMessage,
-                  })
+                  return sendRouteError(res, mapRouteError(error))
                 },
               )
             })
@@ -409,12 +405,7 @@ export const scanAndRetrieveAttachments = async (
       error: scanAndRetrieveFilesResult.error,
     })
 
-    const { statusCode, errorMessage } = mapRouteError(
-      scanAndRetrieveFilesResult.error,
-    )
-    return res.status(statusCode).json({
-      message: errorMessage,
-    })
+    return sendRouteError(res, mapRouteError(scanAndRetrieveFilesResult.error))
   }
 
   logger.info({
@@ -721,10 +712,7 @@ export const validateMultirespondentSubmission = async (
           error,
         })
 
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
+        return sendRouteError(res, mapRouteError(error))
       })
   )
 }
@@ -785,10 +773,7 @@ export const setCurrentWorkflowStep = async (
           error,
         })
 
-        const { statusCode, errorMessage } = mapRouteError(error)
-        return res.status(statusCode).json({
-          message: errorMessage,
-        })
+        return sendRouteError(res, mapRouteError(error))
       })
   )
 }
@@ -1009,14 +994,12 @@ export const handleNdiResponses = async (
     }
 
     if (jwtPayloadResult?.isErr()) {
-      const { statusCode, errorMessage } = mapRouteError(jwtPayloadResult.error)
       logger.error({
         message: `Failed to verify ${authType} JWT with auth client`,
         meta: logMeta,
         error: jwtPayloadResult.error,
       })
-      return res.status(statusCode).json({
-        message: errorMessage,
+      return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
         spcpSubmissionFailure: true,
       })
     } else {
@@ -1037,18 +1020,18 @@ export const handleNdiResponses = async (
           error,
         })
 
-        return res
-          .status(StatusCodes.BAD_REQUEST)
-          .json({ message: 'Invalid data was found. Please submit again.' })
+        return sendRouteError(res, {
+          statusCode: StatusCodes.BAD_REQUEST,
+          errorMessage: 'Invalid data was found. Please submit again.',
+          errorMessageKey:
+            'features.publicForm.backendErrors.submission.validation.invalidData',
+        })
       }
 
       const submitterId = userName?.toUpperCase()
       if (!submitterId) {
         const missingSubmitterIdError = new MissingSubmitterIdError()
-        const { statusCode, errorMessage } = mapRouteError(
-          missingSubmitterIdError,
-        )
-        return res.status(statusCode).json({ message: errorMessage })
+        return sendRouteError(res, mapRouteError(missingSubmitterIdError))
       }
       const hashedSubmitterId = generateHashedSubmitterId(submitterId, formId)
       req.formsg.encryptedPayload.hashedSubmitterId = hashedSubmitterId
@@ -1086,9 +1069,12 @@ export const handleNdiResponses = async (
         meta: logMeta,
       })
 
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Invalid data was found. Please submit again.' })
+      return sendRouteError(res, {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Invalid data was found. Please submit again.',
+        errorMessageKey:
+          'features.publicForm.backendErrors.submission.validation.invalidData',
+      })
     }
   }
 
@@ -1113,9 +1099,12 @@ export const handleNdiResponses = async (
         error,
       })
 
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: 'Invalid data was found. Please submit again.' })
+      return sendRouteError(res, {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Invalid data was found. Please submit again.',
+        errorMessageKey:
+          'features.publicForm.backendErrors.submission.validation.invalidData',
+      })
     } else {
       req.formsg.encryptedPayload.verifiedContent =
         encryptVerifiedContentResult.value

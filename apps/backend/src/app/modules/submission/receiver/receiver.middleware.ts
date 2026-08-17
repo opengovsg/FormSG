@@ -7,6 +7,7 @@ import { Result } from 'neverthrow'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { ControllerHandler } from '../../core/core.types'
+import { sendRouteError } from '../submission.utils'
 
 import { InitialiseMultipartReceiverError } from './receiver.errors'
 import * as SubmissionReceiver from './receiver.service'
@@ -124,7 +125,6 @@ const receiveSubmission = async (
         meta: logMeta,
         error,
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json({ message: errorMessage })
+      return sendRouteError(res, mapRouteError(error))
     })
 }

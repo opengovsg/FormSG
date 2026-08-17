@@ -97,6 +97,18 @@ const mockSubmissionId = new ObjectId().toHexString()
 const mockMrfSubmission = {
   _id: mockSubmissionId,
 } as IMultirespondentSubmissionSchema & { _id: Types.ObjectId }
+const SUBMISSION_BACKEND_ERROR_KEY_PREFIX =
+  'features.publicForm.backendErrors.submission'
+
+const expectedSubmissionError = (
+  key: string,
+  message: string,
+  extraBody: Record<string, unknown> = {},
+) => ({
+  message,
+  messageKey: `${SUBMISSION_BACKEND_ERROR_KEY_PREFIX}.${key}`,
+  ...extraBody,
+})
 
 describe('multirespondent-submision.controller', () => {
   beforeEach(() => {
@@ -347,10 +359,12 @@ describe('multirespondent-submision.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message:
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError(
+          'files.uploadFailed',
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
-      })
+        ),
+      )
     })
 
     it('returns 404 not found when form has reached submission limit', async () => {
@@ -444,9 +458,9 @@ describe('multirespondent-submision.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: submissionSaveError.message,
-      })
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError('saveFailed', submissionSaveError.message),
+      )
     })
 
     it('returns 500 when the snapshot write fails', async () => {
@@ -748,10 +762,12 @@ describe('multirespondent-submision.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(400)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message:
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError(
+          'files.uploadFailed',
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
-      })
+        ),
+      )
     })
 
     it('returns 404 not found when form has reached submission limit', async () => {
@@ -874,10 +890,11 @@ describe('multirespondent-submision.controller', () => {
 
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(500)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: submissionSaveError.message,
-        submissionId: mockSubmissionId,
-      })
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError('saveFailed', submissionSaveError.message, {
+          submissionId: mockSubmissionId,
+        }),
+      )
     })
 
     it('returns 500 when the snapshot write fails', async () => {
@@ -1334,6 +1351,7 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(404)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: formNotFoundError.message,
+        messageKey: 'features.publicForm.errors.notFound',
       })
     })
 
@@ -1586,6 +1604,7 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: mailSendError.message,
+        messageKey: `${SUBMISSION_BACKEND_ERROR_KEY_PREFIX}.generic`,
       })
     })
   })
