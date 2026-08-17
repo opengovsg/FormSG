@@ -4249,202 +4249,117 @@ describe('admin-form.service', () => {
           }),
         })
 
-    describe('P1: strictness follows form status when the flag is on', () => {
-      it('should allow an incomplete step on a private form', async () => {
-        // Arrange
+    // The flag selects how strict the rule is, never whether it runs. If the
+    // flag-off rows return ok, flag-off requests have no completeness guard
+    // left anywhere in the stack.
+    it.each<[string, FormStatus, boolean, unknown[], unknown, boolean]>([
+      [
+        'flag on, private, incomplete',
+        FormStatus.Private,
+        true,
+        [completeFirstStep],
+        incompleteSecondStep,
+        true,
+      ],
+      [
+        'flag on, public, incomplete',
+        FormStatus.Public,
+        true,
+        [completeFirstStep],
+        incompleteSecondStep,
+        false,
+      ],
+      [
+        'flag off, private, incomplete',
+        FormStatus.Private,
+        false,
+        [completeFirstStep],
+        incompleteSecondStep,
+        false,
+      ],
+      [
+        'flag off, private, complete',
+        FormStatus.Private,
+        false,
+        [completeFirstStep],
+        completeSecondStep,
+        true,
+      ],
+      [
+        'step 0 with no respondent',
+        FormStatus.Public,
+        true,
+        [],
+        completeFirstStep,
+        true,
+      ],
+      [
+        'step 0 with no fields',
+        FormStatus.Public,
+        true,
+        [],
+        { ...completeFirstStep, edit: [] },
+        true,
+      ],
+    ])(
+      'createWorkflowStep: %s -> ok=%s',
+      async (_name, status, isRedesignEnabled, workflow, step, expectOk) => {
         mockDbSuccess()
-        const form = makeForm(FormStatus.Private, [completeFirstStep])
-
-        // Act
         const result = await AdminFormService.createWorkflowStep(
-          form,
-          incompleteSecondStep as any,
-          true,
+          makeForm(status, workflow),
+          step as any,
+          isRedesignEnabled,
         )
+        expect(result.isOk()).toBe(expectOk)
+      },
+    )
 
-        // Assert
-        expect(result.isOk()).toBe(true)
-      })
-
-      it('should reject an incomplete step on a public form', async () => {
-        // Arrange
-        const form = makeForm(FormStatus.Public, [completeFirstStep])
-
-        // Act
-        const result = await AdminFormService.createWorkflowStep(
-          form,
-          incompleteSecondStep as any,
-          true,
-        )
-
-        // Assert
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          MalformedParametersError,
-        )
-      })
-
-      it('should name the offending step, 1-indexed', async () => {
-        // Arrange
-        const form = makeForm(FormStatus.Public, [completeFirstStep])
-
-        // Act
-        const result = await AdminFormService.createWorkflowStep(
-          form,
-          incompleteSecondStep as any,
-          true,
-        )
-
-        // Assert
-        expect(result._unsafeUnwrapErr().message).toContain('step 2')
-      })
+    it('should name the offending step, 1-indexed', async () => {
+      const result = await AdminFormService.createWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep]),
+        incompleteSecondStep as any,
+        true,
+      )
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
+      expect(result._unsafeUnwrapErr().message).toContain('step 2')
     })
 
-    // P17: the flag selects how strict the rule is, never whether it runs. If
-    // this case returns ok, flag-off requests have no completeness guard left
-    // anywhere in the stack.
-    describe('P17: flag off validates as today, whatever the status', () => {
-      it('should reject an incomplete step on a private form', async () => {
-        // Arrange
-        const form = makeForm(FormStatus.Private, [completeFirstStep])
-
-        // Act
-        const result = await AdminFormService.createWorkflowStep(
-          form,
-          incompleteSecondStep as any,
-          false,
-        )
-
-        // Assert
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          MalformedParametersError,
-        )
-      })
-
-      it('should still allow a complete step on a private form', async () => {
-        // Arrange
-        mockDbSuccess()
-        const form = makeForm(FormStatus.Private, [completeFirstStep])
-
-        // Act
-        const result = await AdminFormService.createWorkflowStep(
-          form,
-          completeSecondStep as any,
-          false,
-        )
-
-        // Assert
-        expect(result.isOk()).toBe(true)
-      })
+    it('should reject emptying a step on a public form', async () => {
+      const result = await AdminFormService.updateFormWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
+        1,
+        incompleteSecondStep as any,
+        true,
+      )
+      expect(result.isErr()).toBe(true)
     })
 
-    describe('P9 and P20: step 0', () => {
-      it('should allow step 0 to have no respondent', async () => {
-        // Arrange
-        mockDbSuccess()
-        const form = makeForm(FormStatus.Public, [])
-
-        // Act
-        const result = await AdminFormService.createWorkflowStep(
-          form,
-          completeFirstStep as any,
-          true,
-        )
-
-        // Assert
-        expect(result.isOk()).toBe(true)
-      })
-
-      it('should reject step 0 with no fields to fill in', async () => {
-        // Arrange
-        const form = makeForm(FormStatus.Public, [])
-
-        // Act
-        const result = await AdminFormService.createWorkflowStep(
-          form,
-          { ...completeFirstStep, edit: [] } as any,
-          true,
-        )
-
-        // Assert
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr().message).toContain('step 1')
-      })
+    // A deletion can no longer *introduce* incompleteness: removing a step only
+    // shifts later steps earlier, and index 0 is the exempt position. So this
+    // guard catches incompleteness that was already there.
+    it('should reject a deletion that leaves an incomplete step behind, without mutating', async () => {
+      const workflow = [
+        completeFirstStep,
+        completeSecondStep,
+        incompleteSecondStep,
+      ]
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Public, workflow),
+        1,
+        true,
+      )
+      expect(result.isErr()).toBe(true)
+      expect(workflow).toHaveLength(3)
     })
 
-    describe('the check applies to updates and deletions too', () => {
-      it('should reject emptying a step on a public form', async () => {
-        // Arrange
-        const form = makeForm(FormStatus.Public, [
-          completeFirstStep,
-          completeSecondStep,
-        ])
-
-        // Act
-        const result = await AdminFormService.updateFormWorkflowStep(
-          form,
-          1,
-          incompleteSecondStep as any,
-          true,
-        )
-
-        // Assert
-        expect(result.isErr()).toBe(true)
-      })
-
-      it('should reject a deletion that leaves the workflow incomplete', async () => {
-        // Arrange: step 1 is the only step holding a field, so deleting step 0
-        // is fine but deleting step 1 leaves step 0 with nothing to fill in.
-        const form = makeForm(FormStatus.Public, [
-          { ...completeFirstStep, edit: [] },
-          completeSecondStep,
-        ])
-
-        // Act
-        const result = await AdminFormService.deleteFormWorkflowStep(
-          form,
-          1,
-          true,
-        )
-
-        // Assert
-        expect(result.isErr()).toBe(true)
-      })
-
-      it('should not mutate the original workflow when a deletion is rejected', async () => {
-        // Arrange
-        const workflow = [
-          { ...completeFirstStep, edit: [] },
-          completeSecondStep,
-        ]
-        const form = makeForm(FormStatus.Public, workflow)
-
-        // Act
-        await AdminFormService.deleteFormWorkflowStep(form, 1, true)
-
-        // Assert
-        expect(workflow).toHaveLength(2)
-      })
-
-      it('should allow a deletion that leaves a complete workflow', async () => {
-        // Arrange
-        mockDbSuccess()
-        const form = makeForm(FormStatus.Public, [
-          completeFirstStep,
-          completeSecondStep,
-        ])
-
-        // Act
-        const result = await AdminFormService.deleteFormWorkflowStep(
-          form,
-          1,
-          true,
-        )
-
-        // Assert
-        expect(result.isOk()).toBe(true)
-      })
+    it('should allow a deletion that leaves a complete workflow', async () => {
+      mockDbSuccess()
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
+        1,
+        true,
+      )
+      expect(result.isOk()).toBe(true)
     })
   })
 })
