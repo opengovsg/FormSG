@@ -210,6 +210,9 @@ export const handleValidatePaymentAccount: ControllerHandler<{
         }),
       )
       // Step 3: Ensure that the form is a payment-capable response mode.
+      // Deliberately not gated on the MRF payments feature flag: validation
+      // is a read-only check of already-connected credentials, which a live
+      // payment-enabled form still needs when the flag is off.
       .andThen(checkFormIsEncryptModeOrMultirespondent)
       // Step 4: Validate the associated Stripe account.
       .andThen((form) =>
