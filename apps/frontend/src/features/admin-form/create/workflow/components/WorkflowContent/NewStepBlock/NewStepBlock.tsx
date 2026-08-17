@@ -58,6 +58,9 @@ export const NewStepBlock = () => {
           ? t('features.adminForm.sidebar.workflow.paymentEnabledNoSteps')
           : undefined
       }
+      // Disabled buttons swallow hover events; the wrapper span keeps the
+      // tooltip reachable exactly when it has something to say.
+      shouldWrapChildren={isPaymentEnabled}
     >
       <Button
         onClick={setToCreating}
