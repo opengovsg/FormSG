@@ -85,9 +85,7 @@ export const FormStatusToggle = (): JSX.Element => {
   const emailModeConvertModalProps = useDisclosure()
   const { onOpen: onOpenEmailModeConvertModal } = emailModeConvertModalProps
 
-  // FRM-2489: block the publish before it is attempted, so the admin gets the
-  // steps named rather than a toast from the backend's rejection. The backend
-  // enforces the same rule regardless; this is the part they see.
+  // FRM-2489: block the publish client-side so the admin gets the steps named, not a generic toast.
   const incompleteWorkflowModalProps = useDisclosure()
   const { onOpen: onOpenIncompleteWorkflowModal } = incompleteWorkflowModalProps
   const incompleteStepLabels = useIncompleteWorkflowStepLabels()

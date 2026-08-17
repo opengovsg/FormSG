@@ -15,10 +15,7 @@ import {
 } from '../../types'
 
 describe('mustWorkflowBeComplete', () => {
-  // Only a live form needs a runnable workflow. Private is the whole point of
-  // the ticket; Archived cannot be edited; an unknown status defers to the
-  // server. The redesign flag is deliberately not an input, so that rolling it
-  // back cannot start rejecting mutations on forms that saved legally.
+  // Only a live form needs a runnable workflow.
   it.each<[FormStatus | undefined, boolean]>([
     [FormStatus.Public, true],
     [FormStatus.Private, false],
@@ -60,8 +57,7 @@ describe('isStepComplete', () => {
     makeDropdown(map),
   ]
 
-  // A step needs a person, not fields: a respondent who only reads the
-  // submission and passes it on is legitimate, and live forms do this.
+  // A step needs a person, not fields.
   it.each<[string, FormWorkflowStep, number, boolean]>([
     ['no fields but a recipient', staticStep({ edit: [] }), 1, true],
     ['step 0 with no fields', staticStep({ edit: [], emails: [] }), 0, true],
@@ -127,8 +123,7 @@ describe('isStepComplete', () => {
     expect(isStepComplete(step, fields, 1)).toBe(expected)
   })
 
-  // An approval field the assigned person cannot see stops the workflow dead,
-  // so this applies to step 0 too, unlike the respondent rules.
+  // Applies to step 0 too, unlike the respondent rules.
   it.each<[string, Partial<FormWorkflowStep>, number, boolean]>([
     [
       'unreachable approval field',
@@ -150,8 +145,7 @@ describe('isStepComplete', () => {
     )
   })
 
-  // The backend passes Mongoose ObjectIds, not strings. `===` and `includes`
-  // compare object identity, so every id comparison must go through String().
+  // Every id comparison must go through String(); Mongoose passes ObjectIds, not strings.
   describe('object ids', () => {
     const EDIT_HEX = '6a7de1810000000000000001'
     const DROPDOWN_HEX = '6a7de1810000000000000002'

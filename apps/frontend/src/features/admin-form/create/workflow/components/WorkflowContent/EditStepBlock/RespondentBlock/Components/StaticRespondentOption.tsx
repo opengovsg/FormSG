@@ -60,9 +60,6 @@ export const StaticRespondentOption = ({
               control={control}
               rules={{
                 validate: {
-                  // A recipient is still needed before the form goes live, but
-                  // an admin part-way through building should not be blocked
-                  // from saving what they have. See FRM-2489.
                   required: (emails) => {
                     if (isSavePermissive) return true
                     return !emails || emails.length === 0

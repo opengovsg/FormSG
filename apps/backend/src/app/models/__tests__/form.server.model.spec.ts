@@ -990,61 +990,38 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
-      // FRM-2489: an admin building a workflow leaves steps half-finished, and
-      // a Private form must be able to save them. Completeness is enforced in
-      // the service layer, where the form's status is known, so the schema
-      // deliberately accepts an incomplete step.
-      it('should save a dynamic step that has no field chosen yet', async () => {
-        // Arrange
-        const form = new MultirespondentForm({
-          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
-          workflow: [
-            {
-              _id: new ObjectId(),
-              workflow_type: WorkflowType.Dynamic,
-              edit: [new ObjectId()],
-              // No "field" — the admin has not picked one yet.
-            },
-          ],
-        })
+      // FRM-2489: the schema accepts an incomplete step; completeness is enforced in the service layer.
+      it.each<[string, WorkflowType]>([
+        ['field', WorkflowType.Dynamic],
+        ['conditional_field', WorkflowType.Conditional],
+      ])(
+        'should save a %s step that has no %s chosen yet',
+        async (omittedKey, workflowType) => {
+          // Arrange
+          const form = new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [
+              {
+                _id: new ObjectId(),
+                workflow_type: workflowType,
+                edit: [new ObjectId()],
+                // omittedKey deliberately not set — the admin has not picked one yet.
+              },
+            ],
+          })
 
-        // Act
-        const saved = await form.save()
+          // Act
+          const saved = await form.save()
 
-        // Assert
-        // Assert against the persisted object: a Mongoose document exposes
-        // every schema path as a getter, set or not.
-        const persistedStep = (
-          saved.toObject() as { workflow?: Record<string, unknown>[] }
-        ).workflow?.[0] as Record<string, unknown>
-        expect(persistedStep.workflow_type).toEqual(WorkflowType.Dynamic)
-        expect(persistedStep).not.toHaveProperty('field')
-      })
-
-      it('should save a conditional step that has no dropdown chosen yet', async () => {
-        // Arrange
-        const form = new MultirespondentForm({
-          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
-          workflow: [
-            {
-              _id: new ObjectId(),
-              workflow_type: WorkflowType.Conditional,
-              edit: [new ObjectId()],
-              // No "conditional_field" — the admin has not picked one yet.
-            },
-          ],
-        })
-
-        // Act
-        const saved = await form.save()
-
-        // Assert
-        const persistedStep = (
-          saved.toObject() as { workflow?: Record<string, unknown>[] }
-        ).workflow?.[0] as Record<string, unknown>
-        expect(persistedStep.workflow_type).toEqual(WorkflowType.Conditional)
-        expect(persistedStep).not.toHaveProperty('conditional_field')
-      })
+          // Assert against the persisted object: a Mongoose document exposes
+          // every schema path as a getter, set or not.
+          const persistedStep = (
+            saved.toObject() as { workflow?: Record<string, unknown>[] }
+          ).workflow?.[0] as Record<string, unknown>
+          expect(persistedStep.workflow_type).toEqual(workflowType)
+          expect(persistedStep).not.toHaveProperty(omittedKey)
+        },
+      )
     })
 
     describe('Email form schema', () => {

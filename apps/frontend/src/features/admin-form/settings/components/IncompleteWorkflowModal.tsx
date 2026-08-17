@@ -20,7 +20,7 @@ import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
-import { OPEN_WORKFLOW_TAB_STATE } from '~features/admin-form/create/common/openWorkflowTabState'
+import { OPEN_WORKFLOW_TAB_STATE } from '~features/admin-form/create/common/OpenWorkflowTabOnArrival'
 
 export interface IncompleteWorkflowModalProps extends Pick<
   UseDisclosureReturn,
@@ -33,10 +33,7 @@ export interface IncompleteWorkflowModalProps extends Pick<
 
 /**
  * Shown when an admin tries to open a form whose workflow is not finished.
- *
- * Names the steps rather than explaining what each one is missing: a step can
- * be unfinished for more than one reason, and pointing the admin at the step
- * lets them see for themselves once they arrive (FRM-2489).
+ * Names the steps rather than explaining what's missing (FRM-2489).
  */
 export const IncompleteWorkflowModal = ({
   isOpen,

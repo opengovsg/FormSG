@@ -3,14 +3,9 @@ import { FormWorkflowStep, WorkflowType } from 'formsg-shared/types/form'
 
 import { isWorkflowFeedbackEligible } from './workflow.utils'
 
-// This helper is a filter plus a threshold over `isStepComplete`. Every
-// per-workflow-type completeness path is covered directly in
-// packages/shared/utils/__tests__/workflow-step-completion.spec.ts, so the
-// cases here are only the ones this wrapper can get wrong on its own: the
-// threshold, and passing the positional index through.
+// Covers only what this wrapper can get wrong on its own: the threshold and the positional index.
 
-// The first step's respondent is always "anyone who has access to your form",
-// stored as a Static step with no emails, so these fixtures leave it empty.
+// The first step's respondent is implicit, so these fixtures leave it empty.
 const firstStep = (edit: string[] = ['field1']): FormWorkflowStep => ({
   workflow_type: WorkflowType.Static,
   edit,

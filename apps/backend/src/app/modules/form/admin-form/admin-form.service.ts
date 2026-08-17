@@ -1589,25 +1589,14 @@ const incompleteStepsError = (
   stepNumbers: number[],
   action: string,
 ): MalformedParametersError => {
-  const labels = stepNumbers.map((stepNumber) => `step ${stepNumber + 1}`)
-  const described =
-    labels.length === 1
-      ? labels[0]
-      : `${labels.slice(0, -1).join(', ')} and ${labels[labels.length - 1]}`
+  const described = stepNumbers.map((n) => `step ${n + 1}`).join(', ')
   return new MalformedParametersError(`Please complete ${described} ${action}.`)
 }
 
 /**
- * Rejects a workflow mutation that would leave the form in a state it is not
- * allowed to be in. Checks the **resulting** workflow rather than the single
- * step being mutated, which covers deletions for free: removing the step that
- * held the only recipient is caught the same way as emptying it.
- *
- * Not gated on the redesign flag. Joi and Mongoose no longer check
- * completeness, so a live form would otherwise be left unguarded whenever the
- * flag was off. `mustWorkflowBeComplete` limits that to live forms only, which
- * is why this can run unconditionally without penalising forms saved before
- * the check existed.
+ * Rejects a workflow mutation that leaves the form in a disallowed state.
+ * Checks the resulting workflow, not just the mutated step, so deletion is covered.
+ * Not flag-gated; `mustWorkflowBeComplete` already limits this to live forms.
  */
 const checkResultingWorkflowIsAllowed = (
   form: IPopulatedForm,
@@ -1937,15 +1926,11 @@ export const deleteFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  // Remove step with stepNumber from workflow. Built as a copy rather than by
-  // splicing in place, so a rejection below cannot leave the caller holding a
-  // form object whose workflow was already mutated.
+  // Built as a copy so a rejection below cannot leave the workflow already mutated.
   const updatedWorkflow = originalWorkflow.filter(
     (_step, index) => index !== stepNumber,
   )
 
-  // Deleting the step that held the only recipient leaves the workflow just as
-  // incomplete as emptying it, so the same check covers both.
   const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
   if (check.isErr()) return errAsync(check.error)
 
@@ -2016,13 +2001,7 @@ export const updateFormSettings = (
     }
   }
 
-  // FRM-2489: a form must not go live holding a workflow that cannot run.
-  // Re-opening a closed form takes this same path, so both routes into Public
-  // are covered by one check.
-  //
-  // Deliberately not flag-gated. The *relaxation* sits behind the flag;
-  // the gate does not. Otherwise a form whose steps were left half-built while
-  // the flag was on could be published after the flag was rolled back.
+  // FRM-2489: a form must not go live holding a workflow that cannot run; not flag-gated.
   if (
     body.status === FormStatus.Public &&
     originalForm.responseMode === FormResponseMode.Multirespondent

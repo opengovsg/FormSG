@@ -64,8 +64,6 @@ export const DynamicRespondentOption = ({
               control={control}
               name="field"
               rules={{
-                // FRM-2489: a respondent is still needed before the form goes
-                // live, just not before it can be saved.
                 required: isSavePermissive
                   ? false
                   : t(

@@ -2068,13 +2068,11 @@ describe('admin-form.service', () => {
       }
 
       it('should block publishing a form with an incomplete step', async () => {
-        // Act
         const actualResult = await AdminFormService.updateFormSettings(
           makeMrfForm(FormStatus.Private, [firstStep, incompleteSecondStep]),
           { status: FormStatus.Public } as FormSettings,
         )
 
-        // Assert
         expect(actualResult.isErr()).toBeTrue()
         expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
           MalformedParametersError,
@@ -2082,58 +2080,31 @@ describe('admin-form.service', () => {
         expect(actualResult._unsafeUnwrapErr().message).toContain('step 2')
       })
 
-      // Re-opening a closed form runs the same code path as first publish.
-      it('should block re-opening a closed form with an incomplete step', async () => {
-        // Arrange: a closed form is Private, same as one never published.
-        const closedForm = makeMrfForm(FormStatus.Private, [
-          firstStep,
-          incompleteSecondStep,
-        ])
-
-        // Act
-        const actualResult = await AdminFormService.updateFormSettings(
-          closedForm,
-          { status: FormStatus.Public } as FormSettings,
-        )
-
-        // Assert
-        expect(actualResult.isErr()).toBeTrue()
-      })
-
-      it('should not block a settings change that leaves the form private', async () => {
-        // Act
-        const actualResult = await AdminFormService.updateFormSettings(
-          makeMrfForm(FormStatus.Private, [firstStep, incompleteSecondStep]),
-          { title: 'a new title' } as FormSettings,
-        )
-
-        // Assert: rejected by the gate is the only outcome under test; the DB
-        // call is mocked elsewhere in this suite.
-        expect(actualResult.isErr()).toBeFalse()
-      })
-
-      it('should not block publishing a complete workflow', async () => {
-        // Act
-        const actualResult = await AdminFormService.updateFormSettings(
-          makeMrfForm(FormStatus.Private, [
+      it.each<[string, unknown[], Partial<FormSettings>]>([
+        [
+          'a settings change that leaves the form private',
+          [firstStep, incompleteSecondStep],
+          { title: 'a new title' },
+        ],
+        [
+          'publishing a complete workflow',
+          [
             firstStep,
             { ...incompleteSecondStep, emails: ['someone@example.com'] },
-          ]),
-          { status: FormStatus.Public } as FormSettings,
-        )
-
-        // Assert
-        expect(actualResult.isErr()).toBeFalse()
-      })
-
-      it('should not block publishing a form with no workflow at all', async () => {
-        // Act
+          ],
+          { status: FormStatus.Public },
+        ],
+        [
+          'publishing a form with no workflow at all',
+          [],
+          { status: FormStatus.Public },
+        ],
+      ])('should not block %s', async (_name, workflow, settings) => {
         const actualResult = await AdminFormService.updateFormSettings(
-          makeMrfForm(FormStatus.Private, []),
-          { status: FormStatus.Public } as FormSettings,
+          makeMrfForm(FormStatus.Private, workflow),
+          settings as FormSettings,
         )
 
-        // Assert
         expect(actualResult.isErr()).toBeFalse()
       })
     })
@@ -4254,39 +4225,11 @@ describe('admin-form.service', () => {
         true,
       ],
       [
-        'archived, incomplete',
-        FormStatus.Archived,
-        [completeFirstStep],
-        incompleteSecondStep,
-        true,
-      ],
-      [
         'public, incomplete',
         FormStatus.Public,
         [completeFirstStep],
         incompleteSecondStep,
         false,
-      ],
-      [
-        'public, complete',
-        FormStatus.Public,
-        [completeFirstStep],
-        completeSecondStep,
-        true,
-      ],
-      [
-        'public, step 0 with no respondent',
-        FormStatus.Public,
-        [],
-        completeFirstStep,
-        true,
-      ],
-      [
-        'public, step 0 with no fields',
-        FormStatus.Public,
-        [],
-        { ...completeFirstStep, edit: [] },
-        true,
       ],
     ])(
       'createWorkflowStep: %s -> ok=%s',

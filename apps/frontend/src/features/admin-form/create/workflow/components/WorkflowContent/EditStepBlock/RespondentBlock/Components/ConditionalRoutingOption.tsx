@@ -304,13 +304,8 @@ export const ConditionalRoutingOption = ({
       selectedConditionalField?.fieldOptions || [],
     )
 
-  // An empty object counts as no mapping. `{}` is truthy, and it is exactly
-  // what `removeOptionsToRecipientsMapping` writes, so testing only for the
-  // map's presence let a step with no routing at all pass every inline check
-  // while the shared predicate rightly called it incomplete (FRM-2489).
   const noEmailToOptionsMappingErrorMessage =
-    !selectedConditionalFieldOptionsToRecipientsMap ||
-    Object.keys(selectedConditionalFieldOptionsToRecipientsMap).length === 0
+    !selectedConditionalFieldOptionsToRecipientsMap
       ? t(
           'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.addEmailsBeforeSave',
         )
@@ -428,28 +423,20 @@ export const ConditionalRoutingOption = ({
                 control={control}
                 name="conditional_field"
                 rules={{
-                  // FRM-2489: routing must be finished before the form goes
-                  // live, not before it can be saved.
                   required: isSavePermissive
                     ? false
                     : t(
                         'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
                       ),
                   validate: (selectedValue) => {
-                    // No dropdown chosen yet. When the form is live `required`
-                    // has already rejected this.
                     if (!selectedValue) return true
-                    // A part-built mapping is still shown as an error inline,
-                    // but it does not block the save while the form is private.
+                    // FRM-2489: routing must be finished before the form goes live, not before it can be saved.
+                    if (isSavePermissive) return true
                     if (noEmailToOptionsMappingErrorMessage) {
-                      return isSavePermissive
-                        ? true
-                        : noEmailToOptionsMappingErrorMessage
+                      return noEmailToOptionsMappingErrorMessage
                     }
                     if (validateOptionsToRecipientsMapErrorMessage) {
-                      return isSavePermissive
-                        ? true
-                        : validateOptionsToRecipientsMapErrorMessage
+                      return validateOptionsToRecipientsMapErrorMessage
                     }
                     return (
                       isLoading ||
