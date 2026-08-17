@@ -5,15 +5,11 @@ import { checkIsOptionsMismatched } from './options-recipients-map-validation'
 
 /**
  * Conditional routing is only usable once every option of the selected dropdown
- * has at least one recipient. An unmapped option means a real submission routes
- * nowhere, which is the failure the publish gate exists to prevent.
- *
- * The mapping lives on the dropdown field rather than on the workflow step, so
- * this needs the form's fields. See the note in `types/field/dropdownField.ts`.
+ * has at least one recipient, otherwise a real submission routes nowhere. The
+ * mapping lives on the dropdown field, so this needs the form's fields.
  */
 const isConditionalRoutingComplete = (
-  // Typed as required on the step, but P12 loosens the schema so it can be
-  // absent at runtime on a half-built step.
+  // Optional at runtime on a half-built step, though the type says otherwise.
   conditionalFieldId: FormFieldDto['_id'] | undefined,
   formFields: FormFieldDto[],
 ): boolean => {
@@ -22,8 +18,7 @@ const isConditionalRoutingComplete = (
   const conditionalField = formFields.find(
     (field) => String(field._id) === String(conditionalFieldId),
   )
-  // A deleted field leaves an orphaned reference behind, with no cascade to
-  // clean it up. Such a step cannot route, so it is not complete.
+  // Deleting a field leaves an orphaned reference behind, with no cascade.
   if (!conditionalField || conditionalField.fieldType !== BasicField.Dropdown) {
     return false
   }
@@ -46,29 +41,21 @@ const isConditionalRoutingComplete = (
 /**
  * Whether a workflow step is complete enough to run.
  *
- * A step needs fields to fill in, and a person to fill them in. The first step
- * is the exception on the second count only: its respondent is always "anyone
- * who has access to your form", stored as a Static step with an empty `emails`
- * array, so there is no person to configure. It is **not** exempt from needing
- * fields — the `edit` check below deliberately runs before that exemption.
+ * A step needs a person to fill it in, but not fields to fill: a respondent who
+ * only reads the submission and passes it on is legitimate, and live forms do
+ * this. Step 0 is exempt from needing a person, since its respondent is always
+ * whoever opens the form.
  *
- * `stepNumber` must be the step's position in the full, unfiltered workflow.
+ * Ids are compared as strings: the frontend holds them as strings and Mongoose
+ * hands them over as ObjectIds, where `===` compares identity and never matches.
  *
- * Field ids are compared as strings throughout: the frontend holds them as
- * strings and Mongoose hands them over as ObjectIds, where `===` compares
- * object identity and would never match.
- *
- * @param step the workflow step to check
- * @param formFields the form's fields, needed for conditional routing mappings
- * @param stepNumber the step's position in the full workflow
+ * @param stepNumber the step's position in the full, unfiltered workflow
  */
 export const isStepComplete = (
   step: FormWorkflowStep,
   formFields: FormFieldDto[],
   stepNumber: number,
 ): boolean => {
-  if (step.edit.length === 0) return false
-
   // An approval field the assigned person cannot see leaves them nothing to
   // answer, and the workflow stops at their step permanently.
   if (
