@@ -501,9 +501,9 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: new SnapshotWriteError().message,
-      })
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError('saveFailed', new SnapshotWriteError().message),
+      )
     })
 
     it('returns 200 ok when step has invalid workflow type', async () => {
@@ -949,9 +949,9 @@ describe('multirespondent-submision.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(
         StatusCodes.INTERNAL_SERVER_ERROR,
       )
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: new SnapshotWriteError().message,
-      })
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expectedSubmissionError('saveFailed', new SnapshotWriteError().message),
+      )
       // The post-submission actions must not fire for an aborted save.
       expect(
         MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionUpdateActions,
