@@ -1,47 +1,36 @@
-import { describe, expect, it } from 'vitest'
-
 import { getWorkflowStepLabel } from './getWorkflowStepLabel'
 
+// 'step' is the real value of features.common.entities.step: that block holds
+// lowercase nouns for composing sentences, so the label capitalises it.
 describe('getWorkflowStepLabel', () => {
-  it('should use the name the admin gave the step', () => {
-    expect(
-      getWorkflowStepLabel({
-        stepNumber: 2,
-        stepName: 'Approval by manager',
-        stepWord: 'Step',
-      }),
-    ).toEqual('Approval by manager')
-  })
-
-  // 'step' is the real value of features.common.entities.step: that block
-  // holds lowercase nouns for composing sentences, so the label capitalises it.
-  it('should fall back to the position, 1-indexed and sentence case', () => {
-    expect(getWorkflowStepLabel({ stepNumber: 2, stepWord: 'step' })).toEqual(
+  it.each<[string, number, string | undefined, string, string]>([
+    [
+      'the name the admin gave',
+      2,
+      'Approval by manager',
+      'step',
+      'Approval by manager',
+    ],
+    [
+      'a name in any case, untouched',
+      1,
+      'approval by manager',
+      'step',
+      'approval by manager',
+    ],
+    [
+      'the position, 1-indexed and sentence case',
+      2,
+      undefined,
+      'step',
       'Step 3',
+    ],
+    ['the translated word for step', 0, undefined, 'langkah', 'Langkah 1'],
+    // An empty name is not a name, or the modal lists a blank bullet.
+    ['the position when the name is empty', 1, '', 'step', 'Step 2'],
+  ])('should use %s', (_name, stepNumber, stepName, stepWord, expected) => {
+    expect(getWorkflowStepLabel({ stepNumber, stepName, stepWord })).toEqual(
+      expected,
     )
-  })
-
-  it('should use the translated word for step', () => {
-    expect(
-      getWorkflowStepLabel({ stepNumber: 0, stepWord: 'langkah' }),
-    ).toEqual('Langkah 1')
-  })
-
-  it('should leave a name the admin gave alone, whatever its case', () => {
-    expect(
-      getWorkflowStepLabel({
-        stepNumber: 1,
-        stepName: 'approval by manager',
-        stepWord: 'step',
-      }),
-    ).toEqual('approval by manager')
-  })
-
-  // An empty name is not a name. Falling through to the position keeps the
-  // modal from listing a blank bullet.
-  it('should fall back to the position when the name is an empty string', () => {
-    expect(
-      getWorkflowStepLabel({ stepNumber: 1, stepName: '', stepWord: 'step' }),
-    ).toEqual('Step 2')
   })
 })

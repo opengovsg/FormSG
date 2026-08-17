@@ -1612,7 +1612,7 @@ export const _handleCreateWorkflowStep: ControllerHandler<
         AdminFormService.createWorkflowStep(
           form,
           workflowStepToCreate,
-          // Defaults to off, which is the *stricter* rule. See P17.
+          // Defaults to off, which is the *stricter* rule.
           req.growthbook?.isOn(featureFlags.workflowBuilderRedesign) ?? false,
         ),
       )

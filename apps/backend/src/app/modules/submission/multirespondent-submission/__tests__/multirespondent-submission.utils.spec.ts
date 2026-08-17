@@ -1092,11 +1092,13 @@ describe('multirespondent-submission.utils', () => {
     // FRM-2489 relaxed the schema so a half-built step can persist. Publishing
     // is gated on completeness, so these should be unreachable on a live form,
     // but the submission path must not throw if one slips through.
-    describe('incomplete steps', () => {
-      it('should return an empty array for a conditional step with no dropdown chosen', () => {
+    //
+    // The form must hold at least one field: `.find()` on an empty array never
+    // runs its callback, so the lookup would not be exercised at all.
+    it.each([WorkflowType.Conditional, WorkflowType.Dynamic])(
+      'should return an empty array for a %s step with no respondent chosen',
+      (workflowType) => {
         // Arrange
-        // Must hold at least one field: `.find()` on an empty array never
-        // runs its callback, so the lookup would not be exercised at all.
         const mockForm = {
           form_fields: [
             generateDefaultField(BasicField.Dropdown, {
@@ -1105,50 +1107,18 @@ describe('multirespondent-submission.utils', () => {
             }),
           ],
         } as IPopulatedForm
-        const mockWorkflowStep = {
-          workflow_type: WorkflowType.Conditional,
-          // No "conditional_field".
-        } as FormWorkflowStepDto
 
-        // Act
+        // Act: no `field` or `conditional_field` on the step.
         const result = retrieveWorkflowStepEmailAddresses(
           mockForm,
-          mockWorkflowStep,
+          { workflow_type: workflowType } as FormWorkflowStepDto,
           {} as FieldResponsesV4,
         )
 
         // Assert
         expect(result._unsafeUnwrap()).toEqual([])
-      })
-
-      it('should return an empty array for a dynamic step with no field chosen', () => {
-        // Arrange
-        // Must hold at least one field: `.find()` on an empty array never
-        // runs its callback, so the lookup would not be exercised at all.
-        const mockForm = {
-          form_fields: [
-            generateDefaultField(BasicField.Dropdown, {
-              _id: 'someOtherField',
-              fieldOptions: ['Option A'],
-            }),
-          ],
-        } as IPopulatedForm
-        const mockWorkflowStep = {
-          workflow_type: WorkflowType.Dynamic,
-          // No "field".
-        } as FormWorkflowStepDto
-
-        // Act
-        const result = retrieveWorkflowStepEmailAddresses(
-          mockForm,
-          mockWorkflowStep,
-          {} as FieldResponsesV4,
-        )
-
-        // Assert
-        expect(result._unsafeUnwrap()).toEqual([])
-      })
-    })
+      },
+    )
 
     it('should return an empty array if the optionsToRecipientsMap does not contain an email mapping for the option selected', () => {
       // Arrange

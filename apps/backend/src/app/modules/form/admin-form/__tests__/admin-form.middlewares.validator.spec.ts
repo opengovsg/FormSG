@@ -7,122 +7,78 @@ import {
 
 const STEP_ID = '6a7de1810000000000000000'
 const FIELD_ID = '6a7de1810000000000000001'
+const EMAIL = 'someone@example.com'
+
+/** A well-formed step body, before the case under test overrides it. */
+const step = (workflowType: string, extra: Record<string, unknown> = {}) => ({
+  workflow_type: workflowType,
+  edit: [FIELD_ID],
+  ...extra,
+})
 
 describe('workflow step body validators', () => {
   // FRM-2489 moved completeness out of Joi and into the service layer, which
   // knows the form's status. Joi now checks format and shape only.
-  describe('incompleteness is allowed through', () => {
-    const incompleteCases: Array<{ name: string; body: unknown }> = [
-      {
-        name: 'a dynamic step with no field chosen',
-        body: {
-          workflow_type: WorkflowType.Dynamic,
-          edit: [FIELD_ID],
-        },
-      },
-      {
-        name: 'a conditional step with no dropdown chosen',
-        body: {
-          workflow_type: WorkflowType.Conditional,
-          edit: [FIELD_ID],
-        },
-      },
-      {
-        name: 'a static step with no recipients',
-        body: {
-          workflow_type: WorkflowType.Static,
-          emails: [],
-          edit: [FIELD_ID],
-        },
-      },
-      {
-        name: 'a step with no fields to fill in',
-        body: {
-          workflow_type: WorkflowType.Static,
-          emails: ['someone@example.com'],
-          edit: [],
-        },
-      },
-    ]
-
-    it.each(incompleteCases)('should accept $name on create', ({ body }) => {
-      const { error } = createWorkflowStepBodyValidator.validate(body)
-      expect(error).toBeUndefined()
-    })
-
-    it.each(incompleteCases)('should accept $name on update', ({ body }) => {
-      const { error } = updateWorkflowStepBodyValidator.validate({
+  it.each<[string, unknown]>([
+    ['a dynamic step with no field chosen', step(WorkflowType.Dynamic)],
+    ['a conditional step with no dropdown', step(WorkflowType.Conditional)],
+    [
+      'a static step with no recipients',
+      step(WorkflowType.Static, { emails: [] }),
+    ],
+    [
+      'a step with no fields to fill in',
+      step(WorkflowType.Static, { emails: [EMAIL], edit: [] }),
+    ],
+  ])('should accept %s, on create and update', (_name, body) => {
+    expect(createWorkflowStepBodyValidator.validate(body).error).toBeUndefined()
+    expect(
+      updateWorkflowStepBodyValidator.validate({
         _id: STEP_ID,
         ...(body as Record<string, unknown>),
-      })
-      expect(error).toBeUndefined()
-    })
+      }).error,
+    ).toBeUndefined()
   })
 
-  describe('format and shape are still enforced', () => {
-    const rejectCases: Array<{ name: string; body: unknown }> = [
-      {
-        name: 'an unrecognised workflow type',
-        body: { workflow_type: 'nonsense', edit: [FIELD_ID] },
-      },
-      {
-        name: 'a malformed recipient address',
-        body: {
-          workflow_type: WorkflowType.Static,
-          emails: ['not-an-email'],
-          edit: [FIELD_ID],
-        },
-      },
-      {
-        name: 'a missing edit key',
-        body: {
-          workflow_type: WorkflowType.Static,
-          emails: ['someone@example.com'],
-        },
-      },
-      {
-        name: 'conditional_field on a non-conditional step',
-        body: {
-          workflow_type: WorkflowType.Static,
-          emails: [],
-          edit: [FIELD_ID],
-          conditional_field: FIELD_ID,
-        },
-      },
-      {
-        // An empty string is not "unset": it would fail to cast to an ObjectId
-        // further down. Clients must omit the key instead.
-        name: 'an empty string for a field id',
-        body: {
-          workflow_type: WorkflowType.Dynamic,
-          edit: [FIELD_ID],
-          field: '',
-        },
-      },
-    ]
+  it.each<[string, unknown]>([
+    ['an unrecognised workflow type', step('nonsense')],
+    [
+      'a malformed recipient address',
+      step(WorkflowType.Static, { emails: ['not-an-email'] }),
+    ],
+    [
+      'a missing edit key',
+      { workflow_type: WorkflowType.Static, emails: [EMAIL] },
+    ],
+    [
+      'conditional_field on a non-conditional step',
+      step(WorkflowType.Static, { emails: [], conditional_field: FIELD_ID }),
+    ],
+    // An empty string is not "unset": it would fail to cast to an ObjectId
+    // further down. Clients must omit the key instead.
+    [
+      'an empty string for a field id',
+      step(WorkflowType.Dynamic, { field: '' }),
+    ],
+  ])('should reject %s', (_name, body) => {
+    expect(createWorkflowStepBodyValidator.validate(body).error).toBeDefined()
+  })
 
-    it.each(rejectCases)('should reject $name on create', ({ body }) => {
-      const { error } = createWorkflowStepBodyValidator.validate(body)
-      expect(error).toBeDefined()
-    })
+  it('should reject a missing _id on update', () => {
+    const { error } = updateWorkflowStepBodyValidator.validate(
+      step(WorkflowType.Static, { emails: [] }),
+    )
+    expect(error).toBeDefined()
+  })
 
-    it('should reject a missing _id on update', () => {
-      const { error } = updateWorkflowStepBodyValidator.validate({
-        workflow_type: WorkflowType.Static,
-        emails: [],
-        edit: [FIELD_ID],
-      })
-      expect(error).toBeDefined()
+  // Only the update validator constrains `edit` to ObjectId format; create
+  // accepts any string. Pre-existing on develop, asserted here so a future
+  // tidy-up of these two schemas notices the asymmetry rather than assuming it.
+  it('should reject a non-ObjectId entry in edit on update', () => {
+    const { error } = updateWorkflowStepBodyValidator.validate({
+      _id: STEP_ID,
+      ...step(WorkflowType.Static, { emails: [], edit: ['not-an-object-id'] }),
     })
-
-    it('should reject a non-ObjectId entry in edit on update', () => {
-      const { error } = updateWorkflowStepBodyValidator.validate({
-        _id: STEP_ID,
-        workflow_type: WorkflowType.Static,
-        emails: [],
-        edit: ['not-an-object-id'],
-      })
-      expect(error).toBeDefined()
-    })
+    expect(error).toBeDefined()
   })
 })
