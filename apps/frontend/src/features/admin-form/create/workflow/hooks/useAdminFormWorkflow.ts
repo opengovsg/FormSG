@@ -73,7 +73,7 @@ export const useAdminFormWorkflow = () => {
     // payment-enabled form cannot gain steps until the payment is removed.
     isPaymentEnabled:
       form?.responseMode === FormResponseMode.Multirespondent &&
-      form.payments_field?.enabled,
+      !!form.payments_field?.enabled,
     idToFieldMap,
     emailFormFields,
     yesNoFormFields,
