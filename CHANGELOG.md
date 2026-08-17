@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.10.1](https://github.com/opengovsg/formsg/compare/v9.10.0...v9.10.1) (2026-08-17)
+
+
+### Bug Fixes
+
+* **tests:** expect messageKey in MRF snapshot-write failure assertions (#9854) ([#9854](https://github.com/opengovsg/formsg/commit/99b07608366419a76efe557062f57a3b5be64929))
+
+
+### Refactors
+
+* **aws-sdk:** migrate to v3 (#9837) ([#9837](https://github.com/opengovsg/formsg/commit/58cd603b3dee781ca6d103ac41e18dd862d70dbb))
+* **backend:** move messages to i18n keys (#9664) ([#9664](https://github.com/opengovsg/formsg/commit/c5511bcda5f266cda8555570bb3b4bd47944d866))
+
 ## [9.10.0](https://github.com/opengovsg/formsg/compare/v9.9.0...v9.10.0) (2026-08-14)
 
 
