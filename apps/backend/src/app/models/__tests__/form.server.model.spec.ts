@@ -1555,7 +1555,7 @@ describe('Form Model', () => {
       } as FormPaymentsField
 
       const MOCK_WORKFLOW_STEP = {
-        _id: new ObjectId(),
+        _id: new ObjectId().toHexString(),
         workflow_type: WorkflowType.Static,
         emails: ['step@open.gov.sg'],
         edit: [],
