@@ -20,7 +20,6 @@ import MockDate from 'mockdate'
 import mongoose, { Types } from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
-import { aws } from 'src/app/config/config'
 import {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -32,6 +31,7 @@ import getSubmissionModel, {
 import getUserModel from 'src/app/models/user.server.model'
 import { saveSubmissionMetadata } from 'src/app/modules/submission/email-submission/email-submission.service'
 import { SubmissionHash } from 'src/app/modules/submission/email-submission/email-submission.types'
+import { s3Operations } from 'src/app/utils/aws-s3'
 import {
   IFormDocument,
   IPopulatedEmailForm,
@@ -1173,7 +1173,7 @@ describe('admin-form.submissions.routes', () => {
       // Arrange
       // Mock error.
       jest
-        .spyOn(aws.s3, 'getSignedUrlPromise')
+        .spyOn(s3Operations, 'getSignedUrl')
         .mockRejectedValueOnce(new Error('something went wrong'))
 
       const submission = await createEncryptSubmission({

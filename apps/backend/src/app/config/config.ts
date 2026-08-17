@@ -1,5 +1,6 @@
 import { Lambda } from '@aws-sdk/client-lambda'
-import aws from 'aws-sdk'
+import { S3Client } from '@aws-sdk/client-s3'
+import { defaultProvider } from '@aws-sdk/credential-provider-node'
 import convict from 'convict'
 import { SessionOptions } from 'express-session'
 import { merge } from 'lodash'
@@ -92,7 +93,10 @@ const hasR2Buckets = Object.values(s3BucketUrlVars).some((url) =>
   /https:\/\/\w+\.r2\.cloudflarestorage\.com/i.test(url),
 )
 
-const s3 = new aws.S3({
+// Shared across configureAws() and AWS clients below so that credentials are resolved once only and reused
+const credentialsProvider = defaultProvider()
+
+const s3 = new S3Client({
   region: basicVars.awsConfig.region,
   // Unset and use default if not in development mode
   // Endpoint override is needed only in development mode
@@ -101,11 +105,13 @@ const s3 = new aws.S3({
   // RATIONALE: For new buckets, AWS S3 returns virtual-hosted style urls by default.
   // However, due to backwards compatibility, some of our existing buckets and our CSP connect-url config use path style.
   // This param ensures that the signed url uses path style.
-  s3ForcePathStyle: true,
+  forcePathStyle: true,
+  credentials: credentialsProvider,
 })
 
 const guarddutyLambda = new Lambda({
   region: basicVars.awsConfig.region,
+  credentials: credentialsProvider,
   // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
@@ -120,6 +126,7 @@ const guarddutyLambda = new Lambda({
 
 const pdfGeneratorLambda = new Lambda({
   region: basicVars.awsConfig.region,
+  credentials: credentialsProvider,
   // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
@@ -224,22 +231,11 @@ const cookieSettings: SessionOptions['cookie'] = {
  */
 const configureAws = async () => {
   if (!isDevOrTest) {
-    const getCredentials = () => {
-      return new Promise<void>((resolve, reject) => {
-        aws.config.getCredentials((err) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve()
-          }
-        })
-      })
-    }
-    await getCredentials()
-    if (!aws.config.credentials?.accessKeyId) {
+    const getCredentials = await credentialsProvider()
+    if (!getCredentials.accessKeyId) {
       throw new Error(`AWS Access Key Id is missing`)
     }
-    if (!aws.config.credentials?.secretAccessKey) {
+    if (!getCredentials.secretAccessKey) {
       throw new Error(`AWS Secret Access Key is missing`)
     }
   }
