@@ -13,8 +13,8 @@ export const enSG = {
     },
     ariaLabel: 'Toggle form status',
     incompleteWorkflowModal: {
-      title: 'Finish building your workflow before opening your form',
-      description: 'You have steps with no fields or people assigned to them.',
+      title: 'Finish building your workflow before publishing your form.',
+      description: 'These steps have no fields or people assigned to them:',
       confirm: 'Go to workflow',
       cancel: 'Cancel',
     },
