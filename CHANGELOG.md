@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.11.0](https://github.com/opengovsg/formsg/compare/v9.10.1...v9.11.0) (2026-08-18)
+
+
+### Features
+
+* **i18n/EditFieldDrawer:** extract edit-fieldtype component text (#9832) ([#9832](https://github.com/opengovsg/formsg/commit/6683df9fe1f2bf77fbcbd729685aa44ab9662411))
+* **save-draft:** enable save draft by default on forms created from scratch and remove flag requirements (#9833) ([#9833](https://github.com/opengovsg/formsg/commit/5e24250b3063aee06099062a6392380e517793bf))
+* track time spent on form creation selection screen via DD RUM custom action (#9855) ([#9855](https://github.com/opengovsg/formsg/commit/8cf32410929928ef70293804c03c12acf162a58a))
+
+
+### Chores
+
+* **frontend:** log chunk preload failures to Datadog (#9847) ([#9847](https://github.com/opengovsg/formsg/commit/fb27fabc2bb1b1a41429b2f3201ab9b7b435f793))
+
 ## [9.10.1](https://github.com/opengovsg/formsg/compare/v9.10.0...v9.10.1) (2026-08-17)
 
 
