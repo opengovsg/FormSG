@@ -1,19 +1,15 @@
 import config from '../../config/config'
 
-// Type-only: webhook.types imports the message version constants from here, so
-// a value import would close a cycle.
 import type { RetryInterval } from './webhook.types'
 
 /**
- * Version of the queue message format shipped before the snapshot retry path.
- * Messages at this version carry no submission index, so they can only be
- * retried against the live submission row.
+ * Version of the queue message format shipped before the snapshot retry path,
+ * which always sends the live row data for retries, even for earlier steps.
  */
 export const QUEUE_MESSAGE_LIVE_ROW_VERSION = 0
 
 /**
- * Current version of queue message format. Messages at this version name the
- * exact step submission and wire shape to redeliver.
+ * Version of queue message format which sends the exact step's data for retries.
  */
 export const QUEUE_MESSAGE_SNAPSHOT_VERSION = 1
 

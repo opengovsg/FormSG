@@ -86,9 +86,9 @@ export class WebhookQueueMessage {
    * hence uses the current date as the time of the first
    * webhook attempt.
    * @param submissionId
-   * @param snapshotRef the step submission a retry must reproduce, and the wire
-   * shape it must reproduce it in. Supplied only when a snapshot was recorded
-   * for that step; without it the retry falls back to the live submission row.
+   * @param snapshotRef Used for fetching the snapshot to reconstruct
+   * the retry payload. Provided only when a snapshot was recorded
+   * for that step; otherwise the retry uses the live submission row.
    * @returns ok(encapsulated message) if retry policy exists
    * @returns err if the retry policy does not allow any retries
    */
@@ -156,9 +156,6 @@ export class WebhookQueueMessage {
     ]
     return getNextAttempt(updatedPreviousAttempts).map(
       (nextAttempt) =>
-        // RATIONALE: the message version and the step submission it names are
-        // carried forward untouched. A subsequent attempt must deliver exactly
-        // what this attempt would have.
         new WebhookQueueMessage({
           ...this.message,
           previousAttempts: updatedPreviousAttempts,
