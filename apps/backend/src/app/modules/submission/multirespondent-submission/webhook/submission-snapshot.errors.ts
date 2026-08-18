@@ -24,10 +24,7 @@ export class SnapshotReadError extends ApplicationError {
 }
 
 /**
- * Raised whenever the snapshot store refuses the read. Retrying never fixes
- * this, and filing it as a data-integrity failure would send someone hunting
- * for corrupt objects when the answer is an IAM policy — so it carries its own
- * code.
+ * Raised whenever the snapshot store refuses the read.
  */
 export class SnapshotAccessDeniedError extends ApplicationError {
   constructor(
@@ -39,10 +36,8 @@ export class SnapshotAccessDeniedError extends ApplicationError {
 }
 
 /**
- * Raised whenever a retry names a wire shape for which the step submission
- * recorded no snapshot. Produce and deliver disagreed: operationally routine,
- * and deliberately not the data-integrity code, which means the stored object
- * itself is missing or corrupt.
+ * Raised whenever a retry names a content format shape for which the step submission
+ * recorded no snapshot.
  */
 export class SnapshotFormatNotRecordedError extends ApplicationError {
   constructor(
