@@ -1,11 +1,17 @@
 import config from '../../config/config'
 
-import { RetryInterval } from './webhook.types'
+import type { RetryInterval } from './webhook.types'
 
 /**
- * Current version of queue message format.
+ * Version of the queue message format shipped before the snapshot retry path,
+ * which always sends the live row data for retries, even for earlier steps.
  */
-export const QUEUE_MESSAGE_VERSION = 0
+export const QUEUE_MESSAGE_LIVE_ROW_VERSION = 0
+
+/**
+ * Version of queue message format which sends the exact step's data for retries.
+ */
+export const QUEUE_MESSAGE_SNAPSHOT_VERSION = 1
 
 // Conversion to seconds
 const hours = (h: number) => h * 60 * 60
