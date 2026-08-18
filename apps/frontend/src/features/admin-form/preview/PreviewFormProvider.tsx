@@ -33,6 +33,8 @@ import { useEnv } from '../../env/queries'
 import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
 
+import { clampWorkflowStep } from './utils/clampWorkflowStep'
+
 interface PreviewFormProviderProps {
   formId: string
   children: React.ReactNode
@@ -338,11 +340,20 @@ export const PreviewFormProvider = ({
 
   const form = data?.form
   const formFields = form?.form_fields
-  const currentWorkflowStepNumber = 0
+
   const formWorkflow =
     form?.responseMode === FormResponseMode.Multirespondent
       ? form.workflow
       : undefined
+
+  const currentWorkflowStepNumber = useMemo(() => {
+    const stepParam = searchParams.get('step')
+    if (!stepParam) return 0
+    const parsed = parseInt(stepParam, 10)
+    if (isNaN(parsed)) return 0
+    return clampWorkflowStep(parsed, formWorkflow?.length ?? 0)
+  }, [searchParams, formWorkflow])
+
   const currentStepNumberWorkflowStep =
     formWorkflow && formWorkflow.length > currentWorkflowStepNumber
       ? formWorkflow[currentWorkflowStepNumber]
@@ -386,6 +397,12 @@ export const PreviewFormProvider = ({
     defaultValues: defaultFormValues,
   })
 
+  // Clear stale field values from the previous step on step switch.
+  useEffect(() => {
+    formMethods.reset(defaultFormValues)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentWorkflowStepNumber])
+
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -411,6 +428,13 @@ export const PreviewFormProvider = ({
         fieldPrefillMap,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
+        previewWorkflowStepNumber: formWorkflow
+          ? currentWorkflowStepNumber
+          : undefined,
+        previewWorkflowSteps: formWorkflow?.map((step) => ({
+          _id: step._id,
+          step_name: step.step_name,
+        })),
         ...commonFormValues,
         ...data,
         ...rest,
