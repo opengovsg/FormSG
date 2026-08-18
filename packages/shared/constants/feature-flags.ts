@@ -14,7 +14,6 @@ export const featureFlags = {
   mrfStepWriteToken: 'mrf-step-write-token' as const,
   useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
   lambdaPdfGeneration: 'lambda-pdf-generation' as const,
-  enableSaveDraftButtonHeader: 'enable-save-draft-button-header' as const,
   adminEmailPdf: 'admin-email-pdf' as const,
   ogpHeader: 'enable-ogp-header' as const,
   ogpAwareness: 'ogp-awareness' as const,
