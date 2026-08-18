@@ -12,6 +12,7 @@ import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 
 import {
+  SnapshotAccessDeniedError,
   SnapshotDataIntegrityError,
   SnapshotReadError,
   SnapshotWriteError,
@@ -54,6 +55,10 @@ const isPreconditionFailed = (error: unknown): error is S3ServiceException =>
 const isNoSuchKey = (error: unknown): error is NoSuchKey | S3ServiceException =>
   error instanceof NoSuchKey ||
   (error instanceof S3ServiceException && error.name === 'NoSuchKey')
+
+const isAccessDenied = (error: unknown): error is S3ServiceException => {
+  return error instanceof S3ServiceException && error.name === 'AccessDenied'
+}
 
 export const writeV4Snapshot = (
   snapshot: SubmissionSnapshotV4,
@@ -133,7 +138,7 @@ export const readV4Snapshot = ({
   token,
 }: SnapshotKeyParams): ResultAsync<
   SubmissionSnapshot,
-  SnapshotDataIntegrityError | SnapshotReadError
+  SnapshotDataIntegrityError | SnapshotReadError | SnapshotAccessDeniedError
 > => {
   const key = buildSnapshotKey({
     formId,
@@ -173,6 +178,14 @@ export const readV4Snapshot = ({
             error,
           ),
         )
+      }
+      if (isAccessDenied(error)) {
+        logger.error({
+          message: 'Snapshot read was denied by the store',
+          meta: { action: 'readV4Snapshot', key },
+          error: error as Error,
+        })
+        return errAsync(new SnapshotAccessDeniedError(undefined, error))
       }
       logger.error({
         message: 'Snapshot read failed',
