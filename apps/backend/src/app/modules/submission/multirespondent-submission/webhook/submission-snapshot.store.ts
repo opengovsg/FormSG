@@ -48,17 +48,25 @@ export const buildSnapshotKey = ({
  * (the key already exists), i.e. a token collision we should retry.
  */
 const isPreconditionFailed = (error: unknown): boolean => {
-  const s3Error = error as { code?: string; statusCode?: number } | null
+  const s3Error = error as {
+    name?: string
+    $metadata?: { httpStatusCode?: number }
+  } | null
   return (
     !!s3Error &&
-    (s3Error.code === 'PreconditionFailed' || s3Error.statusCode === 412)
+    (s3Error.name === 'PreconditionFailed' ||
+      s3Error.$metadata?.httpStatusCode === 412)
   )
 }
 
 const isNoSuchKey = (error: unknown): boolean => {
-  const s3Error = error as { code?: string; statusCode?: number } | null
+  const s3Error = error as {
+    name?: string
+    $metadata?: { httpStatusCode?: number }
+  } | null
   return (
-    !!s3Error && (s3Error.code === 'NoSuchKey' || s3Error.statusCode === 404)
+    !!s3Error &&
+    (s3Error.name === 'NoSuchKey' || s3Error.$metadata?.httpStatusCode === 404)
   )
 }
 

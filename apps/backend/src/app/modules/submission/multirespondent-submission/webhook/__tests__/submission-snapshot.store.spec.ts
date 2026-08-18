@@ -35,6 +35,13 @@ const makeSnapshot = (): SubmissionSnapshotV4 =>
     createdAt: '2026-07-22T00:00:00.000Z',
   })
 
+// Mirrors the shape of aws-sdk v3 S3ServiceExceptions (`name` +
+// `$metadata.httpStatusCode`, not v2's `code`/`statusCode`).
+const s3Error = (name: string, httpStatusCode: number) => ({
+  name,
+  $metadata: { httpStatusCode },
+})
+
 // Helper to make a resolved/rejected aws-sdk promise shape.
 const putResolves = () => jest.fn().mockReturnValue(Promise.resolve({}))
 const putRejectsThen = (
@@ -118,7 +125,7 @@ describe('writeV4Snapshot', () => {
     // Arrange: first PUT collides (412), second succeeds.
     const snapshot = makeSnapshot()
     const putObject = putRejectsThen(
-      { reject: { code: 'PreconditionFailed', statusCode: 412 } },
+      { reject: s3Error('PreconditionFailed', 412) },
       { resolve: {} },
     )
     ;(AwsConfig.s3.send as jest.Mock) = putObject
@@ -144,7 +151,7 @@ describe('writeV4Snapshot', () => {
   it('should fail loud with SnapshotWriteError on a non-collision rejection (no retry)', async () => {
     const snapshot = makeSnapshot()
     const putObject = putRejectsThen({
-      reject: { code: 'AccessDenied', statusCode: 403 },
+      reject: s3Error('AccessDenied', 403),
     })
     ;(AwsConfig.s3.send as jest.Mock) = putObject
     mockTokens('tok-1')
@@ -161,9 +168,7 @@ describe('writeV4Snapshot', () => {
     // Persistent 412 on every fresh token — must stop and fail loud.
     const putObject = jest
       .fn()
-      .mockReturnValue(
-        Promise.reject({ code: 'PreconditionFailed', statusCode: 412 }),
-      )
+      .mockReturnValue(Promise.reject(s3Error('PreconditionFailed', 412)))
     ;(AwsConfig.s3.send as jest.Mock) = putObject
     // Every attempt gets a distinct fresh token (tok-0, tok-1, ...).
     mockTokens()
@@ -215,7 +220,7 @@ describe('readV4Snapshot', () => {
   it('should err SnapshotDataIntegrityError with NO fallback on a missing object (NoSuchKey/404)', async () => {
     ;(AwsConfig.s3.send as jest.Mock) = jest
       .fn()
-      .mockReturnValue(Promise.reject({ code: 'NoSuchKey', statusCode: 404 }))
+      .mockReturnValue(Promise.reject(s3Error('NoSuchKey', 404)))
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
@@ -227,9 +232,7 @@ describe('readV4Snapshot', () => {
   it('should err SnapshotReadError, NOT an integrity error, on an operational S3 failure (AccessDenied)', async () => {
     ;(AwsConfig.s3.send as jest.Mock) = jest
       .fn()
-      .mockReturnValue(
-        Promise.reject({ code: 'AccessDenied', statusCode: 403 }),
-      )
+      .mockReturnValue(Promise.reject(s3Error('AccessDenied', 403)))
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
@@ -242,7 +245,7 @@ describe('readV4Snapshot', () => {
   it('should err SnapshotReadError on a throttled S3 read', async () => {
     ;(AwsConfig.s3.send as jest.Mock) = jest
       .fn()
-      .mockReturnValue(Promise.reject({ code: 'SlowDown', statusCode: 503 }))
+      .mockReturnValue(Promise.reject(s3Error('SlowDown', 503)))
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
