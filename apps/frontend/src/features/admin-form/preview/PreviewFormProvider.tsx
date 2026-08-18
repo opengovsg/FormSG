@@ -34,6 +34,7 @@ import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
 
 import { clampWorkflowStep } from './utils/clampWorkflowStep'
+import { PREVIEW_STEP_PARAM } from './utils/previewStepParam'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -347,7 +348,7 @@ export const PreviewFormProvider = ({
       : undefined
 
   const currentWorkflowStepNumber = useMemo(() => {
-    const stepParam = searchParams.get('step')
+    const stepParam = searchParams.get(PREVIEW_STEP_PARAM)
     if (!stepParam) return 0
     const parsed = parseInt(stepParam, 10)
     if (isNaN(parsed)) return 0

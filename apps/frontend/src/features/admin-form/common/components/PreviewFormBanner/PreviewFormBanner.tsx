@@ -28,6 +28,7 @@ import Button, { ButtonProps } from '~components/Button'
 import { SingleSelect } from '~components/Dropdown'
 import Link from '~components/Link'
 
+import { PREVIEW_STEP_PARAM } from '~features/admin-form/preview/utils/previewStepParam'
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
 // Explicit deep import to avoid circular dependency warnings by rollup.
 import {
@@ -128,16 +129,16 @@ export const PreviewFormBanner = ({
               previewWorkflowSteps.length > 0 && (
                 <Flex minW="160px" maxW="280px">
                   <SingleSelect
-                    name="preview-step"
+                    name={isSticky ? 'preview-step-sticky' : 'preview-step'}
                     isClearable={false}
                     value={String(previewWorkflowStepNumber ?? 0)}
                     onChange={(val) => {
                       const newStep = Number(val)
                       setSearchParams((prev) => {
                         if (newStep === 0) {
-                          prev.delete('step')
+                          prev.delete(PREVIEW_STEP_PARAM)
                         } else {
-                          prev.set('step', String(newStep))
+                          prev.set(PREVIEW_STEP_PARAM, String(newStep))
                         }
                         return prev
                       })
