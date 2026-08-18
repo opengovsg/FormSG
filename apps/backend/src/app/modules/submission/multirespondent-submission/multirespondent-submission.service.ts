@@ -1168,12 +1168,19 @@ const sendMrfInitialWebhookIfEligible = ({
         submissionIndex,
         submittedStepsLength: submission.submittedSteps?.length ?? 0,
       })
+      const snapshotDetails = snapshot
+        ? {
+            snapshot,
+            submissionIndex,
+          }
+        : {
+            snapshot: undefined,
+            submissionIndex: undefined,
+          }
       return reconstructMrfWebhookData({
         liveData: liveView.data,
-        snapshot,
-        // RATONALE: if snapshot does not exist, we use the live row.
-        submissionIndex: snapshot ? submissionIndex : undefined,
         policy,
+        ...snapshotDetails,
       }).asyncAndThen((data) => {
         const webhookView: WebhookView = { data }
 
