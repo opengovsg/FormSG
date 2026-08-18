@@ -1,6 +1,5 @@
 import { ok, Result } from 'neverthrow'
 
-import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 import { WebhookData } from 'src/types/submission'
 
 import { SnapshotDataIntegrityError } from './submission-snapshot.errors'
@@ -38,21 +37,6 @@ export const reconstructMrfWebhookData = (
     return ok(liveData)
   }
 
-  const liveWorkflow = (liveData.workflowContent ??
-    {}) as Partial<WorkflowWebhookEventObject>
-  const workflowContent: WebhookData['workflowContent'] = {
-    ...liveWorkflow,
-    workflowStep: snapshot.workflowStep,
-    ...(Array.isArray(liveWorkflow.submittedSteps)
-      ? {
-          submittedSteps: liveWorkflow.submittedSteps.slice(
-            0,
-            submissionIndex + 1,
-          ),
-        }
-      : {}),
-  }
-
   const reconstructed: WebhookData = {
     formId: liveData.formId,
     submissionId: liveData.submissionId,
@@ -61,7 +45,23 @@ export const reconstructMrfWebhookData = (
     encryptedContent: snapshot.encryptedContent,
     verifiedContent: snapshot.verifiedContent,
     version: contentFormatToWebhookVersion(snapshot.contentFormat),
-    workflowContent,
+  }
+
+  const liveWorkflow = liveData.workflowContent
+
+  if (liveWorkflow !== undefined) {
+    reconstructed.workflowContent = {
+      ...liveWorkflow,
+      workflowStep: snapshot.workflowStep,
+      ...(Array.isArray(liveWorkflow.submittedSteps)
+        ? {
+            submittedSteps: liveWorkflow.submittedSteps.slice(
+              0,
+              submissionIndex + 1,
+            ),
+          }
+        : {}),
+    }
   }
 
   if (liveData.paymentContent !== undefined) {
