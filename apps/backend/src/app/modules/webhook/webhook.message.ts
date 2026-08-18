@@ -14,6 +14,7 @@ import {
 } from './webhook.errors'
 import {
   QueueMessageContentFormat,
+  SnapshotRef,
   WebhookFailedQueueMessage,
   WebhookQueueMessage as webhookMessageSchema,
   WebhookQueueMessageObject,
@@ -93,10 +94,7 @@ export class WebhookQueueMessage {
    */
   static fromSubmissionId(
     submissionId: string,
-    snapshotRef?: {
-      submissionIndex: number
-      contentFormat: QueueMessageContentFormat
-    },
+    snapshotRef?: SnapshotRef,
   ): Result<WebhookQueueMessage, WebhookNoMoreRetriesError> {
     const initialAttempt = Date.now()
     return getNextAttempt(/* previousAttempts =*/ [initialAttempt]).map(

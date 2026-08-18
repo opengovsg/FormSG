@@ -2,7 +2,10 @@ import { SubmittedStepSnapshotTokens } from 'formsg-shared/types'
 import { errAsync, ResultAsync } from 'neverthrow'
 
 import { WebhookView } from '../../../../../types'
-import { QueueMessageContentFormat } from '../../../webhook/webhook.types'
+import {
+  QueueMessageContentFormat,
+  SnapshotRef,
+} from '../../../webhook/webhook.types'
 
 import {
   SnapshotAccessDeniedError,
@@ -49,23 +52,22 @@ export const getRecordedPayloadPolicy = (
 export const resolveSnapshotRetryView = ({
   liveView,
   submissionId,
-  submissionIndex,
-  contentFormat,
-  snapshotTokens,
+  snapshotRef,
+  submittedStepSnapshotTokens,
 }: {
   liveView: WebhookView
   submissionId: string
-  submissionIndex: number
-  contentFormat: QueueMessageContentFormat
+  snapshotRef: SnapshotRef
   /** Tokens recorded on the row's step submissions, indexed by submissionIndex. */
-  snapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
+  submittedStepSnapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
 }): ResultAsync<WebhookView, SnapshotRetryError> => {
-  const meta = { submissionId, submissionIndex, contentFormat }
+  const meta = { submissionId, snapshotRef }
+  const { submissionIndex, contentFormat } = snapshotRef
 
   // The row records tokens keyed by content format. Only `v4` exists today, so
   // a message naming `v1` correctly finds nothing recorded until S6 (#9746)
   // widens the row schema to carry the v1 copy.
-  const recordedTokens = snapshotTokens?.[submissionIndex] as
+  const recordedTokens = submittedStepSnapshotTokens?.[submissionIndex] as
     | Partial<Record<QueueMessageContentFormat, string>>
     | undefined
 

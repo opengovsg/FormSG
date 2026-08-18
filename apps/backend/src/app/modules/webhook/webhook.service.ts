@@ -31,7 +31,7 @@ import {
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
 import { webhookStatsdClient } from './webhook.statsd-client'
-import { QueueMessageContentFormat } from './webhook.types'
+import { SnapshotRef } from './webhook.types'
 import { formatWebhookResponse, isSuccessfulResponse } from './webhook.utils'
 import { validateWebhookUrl } from './webhook.validation'
 
@@ -262,10 +262,7 @@ export const createInitialWebhookSender =
     // the legacy version and falls back to the live row, so a form toggling
     // retries mid-workflow can never produce a snapshot-naming retry for a
     // step that has no snapshot.
-    snapshotRef?: {
-      submissionIndex: number
-      contentFormat: QueueMessageContentFormat
-    },
+    snapshotRef?: SnapshotRef,
   ): ResultAsync<
     true,
     | WebhookValidationError

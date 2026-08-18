@@ -254,9 +254,11 @@ const resolveWebhookView = (
   return resolveSnapshotRetryView({
     liveView: webhookInfo.webhookView,
     submissionId: webhookMessage.submissionId,
-    submissionIndex,
-    contentFormat,
-    snapshotTokens: webhookInfo.snapshotTokens,
+    snapshotRef: {
+      submissionIndex,
+      contentFormat,
+    },
+    submittedStepSnapshotTokens: webhookInfo.submittedStepSnapshotTokens,
   })
 }
 

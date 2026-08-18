@@ -338,7 +338,7 @@ describe('Submission Model', () => {
           String(submission._id),
         )
 
-        expect(result?.snapshotTokens).toEqual([
+        expect(result?.submittedStepSnapshotTokens).toEqual([
           { v4: 'SNAPSHOT_TOKEN_STEP_0' },
           { v4: 'SNAPSHOT_TOKEN_STEP_1' },
         ])

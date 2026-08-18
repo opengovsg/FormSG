@@ -108,3 +108,8 @@ export type WorkflowWebhookEventObject = {
   workflowStep: number
   submittedSteps: WebhookSubmittedStep[]
 }
+
+export type SnapshotRef = {
+  submissionIndex: number
+  contentFormat: QueueMessageContentFormat
+}

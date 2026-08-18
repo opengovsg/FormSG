@@ -1168,29 +1168,35 @@ const sendMrfInitialWebhookIfEligible = ({
         submissionIndex,
         submittedStepsLength: submission.submittedSteps?.length ?? 0,
       })
+      const snapshotDetails = snapshot
+        ? {
+            snapshot,
+            submissionIndex,
+          }
+        : {
+            snapshot: undefined,
+            submissionIndex: undefined,
+          }
       return reconstructMrfWebhookData({
         liveData: liveView.data,
-        snapshot,
-        // RATONALE: if snapshot does not exist, we use the live row.
-        submissionIndex: snapshot ? submissionIndex : undefined,
         policy,
+        ...snapshotDetails,
       }).asyncAndThen((data) => {
         const webhookView: WebhookView = { data }
+
+        const snapshotRef = snapshot
+          ? {
+              submissionIndex,
+              contentFormat: snapshot.contentFormat,
+            }
+          : undefined
 
         return WebhookFactory.sendInitialWebhook(
           submission,
           webhookUrl,
           isRetryEnabled,
           webhookView,
-          // A retry can only replay a step submission that froze a snapshot,
-          // so the reference is threaded from the snapshot itself rather than
-          // re-derived from the row or the flags at retry time.
-          snapshot
-            ? {
-                submissionIndex,
-                contentFormat: snapshot.contentFormat,
-              }
-            : undefined,
+          snapshotRef,
         ).map(() => undefined)
       })
     })

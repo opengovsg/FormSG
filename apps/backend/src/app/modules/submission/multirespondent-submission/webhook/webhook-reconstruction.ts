@@ -1,4 +1,4 @@
-import { err, ok, Result } from 'neverthrow'
+import { ok, Result } from 'neverthrow'
 
 import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 import { WebhookData } from 'src/types/submission'
@@ -10,25 +10,32 @@ import {
   WebhookPayloadPolicy,
 } from './webhook-payload-policy'
 
-export const reconstructMrfWebhookData = (input: {
+interface ReconstructMrfWebhookDataInputBase {
   liveData: WebhookData
-  snapshot?: SubmissionSnapshot
-  submissionIndex?: number
   policy: WebhookPayloadPolicy
-}): Result<WebhookData, SnapshotDataIntegrityError> => {
+}
+
+interface ReconstructMrfWebhookDataInputWithoutSnapshot extends ReconstructMrfWebhookDataInputBase {
+  snapshot: undefined
+  submissionIndex: undefined
+}
+
+interface ReconstructMrfWebhookDataInputWithSnapshot extends ReconstructMrfWebhookDataInputBase {
+  snapshot: SubmissionSnapshot
+  submissionIndex: number
+}
+
+type ReconstructMrfWebhookDataInput =
+  | ReconstructMrfWebhookDataInputWithSnapshot
+  | ReconstructMrfWebhookDataInputWithoutSnapshot
+
+export const reconstructMrfWebhookData = (
+  input: ReconstructMrfWebhookDataInput,
+): Result<WebhookData, SnapshotDataIntegrityError> => {
   const { liveData, snapshot, submissionIndex, policy } = input
 
-  if (submissionIndex === undefined) {
+  if (snapshot === undefined) {
     return ok(liveData)
-  }
-
-  if (!snapshot) {
-    return err(
-      new SnapshotDataIntegrityError(
-        'Snapshot missing on the snapshot reconstruction path',
-        { submissionId: liveData.submissionId, submissionIndex },
-      ),
-    )
   }
 
   const liveWorkflow = (liveData.workflowContent ??

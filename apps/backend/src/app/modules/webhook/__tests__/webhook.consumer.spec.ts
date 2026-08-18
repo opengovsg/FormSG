@@ -106,7 +106,7 @@ const MOCK_MRF_WEBHOOK_INFO = {
       },
     },
   },
-  snapshotTokens: [{ v4: 'tok-step-0' }, { v4: 'tok-step-1' }],
+  submittedStepSnapshotTokens: [{ v4: 'tok-step-0' }, { v4: 'tok-step-1' }],
 } as SubmissionWebhookInfo
 
 const MOCK_SNAPSHOT: SubmissionSnapshotV4 = {

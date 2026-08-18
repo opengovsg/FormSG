@@ -179,12 +179,7 @@ SubmissionSchema.statics.retrieveWebhookInfoById = async function (
   ])) as IPopulatedWebhookSubmission | null
   if (!populatedSubmission) return null
   const webhookView = await populatedSubmission.getWebhookView()
-  // A retry resolves its snapshot by the token recorded on the step submission
-  // it names. The tokens are deliberately absent from the webhook view — they
-  // are a read credential and must never reach a consumer — so they travel
-  // separately, indexed by submissionIndex. Absent entirely for a submission
-  // with no step submissions, i.e. anything that is not an MRF.
-  const snapshotTokens = (
+  const submittedStepSnapshotTokens = (
     (populatedSubmission as IMultirespondentSubmissionSchema).submittedSteps ??
     []
   ).map((step) => step.snapshotTokens)
@@ -193,7 +188,9 @@ SubmissionSchema.statics.retrieveWebhookInfoById = async function (
     webhookUrl: populatedSubmission.form.webhook?.url ?? '',
     isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
     webhookView,
-    ...(snapshotTokens.length > 0 ? { snapshotTokens } : {}),
+    ...(submittedStepSnapshotTokens.length > 0
+      ? { submittedStepSnapshotTokens }
+      : {}),
   }
 }
 
