@@ -116,24 +116,27 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
           return (
             !!val ||
             !getValues('ValidationOptions.selectedValidation') ||
-            'Please enter number of characters'
+            t('features.adminForm.sidebar.fields.number.error.numOfCharacter')
           )
         },
         validNumber: (val) => {
           // Check whether input is a valid number, avoid e
-          return !isNaN(Number(val)) || 'Please enter a valid number'
+          return (
+            !isNaN(Number(val)) ||
+            t('features.adminForm.sidebar.fields.number.error.validNumber')
+          )
         },
       },
       min: {
         value: 1,
-        message: 'Cannot be less than 1',
+        message: t('features.adminForm.sidebar.fields.number.error.min'),
       },
       max: {
         value: 10000,
-        message: 'Cannot be more than 10000',
+        message: t('features.adminForm.sidebar.fields.number.error.max'),
       },
     }),
-    [getValues],
+    [getValues, t],
   )
 
   return (
@@ -155,13 +158,22 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('required')} label="Required" />
+        <Toggle
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
+        />
       </FormControl>
       <FormControl
         isReadOnly={isLoading}
         isInvalid={!isEmpty(errors.ValidationOptions)}
       >
-        <FormLabel isRequired>Number of characters allowed</FormLabel>
+        <FormLabel isRequired>
+          {t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.noCharactersAllowed',
+          )}
+        </FormLabel>
         <SimpleGrid
           mt="0.5rem"
           columns={{ base: 2, md: 1, lg: 2 }}
@@ -189,7 +201,9 @@ export const EditLongText = ({ field }: EditLongTextProps): JSX.Element => {
                 flex={1}
                 inputMode="numeric"
                 showSteppers={false}
-                placeholder="Number of characters"
+                placeholder={t(
+                  'features.adminForm.sidebar.fields.commonFieldComponents.charactersAllowedPlaceholder',
+                )}
                 isDisabled={!watchedSelectedValidation}
                 onChange={validateNumberInput(onChange)}
                 {...rest}
