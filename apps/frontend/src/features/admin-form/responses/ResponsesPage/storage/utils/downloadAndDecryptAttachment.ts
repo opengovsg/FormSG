@@ -9,6 +9,13 @@ export const downloadAndDecryptAttachment = async (
   secretKey: string,
 ) => {
   const response = await fetch(url)
+  if (!response.ok) {
+    // S3 reports failures (e.g. rejected presigned URLs) as XML error
+    // documents; surface the status instead of failing inside .json().
+    throw new Error(
+      `Attachment download failed with HTTP ${response.status}: ${await response.text()}`,
+    )
+  }
   const data = await response.json()
   data.encryptedFile.binary = decodeBase64(data.encryptedFile.binary)
   // RATIONALE: For casting to Uint8Array<ArrayBuffer>, after TS update, Uint8Array can be SharedArrayBuffer, which is not compatible with Blob.
