@@ -17,7 +17,7 @@ import { SubmissionSnapshotV4 } from 'src/app/modules/submission/multirespondent
 import * as SnapshotStore from 'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.store'
 import { SubmissionWebhookInfo } from 'src/types'
 
-import { QUEUE_MESSAGE_VERSION } from '../webhook.constants'
+import { QUEUE_MESSAGE_SNAPSHOT_VERSION } from '../webhook.constants'
 import { createWebhookQueueHandler } from '../webhook.consumer'
 import { WebhookPushToQueueError } from '../webhook.errors'
 import { WebhookProducer } from '../webhook.producer'
@@ -349,7 +349,7 @@ describe('webhook.consumer', () => {
         contentFormat: 'v4',
         previousAttempts: [Date.now()],
         nextAttempt: Date.now(),
-        _v: QUEUE_MESSAGE_VERSION,
+        _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
       }
       const SNAPSHOT_SQS_MESSAGE: Message = {
         Body: JSON.stringify(SNAPSHOT_MESSAGE_BODY),

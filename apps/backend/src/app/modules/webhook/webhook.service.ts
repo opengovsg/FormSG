@@ -257,11 +257,6 @@ export const createInitialWebhookSender =
     webhookUrl: string,
     isRetryEnabled: boolean,
     webhookView?: WebhookView,
-    // Supplied only when this step submission froze a snapshot, which is what
-    // makes a per-step retry replayable. Without it the retry is enqueued at
-    // the legacy version and falls back to the live row, so a form toggling
-    // retries mid-workflow can never produce a snapshot-naming retry for a
-    // step that has no snapshot.
     snapshotRef?: SnapshotRef,
   ): ResultAsync<
     true,

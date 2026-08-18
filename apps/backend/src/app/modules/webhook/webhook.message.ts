@@ -5,8 +5,8 @@ import { createLoggerWithLabel } from '../../config/logger'
 
 import {
   DUE_TIME_TOLERANCE_SECONDS,
-  QUEUE_MESSAGE_VERSION,
-  QUEUE_MESSAGE_VERSION_LEGACY,
+  QUEUE_MESSAGE_LIVE_ROW_VERSION,
+  QUEUE_MESSAGE_SNAPSHOT_VERSION,
 } from './webhook.constants'
 import {
   WebhookNoMoreRetriesError,
@@ -105,7 +105,7 @@ export class WebhookQueueMessage {
                 submissionId,
                 previousAttempts: [initialAttempt],
                 nextAttempt,
-                _v: QUEUE_MESSAGE_VERSION,
+                _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
                 submissionIndex: snapshotRef.submissionIndex,
                 contentFormat: snapshotRef.contentFormat,
               }
@@ -113,7 +113,7 @@ export class WebhookQueueMessage {
                 submissionId,
                 previousAttempts: [initialAttempt],
                 nextAttempt,
-                _v: QUEUE_MESSAGE_VERSION_LEGACY,
+                _v: QUEUE_MESSAGE_LIVE_ROW_VERSION,
               },
         ),
     )
@@ -197,7 +197,7 @@ export class WebhookQueueMessage {
     submissionIndex?: number
     contentFormat?: QueueMessageContentFormat
   } {
-    return this.message._v === QUEUE_MESSAGE_VERSION
+    return this.message._v === QUEUE_MESSAGE_SNAPSHOT_VERSION
       ? {
           submissionIndex: this.message.submissionIndex,
           contentFormat: this.message.contentFormat,
@@ -218,7 +218,7 @@ export class WebhookQueueMessage {
    * message, which is redelivered from the live submission row instead.
    */
   get submissionIndex(): number | undefined {
-    return this.message._v === QUEUE_MESSAGE_VERSION
+    return this.message._v === QUEUE_MESSAGE_SNAPSHOT_VERSION
       ? this.message.submissionIndex
       : undefined
   }
@@ -228,7 +228,7 @@ export class WebhookQueueMessage {
    * Never re-derived from the form or a feature flag at send.
    */
   get contentFormat(): QueueMessageContentFormat | undefined {
-    return this.message._v === QUEUE_MESSAGE_VERSION
+    return this.message._v === QUEUE_MESSAGE_SNAPSHOT_VERSION
       ? this.message.contentFormat
       : undefined
   }

@@ -4,7 +4,7 @@ import { Producer } from 'sqs-producer'
 
 import {
   MAX_DELAY_SECONDS,
-  QUEUE_MESSAGE_VERSION_LEGACY,
+  QUEUE_MESSAGE_LIVE_ROW_VERSION,
 } from '../webhook.constants'
 import { WebhookPushToQueueError } from '../webhook.errors'
 import { WebhookQueueMessage } from '../webhook.message'
@@ -24,7 +24,7 @@ describe('WebhookProducer', () => {
     submissionId: new ObjectId().toHexString(),
     previousAttempts: [MOCK_NOW],
     nextAttempt: MOCK_NOW,
-    _v: QUEUE_MESSAGE_VERSION_LEGACY,
+    _v: QUEUE_MESSAGE_LIVE_ROW_VERSION,
   }
 
   beforeAll(() => {

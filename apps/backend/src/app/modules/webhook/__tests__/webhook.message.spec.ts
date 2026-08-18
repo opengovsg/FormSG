@@ -5,8 +5,8 @@ import { resolve } from 'path'
 
 import {
   DUE_TIME_TOLERANCE_SECONDS,
-  QUEUE_MESSAGE_VERSION,
-  QUEUE_MESSAGE_VERSION_LEGACY,
+  QUEUE_MESSAGE_LIVE_ROW_VERSION,
+  QUEUE_MESSAGE_SNAPSHOT_VERSION,
   RETRY_INTERVALS,
 } from '../webhook.constants'
 import {
@@ -22,7 +22,7 @@ describe('WebhookQueueMessage', () => {
     submissionId: new ObjectId().toHexString(),
     previousAttempts: [Date.now()],
     nextAttempt: Date.now(),
-    _v: QUEUE_MESSAGE_VERSION_LEGACY,
+    _v: QUEUE_MESSAGE_LIVE_ROW_VERSION,
   }
 
   const VALID_SNAPSHOT_MESSAGE: WebhookQueueMessageObject = {
@@ -31,7 +31,7 @@ describe('WebhookQueueMessage', () => {
     contentFormat: 'v4',
     previousAttempts: [Date.now()],
     nextAttempt: Date.now(),
-    _v: QUEUE_MESSAGE_VERSION,
+    _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
   }
 
   beforeEach(() => {
@@ -84,7 +84,7 @@ describe('WebhookQueueMessage', () => {
       )
 
       const message = result._unsafeUnwrap()
-      expect(message.message._v).toBe(QUEUE_MESSAGE_VERSION_LEGACY)
+      expect(message.message._v).toBe(QUEUE_MESSAGE_LIVE_ROW_VERSION)
       expect(message.submissionIndex).toBeUndefined()
       expect(message.contentFormat).toBeUndefined()
     })
@@ -117,7 +117,7 @@ describe('WebhookQueueMessage', () => {
       const result = WebhookQueueMessage.deserialise(
         JSON.stringify({
           ...VALID_SNAPSHOT_MESSAGE,
-          _v: QUEUE_MESSAGE_VERSION + 1,
+          _v: QUEUE_MESSAGE_SNAPSHOT_VERSION + 1,
         }),
       )
 
@@ -144,7 +144,7 @@ describe('WebhookQueueMessage', () => {
         submissionId,
         previousAttempts: [MOCK_NOW],
         nextAttempt: expect.any(Number),
-        _v: QUEUE_MESSAGE_VERSION_LEGACY,
+        _v: QUEUE_MESSAGE_LIVE_ROW_VERSION,
       })
     })
 
@@ -159,7 +159,7 @@ describe('WebhookQueueMessage', () => {
         submissionId,
         previousAttempts: [MOCK_NOW],
         nextAttempt: expect.any(Number),
-        _v: QUEUE_MESSAGE_VERSION,
+        _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
         submissionIndex: 2,
         contentFormat: 'v4',
       })
@@ -235,7 +235,7 @@ describe('WebhookQueueMessage', () => {
 
       expect(result.submissionIndex).toBe(1)
       expect(result.contentFormat).toBe('v4')
-      expect(result.message._v).toBe(QUEUE_MESSAGE_VERSION)
+      expect(result.message._v).toBe(QUEUE_MESSAGE_SNAPSHOT_VERSION)
     })
 
     it('should return WebhookNoMoreRetriesError when retries have been exhausted', () => {

@@ -4,8 +4,8 @@ import * as z from 'zod'
 import { IFormSchema, ISubmissionSchema, WebhookView } from '../../../types'
 
 import {
-  QUEUE_MESSAGE_VERSION,
-  QUEUE_MESSAGE_VERSION_LEGACY,
+  QUEUE_MESSAGE_LIVE_ROW_VERSION,
+  QUEUE_MESSAGE_SNAPSHOT_VERSION,
 } from './webhook.constants'
 
 export interface WebhookParams {
@@ -28,9 +28,9 @@ const retrySchedule = {
  * ones must keep parsing across the deploy; they name no step submission, so
  * they are redelivered from the live submission row.
  */
-const LegacyQueueMessage = z.object({
+const LiveRowQueueMessage = z.object({
   ...retrySchedule,
-  _v: z.literal(QUEUE_MESSAGE_VERSION_LEGACY),
+  _v: z.literal(QUEUE_MESSAGE_LIVE_ROW_VERSION),
 })
 
 /**
@@ -41,7 +41,7 @@ const LegacyQueueMessage = z.object({
  */
 const SnapshotQueueMessage = z.object({
   ...retrySchedule,
-  _v: z.literal(QUEUE_MESSAGE_VERSION),
+  _v: z.literal(QUEUE_MESSAGE_SNAPSHOT_VERSION),
   submissionIndex: z.number().int(),
   contentFormat: z.enum(['v1', 'v4']),
 })
@@ -52,7 +52,7 @@ const SnapshotQueueMessage = z.object({
  */
 export const WebhookQueueMessage = z.discriminatedUnion('_v', [
   SnapshotQueueMessage,
-  LegacyQueueMessage,
+  LiveRowQueueMessage,
 ])
 
 /**

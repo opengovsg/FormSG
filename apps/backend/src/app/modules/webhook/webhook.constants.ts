@@ -9,13 +9,13 @@ import type { RetryInterval } from './webhook.types'
  * Messages at this version carry no submission index, so they can only be
  * retried against the live submission row.
  */
-export const QUEUE_MESSAGE_VERSION_LEGACY = 0
+export const QUEUE_MESSAGE_LIVE_ROW_VERSION = 0
 
 /**
  * Current version of queue message format. Messages at this version name the
  * exact step submission and wire shape to redeliver.
  */
-export const QUEUE_MESSAGE_VERSION = 1
+export const QUEUE_MESSAGE_SNAPSHOT_VERSION = 1
 
 // Conversion to seconds
 const hours = (h: number) => h * 60 * 60
