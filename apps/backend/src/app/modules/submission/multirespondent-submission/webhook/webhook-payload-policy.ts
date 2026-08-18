@@ -33,7 +33,8 @@ export const getKeyPermissionsPolicy = ({
   const isLatestStep = submissionIndex === submittedStepsLength - 1
   return {
     includeEncryptedSubmissionSecretKey: contentFormat === 'v4',
-    includeEncryptedStepToken: webhookType === 'plumber' && isLatestStep,
+    includeEncryptedStepToken:
+      contentFormat === 'v4' && webhookType === 'plumber' && isLatestStep,
   }
 }
 
