@@ -84,7 +84,7 @@ const MOCK_FORM_ID = new ObjectId().toHexString()
  * content is the LATEST step's, so anything the retry ships from the live row
  * is immediately visible.
  */
-const MOCK_MRF_WEBHOOK_INFO = {
+const MOCK_MRF_WEBHOOK_INFO: SubmissionWebhookInfo = {
   isRetryEnabled: true,
   webhookUrl: 'https://plumber.gov.sg/webhooks/retry',
   webhookView: {
@@ -92,6 +92,7 @@ const MOCK_MRF_WEBHOOK_INFO = {
       formId: MOCK_FORM_ID,
       submissionId: VALID_MESSAGE_BODY.submissionId,
       encryptedContent: 'latest-step-encrypted-content',
+      verifiedContent: 'latest-step-verified-content',
       version: 4,
       created: new Date('2026-07-22T00:00:00.000Z'),
       attachmentDownloadUrls: {},
@@ -107,7 +108,7 @@ const MOCK_MRF_WEBHOOK_INFO = {
     },
   },
   submittedStepSnapshotTokens: [{ v4: 'tok-step-0' }, { v4: 'tok-step-1' }],
-} as SubmissionWebhookInfo
+}
 
 const MOCK_SNAPSHOT: SubmissionSnapshotV4 = {
   _v: 1,
@@ -345,8 +346,10 @@ describe('webhook.consumer', () => {
     describe('snapshot replay', () => {
       const SNAPSHOT_MESSAGE_BODY: WebhookQueueMessageObject = {
         submissionId: VALID_MESSAGE_BODY.submissionId,
-        submissionIndex: 0,
-        contentFormat: 'v4',
+        snapshotRef: {
+          submissionIndex: 0,
+          contentFormat: 'v4',
+        },
         previousAttempts: [Date.now()],
         nextAttempt: Date.now(),
         _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
@@ -445,8 +448,10 @@ describe('webhook.consumer', () => {
 
         const [requeued] = (SUCCESS_PRODUCER.sendMessage as jest.Mock).mock
           .calls[0]
-        expect(requeued.submissionIndex).toBe(0)
-        expect(requeued.contentFormat).toBe('v4')
+        expect(requeued.snapshotRef).toEqual({
+          submissionIndex: 0,
+          contentFormat: 'v4',
+        })
       })
     })
   })

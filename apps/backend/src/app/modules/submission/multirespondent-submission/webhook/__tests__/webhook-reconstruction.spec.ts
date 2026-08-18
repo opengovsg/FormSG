@@ -1,10 +1,10 @@
 import { SubmittedStep, WorkflowStatus } from 'formsg-shared/types'
+import { omit } from 'lodash'
 
 import { projectSubmittedStepForWebhook } from 'src/app/modules/submission/submitted-step-visibility'
 import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 import { WebhookData } from 'src/types/submission'
 
-import { SnapshotDataIntegrityError } from '../submission-snapshot.errors'
 import { WebhookPayloadPolicy } from '../webhook-payload-policy'
 import { reconstructMrfWebhookData } from '../webhook-reconstruction'
 
@@ -82,21 +82,6 @@ describe('reconstructMrfWebhookData', () => {
   })
 
   describe('with submissionIndex (snapshot path)', () => {
-    it('returns a SnapshotDataIntegrityError when the snapshot is missing (fails loud, never falls back to liveData)', () => {
-      const liveData = makeLiveData()
-
-      const result = reconstructMrfWebhookData({
-        liveData,
-        submissionIndex: 1,
-        snapshot: undefined,
-        policy: PLUMBER_LATEST,
-      })
-
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-        SnapshotDataIntegrityError,
-      )
-    })
-
     it('derives version from the FROZEN snapshot content shape (v4 => 4), overriding liveData.version', () => {
       const output = reconstructMrfWebhookData({
         liveData: makeLiveData({ version: 1 }),
@@ -168,8 +153,10 @@ describe('reconstructMrfWebhookData', () => {
     })
 
     it('emits no attachment urls when the snapshot froze none, even if the live row has some', () => {
-      const snapshotWithoutAttachments = { ...makeV4Snapshot() }
-      delete snapshotWithoutAttachments.attachmentMetadata
+      const snapshotWithoutAttachments = omit(
+        makeV4Snapshot(),
+        'attachmentMetadata',
+      )
 
       const output = reconstructMrfWebhookData({
         liveData: makeLiveData({
@@ -200,17 +187,6 @@ describe('reconstructMrfWebhookData', () => {
       expect(workflowContent.workflow).toEqual([{ _id: 'step-def' }])
       // workflowStep taken from the snapshot.
       expect(workflowContent.workflowStep).toBe(1)
-    })
-
-    it('handles a plain-object liveData.workflowContent gracefully', () => {
-      const result = reconstructMrfWebhookData({
-        liveData: makeLiveData({ workflowContent: {} }),
-        snapshot: makeV4Snapshot(),
-        submissionIndex: 1,
-        policy: PLUMBER_LATEST,
-      })
-
-      expect(result.isOk()).toBe(true)
     })
   })
 

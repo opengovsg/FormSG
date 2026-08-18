@@ -233,9 +233,9 @@ describe('[GATE] v4 per-step retry fidelity', () => {
     const view = await resolveSnapshotRetryView({
       liveView,
       submissionId: String(submission._id),
-      submissionIndex,
-      contentFormat,
-      snapshotTokens: (submission.submittedSteps ?? []).map(
+      snapshotRef: { submissionIndex, contentFormat },
+      webhookType: 'plumber',
+      submittedStepSnapshotTokens: (submission.submittedSteps ?? []).map(
         (step) => step.snapshotTokens,
       ),
     })
@@ -348,6 +348,54 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       workflowStep: 0,
       tokens: [STEP_1.token],
     })
+
+    const liveView = await submission.getWebhookView()
+    const result = await resolveSnapshotRetryView({
+      liveView,
+      submissionId: String(submission._id),
+      snapshotRef: { submissionIndex: 0, contentFormat: 'v1' },
+      webhookType: 'plumber',
+      // Even with a v1 token recorded against the step, no v1 copy is stored.
+      submittedStepSnapshotTokens: [
+        { v1: 'tok-v1' } as SubmittedStepSnapshotTokens,
+      ],
+    })
+
+    expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+      SnapshotFormatNotRecordedError,
+    )
+    expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+  })
+
+  it('fails loud when the message names a format the step recorded no snapshot for', async () => {
+    const submission = await createRowAtStep({
+      latest: STEP_1,
+      workflowStep: 0,
+      tokens: [STEP_1.token],
+    })
+
+    const liveView = await submission.getWebhookView()
+    const result = await resolveSnapshotRetryView({
+      liveView,
+      submissionId: String(submission._id),
+      snapshotRef: { submissionIndex: 0, contentFormat: 'v4' },
+      webhookType: 'plumber',
+      // The step recorded no token for the named format.
+      submittedStepSnapshotTokens: [{} as SubmittedStepSnapshotTokens],
+    })
+
+    expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+      SnapshotFormatNotRecordedError,
+    )
+    expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+  })
+
+  it('fails loud when the stored snapshot is not in the format it was recorded under', async () => {
+    const submission = await createRowAtStep({
+      latest: STEP_1,
+      workflowStep: 0,
+      tokens: [STEP_1.token],
+    })
     const v4Snapshot = snapshotFor({
       submission,
       step: STEP_1,
@@ -362,43 +410,17 @@ describe('[GATE] v4 per-step retry fidelity', () => {
     )
 
     const liveView = await submission.getWebhookView()
-    const retried = await resolveSnapshotRetryView({
-      liveView,
-      submissionId: String(submission._id),
-      submissionIndex: 0,
-      contentFormat: 'v1',
-      // The v1 copy is recorded under its own key, so a v1 message resolves a
-      // v1 object and nothing else.
-      snapshotTokens: [{ v1: 'tok-v1' } as SubmittedStepSnapshotTokens],
-    })
-
-    const data = retried._unsafeUnwrap().data
-    expect(data.encryptedSubmissionSecretKey).toBeUndefined()
-    expect(data.version).toBe(2.1)
-  })
-
-  it('fails loud when the message names a format the step recorded no snapshot for', async () => {
-    const submission = await createRowAtStep({
-      latest: STEP_1,
-      workflowStep: 0,
-      tokens: [STEP_1.token],
-    })
-
-    const liveView = await submission.getWebhookView()
     const result = await resolveSnapshotRetryView({
       liveView,
       submissionId: String(submission._id),
-      submissionIndex: 0,
-      contentFormat: 'v1',
-      snapshotTokens: (submission.submittedSteps ?? []).map(
+      snapshotRef: { submissionIndex: 0, contentFormat: 'v4' },
+      webhookType: 'plumber',
+      submittedStepSnapshotTokens: (submission.submittedSteps ?? []).map(
         (step) => step.snapshotTokens,
       ),
     })
 
-    expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-      SnapshotFormatNotRecordedError,
-    )
-    expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+    expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotDataIntegrityError)
   })
 
   it.each([
@@ -419,9 +441,9 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       const result = await resolveSnapshotRetryView({
         liveView,
         submissionId: String(submission._id),
-        submissionIndex: 0,
-        contentFormat: 'v4',
-        snapshotTokens: (submission.submittedSteps ?? []).map(
+        snapshotRef: { submissionIndex: 0, contentFormat: 'v4' },
+        webhookType: 'plumber',
+        submittedStepSnapshotTokens: (submission.submittedSteps ?? []).map(
           (step) => step.snapshotTokens,
         ),
       })

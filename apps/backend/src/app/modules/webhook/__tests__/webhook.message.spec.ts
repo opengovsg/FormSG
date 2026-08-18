@@ -27,8 +27,10 @@ describe('WebhookQueueMessage', () => {
 
   const VALID_SNAPSHOT_MESSAGE: WebhookQueueMessageObject = {
     submissionId: new ObjectId().toHexString(),
-    submissionIndex: 1,
-    contentFormat: 'v4',
+    snapshotRef: {
+      submissionIndex: 1,
+      contentFormat: 'v4',
+    },
     previousAttempts: [Date.now()],
     nextAttempt: Date.now(),
     _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
@@ -85,8 +87,7 @@ describe('WebhookQueueMessage', () => {
 
       const message = result._unsafeUnwrap()
       expect(message.message._v).toBe(QUEUE_MESSAGE_LIVE_ROW_VERSION)
-      expect(message.submissionIndex).toBeUndefined()
-      expect(message.contentFormat).toBeUndefined()
+      expect(message.snapshotRef).toBeUndefined()
     })
 
     it('should parse a snapshot message carrying its submission index and content format', () => {
@@ -96,11 +97,17 @@ describe('WebhookQueueMessage', () => {
 
       const message = result._unsafeUnwrap()
       expect(message.message).toEqual(VALID_SNAPSHOT_MESSAGE)
-      expect(message.submissionIndex).toBe(1)
-      expect(message.contentFormat).toBe('v4')
+      expect(message.snapshotRef).toEqual({
+        submissionIndex: 1,
+        contentFormat: 'v4',
+      })
     })
 
-    it.each(['submissionIndex', 'contentFormat'] as const)(
+    it.each([
+      'snapshotRef',
+      'snapshotRef.submissionIndex',
+      'snapshotRef.contentFormat',
+    ] as const)(
       'should return WebhookQueueMessageParsingError when a snapshot message omits %s',
       (field) => {
         const result = WebhookQueueMessage.deserialise(
@@ -160,8 +167,10 @@ describe('WebhookQueueMessage', () => {
         previousAttempts: [MOCK_NOW],
         nextAttempt: expect.any(Number),
         _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
-        submissionIndex: 2,
-        contentFormat: 'v4',
+        snapshotRef: {
+          submissionIndex: 2,
+          contentFormat: 'v4',
+        },
       })
     })
   })
@@ -233,8 +242,10 @@ describe('WebhookQueueMessage', () => {
 
       const result = msg.incrementAttempts()._unsafeUnwrap()
 
-      expect(result.submissionIndex).toBe(1)
-      expect(result.contentFormat).toBe('v4')
+      expect(result.snapshotRef).toEqual({
+        submissionIndex: 1,
+        contentFormat: 'v4',
+      })
       expect(result.message._v).toBe(QUEUE_MESSAGE_SNAPSHOT_VERSION)
     })
 
