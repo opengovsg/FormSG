@@ -10,8 +10,6 @@ export const downloadAndDecryptAttachment = async (
 ) => {
   const response = await fetch(url)
   if (!response.ok) {
-    // S3 reports failures (e.g. rejected presigned URLs) as XML error
-    // documents; surface the status instead of failing inside .json().
     throw new Error(
       `Attachment download failed with HTTP ${response.status}: ${await response.text()}`,
     )
