@@ -1,5 +1,10 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import { decode as decodeBase64 } from '@stablelib/base64'
 import JSZip from 'jszip'
+
+import { SUPPORT_FORM_LINK } from 'formsg-shared/constants'
+
+import { isPublicFormPathname } from '~/app/chunkPreloadError'
 
 import { AttachmentsDownloadMap, DecryptionCtx } from '../types'
 
@@ -10,8 +15,17 @@ export const downloadAndDecryptAttachment = async (
 ) => {
   const response = await fetch(url)
   if (!response.ok) {
+    datadogLogs.logger.error('Attachment download failed on client', {
+      meta: {
+        action: 'downloadAndDecryptAttachment',
+        status: response.status,
+        text: await response.text(),
+        pathname: window.location.pathname,
+        version: import.meta.env.VITE_APP_VERSION,
+      },
+    })
     throw new Error(
-      `Attachment download failed with HTTP ${response.status}: ${await response.text()}`,
+      `This attachment could not be downloaded. Please refresh and try again.`,
     )
   }
   const data = await response.json()
