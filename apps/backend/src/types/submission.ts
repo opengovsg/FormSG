@@ -35,7 +35,7 @@ export interface WebhookData {
   created: IEncryptedSubmissionSchema['created']
   attachmentDownloadUrls: Record<string, string>
   paymentContent?: PaymentWebhookEventObject | object
-  workflowContent?: WorkflowWebhookEventObject | object
+  workflowContent?: WorkflowWebhookEventObject
   encryptedSubmissionSecretKey?: string
 }
 

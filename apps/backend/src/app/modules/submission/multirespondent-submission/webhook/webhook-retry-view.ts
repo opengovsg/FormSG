@@ -2,10 +2,7 @@ import { SubmittedStepSnapshotTokens } from 'formsg-shared/types'
 import { errAsync, ResultAsync } from 'neverthrow'
 
 import { WebhookView } from '../../../../../types'
-import {
-  QueueMessageContentFormat,
-  SnapshotRef,
-} from '../../../webhook/webhook.types'
+import { SnapshotRef } from '../../../webhook/webhook.types'
 
 import {
   SnapshotAccessDeniedError,
@@ -14,7 +11,11 @@ import {
   SnapshotReadError,
 } from './submission-snapshot.errors'
 import { readV4Snapshot } from './submission-snapshot.store'
-import { WebhookPayloadPolicy } from './webhook-payload-policy'
+import {
+  getKeyPermissionsPolicy,
+  WebhookConsumerType,
+  WebhookPayloadPolicy,
+} from './webhook-payload-policy'
 import { reconstructMrfWebhookData } from './webhook-reconstruction'
 
 export type SnapshotRetryError =
@@ -23,59 +24,62 @@ export type SnapshotRetryError =
   | SnapshotAccessDeniedError
   | SnapshotFormatNotRecordedError
 
-/**
- * The policy for a retry is read off the queue message, never re-derived. The
- * message names the wire shape recorded at enqueue time, so an admin toggling
- * `webhookFormat`, or an operator flipping a feature flag, in between cannot
- * change what the retry delivers — in particular it can never upgrade a
- * generic consumer's payload into one carrying the submission read key.
- */
-export const getRecordedPayloadPolicy = (
-  contentFormat: QueueMessageContentFormat,
-): WebhookPayloadPolicy => ({
-  contentFormat,
-  includeEncryptedSubmissionSecretKey: contentFormat === 'v4',
-  // A step token is only ever minted for the step being advanced to on an
-  // initial send; a retry never re-mints one.
-  includeEncryptedStepToken: false,
-})
+interface GetRecordedPayloadPolicyInput {
+  snapshotRef: SnapshotRef
+  webhookType: WebhookConsumerType
+  submittedStepsLength: number
+}
+
+export const getRecordedPayloadPolicy = ({
+  snapshotRef,
+  webhookType,
+  submittedStepsLength,
+}: GetRecordedPayloadPolicyInput): WebhookPayloadPolicy => {
+  const { contentFormat, submissionIndex } = snapshotRef
+  const keyPermissionsPolicy = getKeyPermissionsPolicy({
+    webhookType,
+    submissionIndex,
+    submittedStepsLength,
+    contentFormat,
+  })
+  return {
+    contentFormat,
+    ...keyPermissionsPolicy,
+  }
+}
 
 /**
- * Rebuilds the payload a retry must deliver from the snapshot frozen for that
- * step submission. Identity is the monotonic `submissionIndex`, not
- * `workflowStep`, which repeats on loop-back.
- *
- * There is deliberately no live-row fallback: a snapshot that is missing or
- * unreadable fails loud, since falling back would ship the latest step's
- * content under an earlier step's identity.
+ * Rebuilds the webhook payload a retry must deliver from the provided
+ * snapshot reference.
  */
 export const resolveSnapshotRetryView = ({
   liveView,
   submissionId,
   snapshotRef,
   submittedStepSnapshotTokens,
+  webhookType,
 }: {
   liveView: WebhookView
   submissionId: string
   snapshotRef: SnapshotRef
-  /** Tokens recorded on the row's step submissions, indexed by submissionIndex. */
   submittedStepSnapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
+  webhookType: WebhookConsumerType
 }): ResultAsync<WebhookView, SnapshotRetryError> => {
   const meta = { submissionId, snapshotRef }
   const { submissionIndex, contentFormat } = snapshotRef
+  const { workflowContent } = liveView.data
+  const submittedStepsLength = workflowContent?.submittedSteps?.length ?? 0
 
-  // The row records tokens keyed by content format. Only `v4` exists today, so
-  // a message naming `v1` correctly finds nothing recorded until S6 (#9746)
+  // RATIONALE: Only `v4` exists today, so a message naming `v1`
+  // resolves to not recorded until future backward compatibility to
   // widens the row schema to carry the v1 copy.
-  const recordedTokens = submittedStepSnapshotTokens?.[submissionIndex] as
-    | Partial<Record<QueueMessageContentFormat, string>>
-    | undefined
-
-  const token = recordedTokens?.[contentFormat]
+  if (contentFormat === 'v1') {
+    return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
+  }
+  const recordedTokensForSubmissionIndex =
+    submittedStepSnapshotTokens?.[submissionIndex]
+  const token = recordedTokensForSubmissionIndex?.[contentFormat]
   if (!token) {
-    // Produce and deliver disagreed: the message names a format for which this
-    // step submission recorded nothing. Operationally routine, and distinct
-    // from the stored object being missing or corrupt.
     return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
   }
 
@@ -86,8 +90,6 @@ export const resolveSnapshotRetryView = ({
     token,
   }).andThen((snapshot) => {
     if (snapshot.contentFormat !== contentFormat) {
-      // The object recorded under this format's token is in another format —
-      // the stored object contradicts the row, which is an integrity failure.
       return errAsync(
         new SnapshotDataIntegrityError(
           'Stored snapshot is not in the content format it was recorded under',
@@ -100,7 +102,11 @@ export const resolveSnapshotRetryView = ({
       liveData: liveView.data,
       snapshot,
       submissionIndex,
-      policy: getRecordedPayloadPolicy(contentFormat),
+      policy: getRecordedPayloadPolicy({
+        snapshotRef,
+        webhookType,
+        submittedStepsLength,
+      }),
     }).map((data) => ({ data }))
   })
 }

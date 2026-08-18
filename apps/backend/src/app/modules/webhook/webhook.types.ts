@@ -17,22 +17,23 @@ export interface WebhookParams {
   signature: string
 }
 
-const retrySchedule = {
+const webhookMessageBaseSchema = {
   submissionId: z.string().regex(/^[a-f\d]{24}$/i),
   previousAttempts: z.array(z.number()),
   nextAttempt: z.number(),
 }
 
 /**
- * The message shape enqueued before the snapshot retry path shipped. In-flight
- * ones must keep parsing across the deploy; they name no step submission, so
- * they are redelivered from the live submission row.
+ * Retry queue message for which uses live row data for reconstructing retry payload.
  */
 const LiveRowQueueMessage = z.object({
-  ...retrySchedule,
+  ...webhookMessageBaseSchema,
   _v: z.literal(QUEUE_MESSAGE_LIVE_ROW_VERSION),
 })
 
+/**
+ * Reference to the snapshot to be used for reconstructing retry payload.
+ */
 const SnapshotRef = z.object({
   submissionIndex: z.number().int(),
   contentFormat: z.enum(['v1', 'v4']),
@@ -40,20 +41,16 @@ const SnapshotRef = z.object({
 export type SnapshotRef = z.infer<typeof SnapshotRef>
 
 /**
- * The current message shape. It names the step submission to redeliver and the
- * wire shape to deliver it in, both fixed at enqueue time: an admin toggling
- * `webhookFormat`, or an operator flipping a feature flag, between the initial
- * send and a retry must not change what the retry delivers.
+ * Retry queue message for which uses snapshots for reconstructing retry payload.
  */
 const SnapshotQueueMessage = z.object({
-  ...retrySchedule,
+  ...webhookMessageBaseSchema,
   _v: z.literal(QUEUE_MESSAGE_SNAPSHOT_VERSION),
   snapshotRef: SnapshotRef,
 })
 
 /**
- * Schema for webhook queue message, which allows an object to be validated.
- * An unknown `_v` fails to parse rather than defaulting to either path.
+ * Schema for webhook retry queue message.
  */
 export const webhookMessageSchema = z.discriminatedUnion('_v', [
   SnapshotQueueMessage,
@@ -64,11 +61,6 @@ export const webhookMessageSchema = z.discriminatedUnion('_v', [
  * Shape of webhook queue message object.
  */
 export type WebhookQueueMessageObject = z.infer<typeof webhookMessageSchema>
-
-/**
- * The content format shape a retry must deliver, fixed at enqueue time.
- */
-export type QueueMessageContentFormat = SnapshotRef['contentFormat']
 
 /**
  * Webhook queue message object formatted for readable logs.
