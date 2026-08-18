@@ -33,6 +33,12 @@ const LiveRowQueueMessage = z.object({
   _v: z.literal(QUEUE_MESSAGE_LIVE_ROW_VERSION),
 })
 
+const SnapshotRef = z.object({
+  submissionIndex: z.number().int(),
+  contentFormat: z.enum(['v1', 'v4']),
+})
+export type SnapshotRef = z.infer<typeof SnapshotRef>
+
 /**
  * The current message shape. It names the step submission to redeliver and the
  * wire shape to deliver it in, both fixed at enqueue time: an admin toggling
@@ -42,15 +48,14 @@ const LiveRowQueueMessage = z.object({
 const SnapshotQueueMessage = z.object({
   ...retrySchedule,
   _v: z.literal(QUEUE_MESSAGE_SNAPSHOT_VERSION),
-  submissionIndex: z.number().int(),
-  contentFormat: z.enum(['v1', 'v4']),
+  snapshotRef: SnapshotRef,
 })
 
 /**
  * Schema for webhook queue message, which allows an object to be validated.
  * An unknown `_v` fails to parse rather than defaulting to either path.
  */
-export const WebhookQueueMessage = z.discriminatedUnion('_v', [
+export const webhookMessageSchema = z.discriminatedUnion('_v', [
   SnapshotQueueMessage,
   LiveRowQueueMessage,
 ])
@@ -58,25 +63,23 @@ export const WebhookQueueMessage = z.discriminatedUnion('_v', [
 /**
  * Shape of webhook queue message object.
  */
-export type WebhookQueueMessageObject = z.infer<typeof WebhookQueueMessage>
+export type WebhookQueueMessageObject = z.infer<typeof webhookMessageSchema>
 
 /**
- * The wire shape a retry must deliver, fixed at enqueue time.
+ * The content format shape a retry must deliver, fixed at enqueue time.
  */
-export type QueueMessageContentFormat = z.infer<
-  typeof SnapshotQueueMessage
->['contentFormat']
+export type QueueMessageContentFormat = SnapshotRef['contentFormat']
 
 /**
  * Webhook queue message object formatted for readable logs.
  */
-export type WebhookQueueMessagePrettified = {
-  submissionId: string
+export type WebhookQueueMessagePrettified = Omit<
+  WebhookQueueMessageObject,
+  'previousAttempts' | 'nextAttempt'
+> & {
   previousAttempts: string[]
   nextAttempt: string
-  _v: number
-  submissionIndex?: number
-  contentFormat?: QueueMessageContentFormat
+  snapshotRef?: SnapshotRef
 }
 
 /**
@@ -107,9 +110,4 @@ export type WorkflowWebhookEventObject = {
   workflow: FormWorkflowDto
   workflowStep: number
   submittedSteps: WebhookSubmittedStep[]
-}
-
-export type SnapshotRef = {
-  submissionIndex: number
-  contentFormat: QueueMessageContentFormat
 }

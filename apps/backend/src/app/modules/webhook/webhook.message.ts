@@ -13,10 +13,9 @@ import {
   WebhookQueueMessageParsingError,
 } from './webhook.errors'
 import {
-  QueueMessageContentFormat,
   SnapshotRef,
   WebhookFailedQueueMessage,
-  WebhookQueueMessage as webhookMessageSchema,
+  webhookMessageSchema,
   WebhookQueueMessageObject,
   WebhookQueueMessagePrettified,
 } from './webhook.types'
@@ -106,8 +105,10 @@ export class WebhookQueueMessage {
                 previousAttempts: [initialAttempt],
                 nextAttempt,
                 _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
-                submissionIndex: snapshotRef.submissionIndex,
-                contentFormat: snapshotRef.contentFormat,
+                snapshotRef: {
+                  submissionIndex: snapshotRef.submissionIndex,
+                  contentFormat: snapshotRef.contentFormat,
+                },
               }
             : {
                 submissionId,
@@ -176,7 +177,7 @@ export class WebhookQueueMessage {
         this.nextAttempt,
       ].map(prettifyEpoch),
       _v: this.message._v,
-      ...this.snapshotRefForLogs(),
+      snapshotRef: this.snapshotRef,
     }
   }
 
@@ -186,20 +187,14 @@ export class WebhookQueueMessage {
       previousAttempts: this.message.previousAttempts.map(prettifyEpoch),
       nextAttempt: prettifyEpoch(this.nextAttempt),
       _v: this.message._v,
-      ...this.snapshotRefForLogs(),
+      snapshotRef: this.snapshotRef,
     }
   }
 
-  private snapshotRefForLogs(): {
-    submissionIndex?: number
-    contentFormat?: QueueMessageContentFormat
-  } {
+  get snapshotRef(): SnapshotRef | undefined {
     return this.message._v === QUEUE_MESSAGE_SNAPSHOT_VERSION
-      ? {
-          submissionIndex: this.message.submissionIndex,
-          contentFormat: this.message.contentFormat,
-        }
-      : {}
+      ? this.message.snapshotRef
+      : undefined
   }
 
   get submissionId(): string {
@@ -208,25 +203,5 @@ export class WebhookQueueMessage {
 
   get nextAttempt(): number {
     return this.message.nextAttempt
-  }
-
-  /**
-   * The step submission this message must redeliver, or undefined for a legacy
-   * message, which is redelivered from the live submission row instead.
-   */
-  get submissionIndex(): number | undefined {
-    return this.message._v === QUEUE_MESSAGE_SNAPSHOT_VERSION
-      ? this.message.submissionIndex
-      : undefined
-  }
-
-  /**
-   * The wire shape this message must be delivered in, fixed at enqueue time.
-   * Never re-derived from the form or a feature flag at send.
-   */
-  get contentFormat(): QueueMessageContentFormat | undefined {
-    return this.message._v === QUEUE_MESSAGE_SNAPSHOT_VERSION
-      ? this.message.contentFormat
-      : undefined
   }
 }

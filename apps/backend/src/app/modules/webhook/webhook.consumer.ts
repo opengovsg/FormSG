@@ -26,7 +26,6 @@ import {
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
 import * as WebhookService from './webhook.service'
-import { webhookStatsdClient } from './webhook.statsd-client'
 import { isSuccessfulResponse } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -201,26 +200,19 @@ export const createWebhookQueueHandler =
       })
       return sqsMessage
     }
-    // Special handling for a snapshot that cannot be replayed. Retrying never
-    // fixes either case, so the message is deleted rather than left to churn
-    // through redelivery into the DLQ. The stable error code is what alarms.
+    // Special handling for unrecoverable snapshot replay failures.
     if (
       retryResult.error instanceof SnapshotDataIntegrityError ||
       retryResult.error instanceof SnapshotFormatNotRecordedError
     ) {
       logger.error({
-        message: 'Webhook retry could not replay the recorded step submission',
+        message:
+          'Webhook retry could not replay the snapshotted step submission due to data integrity issues',
         meta: logMeta,
         error: retryResult.error,
       })
-      webhookStatsdClient.increment('retry.replay_aborted', 1, 1, {
-        errorCode: `${retryResult.error.code}`,
-      })
       return sqsMessage
     }
-    // Remaining cases are unexpected errors, move to DLQ. A transient or denied
-    // snapshot read lands here: both happen before any HTTP call, so no webhook
-    // attempt is burned and the retry schedule is preserved.
     logger.error({
       message: 'Error while attempting to retry webhook',
       meta: logMeta,
@@ -232,32 +224,22 @@ export const createWebhookQueueHandler =
   }
 
 /**
- * Decides what an attempt delivers, from the message alone.
- *
- * A message naming a step submission is replayed from that step's frozen
- * snapshot, in the wire shape the message recorded — the payload policy is
- * deliberately NOT consulted here, so nothing that happened to the row or the
- * form since the initial send can change what this attempt delivers.
- *
- * A legacy message names no step submission, so it keeps the pre-snapshot
- * behaviour of shipping the live row.
+ * Decides what an webhook retry attempt payload includes,
+ * based on whether a snapshotRef exists.
  */
 const resolveWebhookView = (
   webhookMessage: WebhookQueueMessage,
   webhookInfo: SubmissionWebhookInfo,
 ): ResultAsync<WebhookView, SnapshotRetryError> => {
-  const { submissionIndex, contentFormat } = webhookMessage
-  if (submissionIndex === undefined || contentFormat === undefined) {
+  const snapshotRef = webhookMessage.snapshotRef
+  if (snapshotRef === undefined) {
     return okAsync(webhookInfo.webhookView)
   }
 
   return resolveSnapshotRetryView({
     liveView: webhookInfo.webhookView,
     submissionId: webhookMessage.submissionId,
-    snapshotRef: {
-      submissionIndex,
-      contentFormat,
-    },
+    snapshotRef,
     submittedStepSnapshotTokens: webhookInfo.submittedStepSnapshotTokens,
   })
 }
