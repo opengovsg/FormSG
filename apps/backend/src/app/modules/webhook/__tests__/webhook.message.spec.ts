@@ -1,7 +1,5 @@
 import { ObjectId } from 'bson'
-import { readFileSync } from 'fs'
 import { omit } from 'lodash'
-import { resolve } from 'path'
 
 import {
   DUE_TIME_TOLERANCE_SECONDS,
@@ -275,38 +273,6 @@ describe('WebhookQueueMessage', () => {
         _v: VALID_MESSAGE._v,
       })
     })
-  })
-
-  // @steering-gate: delete after S5 verified & merged
-  describe('[STEERING:S5] M9 is pure', () => {
-    const IO_IMPORT_SOURCES = [
-      'aws-sdk',
-      '@aws-sdk/',
-      'axios',
-      'mongoose',
-      'sqs-producer',
-      'sqs-consumer',
-      '../../models/',
-    ]
-
-    it.each(['webhook.types.ts', 'webhook.message.ts'])(
-      '%s reaches no I/O client',
-      (moduleFile) => {
-        const source = readFileSync(
-          resolve(__dirname, '..', moduleFile),
-          'utf8',
-        )
-        const importedFrom = [...source.matchAll(/from '([^']+)'/g)].map(
-          ([, specifier]) => specifier,
-        )
-
-        expect(
-          importedFrom.filter((specifier) =>
-            IO_IMPORT_SOURCES.some((io) => specifier.startsWith(io)),
-          ),
-        ).toEqual([])
-      },
-    )
   })
 
   describe('prettify', () => {

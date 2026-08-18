@@ -295,7 +295,7 @@ describe('Submission Model', () => {
         })
       })
 
-      it('should surface the per-step snapshot tokens a retry resolves against, alongside a view that omits them', async () => {
+      it('should surface the per-step snapshot tokens a retry resolves against, while keeping them out of the webhook view', async () => {
         const MultirespondentForm = getMultirespondentFormModel(mongoose)
         const { user } = await dbHandler.insertFormCollectionReqs()
         const form = await MultirespondentForm.create({
@@ -342,9 +342,10 @@ describe('Submission Model', () => {
           { v4: 'SNAPSHOT_TOKEN_STEP_0' },
           { v4: 'SNAPSHOT_TOKEN_STEP_1' },
         ])
-        expect(JSON.stringify(result?.webhookView)).not.toContain(
-          'SNAPSHOT_TOKEN_STEP_0',
-        )
+        // Ensure that the external webhook view omits the snapshot tokens.
+        const serialisedView = JSON.stringify(result?.webhookView)
+        expect(serialisedView).not.toContain('SNAPSHOT_TOKEN_STEP_0')
+        expect(serialisedView).not.toContain('SNAPSHOT_TOKEN_STEP_1')
       })
 
       it('should return the paymentContent when the submission, payment, and webhook URL exist', async () => {
