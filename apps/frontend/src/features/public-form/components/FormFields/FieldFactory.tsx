@@ -138,5 +138,8 @@ export const FieldFactory = memo(
   },
   (prevProps, nextProps) =>
     prevProps.field._id === nextProps.field._id &&
-    prevProps.field.questionNumber === nextProps.field.questionNumber,
+    prevProps.field.questionNumber === nextProps.field.questionNumber &&
+    prevProps.field.disabled === nextProps.field.disabled &&
+    prevProps.isHighContrast === nextProps.isHighContrast &&
+    prevProps.disableRequiredValidation === nextProps.disableRequiredValidation,
 )
