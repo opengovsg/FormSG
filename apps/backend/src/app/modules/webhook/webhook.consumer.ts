@@ -3,12 +3,20 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { Consumer } from 'sqs-consumer'
 
-import { SubmissionWebhookInfo } from '../../../types'
+import { SubmissionWebhookInfo, WebhookView } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel, CustomLoggerParams } from '../../config/logger'
 import getSubmissionModel from '../../models/submission.server.model'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../core/core.errors'
+import {
+  SnapshotDataIntegrityError,
+  SnapshotFormatNotRecordedError,
+} from '../submission/multirespondent-submission/webhook/submission-snapshot.errors'
+import {
+  resolveSnapshotRetryView,
+  SnapshotRetryError,
+} from '../submission/multirespondent-submission/webhook/webhook-retry-view'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import {
@@ -18,6 +26,7 @@ import {
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
 import * as WebhookService from './webhook.service'
+import { getWebhookType } from './webhook.service'
 import { isSuccessfulResponse } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -148,24 +157,25 @@ export const createWebhookQueueHandler =
         )
 
       // Attempt webhook
-      return WebhookService.sendWebhook(
-        webhookInfo.webhookView,
-        webhookUrl,
-      ).andThen((webhookResponse) => {
-        // Save webhook response to database, but carry on even if it fails
-        void WebhookService.saveWebhookRecord(
-          webhookMessage.submissionId,
-          webhookResponse,
+      return resolveWebhookView(webhookMessage, webhookInfo)
+        .andThen((webhookView) =>
+          WebhookService.sendWebhook(webhookView, webhookUrl),
         )
+        .andThen((webhookResponse) => {
+          // Save webhook response to database, but carry on even if it fails
+          void WebhookService.saveWebhookRecord(
+            webhookMessage.submissionId,
+            webhookResponse,
+          )
 
-        // Webhook was successful, no further action required
-        if (isSuccessfulResponse(webhookResponse)) return okAsync(true)
+          // Webhook was successful, no further action required
+          if (isSuccessfulResponse(webhookResponse)) return okAsync(true)
 
-        // Requeue webhook for subsequent retry
-        return webhookMessage
-          .incrementAttempts()
-          .asyncAndThen((newMessage) => producer.sendMessage(newMessage))
-      })
+          // Requeue webhook for subsequent retry
+          return webhookMessage
+            .incrementAttempts()
+            .asyncAndThen((newMessage) => producer.sendMessage(newMessage))
+        })
     })
 
     if (retryResult.isOk()) return sqsMessage
@@ -191,7 +201,19 @@ export const createWebhookQueueHandler =
       })
       return sqsMessage
     }
-    // Remaining cases are unexpected errors, move to DLQ
+    // Special handling for unrecoverable snapshot replay failures.
+    if (
+      retryResult.error instanceof SnapshotDataIntegrityError ||
+      retryResult.error instanceof SnapshotFormatNotRecordedError
+    ) {
+      logger.error({
+        message:
+          'Webhook retry could not replay the snapshotted step submission due to data integrity issues',
+        meta: logMeta,
+        error: retryResult.error,
+      })
+      return sqsMessage
+    }
     logger.error({
       message: 'Error while attempting to retry webhook',
       meta: logMeta,
@@ -201,6 +223,31 @@ export const createWebhookQueueHandler =
     // if redrive policy is exceeded
     return Promise.reject()
   }
+
+/**
+ * Decides what an webhook retry attempt payload includes,
+ * based on whether a snapshotRef exists.
+ */
+const resolveWebhookView = (
+  webhookMessage: WebhookQueueMessage,
+  webhookInfo: SubmissionWebhookInfo,
+): ResultAsync<WebhookView, SnapshotRetryError> => {
+  const snapshotRef = webhookMessage.snapshotRef
+  if (snapshotRef === undefined) {
+    return okAsync(webhookInfo.webhookView)
+  }
+
+  const webhookType =
+    getWebhookType(webhookInfo.webhookUrl) === 'plumber' ? 'plumber' : 'generic'
+
+  return resolveSnapshotRetryView({
+    liveView: webhookInfo.webhookView,
+    submissionId: webhookMessage.submissionId,
+    snapshotRef,
+    webhookType,
+    submittedStepSnapshotTokens: webhookInfo.submittedStepSnapshotTokens,
+  })
+}
 
 /**
  * Retrieves all relevant information to send webhook for a given submission.
