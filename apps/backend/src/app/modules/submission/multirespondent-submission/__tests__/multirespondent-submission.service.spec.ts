@@ -4321,7 +4321,7 @@ describe('multirespondent-submission.service', () => {
 
     // ---- S5: what a retry of this send would replay ----
 
-    it('names the frozen step submission and its format for the retry', async () => {
+    it('passes snapshotRef so a retry reconstructs from the frozen snapshot', async () => {
       const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
       const submission = buildSubmissionWithToken('tok-A')
 
@@ -4345,7 +4345,7 @@ describe('multirespondent-submission.service', () => {
       })
     })
 
-    it('names nothing for the retry when the step froze no snapshot', async () => {
+    it('omits snapshotRef when no snapshot was frozen so a retry uses the live row', async () => {
       const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
       const submission = buildSubmissionWithToken(
         undefined,
