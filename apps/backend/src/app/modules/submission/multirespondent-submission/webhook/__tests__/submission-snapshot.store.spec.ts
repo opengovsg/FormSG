@@ -35,6 +35,12 @@ const makeSnapshot = (): SubmissionSnapshotV4 =>
     createdAt: '2026-07-22T00:00:00.000Z',
   })
 
+// Mirrors the shape of a v3 GetObjectCommandOutput Body (an SdkStream,
+// which is NOT a Buffer — it must be read via transformToString).
+const s3Body = (content: string) => ({
+  Body: { transformToString: () => Promise.resolve(content) },
+})
+
 // Mirrors the shape of aws-sdk v3 S3ServiceExceptions (`name` +
 // `$metadata.httpStatusCode`, not v2's `code`/`statusCode`).
 const s3Error = (name: string, httpStatusCode: number) => ({
@@ -191,9 +197,7 @@ describe('readV4Snapshot', () => {
     const snapshot = makeSnapshot()
     const getObject = jest
       .fn()
-      .mockReturnValue(
-        Promise.resolve({ Body: Buffer.from(JSON.stringify(snapshot)) }),
-      )
+      .mockReturnValue(Promise.resolve(s3Body(JSON.stringify(snapshot))))
     ;(AwsConfig.s3.send as jest.Mock) = getObject
 
     await readV4Snapshot({ ...COORDS, token: 'tok-1' })
@@ -207,9 +211,7 @@ describe('readV4Snapshot', () => {
     const snapshot = makeSnapshot()
     ;(AwsConfig.s3.send as jest.Mock) = jest
       .fn()
-      .mockReturnValue(
-        Promise.resolve({ Body: Buffer.from(JSON.stringify(snapshot)) }),
-      )
+      .mockReturnValue(Promise.resolve(s3Body(JSON.stringify(snapshot))))
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
@@ -256,9 +258,7 @@ describe('readV4Snapshot', () => {
   it('should err the SAME SnapshotDataIntegrityError on a malformed stored body', async () => {
     ;(AwsConfig.s3.send as jest.Mock) = jest
       .fn()
-      .mockReturnValue(
-        Promise.resolve({ Body: Buffer.from('{ not valid json') }),
-      )
+      .mockReturnValue(Promise.resolve(s3Body('{ not valid json')))
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 
@@ -271,9 +271,7 @@ describe('readV4Snapshot', () => {
     const bad = { ...makeSnapshot(), _v: 2 }
     ;(AwsConfig.s3.send as jest.Mock) = jest
       .fn()
-      .mockReturnValue(
-        Promise.resolve({ Body: Buffer.from(JSON.stringify(bad)) }),
-      )
+      .mockReturnValue(Promise.resolve(s3Body(JSON.stringify(bad))))
 
     const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
 

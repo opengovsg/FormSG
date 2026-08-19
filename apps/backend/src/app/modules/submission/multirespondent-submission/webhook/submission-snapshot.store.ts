@@ -167,13 +167,15 @@ export const readV4Snapshot = ({
     (error) => error,
   )
     .andThen((data) => {
-      const body = data.Body?.toString()
-      if (body === undefined) {
+      if (data.Body === undefined) {
         return errAsync(
           new SnapshotDataIntegrityError('Submission snapshot body is empty'),
         )
       }
-      return parseSnapshot(body)
+      return ResultAsync.fromPromise(
+        data.Body.transformToString(),
+        (error) => error,
+      ).andThen(parseSnapshot)
     })
     .orElse((error) => {
       if (error instanceof SnapshotDataIntegrityError) {
