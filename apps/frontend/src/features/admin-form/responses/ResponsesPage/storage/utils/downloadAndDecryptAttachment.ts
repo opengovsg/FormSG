@@ -2,10 +2,6 @@ import { datadogLogs } from '@datadog/browser-logs'
 import { decode as decodeBase64 } from '@stablelib/base64'
 import JSZip from 'jszip'
 
-import { SUPPORT_FORM_LINK } from 'formsg-shared/constants'
-
-import { isPublicFormPathname } from '~/app/chunkPreloadError'
-
 import { AttachmentsDownloadMap, DecryptionCtx } from '../types'
 
 export const downloadAndDecryptAttachment = async (
