@@ -1,5 +1,4 @@
 import crypto from 'crypto'
-import { text } from 'stream/consumers'
 
 import { aws as AwsConfig } from 'src/app/config/config'
 
@@ -119,8 +118,7 @@ describe('writeV4Snapshot', () => {
     expect(params.IfNoneMatch).toBe('*')
     expect(params.ContentType).toBe('application/json')
     // Body round-trips through parse back to the input snapshot.
-    const body = await text(params.Body as ReadableStream)
-    expect(JSON.parse(body)).toEqual(snapshot)
+    expect(JSON.parse(params.Body as string)).toEqual(snapshot)
     expect(result._unsafeUnwrap().token).toBe('tok-1')
     expect(result._unsafeUnwrap().key).toBe(
       buildSnapshotKey({ ...COORDS, token: 'tok-1' }),
