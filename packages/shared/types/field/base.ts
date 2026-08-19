@@ -25,6 +25,7 @@ export enum BasicField {
   Children = 'children',
   Address = 'address',
   Signature = 'signature',
+  Time = 'time',
 }
 
 /**
@@ -42,6 +43,7 @@ export enum GenericStringAnswerResponseFieldV3 {
   Uen = 'uen',
   Date = 'date',
   CountryRegion = 'country_region',
+  Time = 'time',
 }
 
 export enum MyInfoAttribute {
