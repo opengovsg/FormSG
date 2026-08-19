@@ -1,11 +1,12 @@
 import {
   GetObjectCommand,
+  NoSuchKey,
   PutObjectCommand,
-  PutObjectRequest,
+  PutObjectCommandInput,
+  S3ServiceException,
 } from '@aws-sdk/client-s3'
 import crypto from 'crypto'
 import { errAsync, ResultAsync } from 'neverthrow'
-import { Readable } from 'stream'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
@@ -47,20 +48,12 @@ export const buildSnapshotKey = ({
  * Returns true if the S3 error signals a create-if-absent precondition failure
  * (the key already exists), i.e. a token collision we should retry.
  */
-const isPreconditionFailed = (error: unknown): boolean => {
-  const s3Error = error as { code?: string; statusCode?: number } | null
-  return (
-    !!s3Error &&
-    (s3Error.code === 'PreconditionFailed' || s3Error.statusCode === 412)
-  )
-}
+const isPreconditionFailed = (error: unknown): error is S3ServiceException =>
+  error instanceof S3ServiceException && error.name === 'PreconditionFailed'
 
-const isNoSuchKey = (error: unknown): boolean => {
-  const s3Error = error as { code?: string; statusCode?: number } | null
-  return (
-    !!s3Error && (s3Error.code === 'NoSuchKey' || s3Error.statusCode === 404)
-  )
-}
+const isNoSuchKey = (error: unknown): error is NoSuchKey | S3ServiceException =>
+  error instanceof NoSuchKey ||
+  (error instanceof S3ServiceException && error.name === 'NoSuchKey')
 
 export const writeV4Snapshot = (
   snapshot: SubmissionSnapshotV4,
@@ -78,10 +71,10 @@ export const writeV4Snapshot = (
       token,
     })
 
-    const params: PutObjectRequest = {
+    const params: PutObjectCommandInput = {
       Bucket: AwsConfig.submissionHistoryV4S3Bucket,
       Key: key,
-      Body: Readable.from([body]),
+      Body: body,
       ContentType: 'application/json',
       // Create-if-absent: S3 returns 412 PreconditionFailed if the key exists.
       IfNoneMatch: '*',
@@ -104,7 +97,7 @@ export const writeV4Snapshot = (
                 submissionId: snapshot.submissionId,
                 submissionIndex: snapshot.submissionIndex,
               },
-              error: error as Error,
+              error,
             })
             return errAsync(
               new SnapshotWriteError(
@@ -159,13 +152,15 @@ export const readV4Snapshot = ({
     (error) => error,
   )
     .andThen((data) => {
-      const body = data.Body?.toString()
-      if (body === undefined) {
+      if (data.Body === undefined) {
         return errAsync(
           new SnapshotDataIntegrityError('Submission snapshot body is empty'),
         )
       }
-      return parseSnapshot(body)
+      return ResultAsync.fromPromise(
+        data.Body.transformToString(),
+        (error) => error,
+      ).andThen(parseSnapshot)
     })
     .orElse((error) => {
       if (error instanceof SnapshotDataIntegrityError) {
