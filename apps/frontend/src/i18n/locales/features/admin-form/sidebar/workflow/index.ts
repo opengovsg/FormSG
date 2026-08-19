@@ -147,4 +147,8 @@ export interface Workflow {
   stepName: {
     label: string
   }
+  completionEmail: {
+    title: string
+    divider: string
+  }
 }
