@@ -55,10 +55,19 @@ export const getS3Object = (params: GetObjectCommandInput) =>
 export const putS3Object = (params: PutObjectCommandInput) =>
   s3Operations.putObject(params)
 
+// SigV4 requires X-Amz-Expires to be an integer in [1, 604800].
+const MAX_PRESIGNED_URL_EXPIRES_SECONDS = 7 * 24 * 60 * 60
+
+export const sanitizePresignedUrlExpiry = (expiresIn: number): number =>
+  Math.min(
+    Math.max(Math.floor(expiresIn), 1),
+    MAX_PRESIGNED_URL_EXPIRES_SECONDS,
+  )
+
 export const getSignedS3Url = (
   params: GetObjectCommandInput,
   expiresIn: number,
-) => s3Operations.getSignedUrl(params, expiresIn)
+) => s3Operations.getSignedUrl(params, sanitizePresignedUrlExpiry(expiresIn))
 
 export const createPresignedPostDataPromise = (
   params: CreatePresignedPostDataParams,
