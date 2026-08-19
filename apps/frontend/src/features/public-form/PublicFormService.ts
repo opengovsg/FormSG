@@ -1,3 +1,4 @@
+import { datadogLogs } from '@datadog/browser-logs'
 import axios from 'axios'
 
 import {
@@ -132,9 +133,26 @@ export const getMultirespondentSubmissionById = async ({
     const downloadTasks = Object.keys(data.attachmentMetadata).map(
       async (id) => {
         const url = data.attachmentMetadata[id]
-        const attachmentJson = await fetch(url).then((response) =>
-          response.json(),
-        )
+        const response = await fetch(url)
+        // S3 signals failure with an XML error document, not JSON. Without this
+        // guard response.json() throws a SyntaxError that no error surface on
+        // the public form recognises, so the step silently renders as if there
+        // were no previous submission at all.
+        if (!response.ok) {
+          datadogLogs.logger.error('MRF attachment download failed on client', {
+            meta: {
+              action: 'getMultirespondentSubmissionById',
+              status: response.status,
+              text: await response.text(),
+              formId,
+              submissionId,
+            },
+          })
+          throw new Error(
+            'This attachment could not be downloaded. Please refresh and try again.',
+          )
+        }
+        const attachmentJson = await response.json()
         encryptedAttachments[id] =
           convertEncryptedAttachmentToFileContent(attachmentJson)
       },
