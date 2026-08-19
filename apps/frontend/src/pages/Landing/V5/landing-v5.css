@@ -1,0 +1,51 @@
+/*
+ * Bespoke visuals for the V5 landing page.
+ *
+ * Everything here is scoped under `.landing-v5`, so importing this file cannot
+ * affect a product page.
+ *
+ * Division of labour with the Chakra sub-theme (`theme/landingV5Theme.ts`):
+ *   - Colours are owned by `theme/tokens.ts`. That file is the single source;
+ *     the sub-theme emits each one onto `.landing-v5` as `--lv5-<name>`, which
+ *     is how the rules below reach them. Never redeclare a colour here.
+ *   - This file owns what Chakra cannot express cleanly: the blade mask, the
+ *     `@property --c` peel tween, the marquee keyframes, the carousel track and
+ *     its `--sheetw` arithmetic, the die-cut sticker shapes, the grain.
+ *
+ * The statics declared below are the ones no TypeScript ever reads, so they
+ * cannot drift out of sync with the theme.
+ *
+ * Ported from FormSG-brand-exploration/public/prototypes/v5-hero-carousel.html.
+ */
+
+.landing-v5 {
+  /* Type stacks. `--lv5-sans` gains Inter Tight in part 2. */
+  --lv5-sans: 'Inter var', sans-serif;
+  --lv5-mono: ui-monospace, Menlo, monospace;
+
+  /* The page's one easing curve: overshoot-free, settles rather than stops. */
+  --lv5-settle: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* The blade as a mask. A fold can then be cut to the logo's own S-curve
+     instead of to a straight 45 degree line, which is what makes the peel look
+     like paper lifting rather than a triangle being deleted. */
+  --lv5-blade-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='52 52 78.1 78.1' preserveAspectRatio='none'%3E%3Cpath d='M60.8527 77.448C60.8527 68.2825 68.2831 60.8525 77.4488 60.8525H116.577C122.262 60.8525 127.46 57.6401 130.003 52.5547V53.7831C130.003 58.2997 128.162 62.6211 124.905 65.7503L94.7364 94.7351L65.7507 124.903C62.6214 128.16 58.2999 130.001 53.7832 130.001H52.5547C57.6403 127.458 60.8527 122.26 60.8527 116.575V77.448Z' fill='black'/%3E%3C/svg%3E");
+
+  position: relative;
+  font-family: var(--lv5-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Fine paper grain over the page.
+   The prototype fixes this to the viewport via `body::after`. Here it is
+   absolute within the landing root instead, so it grains the page without
+   also laying a film over the shared header and footer. */
+.landing-v5::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 300;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+}
