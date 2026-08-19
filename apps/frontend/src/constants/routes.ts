@@ -1,5 +1,6 @@
 export const LANDING_ROUTE = '/'
 export const LANDING_PAYMENTS_ROUTE = '/payments'
+export const LANDING_V5_ROUTE = '/landing-v5'
 export const DASHBOARD_ROUTE = '/dashboard'
 export const LOGIN_ROUTE = '/login'
 export const SSO_LOGIN_HOLDING_ROUTE = '/login/sso'

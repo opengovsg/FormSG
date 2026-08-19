@@ -21,6 +21,7 @@ import {
   EDIT_SUBMISSION_PAGE_SUBROUTE,
   LANDING_PAYMENTS_ROUTE,
   LANDING_ROUTE,
+  LANDING_V5_ROUTE,
   LOGIN_CALLBACK_FORWARDING_ROUTE,
   LOGIN_CALLBACK_ROUTE,
   LOGIN_ROUTE,
@@ -71,6 +72,7 @@ const PublicFormPage = loadable(
 const WorkspacePage = loadable(() => import('~features/workspace'))
 const LandingPage = loadable(() => import('~pages/Landing/Home'))
 const LandingPaymentsPage = loadable(() => import('~pages/Landing/Payments'))
+const LandingV5Page = loadable(() => import('~pages/Landing/V5'))
 const LoginPage = loadable(() => import('~features/login'))
 const TempLoginPage = loadable(() => import('~features/login/TempLoginPage'))
 const PrivacyPolicyPage = loadable(() => import('~pages/PrivacyPolicy'))
@@ -106,6 +108,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={LANDING_PAYMENTS_ROUTE}
           element={<HashRouterElement element={<LandingPaymentsPage />} />}
+        />
+        <Route
+          path={LANDING_V5_ROUTE}
+          element={<PublicElement element={<LandingV5Page />} />}
         />
         <Route
           path={DASHBOARD_ROUTE}
