@@ -92,23 +92,32 @@ export const transformAxiosError = (error: Error): ApiError => {
       if (statusCode === StatusCodes.TOO_MANY_REQUESTS) {
         return new HttpError('Please try again later.', statusCode)
       }
-      if (typeof error.response.data === 'string') {
-        return new HttpError(error.response.data, statusCode)
+      const data = error.response.data
+
+      if (typeof data === 'string') {
+        return new HttpError(data, statusCode)
       }
-      const backendMessage = getTranslatedBackendMessage(error.response.data)
+      const backendMessage = getTranslatedBackendMessage(data)
+
+      // Prefer translated messages for i18n enabled Celebrate errors
+      if (typeof data?.messageKey === 'string' && backendMessage) {
+        return new HttpError(backendMessage, statusCode)
+      }
+
+      // Preserve specific message from vanilla Celebrate errors
+      if (data?.validation?.body?.message) {
+        return new HttpError(data.validation.body.message, statusCode)
+      }
+
+      // Fall back to the top-level message for ordinary backend errors
       if (backendMessage) {
         return new HttpError(backendMessage, statusCode)
       }
-      // handle celebrate errors without an i18n-enabled top-level message
-      if (error.response.data?.validation?.body?.message) {
-        return new HttpError(
-          error.response.data.validation.body.message,
-          statusCode,
-        )
-      }
+
       if (error.response.statusText) {
         return new HttpError(error.response.statusText, statusCode)
       }
+
       return new HttpError(`Error: ${statusCode}`, statusCode)
     } else if (error.request) {
       // TODO: Remove this logging once Network Error sources have been identified.
