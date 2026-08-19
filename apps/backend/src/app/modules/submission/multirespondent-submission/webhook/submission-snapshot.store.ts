@@ -1,7 +1,9 @@
 import {
   GetObjectCommand,
+  NoSuchKey,
   PutObjectCommand,
   PutObjectCommandInput,
+  S3ServiceException,
 } from '@aws-sdk/client-s3'
 import crypto from 'crypto'
 import { errAsync, ResultAsync } from 'neverthrow'
@@ -46,28 +48,12 @@ export const buildSnapshotKey = ({
  * Returns true if the S3 error signals a create-if-absent precondition failure
  * (the key already exists), i.e. a token collision we should retry.
  */
-const isPreconditionFailed = (error: unknown): boolean => {
-  const s3Error = error as {
-    name?: string
-    $metadata?: { httpStatusCode?: number }
-  } | null
-  return (
-    !!s3Error &&
-    (s3Error.name === 'PreconditionFailed' ||
-      s3Error.$metadata?.httpStatusCode === 412)
-  )
-}
+const isPreconditionFailed = (error: unknown): error is S3ServiceException =>
+  error instanceof S3ServiceException && error.name === 'PreconditionFailed'
 
-const isNoSuchKey = (error: unknown): boolean => {
-  const s3Error = error as {
-    name?: string
-    $metadata?: { httpStatusCode?: number }
-  } | null
-  return (
-    !!s3Error &&
-    (s3Error.name === 'NoSuchKey' || s3Error.$metadata?.httpStatusCode === 404)
-  )
-}
+const isNoSuchKey = (error: unknown): error is NoSuchKey | S3ServiceException =>
+  error instanceof NoSuchKey ||
+  (error instanceof S3ServiceException && error.name === 'NoSuchKey')
 
 export const writeV4Snapshot = (
   snapshot: SubmissionSnapshotV4,
@@ -111,7 +97,7 @@ export const writeV4Snapshot = (
                 submissionId: snapshot.submissionId,
                 submissionIndex: snapshot.submissionIndex,
               },
-              error: error as Error,
+              error,
             })
             return errAsync(
               new SnapshotWriteError(

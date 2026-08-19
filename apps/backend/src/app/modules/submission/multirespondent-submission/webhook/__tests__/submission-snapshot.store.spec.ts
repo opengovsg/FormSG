@@ -1,3 +1,4 @@
+import { NoSuchKey, S3ServiceException } from '@aws-sdk/client-s3'
 import crypto from 'crypto'
 
 import { aws as AwsConfig } from 'src/app/config/config'
@@ -40,12 +41,17 @@ const s3Body = (content: string) => ({
   Body: { transformToString: () => Promise.resolve(content) },
 })
 
-// Mirrors the shape of aws-sdk v3 S3ServiceExceptions (`name` +
-// `$metadata.httpStatusCode`, not v2's `code`/`statusCode`).
-const s3Error = (name: string, httpStatusCode: number) => ({
-  name,
-  $metadata: { httpStatusCode },
-})
+const s3Error = (name: string, httpStatusCode: number) =>
+  name === 'NoSuchKey'
+    ? new NoSuchKey({
+        message: 'No such key was found.',
+        $metadata: { httpStatusCode },
+      })
+    : new S3ServiceException({
+        name,
+        $fault: 'client',
+        $metadata: { httpStatusCode },
+      })
 
 // Helper to make a resolved/rejected aws-sdk promise shape.
 const putResolves = () => jest.fn().mockReturnValue(Promise.resolve({}))
