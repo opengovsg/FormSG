@@ -1,6 +1,7 @@
 import { Lambda } from '@aws-sdk/client-lambda'
 import { S3Client } from '@aws-sdk/client-s3'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
+import { NodeHttpHandler } from '@smithy/node-http-handler'
 import convict from 'convict'
 import { SessionOptions } from 'express-session'
 import { merge } from 'lodash'
@@ -96,6 +97,15 @@ const hasR2Buckets = Object.values(s3BucketUrlVars).some((url) =>
 // Shared across configureAws() and AWS clients below so that credentials are resolved once only and reused
 const credentialsProvider = defaultProvider()
 
+// AWS SDK v2 defaulted to a 120s socket timeout on every request. AWS SDK v3's
+// NodeHttpHandler has no timeout by default (requestTimeout: 0), so a hung/stalled
+// synchronous Lambda invocation would otherwise block the calling request forever.
+// This restores an explicit ceiling for the synchronous lambdas we invoke inline
+// on the request path.
+const lambdaRequestHandler = new NodeHttpHandler({
+  requestTimeout: 120_000,
+})
+
 const s3 = new S3Client({
   region: basicVars.awsConfig.region,
   // Unset and use default if not in development mode
@@ -112,6 +122,7 @@ const s3 = new S3Client({
 const guarddutyLambda = new Lambda({
   region: basicVars.awsConfig.region,
   credentials: credentialsProvider,
+  requestHandler: lambdaRequestHandler,
   // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
@@ -127,6 +138,7 @@ const guarddutyLambda = new Lambda({
 const pdfGeneratorLambda = new Lambda({
   region: basicVars.awsConfig.region,
   credentials: credentialsProvider,
+  requestHandler: lambdaRequestHandler,
   // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
