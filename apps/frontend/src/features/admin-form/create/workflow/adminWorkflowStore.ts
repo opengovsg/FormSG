@@ -1,19 +1,18 @@
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { AdminEditWorkflowState } from './types'
+import { AdminEditWorkflowState, CreateOrEditData } from './types'
 
 type AdminWorkflowStore = {
   setToCreating: () => void
   setToEditing: (stepNumber: number) => void
+  setToEditingEmailCard: () => void
   setToInactive: () => void
   reset: () => void
-  createOrEditData:
-    | { state: AdminEditWorkflowState.CreatingStep }
-    | { state: AdminEditWorkflowState.EditingStep; stepNumber: number }
-    | null
-  pendingSwitchTo: number | null
-  requestSwitchTo: (target: number) => void
+  createOrEditData: CreateOrEditData | null
+  pendingSwitchTo: CreateOrEditData | null
+  requestSwitchTo: (stepNumber: number) => void
+  requestSwitchToEmailCard: () => void
   cancelPendingSwitch: () => void
   completeSave: () => void
 }
@@ -42,6 +41,12 @@ export const setToCreatingSelector = (state: AdminWorkflowStore) =>
 export const setToEditingSelector = (state: AdminWorkflowStore) =>
   state.setToEditing
 
+export const isEditingEmailCardSelector = (state: AdminWorkflowStore) =>
+  state.createOrEditData?.state === AdminEditWorkflowState.EditingEmailCard
+
+export const setToEditingEmailCardSelector = (state: AdminWorkflowStore) =>
+  state.setToEditingEmailCard
+
 export const setToInactiveSelector = (state: AdminWorkflowStore) =>
   state.setToInactive
 
@@ -50,6 +55,9 @@ export const pendingSwitchToSelector = (state: AdminWorkflowStore) =>
 
 export const requestSwitchToSelector = (state: AdminWorkflowStore) =>
   state.requestSwitchTo
+
+export const requestSwitchToEmailCardSelector = (state: AdminWorkflowStore) =>
+  state.requestSwitchToEmailCard
 
 export const cancelPendingSwitchSelector = (state: AdminWorkflowStore) =>
   state.cancelPendingSwitch
@@ -74,24 +82,29 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
           stepNumber,
         },
       }),
+    setToEditingEmailCard: () =>
+      set({
+        createOrEditData: {
+          state: AdminEditWorkflowState.EditingEmailCard,
+        },
+      }),
     setToInactive: () => set({ createOrEditData: null }),
     reset: () => set(INITIAL_STATE),
-    requestSwitchTo: (target) => set({ pendingSwitchTo: target }),
+    requestSwitchTo: (stepNumber) =>
+      set({
+        pendingSwitchTo: {
+          state: AdminEditWorkflowState.EditingStep,
+          stepNumber,
+        },
+      }),
+    requestSwitchToEmailCard: () =>
+      set({
+        pendingSwitchTo: { state: AdminEditWorkflowState.EditingEmailCard },
+      }),
     cancelPendingSwitch: () => set({ pendingSwitchTo: null }),
-    // Complete a pending switch if one was requested, else collapse the card.
-    completeSave: () => {
-      const pending = get().pendingSwitchTo
-      if (pending !== null) {
-        set({
-          createOrEditData: {
-            state: AdminEditWorkflowState.EditingStep,
-            stepNumber: pending,
-          },
-          pendingSwitchTo: null,
-        })
-      } else {
-        set({ createOrEditData: null })
-      }
-    },
+    // Hand over to a pending switch, or collapse when there is none: a null
+    // pending target is exactly the collapsed state.
+    completeSave: () =>
+      set({ createOrEditData: get().pendingSwitchTo, pendingSwitchTo: null }),
   })),
 )
