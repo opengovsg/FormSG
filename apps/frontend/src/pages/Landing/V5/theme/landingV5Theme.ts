@@ -139,6 +139,20 @@ export const landingV5Theme = extendTheme(
     textStyles: {
       landing: landingTextStyles,
     },
+    /**
+     * Inter Tight for Chakra components rendered inside the page. Plain
+     * elements already inherit it from `.landing-v5`; this covers the
+     * components that set `fontFamily` themselves from the theme.
+     *
+     * Pointing at the custom property rather than repeating the stack keeps
+     * `landing-v5.css` the single place the font stack is written. Safe only
+     * because the provider scopes its variables to `.landing-v5` via
+     * `cssVarsRoot` — at `:root` this would resolve to nothing off-page.
+     */
+    fonts: {
+      heading: 'var(--lv5-sans)',
+      body: 'var(--lv5-sans)',
+    },
     components: {
       Button: {
         variants: {

@@ -18,9 +18,41 @@
  * Ported from FormSG-brand-exploration/public/prototypes/v5-hero-carousel.html.
  */
 
+/* Inter Tight, the page's display face. Self-hosted: `fontSrc` in the CSP
+   allows fonts.gstatic.com but `styleSrc` does not allow fonts.googleapis.com,
+   so the prototype's Google Fonts <link> would be blocked in production.
+
+   Vendored rather than taken from `@fontsource-variable/inter-tight`, because
+   adding any dependency to this repo currently fails: re-resolution trips
+   `trustPolicy: no-downgrade` on semver@5.7.2 under apps/backend's webpack-4
+   branch (ts-loader, worker-loader). This is byte-identical to that package's
+   `files/inter-tight-latin-wght-normal.woff2` at 5.3.0, OFL-1.1, licence
+   alongside it in ./fonts/LICENSE. The declaration below is copied from the
+   package's own `wght.css`, family name included, so swapping to the real
+   dependency once the tree is fixed is a one-line change here.
+
+   One variable file covers 100-900, so the prototype's 400/500/600 cost a
+   single 44KB request. Latin only: latin-ext is twice the size and no copy on
+   this page needs it. No italic file; the prototype never sets italic type.
+
+   Vite fingerprints the url() below, so it cache-busts properly on update. */
+@font-face {
+  font-family: 'Inter Tight Variable';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url('./fonts/inter-tight-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 .landing-v5 {
-  /* Type stacks. `--lv5-sans` gains Inter Tight in part 2. */
-  --lv5-sans: 'Inter var', sans-serif;
+  /* Inter Tight is the display face; 'Inter var' is the fallback the rest of
+     the app already loads, so a failed font request degrades to the product
+     face rather than to a system serif. */
+  --lv5-sans: 'Inter Tight Variable', 'Inter var', sans-serif;
   --lv5-mono: ui-monospace, Menlo, monospace;
 
   /* The page's one easing curve: overshoot-free, settles rather than stops. */
