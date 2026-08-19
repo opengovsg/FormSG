@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.11.1](https://github.com/opengovsg/formsg/compare/v9.11.0...v9.11.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* **aws-s3:** floor presigned URL expiry to whole seconds (#9861) ([#9861](https://github.com/opengovsg/formsg/commit/064422a4804a42e8d1ccabeb74b2d20cc916bd06))
+* **snapshot-store:** finish aws-sdk v3 migration for the S5 snapshot store (#9868) ([#9868](https://github.com/opengovsg/formsg/commit/fd71a8e46440bffe27a2bccc9454d1c856b7d179))
+
 ## [9.11.0](https://github.com/opengovsg/formsg/compare/v9.10.1...v9.11.0) (2026-08-18)
 
 
