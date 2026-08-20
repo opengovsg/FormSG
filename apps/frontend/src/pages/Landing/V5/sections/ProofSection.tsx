@@ -4,6 +4,7 @@ import { Box, Flex, Text } from '@chakra-ui/react'
 
 import { useLanding } from '~/pages/Landing/Home/queries'
 
+import { AgencyMarquee } from '../components/AgencyMarquee'
 import { Reveal } from '../components/Reveal'
 import { formatCompactStat } from '../utils/formatCompactStat'
 
@@ -112,6 +113,10 @@ export const ProofSection = ({ bobRef }: ProofSectionProps): JSX.Element => {
           />
         </Flex>
       </Box>
+      {/* Outside the bob wrapper: the nudge lifts the claim and the numbers,
+          and dragging the logo row along with them reads as the whole page
+          bouncing rather than as a hint. */}
+      <AgencyMarquee />
     </Reveal>
   )
 }

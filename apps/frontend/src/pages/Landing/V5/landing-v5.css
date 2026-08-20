@@ -185,6 +185,50 @@
   animation: lv5-proof-bob 2.1s var(--lv5-settle);
 }
 
+/* ---------- The agency marquee ----------
+   The row is rendered twice and translated by exactly -50%, so the loop has no
+   seam. Both halves are built from the same filtered list, which is what keeps
+   the -50% honest when a logo drops out. */
+.landing-v5 .lv5-marquee {
+  overflow: hidden;
+  position: relative;
+  /* Fades both ends, so logos enter and leave rather than being clipped. */
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+}
+
+.landing-v5 .lv5-marquee-track {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  width: max-content;
+  padding-right: 4rem;
+  animation: lv5-marquee 130s linear infinite;
+}
+
+/* Pause on hover, so a reader who wants to look at a particular logo can. */
+.landing-v5 .lv5-marquee:hover .lv5-marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes lv5-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Reveals land immediately rather than not at all: the content is the point,
      the rise is decoration. */
@@ -192,6 +236,23 @@
     transition: none;
     opacity: 1;
     transform: none;
+  }
+
+  /* Stop the marquee, and hand the reader the scrollbar the animation was
+     standing in for — otherwise the logos past the fold become unreachable. */
+  .landing-v5 .lv5-marquee {
+    overflow-x: auto;
+  }
+
+  .landing-v5 .lv5-marquee-track {
+    animation: none;
+  }
+
+  /* The second copy exists only to hide the loop's seam. With the animation
+     stopped it would just be the same eighteen logos again, so drop it rather
+     than make the reader scroll past duplicates. */
+  .landing-v5 .lv5-marquee-track > [aria-hidden='true'] {
+    display: none;
   }
 
   /* The bob is skipped at source by useProofBob. This is belt and braces, for
