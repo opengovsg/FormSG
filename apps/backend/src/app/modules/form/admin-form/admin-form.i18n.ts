@@ -1,59 +1,68 @@
+import { Joi } from 'celebrate'
 import { ErrorDto, I18nMessageParams } from 'formsg-shared/types'
 
 const ADMIN_FORM_BACKEND_ERROR_KEY_PREFIX =
   'features.adminForm.backendErrors' as const
 
-const errorKey = (suffix: string) =>
+export const adminFormErrorKey = (suffix: string) =>
   `${ADMIN_FORM_BACKEND_ERROR_KEY_PREFIX}.${suffix}`
 
-const ADMIN_FORM_ERROR_KEYS: Record<string, string> = {
-  'Error converting feedback to JSON': errorKey(
-    'exports.feedback.jsonConversion',
-  ),
-  'Error converting issue to JSON.': errorKey('exports.issue.jsonConversion'),
-  'Error retrieving from database.': errorKey('exports.databaseRetrieval'),
-  'Field to modify not found': errorKey('fields.notFound'),
-  'Form does not have a public key': errorKey('whitelist.missingPublicKey'),
-  'Form must be public to be copied': errorKey('template.mustBePublic'),
-  'Invalid payment amount': errorKey('payments.invalidAmount'),
-  'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.':
-    errorKey('payments.productAmountLimitExceeded'),
-  'Please enter a valid HTTP or HTTPS URI': errorKey('endPage.invalidUrl'),
-  'Something went wrong. Please try creating fields again.': errorKey(
-    'fields.createFailed',
-  ),
-  'Unsupported file type': errorKey('assets.unsupportedFileType'),
-  'Your csv has one or more invalid characters.': errorKey(
-    'whitelist.invalidCharacters',
-  ),
-  'Your csv is empty.': errorKey('whitelist.emptyCsv'),
-  'Your form ID is invalid.': errorKey('whitelist.invalidFormId'),
-}
-
-const FILE_SIZE_LIMIT_PATTERN =
-  /^You have exceeded the file size limit, please upload a file below (\d+) kB\.$/
-
-export const getAdminFormErrorI18n = (
+export const buildAdminFormErrorDto = (
   message: string,
-): Pick<ErrorDto, 'messageKey' | 'messageParams'> => {
-  const messageKey = ADMIN_FORM_ERROR_KEYS[message]
-  if (messageKey) return { messageKey }
+  messageKey?: string,
+  messageParams?: I18nMessageParams,
+): ErrorDto => ({
+  message,
+  ...(messageKey ? { messageKey } : {}),
+  ...(messageParams ? { messageParams } : {}),
+})
 
-  const fileSizeMatch = message.match(FILE_SIZE_LIMIT_PATTERN)
-  if (fileSizeMatch) {
-    const messageParams: I18nMessageParams = {
-      limitKb: Number(fileSizeMatch[1]),
-    }
-    return {
-      messageKey: errorKey('whitelist.fileTooLarge'),
-      messageParams,
-    }
-  }
-
-  return {}
+type JoiErrorReportWithI18n = Joi.ErrorReport & {
+  code: string
+  local: Record<string, unknown>
 }
 
-export const buildAdminFormErrorDto = (message: string): ErrorDto => ({
-  message,
-  ...getAdminFormErrorI18n(message),
-})
+type ErrorI18n = Pick<ErrorDto, 'messageKey' | 'messageParams'>
+
+export const attachAdminFormErrorI18nByCode = <T extends Joi.Schema>(
+  schema: T,
+  getI18n: (code: string) => ErrorI18n | undefined,
+): T => {
+  const attachI18n = ((errors: Joi.ErrorReport[]) => {
+    errors.forEach((error) => {
+      const report = error as JoiErrorReportWithI18n
+      const i18n = getI18n(report.code)
+      if (i18n?.messageKey) report.local.messageKey = i18n.messageKey
+      if (i18n?.messageParams) {
+        report.local.messageParams = i18n.messageParams
+      }
+    })
+    return errors
+  }) as unknown as Joi.ValidationErrorFunction
+
+  return schema.error(attachI18n) as T
+}
+
+export const attachAdminFormErrorI18n = <T extends Joi.Schema>(
+  schema: T,
+  messageKey: string,
+  messageParams?: I18nMessageParams,
+): T =>
+  attachAdminFormErrorI18nByCode(schema, () => ({
+    messageKey,
+    messageParams,
+  }))
+
+export const getCelebrateErrorI18n = (
+  detail: Joi.ValidationErrorItem,
+): Pick<ErrorDto, 'messageKey' | 'messageParams'> => {
+  const messageKey = detail.context?.messageKey
+  const messageParams = detail.context?.messageParams
+
+  return {
+    ...(typeof messageKey === 'string' ? { messageKey } : {}),
+    ...(typeof messageParams === 'object' && messageParams !== null
+      ? { messageParams: messageParams as I18nMessageParams }
+      : {}),
+  }
+}
