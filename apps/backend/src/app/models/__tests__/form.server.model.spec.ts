@@ -116,6 +116,7 @@ const FORM_DEFAULTS = {
   },
   status: 'PRIVATE',
   submissionLimit: null,
+  closeAt: null,
   goLinkSuffix: '',
   noSmsLimit: false,
 }
