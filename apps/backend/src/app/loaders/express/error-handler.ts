@@ -8,7 +8,10 @@ import { types } from 'util'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { buildAdminFormErrorDto } from '../../modules/form/admin-form/admin-form.i18n'
+import {
+  buildAdminFormErrorDto,
+  getCelebrateErrorI18n,
+} from '../../modules/form/admin-form/admin-form.i18n'
 import { createReqMeta } from '../../utils/request'
 
 const logger = createLoggerWithLabel(module)
@@ -110,7 +113,15 @@ export const genericErrorHandlerMiddleware: ErrorRequestHandler = (
         error: err,
       })
       const i18nError = [...err.details.values()]
-        .map((detail) => buildAdminFormErrorDto(detail.message))
+        .flatMap((validationError) => validationError.details)
+        .map((detail) => {
+          const { messageKey, messageParams } = getCelebrateErrorI18n(detail)
+          return buildAdminFormErrorDto(
+            detail.message,
+            messageKey,
+            messageParams,
+          )
+        })
         .find((detail) => detail.messageKey)
 
       if (i18nError) {

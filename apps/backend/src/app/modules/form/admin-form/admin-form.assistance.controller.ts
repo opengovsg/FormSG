@@ -16,7 +16,11 @@ import {
   createFormFieldsUsingTextPrompt,
   createFormFieldsUsingVisionPrompt,
 } from './admin-form.assistance.service'
-import { buildAdminFormErrorDto } from './admin-form.i18n'
+import {
+  adminFormErrorKey,
+  attachAdminFormErrorI18n,
+  buildAdminFormErrorDto,
+} from './admin-form.i18n'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -24,10 +28,13 @@ const logger = createLoggerWithLabel(module)
 
 const handleTextPromptValidator = celebrate({
   [Segments.PARAMS]: {
-    formId: Joi.string()
-      .required()
-      .pattern(/^[a-fA-F0-9]{24}$/)
-      .message('Your form ID is invalid.'),
+    formId: attachAdminFormErrorI18n(
+      Joi.string()
+        .required()
+        .pattern(/^[a-fA-F0-9]{24}$/)
+        .message('Your form ID is invalid.'),
+      adminFormErrorKey('whitelist.invalidFormId'),
+    ),
   },
   [Segments.BODY]: {
     prompt: Joi.string().required().max(MFB_TEXT_PROMPT_MAX_CHAR),
@@ -94,8 +101,10 @@ const _handleTextPrompt: ControllerHandler<
         },
         error,
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
+      const { errorMessage, statusCode, errorMessageKey } = mapRouteError(error)
+      return res
+        .status(statusCode)
+        .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
     })
 }
 
@@ -106,10 +115,13 @@ export const handleTextPrompt = [
 
 const handleVisionPromptValidator = celebrate({
   [Segments.PARAMS]: {
-    formId: Joi.string()
-      .required()
-      .pattern(/^[a-fA-F0-9]{24}$/)
-      .message('Your form ID is invalid.'),
+    formId: attachAdminFormErrorI18n(
+      Joi.string()
+        .required()
+        .pattern(/^[a-fA-F0-9]{24}$/)
+        .message('Your form ID is invalid.'),
+      adminFormErrorKey('whitelist.invalidFormId'),
+    ),
   },
   [Segments.BODY]: {
     imageDataUrls: Joi.array()
@@ -183,8 +195,11 @@ const _handleVisionPrompt: ControllerHandler<
           },
           error,
         })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
+        const { errorMessage, statusCode, errorMessageKey } =
+          mapRouteError(error)
+        return res
+          .status(statusCode)
+          .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
       })
   )
 }
