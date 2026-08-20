@@ -77,6 +77,13 @@ export const updateFormLimit: UpdateFormFn<'submissionLimit'> = async (
   return updateFormSettings(formId, { submissionLimit: newLimit })
 }
 
+export const updateFormCloseAt: UpdateFormFn<'closeAt'> = async (
+  formId,
+  newCloseAt,
+) => {
+  return updateFormSettings(formId, { closeAt: newCloseAt })
+}
+
 export const updateFormHasMultiLang: UpdateFormFn<'hasMultiLang'> = async (
   formId,
   newHasMultiLang,

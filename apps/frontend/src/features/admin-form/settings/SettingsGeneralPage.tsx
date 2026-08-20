@@ -3,6 +3,7 @@ import { Divider, Stack } from '@chakra-ui/react'
 import { FormCaptchaToggle } from './components/FormCaptchaToggle'
 import { FormCustomisationSection } from './components/FormCustomisationSection'
 import { FormDetailsSection } from './components/FormDetailsSection'
+import { FormExpiryToggle } from './components/FormExpiryToggle'
 import { FormIssueNotificationToggle } from './components/FormIssueNotificationToggle'
 import { FormLimitToggle } from './components/FormLimitToggle'
 import FormSaveDraftToggle from './components/FormSaveDraftToggle'
@@ -16,6 +17,7 @@ export const SettingsGeneralPage = (): JSX.Element => {
         <GeneralTabHeader />
         <FormStatusToggle />
         <FormLimitToggle />
+        <FormExpiryToggle />
         <FormCustomisationSection />
       </>
       <FormSaveDraftToggle />
