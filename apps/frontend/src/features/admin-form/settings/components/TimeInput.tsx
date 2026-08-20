@@ -13,19 +13,26 @@ import Input, { InputProps } from '~components/Input'
  * into the real thing — it deliberately has no dropdown, no locale handling, no
  * seconds, and no AM/PM.
  *
- * Scope of what it does do: accepts `HH:MM` in 24-hour time, masks input to
+ * Scope of what it does do: accepts `hh:mm` in 24-hour time, masks input to
  * digits, and reports validity to its parent. Validation of *when* the time is
  * (in the past, etc.) is the caller's job.
  */
 
-/** Matches a 24-hour time of day: 00:00 through 23:59. */
+/**
+ * Matches a 24-hour time of day: 00:00 through 23:59.
+ *
+ * NOTE: `hh:mm` here is the lowercase spelling shown to admins, matching the
+ * date picker's placeholder. It is NOT a date-fns format string — in date-fns
+ * `hh` is the 12-hour clock, so the format strings that read and write this
+ * value must stay `HH:mm`.
+ */
 export const TIME_OF_DAY_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/
 
 export const isValidTimeOfDay = (value: string): boolean =>
   TIME_OF_DAY_REGEX.test(value)
 
 /**
- * Masks raw keystrokes into a partial `HH:MM` string. Keeps only digits so the
+ * Masks raw keystrokes into a partial `hh:mm` string. Keeps only digits so the
  * colon is positional rather than something the admin has to type, and caps at
  * four digits so overtyping a complete time is a no-op instead of silently
  * shifting the value.
@@ -40,7 +47,7 @@ export interface TimeInputProps extends Omit<
   InputProps,
   'value' | 'onChange' | 'type'
 > {
-  /** Current value, as a partial or complete `HH:MM` string. */
+  /** Current value, as a partial or complete `hh:mm` string. */
   value: string
   /** Fired with the masked value on every keystroke. */
   onChange: (value: string) => void
@@ -58,9 +65,9 @@ export const TimeInput = forwardRef<TimeInputProps, 'input'>(
         ref={ref}
         value={value}
         onChange={handleChange}
-        placeholder="HH:MM"
+        placeholder="hh:mm"
         inputMode="numeric"
-        // 5 for HH:MM. The mask already enforces this; maxLength is belt and
+        // 5 for hh:mm. The mask already enforces this; maxLength is belt and
         // braces for paste.
         maxLength={5}
         {...props}
