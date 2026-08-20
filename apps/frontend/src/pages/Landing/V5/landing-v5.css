@@ -156,6 +156,35 @@
   );
 }
 
+/* ---------- The proof nudge ----------
+   A decaying bounce, hinting that the page continues below the hero. Driven by
+   `useProofBob`, which adds the class once and removes it on animationend. */
+@keyframes lv5-proof-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  16% {
+    transform: translateY(-34px);
+  }
+  34% {
+    transform: translateY(0);
+  }
+  52% {
+    transform: translateY(-21px);
+  }
+  70% {
+    transform: translateY(0);
+  }
+  85% {
+    transform: translateY(-10px);
+  }
+}
+
+.landing-v5 .lv5-bob {
+  animation: lv5-proof-bob 2.1s var(--lv5-settle);
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Reveals land immediately rather than not at all: the content is the point,
      the rise is decoration. */
@@ -163,5 +192,11 @@
     transition: none;
     opacity: 1;
     transform: none;
+  }
+
+  /* The bob is skipped at source by useProofBob. This is belt and braces, for
+     the case where the class is applied some other way. */
+  .landing-v5 .lv5-bob {
+    animation: none;
   }
 }

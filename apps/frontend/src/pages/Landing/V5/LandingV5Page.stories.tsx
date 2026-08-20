@@ -1,5 +1,7 @@
 import { Meta, StoryFn } from '@storybook/react'
 
+import { getLandingStats } from '~/mocks/msw/handlers/landing'
+
 import { LANDING_V5_ROUTE } from '~constants/routes'
 import {
   getMobileViewParameters,
@@ -20,6 +22,15 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
+    msw: [
+      getLandingStats({
+        overrides: {
+          agencyCount: 167,
+          formCount: 413208,
+          submissionCount: 271000000,
+        },
+      }),
+    ],
   },
 } as Meta
 
