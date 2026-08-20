@@ -208,6 +208,19 @@ export interface FormBase {
 
   inactiveMessage: string
   submissionLimit: number | null
+  /**
+   * Instant at which the form stops accepting responses, or `null` if the form
+   * has no scheduled closure. Kept as a sibling of `submissionLimit` because the
+   * two are independent auto-close triggers: either one firing closes the form.
+   *
+   * Scheduled *opening* is out of scope for v1. When it arrives it should be an
+   * additive sibling field (`openAt`) rather than a reshape of this one.
+   *
+   * Optional rather than required because forms created before this feature have
+   * no such field. Once the model declares a `null` default it can be tightened
+   * to match `submissionLimit`.
+   */
+  closeAt?: DateString | null
   isListed: boolean
 
   esrvcId?: string
