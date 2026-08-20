@@ -34,7 +34,7 @@ export const enSG = {
     label: 'Schedule an expiry date',
     input: {
       label: 'Expiry date and time',
-      timeLabel: 'Expiry time (24-hour, HH:MM)',
+      timeLabel: 'Expiry time (24-hour, hh:mm)',
       description:
         'Your form will automatically close at the selected date and time.',
     },
