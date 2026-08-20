@@ -183,7 +183,7 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         const toastStatusMessage = newData.closeAt
           ? t('features.adminForm.settings.general.expiry.toast.success', {
-              closeAt: format(new Date(newData.closeAt), 'd MMM yyyy'),
+              closeAt: format(new Date(newData.closeAt), 'd MMM yyyy, HH:mm'),
             })
           : t('features.adminForm.settings.general.expiry.toast.successRemoved')
         handleSuccess({ newData, toastDescription: toastStatusMessage })
