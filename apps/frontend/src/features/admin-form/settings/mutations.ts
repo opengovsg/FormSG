@@ -2,7 +2,9 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { format } from 'date-fns'
 
+import { DateString } from 'formsg-shared/types'
 import {
   FormAuthType,
   FormResponseMode,
@@ -32,6 +34,7 @@ import {
   updateBusinessInfo,
   updateFormAuthType,
   updateFormCaptcha,
+  updateFormCloseAt,
   updateFormEmails,
   updateFormEsrvcId,
   updateFormHasMultiLang,
@@ -168,6 +171,21 @@ export const useMutateFormSettings = () => {
               submissionLimit: formatOrdinal(newData.submissionLimit),
             })
           : t('features.adminForm.settings.general.limit.toast.successRemoved')
+        handleSuccess({ newData, toastDescription: toastStatusMessage })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormCloseAt = useMutation(
+    (nextCloseAt: DateString | null) => updateFormCloseAt(formId, nextCloseAt),
+    {
+      onSuccess: (newData) => {
+        const toastStatusMessage = newData.closeAt
+          ? t('features.adminForm.settings.general.expiry.toast.success', {
+              closeAt: format(new Date(newData.closeAt), 'd MMM yyyy'),
+            })
+          : t('features.adminForm.settings.general.expiry.toast.successRemoved')
         handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
       onError: handleError,
@@ -592,6 +610,7 @@ export const useMutateFormSettings = () => {
     mutateFormWebhookUrl,
     mutateFormStatus,
     mutateFormLimit,
+    mutateFormCloseAt,
     mutateFormHasMultiLang,
     mutateFormSupportedLanguages,
     mutateFormInactiveMessage,
