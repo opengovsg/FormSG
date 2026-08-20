@@ -46,6 +46,7 @@ describe('error-handler.loader', () => {
         '/',
         celebrate({
           [Segments.BODY]: Joi.object({
+            name: Joi.string().required(),
             buttonLink: attachAdminFormErrorI18n(
               Joi.string()
                 .uri({ scheme: ['http', 'https'] })
@@ -65,7 +66,7 @@ describe('error-handler.loader', () => {
     it('adds i18n metadata while retaining the Celebrate payload', async () => {
       const response = await request
         .post('/')
-        .send({ buttonLink: 'not-a-url' })
+        .send({ name: 'Form name', buttonLink: 'not-a-url' })
         .type('json')
 
       expect(response.status).toEqual(400)
@@ -75,6 +76,27 @@ describe('error-handler.loader', () => {
         validation: {
           body: {
             message: 'Please enter a valid HTTP or HTTPS URI',
+          },
+        },
+      })
+    })
+
+    it('retains the vanilla Celebrate payload without i18n metadata', async () => {
+      const response = await request
+        .post('/')
+        .send({ buttonLink: 'https://example.com' })
+        .type('json')
+
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'Validation failed',
+        validation: {
+          body: {
+            source: 'body',
+            keys: ['name'],
+            message: '"name" is required',
           },
         },
       })
