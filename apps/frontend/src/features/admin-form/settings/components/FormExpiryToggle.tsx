@@ -1,8 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, FormControl, Skeleton } from '@chakra-ui/react'
+import { Box, FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
-import { addDays, endOfDay, isBefore, isValid } from 'date-fns'
+import { addDays, endOfDay, format, isBefore, isValid, set } from 'date-fns'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { DateString } from 'formsg-shared/types'
@@ -15,6 +15,8 @@ import Toggle from '~components/Toggle'
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
+import { isValidTimeOfDay, TimeInput } from './TimeInput'
+
 /**
  * Date pre-filled when the admin first switches the toggle on, purely so the
  * form is in a valid state before they pick a real deadline.
@@ -22,17 +24,31 @@ import { useAdminFormSettings } from '../queries'
 const DEFAULT_EXPIRY_DAYS_FROM_NOW = 7
 
 /**
- * The picker is date-only for now, so a selected date means "closes at the end
- * of that day" — which is what admins ask for ("close at 2359 on the deadline").
- * Once the Time field lands this becomes an admin-chosen time of day.
- *
- * NOTE: this resolves end-of-day in the browser's timezone. Admins are in SGT so
- * it is correct in practice, but normalising to Asia/Singapore belongs on the
- * server, where the close instant is actually enforced.
+ * Time of day used when the toggle is first switched on. 2359 because the PRD
+ * evidence is near-unanimous that this is the deadline admins actually mean.
  */
-const toCloseAt = (date: Date) => endOfDay(date).toISOString() as DateString
+const DEFAULT_EXPIRY_TIME = '23:59'
 
-const isPast = (date: Date): boolean => isBefore(endOfDay(date), new Date())
+/**
+ * Combines the admin's chosen calendar date and time of day into the single
+ * instant stored as `closeAt`.
+ *
+ * NOTE: this resolves in the browser's timezone. Admins are in SGT so it is
+ * correct in practice, but normalising to Asia/Singapore belongs on the server,
+ * where the close instant is actually enforced.
+ */
+const toCloseAt = (date: Date, timeOfDay: string) => {
+  const [hours, minutes] = timeOfDay.split(':').map(Number)
+  return set(date, {
+    hours,
+    minutes,
+    seconds: 0,
+    milliseconds: 0,
+  }).toISOString() as DateString
+}
+
+/** Whole days before today are unselectable; time-of-day is checked separately. */
+const isPastDay = (date: Date): boolean => isBefore(endOfDay(date), new Date())
 
 interface FormExpiryBlockProps {
   initialCloseAt: DateString
@@ -45,27 +61,52 @@ const FormExpiryBlock = ({
   const [error, setError] = useState<string>()
   const { mutateFormCloseAt } = useMutateFormSettings()
 
-  const value = useMemo(() => new Date(initialCloseAt), [initialCloseAt])
+  const closeAtDate = useMemo(() => new Date(initialCloseAt), [initialCloseAt])
 
-  const handleChange = useCallback(
+  // Time is edited as free text, so it is held locally while the admin types
+  // and only committed once it parses. The date, which can only be picked, is
+  // read straight off the saved value.
+  const [timeOfDay, setTimeOfDay] = useState(() => format(closeAtDate, 'HH:mm'))
+
+  const save = useCallback(
+    (nextDate: Date, nextTimeOfDay: string) => {
+      const nextCloseAt = toCloseAt(nextDate, nextTimeOfDay)
+      if (nextCloseAt === initialCloseAt) return
+      return mutateFormCloseAt.mutate(nextCloseAt)
+    },
+    [initialCloseAt, mutateFormCloseAt],
+  )
+
+  const handleDateChange = useCallback(
     (nextDate: Date | null) => {
       // Clearing the date is the toggle's job, not the picker's.
       if (!nextDate) return
 
-      if (!isValid(nextDate) || isPast(nextDate)) {
+      if (!isValid(nextDate) || isPastDay(nextDate)) {
         return setError(
           t('features.adminForm.settings.general.expiry.dateInThePast'),
         )
       }
 
       setError(undefined)
-      const nextCloseAt = toCloseAt(nextDate)
-      if (nextCloseAt === initialCloseAt) return
-
-      return mutateFormCloseAt.mutate(nextCloseAt)
+      return save(nextDate, timeOfDay)
     },
-    [initialCloseAt, mutateFormCloseAt, t],
+    [save, t, timeOfDay],
   )
+
+  const handleTimeBlur = useCallback(() => {
+    if (!isValidTimeOfDay(timeOfDay)) {
+      // Revert to the last saved time rather than stranding the admin on an
+      // unparseable value they then have to fix.
+      setTimeOfDay(format(closeAtDate, 'HH:mm'))
+      return setError(
+        t('features.adminForm.settings.general.expiry.invalidTime'),
+      )
+    }
+
+    setError(undefined)
+    return save(closeAtDate, timeOfDay)
+  }, [closeAtDate, save, t, timeOfDay])
 
   return (
     <FormControl mt="2rem" isInvalid={!!error}>
@@ -77,13 +118,25 @@ const FormExpiryBlock = ({
       >
         {t('features.adminForm.settings.general.expiry.input.label')}
       </FormLabel>
-      <Box maxW="16rem">
-        <DatePicker
-          value={value}
-          onChange={handleChange}
-          isDateUnavailable={isPast}
-        />
-      </Box>
+      <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
+        <Box maxW="16rem" flex={1}>
+          <DatePicker
+            value={closeAtDate}
+            onChange={handleDateChange}
+            isDateUnavailable={isPastDay}
+          />
+        </Box>
+        <Box maxW="8rem">
+          <TimeInput
+            value={timeOfDay}
+            onChange={setTimeOfDay}
+            onBlur={handleTimeBlur}
+            aria-label={t(
+              'features.adminForm.settings.general.expiry.input.timeLabel',
+            )}
+          />
+        </Box>
+      </Stack>
       <FormErrorMessage>{error}</FormErrorMessage>
     </FormControl>
   )
@@ -112,7 +165,10 @@ export const FormExpiryToggle = (): JSX.Element => {
 
     // Case toggling the expiry date on.
     return mutateFormCloseAt.mutate(
-      toCloseAt(addDays(new Date(), DEFAULT_EXPIRY_DAYS_FROM_NOW)),
+      toCloseAt(
+        addDays(new Date(), DEFAULT_EXPIRY_DAYS_FROM_NOW),
+        DEFAULT_EXPIRY_TIME,
+      ),
     )
   }, [isLoadingSettings, mutateFormCloseAt, settings])
 

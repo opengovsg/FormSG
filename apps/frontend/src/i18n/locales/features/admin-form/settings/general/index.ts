@@ -31,6 +31,7 @@ export interface General extends HasTitle {
     label: string
     input: {
       label: string
+      timeLabel: string
       description: string
     }
     toast: {
@@ -38,6 +39,7 @@ export interface General extends HasTitle {
       successRemoved: string
     }
     dateInThePast: string
+    invalidTime: string
   }
   customisation: {
     closedFormMessage: string
