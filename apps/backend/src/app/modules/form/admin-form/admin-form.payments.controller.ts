@@ -271,8 +271,11 @@ const _handleUpdatePayments: ControllerHandler<
           meta: logMeta,
           error,
         })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
+        const { errorMessage, statusCode, errorMessageKey } =
+          mapRouteError(error)
+        return res
+          .status(statusCode)
+          .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
       })
   )
 }
@@ -322,8 +325,11 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
           },
           error,
         })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
+        const { errorMessage, statusCode, errorMessageKey } =
+          mapRouteError(error)
+        return res
+          .status(statusCode)
+          .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
       })
   )
 }

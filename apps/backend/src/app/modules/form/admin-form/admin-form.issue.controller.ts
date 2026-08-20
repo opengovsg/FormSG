@@ -14,7 +14,7 @@ import { ControllerHandler } from '../../core/core.types'
 import * as IssueService from '../../issue/issue.service'
 import * as UserService from '../../user/user.service'
 
-import { buildAdminFormErrorDto } from './admin-form.i18n'
+import { adminFormErrorKey, buildAdminFormErrorDto } from './admin-form.i18n'
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
@@ -61,8 +61,10 @@ export const handleGetFormIssues: ControllerHandler<
         },
         error,
       })
-      const { errorMessage, statusCode } = mapRouteError(error)
-      return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
+      const { errorMessage, statusCode, errorMessageKey } = mapRouteError(error)
+      return res
+        .status(statusCode)
+        .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
     })
 }
 
@@ -108,10 +110,12 @@ export const handleStreamFormIssues: ControllerHandler<
       meta: logMeta,
       error: hasReadPermissionResult.error,
     })
-    const { errorMessage, statusCode } = mapRouteError(
+    const { errorMessage, statusCode, errorMessageKey } = mapRouteError(
       hasReadPermissionResult.error,
     )
-    return res.status(statusCode).json(buildAdminFormErrorDto(errorMessage))
+    return res
+      .status(statusCode)
+      .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
   }
 
   // No errors, start stream.
@@ -126,7 +130,12 @@ export const handleStreamFormIssues: ControllerHandler<
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json(buildAdminFormErrorDto('Error retrieving from database.'))
+        .json(
+          buildAdminFormErrorDto(
+            'Error retrieving from database.',
+            adminFormErrorKey('exports.databaseRetrieval'),
+          ),
+        )
     })
     .pipe(JSONStream.stringify())
     .on('error', (error) => {
@@ -137,7 +146,12 @@ export const handleStreamFormIssues: ControllerHandler<
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json(buildAdminFormErrorDto('Error converting issue to JSON.'))
+        .json(
+          buildAdminFormErrorDto(
+            'Error converting issue to JSON.',
+            adminFormErrorKey('exports.issue.jsonConversion'),
+          ),
+        )
     })
     .pipe(res.type('json'))
     .on('error', (error) => {
