@@ -1,0 +1,18 @@
+export * from './en-sg'
+
+/**
+ * Copy for the V5 landing page. Section-scoped, so a copy change touches one
+ * block.
+ *
+ * Decorative micro-copy stays in the components rather than living here: the
+ * die-cut sticker numbers, the cipher on the security document's underside and
+ * the field labels inside the illustrations are ornament, not messaging.
+ */
+export interface LandingV5 {
+  proof: {
+    title: string
+    agencies: string
+    forms: string
+    responses: string
+  }
+}

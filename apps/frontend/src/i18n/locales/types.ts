@@ -13,6 +13,7 @@ import {
   HeaderAndInstructions,
   LandingPage,
   LandingPayments,
+  LandingV5,
   Logic,
   Login,
   Meta,
@@ -69,6 +70,7 @@ interface Translation {
       common?: Common
       landingPage?: LandingPage
       landingPayments?: LandingPayments
+      landingV5?: LandingV5
       notFoundError?: NotFoundError
       publicForm?: PublicForm
       login?: Login
