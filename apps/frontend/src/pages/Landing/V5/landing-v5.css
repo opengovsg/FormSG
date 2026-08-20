@@ -81,3 +81,87 @@
   opacity: 0.035;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+
+/* ---------- Entrances ----------
+   Plain and calm: a short rise that settles. Driven by `useReveal`, which
+   flips data-revealed once the element crosses the viewport threshold. */
+.landing-v5 .lv5-reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.9s var(--lv5-settle);
+}
+
+.landing-v5 .lv5-reveal[data-revealed='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- The mint blade ----------
+   The logo's own underside shape, reused at every peel and every cut corner.
+   `--lv5-c` is the cut length: one value drives the clip-path, the blade's
+   size, and (from part 6) the peel tween, so they cannot disagree.
+
+   Registered with @property so it can be transitioned as a length rather than
+   snapping. Note @property registration is document-global, not scoped to this
+   stylesheet, which is why the name is namespaced: the prototype's bare `--c`
+   would hand every element in the app an inherited `--c: 0px`. */
+@property --lv5-c {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+.landing-v5 .lv5-blade {
+  position: absolute;
+  pointer-events: none;
+  z-index: 3;
+  /* 1.025 so the blade overlaps the cut edge slightly and no paper-coloured
+     hairline shows between the two. */
+  width: calc(var(--lv5-c) * 1.025);
+  height: calc(var(--lv5-c) * 1.025);
+  filter: drop-shadow(-4px -4px 8px rgba(38, 58, 112, 0.2));
+}
+
+.landing-v5 .lv5-blade--tr {
+  right: 0;
+  top: 0;
+  transform: rotate(-90deg);
+}
+
+.landing-v5 .lv5-blade--br {
+  right: 0;
+  bottom: 0;
+}
+
+/* The corner the blade sits in, clipped off the element it belongs to. */
+.landing-v5 .lv5-cut-tr {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--lv5-c)) 0,
+    100% var(--lv5-c),
+    100% 100%,
+    0 100%
+  );
+}
+
+.landing-v5 .lv5-cut-br {
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% calc(100% - var(--lv5-c)),
+    calc(100% - var(--lv5-c)) 100%,
+    0 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Reveals land immediately rather than not at all: the content is the point,
+     the rise is decoration. */
+  .landing-v5 .lv5-reveal {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
