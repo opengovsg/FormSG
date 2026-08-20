@@ -4,6 +4,7 @@ import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
 
 import { LandingV5Root } from './components/LandingV5Root'
+import { ProofSection } from './sections/ProofSection'
 
 /**
  * V5 landing page — the "sheet that scrolls sideways" exploration, built for
@@ -18,7 +19,9 @@ export const LandingV5Page = (): JSX.Element => {
   return (
     <>
       <AppPublicHeader />
-      <LandingV5Root minH="60vh" />
+      <LandingV5Root>
+        <ProofSection />
+      </LandingV5Root>
       <AppFooter />
     </>
   )
