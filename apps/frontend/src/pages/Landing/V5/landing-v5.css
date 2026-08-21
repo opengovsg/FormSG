@@ -279,6 +279,57 @@
   color: var(--lv5-blue);
 }
 
+/* ---------- Examples: three template cards ----------
+   The tilt lives on an inner wrapper, not the card, so the reveal's own
+   transform cannot fight it. Each card sets its own `--lv5-tilt` and
+   `--lv5-dy`, which is what staggers the row into something laid out by hand
+   rather than three items in a grid. */
+.landing-v5 .lv5-ex-tilt {
+  position: relative;
+  transform: rotate(var(--lv5-tilt, 0deg)) translateY(var(--lv5-dy, 0px));
+  transition: transform 0.55s var(--lv5-settle);
+}
+
+/* Straightens and lifts on approach. Focus is included, not just hover: the
+   card is a real link, so a keyboard reader should get the same affordance. */
+.landing-v5 .lv5-ex-card:hover .lv5-ex-tilt,
+.landing-v5 .lv5-ex-card:focus-visible .lv5-ex-tilt {
+  transform: rotate(0deg) translateY(calc(var(--lv5-dy, 0px) - 8px));
+}
+
+.landing-v5 .lv5-ex-form {
+  transition: box-shadow 0.55s;
+}
+
+.landing-v5 .lv5-ex-card:hover .lv5-ex-form,
+.landing-v5 .lv5-ex-card:focus-visible .lv5-ex-form {
+  box-shadow: 0 18px 40px rgba(38, 58, 112, 0.15);
+}
+
+/* Fold shadow along the cut, so the corner reads as lifted rather than deleted.
+   Mirrors the security document's crease but from the opposite corner, hence
+   225deg against that one's 315deg, and it reaches further relative to the cut
+   because this fold is much smaller. */
+.landing-v5 .lv5-ex-form::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(
+    225deg,
+    rgba(38, 58, 112, 0.22) 0,
+    rgba(38, 58, 112, 0) calc(var(--lv5-c) * 1.25)
+  );
+  opacity: var(--lv5-sh, 0);
+}
+
+.landing-v5 .lv5-ex-card:hover .lv5-ex-link,
+.landing-v5 .lv5-ex-card:focus-visible .lv5-ex-link {
+  text-decoration: underline;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Reveals land immediately rather than not at all: the content is the point,
      the rise is decoration. */
@@ -321,6 +372,13 @@
   }
 
   .landing-v5 .lv5-field {
+    transition: none;
+  }
+
+  /* The cards keep their straighten-on-hover, they just arrive there at once.
+     The peel itself snaps rather than being skipped — see usePeel. */
+  .landing-v5 .lv5-ex-tilt,
+  .landing-v5 .lv5-ex-form {
     transition: none;
   }
 }

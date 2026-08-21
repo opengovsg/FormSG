@@ -5,8 +5,10 @@ import { AppPublicHeader } from '~/app/AppPublicHeader'
 
 import { LandingV5Root } from './components/LandingV5Root'
 import { CapabilitiesSection } from './sections/CapabilitiesSection'
+import { ExamplesSection } from './sections/ExamplesSection'
 import { ProofSection } from './sections/ProofSection'
 import { SecuritySection } from './sections/SecuritySection'
+import { TestimonialSection } from './sections/TestimonialSection'
 
 /**
  * V5 landing page — the "sheet that scrolls sideways" exploration, built for
@@ -25,6 +27,8 @@ export const LandingV5Page = (): JSX.Element => {
         <ProofSection />
         <SecuritySection />
         <CapabilitiesSection />
+        <ExamplesSection />
+        <TestimonialSection />
       </LandingV5Root>
       <AppFooter />
     </>
