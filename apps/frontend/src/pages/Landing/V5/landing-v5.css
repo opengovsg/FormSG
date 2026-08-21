@@ -261,3 +261,40 @@
     animation: none;
   }
 }
+
+/* ---------- The security peel ----------
+   The cut length `--lv5-c` is tweened per frame by `usePeel` rather than by a
+   CSS transition. A transition can interpolate the cut, but the crease shadow
+   has to be darkest *halfway* through the fold and calm at both ends, and that
+   bell curve is not something a transition can express. `--lv5-sh` is that
+   shadow's opacity, written on the same frame as the cut, so the two can never
+   disagree.
+
+   Note the prototype's `.peelcard` also sets `perspective: 1400px`. That is
+   residue from an earlier version which swung the whole sheet in 3D; nothing in
+   the final markup uses a 3D transform, so it is not carried over. */
+.landing-v5 .lv5-peel {
+  position: relative;
+}
+
+/* The fold shadow, cast on the paper that stays put. Its reach is derived from
+   the cut, so a deeper fold throws a longer crease. */
+.landing-v5 .lv5-peel-doc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  pointer-events: none;
+  background: linear-gradient(
+    315deg,
+    rgba(38, 58, 112, 0.34) 0px,
+    rgba(38, 58, 112, 0) calc(var(--lv5-c) * 1.1)
+  );
+  opacity: var(--lv5-sh, 0);
+}
+
+/* The cipher is one unbroken token by design, so it needs explicit permission
+   to break anywhere in order to fill the underside rather than overflow it. */
+.landing-v5 .lv5-cipher {
+  word-break: break-all;
+}
