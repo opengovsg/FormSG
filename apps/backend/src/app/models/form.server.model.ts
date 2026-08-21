@@ -1573,6 +1573,28 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     lastModified: -1,
   })
 
+  // Serves the scheduled closure sweep, which runs every few minutes and would
+  // otherwise scan every form ever created to find the handful that are due.
+  //
+  // `status` leads because the sweep matches it exactly; `closeAt` follows for
+  // the range comparison. Partial because the overwhelming majority of forms
+  // have no expiry at all, and indexing those would grow the index with the
+  // collection while never matching — the sweep only ever wants forms where a
+  // date is actually set.
+  //
+  // NOTE: `autoIndex` is off outside dev/test (see config.ts), so adding this
+  // here does NOT create it on a deployed database. It has to be created by
+  // hand in Atlas, in the background, before the feature carries real traffic.
+  FormSchema.index(
+    {
+      status: 1,
+      closeAt: 1,
+    },
+    {
+      partialFilterExpression: { closeAt: { $type: 'date' } },
+    },
+  )
+
   const FormModel = db.model<IFormSchema, IFormModel>(
     FORM_SCHEMA_ID,
     FormSchema,
