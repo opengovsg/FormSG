@@ -9,6 +9,23 @@ export * from './en-sg'
  * the field labels inside the illustrations are ornament, not messaging.
  */
 export interface LandingV5 {
+  hero: {
+    headlineBefore: string
+    headlineStamped: string
+    headlineAfter: string
+    subhead: string
+    cta: string
+    builderCaption: string
+    builderCaptionWide: string
+    builderCaptionNarrow: string
+    builderAlt: string
+    formCaption: string
+    formCaptionBody: string
+    formIdle: string
+    formTitle: string
+    previousPanel: string
+    nextPanel: string
+  }
   proof: {
     title: string
     agencies: string
@@ -38,6 +55,12 @@ export interface LandingV5 {
     claims: { name: string; body: string }
     singpass: { name: string; body: string }
     event: { name: string; body: string }
+  }
+  close: {
+    title: string
+    cta: string
+    guidePrefix: string
+    guideLink: string
   }
   testimonial: {
     eyebrow: string

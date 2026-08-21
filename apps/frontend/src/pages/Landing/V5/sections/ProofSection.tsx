@@ -57,10 +57,17 @@ const Sticker = ({ value, label, rotate }: StickerProps): JSX.Element => (
 
 export interface ProofSectionProps {
   /**
-   * Target for the nudge. Comes from `useProofBob`, owned by whatever triggers
-   * it — the hero, once part 9 lands. Optional so the section stands alone.
+   * Target for the nudge. Comes from `useProofBob`, owned by the page, and
+   * fired by the hero when the reader reaches the end of the carousel. Optional
+   * so the section stands alone.
    */
   bobRef?: RefObject<HTMLDivElement>
+  /**
+   * Whether the page is still at the very top. While it is, the section is
+   * faded, so the sliver visible below the hero reads as a hint rather than as
+   * a heading accidentally clipped. Optional so the section stands alone.
+   */
+  isAtTop?: boolean
 }
 
 /**
@@ -70,12 +77,21 @@ export interface ProofSectionProps {
  * so the two pages share one request and one cache entry rather than each
  * hitting /analytics/statistics.
  */
-export const ProofSection = ({ bobRef }: ProofSectionProps): JSX.Element => {
+export const ProofSection = ({
+  bobRef,
+  isAtTop,
+}: ProofSectionProps): JSX.Element => {
   const { t } = useTranslation()
   const { data } = useLanding()
 
   return (
-    <Reveal as="section" py={{ base: '4rem', md: '6.5rem' }} px="1.5rem">
+    <Reveal
+      as="section"
+      className="lv5-proof"
+      data-attop={isAtTop ? 'true' : undefined}
+      py={{ base: '4rem', md: '6.5rem' }}
+      px="1.5rem"
+    >
       <Box ref={bobRef}>
         <Text
           as="h2"
