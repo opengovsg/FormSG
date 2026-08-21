@@ -33,6 +33,7 @@ import {
   WorkflowOutcome,
 } from '../../views/templates/EmailTemplate'
 import { FormDeactivatedNotification } from '../../views/templates/FormDeactivatedNotification'
+import { FormScheduledClosureNotification } from '../../views/templates/FormScheduledClosureNotification'
 import { SmsThresholdWarningNotification } from '../../views/templates/SmsThresholdWarningNotification'
 import { smsThreshold } from '../sms/sms.utils'
 
@@ -47,6 +48,7 @@ import {
   AutoreplySummaryRenderData,
   BounceNotificationHtmlData,
   FormDeactivatedNotificationHtmlData,
+  FormScheduledClosureNotificationHtmlData,
   IssueReportedNotificationData,
   MailOptions,
   MailServiceParams,
@@ -677,6 +679,85 @@ export class MailService {
         })
         return error
       })
+    })
+  }
+
+  /**
+   * Sends a notification that a form has closed by reaching its scheduled
+   * expiry date.
+   *
+   * Distinct from sendFormDeactivatedNotification, which is specific to the
+   * free SMS threshold and tells the admin to contact support. A scheduled
+   * closure is the admin's own instruction being carried out, so it needs no
+   * remediation — only confirmation that it happened.
+   *
+   * @param args the parameter object
+   * @param args.emailRecipients emails to send to
+   * @param args.formTitle title of form
+   * @param args.formId ID of form
+   * @param args.closedAt human-readable close instant, pre-formatted in SGT
+   */
+  sendFormScheduledClosureNotification = ({
+    emailRecipients,
+    formTitle,
+    formId,
+    closedAt,
+  }: {
+    emailRecipients: string[]
+    formTitle: string
+    formId: string
+    closedAt: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const htmlData: FormScheduledClosureNotificationHtmlData = {
+      formTitle,
+      formLink: `${this.#appUrl}/${formId}`,
+      closedAt,
+      appName: this.#appName,
+    }
+
+    const generatedHtml = fromPromise(
+      render(FormScheduledClosureNotification(htmlData)),
+      (e) => {
+        logger.error({
+          message: 'Failed to render FormScheduledClosureNotification',
+          meta: {
+            action: 'sendFormScheduledClosureNotification',
+            error: e,
+          },
+        })
+
+        return new MailGenerationError(
+          'Error generating form scheduled closure notification email',
+        )
+      },
+    )
+
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to: emailRecipients,
+        from: this.#senderFromString,
+        subject: `Your form has closed: ${formTitle}`,
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.WarningNotification,
+          [EMAIL_HEADERS.formId]: formId,
+        },
+      }
+
+      return this.#sendNodeMail(mail, { mailId: 'scheduled-closure' }).mapErr(
+        (error) => {
+          logger.error({
+            message: 'Error sending form scheduled closure notification email',
+            meta: {
+              action: 'sendFormScheduledClosureNotification',
+              formTitle,
+              formId,
+            },
+            error,
+          })
+          return error
+        },
+      )
     })
   }
 
