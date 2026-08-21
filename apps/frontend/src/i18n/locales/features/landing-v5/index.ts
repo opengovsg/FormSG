@@ -15,4 +15,14 @@ export interface LandingV5 {
     forms: string
     responses: string
   }
+  security: {
+    title: string
+    body: string
+    clearance: string
+    classificationLabel: string
+    classificationValue: string
+    sensitivityLabel: string
+    sensitivityValue: string
+    caption: string
+  }
 }
