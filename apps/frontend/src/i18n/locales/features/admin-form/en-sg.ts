@@ -15,6 +15,46 @@ import { enSG as template } from './template'
 import { enSG as toasts } from './toasts'
 
 export const enSG = {
+  backendErrors: {
+    exports: {
+      databaseRetrieval:
+        'There was a problem retrieving the export data. Please try again.',
+      feedback: {
+        jsonConversion:
+          'There was a problem preparing the feedback export. Please try again.',
+      },
+      issue: {
+        jsonConversion:
+          'There was a problem preparing the issue export. Please try again.',
+      },
+    },
+    fields: {
+      notFound: 'Field to modify not found',
+      createFailed: 'Something went wrong. Please try creating fields again.',
+    },
+    whitelist: {
+      missingPublicKey: 'Form does not have a public key',
+      fileTooLarge:
+        'You have exceeded the file size limit, please upload a file below {{limitKb}} kB.',
+      invalidCharacters: 'Your csv has one or more invalid characters.',
+      emptyCsv: 'Your csv is empty.',
+      invalidFormId: 'Your form ID is invalid.',
+    },
+    template: {
+      mustBePublic: 'Form must be public to be copied',
+    },
+    payments: {
+      invalidAmount: 'Invalid payment amount',
+      productAmountLimitExceeded:
+        'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.',
+    },
+    endPage: {
+      invalidUrl: 'Please enter a valid HTTP or HTTPS URI',
+    },
+    assets: {
+      unsupportedFileType: 'Unsupported file type',
+    },
+  },
   responses: {
     charts: responsesCharts,
     components: responsesComponents,

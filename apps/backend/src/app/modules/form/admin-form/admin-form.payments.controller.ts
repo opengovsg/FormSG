@@ -31,6 +31,7 @@ import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
 
 import { PaymentChannelNotFoundError } from './admin-form.errors'
+import { buildAdminFormErrorDto } from './admin-form.i18n'
 import { JoiPaymentProduct } from './admin-form.payments.constants'
 import * as AdminFormPaymentService from './admin-form.payments.service'
 import { PermissionLevel } from './admin-form.types'
@@ -270,8 +271,11 @@ const _handleUpdatePayments: ControllerHandler<
           meta: logMeta,
           error,
         })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        const { errorMessage, statusCode, errorMessageKey } =
+          mapRouteError(error)
+        return res
+          .status(statusCode)
+          .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
       })
   )
 }
@@ -321,8 +325,11 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
           },
           error,
         })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+        const { errorMessage, statusCode, errorMessageKey } =
+          mapRouteError(error)
+        return res
+          .status(statusCode)
+          .json(buildAdminFormErrorDto(errorMessage, errorMessageKey))
       })
   )
 }

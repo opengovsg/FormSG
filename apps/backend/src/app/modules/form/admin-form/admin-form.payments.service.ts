@@ -22,6 +22,11 @@ import {
 } from '../../payments/payments.errors'
 import { FormNotFoundError } from '../form.errors'
 
+import {
+  AdminFormInvalidPaymentAmountError,
+  PaymentProductAmountLimitExceededError,
+} from './admin-form.errors'
+
 const logger = createLoggerWithLabel(module)
 const EncryptedFormModel = getEncryptedFormModel(mongoose)
 
@@ -55,23 +60,23 @@ export const updatePayments = (
       amount_cents > paymentConfig.maxPaymentAmountCents ||
       amount_cents < paymentConfig.minPaymentAmountCents
     ) {
-      return errAsync(new InvalidPaymentAmountError())
+      return errAsync(new AdminFormInvalidPaymentAmountError())
     }
   }
 
   if (enabled && newPayments.payment_type === PaymentType.Variable) {
     const { min_amount, max_amount } = newPayments
     if (min_amount > max_amount) {
-      return errAsync(new InvalidPaymentAmountError())
+      return errAsync(new AdminFormInvalidPaymentAmountError())
     }
     const minAmountCents =
       newPayments.global_min_amount_override ||
       paymentConfig.minPaymentAmountCents
     if (min_amount < minAmountCents) {
-      return errAsync(new InvalidPaymentAmountError())
+      return errAsync(new AdminFormInvalidPaymentAmountError())
     }
     if (max_amount > paymentConfig.maxPaymentAmountCents) {
-      return errAsync(new InvalidPaymentAmountError())
+      return errAsync(new AdminFormInvalidPaymentAmountError())
     }
   }
 
@@ -138,11 +143,7 @@ export const updatePaymentsProduct = (
     const qtyModifier = product.multi_qty ? product.max_qty : 1
     const maximumSelectableQtyCost = qtyModifier * product.amount_cents
     if (maximumSelectableQtyCost > paymentConfig.maxPaymentAmountCents) {
-      return errAsync(
-        new InvalidPaymentAmountError(
-          'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.',
-        ),
-      )
+      return errAsync(new PaymentProductAmountLimitExceededError())
     }
   }
   return ResultAsync.fromPromise(
