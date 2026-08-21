@@ -300,7 +300,12 @@ export const closeExpiredForms = (
     // alone would only yield a count.
     FormModel.find({
       status: FormStatus.Public,
-      closeAt: { $ne: null, $lte: now },
+      // `$type: 'date'` rather than `$ne: null` so this query is eligible for
+      // the partial index on { status, closeAt } — MongoDB only uses a partial
+      // index when the query provably matches its filter expression, and it
+      // will not infer `$type` from `$ne: null`. It also subsumes the null
+      // check, since neither null nor a missing field is of type date.
+      closeAt: { $type: 'date', $lte: now },
     })
       .select('_id title closeAt')
       .limit(limit)
