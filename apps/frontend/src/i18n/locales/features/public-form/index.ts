@@ -5,6 +5,9 @@ import { Table } from './table'
 export * from './en-sg'
 
 export interface PublicForm {
+  expiry: {
+    banner: string
+  }
   backendErrors: {
     verification: {
       sessionExpired: string
