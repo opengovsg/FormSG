@@ -1,0 +1,59 @@
+version: 0.1
+
+# NOTE: each `s3_bucket` below must exist before its first deploy. The pdf-gen
+# service's buckets are provisioned by pulumi in the formsg-infra repo; these
+# need the same treatment, along with the
+# `<env>-cron-scheduled-closure` SSM parameter holding the API secret.
+# The placeholder names below will not resolve until that is done.
+
+stg:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg
+      s3_bucket: TODO-form-scheduled-closure-code-zip-stg
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg
+
+stg-alt:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg-alt
+      s3_bucket: TODO-form-scheduled-closure-code-zip-stg-alt
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg-alt
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt
+
+uat:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-uat
+      s3_bucket: TODO-form-scheduled-closure-code-zip-uat
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: uat
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=uat
+
+production:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-production
+      s3_bucket: TODO-form-scheduled-closure-code-zip-prod
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: production
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=production

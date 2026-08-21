@@ -1,0 +1,15 @@
+{
+  "name": "formsg-scheduled-closure",
+  "version": "9.11.1",
+  "private": true,
+  "description": "Lambda function that closes forms past their scheduled expiry",
+  "main": "index.js",
+  "scripts": {
+    "sam-build": "sam build",
+    "sam-deploy": "pnpm run sam-build && sam deploy",
+    "sam-local-invoke": "pnpm run sam-build && sam local invoke ScheduledClosureFunction"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ssm": "^3.1091.0"
+  }
+}
