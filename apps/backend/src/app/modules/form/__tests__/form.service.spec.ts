@@ -1000,6 +1000,74 @@ describe('FormService', () => {
       expect(actual._unsafeUnwrap()).toEqual(true)
     })
 
+    it('should return PrivateFormError when a public form is past its scheduled expiry', async () => {
+      const form = {
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        closeAt: new Date(Date.now() - 60 * 1000),
+        inactiveMessage: 'test inactive message',
+      } as unknown as IPopulatedForm
+
+      const actual = FormService.isFormPublic(form)
+
+      expect(actual._unsafeUnwrapErr()).toEqual(
+        new PrivateFormError(form.inactiveMessage, form.title),
+      )
+    })
+
+    it('should return PrivateFormError when the expiry is exactly now', async () => {
+      // The deadline is inclusive: 2359 means closed at 2359.
+      const now = new Date()
+      jest.useFakeTimers().setSystemTime(now)
+      const form = {
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        closeAt: now,
+        inactiveMessage: 'test inactive message',
+      } as unknown as IPopulatedForm
+
+      const actual = FormService.isFormPublic(form)
+
+      jest.useRealTimers()
+      expect(actual.isErr()).toEqual(true)
+    })
+
+    it('should return true when a public form has a future expiry', async () => {
+      const form = {
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        closeAt: new Date(Date.now() + 60 * 60 * 1000),
+      } as unknown as IPopulatedForm
+
+      const actual = FormService.isFormPublic(form)
+
+      expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should return true when a public form has no expiry set', async () => {
+      const form = {
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        closeAt: null,
+      } as unknown as IPopulatedForm
+
+      const actual = FormService.isFormPublic(form)
+
+      expect(actual._unsafeUnwrap()).toEqual(true)
+    })
+
+    it('should still report a deleted form as deleted even when past its expiry', async () => {
+      const form = {
+        _id: new ObjectId(),
+        status: FormStatus.Archived,
+        closeAt: new Date(Date.now() - 60 * 1000),
+      } as unknown as IPopulatedForm
+
+      const actual = FormService.isFormPublic(form)
+
+      expect(actual._unsafeUnwrapErr()).toEqual(new FormDeletedError())
+    })
+
     it('should return FormDeletedError when form has been deleted', async () => {
       // Arrange
       const form = {
