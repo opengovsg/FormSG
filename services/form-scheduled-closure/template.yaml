@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Periodic sweep that closes FormSG forms past their scheduled expiry
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    Description: Environment name (eg, production, staging, stg-alt)
+  SweepSchedule:
+    Type: String
+    Default: rate(10 minutes)
+    Description: >-
+      How often to sweep for expired forms. This interval is the worst-case lag
+      between a form's deadline and its status flipping to closed, so it is the
+      knob to turn if that lag needs to shrink.
+
+Globals:
+  Function:
+    # Generous relative to a sweep that is a handful of HTTP calls, but the
+    # batch loop can make up to MAX_SWEEPS_PER_RUN of them after a backlog.
+    Timeout: 120
+    MemorySize: 256
+    Runtime: nodejs22.x
+
+Resources:
+  ScheduledClosureFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Closes forms whose admin-set expiry date has passed
+      FunctionName: !Sub "form-scheduled-closure-${Environment}"
+      CodeUri: ./
+      Handler: index.handler
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          SSM_ENV_SITE_NAME: !Ref Environment
+      Policies:
+        # Read-only, and scoped to this job's single parameter rather than the
+        # whole store.
+        # SSMParameterReadPolicy prepends `parameter/` to the name given, so
+        # this resolves to the unprefixed `<env>-cron-scheduled-closure`
+        # parameter — matching how the payment cron job's secret is stored.
+        - SSMParameterReadPolicy:
+            ParameterName: !Sub "${Environment}-cron-scheduled-closure"
+      Events:
+        # SAM expands this into an EventBridge rule plus the permission for it
+        # to invoke the function — the schedule is code, not console clicks.
+        Sweep:
+          Type: Schedule
+          Properties:
+            Name: !Sub "form-scheduled-closure-sweep-${Environment}"
+            Description: Triggers the expired-form sweep
+            Schedule: !Ref SweepSchedule
+
+Outputs:
+  ScheduledClosureFunctionArn:
+    Description: ARN of the scheduled closure Lambda
+    Value: !GetAtt ScheduledClosureFunction.Arn
