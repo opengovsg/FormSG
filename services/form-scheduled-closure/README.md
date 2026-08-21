@@ -47,7 +47,15 @@ pnpm run sam-build
 pnpm run sam-deploy --config-env stg
 ```
 
-CI does this via `.github/workflows/deploy-scheduled-closure-lambda.yml`.
+CI does this via `.github/workflows/deploy-scheduled-closure-lambda.yml`, which
+is invoked per environment the same way pdf-gen is:
+
+| Environment | Trigger |
+| --- | --- |
+| `stg-alt`, `stg-alt2`, `stg-alt3`, `uat` | push to the branch of that name |
+| `stg`, `production` | `release.yml` (manual dispatch), which fans out to both |
+
+To try a feature branch end to end, push it to `stg-alt`.
 
 The EventBridge schedule is **not** created by hand — the `Events.Sweep` block
 in `template.yaml` expands into the rule and its invoke permission, so changing
