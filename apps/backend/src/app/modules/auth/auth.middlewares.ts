@@ -17,6 +17,7 @@ import { getUserByApiKey } from './auth.service'
 import {
   getUserIdFromSession,
   isCronPaymentAuthValid,
+  isCronScheduledClosureAuthValid,
   isUserInSession,
   mapRouteError,
   mapRoutePublicApiError,
@@ -124,6 +125,20 @@ export const withCronPaymentSecretAuthentication: ControllerHandler = (
   next,
 ) => {
   if (isCronPaymentAuthValid(req.headers)) {
+    return next()
+  }
+
+  return res
+    .status(StatusCodes.UNAUTHORIZED)
+    .json({ message: 'Request is unauthorized.' })
+}
+
+export const withCronScheduledClosureSecretAuthentication: ControllerHandler = (
+  req,
+  res,
+  next,
+) => {
+  if (isCronScheduledClosureAuthValid(req.headers)) {
     return next()
   }
 

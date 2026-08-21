@@ -4,6 +4,7 @@ import { StatusCodes } from 'http-status-codes'
 
 import { MapRouteError } from '../../../types/routing'
 import { cronPaymentConfig } from '../../config/features/payment-cron.config'
+import { cronScheduledClosureConfig } from '../../config/features/scheduled-closure-cron.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as MailErrors from '../../services/mail/mail.errors'
 import { HashingError } from '../../utils/hash'
@@ -110,6 +111,17 @@ export const getUserIdFromSession = (
 
 export const isCronPaymentAuthValid = (header: IncomingHttpHeaders) => {
   return header['x-formsg-cron-payment-secret'] === cronPaymentConfig.apiSecret
+}
+
+export const isCronScheduledClosureAuthValid = (
+  header: IncomingHttpHeaders,
+) => {
+  const { apiSecret } = cronScheduledClosureConfig
+  // An unconfigured secret defaults to the empty string, which would otherwise
+  // be matched by a request sending an empty header value. Fail closed instead:
+  // an environment without the secret set has no authorised caller.
+  if (!apiSecret) return false
+  return header['x-formsg-cron-scheduled-closure-secret'] === apiSecret
 }
 
 export const isEmailInDomainWhitelist = (
