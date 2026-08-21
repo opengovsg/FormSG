@@ -32,6 +32,32 @@ stg-alt:
       confirm_changeset: true
       parameter_overrides: Environment=stg-alt
 
+stg-alt2:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg-alt2
+      s3_bucket: TODO-form-scheduled-closure-code-zip-stg-alt2
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg-alt2
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt2
+
+stg-alt3:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg-alt3
+      s3_bucket: TODO-form-scheduled-closure-code-zip-stg-alt3
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg-alt3
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt3
+
 uat:
   deploy:
     parameters:
