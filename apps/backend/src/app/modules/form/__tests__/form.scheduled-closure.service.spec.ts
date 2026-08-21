@@ -2,15 +2,23 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { FormResponseMode, FormStatus } from 'formsg-shared/types'
 import mongoose from 'mongoose'
+import { errAsync, okAsync } from 'neverthrow'
 
 import getFormModel from 'src/app/models/form.server.model'
+import MailService from 'src/app/services/mail/mail.service'
 
+import { MailSendError } from '../../../services/mail/mail.errors'
 import { DatabaseError } from '../../core/core.errors'
 import * as FormService from '../form.service'
+
+jest.mock('src/app/services/mail/mail.service')
+const MockMailService = jest.mocked(MailService)
 
 const Form = getFormModel(mongoose)
 
 const MOCK_ADMIN_OBJ_ID = new ObjectId()
+// Matches the user seeded by dbHandler.insertFormCollectionReqs.
+const MOCK_ADMIN_EMAIL = 'test@test.gov.sg'
 
 const NOW = new Date('2026-08-20T12:00:00.000Z')
 const AN_HOUR_AGO = new Date('2026-08-20T11:00:00.000Z')
@@ -20,10 +28,12 @@ const createForm = async ({
   title,
   status,
   closeAt,
+  permissionList = [],
 }: {
   title: string
   status: FormStatus
   closeAt: Date | null
+  permissionList?: { email: string; write: boolean }[]
 }) =>
   Form.create({
     title,
@@ -32,6 +42,7 @@ const createForm = async ({
     emails: ['test@example.com'],
     status,
     closeAt,
+    permissionList,
   })
 
 describe('FormService.closeExpiredForms', () => {
@@ -61,7 +72,12 @@ describe('FormService.closeExpiredForms', () => {
 
     expect(actual.isOk()).toEqual(true)
     expect(actual._unsafeUnwrap()).toEqual([
-      { formId: String(form._id), title: 'expired', closeAt: AN_HOUR_AGO },
+      {
+        formId: String(form._id),
+        title: 'expired',
+        closeAt: AN_HOUR_AGO,
+        emailRecipients: [MOCK_ADMIN_EMAIL],
+      },
     ])
     await expect(
       Form.findById(form._id).then((f) => f?.status),
@@ -203,9 +219,11 @@ describe('FormService.closeExpiredForms', () => {
       () =>
         ({
           select: () => ({
-            limit: () => ({
-              lean: () => ({
-                exec: () => Promise.reject(new Error('boom')),
+            populate: () => ({
+              limit: () => ({
+                lean: () => ({
+                  exec: () => Promise.reject(new Error('boom')),
+                }),
               }),
             }),
           }),
@@ -216,5 +234,126 @@ describe('FormService.closeExpiredForms', () => {
 
     expect(actual.isErr()).toEqual(true)
     expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+  })
+})
+
+describe('FormService.closeExpiredForms recipients', () => {
+  beforeAll(async () => {
+    await dbHandler.connect()
+    await dbHandler.insertFormCollectionReqs({ userId: MOCK_ADMIN_OBJ_ID })
+  })
+
+  afterEach(async () => {
+    jest.restoreAllMocks()
+    await Form.deleteMany({})
+  })
+
+  afterAll(async () => {
+    await dbHandler.clearDatabase()
+    await dbHandler.closeDatabase()
+  })
+
+  it('should include the admin and every collaborator', async () => {
+    await createForm({
+      title: 'expired with collaborators',
+      status: FormStatus.Public,
+      closeAt: AN_HOUR_AGO,
+      permissionList: [
+        { email: 'editor@test.gov.sg', write: true },
+        { email: 'viewer@test.gov.sg', write: false },
+      ],
+    })
+
+    const actual = await FormService.closeExpiredForms(NOW)
+
+    expect(actual._unsafeUnwrap()[0].emailRecipients).toEqual([
+      MOCK_ADMIN_EMAIL,
+      'editor@test.gov.sg',
+      'viewer@test.gov.sg',
+    ])
+  })
+})
+
+describe('FormService.notifyFormsClosed', () => {
+  const closedForm = {
+    formId: String(new ObjectId()),
+    title: 'expired form',
+    closeAt: AN_HOUR_AGO,
+    emailRecipients: ['admin@test.gov.sg'],
+  }
+
+  afterEach(() => jest.clearAllMocks())
+
+  it('should send one notification per closed form', async () => {
+    MockMailService.sendFormScheduledClosureNotification.mockReturnValue(
+      okAsync(true),
+    )
+    const second = { ...closedForm, formId: String(new ObjectId()) }
+
+    const actual = await FormService.notifyFormsClosed([closedForm, second])
+
+    expect(actual._unsafeUnwrap()).toEqual({ sentCount: 2, failedCount: 0 })
+    expect(
+      MockMailService.sendFormScheduledClosureNotification,
+    ).toHaveBeenCalledTimes(2)
+  })
+
+  it('should format the close instant in Singapore time', async () => {
+    MockMailService.sendFormScheduledClosureNotification.mockReturnValue(
+      okAsync(true),
+    )
+
+    // 11:00 UTC is 19:00 SGT on the same day.
+    await FormService.notifyFormsClosed([closedForm])
+
+    expect(
+      MockMailService.sendFormScheduledClosureNotification,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({ closedAt: '20 Aug 2026, 19:00' }),
+    )
+  })
+
+  it('should count a failed send without rejecting', async () => {
+    MockMailService.sendFormScheduledClosureNotification.mockReturnValue(
+      errAsync(new MailSendError('nope')),
+    )
+
+    const actual = await FormService.notifyFormsClosed([closedForm])
+
+    expect(actual.isOk()).toEqual(true)
+    expect(actual._unsafeUnwrap()).toEqual({ sentCount: 0, failedCount: 1 })
+  })
+
+  it('should keep sending to other forms when one fails', async () => {
+    MockMailService.sendFormScheduledClosureNotification
+      .mockReturnValueOnce(errAsync(new MailSendError('nope')))
+      .mockReturnValueOnce(okAsync(true))
+
+    const actual = await FormService.notifyFormsClosed([
+      closedForm,
+      { ...closedForm, formId: String(new ObjectId()) },
+    ])
+
+    expect(actual._unsafeUnwrap()).toEqual({ sentCount: 1, failedCount: 1 })
+  })
+
+  it('should skip a form with no recipients rather than send to nobody', async () => {
+    const actual = await FormService.notifyFormsClosed([
+      { ...closedForm, emailRecipients: [] },
+    ])
+
+    expect(actual._unsafeUnwrap()).toEqual({ sentCount: 0, failedCount: 1 })
+    expect(
+      MockMailService.sendFormScheduledClosureNotification,
+    ).not.toHaveBeenCalled()
+  })
+
+  it('should do nothing when no forms were closed', async () => {
+    const actual = await FormService.notifyFormsClosed([])
+
+    expect(actual._unsafeUnwrap()).toEqual({ sentCount: 0, failedCount: 0 })
+    expect(
+      MockMailService.sendFormScheduledClosureNotification,
+    ).not.toHaveBeenCalled()
   })
 })

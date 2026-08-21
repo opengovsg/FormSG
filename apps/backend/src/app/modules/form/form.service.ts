@@ -11,6 +11,7 @@ import {
   SubmissionType,
 } from 'formsg-shared/types'
 import { encryptString } from 'formsg-shared/utils/crypto'
+import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { decodeBase64 } from 'tweetnacl-util'
@@ -24,6 +25,7 @@ import {
 } from '../../../types'
 import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { TIMEZONE } from '../../constants/timezone'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -54,6 +56,7 @@ import {
   PrivateFormError,
 } from './form.errors'
 import {
+  getCollabEmailsWithPermission,
   getSubmissionType,
   hasVerifiableMobileFieldformFields,
 } from './form.utils'
@@ -267,6 +270,8 @@ export type ClosedExpiredForm = {
   formId: string
   title: string
   closeAt: Date
+  /** Admin plus collaborators, i.e. everyone told the form has closed. */
+  emailRecipients: string[]
 }
 
 /**
@@ -307,7 +312,10 @@ export const closeExpiredForms = (
       // check, since neither null nor a missing field is of type date.
       closeAt: { $type: 'date', $lte: now },
     })
-      .select('_id title closeAt')
+      .select('_id title closeAt admin permissionList')
+      // The notification goes to the admin and every collaborator, so their
+      // emails have to come back with the same read.
+      .populate({ path: 'admin', select: 'email' })
       .limit(limit)
       .lean()
       .exec(),
@@ -350,14 +358,83 @@ export const closeExpiredForms = (
         },
       })
 
-      return expiredForms.map((form) => ({
-        formId: String(form._id),
-        title: form.title,
-        // Declared as a wire-format DateString on the shared type but stored
-        // as a BSON date, so normalise instead of asserting either way.
-        closeAt: new Date(form.closeAt as unknown as string | Date),
-      }))
+      return expiredForms.map((form) => {
+        const adminEmail = (form.admin as unknown as { email?: string })?.email
+        return {
+          formId: String(form._id),
+          title: form.title,
+          // Declared as a wire-format DateString on the shared type but stored
+          // as a BSON date, so normalise instead of asserting either way.
+          closeAt: new Date(form.closeAt as unknown as string | Date),
+          emailRecipients: adminEmail
+            ? [
+                adminEmail,
+                ...getCollabEmailsWithPermission(form.permissionList),
+              ]
+            : [],
+        }
+      })
     })
+  })
+}
+
+/**
+ * Notifies each form's admin and collaborators that their form has closed by
+ * reaching its scheduled expiry.
+ *
+ * Never rejects. A failed email must not fail the sweep or undo a closure that
+ * has already happened — the form really is closed, and reporting the sweep as
+ * failed would invite a retry that closes nothing and re-sends to everyone who
+ * did receive one.
+ *
+ * Best-effort and at-most-once: a form is only matched by the sweep while it is
+ * still public, so a send that fails here is not retried on the next run. The
+ * failure is logged and counted rather than silently dropped.
+ *
+ * @param closedForms the forms closed by this sweep
+ * @returns ok with how many notifications were sent and how many failed
+ */
+export const notifyFormsClosed = (
+  closedForms: ClosedExpiredForm[],
+): ResultAsync<{ sentCount: number; failedCount: number }, never> => {
+  const sends = closedForms.map((form) => {
+    if (form.emailRecipients.length === 0) {
+      logger.warn({
+        message: 'Closed form has no notification recipients',
+        meta: {
+          action: 'notifyFormsClosed',
+          formId: form.formId,
+        },
+      })
+      return okAsync(false)
+    }
+
+    return MailService.sendFormScheduledClosureNotification({
+      emailRecipients: form.emailRecipients,
+      formTitle: form.title,
+      formId: form.formId,
+      closedAt: moment(form.closeAt).tz(TIMEZONE).format('D MMM YYYY, HH:mm'),
+    })
+      .map(() => true)
+      .orElse((error) => {
+        logger.error({
+          message: 'Failed to send scheduled closure notification',
+          meta: {
+            action: 'notifyFormsClosed',
+            formId: form.formId,
+          },
+          error,
+        })
+        return okAsync(false)
+      })
+  })
+
+  return ResultAsync.combine(sends).map((results) => {
+    const sentCount = results.filter(Boolean).length
+    return {
+      sentCount,
+      failedCount: results.length - sentCount,
+    }
   })
 }
 
