@@ -106,8 +106,8 @@ Notification failures deliberately do not fail the request. The forms are
 already closed, and a retry would close nothing while re-sending to everyone who
 did receive an email.
 
-## Not done yet
+## Manual reopen
 
-- **Manual reopen.** If an admin reopens a form whose `closeAt` is in the past,
-  the next sweep closes it again — and emails everyone a second time. See PRD
-  Q5, undecided at time of writing. This is the most user-visible gap.
+Reopening a form whose expiry has already lapsed clears `closeAt`, so the sweep
+does not immediately re-close it. A *future* expiry survives a reopen, letting an
+admin schedule a deadline on a form that is not open yet. See PRD Q5.
