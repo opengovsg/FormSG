@@ -2039,6 +2039,104 @@ describe('admin-form.service', () => {
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
     })
+    describe('clearing a lapsed closeAt on manual reopen', () => {
+      const AN_HOUR_AGO = new Date(Date.now() - 60 * 60 * 1000)
+      const IN_AN_HOUR = new Date(Date.now() + 60 * 60 * 1000)
+
+      const formWithCloseAt = (closeAt: Date | null) =>
+        jest.mocked({
+          _id: new ObjectId(),
+          status: FormStatus.Private,
+          responseMode: FormResponseMode.Email,
+          closeAt,
+        } as unknown as IPopulatedForm)
+
+      it('should clear closeAt when reopening a form whose expiry has lapsed', async () => {
+        const form = formWithCloseAt(AN_HOUR_AGO)
+
+        await AdminFormService.updateFormSettings(form, {
+          status: FormStatus.Public,
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { status: FormStatus.Public, closeAt: null },
+          expect.anything(),
+        )
+      })
+
+      it('should keep a future closeAt when reopening, so a pre-scheduled expiry survives', async () => {
+        const form = formWithCloseAt(IN_AN_HOUR)
+
+        await AdminFormService.updateFormSettings(form, {
+          status: FormStatus.Public,
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { status: FormStatus.Public },
+          expect.anything(),
+        )
+      })
+
+      it('should not touch closeAt when the form has none', async () => {
+        const form = formWithCloseAt(null)
+
+        await AdminFormService.updateFormSettings(form, {
+          status: FormStatus.Public,
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { status: FormStatus.Public },
+          expect.anything(),
+        )
+      })
+
+      it('should respect a closeAt supplied in the same request over clearing it', async () => {
+        const form = formWithCloseAt(AN_HOUR_AGO)
+        const rescheduled = IN_AN_HOUR.toISOString() as never
+
+        await AdminFormService.updateFormSettings(form, {
+          status: FormStatus.Public,
+          closeAt: rescheduled,
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { status: FormStatus.Public, closeAt: rescheduled },
+          expect.anything(),
+        )
+      })
+
+      it('should not clear closeAt when closing a form rather than reopening it', async () => {
+        const form = formWithCloseAt(AN_HOUR_AGO)
+
+        await AdminFormService.updateFormSettings(form, {
+          status: FormStatus.Private,
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { status: FormStatus.Private },
+          expect.anything(),
+        )
+      })
+
+      it('should not clear closeAt when the update does not touch status', async () => {
+        const form = formWithCloseAt(AN_HOUR_AGO)
+
+        await AdminFormService.updateFormSettings(form, {
+          title: 'a new title',
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { title: 'a new title' },
+          expect.anything(),
+        )
+      })
+    })
   })
 
   describe('updateFormField', () => {
