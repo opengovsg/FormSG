@@ -281,7 +281,9 @@ export const closeExpiredForms = (
     // notify their admins. An updateMany alone would only yield a count.
     FormModel.find({
       status: FormStatus.Public,
-      closeAt: { $ne: null, $lte: now },
+      // `$type: 'date'` rather than `$ne: null`, so the query provably matches
+      // the partial index's filter expression and is eligible to use it.
+      closeAt: { $type: 'date', $lte: now },
     })
       .select('_id title closeAt')
       .limit(limit)

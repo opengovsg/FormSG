@@ -1677,6 +1677,22 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     lastModified: -1,
   })
 
+  // Serves the scheduled closure sweep. Partial, because most forms have no
+  // closeAt and would only bloat the index.
+  //
+  // NOTE: `autoIndex` is off outside dev/test (see config.ts), so this does not
+  // create the index on a deployed database — it has to be created by hand in
+  // Atlas, in the background, before the feature carries real traffic.
+  FormSchema.index(
+    {
+      status: 1,
+      closeAt: 1,
+    },
+    {
+      partialFilterExpression: { closeAt: { $type: 'date' } },
+    },
+  )
+
   const FormModel = db.model<IFormSchema, IFormModel>(
     FORM_SCHEMA_ID,
     FormSchema,
