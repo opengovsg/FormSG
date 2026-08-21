@@ -91,11 +91,23 @@ docker compose exec -T database mongo formsg --quiet --eval '
 '
 ```
 
+## Notifications
+
+Each closed form's admin and collaborators are emailed. The endpoint reports
+`notifiedCount` and `notifyFailedCount` alongside the closures.
+
+Sending is best-effort and **at-most-once**: a form only matches the sweep while
+it is still public, so once closed it is never revisited and a failed email is
+not retried. A non-zero `notifyFailedCount` therefore means some admins were
+never told, and is worth alarming on. Making this at-least-once needs a
+`closeNotifiedAt` marker on the form so a later sweep can pick up the stragglers.
+
+Notification failures deliberately do not fail the request. The forms are
+already closed, and a retry would close nothing while re-sending to everyone who
+did receive an email.
+
 ## Not done yet
 
-- **Admin notification.** The PRD requires admins and collaborators to be told
-  when their form auto-closes. The endpoint already returns which forms it
-  closed so the mail can be added without reshaping anything, but it does not
-  send yet.
 - **Manual reopen.** If an admin reopens a form whose `closeAt` is in the past,
-  the next sweep closes it again. See PRD Q5 — undecided at time of writing.
+  the next sweep closes it again — and emails everyone a second time. See PRD
+  Q5, undecided at time of writing. This is the most user-visible gap.
