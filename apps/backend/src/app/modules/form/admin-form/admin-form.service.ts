@@ -2061,6 +2061,27 @@ export const deleteFormWorkflowStep = (
 }
 
 /**
+ * Clears a lapsed closeAt when an admin manually reopens a form, so the sweep
+ * does not immediately close it again. A future closeAt, or one supplied in the
+ * same request, is left alone.
+ */
+const withExpiredCloseAtCleared = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateDto,
+): SettingsUpdateDto => {
+  const isReopening = body.status === FormStatus.Public
+  const isReschedulingInSameRequest = body.closeAt !== undefined
+  const hasLapsedCloseAt =
+    !!originalForm.closeAt && new Date(originalForm.closeAt) <= new Date()
+
+  if (!isReopening || isReschedulingInSameRequest || !hasLapsedCloseAt) {
+    return body
+  }
+
+  return { ...body, closeAt: null }
+}
+
+/**
  * Updates form settings.
  * @param originalForm The original form to update settings for
  * @param body the subset of form settings to update
@@ -2143,7 +2164,9 @@ export const updateFormSettings = (
     }
   }
 
-  const dotifiedSettingsToUpdate = dotifyObject(body)
+  const dotifiedSettingsToUpdate = dotifyObject(
+    withExpiredCloseAtCleared(originalForm, body),
+  )
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
 
   return ResultAsync.fromPromise(
