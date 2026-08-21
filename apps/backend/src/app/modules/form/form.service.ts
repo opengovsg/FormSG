@@ -246,6 +246,98 @@ export const isFormPublic = (
 }
 
 /**
+ * Maximum number of forms closed in a single sweep. The remainder is picked up
+ * by the next run.
+ */
+export const CLOSE_EXPIRED_FORMS_BATCH_LIMIT = 500
+
+export type ClosedExpiredForm = {
+  formId: string
+  title: string
+  closeAt: Date
+}
+
+/**
+ * Closes every public form whose scheduled expiry has passed. Idempotent: a
+ * closed form no longer matches the query.
+ *
+ * @param now the instant to evaluate deadlines against
+ * @param limit maximum forms to close in this sweep
+ * @returns ok(closed forms) listing what this sweep closed, capped at the batch limit
+ * @returns err(PossibleDatabaseError) if the query or update failed
+ */
+export const closeExpiredForms = (
+  now: Date = new Date(),
+  limit: number = CLOSE_EXPIRED_FORMS_BATCH_LIMIT,
+): ResultAsync<ClosedExpiredForm[], PossibleDatabaseError> => {
+  const logMeta = {
+    action: 'closeExpiredForms',
+    now: now.toISOString(),
+    limit,
+  }
+
+  return ResultAsync.fromPromise(
+    // Read before updating, so the caller learns which forms closed and can
+    // notify their admins. An updateMany alone would only yield a count.
+    FormModel.find({
+      status: FormStatus.Public,
+      closeAt: { $ne: null, $lte: now },
+    })
+      .select('_id title closeAt')
+      .limit(limit)
+      .lean()
+      .exec(),
+    (error) => {
+      logger.error({
+        message: 'Error finding forms past their scheduled closure',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((expiredForms) => {
+    if (expiredForms.length === 0) return okAsync([])
+
+    const formIds = expiredForms.map((form) => form._id)
+
+    return ResultAsync.fromPromise(
+      // Re-assert `status` so a form reopened between the read and the write
+      // is left alone.
+      FormModel.updateMany(
+        { _id: { $in: formIds }, status: FormStatus.Public },
+        { $set: { status: FormStatus.Private } },
+      ).exec(),
+      (error) => {
+        logger.error({
+          message: 'Error closing forms past their scheduled closure',
+          meta: { ...logMeta, formIds },
+          error,
+        })
+        return transformMongoError(error)
+      },
+    ).map((result) => {
+      logger.info({
+        message: 'Closed forms past their scheduled closure',
+        meta: {
+          ...logMeta,
+          matchedCount: expiredForms.length,
+          modifiedCount: result.modifiedCount,
+          isBatchFull: expiredForms.length === limit,
+        },
+      })
+
+      return expiredForms.map((form) => ({
+        formId: String(form._id),
+        title: form.title,
+        // Declared as a wire-format DateString on the shared type but stored
+        // as a BSON date, so normalise instead of asserting either way.
+        closeAt: new Date(form.closeAt as unknown as string | Date),
+      }))
+    })
+  })
+}
+
+/**
  * Method to check whether a form has reached submission limits, and deactivate the form if necessary
  * @param form the form to check
  * @returns ok(form) if submission is allowed because the form has not reached limits
