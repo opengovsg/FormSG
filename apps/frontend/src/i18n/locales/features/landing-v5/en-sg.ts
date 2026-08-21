@@ -1,6 +1,38 @@
 import { LandingV5 } from '.'
 
 export const enSG: LandingV5 = {
+  hero: {
+    // Split so the stamped word can be a separate element. The prototype's
+    // headline, which supersedes the "Simple on top. Secure underneath." locked
+    // in docs/DECISIONS.md on 11 Aug — the V5 round changed it a week later and
+    // the older shape survives only in v5-shape.
+    headlineBefore: 'Build Simple, ',
+    headlineStamped: 'Secure',
+    headlineAfter: 'Government Forms',
+    // KNOWN OPEN. The 18 Aug review flagged that this restates the headline
+    // rather than carrying proof, and it is still unresolved — "build secure
+    // government forms" is very nearly the headline again. Ported verbatim
+    // rather than rewritten: a homepage headline is not something to change
+    // unilaterally. See the manual-items checklist.
+    subhead:
+      'Any public officer can build secure government forms in minutes. Zero code or cost to collect classified and sensitive data.',
+    cta: 'Start building today',
+    builderCaption: 'The builder.',
+    // Two captions for two screenshots, swapped at the same breakpoint so the
+    // words and the image can never disagree: wide shows the palette beside the
+    // form so it can promise the drag, narrow shows the edit panel so it
+    // cannot.
+    builderCaptionWide: 'Pick fields and drag them onto your form.',
+    builderCaptionNarrow: 'Pick a field, name it, set the rules.',
+    builderAlt:
+      'The FormSG builder: a field palette on the left, a live form preview on the right',
+    formCaption: 'The result.',
+    formCaptionBody: 'A real form, live on this page. Try it.',
+    formIdle: 'Live form',
+    formTitle: 'A live FormSG form',
+    previousPanel: 'Previous panel',
+    nextPanel: 'Next panel',
+  },
   proof: {
     title: 'Trusted across government, healthcare and schools.',
     // Funnel order: agencies -> forms -> responses.
@@ -60,6 +92,14 @@ export const enSG: LandingV5 = {
       name: 'Event registration',
       body: 'Sign-ups collect themselves, and every registrant gets an instant email confirmation with the details.',
     },
+  },
+  close: {
+    // The prototype's wording. docs/DECISIONS.md locked "Start and build your
+    // form today." on 11 Aug; the V5 round tightened it a week later.
+    title: 'Start building your form today.',
+    cta: 'Get started',
+    guidePrefix: 'Questions?',
+    guideLink: "Everything's in the guide",
   },
   testimonial: {
     eyebrow: 'What teams say',

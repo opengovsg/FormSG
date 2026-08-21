@@ -330,6 +330,235 @@
   text-decoration: underline;
 }
 
+/* ---------- Hero: the sheet that scrolls sideways ----------
+   Three panes in a native horizontal scroller: copy, builder, live form. At
+   rest the copy owns the sheet and the builder is cut off at the right edge,
+   which is the whole invitation — a pane that ends mid-content says "more this
+   way" in a way an arrow cannot.
+
+   Deliberately NOT a pinned hero driven by page scroll. Pinning takes the page
+   away from every reader who only wanted to get further down it, and this panel
+   is optional content. Vertical scroll is never touched here, so the cost of
+   ignoring the carousel is zero.
+
+   `--lv5-p` is scroll progress through the first pane only, written per frame by
+   useHeroCarousel and read by everything below. It lives on the sheet, not the
+   scroller, because the controls are siblings of the scroller. */
+.landing-v5 .lv5-hero-sheet {
+  --lv5-p: 0;
+}
+
+.landing-v5 .lv5-hcar {
+  position: relative;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+  /* Without this the copy pane's snap-align:start pins its own left edge to the
+     scrollport edge on load, swallowing the track's left padding and leaving the
+     headline flush against the sheet border. */
+  scroll-padding-left: 48px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Pane widths are struck from the sheet's own width, not from percentages. A
+     percentage flex-basis resolves against the track, and the track is sized by
+     its contents — circular, so the panes would collapse to their intrinsic size
+     and the padding would never land. This restates the sheet's own maths. */
+  --lv5-sheetw: min(1180px, calc(100vw - 48px));
+}
+
+.landing-v5 .lv5-hcar::-webkit-scrollbar {
+  display: none;
+}
+
+/* `width: max-content` is what makes the RIGHT padding real. Without it the
+   track is only as wide as the scrollport, its flex items overflow past that,
+   and the overflow carries no trailing padding — so the left inset lands and the
+   right one silently does nothing, leaving the last pane against the edge. */
+.landing-v5 .lv5-hcar-track {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 60px 48px;
+  width: max-content;
+}
+
+/* The nudge moves the track, not the scroll position. Driving scrollLeft frame
+   by frame meant a reader who grabbed the carousel mid-animation had every frame
+   of their drag overwritten and then reset — destroying the exact interaction the
+   nudge exists to invite. A transform never touches scrollLeft, so the dots, the
+   arrows and --lv5-p all keep reading a position the animation cannot reach. */
+@keyframes lv5-hcar-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  46% {
+    transform: translateX(-38px);
+  }
+}
+
+.landing-v5 .lv5-hcar-track.lv5-nudge {
+  animation: lv5-hcar-nudge 1.05s var(--lv5-settle);
+}
+
+.landing-v5 .lv5-hcar-pane {
+  flex: 0 0 auto;
+}
+
+/* Fades on its own scroll progress rather than on an intersection callback, so
+   the copy dims continuously with the drag instead of snapping at a threshold. */
+.landing-v5 .lv5-pane-copy {
+  width: calc(var(--lv5-sheetw) * 0.5);
+  scroll-snap-align: start;
+  opacity: calc(1 - var(--lv5-p));
+}
+
+/* Once it is mostly gone an invisible headline must not swallow a click meant
+   for the panel behind it. */
+.landing-v5 .lv5-hcar[data-faded='true'] .lv5-pane-copy {
+  pointer-events: none;
+}
+
+/* The stamp is the page's opening beat. If the reader has already scrolled the
+   copy away it should not still be pressing in behind them. */
+.landing-v5 .lv5-hcar[data-faded='true'] .lv5-stamp-word {
+  animation: none;
+}
+
+/* The panes grow via transform, not width. Animating width would change
+   scrollWidth mid-scroll, which moves the very scrollLeft the growth is computed
+   from — a feedback loop that reads as stutter. Scale is free of layout, so the
+   growth is smooth and the scroll maths stay honest. */
+.landing-v5 .lv5-pane-vis {
+  width: calc(var(--lv5-sheetw) * 0.62);
+  scroll-snap-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  transform: scale(calc(0.94 + 0.06 * var(--lv5-p)));
+  transform-origin: center center;
+}
+
+/* contain, not cover: the panel exists to be read, and cropping the builder to
+   fill a box loses the very columns that make it legible as a tool. The pane is
+   sized close to the shot's own ratio, so letterboxing is a few pixels rather
+   than a visible band. */
+.landing-v5 .lv5-pane-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.landing-v5 .lv5-pane-frame iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 6px;
+}
+
+/* Paired with the <picture> in the markup: one caption per screenshot, swapped
+   at the same breakpoint so the words and the image cannot disagree. */
+.landing-v5 .lv5-cap-narrow {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .landing-v5 .lv5-hcar-track {
+    gap: 20px;
+    padding: 40px 24px 64px;
+  }
+
+  /* Kept under full width on purpose: a pane that fills the screen hides the
+     fact that anything follows it, and the cut-off edge is the invitation. */
+  .landing-v5 .lv5-pane-copy {
+    width: calc(var(--lv5-sheetw) * 0.8);
+  }
+
+  .landing-v5 .lv5-pane-vis {
+    width: calc(var(--lv5-sheetw) * 0.82);
+    gap: 10px;
+  }
+
+  /* The portrait capture fills the pane and anchors to the top, so the crop
+     falls off the bottom of a scrolling panel rather than through the middle of
+     the controls. */
+  .landing-v5 .lv5-pane-frame img {
+    object-fit: cover;
+    object-position: center top;
+  }
+
+  .landing-v5 .lv5-cap-wide {
+    display: none;
+  }
+
+  .landing-v5 .lv5-cap-narrow {
+    display: inline;
+  }
+}
+
+/* ---------- The hero stamp ----------
+   Pressed once, on load. Grain over the ink so it reads as hand-inked rather
+   than as a drawn rectangle. */
+@keyframes lv5-stamp-press {
+  from {
+    opacity: 0;
+    transform: scale(2.1) rotate(-9deg);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.965) rotate(-1.4deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(-2deg);
+  }
+}
+
+.landing-v5 .lv5-stamp-word {
+  display: inline-block;
+  position: relative;
+  opacity: 0;
+  transform: rotate(-2deg);
+}
+
+.landing-v5 .lv5-stamp-word.lv5-pressed {
+  animation: lv5-stamp-press 0.42s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+}
+
+.landing-v5 .lv5-stamp-word::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 10px;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.8 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.5;
+  mix-blend-mode: screen;
+}
+
+/* ---------- The proof peek ----------
+   The proof section sits just below the fold and is faded while the page is at
+   the top, so the sliver reads as a hint rather than as a heading accidentally
+   clipped. Once the reader moves it is theirs at full strength.
+
+   Specificity is deliberate: this has to outrank
+   `.landing-v5 .lv5-reveal[data-revealed='true']`, which also sets opacity. The
+   extra attribute selector puts it ahead rather than relying on source order. */
+.landing-v5 .lv5-proof[data-attop='true'] {
+  opacity: 0.4;
+}
+
+/* Brightens a little while it bobs. At 0.4 the sliver is quiet enough that
+   movement alone barely registers; lifting it for the duration is what makes the
+   gesture land, and it drops back on its own afterwards. */
+.landing-v5 .lv5-proof[data-attop='true'].lv5-bob {
+  opacity: 0.66;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Reveals land immediately rather than not at all: the content is the point,
      the rise is decoration. */
@@ -380,6 +609,18 @@
   .landing-v5 .lv5-ex-tilt,
   .landing-v5 .lv5-ex-form {
     transition: none;
+  }
+
+  /* The stamp is present, just not pressed in. */
+  .landing-v5 .lv5-stamp-word {
+    opacity: 1;
+    animation: none !important;
+  }
+
+  /* The nudge is skipped at source; this covers the class arriving any other
+     way. The carousel itself keeps working — only the hint stops moving. */
+  .landing-v5 .lv5-hcar-track.lv5-nudge {
+    animation: none;
   }
 }
 
