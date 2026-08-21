@@ -4,6 +4,7 @@ import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
 
 import { LandingV5Root } from './components/LandingV5Root'
+import { CapabilitiesSection } from './sections/CapabilitiesSection'
 import { ProofSection } from './sections/ProofSection'
 import { SecuritySection } from './sections/SecuritySection'
 
@@ -23,6 +24,7 @@ export const LandingV5Page = (): JSX.Element => {
       <LandingV5Root>
         <ProofSection />
         <SecuritySection />
+        <CapabilitiesSection />
       </LandingV5Root>
       <AppFooter />
     </>

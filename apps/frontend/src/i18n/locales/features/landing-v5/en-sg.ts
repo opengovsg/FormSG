@@ -25,4 +25,23 @@ export const enSG: LandingV5 = {
     sensitivityValue: 'Sensitive (High)',
     caption: 'Responses are fully encrypted.',
   },
+  capabilities: {
+    title: 'From first question to final approval',
+    lede: 'A form on FormSG runs the whole process, not just the collection.',
+    build: {
+      title: 'Build with a drag-and-drop builder',
+      body: 'Pick different form fields and drag them onto the form. The first cut of your form can be out by lunch.',
+    },
+    // Deliberately NOT the prototype's copy. It read "Set up the workflow and
+    // let it run automatically" / "Reminders to finish their turn are just one
+    // click away", which contradicts itself — if it runs automatically, why is
+    // anyone clicking? — and contradicts `docs/DECISIONS.md`, which locks
+    // "told when it's their turn" and "a nudge is one click" precisely because
+    // FormSG does not auto-send approval reminders. Routing is automatic;
+    // chasing is not. This wording keeps both locked phrases verbatim.
+    workflow: {
+      title: 'Set up the workflow and let it run',
+      body: "Responses get routed to the right people to fill up the form or approve them. Each person is told when it's their turn, and a nudge is one click away.",
+    },
+  },
 }
