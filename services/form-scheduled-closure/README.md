@@ -68,17 +68,31 @@ Neither of these lives in this repo, and the first deploy fails without them:
 1. **An S3 bucket for SAM build artifacts.** The `s3_bucket` entries in
    `samconfig.yaml` are `TODO-` placeholders. The equivalent pdf-gen buckets are
    provisioned by pulumi in the `formsg-infra` repo; these need the same.
-2. **An SSM parameter** named `<env>-cron-scheduled-closure`, containing:
+2. **An SSM parameter** at `/<ssm-env-site-name>/CRON_SCHEDULED_CLOSURE_API_SECRET`,
+   holding a random string.
 
-   ```
-   CRON_SCHEDULED_CLOSURE_API_SECRET = <random string>
-   ```
+Both are created by `src/scheduledClosure.ts` in the formsg-infra repo. The
+secret's value is set per stack with:
 
-   The same value must be set as `CRON_SCHEDULED_CLOSURE_API_SECRET` in the
-   backend's environment, or every call is rejected with a 401.
+```bash
+pulumi config set --secret CRON_SCHEDULED_CLOSURE_API_SECRET "$(openssl rand -hex 32)" --stack stg-alt3
+```
 
-The secret is deliberately separate from the payment cron job's secret, so a
-leak of one does not expose the other.
+This is the *same* parameter the backend reads for its own
+`CRON_SCHEDULED_CLOSURE_API_SECRET` env var — one copy, read by both sides, so
+they cannot drift. (The payment cron does it differently: a pulumi-managed
+parameter for the backend plus a separate hand-created blob for its lambda. A
+drift between two copies is silent — every sweep 401s and forms never close.)
+
+It is a different secret from the payment cron's, so a leak of one does not
+expose the other.
+
+### A naming trap
+
+`SsmEnvSiteName` is passed separately from `Environment` in `samconfig.yaml`
+because they are not always the same string. formsg-infra's `src/constants.ts`
+maps the `stg-alt2` stack to the site name `stg-alt21`, so deriving the SSM path
+from `Environment` would look in the wrong place for that one environment.
 
 ## Testing locally
 
@@ -99,11 +113,23 @@ docker compose exec -T database mongo formsg --quiet --eval '
 '
 ```
 
-## Not done yet
+## Notifications
 
-- **Admin notification.** The PRD requires admins and collaborators to be told
-  when their form auto-closes. The endpoint already returns which forms it
-  closed so the mail can be added without reshaping anything, but it does not
-  send yet.
-- **Manual reopen.** If an admin reopens a form whose `closeAt` is in the past,
-  the next sweep closes it again. See PRD Q5 — undecided at time of writing.
+Each closed form's admin and collaborators are emailed. The endpoint reports
+`notifiedCount` and `notifyFailedCount` alongside the closures.
+
+Sending is best-effort and **at-most-once**: a form only matches the sweep while
+it is still public, so once closed it is never revisited and a failed email is
+not retried. A non-zero `notifyFailedCount` therefore means some admins were
+never told, and is worth alarming on. Making this at-least-once needs a
+`closeNotifiedAt` marker on the form so a later sweep can pick up the stragglers.
+
+Notification failures deliberately do not fail the request. The forms are
+already closed, and a retry would close nothing while re-sending to everyone who
+did receive an email.
+
+## Manual reopen
+
+Reopening a form whose expiry has already lapsed clears `closeAt`, so the sweep
+does not immediately re-close it. A *future* expiry survives a reopen, letting an
+admin schedule a deadline on a form that is not open yet. See PRD Q5.
