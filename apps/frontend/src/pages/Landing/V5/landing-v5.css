@@ -229,6 +229,56 @@
   }
 }
 
+/* ---------- Capabilities: the stamped stack ----------
+   The stamp comes down hard and settles, which is why the keyframes overshoot
+   past the resting scale rather than easing into it. Rest state (invisible, at
+   scale 0) lives on the element, so an unstamped card shows nothing even before
+   the animation has run. */
+@keyframes lv5-stamp-in {
+  from {
+    transform: rotate(-14deg) scale(1.8);
+    opacity: 0;
+  }
+  60% {
+    transform: rotate(-7deg) scale(0.95);
+    opacity: 1;
+  }
+  to {
+    transform: rotate(-8deg) scale(1);
+    opacity: 1;
+  }
+}
+
+.landing-v5 .lv5-stamp-in {
+  animation: lv5-stamp-in 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) forwards;
+}
+
+/* ---------- Capabilities: the builder mock ----------
+   The field transitions live in CSS while `useBuilderDrag` writes only the
+   transform, so the easing is declared once rather than per frame. */
+.landing-v5 .lv5-field {
+  transition:
+    transform 0.5s var(--lv5-settle),
+    box-shadow 0.28s ease,
+    border-color 0.28s ease;
+}
+
+/* Picked up: the field has left the page, so it needs its own shadow and has to
+   sit above the neighbour it is travelling over. */
+.landing-v5 .lv5-field-lift {
+  z-index: 2;
+  border-color: var(--lv5-blue);
+  box-shadow: 0 12px 24px rgba(38, 58, 112, 0.2);
+}
+
+.landing-v5 .lv5-field .lv5-grip {
+  transition: color 0.28s ease;
+}
+
+.landing-v5 .lv5-field-lift .lv5-grip {
+  color: var(--lv5-blue);
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Reveals land immediately rather than not at all: the content is the point,
      the rise is decoration. */
@@ -259,6 +309,19 @@
      the case where the class is applied some other way. */
   .landing-v5 .lv5-bob {
     animation: none;
+  }
+
+  /* The stack renders already-landed and already-stamped, so the cards must not
+     transition into place and the stamps must not animate in. Both hooks skip
+     their loops at source; this covers the resting styles they leave behind. */
+  .landing-v5 .lv5-stamp-in {
+    animation: none;
+    transform: rotate(-8deg) scale(1);
+    opacity: 1;
+  }
+
+  .landing-v5 .lv5-field {
+    transition: none;
   }
 }
 

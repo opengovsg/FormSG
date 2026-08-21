@@ -25,4 +25,10 @@ export interface LandingV5 {
     sensitivityValue: string
     caption: string
   }
+  capabilities: {
+    title: string
+    lede: string
+    build: { title: string; body: string }
+    workflow: { title: string; body: string }
+  }
 }
