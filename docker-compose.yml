@@ -118,6 +118,7 @@ services:
       - PAYMENT_LANDING_GUIDE_LINK
       # Cron secrets
       - CRON_PAYMENT_API_SECRET=secretKey
+      - CRON_SCHEDULED_CLOSURE_API_SECRET=secretKey
       # env vars for go integration
       - GOGOV_API_KEY
       # Bearer token API key format
