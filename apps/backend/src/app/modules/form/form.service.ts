@@ -210,12 +210,33 @@ export const retrieveFormById = (
 }
 
 /**
+ * Whether a form's scheduled expiry has passed.
+ *
+ * Evaluated on demand rather than trusted from `status`, because the sweep that
+ * flips the status runs on an interval — between a form's deadline and the next
+ * sweep, `status` still reads Public even though the deadline has gone.
+ */
+const hasPassedCloseAt = (form: IPopulatedForm): boolean =>
+  !!form.closeAt && new Date(form.closeAt) <= new Date()
+
+/**
  * Method to ensure given form is available to the public.
+ *
+ * The scheduled-expiry check here is what actually enforces a deadline. The
+ * periodic sweep updates `status` and notifies the admin, but it lags the
+ * deadline by up to its interval; this closes that window so no response is
+ * accepted after the instant the admin set.
+ *
+ * Deliberately does *not* deactivate an expired form, unlike the submission
+ * limit check. Flipping the status here would remove the form from the sweep's
+ * `status: Public` query, and the admin would never be told it closed.
+ *
  * @param form the form to check
  * @returns ok(true) if form is public
  * @returns err(ApplicationError) if form has an invalid state
  * @returns err(FormDeletedError) if form has been deleted
- * @returns err(PrivateFormError) if form is private, the message will be the form inactive message
+ * @returns err(PrivateFormError) if form is private or past its scheduled
+ * expiry; the message will be the form inactive message
  */
 export const isFormPublic = (
   form: IPopulatedForm,
@@ -225,7 +246,9 @@ export const isFormPublic = (
   }
   switch (form.status) {
     case FormStatus.Public:
-      return ok(true)
+      return hasPassedCloseAt(form)
+        ? err(new PrivateFormError(form.inactiveMessage, form.title))
+        : ok(true)
     case FormStatus.Archived:
       return err(new FormDeletedError())
     case FormStatus.Private:
