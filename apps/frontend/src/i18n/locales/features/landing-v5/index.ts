@@ -31,4 +31,18 @@ export interface LandingV5 {
     build: { title: string; body: string }
     workflow: { title: string; body: string }
   }
+  examples: {
+    title: string
+    lede: string
+    viewTemplate: string
+    claims: { name: string; body: string }
+    singpass: { name: string; body: string }
+    event: { name: string; body: string }
+  }
+  testimonial: {
+    eyebrow: string
+    quote: string
+    name: string
+    role: string
+  }
 }

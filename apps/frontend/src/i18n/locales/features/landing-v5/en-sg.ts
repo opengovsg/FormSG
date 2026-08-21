@@ -44,4 +44,28 @@ export const enSG: LandingV5 = {
       body: "Responses get routed to the right people to fill up the form or approve them. Each person is told when it's their turn, and a nudge is one click away.",
     },
   },
+  examples: {
+    title: 'Start from a working example',
+    lede: 'Three templates teams run every day. Open one and make it yours.',
+    viewTemplate: 'View template',
+    claims: {
+      name: 'Staff claims',
+      body: "Staff submit a claim, an officer approves it, finance is told. The confirmation lands in everyone's inbox on its own.",
+    },
+    singpass: {
+      name: 'Applications with Singpass',
+      body: 'Applicants verify with Singpass, your team processes each case, and the outcome email goes out from the workflow.',
+    },
+    event: {
+      name: 'Event registration',
+      body: 'Sign-ups collect themselves, and every registrant gets an instant email confirmation with the details.',
+    },
+  },
+  testimonial: {
+    eyebrow: 'What teams say',
+    quote:
+      "FormSG has been a practical tool in our school's digitisation journey, helping us simplify data collection and improve selected workflows where an e-form is the right fit.",
+    name: 'Muhammad Hasif Mohd Hanifah',
+    role: 'Cluster ICT Manager, River Valley Primary School',
+  },
 }

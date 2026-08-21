@@ -51,3 +51,20 @@ export const landingV5CssVars: Record<string, string> = Object.fromEntries(
     ],
   ),
 )
+
+/**
+ * Banner and submit-button colours for the three template cards.
+ *
+ * Kept out of `landingV5CssVars` deliberately: these are per-card accents set
+ * on one element each, not page palette, so they are passed as props rather
+ * than published as custom properties for any rule to reach.
+ *
+ * Claims reuses the brand blue. The other two are the prototype's, chosen so
+ * the three cards read as three different agencies' forms rather than as one
+ * template restyled.
+ */
+export const LANDING_V5_TEMPLATE_COLORS = {
+  claims: LANDING_V5_COLORS.blue,
+  singpass: '#c5443c',
+  event: '#4a7c68',
+} as const
