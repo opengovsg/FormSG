@@ -65,9 +65,12 @@ the cadence is a code change.
 
 Neither of these lives in this repo, and the first deploy fails without them:
 
-1. **An S3 bucket for SAM build artifacts.** The `s3_bucket` entries in
-   `samconfig.yaml` are `TODO-` placeholders. The equivalent pdf-gen buckets are
-   provisioned by pulumi in the `formsg-infra` repo; these need the same.
+1. **An S3 bucket for SAM build artifacts.** Provisioned by pulumi in
+   `formsg-infra` (`src/scheduledClosure.ts`). Pulumi generates the name with a
+   random suffix, so it is only known after `pulumi up` — it is exported as the
+   `scheduledClosureCodeZipBucket` stack output, then pasted into
+   `samconfig.yaml`. `stg-alt3` is done; environments still showing `TODO-` have
+   not had pulumi applied and will fail at the artifact upload step.
 2. **An SSM parameter** at `/<ssm-env-site-name>/CRON_SCHEDULED_CLOSURE_API_SECRET`,
    holding a random string.
 

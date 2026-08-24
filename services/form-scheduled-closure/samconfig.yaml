@@ -1,10 +1,14 @@
 version: 0.1
 
-# NOTE: each `s3_bucket` below must exist before its first deploy. The pdf-gen
-# service's buckets are provisioned by pulumi in the formsg-infra repo; these
-# need the same treatment, along with the
-# `<env>-cron-scheduled-closure` SSM parameter holding the API secret.
-# The placeholder names below will not resolve until that is done.
+# NOTE: each `s3_bucket` below must exist before that environment's first
+# deploy. They are provisioned by pulumi in the formsg-infra repo (see
+# src/scheduledClosure.ts), which also creates the
+# `/<ssm-env-site-name>/CRON_SCHEDULED_CLOSURE_API_SECRET` parameter.
+#
+# Pulumi generates bucket names with a random suffix, so the real name is only
+# known after `pulumi up` — it is exported as the `scheduledClosureCodeZipBucket`
+# stack output. Entries still marked TODO- have not had pulumi applied yet and
+# will fail to deploy.
 
 stg:
   deploy:
@@ -49,7 +53,7 @@ stg-alt3:
   deploy:
     parameters:
       stack_name: form-scheduled-closure-stg-alt3
-      s3_bucket: TODO-form-scheduled-closure-code-zip-stg-alt3
+      s3_bucket: form-scheduled-closure-code-zip-stg-alt3-64b2068 # Created by pulumi in formsg-infra to store AWS SAM builds.
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM
       s3_prefix: stg-alt3
