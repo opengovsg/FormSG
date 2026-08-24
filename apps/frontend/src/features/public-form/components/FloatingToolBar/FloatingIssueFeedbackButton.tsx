@@ -41,6 +41,7 @@ export const FloatingIssueFeedbackButton = ({
         onClose={onClose}
         isPreview={isPreview}
         formId={formId}
+        colorScheme={colorScheme}
       />
     </>
   )
