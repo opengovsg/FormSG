@@ -1376,6 +1376,12 @@ importers:
         specifier: ^3.1091.0
         version: 3.1095.0
 
+  services/form-scheduled-closure:
+    dependencies:
+      '@aws-sdk/client-ssm':
+        specifier: ^3.1091.0
+        version: 3.1095.0
+
   services/pdf-gen-sparticuz:
     dependencies:
       '@sparticuz/chromium':
