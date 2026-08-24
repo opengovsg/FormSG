@@ -17,7 +17,7 @@ stg:
       image_repositories: []
       disable_rollback: false
       confirm_changeset: true
-      parameter_overrides: Environment=stg
+      parameter_overrides: Environment=stg SsmEnvSiteName=stg
 
 stg-alt:
   deploy:
@@ -30,7 +30,7 @@ stg-alt:
       image_repositories: []
       disable_rollback: false
       confirm_changeset: true
-      parameter_overrides: Environment=stg-alt
+      parameter_overrides: Environment=stg-alt SsmEnvSiteName=stg-alt
 
 stg-alt2:
   deploy:
@@ -43,7 +43,7 @@ stg-alt2:
       image_repositories: []
       disable_rollback: false
       confirm_changeset: true
-      parameter_overrides: Environment=stg-alt2
+      parameter_overrides: Environment=stg-alt2 SsmEnvSiteName=stg-alt21
 
 stg-alt3:
   deploy:
@@ -56,7 +56,7 @@ stg-alt3:
       image_repositories: []
       disable_rollback: false
       confirm_changeset: true
-      parameter_overrides: Environment=stg-alt3
+      parameter_overrides: Environment=stg-alt3 SsmEnvSiteName=stg-alt3
 
 uat:
   deploy:
@@ -69,7 +69,7 @@ uat:
       image_repositories: []
       disable_rollback: false
       confirm_changeset: true
-      parameter_overrides: Environment=uat
+      parameter_overrides: Environment=uat SsmEnvSiteName=uat
 
 production:
   deploy:
@@ -82,4 +82,4 @@ production:
       image_repositories: []
       disable_rollback: false
       confirm_changeset: true
-      parameter_overrides: Environment=production
+      parameter_overrides: Environment=production SsmEnvSiteName=prod
