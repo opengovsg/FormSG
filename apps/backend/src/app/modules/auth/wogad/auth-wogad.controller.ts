@@ -144,6 +144,12 @@ const _handleVerifyWithCode: ControllerHandler<
   const code = req.body['code']
   const codeVerifier = req.cookies[WOGAD_CODE_VERIFIER_COOKIE_NAME]
 
+  // Both cookies are single-use and scoped to this one login attempt. Clear
+  // them before the exchange so that every exit path below - success or
+  // failure - leaves nothing behind for a subsequent attempt to pick up.
+  res.clearCookie(WOGAD_CODE_VERIFIER_COOKIE_NAME)
+  res.clearCookie('csrf_token')
+
   const tokenRequest = {
     code,
     scopes: ['openid', 'email'],
