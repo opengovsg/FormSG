@@ -88,6 +88,15 @@ const FormExpiryBlock = ({
         )
       }
 
+      // The time is free text and may be mid-edit. Saving anyway would not
+      // fail loudly — date-fns coerces a partial value, so "09:3" would quietly
+      // persist 09:03 and an empty field would persist midnight. Refuse instead.
+      if (!isValidTimeOfDay(timeOfDay)) {
+        return setError(
+          t('features.adminForm.settings.general.expiry.invalidTime'),
+        )
+      }
+
       setError(undefined)
       return save(nextDate, timeOfDay)
     },
@@ -124,6 +133,10 @@ const FormExpiryBlock = ({
             value={closeAtDate}
             onChange={handleDateChange}
             isDateUnavailable={isPastDay}
+            // Both inputs derive their value from the last saved closeAt, so a
+            // second edit made while a save is in flight would compute from a
+            // stale base and could overwrite the newer value.
+            isDisabled={mutateFormCloseAt.isLoading}
           />
         </Box>
         <Box maxW="8rem">
@@ -131,6 +144,7 @@ const FormExpiryBlock = ({
             value={timeOfDay}
             onChange={setTimeOfDay}
             onBlur={handleTimeBlur}
+            isDisabled={mutateFormCloseAt.isLoading}
             aria-label={t(
               'features.adminForm.settings.general.expiry.input.timeLabel',
             )}
@@ -142,7 +156,7 @@ const FormExpiryBlock = ({
   )
 }
 
-export const FormExpiryToggle = (): JSX.Element => {
+export const FormExpiryToggle = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { data: settings, isLoading: isLoadingSettings } =
     useAdminFormSettings()
@@ -184,7 +198,5 @@ export const FormExpiryToggle = (): JSX.Element => {
         <FormExpiryBlock initialCloseAt={settings.closeAt} />
       )}
     </Skeleton>
-  ) : (
-    <></>
-  )
+  ) : null
 }
