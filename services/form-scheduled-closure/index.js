@@ -36,14 +36,16 @@ const API_AUTH_HEADER = 'x-formsg-cron-scheduled-closure-secret'
 const MAX_SWEEPS_PER_RUN = 5
 
 /** Reads the shared API secret from SSM Parameter Store. */
+// Module scope so the client (and its connections) survive warm invocations.
+const ssmClient = new SSMClient({ region: AWS_REGION })
+
 const getApiSecret = async () => {
-  const awsSsmClient = new SSMClient({ region: AWS_REGION })
   const command = new GetParameterCommand({
     Name: SECRET_PARAMETER_NAME,
     WithDecryption: true,
   })
 
-  const res = await awsSsmClient.send(command)
+  const res = await ssmClient.send(command)
   return res.Parameter.Value
 }
 

@@ -42,7 +42,11 @@ Resources:
         - arm64
       Environment:
         Variables:
-          SSM_ENV_SITE_NAME: !Ref Environment
+          # Site name, NOT the CloudFormation Environment. The lambda builds the
+          # API hostname from this, and the two differ: the production stack's
+          # site name is `prod` (giving form.gov.sg, not production.form.gov.sg)
+          # and stg-alt2's is `stg-alt21`.
+          SSM_ENV_SITE_NAME: !Ref SsmEnvSiteName
           # Full path passed in rather than derived in the lambda, so the one
           # place the parameter name is written is here.
           SSM_SECRET_PARAMETER_NAME: !Sub "/${SsmEnvSiteName}/CRON_SCHEDULED_CLOSURE_API_SECRET"
