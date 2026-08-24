@@ -22,7 +22,21 @@ jest.mock('@azure/msal-node', () => {
   })
   const mockRemoveAccount = jest.fn()
 
+  // The controller narrows caught errors with `error instanceof AuthError`.
+  // Without this export the mock leaves AuthError undefined, and the catch
+  // block throws `Right-hand side of 'instanceof' is not an object` before it
+  // can log or respond.
+  class MockAuthError extends Error {
+    constructor(
+      public errorCode?: string,
+      public errorMessage?: string,
+    ) {
+      super(errorMessage)
+    }
+  }
+
   return {
+    AuthError: MockAuthError,
     ConfidentialClientApplication: jest.fn().mockImplementation(() => ({
       getAuthCodeUrl: mockGetAuthCodeUrl,
       acquireTokenByCode: mockAcquireTokenByCode,
