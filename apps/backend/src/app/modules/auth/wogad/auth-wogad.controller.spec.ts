@@ -218,6 +218,42 @@ describe('AuthWogadController', () => {
       expect(mockRes.clearCookie).toHaveBeenCalledWith('csrf_token')
     })
 
+    // Guards the rolling-deploy window: a login started by an instance that
+    // predates PKCE has no verifier cookie and no code_challenge bound at the
+    // IdP, so the exchange must still be attempted rather than rejected here.
+    it('should still attempt the token exchange when the verifier cookie is absent', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        body: {
+          code: 'MOCK_AUTH_CODE',
+          csrfToken: csrfTokenA,
+        },
+        cookies: {
+          csrf_token: csrfTokenA,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain = jest
+        .fn()
+        .mockReturnValue(okAsync(<AgencyDocument>{ _id: 'MOCK_AGENCY_ID' }))
+      MockUserService.retrieveUser = jest.fn().mockReturnValueOnce(
+        okAsync(<IPopulatedUser>{
+          _id: 'MOCK_USER_ID',
+        }),
+      )
+      // Act
+      await AuthWogadController.handleVerifyWithCodeForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(msalMocks.acquireTokenByCode).toHaveBeenCalledWith(
+        expect.objectContaining({ codeVerifier: undefined }),
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
+    })
+
     it('should return 403 when csrf token mismatch', async () => {
       // Arrange
       const mockReq = expressHandler.mockRequest({
