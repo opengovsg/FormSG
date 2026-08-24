@@ -1,4 +1,5 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import crypto from 'crypto'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
 
@@ -58,6 +59,15 @@ describe('AuthWogadController', () => {
     jest.clearAllMocks()
   })
 
+  const getVerifierCookieCall = (
+    mockRes: ReturnType<typeof expressHandler.mockResponse>,
+  ) =>
+    jest
+      .mocked(mockRes.cookie)
+      .mock.calls.find(([name]) => name === 'wogadCodeVerifier') as unknown as
+      | [string, string, Record<string, unknown>]
+      | undefined
+
   describe('generateAuthUrl', () => {
     it('should include csrf token in response cookie', async () => {
       // Arrange
@@ -80,6 +90,81 @@ describe('AuthWogadController', () => {
         authUrl: MOCK_AUTH_URL,
         csrfToken: expect.stringMatching(/^[a-f0-9]{64}$/i),
       })
+    })
+
+    it('should send an S256 challenge derived from the stored verifier', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest()
+      const mockRes = expressHandler.mockResponse()
+      // Act
+      await AuthWogadController.generateAuthUrlForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      const verifier = getVerifierCookieCall(mockRes)?.[1]
+      const [authCodeUrlParams] = jest.mocked(msalMocks.getAuthCodeUrl).mock
+        .calls[0] as unknown as [Record<string, unknown>]
+
+      // The challenge must actually be SHA256(verifier), not merely present -
+      // an unrelated pair would sail past a presence check and fail only at
+      // the IdP, in production.
+      expect(authCodeUrlParams.codeChallenge).toBe(
+        crypto
+          .createHash('sha256')
+          .update(verifier as string)
+          .digest('base64url'),
+      )
+      expect(authCodeUrlParams.codeChallengeMethod).toBe('S256')
+    })
+
+    it('should store the code verifier in a session-scoped httpOnly cookie', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest()
+      const mockRes = expressHandler.mockResponse()
+      // Act
+      await AuthWogadController.generateAuthUrlForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      const verifierCookieCall = getVerifierCookieCall(mockRes)
+      expect(verifierCookieCall).toBeDefined()
+
+      const [, value, options] = verifierCookieCall as [
+        string,
+        string,
+        Record<string, unknown>,
+      ]
+      // 32 octets base64url-encoded, per RFC 7636 section 4.1.
+      expect(value).toMatch(/^[A-Za-z0-9_-]{43}$/)
+      expect(options).toMatchObject({ httpOnly: true })
+      // A lifetime shorter than the user's journey through the IdP would strand
+      // a valid auth code with no verifier, so this stays a session cookie.
+      expect(options).not.toHaveProperty('maxAge')
+      expect(options).not.toHaveProperty('expires')
+    })
+
+    it('should never return the code verifier in the response body', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest()
+      const mockRes = expressHandler.mockResponse()
+      // Act
+      await AuthWogadController.generateAuthUrlForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      // Asserted against the serialised payload rather than a named key: the
+      // verifier reaching the browser defeats PKCE regardless of what it is
+      // called, so renaming a field must not be able to slip past this.
+      const verifier = getVerifierCookieCall(mockRes)?.[1]
+      const [payload] = jest.mocked(mockRes.json).mock.calls[0]
+      expect(verifier).toBeDefined()
+      expect(JSON.stringify(payload)).not.toContain(verifier)
     })
   })
 
