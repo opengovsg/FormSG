@@ -39,6 +39,7 @@ jest.mock('@azure/msal-node', () => {
 })
 
 const MOCK_AUTH_URL = 'MOCK_AUTH_URL'
+const MOCK_CODE_VERIFIER = 'MOCK_CODE_VERIFIER'
 
 const msalMocks = jest.requireMock('@azure/msal-node').msalMocks
 
@@ -108,6 +109,39 @@ describe('AuthWogadController', () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         _id: 'MOCK_USER_ID',
       })
+    })
+
+    it('should pass the code verifier from the cookie to the token request', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        body: {
+          code: 'MOCK_AUTH_CODE',
+          csrfToken: csrfTokenA,
+        },
+        cookies: {
+          csrf_token: csrfTokenA,
+          wogadCodeVerifier: MOCK_CODE_VERIFIER,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain = jest
+        .fn()
+        .mockReturnValue(okAsync(<AgencyDocument>{ _id: 'MOCK_AGENCY_ID' }))
+      MockUserService.retrieveUser = jest.fn().mockReturnValueOnce(
+        okAsync(<IPopulatedUser>{
+          _id: 'MOCK_USER_ID',
+        }),
+      )
+      // Act
+      await AuthWogadController.handleVerifyWithCodeForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(msalMocks.acquireTokenByCode).toHaveBeenCalledWith(
+        expect.objectContaining({ codeVerifier: MOCK_CODE_VERIFIER }),
+      )
     })
 
     it('should return 403 when csrf token mismatch', async () => {
