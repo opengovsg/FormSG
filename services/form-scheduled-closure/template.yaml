@@ -7,6 +7,13 @@ Parameters:
     Type: String
     Default: dev
     Description: Environment name (eg, production, staging, stg-alt)
+  SsmEnvSiteName:
+    Type: String
+    Default: dev
+    Description: >-
+      Environment name as used in SSM parameter paths. Usually identical to
+      Environment, but not always — formsg-infra maps the stg-alt2 stack to the
+      site name stg-alt21, so this is passed explicitly rather than derived.
   SweepSchedule:
     Type: String
     Default: rate(10 minutes)
@@ -36,14 +43,15 @@ Resources:
       Environment:
         Variables:
           SSM_ENV_SITE_NAME: !Ref Environment
+          # Full path passed in rather than derived in the lambda, so the one
+          # place the parameter name is written is here.
+          SSM_SECRET_PARAMETER_NAME: !Sub "/${SsmEnvSiteName}/CRON_SCHEDULED_CLOSURE_API_SECRET"
       Policies:
         # Read-only, and scoped to this job's single parameter rather than the
-        # whole store.
-        # SSMParameterReadPolicy prepends `parameter/` to the name given, so
-        # this resolves to the unprefixed `<env>-cron-scheduled-closure`
-        # parameter — matching how the payment cron job's secret is stored.
-        - SSMParameterReadPolicy:
-            ParameterName: !Sub "${Environment}-cron-scheduled-closure"
+        # whole store. The WithSlashPrefix variant is the one that takes a name
+        # already starting with `/`, which pulumi-managed parameters do.
+        - SSMParameterWithSlashPrefixReadPolicy:
+            ParameterName: !Sub "/${SsmEnvSiteName}/CRON_SCHEDULED_CLOSURE_API_SECRET"
       Events:
         # SAM expands this into an EventBridge rule plus the permission for it
         # to invoke the function — the schedule is code, not console clicks.
