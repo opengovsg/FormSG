@@ -69,6 +69,7 @@ type FormDefaultableKey =
   | 'status'
   | 'inactiveMessage'
   | 'submissionLimit'
+  | 'closeAt'
   | 'isListed'
   | 'webhook'
 
