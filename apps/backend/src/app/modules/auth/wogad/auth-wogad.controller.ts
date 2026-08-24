@@ -37,6 +37,24 @@ const redirectUri = resolveAppUrl(`${wogad.redirectUri}`)
  */
 export const WOGAD_CODE_VERIFIER_COOKIE_NAME = 'wogadCodeVerifier'
 
+/**
+ * Generates an RFC 7636 S256 PKCE pair.
+ *
+ * Hand-rolled rather than taken from MSAL: @azure/msal-node v5 no longer
+ * exports CryptoProvider from its public surface, and its `exports` map blocks
+ * deep imports. This construction is the one RFC 7636 section 4.1 recommends -
+ * 32 random octets, base64url-encoded - which also carries more entropy than
+ * MSAL's own generator did.
+ */
+const generatePkcePair = () => {
+  const codeVerifier = crypto.randomBytes(32).toString('base64url')
+  const codeChallenge = crypto
+    .createHash('sha256')
+    .update(codeVerifier)
+    .digest('base64url')
+  return { codeVerifier, codeChallenge }
+}
+
 const validateWogadConfig: ControllerHandler = (_req, res, next) => {
   if (!isWogadConfigDefined || !ccaSingleton) {
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({
@@ -72,17 +90,29 @@ const _generateAuthUrl: ControllerHandler<
 
   const csrfToken = crypto.randomBytes(32).toString('hex')
 
+  const { codeVerifier, codeChallenge } = generatePkcePair()
+
   const authCodeUrlParams: AuthorizationUrlRequest = {
     state: csrfToken,
     scopes: ['openid', 'email'],
     redirectUri,
+    codeChallenge,
+    codeChallengeMethod: 'S256',
   }
 
-  res.cookie('csrf_token', csrfToken, {
+  const authCookieOptions = {
     httpOnly: true,
     secure: !config.isDevOrTest,
-    sameSite: !config.isDevOrTest ? 'strict' : undefined,
-  })
+    sameSite: !config.isDevOrTest ? ('strict' as const) : undefined,
+  }
+
+  res.cookie('csrf_token', csrfToken, authCookieOptions)
+
+  // Deliberately a session cookie. The verifier has to outlive the user's whole
+  // journey through the IdP, including MFA; any fixed lifetime shorter than that
+  // strands a valid auth code with no verifier and turns a slow login into a
+  // hard failure (AADSTS501481). It is cleared explicitly at /verify instead.
+  res.cookie(WOGAD_CODE_VERIFIER_COOKIE_NAME, codeVerifier, authCookieOptions)
 
   const authUrl = await ccaSingleton.getAuthCodeUrl(authCodeUrlParams)
 
