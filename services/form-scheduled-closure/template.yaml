@@ -42,7 +42,9 @@ Resources:
         - arm64
       Environment:
         Variables:
-          SSM_ENV_SITE_NAME: !Ref Environment
+          # Site name, NOT the CloudFormation Environment: production's site
+          # name is `prod`, and stg-alt2's is `stg-alt21`.
+          SSM_ENV_SITE_NAME: !Ref SsmEnvSiteName
           SSM_SECRET_PARAMETER_NAME: !Sub "/${SsmEnvSiteName}/CRON_SCHEDULED_CLOSURE_API_SECRET"
       Policies:
         # WithSlashPrefix is the variant that takes a name already starting
