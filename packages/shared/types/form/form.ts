@@ -216,11 +216,13 @@ export interface FormBase {
    * Scheduled *opening* is out of scope for v1. When it arrives it should be an
    * additive sibling field (`openAt`) rather than a reshape of this one.
    *
-   * Optional rather than required because forms created before this feature have
-   * no such field. Once the model declares a `null` default it can be tightened
-   * to match `submissionLimit`.
+   * Required and nullable rather than optional, so `null` is the single
+   * representation of "no expiry" on the wire — an optional field would give
+   * consumers two indistinguishable unset states to handle. The schema supplies
+   * the `null` default, so form construction does not pass it; `closeAt` is
+   * listed in `FormDefaultableKey` alongside `submissionLimit` for that reason.
    */
-  closeAt?: DateString | null
+  closeAt: DateString | null
   isListed: boolean
 
   esrvcId?: string
