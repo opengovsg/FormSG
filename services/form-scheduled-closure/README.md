@@ -50,12 +50,26 @@ pnpm run sam-deploy --config-env stg
 CI does this via `.github/workflows/deploy-scheduled-closure-lambda.yml`, which
 is invoked per environment the same way pdf-gen is:
 
-| Environment | Trigger |
-| --- | --- |
-| `stg-alt`, `stg-alt2`, `stg-alt3`, `uat` | push to the branch of that name |
-| `stg`, `production` | `release.yml` (manual dispatch), which fans out to both |
+| Environment | Trigger | Artifact bucket |
+| --- | --- | --- |
+| `stg-alt3` | push to the branch of that name | provisioned |
+| `stg-alt`, `stg-alt2`, `uat` | push to the branch of that name | **not yet** — deploy skips |
+| `stg`, `production` | **not wired yet** — see below | not yet |
 
-To try a feature branch end to end, push it to `stg-alt`.
+To try a feature branch end to end, push it to `stg-alt3` — the only environment
+currently provisioned.
+
+The deploy step checks `samconfig.yaml` for its environment's bucket and skips
+with a notice if it is still a `TODO-` placeholder, rather than failing. So an
+unprovisioned environment produces a green, explanatory no-op rather than a red
+check on an unrelated test push, and starts deploying by itself once a real
+bucket name is pasted in.
+
+`stg` and `production` deploy via `release.yml`, and are deliberately **not**
+wired into it yet: a release fans out automatically, so a failing job there would
+redden a real release for everyone rather than one developer's test branch. Add
+`deploy-scheduled-closure-stg.yml` / `-prod.yml` and their `release.yml` jobs in
+the same change that fills in those buckets.
 
 The EventBridge schedule is **not** created by hand — the `Events.Sweep` block
 in `template.yaml` expands into the rule and its invoke permission, so changing

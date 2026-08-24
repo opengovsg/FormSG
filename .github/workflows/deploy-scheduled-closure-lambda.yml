@@ -57,6 +57,30 @@ jobs:
         with:
           role-to-assume: ${{ secrets.cicd-role }}
           aws-region: ${{ inputs.aws-region }}
+      # The artifact bucket is provisioned by pulumi in formsg-infra and its
+      # generated name is pasted into samconfig.yaml afterwards. Environments
+      # that have not had pulumi applied still carry a TODO- placeholder, and
+      # deploying them would fail at the upload step — a red check on someone
+      # else's unrelated test push. Skip cleanly instead; this starts deploying
+      # by itself the moment a real bucket name lands.
+      - name: Check the artifact bucket is provisioned
+        id: bucket
+        working-directory: ./services/form-scheduled-closure
+        run: |
+          bucket=$(awk -v env="${{ inputs.environment }}:" '
+            $0 == env {found=1; next}
+            found && /^[a-zA-Z]/ {found=0}
+            found && $1 == "s3_bucket:" {print $2; exit}
+          ' samconfig.yaml)
+          if [ -z "$bucket" ] || [ "${bucket#TODO-}" != "$bucket" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping deploy — no artifact bucket for ${{ inputs.environment }} yet (samconfig has '${bucket:-nothing}'). Apply pulumi in formsg-infra, then paste the generated bucket name into samconfig.yaml."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Deploying to bucket $bucket"
+          fi
+
       - name: Deploy with SAM
+        if: steps.bucket.outputs.ready == 'true'
         working-directory: ./services/form-scheduled-closure
         run: pnpm run sam-deploy --config-env ${{ inputs.environment }} --no-confirm-changeset --no-fail-on-empty-changeset
