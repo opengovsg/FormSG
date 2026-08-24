@@ -158,6 +158,66 @@ describe('AuthWogadController', () => {
       )
     })
 
+    it('should clear both auth cookies after a successful verification', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        body: {
+          code: 'MOCK_AUTH_CODE',
+          csrfToken: csrfTokenA,
+        },
+        cookies: {
+          csrf_token: csrfTokenA,
+          wogadCodeVerifier: MOCK_CODE_VERIFIER,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain = jest
+        .fn()
+        .mockReturnValue(okAsync(<AgencyDocument>{ _id: 'MOCK_AGENCY_ID' }))
+      MockUserService.retrieveUser = jest.fn().mockReturnValueOnce(
+        okAsync(<IPopulatedUser>{
+          _id: 'MOCK_USER_ID',
+        }),
+      )
+      // Act
+      await AuthWogadController.handleVerifyWithCodeForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(mockRes.clearCookie).toHaveBeenCalledWith('wogadCodeVerifier')
+      expect(mockRes.clearCookie).toHaveBeenCalledWith('csrf_token')
+    })
+
+    it('should clear both auth cookies when the token exchange fails', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        body: {
+          code: 'MOCK_AUTH_CODE',
+          csrfToken: csrfTokenA,
+        },
+        cookies: {
+          csrf_token: csrfTokenA,
+          wogadCodeVerifier: MOCK_CODE_VERIFIER,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      msalMocks.acquireTokenByCode.mockRejectedValueOnce(
+        new Error('MOCK_TOKEN_FAILURE'),
+      )
+      // Act
+      await AuthWogadController.handleVerifyWithCodeForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith('wogadCodeVerifier')
+      expect(mockRes.clearCookie).toHaveBeenCalledWith('csrf_token')
+    })
+
     it('should return 403 when csrf token mismatch', async () => {
       // Arrange
       const mockReq = expressHandler.mockRequest({
