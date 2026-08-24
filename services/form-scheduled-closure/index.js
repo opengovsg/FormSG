@@ -1,17 +1,17 @@
 /**
  * Scheduled form closure sweep.
  *
- * Closes forms whose admin-set expiry has passed. Deliberately thin: the
- * Lambda is a clock with an HTTP client, and every decision about *which*
- * forms to close lives behind the API so it can reuse the backend's models,
- * logging and (later) mailer.
+ * Closes forms whose admin-set expiry has passed. Deliberately thin: which
+ * forms to close is decided behind the API, so it can reuse the backend's
+ * models, logging and mailer.
  *
- * Required env vars:
+ * Required env vars (both set by template.yaml):
  * - AWS_REGION
  * - SSM_ENV_SITE_NAME: ['prod', 'uat', 'stg', 'stg-alt', 'stg-alt2', 'stg-alt3']
+ * - SSM_SECRET_PARAMETER_NAME: full SSM path of the shared API secret
  *
- * Required parameters in parameter store `<SSM_ENV_SITE_NAME>-cron-scheduled-closure`:
- * - CRON_SCHEDULED_CLOSURE_API_SECRET: shared secret validating requests to the API
+ * The secret is the same parameter the backend reads, provisioned by pulumi in
+ * formsg-infra. One copy rather than two, since a drift between them is silent.
  */
 
 const { SSMClient, GetParameterCommand } = require('@aws-sdk/client-ssm')
@@ -23,36 +23,23 @@ const API_URL = `https://${
   ENV_SITE_NAME === 'prod' ? '' : `${ENV_SITE_NAME}.`
 }form.gov.sg/api/v3/cron/close-expired-forms`
 
-const PARAMETER_STORE_NAME = `${ENV_SITE_NAME}-cron-scheduled-closure`
-const API_SECRET_KEY = 'CRON_SCHEDULED_CLOSURE_API_SECRET'
+const SECRET_PARAMETER_NAME = process.env.SSM_SECRET_PARAMETER_NAME
 const API_AUTH_HEADER = 'x-formsg-cron-scheduled-closure-secret'
 
 // A full batch means more forms are waiting, so keep sweeping — but bounded,
 // so a backlog cannot run the Lambda to its timeout.
 const MAX_SWEEPS_PER_RUN = 5
 
-/**
- * Reads the key-value parameter blob from SSM. Matches the format used by the
- * payment reconciliation job's parameter.
- */
-const getSSMSecrets = async () => {
-  const KEY_VALUE_PAIR_REGEX = /^([^\s=]+)\s*=\s*(\S+)$/
-
+/** Reads the shared API secret from SSM Parameter Store. */
+const getApiSecret = async () => {
   const awsSsmClient = new SSMClient({ region: AWS_REGION })
   const command = new GetParameterCommand({
-    Name: PARAMETER_STORE_NAME,
+    Name: SECRET_PARAMETER_NAME,
     WithDecryption: true,
   })
 
   const res = await awsSsmClient.send(command)
-  return res.Parameter.Value.split(/[\r\n]+/)
-    .map((line) => line.trim())
-    .filter(Boolean)
-    .reduce((parameterMap, line) => {
-      const match = line.match(KEY_VALUE_PAIR_REGEX)
-      if (match && match.length === 3) parameterMap[match[1]] = match[2]
-      return parameterMap
-    }, {})
+  return res.Parameter.Value
 }
 
 const closeExpiredForms = async (apiSecret) => {
@@ -73,13 +60,10 @@ const closeExpiredForms = async (apiSecret) => {
 exports.handler = async () => {
   console.log(`Scheduled closure sweep starting for ${ENV_SITE_NAME}`)
 
-  const secrets = await getSSMSecrets()
-  const apiSecret = secrets[API_SECRET_KEY]
+  const apiSecret = await getApiSecret()
   if (!apiSecret) {
     // Fail loudly: a silent no-op reads as "nothing expired" in the logs.
-    throw new Error(
-      `${API_SECRET_KEY} missing from parameter ${PARAMETER_STORE_NAME}`,
-    )
+    throw new Error(`No secret found at SSM parameter ${SECRET_PARAMETER_NAME}`)
   }
 
   const closedFormIds = []
