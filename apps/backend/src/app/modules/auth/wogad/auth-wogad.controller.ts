@@ -32,6 +32,11 @@ const ccaSingleton = isWogadConfigDefined
   : null
 const redirectUri = resolveAppUrl(`${wogad.redirectUri}`)
 
+/**
+ * Name of the cookie holding the PKCE code verifier for the WOG AD flow.
+ */
+export const WOGAD_CODE_VERIFIER_COOKIE_NAME = 'wogadCodeVerifier'
+
 const validateWogadConfig: ControllerHandler = (_req, res, next) => {
   if (!isWogadConfigDefined || !ccaSingleton) {
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({
@@ -137,11 +142,13 @@ const _handleVerifyWithCode: ControllerHandler<
   }
 
   const code = req.body['code']
+  const codeVerifier = req.cookies[WOGAD_CODE_VERIFIER_COOKIE_NAME]
 
   const tokenRequest = {
     code,
     scopes: ['openid', 'email'],
     redirectUri,
+    codeVerifier,
   }
 
   let account: AccountInfo | null
