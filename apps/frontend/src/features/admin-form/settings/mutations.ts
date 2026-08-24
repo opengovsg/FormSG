@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
-import { format } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
 
 import { DateString } from 'formsg-shared/types'
 import {
@@ -183,7 +183,12 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         const toastStatusMessage = newData.closeAt
           ? t('features.adminForm.settings.general.expiry.toast.success', {
-              closeAt: format(new Date(newData.closeAt), 'd MMM yyyy, HH:mm'),
+              // Rendered in SGT, matching the banner respondents see.
+              closeAt: formatInTimeZone(
+                new Date(newData.closeAt),
+                'Asia/Singapore',
+                "d MMM yyyy, HH:mm '(SGT)'",
+              ),
             })
           : t('features.adminForm.settings.general.expiry.toast.successRemoved')
         handleSuccess({ newData, toastDescription: toastStatusMessage })
