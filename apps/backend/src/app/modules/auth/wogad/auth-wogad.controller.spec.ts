@@ -64,9 +64,10 @@ describe('AuthWogadController', () => {
   ) =>
     jest
       .mocked(mockRes.cookie)
-      .mock.calls.find(([name]) => name === 'wogadCodeVerifier') as unknown as
-      | [string, string, Record<string, unknown>]
-      | undefined
+      .mock.calls.find(
+        ([name]) =>
+          name === AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME,
+      ) as unknown as [string, string, Record<string, unknown>] | undefined
 
   describe('generateAuthUrl', () => {
     it('should include csrf token in response cookie', async () => {
