@@ -109,6 +109,13 @@ export const MOCK_COOKIE_SETTINGS = {
   path: 'path',
 }
 
+export const MOCK_CODE_VERIFIER_COOKIE_OPTIONS = {
+  httpOnly: true as const,
+  secure: true,
+  sameSite: 'lax' as const,
+  ...MOCK_COOKIE_SETTINGS,
+}
+
 export const MOCK_COOKIES = {
   [JwtName.SP]: 'mockSpJwt',
   [JwtName.CP]: 'mockCpJwt',

@@ -3,6 +3,7 @@ import { JWTVerifyResult } from 'jose'
 import { omit } from 'lodash'
 import { generators } from 'openid-client-legacy'
 
+import config from 'src/app/config/config'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 
 import {
@@ -649,6 +650,40 @@ describe('spcp.oidc.service.sp', () => {
 
       // Assert
       expect(spOidcServiceClass.getCookieSettings()).toEqual({})
+    })
+  })
+  describe('getCodeVerifierCookieOptions', () => {
+    it('should include the cookie domain settings when cookieDomain is truthy', () => {
+      // Act
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        MOCK_PARAMS_SP,
+      )
+
+      // Assert
+      expect(spOidcServiceClass.getCodeVerifierCookieOptions()).toEqual({
+        httpOnly: true,
+        secure: !config.isDevOrTest,
+        sameSite: 'lax',
+        path: '/',
+        domain: MOCK_PARAMS.spcpCookieDomain,
+      })
+    })
+
+    it('should omit domain when cookieDomain is falsy', () => {
+      // Act
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        omit(MOCK_PARAMS_SP, 'cookieDomain') as unknown as SpOidcProps,
+      )
+
+      // Assert
+      expect(spOidcServiceClass.getCodeVerifierCookieOptions()).toEqual({
+        httpOnly: true,
+        secure: !config.isDevOrTest,
+        sameSite: 'lax',
+        path: '/',
+      })
     })
   })
 })
