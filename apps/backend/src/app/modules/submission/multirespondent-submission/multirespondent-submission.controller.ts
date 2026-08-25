@@ -317,9 +317,16 @@ const _createPaymentSubmission = async ({
       logMeta,
     })
   if (createPendingSubmissionResult.isErr()) {
-    const { errorMessage, statusCode } = mapRouteError(
-      createPendingSubmissionResult.error,
-    )
+    const error = createPendingSubmissionResult.error
+    // Mirror encrypt mode: a pending-save failure blocks the respondent with
+    // a 400 so they can retry, rather than mapRouteError's generic 500.
+    if (error instanceof SubmissionSaveError) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+      })
+    }
+    const { errorMessage, statusCode } = mapRouteError(error)
     return res.status(statusCode).json({ message: errorMessage })
   }
   const pendingSubmission = createPendingSubmissionResult.value

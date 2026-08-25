@@ -9,6 +9,7 @@ import {
   FormResponseMode,
   FormStatus,
   PaymentChannel,
+  PaymentType,
   PublicMultirespondentSubmissionDto,
   SubmissionType,
   WorkflowType,
@@ -652,6 +653,48 @@ describe('multirespondent-submision.controller', () => {
         expect(
           MockMultiRespondentSubmissionService.createMultiRespondentFormSubmission,
         ).not.toHaveBeenCalled()
+      })
+
+      it('returns 400 bad request when the pending submission fails to save, mirroring encrypt mode', async () => {
+        // Arrange
+        const mockSubmitMrfReq = buildPaymentSubmitReq({
+          isOn: jest.fn().mockReturnValue(true),
+        })
+        merge(mockSubmitMrfReq, {
+          formsg: {
+            formDef: {
+              title: 'mock payment form',
+              payments_field: {
+                enabled: true,
+                payment_type: PaymentType.Fixed,
+                amount_cents: 1000,
+              },
+              payments_channel: {
+                channel: PaymentChannel.Stripe,
+                target_account_id: 'acct_mock123',
+              },
+            },
+            encryptedPayload: {
+              paymentReceiptEmail: 'respondent@example.com',
+            },
+          },
+        })
+        MockMultiRespondentSubmissionService.createMultiRespondentFormPendingSubmission =
+          jest.fn().mockReturnValue(errAsync(new SubmissionSaveError()))
+        const mockRes = expressHandler.mockResponse()
+
+        // Act
+        await submitMultirespondentFormForTest(mockSubmitMrfReq, mockRes)
+
+        // Assert
+        expect(
+          MockMultiRespondentSubmissionService.createMultiRespondentFormPendingSubmission,
+        ).toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+        expect(mockRes.json).toHaveBeenCalledWith({
+          message:
+            'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+        })
       })
     })
   })
