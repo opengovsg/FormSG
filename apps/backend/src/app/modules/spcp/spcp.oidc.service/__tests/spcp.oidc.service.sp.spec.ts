@@ -1,6 +1,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { JWTVerifyResult } from 'jose'
 import { omit } from 'lodash'
+import { generators } from 'openid-client-legacy'
 
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 
@@ -11,6 +12,8 @@ import {
   MOCK_ESRVCID,
   MOCK_JWT,
   MOCK_JWT_PAYLOAD,
+  MOCK_OIDC_CODE_CHALLENGE,
+  MOCK_OIDC_CODE_VERIFIER,
   MOCK_REDIRECT_URL,
   MOCK_SERVICE_PARAMS as MOCK_PARAMS,
   MOCK_SP_JWT_PAYLOAD,
@@ -40,6 +43,8 @@ jest.mock('../../spcp.oidc.client')
 
 jest.mock('axios')
 
+jest.mock('openid-client-legacy')
+
 describe('spcp.oidc.service.sp', () => {
   beforeAll(async () => {
     await dbHandler.connect()
@@ -52,6 +57,16 @@ describe('spcp.oidc.service.sp', () => {
     await dbHandler.clearDatabase()
     jest.clearAllMocks()
   })
+
+  beforeEach(() => {
+    jest
+      .mocked(generators.codeVerifier)
+      .mockReturnValue(MOCK_OIDC_CODE_VERIFIER)
+    jest
+      .mocked(generators.codeChallenge)
+      .mockReturnValue(MOCK_OIDC_CODE_CHALLENGE)
+  })
+
   afterAll(async () => await dbHandler.closeDatabase())
 
   const MOCK_PARAMS_SP = {
@@ -106,9 +121,13 @@ describe('spcp.oidc.service.sp', () => {
       expect(mockSpOidcClient.createAuthorisationUrl).toHaveBeenCalledWith(
         MOCK_TARGET,
         MOCK_ESRVCID,
+        MOCK_OIDC_CODE_CHALLENGE,
       )
 
-      expect(redirectUrl._unsafeUnwrap()).toBe(MOCK_REDIRECT_URL)
+      expect(redirectUrl._unsafeUnwrap()).toEqual({
+        redirectUrl: MOCK_REDIRECT_URL,
+        codeVerifier: MOCK_OIDC_CODE_VERIFIER,
+      })
     })
 
     it('should return CreateRedirectUrlError if sp oidc client returns error', async () => {
@@ -135,6 +154,7 @@ describe('spcp.oidc.service.sp', () => {
       expect(mockSpOidcClient.createAuthorisationUrl).toHaveBeenCalledWith(
         MOCK_TARGET,
         MOCK_ESRVCID,
+        MOCK_OIDC_CODE_CHALLENGE,
       )
 
       expect(redirectUrl._unsafeUnwrapErr()).toBeInstanceOf(
@@ -476,12 +496,16 @@ describe('spcp.oidc.service.sp', () => {
       // Act
       const result = await spOidcServiceClass.exchangeAuthCodeAndRetrieveData(
         MOCK_SP_OIDC_AUTHORISATION_CODE,
+        MOCK_OIDC_CODE_VERIFIER,
       )
 
       // Assert
       expect(
         mockSpOidcClient.exchangeAuthCodeAndDecodeVerifyToken,
-      ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+      ).toHaveBeenCalledWith(
+        MOCK_SP_OIDC_AUTHORISATION_CODE,
+        MOCK_OIDC_CODE_VERIFIER,
+      )
       expect(result._unsafeUnwrap()).toEqual({ userName: MOCK_NRIC })
     })
 
@@ -500,12 +524,16 @@ describe('spcp.oidc.service.sp', () => {
       // Act
       const result = await spOidcServiceClass.exchangeAuthCodeAndRetrieveData(
         MOCK_SP_OIDC_AUTHORISATION_CODE,
+        MOCK_OIDC_CODE_VERIFIER,
       )
 
       // Assert
       expect(
         mockSpOidcClient.exchangeAuthCodeAndDecodeVerifyToken,
-      ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+      ).toHaveBeenCalledWith(
+        MOCK_SP_OIDC_AUTHORISATION_CODE,
+        MOCK_OIDC_CODE_VERIFIER,
+      )
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(ExchangeAuthTokenError)
     })
   })

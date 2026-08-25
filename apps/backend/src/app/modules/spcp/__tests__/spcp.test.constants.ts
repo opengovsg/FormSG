@@ -121,6 +121,8 @@ export const MOCK_DECODED_QUERY =
 
 export const MOCK_SP_OIDC_AUTHORISATION_CODE = 'abcdefg'
 export const MOCK_CP_OIDC_AUTHORISATION_CODE = 'defhijk'
+export const MOCK_OIDC_CODE_VERIFIER = 'mockCodeVerifier'
+export const MOCK_OIDC_CODE_CHALLENGE = 'mockCodeChallenge'
 export const MOCK_OIDC_STATE = `${MOCK_DESTINATION}-${MOCK_REMEMBER_ME}`
 export const MOCK_NRIC = 'S1234567C'
 export const MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD = {

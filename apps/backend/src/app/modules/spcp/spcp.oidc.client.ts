@@ -157,12 +157,14 @@ export abstract class SpcpOidcBaseClient {
    * Method to generate url to SP/CP login page for authorisation
    * @param state - contains formId, remember me, and stored queryId
    * @param esrvcId - eServiceId
+   * @param codeChallenge - PKCE code challenge derived from the code verifier
    * @return authorisation url
    * @throws CreateAuthorisationUrlError if state or esrvcId is undefined
    */
   async createAuthorisationUrl(
     state: string,
     esrvcId: string,
+    codeChallenge: string,
   ): Promise<string> {
     if (!state) {
       throw new CreateAuthorisationUrlError(
@@ -183,6 +185,8 @@ export abstract class SpcpOidcBaseClient {
       state: state,
       nonce: ulid(), // Not used - nonce is a required parameter for SPCP's OIDC implementation although it is optional in OIDC specs
       [this.eServiceIdKey]: esrvcId,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
     })
 
     return authorisationUrl
@@ -267,6 +271,8 @@ export abstract class SpcpOidcBaseClient {
    * Method to exchange authorisation code for idToken from NDI and then decode and verify it
    * @async
    * @param authCode authorisation code provided from browser after authorisation
+   * @param codeVerifier PKCE code verifier matching the code_challenge sent in the authorisation request.
+   * Optional for backward compatibility with in-flight logins whose authorisation request predates PKCE
    * @returns Decoded and verified idToken
    * @throws MissingIdTokenError if id token is missing in tokenSet
    * @throws GetDecryptionKeyError if unable to retrieve decryption key
@@ -275,6 +281,7 @@ export abstract class SpcpOidcBaseClient {
    */
   async exchangeAuthCodeAndDecodeVerifyToken(
     authCode: string,
+    codeVerifier?: string,
   ): Promise<JWTVerifyResult> {
     if (!authCode) {
       throw new ExchangeAuthTokenError('empty authCode')
@@ -308,7 +315,7 @@ export abstract class SpcpOidcBaseClient {
 
       // Construct request body. It is necessary to stringify the body because
       // SP/CP OIDC requires content type to be application/x-www-form-urlencoded
-      const body = new URLSearchParams({
+      const tokenParams: Record<string, string> = {
         grant_type: 'authorization_code',
         redirect_uri: this.#rpRedirectUrl,
         code: authCode,
@@ -316,7 +323,13 @@ export abstract class SpcpOidcBaseClient {
           'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         client_assertion: clientAssertion,
         ...this.getExtraTokenFields(),
-      }).toString()
+      }
+
+      if (codeVerifier) {
+        tokenParams.code_verifier = codeVerifier
+      }
+
+      const body = new URLSearchParams(tokenParams).toString()
 
       const { data } = await axios.post<TokenSet>(tokenEndpoint, body, {
         headers: {

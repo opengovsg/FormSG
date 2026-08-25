@@ -1,5 +1,6 @@
 import { FormAuthType } from 'formsg-shared/types'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
+import { generators } from 'openid-client-legacy'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -14,6 +15,7 @@ import {
 } from '../spcp.errors'
 import { SpcpOidcBaseClient } from '../spcp.oidc.client'
 import {
+  CodeVerifierCookieName,
   CorppassJwtPayloadFromCookie,
   ExtractedNDIPayload,
   JwtName,
@@ -26,7 +28,10 @@ import {
 } from '../spcp.types'
 import { extractFormId } from '../spcp.util'
 
-import { SpcpOidcProps } from './spcp.oidc.service.types'
+import {
+  CreateRedirectUrlResult,
+  SpcpOidcProps,
+} from './spcp.oidc.service.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -37,6 +42,7 @@ const logger = createLoggerWithLabel(module)
 export abstract class SpcpOidcServiceClass {
   abstract authType: FormAuthType
   abstract jwtName: JwtName
+  abstract codeVerifierCookieName: CodeVerifierCookieName
 
   abstract oidcClient: SpcpOidcBaseClient
   abstract oidcProps: SpcpOidcProps
@@ -50,16 +56,17 @@ export abstract class SpcpOidcServiceClass {
   }
 
   /**
-   * Create the URL to which the client should be redirected for Singpass/Corppass OIDC login.
+   * Create the URL to which the client should be redirected for Singpass/Corppass OIDC login,
+   * along with the PKCE code verifier to be persisted for the subsequent token exchange.
    * @param state - contains formId, remember me, and stored queryId
    * @param esrvcId SP/CP OIDC e-service ID
-   * @returns okAsync(redirectUrl)
+   * @returns okAsync({ redirectUrl, codeVerifier })
    * @returns errAsync(CreateRedirectUrlError)
    */
   createRedirectUrl(
     state: string,
     esrvcId: string,
-  ): ResultAsync<string, CreateRedirectUrlError> {
+  ): ResultAsync<CreateRedirectUrlResult, CreateRedirectUrlError> {
     const logMeta = {
       action: 'createRedirectUrl',
       state,
@@ -69,8 +76,13 @@ export abstract class SpcpOidcServiceClass {
 
     const client = this.getClient()
 
+    const codeVerifier = generators.codeVerifier()
+    const codeChallenge = generators.codeChallenge(codeVerifier)
+
     return ResultAsync.fromPromise(
-      client.createAuthorisationUrl(state, esrvcId),
+      client
+        .createAuthorisationUrl(state, esrvcId, codeChallenge)
+        .then((redirectUrl) => ({ redirectUrl, codeVerifier })),
       (error) => {
         logger.error({
           message: 'Error while creating redirect URL',
@@ -93,6 +105,17 @@ export abstract class SpcpOidcServiceClass {
     return cookie ? ok(cookie) : err(new MissingJwtError())
   }
 
+  /**
+   * Extracts the PKCE code verifier from cookie if present.
+   * @param cookies Object containing cookies
+   * @returns codeVerifier if present, undefined otherwise
+   */
+  extractCodeVerifier(
+    cookies: Partial<Record<CodeVerifierCookieName, string>>,
+  ): string | undefined {
+    return cookies[this.codeVerifierCookieName]
+  }
+
   abstract extractJwtPayload(
     jwt: string,
   ): ResultAsync<
@@ -104,6 +127,7 @@ export abstract class SpcpOidcServiceClass {
 
   abstract exchangeAuthCodeAndRetrieveData(
     code: string,
+    codeVerifier?: string,
   ): ResultAsync<ExtractedNDIPayload, InvalidIdTokenError>
 
   abstract createJWTPayload(
