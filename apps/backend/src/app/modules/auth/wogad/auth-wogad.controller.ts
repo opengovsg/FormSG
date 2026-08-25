@@ -44,6 +44,18 @@ export const WOGAD_AUTH_COOKIE_OPTIONS = {
   path: '/',
 }
 
+/**
+ * Generates an RFC 7636 S256 PKCE pair.
+ */
+const generatePkcePair = () => {
+  const codeVerifier = crypto.randomBytes(32).toString('base64url')
+  const codeChallenge = crypto
+    .createHash('sha256')
+    .update(codeVerifier)
+    .digest('base64url')
+  return { codeVerifier, codeChallenge }
+}
+
 const validateWogadConfig: ControllerHandler = (_req, res, next) => {
   if (!isWogadConfigDefined || !ccaSingleton) {
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({
@@ -57,8 +69,9 @@ const validateWogadConfig: ControllerHandler = (_req, res, next) => {
  * Generates the WOG AD Authorization URL.
  *
  * Flow:
- * 1. After receiving the auth URL, the browser redirects to WOG AD with the csrf token in the state and completes the authentication challenge.
- * 2. Then, WOG AD will redirect the browser to the registered redirect URI with the code and the same csrf token the browser passed in its initial request.
+ * 1. Before generating the auth URL, the backend will generate a CSRF token and a PKCE verifier and challenge pair. It issues the challenge to the authorization endpoint.
+ * 2. After receiving the auth URL, the browser redirects to WOG AD with the csrf token in the state and completes the authentication challenge.d
+ * 3. Then, WOG AD will redirect the browser to the registered redirect URI with the code and the same csrf token the browser passed in its initial request.
  */
 const _generateAuthUrl: ControllerHandler<
   unknown,
@@ -79,13 +92,23 @@ const _generateAuthUrl: ControllerHandler<
 
   const csrfToken = crypto.randomBytes(32).toString('hex')
 
+  const { codeVerifier, codeChallenge } = generatePkcePair()
+
   const authCodeUrlParams: AuthorizationUrlRequest = {
     state: csrfToken,
     scopes: ['openid', 'email'],
     redirectUri,
+    codeChallenge,
+    codeChallengeMethod: 'S256',
   }
 
   res.cookie(WOGAD_CSRF_TOKEN_COOKIE_NAME, csrfToken, WOGAD_AUTH_COOKIE_OPTIONS)
+
+  res.cookie(
+    WOGAD_CODE_VERIFIER_COOKIE_NAME,
+    codeVerifier,
+    WOGAD_AUTH_COOKIE_OPTIONS,
+  )
 
   const authUrl = await ccaSingleton.getAuthCodeUrl(authCodeUrlParams)
 
