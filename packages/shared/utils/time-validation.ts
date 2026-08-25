@@ -63,3 +63,38 @@ export const normalizeTime = (
 
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
 }
+
+/** The two halves of a 12-hour clock. */
+export type Meridiem = 'AM' | 'PM'
+
+/**
+ * Converts a 12-hour clock reading into the 24-hour hour component.
+ *
+ * The two ends of the dial are the ones worth being careful about: 12 AM is
+ * midnight (00) and 12 PM is noon (12), which is the opposite of what the
+ * arithmetic suggests.
+ *
+ * Returns `null` for an hour outside 1-12, so callers can distinguish an
+ * unconvertible reading from a legitimate `0`.
+ */
+export const to24HourClock = (
+  hour12: number,
+  meridiem: Meridiem,
+): number | null => {
+  if (!Number.isInteger(hour12) || hour12 < 1 || hour12 > 12) return null
+  if (meridiem === 'AM') return hour12 === 12 ? 0 : hour12
+  return hour12 === 12 ? 12 : hour12 + 12
+}
+
+/**
+ * Splits a 24-hour hour component into its 12-hour clock reading.
+ * The inverse of `to24HourClock`.
+ */
+export const from24HourClock = (
+  hour24: number,
+): { hour12: number; meridiem: Meridiem } | null => {
+  if (!Number.isInteger(hour24) || hour24 < 0 || hour24 > 23) return null
+  const meridiem: Meridiem = hour24 < 12 ? 'AM' : 'PM'
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12
+  return { hour12, meridiem }
+}

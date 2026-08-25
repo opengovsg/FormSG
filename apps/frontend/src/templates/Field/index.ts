@@ -20,6 +20,7 @@ import SectionFieldContainer from './Section'
 import ShortTextField from './ShortText'
 import SignatureField from './Signature'
 import TableField from './Table'
+import TimeField from './Time'
 import UenField from './Uen'
 import YesNoField from './YesNo'
 
@@ -51,6 +52,7 @@ export {
   ShortTextField,
   SignatureField,
   TableField,
+  TimeField,
   UenField,
   YesNoField,
 }

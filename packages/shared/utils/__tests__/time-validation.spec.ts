@@ -1,4 +1,9 @@
-import { isCanonicalTime, normalizeTime } from '../time-validation'
+import {
+  from24HourClock,
+  isCanonicalTime,
+  normalizeTime,
+  to24HourClock,
+} from '../time-validation'
 
 /**
  * These two functions are the boundary between what a respondent may send and
@@ -93,6 +98,54 @@ describe('isCanonicalTime', () => {
       const normalized = normalizeTime(input, true)
       expect(normalized).not.toBeNull()
       expect(isCanonicalTime(normalized as string)).toBe(true)
+    }
+  })
+})
+
+describe('to24HourClock / from24HourClock', () => {
+  // The dial's two ends are the ones that catch people out.
+  it.each([
+    [12, 'AM', 0], // midnight
+    [1, 'AM', 1],
+    [11, 'AM', 11],
+    [12, 'PM', 12], // noon
+    [1, 'PM', 13],
+    [11, 'PM', 23],
+  ] as const)('should convert %i %s to %i', (hour12, meridiem, expected) => {
+    expect(to24HourClock(hour12, meridiem)).toEqual(expected)
+  })
+
+  it.each([0, 13, -1, 1.5, NaN])(
+    'should reject %p as a 12-hour reading',
+    (hour12) => {
+      expect(to24HourClock(hour12 as number, 'AM')).toBeNull()
+    },
+  )
+
+  it.each([
+    [0, 12, 'AM'],
+    [1, 1, 'AM'],
+    [11, 11, 'AM'],
+    [12, 12, 'PM'],
+    [13, 1, 'PM'],
+    [23, 11, 'PM'],
+  ] as const)('should convert %i back to %i %s', (hour24, hour12, meridiem) => {
+    expect(from24HourClock(hour24)).toEqual({ hour12, meridiem })
+  })
+
+  it.each([-1, 24, 1.5])('should reject %p as a 24-hour hour', (hour24) => {
+    expect(from24HourClock(hour24 as number)).toBeNull()
+  })
+
+  it('should round-trip every hour of the day', () => {
+    for (let hour24 = 0; hour24 <= 23; hour24++) {
+      const split = from24HourClock(hour24)
+      expect(split).not.toBeNull()
+      const { hour12, meridiem } = split as {
+        hour12: number
+        meridiem: 'AM' | 'PM'
+      }
+      expect(to24HourClock(hour12, meridiem)).toEqual(hour24)
     }
   })
 })
