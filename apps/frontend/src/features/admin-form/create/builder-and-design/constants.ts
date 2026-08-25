@@ -29,6 +29,7 @@ export const BASIC_FIELDS_ORDERED = [
   BasicField.HomeNo,
   BasicField.Address,
   BasicField.Date,
+  BasicField.Time,
   BasicField.Image,
   BasicField.Table,
   BasicField.Attachment,
@@ -174,6 +175,7 @@ export const BASIC_FIELDS_DATES_AND_NUMBER = [
   BasicField.Number,
   BasicField.Decimal,
   BasicField.Date,
+  BasicField.Time,
 ] as const
 export const BASIC_FIELDS_PERSONAL = [
   BasicField.Email,
