@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.12.0](https://github.com/opengovsg/formsg/compare/v9.11.1...v9.12.0) (2026-08-25)
+
+
+### Features
+
+* **auth-wogad:** accept a PKCE code verifier at /verify (#9888) ([#9888](https://github.com/opengovsg/formsg/commit/99cb6130572e22db48dbcd7fd154cb095ef32ddc))
+* **auth-wogad:** issue an S256 PKCE challenge at /authUrl (#9889) ([#9889](https://github.com/opengovsg/formsg/commit/2c6382021dbff1cc5b5da0969dba322857d08fe1))
+
+
+### Bug Fixes
+
+* **public-form:** thread form colorScheme to issue feedback modal buttons (#9887) ([#9887](https://github.com/opengovsg/formsg/commit/17fbfde6b02d10d06358fbe20889359a8276e598))
+
+
+### Chores
+
+* remove unused commented out import (#9870) ([#9870](https://github.com/opengovsg/formsg/commit/f13af8f375b6e177c7e285f97873ffc8804a0724))
+
 ## [9.11.1](https://github.com/opengovsg/formsg/compare/v9.11.0...v9.11.1) (2026-08-19)
 
 
