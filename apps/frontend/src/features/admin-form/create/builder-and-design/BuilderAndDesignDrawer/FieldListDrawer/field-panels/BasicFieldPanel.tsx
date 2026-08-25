@@ -1,5 +1,10 @@
+import { useMemo } from 'react'
 import { Box } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
+
+import { featureFlags } from 'formsg-shared/constants'
+import { BasicField } from 'formsg-shared/types'
 
 import {
   BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS,
@@ -42,9 +47,20 @@ export const BasicFieldPanel = ({ searchValue }: { searchValue: string }) => {
       BASIC_FIELDS_CONTENT_AND_DESCRIPTIONS,
       BASICFIELD_TO_DRAWER_META,
     )
+  // TODO(#7824): Remove this gate once the Time field is stable.
+  const isTimeFieldEnabled = useFeatureIsOn(featureFlags.timeField)
+  const datesAndNumberFields = useMemo(
+    () =>
+      isTimeFieldEnabled
+        ? BASIC_FIELDS_DATES_AND_NUMBER
+        : BASIC_FIELDS_DATES_AND_NUMBER.filter(
+            (fieldType) => fieldType !== BasicField.Time,
+          ),
+    [isTimeFieldEnabled],
+  )
   const filteredCreateBasicDatesAndNumberFields = filterFieldsBySearchValue(
     searchValue,
-    BASIC_FIELDS_DATES_AND_NUMBER,
+    datesAndNumberFields,
     BASICFIELD_TO_DRAWER_META,
   )
   const filteredCreateBasicPersonalFields = filterFieldsBySearchValue(
