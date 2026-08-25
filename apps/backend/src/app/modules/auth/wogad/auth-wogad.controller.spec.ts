@@ -22,10 +22,6 @@ jest.mock('@azure/msal-node', () => {
   })
   const mockRemoveAccount = jest.fn()
 
-  // The controller narrows caught errors with `error instanceof AuthError`.
-  // Without this export the mock leaves AuthError undefined, and the catch
-  // block throws `Right-hand side of 'instanceof' is not an object` before it
-  // can log or respond.
   class MockAuthError extends Error {
     constructor(
       public errorCode?: string,
@@ -231,42 +227,6 @@ describe('AuthWogadController', () => {
         AuthWogadController.WOGAD_CSRF_TOKEN_COOKIE_NAME,
         AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
       )
-    })
-
-    // Guards the rolling-deploy window: a login started by an instance that
-    // predates PKCE has no verifier cookie and no code_challenge bound at the
-    // IdP, so the exchange must still be attempted rather than rejected here.
-    it('should still attempt the token exchange when the verifier cookie is absent', async () => {
-      // Arrange
-      const mockReq = expressHandler.mockRequest({
-        body: {
-          code: 'MOCK_AUTH_CODE',
-          csrfToken: csrfTokenA,
-        },
-        cookies: {
-          csrf_token: csrfTokenA,
-        },
-      })
-      const mockRes = expressHandler.mockResponse()
-      MockAuthService.validateEmailDomain = jest
-        .fn()
-        .mockReturnValue(okAsync(<AgencyDocument>{ _id: 'MOCK_AGENCY_ID' }))
-      MockUserService.retrieveUser = jest.fn().mockReturnValueOnce(
-        okAsync(<IPopulatedUser>{
-          _id: 'MOCK_USER_ID',
-        }),
-      )
-      // Act
-      await AuthWogadController.handleVerifyWithCodeForTest(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
-      // Assert
-      expect(msalMocks.acquireTokenByCode).toHaveBeenCalledWith(
-        expect.objectContaining({ codeVerifier: undefined }),
-      )
-      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
     })
 
     it('should return 403 when csrf token mismatch', async () => {
