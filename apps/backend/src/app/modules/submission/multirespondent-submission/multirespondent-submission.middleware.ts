@@ -15,6 +15,7 @@ import {
   FormDto,
   FormFieldDto,
   FormResponseMode,
+  isPaymentsProducts,
   SubmissionType,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
@@ -52,6 +53,7 @@ import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
+import * as PaymentsService from '../../payments/payments.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { createNdiResponsesV4FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
@@ -746,6 +748,61 @@ export const validateMultirespondentSubmission = async (
         return sendRouteError(res, mapRouteError(error))
       })
   )
+}
+
+/**
+ * Middleware to validate payment content against the form definition,
+ * mirroring EncryptSubmissionMiddleware.validatePaymentSubmission. Without
+ * this, the charge is computed from the client's paymentProducts payload,
+ * so a respondent could tamper prices, quantities, or duplicates.
+ */
+export const validatePaymentSubmission = async (
+  req: MultirespondentSubmissionMiddlewareHandlerRequest,
+  res: Parameters<MultirespondentSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const formDef = req.formsg.formDef.toObject()
+
+  const logMeta = {
+    action: 'validatePaymentSubmission',
+    formId: String(formDef._id),
+    ...createReqMeta(req),
+  }
+
+  const formDefProducts = formDef?.payments_field?.products
+  const submittedPaymentProducts = req.body.paymentProducts
+  if (submittedPaymentProducts) {
+    if (!isPaymentsProducts(formDefProducts)) {
+      // Payment definition does not allow for payment by product
+
+      logger.error({
+        message: 'Invalid form definition for payment by product',
+        meta: logMeta,
+      })
+
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'The payment settings in this form have been updated. Please refresh and try again.',
+      })
+    }
+    return PaymentsService.validatePaymentProducts(
+      formDefProducts,
+      submittedPaymentProducts,
+    )
+      .map(() => next())
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error validating payment submission',
+          meta: logMeta,
+          error,
+        })
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  }
+  return next()
 }
 
 export const setCurrentWorkflowStep = async (
