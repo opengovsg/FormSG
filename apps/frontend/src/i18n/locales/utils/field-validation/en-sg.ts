@@ -70,6 +70,14 @@ const dateFieldValidation: DateFieldValidation = {
   invalidDay: 'This date is not allowed by the form admin',
 }
 
+interface TimeFieldValidation {
+  validTime: string
+}
+
+const timeFieldValidation: TimeFieldValidation = {
+  validTime: 'Please enter a valid time',
+}
+
 interface NricFieldValidation {
   validNric: string
 }
@@ -172,6 +180,7 @@ export type FieldValidation = BaseValidation &
   DecimalFieldValidation &
   UenFieldValidation &
   DateFieldValidation &
+  TimeFieldValidation &
   NricFieldValidation &
   CheckboxFieldValidation &
   DropdownFieldValidation &
@@ -187,6 +196,7 @@ export const enSG: FieldValidation = {
   ...decimalFieldValidation,
   ...uenFieldValidation,
   ...dateFieldValidation,
+  ...timeFieldValidation,
   ...nricFieldValidation,
   ...checkboxFieldValidation,
   ...checkboxFieldValidation,

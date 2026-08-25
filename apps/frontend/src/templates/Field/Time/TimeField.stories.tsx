@@ -91,3 +91,9 @@ PrefilledFromCanonical.args = {
   schema: { ...baseSchema, use24HourFormat: false },
   defaultValue: '14:30:00',
 }
+
+/** Optional, to check an unfinished entry is rejected rather than dropped. */
+export const Optional = Template.bind({})
+Optional.args = {
+  schema: { ...baseSchema, required: false },
+}

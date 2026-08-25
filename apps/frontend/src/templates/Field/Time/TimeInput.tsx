@@ -13,10 +13,9 @@ import Input, { InputProps } from '~components/Input'
 /**
  * The respondent-facing input for a Time field.
  *
- * Its value is always the canonical persisted form — 24-hour `HH:MM:SS` — or
- * the empty string while the entry is incomplete. Everything the display
- * settings do happens inside here: the surrounding form only ever sees
- * canonical time, which is why neither setting reaches the backend.
+ * Everything the display settings do happens inside here: a submitted answer
+ * is always the canonical persisted form — 24-hour `HH:MM:SS` — which is why
+ * neither setting reaches the backend.
  *
  * The meridiem is a button rather than a text input on purpose. Letting anyone
  * type it would mean parsing free text ("pm", "P.M.", "evening"), and that is

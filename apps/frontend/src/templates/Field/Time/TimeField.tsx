@@ -4,6 +4,8 @@ import { Controller, useFormContext } from 'react-hook-form'
 import { FormColorTheme } from 'formsg-shared/types'
 import { Meridiem } from 'formsg-shared/utils/time-validation'
 
+import { useTimeValidationRules } from '~utils/fieldValidation'
+
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { SingleAnswerFieldInput, TimeFieldSchema } from '../types'
 
@@ -26,6 +28,11 @@ export const TimeField = ({
 }: TimeFieldProps): JSX.Element => {
   const { control } = useFormContext<SingleAnswerFieldInput>()
 
+  const validationRules = useTimeValidationRules(
+    schema,
+    disableRequiredValidation,
+  )
+
   const { includeSeconds, use24HourFormat } = schema
 
   return (
@@ -38,13 +45,7 @@ export const TimeField = ({
         control={control}
         name={schema._id}
         defaultValue=""
-        rules={
-          disableRequiredValidation || !schema.required
-            ? undefined
-            : {
-                required: 'Please enter a time',
-              }
-        }
+        rules={validationRules}
         render={({ field: { value, onChange, ...field } }) => (
           <TimeEntry
             value={value ?? ''}
@@ -61,10 +62,10 @@ export const TimeField = ({
 }
 
 /**
- * Holds what the respondent has typed, and reports only complete, in-range
- * times upward. The form's value is therefore always either canonical
- * `HH:MM:SS` or empty — never a half-entered string that would need
- * interpreting later.
+ * Holds what the respondent has typed. Reports canonical `HH:MM:SS` once the
+ * entry is complete and in range, empty while it is untouched, and the raw
+ * masked entry in between — so validation can tell "nothing yet" apart from
+ * "not a time", and neither can reach storage.
  */
 const TimeEntry = ({
   value,
@@ -103,15 +104,27 @@ const TimeEntry = ({
   }, [includeSeconds, use24HourFormat])
 
   const report = useCallback(
-    (nextDigits: string, nextMeridiem: Meridiem) =>
-      onChange(
-        toCanonical({
-          digits: nextDigits,
-          meridiem: nextMeridiem,
-          includeSeconds,
-          use24HourFormat,
-        }),
-      ),
+    (nextDigits: string, nextMeridiem: Meridiem) => {
+      const canonical = toCanonical({
+        digits: nextDigits,
+        meridiem: nextMeridiem,
+        includeSeconds,
+        use24HourFormat,
+      })
+      // A half-entered or out-of-range time reports the bare digits rather
+      // than collapsing to empty. Empty and invalid are different states: the
+      // respondent deserves "please enter a time" for one and "that is not a
+      // valid time" for the other, and reporting empty for both would let an
+      // optional field silently discard a typo.
+      //
+      // The digits go up unseparated because a digits-only string can never be
+      // mistaken for a canonical `HH:MM:SS`, which is the sole test validation
+      // applies. The separated form is not safe here: in 12-hour mode `133045`
+      // is rejected above — hour 13 has no meridiem reading — yet reads as a
+      // valid 13:30:45 once the colons go in, and would submit.
+      if (canonical || !nextDigits) return onChange(canonical)
+      return onChange(nextDigits)
+    },
     [includeSeconds, onChange, use24HourFormat],
   )
 

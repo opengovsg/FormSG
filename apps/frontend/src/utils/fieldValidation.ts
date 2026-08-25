@@ -40,6 +40,7 @@ import {
   ShortTextFieldBase,
   SignatureFieldBase,
   TextSelectedValidation,
+  TimeFieldBase,
   UenFieldBase,
 } from 'formsg-shared/types/field'
 import {
@@ -58,6 +59,7 @@ import {
   isHomePhoneNumber,
   isMobilePhoneNumber,
 } from 'formsg-shared/utils/phone-num-validation'
+import { isCanonicalTime } from 'formsg-shared/utils/time-validation'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
 
 import { Fields } from '~/i18n/locales/features/public-form/fields'
@@ -844,6 +846,33 @@ export const useDateValidationRules = (
           !schema.invalidDays.length ||
           !isDateAnInvalidDay(parseDate(val), schema.invalidDays) ||
           t('invalidDay'),
+      },
+    }
+  }, [schema, disableRequiredValidation, t])
+}
+
+export const useTimeValidationRules = (
+  schema: TimeFieldBase,
+  disableRequiredValidation?: boolean,
+): RegisterOptions => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: I18N_KEY_PREFIX,
+  })
+
+  return useMemo(() => {
+    return {
+      validate: {
+        required: requiredSingleAnswerValidationFn(
+          schema,
+          disableRequiredValidation,
+          t,
+        ),
+        // The input reports canonical form once the entry is complete and in
+        // range, and the raw entry until then — so anything non-canonical
+        // arriving here is a time the respondent started but did not finish.
+        // Neither display setting is consulted: they govern what the input
+        // shows, and it has already converted.
+        validTime: (val) => !val || isCanonicalTime(val) || t('validTime'),
       },
     }
   }, [schema, disableRequiredValidation, t])
