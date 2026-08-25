@@ -20,6 +20,7 @@ import createSectionFieldSchema from './sectionField'
 import createShortTextFieldSchema from './shortTextField'
 import createStatementFieldSchema from './statementField'
 import createTableFieldSchema from './tableField'
+import createTimeFieldSchema from './timeField'
 import createUenFieldSchema from './uenField'
 import createYesNoFieldSchema from './yesNoField'
 
@@ -28,6 +29,7 @@ export {
   createAttachmentFieldSchema,
   createCheckboxFieldSchema,
   createDateFieldSchema,
+  createTimeFieldSchema,
   createDecimalFieldSchema,
   createDropdownFieldSchema,
   createCountryRegionFieldSchema,

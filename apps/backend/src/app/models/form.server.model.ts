@@ -108,6 +108,7 @@ import {
   createShortTextFieldSchema,
   createStatementFieldSchema,
   createTableFieldSchema,
+  createTimeFieldSchema,
   createUenFieldSchema,
   createYesNoFieldSchema,
 } from './field'
@@ -904,6 +905,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   FormFieldPath.discriminator(BasicField.Decimal, createDecimalFieldSchema())
   FormFieldPath.discriminator(BasicField.Image, createImageFieldSchema())
   FormFieldPath.discriminator(BasicField.Date, createDateFieldSchema())
+  FormFieldPath.discriminator(BasicField.Time, createTimeFieldSchema())
   FormFieldPath.discriminator(BasicField.Nric, createNricFieldSchema())
   FormFieldPath.discriminator(BasicField.Uen, createUenFieldSchema())
   FormFieldPath.discriminator(BasicField.YesNo, createYesNoFieldSchema())
