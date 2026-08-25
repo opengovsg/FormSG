@@ -15,6 +15,7 @@ export const GENERIC_STRING_FIELD_TYPES = new Set<FieldType>([
   'uen',
   'date',
   'country_region',
+  'time',
 ])
 
 export const ADDRESS_SUBFIELD_KEYS = [

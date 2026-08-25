@@ -23,6 +23,7 @@ export type FieldResponseV3 =
   | GenericStringAnswerFieldResponseV3
   | AddressResponseV3
   | SignatureResponseV3
+  | TimeResponseV3
 
 export type GenericStringAnswerFieldResponseV3 =
   | NumberResponseV3
@@ -36,6 +37,7 @@ export type GenericStringAnswerFieldResponseV3 =
   | UenResponseV3
   | DateResponseV3
   | CountryRegionResponseV3
+  | TimeResponseV3
 
 export type NdiResponseV3 = NricResponseV3 | ShortTextResponseV3
 
@@ -55,6 +57,7 @@ export type YesNoResponseV3 = FieldResponseFactoryV3<BasicField.YesNo>
 export type CheckboxResponseV3 = FieldResponseFactoryV3<BasicField.Checkbox>
 export type RadioResponseV3 = FieldResponseFactoryV3<BasicField.Radio>
 export type DateResponseV3 = FieldResponseFactoryV3<BasicField.Date>
+export type TimeResponseV3 = FieldResponseFactoryV3<BasicField.Time>
 export type RatingResponseV3 = FieldResponseFactoryV3<BasicField.Rating>
 export type NricResponseV3 = FieldResponseFactoryV3<BasicField.Nric>
 export type TableResponseV3 = FieldResponseFactoryV3<BasicField.Table>
@@ -108,6 +111,7 @@ export type GenericStringAnswerResponseFieldTypeV3 =
   | UenResponseV3['fieldType']
   | DateResponseV3['fieldType']
   | CountryRegionResponseV3['fieldType']
+  | TimeResponseV3['fieldType']
 
 export type StringAnswerResponseV3 = string
 export type YesNoFieldResponseV3 = 'Yes' | 'No'

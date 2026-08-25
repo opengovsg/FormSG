@@ -336,6 +336,7 @@ export const transformInputsToOutputs = (
     case BasicField.CountryRegion:
     case BasicField.Rating:
     case BasicField.Nric:
+    case BasicField.Time:
     case BasicField.Uen:
       return transformToSingleAnswerOutput(
         field,

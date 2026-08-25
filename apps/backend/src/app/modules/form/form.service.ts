@@ -851,6 +851,23 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       }
     }
 
+    case BasicField.Time: {
+      // Canonical 24-hour HH:MM:SS, matching what is actually stored — the
+      // field's display settings never reach the persisted answer.
+      const sampleValue = faker.date.anytime().toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      })
+      return {
+        id: field._id,
+        question: field.title,
+        answer: sampleValue,
+        fieldType: field.fieldType,
+      }
+    }
+
     case BasicField.Nric: {
       return {
         id: field._id,

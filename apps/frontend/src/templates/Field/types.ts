@@ -38,6 +38,7 @@ import {
   SignatureVectorArray,
   StatementFieldBase,
   TableFieldBase,
+  TimeFieldBase,
   UenFieldBase,
   YesNoFieldBase,
 } from 'formsg-shared/types/field'
@@ -175,6 +176,7 @@ export type AddressCompoundFieldSchema =
 export type AttachmentFieldSchema = FormFieldWithQuestionNo<AttachmentFieldBase>
 export type CheckboxFieldSchema = FormFieldWithQuestionNo<CheckboxFieldBase>
 export type DateFieldSchema = FormFieldWithQuestionNo<DateFieldBase>
+export type TimeFieldSchema = FormFieldWithQuestionNo<TimeFieldBase>
 export type DecimalFieldSchema = FormFieldWithQuestionNo<DecimalFieldBase>
 export type DropdownFieldSchema = FormFieldWithQuestionNo<DropdownFieldBase>
 export type EmailFieldSchema = FormFieldWithQuestionNo<EmailFieldBase>

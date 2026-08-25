@@ -33,6 +33,7 @@ export type FieldType =
   | 'children'
   | 'address'
   | 'signature'
+  | 'time'
 
 // Represents form field responses in a form.
 export type FormField = {

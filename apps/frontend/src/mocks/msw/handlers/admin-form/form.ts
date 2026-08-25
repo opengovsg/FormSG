@@ -237,6 +237,17 @@ export const MOCK_FORM_FIELDS: FormFieldDto[] = [
     globalId: 'pq8tWED4Jf6FkuWr9VKUqz5Ea6rCASbx73aO6T2LhAN',
   },
   {
+    title: 'Time',
+    description: '',
+    required: true,
+    disabled: false,
+    fieldType: BasicField.Time,
+    includeSeconds: false,
+    use24HourFormat: true,
+    _id: '5da04ebfe397fc0013f63c84',
+    globalId: 'pq8tWED4Jf6FkuWr9VKUqz5Ea6rCASbx73aO6T2LhAO',
+  },
+  {
     ratingOptions: {
       steps: 5,
       shape: RatingShape.Heart,
@@ -1018,8 +1029,18 @@ export const createFormBuilderMocks = (
     )
   }
 
+  /**
+   * NOTE: these field resolvers deliberately leave msw's response-body generic
+   * unset. msw expands it into one HttpResponse per union member, and
+   * FormFieldDto carries two variants per field type — so the Time field took it
+   * from 48 members to 50, past the point where TypeScript will relate
+   * HttpResponse<FormFieldDto> to that union at all. The payloads are still
+   * typed at each HttpResponse.json call.
+   */
   const createSingleField = () => {
-    return http.post<{ formId: string }, FieldCreateDto, FormFieldDto>(
+    // Response body generic omitted deliberately — see note above the file's
+    // field resolvers.
+    return http.post<{ formId: string }, FieldCreateDto>(
       '/api/v3/admin/forms/:formId/fields',
       async ({ request }) => {
         const body = await request.json()
@@ -1041,17 +1062,16 @@ export const createFormBuilderMocks = (
         )
         form.form_fields = insertAt(form.form_fields, newIndex, newField)
         await MswDelay(delay)
-        return HttpResponse.json(newField, { status: 200 })
+        // Pinned: msw expands HttpResponseResolver into one HttpResponse
+        // per field type, and TypeScript stops relating unions this large
+        // structurally. The value is a FormFieldDto by construction.
+        return HttpResponse.json<FormFieldDto>(newField, { status: 200 })
       },
     )
   }
 
   const updateSingleField = () => {
-    return http.put<
-      { formId: string; fieldId: string },
-      FormFieldDto,
-      FormFieldDto
-    >(
+    return http.put<{ formId: string; fieldId: string }, FormFieldDto>(
       '/api/v3/admin/forms/:formId/fields/:fieldId',
       async ({ request, params }) => {
         const body = await request.json()
@@ -1060,7 +1080,7 @@ export const createFormBuilderMocks = (
         )
         form.form_fields.splice(index, 1, body)
         await MswDelay(delay)
-        return HttpResponse.json(body, { status: 200 })
+        return HttpResponse.json<FormFieldDto>(body, { status: 200 })
       },
     )
   }
@@ -1091,7 +1111,7 @@ export const createFormBuilderMocks = (
   }
 
   const duplicateField = () => {
-    return http.post<{ formId: string; fieldId: string }, never, FormFieldDto>(
+    return http.post<{ formId: string; fieldId: string }, never>(
       '/api/v3/admin/forms/:formId/fields/:fieldId/duplicate',
       async ({ params }) => {
         await MswDelay(delay)
@@ -1101,28 +1121,27 @@ export const createFormBuilderMocks = (
         const newField = {
           ...form.form_fields[fieldToCopyIndex],
           _id: cuid(),
-        }
+        } as FormFieldDto
         form.form_fields.push(newField)
 
-        return HttpResponse.json(newField, { status: 200 })
+        return HttpResponse.json<FormFieldDto>(newField, { status: 200 })
       },
     )
   }
 
   const deleteField = () => {
-    return http.delete<
-      { formId: string; fieldId: string },
-      never,
-      FormFieldDto
-    >('/api/v3/admin/forms/:formId/fields/:fieldId', async ({ params }) => {
-      const fieldToDeleteIndex = form.form_fields.findIndex(
-        (field) => field._id === params.fieldId,
-      )
-      form.form_fields.splice(fieldToDeleteIndex, 1)
+    return http.delete<{ formId: string; fieldId: string }, never>(
+      '/api/v3/admin/forms/:formId/fields/:fieldId',
+      async ({ params }) => {
+        const fieldToDeleteIndex = form.form_fields.findIndex(
+          (field) => field._id === params.fieldId,
+        )
+        form.form_fields.splice(fieldToDeleteIndex, 1)
 
-      await MswDelay(delay)
-      return new HttpResponse(null, { status: 200 })
-    })
+        await MswDelay(delay)
+        return new HttpResponse(null, { status: 200 })
+      },
+    )
   }
 
   return [

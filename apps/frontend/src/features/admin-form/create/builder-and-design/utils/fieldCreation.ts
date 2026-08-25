@@ -191,6 +191,16 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
         },
       }
     }
+    case BasicField.Time: {
+      return {
+        fieldType,
+        ...baseMeta,
+        // Defaults chosen from the request in #7824: agencies want 24-hour, and
+        // seconds are rarely wanted.
+        includeSeconds: false,
+        use24HourFormat: true,
+      }
+    }
     case BasicField.Table: {
       return {
         fieldType,

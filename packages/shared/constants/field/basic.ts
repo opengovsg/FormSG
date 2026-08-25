@@ -115,6 +115,12 @@ export const types: BasicFieldBlock[] = [
     answerArray: false,
   },
   {
+    name: BasicField.Time,
+    value: 'Time',
+    submitted: true,
+    answerArray: false,
+  },
+  {
     name: BasicField.Rating,
     value: 'Rating',
     submitted: true,
