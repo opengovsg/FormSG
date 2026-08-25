@@ -134,7 +134,8 @@ describe('AuthWogadController', () => {
         },
         cookies: {
           csrf_token: csrfTokenA,
-          wogadCodeVerifier: MOCK_CODE_VERIFIER,
+          [AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME]:
+            MOCK_CODE_VERIFIER,
         },
       })
       const mockRes = expressHandler.mockResponse()
@@ -167,7 +168,8 @@ describe('AuthWogadController', () => {
         },
         cookies: {
           csrf_token: csrfTokenA,
-          wogadCodeVerifier: MOCK_CODE_VERIFIER,
+          [AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME]:
+            MOCK_CODE_VERIFIER,
         },
       })
       const mockRes = expressHandler.mockResponse()
@@ -186,7 +188,9 @@ describe('AuthWogadController', () => {
         jest.fn(),
       )
       // Assert
-      expect(mockRes.clearCookie).toHaveBeenCalledWith('wogadCodeVerifier')
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME,
+      )
       expect(mockRes.clearCookie).toHaveBeenCalledWith('csrf_token')
     })
 
@@ -199,7 +203,8 @@ describe('AuthWogadController', () => {
         },
         cookies: {
           csrf_token: csrfTokenA,
-          wogadCodeVerifier: MOCK_CODE_VERIFIER,
+          [AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME]:
+            MOCK_CODE_VERIFIER,
         },
       })
       const mockRes = expressHandler.mockResponse()
@@ -214,7 +219,9 @@ describe('AuthWogadController', () => {
       )
       // Assert
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
-      expect(mockRes.clearCookie).toHaveBeenCalledWith('wogadCodeVerifier')
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME,
+      )
       expect(mockRes.clearCookie).toHaveBeenCalledWith('csrf_token')
     })
 
