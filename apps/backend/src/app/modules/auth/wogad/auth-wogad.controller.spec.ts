@@ -75,9 +75,9 @@ describe('AuthWogadController', () => {
       )
       // Assert
       expect(mockRes.cookie).toHaveBeenCalledWith(
-        'csrf_token',
+        AuthWogadController.WOGAD_CSRF_TOKEN_COOKIE_NAME,
         expect.stringMatching(/^[a-f0-9]{64}$/i),
-        expect.any(Object),
+        AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -190,8 +190,12 @@ describe('AuthWogadController', () => {
       // Assert
       expect(mockRes.clearCookie).toHaveBeenCalledWith(
         AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME,
+        AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
       )
-      expect(mockRes.clearCookie).toHaveBeenCalledWith('csrf_token')
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        AuthWogadController.WOGAD_CSRF_TOKEN_COOKIE_NAME,
+        AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
+      )
     })
 
     it('should clear both auth cookies when the token exchange fails', async () => {
@@ -221,8 +225,12 @@ describe('AuthWogadController', () => {
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(
         AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME,
+        AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
       )
-      expect(mockRes.clearCookie).toHaveBeenCalledWith('csrf_token')
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        AuthWogadController.WOGAD_CSRF_TOKEN_COOKIE_NAME,
+        AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
+      )
     })
 
     // Guards the rolling-deploy window: a login started by an instance that
