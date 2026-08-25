@@ -22,7 +22,17 @@ jest.mock('@azure/msal-node', () => {
   })
   const mockRemoveAccount = jest.fn()
 
+  class MockAuthError extends Error {
+    constructor(
+      public errorCode?: string,
+      public errorMessage?: string,
+    ) {
+      super(errorMessage)
+    }
+  }
+
   return {
+    AuthError: MockAuthError,
     ConfidentialClientApplication: jest.fn().mockImplementation(() => ({
       getAuthCodeUrl: mockGetAuthCodeUrl,
       acquireTokenByCode: mockAcquireTokenByCode,
@@ -39,6 +49,7 @@ jest.mock('@azure/msal-node', () => {
 })
 
 const MOCK_AUTH_URL = 'MOCK_AUTH_URL'
+const MOCK_CODE_VERIFIER = 'MOCK_CODE_VERIFIER'
 
 const msalMocks = jest.requireMock('@azure/msal-node').msalMocks
 
@@ -60,9 +71,9 @@ describe('AuthWogadController', () => {
       )
       // Assert
       expect(mockRes.cookie).toHaveBeenCalledWith(
-        'csrf_token',
+        AuthWogadController.WOGAD_CSRF_TOKEN_COOKIE_NAME,
         expect.stringMatching(/^[a-f0-9]{64}$/i),
-        expect.any(Object),
+        AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
       )
       expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.OK)
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -108,6 +119,114 @@ describe('AuthWogadController', () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         _id: 'MOCK_USER_ID',
       })
+    })
+
+    it('should pass the code verifier from the cookie to the token request', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        body: {
+          code: 'MOCK_AUTH_CODE',
+          csrfToken: csrfTokenA,
+        },
+        cookies: {
+          csrf_token: csrfTokenA,
+          [AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME]:
+            MOCK_CODE_VERIFIER,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain = jest
+        .fn()
+        .mockReturnValue(okAsync(<AgencyDocument>{ _id: 'MOCK_AGENCY_ID' }))
+      MockUserService.retrieveUser = jest.fn().mockReturnValueOnce(
+        okAsync(<IPopulatedUser>{
+          _id: 'MOCK_USER_ID',
+        }),
+      )
+      // Act
+      await AuthWogadController.handleVerifyWithCodeForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(msalMocks.acquireTokenByCode).toHaveBeenCalledWith(
+        expect.objectContaining({ codeVerifier: MOCK_CODE_VERIFIER }),
+      )
+    })
+
+    it('should clear both auth cookies after a successful verification', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        body: {
+          code: 'MOCK_AUTH_CODE',
+          csrfToken: csrfTokenA,
+        },
+        cookies: {
+          csrf_token: csrfTokenA,
+          [AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME]:
+            MOCK_CODE_VERIFIER,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      MockAuthService.validateEmailDomain = jest
+        .fn()
+        .mockReturnValue(okAsync(<AgencyDocument>{ _id: 'MOCK_AGENCY_ID' }))
+      MockUserService.retrieveUser = jest.fn().mockReturnValueOnce(
+        okAsync(<IPopulatedUser>{
+          _id: 'MOCK_USER_ID',
+        }),
+      )
+      // Act
+      await AuthWogadController.handleVerifyWithCodeForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME,
+        AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
+      )
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        AuthWogadController.WOGAD_CSRF_TOKEN_COOKIE_NAME,
+        AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
+      )
+    })
+
+    it('should clear both auth cookies when the token exchange fails', async () => {
+      // Arrange
+      const mockReq = expressHandler.mockRequest({
+        body: {
+          code: 'MOCK_AUTH_CODE',
+          csrfToken: csrfTokenA,
+        },
+        cookies: {
+          csrf_token: csrfTokenA,
+          [AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME]:
+            MOCK_CODE_VERIFIER,
+        },
+      })
+      const mockRes = expressHandler.mockResponse()
+      msalMocks.acquireTokenByCode.mockRejectedValueOnce(
+        new Error('MOCK_TOKEN_FAILURE'),
+      )
+      // Act
+      await AuthWogadController.handleVerifyWithCodeForTest(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+      // Assert
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        AuthWogadController.WOGAD_CODE_VERIFIER_COOKIE_NAME,
+        AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
+      )
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        AuthWogadController.WOGAD_CSRF_TOKEN_COOKIE_NAME,
+        AuthWogadController.WOGAD_AUTH_COOKIE_OPTIONS,
+      )
     })
 
     it('should return 403 when csrf token mismatch', async () => {
