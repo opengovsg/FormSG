@@ -101,9 +101,9 @@ describe('singpass.oidc.router', () => {
       // Assert
 
       expect(response.status).toBe(302)
-      expect(response.headers['set-cookie']).toEqual([
-        expect.stringContaining(`jwtSp=${MOCK_JWT}`),
-      ])
+      expect(response.headers['set-cookie']).toEqual(
+        expect.arrayContaining([expect.stringContaining(`jwtSp=${MOCK_JWT}`)]),
+      )
       expect(response.headers['location']).toEqual(MOCK_DESTINATION)
     })
 
@@ -180,9 +180,9 @@ describe('singpass.oidc.router', () => {
       })
 
       expect(response.status).toBe(302)
-      expect(response.headers['set-cookie']).toEqual([
-        expect.stringContaining(`isLoginError=true`),
-      ])
+      expect(response.headers['set-cookie']).toEqual(
+        expect.arrayContaining([expect.stringContaining(`isLoginError=true`)]),
+      )
       expect(response.headers['location']).toEqual(MOCK_DESTINATION)
     })
 
@@ -205,9 +205,9 @@ describe('singpass.oidc.router', () => {
       })
 
       expect(response.status).toBe(302)
-      expect(response.headers['set-cookie']).toEqual([
-        expect.stringContaining(`isLoginError=true`),
-      ])
+      expect(response.headers['set-cookie']).toEqual(
+        expect.arrayContaining([expect.stringContaining(`isLoginError=true`)]),
+      )
       expect(response.headers['location']).toEqual(MOCK_DESTINATION)
     })
   })

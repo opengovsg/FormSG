@@ -53,6 +53,7 @@ import {
 } from '../../sgid/sgid.errors'
 import { SgidService } from '../../sgid/sgid.service'
 import { validateSgidForm } from '../../sgid/sgid.util'
+import { SPCP_CODE_VERIFIER_COOKIE_OPTIONS } from '../../spcp/spcp.controller'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import {
@@ -694,10 +695,16 @@ export const _handleFormAuthRedirect: ControllerHandler<
               isPersistentLogin,
               encodedQuery,
             )
-            return getOidcService(FormAuthType.SP).createRedirectUrl(
-              target,
-              form.esrvcId,
-            )
+            const oidcService = getOidcService(FormAuthType.SP)
+            return oidcService
+              .createRedirectUrl(target, form.esrvcId)
+              .andThen(({ redirectUrl, codeVerifier }) => {
+                res.cookie(oidcService.codeVerifierCookieName, codeVerifier, {
+                  ...SPCP_CODE_VERIFIER_COOKIE_OPTIONS,
+                  ...oidcService.getCookieSettings(),
+                })
+                return ok(redirectUrl)
+              })
           })
         }
         case FormAuthType.CP: {
@@ -710,10 +717,16 @@ export const _handleFormAuthRedirect: ControllerHandler<
               isPersistentLogin,
               encodedQuery,
             )
-            return getOidcService(FormAuthType.CP).createRedirectUrl(
-              target,
-              form.esrvcId,
-            )
+            const oidcService = getOidcService(FormAuthType.CP)
+            return oidcService
+              .createRedirectUrl(target, form.esrvcId)
+              .andThen(({ redirectUrl, codeVerifier }) => {
+                res.cookie(oidcService.codeVerifierCookieName, codeVerifier, {
+                  ...SPCP_CODE_VERIFIER_COOKIE_OPTIONS,
+                  ...oidcService.getCookieSettings(),
+                })
+                return ok(redirectUrl)
+              })
           })
         }
         case FormAuthType.SGID:

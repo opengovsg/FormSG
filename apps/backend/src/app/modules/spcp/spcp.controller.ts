@@ -11,6 +11,15 @@ import { getOidcService } from './spcp.oidc.service'
 
 const logger = createLoggerWithLabel(module)
 
+// RATIONALE: sameSite must be 'lax', not 'strict'
+// SPCP callback is a cross-site top-level redirect back to this endpoint
+export const SPCP_CODE_VERIFIER_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: !config.isDevOrTest,
+  sameSite: 'lax' as const,
+  path: '/',
+}
+
 /**
  * Higher-order function which returns an Express handler to handle Singpass
  * and Corppass OIDC login requests.
@@ -34,7 +43,16 @@ export const handleSpcpOidcLogin: (
 
   const oidcService = getOidcService(authType)
 
-  const result = await oidcService.exchangeAuthCodeAndRetrieveData(code)
+  const codeVerifier = oidcService.extractCodeVerifier(req.cookies)
+  res.clearCookie(
+    oidcService.codeVerifierCookieName,
+    SPCP_CODE_VERIFIER_COOKIE_OPTIONS,
+  )
+
+  const result = await oidcService.exchangeAuthCodeAndRetrieveData(
+    code,
+    codeVerifier,
+  )
 
   if (result.isErr()) {
     logger.error({

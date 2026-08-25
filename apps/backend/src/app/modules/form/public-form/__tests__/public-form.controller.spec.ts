@@ -4,7 +4,7 @@ import { ObjectId } from 'bson'
 import { Request } from 'express'
 import { ErrorCode, FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
-import { err, errAsync, ok, okAsync } from 'neverthrow'
+import { errAsync, ok, okAsync } from 'neverthrow'
 
 import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
@@ -45,7 +45,7 @@ import {
 } from '../../../spcp/spcp.errors'
 import { CpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
-import { JwtName } from '../../../spcp/spcp.types'
+import { CodeVerifierCookieName, JwtName } from '../../../spcp/spcp.types'
 import { generateHashedSubmitterId } from '../../../submission/submission.utils'
 import {
   AuthTypeMismatchError,
@@ -1198,6 +1198,14 @@ describe('public-form.controller', () => {
       },
     })
     const MOCK_REDIRECT_URL = 'www.mockata.com'
+    const MOCK_CODE_VERIFIER = 'mockCodeVerifier'
+
+    beforeEach(() => {
+      SpOidcServiceClass.prototype.codeVerifierCookieName =
+        CodeVerifierCookieName.SP
+      CpOidcServiceClass.prototype.codeVerifierCookieName =
+        CodeVerifierCookieName.CP
+    })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType SP', async () => {
       // Arrange
@@ -1211,7 +1219,12 @@ describe('public-form.controller', () => {
       )
       jest
         .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
+        .mockReturnValueOnce(
+          okAsync({
+            redirectUrl: MOCK_REDIRECT_URL,
+            codeVerifier: MOCK_CODE_VERIFIER,
+          }),
+        )
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1225,6 +1238,11 @@ describe('public-form.controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         redirectURL: MOCK_REDIRECT_URL,
       })
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        CodeVerifierCookieName.SP,
+        MOCK_CODE_VERIFIER,
+        expect.anything(),
+      )
     })
 
     it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is undefined', async () => {
@@ -1244,7 +1262,12 @@ describe('public-form.controller', () => {
       )
       jest
         .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
+        .mockReturnValueOnce(
+          okAsync({
+            redirectUrl: MOCK_REDIRECT_URL,
+            codeVerifier: MOCK_CODE_VERIFIER,
+          }),
+        )
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1280,7 +1303,12 @@ describe('public-form.controller', () => {
       )
       jest
         .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
+        .mockReturnValueOnce(
+          okAsync({
+            redirectUrl: MOCK_REDIRECT_URL,
+            codeVerifier: MOCK_CODE_VERIFIER,
+          }),
+        )
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1309,7 +1337,12 @@ describe('public-form.controller', () => {
       )
       jest
         .spyOn(CpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockReturnValueOnce(okAsync(MOCK_REDIRECT_URL))
+        .mockReturnValueOnce(
+          okAsync({
+            redirectUrl: MOCK_REDIRECT_URL,
+            codeVerifier: MOCK_CODE_VERIFIER,
+          }),
+        )
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1323,6 +1356,11 @@ describe('public-form.controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         redirectURL: MOCK_REDIRECT_URL,
       })
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        CodeVerifierCookieName.CP,
+        MOCK_CODE_VERIFIER,
+        expect.anything(),
+      )
     })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType MyInfo', async () => {
@@ -1496,7 +1534,7 @@ describe('public-form.controller', () => {
       )
       jest
         .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockResolvedValue(err(new CreateRedirectUrlError()))
+        .mockReturnValue(errAsync(new CreateRedirectUrlError()))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
