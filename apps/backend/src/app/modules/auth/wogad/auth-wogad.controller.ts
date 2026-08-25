@@ -46,12 +46,6 @@ export const WOGAD_AUTH_COOKIE_OPTIONS = {
 
 /**
  * Generates an RFC 7636 S256 PKCE pair.
- *
- * Hand-rolled rather than taken from MSAL: @azure/msal-node v5 no longer
- * exports CryptoProvider from its public surface, and its `exports` map blocks
- * deep imports. This construction is the one RFC 7636 section 4.1 recommends -
- * 32 random octets, base64url-encoded - which also carries more entropy than
- * MSAL's own generator did.
  */
 const generatePkcePair = () => {
   const codeVerifier = crypto.randomBytes(32).toString('base64url')
@@ -75,8 +69,9 @@ const validateWogadConfig: ControllerHandler = (_req, res, next) => {
  * Generates the WOG AD Authorization URL.
  *
  * Flow:
- * 1. After receiving the auth URL, the browser redirects to WOG AD with the csrf token in the state and completes the authentication challenge.
- * 2. Then, WOG AD will redirect the browser to the registered redirect URI with the code and the same csrf token the browser passed in its initial request.
+ * 1. Before generating the auth URL, the backend will generate a CSRF token and a PKCE verifier and challenge pair. It issues the challenge to the authorization endpoint.
+ * 2. After receiving the auth URL, the browser redirects to WOG AD with the csrf token in the state and completes the authentication challenge.d
+ * 3. Then, WOG AD will redirect the browser to the registered redirect URI with the code and the same csrf token the browser passed in its initial request.
  */
 const _generateAuthUrl: ControllerHandler<
   unknown,
@@ -109,10 +104,6 @@ const _generateAuthUrl: ControllerHandler<
 
   res.cookie(WOGAD_CSRF_TOKEN_COOKIE_NAME, csrfToken, WOGAD_AUTH_COOKIE_OPTIONS)
 
-  // Deliberately a session cookie. The verifier has to outlive the user's whole
-  // journey through the IdP, including MFA; any fixed lifetime shorter than that
-  // strands a valid auth code with no verifier and turns a slow login into a
-  // hard failure (AADSTS501481). It is cleared explicitly at /verify instead.
   res.cookie(
     WOGAD_CODE_VERIFIER_COOKIE_NAME,
     codeVerifier,
