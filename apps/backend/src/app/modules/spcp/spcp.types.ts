@@ -7,6 +7,11 @@ export enum JwtName {
   CP = 'jwtCp',
 }
 
+export enum CodeVerifierCookieName {
+  SP = 'spCodeVerifier',
+  CP = 'cpCodeVerifier',
+}
+
 export type SpcpCookies = Partial<Record<JwtName, string>>
 
 export type SingpassJwtPayload = {
