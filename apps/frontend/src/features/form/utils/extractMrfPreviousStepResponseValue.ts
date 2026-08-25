@@ -49,6 +49,7 @@ export const extractMrfPreviousStepResponseValue = (
     case BasicField.Nric:
     case BasicField.Uen:
     case BasicField.Date:
+    case BasicField.Time:
     case BasicField.YesNo: {
       const answer = previousFieldResponse.answer as StringAnswerV4
       return answer.value as FormFieldValue<typeof field.fieldType>
