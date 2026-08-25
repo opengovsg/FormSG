@@ -2,6 +2,7 @@ import { FormAuthType } from 'formsg-shared/types'
 import { err, ok, Result, ResultAsync } from 'neverthrow'
 import { generators } from 'openid-client-legacy'
 
+import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
   CreateJwtError,
@@ -16,6 +17,7 @@ import {
 import { SpcpOidcBaseClient } from '../spcp.oidc.client'
 import {
   CodeVerifierCookieName,
+  CodeVerifierCookieOptions,
   CorppassJwtPayloadFromCookie,
   ExtractedNDIPayload,
   JwtName,
@@ -249,5 +251,21 @@ export abstract class SpcpOidcServiceClass {
   getCookieSettings(): SpcpDomainSettings {
     const cookieDomain = this.oidcProps.cookieDomain
     return cookieDomain ? { domain: cookieDomain, path: '/' } : {}
+  }
+
+  /**
+   * Gets the full options for the PKCE code_verifier cookies.
+   * RATIONALE: sameSite must be 'lax', not 'strict' - the SPCP callback is a
+   * cross-site top-level redirect back to this endpoint.
+   */
+  getCodeVerifierCookieOptions(): CodeVerifierCookieOptions {
+    const domainSettings = this.getCookieSettings()
+    return {
+      httpOnly: true,
+      secure: !config.isDevOrTest,
+      sameSite: 'lax',
+      path: '/',
+      ...('domain' in domainSettings ? { domain: domainSettings.domain } : {}),
+    }
   }
 }

@@ -1200,11 +1200,24 @@ describe('public-form.controller', () => {
     const MOCK_REDIRECT_URL = 'www.mockata.com'
     const MOCK_CODE_VERIFIER = 'mockCodeVerifier'
 
+    const MOCK_CODE_VERIFIER_COOKIE_OPTIONS = {
+      httpOnly: true as const,
+      secure: true,
+      sameSite: 'lax' as const,
+      path: '/',
+    }
+
     beforeEach(() => {
       SpOidcServiceClass.prototype.codeVerifierCookieName =
         CodeVerifierCookieName.SP
       CpOidcServiceClass.prototype.codeVerifierCookieName =
         CodeVerifierCookieName.CP
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'getCodeVerifierCookieOptions')
+        .mockReturnValue(MOCK_CODE_VERIFIER_COOKIE_OPTIONS)
+      jest
+        .spyOn(CpOidcServiceClass.prototype, 'getCodeVerifierCookieOptions')
+        .mockReturnValue(MOCK_CODE_VERIFIER_COOKIE_OPTIONS)
     })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType SP', async () => {

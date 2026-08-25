@@ -21,6 +21,7 @@ import { SpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.sp'
 import { CodeVerifierCookieName, JwtName } from '../spcp.types'
 
 import {
+  MOCK_CODE_VERIFIER_COOKIE_OPTIONS,
   MOCK_COOKIE_SETTINGS,
   MOCK_CP_FORM,
   MOCK_CP_OIDC_AUTHORISATION_CODE,
@@ -110,6 +111,9 @@ describe('spcp.controller', () => {
         )
         mockSpOidcServiceClass.getCookieSettings.mockReturnValue(
           MOCK_COOKIE_SETTINGS,
+        )
+        mockSpOidcServiceClass.getCodeVerifierCookieOptions.mockReturnValue(
+          MOCK_CODE_VERIFIER_COOKIE_OPTIONS,
         )
         mockSpOidcServiceClass.codeVerifierCookieName =
           CodeVerifierCookieName.SP
@@ -463,6 +467,9 @@ describe('spcp.controller', () => {
         )
         mockCpOidcServiceClass.getCookieSettings.mockReturnValue(
           MOCK_COOKIE_SETTINGS,
+        )
+        mockCpOidcServiceClass.getCodeVerifierCookieOptions.mockReturnValue(
+          MOCK_CODE_VERIFIER_COOKIE_OPTIONS,
         )
         mockCpOidcServiceClass.codeVerifierCookieName =
           CodeVerifierCookieName.CP

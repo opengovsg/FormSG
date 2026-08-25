@@ -66,6 +66,14 @@ export type SpcpDomainSettings =
   | { domain: string; path: string }
   | { [k: string]: never }
 
+export type CodeVerifierCookieOptions = {
+  httpOnly: true
+  secure: boolean
+  sameSite: 'lax'
+  path: string
+  domain?: string
+}
+
 export interface ParsedSpcpParams {
   formId: string
   destination: string
