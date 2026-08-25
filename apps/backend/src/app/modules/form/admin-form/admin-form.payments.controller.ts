@@ -41,9 +41,10 @@ const logger = createLoggerWithLabel(module)
 
 /**
  * Multirespondent payments are rolled out behind a feature flag. The flag
- * gates only the enablement surfaces (connecting Stripe, editing payment
- * config) — never respondent-facing flows — so switching it off cannot
- * break a live payment-enabled form. Encrypt mode is unaffected.
+ * gates only the enablement surfaces (connecting Stripe, enabling or editing
+ * payment config) — never respondent-facing flows or the ability to switch
+ * payments off — so flipping it off cannot break a live payment-enabled form
+ * or strand its admin. Encrypt mode is unaffected.
  */
 const checkMrfPaymentsFeatureEnabled = <T extends IPopulatedForm>(
   form: T,
@@ -278,10 +279,16 @@ const _handleUpdatePayments: ControllerHandler<
       )
       .andThen(checkFormIsEncryptModeOrMultirespondent)
       .andThen((form) =>
-        checkMrfPaymentsFeatureEnabled(
-          form,
-          req.growthbook?.isOn(featureFlags.mrfPayments) ?? false,
-        ),
+        // Disabling payments (`enabled: false`) is exempt from the flag: the
+        // flag is a kill switch for enablement, and the builder deletes the
+        // payment field by sending `enabled: false` through this route — a
+        // flag-off admin must still be able to switch a live payment off.
+        req.body.enabled === false
+          ? ok(form)
+          : checkMrfPaymentsFeatureEnabled(
+              form,
+              req.growthbook?.isOn(featureFlags.mrfPayments) ?? false,
+            ),
       )
       // Check that the payment form has a stripe account connected
       .andThen((form) =>
