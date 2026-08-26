@@ -675,6 +675,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const useFormsgEsrvcId = req.growthbook?.isOn(
         featureFlags.useFormsgEsrvcId,
       )
+      const usePkce = req.growthbook?.isOn(featureFlags.spcpOidcPkce) ?? false
       switch (form.authType) {
         case FormAuthType.MyInfo:
           return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
@@ -696,13 +697,15 @@ export const _handleFormAuthRedirect: ControllerHandler<
             )
             const oidcService = getOidcService(FormAuthType.SP)
             return oidcService
-              .createRedirectUrl(target, form.esrvcId)
+              .createRedirectUrl(target, form.esrvcId, usePkce)
               .andThen(({ redirectUrl, codeVerifier }) => {
-                res.cookie(
-                  oidcService.codeVerifierCookieName,
-                  codeVerifier,
-                  oidcService.getCodeVerifierCookieOptions(),
-                )
+                if (codeVerifier) {
+                  res.cookie(
+                    oidcService.codeVerifierCookieName,
+                    codeVerifier,
+                    oidcService.getCodeVerifierCookieOptions(),
+                  )
+                }
                 return ok(redirectUrl)
               })
           })
@@ -719,13 +722,15 @@ export const _handleFormAuthRedirect: ControllerHandler<
             )
             const oidcService = getOidcService(FormAuthType.CP)
             return oidcService
-              .createRedirectUrl(target, form.esrvcId)
+              .createRedirectUrl(target, form.esrvcId, usePkce)
               .andThen(({ redirectUrl, codeVerifier }) => {
-                res.cookie(
-                  oidcService.codeVerifierCookieName,
-                  codeVerifier,
-                  oidcService.getCodeVerifierCookieOptions(),
-                )
+                if (codeVerifier) {
+                  res.cookie(
+                    oidcService.codeVerifierCookieName,
+                    codeVerifier,
+                    oidcService.getCodeVerifierCookieOptions(),
+                  )
+                }
                 return ok(redirectUrl)
               })
           })

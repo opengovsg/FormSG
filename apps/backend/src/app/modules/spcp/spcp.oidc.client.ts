@@ -10,7 +10,11 @@ import {
   SignJWT,
 } from 'jose'
 import jwkToPem from 'jwk-to-pem'
-import { BaseClient, TokenSet } from 'openid-client-legacy'
+import {
+  AuthorizationParameters,
+  BaseClient,
+  TokenSet,
+} from 'openid-client-legacy'
 import { ulid } from 'ulid'
 import { URLSearchParams } from 'url'
 
@@ -164,7 +168,7 @@ export abstract class SpcpOidcBaseClient {
   async createAuthorisationUrl(
     state: string,
     esrvcId: string,
-    codeChallenge: string,
+    codeChallenge?: string,
   ): Promise<string> {
     if (!state) {
       throw new CreateAuthorisationUrlError(
@@ -179,17 +183,20 @@ export abstract class SpcpOidcBaseClient {
 
     const baseClient = await this.getBaseClientFromCache()
 
-    const authorisationUrl = baseClient.authorizationUrl({
+    const authorisationRequest: AuthorizationParameters = {
       scope: 'openid',
       response_type: 'code',
       state: state,
       nonce: ulid(), // Not used - nonce is a required parameter for SPCP's OIDC implementation although it is optional in OIDC specs
       [this.eServiceIdKey]: esrvcId,
-      code_challenge: codeChallenge,
-      code_challenge_method: 'S256',
-    })
+    }
 
-    return authorisationUrl
+    if (codeChallenge) {
+      authorisationRequest.code_challenge = codeChallenge
+      authorisationRequest.code_challenge_method = 'S256'
+    }
+
+    return baseClient.authorizationUrl(authorisationRequest)
   }
 
   /**

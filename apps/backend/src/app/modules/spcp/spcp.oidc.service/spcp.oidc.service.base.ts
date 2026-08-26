@@ -62,24 +62,31 @@ export abstract class SpcpOidcServiceClass {
    * along with the PKCE code verifier to be persisted for the subsequent token exchange.
    * @param state - contains formId, remember me, and stored queryId
    * @param esrvcId SP/CP OIDC e-service ID
+   * @param usePkce whether to send a PKCE code challenge. Gated by the spcpOidcPkce feature flag.
    * @returns okAsync({ redirectUrl, codeVerifier })
    * @returns errAsync(CreateRedirectUrlError)
    */
   createRedirectUrl(
     state: string,
     esrvcId: string,
+    usePkce: boolean,
   ): ResultAsync<CreateRedirectUrlResult, CreateRedirectUrlError> {
     const logMeta = {
       action: 'createRedirectUrl',
       state,
       esrvcId,
       authType: this.authType,
+      usePkce,
     }
 
     const client = this.getClient()
 
-    const codeVerifier = generators.codeVerifier()
-    const codeChallenge = generators.codeChallenge(codeVerifier)
+    let codeVerifier: string | undefined
+    let codeChallenge: string | undefined
+    if (usePkce) {
+      codeVerifier = generators.codeVerifier()
+      codeChallenge = generators.codeChallenge(codeVerifier)
+    }
 
     return ResultAsync.fromPromise(
       client

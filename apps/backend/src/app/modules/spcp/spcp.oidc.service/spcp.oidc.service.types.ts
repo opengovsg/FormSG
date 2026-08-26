@@ -11,7 +11,7 @@ export type SpcpOidcProps = {
 
 export type CreateRedirectUrlResult = {
   redirectUrl: string
-  codeVerifier: string
+  codeVerifier?: string
 }
 
 export type SpOidcProps = {

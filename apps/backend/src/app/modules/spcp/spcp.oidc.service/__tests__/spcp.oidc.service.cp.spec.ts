@@ -96,7 +96,7 @@ describe('spcp.oidc.service', () => {
   })
 
   describe('createRedirectUrl', () => {
-    it('should call cp oidc client createRedirectUrl with the correct params and return the redirectUrl if it resolves', async () => {
+    it('should call cp oidc client createRedirectUrl with a code challenge and return the code verifier when PKCE is enabled', async () => {
       // Arrange
 
       const cpOidcServiceClass = new CpOidcServiceClass(
@@ -113,6 +113,7 @@ describe('spcp.oidc.service', () => {
       const redirectUrl = await cpOidcServiceClass.createRedirectUrl(
         MOCK_TARGET,
         MOCK_ESRVCID,
+        true,
       )
 
       // Assert
@@ -126,6 +127,40 @@ describe('spcp.oidc.service', () => {
       expect(redirectUrl._unsafeUnwrap()).toEqual({
         redirectUrl: MOCK_REDIRECT_URL,
         codeVerifier: MOCK_OIDC_CODE_VERIFIER,
+      })
+    })
+
+    it('should not send a code challenge or return a code verifier when PKCE is disabled', async () => {
+      // Arrange
+
+      const cpOidcServiceClass = new CpOidcServiceClass(
+        mockCpOidcClient,
+        MOCK_PARAMS_CP,
+      )
+
+      jest
+        .spyOn(mockCpOidcClient, 'createAuthorisationUrl')
+        .mockResolvedValueOnce(MOCK_REDIRECT_URL)
+
+      // Act
+
+      const redirectUrl = await cpOidcServiceClass.createRedirectUrl(
+        MOCK_TARGET,
+        MOCK_ESRVCID,
+        false,
+      )
+
+      // Assert
+      expect(mockCpOidcClient.createAuthorisationUrl).toHaveBeenCalledTimes(1)
+      expect(mockCpOidcClient.createAuthorisationUrl).toHaveBeenCalledWith(
+        MOCK_TARGET,
+        MOCK_ESRVCID,
+        undefined,
+      )
+
+      expect(redirectUrl._unsafeUnwrap()).toEqual({
+        redirectUrl: MOCK_REDIRECT_URL,
+        codeVerifier: undefined,
       })
     })
 
@@ -145,6 +180,7 @@ describe('spcp.oidc.service', () => {
       const redirectUrl = await cpOidcServiceClass.createRedirectUrl(
         MOCK_TARGET,
         MOCK_ESRVCID,
+        true,
       )
 
       // Assert

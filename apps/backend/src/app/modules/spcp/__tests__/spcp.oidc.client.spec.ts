@@ -605,6 +605,40 @@ describe('SpOidcClient', () => {
         }),
       )
     })
+
+    it('should omit the PKCE parameters from the authorisation request when no code challenge is given', async () => {
+      // Arrange
+      jest
+        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
+        .mockResolvedValueOnce('ok' as unknown as Refresh)
+
+      const MOCK_STATE = 'state'
+      const MOCK_ESRVCID = 'esrvcId'
+      const MOCK_URL = 'url'
+
+      const mockAuthorisationUrlFn = jest.fn().mockReturnValue(MOCK_URL)
+
+      jest
+        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
+        .mockResolvedValueOnce({
+          authorizationUrl: mockAuthorisationUrlFn,
+        } as unknown as BaseClient)
+
+      // Act
+
+      const spOidcClient = new SpOidcClient(spOidcClientConfig)
+      const result = await spOidcClient.createAuthorisationUrl(
+        MOCK_STATE,
+        MOCK_ESRVCID,
+      )
+
+      // Assert
+      expect(result).toBe(MOCK_URL)
+      const authorisationRequest = mockAuthorisationUrlFn.mock.calls[0][0]
+      expect(authorisationRequest).toHaveProperty('esrvc', MOCK_ESRVCID)
+      expect(authorisationRequest).not.toHaveProperty('code_challenge')
+      expect(authorisationRequest).not.toHaveProperty('code_challenge_method')
+    })
   })
 
   describe('getDecryptionKey', () => {

@@ -98,7 +98,7 @@ describe('spcp.oidc.service.sp', () => {
   })
 
   describe('createRedirectUrl', () => {
-    it('should call sp oidc client createRedirectUrl with the correct params and return the redirectUrl if it resolves', async () => {
+    it('should call sp oidc client createRedirectUrl with a code challenge and return the code verifier when PKCE is enabled', async () => {
       // Arrange
 
       const spOidcServiceClass = new SpOidcServiceClass(
@@ -115,6 +115,7 @@ describe('spcp.oidc.service.sp', () => {
       const redirectUrl = await spOidcServiceClass.createRedirectUrl(
         MOCK_TARGET,
         MOCK_ESRVCID,
+        true,
       )
 
       // Assert
@@ -128,6 +129,40 @@ describe('spcp.oidc.service.sp', () => {
       expect(redirectUrl._unsafeUnwrap()).toEqual({
         redirectUrl: MOCK_REDIRECT_URL,
         codeVerifier: MOCK_OIDC_CODE_VERIFIER,
+      })
+    })
+
+    it('should not send a code challenge or return a code verifier when PKCE is disabled', async () => {
+      // Arrange
+
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        MOCK_PARAMS_SP,
+      )
+
+      jest
+        .spyOn(mockSpOidcClient, 'createAuthorisationUrl')
+        .mockResolvedValueOnce(MOCK_REDIRECT_URL)
+
+      // Act
+
+      const redirectUrl = await spOidcServiceClass.createRedirectUrl(
+        MOCK_TARGET,
+        MOCK_ESRVCID,
+        false,
+      )
+
+      // Assert
+      expect(mockSpOidcClient.createAuthorisationUrl).toHaveBeenCalledTimes(1)
+      expect(mockSpOidcClient.createAuthorisationUrl).toHaveBeenCalledWith(
+        MOCK_TARGET,
+        MOCK_ESRVCID,
+        undefined,
+      )
+
+      expect(redirectUrl._unsafeUnwrap()).toEqual({
+        redirectUrl: MOCK_REDIRECT_URL,
+        codeVerifier: undefined,
       })
     })
 
@@ -148,6 +183,7 @@ describe('spcp.oidc.service.sp', () => {
       const redirectUrl = await spOidcServiceClass.createRedirectUrl(
         MOCK_TARGET,
         MOCK_ESRVCID,
+        true,
       )
 
       // Assert
