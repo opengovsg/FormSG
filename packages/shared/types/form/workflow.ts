@@ -11,6 +11,16 @@ export interface FormWorkflowStepBase {
   edit: FormFieldDto['_id'][]
   approval_field?: FormFieldDto['_id']
   step_name?: string
+  /**
+   * Marks a step slot that exists but has not been set up. Only step 1 can be a
+   * placeholder, and only the delete-step endpoint writes one: deleting step 1
+   * leaves this behind instead of shifting the remaining steps up, so steps 2
+   * onwards keep their positions and their configuration.
+   *
+   * A workflow whose first step is a placeholder does not run. See
+   * `getRunnableWorkflow`.
+   */
+  isPlaceholder?: boolean
 }
 
 export interface FormWorkflowStepStatic extends FormWorkflowStepBase {

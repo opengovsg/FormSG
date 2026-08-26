@@ -29,6 +29,12 @@ const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
       type: String,
       required: false,
     },
+    // Written only by deleteFormWorkflowStep when step 1 is removed. Absent on
+    // every step an admin has actually set up.
+    isPlaceholder: {
+      type: Boolean,
+      required: false,
+    },
   },
   {
     discriminatorKey: 'workflow_type',
