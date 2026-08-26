@@ -8,6 +8,7 @@ import {
   EndPageUpdateDto,
   FormPermission,
   FormPermissionsDto,
+  FormSettings,
   PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   StartPageUpdateDto,
@@ -17,6 +18,7 @@ import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 import { HttpError } from '~services/ApiService'
 
+import { updateFormTitle } from '~features/admin-form/settings/SettingsService'
 import {
   SubmitEmailFormArgs,
   SubmitStorageFormArgs,
@@ -390,6 +392,19 @@ export const useMutateFormPage = () => {
     },
   )
 
+  const titleMutation = useMutation<FormSettings, Error, string>(
+    (nextTitle: string) => updateFormTitle(formId, nextTitle),
+    {
+      onSuccess: (newData) => {
+        queryClient.setQueryData<AdminFormDto | undefined>(
+          adminFormKeys.id(formId),
+          (oldData) =>
+            oldData ? { ...oldData, title: newData.title } : undefined,
+        )
+      },
+    },
+  )
+
   const endPageMutation = useMutation(
     (endPage: EndPageUpdateDto) => updateFormEndPage(formId, endPage),
     {
@@ -455,6 +470,7 @@ export const useMutateFormPage = () => {
 
   return {
     startPageMutation,
+    titleMutation,
     endPageMutation,
     paymentsMutation,
     paymentsProductMutation,
