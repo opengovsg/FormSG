@@ -267,6 +267,11 @@ export enum ErrorCodes {
   // [190200 - 190299] Verified Content Errors (/modules/verified-content)
   VERIFIED_CONTENT_MALFORMED = 190200,
   VERIFIED_CONTENT_ENCRYPT_FAILURE = 190201,
+  // [190300 - 190399] Changelog Digest Errors (/modules/changelog)
+  CHANGELOG_NOT_CONFIGURED = 190300,
+  CHANGELOG_SOURCE_FETCH = 190301,
+  CHANGELOG_GENERATION = 190302,
+  CHANGELOG_NOTIFICATION = 190303,
   // End of Other Errors -------------------------------------------------------
 }
 
