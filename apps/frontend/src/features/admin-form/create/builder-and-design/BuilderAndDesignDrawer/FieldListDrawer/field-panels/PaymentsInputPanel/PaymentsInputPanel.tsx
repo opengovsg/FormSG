@@ -475,7 +475,10 @@ export const PaymentsInputPanel = (): JSX.Element | null => {
   const isPaymentCapable = isEncryptMode || (isMrfMode && isMrfPaymentsEnabled)
   const isStripeConnected =
     isPaymentCapable && form.payments_channel.channel === PaymentChannel.Stripe
-  const paymentsField = isPaymentCapable ? form.payments_field : undefined
+  const paymentsField =
+    isPaymentCapable || (isMrfMode && form.payments_field.enabled)
+      ? form.payments_field
+      : undefined
 
   const {
     paymentsData,
