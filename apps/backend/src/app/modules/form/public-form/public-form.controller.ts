@@ -675,6 +675,11 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const useFormsgEsrvcId = req.growthbook?.isOn(
         featureFlags.useFormsgEsrvcId,
       )
+      // Add formId to growthbook attributes to allow for targeting in growthbook feature flags.
+      void req.growthbook?.setAttributes({
+        ...req.growthbook.getAttributes(),
+        formId,
+      })
       const usePkce = req.growthbook?.isOn(featureFlags.spcpOidcPkce) ?? false
       switch (form.authType) {
         case FormAuthType.MyInfo:

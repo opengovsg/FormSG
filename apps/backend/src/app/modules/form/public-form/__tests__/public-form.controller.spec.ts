@@ -1200,6 +1200,8 @@ describe('public-form.controller', () => {
       others: {
         growthbook: {
           isOn: jest.fn((flag: string) => flag === featureFlags.spcpOidcPkce),
+          getAttributes: jest.fn(() => ({})),
+          setAttributes: jest.fn().mockResolvedValue(undefined),
         },
       },
     })
