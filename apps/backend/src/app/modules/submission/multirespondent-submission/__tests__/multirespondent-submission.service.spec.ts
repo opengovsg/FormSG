@@ -4319,6 +4319,104 @@ describe('multirespondent-submission.service', () => {
       expect(view?.data.encryptedContent).toBe('frozen-content')
     })
 
+    it('passes snapshotRef so a retry reconstructs from the frozen snapshot', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      const submission = buildSubmissionWithToken('tok-A')
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        snapshot: buildSnapshot(),
+        submissionId: submission._id.toString(),
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: {} as any,
+        growthbook: growthbookWithFlags({
+          enableMrfWebhooks: true,
+          mrfStepWriteToken: true,
+        }),
+      })
+      await flushPromises()
+
+      expect(sendSpy.mock.calls[0][4]).toEqual({
+        submissionIndex: (submission.submittedSteps?.length ?? 1) - 1,
+        contentFormat: 'v4',
+      })
+    })
+
+    it('omits snapshotRef when no snapshot was frozen so a retry uses the live row', async () => {
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      const submission = buildSubmissionWithToken(
+        undefined,
+        buildLiveWebhookView(),
+      )
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        submissionId: submission._id.toString(),
+        form: buildV4Form(),
+        encryptedPayload: buildV4Payload(),
+        logMeta: {} as any,
+        growthbook: growthbookWithFlags({
+          enableMrfWebhooks: true,
+          mrfStepWriteToken: true,
+        }),
+      })
+      await flushPromises()
+
+      expect(sendSpy.mock.calls[0][4]).toBeUndefined()
+    })
+
+    it('passes snapshotRef for the current sending step to send as initialWebhook, not the previous step', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+      })
+      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+        okAsync({ token: 'tok-step-2', key: 'key-step-2' }),
+      )
+
+      const updated = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+      const { submission, snapshot } = updated._unsafeUnwrap()
+
+      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+      await performMultiRespondentPostSubmissionUpdateActions({
+        submission,
+        snapshot,
+        submissionId: submission._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        currentStepNumber: 1,
+        encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+        logMeta: {} as any,
+        growthbook: growthbookWithFlags({
+          enableMrfWebhooks: true,
+          mrfStepWriteToken: true,
+        }),
+      })
+      await flushPromises()
+
+      expect(sendSpy.mock.calls[0][4]).toEqual({
+        submissionIndex: 1,
+        contentFormat: 'v4',
+      })
+    })
+
     it('takes the legacy path (no 4th arg) for a plumber V3 row', async () => {
       const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
       const submission = buildSubmissionWithToken(

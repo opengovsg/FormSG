@@ -1184,11 +1184,19 @@ const sendMrfInitialWebhookIfEligible = ({
       }).asyncAndThen((data) => {
         const webhookView: WebhookView = { data }
 
+        const snapshotRef = snapshot
+          ? {
+              submissionIndex,
+              contentFormat: snapshot.contentFormat,
+            }
+          : undefined
+
         return WebhookFactory.sendInitialWebhook(
           submission,
           webhookUrl,
           isRetryEnabled,
           webhookView,
+          snapshotRef,
         ).map(() => undefined)
       })
     })
