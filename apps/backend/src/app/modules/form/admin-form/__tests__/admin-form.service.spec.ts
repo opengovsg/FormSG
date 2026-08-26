@@ -4238,6 +4238,50 @@ describe('admin-form.service', () => {
       expect(workflow).toEqual([stepOne, stepTwo, stepThree])
     })
 
+    it('should clear the workflow when the last set up step is deleted', async () => {
+      // Arrange: step 1 was already deleted, and now the only real step goes
+      // too. Keeping the slot would leave a workflow that can never run and a
+      // warning the admin cannot clear.
+      const spy = spyOnPersistedWorkflow()
+      const placeholder = {
+        _id: 'placeholder',
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [],
+        isPlaceholder: true,
+      }
+      const mockForm = mockFormWithWorkflow([placeholder, stepTwo])
+
+      // Act
+      const result = await AdminFormService.deleteFormWorkflowStep(mockForm, 1)
+
+      // Assert
+      expect(result.isOk()).toBe(true)
+      expect((spy.mock.calls[0][1] as any).workflow).toEqual([])
+    })
+
+    it('should keep the slot while a set up step remains behind it', async () => {
+      // Arrange
+      const spy = spyOnPersistedWorkflow()
+      const placeholder = {
+        _id: 'placeholder',
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [],
+        isPlaceholder: true,
+      }
+      const mockForm = mockFormWithWorkflow([placeholder, stepTwo, stepThree])
+
+      // Act
+      await AdminFormService.deleteFormWorkflowStep(mockForm, 1)
+
+      // Assert
+      expect((spy.mock.calls[0][1] as any).workflow).toEqual([
+        placeholder,
+        stepThree,
+      ])
+    })
+
     it('should reject an out of range step number', async () => {
       // Arrange
       const mockForm = mockFormWithWorkflow([stepOne])

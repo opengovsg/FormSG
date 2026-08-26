@@ -1879,8 +1879,10 @@ const FIRST_STEP_PLACEHOLDER = {
  * while the slot is unset, so nothing routes to a step that was never meant to
  * start the form.
  *
- * Deleting the only step needs no placeholder. An empty workflow already means
- * the form runs as an ordinary single-respondent form.
+ * Deleting the last step that was actually set up clears the workflow entirely,
+ * placeholder included. An empty workflow already means the form runs as an
+ * ordinary single-respondent form, and keeping a slot nobody can fill in would
+ * leave the admin with a warning they cannot clear.
  */
 const buildWorkflowWithoutStep = (
   workflow: FormWorkflowDto,
@@ -1888,7 +1890,10 @@ const buildWorkflowWithoutStep = (
 ): FormWorkflowDto => {
   const remainingSteps = workflow.filter((_, index) => index !== stepNumber)
 
-  if (stepNumber !== 0 || remainingSteps.length === 0) return remainingSteps
+  const hasStepsLeftToRun = remainingSteps.some((step) => !step.isPlaceholder)
+  if (!hasStepsLeftToRun) return []
+
+  if (stepNumber !== 0) return remainingSteps
 
   return [FIRST_STEP_PLACEHOLDER, ...remainingSteps]
 }
