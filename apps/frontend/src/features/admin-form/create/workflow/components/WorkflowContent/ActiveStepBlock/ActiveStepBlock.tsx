@@ -15,7 +15,7 @@ import { EditStepBlock } from '../EditStepBlock'
 export interface ActiveStepBlockProps {
   stepNumber: number
   step: FormWorkflowStepDto
-  handleOpenDeleteModal: () => void
+  handleOpenDeleteModal?: () => void
 }
 
 const handleTracking = (step: FormWorkflowStep, stepNumber: number) => {

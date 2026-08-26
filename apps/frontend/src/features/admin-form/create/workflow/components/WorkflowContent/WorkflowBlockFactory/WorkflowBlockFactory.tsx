@@ -44,7 +44,11 @@ export const WorkflowBlockFactory = ({
         <ActiveStepBlock
           stepNumber={stepNumber}
           step={step}
-          handleOpenDeleteModal={onDeleteModalOpen}
+          // An unset slot has nothing to delete. Deleting it would only write
+          // the same slot back.
+          handleOpenDeleteModal={
+            step.isPlaceholder ? undefined : onDeleteModalOpen
+          }
         />
       ) : step.isPlaceholder ? (
         // The slot left by deleting step 1. Rendering it as a normal step would

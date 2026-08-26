@@ -19,6 +19,7 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
+import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -152,6 +153,10 @@ export const EditStepBlock = ({
   }, [])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+  const isRedesign = useIsWorkflowBuilderRedesign()
+  // Deleting step 1 leaves the slot unset and stops the workflow running, so
+  // the steps behind it keep their positions and their configuration.
+  const canDelete = isRedesign || !isFirstStep
 
   // RATIONALE: Returned formState is wrapped with a Proxy to improve
   // render performance, we must ead it before a render in order to enable
@@ -244,7 +249,7 @@ export const EditStepBlock = ({
       <SaveActionGroup
         isLoading={_isLoading}
         handleSubmit={handleSubmit}
-        handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
+        handleDelete={canDelete ? handleOpenDeleteModal : undefined}
         handleCancel={setToInactive}
         submitButtonLabel={submitButtonLabel}
         ariaLabelName="step"
