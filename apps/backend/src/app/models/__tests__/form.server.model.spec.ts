@@ -2818,6 +2818,65 @@ describe('Form Model', () => {
         expect(actual).toEqual(expected)
       })
 
+      it('should return an empty workflow when step 1 is an unset placeholder', async () => {
+        // Arrange: a workflow whose first step was deleted. It has no one to
+        // start it, so respondents should see an ordinary form with every field
+        // fillable rather than one greyed out by a step nobody owns.
+        const multirespondentForm = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mock multirespondent form with unset step 1',
+          publicKey: 'mock public key',
+          workflow: [
+            {
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              edit: [],
+              isPlaceholder: true,
+            },
+            {
+              workflow_type: WorkflowType.Static,
+              emails: ['supervisor@example.com'],
+              edit: [],
+            },
+          ],
+        })
+
+        // Act
+        const actual = multirespondentForm.getPublicView()
+
+        // Assert
+        expect(actual.workflow).toEqual([])
+      })
+
+      it('should return the workflow when step 1 is set up', async () => {
+        // Arrange
+        const multirespondentForm = await Form.create({
+          admin: populatedAdmin._id,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'mock multirespondent form with a set up step 1',
+          publicKey: 'mock public key',
+          workflow: [
+            {
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              edit: [],
+            },
+            {
+              workflow_type: WorkflowType.Static,
+              emails: ['supervisor@example.com'],
+              edit: [],
+            },
+          ],
+        })
+
+        // Act
+        const actual = multirespondentForm.getPublicView()
+
+        // Assert
+        expect(actual.workflow).toHaveLength(2)
+      })
+
       it('should correctly return public view of unpopulated multirespondent mode form', async () => {
         // Arrange
         const multirespondentForm = await Form.create({

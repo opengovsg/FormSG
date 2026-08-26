@@ -17,6 +17,7 @@ import {
   FormResponseMode,
   SubmissionType,
 } from 'formsg-shared/types'
+import { getRunnableWorkflow } from 'formsg-shared/utils/runnable-workflow'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -511,7 +512,7 @@ export const validateMultirespondentSubmission = async (
           : ok({
               previousSubmission: undefined,
               workflowStep: 0,
-              workflow: req.formsg.formDef.workflow,
+              workflow: getRunnableWorkflow(req.formsg.formDef.workflow),
               form_fields: req.formsg.formDef.form_fields.map(
                 (ff_schema) => ff_schema.toObject() as FormFieldDto,
               ),

@@ -12,6 +12,7 @@ import {
   SubmittedStep,
   WorkflowStatus,
 } from 'formsg-shared/types'
+import { getRunnableWorkflow } from 'formsg-shared/utils/runnable-workflow'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 import moment from 'moment'
 import mongoose from 'mongoose'
@@ -203,7 +204,7 @@ const sendNextStepEmail = ({
     nextWorkflowStep: nextStepNumber,
   }
 
-  const nextStep = form.workflow[nextStepNumber]
+  const nextStep = getRunnableWorkflow(form.workflow)[nextStepNumber]
   if (!nextStep) {
     return okAsync(true)
   }
@@ -401,7 +402,7 @@ const getEmailsToNotifyAboutMrfOutcome = ({
     : []
 
   // Emails to notify under the 'People who are filling up a workflow step' setting
-  const stepsToNotifyUpToCurrentStep = form.workflow.slice(
+  const stepsToNotifyUpToCurrentStep = getRunnableWorkflow(form.workflow).slice(
     1, // exclude first step since notification is indicated by `stepOneEmailNotificationFieldId`
     currentStepNumber + 1,
   )
@@ -449,10 +450,11 @@ const checkIsWorkflowCompleted = ({
   form: Pick<IPopulatedMultirespondentForm, 'workflow'>
   isRejected: boolean
 }) => {
-  const lastStepNumber = form.workflow.length - 1
+  const workflow = getRunnableWorkflow(form.workflow)
+  const lastStepNumber = workflow.length - 1
   const isLastStepSubmitted = currentStepNumber === lastStepNumber
 
-  return !form.workflow.length || isRejected || isLastStepSubmitted
+  return !workflow.length || isRejected || isLastStepSubmitted
 }
 
 const sendMrfOutcomeEmails = ({
@@ -769,8 +771,9 @@ export const createMultiRespondentFormSubmission = ({
       } = encryptedPayload
 
       const nextStepNumber = 1 // since current step is 0
+      const runnableWorkflow = getRunnableWorkflow(form.workflow)
       const nextStep =
-        form.workflow.length >= 1 ? form.workflow[nextStepNumber] : null
+        runnableWorkflow.length >= 1 ? runnableWorkflow[nextStepNumber] : null
 
       const nextStepRecipientEmailsResult = nextStep
         ? retrieveWorkflowStepEmailAddresses(
@@ -816,7 +819,10 @@ export const createMultiRespondentFormSubmission = ({
         myInfoFields: form.getUniqueMyInfoAttrs(),
         form_fields: form.form_fields,
         form_logics: form.form_logics,
-        workflow: form.workflow,
+        // Snapshot what will actually run, so a submission started while step 1
+        // is unset stays an ordinary form for its whole life even if step 1 is
+        // set up again midway.
+        workflow: runnableWorkflow,
         submissionPublicKey,
         encryptedSubmissionSecretKey,
         encryptedContent,
@@ -1232,8 +1238,9 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   const currentStepNumber = 0
 
   // if there is no workflow, every field is an active field
-  const currentStepActiveFields: string[] = form.workflow.length
-    ? (form.workflow[currentStepNumber]?.edit ?? [])
+  const runnableWorkflow = getRunnableWorkflow(form.workflow)
+  const currentStepActiveFields: string[] = runnableWorkflow.length
+    ? (runnableWorkflow[currentStepNumber]?.edit ?? [])
     : form.form_fields.map((field) => field._id)
 
   logMeta = {

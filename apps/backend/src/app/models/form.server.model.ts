@@ -43,6 +43,7 @@ import {
 } from 'formsg-shared/types'
 import { reorder } from 'formsg-shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from 'formsg-shared/utils/logic'
+import { getRunnableWorkflow } from 'formsg-shared/utils/runnable-workflow'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { compact, omit, pick, uniq } from 'lodash'
@@ -1093,7 +1094,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       const strippedFormFields = stripDropdownFieldOptionsToRecipientsMap(
         mrfPublicViewFields.form_fields,
       )
-      const strippedWorkflow = stripWorkflowEmails(mrfPublicViewFields.workflow)
+      // Respondents and the admin preview see the workflow that will actually
+      // run. A workflow whose step 1 is unset does not run, so every field
+      // stays fillable instead of being greyed out by a step nobody owns.
+      const strippedWorkflow = stripWorkflowEmails(
+        getRunnableWorkflow(mrfPublicViewFields.workflow),
+      )
       const mrfPublicView = {
         ...mrfPublicViewFields,
         workflow: strippedWorkflow,

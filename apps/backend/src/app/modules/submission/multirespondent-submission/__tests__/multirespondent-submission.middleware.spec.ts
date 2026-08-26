@@ -5,7 +5,12 @@ import {
 } from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
 import { featureFlags } from 'formsg-shared/constants'
-import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormAuthType,
+  FormResponseMode,
+  WorkflowType,
+} from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, ok, okAsync } from 'neverthrow'
 import nacl from 'tweetnacl'
@@ -1414,6 +1419,92 @@ describe('Multirespondent Submission Middleware', () => {
       )
       expect(mockNext).not.toHaveBeenCalled()
       expect(mockRes.status).toHaveBeenCalledWith(400)
+    })
+
+    describe('unset step 1', () => {
+      // form_fields reach the new-submission branch as mongoose subdocuments.
+      const LIVE_FORM_FIELDS = SNAPSHOT_FORM_FIELDS.map((field) => ({
+        ...field,
+        toObject: () => field,
+      }))
+
+      const FIRST_SUBMISSION_RESPONSES = {
+        [EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'first' },
+          question: 'Editable Field',
+          provenance: {},
+        },
+        [NON_EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'second' },
+          question: 'Non-editable Field',
+          provenance: {},
+        },
+      }
+
+      const submitFirstStepAgainstWorkflow = async (workflow: unknown[]) => {
+        const mockReq = createMockReq({ formId: MOCK_FORM_ID })
+        mockReq.body.responses = FIRST_SUBMISSION_RESPONSES
+        mockReq.formsg = {
+          formDef: {
+            _id: MOCK_FORM_ID,
+            form_fields: LIVE_FORM_FIELDS,
+            form_logics: [],
+            workflow,
+          },
+          // No previous submission: this is the first step.
+          mrfSubmission: undefined,
+        }
+
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+        return { mockNext, mockRes }
+      }
+
+      it('should accept fields no step owns when step 1 is an unset placeholder', async () => {
+        // Arrange: step 1 was deleted, so the workflow does not run and the
+        // form is an ordinary one again. This is the escape hatch for an admin
+        // who added step 1 by accident.
+        const { mockNext, mockRes } = await submitFirstStepAgainstWorkflow([
+          {
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [],
+            isPlaceholder: true,
+          },
+          {
+            workflow_type: WorkflowType.Static,
+            emails: ['supervisor@example.com'],
+            edit: [EDITABLE_FIELD_ID],
+          },
+        ])
+
+        // Assert
+        expect(mockRes.status).not.toHaveBeenCalledWith(400)
+        expect(mockNext).toHaveBeenCalled()
+      })
+
+      it('should reject fields outside step 1 when step 1 is set up', async () => {
+        // Arrange: the control. The same responses against a workflow whose
+        // step 1 only owns one of the two fields.
+        const { mockNext, mockRes } = await submitFirstStepAgainstWorkflow([
+          {
+            workflow_type: WorkflowType.Static,
+            emails: [],
+            edit: [EDITABLE_FIELD_ID],
+          },
+        ])
+
+        // Assert
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(400)
+      })
     })
 
     describe('step-token write-guard', () => {
