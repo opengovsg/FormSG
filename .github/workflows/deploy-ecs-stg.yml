@@ -1,6 +1,9 @@
 name: Deploy FormSG app to stg
 
 on:
+  push:
+    branches:
+      - stg
   workflow_call:
     inputs:
       version:
