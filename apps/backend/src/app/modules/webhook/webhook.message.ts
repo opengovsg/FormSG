@@ -5,13 +5,15 @@ import { createLoggerWithLabel } from '../../config/logger'
 
 import {
   DUE_TIME_TOLERANCE_SECONDS,
-  QUEUE_MESSAGE_VERSION,
+  QUEUE_MESSAGE_LIVE_ROW_VERSION,
+  QUEUE_MESSAGE_SNAPSHOT_VERSION,
 } from './webhook.constants'
 import {
   WebhookNoMoreRetriesError,
   WebhookQueueMessageParsingError,
 } from './webhook.errors'
 import {
+  SnapshotRef,
   WebhookFailedQueueMessage,
   webhookMessageSchema,
   WebhookQueueMessageObject,
@@ -83,21 +85,38 @@ export class WebhookQueueMessage {
    * hence uses the current date as the time of the first
    * webhook attempt.
    * @param submissionId
+   * @param snapshotRef Used for fetching the snapshot to reconstruct
+   * the retry payload. Provided only when a snapshot was recorded
+   * for that step; otherwise the retry uses the live submission row.
    * @returns ok(encapsulated message) if retry policy exists
    * @returns err if the retry policy does not allow any retries
    */
   static fromSubmissionId(
     submissionId: string,
+    snapshotRef?: SnapshotRef,
   ): Result<WebhookQueueMessage, WebhookNoMoreRetriesError> {
     const initialAttempt = Date.now()
     return getNextAttempt(/* previousAttempts =*/ [initialAttempt]).map(
       (nextAttempt) =>
-        new WebhookQueueMessage({
-          submissionId,
-          previousAttempts: [initialAttempt],
-          nextAttempt,
-          _v: QUEUE_MESSAGE_VERSION,
-        }),
+        new WebhookQueueMessage(
+          snapshotRef
+            ? {
+                submissionId,
+                previousAttempts: [initialAttempt],
+                nextAttempt,
+                _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
+                snapshotRef: {
+                  submissionIndex: snapshotRef.submissionIndex,
+                  contentFormat: snapshotRef.contentFormat,
+                },
+              }
+            : {
+                submissionId,
+                previousAttempts: [initialAttempt],
+                nextAttempt,
+                _v: QUEUE_MESSAGE_LIVE_ROW_VERSION,
+              },
+        ),
     )
   }
 
@@ -139,10 +158,9 @@ export class WebhookQueueMessage {
     return getNextAttempt(updatedPreviousAttempts).map(
       (nextAttempt) =>
         new WebhookQueueMessage({
-          submissionId: this.message.submissionId,
+          ...this.message,
           previousAttempts: updatedPreviousAttempts,
           nextAttempt,
-          _v: QUEUE_MESSAGE_VERSION,
         }),
     )
   }
@@ -159,6 +177,7 @@ export class WebhookQueueMessage {
         this.nextAttempt,
       ].map(prettifyEpoch),
       _v: this.message._v,
+      snapshotRef: this.snapshotRef,
     }
   }
 
@@ -168,7 +187,14 @@ export class WebhookQueueMessage {
       previousAttempts: this.message.previousAttempts.map(prettifyEpoch),
       nextAttempt: prettifyEpoch(this.nextAttempt),
       _v: this.message._v,
+      snapshotRef: this.snapshotRef,
     }
+  }
+
+  get snapshotRef(): SnapshotRef | undefined {
+    return this.message._v === QUEUE_MESSAGE_SNAPSHOT_VERSION
+      ? this.message.snapshotRef
+      : undefined
   }
 
   get submissionId(): string {
