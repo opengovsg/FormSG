@@ -40,6 +40,13 @@ export interface Workflow {
       notDropdownRedesign: string
     }
     modals: {
+      deleteFirstStep: {
+        title: string
+        description: string
+        descriptionWithLaterSteps: string
+        confirm: string
+        cancel: string
+      }
       deleteStep: {
         title: string
         description: string

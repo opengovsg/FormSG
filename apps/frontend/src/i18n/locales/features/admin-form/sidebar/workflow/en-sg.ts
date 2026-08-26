@@ -44,6 +44,15 @@ export const enSG: Workflow = {
       notDropdownRedesign: 'Choose a dropdown field.',
     },
     modals: {
+      deleteFirstStep: {
+        title: 'Delete step 1',
+        description:
+          'Your workflow will stop running. Anyone with your form link will be able to fill in every field, and the form will not be sent on to anyone.\n\nYou can set step 1 up again at any time.',
+        descriptionWithLaterSteps:
+          'Your workflow will stop running until you set step 1 up again. Your other steps are kept, along with who fills them in and any approvals.\n\nIn the meantime, anyone with your form link will be able to fill in every field, and the form will not be sent on to anyone.',
+        confirm: 'Yes, delete step 1',
+        cancel: "No, don't delete",
+      },
       deleteStep: {
         title: 'Delete step',
         description:

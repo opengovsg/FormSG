@@ -19,7 +19,9 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
+import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useWorkflowMutations } from '../../mutations'
+import { isFirstStepByStepNumber } from '../WorkflowContent/utils/isFirstStepByStepNumber'
 
 interface DeleteStepModalProps {
   onClose: () => void
@@ -35,6 +37,7 @@ export const DeleteStepModal = ({
   const { t } = useTranslation()
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
   const { deleteStepMutation } = useWorkflowMutations()
+  const { formWorkflow } = useAdminFormWorkflow()
   const modalSize = useBreakpointValue({
     base: 'mobile',
     xs: 'mobile',
@@ -50,10 +53,28 @@ export const DeleteStepModal = ({
     })
   }, [setToInactive, deleteStepMutation, stepNumber, onClose])
 
-  const { title, description, confirm, cancel } = t(
+  // Deleting step 1 stops the whole workflow running, rather than just
+  // shortening it, so it gets its own copy. Silently turning a live routing
+  // form back into an ordinary one is not something to confirm with "this
+  // action cannot be undone".
+  const isFirstStep = isFirstStepByStepNumber(stepNumber)
+  const hasLaterSteps = (formWorkflow?.length ?? 0) > 1
+
+  const genericCopy = t(
     'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteStep',
     { returnObjects: true },
   )
+  const firstStepCopy = t(
+    'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteFirstStep',
+    { returnObjects: true },
+  )
+
+  const { title, confirm, cancel } = isFirstStep ? firstStepCopy : genericCopy
+  const description = !isFirstStep
+    ? genericCopy.description
+    : hasLaterSteps
+      ? firstStepCopy.descriptionWithLaterSteps
+      : firstStepCopy.description
   return (
     <Modal
       isOpen={isOpen}
