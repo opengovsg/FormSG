@@ -57,7 +57,7 @@ declare module 'express-session' {
   export interface SessionData {
     user?: {
       _id: IUserSchema['_id']
-      grantSource?: 'sso' | 'otp' | 'wogad'
+      grantSource?: 'sso' | 'otp' | 'wogad' | 'one'
     }
     sgid?: SgidUser
   }
@@ -65,7 +65,7 @@ declare module 'express-session' {
   export interface AuthedSessionData extends SessionData {
     user: {
       _id: IUserSchema['_id']
-      grantSource: 'sso' | 'otp' | 'wogad'
+      grantSource: 'sso' | 'otp' | 'wogad' | 'one'
     }
   }
 }

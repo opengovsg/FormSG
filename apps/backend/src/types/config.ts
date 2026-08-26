@@ -176,6 +176,12 @@ export interface ISsoVarsSchema {
   clientSecret: string
 }
 
+export interface IOneVarsSchema {
+  discoveryUrl: string
+  clientId: string
+  clientSecret: string
+}
+
 export interface IWogadVarsSchema {
   clientId: string
   clientSecret: string
