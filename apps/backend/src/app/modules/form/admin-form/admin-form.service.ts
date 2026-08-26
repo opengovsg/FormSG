@@ -1857,6 +1857,42 @@ export const updateFormWorkflowStep = (
   })
 }
 
+/**
+ * The unset slot left in position 1 when step 1 is deleted. Mongoose assigns the
+ * `_id` on write, so it is absent here.
+ */
+const FIRST_STEP_PLACEHOLDER = {
+  workflow_type: WorkflowType.Static,
+  emails: [],
+  edit: [],
+  isPlaceholder: true,
+} as unknown as FormWorkflowStepDto
+
+/**
+ * The workflow after removing one step.
+ *
+ * Deleting step 1 leaves an unset slot in its position instead of shifting the
+ * remaining steps up. Steps 2 onwards therefore keep their positions, their
+ * respondent routing and their approvals, none of which would survive being
+ * promoted into step 1's role: step 1's respondent is always "anyone with the
+ * form link", and step 1 cannot be an approval step. The workflow does not run
+ * while the slot is unset, so nothing routes to a step that was never meant to
+ * start the form.
+ *
+ * Deleting the only step needs no placeholder. An empty workflow already means
+ * the form runs as an ordinary single-respondent form.
+ */
+const buildWorkflowWithoutStep = (
+  workflow: FormWorkflowDto,
+  stepNumber: number,
+): FormWorkflowDto => {
+  const remainingSteps = workflow.filter((_, index) => index !== stepNumber)
+
+  if (stepNumber !== 0 || remainingSteps.length === 0) return remainingSteps
+
+  return [FIRST_STEP_PLACEHOLDER, ...remainingSteps]
+}
+
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
@@ -1878,9 +1914,7 @@ export const deleteFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  // Remove step with stepNumber from workflow
-  const updatedWorkflow = originalWorkflow
-  updatedWorkflow.splice(stepNumber, 1)
+  const updatedWorkflow = buildWorkflowWithoutStep(originalWorkflow, stepNumber)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,

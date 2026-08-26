@@ -4087,4 +4087,166 @@ describe('admin-form.service', () => {
       })
     })
   })
+
+  describe('deleteFormWorkflowStep', () => {
+    const FIELD_A = new ObjectId().toHexString()
+    const FIELD_B = new ObjectId().toHexString()
+    const APPROVAL_FIELD = new ObjectId().toHexString()
+
+    const stepOne = {
+      _id: 'step0',
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: [FIELD_A],
+    }
+    const stepTwo = {
+      _id: 'step1',
+      workflow_type: WorkflowType.Dynamic,
+      field: new ObjectId().toHexString(),
+      edit: [FIELD_B],
+      approval_field: APPROVAL_FIELD,
+      step_name: 'Supervisor',
+    }
+    const stepThree = {
+      _id: 'step2',
+      workflow_type: WorkflowType.Static,
+      emails: ['finance@example.com'],
+      edit: [FIELD_B],
+    }
+
+    const mockFormWithWorkflow = (workflow: unknown[]) =>
+      ({
+        _id: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Multirespondent,
+        form_fields: [],
+        workflow,
+      }) as unknown as IPopulatedForm
+
+    /** Returns the workflow that was actually persisted. */
+    const spyOnPersistedWorkflow = () => {
+      const findByIdAndUpdateSpy = jest
+        .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+        // @ts-ignore
+        .mockImplementation((_id, update) => ({
+          exec: jest
+            .fn()
+            .mockResolvedValue({ _id, workflow: (update as any).workflow }),
+        }))
+      return findByIdAndUpdateSpy
+    }
+
+    beforeEach(() => jest.restoreAllMocks())
+
+    it('should leave an unset placeholder in position 1 when step 1 is deleted', async () => {
+      // Arrange
+      const spy = spyOnPersistedWorkflow()
+      const mockForm = mockFormWithWorkflow([stepOne, stepTwo, stepThree])
+
+      // Act
+      const result = await AdminFormService.deleteFormWorkflowStep(mockForm, 0)
+
+      // Assert
+      expect(result.isOk()).toBe(true)
+      const persisted = (spy.mock.calls[0][1] as any).workflow
+      expect(persisted).toHaveLength(3)
+      expect(persisted[0]).toEqual({
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [],
+        isPlaceholder: true,
+      })
+    })
+
+    it('should preserve the remaining steps untouched when step 1 is deleted', async () => {
+      // Arrange
+      const spy = spyOnPersistedWorkflow()
+      const mockForm = mockFormWithWorkflow([stepOne, stepTwo, stepThree])
+
+      // Act
+      await AdminFormService.deleteFormWorkflowStep(mockForm, 0)
+
+      // Assert: positions, ids, routing, approvals and names all survive, since
+      // nothing is promoted into step 1's role.
+      const persisted = (spy.mock.calls[0][1] as any).workflow
+      expect(persisted[1]).toBe(stepTwo)
+      expect(persisted[2]).toBe(stepThree)
+    })
+
+    it('should empty the workflow when the only step is deleted', async () => {
+      // Arrange: an empty workflow already means "run as an ordinary form", so
+      // no placeholder is needed.
+      const spy = spyOnPersistedWorkflow()
+      const mockForm = mockFormWithWorkflow([stepOne])
+
+      // Act
+      const result = await AdminFormService.deleteFormWorkflowStep(mockForm, 0)
+
+      // Assert
+      expect(result.isOk()).toBe(true)
+      expect((spy.mock.calls[0][1] as any).workflow).toEqual([])
+    })
+
+    it('should splice without a placeholder when a later step is deleted', async () => {
+      // Arrange
+      const spy = spyOnPersistedWorkflow()
+      const mockForm = mockFormWithWorkflow([stepOne, stepTwo, stepThree])
+
+      // Act
+      const result = await AdminFormService.deleteFormWorkflowStep(mockForm, 1)
+
+      // Assert
+      expect(result.isOk()).toBe(true)
+      expect((spy.mock.calls[0][1] as any).workflow).toEqual([
+        stepOne,
+        stepThree,
+      ])
+    })
+
+    it('should not stack placeholders when step 1 is deleted twice', async () => {
+      // Arrange
+      const spy = spyOnPersistedWorkflow()
+      const placeholder = {
+        _id: 'placeholder',
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [],
+        isPlaceholder: true,
+      }
+      const mockForm = mockFormWithWorkflow([placeholder, stepTwo, stepThree])
+
+      // Act
+      await AdminFormService.deleteFormWorkflowStep(mockForm, 0)
+
+      // Assert
+      const persisted = (spy.mock.calls[0][1] as any).workflow
+      expect(persisted).toHaveLength(3)
+      expect(persisted.filter((step: any) => step.isPlaceholder)).toHaveLength(
+        1,
+      )
+    })
+
+    it('should not mutate the original workflow', async () => {
+      // Arrange
+      spyOnPersistedWorkflow()
+      const workflow = [stepOne, stepTwo, stepThree]
+      const mockForm = mockFormWithWorkflow(workflow)
+
+      // Act
+      await AdminFormService.deleteFormWorkflowStep(mockForm, 0)
+
+      // Assert
+      expect(workflow).toEqual([stepOne, stepTwo, stepThree])
+    })
+
+    it('should reject an out of range step number', async () => {
+      // Arrange
+      const mockForm = mockFormWithWorkflow([stepOne])
+
+      // Act
+      const result = await AdminFormService.deleteFormWorkflowStep(mockForm, 5)
+
+      // Assert
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
+    })
+  })
 })
