@@ -485,6 +485,7 @@ export const usePreviewFormMutations = (formId: string) => {
   )
 
   const submitStorageModeFormMutation = useMutation(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
       return submitStorageModeFormPreview({ formId })
     },
@@ -498,6 +499,7 @@ export const usePreviewFormMutations = (formId: string) => {
   )
 
   const submitStorageModeFormFetchMutation = useMutation(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
       return submitStorageModeFormPreviewWithFetch({ formId })
     },
