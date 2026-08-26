@@ -57,6 +57,10 @@ const buildWorkflowStep = (
   if (inputs.step_name === '') {
     inputs.step_name = undefined
   }
+  // Saving an unset step 1 is what fills the slot, so it stops being one.
+  // Leaving the marker on would also fail the update validator, which does not
+  // accept it: only the delete endpoint may ever set it.
+  delete inputs.isPlaceholder
 
   if (isFirstStep) {
     return inputs.field

@@ -1,6 +1,10 @@
+import { useTranslation } from 'react-i18next'
 import { Box, Divider, Stack, Text } from '@chakra-ui/react'
 
+import { isFirstStepPlaceholder } from 'formsg-shared/utils/runnable-workflow'
+
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
+import InlineMessage from '~components/InlineMessage'
 
 import { StatusTrackerToggle } from '~features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
 
@@ -11,6 +15,7 @@ import { WorkflowBlockFactory } from './WorkflowBlockFactory'
 import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
 
 export const WorkflowContent = (): JSX.Element | null => {
+  const { t } = useTranslation()
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
 
   if (isLoading) return null
@@ -32,6 +37,11 @@ export const WorkflowContent = (): JSX.Element | null => {
           <StatusTrackerToggle />
         </Stack>
       </Box>
+      {isFirstStepPlaceholder(formWorkflow) ? (
+        <InlineMessage variant="warning">
+          {t('features.adminForm.sidebar.workflow.unsetFirstStep.banner')}
+        </InlineMessage>
+      ) : null}
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (
           <WorkflowBlockFactory key={i} stepNumber={i} step={step} />

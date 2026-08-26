@@ -170,6 +170,14 @@ const workflow_step_1: FormWorkflowStepDto = {
   edit: [form_field_1._id, form_field_2._id],
 }
 
+const workflow_step_1_unset: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c6f0',
+  workflow_type: WorkflowType.Static,
+  emails: [],
+  edit: [],
+  isPlaceholder: true,
+}
+
 const workflow_step_2: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1c6f9',
   workflow_type: WorkflowType.Static,
@@ -372,4 +380,36 @@ Step2InvalidConditionalRecipientSelected.parameters = {
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({}, 'infinite') } },
+}
+
+export const UnsetStep1 = Template.bind({})
+UnsetStep1.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [workflow_step_1_unset, workflow_step_2],
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'Step 1 has been deleted. The slot holds position 1 so step 2 keeps its number and its configuration, and a banner explains that the workflow is not running until step 1 is set up.',
+  },
+}
+
+export const UnsetStep1Only = Template.bind({})
+UnsetStep1Only.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [workflow_step_1_unset],
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'An unset step 1 with nothing behind it. Reachable by deleting a later step after deleting step 1.',
+  },
 }

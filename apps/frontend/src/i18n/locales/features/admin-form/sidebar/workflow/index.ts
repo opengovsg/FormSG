@@ -18,6 +18,11 @@ export interface Workflow {
     fieldsToFill: string
     clickToEdit: string
   }
+  unsetFirstStep: {
+    title: string
+    description: string
+    banner: string
+  }
   dynamicRespondent: {
     title: string
     required: string

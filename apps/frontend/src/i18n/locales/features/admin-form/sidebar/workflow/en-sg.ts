@@ -20,6 +20,13 @@ export const enSG: Workflow = {
     fieldsToFill: 'Fields to fill',
     clickToEdit: 'Click to edit',
   },
+  unsetFirstStep: {
+    title: 'Set up step 1',
+    description:
+      'Choose who fills in this step and which fields they fill in. Your other steps are saved and will run again once step 1 is set up.',
+    banner:
+      'This workflow is not running because step 1 has not been set up. Until then, anyone with your form link can fill in every field, and the form will not be sent on to your other steps.',
+  },
   dynamicRespondent: {
     title: 'An email field from the form',
     required: 'Please select a field.',
