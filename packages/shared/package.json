@@ -175,6 +175,10 @@
       "require": "./dist/utils/strip-dropdown-field-optionsToRecipientsMap.js",
       "default": "./utils/strip-dropdown-field-optionsToRecipientsMap.ts"
     },
+    "./utils/runnable-workflow": {
+      "require": "./dist/utils/runnable-workflow.js",
+      "default": "./utils/runnable-workflow.ts"
+    },
     "./utils/strip-workflow-emails": {
       "require": "./dist/utils/strip-workflow-emails.js",
       "default": "./utils/strip-workflow-emails.ts"
