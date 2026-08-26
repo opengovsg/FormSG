@@ -35,13 +35,17 @@ export const getTrace = <R extends LooseRequest>(
   return req.get('cf-ray') ?? req.id // trace using cloudflare cf-ray header, with x-request-id header as backup
 }
 
+// Masks the last 24 characters of a secret with asterisks, keeping a prefix
+// so log lines carrying the same secret can still be correlated.
+const MASK_REPLACEMENT = '************************'
+
 const HEADERS_RULES = {
   referer: {
     // Match the referer URL and replace the last 24 characters of the key with asterisks
     // e.g.                  /edit/<form_id>/?key=12345678901234567890123456789012345678901234567890
     // will be replaced with /edit/<form_id>/?key=12345678901234567890123456************************
     regex: /(?<=\/edit\/[a-zA-Z0-9]{24}\?key=.+).{24}$/i,
-    replacement: '************************',
+    replacement: MASK_REPLACEMENT,
   },
 }
 
@@ -63,6 +67,26 @@ const maskRefererHeaders = (
     }
   }
   return headers
+}
+
+/**
+ * Masks the OAuth exchange code that Singpass and Corppass append when
+ * redirecting a respondent back to our login callbacks, in the same way as the
+ * referer key masking above. The code is a single-use credential and must not
+ * be logged in full.
+ *
+ * Note that the Datadog sensitive data scanner only redacts `code=` inside
+ * url-shaped strings, so parsed values (`req.query.code`, `meta.code`) must be
+ * masked here before they are logged.
+ */
+export const maskOAuthCode = (code: unknown): unknown => {
+  if (typeof code !== 'string') {
+    return code
+  }
+  return (
+    code.slice(0, Math.max(code.length - MASK_REPLACEMENT.length, 0)) +
+    MASK_REPLACEMENT
+  )
 }
 
 export const createReqMeta = <R extends LooseRequest>(req: R): ReqMeta => {
