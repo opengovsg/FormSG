@@ -5,6 +5,7 @@ import {
   SubmissionBase,
   SubmissionMetadata,
   SubmissionType,
+  SubmittedStepSnapshotTokens,
   WebhookResponse,
 } from 'formsg-shared/types/submission'
 import mongoose, {
@@ -46,6 +47,7 @@ export type SubmissionWebhookInfo = {
   webhookUrl: string
   isRetryEnabled: boolean
   webhookView: WebhookView
+  submittedStepSnapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
 }
 
 export type FindFormsWithSubsAboveResult = {
