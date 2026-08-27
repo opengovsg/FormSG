@@ -1205,6 +1205,9 @@ describe('public-form.controller', () => {
         },
       },
     })
+    // retrieveFullFormById populates admin and errors when it is absent,
+    // so a form reaching the controller always has one.
+    const MOCK_ADMIN = { email: 'mock@example.com' }
     const MOCK_REDIRECT_URL = 'www.mockata.com'
     const MOCK_CODE_VERIFIER = 'mockCodeVerifier'
 
@@ -1231,6 +1234,7 @@ describe('public-form.controller', () => {
     it('should return 200 with the redirect url when the request is valid and the form has authType SP', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.SP,
         esrvcId: '12345',
       } as SpcpForm<IFormDocument>
@@ -1279,6 +1283,7 @@ describe('public-form.controller', () => {
         },
       })
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.SP,
         esrvcId: '12345',
       } as SpcpForm<IFormDocument>
@@ -1315,6 +1320,7 @@ describe('public-form.controller', () => {
         },
       })
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.SP,
         esrvcId: '12345',
       } as SpcpForm<IFormDocument>
@@ -1356,6 +1362,7 @@ describe('public-form.controller', () => {
         },
       })
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.SP,
         esrvcId: '12345',
       } as SpcpForm<IFormDocument>
@@ -1389,6 +1396,7 @@ describe('public-form.controller', () => {
     it('should return 200 with the redirect url when the request is valid and the form has authType CP', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.CP,
         esrvcId: '12345',
       } as SpcpForm<IFormDocument>
@@ -1429,6 +1437,7 @@ describe('public-form.controller', () => {
       // Arrange
       const FORM_ESRVC_ID = 'MOCKED_FORM_ESRVC_ID'
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.MyInfo,
         esrvcId: FORM_ESRVC_ID,
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
@@ -1471,6 +1480,7 @@ describe('public-form.controller', () => {
     it('should return 200 with the redirect url when the request is valid and the form has authType MyInfo and no esrvcId', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.MyInfo,
         esrvcId: undefined,
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
@@ -1511,6 +1521,7 @@ describe('public-form.controller', () => {
     it('should return 400 when the form has authType NIL', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.NIL,
         esrvcId: '12345',
       } as IFormDocument
@@ -1538,6 +1549,7 @@ describe('public-form.controller', () => {
     it('should return 400 when the form has authType CP and is missing esrvcId', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.CP,
       } as unknown as SpcpForm<IFormDocument>
 
@@ -1586,6 +1598,7 @@ describe('public-form.controller', () => {
     it('should return 500 when the redirectURL could not be created for SP form', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         esrvcId: '234',
         authType: FormAuthType.SP,
       } as unknown as SpcpForm<IFormDocument>
@@ -1615,6 +1628,7 @@ describe('public-form.controller', () => {
     it('should return 500 when the redirectURL could not be created for CP form', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         esrvcId: '234',
         authType: FormAuthType.CP,
       } as unknown as SpcpForm<IFormDocument>

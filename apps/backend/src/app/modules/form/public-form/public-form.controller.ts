@@ -679,6 +679,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
       void req.growthbook?.setAttributes({
         ...req.growthbook.getAttributes(),
         formId,
+        adminEmail: form.admin.email,
       })
       const usePkce = req.growthbook?.isOn(featureFlags.spcpOidcPkce) ?? false
       switch (form.authType) {
