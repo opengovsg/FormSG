@@ -17,12 +17,21 @@ interface SkipGuidanceModalProps {
   isOpen: boolean
   onClose: () => void
   onConfirm: () => void
+  /**
+   * Whether the form has any steps yet, which selects the body copy.
+   *
+   * Read from the workflow rather than passed per screen. One confirmation
+   * serves every entry point, so it should not need telling which one opened
+   * it.
+   */
+  hasSteps: boolean
 }
 
 export const SkipGuidanceModal = ({
   isOpen,
   onClose,
   onConfirm,
+  hasSteps,
 }: SkipGuidanceModalProps): JSX.Element => {
   const modalSize = useBreakpointValue({
     base: 'mobile',
@@ -38,8 +47,9 @@ export const SkipGuidanceModal = ({
         <ModalHeader color="secondary.700">Skip guided setup?</ModalHeader>
         <ModalBody>
           <Text textStyle="body-2" color="secondary.500">
-            You'll switch to manual mode. Any steps you've already created will
-            be kept.
+            {hasSteps
+              ? "You'll set up your workflow yourself. Any steps you've already created will be kept."
+              : "You'll set up your workflow yourself. We won't show this guide again."}
           </Text>
         </ModalBody>
         <ModalFooter>

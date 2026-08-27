@@ -19,6 +19,7 @@ import {
 } from '../../guidedWorkflowStore'
 import { useWorkflowMutations } from '../../mutations'
 import { EditStepInputs } from '../../types'
+import { FadeInUp } from '../FadeInUp'
 import { Spotlight } from '../Spotlight'
 import { QuestionsBlock } from '../WorkflowContent/EditStepBlock/QuestionsBlock'
 import { RespondentBlock } from '../WorkflowContent/EditStepBlock/RespondentBlock'
@@ -38,25 +39,6 @@ interface GuidedStepProps {
 
 const FIRST_STEP_TOTAL_SECTIONS = 3
 const LATER_STEP_TOTAL_SECTIONS = 4
-
-const FadeIn = ({ children }: { children: React.ReactNode }) => {
-  const [isVisible, setIsVisible] = useState(false)
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 50)
-    return () => clearTimeout(timer)
-  }, [])
-
-  return (
-    <Box
-      opacity={isVisible ? 1 : 0}
-      transform={isVisible ? 'translateY(0)' : 'translateY(8px)'}
-      transition="opacity 0.3s ease, transform 0.3s ease"
-    >
-      {children}
-    </Box>
-  )
-}
 
 export const GuidedStep = ({
   stepIndex,
@@ -310,7 +292,7 @@ export const GuidedStep = ({
     if (currentSection >= 2) {
       sections.push(<Divider key="divider-1" />)
       sections.push(
-        <FadeIn key="respondent">
+        <FadeInUp key="respondent">
           <Spotlight
             isActive={currentSection === 2}
             isEnabled={!showSkipGuidedHint}
@@ -324,7 +306,7 @@ export const GuidedStep = ({
             />
           </Spotlight>
           {renderContinueButton(2)}
-        </FadeIn>,
+        </FadeInUp>,
       )
     }
 
@@ -332,7 +314,7 @@ export const GuidedStep = ({
     if (currentSection >= 3) {
       sections.push(<Divider key="divider-2" />)
       sections.push(
-        <FadeIn key="questions">
+        <FadeInUp key="questions">
           <Spotlight
             isActive={currentSection === 3}
             isEnabled={!showSkipGuidedHint}
@@ -345,7 +327,7 @@ export const GuidedStep = ({
             />
           </Spotlight>
           {renderContinueButton(3)}
-        </FadeIn>,
+        </FadeInUp>,
       )
     }
   } else {
@@ -355,7 +337,7 @@ export const GuidedStep = ({
     if (currentSection >= 2) {
       sections.push(<Divider key="divider-1" />)
       sections.push(
-        <FadeIn key="respondent">
+        <FadeInUp key="respondent">
           <Spotlight
             isActive={currentSection === 2}
             isEnabled={!showSkipGuidedHint}
@@ -368,7 +350,7 @@ export const GuidedStep = ({
             />
           </Spotlight>
           {renderContinueButton(2)}
-        </FadeIn>,
+        </FadeInUp>,
       )
     }
 
@@ -376,7 +358,7 @@ export const GuidedStep = ({
     if (currentSection >= 3) {
       sections.push(<Divider key="divider-2" />)
       sections.push(
-        <FadeIn key="what-they-do">
+        <FadeInUp key="what-they-do">
           <Spotlight
             isActive={currentSection === 3}
             isEnabled={!showSkipGuidedHint}
@@ -388,7 +370,7 @@ export const GuidedStep = ({
             />
           </Spotlight>
           {renderContinueButton(3)}
-        </FadeIn>,
+        </FadeInUp>,
       )
     }
 
@@ -396,7 +378,7 @@ export const GuidedStep = ({
     if (currentSection >= 4) {
       sections.push(<Divider key="divider-3" />)
       sections.push(
-        <FadeIn key="questions">
+        <FadeInUp key="questions">
           <Spotlight
             isActive={currentSection === 4}
             isEnabled={!showSkipGuidedHint}
@@ -409,7 +391,7 @@ export const GuidedStep = ({
             />
           </Spotlight>
           {renderContinueButton(4)}
-        </FadeIn>,
+        </FadeInUp>,
       )
     }
   }

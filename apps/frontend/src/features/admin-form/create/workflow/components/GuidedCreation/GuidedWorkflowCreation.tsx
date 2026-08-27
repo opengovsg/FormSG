@@ -16,6 +16,7 @@ import {
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { DeleteStepModal } from '../DeleteStepModal'
 import { EmptyWorkflow } from '../EmptyWorkflow'
+import { FadeInUp } from '../FadeInUp'
 import { ActiveStepBlock } from '../WorkflowContent/ActiveStepBlock'
 import { EndOfWorkflowBlock } from '../WorkflowContent/EndOfWorkflowBlock'
 import { EndOfWorkflowDivider } from '../WorkflowContent/EndOfWorkflowDivider'
@@ -71,7 +72,9 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
     finishWorkflow()
   }
 
-  // Show skip button in all guided modes except success_modal and normal
+  // Every guided screen carries the exit except the two where it makes no
+  // sense: the flow is over, or guidance has not started. The welcome card has
+  // its own placement below the primary action rather than in a card header.
   const showSkipGuidance =
     mode !== 'intro' &&
     mode !== 'welcome' &&
@@ -110,239 +113,239 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
     (s) => s.createOrEditData !== null,
   )
 
-  if (mode === 'intro') {
-    return <EmptyWorkflow />
-  }
+  const renderMode = (): JSX.Element => {
+    if (mode === 'intro') {
+      return <EmptyWorkflow />
+    }
 
-  if (mode === 'welcome') {
-    return <WelcomePage />
-  }
+    if (mode === 'welcome') {
+      return <WelcomePage onSkipGuidance={onSkipModalOpen} />
+    }
 
-  const editingStepNumber = editState?.stepNumber
+    const editingStepNumber = editState?.stepNumber
 
-  // Render completed steps from the real workflow data
-  const completedStepElements = completedSteps.map((stepIdx) => {
-    const step = formWorkflow?.[stepIdx]
-    if (!step) return null
-    const isEditing = editState?.stepNumber === stepIdx
-    return (
-      <Fragment key={stepIdx}>
-        {stepIdx > 0 && <WorkflowStepBlockDivider />}
-        {isEditing ? (
-          <ActiveStepBlock
-            stepNumber={stepIdx}
-            step={step}
-            handleOpenDeleteModal={onDeleteModalOpen}
+    // Render completed steps from the real workflow data
+    const completedStepElements = completedSteps.map((stepIdx) => {
+      const step = formWorkflow?.[stepIdx]
+      if (!step) return null
+      const isEditing = editState?.stepNumber === stepIdx
+      return (
+        <Fragment key={stepIdx}>
+          {stepIdx > 0 && <WorkflowStepBlockDivider />}
+          {isEditing ? (
+            <ActiveStepBlock
+              stepNumber={stepIdx}
+              step={step}
+              handleOpenDeleteModal={onDeleteModalOpen}
+            />
+          ) : (
+            <InactiveStepBlock stepNumber={stepIdx} step={step} />
+          )}
+        </Fragment>
+      )
+    })
+
+    if (mode === 'guided_step') {
+      // Only the arrival from the welcome card animates in. Later returns to a
+      // guided step are ordinary navigation, not a handover.
+      const isWelcomeHandover =
+        currentStepIndex === 0 && completedSteps.length === 0
+
+      const guidedStepContent = (
+        <Stack spacing="0">
+          <WorkflowCard
+            title="Guided workflow setup"
+            showStatusToggle={false}
+            headerRight={skipGuidanceButton}
           />
-        ) : (
-          <InactiveStepBlock stepNumber={stepIdx} step={step} />
-        )}
-      </Fragment>
-    )
-  })
-
-  if (mode === 'guided_step') {
-    return (
-      <Stack spacing="0">
-        <SkipGuidanceModal
-          isOpen={isSkipModalOpen}
-          onClose={onSkipModalClose}
-          onConfirm={handleSkipConfirm}
-        />
-        <WorkflowCard
-          title="Guided workflow setup"
-          showStatusToggle={false}
-          headerRight={skipGuidanceButton}
-        />
-        <Box mt="2.75rem">
-          {editingStepNumber !== undefined && (
-            <DeleteStepModal
-              isOpen={isDeleteModalOpen}
-              onClose={onDeleteModalClose}
-              stepNumber={editingStepNumber}
+          <Box mt="2.75rem">
+            {editingStepNumber !== undefined && (
+              <DeleteStepModal
+                isOpen={isDeleteModalOpen}
+                onClose={onDeleteModalClose}
+                stepNumber={editingStepNumber}
+              />
+            )}
+            {completedStepElements}
+            {completedSteps.length > 0 && <WorkflowStepBlockDivider />}
+            <GuidedStep
+              stepIndex={currentStepIndex}
+              isFirstStep={currentStepIndex === 0}
             />
-          )}
-          {completedStepElements}
-          {completedSteps.length > 0 && <WorkflowStepBlockDivider />}
-          <GuidedStep
-            stepIndex={currentStepIndex}
-            isFirstStep={currentStepIndex === 0}
+          </Box>
+        </Stack>
+      )
+
+      return isWelcomeHandover ? (
+        <FadeInUp duration={0.2}>{guidedStepContent}</FadeInUp>
+      ) : (
+        guidedStepContent
+      )
+    }
+
+    if (mode === 'add_another') {
+      return (
+        <Stack spacing="0">
+          <WorkflowCard
+            title="Guided workflow setup"
+            showStatusToggle={false}
+            headerRight={skipGuidanceButton}
           />
-        </Box>
-      </Stack>
-    )
-  }
+          <Box mt="2.75rem">
+            {editingStepNumber !== undefined && (
+              <DeleteStepModal
+                isOpen={isDeleteModalOpen}
+                onClose={onDeleteModalClose}
+                stepNumber={editingStepNumber}
+              />
+            )}
+            {completedStepElements}
+            {!isAnyCardActive && (
+              <AddAnotherPrompt stepNumber={currentStepIndex} />
+            )}
+          </Box>
+        </Stack>
+      )
+    }
 
-  if (mode === 'add_another') {
-    return (
-      <Stack spacing="0">
-        <SkipGuidanceModal
-          isOpen={isSkipModalOpen}
-          onClose={onSkipModalClose}
-          onConfirm={handleSkipConfirm}
-        />
-        <WorkflowCard
-          title="Guided workflow setup"
-          showStatusToggle={false}
-          headerRight={skipGuidanceButton}
-        />
-        <Box mt="2.75rem">
-          {editingStepNumber !== undefined && (
-            <DeleteStepModal
-              isOpen={isDeleteModalOpen}
-              onClose={onDeleteModalClose}
-              stepNumber={editingStepNumber}
+    // Shared rendering for all steps as inactive blocks
+    const allStepElements = formWorkflow?.map((step, i) => {
+      const isEditing = editState?.stepNumber === i
+      return (
+        <Fragment key={i}>
+          {i > 0 && <WorkflowStepBlockDivider />}
+          {isEditing ? (
+            <ActiveStepBlock
+              stepNumber={i}
+              step={step}
+              handleOpenDeleteModal={onDeleteModalOpen}
             />
+          ) : (
+            <InactiveStepBlock stepNumber={i} step={step} />
           )}
-          {completedStepElements}
-          {!isAnyCardActive && (
-            <AddAnotherPrompt stepNumber={currentStepIndex} />
-          )}
-        </Box>
-      </Stack>
-    )
-  }
+        </Fragment>
+      )
+    })
 
-  // Shared rendering for all steps as inactive blocks
-  const allStepElements = formWorkflow?.map((step, i) => {
-    const isEditing = editState?.stepNumber === i
-    return (
-      <Fragment key={i}>
-        {i > 0 && <WorkflowStepBlockDivider />}
-        {isEditing ? (
-          <ActiveStepBlock
-            stepNumber={i}
-            step={step}
-            handleOpenDeleteModal={onDeleteModalOpen}
+    if (mode === 'email_setup') {
+      return (
+        <Stack spacing="0">
+          <WorkflowCard
+            title="Guided workflow setup"
+            showStatusToggle={false}
+            headerRight={skipGuidanceButton}
           />
-        ) : (
-          <InactiveStepBlock stepNumber={i} step={step} />
-        )}
-      </Fragment>
-    )
-  })
+          <Box mt="2.75rem">
+            {editingStepNumber !== undefined && (
+              <DeleteStepModal
+                isOpen={isDeleteModalOpen}
+                onClose={onDeleteModalClose}
+                stepNumber={editingStepNumber}
+              />
+            )}
+            {allStepElements}
+            <EndOfWorkflowDivider />
+            <GuidedEmailCard onDone={completeEmailSetup} />
+          </Box>
+        </Stack>
+      )
+    }
 
-  if (mode === 'email_setup') {
-    return (
-      <Stack spacing="0">
-        <SkipGuidanceModal
-          isOpen={isSkipModalOpen}
-          onClose={onSkipModalClose}
-          onConfirm={handleSkipConfirm}
-        />
-        <WorkflowCard
-          title="Guided workflow setup"
-          showStatusToggle={false}
-          headerRight={skipGuidanceButton}
-        />
-        <Box mt="2.75rem">
-          {editingStepNumber !== undefined && (
-            <DeleteStepModal
-              isOpen={isDeleteModalOpen}
-              onClose={onDeleteModalClose}
-              stepNumber={editingStepNumber}
-            />
-          )}
-          {allStepElements}
-          <EndOfWorkflowDivider />
-          <GuidedEmailCard onDone={completeEmailSetup} />
-        </Box>
-      </Stack>
-    )
-  }
+    if (mode === 'workflow_complete') {
+      return (
+        <Stack spacing="0">
+          <WorkflowCard
+            title="Guided workflow setup"
+            showStatusToggle={false}
+            headerRight={skipGuidanceButton}
+          />
+          <Box mt="2.75rem">
+            {editingStepNumber !== undefined && (
+              <DeleteStepModal
+                isOpen={isDeleteModalOpen}
+                onClose={onDeleteModalClose}
+                stepNumber={editingStepNumber}
+              />
+            )}
+            {allStepElements}
+            <EndOfWorkflowBlock />
+            {!isAnyCardActive && (
+              <PeekCard
+                title="You've set up the completion email."
+                subtitle="Next, set up an extra workflow setting."
+                actions={[{ label: 'Continue', onClick: completeWorkflowPeek }]}
+                isTucked={false}
+              />
+            )}
+          </Box>
+        </Stack>
+      )
+    }
 
-  if (mode === 'workflow_complete') {
-    return (
-      <Stack spacing="0">
-        <SkipGuidanceModal
-          isOpen={isSkipModalOpen}
-          onClose={onSkipModalClose}
-          onConfirm={handleSkipConfirm}
-        />
-        <WorkflowCard
-          title="Guided workflow setup"
-          showStatusToggle={false}
-          headerRight={skipGuidanceButton}
-        />
-        <Box mt="2.75rem">
-          {editingStepNumber !== undefined && (
-            <DeleteStepModal
-              isOpen={isDeleteModalOpen}
-              onClose={onDeleteModalClose}
-              stepNumber={editingStepNumber}
-            />
-          )}
-          {allStepElements}
-          <EndOfWorkflowBlock />
-          {!isAnyCardActive && (
-            <PeekCard
-              title="You've set up the completion email."
-              subtitle="Next, set up an extra workflow setting."
-              actions={[{ label: 'Continue', onClick: completeWorkflowPeek }]}
-              isTucked={false}
-            />
-          )}
-        </Box>
-      </Stack>
-    )
-  }
+    if (mode === 'status_toggle') {
+      return (
+        <>
+          <StatusToggleMode
+            allStepElements={allStepElements}
+            editingStepNumber={editingStepNumber}
+            isDeleteModalOpen={isDeleteModalOpen}
+            onDeleteModalClose={onDeleteModalClose}
+            onDone={completeStatusToggle}
+            skipGuidanceButton={skipGuidanceButton}
+            isAnyCardActive={isAnyCardActive}
+          />
+        </>
+      )
+    }
 
-  if (mode === 'status_toggle') {
-    return (
-      <>
-        <SkipGuidanceModal
-          isOpen={isSkipModalOpen}
-          onClose={onSkipModalClose}
-          onConfirm={handleSkipConfirm}
-        />
-        <StatusToggleMode
-          allStepElements={allStepElements}
+    if (mode === 'success_modal') {
+      return (
+        <SuccessCompletionMode
+          formWorkflow={formWorkflow}
+          completeSuccessModal={completeSuccessModal}
           editingStepNumber={editingStepNumber}
           isDeleteModalOpen={isDeleteModalOpen}
           onDeleteModalClose={onDeleteModalClose}
-          onDone={completeStatusToggle}
-          skipGuidanceButton={skipGuidanceButton}
+          onDeleteModalOpen={onDeleteModalOpen}
           isAnyCardActive={isAnyCardActive}
         />
-      </>
-    )
-  }
+      )
+    }
 
-  if (mode === 'success_modal') {
+    // mode === 'normal' — workflow is complete
     return (
-      <SuccessCompletionMode
-        formWorkflow={formWorkflow}
-        completeSuccessModal={completeSuccessModal}
-        editingStepNumber={editingStepNumber}
-        isDeleteModalOpen={isDeleteModalOpen}
-        onDeleteModalClose={onDeleteModalClose}
-        onDeleteModalOpen={onDeleteModalOpen}
-        isAnyCardActive={isAnyCardActive}
-      />
+      <Stack spacing="0">
+        <WorkflowCard />
+        <Box mt="2.75rem">
+          {editingStepNumber !== undefined && (
+            <DeleteStepModal
+              isOpen={isDeleteModalOpen}
+              onClose={onDeleteModalClose}
+              stepNumber={editingStepNumber}
+            />
+          )}
+          {formWorkflow?.length ? (
+            <SortableStepList
+              steps={formWorkflow}
+              onDeleteModalOpen={onDeleteModalOpen}
+            />
+          ) : null}
+          {formWorkflow?.length ? <EndOfWorkflowBlock /> : null}
+        </Box>
+      </Stack>
     )
   }
 
-  // mode === 'normal' — workflow is complete
   return (
-    <Stack spacing="0">
-      <WorkflowCard />
-      <Box mt="2.75rem">
-        {editingStepNumber !== undefined && (
-          <DeleteStepModal
-            isOpen={isDeleteModalOpen}
-            onClose={onDeleteModalClose}
-            stepNumber={editingStepNumber}
-          />
-        )}
-        {formWorkflow?.length ? (
-          <SortableStepList
-            steps={formWorkflow}
-            onDeleteModalOpen={onDeleteModalOpen}
-          />
-        ) : null}
-        {formWorkflow?.length ? <EndOfWorkflowBlock /> : null}
-      </Box>
-    </Stack>
+    <>
+      <SkipGuidanceModal
+        isOpen={isSkipModalOpen}
+        onClose={onSkipModalClose}
+        onConfirm={handleSkipConfirm}
+        hasSteps={Boolean(formWorkflow?.length)}
+      />
+      {renderMode()}
+    </>
   )
 }
 
