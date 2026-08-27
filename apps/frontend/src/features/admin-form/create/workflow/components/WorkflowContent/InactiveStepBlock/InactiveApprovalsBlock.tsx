@@ -60,7 +60,7 @@ export const InactiveApprovalsBlock = ({
 
   return (
     <Stack>
-      <Text textStyle="subhead-3">
+      <Text textStyle="subhead-2">
         {t('features.adminForm.sidebar.workflow.approvals.title')}
       </Text>
       <Stack direction="column" spacing="0.25rem">

@@ -1,16 +1,19 @@
 import create from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 
-type GuidedMode =
-  | 'intro'
-  | 'welcome'
-  | 'guided_step'
-  | 'add_another'
-  | 'email_setup'
-  | 'workflow_complete'
-  | 'status_toggle'
-  | 'success_modal'
-  | 'normal'
+const GUIDED_MODES = [
+  'intro',
+  'welcome',
+  'guided_step',
+  'add_another',
+  'email_setup',
+  'workflow_complete',
+  'status_toggle',
+  'success_modal',
+  'normal',
+] as const
+
+export type GuidedMode = (typeof GUIDED_MODES)[number]
 
 type GuidedWorkflowStore = {
   mode: GuidedMode
@@ -36,7 +39,14 @@ type GuidedWorkflowStore = {
   completeStatusToggle: () => void
   completeSuccessModal: () => void
   cancelCurrentStep: () => void
-  requestGuidedMode: () => void
+  /**
+   * Resume the guided flow at the first section an admin has not finished,
+   * rather than restarting it or dropping them into the normal editor.
+   */
+  resumeAtIncompleteSection: (
+    stepIndex: number,
+    section: 'respondent' | 'fields',
+  ) => void
   /** Set the form this guided state belongs to */
   setFormId: (formId: string) => void
   reset: () => void
@@ -133,15 +143,35 @@ export const useGuidedWorkflowStore = create<GuidedWorkflowStore>()(
           set({
             mode: 'normal',
           }),
-        requestGuidedMode: () =>
+        resumeAtIncompleteSection: (stepIndex, section) => {
+          // Section order differs by step. Step 1 is Name, People, Fields.
+          // Later steps insert What they do before Fields.
+          const isFirstStep = stepIndex === 0
+          const currentSection =
+            section === 'respondent' ? 2 : isFirstStep ? 3 : 4
           set({
-            currentSection: 1,
-          }),
+            mode: 'guided_step',
+            currentStepIndex: stepIndex,
+            currentSection,
+          })
+        },
         setFormId: (formId: string) => set({ formId }),
         reset: () => set(INITIAL_STATE),
       }),
       {
         name: 'guided-workflow-state',
+        // A user mid-flow when a release changes the GuidedMode members would
+        // otherwise deserialise into an unknown mode. Bump this when the union
+        // changes; onRehydrateStorage is the belt to that braces.
+        version: 1,
+        onRehydrateStorage: () => (state) => {
+          if (
+            state &&
+            !(GUIDED_MODES as readonly string[]).includes(state.mode)
+          ) {
+            state.mode = 'normal'
+          }
+        },
         partialize: (state) => ({
           mode: state.mode,
           currentStepIndex: state.currentStepIndex,

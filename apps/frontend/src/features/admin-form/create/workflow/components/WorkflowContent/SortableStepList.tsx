@@ -89,7 +89,7 @@ export const SortableStepList = ({
                           {...dragProvided.draggableProps}
                           {...dragProvided.dragHandleProps}
                           opacity={dragSnapshot.isDragging ? 0.8 : 1}
-                          transition="opacity 0.2s ease"
+                          transition="opacity 0.15s ease"
                         >
                           {isEditing ? (
                             <ActiveStepBlock

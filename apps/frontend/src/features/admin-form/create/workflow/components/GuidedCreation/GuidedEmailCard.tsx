@@ -145,8 +145,7 @@ export const GuidedEmailCard = ({
       bg="white"
       border="1px solid"
       borderColor="neutral.300"
-      transitionProperty="common"
-      transitionDuration="normal"
+      transition="background-color 0.3s ease, border-color 0.3s ease"
     >
       <Box px={{ base: '1.5rem', md: '2rem' }}>
         <EmailLabel />

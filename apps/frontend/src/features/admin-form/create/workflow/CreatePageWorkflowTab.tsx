@@ -6,6 +6,7 @@ import { GuidedWorkflowCreation } from './components/GuidedCreation'
 import { WorkflowContent } from './components/WorkflowContent'
 import { WorkflowSkeleton } from './components/WorkflowSkeleton'
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
+import { getWorkflowCompletionStatus } from './utils/getWorkflowCompletionStatus'
 import { useAdminWorkflowStore } from './adminWorkflowStore'
 import {
   currentStepIndexSelector,
@@ -32,6 +33,9 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
   const resetGuided = useGuidedWorkflowStore((s) => s.reset)
   const setGuidedFormId = useGuidedWorkflowStore((s) => s.setFormId)
   const finishWorkflow = useGuidedWorkflowStore((s) => s.finishWorkflow)
+  const resumeAtIncompleteSection = useGuidedWorkflowStore(
+    (s) => s.resumeAtIncompleteSection,
+  )
 
   const isEmptyWorkflow = useMemo(
     () => formWorkflow?.length === 0 && !createOrEditData,
@@ -49,8 +53,24 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
     // Different form than what the guided store was tracking: reset.
     if (storedFormId && storedFormId !== formId) {
       if (formWorkflow && formWorkflow.length > 0) {
-        // Form already has steps, go straight to normal editor
-        finishWorkflow()
+        // The form already has steps. Rather than restarting the flow or
+        // dropping the admin into the normal editor, pick up at the first
+        // section they have not finished.
+        const { firstIncompleteStepIndex, firstIncompleteSection } =
+          getWorkflowCompletionStatus(formWorkflow)
+        if (
+          firstIncompleteStepIndex !== null &&
+          (firstIncompleteSection === 'respondent' ||
+            firstIncompleteSection === 'fields')
+        ) {
+          resumeAtIncompleteSection(
+            firstIncompleteStepIndex,
+            firstIncompleteSection,
+          )
+        } else {
+          // Nothing left to finish, so there is nothing to guide.
+          finishWorkflow()
+        }
       } else {
         // Empty form, show intro
         resetGuided()
@@ -88,6 +108,7 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
     resetGuided,
     finishWorkflow,
     setGuidedFormId,
+    resumeAtIncompleteSection,
   ])
 
   useEffect(() => reset, [reset])

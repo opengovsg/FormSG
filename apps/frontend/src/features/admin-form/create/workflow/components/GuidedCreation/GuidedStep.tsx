@@ -405,8 +405,7 @@ export const GuidedStep = ({
       bg={showSkipGuidedHint ? 'primary.100' : 'white'}
       border={showSkipGuidedHint ? '2px solid' : '1px solid'}
       borderColor={showSkipGuidedHint ? 'primary.500' : 'neutral.300'}
-      transitionProperty="common"
-      transitionDuration="normal"
+      transition="background-color 0.3s ease, border-color 0.3s ease"
     >
       {/* Step badge + guided toggle (outside spotlight) */}
       <Flex

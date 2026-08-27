@@ -315,8 +315,7 @@ export const EditStepBlock = ({
       bg={guidedEdit ? 'white' : 'primary.100'}
       border={guidedEdit ? '1px solid' : '2px solid'}
       borderColor={guidedEdit ? 'neutral.300' : 'primary.500'}
-      transitionProperty="common"
-      transitionDuration="normal"
+      transition="background-color 0.3s ease, border-color 0.3s ease"
     >
       {/* Step badge + guided toggle (always full opacity) */}
       <Flex
