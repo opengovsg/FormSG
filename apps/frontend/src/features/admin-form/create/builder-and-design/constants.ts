@@ -1,3 +1,4 @@
+import { SELECTABLE_MYINFO_CHILD_ATTRIBUTES } from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
   ChildrenCompoundFieldBase,
@@ -98,7 +99,6 @@ export const MYINFO_DATEFIELD_META: MyInfoFieldMeta<DateFieldBase> = {
 export const MYINFO_CHILDRENFIELD_META: MyInfoFieldMeta<ChildrenCompoundFieldBase> =
   {
     childrenSubFields: [MyInfoChildAttributes.ChildName],
-    allowMultiple: false,
   }
 
 export const CREATE_MYINFO_PERSONAL_FIELDS_ORDERED =
@@ -139,17 +139,18 @@ export enum FieldListTabIndex {
   Payments,
 }
 
+// Name is always collected, so it is not offered as a choice.
 export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
   value: MyInfoChildAttributes
   label: string
-}[] = Object.values(MyInfoChildAttributes)
-  .filter((e) => e !== MyInfoChildAttributes.ChildName)
-  .map((value) => {
-    return {
-      value,
-      label: MYINFO_FIELD_TO_DRAWER_META[value].label,
-    }
-  })
+}[] = SELECTABLE_MYINFO_CHILD_ATTRIBUTES.filter(
+  (e) => e !== MyInfoChildAttributes.ChildName,
+).map((value) => {
+  return {
+    value,
+    label: MYINFO_FIELD_TO_DRAWER_META[value].label,
+  }
+})
 
 export const BASIC_FIELDS_FREE_TEXT = [
   BasicField.ShortText,

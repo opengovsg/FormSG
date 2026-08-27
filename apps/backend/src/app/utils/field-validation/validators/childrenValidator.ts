@@ -1,3 +1,4 @@
+import { MAX_CHILDREN_PER_FIELD } from 'formsg-shared/constants/field/myinfo'
 import {
   ChildrenCompoundFieldBase,
   MyInfoChildAttributes,
@@ -42,6 +43,21 @@ const validChildAnswerFirstArray: ChildrenValidator = (response) => {
     ? right(response)
     : left(
         `ChildrenValidator (validChildAnswerFirstArray):\t first subarray length is invalid`,
+      )
+}
+
+/**
+ * Returns a validator to check that at most one child was answered. Keyed on
+ * MAX_CHILDREN_PER_FIELD, not the legacy `allowMultiple` flag, which survives
+ * unmigrated on existing form documents and must not grant a second child.
+ */
+const validSingleChild: ChildrenValidator = (response) => {
+  const { answerArray } = response
+
+  return answerArray.length <= MAX_CHILDREN_PER_FIELD
+    ? right(response)
+    : left(
+        `ChildrenValidator (validSingleChild):\t more than ${MAX_CHILDREN_PER_FIELD} child answered`,
       )
 }
 
@@ -160,6 +176,7 @@ export const constructChildrenValidator: ChildrenValidatorConstructor = (
 ) =>
   flow(
     childrenAnswerValidator,
+    chain(validSingleChild),
     chain(validChildAnswerFirstArray),
     chain(validChildAnswerConsistency),
     chain(validChildAnswersNonEmpty),
