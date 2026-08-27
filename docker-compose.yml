@@ -146,7 +146,7 @@ services:
       - SSO_CLIENT_SECRET
 
   mockpass:
-    image: opengovsg/mockpass:4.6.4
+    image: opengovsg/mockpass:4.6.11
     depends_on:
       - backend
     environment:
@@ -155,6 +155,7 @@ services:
       - SHOW_LOGIN_PAGE=true
       - SP_RP_JWKS_ENDPOINT=http://localhost:5000/sp/.well-known/jwks.json
       - CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
+      - FAPI_CLIENT_JWKS_ENDPOINT=http://localhost:5000/mi/fapi/.well-known/jwks.json
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:5156 to mockpass:5156
 
   database:

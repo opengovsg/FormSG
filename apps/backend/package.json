@@ -128,7 +128,7 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
-    "@opengovsg/mockpass": "^4.3.4",
+    "@opengovsg/mockpass": "^4.6.11",
     "@playwright/test": "^1.58.2",
     "@types/bcrypt": "^5.0.0",
     "@types/bluebird": "^3.5.42",
