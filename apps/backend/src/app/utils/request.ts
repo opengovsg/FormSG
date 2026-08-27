@@ -83,9 +83,12 @@ export const maskOAuthCode = (code: unknown): unknown => {
   if (typeof code !== 'string') {
     return code
   }
+
+  const maskLength = Math.min(code.length, MASK_REPLACEMENT.length)
+
   return (
-    code.slice(0, Math.max(code.length - MASK_REPLACEMENT.length, 0)) +
-    MASK_REPLACEMENT
+    code.slice(0, code.length - maskLength) +
+    MASK_REPLACEMENT.slice(0, maskLength)
   )
 }
 
