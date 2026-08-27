@@ -11,6 +11,7 @@ import { HashingError } from '../../utils/hash'
 import * as CoreErrors from '../core/core.errors'
 import * as UserErrors from '../user/user.errors'
 
+import * as AuthOneErrors from './one/auth-one.errors'
 import * as AuthSsoErrors from './sso/auth-sso.errors'
 import * as AuthErrors from './auth.errors'
 
@@ -31,6 +32,7 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
         errorMessage: error.message,
       }
     case AuthSsoErrors.SsoNotWhitelistedError:
+    case AuthOneErrors.OneNotWhitelistedError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,

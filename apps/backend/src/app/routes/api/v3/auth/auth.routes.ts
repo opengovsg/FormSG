@@ -4,6 +4,7 @@ import { rateLimitConfig } from '../../../../config/config'
 import * as AuthController from '../../../../modules/auth/auth.controller'
 import { limitRate } from '../../../../utils/limit-rate'
 
+import { AuthOneRouter } from './auth-one.routes'
 import { AuthSGIDRouter } from './auth-sgid.routes'
 import { AuthSsoRouter } from './auth-sso.routes'
 import { AuthWogadRouter } from './auth-wogad.routes'
@@ -70,3 +71,4 @@ AuthRouter.get('/logout', AuthController.handleSignout)
 AuthRouter.use('/sgid', AuthSGIDRouter)
 AuthRouter.use('/sso', AuthSsoRouter)
 AuthRouter.use('/wogad', AuthWogadRouter)
+AuthRouter.use('/one', AuthOneRouter)
