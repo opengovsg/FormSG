@@ -28,6 +28,9 @@ export interface Login {
     WogadLoginButton: {
       loginText: string
     }
+    OneLoginButton: {
+      loginText: string
+    }
   }
   LoginPage: {
     slogan: string
