@@ -9,6 +9,7 @@ import { isOneConfigured, one } from '../../../config/features/one.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { resolveAppUrl } from '../../../utils/urls'
 
+import { ONE_LOGIN_CALLBACK_PATH } from './auth-one.constants'
 import { OneCreateRedirectUrlError } from './auth-one.errors'
 
 const logger = createLoggerWithLabel(module)
@@ -222,6 +223,7 @@ export class AuthOneServiceClass {
       const nonce = oidcClient.randomNonce()
 
       const params: Record<string, string> = {
+        redirect_uri: resolveAppUrl(ONE_LOGIN_CALLBACK_PATH),
         code_challenge: codeChallenge,
         code_challenge_method: 'S256',
         state,

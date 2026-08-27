@@ -3,6 +3,7 @@ import * as oidcClient from 'openid-client'
 
 import { IOneVarsSchema } from 'src/types'
 
+import { ONE_LOGIN_CALLBACK_PATH } from './auth-one.constants'
 import { OneCreateRedirectUrlError } from './auth-one.errors'
 import { AuthOneServiceClass } from './auth-one.service'
 
@@ -43,10 +44,9 @@ const VALID_CONFIG: IOneVarsSchema = {
 // Mirrors the placeholder defaults in one.config.ts. Kept inline so a future
 // drift between schema defaults and the placeholder check is caught here.
 const PLACEHOLDER_CONFIG: IOneVarsSchema = {
-  discoveryUrl:
-    'https://placeholder.one.gov.sg/.well-known/openid-configuration',
-  clientId: 'real-client-id',
-  clientSecret: 'real-secret',
+  discoveryUrl: 'https://one.gov.sg/api/auth/.well-known/openid-configuration',
+  clientId: 'client-id',
+  clientSecret: 'test',
 }
 
 const mockClientConfig = {
@@ -185,6 +185,19 @@ describe('AuthOneServiceClass', () => {
           code_challenge: 'mock-challenge',
           code_challenge_method: 'S256',
         }),
+      )
+    })
+
+    it('sends the fixed callback path as redirect_uri', async () => {
+      // one.gov.sg rejects the authorization request with invalid_redirect
+      // when redirect_uri is omitted — openid-client does not infer it.
+      const svc = new AuthOneServiceClass(VALID_CONFIG)
+
+      await svc.createRedirectUrl()
+
+      const [, params] = mockBuildAuthorizationUrl.mock.calls[0]
+      expect((params as Record<string, string>).redirect_uri).toBe(
+        `http://localhost:5000${ONE_LOGIN_CALLBACK_PATH}`,
       )
     })
   })
