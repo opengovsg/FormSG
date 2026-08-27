@@ -121,7 +121,7 @@ export const customFormat = format.printf((info) => {
  * Axios attaches the entire outgoing request to the errors it throws, and we
  * copy every own property off an error below. Non-2xx response
  * from the SP/CP token endpoint logs `config.data` verbatim (form-encoded token
- * request,`client_assertion` JWT. `headers` and `request` are redacted also
+ * request, `client_assertion` JWT). `headers` and `request` are also redacted
  * to redact cookies, authorization headers and the raw request body.
  */
 const REDACTED_KEYS = new Set(['config', 'headers', 'request'])
