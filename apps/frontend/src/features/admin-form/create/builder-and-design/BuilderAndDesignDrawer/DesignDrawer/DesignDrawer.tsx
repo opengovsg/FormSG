@@ -15,6 +15,7 @@ import {
   Flex,
   FormControl,
   FormLabel,
+  Input,
   Text,
   Textarea,
 } from '@chakra-ui/react'
@@ -29,6 +30,7 @@ import {
 } from 'formsg-shared/types'
 
 import { useToast } from '~hooks/useToast'
+import { useFormTitleValidationRules } from '~utils/formValidation'
 import { uploadLogo } from '~services/FileHandlerService'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import NumberInput from '~components/NumberInput'
@@ -37,6 +39,8 @@ import Radio from '~components/Radio'
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
 import { FormDetailsSection } from '~features/admin-form/settings/components/FormDetailsSection'
+import { useMutateFormSettings } from '~features/admin-form/settings/mutations'
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 import { useEnv } from '~features/env/queries'
 import { getTitleBg } from '~features/public-form/components/FormStartPage/useFormHeader'
 
@@ -70,11 +74,20 @@ type DesignDrawerProps = {
   startPage: FormStartPage
 }
 
+interface DesignFormInput extends FormStartPageInput {
+  title: string
+}
+
 export const DesignInput = (): JSX.Element | null => {
   const { t } = useTranslation()
   const toast = useToast({ status: 'danger' })
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
+
+  const { data: settings } = useAdminFormSettings()
+  const { mutateFormTitle } = useMutateFormSettings()
+  const { formName } = t('features.common', { returnObjects: true })
+  const formTitleValidationRules = useFormTitleValidationRules()
 
   const { startPageMutation } = useMutateFormPage()
   const { handleClose } = useCreatePageSidebar()
@@ -117,10 +130,17 @@ export const DesignInput = (): JSX.Element | null => {
     clearErrors,
     setError,
     setFocus,
-  } = useForm<FormStartPageInput>({
+    setValue,
+  } = useForm<DesignFormInput>({
     mode: 'onBlur',
-    defaultValues: startPageData,
+    defaultValues: { ...startPageData, title: settings?.title },
   })
+
+  useEffect(() => {
+    if (settings?.title) {
+      setValue('title', settings.title)
+    }
+  }, [settings?.title, setValue])
 
   // Update dirty state of builder so confirmation modal can be shown
   useEffect(() => {
@@ -186,10 +206,15 @@ export const DesignInput = (): JSX.Element | null => {
   const handleCloseDrawer = useCallback(() => handleClose(false), [handleClose])
 
   const handleUpdateDesign = handleSubmit(
-    async (startPageData: FormStartPageInput) => {
-      const { logo, attachment, estTimeTaken, ...rest } = startPageData
+    async (startPageData: DesignFormInput) => {
+      const { logo, attachment, estTimeTaken, title, ...rest } = startPageData
       const estTimeTakenTransformed =
         estTimeTaken === '' ? undefined : estTimeTaken
+
+      if (title !== settings?.title) {
+        await mutateFormTitle.mutateAsync(title)
+      }
+
       if (logo.state !== FormLogoState.Custom) {
         startPageMutation.mutate(
           {
@@ -342,8 +367,17 @@ export const DesignInput = (): JSX.Element | null => {
         <FormErrorMessage>{errors.colorTheme?.message}</FormErrorMessage>
       </FormControl>
 
-      {showDesignDrawerFormTitle && <FormDetailsSection />}
-
+      {showDesignDrawerFormTitle && (
+        <FormControl
+          isReadOnly={startPageMutation.isLoading || mutateFormTitle.isLoading}
+          isInvalid={!!errors.title}
+          isRequired
+        >
+          <FormLabel>{formName}</FormLabel>
+          <Input {...register('title', formTitleValidationRules)} />
+          <FormErrorMessage>{errors.title?.message}</FormErrorMessage>
+        </FormControl>
+      )}
       <FormControl
         isReadOnly={startPageMutation.isLoading}
         isInvalid={!!errors.estTimeTaken}
