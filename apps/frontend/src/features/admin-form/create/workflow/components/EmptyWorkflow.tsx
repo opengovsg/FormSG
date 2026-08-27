@@ -8,15 +8,61 @@ import {
   useAdminWorkflowStore,
 } from '../adminWorkflowStore'
 import { useGuidedWorkflowStore } from '../guidedWorkflowStore'
+import {
+  useGuidedSetupAudience,
+  useMarkGuidedSetupTaught,
+} from '../utils/useGuidedSetupAudience'
 
 import {
   FormToWorkflowIllustration,
   type FormToWorkflowIllustrationHandle,
 } from './FormToWorkflowIllustration'
 
+/**
+ * The workflow tab's empty state, and the first place most admins meet the
+ * concept.
+ *
+ * The screen itself is the same for everyone. What differs is where its call to
+ * action leads, and whether the admin is offered a choice at all.
+ */
 export const EmptyWorkflow = (): JSX.Element => {
   const startGuided = useGuidedWorkflowStore((state) => state.startGuided)
+  const startBuilding = useGuidedWorkflowStore((state) => state.startBuilding)
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
+  const { audience } = useGuidedSetupAudience()
+  const markTaught = useMarkGuidedSetupTaught()
+
+  // Only the pre-existing cohort is asked. A new admin gets guidance without
+  // choosing it, and a taught admin gets to work in one click.
+  const showFork = audience === 'pre-existing'
+
+  // Choosing guided setup from the fork counts as being taught, so the fork
+  // retires on its own: offered once per admin in the seeded cohort, and never
+  // to anyone who joins afterwards.
+  //
+  // It goes straight into Step 1 rather than through the welcome card. FRM-2500
+  // req 5 shows the card only when the flag is unset, and this cohort's flag is
+  // 0. See the open question in the branch alignment plan.
+  const handleGuided = useCallback(() => {
+    markTaught()
+    startBuilding()
+  }, [markTaught, startBuilding])
+
+  // Picking manual is a decision, so the fork does not return on the next form.
+  const handleManual = useCallback(() => {
+    markTaught()
+    setToCreating()
+  }, [markTaught, setToCreating])
+
+  // A taught admin still sees this screen. They skip the welcome card and are
+  // never dropped straight into an unsaved step editor by opening the tab.
+  const handleCreateWorkflow = useCallback(() => {
+    if (audience === 'taught') {
+      setToCreating()
+      return
+    }
+    startGuided()
+  }, [audience, setToCreating, startGuided])
 
   const animHandle = useRef<FormToWorkflowIllustrationHandle>(null)
   const autoTimersRef = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -73,16 +119,28 @@ export const EmptyWorkflow = (): JSX.Element => {
           own part.
         </Text>
         <HStack spacing="0.75rem" justify="center">
-          <Button
-            onClick={startGuided}
-            onMouseEnter={() => setIsGuidedHover(true)}
-            onMouseLeave={() => setIsGuidedHover(false)}
-          >
-            Start with guided setup
-          </Button>
-          <Button variant="outline" onClick={setToCreating}>
-            Set up manually
-          </Button>
+          {showFork ? (
+            <>
+              <Button
+                onClick={handleGuided}
+                onMouseEnter={() => setIsGuidedHover(true)}
+                onMouseLeave={() => setIsGuidedHover(false)}
+              >
+                Start with guided setup
+              </Button>
+              <Button variant="outline" onClick={handleManual}>
+                Set up manually
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={handleCreateWorkflow}
+              onMouseEnter={() => setIsGuidedHover(true)}
+              onMouseLeave={() => setIsGuidedHover(false)}
+            >
+              Create workflow
+            </Button>
+          )}
         </HStack>
       </Box>
 

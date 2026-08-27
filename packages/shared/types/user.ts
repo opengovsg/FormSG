@@ -9,6 +9,16 @@ export enum SeenFlags {
   LastSeenFeatureUpdateVersion = 'lastSeenFeatureUpdateVersion',
   SettingsNotification = 'settingsNotification',
   CreateBuilderMrfWorkflow = 'createBuilderMrfWorkflow',
+  /**
+   * Whether an admin has been taught the workflow model.
+   *
+   * Unlike the other flags, this one's stored number carries a meaning rather
+   * than a version: unset is a new admin, 0 predates the workflow builder
+   * redesign, 1 or higher has been taught. Nothing compares it against a
+   * current version, so read the raw value rather than going through
+   * getShowFeatureFlagLastSeen, which collapses it to a boolean.
+   */
+  GuidedWorkflowSetup = 'guidedWorkflowSetup',
 }
 
 // Base used for being referenced by schema/model in the backend.

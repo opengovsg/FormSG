@@ -14,6 +14,7 @@ import {
   useGuidedWorkflowStore,
 } from '../../guidedWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { useMarkGuidedSetupTaught } from '../../utils/useGuidedSetupAudience'
 import { DeleteStepModal } from '../DeleteStepModal'
 import { EmptyWorkflow } from '../EmptyWorkflow'
 import { FadeInUp } from '../FadeInUp'
@@ -67,9 +68,20 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
     onOpen: onSkipModalOpen,
   } = useDisclosure()
 
+  const markTaught = useMarkGuidedSetupTaught()
+
+  // The flag is written on completion or on skip, never on sight. Skipping
+  // counts because it is an explicit "I do not need this", so guidance does not
+  // return on the next form.
   const handleSkipConfirm = () => {
     onSkipModalClose()
+    markTaught()
     finishWorkflow()
+  }
+
+  const handleCompleteSuccessModal = () => {
+    markTaught()
+    completeSuccessModal()
   }
 
   // Every guided screen carries the exit except the two where it makes no
@@ -302,7 +314,7 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
       return (
         <SuccessCompletionMode
           formWorkflow={formWorkflow}
-          completeSuccessModal={completeSuccessModal}
+          completeSuccessModal={handleCompleteSuccessModal}
           editingStepNumber={editingStepNumber}
           isDeleteModalOpen={isDeleteModalOpen}
           onDeleteModalClose={onDeleteModalClose}
