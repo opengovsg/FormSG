@@ -12,21 +12,20 @@ convict.addFormat(url)
 export const optionalValuesFromSsm: Path<IOneVarsSchema>[] = []
 
 // RATIONALE: shared between the schema and isOneConfigured() so they can't drift.
-const ONE_PLACEHOLDER_DISCOVERY_URL =
-  'https://placeholder.one.gov.sg/.well-known/openid-configuration'
-const ONE_PLACEHOLDER_CLIENT_SECRET = 'use_placeholder'
+const ONE_PLACEHOLDER_DISCOVERY_URL = 'client-id'
+const ONE_PLACEHOLDER_CLIENT_SECRET = 'test'
 
 export const oneVarsSchema: Schema<IOneVarsSchema> = {
   discoveryUrl: {
     doc: 'The discovery URL for the one.gov.sg service',
     format: String,
-    default: ONE_PLACEHOLDER_DISCOVERY_URL,
+    default: 'https://one.gov.sg/api/auth/.well-known/openid-configuration',
     env: 'ONE_DISCOVERY_URL',
   },
   clientId: {
     doc: 'The client id registered with one.gov.sg',
     format: String,
-    default: 'UEKmgAFwfuCLNFvNohmTQpptwWABQaPi',
+    default: ONE_PLACEHOLDER_DISCOVERY_URL,
     env: 'ONE_CLIENT_ID',
   },
   clientSecret: {
