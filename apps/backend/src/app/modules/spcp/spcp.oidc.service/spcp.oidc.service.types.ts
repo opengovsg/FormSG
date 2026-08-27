@@ -9,6 +9,11 @@ export type SpcpOidcProps = {
   cookieDomain: string
 }
 
+export type CreateRedirectUrlResult = {
+  redirectUrl: string
+  codeVerifier?: string
+}
+
 export type SpOidcProps = {
   cookieMaxAge: number
   cookieMaxAgePreserved: number

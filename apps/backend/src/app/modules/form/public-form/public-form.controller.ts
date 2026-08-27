@@ -1,5 +1,6 @@
 import { HttpStatusCode } from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
+import { randomBytes } from 'crypto'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   ErrorCode,
@@ -675,6 +676,21 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const useFormsgEsrvcId = req.growthbook?.isOn(
         featureFlags.useFormsgEsrvcId,
       )
+      // TODO [CP-PKCE]: Cleanup this flag once PKCE rollout is verified.
+      // Add formId to growthbook attributes to allow for targeting in growthbook feature flags.
+      void req.growthbook?.setAttributes({
+        ...req.growthbook.getAttributes(),
+        formId,
+        adminEmail: form.admin.email,
+      })
+      const usePkce = req.growthbook?.isOn(featureFlags.spcpOidcPkce) ?? false
+      // TODO [CP-PKCE]: Cleanup this flag once the nonce state format is fully
+      // rolled out. Only emit the nonce state format once every instance is
+      // able to parse it, otherwise a callback served by an compute instance running
+      // the older parser rejects the state outright.
+      const useStateNonce =
+        req.growthbook?.isOn(featureFlags.spcpOidcStateNonce) ?? false
+      const nonce = useStateNonce ? randomBytes(16).toString('hex') : undefined
       switch (form.authType) {
         case FormAuthType.MyInfo:
           return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
@@ -693,11 +709,21 @@ export const _handleFormAuthRedirect: ControllerHandler<
               FormAuthType.SP,
               isPersistentLogin,
               encodedQuery,
+              nonce,
             )
-            return getOidcService(FormAuthType.SP).createRedirectUrl(
-              target,
-              form.esrvcId,
-            )
+            const oidcService = getOidcService(FormAuthType.SP)
+            return oidcService
+              .createRedirectUrl(target, form.esrvcId, usePkce)
+              .map(({ redirectUrl, codeVerifier }) => {
+                if (codeVerifier) {
+                  res.cookie(
+                    oidcService.getCodeVerifierCookieName(nonce),
+                    codeVerifier,
+                    oidcService.getCodeVerifierCookieOptions(),
+                  )
+                }
+                return redirectUrl
+              })
           })
         }
         case FormAuthType.CP: {
@@ -709,11 +735,21 @@ export const _handleFormAuthRedirect: ControllerHandler<
               FormAuthType.CP,
               isPersistentLogin,
               encodedQuery,
+              nonce,
             )
-            return getOidcService(FormAuthType.CP).createRedirectUrl(
-              target,
-              form.esrvcId,
-            )
+            const oidcService = getOidcService(FormAuthType.CP)
+            return oidcService
+              .createRedirectUrl(target, form.esrvcId, usePkce)
+              .map(({ redirectUrl, codeVerifier }) => {
+                if (codeVerifier) {
+                  res.cookie(
+                    oidcService.getCodeVerifierCookieName(nonce),
+                    codeVerifier,
+                    oidcService.getCodeVerifierCookieOptions(),
+                  )
+                }
+                return redirectUrl
+              })
           })
         }
         case FormAuthType.SGID:

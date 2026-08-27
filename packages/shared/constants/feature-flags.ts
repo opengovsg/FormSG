@@ -13,6 +13,8 @@ export const featureFlags = {
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   mrfStepWriteToken: 'mrf-step-write-token' as const,
   useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
+  spcpOidcPkce: 'spcp-oidc-pkce' as const,
+  spcpOidcStateNonce: 'spcp-oidc-state-nonce' as const,
   lambdaPdfGeneration: 'lambda-pdf-generation' as const,
   adminEmailPdf: 'admin-email-pdf' as const,
   ogpHeader: 'enable-ogp-header' as const,

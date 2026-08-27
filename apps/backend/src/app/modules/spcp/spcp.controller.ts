@@ -34,17 +34,8 @@ export const handleSpcpOidcLogin: (
 
   const oidcService = getOidcService(authType)
 
-  const result = await oidcService.exchangeAuthCodeAndRetrieveData(code)
-
-  if (result.isErr()) {
-    logger.error({
-      message: 'Failed to exchange auth code and retrieve nric',
-      meta: logMeta,
-      error: result.error,
-    })
-    return res.sendStatus(StatusCodes.BAD_REQUEST)
-  }
-
+  // State must be parsed before the code_verifier is read: the nonce it carries
+  // is what scopes the verifier cookie to this login attempt.
   const parseResult = oidcService.parseState(state)
   if (parseResult.isErr()) {
     logger.error({
@@ -54,7 +45,28 @@ export const handleSpcpOidcLogin: (
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
-  const { formId, destination, rememberMe, cookieDuration } = parseResult.value
+  const { formId, destination, rememberMe, cookieDuration, nonce } =
+    parseResult.value
+
+  const codeVerifier = oidcService.extractCodeVerifier(req.cookies, nonce)
+  res.clearCookie(
+    oidcService.getCodeVerifierCookieName(nonce),
+    oidcService.getCodeVerifierCookieOptions(),
+  )
+
+  const result = await oidcService.exchangeAuthCodeAndRetrieveData(
+    code,
+    codeVerifier,
+  )
+
+  if (result.isErr()) {
+    logger.error({
+      message: 'Failed to exchange auth code and retrieve nric',
+      meta: logMeta,
+      error: result.error,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
   const formResult = await FormService.retrieveFullFormById(formId)
   if (formResult.isErr()) {
     logger.error({

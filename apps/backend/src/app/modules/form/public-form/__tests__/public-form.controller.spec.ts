@@ -2,9 +2,10 @@ import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { Request } from 'express'
+import { featureFlags } from 'formsg-shared/constants'
 import { ErrorCode, FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
-import { err, errAsync, ok, okAsync } from 'neverthrow'
+import { errAsync, ok, okAsync } from 'neverthrow'
 
 import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
@@ -45,7 +46,7 @@ import {
 } from '../../../spcp/spcp.errors'
 import { CpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
-import { JwtName } from '../../../spcp/spcp.types'
+import { CodeVerifierCookieName, JwtName } from '../../../spcp/spcp.types'
 import { generateHashedSubmitterId } from '../../../submission/submission.utils'
 import {
   AuthTypeMismatchError,
@@ -66,6 +67,10 @@ jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 jest.mock('../../../myinfo/myinfo.service')
 jest.mock('../../../billing/billing.service')
 jest.mock('src/app/config/features/spcp-myinfo.config')
+
+const { SpcpOidcServiceClass: ActualSpcpOidcServiceClass } = jest.requireActual(
+  '../../../spcp/spcp.oidc.service/spcp.oidc.service.base',
+) as typeof import('../../../spcp/spcp.oidc.service/spcp.oidc.service.base')
 
 const MockSpCpMyInfoConfig = jest.mocked(spcpMyInfoConfig)
 const MockFormService = jest.mocked(FormService)
@@ -1196,12 +1201,54 @@ describe('public-form.controller', () => {
       query: {
         isPersistentLogin: true,
       },
+      others: {
+        growthbook: {
+          isOn: jest.fn((flag: string) => flag === featureFlags.spcpOidcPkce),
+          getAttributes: jest.fn(() => ({})),
+          setAttributes: jest.fn().mockResolvedValue(undefined),
+        },
+      },
     })
+    // retrieveFullFormById populates admin and errors when it is absent,
+    // so a form reaching the controller always has one.
+    const MOCK_ADMIN = { email: 'mock@example.com' }
     const MOCK_REDIRECT_URL = 'www.mockata.com'
+    const MOCK_CODE_VERIFIER = 'mockCodeVerifier'
+
+    const MOCK_CODE_VERIFIER_COOKIE_OPTIONS = {
+      httpOnly: true as const,
+      secure: true,
+      sameSite: 'lax' as const,
+      path: '/',
+    }
+
+    beforeEach(() => {
+      SpOidcServiceClass.prototype.codeVerifierCookieName =
+        CodeVerifierCookieName.SP
+      CpOidcServiceClass.prototype.codeVerifierCookieName =
+        CodeVerifierCookieName.CP
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'getCodeVerifierCookieOptions')
+        .mockReturnValue(MOCK_CODE_VERIFIER_COOKIE_OPTIONS)
+      jest
+        .spyOn(CpOidcServiceClass.prototype, 'getCodeVerifierCookieOptions')
+        .mockReturnValue(MOCK_CODE_VERIFIER_COOKIE_OPTIONS)
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'getCodeVerifierCookieName')
+        .mockImplementation(
+          ActualSpcpOidcServiceClass.prototype.getCodeVerifierCookieName,
+        )
+      jest
+        .spyOn(CpOidcServiceClass.prototype, 'getCodeVerifierCookieName')
+        .mockImplementation(
+          ActualSpcpOidcServiceClass.prototype.getCodeVerifierCookieName,
+        )
+    })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType SP', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.SP,
         esrvcId: '12345',
       } as SpcpForm<IFormDocument>
@@ -1209,9 +1256,14 @@ describe('public-form.controller', () => {
       MockFormService.retrieveFullFormById.mockReturnValueOnce(
         okAsync(MOCK_FORM),
       )
-      jest
+      const createRedirectUrlSpy = jest
         .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
+        .mockReturnValueOnce(
+          okAsync({
+            redirectUrl: MOCK_REDIRECT_URL,
+            codeVerifier: MOCK_CODE_VERIFIER,
+          }),
+        )
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1221,10 +1273,57 @@ describe('public-form.controller', () => {
       )
 
       // Assert
+      expect(createRedirectUrlSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        MOCK_FORM.esrvcId,
+        true,
+      )
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.json).toHaveBeenCalledWith({
         redirectURL: MOCK_REDIRECT_URL,
       })
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        CodeVerifierCookieName.SP,
+        MOCK_CODE_VERIFIER,
+        expect.anything(),
+      )
+    })
+
+    it('should return 200 without the code verifier cookie when the form has authType SP and PKCE is disabled', async () => {
+      // Arrange
+      const MOCK_REQ_NO_GROWTHBOOK = expressHandler.mockRequest({
+        params: {
+          formId: new ObjectId().toHexString(),
+        },
+      })
+      const MOCK_FORM = {
+        admin: MOCK_ADMIN,
+        authType: FormAuthType.SP,
+        esrvcId: '12345',
+      } as SpcpForm<IFormDocument>
+      const mockRes = expressHandler.mockResponse()
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      const createRedirectUrlSpy = jest
+        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .mockReturnValueOnce(okAsync({ redirectUrl: MOCK_REDIRECT_URL }))
+
+      // Act
+      await PublicFormController._handleFormAuthRedirect(
+        MOCK_REQ_NO_GROWTHBOOK,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(createRedirectUrlSpy).toHaveBeenCalledWith(
+        expect.any(String),
+        MOCK_FORM.esrvcId,
+        false,
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.cookie).not.toHaveBeenCalled()
     })
 
     it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is undefined', async () => {
@@ -1235,6 +1334,7 @@ describe('public-form.controller', () => {
         },
       })
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.SP,
         esrvcId: '12345',
       } as SpcpForm<IFormDocument>
@@ -1244,7 +1344,12 @@ describe('public-form.controller', () => {
       )
       jest
         .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
+        .mockReturnValueOnce(
+          okAsync({
+            redirectUrl: MOCK_REDIRECT_URL,
+            codeVerifier: MOCK_CODE_VERIFIER,
+          }),
+        )
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1271,6 +1376,7 @@ describe('public-form.controller', () => {
         },
       })
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.SP,
         esrvcId: '12345',
       } as SpcpForm<IFormDocument>
@@ -1280,7 +1386,12 @@ describe('public-form.controller', () => {
       )
       jest
         .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockResolvedValueOnce(ok(MOCK_REDIRECT_URL))
+        .mockReturnValueOnce(
+          okAsync({
+            redirectUrl: MOCK_REDIRECT_URL,
+            codeVerifier: MOCK_CODE_VERIFIER,
+          }),
+        )
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1299,6 +1410,7 @@ describe('public-form.controller', () => {
     it('should return 200 with the redirect url when the request is valid and the form has authType CP', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.CP,
         esrvcId: '12345',
       } as SpcpForm<IFormDocument>
@@ -1309,7 +1421,12 @@ describe('public-form.controller', () => {
       )
       jest
         .spyOn(CpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockReturnValueOnce(okAsync(MOCK_REDIRECT_URL))
+        .mockReturnValueOnce(
+          okAsync({
+            redirectUrl: MOCK_REDIRECT_URL,
+            codeVerifier: MOCK_CODE_VERIFIER,
+          }),
+        )
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1323,12 +1440,18 @@ describe('public-form.controller', () => {
       expect(mockRes.json).toHaveBeenCalledWith({
         redirectURL: MOCK_REDIRECT_URL,
       })
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        CodeVerifierCookieName.CP,
+        MOCK_CODE_VERIFIER,
+        expect.anything(),
+      )
     })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType MyInfo', async () => {
       // Arrange
       const FORM_ESRVC_ID = 'MOCKED_FORM_ESRVC_ID'
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.MyInfo,
         esrvcId: FORM_ESRVC_ID,
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
@@ -1371,6 +1494,7 @@ describe('public-form.controller', () => {
     it('should return 200 with the redirect url when the request is valid and the form has authType MyInfo and no esrvcId', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.MyInfo,
         esrvcId: undefined,
         getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
@@ -1411,6 +1535,7 @@ describe('public-form.controller', () => {
     it('should return 400 when the form has authType NIL', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.NIL,
         esrvcId: '12345',
       } as IFormDocument
@@ -1438,6 +1563,7 @@ describe('public-form.controller', () => {
     it('should return 400 when the form has authType CP and is missing esrvcId', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         authType: FormAuthType.CP,
       } as unknown as SpcpForm<IFormDocument>
 
@@ -1486,6 +1612,7 @@ describe('public-form.controller', () => {
     it('should return 500 when the redirectURL could not be created for SP form', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         esrvcId: '234',
         authType: FormAuthType.SP,
       } as unknown as SpcpForm<IFormDocument>
@@ -1496,7 +1623,7 @@ describe('public-form.controller', () => {
       )
       jest
         .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockResolvedValue(err(new CreateRedirectUrlError()))
+        .mockReturnValue(errAsync(new CreateRedirectUrlError()))
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1515,6 +1642,7 @@ describe('public-form.controller', () => {
     it('should return 500 when the redirectURL could not be created for CP form', async () => {
       // Arrange
       const MOCK_FORM = {
+        admin: MOCK_ADMIN,
         esrvcId: '234',
         authType: FormAuthType.CP,
       } as unknown as SpcpForm<IFormDocument>
