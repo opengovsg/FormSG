@@ -440,6 +440,18 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/WOGAD_AUTHORITY"
         },
         {
+          "name": "ONE_CLIENT_ID",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_CLIENT_ID"
+        },
+        {
+          "name": "ONE_CLIENT_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_CLIENT_SECRET"
+        },
+        {
+          "name": "ONE_DISCOVERY_URL",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_DISCOVERY_URL"
+        },
+        {
           "name": "GUARDDUTY_QUARANTINE_S3_BUCKET",
           "valueFrom": "/virus-scanner-guardduty/<ENVIRONMENT_SITE_NAME>/GUARDDUTY_QUARANTINE_S3_BUCKET"
         },
