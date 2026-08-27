@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.13.0](https://github.com/opengovsg/formsg/compare/v9.12.0...v9.13.0) (2026-08-27)
+
+
+### Features
+
+* **mrf:** enqueue a snapshot-naming retry where a snapshot exists (#9866) ([#9866](https://github.com/opengovsg/formsg/commit/9429cfca489b31e3b28c21e04734f73c4a77d945))
+* **mrf:** make a step's snapshot readable and its read failures legible (#9863) ([#9863](https://github.com/opengovsg/formsg/commit/f93c9758fb81eaf7da68689e3d7295d3c89aa41d))
+* **mrf:** replay the failed step's snapshot on webhook retry (#9865) ([#9865](https://github.com/opengovsg/formsg/commit/6c3c0e3bf580d2efc6bb3f76cd733602b7718ac2))
+* **webhook:** version the retry queue message to name its step (#9864) ([#9864](https://github.com/opengovsg/formsg/commit/7b6a958b0215076c8982f7cc0ff786b0b2e9f7f4))
+
+
+### Refactors
+
+* **mrf:** ready the payload policy and reconstruction for replay (#9862) ([#9862](https://github.com/opengovsg/formsg/commit/ba2b247b776319a9fbca9ce89ac6cfa47fdd4b34))
+
 ## [9.12.0](https://github.com/opengovsg/formsg/compare/v9.11.1...v9.12.0) (2026-08-25)
 
 
