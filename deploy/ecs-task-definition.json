@@ -262,6 +262,22 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SP_OIDC_RP_JWKS_SECRET"
         },
         {
+          "name": "MYINFO_FAPI_ISSUER",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_ISSUER"
+        },
+        {
+          "name": "MYINFO_FAPI_CLIENT_ID",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_CLIENT_ID"
+        },
+        {
+          "name": "MYINFO_FAPI_RP_JWKS_PUBLIC",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_RP_JWKS_PUBLIC"
+        },
+        {
+          "name": "MYINFO_FAPI_RP_JWKS_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_RP_JWKS_SECRET"
+        },
+        {
           "name": "CP_OIDC_NDI_DISCOVERY_ENDPOINT",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CP_OIDC_NDI_DISCOVERY_ENDPOINT"
         },
