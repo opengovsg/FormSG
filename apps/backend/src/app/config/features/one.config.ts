@@ -12,7 +12,7 @@ convict.addFormat(url)
 export const optionalValuesFromSsm: Path<IOneVarsSchema>[] = []
 
 // RATIONALE: shared between the schema and isOneConfigured() so they can't drift.
-const ONE_PLACEHOLDER_DISCOVERY_URL = 'client-id'
+const ONE_PLACEHOLDER_CLIENT_ID = 'client-id'
 const ONE_PLACEHOLDER_CLIENT_SECRET = 'test'
 
 export const oneVarsSchema: Schema<IOneVarsSchema> = {
@@ -25,7 +25,7 @@ export const oneVarsSchema: Schema<IOneVarsSchema> = {
   clientId: {
     doc: 'The client id registered with one.gov.sg',
     format: String,
-    default: ONE_PLACEHOLDER_DISCOVERY_URL,
+    default: ONE_PLACEHOLDER_CLIENT_ID,
     env: 'ONE_CLIENT_ID',
   },
   clientSecret: {
@@ -50,7 +50,7 @@ export const isOneConfigured = (config: IOneVarsSchema): boolean => {
     !discoveryUrl ||
     !clientId ||
     !clientSecret ||
-    discoveryUrl === ONE_PLACEHOLDER_DISCOVERY_URL ||
+    clientId === ONE_PLACEHOLDER_CLIENT_ID ||
     clientSecret === ONE_PLACEHOLDER_CLIENT_SECRET
   ) {
     logger.warn({
@@ -61,8 +61,7 @@ export const isOneConfigured = (config: IOneVarsSchema): boolean => {
         hasDiscoveryUrl: !!discoveryUrl,
         hasClientId: !!clientId,
         hasClientSecret: !!clientSecret,
-        isPlaceholderDiscoveryUrl:
-          discoveryUrl === ONE_PLACEHOLDER_DISCOVERY_URL,
+        isPlaceholderClientId: clientId === ONE_PLACEHOLDER_CLIENT_ID,
         isPlaceholderClientSecret:
           clientSecret === ONE_PLACEHOLDER_CLIENT_SECRET,
       },
