@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.14.0](https://github.com/opengovsg/formsg/compare/v9.13.0...v9.14.0) (2026-08-27)
+
+
+### Features
+
+* **children:** remove Secondary Race and Allow-Multiple from the v1 children field (v2.0) (#9794) ([#9794](https://github.com/opengovsg/formsg/commit/c7e870163512fb96e18f0de32f14297cb9e1c9a6))
+
 ## [9.13.0](https://github.com/opengovsg/formsg/compare/v9.12.0...v9.13.0) (2026-08-27)
 
 
