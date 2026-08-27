@@ -27,6 +27,7 @@ import { useMutateFormSettings } from '~features/admin-form/settings/mutations'
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { Spotlight } from '../Spotlight'
 import { EmailLabel } from '../WorkflowContent/EmailLabel'
 
 const WORKFLOW_EMAIL_MULTISELECT_NAME = 'email-multi-select'
@@ -153,14 +154,7 @@ export const GuidedEmailCard = ({
 
       <Divider />
 
-      <Box
-        mx="2rem"
-        py="2rem"
-        bg="primary.100"
-        borderRadius="8px"
-        border="2px solid"
-        borderColor="primary.500"
-      >
+      <Spotlight isActive>
         <Stack spacing="1.5rem" px={{ base: '1.5rem', md: '2rem' }}>
           <Text textStyle="body-2" color="secondary.400">
             Choose who gets notified when the workflow is done. You can always
@@ -272,7 +266,7 @@ export const GuidedEmailCard = ({
             </Skeleton>
           </Box>
         </Stack>
-      </Box>
+      </Spotlight>
 
       <Divider />
 

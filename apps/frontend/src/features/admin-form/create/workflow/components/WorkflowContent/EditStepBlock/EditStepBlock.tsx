@@ -29,6 +29,7 @@ import {
 import { EditStepInputs } from '../../../types'
 import { GuidedRespondentBlock } from '../../GuidedCreation/GuidedRespondentBlock'
 import { GuidedWhatTheyDoBlock } from '../../GuidedCreation/GuidedWhatTheyDoBlock'
+import { Spotlight } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { QuestionsBlock } from './QuestionsBlock'
@@ -45,32 +46,6 @@ export interface EditLogicBlockProps {
   submitButtonLabel: string
   handleOpenDeleteModal?: () => void
   isLoading: boolean
-}
-
-const EditSpotlight = ({
-  isActive,
-  isGuided,
-  children,
-}: {
-  isActive: boolean
-  isGuided: boolean
-  children: React.ReactNode
-}) => {
-  if (!isGuided) return <>{children}</>
-  return (
-    <Box
-      bg={isActive ? 'primary.100' : 'transparent'}
-      borderRadius={isActive ? '8px' : '0'}
-      border={isActive ? '2px solid' : '2px solid transparent'}
-      borderColor={isActive ? 'primary.500' : 'transparent'}
-      opacity={isActive ? 1 : 0.5}
-      transition="opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease"
-      mx={isActive ? '2rem' : '0'}
-      py={isActive ? '2rem' : '0.5rem'}
-    >
-      {children}
-    </Box>
-  )
 }
 
 export const FIELDS_TO_EDIT_NAME = 'edit'
@@ -381,26 +356,20 @@ export const EditStepBlock = ({
       </Flex>
 
       {/* Section 1: Step Name fields */}
-      <EditSpotlight
-        isActive={guidedEdit && guidedSection === 1}
-        isGuided={guidedEdit}
-      >
+      <Spotlight isActive={guidedSection === 1} isEnabled={guidedEdit}>
         <StepNameBlock
           formMethods={formMethods}
           stepNumber={stepNumber}
           hideHeader
           showGuidedHint={guidedEdit && guidedSection === 1}
         />
-      </EditSpotlight>
+      </Spotlight>
 
       {/* Section 2: Respondent */}
       {isSectionVisible(2) && (
         <>
           <Divider />
-          <EditSpotlight
-            isActive={guidedEdit && guidedSection === 2}
-            isGuided={guidedEdit}
-          >
+          <Spotlight isActive={guidedSection === 2} isEnabled={guidedEdit}>
             {guidedEdit && !isFirstStep ? (
               <GuidedRespondentBlock
                 stepNumber={stepNumber}
@@ -419,7 +388,7 @@ export const EditStepBlock = ({
                 {renderGuidedHint('respondent', 2)}
               </>
             )}
-          </EditSpotlight>
+          </Spotlight>
         </>
       )}
 
@@ -427,10 +396,7 @@ export const EditStepBlock = ({
       {!isFirstStep && isSectionVisible(3) && (
         <>
           <Divider />
-          <EditSpotlight
-            isActive={guidedEdit && guidedSection === 3}
-            isGuided={guidedEdit}
-          >
+          <Spotlight isActive={guidedSection === 3} isEnabled={guidedEdit}>
             {guidedEdit ? (
               <GuidedWhatTheyDoBlock
                 stepNumber={stepNumber}
@@ -443,7 +409,7 @@ export const EditStepBlock = ({
                 stepNumber={stepNumber}
               />
             )}
-          </EditSpotlight>
+          </Spotlight>
         </>
       )}
 
@@ -451,9 +417,9 @@ export const EditStepBlock = ({
       {isSectionVisible(isFirstStep ? 3 : 4) && (
         <>
           <Divider />
-          <EditSpotlight
-            isActive={guidedEdit && guidedSection === (isFirstStep ? 3 : 4)}
-            isGuided={guidedEdit}
+          <Spotlight
+            isActive={guidedSection === (isFirstStep ? 3 : 4)}
+            isEnabled={guidedEdit}
           >
             <QuestionsBlock
               formMethods={formMethods}
@@ -463,7 +429,7 @@ export const EditStepBlock = ({
                 guidedEdit && guidedSection === (isFirstStep ? 3 : 4)
               }
             />
-          </EditSpotlight>
+          </Spotlight>
         </>
       )}
 

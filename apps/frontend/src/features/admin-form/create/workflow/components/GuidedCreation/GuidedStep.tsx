@@ -19,6 +19,7 @@ import {
 } from '../../guidedWorkflowStore'
 import { useWorkflowMutations } from '../../mutations'
 import { EditStepInputs } from '../../types'
+import { Spotlight } from '../Spotlight'
 import { QuestionsBlock } from '../WorkflowContent/EditStepBlock/QuestionsBlock'
 import { RespondentBlock } from '../WorkflowContent/EditStepBlock/RespondentBlock'
 import { StepNameBlock } from '../WorkflowContent/EditStepBlock/StepNameBlock'
@@ -56,30 +57,6 @@ const FadeIn = ({ children }: { children: React.ReactNode }) => {
     </Box>
   )
 }
-
-const SpotlightWrapper = ({
-  isActive,
-  isFlowComplete,
-  children,
-}: {
-  isActive: boolean
-  isFlowComplete: boolean
-  children: React.ReactNode
-}) => (
-  <Box
-    bg={isActive && !isFlowComplete ? 'primary.100' : 'transparent'}
-    borderRadius={isActive && !isFlowComplete ? '8px' : '0'}
-    border={isActive && !isFlowComplete ? '2px solid' : '2px solid transparent'}
-    borderColor={isActive && !isFlowComplete ? 'primary.500' : 'transparent'}
-    opacity={isActive || isFlowComplete ? 1 : 0.5}
-    transition="opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease"
-    mx={isActive && !isFlowComplete ? '2rem' : '0'}
-    px="0"
-    py={isActive && !isFlowComplete ? '2rem' : '0.5rem'}
-  >
-    {children}
-  </Box>
-)
 
 export const GuidedStep = ({
   stepIndex,
@@ -307,9 +284,9 @@ export const GuidedStep = ({
             need help.
           </Text>
         )}
-        <SpotlightWrapper
+        <Spotlight
           isActive={currentSection === 1}
-          isFlowComplete={showSkipGuidedHint}
+          isEnabled={!showSkipGuidedHint}
         >
           <StepNameBlock
             formMethods={formMethods}
@@ -322,7 +299,7 @@ export const GuidedStep = ({
             }
             hideHeader
           />
-        </SpotlightWrapper>
+        </Spotlight>
         {renderContinueButton(1)}
       </Box>,
     )
@@ -334,9 +311,9 @@ export const GuidedStep = ({
       sections.push(<Divider key="divider-1" />)
       sections.push(
         <FadeIn key="respondent">
-          <SpotlightWrapper
+          <Spotlight
             isActive={currentSection === 2}
-            isFlowComplete={showSkipGuidedHint}
+            isEnabled={!showSkipGuidedHint}
           >
             <RespondentBlock
               user={user}
@@ -345,7 +322,7 @@ export const GuidedStep = ({
               isLoading={isUserLoading}
               showGuidedHint={currentSection === 2}
             />
-          </SpotlightWrapper>
+          </Spotlight>
           {renderContinueButton(2)}
         </FadeIn>,
       )
@@ -356,9 +333,9 @@ export const GuidedStep = ({
       sections.push(<Divider key="divider-2" />)
       sections.push(
         <FadeIn key="questions">
-          <SpotlightWrapper
+          <Spotlight
             isActive={currentSection === 3}
-            isFlowComplete={showSkipGuidedHint}
+            isEnabled={!showSkipGuidedHint}
           >
             <QuestionsBlock
               formMethods={formMethods}
@@ -366,7 +343,7 @@ export const GuidedStep = ({
               isFirstStep={isFirstStep}
               showGuidedHint
             />
-          </SpotlightWrapper>
+          </Spotlight>
           {renderContinueButton(3)}
         </FadeIn>,
       )
@@ -379,9 +356,9 @@ export const GuidedStep = ({
       sections.push(<Divider key="divider-1" />)
       sections.push(
         <FadeIn key="respondent">
-          <SpotlightWrapper
+          <Spotlight
             isActive={currentSection === 2}
-            isFlowComplete={showSkipGuidedHint}
+            isEnabled={!showSkipGuidedHint}
           >
             <GuidedRespondentBlock
               stepNumber={stepNumber}
@@ -389,7 +366,7 @@ export const GuidedStep = ({
               isLoading={isUserLoading}
               isActive={currentSection === 2}
             />
-          </SpotlightWrapper>
+          </Spotlight>
           {renderContinueButton(2)}
         </FadeIn>,
       )
@@ -400,16 +377,16 @@ export const GuidedStep = ({
       sections.push(<Divider key="divider-2" />)
       sections.push(
         <FadeIn key="what-they-do">
-          <SpotlightWrapper
+          <Spotlight
             isActive={currentSection === 3}
-            isFlowComplete={showSkipGuidedHint}
+            isEnabled={!showSkipGuidedHint}
           >
             <GuidedWhatTheyDoBlock
               stepNumber={stepNumber}
               formMethods={formMethods}
               isActive={currentSection === 3}
             />
-          </SpotlightWrapper>
+          </Spotlight>
           {renderContinueButton(3)}
         </FadeIn>,
       )
@@ -420,9 +397,9 @@ export const GuidedStep = ({
       sections.push(<Divider key="divider-3" />)
       sections.push(
         <FadeIn key="questions">
-          <SpotlightWrapper
+          <Spotlight
             isActive={currentSection === 4}
-            isFlowComplete={showSkipGuidedHint}
+            isEnabled={!showSkipGuidedHint}
           >
             <QuestionsBlock
               formMethods={formMethods}
@@ -430,7 +407,7 @@ export const GuidedStep = ({
               isFirstStep={isFirstStep}
               showGuidedHint={!showSkipGuidedHint}
             />
-          </SpotlightWrapper>
+          </Spotlight>
           {renderContinueButton(4)}
         </FadeIn>,
       )
