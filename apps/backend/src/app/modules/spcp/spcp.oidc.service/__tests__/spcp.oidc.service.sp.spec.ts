@@ -32,7 +32,7 @@ import {
 import { SpOidcClient } from '../../spcp.oidc.client'
 import { SpcpOidcBaseClientCache } from '../../spcp.oidc.client.cache'
 import { Refresh } from '../../spcp.oidc.client.types'
-import { JwtName } from '../../spcp.types'
+import { CodeVerifierCookieName, JwtName } from '../../spcp.types'
 import { SpOidcServiceClass } from '../spcp.oidc.service.sp'
 import { SpOidcProps } from '../spcp.oidc.service.types'
 
@@ -41,6 +41,9 @@ jest.mock('../../spcp.oidc.client')
 jest.mock('axios')
 
 describe('spcp.oidc.service.sp', () => {
+  // 16 random bytes, hex encoded, matching what getRedirectTargetSpcpOidc emits.
+  const MOCK_NONCE = 'a'.repeat(32)
+
   beforeAll(async () => {
     await dbHandler.connect()
     jest
@@ -456,6 +459,212 @@ describe('spcp.oidc.service.sp', () => {
 
       // Assert
       expect(parsedResult._unsafeUnwrapErr()).toBeInstanceOf(InvalidStateError)
+    })
+
+    it('should parse the nonce when state is in the 4-segment nonce format', () => {
+      // Arrange
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        MOCK_PARAMS_SP,
+      )
+      const mockState = `/${MOCK_TARGET}-true-${MOCK_NONCE}-${MOCK_ENCODED_QUERY}`
+
+      // Act
+      const parsedResult = spOidcServiceClass.parseState(mockState)
+
+      // Assert
+      expect(parsedResult._unsafeUnwrap()).toEqual({
+        formId: MOCK_TARGET,
+        destination: `/${MOCK_TARGET}${MOCK_DECODED_QUERY}`,
+        rememberMe: true,
+        nonce: MOCK_NONCE,
+        cookieDuration: MOCK_PARAMS.spCookieMaxAgePreserved,
+      })
+    })
+
+    it('should parse the nonce when the encodedQuery segment is empty', () => {
+      // Arrange
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        MOCK_PARAMS_SP,
+      )
+      const mockState = `/${MOCK_TARGET}-false-${MOCK_NONCE}-`
+
+      // Act
+      const parsedResult = spOidcServiceClass.parseState(mockState)
+
+      // Assert
+      expect(parsedResult._unsafeUnwrap()).toEqual({
+        formId: MOCK_TARGET,
+        destination: `/${MOCK_TARGET}`,
+        rememberMe: false,
+        nonce: MOCK_NONCE,
+        cookieDuration: MOCK_PARAMS.spCookieMaxAge,
+      })
+    })
+
+    it('should return undefined nonce for a legacy state so that in-flight logins still parse', () => {
+      // Arrange
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        MOCK_PARAMS_SP,
+      )
+      const mockState = `/${MOCK_TARGET}-true-${MOCK_ENCODED_QUERY}`
+
+      // Act
+      const parsedResult = spOidcServiceClass.parseState(mockState)
+
+      // Assert
+      expect(parsedResult._unsafeUnwrap().nonce).toBeUndefined()
+    })
+
+    it('should return InvalidStateError when the nonce is not hex', () => {
+      // Arrange
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        MOCK_PARAMS_SP,
+      )
+      const mockState = `/${MOCK_TARGET}-true-${'z'.repeat(32)}-`
+
+      // Act
+      const parsedResult = spOidcServiceClass.parseState(mockState)
+
+      // Assert
+      expect(parsedResult._unsafeUnwrapErr()).toBeInstanceOf(InvalidStateError)
+    })
+
+    it('should return InvalidStateError when the nonce is the wrong length', () => {
+      // Arrange
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        MOCK_PARAMS_SP,
+      )
+      const mockState = `/${MOCK_TARGET}-true-abc123-`
+
+      // Act
+      const parsedResult = spOidcServiceClass.parseState(mockState)
+
+      // Assert
+      expect(parsedResult._unsafeUnwrapErr()).toBeInstanceOf(InvalidStateError)
+    })
+  })
+
+  describe('getCodeVerifierCookieName', () => {
+    it('should scope the cookie name by nonce', () => {
+      // Arrange
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        MOCK_PARAMS_SP,
+      )
+
+      // Act
+      const cookieName =
+        spOidcServiceClass.getCodeVerifierCookieName(MOCK_NONCE)
+
+      // Assert
+      expect(cookieName).toBe(`${CodeVerifierCookieName.SP}_${MOCK_NONCE}`)
+    })
+
+    it('should fall back to the unscoped cookie name for legacy states', () => {
+      // Arrange
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        MOCK_PARAMS_SP,
+      )
+
+      // Act
+      const cookieName = spOidcServiceClass.getCodeVerifierCookieName(undefined)
+
+      // Assert
+      expect(cookieName).toBe(CodeVerifierCookieName.SP)
+    })
+
+    it('should give concurrent login attempts different cookie names', () => {
+      // Arrange
+      const spOidcServiceClass = new SpOidcServiceClass(
+        mockSpOidcClient,
+        MOCK_PARAMS_SP,
+      )
+
+      // Act
+      const first = spOidcServiceClass.getCodeVerifierCookieName('a'.repeat(32))
+      const second = spOidcServiceClass.getCodeVerifierCookieName(
+        'b'.repeat(32),
+      )
+
+      // Assert
+      expect(first).not.toBe(second)
+    })
+  })
+
+  describe('extractCodeVerifier', () => {
+    const spOidcServiceClass = () =>
+      new SpOidcServiceClass(mockSpOidcClient, MOCK_PARAMS_SP)
+    const OTHER_NONCE = 'b'.repeat(32)
+
+    it('should extract the verifier belonging to this login attempt', () => {
+      // Arrange
+      const cookies = {
+        [`${CodeVerifierCookieName.SP}_${MOCK_NONCE}`]: 'verifier-for-this',
+        [`${CodeVerifierCookieName.SP}_${OTHER_NONCE}`]: 'verifier-for-other',
+      }
+
+      // Act
+      const codeVerifier = spOidcServiceClass().extractCodeVerifier(
+        cookies,
+        MOCK_NONCE,
+      )
+
+      // Assert
+      expect(codeVerifier).toBe('verifier-for-this')
+    })
+
+    it('should not pick up another login attempt verifier when this attempt has none', () => {
+      // Arrange
+      const cookies = {
+        [`${CodeVerifierCookieName.SP}_${OTHER_NONCE}`]: 'verifier-for-other',
+      }
+
+      // Act
+      const codeVerifier = spOidcServiceClass().extractCodeVerifier(
+        cookies,
+        MOCK_NONCE,
+      )
+
+      // Assert
+      expect(codeVerifier).toBeUndefined()
+    })
+
+    it('should not pick up a scoped verifier when the state carries no nonce', () => {
+      // Arrange
+      const cookies = {
+        [`${CodeVerifierCookieName.SP}_${MOCK_NONCE}`]: 'verifier-for-this',
+      }
+
+      // Act
+      const codeVerifier = spOidcServiceClass().extractCodeVerifier(
+        cookies,
+        undefined,
+      )
+
+      // Assert
+      expect(codeVerifier).toBeUndefined()
+    })
+
+    it('should read the unscoped cookie for legacy states', () => {
+      // Arrange
+      const cookies = {
+        [CodeVerifierCookieName.SP]: 'legacy-verifier',
+      }
+
+      // Act
+      const codeVerifier = spOidcServiceClass().extractCodeVerifier(
+        cookies,
+        undefined,
+      )
+
+      // Assert
+      expect(codeVerifier).toBe('legacy-verifier')
     })
   })
 

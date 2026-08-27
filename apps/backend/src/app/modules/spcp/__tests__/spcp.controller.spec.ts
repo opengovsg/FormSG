@@ -45,6 +45,10 @@ jest.mock('../spcp.oidc.service/spcp.oidc.service.sp')
 const MockSpOidcServiceClass = jest.mocked(SpOidcServiceClass)
 jest.mock('../spcp.oidc.service/spcp.oidc.service.cp')
 const MockCpOidcServiceClass = jest.mocked(CpOidcServiceClass)
+
+const { SpcpOidcServiceClass: ActualSpcpOidcServiceClass } = jest.requireActual(
+  '../spcp.oidc.service/spcp.oidc.service.base',
+) as typeof import('../spcp.oidc.service/spcp.oidc.service.base')
 jest.mock('../../billing/billing.service')
 const MockBillingService = jest.mocked(BillingService)
 jest.mock('src/app/modules/form/form.service')
@@ -117,6 +121,9 @@ describe('spcp.controller', () => {
         mockSpOidcServiceClass.extractCodeVerifier.mockImplementation(
           (cookies) => cookies[CodeVerifierCookieName.SP],
         )
+        mockSpOidcServiceClass.getCodeVerifierCookieName.mockImplementation(
+          ActualSpcpOidcServiceClass.prototype.getCodeVerifierCookieName,
+        )
       })
 
       it('should set the cookie with the correct params and redirect to the destination', async () => {
@@ -186,7 +193,9 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
         expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
-        expect(mockSpOidcServiceClass.parseState).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
+        )
         expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
         expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
@@ -207,10 +216,7 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(
-          MOCK_SP_OIDC_AUTHORISATION_CODE,
-          MOCK_SP_CODE_VERIFIER,
-        )
+        ).not.toHaveBeenCalled()
         expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
         )
@@ -451,6 +457,9 @@ describe('spcp.controller', () => {
         mockCpOidcServiceClass.extractCodeVerifier.mockImplementation(
           (cookies) => cookies[CodeVerifierCookieName.CP],
         )
+        mockCpOidcServiceClass.getCodeVerifierCookieName.mockImplementation(
+          ActualSpcpOidcServiceClass.prototype.getCodeVerifierCookieName,
+        )
       })
 
       it('should set the cookie with the correct params and redirect to the destination', async () => {
@@ -520,7 +529,9 @@ describe('spcp.controller', () => {
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
         expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
-        expect(mockCpOidcServiceClass.parseState).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
+        )
         expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
         expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
@@ -563,10 +574,7 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(
-          MOCK_CP_OIDC_AUTHORISATION_CODE,
-          MOCK_CP_CODE_VERIFIER,
-        )
+        ).not.toHaveBeenCalled()
         expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
         )

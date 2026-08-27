@@ -37,6 +37,8 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
+const STATE_NONCE_REGEX = /^[0-9a-f]{32}$/
+
 /**
  * Class for executing Singpass/Corppass OIDC-related services.
  * Exported for testing.
@@ -117,12 +119,31 @@ export abstract class SpcpOidcServiceClass {
   /**
    * Extracts the PKCE code verifier from cookie if present.
    * @param cookies Object containing cookies
+   * @param nonce per-login-attempt nonce parsed from state, scoping the cookie
+   * to this login attempt. Undefined for legacy states, which fall back to the
+   * unscoped cookie name.
    * @returns codeVerifier if present, undefined otherwise
    */
   extractCodeVerifier(
-    cookies: Partial<Record<CodeVerifierCookieName, string>>,
+    cookies: Record<string, string | undefined>,
+    nonce?: string,
   ): string | undefined {
-    return cookies[this.codeVerifierCookieName]
+    return cookies[this.getCodeVerifierCookieName(nonce)]
+  }
+
+  /**
+   * Derives the code_verifier cookie name for a login attempt. Scoping the name
+   * by nonce gives each concurrent login its own slot in the cookie jar, so
+   * that a second login does not overwrite the first login's verifier and a
+   * callback never picks up an unrelated login's verifier.
+   * @param nonce per-login-attempt nonce, or undefined for legacy states
+   */
+  getCodeVerifierCookieName(nonce?: string): string {
+    // TODO [CP-PKCE]: drop the unscoped fallback once the spcpOidcStateNonce
+    // flag is permanently on and no legacy state can still be in flight.
+    return nonce
+      ? `${this.codeVerifierCookieName}_${nonce}`
+      : this.codeVerifierCookieName
   }
 
   abstract extractJwtPayload(
@@ -176,7 +197,12 @@ export abstract class SpcpOidcServiceClass {
     }
     const payloads = state.split('-')
     const formId = extractFormId(payloads[0])
-    if ((payloads.length !== 2 && payloads.length !== 3) || !formId) {
+    if (
+      (payloads.length !== 2 &&
+        payloads.length !== 3 &&
+        payloads.length !== 4) ||
+      !formId
+    ) {
       logger.error({
         message: 'state incorrectly formatted',
         meta: logMeta,
@@ -185,7 +211,29 @@ export abstract class SpcpOidcServiceClass {
     }
 
     const rememberMe = payloads[1] === 'true'
-    const encodedQuery = payloads.length === 3 ? payloads[2] : ''
+
+    // RATIONALE: 4 segments identifies the nonce format, which always emits the encodedQuery
+    // segment (possibly empty), so the segment count alone disambiguates it
+    // from the legacy 2/3-segment format.
+    // TODO [CP-PKCE]: drop the legacy branches once the spcpOidcStateNonce flag
+    // is permanently on and no legacy state can still be in flight.
+    const hasNonce = payloads.length === 4
+    const nonce = hasNonce ? payloads[2] : undefined
+    const encodedQuery = hasNonce
+      ? payloads[3]
+      : payloads.length === 3
+        ? payloads[2]
+        : ''
+
+    // state is attacker-craftable and the nonce is interpolated into a cookie
+    // name, so constrain it to exactly what getRedirectTargetSpcpOidc emits.
+    if (nonce !== undefined && !STATE_NONCE_REGEX.test(nonce)) {
+      logger.error({
+        message: 'state nonce incorrectly formatted',
+        meta: logMeta,
+      })
+      return err(new InvalidStateError())
+    }
     let decodedQuery = ''
 
     try {
@@ -210,6 +258,7 @@ export abstract class SpcpOidcServiceClass {
       formId,
       destination,
       rememberMe,
+      nonce,
       cookieDuration: this.getCookieDuration(rememberMe),
     })
   }

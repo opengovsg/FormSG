@@ -219,6 +219,9 @@ const isSpcpForm = <F extends IFormSchema>(form: F): form is SpcpForm<F> => {
  * @param formId
  * @param isPersistentLogin
  * @param encodedQuery
+ * @param nonce per-login-attempt nonce used to scope the PKCE code_verifier
+ * cookie to this login. Omitted when the spcpOidcStateNonce flag is off, which
+ * emits the legacy state format.
  * @returns
  */
 export const getRedirectTargetSpcpOidc = (
@@ -226,13 +229,21 @@ export const getRedirectTargetSpcpOidc = (
   authType: FormAuthType.SP | FormAuthType.CP,
   isPersistentLogin?: boolean,
   encodedQuery?: string,
+  nonce?: string,
 ): RedirectTargetSpcpOidc => {
   // Need to cast to boolean because undefined is allowed as a valid value
   const persistentLogin =
     authType === FormAuthType.SP ? !!isPersistentLogin : false
-  return encodedQuery
-    ? `/${formId}-${persistentLogin}-${encodedQuery}`
-    : `/${formId}-${persistentLogin}`
+  // TODO [CP-PKCE]: drop the legacy branch once the spcpOidcStateNonce flag is
+  // permanently on and no legacy state can still be in flight.
+  if (!nonce) {
+    return encodedQuery
+      ? `/${formId}-${persistentLogin}-${encodedQuery}`
+      : `/${formId}-${persistentLogin}`
+  }
+  // RATIONALE: The encodedQuery segment is always emitted so that a nonce state always has
+  // exactly 4 segments, which no legacy state can have.
+  return `/${formId}-${persistentLogin}-${nonce}-${encodedQuery ?? ''}`
 }
 
 // Typeguards

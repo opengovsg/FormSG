@@ -34,9 +34,23 @@ export const handleSpcpOidcLogin: (
 
   const oidcService = getOidcService(authType)
 
-  const codeVerifier = oidcService.extractCodeVerifier(req.cookies)
+  // State must be parsed before the code_verifier is read: the nonce it carries
+  // is what scopes the verifier cookie to this login attempt.
+  const parseResult = oidcService.parseState(state)
+  if (parseResult.isErr()) {
+    logger.error({
+      message: 'Invalid login parameters',
+      meta: logMeta,
+      error: parseResult.error,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
+  const { formId, destination, rememberMe, cookieDuration, nonce } =
+    parseResult.value
+
+  const codeVerifier = oidcService.extractCodeVerifier(req.cookies, nonce)
   res.clearCookie(
-    oidcService.codeVerifierCookieName,
+    oidcService.getCodeVerifierCookieName(nonce),
     oidcService.getCodeVerifierCookieOptions(),
   )
 
@@ -53,17 +67,6 @@ export const handleSpcpOidcLogin: (
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
-
-  const parseResult = oidcService.parseState(state)
-  if (parseResult.isErr()) {
-    logger.error({
-      message: 'Invalid login parameters',
-      meta: logMeta,
-      error: parseResult.error,
-    })
-    return res.sendStatus(StatusCodes.BAD_REQUEST)
-  }
-  const { formId, destination, rememberMe, cookieDuration } = parseResult.value
   const formResult = await FormService.retrieveFullFormById(formId)
   if (formResult.isErr()) {
     logger.error({

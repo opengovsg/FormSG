@@ -175,13 +175,7 @@ describe('corppass.oidc.router', () => {
       expect(response.status).toBe(400)
     })
 
-    it('should return 400 when state is invalid', async () => {
-      // Arrange
-
-      mockClient.exchangeAuthCodeAndDecodeVerifyToken.mockRejectedValueOnce(
-        new Error(),
-      )
-
+    it('should return 400 when state is invalid, without exchanging the auth code', async () => {
       // Act
       const response = await request.get(LOGIN_ROUTE).query({
         state: 'invalid state',
@@ -190,6 +184,9 @@ describe('corppass.oidc.router', () => {
 
       // Assert
       expect(response.status).toBe(400)
+      expect(
+        mockClient.exchangeAuthCodeAndDecodeVerifyToken,
+      ).not.toHaveBeenCalled()
     })
 
     it('should return 404 when destination form ID is not found', async () => {

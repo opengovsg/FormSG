@@ -68,6 +68,10 @@ jest.mock('../../../myinfo/myinfo.service')
 jest.mock('../../../billing/billing.service')
 jest.mock('src/app/config/features/spcp-myinfo.config')
 
+const { SpcpOidcServiceClass: ActualSpcpOidcServiceClass } = jest.requireActual(
+  '../../../spcp/spcp.oidc.service/spcp.oidc.service.base',
+) as typeof import('../../../spcp/spcp.oidc.service/spcp.oidc.service.base')
+
 const MockSpCpMyInfoConfig = jest.mocked(spcpMyInfoConfig)
 const MockFormService = jest.mocked(FormService)
 const MockPublicFormService = jest.mocked(PublicFormService)
@@ -1229,6 +1233,16 @@ describe('public-form.controller', () => {
       jest
         .spyOn(CpOidcServiceClass.prototype, 'getCodeVerifierCookieOptions')
         .mockReturnValue(MOCK_CODE_VERIFIER_COOKIE_OPTIONS)
+      jest
+        .spyOn(SpOidcServiceClass.prototype, 'getCodeVerifierCookieName')
+        .mockImplementation(
+          ActualSpcpOidcServiceClass.prototype.getCodeVerifierCookieName,
+        )
+      jest
+        .spyOn(CpOidcServiceClass.prototype, 'getCodeVerifierCookieName')
+        .mockImplementation(
+          ActualSpcpOidcServiceClass.prototype.getCodeVerifierCookieName,
+        )
     })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType SP', async () => {
