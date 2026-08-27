@@ -15,6 +15,7 @@ import {
 } from '../../guidedWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { DeleteStepModal } from '../DeleteStepModal'
+import { EmptyWorkflow } from '../EmptyWorkflow'
 import { ActiveStepBlock } from '../WorkflowContent/ActiveStepBlock'
 import { EndOfWorkflowBlock } from '../WorkflowContent/EndOfWorkflowBlock'
 import { EndOfWorkflowDivider } from '../WorkflowContent/EndOfWorkflowDivider'
@@ -26,7 +27,6 @@ import { WorkflowStepBlockDivider } from '../WorkflowContent/WorkflowContent'
 import { AddAnotherPrompt } from './AddAnotherPrompt'
 import { GuidedEmailCard } from './GuidedEmailCard'
 import { GuidedStep } from './GuidedStep'
-import { IntroPage } from './IntroPage'
 import { PeekCard } from './PeekCard'
 import { SkipGuidanceModal } from './SkipGuidanceModal'
 import { WelcomePage } from './WelcomePage'
@@ -111,7 +111,7 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
   )
 
   if (mode === 'intro') {
-    return <IntroPage />
+    return <EmptyWorkflow />
   }
 
   if (mode === 'welcome') {
