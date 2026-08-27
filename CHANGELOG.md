@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.15.0](https://github.com/opengovsg/formsg/compare/v9.14.0...v9.15.0) (2026-08-27)
+
+
+### Features
+
+* **spcp:** add PKCE to Singpass/Corppass OIDC login (#9892) ([#9892](https://github.com/opengovsg/formsg/commit/b25dc6bc90375294ade33091ce8d287a1baec6a7))
+
 ## [9.14.0](https://github.com/opengovsg/formsg/compare/v9.13.0...v9.14.0) (2026-08-27)
 
 
