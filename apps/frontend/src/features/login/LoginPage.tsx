@@ -53,26 +53,19 @@ const LoginOptionButtons = ({
   shouldShowWogadLogin,
   shouldShowSsoLogin,
   shouldShowSgidLogin,
-  shouldShowOneLogin,
 }: {
   shouldShowWogadLogin: boolean
   shouldShowSsoLogin: boolean
   shouldShowSgidLogin: boolean
-  shouldShowOneLogin: boolean
 }) => {
-  const isLoginOptionButtonsPresent =
-    shouldShowWogadLogin ||
-    shouldShowSsoLogin ||
-    shouldShowSgidLogin ||
-    shouldShowOneLogin
-  return isLoginOptionButtonsPresent ? (
+  return (
     <Stack spacing="1rem">
       {shouldShowWogadLogin && <WogadLoginButton />}
       {shouldShowSsoLogin && <SsoLoginButton />}
       {shouldShowSgidLogin && <SgidLoginButton />}
-      {shouldShowOneLogin && <OneLoginButton />}
+      <OneLoginButton />
     </Stack>
-  ) : undefined
+  )
 }
 
 const isDev = import.meta.env.MODE === 'development'
@@ -96,7 +89,6 @@ export const LoginPage = (): JSX.Element => {
     featureFlags.enableIntranetSgidLogin,
   )
   const shouldShowSgidLogin = !isIntranetIp || enableIntranetSgidLogin
-  const shouldShowOneLogin = useFeatureIsOn(featureFlags.oneLogin)
 
   const isMobile = useIsMobile()
 
@@ -183,7 +175,6 @@ export const LoginPage = (): JSX.Element => {
                   shouldShowWogadLogin={shouldShowWogadLogin}
                   shouldShowSsoLogin={shouldShowSsoLogin}
                   shouldShowSgidLogin={shouldShowSgidLogin}
-                  shouldShowOneLogin={shouldShowOneLogin}
                 />,
                 <LoginForm key="form" onSubmit={handleSendOtp} />,
               ]
@@ -194,7 +185,6 @@ export const LoginPage = (): JSX.Element => {
                   shouldShowWogadLogin={shouldShowWogadLogin}
                   shouldShowSsoLogin={shouldShowSsoLogin}
                   shouldShowSgidLogin={shouldShowSgidLogin}
-                  shouldShowOneLogin={shouldShowOneLogin}
                 />,
               ]}
         </Stack>
