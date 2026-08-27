@@ -7,8 +7,11 @@ interface WorkflowCardProps {
   title?: string
   showSubheader?: boolean
   showStatusToggle?: boolean
-  belowToggle?: ReactNode
-  footer?: ReactNode
+  /**
+   * Gives the status tracker toggle the Active treatment, marking it as the
+   * thing to act on. The peek card below explains; this is what gets acted on.
+   */
+  spotlightToggle?: boolean
   headerRight?: ReactNode
 }
 
@@ -16,8 +19,7 @@ export const WorkflowCard = ({
   title = 'Workflow',
   showSubheader = false,
   showStatusToggle = true,
-  belowToggle,
-  footer,
+  spotlightToggle = false,
   headerRight,
 }: WorkflowCardProps): JSX.Element => {
   return (
@@ -46,7 +48,7 @@ export const WorkflowCard = ({
         {showStatusToggle && (
           <>
             <Divider mx="-1.5rem" w="auto" />
-            {belowToggle ? (
+            {spotlightToggle ? (
               <Box
                 bg="primary.100"
                 borderRadius="8px"
@@ -54,17 +56,13 @@ export const WorkflowCard = ({
                 borderColor="primary.500"
                 p="1.5rem"
               >
-                <Stack gap="1rem">
-                  <StatusTrackerToggle />
-                  {belowToggle}
-                </Stack>
+                <StatusTrackerToggle />
               </Box>
             ) : (
               <StatusTrackerToggle />
             )}
           </>
         )}
-        {footer}
       </Stack>
     </Box>
   )

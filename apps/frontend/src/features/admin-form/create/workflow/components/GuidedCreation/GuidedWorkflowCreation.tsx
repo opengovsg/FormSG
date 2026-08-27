@@ -278,8 +278,8 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
             <PeekCard
               title="You've set up the completion email."
               subtitle="Next, set up an extra workflow setting."
-              onDone={completeWorkflowPeek}
-              doneLabel="Continue"
+              actions={[{ label: 'Continue', onClick: completeWorkflowPeek }]}
+              isTucked={false}
             />
           )}
         </Box>
@@ -302,6 +302,7 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
           onDeleteModalClose={onDeleteModalClose}
           onDone={completeStatusToggle}
           skipGuidanceButton={skipGuidanceButton}
+          isAnyCardActive={isAnyCardActive}
         />
       </>
     )
@@ -316,6 +317,7 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
         isDeleteModalOpen={isDeleteModalOpen}
         onDeleteModalClose={onDeleteModalClose}
         onDeleteModalOpen={onDeleteModalOpen}
+        isAnyCardActive={isAnyCardActive}
       />
     )
   }
@@ -352,6 +354,7 @@ const StatusToggleMode = ({
   onDeleteModalClose,
   onDone,
   skipGuidanceButton,
+  isAnyCardActive,
 }: {
   allStepElements: React.ReactNode
   editingStepNumber: number | undefined
@@ -359,6 +362,7 @@ const StatusToggleMode = ({
   onDeleteModalClose: () => void
   onDone: () => void
   skipGuidanceButton?: React.ReactNode
+  isAnyCardActive: boolean
 }) => {
   const cardRef = useRef<HTMLDivElement | null>(null)
 
@@ -371,24 +375,21 @@ const StatusToggleMode = ({
 
   return (
     <Stack spacing="0">
-      <Box ref={cardRef}>
+      <Box ref={cardRef} position="relative" zIndex={1}>
         <WorkflowCard
           title="Guided workflow setup"
           showStatusToggle
+          spotlightToggle
           headerRight={skipGuidanceButton}
-          belowToggle={
-            <Text textStyle="body-2" color="secondary.400">
-              Turn this on to let people who filled in the form check the status
-              of their response.
-            </Text>
-          }
-          footer={
-            <Flex justifyContent="flex-end">
-              <Button onClick={onDone}>Done</Button>
-            </Flex>
-          }
         />
       </Box>
+      {!isAnyCardActive && (
+        <PeekCard
+          title="Your workflow is ready"
+          subtitle="Before you finish, you can let people check the status of their response."
+          actions={[{ label: 'Done', onClick: onDone }]}
+        />
+      )}
       <Box mt="2.75rem">
         {editingStepNumber !== undefined && (
           <DeleteStepModal
@@ -412,6 +413,7 @@ const SuccessCompletionMode = ({
   isDeleteModalOpen,
   onDeleteModalClose,
   onDeleteModalOpen,
+  isAnyCardActive,
 }: {
   formWorkflow: ReturnType<typeof useAdminFormWorkflow>['formWorkflow']
   completeSuccessModal: () => void
@@ -419,37 +421,20 @@ const SuccessCompletionMode = ({
   isDeleteModalOpen: boolean
   onDeleteModalClose: () => void
   onDeleteModalOpen: (stepNumber?: number) => void
+  isAnyCardActive: boolean
 }) => {
   return (
     <Stack spacing="0">
       <Box position="relative" zIndex={1}>
         <WorkflowCard />
       </Box>
-      <Box
-        bg="primary.100"
-        borderTopRadius="0"
-        borderBottomRadius="8px"
-        border="1px solid"
-        borderColor="primary.200"
-        mt="-0.5rem"
-        py="1.5rem"
-        px={{ base: '1.5rem', md: '2rem' }}
-      >
-        <Stack spacing="1rem">
-          <Stack spacing="0.25rem">
-            <Text textStyle="subhead-1" color="secondary.500">
-              You&apos;ve finished the guided workflow tour. Congratulations!
-            </Text>
-            <Text textStyle="body-1" color="secondary.400">
-              Use the Preview button on the top right to check what each step
-              looks like.
-            </Text>
-          </Stack>
-          <Flex justify="flex-end">
-            <Button onClick={completeSuccessModal}>Done</Button>
-          </Flex>
-        </Stack>
-      </Box>
+      {!isAnyCardActive && (
+        <PeekCard
+          title="You've finished guided setup"
+          subtitle="Use the Preview button on the top right to check what each step looks like."
+          actions={[{ label: 'Done', onClick: completeSuccessModal }]}
+        />
+      )}
       <Box mt="2.75rem">
         {editingStepNumber !== undefined && (
           <DeleteStepModal
