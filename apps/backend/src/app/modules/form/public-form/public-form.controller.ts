@@ -675,6 +675,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const useFormsgEsrvcId = req.growthbook?.isOn(
         featureFlags.useFormsgEsrvcId,
       )
+      // TODO [CP-PKCE]: Cleanup this flag once PKCE rollout is verified.
       // Add formId to growthbook attributes to allow for targeting in growthbook feature flags.
       void req.growthbook?.setAttributes({
         ...req.growthbook.getAttributes(),
@@ -704,7 +705,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
             const oidcService = getOidcService(FormAuthType.SP)
             return oidcService
               .createRedirectUrl(target, form.esrvcId, usePkce)
-              .andThen(({ redirectUrl, codeVerifier }) => {
+              .map(({ redirectUrl, codeVerifier }) => {
                 if (codeVerifier) {
                   res.cookie(
                     oidcService.codeVerifierCookieName,
@@ -712,7 +713,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
                     oidcService.getCodeVerifierCookieOptions(),
                   )
                 }
-                return ok(redirectUrl)
+                return redirectUrl
               })
           })
         }
@@ -729,7 +730,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
             const oidcService = getOidcService(FormAuthType.CP)
             return oidcService
               .createRedirectUrl(target, form.esrvcId, usePkce)
-              .andThen(({ redirectUrl, codeVerifier }) => {
+              .map(({ redirectUrl, codeVerifier }) => {
                 if (codeVerifier) {
                   res.cookie(
                     oidcService.codeVerifierCookieName,
@@ -737,7 +738,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
                     oidcService.getCodeVerifierCookieOptions(),
                   )
                 }
-                return ok(redirectUrl)
+                return redirectUrl
               })
           })
         }
