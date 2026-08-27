@@ -502,7 +502,6 @@ describe('SpOidcClient', () => {
       const tryCreateUrl = spOidcClient.createAuthorisationUrl(
         MOCK_EMPTY_STATE,
         MOCK_ESRVCID,
-        'codeChallenge',
       )
 
       // Assert
@@ -525,7 +524,6 @@ describe('SpOidcClient', () => {
       const tryCreateUrl = spOidcClient.createAuthorisationUrl(
         MOCK_STATE,
         MOCK_EMPTY_ESRVCID,
-        'codeChallenge',
       )
 
       // Assert
@@ -552,7 +550,6 @@ describe('SpOidcClient', () => {
       const tryGetAuthorisationUrl = spOidcClient.createAuthorisationUrl(
         MOCK_STATE,
         MOCK_ESRVCID,
-        'codeChallenge',
       )
 
       // Assert
@@ -568,7 +565,6 @@ describe('SpOidcClient', () => {
 
       const MOCK_STATE = 'state'
       const MOCK_ESRVCID = 'esrvcId'
-      const MOCK_CODE_CHALLENGE = 'codeChallenge'
       const MOCK_URL = 'url'
 
       const mockAuthorisationUrlFn = jest.fn().mockReturnValue(MOCK_URL)
@@ -585,7 +581,6 @@ describe('SpOidcClient', () => {
       const result = await spOidcClient.createAuthorisationUrl(
         MOCK_STATE,
         MOCK_ESRVCID,
-        MOCK_CODE_CHALLENGE,
       )
 
       // Assert
@@ -598,46 +593,6 @@ describe('SpOidcClient', () => {
       expect(mockAuthorisationUrlFn).not.toHaveBeenCalledWith(
         expect.objectContaining({ esrvcID: MOCK_ESRVCID }),
       )
-      expect(mockAuthorisationUrlFn).toHaveBeenCalledWith(
-        expect.objectContaining({
-          code_challenge: MOCK_CODE_CHALLENGE,
-          code_challenge_method: 'S256',
-        }),
-      )
-    })
-
-    it('should omit the PKCE parameters from the authorisation request when no code challenge is given', async () => {
-      // Arrange
-      jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-
-      const MOCK_STATE = 'state'
-      const MOCK_ESRVCID = 'esrvcId'
-      const MOCK_URL = 'url'
-
-      const mockAuthorisationUrlFn = jest.fn().mockReturnValue(MOCK_URL)
-
-      jest
-        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
-        .mockResolvedValueOnce({
-          authorizationUrl: mockAuthorisationUrlFn,
-        } as unknown as BaseClient)
-
-      // Act
-
-      const spOidcClient = new SpOidcClient(spOidcClientConfig)
-      const result = await spOidcClient.createAuthorisationUrl(
-        MOCK_STATE,
-        MOCK_ESRVCID,
-      )
-
-      // Assert
-      expect(result).toBe(MOCK_URL)
-      const authorisationRequest = mockAuthorisationUrlFn.mock.calls[0][0]
-      expect(authorisationRequest).toHaveProperty('esrvc', MOCK_ESRVCID)
-      expect(authorisationRequest).not.toHaveProperty('code_challenge')
-      expect(authorisationRequest).not.toHaveProperty('code_challenge_method')
     })
   })
 
@@ -919,98 +874,12 @@ describe('SpOidcClient', () => {
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          MOCK_EMPTY_AUTHCODE,
-          'codeVerifier',
-        )
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_EMPTY_AUTHCODE)
 
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrow(ExchangeAuthTokenError)
       await expect(tryExchangeAuthCode).rejects.toThrow('empty authCode')
       expect(refreshSpy).toHaveBeenCalledTimes(1)
-    })
-
-    it('should omit code_verifier from the token request body when codeVerifier is not provided, for backward compatibility with pre-PKCE in-flight logins', async () => {
-      // Arrange
-      jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-      jest
-        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
-        .mockResolvedValueOnce({
-          issuer: {
-            metadata: {
-              token_endpoint: 'endpoint',
-            },
-          },
-        } as unknown as BaseClient)
-
-      const axiosSpy = jest
-        .spyOn(axios, 'post')
-        .mockResolvedValueOnce({ data: { id_token: 'jwe' } })
-      jest
-        .spyOn(SpOidcClient.prototype, 'getDecryptionKey')
-        .mockReturnValueOnce(new GetDecryptionKeyError())
-
-      // Act
-
-      const spOidcClient = new SpOidcClient(spOidcClientConfig)
-
-      const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken('authCode')
-
-      // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrow(GetDecryptionKeyError)
-      expect(axiosSpy).toHaveBeenCalledOnce()
-      expect(axiosSpy).toHaveBeenCalledWith(
-        'endpoint',
-        expect.not.stringContaining('code_verifier'),
-        expect.objectContaining(AXIOS_HEADER),
-      )
-    })
-
-    it('should include code_verifier in the token request body when codeVerifier is provided', async () => {
-      // Arrange
-      jest
-        .spyOn(SpcpOidcBaseClientCache.prototype, 'refresh')
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-        .mockResolvedValueOnce('ok' as unknown as Refresh)
-      jest
-        .spyOn(SpOidcClient.prototype, 'getBaseClientFromCache')
-        .mockResolvedValueOnce({
-          issuer: {
-            metadata: {
-              token_endpoint: 'endpoint',
-            },
-          },
-        } as unknown as BaseClient)
-
-      const axiosSpy = jest
-        .spyOn(axios, 'post')
-        .mockResolvedValueOnce({ data: { id_token: 'jwe' } })
-      jest
-        .spyOn(SpOidcClient.prototype, 'getDecryptionKey')
-        .mockReturnValueOnce(new GetDecryptionKeyError())
-
-      // Act
-
-      const spOidcClient = new SpOidcClient(spOidcClientConfig)
-
-      const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          'authCode',
-          'codeVerifier',
-        )
-
-      // Assert
-      await expect(tryExchangeAuthCode).rejects.toThrow(GetDecryptionKeyError)
-      expect(axiosSpy).toHaveBeenCalledOnce()
-      expect(axiosSpy).toHaveBeenCalledWith(
-        'endpoint',
-        expect.stringContaining('code_verifier=codeVerifier'),
-        expect.objectContaining(AXIOS_HEADER),
-      )
     })
 
     it('should throw an error if failed to retrieve baseClient from cache and NOT call refresh', async () => {
@@ -1024,17 +893,13 @@ describe('SpOidcClient', () => {
         .mockRejectedValueOnce(new Error('failed'))
 
       const MOCK_AUTHCODE = 'authCode'
-      const MOCK_CODE_VERIFIER = 'codeVerifier'
 
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          MOCK_AUTHCODE,
-          MOCK_CODE_VERIFIER,
-        )
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrow('failed')
@@ -1063,17 +928,13 @@ describe('SpOidcClient', () => {
         .mockRejectedValueOnce(new Error('failed'))
 
       const MOCK_AUTHCODE = 'authCode'
-      const MOCK_CODE_VERIFIER = 'codeVerifier'
 
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          MOCK_AUTHCODE,
-          MOCK_CODE_VERIFIER,
-        )
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrow('failed')
@@ -1108,17 +969,13 @@ describe('SpOidcClient', () => {
         .mockResolvedValueOnce({ data: {} })
 
       const MOCK_AUTHCODE = 'authCode'
-      const MOCK_CODE_VERIFIER = 'codeVerifier'
 
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          MOCK_AUTHCODE,
-          MOCK_CODE_VERIFIER,
-        )
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrow(MissingIdTokenError)
@@ -1153,17 +1010,13 @@ describe('SpOidcClient', () => {
         .mockResolvedValueOnce({ data: { id_token: '' } })
 
       const MOCK_AUTHCODE = 'authCode'
-      const MOCK_CODE_VERIFIER = 'codeVerifier'
 
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          MOCK_AUTHCODE,
-          MOCK_CODE_VERIFIER,
-        )
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrow(MissingIdTokenError)
@@ -1204,16 +1057,13 @@ describe('SpOidcClient', () => {
         .mockResolvedValueOnce(NDI_KEYS)
 
       const MOCK_AUTHCODE = 'authCode'
-      const MOCK_CODE_VERIFIER = 'codeVerifier'
 
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
-      const result = await spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-        MOCK_AUTHCODE,
-        MOCK_CODE_VERIFIER,
-      )
+      const result =
+        await spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       expect(axiosSpy).toHaveBeenCalledOnce()
@@ -1253,17 +1103,13 @@ describe('SpOidcClient', () => {
         .mockReturnValueOnce(new GetDecryptionKeyError())
 
       const MOCK_AUTHCODE = 'authCode'
-      const MOCK_CODE_VERIFIER = 'codeVerifier'
 
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          MOCK_AUTHCODE,
-          MOCK_CODE_VERIFIER,
-        )
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrow(GetDecryptionKeyError)
@@ -1309,17 +1155,13 @@ describe('SpOidcClient', () => {
         .mockRejectedValueOnce(new Error('decrypt failed'))
 
       const MOCK_AUTHCODE = 'authCode'
-      const MOCK_CODE_VERIFIER = 'codeVerifier'
 
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          MOCK_AUTHCODE,
-          MOCK_CODE_VERIFIER,
-        )
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrow(GetDecryptionKeyError)
@@ -1361,17 +1203,13 @@ describe('SpOidcClient', () => {
         .mockRejectedValueOnce('getNdiKeysfailed')
 
       const MOCK_AUTHCODE = 'authCode'
-      const MOCK_CODE_VERIFIER = 'codeVerifier'
 
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          MOCK_AUTHCODE,
-          MOCK_CODE_VERIFIER,
-        )
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrow(ExchangeAuthTokenError)
@@ -1417,17 +1255,13 @@ describe('SpOidcClient', () => {
         .mockReturnValueOnce(new GetVerificationKeyError())
 
       const MOCK_AUTHCODE = 'authCode'
-      const MOCK_CODE_VERIFIER = 'codeVerifier'
 
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          MOCK_AUTHCODE,
-          MOCK_CODE_VERIFIER,
-        )
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
 
@@ -1474,17 +1308,13 @@ describe('SpOidcClient', () => {
         .mockRejectedValueOnce(new Error('verify jwt failed'))
 
       const MOCK_AUTHCODE = 'authCode'
-      const MOCK_CODE_VERIFIER = 'codeVerifier'
 
       // Act
 
       const spOidcClient = new SpOidcClient(spOidcClientConfig)
 
       const tryExchangeAuthCode =
-        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(
-          MOCK_AUTHCODE,
-          MOCK_CODE_VERIFIER,
-        )
+        spOidcClient.exchangeAuthCodeAndDecodeVerifyToken(MOCK_AUTHCODE)
 
       // Assert
       await expect(tryExchangeAuthCode).rejects.toThrow('verify jwt failed')

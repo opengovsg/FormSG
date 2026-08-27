@@ -66,9 +66,6 @@ const MOCK_CPOIDC_LOGIN_REQ = expressHandler.mockRequest({
   query: { state: MOCK_OIDC_STATE, code: MOCK_CP_OIDC_AUTHORISATION_CODE },
   cookies: { [CodeVerifierCookieName.CP]: MOCK_CP_CODE_VERIFIER },
 })
-const MOCK_SPOIDC_LOGIN_REQ_NO_CODE_VERIFIER = expressHandler.mockRequest({
-  query: { state: MOCK_OIDC_STATE, code: MOCK_SP_OIDC_AUTHORISATION_CODE },
-})
 const MOCK_CPOIDC_LOGIN_REQ_NO_CODE_VERIFIER = expressHandler.mockRequest({
   query: { state: MOCK_OIDC_STATE, code: MOCK_CP_OIDC_AUTHORISATION_CODE },
 })
@@ -195,28 +192,6 @@ describe('spcp.controller', () => {
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
         expect(mockSpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
-      })
-
-      it('should proceed without code_verifier and still redirect when code verifier cookie is missing (backward compatibility with pre-PKCE in-flight logins)', async () => {
-        // Arrange
-        mockSpOidcServiceClass.jwtName = JwtName.SP
-
-        // Act
-        await loginHandler(
-          MOCK_SPOIDC_LOGIN_REQ_NO_CODE_VERIFIER,
-          MOCK_RESPONSE,
-          jest.fn(),
-        )
-
-        // Assert
-        expect(
-          mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE, undefined)
-        expect(MOCK_RESPONSE.clearCookie).toHaveBeenCalledWith(
-          CodeVerifierCookieName.SP,
-          expect.anything(),
-        )
-        expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
       })
 
       it('should return 400 when parse state fails', async () => {

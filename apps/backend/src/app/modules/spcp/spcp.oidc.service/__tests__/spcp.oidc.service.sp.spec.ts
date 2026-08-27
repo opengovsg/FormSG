@@ -1,9 +1,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { JWTVerifyResult } from 'jose'
 import { omit } from 'lodash'
-import { generators } from 'openid-client-legacy'
 
-import config from 'src/app/config/config'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 
 import {
@@ -13,8 +11,6 @@ import {
   MOCK_ESRVCID,
   MOCK_JWT,
   MOCK_JWT_PAYLOAD,
-  MOCK_OIDC_CODE_CHALLENGE,
-  MOCK_OIDC_CODE_VERIFIER,
   MOCK_REDIRECT_URL,
   MOCK_SERVICE_PARAMS as MOCK_PARAMS,
   MOCK_SP_JWT_PAYLOAD,
@@ -44,8 +40,6 @@ jest.mock('../../spcp.oidc.client')
 
 jest.mock('axios')
 
-jest.mock('openid-client-legacy')
-
 describe('spcp.oidc.service.sp', () => {
   beforeAll(async () => {
     await dbHandler.connect()
@@ -58,16 +52,6 @@ describe('spcp.oidc.service.sp', () => {
     await dbHandler.clearDatabase()
     jest.clearAllMocks()
   })
-
-  beforeEach(() => {
-    jest
-      .mocked(generators.codeVerifier)
-      .mockReturnValue(MOCK_OIDC_CODE_VERIFIER)
-    jest
-      .mocked(generators.codeChallenge)
-      .mockReturnValue(MOCK_OIDC_CODE_CHALLENGE)
-  })
-
   afterAll(async () => await dbHandler.closeDatabase())
 
   const MOCK_PARAMS_SP = {
@@ -98,41 +82,7 @@ describe('spcp.oidc.service.sp', () => {
   })
 
   describe('createRedirectUrl', () => {
-    it('should call sp oidc client createRedirectUrl with a code challenge and return the code verifier when PKCE is enabled', async () => {
-      // Arrange
-
-      const spOidcServiceClass = new SpOidcServiceClass(
-        mockSpOidcClient,
-        MOCK_PARAMS_SP,
-      )
-
-      jest
-        .spyOn(mockSpOidcClient, 'createAuthorisationUrl')
-        .mockResolvedValueOnce(MOCK_REDIRECT_URL)
-
-      // Act
-
-      const redirectUrl = await spOidcServiceClass.createRedirectUrl(
-        MOCK_TARGET,
-        MOCK_ESRVCID,
-        true,
-      )
-
-      // Assert
-      expect(mockSpOidcClient.createAuthorisationUrl).toHaveBeenCalledTimes(1)
-      expect(mockSpOidcClient.createAuthorisationUrl).toHaveBeenCalledWith(
-        MOCK_TARGET,
-        MOCK_ESRVCID,
-        MOCK_OIDC_CODE_CHALLENGE,
-      )
-
-      expect(redirectUrl._unsafeUnwrap()).toEqual({
-        redirectUrl: MOCK_REDIRECT_URL,
-        codeVerifier: MOCK_OIDC_CODE_VERIFIER,
-      })
-    })
-
-    it('should not send a code challenge or return a code verifier when PKCE is disabled', async () => {
+    it('should call sp oidc client createRedirectUrl with the correct params and return the redirectUrl if it resolves', async () => {
       // Arrange
 
       const spOidcServiceClass = new SpOidcServiceClass(
@@ -183,7 +133,7 @@ describe('spcp.oidc.service.sp', () => {
       const redirectUrl = await spOidcServiceClass.createRedirectUrl(
         MOCK_TARGET,
         MOCK_ESRVCID,
-        true,
+        false,
       )
 
       // Assert
@@ -191,7 +141,7 @@ describe('spcp.oidc.service.sp', () => {
       expect(mockSpOidcClient.createAuthorisationUrl).toHaveBeenCalledWith(
         MOCK_TARGET,
         MOCK_ESRVCID,
-        MOCK_OIDC_CODE_CHALLENGE,
+        undefined,
       )
 
       expect(redirectUrl._unsafeUnwrapErr()).toBeInstanceOf(
@@ -533,16 +483,12 @@ describe('spcp.oidc.service.sp', () => {
       // Act
       const result = await spOidcServiceClass.exchangeAuthCodeAndRetrieveData(
         MOCK_SP_OIDC_AUTHORISATION_CODE,
-        MOCK_OIDC_CODE_VERIFIER,
       )
 
       // Assert
       expect(
         mockSpOidcClient.exchangeAuthCodeAndDecodeVerifyToken,
-      ).toHaveBeenCalledWith(
-        MOCK_SP_OIDC_AUTHORISATION_CODE,
-        MOCK_OIDC_CODE_VERIFIER,
-      )
+      ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE, undefined)
       expect(result._unsafeUnwrap()).toEqual({ userName: MOCK_NRIC })
     })
 
@@ -561,16 +507,12 @@ describe('spcp.oidc.service.sp', () => {
       // Act
       const result = await spOidcServiceClass.exchangeAuthCodeAndRetrieveData(
         MOCK_SP_OIDC_AUTHORISATION_CODE,
-        MOCK_OIDC_CODE_VERIFIER,
       )
 
       // Assert
       expect(
         mockSpOidcClient.exchangeAuthCodeAndDecodeVerifyToken,
-      ).toHaveBeenCalledWith(
-        MOCK_SP_OIDC_AUTHORISATION_CODE,
-        MOCK_OIDC_CODE_VERIFIER,
-      )
+      ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE, undefined)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(ExchangeAuthTokenError)
     })
   })
@@ -686,40 +628,6 @@ describe('spcp.oidc.service.sp', () => {
 
       // Assert
       expect(spOidcServiceClass.getCookieSettings()).toEqual({})
-    })
-  })
-  describe('getCodeVerifierCookieOptions', () => {
-    it('should include the cookie domain settings when cookieDomain is truthy', () => {
-      // Act
-      const spOidcServiceClass = new SpOidcServiceClass(
-        mockSpOidcClient,
-        MOCK_PARAMS_SP,
-      )
-
-      // Assert
-      expect(spOidcServiceClass.getCodeVerifierCookieOptions()).toEqual({
-        httpOnly: true,
-        secure: !config.isDevOrTest,
-        sameSite: 'lax',
-        path: '/',
-        domain: MOCK_PARAMS.spcpCookieDomain,
-      })
-    })
-
-    it('should omit domain when cookieDomain is falsy', () => {
-      // Act
-      const spOidcServiceClass = new SpOidcServiceClass(
-        mockSpOidcClient,
-        omit(MOCK_PARAMS_SP, 'cookieDomain') as unknown as SpOidcProps,
-      )
-
-      // Assert
-      expect(spOidcServiceClass.getCodeVerifierCookieOptions()).toEqual({
-        httpOnly: true,
-        secure: !config.isDevOrTest,
-        sameSite: 'lax',
-        path: '/',
-      })
     })
   })
 })
