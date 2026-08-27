@@ -59,6 +59,9 @@ declare module 'express-session' {
       _id: IUserSchema['_id']
       grantSource?: 'sso' | 'otp' | 'wogad' | 'one'
     }
+    // RATIONALE: id_token `sid` from one.gov.sg, kept so a future central /
+    // back-channel logout can address this session (suite ADR-0003).
+    oneIdpSid?: string
     sgid?: SgidUser
   }
 
