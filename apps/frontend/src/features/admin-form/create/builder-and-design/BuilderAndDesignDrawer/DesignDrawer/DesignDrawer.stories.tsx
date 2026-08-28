@@ -39,11 +39,13 @@ export default {
   },
   args: {
     startPage: DEFAULT_START_PAGE,
+    title: 'Storybook form title',
   },
 } as Meta<StoryArgs>
 
 interface StoryArgs {
   startPage: FormStartPage
+  title: string
 }
 
 const Template: StoryFn<StoryArgs> = (args) => {
