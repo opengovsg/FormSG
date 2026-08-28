@@ -27,7 +27,6 @@ import {
  */
 export const EmptyWorkflow = (): JSX.Element => {
   const startGuided = useGuidedWorkflowStore((state) => state.startGuided)
-  const startBuilding = useGuidedWorkflowStore((state) => state.startBuilding)
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
   const { audience } = useGuidedSetupAudience()
   const markTaught = useMarkGuidedSetupTaught()
@@ -40,13 +39,12 @@ export const EmptyWorkflow = (): JSX.Element => {
   // retires on its own: offered once per admin in the seeded cohort, and never
   // to anyone who joins afterwards.
   //
-  // It goes straight into Step 1 rather than through the welcome card. FRM-2500
-  // req 5 shows the card only when the flag is unset, and this cohort's flag is
-  // 0. See the open question in the branch alignment plan.
+  // They still get the welcome card. Asking for guidance and then being dropped
+  // straight into a form field is the jolt the card exists to soften.
   const handleGuided = useCallback(() => {
     markTaught()
-    startBuilding()
-  }, [markTaught, startBuilding])
+    startGuided()
+  }, [markTaught, startGuided])
 
   // Picking manual is a decision, so the fork does not return on the next form.
   const handleManual = useCallback(() => {
