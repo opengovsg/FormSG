@@ -5,7 +5,7 @@ import { Meta, StoryFn } from '@storybook/react'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
-import { isValidTimeOfDay, TimeInput } from './TimeInput'
+import { TimeInput } from './TimeInput'
 
 /**
  * TEMPORARY — see the note in TimeInput.tsx. These stories exist so the stopgap
@@ -19,31 +19,31 @@ export default {
   },
 } as Meta
 
-/** Live input: type into it to see the mask insert the colon at HH|MM. */
+/**
+ * Live input. The things worth trying by hand: type "123" and tab away (it
+ * settles to 01:23), type "3:00pm" (the toggle follows), and click AM/PM.
+ */
 const InteractiveTemplate: StoryFn = () => {
-  const [value, setValue] = useState('')
-  const [touched, setTouched] = useState(false)
-
-  const isInvalid = touched && !isValidTimeOfDay(value)
+  const [value, setValue] = useState('09:30')
+  const [error, setError] = useState<string>()
 
   return (
     <Box maxW="20rem">
-      <FormControl isInvalid={isInvalid}>
-        <FormLabel description="Type digits only — the colon is inserted for you.">
-          Expiry time (24-hour)
+      <FormControl isInvalid={!!error}>
+        <FormLabel description="Nothing is reformatted until you leave the field.">
+          Expiry time
         </FormLabel>
         <TimeInput
           value={value}
           onChange={setValue}
-          onBlur={() => setTouched(true)}
+          onCommit={(committed) =>
+            setError(committed ? undefined : 'Enter a time like 09:30')
+          }
         />
-        <FormErrorMessage>
-          Enter a 24-hour time between 00:00 and 23:59
-        </FormErrorMessage>
+        <FormErrorMessage>{error}</FormErrorMessage>
       </FormControl>
       <Text mt="1rem" textStyle="caption-1" color="secondary.400">
-        Parsed value: <code>{value || '(empty)'}</code> —{' '}
-        {isValidTimeOfDay(value) ? 'valid' : 'not yet valid'}
+        Stored value (24-hour): <code>{value || '(not a time)'}</code>
       </Text>
     </Box>
   )
@@ -51,7 +51,10 @@ const InteractiveTemplate: StoryFn = () => {
 
 export const Interactive = InteractiveTemplate.bind({})
 
-/** Static states, side by side, for a quick visual scan. */
+/**
+ * Static states. Values here are canonical 24-hour — the 12-hour reading and
+ * the meridiem shown beside it are both derived, which is the point.
+ */
 const StatesTemplate: StoryFn = () => (
   <Stack spacing="1.5rem" maxW="20rem">
     <FormControl>
@@ -60,34 +63,29 @@ const StatesTemplate: StoryFn = () => (
     </FormControl>
 
     <FormControl>
-      <FormLabel>Valid — end of day</FormLabel>
-      <TimeInput value="23:59" onChange={() => undefined} />
-    </FormControl>
-
-    <FormControl>
-      <FormLabel>Valid — midnight</FormLabel>
+      <FormLabel>Midnight — 00:00 reads as 12:00 AM</FormLabel>
       <TimeInput value="00:00" onChange={() => undefined} />
     </FormControl>
 
     <FormControl>
-      <FormLabel>Partially typed</FormLabel>
-      <TimeInput value="09:3" onChange={() => undefined} />
+      <FormLabel>Morning — 09:05</FormLabel>
+      <TimeInput value="09:05" onChange={() => undefined} />
+    </FormControl>
+
+    <FormControl>
+      <FormLabel>Noon — 12:00 reads as 12:00 PM</FormLabel>
+      <TimeInput value="12:00" onChange={() => undefined} />
+    </FormControl>
+
+    <FormControl>
+      <FormLabel>End of day — 23:59 reads as 11:59 PM</FormLabel>
+      <TimeInput value="23:59" onChange={() => undefined} />
     </FormControl>
 
     <FormControl isInvalid>
-      <FormLabel>Invalid — hour out of range</FormLabel>
-      <TimeInput value="25:00" onChange={() => undefined} />
-      <FormErrorMessage>
-        Enter a 24-hour time between 00:00 and 23:59
-      </FormErrorMessage>
-    </FormControl>
-
-    <FormControl isInvalid>
-      <FormLabel>Invalid — minute out of range</FormLabel>
-      <TimeInput value="12:75" onChange={() => undefined} />
-      <FormErrorMessage>
-        Enter a 24-hour time between 00:00 and 23:59
-      </FormErrorMessage>
+      <FormLabel>Invalid — what the admin typed is left on screen</FormLabel>
+      <TimeInput value="" onChange={() => undefined} />
+      <FormErrorMessage>Enter a time like 09:30</FormErrorMessage>
     </FormControl>
 
     <FormControl isDisabled>
