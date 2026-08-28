@@ -19,9 +19,11 @@ import { isValidTimeOfDay, TimeInput } from './TimeInput'
 
 /**
  * Date pre-filled when the admin first switches the toggle on, purely so the
- * form is in a valid state before they pick a real deadline.
+ * form is in a valid state before they pick a real deadline. Tomorrow: the
+ * nearest date that is unambiguously in the future, so the pre-fill reads as a
+ * placeholder to replace rather than as a deadline the product picked.
  */
-const DEFAULT_EXPIRY_DAYS_FROM_NOW = 7
+const DEFAULT_EXPIRY_DAYS_FROM_NOW = 1
 
 /**
  * Time of day used when the toggle is first switched on. 2359 because the PRD
