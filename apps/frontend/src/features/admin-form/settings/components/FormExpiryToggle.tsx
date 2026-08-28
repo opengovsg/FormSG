@@ -92,17 +92,22 @@ const FormExpiryBlock = ({
     [save, t, timeOfDay],
   )
 
-  const handleTimeBlur = useCallback(() => {
-    if (!isValidTimeOfDay(timeOfDay)) {
-      setTimeOfDay(format(closeAtDate, 'HH:mm'))
-      return setError(
-        t('features.adminForm.settings.general.expiry.invalidTime'),
-      )
-    }
+  // Fired once the admin is done, with the time already normalised, so a bad
+  // value stays on screen next to the error rather than being reverted.
+  const handleTimeCommit = useCallback(
+    (nextTimeOfDay: string | null) => {
+      if (!nextTimeOfDay) {
+        return setError(
+          t('features.adminForm.settings.general.expiry.invalidTime'),
+        )
+      }
 
-    setError(undefined)
-    return save(closeAtDate, timeOfDay)
-  }, [closeAtDate, save, t, timeOfDay])
+      setError(undefined)
+      setTimeOfDay(nextTimeOfDay)
+      return save(closeAtDate, nextTimeOfDay)
+    },
+    [closeAtDate, save, t],
+  )
 
   return (
     <FormControl mt="2rem" isInvalid={!!error}>
@@ -129,7 +134,7 @@ const FormExpiryBlock = ({
           <TimeInput
             value={timeOfDay}
             onChange={setTimeOfDay}
-            onBlur={handleTimeBlur}
+            onCommit={handleTimeCommit}
             isDisabled={mutateFormCloseAt.isLoading}
             aria-label={t(
               'features.adminForm.settings.general.expiry.input.timeLabel',
