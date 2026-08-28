@@ -16,16 +16,24 @@ Parameters:
       site name stg-alt21, so this is passed explicitly rather than derived.
   SweepSchedule:
     Type: String
-    Default: rate(10 minutes)
+    Default: rate(1 minute)
     Description: >-
       How often to sweep for expired forms. This interval is the worst-case lag
       between a form's deadline and its status flipping to closed, so it is the
-      knob to turn if that lag needs to shrink.
+      knob to turn if that lag needs to shrink. One minute is the floor
+      EventBridge allows, and it is what admins expect from a deadline they
+      published to the minute. The sweep is idempotent and cheap when nothing is
+      due — one indexed query that matches nothing — so the cost of running it
+      often is a query per minute per environment, not a closure per minute.
 
 Globals:
   Function:
     # Generous relative to a sweep that is a handful of HTTP calls, but the
     # batch loop can make up to MAX_SWEEPS_PER_RUN of them after a backlog.
+    # Longer than the one-minute schedule, so a backlog run can overlap the next
+    # invocation. That is safe rather than merely tolerated: the sweep closes
+    # forms with a status-guarded updateMany, so a form already closed by the
+    # overlapping run no longer matches and is not touched twice.
     Timeout: 120
     MemorySize: 256
     Runtime: nodejs22.x
