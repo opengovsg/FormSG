@@ -17,7 +17,9 @@ import { useAdminFormSettings } from '../queries'
 
 import { isValidTimeOfDay, TimeInput } from './TimeInput'
 
-const DEFAULT_EXPIRY_DAYS_FROM_NOW = 7
+// Tomorrow: the nearest date unambiguously in the future, so the pre-fill
+// reads as a placeholder rather than as a deadline the product picked.
+const DEFAULT_EXPIRY_DAYS_FROM_NOW = 1
 
 const DEFAULT_EXPIRY_TIME = '23:59'
 
