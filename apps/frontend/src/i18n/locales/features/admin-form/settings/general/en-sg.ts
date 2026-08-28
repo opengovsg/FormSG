@@ -34,7 +34,7 @@ export const enSG = {
     label: 'Schedule an expiry date',
     input: {
       label: 'Expiry date and time',
-      timeLabel: 'Expiry time (24-hour, hh:mm)',
+      timeLabel: 'Expiry time',
       description:
         'Your form will automatically close at the selected date and time.',
     },
@@ -43,7 +43,7 @@ export const enSG = {
       successRemoved: 'The expiry date on your form is removed.',
     },
     dateInThePast: 'Expiry date must be in the future',
-    invalidTime: 'Enter a 24-hour time between 00:00 and 23:59',
+    invalidTime: 'Enter a time like 09:30',
   },
   customisation: {
     closedFormMessage: 'Set message for closed form',
