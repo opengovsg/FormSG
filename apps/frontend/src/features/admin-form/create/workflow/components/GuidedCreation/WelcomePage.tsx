@@ -18,10 +18,6 @@ import {
 /** Milliseconds the card takes to clear before Step 1 takes its place. */
 const LEAVE_DURATION_MS = 150
 
-interface WelcomePageProps {
-  onSkipGuidance: () => void
-}
-
 /**
  * Orients an admin into the workflow model, so they reach Step 1 already
  * knowing it is what the first person to open their form link will fill in.
@@ -30,10 +26,10 @@ interface WelcomePageProps {
  * card connects that to Step 1, and the guided flow asks for input. The concept
  * explanation stays upstream on the empty state, so the copy here is scoped to
  * the handover.
+ *
+ * It asks for nothing. One action, no exit.
  */
-export const WelcomePage = ({
-  onSkipGuidance,
-}: WelcomePageProps): JSX.Element => {
+export const WelcomePage = (): JSX.Element => {
   const startBuilding = useGuidedWorkflowStore((s) => s.startBuilding)
   const animHandle = useRef<FormToWorkflowIllustrationHandle>(null)
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -101,17 +97,14 @@ export const WelcomePage = ({
               they see. Then you can add more steps.
             </Text>
           </Stack>
-          <Stack spacing="0.75rem" align="flex-start">
+          {/*
+            "Let's go" is the only action. The card carries no exit: it is an
+            orientation beat rather than a decision, and Skip guidance is
+            waiting in the card header on the very next screen.
+          */}
+          <Box>
             <Button onClick={handleStartBuilding}>Let&apos;s go</Button>
-            {/*
-              Skipping here skips the whole guided flow, not just this card,
-              which is why it confirms. The confirmation and the flag write are
-              owned by the skip guidance feature.
-            */}
-            <Button variant="clear" onClick={onSkipGuidance}>
-              Skip guidance
-            </Button>
-          </Stack>
+          </Box>
         </Stack>
       </Flex>
     </Box>

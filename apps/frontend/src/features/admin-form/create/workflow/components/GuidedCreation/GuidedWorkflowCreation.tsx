@@ -84,9 +84,9 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
     completeSuccessModal()
   }
 
-  // Every guided screen carries the exit except the two where it makes no
-  // sense: the flow is over, or guidance has not started. The welcome card has
-  // its own placement below the primary action rather than in a card header.
+  // The exit appears wherever the admin is being paced through a decision.
+  // Not on the intro or welcome screens, which ask for nothing, and not once
+  // the flow is over or guidance is already off.
   const showSkipGuidance =
     mode !== 'intro' &&
     mode !== 'welcome' &&
@@ -131,7 +131,7 @@ export const GuidedWorkflowCreation = (): JSX.Element => {
     }
 
     if (mode === 'welcome') {
-      return <WelcomePage onSkipGuidance={onSkipModalOpen} />
+      return <WelcomePage />
     }
 
     const editingStepNumber = editState?.stepNumber
