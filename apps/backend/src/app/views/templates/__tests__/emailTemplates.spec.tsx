@@ -1,6 +1,7 @@
 import { render } from '@react-email/render'
 
 import { EmailTemplate, WorkflowOutcome } from '../EmailTemplate'
+import { FormScheduledClosureNotification } from '../FormScheduledClosureNotification'
 
 /**
  * Snapshots of the rendered HTML, not of the component tree. Email markup is
@@ -37,6 +38,21 @@ describe('EmailTemplate', () => {
   it('should render with only the required fields', async () => {
     const html = await render(
       EmailTemplate({ formTitle: 'Mock form', responseId: 'mock-response-id' }),
+    )
+
+    expect(html).toMatchSnapshot()
+  })
+})
+
+describe('FormScheduledClosureNotification', () => {
+  it('should render the closure notification', async () => {
+    const html = await render(
+      FormScheduledClosureNotification({
+        formTitle: 'Mock form',
+        formLink: 'https://form.gov.sg/mock-form-id',
+        closedAt: 'Thu, 28 Aug 2026, 11:59 PM',
+        appName: 'FormSG',
+      }),
     )
 
     expect(html).toMatchSnapshot()
