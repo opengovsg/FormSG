@@ -13,7 +13,7 @@ nobody visits it keeps reporting itself as open.
 ## How it works
 
 ```
-EventBridge (every 10 min) → this Lambda → HTTPS → FormSG API → MongoDB
+EventBridge (every minute) → this Lambda → HTTPS → FormSG API → MongoDB
 ```
 
 The Lambda holds no business logic. It reads a shared secret from SSM Parameter
@@ -32,11 +32,24 @@ backlog after an outage drains without any single request being unbounded.
 ### Sweep interval and lag
 
 The schedule interval is the worst-case lag between a form's deadline and its
-status flipping to closed. Product has accepted a lag here rather than requiring
-an exact cut-off. If that changes, `SweepSchedule` in `template.yaml` is the
-knob — but note that the guarantee a shorter interval buys is still
-best-effort. Making the deadline exact means checking `closeAt` on the
-submission path itself, not sweeping faster.
+*status* flipping to closed. It runs every minute, the floor EventBridge allows,
+so an admin who published a deadline to the minute sees the form's status agree
+with it within one.
+
+Sweeping faster is cheap: when nothing is due, a run is one query against the
+partial `{ status, closeAt }` index that matches nothing. What it buys, though,
+is only how quickly the *status* catches up. Late responses are already rejected
+at the instant of the deadline: `isFormPublic` in `form.service.ts` evaluates
+`closeAt` on every load and submit rather than trusting `status`. So a shorter
+interval tightens what the admin sees, not what respondents can do.
+
+The Lambda's 120s timeout is longer than the interval, so a run draining a
+backlog can overlap the next invocation. The sweep closes forms with a
+status-guarded `updateMany`, so the overlapping run finds nothing left to close
+rather than closing anything twice.
+
+`SweepSchedule` in `template.yaml` is the knob, and no `samconfig.yaml`
+environment overrides it.
 
 ## Deployment
 
