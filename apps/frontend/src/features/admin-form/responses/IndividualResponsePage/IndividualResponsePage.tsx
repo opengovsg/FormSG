@@ -216,7 +216,7 @@ export const IndividualResponsePage = (): JSX.Element => {
         spacing={{ base: '1.5rem', md: '2.5rem' }}
         data-dd-privacy="mask"
       >
-        <Stack bg="primary.100" p="1.5rem" textStyle="monospace">
+        <Stack bg="primary.100" p="1.5rem" textStyle="body-1">
           <StackRow
             label="Response ID"
             value={submissionId}
