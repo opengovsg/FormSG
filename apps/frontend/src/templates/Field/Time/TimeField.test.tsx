@@ -29,7 +29,20 @@ describe('required field', () => {
     expect(screen.getByText('This field is required')).toBeInTheDocument()
   })
 
-  it('renders the invalid error when the entry is incomplete', async () => {
+  it('renders the invalid error when the entry is not a time', async () => {
+    await act(async () => {
+      render(<TwentyFourHour defaultValue={undefined} />)
+    })
+
+    await typeInto('99')
+    await submit()
+
+    // Not the required error: something *was* entered, it is just not a time.
+    expect(screen.getByText('Please enter a valid time')).toBeInTheDocument()
+    expect(screen.queryByText('This field is required')).toBeNull()
+  })
+
+  it('completes a bare hour to the top of that hour', async () => {
     await act(async () => {
       render(<TwentyFourHour defaultValue={undefined} />)
     })
@@ -37,9 +50,18 @@ describe('required field', () => {
     await typeInto('12')
     await submit()
 
-    // Not the required error: something *was* entered, it is just not a time.
-    expect(screen.getByText('Please enter a valid time')).toBeInTheDocument()
-    expect(screen.queryByText('This field is required')).toBeNull()
+    expect(screen.getByText('Submitted: 12:00:00')).toBeInTheDocument()
+  })
+
+  it('reads three digits as h:mm rather than refusing them', async () => {
+    await act(async () => {
+      render(<TwentyFourHour defaultValue={undefined} />)
+    })
+
+    await typeInto('930')
+    await submit()
+
+    expect(screen.getByText('Submitted: 09:30:00')).toBeInTheDocument()
   })
 
   it('renders the invalid error when the entry is out of range', async () => {
@@ -77,12 +99,12 @@ describe('optional field', () => {
     expect(screen.getByText(/nothing was entered/i)).toBeInTheDocument()
   })
 
-  it('rejects an unfinished entry rather than silently dropping it', async () => {
+  it('rejects an unusable entry rather than silently dropping it', async () => {
     await act(async () => {
       render(<Optional defaultValue={undefined} />)
     })
 
-    await typeInto('12')
+    await typeInto('99')
     await submit()
 
     expect(screen.getByText('Please enter a valid time')).toBeInTheDocument()
@@ -91,16 +113,29 @@ describe('optional field', () => {
 })
 
 describe('12-hour entry', () => {
-  // The hour is read against the meridiem, so 13 has no reading. Separating
-  // those digits would produce a string indistinguishable from a canonical
-  // 13:30:45, which would pass validation and submit an answer the input
-  // never accepted.
-  it('rejects an hour that only exists on a 24-hour clock', async () => {
+  // An hour of 13 has only one possible reading, so it is taken at face value
+  // rather than refused — a respondent typing it out of 24-hour habit means
+  // half past one in the afternoon.
+  it('accepts a 24-hour hour typed into a 12-hour field', async () => {
     await act(async () => {
       render(<TwelveHourWithSeconds defaultValue={undefined} />)
     })
 
     await typeInto('133045')
+    await submit()
+
+    expect(screen.getByText('Submitted: 13:30:45')).toBeInTheDocument()
+  })
+
+  // The guard that matters: an entry the parser refuses must never reach
+  // validation looking like a canonical HH:MM:SS, or it would pass and submit
+  // an answer the input never accepted.
+  it('never submits an entry the input refused', async () => {
+    await act(async () => {
+      render(<TwelveHourWithSeconds defaultValue={undefined} />)
+    })
+
+    await typeInto('253045')
     await submit()
 
     expect(screen.getByText('Please enter a valid time')).toBeInTheDocument()
