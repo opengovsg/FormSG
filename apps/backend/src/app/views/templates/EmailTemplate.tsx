@@ -8,25 +8,20 @@
  * 3. Fallback links provided for buttons to ensure accessibility in case buttons do not render correctly
  */
 
-import {
-  Column,
-  Container,
-  Link,
-  Row,
-  Section,
-  Text,
-} from '@react-email/components'
+import { Section, Text } from '@react-email/components'
 import { BasicField } from 'formsg-shared/types'
 import React from 'react'
 
-import { EmailLayout, EmailMargin, renderLines } from './EmailLayout'
+import {
+  EmailButton,
+  EmailLayout,
+  EmailMargin,
+  renderLines,
+} from './EmailLayout'
 import {
   answerMargin,
-  buttonContainerStyle,
-  buttonInnerStyle,
   cardSectionStyle,
   jsonTextStyle,
-  linkStyle,
   outcomeTextStyle,
   primaryTextStyle,
   questionMargin,
@@ -87,18 +82,6 @@ export const EmailTemplate = ({
       <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
         {renderLines(qa.answer)}
       </Text>
-    </>
-  )
-
-  const renderFallbackLink = (url: string) => (
-    <>
-      <Text style={{ ...secondaryTextStyle }}>
-        If you are having trouble with the button above, copy and paste the link
-        below into your browser:
-      </Text>
-      <Link href={url} style={{ ...linkStyle }}>
-        {url}
-      </Link>
     </>
   )
 
@@ -199,58 +182,16 @@ export const EmailTemplate = ({
       )}
       {/* Status tracker button*/}
       {statusTrackerUrl && (
-        <Row>
-          <Column>
-            <Container style={buttonContainerStyle}>
-              <a
-                href={statusTrackerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={buttonInnerStyle}
-              >
-                Track your submission
-              </a>
-            </Container>
-            {renderFallbackLink(statusTrackerUrl)}
-          </Column>
-        </Row>
+        <EmailButton href={statusTrackerUrl}>Track your submission</EmailButton>
       )}
       {/* Review and complete button*/}
       {reviewUrl && (
-        <Row>
-          <Column>
-            <Container style={buttonContainerStyle}>
-              <a
-                href={reviewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={buttonInnerStyle}
-              >
-                Click to review and complete
-              </a>
-            </Container>
-            {renderFallbackLink(reviewUrl)}
-          </Column>
-        </Row>
+        <EmailButton href={reviewUrl}>Click to review and complete</EmailButton>
       )}
 
       {/* Payment button*/}
       {paymentUrl && (
-        <Row>
-          <Column>
-            <Container style={buttonContainerStyle}>
-              <a
-                href={paymentUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={buttonInnerStyle}
-              >
-                View proof of payment
-              </a>
-            </Container>
-            {renderFallbackLink(paymentUrl)}
-          </Column>
-        </Row>
+        <EmailButton href={paymentUrl}>View proof of payment</EmailButton>
       )}
 
       {/* Email end */}
