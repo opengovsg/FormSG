@@ -711,6 +711,7 @@ export class MailService {
     const htmlData: FormScheduledClosureNotificationHtmlData = {
       formTitle,
       formLink: `${this.#appUrl}/${formId}`,
+      formSettingsLink: `${this.#appUrl}/admin/form/${formId}/settings`,
       closedAt,
       appName: this.#appName,
     }

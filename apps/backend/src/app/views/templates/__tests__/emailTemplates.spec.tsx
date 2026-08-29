@@ -50,6 +50,8 @@ describe('FormScheduledClosureNotification', () => {
       FormScheduledClosureNotification({
         formTitle: 'Mock form',
         formLink: 'https://form.gov.sg/mock-form-id',
+        formSettingsLink:
+          'https://form.gov.sg/admin/form/mock-form-id/settings',
         closedAt: 'Thu, 28 Aug 2026, 11:59 PM',
         appName: 'FormSG',
       }),

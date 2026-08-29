@@ -18,6 +18,8 @@ export const Default = Template.bind({})
 Default.args = {
   formTitle: 'Application for Something Important 2026',
   formLink: 'https://form.gov.sg/68b1f2a4c5d6e7f8a9b0c1d2',
+  formSettingsLink:
+    'https://form.gov.sg/admin/form/68b1f2a4c5d6e7f8a9b0c1d2/settings',
   closedAt: 'Fri, 28 Aug 2026, 11:59 PM',
   appName: 'FormSG',
 }
