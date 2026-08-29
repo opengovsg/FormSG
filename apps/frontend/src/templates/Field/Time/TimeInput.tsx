@@ -1,5 +1,5 @@
 import { ChangeEventHandler, KeyboardEventHandler, useCallback } from 'react'
-import { Button, forwardRef, HStack } from '@chakra-ui/react'
+import { forwardRef, InputGroup, InputRightElement } from '@chakra-ui/react'
 
 import {
   from24HourClock,
@@ -8,6 +8,7 @@ import {
   to24HourClock,
 } from 'formsg-shared/utils/time-validation'
 
+import Button from '~components/Button'
 import Input, { InputProps } from '~components/Input'
 
 /**
@@ -225,7 +226,7 @@ export const TimeInput = forwardRef<TimeInputProps, 'input'>(
       )
 
     return (
-      <HStack spacing="0.5rem" align="stretch">
+      <InputGroup>
         <Input
           ref={ref}
           value={text}
@@ -233,23 +234,37 @@ export const TimeInput = forwardRef<TimeInputProps, 'input'>(
           placeholder={includeSeconds ? 'hh:mm:ss' : 'hh:mm'}
           inputMode="numeric"
           isDisabled={isDisabled}
+          // Room for the meridiem toggle pinned at the right edge. Only
+          // reserved when there is one, so a 24-hour field keeps its full box.
+          sx={use24HourFormat ? undefined : { pr: '3.75rem' }}
           {...props}
         />
         {!use24HourFormat && (
-          <Button
-            variant="outline"
-            onClick={toggleMeridiem}
-            onKeyDown={handleMeridiemKeyDown}
-            isDisabled={isDisabled}
-            aria-label={`Change to ${meridiem === 'AM' ? 'PM' : 'AM'}`}
-            // Announce the change to a screen reader without stealing focus.
-            aria-live="polite"
-            flexShrink={0}
-          >
-            {meridiem}
-          </Button>
+          <InputRightElement w="3.75rem">
+            <Button
+              variant="clear"
+              size="sm"
+              px="0.5rem"
+              h="2rem"
+              fontSize="1rem"
+              colorScheme="secondary"
+              onClick={toggleMeridiem}
+              onKeyDown={handleMeridiemKeyDown}
+              isDisabled={isDisabled}
+              // Keep focus in the box, so clicking the toggle does not fire a
+              // blur that reformats the entry out from under the click.
+              onMouseDown={(e) => e.preventDefault()}
+              aria-label={`${meridiem}, change to ${
+                meridiem === 'AM' ? 'PM' : 'AM'
+              }`}
+              // Announce the change to a screen reader without stealing focus.
+              aria-live="polite"
+            >
+              {meridiem}
+            </Button>
+          </InputRightElement>
         )}
-      </HStack>
+      </InputGroup>
     )
   },
 )
