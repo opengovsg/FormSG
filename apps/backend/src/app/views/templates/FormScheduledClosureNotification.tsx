@@ -32,7 +32,7 @@ export const FormScheduledClosureNotification = ({
     <EmailLayout emailTitle="Your form has closed">
       <Text style={{ ...secondaryTextStyle, marginBottom: '40px' }}>
         Your form reached the expiry date you set and has stopped accepting
-        responses. Your existing responses are unaffected and still available.
+        responses.
       </Text>
 
       <Section style={cardSectionStyle}>
