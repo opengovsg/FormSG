@@ -12,18 +12,24 @@ import {
   Heading,
   Html,
   Img,
+  Link,
   Preview,
   Row,
   Section,
+  Text,
 } from '@react-email/components'
 import React from 'react'
 
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
 
 import {
+  buttonContainerStyle,
+  buttonInnerStyle,
   containerStyle,
   headingTextStyle,
+  linkStyle,
   mainStyle,
+  secondaryTextStyle,
   sectionStyle,
 } from './emailStyles'
 
@@ -60,6 +66,40 @@ export const renderLines = (text: string): JSX.Element[] => {
     </React.Fragment>
   ))
 }
+
+/**
+ * A call-to-action button, followed by the same link in plain text: several
+ * clients strip or fail to render the styled anchor.
+ */
+export const EmailButton = ({
+  href,
+  children,
+}: {
+  href: string
+  children: React.ReactNode
+}): JSX.Element => (
+  <Row>
+    <Column>
+      <Container style={buttonContainerStyle}>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={buttonInnerStyle}
+        >
+          {children}
+        </a>
+      </Container>
+      <Text style={{ ...secondaryTextStyle }}>
+        If you are having trouble with the button above, copy and paste the link
+        below into your browser:
+      </Text>
+      <Link href={href} style={{ ...linkStyle }}>
+        {href}
+      </Link>
+    </Column>
+  </Row>
+)
 
 export const EmailLayout = ({
   emailTitle,
