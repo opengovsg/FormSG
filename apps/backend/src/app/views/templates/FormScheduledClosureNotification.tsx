@@ -2,7 +2,7 @@ import { Link, Section, Text } from '@react-email/components'
 
 import { FormScheduledClosureNotificationHtmlData } from '../../services/mail/mail.types'
 
-import { EmailLayout, EmailMargin } from './EmailLayout'
+import { EmailButton, EmailLayout, EmailMargin } from './EmailLayout'
 import {
   answerMargin,
   cardSectionStyle,
@@ -24,6 +24,7 @@ import {
 export const FormScheduledClosureNotification = ({
   formTitle,
   formLink,
+  formSettingsLink,
   closedAt,
   appName,
 }: FormScheduledClosureNotificationHtmlData): JSX.Element => {
@@ -58,11 +59,12 @@ export const FormScheduledClosureNotification = ({
       </Section>
       <EmailMargin height={40} />
 
-      <Text style={secondaryTextStyle}>
+      <Text style={{ ...secondaryTextStyle, marginBottom: '24px' }}>
         To collect more responses, reopen the form and set a new expiry date in
         its settings.
       </Text>
-      <EmailMargin height={16} />
+      <EmailButton href={formSettingsLink}>Go to form settings</EmailButton>
+      <EmailMargin height={24} />
       <Text style={secondaryTextStyle}>The {appName} Support Team</Text>
       <EmailMargin height={40} />
     </EmailLayout>

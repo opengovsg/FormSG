@@ -109,6 +109,12 @@ export type FormDeactivatedNotificationHtmlData = {
 export type FormScheduledClosureNotificationHtmlData = {
   formTitle: string
   formLink: string
+  /**
+   * Deep link to the form's settings, where the admin reopens it and sets a new
+   * expiry date. Distinct from `formLink`, which is the respondent-facing URL
+   * and by this point shows the "form closed" page.
+   */
+  formSettingsLink: string
   /** Human-readable close instant, pre-formatted in SGT by the caller. */
   closedAt: string
   appName: string
