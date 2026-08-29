@@ -195,10 +195,12 @@ export const getFieldCreationMeta = (fieldType: BasicField): FieldCreateDto => {
       return {
         fieldType,
         ...baseMeta,
-        // Defaults chosen from the request in #7824: agencies want 24-hour, and
-        // seconds are rarely wanted.
+        // Seconds are rarely wanted. The clock defaults to 12-hour because
+        // that is how respondents write a time of day here, and an admin who
+        // wants 24-hour is making a deliberate choice — the reverse left every
+        // new field in the format fewer people expected.
         includeSeconds: false,
-        use24HourFormat: true,
+        use24HourFormat: false,
       }
     }
     case BasicField.Table: {

@@ -62,6 +62,6 @@ describe('Time field mongoose schema', () => {
       use24HourFormat: boolean
     }
     expect(field.includeSeconds).toEqual(false)
-    expect(field.use24HourFormat).toEqual(true)
+    expect(field.use24HourFormat).toEqual(false)
   })
 })
