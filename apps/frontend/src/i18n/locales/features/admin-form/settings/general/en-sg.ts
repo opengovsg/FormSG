@@ -43,7 +43,7 @@ export const enSG = {
       successRemoved: 'The expiry date on your form is removed.',
     },
     dateInThePast: 'Expiry date must be in the future',
-    invalidTime: 'Enter a time like 09:30',
+    invalidTime: 'Please enter a valid time',
   },
   customisation: {
     closedFormMessage: 'Set message for closed form',
