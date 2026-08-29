@@ -37,7 +37,7 @@ const InteractiveTemplate: StoryFn = () => {
           value={value}
           onChange={setValue}
           onCommit={(committed) =>
-            setError(committed ? undefined : 'Enter a time like 09:30')
+            setError(committed ? undefined : 'Please enter a valid time')
           }
         />
         <FormErrorMessage>{error}</FormErrorMessage>
@@ -85,7 +85,7 @@ const StatesTemplate: StoryFn = () => (
     <FormControl isInvalid>
       <FormLabel>Invalid — what the admin typed is left on screen</FormLabel>
       <TimeInput value="" onChange={() => undefined} />
-      <FormErrorMessage>Enter a time like 09:30</FormErrorMessage>
+      <FormErrorMessage>Please enter a valid time</FormErrorMessage>
     </FormControl>
 
     <FormControl isDisabled>
