@@ -65,7 +65,12 @@ export const MrfEmailRecipientsFieldGroup = ({
   // Subscribed here rather than taken as a prop: RHF's formState is a Proxy that
   // only tracks what is read during render, so a consumer that forgot to read
   // errors would silently pass stale ones.
-  const { errors } = useFormState({ control })
+  // Narrowed to the one field with validation rules; the two selects have none,
+  // so subscribing to them would only add re-renders.
+  const { errors } = useFormState({
+    control,
+    name: OTHER_PARTIES_EMAIL_INPUT_NAME,
+  })
   const isRedesign = useIsWorkflowBuilderRedesign()
   const {
     isLoading,
