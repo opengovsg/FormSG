@@ -25,22 +25,28 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   const { data: settings } = useAdminFormSettings()
   const { formWorkflow, emailFormFields } = useAdminFormWorkflow()
 
-  // Settings load separately from the form, so the card waits rather than
-  // rendering with no recipients and then filling in.
-  if (!settings || settings.responseMode !== FormResponseMode.Multirespondent) {
+  // Not an MRF form, so the card does not apply at all. Unreachable from the
+  // workflow tab, which only exists on MRF forms, but it narrows the union.
+  if (settings && settings.responseMode !== FormResponseMode.Multirespondent) {
     return null
   }
-  const mrfSettings: MultirespondentFormSettings = settings
+  const mrfSettings: MultirespondentFormSettings | undefined = settings
 
-  const recipients = getCompletionEmailRecipients({
-    emails: mrfSettings.emails,
-    // Defaults to '' in the model, but the settings type still has it optional.
-    stepOneEmailNotificationFieldId:
-      mrfSettings.stepOneEmailNotificationFieldId ?? '',
-    stepsToNotify: mrfSettings.stepsToNotify,
-    workflowSteps: formWorkflow ?? [],
-    emailFormFields,
-  })
+  // Settings are a separate query from the form, so they can arrive after the
+  // steps. Undefined recipients tell the card to hold its frame and skeleton
+  // the list, rather than the whole block appearing a beat late.
+  // StatusTrackerToggle, which reads the same query on this tab, does the same.
+  const recipients = mrfSettings
+    ? getCompletionEmailRecipients({
+        emails: mrfSettings.emails,
+        // Defaults to '' in the model, but the settings type has it optional.
+        stepOneEmailNotificationFieldId:
+          mrfSettings.stepOneEmailNotificationFieldId ?? '',
+        stepsToNotify: mrfSettings.stepsToNotify,
+        workflowSteps: formWorkflow ?? [],
+        emailFormFields,
+      })
+    : undefined
 
   return (
     <Stack spacing="1.5rem">

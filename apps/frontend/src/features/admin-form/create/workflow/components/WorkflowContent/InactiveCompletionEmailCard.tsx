@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Box, Stack, Text } from '@chakra-ui/react'
+import { Box, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import { CompletionEmailRecipients } from './utils/getCompletionEmailRecipients'
 import { CompletionEmailLabel } from './CompletionEmailLabel'
@@ -8,7 +8,8 @@ const PREFIX =
   'features.adminForm.settings.emailNotifications.section.mrf.respondents'
 
 export interface InactiveCompletionEmailCardProps {
-  recipients: CompletionEmailRecipients
+  /** Undefined while the settings query is still in flight. */
+  recipients?: CompletionEmailRecipients
 }
 
 /**
@@ -22,7 +23,6 @@ export const InactiveCompletionEmailCard = ({
   recipients,
 }: InactiveCompletionEmailCardProps): JSX.Element => {
   const { t } = useTranslation()
-  const { otherParties, stepOneField, notifiedSteps, isEmpty } = recipients
 
   // One group per control in the expanded card, same order, same labels, so the
   // two views cannot describe the same settings differently. Every label is
@@ -30,29 +30,35 @@ export const InactiveCompletionEmailCard = ({
   //
   // Keyed on `id` rather than `label`: labels are translated, so they are not
   // ours to guarantee unique.
-  const groups = [
-    { id: 'others', label: t(`${PREFIX}.others.label`), values: otherParties },
-    {
-      id: 'step1',
-      label: t(`${PREFIX}.step1.label`),
-      values: stepOneField
-        ? [
-            stepOneField.questionNumber
-              ? `${stepOneField.questionNumber}. ${stepOneField.title}`
-              : stepOneField.title,
-          ]
-        : [],
-    },
-    {
-      id: 'stepN',
-      label: t(`${PREFIX}.stepN.label.overallRedesign`),
-      values: notifiedSteps.map(
-        ({ stepNumber, stepName }) =>
-          t(`${PREFIX}.stepN.label.each`, { stepNumber }) +
-          (stepName ? ` (${stepName})` : ''),
-      ),
-    },
-  ].filter(({ values }) => values.length > 0)
+  const groups = recipients
+    ? [
+        {
+          id: 'others',
+          label: t(`${PREFIX}.others.label`),
+          values: recipients.otherParties,
+        },
+        {
+          id: 'step1',
+          label: t(`${PREFIX}.step1.label`),
+          values: recipients.stepOneField
+            ? [
+                recipients.stepOneField.questionNumber
+                  ? `${recipients.stepOneField.questionNumber}. ${recipients.stepOneField.title}`
+                  : recipients.stepOneField.title,
+              ]
+            : [],
+        },
+        {
+          id: 'stepN',
+          label: t(`${PREFIX}.stepN.label.overallRedesign`),
+          values: recipients.notifiedSteps.map(
+            ({ stepNumber, stepName }) =>
+              t(`${PREFIX}.stepN.label.each`, { stepNumber }) +
+              (stepName ? ` (${stepName})` : ''),
+          ),
+        },
+      ].filter(({ values }) => values.length > 0)
+    : []
 
   return (
     <Box
@@ -67,7 +73,17 @@ export const InactiveCompletionEmailCard = ({
       <Stack spacing="1.5rem" p={{ base: '1.5rem', md: '2rem' }}>
         <CompletionEmailLabel />
 
-        {isEmpty ? (
+        {!recipients ? (
+          // Settings arrive after the form, so the card holds its frame and
+          // label rather than the whole block appearing late. Sized bars rather
+          // than a <Skeleton isLoaded> wrapper because the loaded content has
+          // two different shapes, and neither is honest to size a placeholder
+          // against.
+          <Stack spacing="0.25rem">
+            <Skeleton h="1.5rem" w="60%" />
+            <Skeleton h="1.5rem" w="40%" />
+          </Stack>
+        ) : recipients.isEmpty ? (
           // Reuses the Settings instruction rather than an absence message:
           // this is the state every new form starts in, so it should tell the
           // admin what to do next.

@@ -70,7 +70,10 @@ const redesignOn = new GrowthBook({
   features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
 })
 
-const mocks = (settingsOverrides: Partial<MultirespondentFormSettings>) => [
+const mocks = (
+  settingsOverrides: Partial<MultirespondentFormSettings>,
+  settingsDelay: number | 'infinite' = 0,
+) => [
   getAdminFormView({
     mode: FormResponseMode.Multirespondent,
     overrides: {
@@ -80,6 +83,7 @@ const mocks = (settingsOverrides: Partial<MultirespondentFormSettings>) => [
   }),
   getAdminFormSettings({
     mode: FormResponseMode.Multirespondent,
+    delay: settingsDelay,
     overrides: {
       // The shared mock form is Public by default, which would render every
       // story read-only. Editable stories must say so explicitly.
@@ -137,6 +141,18 @@ InactiveConfigured.parameters = {
     description: {
       story:
         'Summarises all three recipient groups. Notified steps read in workflow order, not the order the ids happen to be stored in.',
+    },
+  },
+}
+
+export const Loading = Template.bind({})
+Loading.storyName = 'Loading, settings not yet arrived'
+Loading.parameters = {
+  msw: { handlers: mocks(FULLY_CONFIGURED, 'infinite') },
+  docs: {
+    description: {
+      story:
+        'The form resolves before its settings, so the divider, card frame and label are already in place while the recipient list is still on its way. Only the list is skeletoned.',
     },
   },
 }
