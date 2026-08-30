@@ -13,7 +13,6 @@ import {
 } from 'src/app/modules/form/form.errors'
 import { IPopulatedForm, IPopulatedUser } from 'src/types'
 
-import { MalformedParametersError } from '../../../core/core.errors'
 import {
   deleteFormWorkflow,
   deleteFormWorkflowStep,
@@ -123,23 +122,9 @@ describe('workflow deletion', () => {
     })
   })
 
+  // Refusing to delete step 1 is flagged behaviour and lives in the controller,
+  // where the flag can be read; it is covered by the route spec.
   describe('deleteFormWorkflowStep', () => {
-    // Removing step 1 would shift step 2 into the entry point, handing the
-    // workflow's start to a respondent never chosen for it. There is no sane
-    // reading of that request other than deleting the workflow, which is a far
-    // more destructive thing to do silently.
-    it('should refuse to delete step 1', async () => {
-      const form = await createMrfForm(FormStatus.Private)
-
-      const actual = await deleteFormWorkflowStep(form, 0)
-
-      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
-      const stored = await FormModel.findById(form._id)
-      expect(
-        (stored as never as { workflow: unknown[] }).workflow,
-      ).toHaveLength(3)
-    })
-
     it('should still delete a later step', async () => {
       const form = await createMrfForm(FormStatus.Private)
 
