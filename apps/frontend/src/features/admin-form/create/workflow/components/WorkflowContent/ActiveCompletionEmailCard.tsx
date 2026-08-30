@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Divider, Stack, Text } from '@chakra-ui/react'
+import { Box, Divider, Stack, Text } from '@chakra-ui/react'
 import { isEqual, uniq } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -171,23 +171,31 @@ export const ActiveCompletionEmailCard = ({
         </EditStepBlockContainer>
       ) : null}
       <EditStepBlockContainer>
-        <MrfEmailRecipientsFieldGroup
-          control={control}
-          isDisabled={isDisabled}
-          isHighContrast={false}
-          otherPartiesPlaceholder={otherPartiesPlaceholder}
-          onOtherPartiesBlur={handleOtherPartiesBlur}
-          heading={
-            // Settings' own liner, in Settings' own treatment. The card only
-            // renders on a workflow with at least one step, so the
-            // no-workflow variant of this string is unreachable here.
-            <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
-              {t(
-                'features.adminForm.settings.emailNotifications.section.mrf.selectRecipientWorkflow',
-              )}
-            </Text>
-          }
-        />
+        {/* The field group carries Settings' own 1.5rem outer margins, which
+        double up against this card's Stack spacing and leave the controls
+        sitting 48px off the dividers where a step card's sit 24px. Cancelled
+        here rather than in the field group, which Settings also renders. The
+        Box is a flex item, so it establishes its own formatting context and
+        the child margins cannot collapse through it. */}
+        <Box my="-1.5rem">
+          <MrfEmailRecipientsFieldGroup
+            control={control}
+            isDisabled={isDisabled}
+            isHighContrast={false}
+            otherPartiesPlaceholder={otherPartiesPlaceholder}
+            onOtherPartiesBlur={handleOtherPartiesBlur}
+            heading={
+              // Settings' own liner, in Settings' own treatment. The card only
+              // renders on a workflow with at least one step, so the
+              // no-workflow variant of this string is unreachable here.
+              <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
+                {t(
+                  'features.adminForm.settings.emailNotifications.section.mrf.selectRecipientWorkflow',
+                )}
+              </Text>
+            }
+          />
+        </Box>
       </EditStepBlockContainer>
       <Divider />
       <SaveActionGroup
