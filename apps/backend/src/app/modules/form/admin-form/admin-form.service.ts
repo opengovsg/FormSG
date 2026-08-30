@@ -95,6 +95,7 @@ import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
   FormInvalidResponseModeError,
   FormNotFoundError,
+  FormOpenToResponsesError,
   FormWhitelistSettingNotFoundError,
   LogicNotFoundError,
   TransferOwnershipError,
@@ -1817,6 +1818,19 @@ export const updateFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
+  // Step 1 has no meaningful deletion of its own: removing it would shift step
+  // 2 up into the entry point, handing the workflow's start to a respondent
+  // never chosen for it. Deleting the workflow is the only thing that request
+  // can sensibly mean, and it has a guard of its own — so refuse here rather
+  // than quietly redirecting to a far more destructive operation.
+  if (stepNumber === 0) {
+    return errAsync(
+      new MalformedParametersError(
+        'Deleting the first step means deleting the workflow; use DELETE /workflow',
+      ),
+    )
+  }
+
   const updatedWorkflow = originalMrfForm.workflow.map((step, index) =>
     index === stepNumber ? updatedWorkflowStep : step,
   )
@@ -1857,6 +1871,81 @@ export const updateFormWorkflowStep = (
   })
 }
 
+/**
+ * Deletes a form's entire workflow.
+ *
+ * This is what deleting step 1 means. A workflow's first step is the one that
+ * starts it, so removing it does not shorten the workflow — it stops there
+ * being one. Shifting step 2 up into its place, which is what deleting any
+ * other step does, would silently hand the workflow's entry point to a
+ * respondent who was never meant to have it.
+ *
+ * Refused while the form is open. Respondents may be part-way through a
+ * workflow right now, and pulling it out from under them mid-submission is not
+ * something an admin can undo. Closing the form first is a deliberate act that
+ * makes the consequence visible. The UI says the same thing in a modal, but
+ * this is the rule — the modal is a courtesy.
+ *
+ * Deliberately unrecoverable and deliberately total: every step goes, not just
+ * the first. The form reverts to an ordinary single-respondent form, which an
+ * empty workflow already means everywhere else in the codebase.
+ */
+export const deleteFormWorkflow = (
+  originalForm: IPopulatedForm,
+): ResultAsync<
+  FormWorkflowDto,
+  | DatabaseError
+  | FormNotFoundError
+  | FormInvalidResponseModeError
+  | FormOpenToResponsesError
+> => {
+  if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
+    return errAsync(
+      new FormInvalidResponseModeError(
+        'Cannot delete workflow for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  if (originalForm.status === FormStatus.Public) {
+    return errAsync(
+      new FormOpenToResponsesError(
+        'Close your form to new responses before deleting its workflow',
+      ),
+    )
+  }
+
+  const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+
+  const MultirespondentFormModel = getFormModelByResponseMode(
+    originalForm.responseMode,
+  ) as IMultirespondentFormModel
+
+  return ResultAsync.fromPromise(
+    MultirespondentFormModel.findByIdAndUpdate(
+      originalMrfForm._id,
+      { workflow: [] },
+      { new: true, runValidators: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while deleting form workflow in database',
+        meta: {
+          action: 'deleteFormWorkflow',
+          formId: originalMrfForm._id,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  })
+}
+
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
@@ -1876,6 +1965,19 @@ export const deleteFormWorkflowStep = (
     stepNumber >= 0 && stepNumber < originalWorkflow.length
   if (!isStepNumberValid) {
     return errAsync(new MalformedParametersError('Invalid step number'))
+  }
+
+  // Step 1 has no meaningful deletion of its own: removing it would shift step
+  // 2 up into the entry point, handing the workflow's start to a respondent
+  // never chosen for it. Deleting the workflow is the only thing that request
+  // can sensibly mean, and it has a guard of its own — so refuse here rather
+  // than quietly redirecting to a far more destructive operation.
+  if (stepNumber === 0) {
+    return errAsync(
+      new MalformedParametersError(
+        'Deleting the first step means deleting the workflow; use DELETE /workflow',
+      ),
+    )
   }
 
   // Remove step with stepNumber from workflow
