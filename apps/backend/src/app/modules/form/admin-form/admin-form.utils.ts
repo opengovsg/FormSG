@@ -39,6 +39,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  FormOpenToResponsesError,
   LogicNotFoundError,
   PrivateFormError,
   TransferOwnershipError,
@@ -102,6 +103,13 @@ export const mapRouteError = (
     case FormDeletedError:
       return {
         statusCode: StatusCodes.GONE,
+        errorMessage: error.message,
+      }
+    // Conflict rather than forbidden: the admin is allowed to do this, just not
+    // while the form is open. Closing it makes the same request succeed.
+    case FormOpenToResponsesError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
         errorMessage: error.message,
       }
     case PrivateFormError:
