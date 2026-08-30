@@ -1,0 +1,15 @@
+{
+  "name": "formsg-changelog-digest",
+  "version": "9.12.0",
+  "private": true,
+  "description": "Lambda function that triggers the weekly product digest",
+  "main": "index.js",
+  "scripts": {
+    "sam-build": "sam build",
+    "sam-deploy": "pnpm run sam-build && sam deploy",
+    "sam-local-invoke": "pnpm run sam-build && sam local invoke ChangelogDigestFunction"
+  },
+  "dependencies": {
+    "@aws-sdk/client-ssm": "^3.1091.0"
+  }
+}

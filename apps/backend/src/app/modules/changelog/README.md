@@ -4,8 +4,12 @@ Drafts the weekly product digest email for FormSG form admins and sends it to a
 single preview address for review.
 
 This is the prototype stage of the digest RFC. It covers generation, the email,
-and the Slack notification. It deliberately does not cover the changelog page,
-an entry store, an approval UI, Postman delivery, or scheduling.
+the Slack notification, and the weekly schedule. It deliberately does not cover
+the changelog page, an entry store, an approval UI, or Postman delivery.
+
+The schedule lives in `services/changelog-digest` — an EventBridge rule and a
+Lambda that call the endpoint every Monday at 09:00 Singapore time. Running
+weekly is not sending weekly; see "Holding items over" below.
 
 ## What it does
 
@@ -45,12 +49,17 @@ session. In production a scheduler would call it; for now a person does.
 
 These are deliberate and worth preserving until the approval flow exists.
 
-- **The route is unreachable outside development.** The guard is on the router,
-  so it travels with the routes, and returns 404 rather than 403.
+- **The routes exist only where the digest is configured.** The guard is on the
+  router, so it travels with the routes, and returns 404 rather than 403. It
+  keys on the shared secret being set rather than on `NODE_ENV`: a
+  development-only guard could not survive the job being scheduled, since a
+  Lambda calling a deployed environment would have got a 404 forever. An
+  environment nobody has set up for the digest still does not expose it.
 - **There is no code path to the real admin list.** The service knows only about
   the configured preview address, and `MailService.sendChangelogDigest` takes
   recipients as a parameter rather than resolving them.
-- **Nothing sends automatically.** Every run emails one person.
+- **Every run emails one person.** Scheduled and manual runs take the same path
+  and reach the same single configured address.
 
 ## Configuration
 

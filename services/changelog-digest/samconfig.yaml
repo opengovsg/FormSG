@@ -1,0 +1,27 @@
+version: 0.1
+
+# NOTE: the `s3_bucket` below must exist before the first deploy. It is
+# provisioned by pulumi in the formsg-infra repo, which also creates the
+# `/<ssm-env-site-name>/CRON_CHANGELOG_API_SECRET` parameter the backend and the
+# lambda both read.
+#
+# Pulumi generates bucket names with a random suffix, so the real name is only
+# known after `pulumi up`. An entry still marked TODO- has not had pulumi
+# applied and will be skipped by the deploy workflow rather than failing it.
+#
+# Only stg-alt3 is listed. The digest is a prototype that emails one person, so
+# there is nothing to gain from standing it up in six environments — adding one
+# is a copy of this block plus a caller workflow.
+
+stg-alt3:
+  deploy:
+    parameters:
+      stack_name: changelog-digest-stg-alt3
+      s3_bucket: TODO-changelog-digest-code-zip-stg-alt3
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg-alt3
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt3 SsmEnvSiteName=stg-alt3
