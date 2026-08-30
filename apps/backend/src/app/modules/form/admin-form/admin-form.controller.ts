@@ -3,7 +3,10 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants'
+import {
+  featureFlags,
+  FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
+} from 'formsg-shared/constants'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
@@ -1710,6 +1713,13 @@ export const handleDeleteWorkflow: ControllerHandler<
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
+  // 404 rather than 403: while the feature is off this endpoint does not exist
+  // as far as anyone outside the rollout is concerned, and advertising it would
+  // invite exactly the destructive call the flag is holding back.
+  if (!req.growthbook?.isOn(featureFlags.workflowDeletion)) {
+    return res.status(StatusCodes.NOT_FOUND).json({ message: 'Not found' })
+  }
+
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
       AuthService.getFormAfterPermissionChecks({
@@ -1747,6 +1757,24 @@ export const handleDeleteWorkflowStep: ControllerHandler<
 > = (req, res) => {
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Deleting step 1 means deleting the workflow, which has its own route and
+  // its own guard against doing it to an open form. Refusing here rather than
+  // redirecting: quietly performing a far more destructive operation than the
+  // caller asked for is worse than making them ask for it.
+  //
+  // Behind the flag, because with it off this route keeps today's behaviour
+  // exactly — including the bug where deleting step 1 shifts step 2 into the
+  // entry point. That is what makes the flag a clean rollback.
+  if (
+    req.growthbook?.isOn(featureFlags.workflowDeletion) &&
+    Number(stepNumber) === 0
+  ) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'Deleting the first step means deleting the workflow; use DELETE /workflow',
+    })
+  }
 
   // Step 1: Retrieve currently logged in user.
   return (
