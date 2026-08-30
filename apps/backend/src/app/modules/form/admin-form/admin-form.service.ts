@@ -1961,28 +1961,23 @@ export const deleteFormWorkflowStep = (
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
   const originalWorkflow = originalMrfForm.workflow ?? []
 
+  // Express route params arrive as strings however they are typed, so this is
+  // coerced once here rather than relied on to compare numerically. The range
+  // check below happens to survive the coercion; a strict equality check
+  // against 0 does not, and quietly did nothing when it was written that way.
+  const stepIndex = Number(stepNumber)
+
   const isStepNumberValid =
-    stepNumber >= 0 && stepNumber < originalWorkflow.length
+    Number.isInteger(stepIndex) &&
+    stepIndex >= 0 &&
+    stepIndex < originalWorkflow.length
   if (!isStepNumberValid) {
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  // Step 1 has no meaningful deletion of its own: removing it would shift step
-  // 2 up into the entry point, handing the workflow's start to a respondent
-  // never chosen for it. Deleting the workflow is the only thing that request
-  // can sensibly mean, and it has a guard of its own — so refuse here rather
-  // than quietly redirecting to a far more destructive operation.
-  if (stepNumber === 0) {
-    return errAsync(
-      new MalformedParametersError(
-        'Deleting the first step means deleting the workflow; use DELETE /workflow',
-      ),
-    )
-  }
-
   // Remove step with stepNumber from workflow
   const updatedWorkflow = originalWorkflow
-  updatedWorkflow.splice(stepNumber, 1)
+  updatedWorkflow.splice(stepIndex, 1)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
