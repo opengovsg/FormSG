@@ -10,6 +10,9 @@ import { Workflow } from '.'
 
 export const enSG: Workflow = {
   title: 'Add workflow',
+  aria: {
+    deleteWorkflow: 'Delete workflow',
+  },
   respondentBlock: {
     stepRespondent: 'Respondent in this step',
     stepRespondentRedesign: 'Who fills in this step?',

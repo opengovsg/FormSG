@@ -8,8 +8,10 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { DeleteStepModal } from '../../DeleteStepModal'
+import { DeleteWorkflowModal } from '../../DeleteWorkflowModal'
 import { ActiveStepBlock } from '../ActiveStepBlock'
 import { InactiveStepBlock } from '../InactiveStepBlock'
+import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 export interface WorkflowBlockFactoryProps {
   stepNumber: number
@@ -32,13 +34,25 @@ export const WorkflowBlockFactory = ({
     [editState?.stepNumber, stepNumber],
   )
 
+  // A workflow without its first step has no entry point, so deleting step 1 is
+  // deleting the workflow. Same button, same modal as the workflow's own delete
+  // — the outcome is the same, and two different modals would imply otherwise.
+  const isFirstStep = isFirstStepByStepNumber(stepNumber)
+
   return (
     <>
-      <DeleteStepModal
-        isOpen={isDeleteModalOpen}
-        onClose={onDeleteModalClose}
-        stepNumber={stepNumber}
-      />
+      {isFirstStep ? (
+        <DeleteWorkflowModal
+          isOpen={isDeleteModalOpen}
+          onClose={onDeleteModalClose}
+        />
+      ) : (
+        <DeleteStepModal
+          isOpen={isDeleteModalOpen}
+          onClose={onDeleteModalClose}
+          stepNumber={stepNumber}
+        />
+      )}
       {isActiveState ? (
         <ActiveStepBlock
           stepNumber={stepNumber}
