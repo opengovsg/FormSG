@@ -135,12 +135,13 @@ export const PreviewFormBanner = ({
                     onChange={(val) => {
                       const newStep = Number(val)
                       setSearchParams((prev) => {
+                        const next = new URLSearchParams(prev)
                         if (newStep === 0) {
-                          prev.delete(PREVIEW_STEP_PARAM)
+                          next.delete(PREVIEW_STEP_PARAM)
                         } else {
-                          prev.set(PREVIEW_STEP_PARAM, String(newStep))
+                          next.set(PREVIEW_STEP_PARAM, String(newStep))
                         }
-                        return prev
+                        return next
                       })
                     }}
                     items={previewWorkflowSteps.map((step, idx) => ({
