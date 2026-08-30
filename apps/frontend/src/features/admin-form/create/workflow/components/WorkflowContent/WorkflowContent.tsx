@@ -15,6 +15,7 @@ import IconButton from '~components/IconButton'
 import { StatusTrackerToggle } from '~features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowDeletion } from '../../hooks/useIsWorkflowDeletion'
 import { DeleteWorkflowModal } from '../DeleteWorkflowModal'
 
 import { NewStepBlock } from './NewStepBlock'
@@ -24,6 +25,7 @@ import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock
 export const WorkflowContent = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
+  const isWorkflowDeletion = useIsWorkflowDeletion()
   const {
     isOpen: isDeleteModalOpen,
     onClose: onDeleteModalClose,
@@ -55,15 +57,17 @@ export const WorkflowContent = (): JSX.Element | null => {
                 page reads as a warning about the page's state rather than as
                 an action. The destructive colour belongs on the button that
                 actually destroys something, in the modal. */}
-            <IconButton
-              variant="clear"
-              colorScheme="secondary"
-              aria-label={t(
-                'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
-              )}
-              icon={<BiTrash />}
-              onClick={onDeleteModalOpen}
-            />
+            {isWorkflowDeletion ? (
+              <IconButton
+                variant="clear"
+                colorScheme="secondary"
+                aria-label={t(
+                  'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
+                )}
+                icon={<BiTrash />}
+                onClick={onDeleteModalOpen}
+              />
+            ) : null}
           </Flex>
           <Divider />
           <StatusTrackerToggle />
