@@ -2008,7 +2008,8 @@ export const deleteFormWorkflowStep = (
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
   const originalWorkflow = originalMrfForm.workflow ?? []
 
-  // Express hands this over as a string; the route has no Joi cast.
+  // Express hands this over as a string; the route has no Joi cast. A strict
+  // equality check against 0 does not survive that, so compare the coercion.
   const targetStepNumber = Number(stepNumber)
   const isStepNumberValid =
     Number.isInteger(targetStepNumber) &&

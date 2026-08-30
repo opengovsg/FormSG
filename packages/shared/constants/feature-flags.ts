@@ -36,6 +36,7 @@ export const featureFlags = {
   workflowBuilderRedesign: 'workflow-builder-redesign' as const,
   formIdJson: 'formid-json' as const,
   mrfPayments: 'mrf-payments' as const,
+  workflowDeletion: 'workflow-deletion' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
