@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next'
-import { Box, Skeleton, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Skeleton, Stack, Text } from '@chakra-ui/react'
+
+import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
 import {
   formatEmailFieldLabel,
@@ -97,14 +99,25 @@ export const InactiveCompletionEmailCard = ({
         ) : (
           <Stack spacing="1.5rem">
             {groups.map(({ id, label, values }) => (
-              <Stack key={id} spacing="0.25rem">
+              // Bare Stack, so the label-to-chips gap is Chakra's 0.5rem
+              // default, the same as InactiveStepBlock's respondent block.
+              <Stack key={id}>
                 <Text textStyle="subhead-3">{label}</Text>
-                {/* Values are unique within a group: emails are deduplicated in
-                    the helper, step labels carry their step number, and step 1
-                    is a single value. */}
-                {values.map((value) => (
-                  <Text key={value}>{value}</Text>
-                ))}
+                {/* Chip row copied from InactiveStepBlock's respondent badges
+                    rather than approximated, so both cards lay recipients out
+                    identically. Values are unique within a group: emails are
+                    deduplicated in the helper, step labels carry their step
+                    number, and step 1 is a single value. */}
+                <Flex
+                  flexDir={{ base: 'column', md: 'row' }}
+                  gap={{ base: '0.5rem', md: '1rem' }}
+                  rowGap={{ md: '0.5rem' }}
+                  wrap="wrap"
+                >
+                  {values.map((value) => (
+                    <LogicBadge key={value}>{value}</LogicBadge>
+                  ))}
+                </Flex>
               </Stack>
             ))}
           </Stack>
