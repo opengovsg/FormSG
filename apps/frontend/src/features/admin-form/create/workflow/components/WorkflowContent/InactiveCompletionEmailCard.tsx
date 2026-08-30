@@ -1,6 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { Box, Skeleton, Stack, Text } from '@chakra-ui/react'
 
+import {
+  formatEmailFieldLabel,
+  formatNotifiedStepLabel,
+} from './utils/completionEmailLabels'
 import { CompletionEmailRecipients } from './utils/getCompletionEmailRecipients'
 import { CompletionEmailLabel } from './CompletionEmailLabel'
 
@@ -45,20 +49,14 @@ export const InactiveCompletionEmailCard = ({
           id: 'step1',
           label: t(`${PREFIX}.step1.label`),
           values: recipients.stepOneField
-            ? [
-                recipients.stepOneField.questionNumber
-                  ? `${recipients.stepOneField.questionNumber}. ${recipients.stepOneField.title}`
-                  : recipients.stepOneField.title,
-              ]
+            ? [formatEmailFieldLabel(recipients.stepOneField)]
             : [],
         },
         {
           id: 'stepN',
           label: t(`${PREFIX}.stepN.label.overallRedesign`),
-          values: recipients.notifiedSteps.map(
-            ({ stepNumber, stepName }) =>
-              t(`${PREFIX}.stepN.label.each`, { stepNumber }) +
-              (stepName ? ` (${stepName})` : ''),
+          values: recipients.notifiedSteps.map((step) =>
+            formatNotifiedStepLabel(t, step),
           ),
         },
       ].filter(({ values }) => values.length > 0)
