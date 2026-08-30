@@ -13,7 +13,6 @@ jest.mock('src/app/config/features/changelog-digest.config', () => ({
   changelogDigestConfig: {
     slackWebhookUrl: 'https://hooks.slack.test/x',
     previewRecipient: 'preview@example.com',
-    anthropicApiKey: 'test-key',
     githubToken: 'test-token',
     githubRepo: 'opengovsg/FormSG',
     apiSecret: 'test-secret',

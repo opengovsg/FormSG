@@ -23,7 +23,6 @@ import { DigestItem, MergedPullRequest } from '../changelog.types'
 
 jest.mock('src/app/config/features/changelog-digest.config', () => ({
   changelogDigestConfig: {
-    anthropicApiKey: 'test-key',
     githubToken: 'test-token',
     githubRepo: 'opengovsg/FormSG',
     slackWebhookUrl: 'https://hooks.slack.test/x',

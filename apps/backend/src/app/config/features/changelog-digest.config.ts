@@ -2,7 +2,6 @@ import convict, { Schema } from 'convict'
 
 export interface IChangelogDigest {
   apiSecret: string
-  anthropicApiKey: string
   githubToken: string
   githubRepo: string
   slackWebhookUrl: string
@@ -15,13 +14,6 @@ const changelogDigestFeature: Schema<IChangelogDigest> = {
     format: String,
     default: '',
     env: 'CRON_CHANGELOG_API_SECRET',
-    sensitive: true,
-  },
-  anthropicApiKey: {
-    doc: 'Anthropic API key used to draft digest items from merged pull requests',
-    format: String,
-    default: '',
-    env: 'ANTHROPIC_API_KEY',
     sensitive: true,
   },
   githubToken: {

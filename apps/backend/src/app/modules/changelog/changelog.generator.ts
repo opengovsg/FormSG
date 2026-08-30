@@ -1,25 +1,24 @@
-import axios from 'axios'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
-import { changelogDigestConfig } from '../../config/features/changelog-digest.config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { Role, sendPromptToModel } from '../form/admin-form/ai-model'
 
 import { ChangelogGenerationError } from './changelog.errors'
 import { DigestItem, MergedPullRequest } from './changelog.types'
 
 const logger = createLoggerWithLabel(module)
 
-const ANTHROPIC_MESSAGES_URL = 'https://api.anthropic.com/v1/messages'
-const ANTHROPIC_VERSION = '2023-06-01'
-const MODEL = 'claude-opus-5'
-
 /**
- * The official @anthropic-ai/sdk would be preferable here, but adding any new
- * dependency currently fails this repo's pnpm trust check on semver@5.7.2
- * (a transitive dependency of webpack@4). Resolving that is a repo-wide
- * supply chain decision rather than something to settle in a feature branch,
- * so this calls the Messages API over axios, which is already a dependency.
- * Swapping to the SDK is a change to this file alone.
+ * Drafting goes through the same Azure OpenAI client as the form builder's
+ * assistance feature, rather than a provider of its own.
+ *
+ * That is a deployment decision more than a technical one: those credentials
+ * are already provisioned in every environment, so this needs no new key, no
+ * new procurement, and no new dependency — which also sidesteps the pnpm trust
+ * check that adding one currently trips.
+ *
+ * The model is whatever `AZURE_OPENAI_MODEL` names. The prompt does the work
+ * here, and swapping the provider is a change to this file alone.
  */
 
 /**
@@ -29,42 +28,6 @@ const MODEL = 'claude-opus-5'
  * or a Slack post.
  */
 export const MAX_DIGEST_CANDIDATES = 10
-
-const DIGEST_SCHEMA = {
-  type: 'object',
-  properties: {
-    items: {
-      type: 'array',
-      description:
-        'Every change worth telling a form admin about, ordered most notable first. May be empty.',
-      items: {
-        type: 'object',
-        properties: {
-          title: {
-            type: 'string',
-            description:
-              "Sentence-case heading describing the change in the reader's terms. No version numbers, no feature flag names, no internal project names.",
-          },
-          body: {
-            type: 'string',
-            description:
-              'One or two sentences on what this lets the reader do. No links, no jargon, no references to pull requests or tickets.',
-          },
-          sourcePullRequests: {
-            type: 'array',
-            description:
-              'Numbers of the pull requests this item was drawn from. Used by the reviewer to verify the claim; never shown to the reader.',
-            items: { type: 'integer' },
-          },
-        },
-        required: ['title', 'body', 'sourcePullRequests'],
-        additionalProperties: false,
-      },
-    },
-  },
-  required: ['items'],
-  additionalProperties: false,
-} as const
 
 const SYSTEM_PROMPT = `You write a product update email for FormSG, the Singapore government's form building service.
 
@@ -82,12 +45,17 @@ For each item you do select:
 - Write the title as something the reader can do, in sentence case.
 - Write the body as one or two sentences on what it lets them do, or what problem it removes.
 - Use plain language. No version numbers, no flag names, no ticket or pull request references, no links, no marketing phrases such as "we are excited to announce".
-- Describe only what the change actually does. Do not infer capabilities the pull requests do not describe.`
+- Describe only what the change actually does. Do not infer capabilities the pull requests do not describe.
 
-type AnthropicResponse = {
-  stop_reason: string
-  content: { type: string; text?: string }[]
-}
+Reply with a JSON object of this shape, and nothing outside it:
+
+{"items": [{"title": string, "body": string, "sourcePullRequests": number[]}]}
+
+- title: the sentence-case heading described above.
+- body: the one or two sentences described above.
+- sourcePullRequests: the numbers of the pull requests the item was drawn from. A reviewer uses these to check the claim against the change behind it; they are never shown to the reader, so do not refer to them in the title or body.
+
+Return {"items": []} when nothing merits reporting.`
 
 const buildUserPrompt = (pullRequests: MergedPullRequest[]): string => {
   const rendered = pullRequests
@@ -120,42 +88,24 @@ const parseItems = (raw: string): DigestItem[] => {
 export const generateDigestItems = (
   pullRequests: MergedPullRequest[],
 ): ResultAsync<DigestItem[], ChangelogGenerationError> => {
-  const { anthropicApiKey } = changelogDigestConfig
-
-  if (!anthropicApiKey) {
-    return errAsync(
-      new ChangelogGenerationError('ANTHROPIC_API_KEY is not set'),
-    )
-  }
-
   if (!pullRequests.length) {
     return okAsync([])
   }
 
-  return ResultAsync.fromPromise(
-    axios.post<AnthropicResponse>(
-      ANTHROPIC_MESSAGES_URL,
-      {
-        model: MODEL,
-        max_tokens: 16000,
-        thinking: { type: 'adaptive' },
-        system: SYSTEM_PROMPT,
-        output_config: {
-          format: { type: 'json_schema', schema: DIGEST_SCHEMA },
-        },
-        messages: [{ role: 'user', content: buildUserPrompt(pullRequests) }],
-      },
-      {
-        headers: {
-          'x-api-key': anthropicApiKey,
-          'anthropic-version': ANTHROPIC_VERSION,
-          'content-type': 'application/json',
-        },
-      },
-    ),
-    (error) => {
+  return sendPromptToModel({
+    messages: [
+      { role: Role.System, content: SYSTEM_PROMPT },
+      { role: Role.User, content: buildUserPrompt(pullRequests) },
+    ],
+    options: {
+      // Guarantees parseable JSON, not a particular shape. The shape is asked
+      // for in the prompt and checked below.
+      response_format: { type: 'json_object' },
+    },
+  })
+    .mapErr((error) => {
       logger.error({
-        message: 'Anthropic request failed',
+        message: 'Model request failed while drafting the digest',
         meta: {
           action: 'generateDigestItems',
           pullRequestCount: pullRequests.length,
@@ -163,49 +113,36 @@ export const generateDigestItems = (
         error,
       })
       return new ChangelogGenerationError()
-    },
-  ).andThen(({ data }) => {
-    if (data.stop_reason === 'refusal') {
-      logger.error({
-        message: 'Anthropic declined the digest request',
-        meta: { action: 'generateDigestItems' },
-      })
-      return errAsync(
-        new ChangelogGenerationError('Request was declined by the model'),
-      )
-    }
+    })
+    .andThen((text) => {
+      if (!text) {
+        return errAsync(new ChangelogGenerationError('Response was empty'))
+      }
 
-    const text = data.content.find((block) => block.type === 'text')?.text
-    if (!text) {
-      return errAsync(
-        new ChangelogGenerationError('Response contained no text block'),
-      )
-    }
+      let items: DigestItem[]
+      try {
+        items = parseItems(text)
+      } catch (error) {
+        logger.error({
+          message: 'Could not parse digest items from response',
+          meta: { action: 'generateDigestItems' },
+          error,
+        })
+        return errAsync(
+          new ChangelogGenerationError('Response was not valid JSON'),
+        )
+      }
 
-    let items: DigestItem[]
-    try {
-      items = parseItems(text)
-    } catch (error) {
-      logger.error({
-        message: 'Could not parse digest items from response',
-        meta: { action: 'generateDigestItems' },
-        error,
-      })
-      return errAsync(
-        new ChangelogGenerationError('Response was not valid JSON'),
-      )
-    }
+      // The response format guarantees JSON, not this JSON, so the ceiling is
+      // enforced here. Ranked output means the tail is what gets dropped.
+      if (items.length > MAX_DIGEST_CANDIDATES) {
+        logger.warn({
+          message: 'More candidates than the ceiling allows; truncating',
+          meta: { action: 'generateDigestItems', returned: items.length },
+        })
+        items = items.slice(0, MAX_DIGEST_CANDIDATES)
+      }
 
-    // The schema cannot express a maximum array length, so the safety ceiling
-    // is enforced here. Ranked output means the tail is what gets dropped.
-    if (items.length > MAX_DIGEST_CANDIDATES) {
-      logger.warn({
-        message: 'More candidates than the ceiling allows; truncating',
-        meta: { action: 'generateDigestItems', returned: items.length },
-      })
-      items = items.slice(0, MAX_DIGEST_CANDIDATES)
-    }
-
-    return okAsync(items)
-  })
+      return okAsync(items)
+    })
 }

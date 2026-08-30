@@ -1,6 +1,7 @@
-import axios from 'axios'
+import { errAsync, okAsync } from 'neverthrow'
 
-import { changelogDigestConfig } from 'src/app/config/features/changelog-digest.config'
+import { ModelResponseFailureError } from 'src/app/modules/form/admin-form/admin-form.errors'
+import * as AiModel from 'src/app/modules/form/admin-form/ai-model'
 
 import { ChangelogGenerationError } from '../changelog.errors'
 import {
@@ -9,30 +10,18 @@ import {
 } from '../changelog.generator'
 import { MergedPullRequest } from '../changelog.types'
 
-jest.mock('axios')
-const MockAxios = jest.mocked(axios)
-
-jest.mock('src/app/config/features/changelog-digest.config', () => ({
-  changelogDigestConfig: {
-    anthropicApiKey: 'test-key',
-    githubToken: 'test-token',
-    githubRepo: 'opengovsg/FormSG',
-    slackWebhookUrl: '',
-    previewRecipient: 'preview@example.com',
-    apiSecret: 'test-secret',
-  },
-}))
+jest.mock('src/app/modules/form/admin-form/ai-model')
+const MockAiModel = jest.mocked(AiModel)
 
 const PULL_REQUESTS: MergedPullRequest[] = [
   { number: 1, title: 'feat: save draft', body: null, labels: [] },
 ]
 
-const itemsResponse = (items: unknown[]) => ({
-  data: {
-    stop_reason: 'end_turn',
-    content: [{ type: 'text', text: JSON.stringify({ items }) }],
-  },
-})
+/** What the model returns: a JSON string, per the response format asked for. */
+const itemsResponse = (items: unknown[]) =>
+  okAsync(JSON.stringify({ items })) as ReturnType<
+    typeof AiModel.sendPromptToModel
+  >
 
 const buildItem = (n: number) => ({
   title: `Item ${n}`,
@@ -41,29 +30,17 @@ const buildItem = (n: number) => ({
 })
 
 describe('generateDigestItems', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-    changelogDigestConfig.anthropicApiKey = 'test-key'
-  })
+  beforeEach(() => jest.clearAllMocks())
 
-  it('should return no items without calling the API when nothing merged', async () => {
+  it('should return no items without calling the model when nothing merged', async () => {
     const actual = await generateDigestItems([])
 
     expect(actual._unsafeUnwrap()).toEqual([])
-    expect(MockAxios.post).not.toHaveBeenCalled()
-  })
-
-  it('should error when the API key is not configured', async () => {
-    changelogDigestConfig.anthropicApiKey = ''
-
-    const actual = await generateDigestItems(PULL_REQUESTS)
-
-    expect(actual._unsafeUnwrapErr()).toBeInstanceOf(ChangelogGenerationError)
-    expect(MockAxios.post).not.toHaveBeenCalled()
+    expect(MockAiModel.sendPromptToModel).not.toHaveBeenCalled()
   })
 
   it('should return the drafted items', async () => {
-    MockAxios.post.mockResolvedValueOnce(itemsResponse([buildItem(1)]))
+    MockAiModel.sendPromptToModel.mockReturnValue(itemsResponse([buildItem(1)]))
 
     const actual = await generateDigestItems(PULL_REQUESTS)
 
@@ -73,22 +50,21 @@ describe('generateDigestItems', () => {
   // A quiet cycle is the common case, not a failure. The prompt permits an
   // empty list and the caller must handle it as a success.
   it('should treat an empty list as success', async () => {
-    MockAxios.post.mockResolvedValueOnce(itemsResponse([]))
+    MockAiModel.sendPromptToModel.mockReturnValue(itemsResponse([]))
 
     const actual = await generateDigestItems(PULL_REQUESTS)
 
     expect(actual._unsafeUnwrap()).toEqual([])
   })
 
-  // Structured output schemas cannot express a maximum array length, so the
-  // ceiling has to hold even when the model ignores the instruction. This is a
-  // runaway guard, not the digest size — how many items are sent is the
-  // service's decision.
+  // The response format guarantees JSON, not this JSON, so the ceiling has to
+  // hold even when the model ignores the instruction. This is a runaway guard,
+  // not the digest size — how many items are sent is the service's decision.
   it('should truncate to the ceiling when more candidates come back', async () => {
     const tooMany = Array.from({ length: MAX_DIGEST_CANDIDATES + 2 }, (_, i) =>
       buildItem(i),
     )
-    MockAxios.post.mockResolvedValueOnce(itemsResponse(tooMany))
+    MockAiModel.sendPromptToModel.mockReturnValue(itemsResponse(tooMany))
 
     const actual = await generateDigestItems(PULL_REQUESTS)
 
@@ -98,7 +74,7 @@ describe('generateDigestItems', () => {
   // Ranking is the contract the service relies on when it takes the top three.
   it('should preserve the order the model returned', async () => {
     const ranked = [buildItem(0), buildItem(1), buildItem(2)]
-    MockAxios.post.mockResolvedValueOnce(itemsResponse(ranked))
+    MockAiModel.sendPromptToModel.mockReturnValue(itemsResponse(ranked))
 
     const actual = await generateDigestItems(PULL_REQUESTS)
 
@@ -107,10 +83,23 @@ describe('generateDigestItems', () => {
     )
   })
 
-  it('should error when the model declines the request', async () => {
-    MockAxios.post.mockResolvedValueOnce({
-      data: { stop_reason: 'refusal', content: [] },
-    })
+  it('should error when the model request fails', async () => {
+    MockAiModel.sendPromptToModel.mockReturnValue(
+      errAsync(new ModelResponseFailureError()) as ReturnType<
+        typeof AiModel.sendPromptToModel
+      >,
+    )
+
+    const actual = await generateDigestItems(PULL_REQUESTS)
+
+    expect(actual._unsafeUnwrapErr()).toBeInstanceOf(ChangelogGenerationError)
+  })
+
+  // The shared client returns null when the response carried no content.
+  it('should error when the model returns nothing', async () => {
+    MockAiModel.sendPromptToModel.mockReturnValue(
+      okAsync(null) as ReturnType<typeof AiModel.sendPromptToModel>,
+    )
 
     const actual = await generateDigestItems(PULL_REQUESTS)
 
@@ -118,23 +107,28 @@ describe('generateDigestItems', () => {
   })
 
   it('should error when the response is not valid JSON', async () => {
-    MockAxios.post.mockResolvedValueOnce({
-      data: {
-        stop_reason: 'end_turn',
-        content: [{ type: 'text', text: 'not json' }],
-      },
-    })
+    MockAiModel.sendPromptToModel.mockReturnValue(
+      okAsync('not json at all') as ReturnType<
+        typeof AiModel.sendPromptToModel
+      >,
+    )
 
     const actual = await generateDigestItems(PULL_REQUESTS)
 
     expect(actual._unsafeUnwrapErr()).toBeInstanceOf(ChangelogGenerationError)
   })
 
-  it('should error when the request fails', async () => {
-    MockAxios.post.mockRejectedValueOnce(new Error('network'))
+  // json_object mode guarantees parseable JSON, not a shape. Valid JSON with no
+  // items array must read as "nothing to report", not crash the cycle.
+  it('should treat valid JSON without an items array as no items', async () => {
+    MockAiModel.sendPromptToModel.mockReturnValue(
+      okAsync('{"something":"else"}') as ReturnType<
+        typeof AiModel.sendPromptToModel
+      >,
+    )
 
     const actual = await generateDigestItems(PULL_REQUESTS)
 
-    expect(actual._unsafeUnwrapErr()).toBeInstanceOf(ChangelogGenerationError)
+    expect(actual._unsafeUnwrap()).toEqual([])
   })
 })

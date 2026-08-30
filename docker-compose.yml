@@ -119,10 +119,11 @@ services:
       # Cron secrets
       - CRON_PAYMENT_API_SECRET=secretKey
       - CRON_CHANGELOG_API_SECRET=secretKey
-      # Changelog digest. The two secrets are read from the host environment so
-      # they never land in the repo; the recipient is pinned because a local
-      # digest must not be able to reach anyone but the person running it.
-      - ANTHROPIC_API_KEY
+      # Changelog digest. Drafting uses the Azure OpenAI credentials the form
+      # builder's assistance feature already needs, so the only secret here is
+      # the GitHub token, read from the host environment so it never lands in
+      # the repo. The recipient is pinned because a local digest must not be
+      # able to reach anyone but the person running it.
       - CHANGELOG_GITHUB_TOKEN
       - CHANGELOG_SLACK_WEBHOOK_URL
       - CHANGELOG_PREVIEW_RECIPIENT=eric@open.gov.sg

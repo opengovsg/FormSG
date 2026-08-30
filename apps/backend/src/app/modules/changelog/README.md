@@ -19,7 +19,7 @@ Two endpoints, deliberately separate.
 
 1. If a digest already exists for this ISO week, return it and stop.
 2. Read pull requests merged since a digest was last **sent**.
-3. Ask Claude for every change a form admin would care about, ranked most
+3. Ask the model for every change a form admin would care about, ranked most
    notable first.
 4. Persist the result: `draft` if there are at least three, `held` if not.
 5. Post the outcome to Slack.
@@ -104,7 +104,7 @@ These are deliberate and worth preserving until the approval flow exists.
 | Variable                      | Purpose                                                            |
 | ----------------------------- | ------------------------------------------------------------------ |
 | `CRON_CHANGELOG_API_SECRET`   | Shared secret for the route. An unset secret authenticates nobody. |
-| `ANTHROPIC_API_KEY`           | Drafting the items.                                                |
+| `AZURE_OPENAI_*`              | Drafting the items. Shared with the form builder's assistance feature — already provisioned, nothing new to set up. |
 | `CHANGELOG_GITHUB_TOKEN`      | Read access to pull requests.                                      |
 | `CHANGELOG_GITHUB_REPO`       | Defaults to `opengovsg/FormSG`.                                    |
 | `CHANGELOG_SLACK_WEBHOOK_URL` | Optional. Unset means the Slack step is skipped, not failed.       |
