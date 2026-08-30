@@ -54,14 +54,33 @@ describe('getMergedPullRequests', () => {
     expect(params.q).toContain('repo:opengovsg/FormSG')
     expect(params.q).toContain('is:merged')
     expect(params.q).toContain('base:develop')
-    // Exclusive lower bound, inclusive upper, rather than GitHub's `a..b`
-    // range. `a..b` includes both ends, which would re-feed the generator every
-    // pull request merged at the previous window's boundary — and a repeated
-    // item across consecutive digests is the most visible failure this could
-    // have.
-    expect(params.q).toContain('merged:>2026-08-01T00:00:00.000Z')
-    expect(params.q).toContain('merged:<=2026-08-15T00:00:00.000Z')
-    expect(params.q).not.toContain('..')
+    // One range qualifier, with the lower bound nudged a millisecond forward
+    // so an inclusive range expresses the window's exclusive `since`.
+    expect(params.q).toContain(
+      'merged:2026-08-01T00:00:00.001Z..2026-08-15T00:00:00.000Z',
+    )
+  })
+
+  /**
+   * GitHub applies only the *last* `merged:` qualifier in a query and silently
+   * drops the rest — no error, just a result set that ignores the window. A
+   * query built with two of them means "everything ever merged", which reads as
+   * a suspiciously productive fortnight rather than as a bug.
+   *
+   * This can only be asserted on the query string. Nothing in this suite talks
+   * to GitHub, so no test here can catch the API ignoring a qualifier we think
+   * it honours; that was found by running the real query and has to be
+   * re-checked by hand if this line ever changes.
+   */
+  it('should use exactly one merged: qualifier', async () => {
+    MockAxios.get.mockResolvedValueOnce(searchResponse([]))
+
+    await getMergedPullRequests(WINDOW)
+
+    const { params } = MockAxios.get.mock.calls[0][1] as {
+      params: { q: string }
+    }
+    expect(params.q.match(/merged:/g)).toHaveLength(1)
   })
 
   it('should flatten labels onto each pull request', async () => {

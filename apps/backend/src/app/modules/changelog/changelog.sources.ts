@@ -12,6 +12,13 @@ const logger = createLoggerWithLabel(module)
 const GITHUB_SEARCH_URL = 'https://api.github.com/search/issues'
 
 /**
+ * The instant just after `since`, so an inclusive range expresses an exclusive
+ * lower bound. See the query below for why the range has to be inclusive.
+ */
+const exclusiveLowerBound = (since: string): string =>
+  new Date(new Date(since).getTime() + 1).toISOString()
+
+/**
  * GitHub caps search results at 100 per page. A week of merges sits well under
  * that. A window large enough to exceed it means either the caller passed the
  * wrong dates or the digest has been holding items over for a very long time —
@@ -53,13 +60,18 @@ export const getMergedPullRequests = (
     'is:pr',
     'is:merged',
     'base:develop',
-    // Exclusive lower bound, inclusive upper. GitHub's `a..b` range is
-    // inclusive at both ends, which would hand the generator every pull request
-    // merged at the previous window's boundary a second time — and a repeated
-    // item in consecutive digests is the most visible way this could embarrass
-    // us. Two qualifiers instead; GitHub ANDs them.
-    `merged:>${window.since}`,
-    `merged:<=${window.until}`,
+    // One range qualifier, not two. GitHub applies only the *last* `merged:`
+    // qualifier in a query and silently drops the rest — no error, just a
+    // result set that quietly ignores the window. `merged:>a merged:<=b`
+    // therefore means `merged:<=b`, which is every pull request the repository
+    // has ever merged.
+    //
+    // The range is inclusive at both ends, and the window's `since` is
+    // exclusive, so the bound is nudged forward by the smallest unit the
+    // format carries. A millisecond is not a meaningful amount of time to
+    // anyone reading a digest, but it is the difference between a pull request
+    // merged exactly at a boundary appearing in one digest or in two.
+    `merged:${exclusiveLowerBound(window.since)}..${window.until}`,
   ].join(' ')
 
   return ResultAsync.fromPromise(
