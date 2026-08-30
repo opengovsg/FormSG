@@ -181,7 +181,10 @@ export const ActiveCompletionEmailCard = ({
           <MrfEmailRecipientsFieldGroup
             control={control}
             isDisabled={isDisabled}
-            isHighContrast={false}
+            // Matches Settings, which defaults this to true. The variant
+            // exists only to keep a disabled label dark rather than faded,
+            // and this card is read-only on a published form.
+            isHighContrast
             otherPartiesPlaceholder={otherPartiesPlaceholder}
             onOtherPartiesBlur={handleOtherPartiesBlur}
             heading={

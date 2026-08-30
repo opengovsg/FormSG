@@ -1,6 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
-import { Box, chakra, Flex, Icon, Skeleton, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  chakra,
+  Flex,
+  Icon,
+  Skeleton,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
