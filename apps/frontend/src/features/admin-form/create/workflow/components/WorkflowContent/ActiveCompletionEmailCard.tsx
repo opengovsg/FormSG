@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Box, Divider, Stack, Text } from '@chakra-ui/react'
 import { isEqual, uniq } from 'lodash'
@@ -102,12 +102,16 @@ export const ActiveCompletionEmailCard = ({
     )
   }, cancelPendingSwitch)
 
-  // Matches Settings: the placeholder is a hint for an empty field, so it goes
-  // away once there are recipients.
+  // The placeholder is a hint for an empty field, so it goes away once there
+  // are recipients. Subscribed rather than read with getValues: this card
+  // commits on Save, so nothing else re-renders it when a tag is added or
+  // removed. Settings gets away with getValues only because it saves on blur.
+  const otherParties = useWatch({
+    control,
+    name: OTHER_PARTIES_EMAIL_INPUT_NAME,
+  })
   const otherPartiesPlaceholder =
-    (getValues(OTHER_PARTIES_EMAIL_INPUT_NAME)?.length ?? 0) > 0
-      ? undefined
-      : 'me@example.com'
+    (otherParties?.length ?? 0) > 0 ? undefined : 'me@example.com'
 
   // Dedupes on blur but does not submit: this card commits only on Save.
   const handleOtherPartiesBlur = () => {

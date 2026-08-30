@@ -134,7 +134,12 @@ const OpenedTemplate: StoryFn = () => {
   const setToEditingEmailCard = useAdminWorkflowStore(
     setToEditingEmailCardSelector,
   )
-  useEffect(() => setToEditingEmailCard(), [setToEditingEmailCard])
+  // Resets on unmount, so switching between the Active and Inactive stories
+  // does not leak an open card into the next one.
+  useEffect(() => {
+    setToEditingEmailCard()
+    return () => useAdminWorkflowStore.getState().reset()
+  }, [setToEditingEmailCard])
   return <CompletionEmailBlock />
 }
 

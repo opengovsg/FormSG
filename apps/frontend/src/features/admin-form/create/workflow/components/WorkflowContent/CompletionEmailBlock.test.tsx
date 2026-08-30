@@ -15,8 +15,16 @@ const DIVIDER = /end of workflow/i
 
 describe('completion email seam', () => {
   // jsdom does not implement scrollIntoView, which the expanded card calls.
+  // It has to be assigned rather than spied, because vi.spyOn needs the
+  // property to already exist. Deleted afterwards so the global does not leak
+  // into other suites.
   beforeAll(() => {
     Element.prototype.scrollIntoView = vi.fn()
+  })
+
+  afterAll(() => {
+    delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>)
+      .scrollIntoView
   })
 
   afterEach(() => useAdminWorkflowStore.getState().reset())
