@@ -101,14 +101,31 @@ These are deliberate and worth preserving until the approval flow exists.
 
 ## Configuration
 
-| Variable                      | Purpose                                                            |
-| ----------------------------- | ------------------------------------------------------------------ |
-| `CRON_CHANGELOG_API_SECRET`   | Shared secret for the route. An unset secret authenticates nobody. |
+| Variable                      | Purpose                                                                                                             |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `CRON_CHANGELOG_API_SECRET`   | Shared secret for the route. An unset secret authenticates nobody.                                                  |
 | `AZURE_OPENAI_*`              | Drafting the items. Shared with the form builder's assistance feature — already provisioned, nothing new to set up. |
-| `CHANGELOG_GITHUB_TOKEN`      | Read access to pull requests.                                      |
-| `CHANGELOG_GITHUB_REPO`       | Defaults to `opengovsg/FormSG`.                                    |
-| `CHANGELOG_SLACK_WEBHOOK_URL` | Optional. Unset means the Slack step is skipped, not failed.       |
-| `CHANGELOG_PREVIEW_RECIPIENT` | The only address a digest is ever sent to.                         |
+| `CHANGELOG_GITHUB_TOKEN`      | Read access to pull requests.                                                                                       |
+| `CHANGELOG_GITHUB_REPO`       | Defaults to `opengovsg/FormSG`.                                                                                     |
+| `CHANGELOG_SLACK_WEBHOOK_URL` | Optional. Unset means the Slack step is skipped, not failed.                                                        |
+| `CHANGELOG_PREVIEW_RECIPIENT` | The only address a digest is ever sent to.                                                                          |
+
+## Before it runs in a deployed environment
+
+The task definition reads all of these from SSM at
+`/<site>/<NAME>`, so each must exist for that site before the digest can run
+there. None are created by this repo.
+
+| Parameter                     | Notes                                                                                                                                                                |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CRON_CHANGELOG_API_SECRET`   | Read by the backend _and_ by the Lambda, which fetches it from SSM directly. One parameter, not two — a drift between them would be silent, and every run would 401. |
+| `CHANGELOG_GITHUB_TOKEN`      | Read access to pull requests. The repository is public, so this is about the search API's rate limit rather than access.                                             |
+| `CHANGELOG_PREVIEW_RECIPIENT` | The only address a digest is ever sent to.                                                                                                                           |
+| `CHANGELOG_SLACK_WEBHOOK_URL` | Optional. Unset means the Slack step is skipped, not failed.                                                                                                         |
+| `AZURE_OPENAI_*`              | Already wired into the task definition for the form builder's assistance feature. Present wherever that feature works; nothing new to create.                        |
+
+The scheduling Lambda additionally needs its artifact bucket; see
+`services/changelog-digest/README.md`.
 
 ## Working on it locally
 
