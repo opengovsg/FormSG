@@ -38,6 +38,10 @@ export const DynamicRespondentOption = ({
 
   // The radio stays selectable. The admin picks the routing option, then
   // finds out what it needs. Disabling it would hide the reason.
+  //
+  // The empty state swaps out what the Controller renders, never the
+  // Controller itself. Unmounting it would unregister the `required` rule, so
+  // Save would pass validation, fail to build a step, and return silently.
   const showEmptyState = isRedesign && !emailFieldItems?.length
 
   return (
@@ -63,44 +67,44 @@ export const DynamicRespondentOption = ({
             pt="0.5rem"
             isReadOnly={isLoading}
             id="field"
-            isRequired={!showEmptyState}
+            isRequired
             isInvalid={!!errors.field}
           >
-            {showEmptyState ? (
-              <FieldEmptyState
-                picker="email"
-                message={t(
-                  'features.adminForm.sidebar.workflow.emptyStates.noEmailField',
-                )}
-                actionLabel={t(
-                  'features.adminForm.sidebar.workflow.emptyStates.noEmailFieldAction',
-                )}
-                onAction={() => stageFieldAndNavigate(BasicField.Email)}
-              />
-            ) : (
-              <Controller
-                control={control}
-                name="field"
-                rules={{
-                  required: t(
-                    'features.adminForm.sidebar.workflow.dynamicRespondent.required',
-                  ),
-                  validate: (selectedValue) => {
-                    return (
-                      isLoading ||
-                      !emailFieldItems ||
-                      emailFieldItems.some(
-                        ({ value: fieldValue }) => fieldValue === selectedValue,
-                      ) ||
-                      t(
-                        isRedesign
-                          ? 'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmailRedesign'
-                          : 'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmail',
-                      )
+            <Controller
+              control={control}
+              name="field"
+              rules={{
+                required: t(
+                  'features.adminForm.sidebar.workflow.dynamicRespondent.required',
+                ),
+                validate: (selectedValue) => {
+                  return (
+                    isLoading ||
+                    !emailFieldItems ||
+                    emailFieldItems.some(
+                      ({ value: fieldValue }) => fieldValue === selectedValue,
+                    ) ||
+                    t(
+                      isRedesign
+                        ? 'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmailRedesign'
+                        : 'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmail',
                     )
-                  },
-                }}
-                render={({ field: { value = '', ...rest } }) => (
+                  )
+                },
+              }}
+              render={({ field: { value = '', ...rest } }) =>
+                showEmptyState ? (
+                  <FieldEmptyState
+                    picker="email"
+                    message={t(
+                      'features.adminForm.sidebar.workflow.emptyStates.noEmailField',
+                    )}
+                    actionLabel={t(
+                      'features.adminForm.sidebar.workflow.emptyStates.noEmailFieldAction',
+                    )}
+                    onAction={() => stageFieldAndNavigate(BasicField.Email)}
+                  />
+                ) : (
                   <SingleSelect
                     isDisabled={isLoading}
                     isClearable={false}
@@ -111,9 +115,9 @@ export const DynamicRespondentOption = ({
                     value={value}
                     {...rest}
                   />
-                )}
-              />
-            )}
+                )
+              }
+            />
             <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
           </FormControl>
         ) : null}

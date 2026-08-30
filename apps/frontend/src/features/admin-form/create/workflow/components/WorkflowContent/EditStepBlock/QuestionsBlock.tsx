@@ -63,6 +63,11 @@ export const QuestionsBlock = ({
 
   // The empty state only exists under the redesign flag. With it off, the
   // picker renders as it does today: enabled, and holding nothing.
+  //
+  // Unlike the respondent pickers, this one replaces the Controller outright.
+  // `edit` carries no validation rules and buildWorkflowStep does not require
+  // it, so there is no registered rule to lose. The asterisk goes with it,
+  // because nothing here is actually required.
   const showEmptyState = isRedesign && items.length === 0
 
   return (

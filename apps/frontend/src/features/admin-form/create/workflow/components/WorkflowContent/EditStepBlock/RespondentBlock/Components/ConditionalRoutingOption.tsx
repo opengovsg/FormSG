@@ -365,6 +365,10 @@ export const ConditionalRoutingOption = ({
   // The radio stays selectable, matching the dynamic option. The CSV block
   // below is already gated on a selected dropdown field, so it stays hidden
   // here without extra handling.
+  //
+  // The empty state swaps out what the Controller renders, never the
+  // Controller itself. Unmounting it would unregister the `required` rule, so
+  // Save would pass validation, fail to build a step, and return silently.
   const showEmptyState = isRedesign && !conditionalFieldItems.length
 
   const handleOpenModal = () => {
@@ -419,55 +423,56 @@ export const ConditionalRoutingOption = ({
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <FormControl
             id="conditional_field"
-            isRequired={!showEmptyState}
+            isRequired
             isInvalid={
               !!validateOptionsToRecipientsMapErrorMessage ||
               !!errors.conditional_field
             }
           >
             <Stack spacing="0.625rem">
-              {showEmptyState ? (
-                <FieldEmptyState
-                  picker="dropdown"
-                  message={t(
-                    'features.adminForm.sidebar.workflow.emptyStates.noDropdownField',
-                  )}
-                  actionLabel={t(
-                    'features.adminForm.sidebar.workflow.emptyStates.noDropdownFieldAction',
-                  )}
-                  onAction={() => stageFieldAndNavigate(BasicField.Dropdown)}
-                />
-              ) : (
-                <Controller
-                  control={control}
-                  name="conditional_field"
-                  rules={{
-                    required: t(
-                      'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
-                    ),
-                    validate: (selectedValue) => {
-                      if (noEmailToOptionsMappingErrorMessage) {
-                        return noEmailToOptionsMappingErrorMessage
-                      }
-                      if (validateOptionsToRecipientsMapErrorMessage) {
-                        return validateOptionsToRecipientsMapErrorMessage
-                      }
-                      return (
-                        isLoading ||
-                        !conditionalFieldItems ||
-                        conditionalFieldItems.some(
-                          ({ value: fieldValue }) =>
-                            fieldValue === selectedValue,
-                        ) ||
-                        t(
-                          isRedesign
-                            ? 'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdownRedesign'
-                            : 'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdown',
-                        )
+              <Controller
+                control={control}
+                name="conditional_field"
+                rules={{
+                  required: t(
+                    'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
+                  ),
+                  validate: (selectedValue) => {
+                    if (noEmailToOptionsMappingErrorMessage) {
+                      return noEmailToOptionsMappingErrorMessage
+                    }
+                    if (validateOptionsToRecipientsMapErrorMessage) {
+                      return validateOptionsToRecipientsMapErrorMessage
+                    }
+                    return (
+                      isLoading ||
+                      !conditionalFieldItems ||
+                      conditionalFieldItems.some(
+                        ({ value: fieldValue }) => fieldValue === selectedValue,
+                      ) ||
+                      t(
+                        isRedesign
+                          ? 'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdownRedesign'
+                          : 'features.adminForm.sidebar.workflow.conditionalRouting.validation.notDropdown',
                       )
-                    },
-                  }}
-                  render={({ field: { value = '', ...rest } }) => (
+                    )
+                  },
+                }}
+                render={({ field: { value = '', ...rest } }) =>
+                  showEmptyState ? (
+                    <FieldEmptyState
+                      picker="dropdown"
+                      message={t(
+                        'features.adminForm.sidebar.workflow.emptyStates.noDropdownField',
+                      )}
+                      actionLabel={t(
+                        'features.adminForm.sidebar.workflow.emptyStates.noDropdownFieldAction',
+                      )}
+                      onAction={() =>
+                        stageFieldAndNavigate(BasicField.Dropdown)
+                      }
+                    />
+                  ) : (
                     <SingleSelect
                       isDisabled={isLoading}
                       isClearable={false}
@@ -478,9 +483,9 @@ export const ConditionalRoutingOption = ({
                       value={value}
                       {...rest}
                     />
-                  )}
-                />
-              )}
+                  )
+                }
+              />
               {isSelectedConditionalFieldFound ? (
                 isOptionsToRecipientsMapAttached ? (
                   <Attachment
