@@ -50,7 +50,11 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
     : null
 
   return (
-    <Stack spacing="1.5rem">
+    // Measured: only 16px sits below this card today, from the tab's own
+    // `md: '1rem'` padding. These add to that for 64px on desktop and 48px on
+    // mobile. On this Stack rather than a shared container so the flag-off
+    // path stays untouched.
+    <Stack spacing="1.5rem" pb={{ base: '1rem', md: '3rem' }}>
       <EndOfWorkflowDivider />
       <InactiveCompletionEmailCard recipients={recipients} />
     </Stack>
