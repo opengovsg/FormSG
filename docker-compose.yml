@@ -118,6 +118,14 @@ services:
       - PAYMENT_LANDING_GUIDE_LINK
       # Cron secrets
       - CRON_PAYMENT_API_SECRET=secretKey
+      - CRON_CHANGELOG_API_SECRET=secretKey
+      # Changelog digest. The two secrets are read from the host environment so
+      # they never land in the repo; the recipient is pinned because a local
+      # digest must not be able to reach anyone but the person running it.
+      - ANTHROPIC_API_KEY
+      - CHANGELOG_GITHUB_TOKEN
+      - CHANGELOG_SLACK_WEBHOOK_URL
+      - CHANGELOG_PREVIEW_RECIPIENT=eric@open.gov.sg
       # env vars for go integration
       - GOGOV_API_KEY
       # Bearer token API key format

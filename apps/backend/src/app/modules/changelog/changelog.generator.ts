@@ -22,15 +22,21 @@ const MODEL = 'claude-opus-5'
  * Swapping to the SDK is a change to this file alone.
  */
 
-/** Hard ceiling on items in one digest. Fewer is fine; zero is fine. */
-export const MAX_DIGEST_ITEMS = 3
+/**
+ * Safety ceiling on how many candidates one call may return. Not the digest
+ * size — the digest takes the best few of these, and that decision belongs to
+ * the service. This exists only so a runaway response cannot flood a log line
+ * or a Slack post.
+ */
+export const MAX_DIGEST_CANDIDATES = 10
 
 const DIGEST_SCHEMA = {
   type: 'object',
   properties: {
     items: {
       type: 'array',
-      description: `Between 0 and ${MAX_DIGEST_ITEMS} items, most notable first.`,
+      description:
+        'Every change worth telling a form admin about, ordered most notable first. May be empty.',
       items: {
         type: 'object',
         properties: {
@@ -64,11 +70,13 @@ const SYSTEM_PROMPT = `You write a product update email for FormSG, the Singapor
 
 Your readers are form admins: public officers who build and manage forms. They are not engineers. They do not know or care about our codebase, our release process, our internal project names, or our feature flags.
 
-You will be given the pull requests merged during one period. Select at most ${MAX_DIGEST_ITEMS} that a form admin would genuinely care about, and write each one up for them.
+You will be given the pull requests merged since the last digest went out. Select every one that a form admin would genuinely care about, write each up for them, and order them most notable first.
+
+Only the top few are actually sent, so the ordering carries real weight. Put the change that most affects a form admin's daily work first, and judge that by how many admins it touches and how much it changes what they can do — not by how much engineering went into it.
 
 Most merged work is invisible to these readers. Translation groundwork, library and SDK upgrades, monitoring and logging, dead code removal, test changes, refactors, and version bumps are never worth reporting. Neither is anything that has landed but is still switched off for users.
 
-It is normal and expected for a period to contain nothing worth announcing. Return an empty list when that is the case. Never pad the list to reach three items, and never inflate the significance of internal work to make it sound user-facing. Returning one strong item is a better outcome than three weak ones.
+It is normal and expected for a period to contain nothing worth announcing. Return an empty list when that is the case. Never pad the list, and never inflate the significance of internal work to make it sound user-facing — a period that yields too little is simply held over and reconsidered next time, so there is no cost to returning fewer items and a real cost to returning weak ones.
 
 For each item you do select:
 - Write the title as something the reader can do, in sentence case.
@@ -101,10 +109,13 @@ const parseItems = (raw: string): DigestItem[] => {
 }
 
 /**
- * Drafts digest items from merged pull requests.
+ * Drafts candidate digest items from merged pull requests, ranked most notable
+ * first.
  *
- * Returns an empty list when nothing merged is worth telling a form admin
- * about, which is the common case and not a failure.
+ * Returns everything worth telling a form admin about rather than a digest's
+ * worth: how many are needed, and whether there are enough to send at all, is
+ * the service's decision. Returning an empty list is the common case and not a
+ * failure.
  */
 export const generateDigestItems = (
   pullRequests: MergedPullRequest[],
@@ -185,14 +196,14 @@ export const generateDigestItems = (
       )
     }
 
-    // The schema cannot express a maximum array length, so the cap is enforced
-    // here as well as asked for in the prompt.
-    if (items.length > MAX_DIGEST_ITEMS) {
+    // The schema cannot express a maximum array length, so the safety ceiling
+    // is enforced here. Ranked output means the tail is what gets dropped.
+    if (items.length > MAX_DIGEST_CANDIDATES) {
       logger.warn({
-        message: 'More items than the cap allows; truncating',
+        message: 'More candidates than the ceiling allows; truncating',
         meta: { action: 'generateDigestItems', returned: items.length },
       })
-      items = items.slice(0, MAX_DIGEST_ITEMS)
+      items = items.slice(0, MAX_DIGEST_CANDIDATES)
     }
 
     return okAsync(items)

@@ -9,9 +9,10 @@ import {
 } from '../changelog.errors'
 import * as ChangelogGenerator from '../changelog.generator'
 import {
-  defaultWindow,
   DIGEST_CTA_URL,
+  DIGEST_ITEM_COUNT,
   generateAndPreviewDigest,
+  nextDigestWindow,
 } from '../changelog.service'
 import * as ChangelogSlack from '../changelog.slack'
 import * as ChangelogSources from '../changelog.sources'
@@ -50,6 +51,20 @@ const ITEM: DigestItem = {
   sourcePullRequests: [1],
 }
 
+/** A ranked run of candidates, most notable first. */
+const items = (count: number): DigestItem[] =>
+  Array.from({ length: count }, (_, i) => ({
+    title: `Item ${i}`,
+    body: `Body ${i}`,
+    sourcePullRequests: [i],
+  }))
+
+const mockLastSent = jest.fn()
+jest.mock('src/app/models/changelog_digest.server.model', () => () => ({
+  getLastSent: (...args: unknown[]) => mockLastSent(...args),
+  create: jest.fn().mockResolvedValue({}),
+}))
+
 describe('generateAndPreviewDigest', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -70,15 +85,16 @@ describe('generateAndPreviewDigest', () => {
     expect(MockSources.getMergedPullRequests).not.toHaveBeenCalled()
   })
 
-  it('should email the preview recipient and notify Slack when there are items', async () => {
-    MockGenerator.generateDigestItems.mockReturnValue(okAsync([ITEM]))
+  it('should email the preview recipient and notify Slack when there are enough items', async () => {
+    const candidates = items(DIGEST_ITEM_COUNT)
+    MockGenerator.generateDigestItems.mockReturnValue(okAsync(candidates))
 
     const actual = await generateAndPreviewDigest(WINDOW)
 
-    expect(actual._unsafeUnwrap()).toEqual({
-      items: [ITEM],
-      window: WINDOW,
-      consideredPullRequests: 1,
+    expect(actual._unsafeUnwrap()).toMatchObject({
+      outcome: 'sent',
+      sentItems: candidates,
+      candidateCount: DIGEST_ITEM_COUNT,
     })
     expect(MockMailService.sendChangelogDigest).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -89,27 +105,59 @@ describe('generateAndPreviewDigest', () => {
     expect(MockSlack.notifySlack).toHaveBeenCalled()
   })
 
+  // The whole point of holding items over: two quiet weeks are meant to produce
+  // one good digest, not two thin ones. The generator ranks, the service cuts.
+  it('should send only the best items when more than enough are found', async () => {
+    const candidates = items(DIGEST_ITEM_COUNT + 2)
+    MockGenerator.generateDigestItems.mockReturnValue(okAsync(candidates))
+
+    const actual = await generateAndPreviewDigest(WINDOW)
+
+    expect(actual._unsafeUnwrap()).toMatchObject({
+      outcome: 'sent',
+      candidateCount: DIGEST_ITEM_COUNT + 2,
+    })
+    expect(actual._unsafeUnwrap().sentItems).toEqual(
+      candidates.slice(0, DIGEST_ITEM_COUNT),
+    )
+    expect(
+      MockMailService.sendChangelogDigest.mock.calls[0][0].items,
+    ).toHaveLength(DIGEST_ITEM_COUNT)
+  })
+
+  // Below the bar, nothing is sent and nothing is recorded, so the same changes
+  // are reconsidered next cycle alongside whatever is new.
+  it.each([0, 1, DIGEST_ITEM_COUNT - 1])(
+    'should hold over and send no mail when only %i items are found',
+    async (count) => {
+      MockGenerator.generateDigestItems.mockReturnValue(okAsync(items(count)))
+
+      const actual = await generateAndPreviewDigest(WINDOW)
+
+      expect(actual._unsafeUnwrap()).toMatchObject({
+        outcome: 'skipped',
+        sentItems: [],
+        candidateCount: count,
+      })
+      expect(MockMailService.sendChangelogDigest).not.toHaveBeenCalled()
+      expect(MockSlack.notifySlack).toHaveBeenCalled()
+    },
+  )
+
   // Provenance is for the reviewer in Slack, never for the reader. The mail
   // payload must carry only what the template can render.
   it('should not pass pull request numbers to the email', async () => {
-    MockGenerator.generateDigestItems.mockReturnValue(okAsync([ITEM]))
+    MockGenerator.generateDigestItems.mockReturnValue(
+      okAsync([ITEM, ...items(DIGEST_ITEM_COUNT - 1)]),
+    )
 
     await generateAndPreviewDigest(WINDOW)
 
     const mailArgs = MockMailService.sendChangelogDigest.mock.calls[0][0]
-    expect(mailArgs.items).toEqual([{ title: ITEM.title, body: ITEM.body }])
-  })
-
-  // A quiet cycle is expected. Nothing should be emailed, but Slack still hears
-  // about it so silence is not mistaken for a job that failed.
-  it('should notify Slack but send no mail when there are no items', async () => {
-    MockGenerator.generateDigestItems.mockReturnValue(okAsync([]))
-
-    const actual = await generateAndPreviewDigest(WINDOW)
-
-    expect(actual._unsafeUnwrap().items).toEqual([])
-    expect(MockMailService.sendChangelogDigest).not.toHaveBeenCalled()
-    expect(MockSlack.notifySlack).toHaveBeenCalled()
+    expect(mailArgs.items[0]).toEqual({ title: ITEM.title, body: ITEM.body })
+    mailArgs.items.forEach((item) =>
+      expect(item).not.toHaveProperty('sourcePullRequests'),
+    )
   })
 
   it('should propagate a source failure without sending anything', async () => {
@@ -125,17 +173,59 @@ describe('generateAndPreviewDigest', () => {
   })
 })
 
-describe('defaultWindow', () => {
-  it('should span the preceding 14 days inclusive', () => {
-    expect(defaultWindow(new Date('2026-08-27T00:00:00Z'))).toEqual({
-      since: '2026-08-13',
-      until: '2026-08-27',
+/**
+ * The watermark is what makes holding items over work: a cycle covers
+ * everything since the last digest was *sent*, not since the job last ran.
+ */
+describe('nextDigestWindow', () => {
+  beforeEach(() => jest.clearAllMocks())
+
+  it('should start from the last sent digest', async () => {
+    mockLastSent.mockResolvedValue({
+      window: { since: '2026-08-01', until: '2026-08-17' },
+    })
+
+    const actual = await nextDigestWindow(new Date('2026-08-24T00:00:00Z'))
+
+    expect(actual._unsafeUnwrap()).toEqual({
+      since: '2026-08-17',
+      until: '2026-08-24',
     })
   })
 
-  it('should cross a month boundary correctly', () => {
-    expect(defaultWindow(new Date('2026-03-05T00:00:00Z'))).toEqual({
-      since: '2026-02-19',
+  it('should look back a week when nothing has ever been sent', async () => {
+    mockLastSent.mockResolvedValue(null)
+
+    const actual = await nextDigestWindow(new Date('2026-08-24T00:00:00Z'))
+
+    expect(actual._unsafeUnwrap()).toEqual({
+      since: '2026-08-17',
+      until: '2026-08-24',
+    })
+  })
+
+  // A skipped cycle records nothing, so the window keeps growing until a digest
+  // actually goes out. This is what lets two quiet weeks combine.
+  it('should span both weeks when the previous cycle was skipped', async () => {
+    mockLastSent.mockResolvedValue({
+      window: { since: '2026-08-03', until: '2026-08-10' },
+    })
+
+    const actual = await nextDigestWindow(new Date('2026-08-24T00:00:00Z'))
+
+    expect(actual._unsafeUnwrap()).toEqual({
+      since: '2026-08-10',
+      until: '2026-08-24',
+    })
+  })
+
+  it('should cross a month boundary correctly', async () => {
+    mockLastSent.mockResolvedValue(null)
+
+    const actual = await nextDigestWindow(new Date('2026-03-05T00:00:00Z'))
+
+    expect(actual._unsafeUnwrap()).toEqual({
+      since: '2026-02-26',
       until: '2026-03-05',
     })
   })

@@ -12,7 +12,7 @@ const logger = createLoggerWithLabel(module)
 const GITHUB_SEARCH_URL = 'https://api.github.com/search/issues'
 
 /**
- * GitHub caps search results at 100 per page. A fortnight of merges sits well
+ * GitHub caps search results at 100 per page. A week of merges sits well
  * under that, and a window large enough to exceed it is a signal that the
  * caller passed the wrong dates rather than something to paginate through.
  */

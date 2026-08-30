@@ -1,14 +1,15 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { ErrorDto } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
+import { okAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 
 import { ChangelogNotConfiguredError } from './changelog.errors'
-import { defaultWindow, generateAndPreviewDigest } from './changelog.service'
-import { DigestDraft } from './changelog.types'
+import { generateAndPreviewDigest, nextDigestWindow } from './changelog.service'
+import { DigestCycleResult, DigestWindow } from './changelog.types'
 
 const logger = createLoggerWithLabel(module)
 
@@ -20,7 +21,7 @@ export const validateGenerateDigest = celebrate({
     until: Joi.string().regex(ISO_DATE),
   })
     // Both or neither. A half-specified window silently pairing with a default
-    // is the kind of thing that produces a digest covering the wrong fortnight.
+    // is the kind of thing that produces a digest covering the wrong week.
     .and('since', 'until'),
 })
 
@@ -28,10 +29,16 @@ type GenerateDigestBody = { since?: string; until?: string }
 
 type GenerateDigestResponse =
   | {
-      itemCount: number
+      /** 'sent' or 'skipped'. Skipped is an ordinary outcome, not a failure. */
+      outcome: DigestCycleResult['outcome']
+      /** Notable changes found, before the top-three cut. */
+      candidateCount: number
       consideredPullRequests: number
-      window: DigestDraft['window']
-      items: DigestDraft['items']
+      window: DigestCycleResult['draft']['window']
+      /** What was emailed. Empty when the cycle was skipped. */
+      sentItems: DigestCycleResult['sentItems']
+      /** Everything the generator found, ranked. Useful when skipped. */
+      candidates: DigestCycleResult['draft']['items']
     }
   | ErrorDto
 
@@ -39,11 +46,16 @@ type GenerateDigestResponse =
  * Runs one digest cycle and emails the result to the configured preview
  * address.
  *
- * The response body is the draft rather than a bare acknowledgement, so a local
- * run can be inspected without opening maildev.
+ * The window defaults to everything merged since the last digest was sent.
+ * Passing `since` and `until` overrides that, which is how a local run
+ * reproduces a particular week without waiting for one.
+ *
+ * The response body is the draft rather than a bare acknowledgement, so a run
+ * can be inspected without opening maildev — including the candidates that were
+ * held over when the cycle skipped.
  *
  * @route POST /api/v3/cron/generate-digest
- * @returns 200 with the drafted digest, which may legitimately contain no items
+ * @returns 200 whether the digest was sent or held over; `outcome` says which
  * @returns 401 if the shared secret is missing or wrong
  * @returns 422 if the digest is not configured
  * @returns 500 if the cycle failed
@@ -53,18 +65,24 @@ export const handleGenerateDigest: ControllerHandler<
   GenerateDigestResponse,
   GenerateDigestBody
 > = (req, res) => {
-  const window =
+  const requestedWindow =
     req.body.since && req.body.until
-      ? { since: req.body.since, until: req.body.until }
-      : defaultWindow(new Date())
+      ? okAsync<DigestWindow, never>({
+          since: req.body.since,
+          until: req.body.until,
+        })
+      : nextDigestWindow(new Date())
 
-  return generateAndPreviewDigest(window)
-    .map((draft) =>
+  return requestedWindow
+    .andThen(generateAndPreviewDigest)
+    .map((result) =>
       res.status(StatusCodes.OK).json({
-        itemCount: draft.items.length,
-        consideredPullRequests: draft.consideredPullRequests,
-        window: draft.window,
-        items: draft.items,
+        outcome: result.outcome,
+        candidateCount: result.candidateCount,
+        consideredPullRequests: result.draft.consideredPullRequests,
+        window: result.draft.window,
+        sentItems: result.sentItems,
+        candidates: result.draft.items,
       }),
     )
     .mapErr((error) => {
@@ -72,7 +90,6 @@ export const handleGenerateDigest: ControllerHandler<
         message: 'Failed to generate digest',
         meta: {
           action: 'handleGenerateDigest',
-          window,
           ...createReqMeta(req),
         },
         error,

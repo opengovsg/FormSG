@@ -33,8 +33,8 @@ const devOnly: ControllerHandler = (_req, res, next) => {
 CronRouter.use(devOnly)
 
 /**
- * Generates the biweekly product digest and emails it to the configured
- * preview address. Defaults to the last 14 days when no window is given.
+ * Generates the weekly product digest and emails it to the configured preview
+ * address. Defaults to everything merged since the last digest was sent.
  *
  * @protected
  * @route POST /cron/generate-digest

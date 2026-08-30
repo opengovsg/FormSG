@@ -1,7 +1,7 @@
 # Changelog digest
 
-Drafts the biweekly product digest email for FormSG form admins and sends it to
-a single preview address for review.
+Drafts the weekly product digest email for FormSG form admins and sends it to a
+single preview address for review.
 
 This is the prototype stage of the digest RFC. It covers generation, the email,
 and the Slack notification. It deliberately does not cover the changelog page,
@@ -11,10 +11,31 @@ an entry store, an approval UI, Postman delivery, or scheduling.
 
 `POST /api/v3/cron/generate-digest` runs one cycle:
 
-1. Fetch pull requests merged into `develop` during the window.
-2. Ask Claude to draft at most three items a form admin would care about.
-3. Email the rendered digest to `CHANGELOG_PREVIEW_RECIPIENT`.
-4. Post the draft to Slack for review.
+1. Work out the window: everything merged since the last digest was **sent**.
+2. Fetch pull requests merged into `develop` during it.
+3. Ask Claude for every change a form admin would care about, ranked most
+   notable first.
+4. If there are at least three, email the best three to
+   `CHANGELOG_PREVIEW_RECIPIENT` and record the send. Otherwise send nothing.
+5. Post the outcome to Slack for review.
+
+## Holding items over
+
+The cycle is meant to run weekly, but it does not send weekly. A digest carries
+exactly three items or it does not go out, and the number is the same in both
+directions on purpose: a digest of one or two items reads as though we had
+nothing to say.
+
+When a cycle finds too few, it records nothing. The watermark stays where it
+was, so the next cycle's window still starts at the last _sent_ digest and those
+changes are reconsidered alongside whatever is new. Two quiet weeks of two items
+each therefore produce one digest of the best three, not two thin ones — the
+generator ranks the combined four and the service takes the top three.
+
+The consequence worth knowing: a genuinely notable change can sit unannounced
+for as long as it takes two more to land. There is deliberately no maximum age
+yet. If that becomes a problem the fix is a staleness escape hatch, not a lower
+bar.
 
 The route follows the RPC-shaped convention for scheduled jobs: one route is one
 job's entire unit of work, authenticated with a shared secret rather than a user
@@ -68,7 +89,10 @@ curl -X POST localhost:5001/api/v3/cron/generate-digest \
   -d '{"since":"2026-08-01","until":"2026-08-15"}'
 ```
 
-Omit the body to default to the last 14 days. `since` and `until` must be given
+Omit the body to cover everything merged since the last digest was sent, which
+is what a scheduled run does. Supplying a window is how you reproduce a
+particular week without waiting for one — note that it bypasses the watermark,
+so a windowed run that sends will still move it. `since` and `until` must be given
 together.
 
 The response body is the draft itself, so a run can be inspected without opening

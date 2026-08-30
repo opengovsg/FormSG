@@ -1,5 +1,5 @@
 /**
- * The biweekly product digest sent to FormSG form admins.
+ * The weekly product digest sent to FormSG form admins.
  *
  * Audience is form admins, not engineers. Nothing in here links to GitHub,
  * Linear, or any other internal tool, and items never carry version numbers or

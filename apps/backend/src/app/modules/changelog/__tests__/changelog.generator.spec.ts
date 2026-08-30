@@ -3,7 +3,10 @@ import axios from 'axios'
 import { changelogDigestConfig } from 'src/app/config/features/changelog-digest.config'
 
 import { ChangelogGenerationError } from '../changelog.errors'
-import { generateDigestItems, MAX_DIGEST_ITEMS } from '../changelog.generator'
+import {
+  generateDigestItems,
+  MAX_DIGEST_CANDIDATES,
+} from '../changelog.generator'
 import { MergedPullRequest } from '../changelog.types'
 
 jest.mock('axios')
@@ -77,17 +80,31 @@ describe('generateDigestItems', () => {
     expect(actual._unsafeUnwrap()).toEqual([])
   })
 
-  // Structured output schemas cannot express a maximum array length, so the cap
-  // has to hold even when the model ignores the instruction.
-  it('should truncate to the cap when more items come back', async () => {
-    const tooMany = Array.from({ length: MAX_DIGEST_ITEMS + 2 }, (_, i) =>
+  // Structured output schemas cannot express a maximum array length, so the
+  // ceiling has to hold even when the model ignores the instruction. This is a
+  // runaway guard, not the digest size — how many items are sent is the
+  // service's decision.
+  it('should truncate to the ceiling when more candidates come back', async () => {
+    const tooMany = Array.from({ length: MAX_DIGEST_CANDIDATES + 2 }, (_, i) =>
       buildItem(i),
     )
     MockAxios.post.mockResolvedValueOnce(itemsResponse(tooMany))
 
     const actual = await generateDigestItems(PULL_REQUESTS)
 
-    expect(actual._unsafeUnwrap()).toHaveLength(MAX_DIGEST_ITEMS)
+    expect(actual._unsafeUnwrap()).toHaveLength(MAX_DIGEST_CANDIDATES)
+  })
+
+  // Ranking is the contract the service relies on when it takes the top three.
+  it('should preserve the order the model returned', async () => {
+    const ranked = [buildItem(0), buildItem(1), buildItem(2)]
+    MockAxios.post.mockResolvedValueOnce(itemsResponse(ranked))
+
+    const actual = await generateDigestItems(PULL_REQUESTS)
+
+    expect(actual._unsafeUnwrap().map((item) => item.title)).toEqual(
+      ranked.map((item) => item.title),
+    )
   })
 
   it('should error when the model declines the request', async () => {

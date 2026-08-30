@@ -31,3 +31,20 @@ export type DigestDraft = {
   /** How many merged pull requests the generator was given. */
   consideredPullRequests: number
 }
+
+/**
+ * What one cycle did.
+ *
+ * `skipped` is the ordinary outcome, not a failure: a week that produced fewer
+ * than the required number of notable changes sends nothing and leaves the
+ * watermark where it was, so the next cycle reconsiders those changes together
+ * with whatever has since merged.
+ */
+export type DigestCycleResult = {
+  outcome: 'sent' | 'skipped'
+  draft: DigestDraft
+  /** Items actually emailed. Empty when the cycle was skipped. */
+  sentItems: DigestItem[]
+  /** How many notable items the generator found, before the top-N cut. */
+  candidateCount: number
+}

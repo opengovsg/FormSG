@@ -1135,7 +1135,7 @@ export class MailService {
   }
 
   /**
-   * Sends the biweekly product digest.
+   * Sends the weekly product digest.
    *
    * Recipients are passed in by the caller rather than resolved here. Until the
    * approval flow exists, the only caller passes a single preview address, so
