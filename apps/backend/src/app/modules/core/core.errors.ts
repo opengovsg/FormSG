@@ -272,6 +272,8 @@ export enum ErrorCodes {
   CHANGELOG_SOURCE_FETCH = 190301,
   CHANGELOG_GENERATION = 190302,
   CHANGELOG_NOTIFICATION = 190303,
+  CHANGELOG_DIGEST_NOT_FOUND = 190304,
+  CHANGELOG_DIGEST_NOT_APPROVABLE = 190305,
   // End of Other Errors -------------------------------------------------------
 }
 

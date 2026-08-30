@@ -4,8 +4,11 @@ import { StatusCodes } from 'http-status-codes'
 import { changelogDigestConfig } from '../../../../config/features/changelog-digest.config'
 import { withCronChangelogSecretAuthentication } from '../../../../modules/auth/auth.middlewares'
 import {
+  handleApproveDigest,
   handleGenerateDigest,
-  validateGenerateDigest,
+  handleListDigests,
+  validateApproveDigest,
+  validateListDigests,
 } from '../../../../modules/changelog/changelog.controller'
 import { ControllerHandler } from '../../../../modules/core/core.types'
 
@@ -45,8 +48,11 @@ const configuredOnly: ControllerHandler = (_req, res, next) => {
 CronRouter.use(configuredOnly)
 
 /**
- * Generates the weekly product digest and emails it to the configured preview
- * address. Defaults to everything merged since the last digest was sent.
+ * Drafts this week's digest and persists it. Sends nothing.
+ *
+ * Idempotent within an ISO week: a second call returns the first one's digest
+ * untouched, so the Monday schedule and a person running it by hand cannot
+ * produce two digests for the same week.
  *
  * @protected
  * @route POST /cron/generate-digest
@@ -54,6 +60,36 @@ CronRouter.use(configuredOnly)
 CronRouter.post(
   '/generate-digest',
   withCronChangelogSecretAuthentication,
-  validateGenerateDigest,
   handleGenerateDigest,
+)
+
+/**
+ * Approves a drafted digest and emails it. The only route that sends mail.
+ *
+ * Split from generation so a digest can be read before it goes anywhere, can
+ * survive a mail failure without losing the drafting work, and can later be
+ * approved by someone other than the process that drafted it.
+ *
+ * @protected
+ * @route POST /cron/approve-digest?digestId=...
+ */
+CronRouter.post(
+  '/approve-digest',
+  withCronChangelogSecretAuthentication,
+  validateApproveDigest,
+  handleApproveDigest,
+)
+
+/**
+ * Recent digests, newest first. Approving needs an id, and the run that
+ * produced it was a scheduled job nobody watched.
+ *
+ * @protected
+ * @route GET /cron/digests?limit=10
+ */
+CronRouter.get(
+  '/digests',
+  withCronChangelogSecretAuthentication,
+  validateListDigests,
+  handleListDigests,
 )

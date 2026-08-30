@@ -26,3 +26,21 @@ export class ChangelogNotificationError extends ApplicationError {
     super(message, meta, ErrorCodes.CHANGELOG_NOTIFICATION)
   }
 }
+
+export class ChangelogDigestNotFoundError extends ApplicationError {
+  constructor(message = 'No digest with that id', meta?: unknown) {
+    super(message, meta, ErrorCodes.CHANGELOG_DIGEST_NOT_FOUND)
+  }
+}
+
+/**
+ * The digest exists but is not in a state that can be approved: it was already
+ * sent, it was held for having too little to say, or a later cycle superseded
+ * it. The message names which, because "cannot approve" on its own sends
+ * someone reading a log to the database.
+ */
+export class ChangelogDigestNotApprovableError extends ApplicationError {
+  constructor(message = 'Digest cannot be approved', meta?: unknown) {
+    super(message, meta, ErrorCodes.CHANGELOG_DIGEST_NOT_APPROVABLE)
+  }
+}

@@ -1,14 +1,19 @@
 /**
- * Weekly product digest trigger.
+ * Weekly product digest generator.
  *
  * Deliberately thin: the Lambda is a clock with an HTTP client. Every decision
- * — what merged, what is worth reporting, whether there is enough to send at
- * all — lives behind the API, where it can reuse the backend's models, mailer
- * and logging.
+ * — what merged, what is worth reporting, whether there is enough to be worth
+ * sending — lives behind the API, where it can reuse the backend's models and
+ * logging.
  *
- * Note what this does NOT decide: whether a digest goes out this week. The
- * endpoint answers that, and answering "no" is the ordinary case. A run that
- * reports `skipped` is a success.
+ * Note what this does NOT do: send anything. It drafts a digest and persists
+ * it. Mail goes out only when someone approves that digest, which is a separate
+ * endpoint and deliberately not on a timer. A drafted digest nobody approves is
+ * a normal outcome, not a failed run.
+ *
+ * The call is safe to repeat. Generation is idempotent within an ISO week, so a
+ * retry, an overlapping invocation, or someone running it by hand on the same
+ * day all return the digest that already exists rather than drafting a second.
  *
  * Required env vars (all set by template.yaml):
  * - AWS_REGION
@@ -33,8 +38,8 @@ const SECRET_PARAMETER_NAME = process.env.SSM_SECRET_PARAMETER_NAME
 const API_AUTH_HEADER = 'x-formsg-cron-changelog-secret'
 
 /**
- * Drafting the digest calls a model over the network, which is slower than the
- * usual API request and worth waiting for rather than retrying blind.
+ * Drafting calls a model over the network, which is slower than the usual API
+ * request and worth waiting for rather than retrying blind.
  */
 const REQUEST_TIMEOUT_MS = 120_000
 
@@ -66,10 +71,9 @@ exports.handler = async () => {
       'Content-Type': 'application/json',
       [API_AUTH_HEADER]: apiSecret,
     },
-    // No window. Omitting it is what makes the schedule and the watermark agree:
-    // the endpoint covers everything merged since the last digest was *sent*,
-    // so a week that sent nothing is picked up by the following one rather than
-    // being lost between two fixed windows.
+    // No body. The endpoint decides its own window: everything merged since a
+    // digest was last *sent*. A week that sent nothing is therefore picked up
+    // by the following one rather than falling between two fixed windows.
     body: JSON.stringify({}),
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   })
@@ -85,10 +89,11 @@ exports.handler = async () => {
 
   console.log(
     JSON.stringify({
-      message: 'Digest cycle complete',
-      outcome: result.outcome,
-      candidateCount: result.candidateCount,
-      consideredPullRequests: result.consideredPullRequests,
+      message: 'Digest generated',
+      digestId: result.digestId,
+      week: result.week,
+      status: result.status,
+      itemCount: result.itemCount,
       window: result.window,
     }),
   )

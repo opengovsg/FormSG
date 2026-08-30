@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Weekly trigger for the FormSG product digest email
+Description: Weekly generation of the FormSG product digest draft
 
 Parameters:
   Environment:
@@ -42,7 +42,7 @@ Resources:
   ChangelogDigestFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Description: Triggers one weekly product digest cycle
+      Description: Drafts one weekly product digest. Sends nothing.
       FunctionName: !Sub 'changelog-digest-${Environment}'
       CodeUri: ./
       Handler: index.handler
