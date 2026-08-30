@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Divider, Stack } from '@chakra-ui/react'
+import { Divider, Stack, Text } from '@chakra-ui/react'
 import { isEqual, uniq } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
@@ -177,6 +177,16 @@ export const ActiveCompletionEmailCard = ({
           isHighContrast={false}
           otherPartiesPlaceholder={otherPartiesPlaceholder}
           onOtherPartiesBlur={handleOtherPartiesBlur}
+          heading={
+            // Settings' own liner, in Settings' own treatment. The card only
+            // renders on a workflow with at least one step, so the
+            // no-workflow variant of this string is unreachable here.
+            <Text textStyle="body-1" textColor="secondary.700" mb="1.5rem">
+              {t(
+                'features.adminForm.settings.emailNotifications.section.mrf.selectRecipientWorkflow',
+              )}
+            </Text>
+          }
         />
       </EditStepBlockContainer>
       <Divider />
