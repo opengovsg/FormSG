@@ -27,9 +27,13 @@ export const InactiveCompletionEmailCard = ({
   // One group per control in the expanded card, same order, same labels, so the
   // two views cannot describe the same settings differently. Every label is
   // Settings' own string; none of this copy is new.
+  //
+  // Keyed on `id` rather than `label`: labels are translated, so they are not
+  // ours to guarantee unique.
   const groups = [
-    { label: t(`${PREFIX}.others.label`), values: otherParties },
+    { id: 'others', label: t(`${PREFIX}.others.label`), values: otherParties },
     {
+      id: 'step1',
       label: t(`${PREFIX}.step1.label`),
       values: stepOneField
         ? [
@@ -40,6 +44,7 @@ export const InactiveCompletionEmailCard = ({
         : [],
     },
     {
+      id: 'stepN',
       label: t(`${PREFIX}.stepN.label.overallRedesign`),
       values: notifiedSteps.map(
         ({ stepNumber, stepName }) =>
@@ -73,11 +78,13 @@ export const InactiveCompletionEmailCard = ({
           </Text>
         ) : (
           <Stack spacing="1.5rem">
-            {groups.map(({ label, values }) => (
-              <Stack key={label} spacing="0.25rem">
+            {groups.map(({ id, label, values }) => (
+              <Stack key={id} spacing="0.25rem">
                 <Text textStyle="subhead-3">{label}</Text>
-                {values.map((value) => (
-                  <Text key={value}>{value}</Text>
+                {/* Emails are deduplicated on entry but not in storage, so the
+                    index keeps the key unique for data written before that. */}
+                {values.map((value, index) => (
+                  <Text key={`${value}-${index}`}>{value}</Text>
                 ))}
               </Stack>
             ))}
