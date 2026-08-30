@@ -19,7 +19,10 @@ jest.mock('src/app/config/features/changelog-digest.config', () => ({
   },
 }))
 
-const WINDOW = { since: '2026-08-01', until: '2026-08-15' }
+const WINDOW = {
+  since: '2026-08-01T00:00:00.000Z',
+  until: '2026-08-15T00:00:00.000Z',
+}
 
 const searchResponse = (items: unknown[], totalCount?: number) => ({
   data: { total_count: totalCount ?? items.length, items },
@@ -51,7 +54,14 @@ describe('getMergedPullRequests', () => {
     expect(params.q).toContain('repo:opengovsg/FormSG')
     expect(params.q).toContain('is:merged')
     expect(params.q).toContain('base:develop')
-    expect(params.q).toContain('merged:2026-08-01..2026-08-15')
+    // Exclusive lower bound, inclusive upper, rather than GitHub's `a..b`
+    // range. `a..b` includes both ends, which would re-feed the generator every
+    // pull request merged at the previous window's boundary — and a repeated
+    // item across consecutive digests is the most visible failure this could
+    // have.
+    expect(params.q).toContain('merged:>2026-08-01T00:00:00.000Z')
+    expect(params.q).toContain('merged:<=2026-08-15T00:00:00.000Z')
+    expect(params.q).not.toContain('..')
   })
 
   it('should flatten labels onto each pull request', async () => {

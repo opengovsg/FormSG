@@ -12,9 +12,10 @@ const logger = createLoggerWithLabel(module)
 const GITHUB_SEARCH_URL = 'https://api.github.com/search/issues'
 
 /**
- * GitHub caps search results at 100 per page. A week of merges sits well
- * under that, and a window large enough to exceed it is a signal that the
- * caller passed the wrong dates rather than something to paginate through.
+ * GitHub caps search results at 100 per page. A week of merges sits well under
+ * that. A window large enough to exceed it means either the caller passed the
+ * wrong dates or the digest has been holding items over for a very long time —
+ * both worth noticing rather than quietly paginating through.
  */
 const PER_PAGE = 100
 
@@ -52,7 +53,13 @@ export const getMergedPullRequests = (
     'is:pr',
     'is:merged',
     'base:develop',
-    `merged:${window.since}..${window.until}`,
+    // Exclusive lower bound, inclusive upper. GitHub's `a..b` range is
+    // inclusive at both ends, which would hand the generator every pull request
+    // merged at the previous window's boundary a second time — and a repeated
+    // item in consecutive digests is the most visible way this could embarrass
+    // us. Two qualifiers instead; GitHub ANDs them.
+    `merged:>${window.since}`,
+    `merged:<=${window.until}`,
   ].join(' ')
 
   return ResultAsync.fromPromise(

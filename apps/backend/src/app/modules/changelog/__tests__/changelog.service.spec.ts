@@ -39,7 +39,10 @@ const MockGenerator = jest.mocked(ChangelogGenerator)
 const MockSlack = jest.mocked(ChangelogSlack)
 const MockMailService = jest.mocked(MailService)
 
-const WINDOW = { since: '2026-08-01', until: '2026-08-15' }
+const WINDOW = {
+  since: '2026-08-01T00:00:00.000Z',
+  until: '2026-08-15T00:00:00.000Z',
+}
 
 const PULL_REQUESTS: MergedPullRequest[] = [
   { number: 1, title: 'feat: save draft', body: null, labels: [] },
@@ -180,27 +183,33 @@ describe('generateAndPreviewDigest', () => {
 describe('nextDigestWindow', () => {
   beforeEach(() => jest.clearAllMocks())
 
-  it('should start from the last sent digest', async () => {
+  // The previous window's `until` becomes this one's `since` unchanged. Since
+  // `since` is exclusive and `until` inclusive, the two windows abut exactly:
+  // nothing between cycles is missed, and nothing is seen twice.
+  it('should start exactly where the last sent digest ended', async () => {
     mockLastSent.mockResolvedValue({
-      window: { since: '2026-08-01', until: '2026-08-17' },
+      window: {
+        since: '2026-08-01T00:00:00.000Z',
+        until: '2026-08-17T01:00:00.000Z',
+      },
     })
 
-    const actual = await nextDigestWindow(new Date('2026-08-24T00:00:00Z'))
+    const actual = await nextDigestWindow(new Date('2026-08-24T01:00:00.000Z'))
 
     expect(actual._unsafeUnwrap()).toEqual({
-      since: '2026-08-17',
-      until: '2026-08-24',
+      since: '2026-08-17T01:00:00.000Z',
+      until: '2026-08-24T01:00:00.000Z',
     })
   })
 
   it('should look back a week when nothing has ever been sent', async () => {
     mockLastSent.mockResolvedValue(null)
 
-    const actual = await nextDigestWindow(new Date('2026-08-24T00:00:00Z'))
+    const actual = await nextDigestWindow(new Date('2026-08-24T01:00:00.000Z'))
 
     expect(actual._unsafeUnwrap()).toEqual({
-      since: '2026-08-17',
-      until: '2026-08-24',
+      since: '2026-08-17T01:00:00.000Z',
+      until: '2026-08-24T01:00:00.000Z',
     })
   })
 
@@ -208,25 +217,28 @@ describe('nextDigestWindow', () => {
   // actually goes out. This is what lets two quiet weeks combine.
   it('should span both weeks when the previous cycle was skipped', async () => {
     mockLastSent.mockResolvedValue({
-      window: { since: '2026-08-03', until: '2026-08-10' },
+      window: {
+        since: '2026-08-03T01:00:00.000Z',
+        until: '2026-08-10T01:00:00.000Z',
+      },
     })
 
-    const actual = await nextDigestWindow(new Date('2026-08-24T00:00:00Z'))
+    const actual = await nextDigestWindow(new Date('2026-08-24T01:00:00.000Z'))
 
     expect(actual._unsafeUnwrap()).toEqual({
-      since: '2026-08-10',
-      until: '2026-08-24',
+      since: '2026-08-10T01:00:00.000Z',
+      until: '2026-08-24T01:00:00.000Z',
     })
   })
 
   it('should cross a month boundary correctly', async () => {
     mockLastSent.mockResolvedValue(null)
 
-    const actual = await nextDigestWindow(new Date('2026-03-05T00:00:00Z'))
+    const actual = await nextDigestWindow(new Date('2026-03-05T01:00:00.000Z'))
 
     expect(actual._unsafeUnwrap()).toEqual({
-      since: '2026-02-26',
-      until: '2026-03-05',
+      since: '2026-02-26T01:00:00.000Z',
+      until: '2026-03-05T01:00:00.000Z',
     })
   })
 })

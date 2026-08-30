@@ -13,17 +13,40 @@ import { DigestCycleResult, DigestWindow } from './changelog.types'
 
 const logger = createLoggerWithLabel(module)
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
-
+/**
+ * The manual override takes calendar dates, which is what a person reproducing
+ * a particular week actually has to hand. They are widened to instants below,
+ * since the window itself is expressed at instant precision.
+ *
+ * `Joi.date().iso()` rather than a shape regex: a regex accepts 2026-13-99,
+ * which would reach GitHub as a query matching nothing and read as a digest
+ * with nothing to report rather than as the bad input it is. `raw()` keeps the
+ * string, so the handler is not handed a Date in a local timezone.
+ */
 export const validateGenerateDigest = celebrate({
   [Segments.BODY]: Joi.object({
-    since: Joi.string().regex(ISO_DATE),
-    until: Joi.string().regex(ISO_DATE),
+    since: Joi.date().iso().raw(),
+    until: Joi.date().iso().raw().min(Joi.ref('since')),
   })
     // Both or neither. A half-specified window silently pairing with a default
     // is the kind of thing that produces a digest covering the wrong week.
     .and('since', 'until'),
 })
+
+/**
+ * Widens a calendar date into the instant bound it stands for. A window given
+ * as 2026-08-17..2026-08-24 means "from the start of the 17th to the end of the
+ * 24th", which is what someone naming two dates intends.
+ *
+ * `since` is exclusive, so the start of the day is the instant just before it —
+ * expressed as the end of the previous day would be fiddlier and no clearer;
+ * subtracting a millisecond keeps the whole of the named day inside the window.
+ */
+const startBoundary = (date: string): string =>
+  new Date(new Date(`${date}T00:00:00.000Z`).getTime() - 1).toISOString()
+
+const endBoundary = (date: string): string =>
+  new Date(`${date}T23:59:59.999Z`).toISOString()
 
 type GenerateDigestBody = { since?: string; until?: string }
 
@@ -68,8 +91,8 @@ export const handleGenerateDigest: ControllerHandler<
   const requestedWindow =
     req.body.since && req.body.until
       ? okAsync<DigestWindow, never>({
-          since: req.body.since,
-          until: req.body.until,
+          since: startBoundary(req.body.since),
+          until: endBoundary(req.body.until),
         })
       : nextDigestWindow(new Date())
 

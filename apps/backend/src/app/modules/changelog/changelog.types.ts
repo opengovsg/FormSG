@@ -18,10 +18,23 @@ export type DigestItem = ChangelogDigestItem & {
   sourcePullRequests: number[]
 }
 
+/**
+ * The span a cycle covers, as ISO 8601 instants rather than dates.
+ *
+ * Exclusive at `since`, inclusive at `until`. That asymmetry is what lets one
+ * window's `until` become the next one's `since` with neither a gap nor an
+ * overlap: a pull request merged at exactly the boundary belongs to the earlier
+ * window only, and so is reported once.
+ *
+ * Instants rather than dates because a date cannot express the boundary. A
+ * digest sent at 09:00 on the 17th has to exclude what it already reported that
+ * morning while still picking up what merges that afternoon, and "the 17th" is
+ * either all of both or neither.
+ */
 export type DigestWindow = {
-  /** Inclusive ISO date, YYYY-MM-DD. */
+  /** Exclusive lower bound, ISO 8601 instant. */
   since: string
-  /** Inclusive ISO date, YYYY-MM-DD. */
+  /** Inclusive upper bound, ISO 8601 instant. */
   until: string
 }
 

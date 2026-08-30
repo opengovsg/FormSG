@@ -63,19 +63,21 @@ export type GenerateDigestError =
   | MailSendError
   | DatabaseError
 
-const isoDate = (date: Date): string => date.toISOString().slice(0, 10)
-
 /**
  * The window the next cycle should cover: everything merged since the last
- * digest was *sent*, up to today.
+ * digest was *sent*, up to now.
  *
  * Not "since the job last ran". A cycle that finds too little to send records
  * nothing, so the watermark stays put and those changes come round again next
- * week alongside whatever is new. That is what lets two quiet
- * weeks produce a single digest of the best three items.
+ * week alongside whatever is new. That is what lets two quiet weeks produce a
+ * single digest of the best three items.
+ *
+ * The previous window's `until` becomes this one's `since` unchanged. Because
+ * `since` is exclusive and `until` inclusive, consecutive windows abut exactly:
+ * nothing merged between two cycles is missed, and nothing is seen twice.
  */
 export const nextDigestWindow = (
-  today: Date,
+  now: Date,
 ): ResultAsync<DigestWindow, DatabaseError> =>
   ResultAsync.fromPromise(ChangelogDigestModel.getLastSent(), (error) => {
     logger.error({
@@ -85,11 +87,12 @@ export const nextDigestWindow = (
     })
     return transformMongoError(error)
   }).map((lastSent) => {
-    if (lastSent) return { since: lastSent.window.until, until: isoDate(today) }
+    const until = now.toISOString()
+    if (lastSent) return { since: lastSent.window.until, until }
 
-    const since = new Date(today)
+    const since = new Date(now)
     since.setUTCDate(since.getUTCDate() - FIRST_RUN_LOOKBACK_DAYS)
-    return { since: isoDate(since), until: isoDate(today) }
+    return { since: since.toISOString(), until }
   })
 
 const recordSentDigest = (
