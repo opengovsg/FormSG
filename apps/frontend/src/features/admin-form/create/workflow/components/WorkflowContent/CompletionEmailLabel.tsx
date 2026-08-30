@@ -16,9 +16,13 @@ export const CompletionEmailLabel = (): JSX.Element => {
       alignItems="center"
       textStyle="subhead-3"
     >
+      {/* Measured against StepLabel's number box, which renders 44.51 x 42px:
+      42px tall from 0.5rem padding + subhead-3's 1.5rem line box + 1px borders,
+      and glyph-driven in width. Padding here would size to the icon instead
+      (54 x 38px), so the box is set square to that measured height. */}
       <Flex
-        py="0.5rem"
-        px="1rem"
+        boxSize="2.625rem"
+        flexShrink={0}
         borderWidth="1px"
         borderColor="secondary.300"
         borderRadius="4px"
