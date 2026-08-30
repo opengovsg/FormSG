@@ -136,6 +136,9 @@ export const FieldFactory = memo(
         )
     }
   },
+  // NOTE: if a new `field` property or prop starts affecting what's rendered
+  // below, add it to this comparator too, or this memo will silently skip
+  // re-renders that should have happened.
   (prevProps, nextProps) =>
     prevProps.field._id === nextProps.field._id &&
     prevProps.field.questionNumber === nextProps.field.questionNumber &&
