@@ -18,6 +18,7 @@ import {
   Text,
   TextProps,
   useDisclosure,
+  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { FormId } from 'formsg-shared/types/form/form'
@@ -26,6 +27,7 @@ import { FORMSG_UAT } from '~constants/links'
 import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 import Button, { ButtonProps } from '~components/Button'
 import { SingleSelect } from '~components/Dropdown'
+import FormLabel from '~components/FormControl/FormLabel'
 import Link from '~components/Link'
 
 import { PREVIEW_STEP_PARAM } from '~features/admin-form/preview/utils/previewStepParam'
@@ -78,6 +80,9 @@ export const PreviewFormBanner = ({
     previewWorkflowSteps,
   } = usePublicFormContext()
   const [, setSearchParams] = useSearchParams()
+  const previewStepSelectName = isSticky
+    ? 'preview-step-sticky'
+    : 'preview-step'
   const { data: { secretEnv } = {} } = useEnv()
   const {
     isOpen: isModalOpen,
@@ -128,8 +133,13 @@ export const PreviewFormBanner = ({
               previewWorkflowSteps &&
               previewWorkflowSteps.length > 0 && (
                 <Flex minW="160px" maxW="280px">
+                  <VisuallyHidden>
+                    <FormLabel id={`${previewStepSelectName}-label`}>
+                      Preview step
+                    </FormLabel>
+                  </VisuallyHidden>
                   <SingleSelect
-                    name={isSticky ? 'preview-step-sticky' : 'preview-step'}
+                    name={previewStepSelectName}
                     isClearable={false}
                     value={String(previewWorkflowStepNumber ?? 0)}
                     onChange={(val) => {
