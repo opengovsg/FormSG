@@ -19,6 +19,7 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
+import { useIsWorkflowDeletion } from '../../../hooks/useIsWorkflowDeletion'
 import { EditStepInputs } from '../../../types'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -148,6 +149,7 @@ export const EditStepBlock = ({
   }, [])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
+  const isWorkflowDeletion = useIsWorkflowDeletion()
 
   // RATIONALE: Returned formState is wrapped with a Proxy to improve
   // render performance, we must ead it before a render in order to enable
@@ -244,8 +246,11 @@ export const EditStepBlock = ({
         // differs — deleting step 1 means deleting the workflow — but hiding
         // the button was never the right way to say that: it left admins
         // hunting for a delete that does not exist, which is the behaviour
-        // FRM-2494 is about.
-        handleDelete={handleOpenDeleteModal}
+        // FRM-2494 is about. Behind the flag, so with it off step 1 has no
+        // delete, exactly as before.
+        handleDelete={
+          !isFirstStep || isWorkflowDeletion ? handleOpenDeleteModal : undefined
+        }
         handleCancel={setToInactive}
         submitButtonLabel={submitButtonLabel}
         ariaLabelName="step"
