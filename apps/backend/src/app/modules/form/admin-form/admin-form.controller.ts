@@ -1686,6 +1686,58 @@ export const handleUpdateWorkflowStep = [
   _handleUpdateWorkflowStep,
 ] as ControllerHandler[]
 
+/**
+ * Handler for DELETE /:formId/workflow
+ *
+ * Deletes the form's entire workflow. This is also what deleting step 1 means:
+ * a workflow without its first step has no entry point, so the two are the same
+ * request and share this one route.
+ *
+ * @security session
+ *
+ * @returns 200 with the now-empty workflow
+ * @returns 403 when the user does not have permission to update the form
+ * @returns 404 when the form cannot be found
+ * @returns 409 when the form is still open to new responses
+ * @returns 410 when the form is archived
+ * @returns 422 when the form is not a multi-respondent form
+ * @returns 500 when a database error occurs
+ */
+export const handleDeleteWorkflow: ControllerHandler<
+  { formId: string },
+  FormWorkflowDto | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.deleteFormWorkflow(retrievedForm),
+    )
+    .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when deleting form workflow',
+        meta: {
+          action: 'handleDeleteWorkflow',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
 export const handleDeleteWorkflowStep: ControllerHandler<
   {
     formId: string
