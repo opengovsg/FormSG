@@ -118,6 +118,16 @@ export interface Workflow {
     placeholder: string
     placeholderRedesign: string
   }
+  emptyStates: {
+    noEmailField: string
+    noEmailFieldAction: string
+    noDropdownField: string
+    noDropdownFieldAction: string
+    noYesNoField: string
+    noYesNoFieldAction: string
+    noFields: string
+    noFieldsAction: string
+  }
   approvals: {
     title: string
     yesNoDeleted: string
