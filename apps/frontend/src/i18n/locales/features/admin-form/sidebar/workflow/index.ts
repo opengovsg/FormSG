@@ -41,6 +41,18 @@ export interface Workflow {
         confirm: string
         cancel: string
       }
+      deleteWorkflow: {
+        title: string
+        description: string
+        confirm: string
+        cancel: string
+      }
+      closeFormFirst: {
+        title: string
+        description: string
+        confirm: string
+        cancel: string
+      }
       deleteMapping: {
         title: string
         description: string
