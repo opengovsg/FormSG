@@ -1,21 +1,42 @@
-import { Box, Divider, Stack, Text } from '@chakra-ui/react'
+import { useTranslation } from 'react-i18next'
+import { BiTrash } from 'react-icons/bi'
+import {
+  Box,
+  Divider,
+  Flex,
+  Stack,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
+import IconButton from '~components/IconButton'
 
 import { StatusTrackerToggle } from '~features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { DeleteWorkflowModal } from '../DeleteWorkflowModal'
 
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'
 import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
 
 export const WorkflowContent = (): JSX.Element | null => {
+  const { t } = useTranslation()
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
+  const {
+    isOpen: isDeleteModalOpen,
+    onClose: onDeleteModalClose,
+    onOpen: onDeleteModalOpen,
+  } = useDisclosure()
 
   if (isLoading) return null
   return (
     <Stack color="secondary.500" spacing="2.75rem" mt="1.5rem">
+      <DeleteWorkflowModal
+        isOpen={isDeleteModalOpen}
+        onClose={onDeleteModalClose}
+      />
       {/* <HeaderBlock /> */}
       <Box
         bg="white"
@@ -25,9 +46,25 @@ export const WorkflowContent = (): JSX.Element | null => {
         padding="1.5rem"
       >
         <Stack gap={'1.5rem'}>
-          <Text as="h2" textStyle="h2">
-            Workflow
-          </Text>
+          <Flex align="center" justify="space-between">
+            <Text as="h2" textStyle="h2">
+              Workflow
+            </Text>
+            {/* Grey rather than danger-red. This sits on the card at rest,
+                not inside a confirmation, and a red button in the corner of a
+                page reads as a warning about the page's state rather than as
+                an action. The destructive colour belongs on the button that
+                actually destroys something, in the modal. */}
+            <IconButton
+              variant="clear"
+              colorScheme="secondary"
+              aria-label={t(
+                'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
+              )}
+              icon={<BiTrash />}
+              onClick={onDeleteModalOpen}
+            />
+          </Flex>
           <Divider />
           <StatusTrackerToggle />
         </Stack>

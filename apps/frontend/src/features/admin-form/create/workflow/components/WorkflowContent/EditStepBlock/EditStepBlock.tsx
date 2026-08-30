@@ -240,7 +240,12 @@ export const EditStepBlock = ({
       <SaveActionGroup
         isLoading={_isLoading}
         handleSubmit={handleSubmit}
-        handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
+        // Step 1 gets the same affordance as every other step. What it opens
+        // differs — deleting step 1 means deleting the workflow — but hiding
+        // the button was never the right way to say that: it left admins
+        // hunting for a delete that does not exist, which is the behaviour
+        // FRM-2494 is about.
+        handleDelete={handleOpenDeleteModal}
         handleCancel={setToInactive}
         submitButtonLabel={submitButtonLabel}
         ariaLabelName="step"
