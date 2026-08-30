@@ -15,8 +15,8 @@ import { useCreatePageSidebar } from '~features/admin-form/create/common'
  * for creation. The admin still confirms; nothing is written to the form here.
  *
  * `handleBuilderClick(false)` is deliberate. Passing true routes through the
- * pending-tab machinery, which prompts on unsaved changes — noise on a trip
- * the admin just asked for.
+ * pending-tab machinery, which prompts on unsaved changes. That prompt is
+ * noise on a trip the admin just asked for.
  */
 export const useStageFieldAndNavigate = () => {
   const { handleBuilderClick } = useCreatePageSidebar()

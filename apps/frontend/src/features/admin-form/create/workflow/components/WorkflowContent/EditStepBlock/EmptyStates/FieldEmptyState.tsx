@@ -30,7 +30,7 @@ export const FieldEmptyState = ({
     // sendDdAction, not the datadogRum proxy: the proxy binds window.DD_RUM at
     // module load and silently drops actions when the datadog chunk lands
     // after the app bundle. This fires on mount, which is when that happens.
-    sendDdAction(() => {
+    void sendDdAction(() => {
       window.DD_RUM?.addAction('workflow_builder.empty_state.shown', {
         picker,
       })
