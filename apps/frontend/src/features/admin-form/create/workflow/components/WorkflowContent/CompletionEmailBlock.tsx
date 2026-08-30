@@ -33,9 +33,10 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   const mrfSettings: MultirespondentFormSettings | undefined = settings
 
   // Settings are a separate query from the form, so they can arrive after the
-  // steps. Undefined recipients tell the card to hold its frame and skeleton
-  // the list, rather than the whole block appearing a beat late.
-  // StatusTrackerToggle, which reads the same query on this tab, does the same.
+  // steps. Null recipients tell the card to hold its frame and skeleton the
+  // list, rather than the whole block appearing a beat late. StatusTrackerToggle
+  // reads the same query on this tab and also skeletons rather than returning
+  // null, though it wraps its whole control instead of holding a frame.
   const recipients = mrfSettings
     ? getCompletionEmailRecipients({
         emails: mrfSettings.emails,
@@ -46,7 +47,7 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
         workflowSteps: formWorkflow ?? [],
         emailFormFields,
       })
-    : undefined
+    : null
 
   return (
     <Stack spacing="1.5rem">

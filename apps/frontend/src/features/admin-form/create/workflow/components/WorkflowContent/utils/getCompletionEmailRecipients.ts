@@ -33,7 +33,10 @@ export const getCompletionEmailRecipients = ({
   workflowSteps,
   emailFormFields,
 }: CompletionEmailRecipientsInput): CompletionEmailRecipients => {
-  const otherParties = emails.filter(Boolean)
+  // Compacted and deduplicated: the tag input blocks repeats on entry, but
+  // nothing dedupes what is already stored, and an admin should not be shown
+  // the same address twice.
+  const otherParties = [...new Set(emails.filter(Boolean))]
 
   // A field or step since deleted resolves away rather than showing a dangling
   // id. Settings drops them from its options for the same reason.

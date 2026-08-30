@@ -71,6 +71,19 @@ describe('getCompletionEmailRecipients', () => {
     ).toEqual(['zoe@example.gov.sg', 'amir@example.gov.sg'])
   })
 
+  it('should drop duplicate other parties, keeping the first occurrence', () => {
+    expect(
+      getCompletionEmailRecipients({
+        ...EMPTY,
+        emails: [
+          'zoe@example.gov.sg',
+          'amir@example.gov.sg',
+          'zoe@example.gov.sg',
+        ],
+      }).otherParties,
+    ).toEqual(['zoe@example.gov.sg', 'amir@example.gov.sg'])
+  })
+
   it('should resolve the step 1 field to its question number and title', () => {
     expect(
       getCompletionEmailRecipients({

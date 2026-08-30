@@ -8,8 +8,12 @@ const PREFIX =
   'features.adminForm.settings.emailNotifications.section.mrf.respondents'
 
 export interface InactiveCompletionEmailCardProps {
-  /** Undefined while the settings query is still in flight. */
-  recipients?: CompletionEmailRecipients
+  /**
+   * Null while the settings query is still in flight. Required rather than
+   * optional so that omitting it is a type error instead of a card that
+   * skeletons forever.
+   */
+  recipients: CompletionEmailRecipients | null
 }
 
 /**
@@ -97,10 +101,11 @@ export const InactiveCompletionEmailCard = ({
             {groups.map(({ id, label, values }) => (
               <Stack key={id} spacing="0.25rem">
                 <Text textStyle="subhead-3">{label}</Text>
-                {/* Emails are deduplicated on entry but not in storage, so the
-                    index keeps the key unique for data written before that. */}
-                {values.map((value, index) => (
-                  <Text key={`${value}-${index}`}>{value}</Text>
+                {/* Values are unique within a group: emails are deduplicated in
+                    the helper, step labels carry their step number, and step 1
+                    is a single value. */}
+                {values.map((value) => (
+                  <Text key={value}>{value}</Text>
                 ))}
               </Stack>
             ))}
