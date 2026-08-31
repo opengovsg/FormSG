@@ -306,7 +306,10 @@ export const reconcileAccount: ControllerHandler<
         meta: { ...logMeta, event },
       })
 
-      await StripeService.handleStripeEvent(event as Stripe.DiscriminatedEvent)
+      await StripeService.handleStripeEvent(
+        event as Stripe.DiscriminatedEvent,
+        req.growthbook,
+      )
         .andThen(() => {
           logger.warn({
             message:

@@ -1,3 +1,4 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import { PaymentStatus, Product, ProductItem } from 'formsg-shared/types'
 import { isEqual, omit } from 'lodash'
 import moment from 'moment-timezone'
@@ -210,6 +211,7 @@ export const confirmPaymentPendingSubmission = (
  */
 export const performPaymentPostSubmissionActions = (
   paymentId: IPaymentSchema['_id'],
+  growthbook?: GrowthBook,
 ): ResultAsync<
   void,
   | PaymentNotFoundError
@@ -272,7 +274,10 @@ export const performPaymentPostSubmissionActions = (
               // the initial webhook is the only post-payment action; the
               // payer's receipt email is sent below for all modes.
               return (
-                performMultirespondentPaymentPostSubmissionActions(submission)
+                performMultirespondentPaymentPostSubmissionActions(
+                  submission,
+                  growthbook,
+                )
                   .map(() => submission)
                   // Ignore failures as they will be logged, but the payment
                   // confirmation flow should not fail because of them

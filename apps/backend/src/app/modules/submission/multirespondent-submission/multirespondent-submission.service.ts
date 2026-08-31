@@ -52,10 +52,6 @@ import {
 } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { isFormMultirespondent } from '../../form/form.utils'
-import {
-  WebhookPushToQueueError,
-  WebhookValidationError,
-} from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType } from '../../webhook/webhook.service'
 import {
@@ -1226,6 +1222,7 @@ const sendMrfInitialWebhookIfEligible = ({
   isRetryEnabled,
   growthbook,
   logMeta,
+  errorMessage = 'Multirespondent submission webhook error',
 }: {
   submission: IMultirespondentSubmissionSchema
   snapshot?: SubmissionSnapshotV4
@@ -1233,6 +1230,7 @@ const sendMrfInitialWebhookIfEligible = ({
   isRetryEnabled: boolean
   growthbook?: GrowthBook
   logMeta: CustomLoggerParams['meta']
+  errorMessage?: string
 }): void => {
   const webhookType = getWebhookType(webhookUrl)
   const isStepWriteTokenEnabled =
@@ -1263,7 +1261,7 @@ const sendMrfInitialWebhookIfEligible = ({
       isRetryEnabled,
     ).mapErr((error) => {
       logger.error({
-        message: 'Multirespondent submission webhook error',
+        message: errorMessage,
         meta: logMeta,
         error,
       })
@@ -1316,7 +1314,7 @@ const sendMrfInitialWebhookIfEligible = ({
     })
     .mapErr((error) => {
       logger.error({
-        message: 'Multirespondent submission webhook error',
+        message: errorMessage,
         meta: logMeta,
         error,
       })
@@ -1470,47 +1468,44 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
  * Performs post-submission actions for a multirespondent submission promoted
  * from a pending submission on payment confirmation. A payment-enabled MRF
  * sends no form-configured emails, so the only action mirrored from
- * submission creation is the initial webhook; the payer's receipt email is
- * sent by the payments machinery.
+ * submission creation is the initial webhook — routed through the same
+ * eligibility gate and payload policy as non-payment submissions; the
+ * payer's receipt email is sent by the payments machinery.
  * @param submission the promoted multirespondent submission
+ * @param growthbook growthbook instance of the triggering request, used to
+ * evaluate the MRF webhook rollout flags (absent means flags-off, so only
+ * plumber webhooks fire)
  */
 export const performMultirespondentPaymentPostSubmissionActions = (
   submission: IMultirespondentSubmissionSchema,
-): ResultAsync<
-  true,
-  | FormNotFoundError
-  | PossibleDatabaseError
-  | WebhookValidationError
-  | SubmissionNotFoundError
-  | WebhookPushToQueueError
-> => {
+  growthbook?: GrowthBook,
+): ResultAsync<true, FormNotFoundError | PossibleDatabaseError> => {
   const logMeta = {
     action: 'performMultirespondentPaymentPostSubmissionActions',
     submissionId: submission.id,
   }
 
-  return FormService.retrieveFullFormById(submission.form).andThen((form) => {
+  return FormService.retrieveFullFormById(submission.form).map((form) => {
     const webhookUrl = form.webhook?.url
-    if (!webhookUrl) return okAsync(true as const)
+    if (!webhookUrl) return true as const
 
-    logger.info({
-      message:
-        'Sending initial webhook for payment-confirmed multirespondent submission',
-      meta: logMeta,
+    // Mirror the submission paths: target the rollout flags by form and
+    // admin before evaluating webhook eligibility.
+    void growthbook?.setAttributes({
+      ...growthbook.getAttributes(),
+      formId: String(form._id),
+      adminEmail: form.admin.email,
     })
 
-    return WebhookFactory.sendInitialWebhook(
+    sendMrfInitialWebhookIfEligible({
       submission,
       webhookUrl,
-      !!form.webhook?.isRetryEnabled,
-    ).mapErr((error) => {
-      logger.error({
-        message: 'Multirespondent payment submission webhook error',
-        meta: logMeta,
-        error,
-      })
-      return error
+      isRetryEnabled: !!form.webhook?.isRetryEnabled,
+      growthbook,
+      logMeta,
+      errorMessage: 'Multirespondent payment submission webhook error',
     })
+    return true as const
   })
 }
 

@@ -32,7 +32,6 @@ import { MultirespondentSubmissionDto, SnapshottedFormDef } from 'src/types/api'
 import { DatabaseConflictError } from '../../../core/core.errors'
 import { FormRespondentSingleSubmissionValidationError } from '../../../form/form.errors'
 import * as FormService from '../../../form/form.service'
-import { WebhookValidationError } from '../../../webhook/webhook.errors'
 import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
@@ -4688,22 +4687,131 @@ describe('multirespondent-submission.service', () => {
   })
 
   describe('performMultirespondentPaymentPostSubmissionActions', () => {
-    const MOCK_WEBHOOK_URL = 'https://example.com/webhook'
+    const MOCK_GENERIC_WEBHOOK_URL = 'https://example.com/webhook'
+    const MOCK_PLUMBER_WEBHOOK_URL = 'https://plumber.gov.sg/webhooks/abc'
+    const MOCK_ADMIN_EMAIL = 'admin@example.gov.sg'
+    // No mrfVersion, so the send takes the v3 legacy shape (raw submission,
+    // no reconstructed webhook view).
     const mockSubmission = {
       id: mockSubmissionId,
       form: mockFormId,
       submissionType: SubmissionType.Multirespondent,
     } as unknown as IMultirespondentSubmissionSchema
 
+    const mockPaymentMrfFormWithWebhook = (webhookUrl: string) =>
+      okAsync({
+        _id: mockFormId,
+        admin: { email: MOCK_ADMIN_EMAIL },
+        webhook: { url: webhookUrl, isRetryEnabled: true },
+      } as unknown as IPopulatedForm)
+
+    const growthbookWithFlags = ({
+      enableMrfWebhooks = false,
+      mrfStepWriteToken = false,
+    }: {
+      enableMrfWebhooks?: boolean
+      mrfStepWriteToken?: boolean
+    }) =>
+      ({
+        isOn: jest.fn((flag: string) =>
+          flag === featureFlags.enableMrfWebhooks
+            ? enableMrfWebhooks
+            : flag === featureFlags.mrfStepWriteToken
+              ? mrfStepWriteToken
+              : false,
+        ),
+        getAttributes: jest.fn(() => ({})),
+        setAttributes: jest.fn(),
+      }) as any
+
     afterEach(() => jest.restoreAllMocks())
 
-    it('should fire the initial webhook when the form has a webhook url', async () => {
+    it('should suppress the webhook to a generic endpoint when no growthbook instance is available (flags fail closed)', async () => {
       // Arrange
-      jest.spyOn(FormService, 'retrieveFullFormById').mockReturnValue(
-        okAsync({
-          webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: true },
-        } as IPopulatedForm),
+      jest
+        .spyOn(FormService, 'retrieveFullFormById')
+        .mockReturnValue(
+          mockPaymentMrfFormWithWebhook(MOCK_GENERIC_WEBHOOK_URL),
+        )
+      const webhookSpy = jest.spyOn(WebhookFactory, 'sendInitialWebhook')
+
+      // Act
+      const actualResult =
+        await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
+          mockSubmission,
+        )
+
+      // Assert
+      expect(webhookSpy).not.toHaveBeenCalled()
+      expect(actualResult.isOk()).toBeTrue()
+    })
+
+    it('should suppress the webhook to a generic endpoint when the MRF webhook flags are off', async () => {
+      // Arrange
+      jest
+        .spyOn(FormService, 'retrieveFullFormById')
+        .mockReturnValue(
+          mockPaymentMrfFormWithWebhook(MOCK_GENERIC_WEBHOOK_URL),
+        )
+      const webhookSpy = jest.spyOn(WebhookFactory, 'sendInitialWebhook')
+
+      // Act
+      const actualResult =
+        await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
+          mockSubmission,
+          growthbookWithFlags({
+            enableMrfWebhooks: false,
+            mrfStepWriteToken: false,
+          }),
+        )
+
+      // Assert
+      expect(webhookSpy).not.toHaveBeenCalled()
+      expect(actualResult.isOk()).toBeTrue()
+    })
+
+    it('should fire the webhook to a generic endpoint when the MRF webhook flags are on, targeting the flags by form and admin', async () => {
+      // Arrange
+      jest
+        .spyOn(FormService, 'retrieveFullFormById')
+        .mockReturnValue(
+          mockPaymentMrfFormWithWebhook(MOCK_GENERIC_WEBHOOK_URL),
+        )
+      const webhookSpy = jest
+        .spyOn(WebhookFactory, 'sendInitialWebhook')
+        .mockReturnValue(okAsync(true))
+      const mockGrowthbook = growthbookWithFlags({
+        enableMrfWebhooks: true,
+        mrfStepWriteToken: true,
+      })
+
+      // Act
+      const actualResult =
+        await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
+          mockSubmission,
+          mockGrowthbook,
+        )
+
+      // Assert
+      expect(mockGrowthbook.setAttributes).toHaveBeenCalledWith({
+        formId: String(mockFormId),
+        adminEmail: MOCK_ADMIN_EMAIL,
+      })
+      expect(webhookSpy).toHaveBeenCalledWith(
+        mockSubmission,
+        MOCK_GENERIC_WEBHOOK_URL,
+        true,
       )
+      expect(actualResult.isOk()).toBeTrue()
+    })
+
+    it('should fire the webhook to a plumber endpoint even without a growthbook instance', async () => {
+      // Arrange
+      jest
+        .spyOn(FormService, 'retrieveFullFormById')
+        .mockReturnValue(
+          mockPaymentMrfFormWithWebhook(MOCK_PLUMBER_WEBHOOK_URL),
+        )
       const webhookSpy = jest
         .spyOn(WebhookFactory, 'sendInitialWebhook')
         .mockReturnValue(okAsync(true))
@@ -4717,7 +4825,7 @@ describe('multirespondent-submission.service', () => {
       // Assert
       expect(webhookSpy).toHaveBeenCalledWith(
         mockSubmission,
-        MOCK_WEBHOOK_URL,
+        MOCK_PLUMBER_WEBHOOK_URL,
         true,
       )
       expect(actualResult.isOk()).toBeTrue()
@@ -4739,30 +4847,6 @@ describe('multirespondent-submission.service', () => {
       // Assert
       expect(webhookSpy).not.toHaveBeenCalled()
       expect(actualResult.isOk()).toBeTrue()
-    })
-
-    it('should return the webhook error when sending fails', async () => {
-      // Arrange
-      jest.spyOn(FormService, 'retrieveFullFormById').mockReturnValue(
-        okAsync({
-          webhook: { url: MOCK_WEBHOOK_URL, isRetryEnabled: false },
-        } as IPopulatedForm),
-      )
-      jest
-        .spyOn(WebhookFactory, 'sendInitialWebhook')
-        .mockReturnValue(errAsync(new WebhookValidationError()))
-
-      // Act
-      const actualResult =
-        await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
-          mockSubmission,
-        )
-
-      // Assert
-      expect(actualResult.isErr()).toBeTrue()
-      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
-        WebhookValidationError,
-      )
     })
   })
 })

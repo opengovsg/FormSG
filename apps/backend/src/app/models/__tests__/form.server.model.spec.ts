@@ -1033,8 +1033,7 @@ describe('Form Model', () => {
           })
 
           // Act
-          const saved = (await validForm.save()) as IMultirespondentFormSchema
-          const saved = (await validForm.save()) as IMultirespondentFormSchema
+          const saved = await validForm.save()
 
           // Assert
           expect(saved._id).toBeDefined()
@@ -1110,11 +1109,9 @@ describe('Form Model', () => {
         it('should reject adding a workflow step to a saved payment-enabled form', async () => {
           // Arrange
           const form = (await new MultirespondentForm({
-          const form = (await new MultirespondentForm({
             ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
             workflow: [],
             payments_field: ENABLED_PAYMENTS_FIELD,
-          }).save()) as IMultirespondentFormSchema
           }).save()) as IMultirespondentFormSchema
           form.workflow.push({
             _id: new ObjectId().toHexString(),
