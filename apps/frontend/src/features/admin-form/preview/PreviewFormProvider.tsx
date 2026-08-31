@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -35,6 +35,7 @@ import { usePreviewFormMutations } from '../common/mutations'
 
 import { carryOverPreviousStepValues } from './utils/carryOverPreviousStepValues'
 import { clampWorkflowStep } from './utils/clampWorkflowStep'
+import { getPreviewStepLabel } from './utils/getPreviewStepLabel'
 import { PREVIEW_STEP_PARAM } from './utils/previewStepParam'
 
 interface PreviewFormProviderProps {
@@ -399,6 +400,9 @@ export const PreviewFormProvider = ({
     defaultValues: defaultFormValues,
   })
 
+  const hasSeenInitialStepRef = useRef(false)
+  const stepToastIdRef = useRef<string | number>()
+
   // On a step switch, carry the answers already entered into the fields this
   // step cannot edit. They stand in for the earlier respondents' submitted
   // answers, which a real respondent at this step would see filled in and
@@ -406,6 +410,9 @@ export const PreviewFormProvider = ({
   // values and the preview can show a different field set than the respondent
   // would get. Fields this step can edit go back to their defaults, since a
   // real respondent reaches their own step with nothing filled in yet.
+  //
+  // The switch also raises a toast naming the step. The first run is skipped so
+  // that arriving on the preview does not announce a step the admin never chose.
   useEffect(() => {
     formMethods.reset(
       carryOverPreviousStepValues({
@@ -415,6 +422,24 @@ export const PreviewFormProvider = ({
         defaultFormValues,
       }),
     )
+
+    if (!hasSeenInitialStepRef.current) {
+      hasSeenInitialStepRef.current = true
+      return
+    }
+    if (!currentStepNumberWorkflowStep) return
+
+    // Replace rather than stack, so flicking through steps leaves one toast.
+    if (stepToastIdRef.current) {
+      toast.close(stepToastIdRef.current)
+    }
+    stepToastIdRef.current = toast({
+      status: 'success',
+      description: `You're previewing ${getPreviewStepLabel(
+        currentStepNumberWorkflowStep,
+        currentWorkflowStepNumber,
+      )}.`,
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentWorkflowStepNumber])
 
