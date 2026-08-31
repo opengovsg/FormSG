@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.15.1](https://github.com/opengovsg/formsg/compare/v9.15.0...v9.15.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* **design-drawer:** stop form title from autosaving before Save design (#9894) ([#9894](https://github.com/opengovsg/formsg/commit/100742d2de5ff3eecbabbc00315e00708a4e4c7f))
+* **responses:** put response metadata back on the type scale (#9904) ([#9904](https://github.com/opengovsg/formsg/commit/c5234339d3cadf82ae9d44bb23e0c34fe6d8719a))
+
 ## [9.15.0](https://github.com/opengovsg/formsg/compare/v9.14.0...v9.15.0) (2026-08-27)
 
 
