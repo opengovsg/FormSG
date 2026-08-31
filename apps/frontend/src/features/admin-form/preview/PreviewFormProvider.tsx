@@ -36,7 +36,10 @@ import { usePreviewFormMutations } from '../common/mutations'
 import { carryOverPreviousStepValues } from './utils/carryOverPreviousStepValues'
 import { clampWorkflowStep } from './utils/clampWorkflowStep'
 import { getPreviewStepLabel } from './utils/getPreviewStepLabel'
-import { PREVIEW_STEP_PARAM } from './utils/previewStepParam'
+import {
+  PREVIEW_STEP_PARAM,
+  withPreviewStepParam,
+} from './utils/previewStepParam'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -339,7 +342,7 @@ export const PreviewFormProvider = ({
     })
   }
 
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const form = data?.form
   const formFields = form?.form_fields
@@ -361,6 +364,18 @@ export const PreviewFormProvider = ({
     formWorkflow && formWorkflow.length > currentWorkflowStepNumber
       ? formWorkflow[currentWorkflowStepNumber]
       : undefined
+
+  useEffect(() => {
+    if (!formWorkflow) return
+    const rawStepParam = searchParams.get(PREVIEW_STEP_PARAM)
+    const canonicalStepParam =
+      currentWorkflowStepNumber === 0 ? null : String(currentWorkflowStepNumber)
+    if (rawStepParam === canonicalStepParam) return
+    setSearchParams(
+      (prev) => withPreviewStepParam(prev, currentWorkflowStepNumber),
+      { replace: true },
+    )
+  }, [formWorkflow, searchParams, currentWorkflowStepNumber, setSearchParams])
 
   const fieldPrefillMap = useMemo(
     () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
