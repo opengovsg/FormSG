@@ -31,7 +31,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Link from '~components/Link'
 
 import { getPreviewStepLabel } from '~features/admin-form/preview/utils/getPreviewStepLabel'
-import { PREVIEW_STEP_PARAM } from '~features/admin-form/preview/utils/previewStepParam'
+import { withPreviewStepParam } from '~features/admin-form/preview/utils/previewStepParam'
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
 // Explicit deep import to avoid circular dependency warnings by rollup.
 import {
@@ -144,16 +144,9 @@ export const PreviewFormBanner = ({
                     isClearable={false}
                     value={String(previewWorkflowStepNumber ?? 0)}
                     onChange={(val) => {
-                      const newStep = Number(val)
-                      setSearchParams((prev) => {
-                        const next = new URLSearchParams(prev)
-                        if (newStep === 0) {
-                          next.delete(PREVIEW_STEP_PARAM)
-                        } else {
-                          next.set(PREVIEW_STEP_PARAM, String(newStep))
-                        }
-                        return next
-                      })
+                      setSearchParams((prev) =>
+                        withPreviewStepParam(prev, Number(val)),
+                      )
                     }}
                     items={previewWorkflowSteps.map((step, idx) => ({
                       value: String(idx),
