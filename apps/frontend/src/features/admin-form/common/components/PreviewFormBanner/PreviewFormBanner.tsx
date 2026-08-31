@@ -144,8 +144,9 @@ export const PreviewFormBanner = ({
                     isClearable={false}
                     value={String(previewWorkflowStepNumber ?? 0)}
                     onChange={(val) => {
-                      setSearchParams((prev) =>
-                        withPreviewStepParam(prev, Number(val)),
+                      setSearchParams(
+                        (prev) => withPreviewStepParam(prev, Number(val)),
+                        { replace: true },
                       )
                     }}
                     items={previewWorkflowSteps.map((step, idx) => ({
