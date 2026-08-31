@@ -403,6 +403,8 @@ export const PreviewFormProvider = ({
   const hasSeenInitialStepRef = useRef(false)
   const stepToastIdRef = useRef<string | number>()
 
+  const hasLoadedWorkflow = !!formWorkflow
+
   useEffect(() => {
     formMethods.reset(
       carryOverPreviousStepValues({
@@ -415,6 +417,7 @@ export const PreviewFormProvider = ({
       { keepDirty: true },
     )
 
+    if (!hasLoadedWorkflow) return
     if (!hasSeenInitialStepRef.current) {
       hasSeenInitialStepRef.current = true
       return
@@ -432,7 +435,7 @@ export const PreviewFormProvider = ({
       )}.`,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentWorkflowStepNumber])
+  }, [currentWorkflowStepNumber, hasLoadedWorkflow])
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
