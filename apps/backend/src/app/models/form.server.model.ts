@@ -1551,9 +1551,12 @@ const compileFormModel = (db: Mongoose): IFormModel => {
   ) {
     // Enabling payments re-asserts the notification and single-submission
     // guards atomically in the query, closing the race against concurrent
-    // settings updates. `workflow` only exists on multirespondent documents
-    // and `emails` may be absent on legacy documents, so empty arrays are
-    // matched via `field.0` non-existence rather than `$size`.
+    // settings updates. `workflow` and `stepOneEmailNotificationFieldId` are
+    // multirespondent-only fields (they match vacuously on storage mode);
+    // `emails` exists on both modes and must be empty to enable payments in
+    // either. Empty arrays are matched via `field.0` non-existence rather
+    // than `$size` so legacy storage-mode documents missing `emails`
+    // entirely also pass.
     const filter = newPayments.enabled
       ? {
           _id: formId,
