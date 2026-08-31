@@ -1,3 +1,4 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { featureFlags } from 'formsg-shared/constants'
@@ -48,16 +49,25 @@ const logger = createLoggerWithLabel(module)
  */
 const checkMrfPaymentsFeatureEnabled = <T extends IPopulatedForm>(
   form: T,
-  isMrfPaymentsEnabled: boolean,
-) =>
-  form.responseMode === FormResponseMode.Multirespondent &&
-  !isMrfPaymentsEnabled
-    ? err(
+  growthbook?: GrowthBook,
+) => {
+  if (form.responseMode !== FormResponseMode.Multirespondent) {
+    return ok(form)
+  }
+
+  void growthbook?.setAttributes({
+    ...growthbook.getAttributes(),
+    formId: form._id.toString(),
+    adminEmail: form.admin.email,
+  })
+  return growthbook?.isOn(featureFlags.mrfPayments)
+    ? ok(form)
+    : err(
         new ForbiddenFormError(
           'Payments are not available for multirespondent forms',
         ),
       )
-    : ok(form)
+}
 
 /**
  * Handler for POST /:formId/stripe.
@@ -99,12 +109,7 @@ export const handleConnectAccount: ControllerHandler<{
       .andThen(assertFormIsSingleSubmissionDisabled)
       // Ensure that the form is a payment-capable response mode.
       .andThen(checkFormIsEncryptModeOrMultirespondent)
-      .andThen((form) =>
-        checkMrfPaymentsFeatureEnabled(
-          form,
-          req.growthbook?.isOn(featureFlags.mrfPayments) ?? false,
-        ),
-      )
+      .andThen((form) => checkMrfPaymentsFeatureEnabled(form, req.growthbook))
       // Get the auth URL and state, and pass the auth URL for redirection.
       .andThen(getStripeOauthUrl)
       .map(({ authUrl, state }) => {
@@ -285,10 +290,7 @@ const _handleUpdatePayments: ControllerHandler<
         // flag-off admin must still be able to switch a live payment off.
         req.body.enabled === false
           ? ok(form)
-          : checkMrfPaymentsFeatureEnabled(
-              form,
-              req.growthbook?.isOn(featureFlags.mrfPayments) ?? false,
-            ),
+          : checkMrfPaymentsFeatureEnabled(form, req.growthbook),
       )
       // Check that the payment form has a stripe account connected
       .andThen((form) =>
@@ -340,12 +342,7 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
         }),
       )
       .andThen(checkFormIsEncryptModeOrMultirespondent)
-      .andThen((form) =>
-        checkMrfPaymentsFeatureEnabled(
-          form,
-          req.growthbook?.isOn(featureFlags.mrfPayments) ?? false,
-        ),
-      )
+      .andThen((form) => checkMrfPaymentsFeatureEnabled(form, req.growthbook))
       // Step 3: Check that the payment form has a stripe account connected
       .andThen((form) =>
         form.payments_channel.channel === PaymentChannel.Unconnected
