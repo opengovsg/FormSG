@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { isEqual } from 'lodash'
 
 import { BasicField } from 'formsg-shared/types/field'
 import { FormColorTheme, FormResponseMode } from 'formsg-shared/types/form'
@@ -136,13 +137,5 @@ export const FieldFactory = memo(
         )
     }
   },
-  // NOTE: if a new `field` property or prop starts affecting what's rendered
-  // below, add it to this comparator too, or this memo will silently skip
-  // re-renders that should have happened.
-  (prevProps, nextProps) =>
-    prevProps.field._id === nextProps.field._id &&
-    prevProps.field.questionNumber === nextProps.field.questionNumber &&
-    prevProps.field.disabled === nextProps.field.disabled &&
-    prevProps.isHighContrast === nextProps.isHighContrast &&
-    prevProps.disableRequiredValidation === nextProps.disableRequiredValidation,
+  (prevProps, nextProps) => isEqual(prevProps, nextProps),
 )
