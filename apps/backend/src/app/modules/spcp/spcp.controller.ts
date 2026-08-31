@@ -3,7 +3,6 @@ import { StatusCodes } from 'http-status-codes'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-import { maskOAuthCode } from '../../utils/request'
 import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
@@ -29,7 +28,7 @@ export const handleSpcpOidcLogin: (
   const logMeta = {
     action: 'handleSpcpOidcLogin',
     state,
-    code: maskOAuthCode(code),
+    hasCode: !!code,
     authType,
   }
 
