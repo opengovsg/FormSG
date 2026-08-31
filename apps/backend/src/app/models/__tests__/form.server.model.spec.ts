@@ -15,6 +15,7 @@ import {
   FormField,
   FormFieldDto,
   FormLogoState,
+  FormPaymentsField,
   FormPermission,
   FormResponseMode,
   FormStartPage,
@@ -2275,6 +2276,132 @@ describe('Form Model', () => {
         // Assert
         expect(actual).toEqual(null)
         await expect(Form.countDocuments()).resolves.toEqual(0)
+      })
+    })
+
+    describe('updatePaymentsById', () => {
+      const PAYMENTS_ENABLED = {
+        enabled: true,
+        description: 'some description',
+        name: 'some name',
+        amount_cents: 5000,
+        payment_type: PaymentType.Fixed,
+      } as FormPaymentsField
+
+      it('should enable payments on a storage mode form with no emails', async () => {
+        // Arrange
+        const form = await EncryptedForm.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          emails: [],
+        })
+
+        // Act
+        const actual = await EncryptedForm.updatePaymentsById(
+          form._id,
+          PAYMENTS_ENABLED,
+        )
+
+        // Assert
+        expect(actual?.payments_field?.enabled).toEqual(true)
+      })
+
+      it('should enable payments on a legacy storage mode form with no emails field at all', async () => {
+        // Arrange: pre-migration documents may lack `emails` entirely, and
+        // storage mode forms never have `workflow`; the filter must treat
+        // missing paths the same as empty arrays.
+        const form = await EncryptedForm.create(MOCK_ENCRYPTED_FORM_PARAMS)
+        await EncryptedForm.collection.updateOne(
+          { _id: form._id },
+          { $unset: { emails: 1 } },
+        )
+
+        // Act
+        const actual = await EncryptedForm.updatePaymentsById(
+          form._id,
+          PAYMENTS_ENABLED,
+        )
+
+        // Assert
+        expect(actual?.payments_field?.enabled).toEqual(true)
+      })
+
+      it('should return null when enabling payments on a form with emails', async () => {
+        // Arrange: emails may have been added concurrently after the service
+        // layer's in-memory guard passed.
+        const form = await EncryptedForm.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          emails: [MOCK_ADMIN_EMAIL],
+        })
+
+        // Act
+        const actual = await EncryptedForm.updatePaymentsById(
+          form._id,
+          PAYMENTS_ENABLED,
+        )
+
+        // Assert
+        expect(actual).toEqual(null)
+        const untouchedForm = await EncryptedForm.findById(form._id)
+        expect(untouchedForm?.payments_field?.enabled).toEqual(false)
+      })
+
+      it('should return null when enabling payments on a form with single submission enabled', async () => {
+        // Arrange
+        const form = await EncryptedForm.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          emails: [],
+          isSingleSubmission: true,
+        })
+
+        // Act
+        const actual = await EncryptedForm.updatePaymentsById(
+          form._id,
+          PAYMENTS_ENABLED,
+        )
+
+        // Assert
+        expect(actual).toEqual(null)
+      })
+
+      it('should return null when enabling payments on a multirespondent form with workflow steps', async () => {
+        // Arrange
+        const form = await MultirespondentForm.create({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          workflow: [
+            {
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              edit: [],
+            },
+          ],
+        })
+
+        // Act
+        const actual = await MultirespondentForm.updatePaymentsById(
+          form._id,
+          PAYMENTS_ENABLED,
+        )
+
+        // Assert
+        expect(actual).toEqual(null)
+      })
+
+      it('should allow disabling payments regardless of emails or single submission', async () => {
+        // Arrange
+        const form = await EncryptedForm.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          emails: [MOCK_ADMIN_EMAIL],
+          isSingleSubmission: true,
+        })
+
+        // Act
+        const actual = await EncryptedForm.updatePaymentsById(form._id, {
+          ...PAYMENTS_ENABLED,
+          enabled: false,
+        })
+
+        // Assert
+        expect(actual?.payments_field?.enabled).toEqual(false)
       })
     })
 
