@@ -30,6 +30,7 @@ import { SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 import Link from '~components/Link'
 
+import { getPreviewStepLabel } from '~features/admin-form/preview/utils/getPreviewStepLabel'
 import { PREVIEW_STEP_PARAM } from '~features/admin-form/preview/utils/previewStepParam'
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
 // Explicit deep import to avoid circular dependency warnings by rollup.
@@ -156,7 +157,7 @@ export const PreviewFormBanner = ({
                     }}
                     items={previewWorkflowSteps.map((step, idx) => ({
                       value: String(idx),
-                      label: `Step ${idx + 1}${step.step_name ? `: ${step.step_name}` : ''}`,
+                      label: getPreviewStepLabel(step, idx),
                     }))}
                   />
                 </Flex>
