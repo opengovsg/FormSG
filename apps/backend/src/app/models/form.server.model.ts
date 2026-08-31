@@ -1549,8 +1549,23 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     formId: string,
     newPayments: FormPaymentsField,
   ) {
-    return this.findByIdAndUpdate(
-      formId,
+    // Enabling payments re-asserts the notification and single-submission
+    // guards atomically in the query, closing the race against concurrent
+    // settings updates. `workflow` only exists on multirespondent documents
+    // and `emails` may be absent on legacy documents, so empty arrays are
+    // matched via `field.0` non-existence rather than `$size`.
+    const filter = newPayments.enabled
+      ? {
+          _id: formId,
+          'workflow.0': { $exists: false },
+          'emails.0': { $exists: false },
+          stepOneEmailNotificationFieldId: { $in: [null, ''] },
+          isSingleSubmission: { $ne: true },
+        }
+      : { _id: formId }
+
+    return this.findOneAndUpdate(
+      filter,
       { payments_field: newPayments },
       { new: true, runValidators: true },
     ).exec()
