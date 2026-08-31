@@ -33,6 +33,7 @@ import { useEnv } from '../../env/queries'
 import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
 
+import { carryOverPreviousStepValues } from './utils/carryOverPreviousStepValues'
 import { clampWorkflowStep } from './utils/clampWorkflowStep'
 import { PREVIEW_STEP_PARAM } from './utils/previewStepParam'
 
@@ -398,9 +399,22 @@ export const PreviewFormProvider = ({
     defaultValues: defaultFormValues,
   })
 
-  // Clear stale field values from the previous step on step switch.
+  // On a step switch, carry the answers already entered into the fields this
+  // step cannot edit. They stand in for the earlier respondents' submitted
+  // answers, which a real respondent at this step would see filled in and
+  // read-only. Without them, conditional logic is evaluated against empty
+  // values and the preview can show a different field set than the respondent
+  // would get. Fields this step can edit go back to their defaults, since a
+  // real respondent reaches their own step with nothing filled in yet.
   useEffect(() => {
-    formMethods.reset(defaultFormValues)
+    formMethods.reset(
+      carryOverPreviousStepValues({
+        augmentedFormFields,
+        currentStepNumberWorkflowStep,
+        enteredValues: formMethods.getValues(),
+        defaultFormValues,
+      }),
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentWorkflowStepNumber])
 
