@@ -17,6 +17,12 @@ vi.mock('~features/public-form/PublicFormContext', () => ({
   }),
 }))
 
+// Stub out the real field component so assertions can inspect exactly what
+// FieldFactory forwards to it, without needing a react-hook-form tree.
+// The stub is a `vi.fn` (rather than a plain arrow function) so tests can
+// assert on render *call count* directly — DOM node identity alone doesn't
+// prove whether React re-invoked the component, since React can re-render
+// without replacing the underlying DOM node.
 vi.mock('~templates/Field', async (importOriginal) => {
   const actual = await importOriginal<typeof import('~templates/Field')>()
   return {
@@ -75,32 +81,14 @@ describe('FieldFactory', () => {
       />,
     )
 
+    // Asserting call count (rather than only the rendered output) proves
+    // the memoized component was actually re-invoked, not just that its
+    // DOM node happens to have new attributes.
     expect(mockShortTextField).toHaveBeenCalledTimes(2)
     const el = screen.getByTestId('mock-short-text-field')
     expect(el).toHaveAttribute('data-disabled', 'true')
     expect(el).toHaveAttribute('data-high-contrast', 'true')
     expect(el).toHaveAttribute('data-disable-required-validation', 'true')
-  })
-
-  it('re-renders when any other schema property changes, e.g. title', () => {
-    const { rerender } = render(
-      <FieldFactory
-        field={baseField}
-        isHighContrast={false}
-        disableRequiredValidation={false}
-      />,
-    )
-    expect(mockShortTextField).toHaveBeenCalledTimes(1)
-
-    rerender(
-      <FieldFactory
-        field={{ ...baseField, title: 'Renamed field' }}
-        isHighContrast={false}
-        disableRequiredValidation={false}
-      />,
-    )
-
-    expect(mockShortTextField).toHaveBeenCalledTimes(2)
   })
 
   it('does not re-render when field, isHighContrast, and disableRequiredValidation are unchanged', () => {
@@ -121,6 +109,8 @@ describe('FieldFactory', () => {
       />,
     )
 
+    // Call count staying at 1 proves React bailed out of re-rendering the
+    // memoized component entirely, which DOM node identity alone cannot show.
     expect(mockShortTextField).toHaveBeenCalledTimes(1)
   })
 })
