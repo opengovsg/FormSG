@@ -8,6 +8,8 @@ import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
 import { DndPlaceholderProps } from '../types'
 import {
+  consumePendingFieldCreationSelector,
+  pendingFieldCreationSelector,
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
@@ -27,11 +29,24 @@ export const BuilderAndDesignContent = ({
   const { data: settings } = useAdminFormSettings()
 
   const setFieldsToInactive = useFieldBuilderStore(setToInactiveSelector)
+  const pendingFieldCreation = useFieldBuilderStore(
+    pendingFieldCreationSelector,
+  )
+  const consumePendingFieldCreation = useFieldBuilderStore(
+    consumePendingFieldCreationSelector,
+  )
 
   useEffect(() => {
     setFieldsToInactive()
     return () => setFieldsToInactive()
   }, [setFieldsToInactive])
+
+  // Runs after the reset above, which is why the field another tab staged
+  // has to live outside stateData. Declaration order is the ordering
+  // guarantee: on mount React runs these two in the order they appear.
+  useEffect(() => {
+    if (pendingFieldCreation) consumePendingFieldCreation()
+  }, [pendingFieldCreation, consumePendingFieldCreation])
 
   return (
     <Flex flex={1} overflow="auto">

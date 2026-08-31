@@ -40,6 +40,15 @@ export type FieldBuilderStore = {
     | null
   clearHoldingStateData: () => void
   moveFromHolding: () => void
+  // A field another tab asked the builder to open on. Survives setToInactive
+  // on purpose: the builder clears its own state as it mounts, so anything
+  // written to stateData before the trip is gone by the time it arrives.
+  pendingFieldCreation: {
+    field: FieldCreateDto
+    insertionIndex: number
+  } | null
+  stageFieldCreation: (field: FieldCreateDto, insertionIndex: number) => void
+  consumePendingFieldCreation: () => void
 }
 
 export const useFieldBuilderStore = create<FieldBuilderStore>()(
@@ -95,6 +104,21 @@ export const useFieldBuilderStore = create<FieldBuilderStore>()(
         set({ stateData })
       }
     },
+    pendingFieldCreation: null,
+    stageFieldCreation: (field, insertionIndex) =>
+      set({ pendingFieldCreation: { field, insertionIndex } }),
+    consumePendingFieldCreation: () => {
+      const pending = get().pendingFieldCreation
+      if (!pending) return
+      set({
+        stateData: {
+          state: FieldBuilderState.CreatingField,
+          field: pending.field,
+          insertionIndex: pending.insertionIndex,
+        },
+        pendingFieldCreation: null,
+      })
+    },
     setToInactive: (holding?: boolean) => {
       const nextState: FieldBuilderStore['holdingStateData'] = {
         state: FieldBuilderState.Inactive,
@@ -123,6 +147,19 @@ export const updateCreateStateSelector = (
 export const updateEditStateSelector = (
   state: FieldBuilderStore,
 ): FieldBuilderStore['updateEditState'] => state.updateEditState
+
+export const pendingFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['pendingFieldCreation'] => state.pendingFieldCreation
+
+export const stageFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['stageFieldCreation'] => state.stageFieldCreation
+
+export const consumePendingFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['consumePendingFieldCreation'] =>
+  state.consumePendingFieldCreation
 
 export const setToInactiveSelector = (
   state: FieldBuilderStore,
