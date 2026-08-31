@@ -99,6 +99,13 @@ describe('Multirespondent Submission Middleware', () => {
         respondentEmails: ['test@example.com'],
       },
       formsg: undefined,
+      growthbook: {
+        isOn: jest.fn().mockReturnValue(false),
+        setAttributes: jest.fn().mockResolvedValue(undefined),
+        getAttributes: jest.fn().mockReturnValue({
+          unclobberedAttributeKey: 'unclobberedValue',
+        }),
+      },
       // Add Express request methods and properties
       get: jest.fn((name: string) => {
         if (name === 'cf-connecting-ip') return '127.0.0.1'
@@ -163,6 +170,7 @@ describe('Multirespondent Submission Middleware', () => {
       // Add other required properties to satisfy IPopulatedForm interface
       admin: {
         _id: new ObjectId(),
+        email: 'admin@example.com',
         agency: {
           fullName: 'Government Technology Agency',
         },
@@ -276,6 +284,11 @@ describe('Multirespondent Submission Middleware', () => {
       expect(getMultirespondentSubmission).toHaveBeenCalledWith(
         MOCK_SUBMISSION_ID,
       )
+      expect(mockReq.growthbook?.setAttributes).toHaveBeenCalledWith({
+        ...mockReq.growthbook?.getAttributes(),
+        formId: MOCK_FORM_ID,
+        adminEmail: MOCK_FORM.admin.email,
+      })
     })
 
     it('should return error response when submissionId exists but mrfSubmission is not found', async () => {
@@ -972,12 +985,6 @@ describe('Multirespondent Submission Middleware', () => {
       expect(jest.mocked(adaptV4ToV3)).not.toHaveBeenCalled()
       expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(2)
       expect(mockNext).toHaveBeenCalled()
-      expect(mockReq.growthbook.setAttributes).toHaveBeenCalledWith(
-        expect.objectContaining({
-          formId: MOCK_FORM_ID,
-          adminEmail: 'admin@example.com',
-        }),
-      )
     })
 
     it('should return 500 and not call next() when decryptFromSubmissionKey returns falsy', async () => {

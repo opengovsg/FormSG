@@ -265,6 +265,13 @@ export const createFormsgAndRetrieveForm = (
               // Step 6: Set req.formsg
               req.formsg = formsg
 
+              // Step 7: Inject growthbook attributes to selectively whitelist.
+              void req.growthbook?.setAttributes({
+                ...req.growthbook.getAttributes(),
+                formId,
+                adminEmail: formsg.formDef.admin.email,
+              })
+
               return next()
             })
         })
@@ -786,12 +793,6 @@ export const encryptSubmission = async (
   res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
   next: NextFunction,
 ) => {
-  void req.growthbook?.setAttributes({
-    ...req.growthbook.getAttributes(),
-    formId: req.params.formId,
-    adminEmail: req.formsg.formDef.admin.email,
-  })
-
   const formDef = req.formsg.formDef
   const formPublicKey = formDef.publicKey
   const responses = req.body.responses
