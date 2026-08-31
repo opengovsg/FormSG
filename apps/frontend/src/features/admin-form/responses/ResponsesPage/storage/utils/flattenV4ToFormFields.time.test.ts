@@ -63,6 +63,30 @@ describe('flattenV4ToFormFields — Time', () => {
     expect(result[0]).toMatchObject({ answer: '09:05:42' })
   })
 
+  /**
+   * The display settings govern the input widget and stop there. An afternoon
+   * answer given on a 12-hour field is stored — and so exported, tabled and
+   * emailed — as canonical 24-hour, never as "02:30 PM". This is the property
+   * that keeps a CSV column readable when an admin flips the toggle midway
+   * through a collection, and it is why nothing downstream reads the setting.
+   */
+  it("should export 24-hour regardless of the field's clock setting", () => {
+    const v4Responses = {
+      'time-field-id': {
+        fieldType: BasicField.Time,
+        question: 'Appointment time',
+        answer: { value: '14:30:00' },
+      },
+    } as unknown as FieldResponsesV4
+
+    const result = flattenV4ToFormFields({
+      v4Responses,
+      formFields: [{ ...timeField, use24HourFormat: false } as FormFieldDto],
+    })
+
+    expect(result[0]).toMatchObject({ answer: '14:30:00' })
+  })
+
   it('should emit an empty answer for an unanswered field', () => {
     const result = flattenV4ToFormFields({
       v4Responses: {} as FieldResponsesV4,

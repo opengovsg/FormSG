@@ -13,7 +13,7 @@ const createTimeFieldSchema = () => {
     },
     use24HourFormat: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   })
 }
