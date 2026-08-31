@@ -403,13 +403,6 @@ export const PreviewFormProvider = ({
   const hasSeenInitialStepRef = useRef(false)
   const stepToastIdRef = useRef<string | number>()
 
-  // On a step switch, carry the answers already entered into the fields the
-  // preceding steps fill in. They stand in for those respondents' submitted
-  // answers, which a real respondent at this step would see filled in. Every
-  // other field falls back to its default.
-  //
-  // The switch also raises a toast naming the step. The first run is skipped so
-  // that arriving on the preview does not announce a step the admin never chose.
   useEffect(() => {
     formMethods.reset(
       carryOverPreviousStepValues({
@@ -419,6 +412,7 @@ export const PreviewFormProvider = ({
         enteredValues: formMethods.getValues(),
         defaultFormValues,
       }),
+      { keepDirty: true },
     )
 
     if (!hasSeenInitialStepRef.current) {
@@ -427,7 +421,6 @@ export const PreviewFormProvider = ({
     }
     if (!currentStepNumberWorkflowStep) return
 
-    // Replace rather than stack, so flicking through steps leaves one toast.
     if (stepToastIdRef.current) {
       toast.close(stepToastIdRef.current)
     }
