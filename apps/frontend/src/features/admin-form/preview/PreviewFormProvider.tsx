@@ -403,13 +403,10 @@ export const PreviewFormProvider = ({
   const hasSeenInitialStepRef = useRef(false)
   const stepToastIdRef = useRef<string | number>()
 
-  // On a step switch, carry the answers already entered into the fields this
-  // step cannot edit. They stand in for the earlier respondents' submitted
-  // answers, which a real respondent at this step would see filled in and
-  // read-only. Without them, conditional logic is evaluated against empty
-  // values and the preview can show a different field set than the respondent
-  // would get. Fields this step can edit go back to their defaults, since a
-  // real respondent reaches their own step with nothing filled in yet.
+  // On a step switch, carry the answers already entered into the fields the
+  // preceding steps fill in. They stand in for those respondents' submitted
+  // answers, which a real respondent at this step would see filled in. Every
+  // other field falls back to its default.
   //
   // The switch also raises a toast naming the step. The first run is skipped so
   // that arriving on the preview does not announce a step the admin never chose.
@@ -417,7 +414,8 @@ export const PreviewFormProvider = ({
     formMethods.reset(
       carryOverPreviousStepValues({
         augmentedFormFields,
-        currentStepNumberWorkflowStep,
+        precedingWorkflowSteps:
+          formWorkflow?.slice(0, currentWorkflowStepNumber) ?? [],
         enteredValues: formMethods.getValues(),
         defaultFormValues,
       }),

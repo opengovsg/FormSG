@@ -1,76 +1,111 @@
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
-import { FormFieldValues } from '~templates/Field'
-
 import { carryOverPreviousStepValues } from './carryOverPreviousStepValues'
 
 const field = (_id: string): FormFieldDto =>
   ({ _id, fieldType: BasicField.ShortText }) as FormFieldDto
 
+type Args = Parameters<typeof carryOverPreviousStepValues>[0]
 const step = (edit: string[]) =>
-  ({ edit }) as unknown as Parameters<
-    typeof carryOverPreviousStepValues
-  >[0]['currentStepNumberWorkflowStep']
+  ({ edit }) as unknown as Args['precedingWorkflowSteps'][number]
 
-const fields = [field('a'), field('b')]
+// A three step approval form: step 1 fills `reason`, step 2 `comments`,
+// step 3 `approval`.
+const fields = [field('reason'), field('comments'), field('approval')]
+const stepOne = step(['reason'])
+const stepTwo = step(['comments'])
 
 describe('carryOverPreviousStepValues', () => {
-  it('keeps the entered value for a field this step cannot edit', () => {
+  it("carries an earlier step's answer forward", () => {
     expect(
       carryOverPreviousStepValues({
         augmentedFormFields: fields,
-        currentStepNumberWorkflowStep: step(['b']),
-        enteredValues: { a: 'from step 1', b: 'stale' },
+        precedingWorkflowSteps: [stepOne],
+        enteredValues: { reason: 'New laptop' },
         defaultFormValues: {},
       }),
-    ).toEqual({ a: 'from step 1' })
+    ).toEqual({ reason: 'New laptop' })
   })
 
-  it('resets a field this step can edit back to its default', () => {
+  it("does not carry a later step's answer backwards", () => {
+    // Viewing step 1, having typed into step 3 earlier. A step 1 respondent has
+    // never seen `approval`, so it must not appear even though step 1 cannot
+    // edit it.
     expect(
       carryOverPreviousStepValues({
         augmentedFormFields: fields,
-        currentStepNumberWorkflowStep: step(['b']),
-        enteredValues: { b: 'typed on an earlier step' },
-        defaultFormValues: { b: 'prefilled' },
+        precedingWorkflowSteps: [],
+        enteredValues: { approval: 'Approved' },
+        defaultFormValues: {},
       }),
-    ).toEqual({ b: 'prefilled' })
+    ).toEqual({})
   })
 
-  it('leaves an uneditable field absent when nothing was entered for it', () => {
+  it('carries every preceding step, not just the immediately previous one', () => {
     expect(
       carryOverPreviousStepValues({
         augmentedFormFields: fields,
-        currentStepNumberWorkflowStep: step(['b']),
+        precedingWorkflowSteps: [stepOne, stepTwo],
+        enteredValues: { reason: 'New laptop', comments: 'Looks fine' },
+        defaultFormValues: {},
+      }),
+    ).toEqual({ reason: 'New laptop', comments: 'Looks fine' })
+  })
+
+  it('resets a field this step fills in, even if an entered value exists', () => {
+    expect(
+      carryOverPreviousStepValues({
+        augmentedFormFields: fields,
+        precedingWorkflowSteps: [stepOne],
+        enteredValues: { reason: 'New laptop', comments: 'typed earlier' },
+        defaultFormValues: { comments: 'prefilled' },
+      }),
+    ).toEqual({ reason: 'New laptop', comments: 'prefilled' })
+  })
+
+  it('keeps an entered value for a field an earlier step shares with this one', () => {
+    // `reason` is editable at both step 1 and step 2; a step 2 respondent sees
+    // step 1's answer and may revise it.
+    expect(
+      carryOverPreviousStepValues({
+        augmentedFormFields: fields,
+        precedingWorkflowSteps: [stepOne],
+        enteredValues: { reason: 'New laptop' },
+        defaultFormValues: { reason: '' },
+      }),
+    ).toEqual({ reason: 'New laptop' })
+  })
+
+  it('carries a falsy entered value rather than dropping it', () => {
+    expect(
+      carryOverPreviousStepValues({
+        augmentedFormFields: fields,
+        precedingWorkflowSteps: [stepOne],
+        enteredValues: { reason: '' },
+        defaultFormValues: { reason: 'default' },
+      }),
+    ).toEqual({ reason: '' })
+  })
+
+  it('leaves a field absent when nothing was entered for it', () => {
+    expect(
+      carryOverPreviousStepValues({
+        augmentedFormFields: fields,
+        precedingWorkflowSteps: [stepOne],
         enteredValues: {},
         defaultFormValues: {},
       }),
     ).toEqual({})
   })
 
-  it('carries over a falsy entered value rather than dropping it', () => {
+  it('keeps every default at the first step, which has no preceding steps', () => {
     expect(
       carryOverPreviousStepValues({
         augmentedFormFields: fields,
-        currentStepNumberWorkflowStep: step(['b']),
-        enteredValues: { a: '' },
-        defaultFormValues: { a: 'default' },
+        precedingWorkflowSteps: [],
+        enteredValues: { reason: 'entered', comments: 'entered' },
+        defaultFormValues: { reason: 'default' },
       }),
-    ).toEqual({ a: '' })
-  })
-
-  it('keeps every default when there is no workflow step', () => {
-    const defaultFormValues: FormFieldValues = {
-      a: 'default a',
-      b: 'default b',
-    }
-    expect(
-      carryOverPreviousStepValues({
-        augmentedFormFields: fields,
-        currentStepNumberWorkflowStep: undefined,
-        enteredValues: { a: 'entered', b: 'entered' },
-        defaultFormValues,
-      }),
-    ).toEqual(defaultFormValues)
+    ).toEqual({ reason: 'default' })
   })
 })
