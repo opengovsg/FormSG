@@ -51,6 +51,17 @@ interface FieldFactoryProps {
   isHighContrast?: boolean
 }
 
+const FIELD_KEYS_AFFECTING_RENDER = [
+  '_id',
+  'questionNumber',
+  'disabled',
+] as const
+
+const PROP_KEYS_AFFECTING_RENDER = [
+  'isHighContrast',
+  'disableRequiredValidation',
+] as const
+
 export const FieldFactory = memo(
   ({ field, ...rest }: FieldFactoryProps) => {
     const { myInfoChildrenBirthRecords, form } = usePublicFormContext()
@@ -136,13 +147,11 @@ export const FieldFactory = memo(
         )
     }
   },
-  // NOTE: if a new `field` property or prop starts affecting what's rendered
-  // below, add it to this comparator too, or this memo will silently skip
-  // re-renders that should have happened.
   (prevProps, nextProps) =>
-    prevProps.field._id === nextProps.field._id &&
-    prevProps.field.questionNumber === nextProps.field.questionNumber &&
-    prevProps.field.disabled === nextProps.field.disabled &&
-    prevProps.isHighContrast === nextProps.isHighContrast &&
-    prevProps.disableRequiredValidation === nextProps.disableRequiredValidation,
+    FIELD_KEYS_AFFECTING_RENDER.every(
+      (key) => prevProps.field[key] === nextProps.field[key],
+    ) &&
+    PROP_KEYS_AFFECTING_RENDER.every(
+      (key) => prevProps[key] === nextProps[key],
+    ),
 )
