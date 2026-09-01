@@ -77,7 +77,18 @@ export const WorkflowContent = (): JSX.Element | null => {
         {isWorkflowDeletion ? (
           <Accordion allowToggle>
             <AccordionItem border="none">
-              <AccordionButton p="1.5rem" borderRadius="4px">
+              {/* Same hover tint as the step cards, so a card that opens on
+                  click looks like the other cards that respond to one. */}
+              <AccordionButton
+                p="1.5rem"
+                // Right inset matches where the step cards place their pencil,
+                // so the two icons sit on the same line down the page.
+                pr={{ base: '0.5rem', md: '2rem' }}
+                borderRadius="4px"
+                transitionProperty="common"
+                transitionDuration="normal"
+                _hover={{ bg: 'primary.100' }}
+              >
                 <Stack spacing="0.25rem" flex="1" textAlign="left">
                   <Text as="h2" textStyle="h2" color="secondary.700">
                     {t('features.adminForm.sidebar.workflow.card.title')}
@@ -92,11 +103,15 @@ export const WorkflowContent = (): JSX.Element | null => {
                     </Text>
                   </Skeleton>
                 </Stack>
-                <AccordionIcon color="secondary.500" />
+                <AccordionIcon color="secondary.500" fontSize="1.5rem" />
               </AccordionButton>
-              <AccordionPanel px="1.5rem" pt="0" pb="1.5rem">
-                <Stack spacing="1.5rem">
-                  <Divider />
+              {/* The panel carries no padding of its own so the divider under
+                  the header can run the full width of the card, the way a
+                  rule separating header from body should. The rows below it
+                  are inset by the stack instead. */}
+              <AccordionPanel p="0">
+                <Divider />
+                <Stack spacing="1.5rem" px="1.5rem" py="1.5rem">
                   <StatusTrackerToggle />
                   <Divider />
                   <Flex

@@ -16,13 +16,12 @@ export const enSG: Workflow = {
   card: {
     title: 'Workflow',
     statusTracking: {
-      on: 'Status tracking on',
-      off: 'Status tracking off',
+      on: 'Status tracking is on',
+      off: 'Status tracking is off',
     },
     delete: {
       title: 'Delete this workflow',
-      description:
-        'Your form will keep working, but as an ordinary form. You can only do this when your form is closed.',
+      description: 'Your form will keep working, but as an ordinary form.',
       action: 'Delete workflow',
     },
   },
