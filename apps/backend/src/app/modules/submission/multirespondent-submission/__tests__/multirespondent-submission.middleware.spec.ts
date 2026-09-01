@@ -40,8 +40,18 @@ import * as stepToken from '../step-token'
 jest.mock('../../../feature-flags/feature-flags.service')
 jest.mock('../../../form/form.service')
 jest.mock('../multirespondent-submission.service')
-jest.mock('../../../spcp/spcp.oidc.service')
-jest.mock('../../../myinfo/myinfo.service')
+// RATIONALE: The factory mocks are required to prevent Jest from
+// hanging when automock is enabled, due to retries against localhost.
+jest.mock('../../../spcp/spcp.oidc.service', () => ({
+  __esModule: true,
+  getOidcService: jest.fn(),
+}))
+jest.mock('../../../myinfo/myinfo.service', () => ({
+  __esModule: true,
+  MyInfoService: {
+    verifyLoginJwt: jest.fn(),
+  },
+}))
 jest.mock('../../../verified-content/verified-content.service')
 jest.mock('src/app/modules/myinfo/myinfo.util')
 jest.mock('src/app/modules/spcp/spcp.util')
