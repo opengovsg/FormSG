@@ -4,7 +4,7 @@ import winston from 'winston'
 
 import config from '../../config/config'
 import { customFormat } from '../../config/logger'
-import { getRequestIp, getTrace } from '../../utils/request'
+import { getRequestIp, getTrace, maskOAuthCode } from '../../utils/request'
 
 const LOGGER_LABEL = 'network'
 
@@ -73,6 +73,20 @@ const loggingMiddleware = () => {
       }
 
       return meta
+    },
+    // The parsed query object is logged alongside the url. The Datadog
+    // sensitive data scanner redacts `code=` inside the url strings but not
+    // the parsed `req.query.code` attribute, so the OAuth exchange code on
+    // Singpass/Corppass/sgID login callbacks must be masked here.
+    requestFilter: (req, propName) => {
+      const value = get(req, propName)
+      if (propName === 'query' && value && typeof value === 'object') {
+        const query = value as Record<string, unknown>
+        if ('code' in query) {
+          return { ...query, code: maskOAuthCode(query.code) }
+        }
+      }
+      return value
     },
     headerBlacklist: ['cookie'],
     ignoredRoutes: ['/'],

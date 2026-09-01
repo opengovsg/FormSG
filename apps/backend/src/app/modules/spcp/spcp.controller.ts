@@ -28,7 +28,7 @@ export const handleSpcpOidcLogin: (
   const logMeta = {
     action: 'handleSpcpOidcLogin',
     state,
-    code,
+    hasCode: !!code,
     authType,
   }
 
