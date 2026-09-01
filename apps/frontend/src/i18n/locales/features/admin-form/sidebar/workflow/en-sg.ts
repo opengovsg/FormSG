@@ -13,6 +13,19 @@ export const enSG: Workflow = {
   aria: {
     deleteWorkflow: 'Delete workflow',
   },
+  card: {
+    title: 'Workflow',
+    statusTracking: {
+      on: 'Status tracking on',
+      off: 'Status tracking off',
+    },
+    delete: {
+      title: 'Delete this workflow',
+      description:
+        'Your form will keep working, but as an ordinary form. You can only do this when your form is closed.',
+      action: 'Delete workflow',
+    },
+  },
   respondentBlock: {
     stepRespondent: 'Respondent in this step',
     stepRespondentRedesign: 'Who fills in this step?',

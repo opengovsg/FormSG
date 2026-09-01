@@ -1,18 +1,27 @@
 import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import {
+  Accordion,
+  AccordionButton,
+  AccordionIcon,
+  AccordionItem,
+  AccordionPanel,
   Box,
   Divider,
   Flex,
+  Skeleton,
   Stack,
   Text,
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { MultirespondentFormSettings } from 'formsg-shared/types'
+
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
-import IconButton from '~components/IconButton'
+import Button from '~components/Button'
 
 import { StatusTrackerToggle } from '~features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowDeletion } from '../../hooks/useIsWorkflowDeletion'
@@ -26,6 +35,11 @@ export const WorkflowContent = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
   const isWorkflowDeletion = useIsWorkflowDeletion()
+  // Read here as well as in StatusTrackerToggle: the closed card has to say
+  // whether tracking is on without mounting the row that owns the toggle.
+  const { data: settings, isLoading: isLoadingSettings } =
+    useAdminFormSettings<MultirespondentFormSettings>()
+  const hasStatusTracker = Boolean(settings?.hasStatusTracker)
   const {
     isOpen: isDeleteModalOpen,
     onClose: onDeleteModalClose,
@@ -41,49 +55,86 @@ export const WorkflowContent = (): JSX.Element | null => {
         entryPoint="workflow-card"
       />
       {/* <HeaderBlock /> */}
+      {/* The card is a settings drawer for the workflow as a whole, closed by
+          default. Delete is not an icon in the corner but a settings row like
+          any other, sharing the shape of the status-tracker row above it:
+          label, description, action on the right. Scope is stated in words
+          before the modal opens, and a mis-click is near impossible because
+          the action sits behind a deliberate open.
+
+          The cost is real and accepted: the status-tracker toggle is visible
+          today with no clicks, and it moves behind one. That is a regression
+          for an existing setting, traded for a better home for a new one. The
+          closed state carries a summary line so the setting is still legible
+          without opening, which also earns the height a bare title would not. */}
       <Box
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
         borderRadius="4px"
-        padding="1.5rem"
       >
-        <Stack gap={'1.5rem'}>
-          <Flex align="center" justify="space-between">
-            <Text as="h2" textStyle="h2">
-              Workflow
-            </Text>
-            {/* Grey at rest, red on intent. A red button sitting in the
-                corner of a page reads as a warning about the page's state
-                rather than as an action, so the destructive colour waits until
-                the pointer is on it. The resting grey matches the pencil on
-                the step cards, so the two affordances read as one family.
-
-                The states are set inline rather than through a variant: the
-                clear variant derives every state from a single colorScheme and
-                so cannot span two, and one call site does not warrant a
-                theme-wide variant that would invite use where plain danger is
-                correct. */}
-            {isWorkflowDeletion ? (
-              <IconButton
-                variant="clear"
-                colorScheme="danger"
-                color="neutral.500"
-                transitionProperty="common"
-                transitionDuration="normal"
-                _hover={{ color: 'danger.500', bg: 'danger.100' }}
-                _active={{ color: 'danger.500', bg: 'danger.200' }}
-                aria-label={t(
-                  'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
-                )}
-                icon={<BiTrash />}
-                onClick={onDeleteModalOpen}
-              />
-            ) : null}
-          </Flex>
-          <Divider />
-          <StatusTrackerToggle />
-        </Stack>
+        <Accordion allowToggle>
+          <AccordionItem border="none">
+            <AccordionButton p="1.5rem" borderRadius="4px">
+              <Stack spacing="0.25rem" flex="1" textAlign="left">
+                <Text as="h2" textStyle="h2" color="secondary.700">
+                  {t('features.adminForm.sidebar.workflow.card.title')}
+                </Text>
+                <Skeleton isLoaded={!isLoadingSettings}>
+                  <Text textStyle="body-2" color="secondary.400">
+                    {t(
+                      hasStatusTracker
+                        ? 'features.adminForm.sidebar.workflow.card.statusTracking.on'
+                        : 'features.adminForm.sidebar.workflow.card.statusTracking.off',
+                    )}
+                  </Text>
+                </Skeleton>
+              </Stack>
+              <AccordionIcon color="secondary.500" />
+            </AccordionButton>
+            <AccordionPanel px="1.5rem" pt="0" pb="1.5rem">
+              <Stack spacing="1.5rem">
+                <Divider />
+                <StatusTrackerToggle />
+                {isWorkflowDeletion ? (
+                  <>
+                    <Divider />
+                    <Flex
+                      justify="space-between"
+                      align="flex-start"
+                      gap="1rem"
+                      direction={{ base: 'column', md: 'row' }}
+                    >
+                      <Box>
+                        <Text textStyle="subhead-1" color="secondary.700">
+                          {t(
+                            'features.adminForm.sidebar.workflow.card.delete.title',
+                          )}
+                        </Text>
+                        <Text textStyle="body-2" color="secondary.400">
+                          {t(
+                            'features.adminForm.sidebar.workflow.card.delete.description',
+                          )}
+                        </Text>
+                      </Box>
+                      <Button
+                        variant="outline"
+                        colorScheme="danger"
+                        flexShrink={0}
+                        leftIcon={<BiTrash fontSize="1.25rem" />}
+                        onClick={onDeleteModalOpen}
+                      >
+                        {t(
+                          'features.adminForm.sidebar.workflow.card.delete.action',
+                        )}
+                      </Button>
+                    </Flex>
+                  </>
+                ) : null}
+              </Stack>
+            </AccordionPanel>
+          </AccordionItem>
+        </Accordion>
       </Box>
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (

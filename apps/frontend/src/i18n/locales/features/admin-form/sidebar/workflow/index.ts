@@ -11,6 +11,20 @@ export interface Workflow {
     deleteWorkflow: string
   }
   title: string
+  card: {
+    title: string
+    // Summary shown while the card is closed, so the one setting inside is
+    // still legible without opening it.
+    statusTracking: {
+      on: string
+      off: string
+    }
+    delete: {
+      title: string
+      description: string
+      action: string
+    }
+  }
   respondentBlock: {
     stepRespondent: string
     stepRespondentRedesign: string
