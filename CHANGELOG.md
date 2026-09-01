@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.15.2](https://github.com/opengovsg/formsg/compare/v9.15.1...v9.15.2) (2026-09-01)
+
+
+### Bug Fixes
+
+* inject gb attributes earlier the controller chain (#9914) ([#9914](https://github.com/opengovsg/formsg/commit/b3aa46909b9c8140011107c6507112995768bde8))
+
+
+### Chores
+
+* **logging:** redact client assertion and OAuth exchange codes from logs (#9896) ([#9896](https://github.com/opengovsg/formsg/commit/0aab7ae88ff7fab3f6c705411b2930268735a470))
+
 ## [9.15.1](https://github.com/opengovsg/formsg/compare/v9.15.0...v9.15.1) (2026-08-31)
 
 
