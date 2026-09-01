@@ -17,6 +17,8 @@ import {
 
 import { MultirespondentFormSettings } from 'formsg-shared/types'
 
+import { FCC } from '~typings/react'
+
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import Button from '~components/Button'
 
@@ -55,87 +57,92 @@ export const WorkflowContent = (): JSX.Element | null => {
         entryPoint="workflow-card"
       />
       {/* <HeaderBlock /> */}
-      {/* The card is a settings drawer for the workflow as a whole, closed by
-          default. Delete is not an icon in the corner but a settings row like
-          any other, sharing the shape of the status-tracker row above it:
-          label, description, action on the right. Scope is stated in words
-          before the modal opens, and a mis-click is near impossible because
-          the action sits behind a deliberate open.
+      {/* Behind the flag the card is a settings drawer for the workflow as a
+          whole, closed by default. Delete is not an icon in the corner but a
+          settings row like any other, sharing the shape of the status-tracker
+          row above it: label, description, action on the right. Scope is
+          stated in words before the modal opens, and a mis-click is near
+          impossible because the action sits behind a deliberate open.
 
           The cost is real and accepted: the status-tracker toggle is visible
           today with no clicks, and it moves behind one. That is a regression
           for an existing setting, traded for a better home for a new one. The
           closed state carries a summary line so the setting is still legible
-          without opening, which also earns the height a bare title would not. */}
-      <Box
-        bg="white"
-        border="1px solid"
-        borderColor="neutral.300"
-        borderRadius="4px"
-      >
-        <Accordion allowToggle>
-          <AccordionItem border="none">
-            <AccordionButton p="1.5rem" borderRadius="4px">
-              <Stack spacing="0.25rem" flex="1" textAlign="left">
-                <Text as="h2" textStyle="h2" color="secondary.700">
-                  {t('features.adminForm.sidebar.workflow.card.title')}
-                </Text>
-                <Skeleton isLoaded={!isLoadingSettings}>
-                  <Text textStyle="body-2" color="secondary.400">
-                    {t(
-                      hasStatusTracker
-                        ? 'features.adminForm.sidebar.workflow.card.statusTracking.on'
-                        : 'features.adminForm.sidebar.workflow.card.statusTracking.off',
-                    )}
+          without opening, which also earns the height a bare title would not.
+
+          The accordion is gated with the delete row rather than around it. The
+          drawer only exists to give delete a home, so with the flag off there
+          is nothing to disclose and the card stays exactly as it ships today. */}
+      <WorkflowCardShell>
+        {isWorkflowDeletion ? (
+          <Accordion allowToggle>
+            <AccordionItem border="none">
+              <AccordionButton p="1.5rem" borderRadius="4px">
+                <Stack spacing="0.25rem" flex="1" textAlign="left">
+                  <Text as="h2" textStyle="h2" color="secondary.700">
+                    {t('features.adminForm.sidebar.workflow.card.title')}
                   </Text>
-                </Skeleton>
-              </Stack>
-              <AccordionIcon color="secondary.500" />
-            </AccordionButton>
-            <AccordionPanel px="1.5rem" pt="0" pb="1.5rem">
-              <Stack spacing="1.5rem">
-                <Divider />
-                <StatusTrackerToggle />
-                {isWorkflowDeletion ? (
-                  <>
-                    <Divider />
-                    <Flex
-                      justify="space-between"
-                      align="flex-start"
-                      gap="1rem"
-                      direction={{ base: 'column', md: 'row' }}
-                    >
-                      <Box>
-                        <Text textStyle="subhead-1" color="secondary.700">
-                          {t(
-                            'features.adminForm.sidebar.workflow.card.delete.title',
-                          )}
-                        </Text>
-                        <Text textStyle="body-2" color="secondary.400">
-                          {t(
-                            'features.adminForm.sidebar.workflow.card.delete.description',
-                          )}
-                        </Text>
-                      </Box>
-                      <Button
-                        variant="outline"
-                        colorScheme="danger"
-                        flexShrink={0}
-                        leftIcon={<BiTrash fontSize="1.25rem" />}
-                        onClick={onDeleteModalOpen}
-                      >
+                  <Skeleton isLoaded={!isLoadingSettings}>
+                    <Text textStyle="body-2" color="secondary.400">
+                      {t(
+                        hasStatusTracker
+                          ? 'features.adminForm.sidebar.workflow.card.statusTracking.on'
+                          : 'features.adminForm.sidebar.workflow.card.statusTracking.off',
+                      )}
+                    </Text>
+                  </Skeleton>
+                </Stack>
+                <AccordionIcon color="secondary.500" />
+              </AccordionButton>
+              <AccordionPanel px="1.5rem" pt="0" pb="1.5rem">
+                <Stack spacing="1.5rem">
+                  <Divider />
+                  <StatusTrackerToggle />
+                  <Divider />
+                  <Flex
+                    justify="space-between"
+                    align="flex-start"
+                    gap="1rem"
+                    direction={{ base: 'column', md: 'row' }}
+                  >
+                    <Box>
+                      <Text textStyle="subhead-1" color="secondary.700">
                         {t(
-                          'features.adminForm.sidebar.workflow.card.delete.action',
+                          'features.adminForm.sidebar.workflow.card.delete.title',
                         )}
-                      </Button>
-                    </Flex>
-                  </>
-                ) : null}
-              </Stack>
-            </AccordionPanel>
-          </AccordionItem>
-        </Accordion>
-      </Box>
+                      </Text>
+                      <Text textStyle="body-2" color="secondary.400">
+                        {t(
+                          'features.adminForm.sidebar.workflow.card.delete.description',
+                        )}
+                      </Text>
+                    </Box>
+                    <Button
+                      variant="outline"
+                      colorScheme="danger"
+                      flexShrink={0}
+                      leftIcon={<BiTrash fontSize="1.25rem" />}
+                      onClick={onDeleteModalOpen}
+                    >
+                      {t(
+                        'features.adminForm.sidebar.workflow.card.delete.action',
+                      )}
+                    </Button>
+                  </Flex>
+                </Stack>
+              </AccordionPanel>
+            </AccordionItem>
+          </Accordion>
+        ) : (
+          <Stack gap="1.5rem" p="1.5rem">
+            <Text as="h2" textStyle="h2">
+              {t('features.adminForm.sidebar.workflow.card.title')}
+            </Text>
+            <Divider />
+            <StatusTrackerToggle />
+          </Stack>
+        )}
+      </WorkflowCardShell>
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (
           <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
@@ -146,6 +153,23 @@ export const WorkflowContent = (): JSX.Element | null => {
     </Stack>
   )
 }
+
+/**
+ * The card's frame, shared by both states so they cannot drift apart. Padding
+ * belongs to the contents, not here: the accordion puts it on the button so
+ * the whole header is the click target, while the flag-off card puts it on the
+ * stack.
+ */
+const WorkflowCardShell: FCC = ({ children }) => (
+  <Box
+    bg="white"
+    border="1px solid"
+    borderColor="neutral.300"
+    borderRadius="4px"
+  >
+    {children}
+  </Box>
+)
 
 const WorkflowStepBlockDivider = () => (
   <Box alignSelf="center" justifyContent="center" border="none">
