@@ -266,8 +266,9 @@ export const createFormsgAndRetrieveForm = (
               req.formsg = formsg
 
               // Step 7: Inject growthbook attributes to selectively whitelist.
+              const existingAttributes = req.growthbook?.getAttributes() ?? {}
               void req.growthbook?.setAttributes({
-                ...req.growthbook.getAttributes(),
+                ...existingAttributes,
                 formId,
                 adminEmail: formsg.formDef.admin.email,
               })
