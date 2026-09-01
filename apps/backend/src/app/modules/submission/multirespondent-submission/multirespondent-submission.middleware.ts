@@ -251,7 +251,7 @@ export const createFormsgAndRetrieveForm = (
                 )
               }
             })
-            .map(() => {
+            .map(async () => {
               const formDef = formsg.formDef
               // Step 5: Check that the form def has a public key
               if (!formDef.publicKey) {
@@ -267,7 +267,7 @@ export const createFormsgAndRetrieveForm = (
 
               // Step 7: Inject growthbook attributes to selectively whitelist.
               const existingAttributes = req.growthbook?.getAttributes() ?? {}
-              void req.growthbook?.setAttributes({
+              await req.growthbook?.setAttributes({
                 ...existingAttributes,
                 formId,
                 adminEmail: formsg.formDef.admin.email,
