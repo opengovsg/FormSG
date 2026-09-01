@@ -49,8 +49,22 @@ export const enSG: Workflow = {
       },
       deleteWorkflow: {
         title: 'Delete your workflow',
-        description:
-          'Responses already in progress will carry on as they are. When you reopen your form, anyone with the link will be able to fill in every field.',
+        description: [
+          'Responses already in progress will continue on the current workflow.',
+          'When you reopen your form, anyone with the link can fill in every field.',
+        ],
+        confirm: 'Delete workflow',
+        cancel: 'Cancel',
+      },
+      // Same consequences as deleteWorkflow, repeated rather than shared: the
+      // two differ only in the title, and translators need whole sentences,
+      // since clause order differs by language and stitched fragments break.
+      deleteFirstStep: {
+        title: 'Deleting the first step removes your workflow',
+        description: [
+          'Responses already in progress will continue on the current workflow.',
+          'When you reopen your form, anyone with the link can fill in every field.',
+        ],
         confirm: 'Delete workflow',
         cancel: 'Cancel',
       },

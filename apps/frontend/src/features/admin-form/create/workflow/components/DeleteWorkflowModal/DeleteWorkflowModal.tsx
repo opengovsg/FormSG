@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
+  ListItem,
   Modal,
   ModalBody,
   ModalContent,
@@ -10,6 +11,7 @@ import {
   ModalOverlay,
   Stack,
   Text,
+  UnorderedList,
   useBreakpointValue,
 } from '@chakra-ui/react'
 
@@ -30,6 +32,11 @@ import { useWorkflowMutations } from '../../mutations'
 interface DeleteWorkflowModalProps {
   isOpen: boolean
   onClose: () => void
+  /**
+   * Which delete button opened this. Named rather than a boolean so the reason
+   * the copy differs is readable here, without opening the call site.
+   */
+  entryPoint: 'workflow-card' | 'first-step'
 }
 
 /**
@@ -37,17 +44,24 @@ interface DeleteWorkflowModalProps {
  *
  * Shown from two places that mean the same thing: the workflow card's own
  * delete button, and the delete button on step 1. A workflow without its first
- * step has no entry point, so deleting step 1 is deleting the workflow — and
+ * step has no entry point, so deleting step 1 is deleting the workflow, and
  * offering two different modals for one outcome would suggest otherwise.
  *
- * Which of the two states it shows depends on whether the form is still open.
- * Deleting the workflow while respondents may be part-way through it is refused
- * by the API, so the modal's job when the form is open is not to warn but to
- * send the admin to the one place they can do something about it.
+ * One modal, but it speaks two ways. Entering from step 1 says so in the title,
+ * since the surprise to head off is that a step delete removed everything;
+ * entering from the card needs no such explanation, because the button already
+ * said workflow. The consequences below the title are identical either way.
+ *
+ * Both of those assume the form is closed. Deleting the workflow while
+ * respondents may be part-way through it is refused by the API, so when the
+ * form is open the modal's job is not to warn but to send the admin to the one
+ * place they can do something about it. That state reads the same from either
+ * entry point: it is about the form's status, not about what was clicked.
  */
 export const DeleteWorkflowModal = ({
   isOpen,
   onClose,
+  entryPoint,
 }: DeleteWorkflowModalProps): JSX.Element => {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -64,12 +78,15 @@ export const DeleteWorkflowModal = ({
 
   const isFormOpen = form?.status === FormStatus.Public
 
-  const copy = t(
-    isFormOpen
-      ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.closeFormFirst'
-      : 'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteWorkflow',
-    { returnObjects: true },
-  )
+  // Full literal keys rather than an interpolated path: i18next types its keys
+  // off string literals, and building the path up would drop that checking.
+  const copyKey = isFormOpen
+    ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.closeFormFirst'
+    : entryPoint === 'first-step'
+      ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteFirstStep'
+      : 'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteWorkflow'
+
+  const copy = t(copyKey, { returnObjects: true })
 
   const handleGoToSettings = useCallback(() => {
     navigate(`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SUBROUTE}`)
@@ -96,9 +113,25 @@ export const DeleteWorkflowModal = ({
         <ModalCloseButton isDisabled={isLoading} />
         <ModalHeader color="secondary.700">{copy.title}</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
-          <Text textStyle="body-2" color="secondary.500">
-            {copy.description}
-          </Text>
+          {/* The two delete states list their consequences; closeFormFirst has
+              a single sentence, and one sentence set as a lone bullet reads as
+              a list that lost its other items. Discriminating on the shape of
+              the copy keeps that decision with the copy itself. */}
+          {Array.isArray(copy.description) ? (
+            <UnorderedList styleType="disc" spacing={2}>
+              {copy.description.map((consequence) => (
+                <ListItem key={consequence}>
+                  <Text textStyle="body-2" color="secondary.500">
+                    {consequence}
+                  </Text>
+                </ListItem>
+              ))}
+            </UnorderedList>
+          ) : (
+            <Text textStyle="body-2" color="secondary.500">
+              {copy.description}
+            </Text>
+          )}
         </ModalBody>
         <ModalFooter>
           <Stack

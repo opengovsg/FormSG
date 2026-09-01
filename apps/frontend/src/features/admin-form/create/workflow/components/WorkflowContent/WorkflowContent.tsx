@@ -45,6 +45,7 @@ export const WorkflowContent = (): JSX.Element | null => {
       <DeleteWorkflowModal
         isOpen={isDeleteModalOpen}
         onClose={onDeleteModalClose}
+        entryPoint="workflow-card"
       />
       {/* <HeaderBlock /> */}
       <Box
