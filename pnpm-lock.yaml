@@ -502,8 +502,8 @@ importers:
         version: 3.25.34
     devDependencies:
       '@opengovsg/mockpass':
-        specifier: ^4.6.11
-        version: 4.6.11
+        specifier: ^4.7.1
+        version: 4.7.1
       '@playwright/test':
         specifier: ^1.58.2
         version: 1.58.2
@@ -3874,8 +3874,8 @@ packages:
   '@open-draft/until@2.1.0':
     resolution: {integrity: sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==}
 
-  '@opengovsg/mockpass@4.6.11':
-    resolution: {integrity: sha512-PT338UhP8BVu5KzM2GnGWmIdVRe0tr8prqEp0MV89dvKx9/rP6zSobEaB13Gf13SFVyvAwqTAyCedejZQBBJSA==}
+  '@opengovsg/mockpass@4.7.1':
+    resolution: {integrity: sha512-x/paZTZUMuiLL64oWIV10FX84wQTEUfxOSR7cL6J9WMM3Wwg9DZ+LVJd80r4qFVI/4VgFROzZqe5mjyD2Yipyw==}
     engines: {node: '>=8.0.0'}
     hasBin: true
 
@@ -17892,7 +17892,7 @@ snapshots:
 
   '@open-draft/until@2.1.0': {}
 
-  '@opengovsg/mockpass@4.6.11':
+  '@opengovsg/mockpass@4.7.1':
     dependencies:
       base-64: 1.0.0
       cookie-parser: 1.4.6
