@@ -46,7 +46,15 @@ export interface Workflow {
       }
       deleteWorkflow: {
         title: string
-        description: string
+        // Rendered as bullets. closeFormFirst stays a single string: one
+        // sentence as a lone bullet reads as a broken list.
+        description: string[]
+        confirm: string
+        cancel: string
+      }
+      deleteFirstStep: {
+        title: string
+        description: string[]
         confirm: string
         cancel: string
       }
