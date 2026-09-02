@@ -146,7 +146,7 @@ services:
       - SSO_CLIENT_SECRET
 
   mockpass:
-    image: opengovsg/mockpass:4.6.4
+    image: opengovsg/mockpass:4.7.1
     depends_on:
       - backend
     environment:
