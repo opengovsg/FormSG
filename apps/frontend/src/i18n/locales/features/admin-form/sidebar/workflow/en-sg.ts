@@ -51,7 +51,7 @@ export const enSG: Workflow = {
         title: 'Delete your workflow',
         description: [
           'Responses already in progress will continue on the current workflow.',
-          'When you reopen your form, anyone with the link can fill in every field.',
+          'When you reopen your form, anyone with the link will be able to fill in every field.',
         ],
         confirm: 'Delete workflow',
         cancel: 'Cancel',
@@ -63,7 +63,7 @@ export const enSG: Workflow = {
         title: 'Deleting the first step removes your workflow',
         description: [
           'Responses already in progress will continue on the current workflow.',
-          'When you reopen your form, anyone with the link can fill in every field.',
+          'When you reopen your form, anyone with the link will be able to fill in every field.',
         ],
         confirm: 'Delete workflow',
         cancel: 'Cancel',
