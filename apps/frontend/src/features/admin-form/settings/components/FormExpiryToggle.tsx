@@ -182,6 +182,7 @@ export const FormExpiryToggle = (): JSX.Element | null => {
       <Toggle
         isLoading={mutateFormCloseAt.isLoading}
         isChecked={isScheduled}
+        betaBadge
         label={t('features.adminForm.settings.general.expiry.label')}
         onChange={() => handleToggleExpiry()}
       />
