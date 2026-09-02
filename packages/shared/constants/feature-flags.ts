@@ -36,6 +36,7 @@ export const featureFlags = {
   fiveStarAdminRating: '5star-admin-rating' as const,
   workflowBuilderRedesign: 'workflow-builder-redesign' as const,
   formIdJson: 'formid-json' as const,
+  myinfoFapi: 'myinfo-fapi' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {
