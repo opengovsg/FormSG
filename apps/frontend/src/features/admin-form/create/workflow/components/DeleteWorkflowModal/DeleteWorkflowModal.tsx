@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
@@ -76,6 +76,20 @@ export const DeleteWorkflowModal = ({
     md: 'md',
   })
 
+  // Chakra's focus lock takes the first tabbable element when it is not told
+  // otherwise, and that is the close button, since it is ModalContent's first
+  // child regardless of sitting in the top right corner.
+  //
+  // Focus goes to the dialog rather than to any of the buttons. Our Button and
+  // CloseButton themes paint `_focus` rather than `_focusVisible`, so a
+  // programmatically focused button shows its ring even though the admin
+  // opened the modal by clicking, and a ring sitting on an action on open reads
+  // as though something has already been chosen. The dialog carries no focus
+  // style, so nothing lights up, focus is still inside the lock, and screen
+  // readers announce the title and the consequences from role and
+  // aria-describedby.
+  const dialogRef = useRef<HTMLDivElement>(null)
+
   const isFormOpen = form?.status === FormStatus.Public
 
   // Full literal keys rather than an interpolated path: i18next types its keys
@@ -107,9 +121,10 @@ export const DeleteWorkflowModal = ({
       onClose={onClose}
       size={modalSize}
       closeOnOverlayClick={!isLoading}
+      initialFocusRef={dialogRef}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent ref={dialogRef}>
         <ModalCloseButton isDisabled={isLoading} />
         <ModalHeader color="secondary.700">{copy.title}</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
