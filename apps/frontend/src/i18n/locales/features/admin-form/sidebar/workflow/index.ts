@@ -7,6 +7,9 @@ interface CsvColumnText {
 }
 
 export interface Workflow {
+  aria: {
+    deleteWorkflow: string
+  }
   title: string
   respondentBlock: {
     stepRespondent: string
