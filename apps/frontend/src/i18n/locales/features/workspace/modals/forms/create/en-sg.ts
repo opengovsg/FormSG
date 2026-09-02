@@ -88,7 +88,7 @@ export const enSG: CreateFormModal = {
     q2: {
       label: 'How is this data being collected today?',
       options: {
-        digitalFormbuilder: 'An online form (e.g. FormSG)',
+        digitalFormbuilder: 'Online form builders (e.g. FormSG)',
         digitalEmail: 'Emails',
         digitalDocument: 'Documents (e.g. PDF, Word)',
         digitalSpreadsheet: 'Spreadsheets (e.g. Excel, Sheets)',
