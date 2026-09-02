@@ -183,14 +183,15 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         const toastStatusMessage = newData.closeAt
           ? t('features.adminForm.settings.general.expiry.toast.success', {
-              // Rendered in SGT with the zone labelled, matching the banner
-              // respondents see. The browser's own timezone would confirm a
-              // different wall-clock time than the deadline that was actually
-              // set, for any admin not currently in Singapore.
+              // Same 12-hour rendering and zone label as the banner
+              // respondents see, so the admin confirms the deadline in the
+              // form it will be read in. The browser's own timezone would
+              // confirm a different wall-clock time than the deadline that was
+              // actually set, for any admin not currently in Singapore.
               closeAt: formatInTimeZone(
                 new Date(newData.closeAt),
                 'Asia/Singapore',
-                "d MMM yyyy, HH:mm '(SGT)'",
+                "d MMM yyyy, h:mm a '(SGT)'",
               ),
             })
           : t('features.adminForm.settings.general.expiry.toast.successRemoved')

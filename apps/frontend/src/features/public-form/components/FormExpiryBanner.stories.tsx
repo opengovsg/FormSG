@@ -33,7 +33,7 @@ export default {
   },
 } as Meta
 
-/** 2359 SGT on 31 Dec 2026, stored as UTC. Should read as 11.59pm (SGT). */
+/** 2359 SGT on 31 Dec 2026, stored as UTC. Should read as 11:59 PM (SGT). */
 export const EndOfYearDeadline = withCloseAt(
   '2026-12-31T15:59:00.000Z' as DateString,
 )

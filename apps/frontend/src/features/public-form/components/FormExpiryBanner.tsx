@@ -27,7 +27,7 @@ export const FormExpiryBanner = (): JSX.Element | null => {
     // would otherwise keep advertising a time that has already gone.
     if (closeAt <= new Date()) return null
 
-    return formatInTimeZone(closeAt, SGT, "d MMM yyyy, h:mmaaa '(SGT)'")
+    return formatInTimeZone(closeAt, SGT, "d MMM yyyy, h:mm a '(SGT)'")
   }, [form?.closeAt])
 
   if (!closesAt) return null
