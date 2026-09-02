@@ -45,7 +45,7 @@ const logger = createLoggerWithLabel(module)
  * gates only the enablement surfaces (connecting Stripe, enabling or editing
  * payment config) — never respondent-facing flows or the ability to switch
  * payments off — so flipping it off cannot break a live payment-enabled form
- * or strand its admin. Encrypt mode is unaffected.
+ * or strand its admin.
  */
 const checkMrfPaymentsFeatureEnabled = <T extends IPopulatedForm>(
   form: T,
@@ -284,10 +284,6 @@ const _handleUpdatePayments: ControllerHandler<
       )
       .andThen(checkFormIsEncryptModeOrMultirespondent)
       .andThen((form) =>
-        // Disabling payments (`enabled: false`) is exempt from the flag: the
-        // flag is a kill switch for enablement, and the builder deletes the
-        // payment field by sending `enabled: false` through this route — a
-        // flag-off admin must still be able to switch a live payment off.
         req.body.enabled === false
           ? ok(form)
           : checkMrfPaymentsFeatureEnabled(form, req.growthbook),

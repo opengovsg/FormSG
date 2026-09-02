@@ -1693,9 +1693,6 @@ export const createWorkflowStep = (
   ) as IMultirespondentFormModel
 
   return ResultAsync.fromPromise(
-    // findOneAndUpdate skips the schema's payment-invariant pre-validate
-    // hook, so the payments precondition rides in the query filter — this
-    // also closes the race against a concurrent enable-payments update.
     MultirespondentFormModel.findOneAndUpdate(
       { _id: originalMrfForm._id, 'payments_field.enabled': { $ne: true } },
       { workflow: updatedWorkflow },
@@ -1987,9 +1984,6 @@ export const updateFormSettings = (
     }
   }
 
-  // A payment-enabled multirespondent form sends no form-configured emails
-  // (the payer's receipt is the only email) and cannot enforce single
-  // submission.
   if (isFormMultirespondent(originalForm)) {
     const mrfBody = body as MultirespondentFormSettings
     if (
