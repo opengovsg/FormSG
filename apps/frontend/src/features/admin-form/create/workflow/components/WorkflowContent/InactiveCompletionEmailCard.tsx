@@ -27,6 +27,9 @@ export interface InactiveCompletionEmailCardProps {
    * Null while the settings query is still in flight. Required rather than
    * optional so that omitting it is a type error instead of a card that
    * skeletons forever.
+   *
+   * A failed query is not this component's to represent: the caller renders the
+   * flag-off message instead of the card, so null here only ever means loading.
    */
   recipients: CompletionEmailRecipients | null
   onClick: () => void

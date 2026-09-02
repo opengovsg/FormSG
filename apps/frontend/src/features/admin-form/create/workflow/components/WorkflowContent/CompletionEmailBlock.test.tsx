@@ -8,7 +8,7 @@ import { AdminEditWorkflowState } from '../../types'
 import * as cardStories from './CompletionEmailBlock.stories'
 
 const { WithWorkflow, WithWorkflowRedesignOn } = composeStories(pageStories)
-const { Active } = composeStories(cardStories)
+const { Active, SettingsError } = composeStories(cardStories)
 
 const SETTINGS_LINK = /email notifications/i
 const DIVIDER = /end of workflow/i
@@ -93,5 +93,19 @@ describe('completion email seam', () => {
         stepNumber: 0,
       }),
     )
+  })
+
+  // A failed settings request leaves `data` undefined, exactly as one still in
+  // flight does, so the card would otherwise skeleton with no error and no
+  // retry. The fallback keeps a working route to Settings.
+  it('falls back to the Settings message when the settings request fails', async () => {
+    await act(async () => {
+      render(<SettingsError />)
+    })
+
+    expect(
+      await screen.findByRole('link', { name: SETTINGS_LINK }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(DIVIDER)).not.toBeInTheDocument()
   })
 })
