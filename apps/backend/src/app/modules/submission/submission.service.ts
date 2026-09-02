@@ -619,10 +619,18 @@ export const getEncryptedSubmissionData = (
   getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
     (modelToUse) =>
       ResultAsync.fromPromise(
-        modelToUse.findEncryptedSubmissionById(
-          formId,
-          submissionId,
-        ) as Promise<SubmissionData | null>,
+        // Multirespondent forms mode-migrated from storage mode retain their
+        // pre-migration encrypt submissions, so the lookup must span both
+        // submission types via the base model.
+        responseMode === FormResponseMode.Multirespondent
+          ? SubmissionModel.findEncryptedOrMultirespondentSubmissionById(
+              formId,
+              submissionId,
+            )
+          : (modelToUse.findEncryptedSubmissionById(
+              formId,
+              submissionId,
+            ) as Promise<SubmissionData | null>),
         (error) => {
           logger.error({
             message: 'Failure retrieving encrypted submission from database',
