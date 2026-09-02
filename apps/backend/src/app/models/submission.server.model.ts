@@ -31,6 +31,7 @@ import {
   MultirespondentSubmissionData,
   StorageModeSubmissionCursorData,
   StorageModeSubmissionData,
+  SubmissionCursorData,
   SubmissionData,
   SubmissionWebhookInfo,
   WebhookData,
@@ -275,6 +276,65 @@ SubmissionSchema.statics.findEncryptedOrMultirespondentSubmissionById =
         encryptedStepToken: 1,
       })
       .exec() as Promise<SubmissionData | null>
+  }
+
+SubmissionSchema.statics.getEncryptedOrMultirespondentSubmissionCursorByFormId =
+  function (
+    this: ISubmissionModel,
+    formId: string,
+    dateRange: {
+      startDate?: string
+      endDate?: string
+    } = {},
+    isSortByLatest = false,
+    limit?: number,
+  ): QueryCursor<SubmissionCursorData, QueryOptions<ISubmissionSchema>> {
+    // Multirespondent forms mode-migrated from storage mode retain their
+    // pre-migration encrypt submissions, so the stream must span both types
+    // in one cursor to keep sort order and completeness. Email submissions
+    // have no encrypted content and stay excluded.
+    const streamQuery = {
+      form: formId,
+      submissionType: {
+        $in: [SubmissionType.Encrypt, SubmissionType.Multirespondent],
+      },
+      ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
+    }
+    let query = this.find(streamQuery).select({
+      submissionType: 1,
+      encryptedContent: 1,
+      verifiedContent: 1,
+      attachmentMetadata: 1,
+      created: 1,
+      version: 1,
+      form_fields: 1,
+      form_logics: 1,
+      workflow: 1,
+      workflowStep: 1,
+      ...buildAdminSubmittedStepsMongoProjection(),
+      encryptedSubmissionSecretKey: 1,
+      mrfVersion: 1,
+      id: 1,
+    })
+    if (isSortByLatest) {
+      query = query.sort({ created: -1 })
+    }
+    if (limit && limit > 0 && Number.isSafeInteger(limit)) {
+      query = query.limit(limit)
+    }
+    return (
+      query
+        .batchSize(2000)
+        .read('secondary')
+        .lean()
+        // Override typing: Map is converted to Object once passed through
+        // `lean()`, and the base model's document type does not carry the
+        // per-discriminator fields the union projection selects.
+        .cursor() as unknown as QueryCursor<
+        SubmissionCursorData,
+        QueryOptions<ISubmissionSchema>
+      >
+    )
   }
 
 // Exported for use in pending submissions model
