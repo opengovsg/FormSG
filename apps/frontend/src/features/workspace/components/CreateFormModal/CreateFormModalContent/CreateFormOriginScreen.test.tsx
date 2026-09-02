@@ -29,8 +29,7 @@ vi.mock('react-i18next', () => {
     [`${P}.q2.options.digitalEmail`]: 'Emails',
     [`${P}.q2.options.digitalDocument`]: 'Documents (e.g. PDF, Word)',
     [`${P}.q2.options.digitalSpreadsheet`]: 'Spreadsheets (e.g. Excel, Sheets)',
-    [`${P}.q2.options.digitalFormsg`]: 'Another FormSG form',
-    [`${P}.q2.options.digitalFormbuilder`]: 'Other form builders',
+    [`${P}.q2.options.digitalFormbuilder`]: 'An online form (e.g. FormSG)',
     [`${P}.q2.options.others`]: 'Other',
     [`${P}.otherInputLabel`]: 'Other source',
     [`${P}.errors.q1Required`]: 'Please select an option.',
@@ -169,22 +168,23 @@ describe('CreateFormOriginScreen', () => {
     )
   })
 
-  it('offers "Another FormSG form" as its own option, distinct from "Other form builders"', async () => {
+  it('offers "An online form (e.g. FormSG)" as a medium option', async () => {
     const user = userEvent.setup()
     const { onCreate } = renderOriginScreen()
 
     await selectExisting(user)
-    expect(screen.getByLabelText('Another FormSG form')).toBeInTheDocument()
-    expect(screen.getByLabelText('Other form builders')).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('An online form (e.g. FormSG)'),
+    ).toBeInTheDocument()
 
-    await user.click(screen.getByLabelText('Another FormSG form'))
+    await user.click(screen.getByLabelText('An online form (e.g. FormSG)'))
     await clickNext(user)
 
     await waitFor(() => expect(onCreate).toHaveBeenCalledTimes(1))
     expect(onCreate.mock.calls[0][0]).toEqual(
       expect.objectContaining({
         formOrigins: expect.objectContaining({
-          value: [FormOrigin.DigitalFormsg],
+          value: [FormOrigin.DigitalFormBuilder],
         }),
       }),
     )

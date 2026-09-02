@@ -79,12 +79,11 @@ export interface CreateFormModal {
     q2: {
       label: string
       options: {
-        paper: string
+        digitalFormbuilder: string
         digitalEmail: string
         digitalDocument: string
         digitalSpreadsheet: string
-        digitalFormsg: string
-        digitalFormbuilder: string
+        paper: string
         others: string
       }
     }

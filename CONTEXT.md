@@ -9,7 +9,7 @@ The underlying business activity or data-collection need a form serves (e.g. "pr
 _Avoid_: using "process" to mean the medium/format itself (e.g. "digital process" vs "paper process") — this is the exact confusion the origin question exists to resolve.
 
 **Existing process**:
-A **Process** for which the admin's agency was already collecting this data in some medium before creating this form (paper, email, spreadsheet, another FormSG form, another form builder, etc).
+A **Process** for which the admin's agency was already collecting this data in some medium before creating this form (paper, email, spreadsheet, an online form such as FormSG or another form builder, etc).
 
 **New process**:
 A **Process** for which the admin's agency was not collecting this data in any medium before creating this form.

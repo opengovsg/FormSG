@@ -12,13 +12,14 @@ describe('FORM_ORIGIN_OPTIONS', () => {
     )
   })
 
-  it('places the "another FormSG form" option between spreadsheet and form-builder', () => {
-    expect(FORM_ORIGIN_OPTIONS.indexOf(FormOrigin.DigitalFormsg)).toBe(
-      FORM_ORIGIN_OPTIONS.indexOf(FormOrigin.DigitalSpreadsheet) + 1,
-    )
-    expect(FORM_ORIGIN_OPTIONS.indexOf(FormOrigin.DigitalFormBuilder)).toBe(
-      FORM_ORIGIN_OPTIONS.indexOf(FormOrigin.DigitalFormsg) + 1,
-    )
+  it('places form-builder first among the mediums, ahead of email/document/spreadsheet/paper', () => {
+    expect(FORM_ORIGIN_MEDIUM_OPTIONS).toEqual([
+      FormOrigin.DigitalFormBuilder,
+      FormOrigin.DigitalEmail,
+      FormOrigin.DigitalDocument,
+      FormOrigin.DigitalSpreadsheet,
+      FormOrigin.Paper,
+    ])
   })
 })
 

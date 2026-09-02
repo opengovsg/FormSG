@@ -9,13 +9,12 @@ export const FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH = 200
  * rather than as an origin code.
  */
 export const FORM_ORIGIN_OPTIONS = [
-  FormOrigin.Paper,
   FormOrigin.DigitalNew,
+  FormOrigin.DigitalFormBuilder,
   FormOrigin.DigitalEmail,
   FormOrigin.DigitalDocument,
   FormOrigin.DigitalSpreadsheet,
-  FormOrigin.DigitalFormsg,
-  FormOrigin.DigitalFormBuilder,
+  FormOrigin.Paper,
 ] as const
 
 /**

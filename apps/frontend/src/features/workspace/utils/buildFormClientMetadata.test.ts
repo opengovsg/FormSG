@@ -32,20 +32,20 @@ describe('buildFormClientMetadata', () => {
     })
   })
 
-  it('produces all selected mediums when multiple are ticked, including the new FormSG option', () => {
+  it('produces all selected mediums when multiple are ticked', () => {
     const metadata = buildFormClientMetadata({
       isPaperTrackingSetUpPageEnabled: true,
       isMrfCutoverEnabled: false,
       formOriginProcess: 'existing',
       formOrigins: {
-        value: [FormOrigin.Paper, FormOrigin.DigitalFormsg],
+        value: [FormOrigin.Paper, FormOrigin.DigitalFormBuilder],
       },
       formResponseMode: FormResponseMode.Multirespondent,
     })
 
     expect(metadata).toEqual({
       formOrigins: {
-        value: [FormOrigin.Paper, FormOrigin.DigitalFormsg],
+        value: [FormOrigin.Paper, FormOrigin.DigitalFormBuilder],
         othersInput: undefined,
       },
     })
