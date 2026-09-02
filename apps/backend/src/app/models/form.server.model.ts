@@ -483,30 +483,6 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
   business: formBusinessSchema,
 })
 
-// Overrides the base-schema static: enabling payments on a multirespondent
-// form must be atomic with the zero-step invariant's preconditions, since
-// findOneAndUpdate skips the schema's payment-invariant pre-validate hook.
-// A miss (null) therefore means "preconditions not met", not "form missing".
-MultirespondentFormSchema.statics.updatePaymentsById = async function (
-  formId: string,
-  newPayments: FormPaymentsField,
-) {
-  const filter = newPayments.enabled
-    ? {
-        _id: formId,
-        workflow: { $size: 0 },
-        emails: { $size: 0 },
-        stepOneEmailNotificationFieldId: { $in: [null, ''] },
-        isSingleSubmission: { $ne: true },
-      }
-    : { _id: formId }
-  return this.findOneAndUpdate(
-    filter,
-    { payments_field: newPayments },
-    { new: true, runValidators: true },
-  ).exec()
-}
-
 MultirespondentFormSchema.methods.addPaymentAccountId = function ({
   accountId,
   publishableKey,
@@ -1580,7 +1556,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     // `emails` exists on both modes and must be empty to enable payments in
     // either. Empty arrays are matched via `field.0` non-existence rather
     // than `$size` so legacy storage-mode documents missing `emails`
-    // entirely also pass.
+    // entirely also pass. A miss (null) when enabling therefore means
+    // "preconditions not met", not necessarily "form missing".
     const filter = newPayments.enabled
       ? {
           _id: formId,
