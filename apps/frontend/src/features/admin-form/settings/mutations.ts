@@ -183,11 +183,12 @@ export const useMutateFormSettings = () => {
       onSuccess: (newData) => {
         const toastStatusMessage = newData.closeAt
           ? t('features.adminForm.settings.general.expiry.toast.success', {
-              // Rendered in SGT, matching the banner respondents see.
+              // The same 12-hour rendering and zone label as the banner
+              // respondents see.
               closeAt: formatInTimeZone(
                 new Date(newData.closeAt),
                 'Asia/Singapore',
-                "d MMM yyyy, HH:mm '(SGT)'",
+                "d MMM yyyy, h:mm a '(SGT)'",
               ),
             })
           : t('features.adminForm.settings.general.expiry.toast.successRemoved')
