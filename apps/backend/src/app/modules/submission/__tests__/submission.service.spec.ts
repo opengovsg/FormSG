@@ -1421,6 +1421,45 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(mockCursor)
     })
 
+    it('should stream multirespondent forms across both submission types via the base model', async () => {
+      // Arrange
+      // A mode-migrated multirespondent form can hold pre-migration encrypt
+      // submissions; a single-discriminator cursor would silently omit them
+      // from the download stream.
+      const mockCursor = jest.fn() as unknown as ReturnType<
+        typeof Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId
+      >
+      const mixedCursorSpy = jest
+        .spyOn(
+          Submission,
+          'getEncryptedOrMultirespondentSubmissionCursorByFormId',
+        )
+        .mockReturnValueOnce(mockCursor)
+      const mrfCursorSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'getSubmissionCursorByFormId',
+      )
+      const mockFormId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = SubmissionService.getSubmissionCursor(
+        FormResponseMode.Multirespondent,
+        mockFormId,
+      )
+
+      // Assert
+      expect(mixedCursorSpy).toHaveBeenCalledTimes(1)
+      expect(mixedCursorSpy).toHaveBeenCalledWith(
+        mockFormId,
+        {},
+        undefined,
+        undefined,
+      )
+      expect(mrfCursorSpy).not.toHaveBeenCalled()
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(mockCursor)
+    })
+
     it('should return cursor successfully when date range is provided', async () => {
       // Arrange
       const mockCursor = jest.fn() as unknown as ReturnType<
@@ -1512,11 +1551,15 @@ describe('submission.service', () => {
 
     it('should return cursor successfully when isSortByLatest and limit are provided', () => {
       // Arrange
+      // Multirespondent forms stream via the base-model mixed-type cursor.
       const mockCursor = jest.fn() as unknown as ReturnType<
-        typeof MultirespondentSubmission.getSubmissionCursorByFormId
+        typeof Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId
       >
       const getSubmissionSpy = jest
-        .spyOn(MultirespondentSubmission, 'getSubmissionCursorByFormId')
+        .spyOn(
+          Submission,
+          'getEncryptedOrMultirespondentSubmissionCursorByFormId',
+        )
         .mockReturnValueOnce(mockCursor)
       const mockFormId = new ObjectId().toHexString()
       const mockDateRange = {
