@@ -25,6 +25,7 @@ import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.type
 
 import {
   ISubmissionSchema,
+  MultirespondentSubmissionCursorData,
   MultirespondentSubmissionData,
 } from '../../../types'
 import getPaymentModel from '../payment.server.model'
@@ -831,6 +832,91 @@ describe('Submission Model', () => {
 
         // Assert
         expect(actualResult).toBeNull()
+      })
+    })
+
+    describe('getEncryptedOrMultirespondentSubmissionCursorByFormId', () => {
+      it('should stream each encrypt and multirespondent submission exactly once, excluding email submissions', async () => {
+        // Arrange
+        // A mode-migrated form: one encrypt, one MRF v3, one MRF v4 and one
+        // email submission all on the same form.
+        const encryptSubmission = await EncryptedSubmission.create(
+          MOCK_ENCRYPT_SUBMISSION_PARAMS,
+        )
+        const mrfV3Submission = await MultirespondentSubmission.create(
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+        const mrfV4Submission = await MultirespondentSubmission.create({
+          ...MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+          version: 4,
+          mrfVersion: 2,
+        })
+        await EmailSubmission.create(MOCK_EMAIL_SUBMISSION_PARAMS)
+
+        // Act
+        const cursor =
+          Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId(
+            MOCK_FORM_ID.toHexString(),
+            {},
+          )
+        const docs = []
+        for await (const doc of cursor) docs.push(doc)
+
+        // Assert
+        expect(docs).toHaveLength(3)
+        const docIds = docs.map((doc) => String(doc._id)).sort()
+        expect(docIds).toEqual(
+          [encryptSubmission._id, mrfV3Submission._id, mrfV4Submission._id]
+            .map(String)
+            .sort(),
+        )
+        const typeCounts = docs.reduce<Record<string, number>>((acc, doc) => {
+          acc[doc.submissionType] = (acc[doc.submissionType] ?? 0) + 1
+          return acc
+        }, {})
+        expect(typeCounts).toEqual({
+          [SubmissionType.Encrypt]: 1,
+          [SubmissionType.Multirespondent]: 2,
+        })
+      })
+
+      it('should not load unclassified step sub-fields for multirespondent docs', async () => {
+        // Arrange
+        await MultirespondentSubmission.create({
+          ...MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+          submittedSteps: [
+            {
+              isApproval: true,
+              submittedAt: '2026-07-22T00:00:00.000Z',
+              status: WorkflowStatus.APPROVED,
+              nextStepRecipientEmails: ['next@example.com'],
+              submitterId: 'SUBMITTER_ID_HASH',
+              snapshotTokens: { v4: 'SNAPSHOT_TOKEN_LEAF_VALUE' },
+            },
+          ],
+        })
+
+        // Act
+        const cursor =
+          Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId(
+            MOCK_FORM_ID.toHexString(),
+            {},
+          )
+        const docs = []
+        for await (const doc of cursor) docs.push(doc)
+
+        // Assert
+        expect(docs).toHaveLength(1)
+        expect(
+          (docs[0] as MultirespondentSubmissionCursorData).submittedSteps,
+        ).toEqual([
+          {
+            isApproval: true,
+            submittedAt: '2026-07-22T00:00:00.000Z',
+            status: WorkflowStatus.APPROVED,
+            nextStepRecipientEmails: ['next@example.com'],
+          },
+        ])
       })
     })
 

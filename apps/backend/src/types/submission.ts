@@ -151,6 +151,25 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
     formId: string,
     submissionId: string,
   ): Promise<SubmissionData | null>
+
+  /**
+   * Returns a cursor over a form's admin-viewable submissions, spanning both
+   * Encrypt and Multirespondent submission types in one sorted stream.
+   * Multirespondent forms mode-migrated from storage mode retain their
+   * pre-migration encrypt submissions, which a single discriminator cursor
+   * cannot see. Email submissions are deliberately excluded.
+   * @param formId the id of the form to stream submissions for
+   * @param dateRange optional date range to limit submissions to
+   */
+  getEncryptedOrMultirespondentSubmissionCursorByFormId(
+    formId: string,
+    dateRange: {
+      startDate?: string
+      endDate?: string
+    },
+    isSortByLatest?: boolean,
+    limit?: number,
+  ): QueryCursor<SubmissionCursorData, QueryOptions<ISubmissionSchema>>
 }
 
 export interface IEmailSubmissionSchema
