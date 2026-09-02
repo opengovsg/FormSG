@@ -102,6 +102,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Encrypt,
+        formOriginProcess: 'existing',
         formOrigins: {
           value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
         },
@@ -131,6 +132,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
+        formOriginProcess: 'existing',
         formOrigins: {
           value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
         },
@@ -160,6 +162,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
+        formOriginProcess: 'existing',
         formOrigins: {
           value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
           othersInput: 'Carrier pigeon',
@@ -192,6 +195,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
+        formOriginProcess: 'existing',
         formOrigins: {
           value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
           othersInput: 'Carrier pigeon',

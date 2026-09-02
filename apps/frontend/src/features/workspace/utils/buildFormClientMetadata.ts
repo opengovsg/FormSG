@@ -26,7 +26,11 @@ const buildFormOriginsPayload = (
     return { value: [FormOrigin.DigitalNew] }
   }
 
-  if (!formOrigins || formOrigins.value.length <= 0) {
+  if (
+    formOriginProcess !== 'existing' ||
+    !formOrigins ||
+    formOrigins.value.length <= 0
+  ) {
     return undefined
   }
 

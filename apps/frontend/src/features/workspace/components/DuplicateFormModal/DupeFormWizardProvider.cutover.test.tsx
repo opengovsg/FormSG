@@ -212,6 +212,7 @@ describe('DupeFormWizardProvider — cutover behaviour', () => {
 
     act(() => {
       result.current.formMethods.setValue('title', 'New title')
+      result.current.formMethods.setValue('formOriginProcess', 'existing')
       result.current.formMethods.setValue('formOrigins', {
         value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
         othersInput: 'Fax',

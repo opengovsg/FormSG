@@ -122,4 +122,16 @@ describe('buildFormClientMetadata', () => {
 
     expect(metadata).toBeUndefined()
   })
+
+  it('ignores stale Q2 selections retained in wizard state when formOriginProcess is unanswered', () => {
+    const metadata = buildFormClientMetadata({
+      isPaperTrackingSetUpPageEnabled: true,
+      isMrfCutoverEnabled: false,
+      formOriginProcess: undefined,
+      formOrigins: { value: [FormOrigin.Paper] },
+      formResponseMode: FormResponseMode.Multirespondent,
+    })
+
+    expect(metadata).toBeUndefined()
+  })
 })

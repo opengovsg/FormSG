@@ -196,6 +196,7 @@ describe('UseTemplateWizardProvider — cutover behaviour', () => {
 
     act(() => {
       result.current.formMethods.setValue('title', 'New title')
+      result.current.formMethods.setValue('formOriginProcess', 'existing')
       result.current.formMethods.setValue('formOrigins', {
         value: [FormOrigin.DigitalSpreadsheet],
       })
