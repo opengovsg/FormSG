@@ -13,6 +13,7 @@ type AdminWorkflowStore = {
   pendingSwitchTo: CreateOrEditData | null
   requestSwitchTo: (stepNumber: number) => void
   requestSwitchToEmailCard: () => void
+  requestSwitchToCreating: () => void
   cancelPendingSwitch: () => void
   completeSave: () => void
 }
@@ -59,6 +60,9 @@ export const requestSwitchToSelector = (state: AdminWorkflowStore) =>
 export const requestSwitchToEmailCardSelector = (state: AdminWorkflowStore) =>
   state.requestSwitchToEmailCard
 
+export const requestSwitchToCreatingSelector = (state: AdminWorkflowStore) =>
+  state.requestSwitchToCreating
+
 export const cancelPendingSwitchSelector = (state: AdminWorkflowStore) =>
   state.cancelPendingSwitch
 
@@ -100,6 +104,10 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
     requestSwitchToEmailCard: () =>
       set({
         pendingSwitchTo: { state: AdminEditWorkflowState.EditingEmailCard },
+      }),
+    requestSwitchToCreating: () =>
+      set({
+        pendingSwitchTo: { state: AdminEditWorkflowState.CreatingStep },
       }),
     cancelPendingSwitch: () => set({ pendingSwitchTo: null }),
     // Hand over to a pending switch, or collapse when there is none: a null

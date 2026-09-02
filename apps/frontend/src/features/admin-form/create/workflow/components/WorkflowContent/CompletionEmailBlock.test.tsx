@@ -108,4 +108,41 @@ describe('completion email seam', () => {
     ).toBeInTheDocument()
     expect(screen.queryByText(DIVIDER)).not.toBeInTheDocument()
   })
+  // Add step used to call setToCreating directly, which unmounted the open card
+  // and dropped its edits with no save and no warning. It now goes through the
+  // same pending-switch mechanism as clicking another card.
+  it('saves pending edits before Add step opens the new step form', async () => {
+    await act(async () => {
+      render(<WithWorkflowRedesignOn />)
+    })
+
+    const card = await screen.findByRole(
+      'button',
+      { name: /completion email/i },
+      { timeout: 10000 },
+    )
+    await act(async () => {
+      fireEvent.click(card)
+    })
+
+    const tagInput = await screen.findByRole('textbox', {}, { timeout: 10000 })
+    await act(async () => {
+      fireEvent.change(tagInput, {
+        target: { value: 'newperson@example.gov.sg' },
+      })
+    })
+    await act(async () => {
+      fireEvent.keyDown(tagInput, { key: 'Enter', code: 'Enter' })
+    })
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /add step/i }))
+    })
+
+    // The toast is the observable proof the edit was saved rather than dropped
+    // on the way to the new step form.
+    expect(
+      await screen.findByText(/emails successfully updated/i),
+    ).toBeInTheDocument()
+  })
 })
