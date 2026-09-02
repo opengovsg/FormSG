@@ -38,6 +38,7 @@ export const WorkflowContent = (): JSX.Element | null => {
       <DeleteWorkflowModal
         isOpen={isDeleteModalOpen}
         onClose={onDeleteModalClose}
+        entryPoint="workflow-card"
       />
       {/* <HeaderBlock /> */}
       <Box
@@ -52,15 +53,26 @@ export const WorkflowContent = (): JSX.Element | null => {
             <Text as="h2" textStyle="h2">
               Workflow
             </Text>
-            {/* Grey rather than danger-red. This sits on the card at rest,
-                not inside a confirmation, and a red button in the corner of a
-                page reads as a warning about the page's state rather than as
-                an action. The destructive colour belongs on the button that
-                actually destroys something, in the modal. */}
+            {/* Grey at rest, red on intent. A red button sitting in the
+                corner of a page reads as a warning about the page's state
+                rather than as an action, so the destructive colour waits until
+                the pointer is on it. The resting grey matches the pencil on
+                the step cards, so the two affordances read as one family.
+
+                The states are set inline rather than through a variant: the
+                clear variant derives every state from a single colorScheme and
+                so cannot span two, and one call site does not warrant a
+                theme-wide variant that would invite use where plain danger is
+                correct. */}
             {isWorkflowDeletion ? (
               <IconButton
                 variant="clear"
-                colorScheme="secondary"
+                colorScheme="danger"
+                color="neutral.500"
+                transitionProperty="common"
+                transitionDuration="normal"
+                _hover={{ color: 'danger.500', bg: 'danger.100' }}
+                _active={{ color: 'danger.500', bg: 'danger.200' }}
                 aria-label={t(
                   'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
                 )}

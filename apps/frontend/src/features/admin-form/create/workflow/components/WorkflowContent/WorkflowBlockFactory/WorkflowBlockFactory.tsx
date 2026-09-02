@@ -35,8 +35,10 @@ export const WorkflowBlockFactory = ({
   )
 
   // A workflow without its first step has no entry point, so deleting step 1 is
-  // deleting the workflow. Same button, same modal as the workflow's own delete
-  // — the outcome is the same, and two different modals would imply otherwise.
+  // deleting the workflow. Same button, same modal as the workflow's own
+  // delete: the outcome is the same, and two different modals would imply
+  // otherwise. The modal is told where it was opened from so it can explain
+  // the jump from step to workflow, which the card's own button need not.
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
   return (
@@ -45,6 +47,7 @@ export const WorkflowBlockFactory = ({
         <DeleteWorkflowModal
           isOpen={isDeleteModalOpen}
           onClose={onDeleteModalClose}
+          entryPoint="first-step"
         />
       ) : (
         <DeleteStepModal
