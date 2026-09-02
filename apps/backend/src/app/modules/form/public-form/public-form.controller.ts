@@ -27,6 +27,12 @@ import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import * as BillingService from '../../billing/billing.service'
 import { ControllerHandler } from '../../core/core.types'
+import {
+  MYINFO_FAPI_SESSION_CLEAR_COOKIE_OPTIONS,
+  MYINFO_FAPI_SESSION_COOKIE_NAME,
+  MYINFO_FAPI_SESSION_COOKIE_OPTIONS,
+} from '../../myinfo/fapi/myinfo.fapi.constants'
+import * as MyInfoFapiService from '../../myinfo/fapi/myinfo.fapi.service'
 import { MyInfoData } from '../../myinfo/myinfo.adapter'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
@@ -203,6 +209,35 @@ export const handleGetPublicForm: ControllerHandler<
       // We always want to clear existing login cookies because we no longer
       // have the prefilled data
       res.clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
+
+      // If FAPI session cookie exists, means user started with FAPI login
+      // Cookie is cleared here to avoid double login.
+      const fapiSessionId: unknown =
+        req.signedCookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]
+      if (typeof fapiSessionId === 'string' && fapiSessionId) {
+        res.clearCookie(
+          MYINFO_FAPI_SESSION_COOKIE_NAME,
+          MYINFO_FAPI_SESSION_CLEAR_COOKIE_OPTIONS,
+        )
+        const fapiFieldsResult =
+          await MyInfoFapiService.loadPersonForSession(fapiSessionId)
+        if (fapiFieldsResult.isErr()) {
+          logger.error({
+            message: 'MyInfo FAPI login error',
+            meta: logMeta,
+            error: fapiFieldsResult.error,
+          })
+          return res.json({
+            form: publicForm,
+            errorCodes: [ErrorCode.myInfo],
+            isIntranetUser,
+          })
+        }
+        myInfoFields = fapiFieldsResult.value
+        spcpSession = { userName: myInfoFields.getUinFin() }
+        break
+      }
+
       const authCodeCookie: unknown = req.cookies[MYINFO_AUTH_CODE_COOKIE_NAME]
       // No auth code cookie because user is accessing the form before logging
       // in
@@ -691,8 +726,24 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const useStateNonce =
         req.growthbook?.isOn(featureFlags.spcpOidcStateNonce) ?? false
       const nonce = useStateNonce ? randomBytes(16).toString('hex') : undefined
+      const useMyInfoFapi =
+        req.growthbook?.isOn(featureFlags.myinfoFapi) ?? false
       switch (form.authType) {
-        case FormAuthType.MyInfo:
+        case FormAuthType.MyInfo: {
+          if (useMyInfoFapi) {
+            return MyInfoFapiService.startLogin({
+              formId,
+              encodedQuery,
+              requestedAttributes: form.getUniqueMyInfoAttrs(),
+            }).map(({ sessionId, redirectUrl }) => {
+              res.cookie(
+                MYINFO_FAPI_SESSION_COOKIE_NAME,
+                sessionId,
+                MYINFO_FAPI_SESSION_COOKIE_OPTIONS,
+              )
+              return redirectUrl
+            })
+          }
           return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
             ([form, eserviceId]) =>
               MyInfoService.createRedirectURL({
@@ -702,6 +753,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
                 encodedQuery,
               }),
           )
+        }
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
             const target = getRedirectTargetSpcpOidc(
