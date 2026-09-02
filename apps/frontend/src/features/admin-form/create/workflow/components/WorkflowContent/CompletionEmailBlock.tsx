@@ -12,6 +12,7 @@ import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { getCompletionEmailRecipients } from './utils/getCompletionEmailRecipients'
 import { EndOfWorkflowDivider } from './EndOfWorkflowDivider'
 import { InactiveCompletionEmailCard } from './InactiveCompletionEmailCard'
+import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
 
 /**
  * The completion email as a card at the end of the workflow, replacing the
@@ -22,7 +23,7 @@ import { InactiveCompletionEmailCard } from './InactiveCompletionEmailCard'
  * message used to sit.
  */
 export const CompletionEmailBlock = (): JSX.Element | null => {
-  const { data: settings } = useAdminFormSettings()
+  const { data: settings, isError } = useAdminFormSettings()
   const { formWorkflow, emailFormFields } = useAdminFormWorkflow()
 
   // Not an MRF form, so the card does not apply at all. Unreachable from the
@@ -48,6 +49,19 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
         emailFormFields,
       })
     : null
+
+  // Settings failed rather than merely arrived late. `data` is undefined for
+  // both a request in flight and a failed one, so without this the card reads
+  // the failure as loading and skeletons indefinitely, with no error and no
+  // retry. Falls back to the message the flag-off path shows, which keeps a
+  // working link to Settings and needs no new copy.
+  //
+  // Gated on `recipients` too, not `isError` alone: react-query keeps the last
+  // successful `data` when a refetch fails, and a stale summary is more use
+  // than the fallback.
+  if (!recipients && isError) {
+    return <WorkflowCompletionMessageBlock />
+  }
 
   return (
     // Measured: only 16px sits below this card today, from the tab's own

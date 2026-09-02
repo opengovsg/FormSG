@@ -1,5 +1,6 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
+import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'
 import {
@@ -153,6 +154,27 @@ Loading.parameters = {
     description: {
       story:
         'The form resolves before its settings, so the divider, card frame and label are already in place while the recipient list is still on its way. Only the list is skeletoned.',
+    },
+  },
+}
+
+export const SettingsError = Template.bind({})
+SettingsError.storyName = 'Settings request failed'
+SettingsError.parameters = {
+  // Overridden inline rather than by teaching the shared settings handler about
+  // failures, which every other story would then carry.
+  msw: {
+    handlers: [
+      mocks(NOTHING_CONFIGURED)[0],
+      http.get('/api/v3/admin/forms/:formId/settings', () =>
+        HttpResponse.json({ message: 'Forbidden' }, { status: 403 }),
+      ),
+    ],
+  },
+  docs: {
+    description: {
+      story:
+        'With no recipients to summarise the card would skeleton indefinitely, since a failed request and one still in flight both leave the data undefined. Falls back to the message the flag-off path shows, so the admin still gets a working link to Settings.',
     },
   },
 }
