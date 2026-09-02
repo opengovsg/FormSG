@@ -88,16 +88,18 @@ export const enSG: CreateFormModal = {
     q2: {
       label: 'How is this data being collected today?',
       options: {
-        digitalFormsg: 'Another FormSG form',
+        paper: 'Paper form',
         digitalEmail: 'Emails',
         digitalDocument: 'Documents (e.g. PDF, Word)',
         digitalSpreadsheet: 'Spreadsheets (e.g. Excel, Sheets)',
-        paper: 'Paper form',
+        digitalFormsg: 'Another FormSG form',
+        digitalFormbuilder: 'Other form builders',
         others: 'Other',
       },
     },
     otherInputLabel: 'Other source',
     errors: {
+      q1Required: 'Please select an option.',
       atLeastOne: 'Please select at least 1 option.',
       otherRequired: 'Please specify a value for the "others" option',
       otherMaxLength: 'Please use {maxLength} characters or fewer.',

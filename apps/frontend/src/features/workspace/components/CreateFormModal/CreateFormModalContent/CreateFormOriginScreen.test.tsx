@@ -30,8 +30,10 @@ vi.mock('react-i18next', () => {
     [`${P}.q2.options.digitalDocument`]: 'Documents (e.g. PDF, Word)',
     [`${P}.q2.options.digitalSpreadsheet`]: 'Spreadsheets (e.g. Excel, Sheets)',
     [`${P}.q2.options.digitalFormsg`]: 'Another FormSG form',
+    [`${P}.q2.options.digitalFormbuilder`]: 'Other form builders',
     [`${P}.q2.options.others`]: 'Other',
     [`${P}.otherInputLabel`]: 'Other source',
+    [`${P}.errors.q1Required`]: 'Please select an option.',
     [`${P}.errors.atLeastOne`]: 'Please select at least 1 option.',
     [`${P}.errors.otherRequired`]:
       'Please specify a value for the "others" option',
@@ -126,7 +128,7 @@ describe('CreateFormOriginScreen', () => {
     await clickNext(user)
 
     expect(
-      await screen.findByText('Please select at least 1 option.'),
+      await screen.findByText('Please select an option.'),
     ).toBeInTheDocument()
     expect(onCreate).not.toHaveBeenCalled()
   })
@@ -167,12 +169,13 @@ describe('CreateFormOriginScreen', () => {
     )
   })
 
-  it('offers "Another FormSG form" as its own option', async () => {
+  it('offers "Another FormSG form" as its own option, distinct from "Other form builders"', async () => {
     const user = userEvent.setup()
     const { onCreate } = renderOriginScreen()
 
     await selectExisting(user)
     expect(screen.getByLabelText('Another FormSG form')).toBeInTheDocument()
+    expect(screen.getByLabelText('Other form builders')).toBeInTheDocument()
 
     await user.click(screen.getByLabelText('Another FormSG form'))
     await clickNext(user)

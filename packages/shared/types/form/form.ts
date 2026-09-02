@@ -120,6 +120,7 @@ export enum FormOrigin {
   DigitalDocument = 'digitalDocument',
   DigitalSpreadsheet = 'digitalSpreadsheet',
   DigitalFormsg = 'digitalFormsg',
+  DigitalFormBuilder = 'digitalFormbuilder',
 }
 
 export interface FormMetadata {

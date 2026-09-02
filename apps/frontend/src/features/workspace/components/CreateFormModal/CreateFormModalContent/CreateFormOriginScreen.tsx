@@ -75,7 +75,7 @@ export const CreateFormOriginScreen = ({
               name="formOriginProcess"
               control={control}
               rules={{
-                required: t(`${ORIGIN_I18N_PREFIX}.errors.atLeastOne`),
+                required: t(`${ORIGIN_I18N_PREFIX}.errors.q1Required`),
               }}
               render={({ field: { value, onChange } }) => (
                 <Radio.RadioGroup value={value ?? ''} onChange={onChange}>

@@ -12,9 +12,12 @@ describe('FORM_ORIGIN_OPTIONS', () => {
     )
   })
 
-  it('places paper form last, after the digital mediums', () => {
-    expect(FORM_ORIGIN_OPTIONS.indexOf(FormOrigin.Paper)).toBe(
-      FORM_ORIGIN_OPTIONS.length - 1,
+  it('places the "another FormSG form" option between spreadsheet and form-builder', () => {
+    expect(FORM_ORIGIN_OPTIONS.indexOf(FormOrigin.DigitalFormsg)).toBe(
+      FORM_ORIGIN_OPTIONS.indexOf(FormOrigin.DigitalSpreadsheet) + 1,
+    )
+    expect(FORM_ORIGIN_OPTIONS.indexOf(FormOrigin.DigitalFormBuilder)).toBe(
+      FORM_ORIGIN_OPTIONS.indexOf(FormOrigin.DigitalFormsg) + 1,
     )
   })
 })
