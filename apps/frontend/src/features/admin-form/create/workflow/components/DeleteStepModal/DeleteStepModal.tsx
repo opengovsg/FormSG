@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Modal,
@@ -41,6 +41,20 @@ export const DeleteStepModal = ({
     md: 'md',
   })
 
+  // Chakra's focus lock takes the first tabbable element when it is not told
+  // otherwise, and that is the close button, since it is ModalContent's first
+  // child regardless of sitting in the top right corner.
+  //
+  // Focus goes to the dialog rather than to any of the buttons. Our Button and
+  // CloseButton themes paint `_focus` rather than `_focusVisible`, so a
+  // programmatically focused button shows its ring even though the admin
+  // opened the modal by clicking, and a ring sitting on an action on open reads
+  // as though something has already been chosen. The dialog carries no focus
+  // style, so nothing lights up, focus is still inside the lock, and screen
+  // readers announce the title and the consequences from role and
+  // aria-describedby.
+  const dialogRef = useRef<HTMLDivElement>(null)
+
   const handleDelete = useCallback(() => {
     // Cannot be put in onSuccess since this component will be unmounted by then.
     // No big deal even if we set to inactive here.
@@ -60,9 +74,10 @@ export const DeleteStepModal = ({
       onClose={onClose}
       size={modalSize}
       closeOnOverlayClick={!deleteStepMutation.isLoading}
+      initialFocusRef={dialogRef}
     >
       <ModalOverlay />
-      <ModalContent>
+      <ModalContent ref={dialogRef}>
         <ModalCloseButton isDisabled={deleteStepMutation.isLoading} />
         <ModalHeader color="secondary.700">{title}</ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
