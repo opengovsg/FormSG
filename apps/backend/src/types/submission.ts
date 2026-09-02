@@ -137,6 +137,20 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
     submissionId: string,
     webhookResponse: WebhookResponse,
   ): Promise<ISubmissionSchema | null>
+
+  /**
+   * Finds a single admin-viewable submission of a form by id, across both
+   * Encrypt and Multirespondent submission types. Multirespondent forms
+   * mode-migrated from storage mode retain their pre-migration encrypt
+   * submissions, so the lookup must not be pinned to one discriminator.
+   * Email submissions are deliberately excluded.
+   * @param formId the id of the form the submission belongs to
+   * @param submissionId the id of the submission to retrieve
+   */
+  findEncryptedOrMultirespondentSubmissionById(
+    formId: string,
+    submissionId: string,
+  ): Promise<SubmissionData | null>
 }
 
 export interface IEmailSubmissionSchema
