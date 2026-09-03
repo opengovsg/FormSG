@@ -80,8 +80,9 @@ jobs:
           storybookBaseDir: apps/frontend
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
-          # Only run when the frontend directory has changes
-          untraced: '!(apps/frontend)/**'
+          # TurboSnap's untraced globs live in apps/frontend/chromatic.config.json,
+          # which the CLI reads from workingDir. They need one glob per excluded
+          # tree, which this input cannot express.
 
   chromatic-deployment-emailpreview:
     needs: changes
@@ -126,5 +127,3 @@ jobs:
           storybookBaseDir: packages/react-email-preview
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
-          # Only run when the react-email-preview directory has changes
-          untraced: '!(packages/react-email-preview)/**'
