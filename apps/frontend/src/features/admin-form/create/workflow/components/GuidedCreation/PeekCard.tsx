@@ -7,20 +7,31 @@ export interface PeekCardAction {
   onClick: () => void
 }
 
+/**
+ * One or two actions, right-aligned with the primary last. Where there are
+ * two, the earlier is a clear-variant secondary.
+ *
+ * A tuple union rather than an array, because "primary last" is positional and
+ * an array permits the two shapes the treatment is undefined for: none, which
+ * renders a card with a bare button row, and three or more, where the third
+ * silently becomes the primary. The type is the whole guard; there is nothing
+ * left for a runtime check to catch.
+ */
+export type PeekCardActions =
+  | readonly [PeekCardAction]
+  | readonly [PeekCardAction, PeekCardAction]
+
 export interface PeekCardProps {
   /** What just happened. Required: a peek card always names a completion. */
   title: string
   /** What comes next. */
   subtitle?: string
   /**
-   * One or two actions, right-aligned with the primary last. Where there are
-   * two, the earlier is a clear-variant secondary.
-   *
    * An array rather than a single `onDone` callback because the two-action case
    * is the one that shapes this API: "No, I'm done" beside "Yes, add a step"
    * cannot be expressed by one callback.
    */
-  actions: PeekCardAction[]
+  actions: PeekCardActions
   /**
    * Tucked beneath the card it reports on: a square, borderless top butted
    * against that card's bottom edge, so the card above keeps its own border and
@@ -90,8 +101,10 @@ export const PeekCard = ({
           {actions.map((action, index) => (
             // Primary is last, so index position decides the treatment rather
             // than a per-action flag the caller could set inconsistently.
+            // Keyed by position too: two actions may legitimately share a
+            // label, and position is what identifies an action here.
             <Button
-              key={action.label}
+              key={`${index}-${action.label}`}
               variant={index === actions.length - 1 ? undefined : 'clear'}
               colorScheme={
                 index === actions.length - 1 ? undefined : 'secondary'
