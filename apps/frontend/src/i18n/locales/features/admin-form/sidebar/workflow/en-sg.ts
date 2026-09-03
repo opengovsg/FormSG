@@ -175,4 +175,8 @@ export const enSG: Workflow = {
   stepName: {
     label: 'Step name',
   },
+  completionEmail: {
+    title: 'Completion email',
+    divider: 'END OF WORKFLOW',
+  },
 }
