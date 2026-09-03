@@ -94,7 +94,7 @@ export const QuestionsBlock = ({
             const handleFieldsChange = (newValue: string[]) => {
               onChange(newValue)
               if (isRedesign && selectedApprovalField) {
-                trigger(APPROVAL_FIELD_NAME)
+                void trigger(APPROVAL_FIELD_NAME)
               }
             }
             return (
