@@ -162,15 +162,18 @@ export const ApprovalsBlock = ({
             render={({ field: { value = '', onChange, ...rest } }) => {
               const handleApprovalFieldChange = (newValue: string) => {
                 onChange(newValue)
-                setValue(
-                  FIELDS_TO_EDIT_NAME,
-                  nextEditFieldsForApproval({
-                    edit: getValues(FIELDS_TO_EDIT_NAME),
-                    approvalFieldId: newValue,
-                    isEnabled: isRedesign,
-                  }),
-                  { shouldDirty: true },
-                )
+                const currentEdit = getValues(FIELDS_TO_EDIT_NAME)
+                const nextEdit = nextEditFieldsForApproval({
+                  edit: currentEdit,
+                  approvalFieldId: newValue,
+                  isEnabled: isRedesign,
+                })
+                // The helper returns `currentEdit` itself when there is nothing
+                // to add, so a reference check is enough to skip the no-op
+                // setValue and keep flag-off dirty tracking untouched.
+                if (nextEdit !== currentEdit) {
+                  setValue(FIELDS_TO_EDIT_NAME, nextEdit, { shouldDirty: true })
+                }
               }
               return (
                 <SingleSelect
