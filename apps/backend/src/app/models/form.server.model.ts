@@ -1556,7 +1556,8 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     // `emails` exists on both modes and must be empty to enable payments in
     // either. Empty arrays are matched via `field.0` non-existence rather
     // than `$size` so legacy storage-mode documents missing `emails`
-    // entirely also pass.
+    // entirely also pass. A miss (null) when enabling therefore means
+    // "preconditions not met", not necessarily "form missing".
     const filter = newPayments.enabled
       ? {
           _id: formId,

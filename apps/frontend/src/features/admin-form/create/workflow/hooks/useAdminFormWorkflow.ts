@@ -76,6 +76,11 @@ export const useAdminFormWorkflow = () => {
     isLoading,
     formFields: form?.form_fields,
     formWorkflow,
+    // Workflow steps and the payment field are mutually exclusive: a
+    // payment-enabled form cannot gain steps until the payment is removed.
+    isPaymentEnabled:
+      form?.responseMode === FormResponseMode.Multirespondent &&
+      !!form.payments_field?.enabled,
     idToFieldMap,
     emailFormFields,
     yesNoFormFields,

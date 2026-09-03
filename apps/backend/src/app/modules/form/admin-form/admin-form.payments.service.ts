@@ -3,17 +3,16 @@ import {
   PaymentsUpdateDto,
   PaymentType,
 } from 'formsg-shared/types'
-import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import {
   IEncryptedForm,
   IEncryptedFormDocument,
   IPopulatedEncryptedForm,
+  IPopulatedMultirespondentForm,
 } from '../../../../types'
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
-import { getEncryptedFormModel } from '../../../models/form.server.model'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { PossibleDatabaseError } from '../../core/core.errors'
 import {
@@ -21,9 +20,10 @@ import {
   PaymentConfigurationError,
 } from '../../payments/payments.errors'
 import { FormNotFoundError } from '../form.errors'
+import { getFormModelByResponseMode } from '../form.service'
+import { isFormMultirespondent } from '../form.utils'
 
 const logger = createLoggerWithLabel(module)
-const EncryptedFormModel = getEncryptedFormModel(mongoose)
 
 /**
  * Update the payments field of the given form
@@ -37,7 +37,7 @@ const EncryptedFormModel = getEncryptedFormModel(mongoose)
  */
 export const updatePayments = (
   formId: string,
-  form: IPopulatedEncryptedForm,
+  form: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
   newPayments: PaymentsUpdateDto,
 ): ResultAsync<
   IEncryptedFormDocument['payments_field'],
@@ -75,24 +75,65 @@ export const updatePayments = (
     }
   }
 
-  if (((form as IEncryptedForm)?.emails || []).length !== 0) {
-    return errAsync(
-      new PaymentConfigurationError(
-        'Cannot enable payment for form with emails',
-      ),
-    )
+  const isMultirespondent = isFormMultirespondent(form)
+
+  if (!isMultirespondent) {
+    if (((form as IEncryptedForm)?.emails || []).length !== 0) {
+      return errAsync(
+        new PaymentConfigurationError(
+          'Cannot enable payment for form with emails',
+        ),
+      )
+    }
+
+    if (form.isSingleSubmission) {
+      return errAsync(
+        new PaymentConfigurationError(
+          'Cannot enable payment for form with single submission per submitterId enabled',
+        ),
+      )
+    }
   }
 
-  if (form.isSingleSubmission) {
-    return errAsync(
-      new PaymentConfigurationError(
-        'Cannot enable payment for form with single submission per submitterId enabled',
-      ),
-    )
+  // For multirespondent forms these conditions gate only the act of
+  // enabling: a Stripe-connected MRF with payments off keeps its workflow
+  // and notification settings, so disabling or editing a disabled config
+  // must not be blocked by them.
+  if (isMultirespondent && enabled) {
+    if ((form.workflow?.length ?? 0) > 0) {
+      return errAsync(
+        new PaymentConfigurationError(
+          'Remove all workflow steps before enabling payments',
+        ),
+      )
+    }
+    if ((form.emails?.length ?? 0) > 0) {
+      return errAsync(
+        new PaymentConfigurationError(
+          'Remove email notifications before enabling payments',
+        ),
+      )
+    }
+    if (form.stepOneEmailNotificationFieldId) {
+      return errAsync(
+        new PaymentConfigurationError(
+          'Remove the respondent email notification before enabling payments',
+        ),
+      )
+    }
+    if (form.isSingleSubmission) {
+      return errAsync(
+        new PaymentConfigurationError(
+          'Disable single submission before enabling payments',
+        ),
+      )
+    }
   }
+
+  const FormModelToUse = getFormModelByResponseMode(form.responseMode)
 
   return ResultAsync.fromPromise(
-    EncryptedFormModel.updatePaymentsById(formId, newPayments),
+    FormModelToUse.updatePaymentsById(formId, newPayments),
     (error) => {
       logger.error({
         message: 'Error occurred when updating form payments',
@@ -107,6 +148,16 @@ export const updatePayments = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
+      // For multirespondent forms the update filter carries the zero-step
+      // invariant's preconditions, so a miss on an existing form means a
+      // concurrent edit violated them, not that the form is gone.
+      if (isMultirespondent && enabled) {
+        return errAsync(
+          new PaymentConfigurationError(
+            'Remove all workflow steps and email notifications before enabling payments',
+          ),
+        )
+      }
       return errAsync(new FormNotFoundError())
     }
     return okAsync(updatedForm.payments_field)
@@ -128,6 +179,7 @@ export const getPaymentGuideLink = (): string => {
  */
 export const updatePaymentsProduct = (
   formId: string,
+  form: IPopulatedEncryptedForm | IPopulatedMultirespondentForm,
   newProducts: PaymentsProductUpdateDto,
 ): ResultAsync<
   IEncryptedFormDocument['payments_field'],
@@ -146,7 +198,10 @@ export const updatePaymentsProduct = (
     }
   }
   return ResultAsync.fromPromise(
-    EncryptedFormModel.updatePaymentsProductById(formId, newProducts),
+    getFormModelByResponseMode(form.responseMode).updatePaymentsProductById(
+      formId,
+      newProducts,
+    ),
     (error) => {
       logger.error({
         message: 'Error occurred when updating form payments',

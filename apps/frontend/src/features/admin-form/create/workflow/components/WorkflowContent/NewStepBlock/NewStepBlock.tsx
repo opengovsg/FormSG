@@ -5,6 +5,7 @@ import { BiPlus } from 'react-icons/bi'
 import { FormWorkflowStep } from 'formsg-shared/types'
 
 import Button from '~components/Button'
+import Tooltip from '~components/Tooltip'
 
 import {
   cancelPendingSwitchSelector,
@@ -21,7 +22,7 @@ import { EditStepBlock } from '../EditStepBlock'
 
 export const NewStepBlock = () => {
   const { t } = useTranslation()
-  const { formWorkflow } = useAdminFormWorkflow()
+  const { formWorkflow, isPaymentEnabled } = useAdminFormWorkflow()
   const { createStepMutation } = useWorkflowMutations()
   const {
     isCreatingState,
@@ -74,8 +75,24 @@ export const NewStepBlock = () => {
       )}
     />
   ) : (
-    <Button onClick={handleAddStep} variant="outline" leftIcon={<BiPlus />}>
-      {t('features.adminForm.sidebar.workflow.approvals.addStep')}
-    </Button>
+    <Tooltip
+      label={
+        isPaymentEnabled
+          ? t('features.adminForm.sidebar.workflow.paymentEnabledNoSteps')
+          : undefined
+      }
+      // Disabled buttons swallow hover events; the wrapper span keeps the
+      // tooltip reachable exactly when it has something to say.
+      shouldWrapChildren={isPaymentEnabled}
+    >
+      <Button
+        onClick={handleAddStep}
+        variant="outline"
+        leftIcon={<BiPlus />}
+        isDisabled={isPaymentEnabled}
+      >
+        {t('features.adminForm.sidebar.workflow.approvals.addStep')}
+      </Button>
+    </Tooltip>
   )
 }

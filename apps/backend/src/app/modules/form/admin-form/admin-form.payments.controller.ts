@@ -1,7 +1,10 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   ErrorDto,
+  FormResponseMode,
   PaymentChannel,
   PaymentsProductUpdateDto,
   PaymentsUpdateDto,
@@ -10,7 +13,7 @@ import {
 import { StatusCodes } from 'http-status-codes'
 import { err, ok } from 'neverthrow'
 
-import { IEncryptedFormDocument } from 'src/types'
+import { IEncryptedFormDocument, IPopulatedForm } from 'src/types'
 
 import { paymentConfig } from '../../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../../config/logger'
@@ -23,12 +26,11 @@ import {
   unlinkStripeAccountFromForm,
   validateAccount,
 } from '../../payments/stripe.service'
-import {
-  assertFormIsSingleSubmissionDisabled,
-  checkFormIsEncryptMode,
-} from '../../submission/encrypt-submission/encrypt-submission.service'
+import { assertFormIsSingleSubmissionDisabled } from '../../submission/encrypt-submission/encrypt-submission.service'
+import { checkFormIsEncryptModeOrMultirespondent } from '../../submission/submission.utils'
 import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
+import { ForbiddenFormError } from '../form.errors'
 
 import { PaymentChannelNotFoundError } from './admin-form.errors'
 import { JoiPaymentProduct } from './admin-form.payments.constants'
@@ -37,6 +39,35 @@ import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 
 const logger = createLoggerWithLabel(module)
+
+/**
+ * Multirespondent payments are rolled out behind a feature flag. The flag
+ * gates only the enablement surfaces (connecting Stripe, enabling or editing
+ * payment config) — never respondent-facing flows or the ability to switch
+ * payments off — so flipping it off cannot break a live payment-enabled form
+ * or strand its admin. Encrypt mode is unaffected.
+ */
+const checkMrfPaymentsFeatureEnabled = <T extends IPopulatedForm>(
+  form: T,
+  growthbook?: GrowthBook,
+) => {
+  if (form.responseMode !== FormResponseMode.Multirespondent) {
+    return ok(form)
+  }
+
+  void growthbook?.setAttributes({
+    ...growthbook.getAttributes(),
+    formId: form._id.toString(),
+    adminEmail: form.admin.email,
+  })
+  return growthbook?.isOn(featureFlags.mrfPayments)
+    ? ok(form)
+    : err(
+        new ForbiddenFormError(
+          'Payments are not available for multirespondent forms',
+        ),
+      )
+}
 
 /**
  * Handler for POST /:formId/stripe.
@@ -76,8 +107,9 @@ export const handleConnectAccount: ControllerHandler<{
       // Payments should not be allowed to connect
       // since single submission forms do not support it currently.
       .andThen(assertFormIsSingleSubmissionDisabled)
-      // Ensure that the form is encrypt mode.
-      .andThen(checkFormIsEncryptMode)
+      // Ensure that the form is a payment-capable response mode.
+      .andThen(checkFormIsEncryptModeOrMultirespondent)
+      .andThen((form) => checkMrfPaymentsFeatureEnabled(form, req.growthbook))
       // Get the auth URL and state, and pass the auth URL for redirection.
       .andThen(getStripeOauthUrl)
       .map(({ authUrl, state }) => {
@@ -129,8 +161,10 @@ export const handleUnlinkAccount: ControllerHandler<{
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: Ensure that the form is encrypt mode.
-      .andThen(checkFormIsEncryptMode)
+      // Step 3: Ensure that the form is a payment-capable response mode.
+      // Deliberately not gated on the MRF payments feature flag: unlinking
+      // must remain available as an escape hatch even if the flag is off.
+      .andThen(checkFormIsEncryptModeOrMultirespondent)
       // Step 4: Remove the Stripe account details.
       .andThen(unlinkStripeAccountFromForm)
       .map(() => res.status(StatusCodes.OK).json({ message: 'Success' }))
@@ -181,8 +215,11 @@ export const handleValidatePaymentAccount: ControllerHandler<{
           level: PermissionLevel.Write,
         }),
       )
-      // Step 3: Ensure that the form is encrypt mode.
-      .andThen(checkFormIsEncryptMode)
+      // Step 3: Ensure that the form is a payment-capable response mode.
+      // Deliberately not gated on the MRF payments feature flag: validation
+      // is a read-only check of already-connected credentials, which a live
+      // payment-enabled form still needs when the flag is off.
+      .andThen(checkFormIsEncryptModeOrMultirespondent)
       // Step 4: Validate the associated Stripe account.
       .andThen((form) =>
         validateAccount(form.payments_channel.target_account_id),
@@ -245,7 +282,16 @@ const _handleUpdatePayments: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      .andThen(checkFormIsEncryptMode)
+      .andThen(checkFormIsEncryptModeOrMultirespondent)
+      .andThen((form) =>
+        // Disabling payments (`enabled: false`) is exempt from the flag: the
+        // flag is a kill switch for enablement, and the builder deletes the
+        // payment field by sending `enabled: false` through this route — a
+        // flag-off admin must still be able to switch a live payment off.
+        req.body.enabled === false
+          ? ok(form)
+          : checkMrfPaymentsFeatureEnabled(form, req.growthbook),
+      )
       // Check that the payment form has a stripe account connected
       .andThen((form) =>
         form.payments_channel.channel === PaymentChannel.Unconnected
@@ -295,7 +341,8 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
           level: PermissionLevel.Write,
         }),
       )
-      .andThen(checkFormIsEncryptMode)
+      .andThen(checkFormIsEncryptModeOrMultirespondent)
+      .andThen((form) => checkMrfPaymentsFeatureEnabled(form, req.growthbook))
       // Step 3: Check that the payment form has a stripe account connected
       .andThen((form) =>
         form.payments_channel.channel === PaymentChannel.Unconnected
@@ -303,8 +350,8 @@ export const _handleUpdatePaymentsProduct: ControllerHandler<
           : ok(form),
       )
       // Step 4: User has permissions, proceed to allow updating of start page
-      .andThen(() =>
-        AdminFormPaymentService.updatePaymentsProduct(formId, req.body),
+      .andThen((form) =>
+        AdminFormPaymentService.updatePaymentsProduct(formId, form, req.body),
       )
       .map((updatedPayments) => {
         return res.status(StatusCodes.OK).json(updatedPayments.products)

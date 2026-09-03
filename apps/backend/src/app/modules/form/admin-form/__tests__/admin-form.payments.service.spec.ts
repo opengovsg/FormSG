@@ -1,5 +1,6 @@
 import { ObjectId } from 'bson'
 import {
+  FormResponseMode,
   PaymentsProductUpdateDto,
   PaymentsUpdateDto,
   PaymentType,
@@ -7,13 +8,20 @@ import {
 import mongoose from 'mongoose'
 
 import * as PaymentConfig from 'src/app/config/features/payment.config'
-import { getEncryptedFormModel } from 'src/app/models/form.server.model'
+import {
+  getEncryptedFormModel,
+  getMultirespondentFormModel,
+} from 'src/app/models/form.server.model'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import {
   InvalidPaymentAmountError,
   PaymentConfigurationError,
 } from 'src/app/modules/payments/payments.errors'
-import { IEncryptedFormDocument, IPopulatedEncryptedForm } from 'src/types'
+import {
+  IEncryptedFormDocument,
+  IPopulatedEncryptedForm,
+  IPopulatedMultirespondentForm,
+} from 'src/types'
 
 import { FormNotFoundError } from '../../form.errors'
 import * as AdminFormPaymentService from '../admin-form.payments.service'
@@ -23,6 +31,7 @@ describe('admin-form.payment.service', () => {
   describe('updatePayments', () => {
     const mockFormId = new ObjectId().toString()
     const MOCK_FORM: IPopulatedEncryptedForm = {
+      responseMode: FormResponseMode.Encrypt,
       publicKey: 'public key',
       emails: [],
     } as any as IPopulatedEncryptedForm
@@ -398,8 +407,139 @@ describe('admin-form.payment.service', () => {
     })
   })
 
+  describe('updatePayments for multirespondent forms', () => {
+    const mockFormId = new ObjectId().toString()
+    const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
+
+    const MOCK_ELIGIBLE_MRF = {
+      responseMode: FormResponseMode.Multirespondent,
+      workflow: [],
+      emails: [],
+      stepOneEmailNotificationFieldId: '',
+      isSingleSubmission: false,
+    } as any as IPopulatedMultirespondentForm
+
+    const ENABLE_PAYMENTS: PaymentsUpdateDto = {
+      enabled: true,
+      payment_type: PaymentType.Variable,
+      min_amount: 100,
+      max_amount: 1000,
+      description: 'some description',
+      name: 'some name',
+    }
+
+    beforeEach(() => jest.clearAllMocks())
+    afterEach(() => jest.restoreAllMocks())
+
+    it('should enable payments on an eligible zero-step form', async () => {
+      // Arrange
+      const putSpy = jest
+        .spyOn(MultirespondentFormModel, 'updatePaymentsById')
+        .mockResolvedValueOnce({
+          payments_field: ENABLE_PAYMENTS,
+        } as unknown as IEncryptedFormDocument)
+
+      // Act
+      const actualResult = await AdminFormPaymentService.updatePayments(
+        mockFormId,
+        MOCK_ELIGIBLE_MRF,
+        ENABLE_PAYMENTS,
+      )
+
+      // Assert
+      expect(putSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isOk()).toBeTrue()
+    })
+
+    it.each([
+      ['workflow steps', { workflow: [{ _id: 'step' }] }],
+      ['email notifications', { emails: ['notify@open.gov.sg'] }],
+      [
+        'a respondent email notification',
+        { stepOneEmailNotificationFieldId: new ObjectId().toHexString() },
+      ],
+      ['single submission enabled', { isSingleSubmission: true }],
+    ])(
+      'should return PaymentConfigurationError when enabling payments on a form with %s',
+      async (_name, formOverrides) => {
+        // Arrange
+        const putSpy = jest.spyOn(
+          MultirespondentFormModel,
+          'updatePaymentsById',
+        )
+        const mockForm = {
+          ...MOCK_ELIGIBLE_MRF,
+          ...formOverrides,
+        } as any as IPopulatedMultirespondentForm
+
+        // Act
+        const actualResult = await AdminFormPaymentService.updatePayments(
+          mockFormId,
+          mockForm,
+          ENABLE_PAYMENTS,
+        )
+
+        // Assert
+        expect(putSpy).not.toHaveBeenCalled()
+        expect(actualResult.isErr()).toBeTrue()
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          PaymentConfigurationError,
+        )
+      },
+    )
+
+    it('should allow disabling payments on a form with workflow steps', async () => {
+      // Arrange
+      const disablePayments = { ...ENABLE_PAYMENTS, enabled: false }
+      const putSpy = jest
+        .spyOn(MultirespondentFormModel, 'updatePaymentsById')
+        .mockResolvedValueOnce({
+          payments_field: disablePayments,
+        } as unknown as IEncryptedFormDocument)
+      const mockForm = {
+        ...MOCK_ELIGIBLE_MRF,
+        workflow: [{ _id: 'step' }],
+        emails: ['notify@open.gov.sg'],
+      } as any as IPopulatedMultirespondentForm
+
+      // Act
+      const actualResult = await AdminFormPaymentService.updatePayments(
+        mockFormId,
+        mockForm,
+        disablePayments,
+      )
+
+      // Assert
+      expect(putSpy).toHaveBeenCalledOnce()
+      expect(actualResult.isOk()).toBeTrue()
+    })
+
+    it('should return PaymentConfigurationError when the update filter misses (concurrent edit)', async () => {
+      // Arrange
+      jest
+        .spyOn(MultirespondentFormModel, 'updatePaymentsById')
+        .mockResolvedValueOnce(null)
+
+      // Act
+      const actualResult = await AdminFormPaymentService.updatePayments(
+        mockFormId,
+        MOCK_ELIGIBLE_MRF,
+        ENABLE_PAYMENTS,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toBeTrue()
+      expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+        PaymentConfigurationError,
+      )
+    })
+  })
+
   describe('updatePaymentsProduct', () => {
     const mockFormId = new ObjectId().toString()
+    const MOCK_FORM = {
+      responseMode: FormResponseMode.Encrypt,
+    } as any as IPopulatedEncryptedForm
 
     describe('with multi qty enabled', () => {
       beforeEach(() => {
@@ -429,6 +569,7 @@ describe('admin-form.payment.service', () => {
         const actualResult =
           await AdminFormPaymentService.updatePaymentsProduct(
             mockFormId,
+            MOCK_FORM,
             updatedProducts,
           )
 
@@ -459,6 +600,7 @@ describe('admin-form.payment.service', () => {
         const actualResult =
           await AdminFormPaymentService.updatePaymentsProduct(
             mockFormId,
+            MOCK_FORM,
             updatedProducts,
           )
 
@@ -489,6 +631,7 @@ describe('admin-form.payment.service', () => {
         const actualResult =
           await AdminFormPaymentService.updatePaymentsProduct(
             mockFormId,
+            MOCK_FORM,
             updatedProducts,
           )
 
@@ -527,6 +670,7 @@ describe('admin-form.payment.service', () => {
         const actualResult =
           await AdminFormPaymentService.updatePaymentsProduct(
             mockFormId,
+            MOCK_FORM,
             updatedProducts,
           )
 
@@ -556,6 +700,7 @@ describe('admin-form.payment.service', () => {
         const actualResult =
           await AdminFormPaymentService.updatePaymentsProduct(
             mockFormId,
+            MOCK_FORM,
             updatedProducts,
           )
 
