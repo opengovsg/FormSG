@@ -452,9 +452,11 @@ export const Step2ConditionalRoutingReplace = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
 
-    const conditionalOption = await canvas.findByRole('radio', {
-      name: /Emails assigned to options in a dropdown field/i,
-    })
+    const conditionalOption = await canvas.findByRole(
+      'radio',
+      { name: /Emails assigned to options in a dropdown field/i },
+      { timeout: 5000 },
+    )
     await waitFor(() => expect(conditionalOption).toBeEnabled(), {
       timeout: 5000,
     })
@@ -468,7 +470,18 @@ export const Step2ConditionalRoutingReplace = {
       undefined,
       { timeout: 5000 },
     )
+    await waitFor(() => expect(replaceButton).toBeEnabled(), { timeout: 5000 })
     await userEvent.click(replaceButton)
+
+    // Replacing opens the replace-CSV modal, which is what this story captures.
+    // The modal portals to the body, so it is outside canvasElement.
+    await expect(
+      await within(document.body).findByRole(
+        'dialog',
+        { name: /replace your csv file/i },
+        { timeout: 5000 },
+      ),
+    ).toBeInTheDocument()
   },
   args: {
     stepNumber: 3,
@@ -521,7 +534,11 @@ export const Step4ApprovalFieldNotInEditErrorMessage = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
 
-    const saveButton = await canvas.findByRole('button', { name: 'Save step' })
+    const saveButton = await canvas.findByRole(
+      'button',
+      { name: 'Save step' },
+      { timeout: 5000 },
+    )
     await waitFor(() => expect(saveButton).toBeEnabled(), { timeout: 5000 })
     await userEvent.click(saveButton)
 
