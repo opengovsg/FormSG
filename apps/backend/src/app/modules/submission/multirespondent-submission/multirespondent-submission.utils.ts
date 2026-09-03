@@ -22,6 +22,7 @@ import {
   EmailRespondentConfirmationField,
   FormFieldSchema,
   IMultirespondentSubmissionSchema,
+  ISubmissionSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV4 } from '../../../../types/api'
@@ -41,6 +42,12 @@ import {
 import { buildMrfMetadata } from '../submission.utils'
 
 import { MrfJwtPayload } from './multirespondent-submission.types'
+
+export const isSubmissionMultirespondentMode = (
+  submission: ISubmissionSchema,
+): submission is IMultirespondentSubmissionSchema => {
+  return submission.submissionType === SubmissionType.Multirespondent
+}
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and

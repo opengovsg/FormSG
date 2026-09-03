@@ -100,8 +100,9 @@ export const FormFields = ({
           </Stack>
         </Box>
       )}
-      {form?.responseMode === FormResponseMode.Encrypt &&
-        form?.payments_field.enabled && (
+      {(form?.responseMode === FormResponseMode.Encrypt ||
+        form?.responseMode === FormResponseMode.Multirespondent) &&
+        form?.payments_field?.enabled && (
           <Box
             mt="2.5rem"
             bg="white"

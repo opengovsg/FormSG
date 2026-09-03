@@ -29,6 +29,7 @@ import {
   handleNdiResponses,
   validateMultirespondentRemindBody,
   validateMultirespondentSubmission,
+  validatePaymentSubmission,
 } from '../multirespondent-submission.middleware'
 import {
   checkFormIsMultirespondent,
@@ -1578,6 +1579,142 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockNext).toHaveBeenCalled()
         expect(mockRes.status).not.toHaveBeenCalled()
       })
+    })
+  })
+
+  describe('validatePaymentSubmission', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const PRODUCT_ID = new ObjectId().toHexString()
+
+    const PRODUCT_DEFINITION = {
+      _id: PRODUCT_ID,
+      name: 'Product A',
+      description: 'A product',
+      multi_qty: false,
+      min_qty: 1,
+      max_qty: 1,
+      amount_cents: 100_00,
+    }
+
+    // Uses the real PaymentsService.validatePaymentProducts, so these tests
+    // pin the full tamper-rejection behavior, not just the wiring.
+    const createPaymentReq = ({
+      formProducts,
+      paymentProducts,
+    }: {
+      formProducts?: unknown
+      paymentProducts?: unknown
+    }) => {
+      const req = createMockReq({ formId: MOCK_FORM_ID })
+      req.formsg = {
+        formDef: {
+          toObject: () => ({
+            _id: MOCK_FORM_ID,
+            payments_field: formProducts
+              ? { enabled: true, products: formProducts }
+              : undefined,
+          }),
+        },
+      }
+      if (paymentProducts) req.body.paymentProducts = paymentProducts
+      return req
+    }
+
+    it('should call next when the submission carries no payment products', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockRes.status).not.toHaveBeenCalled()
+    })
+
+    it('should call next when submitted products match the form definition', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockRes.status).not.toHaveBeenCalled()
+    })
+
+    it('should return 400 when payment products are submitted to a form without product definitions', async () => {
+      const mockReq = createPaymentReq({
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    it('should return 400 when a submitted product price is tampered', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          {
+            data: { ...PRODUCT_DEFINITION, amount_cents: 50 },
+            selected: true,
+            quantity: 1,
+          },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    it('should return 400 when quantity exceeds the single-quantity limit', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 2 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    it('should return 400 when the same product is selected twice', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
     })
   })
 })

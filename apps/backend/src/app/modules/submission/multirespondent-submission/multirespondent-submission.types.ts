@@ -98,6 +98,8 @@ export type MultirespondentSubmissionContent = {
   // in-flight mrf steps which do not have a step token at time of creation.
   stepTokenHash?: string
   encryptedStepToken?: string
+  // Only present on payment-enabled (necessarily zero-step) forms.
+  paymentId?: string
 }
 
 export type StrippedAttachmentResponseV4 = Omit<

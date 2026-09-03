@@ -112,6 +112,9 @@ type CreateMultirespondentSubmissionFormDataArgs =
     submissionSecretKey?: string
     stepToken?: string
     version: number
+    paymentReceiptEmail?: string
+    paymentProducts?: ProductItem[]
+    payments?: PaymentFieldsDto
   }
 
 /**

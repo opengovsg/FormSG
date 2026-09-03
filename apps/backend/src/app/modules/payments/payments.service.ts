@@ -1,3 +1,4 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import { PaymentStatus, Product, ProductItem } from 'formsg-shared/types'
 import { isEqual, omit } from 'lodash'
 import moment from 'moment-timezone'
@@ -17,6 +18,8 @@ import { FormNotFoundError } from '../form/form.errors'
 import { retrieveFormById } from '../form/form.service'
 import { performEncryptPostSubmissionActions } from '../submission/encrypt-submission/encrypt-submission.service'
 import { isSubmissionEncryptMode } from '../submission/encrypt-submission/encrypt-submission.utils'
+import { performMultirespondentPaymentPostSubmissionActions } from '../submission/multirespondent-submission/multirespondent-submission.service'
+import { isSubmissionMultirespondentMode } from '../submission/multirespondent-submission/multirespondent-submission.utils'
 import {
   PendingSubmissionNotFoundError,
   SubmissionNotFoundError,
@@ -208,6 +211,7 @@ export const confirmPaymentPendingSubmission = (
  */
 export const performPaymentPostSubmissionActions = (
   paymentId: IPaymentSchema['_id'],
+  growthbook?: GrowthBook,
 ): ResultAsync<
   void,
   | PaymentNotFoundError
@@ -262,6 +266,21 @@ export const performPaymentPostSubmissionActions = (
                   )
                   // Ignore failures as they will be logged, but the webhook
                   // response should not be a failure
+                  .orElse(() => okAsync(submission))
+              )
+            }
+            if (isSubmissionMultirespondentMode(submission)) {
+              // A payment-enabled MRF sends no form-configured emails, so
+              // the initial webhook is the only post-payment action; the
+              // payer's receipt email is sent below for all modes.
+              return (
+                performMultirespondentPaymentPostSubmissionActions(
+                  submission,
+                  growthbook,
+                )
+                  .map(() => submission)
+                  // Ignore failures as they will be logged, but the payment
+                  // confirmation flow should not fail because of them
                   .orElse(() => okAsync(submission))
               )
             }

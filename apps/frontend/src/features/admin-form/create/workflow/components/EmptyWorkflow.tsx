@@ -1,21 +1,26 @@
+import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Flex, Text } from '@chakra-ui/react'
 
 import { GUIDE_FORM_MRF } from '~constants/links'
 import Button from '~components/Button'
 import Link from '~components/Link'
+import Tooltip from '~components/Tooltip'
 
 import {
   setToCreatingSelector,
   useAdminWorkflowStore,
 } from '../adminWorkflowStore'
+import { useAdminFormWorkflow } from '../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../hooks/useIsWorkflowBuilderRedesign'
 
 import { WorkflowSvgr } from './WorkflowSvgr'
 
 export const EmptyWorkflow = (): JSX.Element => {
+  const { t } = useTranslation()
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const { isPaymentEnabled } = useAdminFormWorkflow()
 
   return (
     <Flex
@@ -38,13 +43,25 @@ export const EmptyWorkflow = (): JSX.Element => {
           Learn how to create a workflow
         </Link>
       </Text>
-      <Button
-        my="2.5rem"
-        leftIcon={<BiPlus fontSize="1.5rem" />}
-        onClick={setToCreating}
+      <Tooltip
+        label={
+          isPaymentEnabled
+            ? t('features.adminForm.sidebar.workflow.paymentEnabledNoSteps')
+            : undefined
+        }
+        // Disabled buttons swallow hover events; the wrapper span keeps the
+        // tooltip reachable exactly when it has something to say.
+        shouldWrapChildren={isPaymentEnabled}
       >
-        Create workflow
-      </Button>
+        <Button
+          my="2.5rem"
+          leftIcon={<BiPlus fontSize="1.5rem" />}
+          onClick={setToCreating}
+          isDisabled={isPaymentEnabled}
+        >
+          Create workflow
+        </Button>
+      </Tooltip>
       <WorkflowSvgr maxW="292px" />
     </Flex>
   )

@@ -36,6 +36,7 @@ import {
   createLoggerWithLabel,
   CustomLoggerParams,
 } from '../../../config/logger'
+import { getMultirespondentPendingSubmissionModel } from '../../../models/pending_submission.server.model'
 import { getMultirespondentSubmissionModel } from '../../../models/submission.server.model'
 import {
   AutoreplyPdfGenerationError,
@@ -45,7 +46,11 @@ import MailService from '../../../services/mail/mail.service'
 import { generateAutoreplyPdf } from '../../../services/mail/mail.utils'
 import { transformMongoError } from '../../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../../core/core.errors'
-import { FormRespondentSingleSubmissionValidationError } from '../../form/form.errors'
+import {
+  FormNotFoundError,
+  FormRespondentSingleSubmissionValidationError,
+} from '../../form/form.errors'
+import * as FormService from '../../form/form.service'
 import { isFormMultirespondent } from '../../form/form.utils'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType } from '../../webhook/webhook.service'
@@ -97,6 +102,8 @@ import {
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
+const MultirespondentPendingSubmission =
+  getMultirespondentPendingSubmissionModel(mongoose)
 const appUrl =
   process.env.NODE_ENV === Environment.Dev
     ? config.app.feAppUrl
@@ -940,6 +947,109 @@ export const createMultiRespondentFormSubmission = ({
     })
 }
 
+/**
+ * Saves an incoming payment-form submission as a *pending* submission: it is
+ * only promoted to a real submission when the Stripe webhook confirms the
+ * payment. Payment-enabled multirespondent forms are necessarily zero-step
+ * (no next-step recipients) and cannot enforce single submission, so this is
+ * a simpler variant of createMultiRespondentFormSubmission.
+ */
+export const createMultiRespondentFormPendingSubmission = ({
+  form,
+  encryptedPayload,
+  paymentId,
+  logMeta,
+}: {
+  form: IPopulatedMultirespondentForm
+  encryptedPayload: MultirespondentSubmissionDto
+  paymentId: string
+  logMeta: CustomLoggerParams['meta']
+}): ResultAsync<
+  IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
+  AttachmentUploadError | SubmissionSaveError
+> => {
+  logMeta = {
+    ...logMeta,
+    action: 'createMultiRespondentFormPendingSubmission',
+  }
+
+  return saveAttachmentsToDbIfExists({
+    formId: form._id,
+    attachments: encryptedPayload.attachments,
+  }).andThen((attachmentMetadata) => {
+    const {
+      submissionPublicKey,
+      encryptedSubmissionSecretKey,
+      encryptedContent,
+      verifiedContent,
+      responseMetadata,
+      version,
+      mrfVersion,
+      hashedSubmitterId,
+      stepTokenHash,
+      encryptedStepToken,
+    } = encryptedPayload
+
+    const submittedStepMeta: SubmittedNonApprovalStep = {
+      isApproval: false, // first step cannot be approval step
+      submittedAt: new Date().toISOString(),
+      submitterId: hashedSubmitterId,
+    }
+
+    const submissionContent: MultirespondentSubmissionContent = {
+      form: form._id,
+      authType: form.authType,
+      myInfoFields: form.getUniqueMyInfoAttrs(),
+      form_fields: form.form_fields,
+      form_logics: form.form_logics,
+      workflow: form.workflow,
+      submissionPublicKey,
+      encryptedSubmissionSecretKey,
+      encryptedContent,
+      verifiedContent,
+      attachmentMetadata,
+      version,
+      workflowStep: 0,
+      mrfVersion,
+      submittedSteps: [submittedStepMeta],
+      stepTokenHash,
+      encryptedStepToken,
+      paymentId,
+    }
+
+    const pendingSubmission = new MultirespondentPendingSubmission(
+      submissionContent,
+    )
+
+    return ResultAsync.fromPromise(pendingSubmission.save(), (error) => {
+      logger.error({
+        message: 'Multirespondent pending submission save error',
+        meta: logMeta,
+        error,
+      })
+      return new SubmissionSaveError()
+    }).map((pendingSubmission) => {
+      logger.info({
+        message: 'Saved pending submission to MongoDB',
+        meta: {
+          ...logMeta,
+          pendingSubmissionId: pendingSubmission.id,
+          responseMetadata,
+        },
+      })
+
+      if (responseMetadata) {
+        reportSubmissionResponseTime(responseMetadata, {
+          mode: 'multirespodent',
+          payment: 'true',
+        })
+      }
+
+      return pendingSubmission
+    })
+  })
+}
+
 interface CheckIfRespondentFormSummaryIsRequiredArgs {
   responses: FieldResponsesV4
   formFields: FormFieldSchema[] | FormFieldDto[]
@@ -1112,6 +1222,7 @@ const sendMrfInitialWebhookIfEligible = ({
   isRetryEnabled,
   growthbook,
   logMeta,
+  errorMessage = 'Multirespondent submission webhook error',
 }: {
   submission: IMultirespondentSubmissionSchema
   snapshot?: SubmissionSnapshotV4
@@ -1119,6 +1230,7 @@ const sendMrfInitialWebhookIfEligible = ({
   isRetryEnabled: boolean
   growthbook?: GrowthBook
   logMeta: CustomLoggerParams['meta']
+  errorMessage?: string
 }): void => {
   const webhookType = getWebhookType(webhookUrl)
   const isStepWriteTokenEnabled =
@@ -1149,7 +1261,7 @@ const sendMrfInitialWebhookIfEligible = ({
       isRetryEnabled,
     ).mapErr((error) => {
       logger.error({
-        message: 'Multirespondent submission webhook error',
+        message: errorMessage,
         meta: logMeta,
         error,
       })
@@ -1202,7 +1314,7 @@ const sendMrfInitialWebhookIfEligible = ({
     })
     .mapErr((error) => {
       logger.error({
-        message: 'Multirespondent submission webhook error',
+        message: errorMessage,
         meta: logMeta,
         error,
       })
@@ -1350,6 +1462,51 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       })
       return error
     })
+}
+
+/**
+ * Performs post-submission actions for a multirespondent submission promoted
+ * from a pending submission on payment confirmation. A payment-enabled MRF
+ * sends no form-configured emails, so the only action mirrored from
+ * submission creation is the initial webhook — routed through the same
+ * eligibility gate and payload policy as non-payment submissions; the
+ * payer's receipt email is sent by the payments machinery.
+ * @param submission the promoted multirespondent submission
+ * @param growthbook growthbook instance of the triggering request, used to
+ * evaluate the MRF webhook rollout flags (absent means flags-off, so only
+ * plumber webhooks fire)
+ */
+export const performMultirespondentPaymentPostSubmissionActions = (
+  submission: IMultirespondentSubmissionSchema,
+  growthbook?: GrowthBook,
+): ResultAsync<true, FormNotFoundError | PossibleDatabaseError> => {
+  const logMeta = {
+    action: 'performMultirespondentPaymentPostSubmissionActions',
+    submissionId: submission.id,
+  }
+
+  return FormService.retrieveFullFormById(submission.form).map((form) => {
+    const webhookUrl = form.webhook?.url
+    if (!webhookUrl) return true as const
+
+    // Mirror the submission paths: target the rollout flags by form and
+    // admin before evaluating webhook eligibility.
+    void growthbook?.setAttributes({
+      ...growthbook.getAttributes(),
+      formId: String(form._id),
+      adminEmail: form.admin.email,
+    })
+
+    sendMrfInitialWebhookIfEligible({
+      submission,
+      webhookUrl,
+      isRetryEnabled: !!form.webhook?.isRetryEnabled,
+      growthbook,
+      logMeta,
+      errorMessage: 'Multirespondent payment submission webhook error',
+    })
+    return true as const
+  })
 }
 
 export const updateMultiRespondentFormSubmission = ({

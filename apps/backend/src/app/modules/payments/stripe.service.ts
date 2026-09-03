@@ -1,5 +1,6 @@
 // Use 'stripe-event-types' for better type discrimination.
 /// <reference types="stripe-event-types" />
+import { GrowthBook } from '@growthbook/growthbook'
 import cuid from 'cuid'
 import { featureFlags } from 'formsg-shared/constants'
 import {
@@ -454,6 +455,7 @@ type HandleStripeEventResultError =
  */
 export const handleStripeEvent = (
   event: Stripe.DiscriminatedEvent,
+  growthbook?: GrowthBook,
 ): ResultAsync<void, HandleStripeEventResultError> => {
   const logMeta = {
     action: 'handleStripeEvent',
@@ -500,6 +502,7 @@ export const handleStripeEvent = (
 
             return PaymentsService.performPaymentPostSubmissionActions(
               paymentId,
+              growthbook,
             )
               .andThen(() => okAsync(undefined))
               .orElse((e) => {

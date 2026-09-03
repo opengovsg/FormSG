@@ -30,6 +30,7 @@ export const STORAGE_PUBLIC_FORM_FIELDS = [
 
 export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = [
   ...PUBLIC_FORM_FIELDS,
+  'payments_field',
   'publicKey',
   'workflow',
   'hasStatusTracker',

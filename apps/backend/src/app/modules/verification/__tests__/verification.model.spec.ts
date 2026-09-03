@@ -419,6 +419,91 @@ describe('Verification Model', () => {
           expect(result!.paymentField.fieldType).toEqual(BasicField.Email)
         })
       })
+
+      describe('Multirespondent mode forms', () => {
+        it('should return null when there are no verifiable fields and payment not enabled', async () => {
+          const { form } = await dbHandler.insertMultirespondentForm({
+            formOptions: {
+              form_fields: [
+                generateDefaultField(BasicField.ShortText),
+                // Email and mobile fields, but with isVerifiable undefined
+                generateDefaultField(BasicField.Email),
+                generateDefaultField(BasicField.Mobile),
+              ],
+            },
+          })
+
+          const result = await VerificationModel.createTransactionFromForm(form)
+
+          expect(result).toBeNull()
+        })
+
+        it('should create transaction correctly when there is one verifiable field', async () => {
+          const verifiableField = generateDefaultField(BasicField.Email, {
+            isVerifiable: true,
+          })
+          const { form } = await dbHandler.insertMultirespondentForm({
+            formOptions: {
+              form_fields: [
+                generateDefaultField(BasicField.ShortText),
+                verifiableField,
+              ],
+            },
+          })
+
+          const result = await VerificationModel.createTransactionFromForm(form)
+
+          expect(result).toBeTruthy()
+          expect(result!.formId).toEqual(form._id)
+          expect(result!.fields[0]._id).toEqual(verifiableField._id)
+          expect(result!.fields[0].fieldType).toEqual(verifiableField.fieldType)
+        })
+
+        it('should create transaction correctly when there are no verifiable fields but payment is enabled', async () => {
+          const { form } = await dbHandler.insertMultirespondentForm({
+            formOptions: {
+              form_fields: [
+                generateDefaultField(BasicField.ShortText),
+                // Email and mobile fields, but with isVerifiable undefined
+                generateDefaultField(BasicField.Email),
+                generateDefaultField(BasicField.Mobile),
+              ],
+              payments_field: { enabled: true },
+            },
+          })
+
+          const result = await VerificationModel.createTransactionFromForm(form)
+
+          expect(result).toBeTruthy()
+          expect(result!.formId).toEqual(form._id)
+          expect(result!.paymentField._id).toEqual(PAYMENT_CONTACT_FIELD_ID)
+          expect(result!.paymentField.fieldType).toEqual(BasicField.Email)
+        })
+
+        it('should create transaction correctly when there are verifiable fields and payment is enabled', async () => {
+          const verifiableField = generateDefaultField(BasicField.Mobile, {
+            isVerifiable: true,
+          })
+          const { form } = await dbHandler.insertMultirespondentForm({
+            formOptions: {
+              form_fields: [
+                verifiableField,
+                generateDefaultField(BasicField.ShortText),
+              ],
+              payments_field: { enabled: true },
+            },
+          })
+
+          const result = await VerificationModel.createTransactionFromForm(form)
+
+          expect(result).toBeTruthy()
+          expect(result!.formId).toEqual(form._id)
+          expect(result!.fields[0]._id).toEqual(verifiableField._id)
+          expect(result!.fields[0].fieldType).toEqual(verifiableField.fieldType)
+          expect(result!.paymentField._id).toEqual(PAYMENT_CONTACT_FIELD_ID)
+          expect(result!.paymentField.fieldType).toEqual(BasicField.Email)
+        })
+      })
     })
 
     describe('incrementFieldRetries', () => {
