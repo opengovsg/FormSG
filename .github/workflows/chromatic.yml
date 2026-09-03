@@ -80,7 +80,9 @@ jobs:
           storybookBaseDir: apps/frontend
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
-          # TurboSnap's untraced globs: apps/frontend/chromatic.config.json
+          # TurboSnap's untraced globs. Repo-root-relative on purpose: the CLI
+          # resolves configFile from the action's cwd, not from workingDir.
+          configFile: apps/frontend/chromatic.config.json
 
   chromatic-deployment-emailpreview:
     needs: changes
