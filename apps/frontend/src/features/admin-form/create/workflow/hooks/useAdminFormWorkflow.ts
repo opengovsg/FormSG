@@ -18,8 +18,15 @@ import { augmentWithMyInfo } from '~features/myinfo/utils'
 export const useAdminFormWorkflow = () => {
   const { data: form, isLoading } = useAdminForm()
 
-  const augmentedFormFields = augmentFieldWithQuestionNo(
-    form?.form_fields.map(augmentWithMyInfo) ?? [],
+  // Memoised on form_fields. Without this the array identity changes on every
+  // render, so the four useMemos below never hit and every consumer redoes a
+  // keyBy plus three filters over every field in the form.
+  const augmentedFormFields = useMemo(
+    () =>
+      augmentFieldWithQuestionNo(
+        form?.form_fields.map(augmentWithMyInfo) ?? [],
+      ),
+    [form?.form_fields],
   )
 
   const idToFieldMap = useMemo(

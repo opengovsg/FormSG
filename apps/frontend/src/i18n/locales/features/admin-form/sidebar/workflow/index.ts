@@ -148,4 +148,8 @@ export interface Workflow {
     label: string
   }
   paymentEnabledNoSteps: string
+  completionEmail: {
+    title: string
+    divider: string
+  }
 }

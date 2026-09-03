@@ -1,5 +1,7 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   AttachmentSize,
   BasicField,
@@ -8,11 +10,17 @@ import {
 import {
   AdminFormDto,
   FormResponseMode,
+  FormStatus,
   FormWorkflowStepDto,
+  MultirespondentFormSettings,
   WorkflowType,
 } from 'formsg-shared/types/form'
 
-import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+import {
+  createFormBuilderMocks,
+  getAdminFormSettings,
+  patchAdminFormSettings,
+} from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewports } from '~utils/storybook'
 
@@ -238,6 +246,10 @@ const FORM_WITH_WORKFLOW: Partial<AdminFormDto> = {
   workflow: [workflow_step_1, workflow_step_2],
 }
 
+const redesignOn = new GrowthBook({
+  features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
+})
+
 const Template: StoryFn = () => <CreatePageWorkflowTab />
 export const NoWorkflow = Template.bind({})
 
@@ -366,6 +378,37 @@ Step2InvalidConditionalRecipientSelected.parameters = {
         ],
       }),
     },
+  },
+}
+
+// Paired with WithWorkflow to show the completion email seam in both flag
+// states: off keeps the inline message pointing at Settings, on replaces it
+// with the editable card.
+export const WithWorkflowRedesignOn = Template.bind({})
+WithWorkflowRedesignOn.decorators = [
+  (Story: StoryFn) => (
+    <GrowthBookProvider growthbook={redesignOn}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+WithWorkflowRedesignOn.parameters = {
+  msw: {
+    handlers: [
+      ...buildMswRoutes(FORM_WITH_WORKFLOW),
+      getAdminFormSettings({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          // The shared mock form is Public by default, which renders the MRF
+          // email controls read-only.
+          status: FormStatus.Private,
+          emails: ['admin@example.gov.sg'],
+          stepsToNotify: [workflow_step_2._id],
+          stepOneEmailNotificationFieldId: form_field_5._id,
+        } satisfies Partial<MultirespondentFormSettings>,
+      }),
+      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+    ],
   },
 }
 
