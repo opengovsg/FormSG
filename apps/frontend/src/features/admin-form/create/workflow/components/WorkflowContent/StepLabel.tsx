@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Flex, Stack, Text } from '@chakra-ui/react'
 
+import { getWorkflowStepLabel } from '../../utils/getWorkflowStepLabel'
+
 type StepLabelProps = {
   stepNumber: number
   stepName?: string | undefined
@@ -8,8 +10,11 @@ type StepLabelProps = {
 
 export const StepLabel = ({ stepNumber, stepName }: StepLabelProps) => {
   const { t } = useTranslation()
-  const stepLabel =
-    stepName ?? `${t('features.common.entities.step')} ${stepNumber + 1}`
+  const stepLabel = getWorkflowStepLabel({
+    stepNumber,
+    stepName,
+    stepWord: t('features.common.entities.step'),
+  })
   return (
     <Stack
       direction="row"

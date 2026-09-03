@@ -12,6 +12,12 @@ export const enSG = {
       closed: 'CLOSED',
     },
     ariaLabel: 'Toggle form status',
+    incompleteWorkflowModal: {
+      title: 'Finish building your workflow before publishing your form.',
+      description: "These steps aren't finished yet:",
+      confirm: 'Go to workflow',
+      cancel: 'Cancel',
+    },
   },
   limit: {
     label: 'Set a response limit',

@@ -990,26 +990,38 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
-      it('should reject when a workflow contains missing keys', async () => {
-        // Arrange
-        const invalidFormObj = {
-          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
-          workflow: [
-            {
-              _id: new ObjectId(),
-              workflow_type: WorkflowType.Dynamic,
-              // Missing "field"
-            },
-          ],
-        }
+      // FRM-2489: the schema accepts an incomplete step; completeness is enforced in the service layer.
+      it.each<[string, WorkflowType]>([
+        ['field', WorkflowType.Dynamic],
+        ['conditional_field', WorkflowType.Conditional],
+      ])(
+        'should save a %s step that has no %s chosen yet',
+        async (omittedKey, workflowType) => {
+          // Arrange
+          const form = new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [
+              {
+                _id: new ObjectId(),
+                workflow_type: workflowType,
+                edit: [new ObjectId()],
+                // omittedKey deliberately not set — the admin has not picked one yet.
+              },
+            ],
+          })
 
-        const invalidForm = new MultirespondentForm(invalidFormObj)
+          // Act
+          const saved = await form.save()
 
-        // Act + Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          mongoose.Error.ValidationError,
-        )
-      })
+          // Assert against the persisted object: a Mongoose document exposes
+          // every schema path as a getter, set or not.
+          const persistedStep = (
+            saved.toObject() as { workflow?: Record<string, unknown>[] }
+          ).workflow?.[0] as Record<string, unknown>
+          expect(persistedStep.workflow_type).toEqual(workflowType)
+          expect(persistedStep).not.toHaveProperty(omittedKey)
+        },
+      )
     })
 
     describe('Email form schema', () => {

@@ -73,6 +73,7 @@ export const getWebhookSettingsValidator = celebrate({
   }),
 })
 
+// FRM-2489: field / conditional_field may be omitted on a half-built step; completeness is checked in the service against form status.
 /**
  * Joi validator for POST /forms/:formId/workflow/ route.
  */
@@ -85,13 +86,13 @@ export const createWorkflowStepValidator = celebrate({
     }),
     field: Joi.when('workflow_type', {
       is: WorkflowType.Dynamic,
-      then: Joi.string().required(),
+      then: Joi.string().optional(),
     }),
     edit: Joi.array().items(Joi.string()).required(),
     approval_field: Joi.string().optional(),
     conditional_field: Joi.when('workflow_type', {
       is: WorkflowType.Conditional,
-      then: Joi.string().required(),
+      then: Joi.string().optional(),
       otherwise: Joi.forbidden(),
     }),
     step_name: Joi.string().optional(),
@@ -114,13 +115,13 @@ export const updateWorkflowStepValidator = celebrate({
     }),
     field: Joi.when('workflow_type', {
       is: WorkflowType.Dynamic,
-      then: Joi.string().required(),
+      then: Joi.string().optional(),
     }),
     edit: Joi.array().items(Joi.string().hex().length(24)).required(),
     approval_field: Joi.string().optional(),
     conditional_field: Joi.when('workflow_type', {
       is: WorkflowType.Conditional,
-      then: Joi.string().required(),
+      then: Joi.string().optional(),
       otherwise: Joi.forbidden(),
     }),
     step_name: Joi.string().optional(),

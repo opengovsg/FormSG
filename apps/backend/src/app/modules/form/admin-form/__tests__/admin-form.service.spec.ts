@@ -2039,6 +2039,75 @@ describe('admin-form.service', () => {
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
     })
+
+    // FRM-2489. Not flag-gated: a form saved half-built while the flag was on
+    // must not become publishable by rolling the flag back.
+    describe('publish gate', () => {
+      const FIELD_ID = new ObjectId().toHexString()
+
+      const makeMrfForm = (status: FormStatus, workflow: unknown[]) =>
+        jest.mocked({
+          _id: new ObjectId(),
+          status,
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: [
+            { _id: FIELD_ID, fieldType: BasicField.ShortText, title: 'A' },
+          ],
+          workflow,
+        } as unknown as IPopulatedForm)
+
+      const firstStep = {
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [FIELD_ID],
+      }
+      const incompleteSecondStep = {
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [FIELD_ID],
+      }
+
+      it('should block publishing a form with an incomplete step', async () => {
+        const actualResult = await AdminFormService.updateFormSettings(
+          makeMrfForm(FormStatus.Private, [firstStep, incompleteSecondStep]),
+          { status: FormStatus.Public } as FormSettings,
+        )
+
+        expect(actualResult.isErr()).toBeTrue()
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          MalformedParametersError,
+        )
+        expect(actualResult._unsafeUnwrapErr().message).toContain('step 2')
+      })
+
+      it.each<[string, unknown[], Partial<FormSettings>]>([
+        [
+          'a settings change that leaves the form private',
+          [firstStep, incompleteSecondStep],
+          { title: 'a new title' },
+        ],
+        [
+          'publishing a complete workflow',
+          [
+            firstStep,
+            { ...incompleteSecondStep, emails: ['someone@example.com'] },
+          ],
+          { status: FormStatus.Public },
+        ],
+        [
+          'publishing a form with no workflow at all',
+          [],
+          { status: FormStatus.Public },
+        ],
+      ])('should not block %s', async (_name, workflow, settings) => {
+        const actualResult = await AdminFormService.updateFormSettings(
+          makeMrfForm(FormStatus.Private, workflow),
+          settings as FormSettings,
+        )
+
+        expect(actualResult.isErr()).toBeFalse()
+      })
+    })
   })
 
   describe('updateFormField', () => {
@@ -4085,6 +4154,137 @@ describe('admin-form.service', () => {
         // Assert
         expect(result.isOk()).toBe(true)
       })
+    })
+  })
+
+  // FRM-2489. Joi and Mongoose no longer check completeness, so this is the
+  // only guard left on a workflow mutation.
+  describe('workflow completeness', () => {
+    const FIELD_ID = new ObjectId().toHexString()
+    const OTHER_FIELD_ID = new ObjectId().toHexString()
+
+    const MOCK_FORM_FIELDS = [
+      { _id: FIELD_ID, fieldType: BasicField.ShortText, title: 'A field' },
+      {
+        _id: OTHER_FIELD_ID,
+        fieldType: BasicField.ShortText,
+        title: 'Another field',
+      },
+    ]
+
+    /** Step 0: exempt from needing a respondent, not from needing fields. */
+    const completeFirstStep = {
+      _id: 'step0',
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: [FIELD_ID],
+    }
+    const completeSecondStep = {
+      _id: 'step1',
+      workflow_type: WorkflowType.Static,
+      emails: ['someone@example.com'],
+      edit: [OTHER_FIELD_ID],
+    }
+    const incompleteSecondStep = {
+      _id: 'step1',
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: [OTHER_FIELD_ID],
+    }
+
+    const makeForm = (status: FormStatus, workflow: unknown[]) =>
+      ({
+        _id: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Multirespondent,
+        status,
+        form_fields: MOCK_FORM_FIELDS,
+        workflow,
+      }) as unknown as IPopulatedForm
+
+    const mockDbSuccess = () =>
+      jest
+        .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({
+            _id: new ObjectId().toHexString(),
+            workflow: [],
+          }),
+        })
+
+    // Only a live form is guarded, whatever the redesign flag says. Applying
+    // the check to a Private form would reject mutations on forms that saved
+    // legally before this check existed, and since the guard inspects the whole
+    // resulting workflow, a form with two such steps could not be repaired.
+    it.each<[string, FormStatus, unknown[], unknown, boolean]>([
+      [
+        'private, incomplete',
+        FormStatus.Private,
+        [completeFirstStep],
+        incompleteSecondStep,
+        true,
+      ],
+      [
+        'public, incomplete',
+        FormStatus.Public,
+        [completeFirstStep],
+        incompleteSecondStep,
+        false,
+      ],
+    ])(
+      'createWorkflowStep: %s -> ok=%s',
+      async (_name, status, workflow, step, expectOk) => {
+        mockDbSuccess()
+        const result = await AdminFormService.createWorkflowStep(
+          makeForm(status, workflow),
+          step as any,
+        )
+        expect(result.isOk()).toBe(expectOk)
+      },
+    )
+
+    it('should name the offending step, 1-indexed', async () => {
+      const result = await AdminFormService.createWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep]),
+        incompleteSecondStep as any,
+      )
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
+      expect(result._unsafeUnwrapErr().message).toContain('step 2')
+    })
+
+    it('should reject emptying a step on a public form', async () => {
+      const result = await AdminFormService.updateFormWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
+        1,
+        incompleteSecondStep as any,
+      )
+      expect(result.isErr()).toBe(true)
+    })
+
+    // A deletion can no longer *introduce* incompleteness: removing a step only
+    // shifts later steps earlier, and index 0 is the exempt position. So this
+    // guard catches incompleteness that was already there.
+    it('should reject a deletion that leaves an incomplete step behind, without mutating', async () => {
+      const workflow = [
+        completeFirstStep,
+        completeSecondStep,
+        incompleteSecondStep,
+      ]
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Public, workflow),
+        1,
+      )
+      expect(result.isErr()).toBe(true)
+      expect(workflow).toHaveLength(3)
+    })
+
+    it('should allow a deletion that leaves a complete workflow', async () => {
+      mockDbSuccess()
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
+        1,
+      )
+      expect(result.isOk()).toBe(true)
     })
   })
 })

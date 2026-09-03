@@ -1,4 +1,5 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import { ObjectId } from 'bson'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
 import {
@@ -1086,6 +1087,29 @@ describe('multirespondent-submission.utils', () => {
         // Assert
         expect(result._unsafeUnwrap()).toEqual([])
       })
+    })
+
+    // FRM-2489: a half-built conditional step can omit conditional_field; the submission path must not throw.
+    it('should return an empty array for a conditional step with no dropdown chosen', () => {
+      // Arrange
+      const mockForm = {
+        form_fields: [
+          generateDefaultField(BasicField.Dropdown, {
+            _id: 'someOtherField',
+            fieldOptions: ['Option A'],
+          }),
+        ],
+      } as IPopulatedForm
+
+      // Act: no `conditional_field` on the step.
+      const result = retrieveWorkflowStepEmailAddresses(
+        mockForm,
+        { workflow_type: WorkflowType.Conditional } as FormWorkflowStepDto,
+        {} as FieldResponsesV4,
+      )
+
+      // Assert
+      expect(result._unsafeUnwrap()).toEqual([])
     })
 
     it('should return an empty array if the optionsToRecipientsMap does not contain an email mapping for the option selected', () => {
