@@ -126,6 +126,22 @@ describe('Spotlight', () => {
     expect(getComputedStyle(wrapper()!).zIndex).toBe('0')
   })
 
+  // Elevation comes from a theme token, not a literal. Every literal boxShadow
+  // in features/ is a focus ring, so a literal here would read as one.
+  it('should elevate only the active band', () => {
+    const view = renderSpotlight({ isActive: true })
+    const activeShadow = getComputedStyle(wrapper()!).boxShadow
+    view.unmount()
+
+    renderSpotlight({ isActive: false })
+
+    // The token name, not its value: these tests render without a
+    // ChakraProvider, so theme tokens stay unresolved. Asserting the name is
+    // the point anyway, since a literal is what we are guarding against.
+    expect(activeShadow).toBe('md')
+    expect(getComputedStyle(wrapper()!).boxShadow).toBe('none')
+  })
+
   // The ring is colour-switched rather than switched off. `outline: none` loses
   // to the `outlineColor` longhand beside it, which painted the ring on every
   // band and showed as a rectangle around the whole group at 0.5 opacity.

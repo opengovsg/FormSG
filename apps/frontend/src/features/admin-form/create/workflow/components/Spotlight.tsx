@@ -142,6 +142,15 @@ export const Spotlight = ({
       // DOM as attributes and which never become CSS at all.
       outline="2px solid"
       outlineColor={isActive ? 'primary.500' : 'transparent'}
+      // A token rather than a literal on purpose: every literal boxShadow in
+      // features/ is a focus ring (`0 0 0 Npx`, no blur), so a literal here
+      // would read as one. Note the token has no Y offset, like all three of
+      // them: elevation in this codebase is a soft halo, not a downward cast.
+      //
+      // `md` and not `sm`. `sm` composites to about 4% darker than white at its
+      // densest, spread over a 10px blur, with its inner ring hidden under the
+      // 2px outline, so it was invisible on the card.
+      boxShadow={isActive ? 'md' : 'none'}
       opacity={isActive ? 1 : 0.5}
       _hover={{ opacity: 1 }}
       _focusWithin={{ opacity: 1 }}
@@ -157,7 +166,7 @@ export const Spotlight = ({
       transition={
         prefersReducedMotion
           ? 'none'
-          : 'opacity 0.3s ease, background 0.3s ease, outline-color 0.3s ease, transform 0.3s ease'
+          : 'opacity 0.3s ease, background 0.3s ease, outline-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease'
       }
     >
       {children}
