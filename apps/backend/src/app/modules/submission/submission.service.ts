@@ -134,7 +134,7 @@ export const getFormSubmissionsCount = ({
     startDate?: string
     endDate?: string
   }
-  submissionType?: SubmissionType
+  submissionType?: SubmissionType | SubmissionType[]
 }): ResultAsync<number, MalformedParametersError | DatabaseError> => {
   if (
     isMalformedDate(dateRange.startDate) ||
@@ -146,7 +146,13 @@ export const getFormSubmissionsCount = ({
   const countQuery = {
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
-    ...(submissionType ? { submissionType } : {}),
+    ...(submissionType
+      ? {
+          submissionType: Array.isArray(submissionType)
+            ? { $in: submissionType }
+            : submissionType,
+        }
+      : {}),
   }
 
   return ResultAsync.fromPromise(
