@@ -1085,6 +1085,37 @@ describe('submission.service', () => {
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
     })
 
+    it('should look up multirespondent form metadata across both submission types via the base model', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const expectedMetadata: SubmissionMetadata = {
+        number: 1,
+        refNo: mockSubmissionId as SubmissionId,
+        submissionTime: 'some submission time',
+        payments: null,
+      }
+      const mixedMetaSpy = jest
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSingleMetadata')
+        .mockResolvedValueOnce(expectedMetadata)
+      const mrfMetaSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'findSingleMetadata',
+      )
+
+      // Act
+      const actualResult = await SubmissionService.getSubmissionMetadata(
+        FormResponseMode.Multirespondent,
+        MOCK_FORM_ID,
+        mockSubmissionId,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedMetadata)
+      expect(mixedMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
+      expect(mrfMetaSpy).not.toHaveBeenCalled()
+    })
+
     it('should return null when given submissionId is not valid', async () => {
       // Arrange
       const invalidSubmissionId = 'not an id at all'
@@ -1176,6 +1207,41 @@ describe('submission.service', () => {
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
         page: undefined,
       })
+    })
+
+    it('should list multirespondent form metadata across both submission types via the base model', async () => {
+      // Arrange
+      const expectedResult = {
+        metadata: [
+          {
+            number: 2,
+            refNo: new ObjectId().toHexString(),
+            submissionTime: 'some submission time',
+          },
+        ] as SubmissionMetadata[],
+        count: 2,
+      }
+      const mixedMetaSpy = jest
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
+        .mockResolvedValueOnce(expectedResult)
+      const mrfMetaSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'findAllMetadataByFormId',
+      )
+
+      // Act
+      const actualResult = await SubmissionService.getSubmissionMetadataList(
+        FormResponseMode.Multirespondent,
+        MOCK_FORM_ID,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
+      expect(mixedMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
+        page: undefined,
+      })
+      expect(mrfMetaSpy).not.toHaveBeenCalled()
     })
 
     it('should return metadata list successfully with page param', async () => {
