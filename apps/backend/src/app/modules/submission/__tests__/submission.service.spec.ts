@@ -288,6 +288,64 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
     })
 
+    it('should count across submission types when an array of types is provided', async () => {
+      // Arrange
+      // A mode-migrated multirespondent form holds encrypt submissions
+      // alongside multirespondent ones; the count must span both while
+      // still excluding email submissions.
+      const encryptSubmissionCount = 4
+      const multirespondentSubmissionCount = 3
+      const subEncryptPromise = times(encryptSubmissionCount, () =>
+        Submission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: MOCK_FORM_ID,
+          version: 1,
+          encryptedContent: 'some random encrypted content',
+        }),
+      )
+      const subEmailPromise = Submission.create({
+        submissionType: SubmissionType.Email,
+        form: MOCK_FORM_ID,
+        responseHash: 'hash',
+        responseSalt: 'salt',
+        recipientEmails: [],
+      })
+      const subMultirespondentPromise = times(
+        multirespondentSubmissionCount,
+        () =>
+          Submission.create({
+            submissionType: SubmissionType.Multirespondent,
+            form: MOCK_FORM_ID,
+            workflowStep: 0,
+            version: 3,
+            encryptedContent: 'some random encrypted content',
+            encryptedSubmissionSecretKey:
+              'some random encrypted submission secret key',
+            submissionPublicKey: 'some random submission public key',
+          }),
+      )
+      await Promise.all([
+        ...subEncryptPromise,
+        subEmailPromise,
+        ...subMultirespondentPromise,
+      ])
+
+      // Act
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        submissionType: [
+          SubmissionType.Encrypt,
+          SubmissionType.Multirespondent,
+        ],
+      })
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(
+        encryptSubmissionCount + multirespondentSubmissionCount,
+      )
+    })
+
     it('should return correct form counts in range when date range is provided', async () => {
       // Arrange
       const expectedSubmissionCount = 4
