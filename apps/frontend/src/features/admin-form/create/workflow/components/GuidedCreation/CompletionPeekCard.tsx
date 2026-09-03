@@ -27,7 +27,13 @@ export type CompletionPeekCardProps =
     }
   | {
       type: CompletionPeekMomentType.LaterStepDone
-      /** Zero-based, as everywhere else in the workflow. Reads as +1. */
+      /**
+       * Zero-based, and named `stepNumber` rather than `stepIndex` to match
+       * the rest of the builder: `adminWorkflowStore`'s
+       * `setToEditing(stepNumber)`, `isFirstStepByStepNumber` and
+       * `WorkflowContent`'s `stepNumber={i}` all count from zero. Rendered as
+       * +1, so 1 reads "Step 2".
+       */
       stepNumber: number
       onDeclineAnotherStep: () => void
       onAddAnotherStep: () => void
@@ -76,8 +82,11 @@ export const CompletionPeekCard = (
   const { title, subtitle } = getCompletionPeekContent(t, props)
   const labels = getCompletionPeekActionLabels(t)
 
-  // Exhaustive over the union with no default, so adding a moment without
-  // giving it actions is a compile error rather than an empty button row.
+  // Adding a moment without giving it actions is a compile error rather than
+  // an empty button row. The `never` assignment in the default branch is what
+  // makes that so, rather than the absence of a default: a fallthrough on an
+  // annotated return type only errors under noImplicitReturns, which is a
+  // config away from being the guarantee this comment claims.
   const actions = ((): PeekCardActions => {
     switch (props.type) {
       case CompletionPeekMomentType.StepOneDone:
@@ -94,6 +103,11 @@ export const CompletionPeekCard = (
       case CompletionPeekMomentType.StatusTracking:
       case CompletionPeekMomentType.GuidedSetupFinished:
         return [{ label: labels.finish, onClick: props.onFinish }]
+      default: {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const _: never = props
+        throw new Error('Unhandled completion peek moment.')
+      }
     }
   })()
 
