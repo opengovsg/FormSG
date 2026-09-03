@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { Box, useMergeRefs, useOutsideClick } from '@chakra-ui/react'
 import {
   autoUpdate,
@@ -62,6 +62,45 @@ export const SelectPopoverProvider: FCC = ({ children }): JSX.Element => {
       return autoUpdate(reference.current, floating.current, update)
     }
   }, [floating, isOpen, reference, update])
+
+  // Close popover when any scrollable ancestor element scrolls.
+  // This prevents the dropdown from appearing above sticky headers or
+  // floating elements after the trigger has scrolled out of view.
+  useEffect(() => {
+    if (!isOpen || !reference.current) return
+
+    const handleScroll = () => {
+      setIsFocused(false)
+    }
+
+    // Walk up the DOM tree and attach scroll listeners to all scrollable ancestors.
+    const cleanups: (() => void)[] = []
+    let element: HTMLElement | null = (
+      reference.current as HTMLElement
+    ).parentElement
+
+    while (element) {
+      const { overflow, overflowY } = getComputedStyle(element)
+      if (
+        ['auto', 'scroll'].some(
+          (v) => overflow.includes(v) || overflowY.includes(v),
+        )
+      ) {
+        element.addEventListener('scroll', handleScroll, { passive: true })
+        const el = element
+        cleanups.push(() => el.removeEventListener('scroll', handleScroll))
+      }
+      element = element.parentElement
+    }
+
+    // Also listen on window for page-level scrolling.
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    cleanups.push(() => window.removeEventListener('scroll', handleScroll))
+
+    return () => {
+      cleanups.forEach((cleanup) => cleanup())
+    }
+  }, [isOpen, reference, setIsFocused])
 
   useOutsideClick({
     ref: wrapperRef,
