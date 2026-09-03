@@ -10,7 +10,9 @@ import Tooltip from '~components/Tooltip'
 import {
   cancelPendingSwitchSelector,
   completeSaveSelector,
+  createOrEditDataSelector,
   isCreatingStateSelector,
+  requestSwitchToCreatingSelector,
   setToCreatingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
@@ -22,13 +24,34 @@ export const NewStepBlock = () => {
   const { t } = useTranslation()
   const { formWorkflow, isPaymentEnabled } = useAdminFormWorkflow()
   const { createStepMutation } = useWorkflowMutations()
-  const { isCreatingState, setToCreating, completeSave, cancelPendingSwitch } =
-    useAdminWorkflowStore((state) => ({
-      isCreatingState: isCreatingStateSelector(state),
-      setToCreating: setToCreatingSelector(state),
-      completeSave: completeSaveSelector(state),
-      cancelPendingSwitch: cancelPendingSwitchSelector(state),
-    }))
+  const {
+    isCreatingState,
+    stateData,
+    setToCreating,
+    requestSwitchToCreating,
+    completeSave,
+    cancelPendingSwitch,
+  } = useAdminWorkflowStore((state) => ({
+    isCreatingState: isCreatingStateSelector(state),
+    stateData: createOrEditDataSelector(state),
+    setToCreating: setToCreatingSelector(state),
+    requestSwitchToCreating: requestSwitchToCreatingSelector(state),
+    completeSave: completeSaveSelector(state),
+    cancelPendingSwitch: cancelPendingSwitchSelector(state),
+  }))
+
+  // Another card is open: hand it a pending switch so it saves first, the same
+  // way clicking a step card or the email card does. Calling setToCreating
+  // straight away unmounts that card and drops its edits with no save and no
+  // warning.
+  const handleAddStep = () => {
+    if (stateData) {
+      requestSwitchToCreating()
+      return
+    }
+    setToCreating()
+  }
+
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) =>
       createStepMutation.mutate(step, {
@@ -63,7 +86,7 @@ export const NewStepBlock = () => {
       shouldWrapChildren={isPaymentEnabled}
     >
       <Button
-        onClick={setToCreating}
+        onClick={handleAddStep}
         variant="outline"
         leftIcon={<BiPlus />}
         isDisabled={isPaymentEnabled}
