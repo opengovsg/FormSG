@@ -1,4 +1,6 @@
-import i18next from 'i18next'
+import { Language } from 'formsg-shared/types'
+
+import i18n from '~/i18n/i18n'
 
 import {
   CompletionPeekMomentType,
@@ -7,7 +9,24 @@ import {
   isCompletionPeekTucked,
 } from './completionPeekContent'
 
-const t = i18next.t.bind(i18next)
+// The app's own instance, imported here rather than reached for through the
+// bare i18next singleton, so the suite carries its own initialisation rather
+// than depending on the setup file having pulled it in on its way to the
+// Storybook preview.
+//
+// Pinning the language is insurance, not load-bearing today: this copy exists
+// only in en-SG, so every other locale falls back to it and the language
+// i18next detects from jsdom cannot change the result. It starts mattering the
+// day the copy is translated, which is when a suite asserting English strings
+// against a detected language would start failing for a reason that is not a
+// regression.
+//
+// Real resources rather than a stub either way: the third test's whole point
+// is that a missing key resolves to the key itself, which only holds against
+// the locale files.
+beforeAll(() => i18n.changeLanguage(Language.ENGLISH))
+
+const t = i18n.t.bind(i18n)
 
 describe('getCompletionPeekContent', () => {
   it('should give step 1 its own wording, not the later-step wording', () => {
