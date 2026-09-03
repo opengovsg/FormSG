@@ -215,6 +215,35 @@ export const formPaymentsFieldSchema = {
   },
 }
 
+export const formPaymentsChannelSchema = {
+  channel: {
+    type: String,
+    enum: Object.values(PaymentChannel),
+    default: PaymentChannel.Unconnected,
+  },
+  target_account_id: {
+    type: String,
+    default: '',
+    validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
+  },
+  publishable_key: {
+    type: String,
+    default: '',
+    validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
+  },
+  payment_methods: {
+    type: [String],
+    default: [],
+  },
+}
+
+export const formBusinessSchema = {
+  type: {
+    address: { type: String, default: '', trim: true },
+    gstRegNo: { type: String, default: '', trim: true },
+  },
+}
+
 const whitelistedSubmitterIdNestedPath = new Schema(
   {
     isWhitelistEnabled: {
@@ -268,36 +297,11 @@ const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
       isWhitelistEnabled: false,
     }),
   },
-  payments_channel: {
-    channel: {
-      type: String,
-      enum: Object.values(PaymentChannel),
-      default: PaymentChannel.Unconnected,
-    },
-    target_account_id: {
-      type: String,
-      default: '',
-      validate: [/^\S*$/i, 'target_account_id must not contain whitespace.'],
-    },
-    publishable_key: {
-      type: String,
-      default: '',
-      validate: [/^\S*$/i, 'publishable_key must not contain whitespace.'],
-    },
-    payment_methods: {
-      type: [String],
-      default: [],
-    },
-  },
+  payments_channel: formPaymentsChannelSchema,
 
   payments_field: formPaymentsFieldSchema,
 
-  business: {
-    type: {
-      address: { type: String, default: '', trim: true },
-      gstRegNo: { type: String, default: '', trim: true },
-    },
-  },
+  business: formBusinessSchema,
 
   isForceConvertToStorageMode: {
     type: Boolean,
@@ -471,7 +475,45 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: Boolean,
     default: false,
   },
+
+  payments_channel: formPaymentsChannelSchema,
+
+  payments_field: formPaymentsFieldSchema,
+
+  business: formBusinessSchema,
 })
+
+MultirespondentFormSchema.methods.addPaymentAccountId = function ({
+  accountId,
+  publishableKey,
+}: {
+  accountId: FormPaymentsChannel['target_account_id']
+  publishableKey: FormPaymentsChannel['publishable_key']
+}) {
+  if (this.payments_channel?.channel === PaymentChannel.Unconnected) {
+    this.payments_channel = {
+      // Definitely Stripe for now, may be different later on.
+      channel: PaymentChannel.Stripe,
+      target_account_id: accountId,
+      publishable_key: publishableKey,
+      payment_methods: [],
+    }
+  }
+  return this.save()
+}
+
+MultirespondentFormSchema.methods.removePaymentAccount = async function () {
+  this.payments_channel = {
+    channel: PaymentChannel.Unconnected,
+    target_account_id: '',
+    publishable_key: '',
+    payment_methods: [],
+  }
+  if (this.payments_field) {
+    this.payments_field.enabled = false
+  }
+  return this.save()
+}
 
 MultirespondentFormSchema.methods.getWhitelistedSubmitterIds = function () {
   return this.get('whitelistedSubmitterIds', null, {
@@ -504,6 +546,50 @@ MultirespondentFormWorkflowPath.discriminator(
 MultirespondentFormWorkflowPath.discriminator(
   WorkflowType.Conditional,
   WorkflowStepConditionalSchema,
+)
+
+// Payments on multirespondent forms are only supported when the form behaves
+// as a single-submission form: no workflow steps, no form-configured email
+// notifications, no single-submission enforcement. This document-level guard
+// covers every save() path (creation, duplication, instance methods); update
+// paths that bypass document validation (findByIdAndUpdate) must enforce the
+// same conditions atomically via their query filter.
+MultirespondentFormSchema.pre<IMultirespondentFormSchema>(
+  'validate',
+  function (next) {
+    if (!this.payments_field?.enabled) {
+      return next()
+    }
+    if ((this.workflow?.length ?? 0) > 0) {
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with workflow steps',
+      )
+      return next()
+    }
+    if ((this.emails?.length ?? 0) > 0) {
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with email notifications',
+      )
+      return next()
+    }
+    if (this.stepOneEmailNotificationFieldId) {
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with a respondent email notification',
+      )
+      return next()
+    }
+    if (this.isSingleSubmission) {
+      this.invalidate(
+        'payments_field.enabled',
+        'Payments cannot be enabled on a multirespondent form with single submission enforcement',
+      )
+      return next()
+    }
+    return next()
+  },
 )
 
 const compileFormModel = (db: Mongoose): IFormModel => {
@@ -1463,8 +1549,26 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     formId: string,
     newPayments: FormPaymentsField,
   ) {
-    return this.findByIdAndUpdate(
-      formId,
+    // Enabling payments re-asserts the notification and single-submission
+    // guards atomically in the query, closing the race against concurrent
+    // settings updates. `workflow` and `stepOneEmailNotificationFieldId` are
+    // multirespondent-only fields (they match vacuously on storage mode);
+    // `emails` exists on both modes and must be empty to enable payments in
+    // either. Empty arrays are matched via `field.0` non-existence rather
+    // than `$size` so legacy storage-mode documents missing `emails`
+    // entirely also pass.
+    const filter = newPayments.enabled
+      ? {
+          _id: formId,
+          'workflow.0': { $exists: false },
+          'emails.0': { $exists: false },
+          stepOneEmailNotificationFieldId: { $in: [null, ''] },
+          isSingleSubmission: { $ne: true },
+        }
+      : { _id: formId }
+
+    return this.findOneAndUpdate(
+      filter,
       { payments_field: newPayments },
       { new: true, runValidators: true },
     ).exec()
