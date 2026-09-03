@@ -22,12 +22,15 @@ export interface PeekCardProps {
    */
   actions: PeekCardAction[]
   /**
-   * Tucked beneath the card it reports on, so its top edge is hidden behind
-   * that card and it reads as sliding out from underneath.
+   * Tucked beneath the card it reports on: a square, borderless top butted
+   * against that card's bottom edge, so the card above keeps its own border and
+   * rounded corners and this one reads as sliding out from underneath.
    *
-   * Only looks right directly beneath a card of matching width; anywhere else
-   * it reads as a floating tab. Set false for a free-standing card, which is
-   * the moment that follows the end-of-workflow block rather than a card.
+   * Only looks right directly beneath a card of matching width, and flush
+   * against it, so the container must not add spacing between the two.
+   * Anywhere else it reads as a floating tab. Set false for a free-standing
+   * card, which is the moment that follows the end-of-workflow block rather
+   * than a card.
    */
   isTucked?: boolean
 }
@@ -53,13 +56,22 @@ export const PeekCard = ({
   return (
     <Box
       bg="primary.100"
-      // Flat top plus a negative margin is what hides the top edge behind the
-      // card above. The bottom radius is constant, so only the top varies.
+      // The tuck is geometric, not layered: dropping the top border and radius
+      // and butting up against the card above leaves that card's own bottom
+      // edge intact, and the fill continues past it.
+      //
+      // Deliberately not a negative margin overlapping the card above. Two
+      // in-flow siblings paint in document order, so the peek card would paint
+      // over the card it reports on and cover the very edge the tuck reads
+      // from. Getting underneath a later sibling needs either a negative
+      // z-index, which would also drop the card behind any ancestor
+      // background, or a raised card above, which this component cannot reach
+      // from the inside. Butting up needs neither.
       borderTopRadius={isTucked ? '0' : '8px'}
       borderBottomRadius="8px"
-      border="1px solid"
+      borderStyle="solid"
       borderColor="primary.200"
-      mt={isTucked ? '-0.5rem' : undefined}
+      borderWidth={isTucked ? '0 1px 1px' : '1px'}
       py="1.5rem"
       px={{ base: '1.5rem', md: '2rem' }}
     >
