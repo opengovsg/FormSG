@@ -108,6 +108,11 @@ export const DateResponse = MyInfoableSingleResponse.extend({
 })
 export type DateResponse = z.infer<typeof DateResponse>
 
+export const TimeResponse = SingleAnswerResponse.extend({
+  fieldType: z.literal(BasicField.Time),
+})
+export type TimeResponse = z.infer<typeof TimeResponse>
+
 export const RatingResponse = SingleAnswerResponse.extend({
   fieldType: z.literal(BasicField.Rating),
 })
@@ -198,3 +203,4 @@ export type FieldResponse =
   | AddressResponse
   | AddressSubFieldResponse
   | SignatureResponse
+  | TimeResponse

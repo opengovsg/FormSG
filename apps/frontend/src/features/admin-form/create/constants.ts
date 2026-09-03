@@ -39,6 +39,7 @@ import {
   BiStar,
   BiTable,
   BiText,
+  BiTimeFive,
   BiToggleLeft,
   BiUser,
   BiUserVoice,
@@ -115,8 +116,14 @@ export const BASICFIELD_TO_DRAWER_META: {
       'event date',
       'start date',
       'end date',
-      'time',
     ],
+  },
+
+  [BasicField.Time]: {
+    label: 'Time',
+    icon: BiTimeFive,
+    isSubmitted: true,
+    searchAliases: ['time', 'clock', 'hour', 'minute', 'appointment', 'timing'],
   },
 
   [BasicField.Decimal]: {

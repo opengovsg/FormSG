@@ -17,6 +17,7 @@ export const enSG: Fields = {
     attachment: 'Attachment',
     checkbox: 'Checkbox',
     date: 'Date',
+    time: 'Time',
     decimal: 'Decimal',
     dropdown: 'Dropdown',
     countryRegion: 'Country/Region',
@@ -161,6 +162,14 @@ export const enSG: Fields = {
       noAvailableDaysError:
         "The selected days aren't available within your custom date range",
     },
+  },
+  time: {
+    use24HourFormat: 'Display as 24 hour time',
+    use24HourFormatDescription:
+      'When off, respondents enter a 12-hour time with an AM/PM toggle.',
+    includeSeconds: 'Display seconds',
+    includeSecondsDescription:
+      'Adds a seconds input. Answers are stored as 24-hour HH:MM:SS either way, so you can change this on a form that already has responses.',
   },
   imageAttachment: {
     title: 'Uploaded image',

@@ -92,6 +92,10 @@ import constructTextValidator, {
   constructTextValidatorV4,
 } from './validators/textValidator'
 import {
+  constructTimeValidator,
+  constructTimeValidatorV4,
+} from './validators/timeValidator'
+import {
   constructUenValidator,
   constructUenValidatorV4,
 } from './validators/uenValidator'
@@ -125,6 +129,8 @@ export const constructSingleAnswerValidator = (
       return constructMobileNoValidator(formField)
     case BasicField.Date:
       return constructDateValidator(formField)
+    case BasicField.Time:
+      return constructTimeValidator()
     case BasicField.Number:
       return constructNumberValidator(formField)
     case BasicField.Decimal:
@@ -238,6 +244,8 @@ export const constructFieldResponseValidatorV4 = ({
       return constructUenValidatorV4()
     case BasicField.Date:
       return constructDateValidatorV4(formField)
+    case BasicField.Time:
+      return constructTimeValidatorV4
     case BasicField.CountryRegion:
       return constructCountryRegionValidatorV4()
     case BasicField.Section:

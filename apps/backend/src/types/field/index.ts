@@ -23,6 +23,7 @@ import type { IShortTextFieldSchema } from './shortTextField'
 import type { ISignatureFieldSchema } from './signatureField'
 import type { IStatementFieldSchema } from './statementField'
 import type { ITableFieldSchema } from './tableField'
+import type { ITimeFieldSchema } from './timeField'
 import type { IUenFieldSchema } from './uenField'
 import type { IYesNoFieldSchema } from './yesNoField'
 
@@ -31,6 +32,7 @@ export * from './attachmentField'
 export * from './baseField'
 export * from './checkboxField'
 export * from './dateField'
+export * from './timeField'
 export * from './decimalField'
 export * from './dropdownField'
 export * from './countryRegionField'
@@ -85,6 +87,7 @@ export type FormFieldSchema =
   | ISignatureFieldSchema
   | IStatementFieldSchema
   | ITableFieldSchema
+  | ITimeFieldSchema
   | IUenFieldSchema
   | IYesNoFieldSchema
   | IChildrenCompoundFieldSchema
@@ -129,6 +132,7 @@ export type FieldValidationSchema =
   | OmitUnusedValidatorProps<ISignatureFieldSchema>
   | OmitUnusedValidatorProps<IStatementFieldSchema>
   | OmitUnusedValidatorProps<ITableFieldSchema>
+  | OmitUnusedValidatorProps<ITimeFieldSchema>
   | OmitUnusedValidatorProps<IUenFieldSchema>
   | OmitUnusedValidatorProps<IYesNoFieldSchema>
   | OmitUnusedValidatorProps<IChildrenCompoundFieldSchema>

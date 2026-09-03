@@ -128,6 +128,13 @@ export const isPossibleEmailFieldSchema = (
 // V4 field types whose answer is StringAnswerV4 ({ value: string }).
 // Matches StringFieldResponseV4 in packages/sdk/src/types-v4.ts. Section is
 // included here because V4 models Section as a StringAnswerV4.
+//
+// This duplicates GENERIC_STRING_FIELD_TYPES in the SDK, which additionally
+// carries the non-input types the backend rejects earlier via FIELDS_TO_REJECT
+// — so the two cannot simply be shared. Adding a string-answer field type means
+// adding it in both places: omitting it here does not fail to compile, it makes
+// every submission of that field fall through the switches in validateFieldV4
+// and get rejected as "Response has invalid shape".
 const GENERIC_STRING_ANSWER_FIELD_TYPES_V4: string[] = [
   BasicField.Section,
   BasicField.Number,
@@ -140,6 +147,7 @@ const GENERIC_STRING_ANSWER_FIELD_TYPES_V4: string[] = [
   BasicField.Nric,
   BasicField.Uen,
   BasicField.Date,
+  BasicField.Time,
   BasicField.CountryRegion,
 ]
 

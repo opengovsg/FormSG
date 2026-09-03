@@ -21,6 +21,7 @@ import {
   ShortTextResponse,
   SignatureResponse,
   TableResponse,
+  TimeResponse,
   UenResponse,
   YesNoResponse,
 } from 'formsg-shared/types'
@@ -63,6 +64,8 @@ export const validateResponses = (responses: unknown): FieldResponse[] => {
         return CheckboxResponse.parse(response)
       case BasicField.Date:
         return DateResponse.parse(response)
+      case BasicField.Time:
+        return TimeResponse.parse(response)
       case BasicField.Dropdown:
         return DropdownResponse.parse(response)
       case BasicField.CountryRegion:

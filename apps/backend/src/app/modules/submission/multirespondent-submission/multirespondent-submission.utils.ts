@@ -467,7 +467,7 @@ const getQuestionAnswerPairsForOneField = ({
       return [signatureQuestionAnswer]
     }
     default:
-      // For all string-answer fields (number, decimal, text, homeNo, dropdown, rating, nric, uen, date, countryRegion, section, yesNo)
+      // For all string-answer fields (number, decimal, text, homeNo, dropdown, rating, nric, uen, date, time, countryRegion, section, yesNo)
       answer = (response.answer as { value: string }).value ?? ''
   }
 

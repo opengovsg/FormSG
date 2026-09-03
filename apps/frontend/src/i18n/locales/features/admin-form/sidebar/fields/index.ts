@@ -17,6 +17,7 @@ export interface Fields {
     attachment: string
     checkbox: string
     date: string
+    time: string
     decimal: string
     dropdown: string
     countryRegion: string
@@ -154,6 +155,12 @@ export interface Fields {
       requiredError: string
       noAvailableDaysError: string
     }
+  }
+  time: {
+    use24HourFormat: string
+    use24HourFormatDescription: string
+    includeSeconds: string
+    includeSecondsDescription: string
   }
   imageAttachment: {
     title: string

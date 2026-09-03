@@ -52,6 +52,7 @@ import {
   ShortTextField,
   SignatureField,
   TableField,
+  TimeField,
   UenField,
   YesNoField,
 } from '~templates/Field'
@@ -558,6 +559,8 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <DecimalField schema={field} {...rest} />
     case BasicField.Date:
       return <DateField schema={field} {...rest} />
+    case BasicField.Time:
+      return <TimeField schema={field} {...rest} />
     case BasicField.Dropdown:
       return <DropdownField schema={field} {...rest} />
     case BasicField.CountryRegion:
@@ -582,5 +585,14 @@ const FieldRow = ({ field, ...rest }: FieldRowProps) => {
       return <AddressCompoundField schema={field} {...rest} />
     case BasicField.Signature:
       return <SignatureField schema={field} {...rest} />
+    default: {
+      // This switch previously fell off its end, so an unhandled field type
+      // rendered as a blank row with nothing to explain it — no compile error,
+      // no runtime error. Forcing exhaustiveness turns the next omission into a
+      // build failure instead.
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const exhaustiveCheck: never = field
+      return null
+    }
   }
 }

@@ -1,6 +1,8 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { DragDropContext } from '@hello-pangea/dnd'
 import { StoryFn } from '@storybook/react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types'
 
 import { getAdminFormView } from '~/mocks/msw/handlers/admin-form'
@@ -57,4 +59,25 @@ export const EmailMode = {
   parameters: {
     msw: emailModeHandlers,
   },
+}
+
+const timeFieldOn = new GrowthBook({
+  features: { [featureFlags.timeField]: { defaultValue: true } },
+})
+
+/**
+ * The Time field is gated behind `time-field` while it stabilises, so it is
+ * absent from the other stories. This one turns it on.
+ */
+export const WithTimeField = {
+  parameters: {
+    msw: encryptModeHandlers,
+  },
+  decorators: [
+    (Story: StoryFn) => (
+      <GrowthBookProvider growthbook={timeFieldOn}>
+        <Story />
+      </GrowthBookProvider>
+    ),
+  ],
 }

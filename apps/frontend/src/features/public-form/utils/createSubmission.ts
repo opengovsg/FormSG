@@ -316,6 +316,7 @@ export const createResponsesV4 = (
       case BasicField.Nric:
       case BasicField.Uen:
       case BasicField.Date:
+      case BasicField.Time:
       case BasicField.CountryRegion:
       case BasicField.YesNo: {
         const input = formInputs[ff._id] as

@@ -48,6 +48,7 @@ import {
   EditShortText,
   EditSignature,
   EditTable,
+  EditTime,
   EditUen,
   EditYesNo,
 } from './edit-fieldtype'
@@ -147,6 +148,8 @@ export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
         return <EditNumber {...props} field={field} />
       case BasicField.Date:
         return <EditDate {...props} field={field} />
+      case BasicField.Time:
+        return <EditTime {...props} field={field} />
       case BasicField.Decimal:
         return <EditDecimal {...props} field={field} />
       case BasicField.Section:
