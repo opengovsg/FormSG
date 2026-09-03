@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.16.0](https://github.com/opengovsg/formsg/compare/v9.15.2...v9.16.0) (2026-09-03)
+
+
+### Features
+
+* **workflow:** completion email card, editable (3/3) (#9874) ([#9874](https://github.com/opengovsg/formsg/commit/020af39399ae051f6b8da26361dfbf4bca0e51f1))
+* **workflow:** completion email card, read-only (2/3) (#9873) ([#9873](https://github.com/opengovsg/formsg/commit/60fcee9003dda3e194101fbb3aa1d757260cf043))
+* **workspace:** rework form-origin question into two-question flow (FRM-2572) (#9852) ([#9852](https://github.com/opengovsg/formsg/commit/fcf0df93f0da07dc00ca3e87ad3b17d61acf9971))
+* mrf payments admin surfaces (2/4) (#9798) ([#9798](https://github.com/opengovsg/formsg/commit/ec0d1a15ff3959185fe54bd19fec3421c32a3891))
+* mrf payments hardening (4/4) (#9800) ([#9800](https://github.com/opengovsg/formsg/commit/52d3b8058e3906b4aa6941d583f86096de339fe1))
+* mrf payments respondent flow (3/4) (#9799) ([#9799](https://github.com/opengovsg/formsg/commit/bf5db8ebf19fa32b4068fa1522989ca90cf1d3de))
+* mrf payments schema changes (1/4) (#9797) ([#9797](https://github.com/opengovsg/formsg/commit/3ce7aa4a9515abda71ab4906738a6fcb51838d90))
+
+
+### Bug Fixes
+
+* **ci:** correct TurboSnap's untraced globs so tracing works at all (#9950) ([#9950](https://github.com/opengovsg/formsg/commit/d2124b18b5fc5b3949d8c6f6ac0f755a5c29b2b3))
+* add factory mocks to prevent unlimited retries against localhost (#9913) ([#9913](https://github.com/opengovsg/formsg/commit/e18536654ae5fd38edd30a0c632fa9b121206893))
+
+
+### Tests
+
+* **workspace:** assert Q1's own required message in the origin story (#9948) ([#9948](https://github.com/opengovsg/formsg/commit/cb41c600487ff994689ac22f4c472b0ffd18dff1))
+
+
+### Chores
+
+* drop domain docs merged by accident in #9852 (#9949) ([#9852](https://github.com/opengovsg/formsg/commit/360be6173607778a5abec136050e2cb5bd63140c))
+
+
+### Refactors
+
+* **mrf-email:** extract the MRF completion email field group (1/3) (#9872) ([#9872](https://github.com/opengovsg/formsg/commit/40426be3a34d3c4eed57706eeec676a94277f45c))
+
 ## [9.15.2](https://github.com/opengovsg/formsg/compare/v9.15.1...v9.15.2) (2026-09-01)
 
 
