@@ -1,0 +1,7 @@
+# No per-form variant logging for the form-origin two-question redesign
+
+The form-origin redesign (splitting the single "how is this being filled today?" question into a process question and a medium question) needs to compare answer distributions from before and after the change. The obvious way to guarantee a clean comparison is to log, on each form, which UI version (old single-question vs new two-question) the admin saw — but we decided against adding that logging.
+
+Instead, the new two-question UI ships **directly inside the existing `enable-paper-tracking-set-up-page` flag** — no new flag is created for this redesign (v2.1 decision; v2.0 had originally planned a new flag layered on top, since abandoned). Whoever currently reaches the origin screen through that pre-existing flag sees the two-question version as soon as this change is deployed. Before/after comparison is done purely by each form's creation timestamp relative to the deploy — not by a stored variant marker, and not by a flag-flip timestamp (there is no new flag to flip).
+
+**Consequence**: if the deploy in practice isn't instantaneous for every admin (e.g. staggered rollout across instances, clients with stale cached bundles), forms created near the deploy boundary can't be reliably attributed to a version after the fact. This was accepted as a simplicity trade-off — do not add variant tracking on top of this without revisiting the decision, and do not assume answers near the deploy date are attributable to a single version.
