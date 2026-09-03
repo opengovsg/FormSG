@@ -3,7 +3,10 @@ import axios from 'axios'
 import { ObjectId } from 'bson'
 import { celebrate, Joi as BaseJoi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH } from 'formsg-shared/constants'
+import {
+  featureFlags,
+  FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
+} from 'formsg-shared/constants'
 import {
   KB,
   MAX_UPLOAD_FILE_SIZE,
@@ -1686,6 +1689,65 @@ export const handleUpdateWorkflowStep = [
   _handleUpdateWorkflowStep,
 ] as ControllerHandler[]
 
+/**
+ * Handler for DELETE /:formId/workflow
+ *
+ * Deletes the form's entire workflow. This is also what deleting step 1 means:
+ * a workflow without its first step has no entry point, so the two are the same
+ * request and share this one route.
+ *
+ * @security session
+ *
+ * @returns 200 with the now-empty workflow
+ * @returns 403 when the user does not have permission to update the form
+ * @returns 404 when the form cannot be found
+ * @returns 409 when the form is still open to new responses
+ * @returns 410 when the form is archived
+ * @returns 422 when the form is not a multi-respondent form
+ * @returns 500 when a database error occurs
+ */
+export const handleDeleteWorkflow: ControllerHandler<
+  { formId: string },
+  FormWorkflowDto | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // 404 rather than 403: while the feature is off this endpoint does not exist
+  // as far as anyone outside the rollout is concerned, and advertising it would
+  // invite exactly the destructive call the flag is holding back.
+  if (!req.growthbook?.isOn(featureFlags.workflowDeletion)) {
+    return res.status(StatusCodes.NOT_FOUND).json({ message: 'Not found' })
+  }
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.deleteFormWorkflow(retrievedForm),
+    )
+    .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when deleting form workflow',
+        meta: {
+          action: 'handleDeleteWorkflow',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
 export const handleDeleteWorkflowStep: ControllerHandler<
   {
     formId: string
@@ -1695,6 +1757,24 @@ export const handleDeleteWorkflowStep: ControllerHandler<
 > = (req, res) => {
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  // Deleting step 1 means deleting the workflow, which has its own route and
+  // its own guard against doing it to an open form. Refusing here rather than
+  // redirecting: quietly performing a far more destructive operation than the
+  // caller asked for is worse than making them ask for it.
+  //
+  // Behind the flag, because with it off this route keeps today's behaviour
+  // exactly — including the bug where deleting step 1 shifts step 2 into the
+  // entry point. That is what makes the flag a clean rollback.
+  if (
+    req.growthbook?.isOn(featureFlags.workflowDeletion) &&
+    Number(stepNumber) === 0
+  ) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        'Deleting the first step means deleting the workflow; use DELETE /workflow',
+    })
+  }
 
   // Step 1: Retrieve currently logged in user.
   return (
