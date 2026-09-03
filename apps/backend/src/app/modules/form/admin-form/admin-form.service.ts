@@ -89,6 +89,8 @@ import {
   MalformedParametersError,
   PossibleDatabaseError,
 } from '../../core/core.errors'
+import { InvalidDomainError } from '../../auth/auth.errors'
+import * as AuthService from '../../auth/auth.service'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
@@ -312,7 +314,7 @@ export const archiveForm = (
  *
  * @return ok(updated form) if transfer is successful
  * @return err(MissingUserError) if the current form admin cannot be found
- * @return err(TransferOwnershipError) if new owner cannot be found in the database or new owner email is same as current owner
+ * @return err(TransferOwnershipError) if new owner cannot be found in the database, new owner email is same as current owner, or new owner email domain is not whitelisted
  * @return err(DatabaseError) if any database errors like missing admin of current owner occurs
  */
 export const transferFormOwnership = (
@@ -342,6 +344,19 @@ export const transferFormOwnership = (
         }
         return okAsync(currentOwner)
       })
+      // Step 1b: Validate that the new owner's email domain is whitelisted.
+      .andThen((currentOwner) =>
+        AuthService.validateEmailDomain(newOwnerEmail)
+          .map(() => currentOwner)
+          .mapErr((error) => {
+            if (error instanceof InvalidDomainError) {
+              return new TransferOwnershipError(
+                `${newOwnerEmail} is not part of a whitelisted agency`,
+              )
+            }
+            return error
+          }),
+      )
       .andThen((currentOwner) =>
         // Step 2: Retrieve user document for new owner.
         UserService.findUserByEmail(newOwnerEmail)
