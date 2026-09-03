@@ -66,16 +66,43 @@ const StoryOriginScreen = ({
 const Template: StoryFn = () => <StoryOriginScreen />
 export const Default = Template.bind({})
 
+export const NewProcessSelected: StoryFn = () => (
+  <StoryOriginScreen defaultValues={{ formOriginProcess: 'new' }} />
+)
+
+export const ExistingProcessSelected: StoryFn = () => (
+  <StoryOriginScreen defaultValues={{ formOriginProcess: 'existing' }} />
+)
+
 export const WithOtherSelected: StoryFn = () => (
   <StoryOriginScreen
     defaultValues={{
+      formOriginProcess: 'existing',
       formOrigins: { value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE] },
     }}
   />
 )
 
-export const ValidationError: StoryFn = () => <StoryOriginScreen />
-ValidationError.play = async () => {
+export const Q1ValidationError: StoryFn = () => <StoryOriginScreen />
+Q1ValidationError.play = async () => {
+  await userEvent.click(
+    await screen.findByRole(
+      'button',
+      { name: /next step/i },
+      { timeout: 3000 },
+    ),
+  )
+  await expect(
+    await screen.findByText('Please select an option.', undefined, {
+      timeout: 3000,
+    }),
+  ).toBeInTheDocument()
+}
+
+export const Q2ValidationError: StoryFn = () => (
+  <StoryOriginScreen defaultValues={{ formOriginProcess: 'existing' }} />
+)
+Q2ValidationError.play = async () => {
   await userEvent.click(
     await screen.findByRole(
       'button',
