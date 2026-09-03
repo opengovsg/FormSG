@@ -451,34 +451,37 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
 export const Step2ConditionalRoutingReplace = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        await userEvent.click(
-          await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
-          ),
-        )
-      },
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        const replaceButton = await canvas.getByLabelText(
-          'Click to replace file',
-        )
-        await userEvent.click(replaceButton)
-      },
+
+    const conditionalOption = await canvas.findByRole(
+      'radio',
+      { name: /Emails assigned to options in a dropdown field/i },
       { timeout: 5000 },
     )
+    await waitFor(() => expect(conditionalOption).toBeEnabled(), {
+      timeout: 5000,
+    })
+    await userEvent.click(conditionalOption)
+    await waitFor(() => expect(conditionalOption).toBeChecked(), {
+      timeout: 5000,
+    })
+
+    const replaceButton = await canvas.findByLabelText(
+      'Click to replace file',
+      undefined,
+      { timeout: 5000 },
+    )
+    await waitFor(() => expect(replaceButton).toBeEnabled(), { timeout: 5000 })
+    await userEvent.click(replaceButton)
+
+    // Replacing opens the replace-CSV modal, which is what this story captures.
+    // The modal portals to the body, so it is outside canvasElement.
+    await expect(
+      await within(document.body).findByRole(
+        'dialog',
+        { name: /replace your csv file/i },
+        { timeout: 5000 },
+      ),
+    ).toBeInTheDocument()
   },
   args: {
     stepNumber: 3,
@@ -530,29 +533,21 @@ export const Step3AllSelectedValid = {
 export const Step4ApprovalFieldNotInEditErrorMessage = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
+
+    const saveButton = await canvas.findByRole(
+      'button',
+      { name: 'Save step' },
+      { timeout: 5000 },
     )
-    await waitFor(
-      async () => {
-        await userEvent.click(await canvas.getByText('Save step'))
-      },
-      {
-        timeout: 5000,
-      },
-    )
+    await waitFor(() => expect(saveButton).toBeEnabled(), { timeout: 5000 })
+    await userEvent.click(saveButton)
+
     await expect(
-      await canvas.findByText((content) => {
-        return content
-          .toLowerCase()
-          .includes(
-            'the selected yes/no field has not been assigned to this respondent'.toLowerCase(),
-          )
-      }),
+      await canvas.findByText(
+        /the selected yes\/no field has not been assigned to this respondent/i,
+        undefined,
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument()
   },
   args: {
