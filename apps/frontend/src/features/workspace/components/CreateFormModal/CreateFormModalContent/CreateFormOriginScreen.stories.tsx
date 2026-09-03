@@ -93,7 +93,7 @@ Q1ValidationError.play = async () => {
     ),
   )
   await expect(
-    await screen.findByText('Please select at least 1 option.', undefined, {
+    await screen.findByText('Please select an option.', undefined, {
       timeout: 3000,
     }),
   ).toBeInTheDocument()
