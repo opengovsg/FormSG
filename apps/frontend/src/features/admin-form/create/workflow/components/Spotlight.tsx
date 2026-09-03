@@ -116,7 +116,11 @@ export const Spotlight = ({
       data-testid={SPOTLIGHT_TEST_ID}
       py={BAND_GAP}
       bg={isActive ? 'primary.100' : 'transparent'}
-      borderRadius={isActive ? '8px' : '0'}
+      // `4px` is the workflow builder's radius: the step card, EditStepBlock,
+      // InactiveStepBlock and StepLabel all use it. The band is a surface
+      // inside that card, so a rounder corner reads as a different kind of
+      // object rather than a lit section of the same one.
+      borderRadius={isActive ? '4px' : '0'}
       // Always 1px on both edges, colour-switched. Toggling a border itself
       // would move the section by a pixel every time the spotlight arrived or
       // left, and every band carries both so their heights stay identical.
