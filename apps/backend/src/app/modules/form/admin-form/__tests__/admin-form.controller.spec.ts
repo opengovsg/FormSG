@@ -1864,7 +1864,12 @@ describe('admin-form.controller', () => {
         MockSubmissionService.getFormSubmissionsCount,
       ).toHaveBeenNthCalledWith(3, {
         formId: String(MOCK_FORM._id),
-        submissionType: SubmissionType.Multirespondent,
+        // Multirespondent forms mode-migrated from storage mode retain their
+        // pre-migration encrypt submissions, so both types are counted.
+        submissionType: [
+          SubmissionType.Encrypt,
+          SubmissionType.Multirespondent,
+        ],
         dateRange: {},
       })
     })
