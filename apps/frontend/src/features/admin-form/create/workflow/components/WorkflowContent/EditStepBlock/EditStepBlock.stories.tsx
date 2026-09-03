@@ -449,36 +449,35 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
 }
 
 export const Step2ConditionalRoutingReplace = {
+  // Waits for the radio to be interactive, clicks it, then asserts it actually
+  // became checked.
+  //
+  // The clicks used to sit inside `waitFor`. A click on a disabled control is a
+  // silent no-op that `waitFor` still counts as a pass, so the story reported
+  // success while doing nothing. The radio is gated on `isDisabled={isLoading}`,
+  // which includes `useUser()`'s loading state, and the production build
+  // Chromatic tests loads fast enough to click inside that window. It passed on
+  // the dev server for no better reason than dev being slower.
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        await userEvent.click(
-          await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
-          ),
-        )
-      },
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        const replaceButton = await canvas.getByLabelText(
-          'Click to replace file',
-        )
-        await userEvent.click(replaceButton)
-      },
+
+    const conditionalOption = await canvas.findByRole('radio', {
+      name: /Emails assigned to options in a dropdown field/i,
+    })
+    await waitFor(() => expect(conditionalOption).toBeEnabled(), {
+      timeout: 5000,
+    })
+    await userEvent.click(conditionalOption)
+    await waitFor(() => expect(conditionalOption).toBeChecked(), {
+      timeout: 5000,
+    })
+
+    const replaceButton = await canvas.findByLabelText(
+      'Click to replace file',
+      undefined,
       { timeout: 5000 },
     )
+    await userEvent.click(replaceButton)
   },
   args: {
     stepNumber: 3,
@@ -528,31 +527,25 @@ export const Step3AllSelectedValid = {
 }
 
 export const Step4ApprovalFieldNotInEditErrorMessage = {
+  // Queries the button by role, not by text. `getByText('Save step')` returns
+  // the element holding the text, and `not.toBeDisabled()` passes vacuously on
+  // anything that is not a form control, so the old guard did not actually wait
+  // for the button to be usable. The click then landed while the button was
+  // still disabled, submitted nothing, and no validation error was ever
+  // rendered for the assertion below to find.
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        await userEvent.click(await canvas.getByText('Save step'))
-      },
-      {
-        timeout: 5000,
-      },
-    )
+
+    const saveButton = await canvas.findByRole('button', { name: 'Save step' })
+    await waitFor(() => expect(saveButton).toBeEnabled(), { timeout: 5000 })
+    await userEvent.click(saveButton)
+
     await expect(
-      await canvas.findByText((content) => {
-        return content
-          .toLowerCase()
-          .includes(
-            'the selected yes/no field has not been assigned to this respondent'.toLowerCase(),
-          )
-      }),
+      await canvas.findByText(
+        /the selected yes\/no field has not been assigned to this respondent/i,
+        undefined,
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument()
   },
   args: {
