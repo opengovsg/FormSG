@@ -449,8 +449,6 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
 }
 
 export const Step2ConditionalRoutingReplace = {
-  // Assert the click landed: a click on a still-disabled radio is a no-op that
-  // `waitFor` would otherwise report as a pass.
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
 
@@ -520,8 +518,6 @@ export const Step3AllSelectedValid = {
 }
 
 export const Step4ApprovalFieldNotInEditErrorMessage = {
-  // By role, not by text: `not.toBeDisabled()` passes vacuously on the element
-  // holding the text, so the click landed while the button was still disabled.
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
 
