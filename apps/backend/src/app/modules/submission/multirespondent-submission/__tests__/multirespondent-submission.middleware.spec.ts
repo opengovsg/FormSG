@@ -1542,6 +1542,40 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
       })
 
+      it('should reject a tokenless update to a zero-step submission (hash on row, raw token never delivered)', async () => {
+        // The guard itself is purely token-based — it knows nothing about
+        // payments. The payment-terminality guarantee (no post-payment edits)
+        // falls out of it structurally: a payment-enabled form is necessarily
+        // zero-step, the step token is minted at creation but its raw value
+        // is only ever delivered via next-step email links, and a zero-step
+        // form sends none — so no caller can ever present a valid token.
+        const mockReq = createGuardReq({
+          flagOn: true,
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: undefined, // nobody ever received the raw token
+        })
+        // Zero-step everywhere it is recorded: the form definition and the
+        // submission's workflow snapshot must agree for the fixture to
+        // describe a real row (updates read the snapshot, creates the form).
+        mockReq.formsg.formDef.workflow = []
+        mockReq.formsg.mrfSubmission = {
+          ...mockReq.formsg.mrfSubmission,
+          workflow: [],
+          workflowStep: 0,
+        }
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      })
+
       it('should advance on a legacy row without a hash even with no token (migration grace)', async () => {
         const mockReq = createGuardReq({
           flagOn: true,

@@ -100,6 +100,13 @@ export const updatePayments = (
   // and notification settings, so disabling or editing a disabled config
   // must not be blocked by them.
   if (isMultirespondent && enabled) {
+    if (newPayments.payment_type === PaymentType.Fixed) {
+      return errAsync(
+        new PaymentConfigurationError(
+          'Fixed payments are not available on multirespondent forms',
+        ),
+      )
+    }
     if ((form.workflow?.length ?? 0) > 0) {
       return errAsync(
         new PaymentConfigurationError(
@@ -148,9 +155,6 @@ export const updatePayments = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      // For multirespondent forms the update filter carries the zero-step
-      // invariant's preconditions, so a miss on an existing form means a
-      // concurrent edit violated them, not that the form is gone.
       if (isMultirespondent && enabled) {
         return errAsync(
           new PaymentConfigurationError(

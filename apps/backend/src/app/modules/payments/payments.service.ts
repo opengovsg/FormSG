@@ -270,9 +270,6 @@ export const performPaymentPostSubmissionActions = (
               )
             }
             if (isSubmissionMultirespondentMode(submission)) {
-              // A payment-enabled MRF sends no form-configured emails, so
-              // the initial webhook is the only post-payment action; the
-              // payer's receipt email is sent below for all modes.
               return (
                 performMultirespondentPaymentPostSubmissionActions(
                   submission,

@@ -4,6 +4,7 @@ import { Box, VisuallyHidden } from '@chakra-ui/react'
 import { FormDto } from 'formsg-shared/types/form'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 import { DownloadReceiptBlock } from '../../../public-form/components/FormPaymentPage/stripe/components'
@@ -29,10 +30,7 @@ export const PaymentEndPageBlock = ({
     }
   }, [focusOnMount])
 
-  // All supported response modes carry payment config; the structural check
-  // exists only to narrow away the deprecated email mode.
-  const isPaymentEnabled =
-    !!form && 'payments_field' in form && form.payments_field.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(form)
 
   const submittedAriaText = useMemo(() => {
     if (form?.title) {

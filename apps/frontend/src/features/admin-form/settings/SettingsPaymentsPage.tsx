@@ -14,11 +14,6 @@ export const SettingsPaymentsPage = (): JSX.Element => {
   const { data: settings, isLoading } = useAdminFormSettings()
   const isMrfPaymentsEnabled = useFeatureIsOn(featureFlags.mrfPayments)
 
-  // Payments are supported on storage mode forms, and on multirespondent
-  // forms behind a feature flag; show message for anything else. An MRF with
-  // payments enabled or Stripe connected stays visible even with the flag
-  // off, so admins keep access to the disable/unlink escape hatches — the
-  // flag kills enablement, not administration of a live payment form.
   const isPaymentCapableMode =
     settings?.responseMode === FormResponseMode.Encrypt ||
     (settings?.responseMode === FormResponseMode.Multirespondent &&

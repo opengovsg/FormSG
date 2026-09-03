@@ -24,6 +24,7 @@ import Textarea from '~components/Textarea'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 
 import {
   setIsDirtySelector,
@@ -244,10 +245,7 @@ export const EndPageDrawer = (): JSX.Element | null => {
   )
   const { t } = useTranslation()
 
-  // All supported response modes carry payment config; the structural check
-  // exists only to narrow away the deprecated email mode.
-  const isPaymentEnabled =
-    !!form && 'payments_field' in form && form.payments_field.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(form)
 
   useEffect(() => {
     setData(form?.endPage)
