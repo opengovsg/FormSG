@@ -2,6 +2,9 @@ import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { fireEvent, render, screen } from '@testing-library/react'
 
 import { featureFlags } from 'formsg-shared/constants'
+import { Language } from 'formsg-shared/types'
+
+import i18n from '~/i18n/i18n'
 
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 
@@ -26,6 +29,17 @@ const renderCard = (
   )
 
 describe('CompletionPeekCard', () => {
+  // The app's i18n instance, imported so the suite does not rely on the setup
+  // file having pulled it in, and pinned so the language is the suite's choice
+  // rather than whatever jsdom reports. Insurance rather than load-bearing:
+  // this copy exists only in en-SG today, so every locale falls back to it.
+  //
+  // Left going through the real resources rather than mocked, because the copy
+  // resolving at all is part of what these tests are for: the union, the
+  // labels and the locale keys have to line up, and a stubbed `t` would assert
+  // the stub instead.
+  beforeAll(() => i18n.changeLanguage(Language.ENGLISH))
+
   afterEach(() => useAdminWorkflowStore.getState().reset())
 
   it('should render the copy and both actions for a finished step', () => {
