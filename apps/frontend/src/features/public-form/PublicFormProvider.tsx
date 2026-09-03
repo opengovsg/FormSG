@@ -66,6 +66,7 @@ import {
   isFieldEnabledByMrfWorkflow,
 } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { extractMrfPreviousStepResponseValue } from '~features/form/utils/extractMrfPreviousStepResponseValue'
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 import { hasExistingFieldValue } from '~features/myinfo/utils'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
@@ -673,10 +674,7 @@ export const PublicFormProvider = ({
     captchaType = CaptchaTypes.Recaptcha
   }
 
-  const isPaymentEnabled =
-    (data?.form.responseMode === FormResponseMode.Encrypt ||
-      data?.form.responseMode === FormResponseMode.Multirespondent) &&
-    data.form.payments_field.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(data?.form)
 
   const hasMyInfoError = !!data?.errorCodes?.find(
     (errorCode) => errorCode === ErrorCode.myInfo,

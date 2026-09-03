@@ -27,6 +27,7 @@ import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 import { SubmitEmailFormArgs } from '~features/public-form/PublicFormService'
 
 import { useEnv } from '../../env/queries'
@@ -322,9 +323,7 @@ export const PreviewFormProvider = ({
     ],
   )
 
-  const isPaymentEnabled =
-    data?.form.responseMode === FormResponseMode.Encrypt &&
-    data.form.payments_field.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(data?.form)
 
   const onSaveDraft = () => {
     toast({

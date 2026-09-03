@@ -5,6 +5,7 @@ import { FormResponseMode } from 'formsg-shared/types'
 
 import { useToast } from '~hooks/useToast'
 
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 import { useSubmitFormFeedbackMutation } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -21,10 +22,7 @@ export const FormEndPageContainer = (): JSX.Element | null => {
   const toast = useToast()
   const [isFeedbackSubmitted, setIsFeedbackSubmitted] = useState(false)
 
-  const isPaymentEnabled =
-    (form?.responseMode === FormResponseMode.Encrypt ||
-      form?.responseMode === FormResponseMode.Multirespondent) &&
-    form.payments_field?.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(form)
 
   const isMrf = form?.responseMode === FormResponseMode.Multirespondent
   /**
