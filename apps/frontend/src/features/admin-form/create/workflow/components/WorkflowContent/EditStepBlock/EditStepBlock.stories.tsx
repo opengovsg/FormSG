@@ -449,15 +449,8 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
 }
 
 export const Step2ConditionalRoutingReplace = {
-  // Waits for the radio to be interactive, clicks it, then asserts it actually
-  // became checked.
-  //
-  // The clicks used to sit inside `waitFor`. A click on a disabled control is a
-  // silent no-op that `waitFor` still counts as a pass, so the story reported
-  // success while doing nothing. The radio is gated on `isDisabled={isLoading}`,
-  // which includes `useUser()`'s loading state, and the production build
-  // Chromatic tests loads fast enough to click inside that window. It passed on
-  // the dev server for no better reason than dev being slower.
+  // Assert the click landed: a click on a still-disabled radio is a no-op that
+  // `waitFor` would otherwise report as a pass.
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
 
@@ -527,12 +520,8 @@ export const Step3AllSelectedValid = {
 }
 
 export const Step4ApprovalFieldNotInEditErrorMessage = {
-  // Queries the button by role, not by text. `getByText('Save step')` returns
-  // the element holding the text, and `not.toBeDisabled()` passes vacuously on
-  // anything that is not a form control, so the old guard did not actually wait
-  // for the button to be usable. The click then landed while the button was
-  // still disabled, submitted nothing, and no validation error was ever
-  // rendered for the assertion below to find.
+  // By role, not by text: `not.toBeDisabled()` passes vacuously on the element
+  // holding the text, so the click landed while the button was still disabled.
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
 
