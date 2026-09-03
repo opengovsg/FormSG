@@ -44,6 +44,20 @@ export const enSG: Workflow = {
         confirm: 'Yes, delete step',
         cancel: "No, don't delete",
       },
+      deleteWorkflow: {
+        title: 'Delete your workflow',
+        description:
+          'Responses already in progress will carry on as they are. When you reopen your form, anyone with the link will be able to fill in every field.',
+        confirm: 'Delete workflow',
+        cancel: 'Cancel',
+      },
+      closeFormFirst: {
+        title: 'Close your form first',
+        description:
+          'You can only delete your workflow when your form is closed to new responses.',
+        confirm: 'Go to settings',
+        cancel: 'Cancel',
+      },
       deleteMapping: {
         title: 'Delete CSV file',
         description:
