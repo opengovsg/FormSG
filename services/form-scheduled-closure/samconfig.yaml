@@ -1,14 +1,12 @@
 version: 0.1
 
-# NOTE: each `s3_bucket` below must exist before that environment's first
-# deploy. They are provisioned by pulumi in the formsg-infra repo (see
-# src/scheduledClosure.ts), which also creates the
-# `/<ssm-env-site-name>/CRON_SCHEDULED_CLOSURE_API_SECRET` parameter.
+# Each `s3_bucket` must exist before that environment's first deploy. They are
+# provisioned by pulumi in formsg-infra (`src/scheduledClosure.ts`), which also
+# creates the `/<ssm-env-site-name>/CRON_SCHEDULED_CLOSURE_API_SECRET` parameter.
 #
-# Pulumi generates bucket names with a random suffix, so the real name is only
-# known after `pulumi up` — it is exported as the `scheduledClosureCodeZipBucket`
-# stack output. Entries still marked TODO- have not had pulumi applied yet and
-# will fail to deploy.
+# Pulumi suffixes bucket names randomly and regenerates the suffix on apply, so
+# take the name from the `scheduledClosureCodeZipBucket` output of an `up`,
+# never of a `preview`.
 
 stg:
   deploy:
