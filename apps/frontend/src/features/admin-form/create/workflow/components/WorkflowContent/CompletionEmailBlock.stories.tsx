@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 import { http, HttpResponse } from 'msw'
@@ -18,9 +19,15 @@ import {
 import {
   getAdminFormSettings,
   getAdminFormView,
+  patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter } from '~utils/storybook'
+
+import {
+  setToEditingEmailCardSelector,
+  useAdminWorkflowStore,
+} from '../../adminWorkflowStore'
 
 import { CompletionEmailBlock } from './CompletionEmailBlock'
 
@@ -92,6 +99,7 @@ const mocks = (
       ...settingsOverrides,
     },
   }),
+  patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
 ]
 
 const NOTHING_CONFIGURED = {
@@ -121,6 +129,20 @@ export default {
 } as Meta
 
 const Template: StoryFn = () => <CompletionEmailBlock />
+
+/** Opens the card, for the stories that document its expanded state. */
+const OpenedTemplate: StoryFn = () => {
+  const setToEditingEmailCard = useAdminWorkflowStore(
+    setToEditingEmailCardSelector,
+  )
+  // Resets on unmount, so switching between the Active and Inactive stories
+  // does not leak an open card into the next one.
+  useEffect(() => {
+    setToEditingEmailCard()
+    return () => useAdminWorkflowStore.getState().reset()
+  }, [setToEditingEmailCard])
+  return <CompletionEmailBlock />
+}
 
 export const InactiveEmpty = Template.bind({})
 InactiveEmpty.storyName = 'Inactive, nothing configured'
@@ -154,6 +176,31 @@ Loading.parameters = {
     description: {
       story:
         'The form resolves before its settings, so the divider, card frame and label are already in place while the recipient list is still on its way. Only the list is skeletoned.',
+    },
+  },
+}
+
+export const Active = OpenedTemplate.bind({})
+Active.parameters = {
+  msw: { handlers: mocks(FULLY_CONFIGURED) },
+  docs: {
+    description: {
+      story:
+        'Expanded card. Commits on Save only, unlike Settings, which saves on blur.',
+    },
+  },
+}
+
+export const ActiveOnPublicForm = OpenedTemplate.bind({})
+ActiveOnPublicForm.storyName = 'Active, form is public'
+ActiveOnPublicForm.parameters = {
+  msw: {
+    handlers: mocks({ ...FULLY_CONFIGURED, status: FormStatus.Public }),
+  },
+  docs: {
+    description: {
+      story:
+        'Editing recipients on a live form is blocked in the frontend today, so the card opens read-only with Save disabled and Cancel still usable. This state has no design yet.',
     },
   },
 }
