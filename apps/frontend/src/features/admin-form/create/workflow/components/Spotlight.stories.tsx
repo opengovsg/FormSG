@@ -1,4 +1,4 @@
-import { Box, Divider, Stack, Text } from '@chakra-ui/react'
+import { Box, Stack, Text } from '@chakra-ui/react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 
@@ -7,7 +7,7 @@ import { featureFlags } from 'formsg-shared/constants'
 import Button from '~components/Button'
 import Input from '~components/Input'
 
-import { Spotlight, SpotlightProps } from './Spotlight'
+import { SpotlightGroup, SpotlightGroupProps } from './Spotlight'
 
 const withFlag = (isOn: boolean) =>
   new GrowthBook({
@@ -18,8 +18,8 @@ const withFlag = (isOn: boolean) =>
 
 export default {
   title: 'Features/AdminForm/create/workflow/components/Spotlight',
-  component: Spotlight,
-} as Meta<SpotlightProps>
+  component: SpotlightGroup,
+} as Meta<SpotlightGroupProps>
 
 /**
  * Stand-in for one section of a step card: a label, a hint and an input. The
@@ -37,94 +37,109 @@ const Section = ({ name }: { name: string }): JSX.Element => (
 
 /**
  * The whole point is one section lit and the rest dimmed, so the stories show a
- * card with three sections rather than a single wrapper in isolation.
+ * card with three sections rather than a single band in isolation.
+ *
+ * The card is deliberately not `overflow: hidden`. The lit band is 2% wider
+ * than the card and is meant to cross its border, which is only visible with a
+ * real card edge to cross.
+ *
+ * `pt` is `0.5rem` rather than the card's usual `2rem` because the group
+ * contributes the other `1.5rem` itself. `EditStepBlock` makes the same swap
+ * when it adopts the group.
  */
 const CardTemplate =
   (
-    activeSection: number,
+    activeIndex: number | null,
     { isEnabled = true, isFlagOn = true } = {},
   ): StoryFn =>
   () => (
     <GrowthBookProvider growthbook={withFlag(isFlagOn)}>
-      <Box
-        maxW="42rem"
-        bg="white"
-        border="1px solid"
-        borderColor="neutral.300"
-        borderRadius="4px"
-        py="2rem"
-      >
-        <Stack spacing="0">
-          {/* Outside the spotlight and always at full opacity: the buttons are
-              the way forward, and dimming them would look unavailable. */}
+      {/* Story-only gutter. The lit band is wider than the card, so without
+          room either side the left overhang is clipped by the canvas edge and
+          the treatment looks asymmetric. */}
+      <Box p="1.5rem">
+        <Box
+          maxW="42rem"
+          bg="white"
+          border="1px solid"
+          borderColor="neutral.300"
+          borderRadius="4px"
+          pt="0.5rem"
+          pb="2rem"
+        >
           <Stack spacing="0">
-            <Spotlight isActive={activeSection === 1} isEnabled={isEnabled}>
+            <SpotlightGroup activeIndex={activeIndex} isEnabled={isEnabled}>
               <Section name="Step name" />
-            </Spotlight>
-            <Divider />
-            <Spotlight isActive={activeSection === 2} isEnabled={isEnabled}>
               <Section name="Who fills this in" />
-            </Spotlight>
-            <Divider />
-            <Spotlight isActive={activeSection === 3} isEnabled={isEnabled}>
               <Section name="What they can see" />
-            </Spotlight>
+            </SpotlightGroup>
+            {/* Outside the group and always at full opacity: the buttons are
+                the way forward, and dimming them would look unavailable. The
+                divider above them is the group's trailing boundary, so it is
+                rendered there and not here. */}
+            <Stack direction="row" justify="flex-end" px="2rem" pt="1.5rem">
+              <Button variant="clear" colorScheme="secondary">
+                Back
+              </Button>
+              <Button>Continue</Button>
+            </Stack>
           </Stack>
-          <Divider />
-          <Stack direction="row" justify="flex-end" px="2rem" pt="1.5rem">
-            <Button variant="clear" colorScheme="secondary">
-              Back
-            </Button>
-            <Button>Continue</Button>
-          </Stack>
-        </Stack>
+        </Box>
       </Box>
     </GrowthBookProvider>
   )
 
-export const FirstSectionActive = CardTemplate(1)
+export const FirstSectionActive = CardTemplate(0)
 FirstSectionActive.storyName = 'Section 1 active'
 FirstSectionActive.parameters = {
   docs: {
     description: {
       story:
-        'One section carries the Active treatment and the rest go inert. Note the active section is inset by 2rem, narrower than the sections around it, which is deliberate.',
+        'One band carries the Active treatment and the rest go inert. The lit band is enlarged 2% at full card width, so it crosses the card border on both sides rather than being inset. Its contents are the same size as every other section, only scaled with the band.',
     },
   },
 }
 
-export const MiddleSectionActive = CardTemplate(2)
+export const MiddleSectionActive = CardTemplate(1)
 MiddleSectionActive.storyName = 'Section 2 active'
 MiddleSectionActive.parameters = {
   docs: {
     description: {
       story:
-        'With a dimmed section above and below, which is where the reserved transparent border matters: nothing shifts as the spotlight moves.',
+        'With a dimmed section above and below, which is where the boundary lines matter: the outline is drawn on the two lines that bound the section, and both grey lines are suppressed so no hairline shows inside the blue.',
     },
   },
 }
 
-export const LastSectionActive = CardTemplate(3)
+export const LastSectionActive = CardTemplate(2)
 LastSectionActive.storyName = 'Section 3 active'
+LastSectionActive.parameters = {
+  docs: {
+    description: {
+      story:
+        "The last section's lower boundary is the divider above the buttons, which stays put: it belongs to the button row, not to the group.",
+    },
+  },
+}
 
-export const Disabled = CardTemplate(1, { isEnabled: false })
+export const Disabled = CardTemplate(0, { isEnabled: false })
 Disabled.storyName = 'Spotlight off (step 3+, guidance off)'
 Disabled.parameters = {
   docs: {
     description: {
       story:
-        'Children render untouched: no background, no border, no padding, no dimming. Compare against section 1 active to confirm no wrapper styling leaks through.',
+        'Sections render untouched, in the pre-redesign structure: sibling dividers, the same 1.5rem rhythm, no band, no outline, no enlargement, no dimming. Compare against section 1 active to confirm no band styling leaks through.',
     },
   },
 }
 
-export const FlagOff = CardTemplate(1, { isFlagOn: false })
+export const FlagOff = CardTemplate(0, { isFlagOn: false })
 FlagOff.storyName = 'Redesign flag off'
 FlagOff.parameters = {
   docs: {
     description: {
       story:
-        'Identical to the disabled story. Flag-off has to be untouched children everywhere, which is the same thing isEnabled already means.',
+        'Identical to the disabled story. Flag-off has to be untouched sections everywhere, which is the same thing isEnabled already means.',
     },
   },
 }
