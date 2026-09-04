@@ -21,7 +21,8 @@ export default {
 
 /**
  * Live input. The things worth trying by hand: type "123" and tab away (it
- * settles to 01:23), type "3:00pm" (the toggle follows), and click AM/PM.
+ * settles to 01:23), type "3:00pm" and tab away (the toggle follows on blur),
+ * and click AM/PM.
  */
 const InteractiveTemplate: StoryFn = () => {
   const [value, setValue] = useState('09:30')
