@@ -499,6 +499,37 @@ export const getMyInfoChildHashKey = (
 }
 
 /**
+ * Collects every stored hash written for the given child name under the given
+ * subfield, regardless of the MyInfo index it was stored at.
+ *
+ * Names are not unique across a respondent's children, so several hashes can
+ * match; the caller must compare against all of them.
+ */
+const findChildHashesByName = (
+  hashes: IHashes,
+  fieldId: string,
+  childAttr: MyInfoChildAttributes,
+  childName: string,
+): string[] => {
+  const prefix = `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.${childAttr}.`
+  return Object.entries(hashes)
+    .filter((entry): entry is [string, string] => {
+      const [key, hash] = entry
+      if (hash === undefined || !key.startsWith(prefix)) {
+        return false
+      }
+      const indexAndName = key.slice(prefix.length)
+      const separatorIdx = indexAndName.indexOf('.')
+      return (
+        separatorIdx > 0 &&
+        /^\d+$/.test(indexAndName.slice(0, separatorIdx)) &&
+        indexAndName.slice(separatorIdx + 1) === childName
+      )
+    })
+    .map(([, hash]) => hash)
+}
+
+/**
  * This function is responsible for checking the validity of hashes of
  * MyInfo Child fields.
  *
@@ -530,10 +561,27 @@ export const handleMyInfoChildHashResponse = (
         childIndex,
         childName,
       )
-      const hash = hashes[key]
+      // Stored hashes are keyed by the child's index in the MyInfo response,
+      // but a submitted Children field carries at most one child, so
+      // childIndex is the index within the answer array and is always 0. The
+      // two indices only coincide when the respondent picked their first
+      // child, so the hash is located by the child's name instead.
+      const candidateHashes = findChildHashesByName(
+        hashes,
+        field._id,
+        subFields[subFieldIndex],
+        childName,
+      )
       // Intentional, to allow user-filled fields to pass through.
-      if (hash) {
-        myInfoResponsesMap.set(key, bcrypt.compare(attrAnswer, hash))
+      if (candidateHashes.length > 0) {
+        myInfoResponsesMap.set(
+          key,
+          Promise.all(
+            candidateHashes.map((candidate) =>
+              bcrypt.compare(attrAnswer, candidate),
+            ),
+          ).then((results) => results.some(Boolean)),
+        )
       }
     })
   })
