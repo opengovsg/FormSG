@@ -181,4 +181,35 @@ export const enSG: Workflow = {
     title: 'Completion email',
     divider: 'END OF WORKFLOW',
   },
+  completionPeek: {
+    stepOneDone: {
+      title:
+        'Step 1 is the public-facing step. Anyone with your link starts here.',
+      subtitle: 'Now add the steps that route to specific people.',
+    },
+    laterStepDone: {
+      title: 'Nice, Step {stepNumber} is all set',
+      subtitle: 'Would you like to add another step?',
+    },
+    emailSetUp: {
+      title: "You've set up the completion email.",
+      subtitle: 'Next, set up an extra workflow setting.',
+    },
+    statusTracking: {
+      title: 'Your workflow is ready',
+      subtitle:
+        'Before you finish, you can let people check the status of their response.',
+    },
+    guidedSetupFinished: {
+      title: "You've finished guided setup",
+      subtitle:
+        'Use the Preview button on the top right to check what each step looks like.',
+    },
+    actions: {
+      declineAnotherStep: "No, I'm done",
+      addAnotherStep: 'Yes, add a step',
+      continue: 'Continue',
+      finish: 'Done',
+    },
+  },
 }

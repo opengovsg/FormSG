@@ -1,5 +1,10 @@
 export * from './en-sg'
 
+interface CompletionPeekText {
+  title: string
+  subtitle: string
+}
+
 interface CsvColumnText {
   title: string
   explanation: string
@@ -151,5 +156,18 @@ export interface Workflow {
   completionEmail: {
     title: string
     divider: string
+  }
+  completionPeek: {
+    stepOneDone: CompletionPeekText
+    laterStepDone: CompletionPeekText
+    emailSetUp: CompletionPeekText
+    statusTracking: CompletionPeekText
+    guidedSetupFinished: CompletionPeekText
+    actions: {
+      declineAnotherStep: string
+      addAnotherStep: string
+      continue: string
+      finish: string
+    }
   }
 }
