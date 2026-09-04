@@ -51,6 +51,17 @@ interface FieldFactoryProps {
   isHighContrast?: boolean
 }
 
+const FIELD_KEYS_AFFECTING_RENDER = [
+  '_id',
+  'questionNumber',
+  'disabled',
+] as const
+
+const PROP_KEYS_AFFECTING_RENDER = [
+  'isHighContrast',
+  'disableRequiredValidation',
+] as const
+
 export const FieldFactory = memo(
   ({ field, ...rest }: FieldFactoryProps) => {
     const { myInfoChildrenBirthRecords, form } = usePublicFormContext()
@@ -137,6 +148,10 @@ export const FieldFactory = memo(
     }
   },
   (prevProps, nextProps) =>
-    prevProps.field._id === nextProps.field._id &&
-    prevProps.field.questionNumber === nextProps.field.questionNumber,
+    FIELD_KEYS_AFFECTING_RENDER.every(
+      (key) => prevProps.field[key] === nextProps.field[key],
+    ) &&
+    PROP_KEYS_AFFECTING_RENDER.every(
+      (key) => prevProps[key] === nextProps[key],
+    ),
 )
