@@ -14,9 +14,11 @@ import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
+import { useStageFieldAndNavigate } from '../../../hooks/useStageFieldAndNavigate'
 
 import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
+import { FieldEmptyState } from './EmptyStates'
 
 interface QuestionsBlockProps {
   isLoading: boolean
@@ -31,6 +33,7 @@ export const QuestionsBlock = ({
 }: QuestionsBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const stageFieldAndNavigate = useStageFieldAndNavigate()
   const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
   const {
     formState: { errors },
@@ -58,12 +61,21 @@ export const QuestionsBlock = ({
       icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
     }))
 
+  // The empty state only exists under the redesign flag. With it off, the
+  // picker renders as it does today: enabled, and holding nothing.
+  //
+  // Unlike the respondent pickers, this one replaces the Controller outright.
+  // `edit` carries no validation rules and buildWorkflowStep does not require
+  // it, so there is no registered rule to lose. The asterisk goes with it,
+  // because nothing here is actually required.
+  const showEmptyState = isRedesign && items.length === 0
+
   return (
     <EditStepBlockContainer>
       <FormControl
         isReadOnly={isLoading}
         id={FIELDS_TO_EDIT_NAME}
-        isRequired
+        isRequired={!showEmptyState}
         isInvalid={!!errors.edit}
       >
         <FormLabel
@@ -82,24 +94,38 @@ export const QuestionsBlock = ({
               : 'features.adminForm.sidebar.workflow.questions.label',
           )}
         </FormLabel>
-        <Controller
-          control={control}
-          name={FIELDS_TO_EDIT_NAME}
-          render={({ field: { value = [], ...field } }) => (
-            <MultiSelect
-              isDisabled={isLoading}
-              placeholder={t(
-                isRedesign
-                  ? 'features.adminForm.sidebar.workflow.questions.placeholderRedesign'
-                  : 'features.adminForm.sidebar.workflow.questions.placeholder',
-              )}
-              items={items}
-              isSelectedItemFullWidth
-              values={value}
-              {...field}
-            />
-          )}
-        />
+        {showEmptyState ? (
+          <FieldEmptyState
+            picker="fields"
+            message={t(
+              'features.adminForm.sidebar.workflow.emptyStates.noFields',
+            )}
+            actionLabel={t(
+              'features.adminForm.sidebar.workflow.emptyStates.noFieldsAction',
+            )}
+            // No field type staged: the admin chooses what to build.
+            onAction={() => stageFieldAndNavigate()}
+          />
+        ) : (
+          <Controller
+            control={control}
+            name={FIELDS_TO_EDIT_NAME}
+            render={({ field: { value = [], ...field } }) => (
+              <MultiSelect
+                isDisabled={isLoading}
+                placeholder={t(
+                  isRedesign
+                    ? 'features.adminForm.sidebar.workflow.questions.placeholderRedesign'
+                    : 'features.adminForm.sidebar.workflow.questions.placeholder',
+                )}
+                items={items}
+                isSelectedItemFullWidth
+                values={value}
+                {...field}
+              />
+            )}
+          />
+        )}
         <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
       </FormControl>
     </EditStepBlockContainer>

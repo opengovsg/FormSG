@@ -137,6 +137,16 @@ export const enSG: Workflow = {
     placeholder: 'Select field(s) from your form',
     placeholderRedesign: 'Select fields from your form',
   },
+  emptyStates: {
+    noEmailField: 'Your form has no email field yet.',
+    noEmailFieldAction: 'Add an email field',
+    noDropdownField: 'Your form has no dropdown field yet.',
+    noDropdownFieldAction: 'Add a dropdown field',
+    noYesNoField: 'Your form has no Yes/No field yet.',
+    noYesNoFieldAction: 'Add a Yes/No field',
+    noFields: 'Your form has no fields yet.',
+    noFieldsAction: 'Add fields',
+  },
   approvals: {
     title: 'Approvals',
     yesNoDeleted:
