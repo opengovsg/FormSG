@@ -413,10 +413,12 @@ export const notifyFormsClosed = (
       emailRecipients: form.emailRecipients,
       formTitle: form.title,
       formId: form.formId,
-      // 12-hour with a space before the meridiem, matching the submission
-      // timestamps in every other email. Seconds are dropped: a deadline is set
-      // to the minute, so they would be noise rather than precision.
-      closedAt: moment(form.closeAt).tz(TIMEZONE).format('D MMM YYYY, hh:mm A'),
+      // 12-hour, with the zone spelled out because the email is read outside
+      // the app where nothing else establishes it. Seconds are dropped: a
+      // deadline is set to the minute, so they would be noise not precision.
+      closedAt: moment(form.closeAt)
+        .tz(TIMEZONE)
+        .format('D MMM YYYY, h:mm A [(SGT)]'),
     })
       .map(() => true)
       .orElse((error) => {

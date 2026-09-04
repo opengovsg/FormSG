@@ -309,7 +309,7 @@ describe('FormService.notifyFormsClosed', () => {
     expect(
       MockMailService.sendFormScheduledClosureNotification,
     ).toHaveBeenCalledWith(
-      expect.objectContaining({ closedAt: '20 Aug 2026, 07:00 PM' }),
+      expect.objectContaining({ closedAt: '20 Aug 2026, 7:00 PM (SGT)' }),
     )
   })
 
