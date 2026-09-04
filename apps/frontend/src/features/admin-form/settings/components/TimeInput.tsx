@@ -88,7 +88,7 @@ export const formatTimeOfDay = (value: string): string => {
  *   "123"    -> 01:23        3 digits read as h:mm
  *   "1234"   -> 12:34        4 digits read as hh:mm
  *   "1:23"   -> 01:23        explicit colon
- *   "1:3"    -> 01:03        a lone minute digit is the tens column, as written
+ *   "1:3"    -> 01:03        a lone minute digit means 3 minutes, not 30
  *   "3:00pm" -> 15:00        typed meridiem wins over the toggle
  *   "14:00"  -> 14:00        24-hour input is accepted and shown back as 02:00 PM
  *

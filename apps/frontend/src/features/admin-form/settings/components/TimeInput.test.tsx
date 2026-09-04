@@ -58,7 +58,7 @@ describe('parseTimeOfDay', () => {
       ['1234', '00:34', 'four digits, and 12 AM is still midnight'],
       ['1:23', '01:23', 'the reported complaint — 1:23 stays 1:23'],
       ['01:23', '01:23', 'already padded'],
-      ['1:3', '01:03', 'a lone minute digit is the tens column, as written'],
+      ['1:3', '01:03', 'a lone minute digit means 3 minutes, not 30'],
       ['9:05', '09:05', 'unpadded hour'],
       ['12:30', '00:30', '12 AM is midnight, not noon'],
       [' 1:23 ', '01:23', 'surrounding whitespace'],
