@@ -96,6 +96,7 @@ export const Radio: ComponentMultiStyleConfig<typeof parts> = {
     container: {
       w: '100%',
       color: 'secondary.700',
+      cursor: 'pointer',
       _hover: {
         bg: `${c}.100`,
         _disabled: {
