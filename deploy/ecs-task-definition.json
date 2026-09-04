@@ -444,8 +444,8 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_CLIENT_ID"
         },
         {
-          "name": "ONE_CLIENT_SECRET",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_CLIENT_SECRET"
+          "name": "ONE_OIDC_RP_JWKS_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_OIDC_RP_JWKS_SECRET"
         },
         {
           "name": "ONE_DISCOVERY_URL",

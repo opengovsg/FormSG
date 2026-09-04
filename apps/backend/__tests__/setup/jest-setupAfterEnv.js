@@ -6,6 +6,7 @@ expect.extend(matchers)
 jest.mock('openid-client', () => ({
   ClientSecretPost: jest.fn(),
   ClientSecretBasic: jest.fn(),
+  PrivateKeyJwt: jest.fn(),
   discovery: jest.fn().mockImplementation(() => {
     return Promise.resolve({
       issuer: 'https://mock-issuer.com',

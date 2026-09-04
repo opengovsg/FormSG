@@ -20,6 +20,27 @@ export type OneIdTokenClaims = {
   sid?: string
 }
 
+type PrivateSigningJwk = JsonWebKey & { alg: string; kid?: string }
+
+// RATIONALE: JWK `alg` doesn't map to a WebCrypto import algorithm on its
+// own (e.g. RSA needs an explicit hash) — this is the full set of algs the
+// one.gov.sg developer portal accepts (RSA, EC or OKP public keys).
+const JWA_TO_WEBCRYPTO_IMPORT_PARAMS: Record<
+  string,
+  Parameters<typeof crypto.subtle.importKey>[2]
+> = {
+  RS256: { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+  RS384: { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-384' },
+  RS512: { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-512' },
+  PS256: { name: 'RSA-PSS', hash: 'SHA-256' },
+  PS384: { name: 'RSA-PSS', hash: 'SHA-384' },
+  PS512: { name: 'RSA-PSS', hash: 'SHA-512' },
+  ES256: { name: 'ECDSA', namedCurve: 'P-256' },
+  ES384: { name: 'ECDSA', namedCurve: 'P-384' },
+  ES512: { name: 'ECDSA', namedCurve: 'P-521' },
+  EdDSA: { name: 'Ed25519' },
+}
+
 export class AuthOneServiceClass {
   // RATIONALE: bound retries so a transient outage doesn't disable one.gov.sg
   // login until restart, without hammering the discovery endpoint on every
@@ -34,6 +55,36 @@ export class AuthOneServiceClass {
   constructor(config: IOneVarsSchema) {
     this.config = config
     this.isConfigured = isOneConfigured(config)
+  }
+
+  /**
+   * Import the RP's private signing key and build the private_key_jwt
+   * ClientAuth used to authenticate at the one.gov.sg token endpoint.
+   *
+   * RATIONALE: isOneConfigured() already validated clientJwksSecret parses
+   * to a JWK Set with exactly one private key, so JSON.parse and the [0]
+   * access here are assumed safe.
+   */
+  private static async buildPrivateKeyJwtAuth(
+    clientJwksSecret: string,
+  ): Promise<oidcClient.ClientAuth> {
+    const { keys } = JSON.parse(clientJwksSecret) as {
+      keys: PrivateSigningJwk[]
+    }
+    const jwk = keys[0]
+    const importParams = JWA_TO_WEBCRYPTO_IMPORT_PARAMS[jwk.alg]
+    if (!importParams) {
+      return Promise.reject(
+        new OneCreateRedirectUrlError(
+          `one.gov.sg client JWKS secret has unsupported alg: ${jwk.alg}`,
+        ),
+      )
+    }
+
+    const key = await crypto.subtle.importKey('jwk', jwk, importParams, false, [
+      'sign',
+    ])
+    return oidcClient.PrivateKeyJwt({ key, kid: jwk.kid })
   }
 
   /**
@@ -53,14 +104,7 @@ export class AuthOneServiceClass {
       this.discoveryFailedAt = null
     }
 
-    const { discoveryUrl, clientId, clientSecret } = this.config
-
-    // RATIONALE: the one.gov.sg IdP expects client_secret_basic at the token
-    // endpoint (see opengovsg/suite reference RP), unlike the sso module which
-    // uses client_secret_post.
-    const clientAuth: oidcClient.ClientAuth | undefined = clientSecret
-      ? oidcClient.ClientSecretBasic(clientSecret)
-      : undefined
+    const { discoveryUrl, clientId, clientJwksSecret } = this.config
 
     const clientDiscoveryRequestOptions: oidcClient.DiscoveryRequestOptions = {
       algorithm: 'oidc',
@@ -72,13 +116,20 @@ export class AuthOneServiceClass {
 
     try {
       const oidcServer = new URL(discoveryUrl)
-      this.clientConfigPromise = oidcClient
-        .discovery(
-          oidcServer,
-          clientId,
-          undefined, // clientMetadata,
-          clientAuth,
-          clientDiscoveryRequestOptions,
+      // RATIONALE: the one.gov.sg IdP retired client_secret_basic in favour of
+      // private_key_jwt (2026-08 migration, see opengovsg/suite). isConfigured
+      // guarantees clientJwksSecret parses to exactly one private signing key.
+      this.clientConfigPromise = AuthOneServiceClass.buildPrivateKeyJwtAuth(
+        clientJwksSecret,
+      )
+        .then((clientAuth) =>
+          oidcClient.discovery(
+            oidcServer,
+            clientId,
+            undefined, // clientMetadata,
+            clientAuth,
+            clientDiscoveryRequestOptions,
+          ),
         )
         .catch((error) => {
           logger.error({

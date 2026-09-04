@@ -13,7 +13,9 @@ export const optionalValuesFromSsm: Path<IOneVarsSchema>[] = []
 
 // RATIONALE: shared between the schema and isOneConfigured() so they can't drift.
 const ONE_PLACEHOLDER_CLIENT_ID = 'client-id'
-const ONE_PLACEHOLDER_CLIENT_SECRET = 'test'
+// RATIONALE: placeholder has no keys, so isOneConfigured() below always
+// rejects it — a real JWKS secret must contain exactly one private signing key.
+const ONE_PLACEHOLDER_CLIENT_JWKS_SECRET = '{"keys":[]}'
 
 export const oneVarsSchema: Schema<IOneVarsSchema> = {
   discoveryUrl: {
@@ -28,11 +30,11 @@ export const oneVarsSchema: Schema<IOneVarsSchema> = {
     default: ONE_PLACEHOLDER_CLIENT_ID,
     env: 'ONE_CLIENT_ID',
   },
-  clientSecret: {
-    doc: 'The client secret for the one.gov.sg service',
+  clientJwksSecret: {
+    doc: 'JSON string of a JWK Set containing exactly one private signing key (EC, RSA or OKP), used to authenticate with one.gov.sg via private_key_jwt.',
     format: String,
-    default: ONE_PLACEHOLDER_CLIENT_SECRET,
-    env: 'ONE_CLIENT_SECRET',
+    default: ONE_PLACEHOLDER_CLIENT_JWKS_SECRET,
+    env: 'ONE_OIDC_RP_JWKS_SECRET',
   },
 }
 
@@ -43,15 +45,31 @@ resetToApplicationDefaultForUndefinedSsmValues(oneConfig, optionalValuesFromSsm)
 
 export const one = oneConfig.validate({ allowed: 'strict' }).getProperties()
 
+// RATIONALE: only checks shape (one private signing key present) — actual
+// key material (kty/alg support) is validated where it's imported into a
+// CryptoKey, in auth-one.service.ts.
+const hasSinglePrivateSigningKey = (clientJwksSecret: string): boolean => {
+  try {
+    const parsed = JSON.parse(clientJwksSecret)
+    return (
+      Array.isArray(parsed?.keys) &&
+      parsed.keys.length === 1 &&
+      typeof parsed.keys[0]?.d === 'string'
+    )
+  } catch {
+    return false
+  }
+}
+
 export const isOneConfigured = (config: IOneVarsSchema): boolean => {
-  const { discoveryUrl, clientId, clientSecret } = config
+  const { discoveryUrl, clientId, clientJwksSecret } = config
+  const hasJwksSecret = hasSinglePrivateSigningKey(clientJwksSecret)
 
   if (
     !discoveryUrl ||
     !clientId ||
-    !clientSecret ||
-    clientId === ONE_PLACEHOLDER_CLIENT_ID ||
-    clientSecret === ONE_PLACEHOLDER_CLIENT_SECRET
+    !hasJwksSecret ||
+    clientId === ONE_PLACEHOLDER_CLIENT_ID
   ) {
     logger.warn({
       message:
@@ -60,10 +78,8 @@ export const isOneConfigured = (config: IOneVarsSchema): boolean => {
         action: 'isOneConfigured',
         hasDiscoveryUrl: !!discoveryUrl,
         hasClientId: !!clientId,
-        hasClientSecret: !!clientSecret,
+        hasJwksSecret,
         isPlaceholderClientId: clientId === ONE_PLACEHOLDER_CLIENT_ID,
-        isPlaceholderClientSecret:
-          clientSecret === ONE_PLACEHOLDER_CLIENT_SECRET,
       },
     })
     return false
