@@ -208,6 +208,21 @@ export interface FormBase {
 
   inactiveMessage: string
   submissionLimit: number | null
+  /**
+   * Instant at which the form stops accepting responses, or `null` if the form
+   * has no scheduled closure. Kept as a sibling of `submissionLimit` because the
+   * two are independent auto-close triggers: either one firing closes the form.
+   *
+   * Scheduled *opening* is out of scope for v1. When it arrives it should be an
+   * additive sibling field (`openAt`) rather than a reshape of this one.
+   *
+   * Required and nullable rather than optional, so `null` is the single
+   * representation of "no expiry" on the wire — an optional field would give
+   * consumers two indistinguishable unset states to handle. The schema supplies
+   * the `null` default, so form construction does not pass it; `closeAt` is
+   * listed in `FormDefaultableKey` alongside `submissionLimit` for that reason.
+   */
+  closeAt: DateString | null
   isListed: boolean
 
   esrvcId?: string

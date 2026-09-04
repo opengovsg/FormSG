@@ -915,6 +915,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         min: 1,
       },
 
+      closeAt: {
+        // Instant at which the form stops accepting responses. Independent of
+        // submissionLimit: either trigger firing closes the form.
+        type: Date,
+        default: null,
+      },
+
       goLinkSuffix: {
         // GoGov link suffix
         type: String,
