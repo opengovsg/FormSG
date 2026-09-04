@@ -5,6 +5,7 @@ import {
   MyInfoChildBirthRecordBelow21,
   MyInfoScope,
   MyInfoSource,
+  MyInfoSponsoredChildFull,
 } from '@opengovsg/myinfo-gov-client'
 import {
   MyInfoAttribute as InternalAttr,
@@ -106,6 +107,48 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
 }
 
 /**
+ * Child sub-fields that sponsored children records also carry, and how to read
+ * each one. Drives both the requested scope and the extraction. Sub-fields
+ * absent here have no sponsored counterpart.
+ */
+const SPONSORED_CHILD_COLUMNS: Partial<
+  Record<
+    MyInfoChildAttributes,
+    { key: keyof MyInfoSponsoredChildFull; use: 'value' | 'desc' }
+  >
+> = {
+  [MyInfoChildAttributes.ChildName]: { key: 'name', use: 'value' },
+  [MyInfoChildAttributes.ChildDateOfBirth]: { key: 'dob', use: 'value' },
+  [MyInfoChildAttributes.ChildGender]: { key: 'sex', use: 'desc' },
+  [MyInfoChildAttributes.ChildRace]: { key: 'race', use: 'desc' },
+  [MyInfoChildAttributes.ChildSecondaryRace]: {
+    key: 'secondaryrace',
+    use: 'desc',
+  },
+}
+
+/**
+ * Child sub-fields the table above cannot fill: a birth certificate number and
+ * the national immunisation schedule both presuppose a Singapore birth record.
+ * Every child sub-field is mandatory on submission, so merging sponsored
+ * children into a form collecting one of these would leave a blank the
+ * respondent cannot fill, the same failure that retired `secondaryrace`. Such
+ * forms opt out of sponsored children entirely. Deriving this from the table
+ * rather than listing it also keeps every column the same length, since a form
+ * that reaches the merge requests only columns the table can fill.
+ */
+const BIRTH_RECORD_ONLY_CHILD_ATTRIBUTES = Object.values(
+  MyInfoChildAttributes,
+).filter((attr) => SPONSORED_CHILD_COLUMNS[attr] === undefined)
+
+export const hasBirthRecordOnlyChildAttr = (attrs: InternalAttr[]): boolean =>
+  attrs.some((attr) =>
+    BIRTH_RECORD_ONLY_CHILD_ATTRIBUTES.includes(
+      attr as unknown as MyInfoChildAttributes,
+    ),
+  )
+
+/**
  * Converts an internal MyInfo attribute used in FormSG to a key of the
  * data object returned by the MyInfo Person API.
  * @param attr Internal MyInfo attribute used in FormSG
@@ -185,6 +228,16 @@ export const internalAttrListToScopes = (
 ): MyInfoScope[] => {
   // Always ask for consent for UinFin, even though it is not a form field
   const scopes = attrs.map(internalAttrToScope).concat(ExternalAttr.UinFin)
+  const wantsSponsoredChildren = !hasBirthRecordOnlyChildAttr(attrs)
+  if (wantsSponsoredChildren) {
+    for (const attr of attrs) {
+      const column =
+        SPONSORED_CHILD_COLUMNS[attr as unknown as MyInfoChildAttributes]
+      if (column) {
+        scopes.push(`${ExternalAttr.SponsoredChildrenRecords}.${column.key}`)
+      }
+    }
+  }
   // Only for MockPass compatbility. For production we don't want to
   // ask for the most general Children scope.
   if (
@@ -194,12 +247,15 @@ export const internalAttrListToScopes = (
     for (const attr of attrs) {
       if (isMyInfoChildrenBirthRecords(attr)) {
         scopes.push(ExternalAttr.ChildrenBirthRecords)
+        if (wantsSponsoredChildren) {
+          scopes.push(ExternalAttr.SponsoredChildrenRecords)
+        }
         break
       }
     }
   }
 
-  return scopes
+  return Array.from(new Set(scopes))
 }
 
 /**
@@ -312,19 +368,56 @@ export class MyInfoData implements MyInfoDataTransformer<
     }
   }
 
+  /**
+   * Accesses the same child sub-field from the respondent's sponsored children.
+   *
+   * @param childAttr The child attribute you're requesting.
+   * @returns Array of sponsored children's values, empty if the sub-field has
+   * no sponsored counterpart.
+   */
+  #accessSponsoredChildrenAttrFromMyInfo(
+    childAttr: MyInfoChildAttributes,
+  ): string[] {
+    const column = SPONSORED_CHILD_COLUMNS[childAttr]
+    const records = this.#personData
+      .sponsoredchildrenrecords as Array<MyInfoSponsoredChildFull>
+    if (column === undefined || records === undefined) {
+      return []
+    }
+    return records.map((c) => {
+      const field: Partial<Record<'value' | 'desc', string>> | undefined =
+        c?.[column.key]
+      return field?.[column.use] ?? ''
+    })
+  }
+
   getChildrenBirthRecords(
     allMyInfoAttrs: InternalAttr[],
   ): MyInfoChildData | undefined {
-    if (this.#personData?.childrenbirthrecords === undefined) {
+    if (
+      this.#personData?.childrenbirthrecords === undefined &&
+      this.#personData?.sponsoredchildrenrecords === undefined
+    ) {
       return
     }
     const myInfoAttrsSet = new Set(allMyInfoAttrs)
+    const includeSponsoredChildren =
+      !hasBirthRecordOnlyChildAttr(allMyInfoAttrs)
 
     const result = Object.fromEntries(
       MyInfoChildAttributesSorted
         // Filter out records that aren't requested by our scope.
         .filter((attr) => myInfoAttrsSet.has(attr as unknown as InternalAttr))
-        .map((attr) => [attr, this.#accessChildrenAttrFromMyInfo(attr)]),
+        .map((attr) => [
+          attr,
+          // Birth records must keep the leading indices. Stored MyInfo hashes
+          // are keyed by a child's position in this column.
+          this.#accessChildrenAttrFromMyInfo(attr).concat(
+            includeSponsoredChildren
+              ? this.#accessSponsoredChildrenAttrFromMyInfo(attr)
+              : [],
+          ),
+        ]),
     )
     return result
   }
