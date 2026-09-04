@@ -32,7 +32,6 @@ const toCloseAt = (date: Date, timeOfDay: string) => {
   }).toISOString() as DateString
 }
 
-/** Whole days before today are unselectable; time-of-day is checked separately. */
 const isPastDay = (date: Date): boolean => isBefore(endOfDay(date), new Date())
 
 interface FormExpiryBlockProps {
@@ -53,10 +52,19 @@ const FormExpiryBlock = ({
   const save = useCallback(
     (nextDate: Date, nextTimeOfDay: string) => {
       const nextCloseAt = toCloseAt(nextDate, nextTimeOfDay)
+
+      // isPastDay only rejects whole days, so today can still be in the past.
+      if (isBefore(new Date(nextCloseAt), new Date())) {
+        return setError(
+          t('features.adminForm.settings.general.expiry.dateInThePast'),
+        )
+      }
+
+      setError(undefined)
       if (nextCloseAt === initialCloseAt) return
       return mutateFormCloseAt.mutate(nextCloseAt)
     },
-    [initialCloseAt, mutateFormCloseAt],
+    [initialCloseAt, mutateFormCloseAt, t],
   )
 
   const handleDateChange = useCallback(
