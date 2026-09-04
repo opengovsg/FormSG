@@ -16,7 +16,7 @@ export default {
   },
 } as Meta
 
-/** Live input: try "123" then tab away, "3:00pm", and AM/PM. */
+/** Live input: try "123" then tab away, "3:00pm" then tab away, and AM/PM. */
 const InteractiveTemplate: StoryFn = () => {
   const [value, setValue] = useState('09:30')
   const [error, setError] = useState<string>()
