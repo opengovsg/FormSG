@@ -4,6 +4,10 @@ env:
   NODE_VERSION: '22.22'
   PNPM_VERSION: '10.30.3'
 
+permissions:
+  contents: read
+  id-token: write
+
 on:
   push:
     branches-ignore:
@@ -70,6 +74,10 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+      - name: Setup Chainguard registry
+        uses: ./.github/actions/setup-cgr
+        with:
+          assumed-id: ${{ secrets.CGR_ASSUMED_ID }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -80,7 +88,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
   build:
     needs: install
@@ -89,6 +97,10 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+      - name: Setup Chainguard registry
+        uses: ./.github/actions/setup-cgr
+        with:
+          assumed-id: ${{ secrets.CGR_ASSUMED_ID }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -99,7 +111,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - run: pnpm build
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
@@ -137,6 +149,10 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+      - name: Setup Chainguard registry
+        uses: ./.github/actions/setup-cgr
+        with:
+          assumed-id: ${{ secrets.CGR_ASSUMED_ID }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -164,7 +180,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
@@ -186,6 +202,10 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+      - name: Setup Chainguard registry
+        uses: ./.github/actions/setup-cgr
+        with:
+          assumed-id: ${{ secrets.CGR_ASSUMED_ID }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -196,7 +216,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - run: pnpm lint:frontend
 
   backend_test_shards:
@@ -211,6 +231,10 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+      - name: Setup Chainguard registry
+        uses: ./.github/actions/setup-cgr
+        with:
+          assumed-id: ${{ secrets.CGR_ASSUMED_ID }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -238,7 +262,7 @@ jobs:
           key: ${{ runner.os }}-build-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - run: pnpm install --prefix services/pdf-gen-sparticuz
       - run: pnpm install --prefix services/virus-scanner-guardduty
       - name: Configure Datadog Test Visibility
@@ -278,6 +302,10 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+      - name: Setup Chainguard registry
+        uses: ./.github/actions/setup-cgr
+        with:
+          assumed-id: ${{ secrets.CGR_ASSUMED_ID }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -288,7 +316,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - run: pnpm lint-ci:backend
 
   shared_lint:
@@ -299,6 +327,10 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+      - name: Setup Chainguard registry
+        uses: ./.github/actions/setup-cgr
+        with:
+          assumed-id: ${{ secrets.CGR_ASSUMED_ID }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -309,7 +341,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - run: pnpm lint-ci:shared
   
   shared_test:
@@ -320,6 +352,10 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+      - name: Setup Chainguard registry
+        uses: ./.github/actions/setup-cgr
+        with:
+          assumed-id: ${{ secrets.CGR_ASSUMED_ID }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -330,7 +366,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
@@ -353,6 +389,10 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+      - name: Setup Chainguard registry
+        uses: ./.github/actions/setup-cgr
+        with:
+          assumed-id: ${{ secrets.CGR_ASSUMED_ID }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -363,7 +403,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
