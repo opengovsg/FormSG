@@ -150,7 +150,10 @@ export const ApprovalsBlock = ({
                 // sibling QuestionsBlock calls trigger() synchronously in its
                 // onChange, before this component re-renders, so a closed-over
                 // value would be one change stale.
-                if (value && !getValues(FIELDS_TO_EDIT_NAME).includes(value)) {
+                if (
+                  value &&
+                  !(getValues(FIELDS_TO_EDIT_NAME) ?? []).includes(value)
+                ) {
                   return t(
                     isRedesign
                       ? 'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUserRedesign'
@@ -161,8 +164,12 @@ export const ApprovalsBlock = ({
             }}
             render={({ field: { value = '', onChange, ...rest } }) => {
               const handleApprovalFieldChange = (newValue: string) => {
-                onChange(newValue)
-                const currentEdit = getValues(FIELDS_TO_EDIT_NAME)
+                // Append to `edit` before handing the value to RHF. Setting
+                // approval_field revalidates it, and validate reads `edit`
+                // live, so doing that first makes the field look unassigned
+                // and raises "not assigned to this person" for the very field
+                // this handler is about to assign.
+                const currentEdit = getValues(FIELDS_TO_EDIT_NAME) ?? []
                 const nextEdit = nextEditFieldsForApproval({
                   edit: currentEdit,
                   approvalFieldId: newValue,
@@ -174,6 +181,7 @@ export const ApprovalsBlock = ({
                 if (nextEdit !== currentEdit) {
                   setValue(FIELDS_TO_EDIT_NAME, nextEdit, { shouldDirty: true })
                 }
+                onChange(newValue)
               }
               return (
                 <SingleSelect
