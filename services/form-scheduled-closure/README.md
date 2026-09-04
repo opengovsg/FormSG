@@ -67,7 +67,7 @@ is invoked per environment the same way pdf-gen is:
 | --- | --- | --- |
 | `stg-alt3` | push to the branch of that name | provisioned |
 | `stg-alt`, `stg-alt2`, `uat` | push to the branch of that name | **not yet** — deploy skips |
-| `stg`, `production` | **not wired yet** — see below | not yet |
+| `stg`, `production` | `release.yml` (manual dispatch), which fans out to both | **not yet** — deploy skips |
 
 To try a feature branch end to end, push it to `stg-alt3` — the only environment
 currently provisioned.
@@ -78,11 +78,11 @@ unprovisioned environment produces a green, explanatory no-op rather than a red
 check on an unrelated test push, and starts deploying by itself once a real
 bucket name is pasted in.
 
-`stg` and `production` deploy via `release.yml`, and are deliberately **not**
-wired into it yet: a release fans out automatically, so a failing job there would
-redden a real release for everyone rather than one developer's test branch. Add
-`deploy-scheduled-closure-stg.yml` / `-prod.yml` and their `release.yml` jobs in
-the same change that fills in those buckets.
+`stg` and `production` deploy via `release.yml`, which fans out to
+`deploy-scheduled-closure-stg.yml` and `-prod.yml`. Both call the same reusable
+workflow, so they inherit the same bucket check: until pulumi has been applied to
+those environments the job skips with a notice, and a release stays green rather
+than reddening for everyone over a bucket that does not exist yet.
 
 The EventBridge schedule is **not** created by hand — the `Events.Sweep` block
 in `template.yaml` expands into the rule and its invoke permission, so changing
@@ -90,14 +90,14 @@ the cadence is a code change.
 
 ### Prerequisites, per environment
 
-Neither of these lives in this repo, and the first deploy fails without them:
+Neither of these lives in this repo, and an environment cannot deploy without them:
 
 1. **An S3 bucket for SAM build artifacts.** Provisioned by pulumi in
    `formsg-infra` (`src/scheduledClosure.ts`). Pulumi generates the name with a
    random suffix, so it is only known after `pulumi up` — it is exported as the
    `scheduledClosureCodeZipBucket` stack output, then pasted into
    `samconfig.yaml`. `stg-alt3` is done; environments still showing `TODO-` have
-   not had pulumi applied and will fail at the artifact upload step.
+   not had pulumi applied, and their deploy job skips rather than failing.
 2. **An SSM parameter** at `/<ssm-env-site-name>/CRON_SCHEDULED_CLOSURE_API_SECRET`,
    holding a random string.
 
