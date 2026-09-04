@@ -114,6 +114,10 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CRON_PAYMENT_API_SECRET"
         },
         {
+          "name": "CRON_SCHEDULED_CLOSURE_API_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CRON_SCHEDULED_CLOSURE_API_SECRET"
+        },
+        {
           "name": "SLACK_API_SECRET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SLACK_API_SECRET"
         },
