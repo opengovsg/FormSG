@@ -1936,6 +1936,35 @@ export const deleteFormWorkflowStep = (
 }
 
 /**
+ * Clears a scheduled expiry that has already lapsed when the admin manually
+ * reopens a form.
+ *
+ * Without this, reopening a form whose deadline has passed is futile: the sweep
+ * re-closes it within minutes and emails everyone a second time, which reads as
+ * the reopen having silently failed.
+ *
+ * A *future* expiry is deliberately left alone, so an admin can schedule a
+ * deadline on a form that is not open yet and then open it. An expiry supplied
+ * in the same request also wins, since that is the admin explicitly rescheduling
+ * rather than merely reopening.
+ */
+const withExpiredCloseAtCleared = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateDto,
+): SettingsUpdateDto => {
+  const isReopening = body.status === FormStatus.Public
+  const isReschedulingInSameRequest = body.closeAt !== undefined
+  const hasLapsedCloseAt =
+    !!originalForm.closeAt && new Date(originalForm.closeAt) <= new Date()
+
+  if (!isReopening || isReschedulingInSameRequest || !hasLapsedCloseAt) {
+    return body
+  }
+
+  return { ...body, closeAt: null }
+}
+
+/**
  * Updates form settings.
  * @param originalForm The original form to update settings for
  * @param body the subset of form settings to update
@@ -2000,7 +2029,9 @@ export const updateFormSettings = (
     }
   }
 
-  const dotifiedSettingsToUpdate = dotifyObject(body)
+  const dotifiedSettingsToUpdate = dotifyObject(
+    withExpiredCloseAtCleared(originalForm, body),
+  )
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
 
   return ResultAsync.fromPromise(
