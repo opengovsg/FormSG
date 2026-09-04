@@ -200,8 +200,12 @@ export const TimeInput = forwardRef<TimeInputProps, 'input'>(
       const next: Meridiem = meridiem === 'AM' ? 'PM' : 'AM'
       setMeridiem(next)
 
+      // Drop a typed meridiem first: `parseTimeOfDay` lets the text outrank
+      // the toggle, but a click is the admin overriding what they typed.
+      const withoutMeridiem = text.replace(/\s*[ap]m\s*$/i, '')
+
       // Toggling is only a time change if there is a time to change.
-      const parsed = parseTimeOfDay(text, next)
+      const parsed = parseTimeOfDay(withoutMeridiem, next)
       if (!parsed) return
       setText(formatTimeOfDay(parsed))
       report(parsed)
