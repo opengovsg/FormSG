@@ -17,7 +17,7 @@ jest.mock('src/app/config/logger', () => ({
 }))
 
 const mockDiscovery = jest.mocked(oidcClient.discovery)
-const mockClientSecretBasic = jest.mocked(oidcClient.ClientSecretBasic)
+const mockPrivateKeyJwt = jest.mocked(oidcClient.PrivateKeyJwt)
 const mockRandomPKCECodeVerifier = jest.mocked(
   oidcClient.randomPKCECodeVerifier,
 )
@@ -34,11 +34,24 @@ const mockGetValidatedIdTokenClaims = jest.mocked(getValidatedIdTokenClaims)
 
 const MOCK_ISSUER = 'https://one.example.com/api/auth'
 
+// A real EC (P-256) private JWK — buildPrivateKeyJwtAuth imports it via
+// crypto.subtle.importKey, which validates key material shape for real.
+const MOCK_PRIVATE_JWK = {
+  kty: 'EC',
+  crv: 'P-256',
+  x: 'nIScnsnBC869oonrZqrPyz44Ni2H1nHfE-xeWI88dWs',
+  y: '779aY_i3XyFLllgyBO2u3IzqpMGut7Eckq0U-dqkgrU',
+  d: 'AFtrlexz7C9LiP_RPPJPN7vcv1NpolLzMLG0-TcTGOs',
+  kid: 'mock-kid',
+  alg: 'ES256',
+  use: 'sig',
+}
+
 const VALID_CONFIG: IOneVarsSchema = {
   discoveryUrl:
     'https://one.example.com/api/auth/.well-known/openid-configuration',
   clientId: 'real-client-id',
-  clientSecret: 'real-secret',
+  clientJwksSecret: JSON.stringify({ keys: [MOCK_PRIVATE_JWK] }),
 }
 
 // Mirrors the placeholder defaults in one.config.ts. Kept inline so a future
@@ -46,7 +59,7 @@ const VALID_CONFIG: IOneVarsSchema = {
 const PLACEHOLDER_CONFIG: IOneVarsSchema = {
   discoveryUrl: 'https://one.gov.sg/api/auth/.well-known/openid-configuration',
   clientId: 'client-id',
-  clientSecret: 'test',
+  clientJwksSecret: '{"keys":[]}',
 }
 
 const mockClientConfig = {
@@ -76,15 +89,18 @@ describe('AuthOneServiceClass', () => {
   })
 
   describe('getClientConfigResult — discovery', () => {
-    it('authenticates the client with client_secret_basic', async () => {
+    it('authenticates the client with private_key_jwt', async () => {
       mockDiscovery.mockResolvedValue(mockClientConfig)
       const svc = new AuthOneServiceClass(VALID_CONFIG)
 
       const result = await svc.getClientConfigResult()
 
       expect(result.isOk()).toBe(true)
-      expect(mockClientSecretBasic).toHaveBeenCalledWith(
-        VALID_CONFIG.clientSecret,
+      expect(mockPrivateKeyJwt).toHaveBeenCalledWith(
+        expect.objectContaining({
+          key: expect.anything(),
+          kid: MOCK_PRIVATE_JWK.kid,
+        }),
       )
     })
   })
