@@ -20,6 +20,7 @@ import {
 } from '~features/analytics/AnalyticsService'
 
 import { LoginForm, LoginFormInputs } from './components/LoginForm'
+import { OneLoginButton } from './components/OneLoginButton'
 import { OrDivider } from './components/OrDivider'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
 import { SgidLoginButton } from './components/SgidLoginButton'
@@ -57,15 +58,14 @@ const LoginOptionButtons = ({
   shouldShowSsoLogin: boolean
   shouldShowSgidLogin: boolean
 }) => {
-  const isLoginOptionButtonsPresent =
-    shouldShowWogadLogin || shouldShowSsoLogin || shouldShowSgidLogin
-  return isLoginOptionButtonsPresent ? (
+  return (
     <Stack spacing="1rem">
       {shouldShowWogadLogin && <WogadLoginButton />}
       {shouldShowSsoLogin && <SsoLoginButton />}
       {shouldShowSgidLogin && <SgidLoginButton />}
+      <OneLoginButton />
     </Stack>
-  ) : undefined
+  )
 }
 
 const isDev = import.meta.env.MODE === 'development'

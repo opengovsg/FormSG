@@ -5,6 +5,8 @@ expect.extend(matchers)
 /* Mocking ESM-only libraries as ts-jest doesn't support them */
 jest.mock('openid-client', () => ({
   ClientSecretPost: jest.fn(),
+  ClientSecretBasic: jest.fn(),
+  PrivateKeyJwt: jest.fn(),
   discovery: jest.fn().mockImplementation(() => {
     return Promise.resolve({
       issuer: 'https://mock-issuer.com',
@@ -15,6 +17,14 @@ jest.mock('openid-client', () => ({
       token_endpoint_auth_method: 'client_secret_post',
     })
   }),
+  allowInsecureRequests: jest.fn(),
+  randomPKCECodeVerifier: jest.fn(),
+  calculatePKCECodeChallenge: jest.fn(),
+  randomNonce: jest.fn(),
+  randomState: jest.fn(),
+  buildAuthorizationUrl: jest.fn(),
+  authorizationCodeGrant: jest.fn(),
+  fetchUserInfo: jest.fn(),
 }))
 jest.mock('oauth4webapi', () => ({
   // Mock implementation

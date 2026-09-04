@@ -47,5 +47,8 @@ export const enSG: Login = {
     WogadLoginButton: {
       loginText: 'Log in with WOG AD',
     },
+    OneLoginButton: {
+      loginText: 'Log in with one.gov.sg',
+    },
   },
 }

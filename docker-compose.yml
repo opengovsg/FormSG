@@ -144,6 +144,9 @@ services:
       - SSO_DISCOVERY_URL
       - SSO_CLIENT_ID
       - SSO_CLIENT_SECRET
+      - ONE_DISCOVERY_URL
+      - ONE_CLIENT_ID
+      - ONE_OIDC_RP_JWKS_SECRET
 
   mockpass:
     image: opengovsg/mockpass:4.6.4
