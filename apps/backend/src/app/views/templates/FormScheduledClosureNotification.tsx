@@ -23,7 +23,7 @@ export const FormScheduledClosureNotification = ({
 }: FormScheduledClosureNotificationHtmlData): JSX.Element => {
   return (
     <EmailLayout emailTitle="Form closed">
-      <Text style={secondaryTextStyle}>Dear form admins(s),</Text>
+      <Text style={secondaryTextStyle}>Dear form admin(s),</Text>
       <Text style={secondaryTextStyle}>
         Your <b>{formTitle}</b> (
         <Link href={formLink} style={linkStyle}>
