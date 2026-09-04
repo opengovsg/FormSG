@@ -232,10 +232,16 @@ export const TimeInput = forwardRef<TimeInputProps, 'input'>(
       const next: Meridiem = meridiem === 'AM' ? 'PM' : 'AM'
       setMeridiem(next)
 
+      // Drop a typed meridiem before parsing. `parseTimeOfDay` lets the text
+      // outrank the toggle, which is right while typing but wrong here: the
+      // click is the admin saying which half of the day they meant, so obeying
+      // "12:30am" would flip the button to PM and leave the value at 00:30.
+      const withoutMeridiem = text.replace(/\s*[ap]m\s*$/i, '')
+
       // Toggling is only a time change if there is a time to change. When the
       // box does not parse, the toggle just moves and the caller's existing
       // error stands.
-      const parsed = parseTimeOfDay(text, next)
+      const parsed = parseTimeOfDay(withoutMeridiem, next)
       if (!parsed) return
       setText(formatTimeOfDay(parsed))
       report(parsed)
