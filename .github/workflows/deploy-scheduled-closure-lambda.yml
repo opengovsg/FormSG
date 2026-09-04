@@ -1,0 +1,86 @@
+name: Deploy Scheduled Closure Lambda
+
+on:
+  workflow_call:
+    inputs:
+      gha-environment:
+        description: 'GitHub Actions environment'
+        required: true
+        type: string
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: string
+      checkoutBranch:
+        description: 'Branch to checkout code from'
+        required: true
+        type: string
+      aws-region:
+        description: 'AWS region to use'
+        required: false
+        default: 'ap-southeast-1'
+        type: string
+    secrets:
+      cicd-role:
+        description: 'AWS IAM role to assume by GitHub action runner'
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-scheduled-closure-lambda:
+    name: Deploy Scheduled Closure Lambda using SAM
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.gha-environment }}
+    steps:
+      - name: Checkout branch source code into runner environment
+        uses: actions/checkout@v4.3.1
+        with:
+          lfs: true
+          ref: ${{ inputs.checkoutBranch }}
+          fetch-depth: 0
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@d78e1a4a9656d3b223e59b80676a797f20093133 # v2
+      - name: Install pnpm
+        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 10.30.3
+      - name: Use Node.js
+        uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22.22
+          cache: 'pnpm'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4.3.1
+        with:
+          role-to-assume: ${{ secrets.cicd-role }}
+          aws-region: ${{ inputs.aws-region }}
+      # The artifact bucket is provisioned by pulumi in formsg-infra and its
+      # generated name is pasted into samconfig.yaml afterwards. Environments
+      # that have not had pulumi applied still carry a TODO- placeholder, and
+      # deploying them would fail at the upload step — a red check on someone
+      # else's unrelated test push. Skip cleanly instead; this starts deploying
+      # by itself the moment a real bucket name lands.
+      - name: Check the artifact bucket is provisioned
+        id: bucket
+        working-directory: ./services/form-scheduled-closure
+        run: |
+          bucket=$(awk -v env="${{ inputs.environment }}:" '
+            $0 == env {found=1; next}
+            found && /^[a-zA-Z]/ {found=0}
+            found && $1 == "s3_bucket:" {print $2; exit}
+          ' samconfig.yaml)
+          if [ -z "$bucket" ] || [ "${bucket#TODO-}" != "$bucket" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping deploy — no artifact bucket for ${{ inputs.environment }} yet (samconfig has '${bucket:-nothing}'). Apply pulumi in formsg-infra, then paste the generated bucket name into samconfig.yaml."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "Deploying to bucket $bucket"
+          fi
+
+      - name: Deploy with SAM
+        if: steps.bucket.outputs.ready == 'true'
+        working-directory: ./services/form-scheduled-closure
+        run: pnpm run sam-deploy --config-env ${{ inputs.environment }} --no-confirm-changeset --no-fail-on-empty-changeset

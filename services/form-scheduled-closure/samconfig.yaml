@@ -1,0 +1,93 @@
+version: 0.1
+
+# NOTE: each `s3_bucket` below must exist before that environment's first
+# deploy. They are provisioned by pulumi in the formsg-infra repo (see
+# src/scheduledClosure.ts), which also creates the
+# `/<ssm-env-site-name>/CRON_SCHEDULED_CLOSURE_API_SECRET` parameter.
+#
+# Pulumi generates bucket names with a random suffix, so the real name is only
+# known after `pulumi up` — it is exported as the `scheduledClosureCodeZipBucket`
+# stack output. Entries still marked TODO- have not had pulumi applied yet; the
+# deploy workflow skips those environments with a notice rather than failing.
+#
+# Take the name from an `up`, never from a `preview`. Pulumi's autonaming suffix
+# is regenerated on apply, so a preview shows a provisional name that is not the
+# one created: stg-alt3 previewed as ...-8db6053 and was created as ...-64b2068.
+
+stg:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg
+      s3_bucket: TODO-form-scheduled-closure-code-zip-stg
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg SsmEnvSiteName=stg
+
+stg-alt:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg-alt
+      s3_bucket: TODO-form-scheduled-closure-code-zip-stg-alt
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg-alt
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt SsmEnvSiteName=stg-alt
+
+stg-alt2:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg-alt2
+      s3_bucket: TODO-form-scheduled-closure-code-zip-stg-alt2
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg-alt2
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt2 SsmEnvSiteName=stg-alt21
+
+stg-alt3:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg-alt3
+      s3_bucket: form-scheduled-closure-code-zip-stg-alt3-64b2068 # Created by pulumi in formsg-infra to store AWS SAM builds.
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg-alt3
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt3 SsmEnvSiteName=stg-alt3
+
+uat:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-uat
+      s3_bucket: TODO-form-scheduled-closure-code-zip-uat
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: uat
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=uat SsmEnvSiteName=uat
+
+production:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-production
+      s3_bucket: TODO-form-scheduled-closure-code-zip-prod
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: production
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=production SsmEnvSiteName=prod
