@@ -5,6 +5,7 @@
   "description": "Lambda function that closes forms past their scheduled expiry",
   "main": "index.js",
   "scripts": {
+    "test": "node --test",
     "sam-build": "sam build",
     "sam-deploy": "pnpm run sam-build && sam deploy",
     "sam-local-invoke": "pnpm run sam-build && sam local invoke ScheduledClosureFunction"
