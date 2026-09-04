@@ -34,15 +34,15 @@ export const enSG = {
     label: 'Set a form closing date',
     input: {
       label: 'Closing date and time',
-      timeLabel: 'Expiry time',
+      timeLabel: 'Closing time',
       description:
         'Your form will automatically close at the selected date and time (SGT).',
     },
     toast: {
       success: 'Your form will now automatically close on {closeAt}.',
-      successRemoved: 'The expiry date on your form is removed.',
+      successRemoved: 'The closing date on your form is removed.',
     },
-    dateInThePast: 'Expiry date must be in the future',
+    dateInThePast: 'Closing date must be in the future',
     invalidTime: 'Please enter a valid time',
   },
   customisation: {
