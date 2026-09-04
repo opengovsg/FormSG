@@ -19,9 +19,11 @@ import { isValidTimeOfDay, TimeInput } from './TimeInput'
 
 /**
  * Date pre-filled when the admin first switches the toggle on, purely so the
- * form is in a valid state before they pick a real deadline.
+ * form is in a valid state before they pick a real deadline. Tomorrow: the
+ * nearest date that is unambiguously in the future, so the pre-fill reads as a
+ * placeholder to replace rather than as a deadline the product picked.
  */
-const DEFAULT_EXPIRY_DAYS_FROM_NOW = 7
+const DEFAULT_EXPIRY_DAYS_FROM_NOW = 1
 
 /**
  * Time of day used when the toggle is first switched on. 2359 because the PRD
@@ -116,19 +118,23 @@ const FormExpiryBlock = ({
     [save, t, timeOfDay],
   )
 
-  const handleTimeBlur = useCallback(() => {
-    if (!isValidTimeOfDay(timeOfDay)) {
-      // Revert to the last saved time rather than stranding the admin on an
-      // unparseable value they then have to fix.
-      setTimeOfDay(format(closeAtDate, 'HH:mm'))
-      return setError(
-        t('features.adminForm.settings.general.expiry.invalidTime'),
-      )
-    }
+  // Fired once the admin is done with the field, with the time already
+  // normalised — so the bad value stays on screen next to the error instead of
+  // being silently reverted to whatever was saved before.
+  const handleTimeCommit = useCallback(
+    (nextTimeOfDay: string | null) => {
+      if (!nextTimeOfDay) {
+        return setError(
+          t('features.adminForm.settings.general.expiry.invalidTime'),
+        )
+      }
 
-    setError(undefined)
-    return save(closeAtDate, timeOfDay)
-  }, [closeAtDate, save, t, timeOfDay])
+      setError(undefined)
+      setTimeOfDay(nextTimeOfDay)
+      return save(closeAtDate, nextTimeOfDay)
+    },
+    [closeAtDate, save, t],
+  )
 
   return (
     <FormControl mt="2rem" isInvalid={!!error}>
@@ -156,7 +162,7 @@ const FormExpiryBlock = ({
           <TimeInput
             value={timeOfDay}
             onChange={setTimeOfDay}
-            onBlur={handleTimeBlur}
+            onCommit={handleTimeCommit}
             isDisabled={mutateFormCloseAt.isLoading}
             aria-label={t(
               'features.adminForm.settings.general.expiry.input.timeLabel',
