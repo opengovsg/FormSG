@@ -80,7 +80,7 @@
     "react-markdown": "^9.0.1",
     "react-query": "^3.34.2",
     "react-remove-scroll": "^2.5.10",
-    "react-router": "^6.30.4",
+    "react-router": "^8.3.0",
     "react-router-dom": "^6.30.4",
     "react-roving-tabindex": "^3.2.0",
     "react-swipeable": "^7.0.0",

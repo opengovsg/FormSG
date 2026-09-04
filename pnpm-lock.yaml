@@ -958,8 +958,8 @@ importers:
         specifier: ^2.5.10
         version: 2.5.10(@types/react@18.3.12)(react@18.3.1)
       react-router:
-        specifier: ^6.30.4
-        version: 6.30.4(react@18.3.1)
+        specifier: ^8.3.0
+        version: 8.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-router-dom:
         specifier: ^6.30.4
         version: 6.30.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -6994,6 +6994,9 @@ packages:
     resolution: {integrity: sha512-JtXpxqDqJ8P0UwEHwhxLzCIXQy97vlYBZR222Sbzb1q1Erex9ASrztJ29SyhWFQjod1AeFBaPzEEC8YvtZMIYg==}
     engines: {node: '>=6'}
 
+  cookie-es@3.1.1:
+    resolution: {integrity: sha512-UaXxwISYJPTr9hwQxMFYZ7kNhSXboMXP+Z3TRX6f1/NyaGPfuNUZOWP1pUEb75B2HjfklIYLVRfWiFZJyC6Npg==}
+
   cookie-parser@1.4.6:
     resolution: {integrity: sha512-z3IzaNjdwUC2olLIB5/ITd0/setiaFMLYiZJle7xg5Fe9KWAceil7xszYfHHBtDFYLSgJduS2Ty0P1uJdPDJeA==}
     engines: {node: '>= 0.8.0'}
@@ -11855,6 +11858,16 @@ packages:
     engines: {node: '>=14.0.0'}
     peerDependencies:
       react: '>=16.8'
+
+  react-router@8.3.0:
+    resolution: {integrity: sha512-qyPMvW83jGIct3yiieisxdk9M745anqhpIMKN5m1t6yBMfgVPpt77aHOqs5fUlEJRMCGffg9BaQLH9oPVOL7xQ==}
+    engines: {node: '>=22.22.0'}
+    peerDependencies:
+      react: '>=19.2.7'
+      react-dom: '>=19.2.7'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
 
   react-roving-tabindex@3.2.0:
     resolution: {integrity: sha512-WY5d46Y/QuS2zgXs4MgYJlmi3uIyq7M9UD4l3SWim8ClnyV1L3r84brxElLxEBXdKuWFUbll9mOBpxfcDZsCVQ==}
@@ -21613,6 +21626,8 @@ snapshots:
       lodash.clonedeep: 4.5.0
       yargs-parser: 20.2.9
 
+  cookie-es@3.1.1: {}
+
   cookie-parser@1.4.6:
     dependencies:
       cookie: 0.7.2
@@ -28042,6 +28057,13 @@ snapshots:
     dependencies:
       '@remix-run/router': 1.23.3
       react: 18.3.1
+
+  react-router@8.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+    dependencies:
+      cookie-es: 3.1.1
+      react: 18.3.1
+    optionalDependencies:
+      react-dom: 18.3.1(react@18.3.1)
 
   react-roving-tabindex@3.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
