@@ -147,9 +147,16 @@ export const EmailLayout = ({
               alt="FormSG"
             />
             {/* Body Title */}
-            <Heading style={{ ...headingTextStyle, marginBottom: '40px' }}>
-              {emailTitle}
-            </Heading>
+            {/* Only when there is one to show. Three senders build EmailData
+                without a title (the admin response notification, the MRF
+                completion email and the respondent's copy), and an
+                unconditional heading gave those an empty <h1> carrying a line
+                box and 40px of margin at the top of the card. */}
+            {emailTitle && (
+              <Heading style={{ ...headingTextStyle, marginBottom: '40px' }}>
+                {emailTitle}
+              </Heading>
+            )}
             {children}
           </Section>
         </Container>
