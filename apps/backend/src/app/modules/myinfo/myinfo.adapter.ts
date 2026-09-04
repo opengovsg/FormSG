@@ -110,11 +110,19 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
  * Child sub-fields that sponsored children records also carry, and how to read
  * each one. Drives both the requested scope and the extraction. Sub-fields
  * absent here have no sponsored counterpart.
+ *
+ * `key` is constrained to fields both record types carry, so a sponsored-only
+ * field cannot be added here. Birth records came first and define the shape of
+ * a child; a column only one source can fill would be blank for the other, and
+ * every child sub-field is mandatory on submission.
  */
 const SPONSORED_CHILD_COLUMNS: Partial<
   Record<
     MyInfoChildAttributes,
-    { key: keyof MyInfoSponsoredChildFull; use: 'value' | 'desc' }
+    {
+      key: keyof MyInfoSponsoredChildFull & keyof MyInfoChildBirthRecordBelow21
+      use: 'value' | 'desc'
+    }
   >
 > = {
   [MyInfoChildAttributes.ChildName]: { key: 'name', use: 'value' },
