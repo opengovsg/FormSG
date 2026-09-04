@@ -47,7 +47,7 @@ const toCloseAt = (date: Date, timeOfDay: string) => {
   }).toISOString() as DateString
 }
 
-/** Whole days before today are unselectable; time-of-day is checked separately. */
+/** Whole days before today are unselectable. The instant is checked in `save`. */
 const isPastDay = (date: Date): boolean => isBefore(endOfDay(date), new Date())
 
 interface FormExpiryBlockProps {
@@ -71,10 +71,23 @@ const FormExpiryBlock = ({
   const save = useCallback(
     (nextDate: Date, nextTimeOfDay: string) => {
       const nextCloseAt = toCloseAt(nextDate, nextTimeOfDay)
+
+      // `isPastDay` rejects whole days, so today always passes it while the
+      // time of day may already have gone. Both callers compose their instant
+      // here, so this is the one place that sees what actually gets stored.
+      // Without it, picking today at 09:00 in the afternoon saves a deadline
+      // already behind us, under an error message promising the opposite.
+      if (isBefore(new Date(nextCloseAt), new Date())) {
+        return setError(
+          t('features.adminForm.settings.general.expiry.dateInThePast'),
+        )
+      }
+
+      setError(undefined)
       if (nextCloseAt === initialCloseAt) return
       return mutateFormCloseAt.mutate(nextCloseAt)
     },
-    [initialCloseAt, mutateFormCloseAt],
+    [initialCloseAt, mutateFormCloseAt, t],
   )
 
   const handleDateChange = useCallback(
