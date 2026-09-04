@@ -299,6 +299,9 @@ export const IndividualResponsePage = (): JSX.Element => {
             </Stack>
           )}
           {form?.responseMode === FormResponseMode.Multirespondent &&
+            // Pre-mode-migration encrypt submissions have no submission secret
+            // key, so no valid response link can be built for them.
+            data?.submissionSecretKey &&
             user?.betaFlags?.mrfAdminSubmissionKey && (
               <StackRow
                 label={t(
