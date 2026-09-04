@@ -30,6 +30,21 @@ export const enSG = {
     limitLessThanCurrent:
       'Submission limit must be greater than current submission count ({currentResponseCount})',
   },
+  expiry: {
+    label: 'Schedule an expiry date',
+    input: {
+      label: 'Expiry date and time',
+      timeLabel: 'Expiry time (24-hour, hh:mm)',
+      description:
+        'Your form will automatically close at the selected date and time.',
+    },
+    toast: {
+      success: 'Your form will now automatically close on {closeAt}.',
+      successRemoved: 'The expiry date on your form is removed.',
+    },
+    dateInThePast: 'Expiry date must be in the future',
+    invalidTime: 'Enter a 24-hour time between 00:00 and 23:59',
+  },
   customisation: {
     closedFormMessage: 'Set message for closed form',
   },

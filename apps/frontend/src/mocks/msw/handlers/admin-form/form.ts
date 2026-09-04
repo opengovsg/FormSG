@@ -929,6 +929,7 @@ export const createMockForm = (
         inactiveMessage:
           'If you require further assistance, please contact the agency that gave you the form link.',
         submissionLimit: null,
+        closeAt: null,
         form_fields: [],
         form_logics: [],
         payments_channel: { channel: PaymentChannel.Unconnected },
