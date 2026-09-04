@@ -70,11 +70,15 @@ exports.handler = async () => {
   const closedFormIds = []
   let sweeps = 0
   let hasMore = true
+  let notifiedCount = 0
+  let notifyFailedCount = 0
 
   while (hasMore && sweeps < MAX_SWEEPS_PER_RUN) {
     const result = await closeExpiredForms(apiSecret)
     sweeps += 1
     closedFormIds.push(...result.formIds)
+    notifiedCount += result.notifiedCount ?? 0
+    notifyFailedCount += result.notifyFailedCount ?? 0
     hasMore = result.hasMore
   }
 
@@ -84,8 +88,16 @@ exports.handler = async () => {
     )
   }
 
+  // Nothing retries a failed notification, and the count is only observable
+  // from this job's logs.
+  if (notifyFailedCount > 0) {
+    console.error(
+      `${notifyFailedCount} closure notification(s) failed and will not be retried; those admins were not told their form closed.`,
+    )
+  }
+
   console.log(
-    `Scheduled closure sweep done. Closed ${closedFormIds.length} form(s) over ${sweeps} sweep(s).`,
+    `Scheduled closure sweep done. Closed ${closedFormIds.length} form(s) over ${sweeps} sweep(s), notified ${notifiedCount}, failed to notify ${notifyFailedCount}.`,
     closedFormIds,
   )
 
@@ -93,6 +105,8 @@ exports.handler = async () => {
     environment: ENV_SITE_NAME,
     closedCount: closedFormIds.length,
     formIds: closedFormIds,
+    notifiedCount,
+    notifyFailedCount,
     sweeps,
     hasMore,
   }
