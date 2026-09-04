@@ -51,7 +51,7 @@ export type Message = ChatCompletionMessageParam
  * Sends prompt to the AI LLM and returns the response.
  * @param {Message[]} params.messages - An array of message objects to send to the AI.
  * @param {Object} [params.options] - Optional parameters for the chat completion.
- * @param {string} params.formId - The ID of the form associated with this request. Used for logging.
+ * @param {string} [params.formId] - The ID of the form associated with this request. Used for logging. Omitted by callers that are not acting on a form.
  * @returns {ResultAsync<string | null, ModelGetClientFailureError>} A Result containing the AI's response or null if no response, or an error if the request fails.
  */
 export const sendPromptToModel = ({
@@ -61,7 +61,7 @@ export const sendPromptToModel = ({
 }: {
   messages: Message[]
   options?: Omit<ChatCompletionCreateParamsNonStreaming, 'model' | 'messages'>
-  formId: string
+  formId?: string
 }): ResultAsync<
   string | null,
   ModelGetClientFailureError | ModelResponseFailureError

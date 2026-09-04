@@ -114,6 +114,22 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CRON_PAYMENT_API_SECRET"
         },
         {
+          "name": "CRON_CHANGELOG_API_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CRON_CHANGELOG_API_SECRET"
+        },
+        {
+          "name": "CHANGELOG_GITHUB_TOKEN",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CHANGELOG_GITHUB_TOKEN"
+        },
+        {
+          "name": "CHANGELOG_SLACK_WEBHOOK_URL",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CHANGELOG_SLACK_WEBHOOK_URL"
+        },
+        {
+          "name": "CHANGELOG_PREVIEW_RECIPIENT",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CHANGELOG_PREVIEW_RECIPIENT"
+        },
+        {
           "name": "SLACK_API_SECRET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SLACK_API_SECRET"
         },

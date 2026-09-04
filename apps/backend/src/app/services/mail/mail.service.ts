@@ -23,6 +23,10 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { getAdminEmails } from '../../modules/form/form.utils'
 import { BounceNotification } from '../../views/templates/BounceNotification'
 import {
+  ChangelogDigestEmail,
+  ChangelogDigestHtmlData,
+} from '../../views/templates/ChangelogDigestEmail'
+import {
   EmailAddressVerificationOtp,
   EmailAddressVerificationOtpHtmlData,
 } from '../../views/templates/EmailAddressVerificationOtp'
@@ -1128,6 +1132,63 @@ export class MailService {
         })
       },
     )
+  }
+
+  /**
+   * Sends the weekly product digest.
+   *
+   * Recipients are passed in by the caller rather than resolved here. Until the
+   * approval flow exists, the only caller passes a single preview address, so
+   * this method has no notion of the real admin list.
+   *
+   * @returns ok(true) when the mail was sent
+   * @returns err(MailGenerationError) when the template failed to render
+   * @returns err(MailSendError) when sending failed
+   */
+  sendChangelogDigest = ({
+    to,
+    subject,
+    ...htmlData
+  }: ChangelogDigestHtmlData & {
+    to: string | string[]
+    subject: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> => {
+    const generatedHtml = fromPromise(
+      render(ChangelogDigestEmail(htmlData)),
+      (e) => {
+        logger.error({
+          message: 'Failed to render ChangelogDigestEmail',
+          meta: { action: 'sendChangelogDigest', error: e },
+        })
+        return new MailGenerationError('Error generating product digest email')
+      },
+    )
+
+    return generatedHtml.andThen((mailHtml) => {
+      const mail: MailOptions = {
+        to,
+        from: this.#senderFromString,
+        subject,
+        html: mailHtml,
+        headers: {
+          [EMAIL_HEADERS.emailType]: EmailType.ProductDigest,
+        },
+      }
+
+      return this.#sendNodeMail(mail, { mailId: 'productDigest' }).mapErr(
+        (error) => {
+          logger.error({
+            message: 'Error sending product digest email',
+            meta: {
+              action: 'sendChangelogDigest',
+              itemCount: htmlData.items.length,
+            },
+            error,
+          })
+          return error
+        },
+      )
+    })
   }
 
   // Utility method to send a mail during local dev (to maildev)

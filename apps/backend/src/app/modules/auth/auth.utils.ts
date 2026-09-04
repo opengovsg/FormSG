@@ -3,6 +3,7 @@ import { IncomingHttpHeaders } from 'http'
 import { StatusCodes } from 'http-status-codes'
 
 import { MapRouteError } from '../../../types/routing'
+import { changelogDigestConfig } from '../../config/features/changelog-digest.config'
 import { cronPaymentConfig } from '../../config/features/payment-cron.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as MailErrors from '../../services/mail/mail.errors'
@@ -110,6 +111,14 @@ export const getUserIdFromSession = (
 
 export const isCronPaymentAuthValid = (header: IncomingHttpHeaders) => {
   return header['x-formsg-cron-payment-secret'] === cronPaymentConfig.apiSecret
+}
+
+export const isCronChangelogAuthValid = (header: IncomingHttpHeaders) => {
+  // An unset secret must never authenticate. convict defaults it to '', and a
+  // caller can trivially send an empty header, so compare only when set.
+  const { apiSecret } = changelogDigestConfig
+  if (!apiSecret) return false
+  return header['x-formsg-cron-changelog-secret'] === apiSecret
 }
 
 export const isEmailInDomainWhitelist = (

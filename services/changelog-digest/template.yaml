@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Weekly generation of the FormSG product digest draft
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    Description: Environment name (eg, production, staging, stg-alt)
+  SsmEnvSiteName:
+    Type: String
+    Default: dev
+    Description: >-
+      Environment name as used in SSM parameter paths. Usually identical to
+      Environment, but not always — formsg-infra maps the stg-alt2 stack to the
+      site name stg-alt21, so this is passed explicitly rather than derived.
+  DigestSchedule:
+    Type: String
+    Default: cron(0 1 ? * MON *)
+    Description: >-
+      When to run a digest cycle. EventBridge cron is UTC and has no timezone
+      option, so 09:00 Singapore is expressed as 01:00 UTC. Singapore does not
+      observe daylight saving, so this stays correct year round — unlike the
+      same trick for a timezone that does.
+
+      Running weekly does not mean sending weekly. A cycle that finds fewer than
+      three notable changes sends nothing and records nothing, so those changes
+      are reconsidered next Monday alongside whatever is new. Turning this knob
+      up would not produce more digests, only more cycles that decide there is
+      nothing worth sending.
+
+Globals:
+  Function:
+    # Generous, because the request behind this waits on a model call to draft
+    # the digest, not just a database query. The Lambda spends nearly all of
+    # this waiting on one HTTP response.
+    Timeout: 180
+    MemorySize: 256
+    Runtime: nodejs22.x
+
+Resources:
+  ChangelogDigestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Drafts one weekly product digest. Sends nothing.
+      FunctionName: !Sub 'changelog-digest-${Environment}'
+      CodeUri: ./
+      Handler: index.handler
+      Architectures:
+        - arm64
+      Environment:
+        Variables:
+          # Site name, NOT the CloudFormation Environment. The lambda builds the
+          # API hostname from this, and the two differ: the production stack's
+          # site name is `prod` (giving form.gov.sg, not production.form.gov.sg)
+          # and stg-alt2's is `stg-alt21`.
+          SSM_ENV_SITE_NAME: !Ref SsmEnvSiteName
+          # Full path passed in rather than derived in the lambda, so the one
+          # place the parameter name is written is here.
+          SSM_SECRET_PARAMETER_NAME: !Sub '/${SsmEnvSiteName}/CRON_CHANGELOG_API_SECRET'
+      Policies:
+        # Read-only, and scoped to this job's single parameter rather than the
+        # whole store. The WithSlashPrefix variant is the one that takes a name
+        # already starting with `/`, which pulumi-managed parameters do.
+        - SSMParameterWithSlashPrefixReadPolicy:
+            ParameterName: !Sub '/${SsmEnvSiteName}/CRON_CHANGELOG_API_SECRET'
+      Events:
+        # SAM expands this into an EventBridge rule plus the permission for it
+        # to invoke the function — the schedule is code, not console clicks.
+        WeeklyDigest:
+          Type: Schedule
+          Properties:
+            Name: !Sub 'changelog-digest-weekly-${Environment}'
+            Description: Triggers the weekly product digest cycle
+            Schedule: !Ref DigestSchedule
+
+Outputs:
+  ChangelogDigestFunctionArn:
+    Description: ARN of the changelog digest Lambda
+    Value: !GetAtt ChangelogDigestFunction.Arn

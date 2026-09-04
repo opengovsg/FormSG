@@ -16,6 +16,7 @@ import { UnauthorizedError } from './auth.errors'
 import { getUserByApiKey } from './auth.service'
 import {
   getUserIdFromSession,
+  isCronChangelogAuthValid,
   isCronPaymentAuthValid,
   isUserInSession,
   mapRouteError,
@@ -124,6 +125,20 @@ export const withCronPaymentSecretAuthentication: ControllerHandler = (
   next,
 ) => {
   if (isCronPaymentAuthValid(req.headers)) {
+    return next()
+  }
+
+  return res
+    .status(StatusCodes.UNAUTHORIZED)
+    .json({ message: 'Request is unauthorized.' })
+}
+
+export const withCronChangelogSecretAuthentication: ControllerHandler = (
+  req,
+  res,
+  next,
+) => {
+  if (isCronChangelogAuthValid(req.headers)) {
     return next()
   }
 
