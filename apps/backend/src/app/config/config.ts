@@ -1,6 +1,7 @@
 import { Lambda } from '@aws-sdk/client-lambda'
 import { S3Client } from '@aws-sdk/client-s3'
 import { defaultProvider } from '@aws-sdk/credential-provider-node'
+import { NodeHttpHandler } from '@smithy/node-http-handler'
 import convict from 'convict'
 import { SessionOptions } from 'express-session'
 import { merge } from 'lodash'
@@ -96,6 +97,18 @@ const hasR2Buckets = Object.values(s3BucketUrlVars).some((url) =>
 // Shared across configureAws() and AWS clients below so that credentials are resolved once only and reused
 const credentialsProvider = defaultProvider()
 
+// NodeHttpHandler has no socket timeout by default, so a hung/stalled synchronous
+// Lambda invocation (e.g. a half-open connection where no data ever arrives) would
+// otherwise leave the calling request pending forever. socketTimeout mirrors the
+// inactivity-based timeout AWS SDK v2 used to apply by default.
+// Both guarddutyLambda and pdfGeneratorLambda have a configured function timeout of
+// 300s (services/virus-scanner-guardduty/serverless.yml, services/pdf-gen-sparticuz/template.yaml),
+// so this is set comfortably above that so it only fires on a genuine hang, never on
+// a legitimate slow-but-successful invocation.
+const lambdaRequestHandler = new NodeHttpHandler({
+  socketTimeout: 310_000,
+})
+
 const s3 = new S3Client({
   region: basicVars.awsConfig.region,
   // Unset and use default if not in development mode
@@ -112,6 +125,13 @@ const s3 = new S3Client({
 const guarddutyLambda = new Lambda({
   region: basicVars.awsConfig.region,
   credentials: credentialsProvider,
+  requestHandler: lambdaRequestHandler,
+  // On a clean scan, the lambda moves the file to the clean bucket under a new key
+  // and deletes the quarantined original, then returns that new key in the response.
+  // That's a one-shot, non-idempotent side effect: if the SDK retried a slow-but-
+  // successful invocation, the retry would find the source file already gone and
+  // surface a false failure, silently dropping the correct response. Disable retries.
+  maxAttempts: 1,
   // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
@@ -127,6 +147,10 @@ const guarddutyLambda = new Lambda({
 const pdfGeneratorLambda = new Lambda({
   region: basicVars.awsConfig.region,
   credentials: credentialsProvider,
+  requestHandler: lambdaRequestHandler,
+  // Kept consistent with guarddutyLambda; a retry here would just be wasted compute
+  // rather than a correctness issue, since PDF generation has no side effects.
+  maxAttempts: 1,
   // For dev mode or where specified, endpoint is set to point to the separate docker container running the lambda function.
   // host.docker.internal is a special DNS name which resolves to the internal IP address used by the host.
   // Reference: https://docs.docker.com/desktop/networking/#i-want-to-connect-from-a-container-to-a-service-on-the-host
