@@ -68,8 +68,11 @@ export const EmailTemplate = ({
   paymentUrl,
   responseJson,
 }: EmailData): JSX.Element => {
-  const renderQuestionAnswer = (qa: QuestionAnswer) => (
-    <>
+  // Keyed by position rather than by question: questions are free text and a
+  // form may legitimately repeat one, so the index is the only stable identity
+  // available here.
+  const renderQuestionAnswer = (qa: QuestionAnswer, index: number) => (
+    <React.Fragment key={index}>
       {qa.fieldType === BasicField.Section ? (
         <Text style={{ ...outcomeTextStyle, ...questionMargin }}>
           {qa.question}
@@ -82,7 +85,7 @@ export const EmailTemplate = ({
       <Text style={{ ...secondaryTextStyle, ...answerMargin }}>
         {renderLines(qa.answer)}
       </Text>
-    </>
+    </React.Fragment>
   )
 
   const renderMargin = (height: number) => <EmailMargin height={height} />
