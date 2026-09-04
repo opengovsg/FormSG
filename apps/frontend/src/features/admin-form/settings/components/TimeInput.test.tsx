@@ -232,6 +232,20 @@ describe('<TimeInput />', () => {
     expect(onCommit).toHaveBeenLastCalledWith('21:30')
   })
 
+  it('should let the toggle override a meridiem still in the box', async () => {
+    const { user, input, onCommit } = setup('09:30')
+    await user.clear(input)
+    await user.type(input, '12:30am')
+    // No blur: the meridiem is still sitting in the text when the button is hit.
+    await user.click(screen.getByRole('button'))
+
+    // The click is the admin overriding what they typed, so it has to win.
+    // Obeying the text instead would show PM against a stored 00:30.
+    expect(screen.getByRole('button')).toHaveTextContent('PM')
+    expect(input).toHaveValue('12:30')
+    expect(onCommit).toHaveBeenLastCalledWith('12:30')
+  })
+
   it('should let a typed meridiem set the toggle', async () => {
     const { user, input, onCommit } = setup('09:30')
     await user.clear(input)
