@@ -16,11 +16,15 @@ type AdminWorkflowStore = {
   requestSwitchToCreating: () => void
   cancelPendingSwitch: () => void
   completeSave: () => void
+  completedStepNumber: number | null
+  setCompletedStep: (stepNumber: number) => void
+  dismissCompletedStep: () => void
 }
 
 const INITIAL_STATE = {
   createOrEditData: null,
   pendingSwitchTo: null,
+  completedStepNumber: null,
 }
 
 export const isCreatingStateSelector = (state: AdminWorkflowStore) =>
@@ -69,15 +73,26 @@ export const cancelPendingSwitchSelector = (state: AdminWorkflowStore) =>
 export const completeSaveSelector = (state: AdminWorkflowStore) =>
   state.completeSave
 
+export const completedStepNumberSelector = (state: AdminWorkflowStore) =>
+  state.completedStepNumber
+
+export const setCompletedStepSelector = (state: AdminWorkflowStore) =>
+  state.setCompletedStep
+
+export const dismissCompletedStepSelector = (state: AdminWorkflowStore) =>
+  state.dismissCompletedStep
+
 export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
   devtools((set, get) => ({
     createOrEditData: null,
     pendingSwitchTo: null,
+    completedStepNumber: null,
     setToCreating: () =>
       set({
         createOrEditData: {
           state: AdminEditWorkflowState.CreatingStep,
         },
+        completedStepNumber: null,
       }),
     setToEditing: (stepNumber) =>
       set({
@@ -85,13 +100,17 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
           state: AdminEditWorkflowState.EditingStep,
           stepNumber,
         },
+        completedStepNumber: null,
       }),
     setToEditingEmailCard: () =>
       set({
         createOrEditData: {
           state: AdminEditWorkflowState.EditingEmailCard,
         },
+        completedStepNumber: null,
       }),
+    setCompletedStep: (stepNumber) => set({ completedStepNumber: stepNumber }),
+    dismissCompletedStep: () => set({ completedStepNumber: null }),
     setToInactive: () => set({ createOrEditData: null }),
     reset: () => set(INITIAL_STATE),
     requestSwitchTo: (stepNumber) =>
@@ -112,7 +131,13 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
     cancelPendingSwitch: () => set({ pendingSwitchTo: null }),
     // Hand over to a pending switch, or collapse when there is none: a null
     // pending target is exactly the collapsed state.
-    completeSave: () =>
-      set({ createOrEditData: get().pendingSwitchTo, pendingSwitchTo: null }),
+    completeSave: () => {
+      const pendingSwitchTo = get().pendingSwitchTo
+      set({
+        createOrEditData: pendingSwitchTo,
+        pendingSwitchTo: null,
+        ...(pendingSwitchTo ? { completedStepNumber: null } : {}),
+      })
+    },
   })),
 )

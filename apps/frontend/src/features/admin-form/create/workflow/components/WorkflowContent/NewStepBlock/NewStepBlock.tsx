@@ -13,6 +13,7 @@ import {
   createOrEditDataSelector,
   isCreatingStateSelector,
   requestSwitchToCreatingSelector,
+  setCompletedStepSelector,
   setToCreatingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
@@ -31,6 +32,7 @@ export const NewStepBlock = () => {
     requestSwitchToCreating,
     completeSave,
     cancelPendingSwitch,
+    setCompletedStep,
   } = useAdminWorkflowStore((state) => ({
     isCreatingState: isCreatingStateSelector(state),
     stateData: createOrEditDataSelector(state),
@@ -38,7 +40,10 @@ export const NewStepBlock = () => {
     requestSwitchToCreating: requestSwitchToCreatingSelector(state),
     completeSave: completeSaveSelector(state),
     cancelPendingSwitch: cancelPendingSwitchSelector(state),
+    setCompletedStep: setCompletedStepSelector(state),
   }))
+
+  const newStepNumber = formWorkflow?.length ?? 0
 
   // Another card is open: hand it a pending switch so it saves first, the same
   // way clicking a step card or the email card does. Calling setToCreating
@@ -55,11 +60,20 @@ export const NewStepBlock = () => {
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) =>
       createStepMutation.mutate(step, {
-        onSuccess: completeSave,
+        onSuccess: () => {
+          setCompletedStep(newStepNumber)
+          completeSave()
+        },
         // Drop any pending switch so a failed save can't redirect a later one.
         onError: cancelPendingSwitch,
       }),
-    [createStepMutation, completeSave, cancelPendingSwitch],
+    [
+      createStepMutation,
+      completeSave,
+      cancelPendingSwitch,
+      setCompletedStep,
+      newStepNumber,
+    ],
   )
 
   if (!formWorkflow) return null
