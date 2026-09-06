@@ -6,6 +6,8 @@ export const MOCK_ENVS: Partial<ClientEnvVars> = {
   logoBucketUrl: 'local-logo-bucket',
   // Official reCaptcha test keys, see https://developers.google.com/recaptcha/docs/faq.
   captchaPublicKey: '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
+  // Matches the backend's convict default for GOGOV_BASE_URL.
+  goGovBaseUrl: 'https://go.gov.sg',
 }
 
 export const envHandlers = [

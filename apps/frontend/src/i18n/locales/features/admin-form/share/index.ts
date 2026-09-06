@@ -33,6 +33,13 @@ export interface Share {
     claim: string
     claimAriaLabel: string
     copyAriaLabel: string
+    qr: {
+      menuLabel: string
+      ariaLabel: string
+      downloadSvg: string
+      downloadPng: string
+      downloadError: string
+    }
     success: {
       text: string
     }

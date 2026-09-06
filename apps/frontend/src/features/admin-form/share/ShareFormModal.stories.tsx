@@ -2,6 +2,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
+import { goGovHandlers } from '~/mocks/msw/handlers/admin-form/gogov'
+
 import { fullScreenDecorator } from '~utils/storybook'
 
 import { ShareFormModal, ShareFormModalProps } from './ShareFormModal'
@@ -42,4 +44,16 @@ export const PrivateFormWarning = Template.bind({})
 PrivateFormWarning.args = {
   ...Default.args,
   isFormPrivate: true,
+}
+
+export const WithClaimedGoLink = Template.bind({})
+WithClaimedGoLink.args = {
+  ...Default.args,
+}
+WithClaimedGoLink.parameters = {
+  msw: {
+    handlers: {
+      gogov: goGovHandlers(),
+    },
+  },
 }
