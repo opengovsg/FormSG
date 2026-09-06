@@ -15,6 +15,8 @@ const MOCK_SHORT_LINK = 'go.gov.sg/my-mock-form'
 
 const mockToast = vi.fn()
 
+const mockUseIsMobile = vi.fn()
+
 vi.mock('file-saver')
 
 vi.mock('~features/link-shortener/qr/goLinkQrCode', async () => {
@@ -32,6 +34,10 @@ vi.mock('~hooks/useToast', () => ({
   useToast: () => mockToast,
 }))
 
+vi.mock('~hooks/useIsMobile', () => ({
+  useIsMobile: () => mockUseIsMobile(),
+}))
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }))
@@ -39,6 +45,7 @@ vi.mock('react-i18next', () => ({
 describe('GoLinkQrCodeMenu', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockUseIsMobile.mockReturnValue(false)
   })
 
   it('renders the trigger with its accessible name', () => {
@@ -47,6 +54,24 @@ describe('GoLinkQrCodeMenu', () => {
     expect(
       screen.getByRole('button', { name: 'goLink.qr.ariaLabel' }),
     ).toBeInTheDocument()
+  })
+
+  it('shows the visible label and default width on desktop', () => {
+    mockUseIsMobile.mockReturnValue(false)
+    render(<GoLinkQrCodeMenu shortLink={MOCK_SHORT_LINK} />)
+
+    const trigger = screen.getByRole('button', { name: 'goLink.qr.ariaLabel' })
+    expect(trigger).toHaveTextContent('goLink.qr.menuLabel')
+    expect(trigger).not.toHaveStyle({ width: '100%' })
+  })
+
+  it('shows the visible label and stretches full-width on mobile', () => {
+    mockUseIsMobile.mockReturnValue(true)
+    render(<GoLinkQrCodeMenu shortLink={MOCK_SHORT_LINK} />)
+
+    const trigger = screen.getByRole('button', { name: 'goLink.qr.ariaLabel' })
+    expect(trigger).toHaveTextContent('goLink.qr.menuLabel')
+    expect(trigger).toHaveStyle({ width: '100%' })
   })
 
   it('shows both format items when opened', () => {
