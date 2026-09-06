@@ -1,5 +1,9 @@
+import { ReactNode, useLayoutEffect, useState } from 'react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
+import { StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FormFieldDto,
@@ -10,6 +14,8 @@ import {
 import { getAdminFormView } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter } from '~utils/storybook'
+
+import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 
 import { EditStepBlock } from './EditStepBlock'
 
@@ -159,6 +165,70 @@ export default {
       handlers: mrfFormViewWithFields,
     },
   },
+}
+
+const redesignOn = new GrowthBook({
+  features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
+})
+
+const GuidedCreation = ({ children }: { children: ReactNode }): JSX.Element => {
+  const [isCreating, setIsCreating] = useState(false)
+
+  useLayoutEffect(() => {
+    useAdminWorkflowStore.getState().setToCreating()
+    setIsCreating(true)
+    return () => useAdminWorkflowStore.getState().reset()
+  }, [])
+
+  return (
+    <GrowthBookProvider growthbook={redesignOn}>
+      {isCreating ? children : null}
+    </GrowthBookProvider>
+  )
+}
+
+const withGuidedCreation = (Story: StoryFn) => (
+  <GuidedCreation>
+    <Story />
+  </GuidedCreation>
+)
+
+const revealSections =
+  (count: number) =>
+  async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    for (let i = 0; i < count; i++) {
+      await userEvent.click(
+        await canvas.findByRole('button', { name: 'Continue' }),
+      )
+    }
+  }
+
+export const GuidedStep1Name = {
+  args: { stepNumber: 0, submitButtonLabel: 'Add step' },
+  decorators: [withGuidedCreation],
+}
+
+export const GuidedStep1People = {
+  ...GuidedStep1Name,
+  play: revealSections(1),
+}
+
+export const GuidedStep1Fields = {
+  ...GuidedStep1Name,
+  play: revealSections(2),
+}
+
+export const GuidedStep2WhatTheyDo = {
+  args: { stepNumber: 1, submitButtonLabel: 'Add step' },
+  decorators: [withGuidedCreation],
+  play: revealSections(2),
+}
+
+export const GuidedStep2Fields = {
+  args: { stepNumber: 1, submitButtonLabel: 'Add step' },
+  decorators: [withGuidedCreation],
+  play: revealSections(3),
 }
 
 export const Step1Empty = {

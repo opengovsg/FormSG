@@ -250,6 +250,12 @@ const redesignOn = new GrowthBook({
   features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
 })
 
+const withRedesignOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={redesignOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
 const Template: StoryFn = () => <CreatePageWorkflowTab />
 export const NoWorkflow = Template.bind({})
 
@@ -385,13 +391,7 @@ Step2InvalidConditionalRecipientSelected.parameters = {
 // states: off keeps the inline message pointing at Settings, on replaces it
 // with the editable card.
 export const WithWorkflowRedesignOn = Template.bind({})
-WithWorkflowRedesignOn.decorators = [
-  (Story: StoryFn) => (
-    <GrowthBookProvider growthbook={redesignOn}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
+WithWorkflowRedesignOn.decorators = [withRedesignOn]
 WithWorkflowRedesignOn.parameters = {
   msw: {
     handlers: [
@@ -409,6 +409,16 @@ WithWorkflowRedesignOn.parameters = {
       }),
       patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
     ],
+  },
+}
+
+export const NoWorkflowRedesignOn = Template.bind({})
+NoWorkflowRedesignOn.decorators = [withRedesignOn]
+NoWorkflowRedesignOn.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({ ...FORM_WITH_WORKFLOW, workflow: [] }),
+    },
   },
 }
 

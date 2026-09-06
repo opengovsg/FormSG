@@ -1,4 +1,3 @@
-
 export enum GuidedSecondaryAction {
   None = 'none',
   Back = 'back',
