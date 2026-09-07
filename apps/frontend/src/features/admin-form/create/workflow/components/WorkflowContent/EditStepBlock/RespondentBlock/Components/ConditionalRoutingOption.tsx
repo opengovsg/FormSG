@@ -14,6 +14,7 @@ import Papa from 'papaparse'
 import isEmail from 'validator/lib/isEmail'
 
 import {
+  BasicField,
   DropdownFieldBase,
   FormFieldDto,
   WorkflowType,
@@ -32,6 +33,8 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+import { useStageFieldAndNavigate } from '../../../../../hooks/useStageFieldAndNavigate'
+import { FieldEmptyState } from '../../EmptyStates'
 
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
@@ -357,6 +360,13 @@ export const ConditionalRoutingOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const stageFieldAndNavigate = useStageFieldAndNavigate()
+
+  // The CSV block below is already gated on a selected dropdown field, so it
+  // stays hidden here without extra handling. The empty state swaps what the
+  // Controller renders, never the Controller itself: unmounting would
+  // unregister the `required` rule and Save would fail silently.
+  const showEmptyState = isRedesign && !conditionalFieldItems.length
 
   const handleOpenModal = () => {
     conditionalRoutingConfigSetValue('csvFile', null)
@@ -445,18 +455,33 @@ export const ConditionalRoutingOption = ({
                     )
                   },
                 }}
-                render={({ field: { value = '', ...rest } }) => (
-                  <SingleSelect
-                    isDisabled={isLoading}
-                    isClearable={false}
-                    placeholder={t(
-                      'features.adminForm.sidebar.workflow.dynamicRespondent.select',
-                    )}
-                    items={conditionalFieldItems}
-                    value={value}
-                    {...rest}
-                  />
-                )}
+                render={({ field: { value = '', ...rest } }) =>
+                  showEmptyState ? (
+                    <FieldEmptyState
+                      picker="dropdown"
+                      message={t(
+                        'features.adminForm.sidebar.workflow.emptyStates.noDropdownField',
+                      )}
+                      actionLabel={t(
+                        'features.adminForm.sidebar.workflow.emptyStates.noDropdownFieldAction',
+                      )}
+                      onAction={() =>
+                        stageFieldAndNavigate(BasicField.Dropdown)
+                      }
+                    />
+                  ) : (
+                    <SingleSelect
+                      isDisabled={isLoading}
+                      isClearable={false}
+                      placeholder={t(
+                        'features.adminForm.sidebar.workflow.dynamicRespondent.select',
+                      )}
+                      items={conditionalFieldItems}
+                      value={value}
+                      {...rest}
+                    />
+                  )
+                }
               />
               {isSelectedConditionalFieldFound ? (
                 isOptionsToRecipientsMapAttached ? (
