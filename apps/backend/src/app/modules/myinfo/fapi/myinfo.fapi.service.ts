@@ -24,6 +24,7 @@ import {
   MyInfoFapiConfigError,
   MyInfoFapiExchangeError,
   MyInfoFapiFetchError,
+  MyInfoFapiIncompleteLoginError,
   MyInfoFapiMissingSessionError,
   MyInfoFapiMissingUinFinError,
 } from './myinfo.fapi.errors'
@@ -287,6 +288,38 @@ export const fetchPerson = ({
 }
 
 /**
+ * Consumes a resolved login session. A still-pending session is left
+ * untouched and reported as an incomplete login rather than a failure.
+ */
+const consumeFapiSession = (
+  sessionId: string,
+): ResultAsync<
+  MyInfoFapiExchangedSession,
+  DatabaseError | MyInfoFapiMissingSessionError | MyInfoFapiIncompleteLoginError
+> => {
+  return ResultAsync.fromPromise(
+    MyInfoFapiSession.consume(sessionId),
+    (error) => {
+      logger.error({
+        message: 'Failed to consume MyInfo FAPI session',
+        meta: { action: 'loadPersonForSession' },
+        error,
+      })
+      return new DatabaseError('Failed to consume MyInfo FAPI session')
+    },
+  ).andThen((consumed) => {
+    switch (consumed.status) {
+      case 'exchanged':
+        return okAsync(consumed.session)
+      case 'failed':
+        return errAsync(new MyInfoFapiMissingSessionError())
+      case 'incomplete':
+        return errAsync(new MyInfoFapiIncompleteLoginError())
+    }
+  })
+}
+
+/**
  * Consumes an exchanged login session and loads the person data it grants.
  * @param sessionId - The session ID.
  * @returns The person data.
@@ -297,27 +330,12 @@ export const loadPersonForSession = (
   MyInfoData,
   | DatabaseError
   | MyInfoFapiMissingSessionError
+  | MyInfoFapiIncompleteLoginError
   | MyInfoFapiConfigError
   | MyInfoFapiFetchError
   | MyInfoFapiMissingUinFinError
 > => {
-  return ResultAsync.fromPromise(
-    MyInfoFapiSession.consumeExchanged(sessionId),
-    (error) => {
-      logger.error({
-        message: 'Failed to consume MyInfo FAPI session',
-        meta: { action: 'loadPersonForSession', sessionId },
-        error,
-      })
-      return new DatabaseError('Failed to consume MyInfo FAPI session')
-    },
-  )
-    .andThen((session) => {
-      if (!session) {
-        return errAsync(new MyInfoFapiMissingSessionError())
-      }
-      return okAsync(session)
-    })
+  return consumeFapiSession(sessionId)
     .andThen(fetchPerson)
     .map((personResponse) => new MyInfoData(personResponse))
 }

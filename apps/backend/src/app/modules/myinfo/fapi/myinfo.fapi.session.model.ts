@@ -12,11 +12,13 @@ import {
 export const MYINFO_FAPI_SESSION_SCHEMA_ID = 'MyInfoFapiSession'
 
 /**
- * A login session moves pending -> exchanged exactly once, then is deleted.
- * Both transitions filter on phase, so Mongo decides which of two concurrent
- * callbacks wins rather than a read-then-write race.
+ * A login session moves pending -> exchanged or pending -> failed exactly
+ * once, then is deleted. All transitions filter on phase, so Mongo decides
+ * which of two concurrent callbacks wins rather than a read-then-write race.
+ * A session left `pending` (neither transition ever happened) means the
+ * respondent never reached, or hasn't yet reached, the Singpass callback.
  */
-export type MyInfoFapiSessionPhase = 'pending' | 'exchanged'
+export type MyInfoFapiSessionPhase = 'pending' | 'exchanged' | 'failed'
 
 export interface IMyInfoFapiSessionSchema extends Document<string> {
   _id: string
@@ -75,6 +77,15 @@ export type MyInfoFapiExchangedSession = {
  */
 export type MyInfoFapiClaimOutcome = 'claimed' | 'alreadyExchanged' | 'notFound'
 
+/**
+ * `incomplete` is a session still `pending`, or already gone (TTL / unknown
+ * id). It is not deleted, so a later callback can still succeed.
+ */
+export type MyInfoFapiConsumeOutcome =
+  | { status: 'exchanged'; session: MyInfoFapiExchangedSession }
+  | { status: 'failed' }
+  | { status: 'incomplete' }
+
 export interface IMyInfoFapiSessionModel extends Model<IMyInfoFapiSessionSchema> {
   createPending(session: MyInfoFapiPendingSession): Promise<string>
   loadForCallback(sessionId: string): Promise<MyInfoFapiCallbackSession | null>
@@ -82,9 +93,8 @@ export interface IMyInfoFapiSessionModel extends Model<IMyInfoFapiSessionSchema>
     sessionId: string,
     tokens: { accessToken: string; sub: string },
   ): Promise<MyInfoFapiClaimOutcome>
-  consumeExchanged(
-    sessionId: string,
-  ): Promise<MyInfoFapiExchangedSession | null>
+  markFailed(sessionId: string): Promise<void>
+  consume(sessionId: string): Promise<MyInfoFapiConsumeOutcome>
 }
 
 const requiredString = { type: String, required: true }
@@ -97,7 +107,7 @@ const MyInfoFapiSessionSchema = new Schema<
   {
     // Opaque session ID, high entropy UUID to retrieve session data from MongoDB.
     _id: { type: String, default: () => crypto.randomUUID() },
-    phase: { ...requiredString, enum: ['pending', 'exchanged'] },
+    phase: { ...requiredString, enum: ['pending', 'exchanged', 'failed'] },
     formId: requiredString,
     encodedQuery: optionalString,
     state: requiredString,
@@ -188,22 +198,48 @@ MyInfoFapiSessionSchema.statics.markExchanged = async function (
   return 'notFound'
 }
 
-MyInfoFapiSessionSchema.statics.consumeExchanged = async function (
+/**
+ * Records that the callback was reached but the login did not succeed
+ * (Singpass returned an error, or the token exchange failed). Filtered on
+ * `phase: 'pending'` so a session someone else already exchanged is left
+ * alone rather than being overwritten with a failure.
+ */
+MyInfoFapiSessionSchema.statics.markFailed = async function (
   sessionId: string,
-): Promise<MyInfoFapiExchangedSession | null> {
+): Promise<void> {
+  await this.findOneAndUpdate(
+    { _id: sessionId, phase: 'pending' },
+    { $set: { phase: 'failed' } },
+  )
+}
+
+/**
+ * Consumes a resolved (exchanged or failed) session in one write. A session
+ * still `pending` is left untouched: the respondent may yet complete login
+ * elsewhere (e.g. a still-open Singpass tab), and the TTL index already
+ * reaps genuinely abandoned sessions on its own.
+ */
+MyInfoFapiSessionSchema.statics.consume = async function (
+  sessionId: string,
+): Promise<MyInfoFapiConsumeOutcome> {
   const session = await this.findOneAndDelete(
-    { _id: sessionId, phase: 'exchanged' },
+    { _id: sessionId, phase: { $in: ['exchanged', 'failed'] } },
     { includeResultMetadata: false },
   )
-  if (!session || !session.accessTokenEnc || !session.sub) {
-    return null
+  if (!session) {
+    return { status: 'incomplete' }
   }
-
+  if (session.phase === 'failed' || !session.accessTokenEnc || !session.sub) {
+    return { status: 'failed' }
+  }
   return {
-    formId: session.formId,
-    accessToken: await decrypt(session.accessTokenEnc),
-    sub: session.sub,
-    dpopPrivateJwk: await decryptJwk(session.dpopPrivateJwkEnc),
+    status: 'exchanged',
+    session: {
+      formId: session.formId,
+      accessToken: await decrypt(session.accessTokenEnc),
+      sub: session.sub,
+      dpopPrivateJwk: await decryptJwk(session.dpopPrivateJwkEnc),
+    },
   }
 }
 

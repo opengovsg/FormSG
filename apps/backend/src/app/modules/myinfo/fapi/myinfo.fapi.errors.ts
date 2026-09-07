@@ -12,6 +12,12 @@ export class MyInfoFapiMissingSessionError extends ApplicationError {
   }
 }
 
+export class MyInfoFapiIncompleteLoginError extends ApplicationError {
+  constructor(message = 'MyInfo FAPI login not completed') {
+    super(message, undefined, ErrorCodes.MYINFO_FAPI_INCOMPLETE_LOGIN)
+  }
+}
+
 export class MyInfoFapiAuthRequestError extends ApplicationError {
   constructor(
     message = 'Error while creating MyInfo FAPI authorization request',
