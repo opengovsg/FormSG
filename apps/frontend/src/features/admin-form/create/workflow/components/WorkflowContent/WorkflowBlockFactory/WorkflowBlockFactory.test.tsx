@@ -8,6 +8,7 @@ import i18n from '~/i18n/i18n'
 
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 import * as pageStories from '../../../CreatePageWorkflowTab.stories'
+import { STEP_CONNECTOR_TEST_ID } from '../WorkflowContent'
 
 const { WithWorkflowRedesignOn, WithWorkflow } = composeStories(pageStories)
 
@@ -100,6 +101,55 @@ describe('completion peek card after a step is built', () => {
     })
 
     expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
+  })
+
+  describe('while a step is reporting', () => {
+    it('withholds the Add step button, leaving the report the only way on', async () => {
+      await renderWorkflow(WithWorkflowRedesignOn)
+      expect(
+        screen.getByRole('button', { name: /add step/i }),
+      ).toBeInTheDocument()
+
+      await finishCreating(0)
+
+      expect(
+        screen.queryByRole('button', { name: /add step/i }),
+      ).not.toBeInTheDocument()
+    })
+
+    it('takes the connector with it, so nothing dangles under the report', async () => {
+      await renderWorkflow(WithWorkflowRedesignOn)
+      const before = screen.queryAllByTestId(STEP_CONNECTOR_TEST_ID).length
+
+      await finishCreating(0)
+
+      expect(screen.queryAllByTestId(STEP_CONNECTOR_TEST_ID)).toHaveLength(
+        before - 1,
+      )
+    })
+
+    it('gives the Add step button back once the admin says they are done', async () => {
+      const user = userEvent.setup()
+      await renderWorkflow(WithWorkflowRedesignOn)
+      await finishCreating(0)
+
+      await act(async () => {
+        await user.click(screen.getByRole('button', DECLINE))
+      })
+
+      expect(
+        await screen.findByRole('button', { name: /add step/i }),
+      ).toBeInTheDocument()
+    })
+
+    it('keeps the Add step button when the flag is off, since no report shows', async () => {
+      await renderWorkflow(WithWorkflow)
+      await finishCreating(0)
+
+      expect(
+        screen.getByRole('button', { name: /add step/i }),
+      ).toBeInTheDocument()
+    })
   })
 
   it('does not appear with the redesign flag off', async () => {

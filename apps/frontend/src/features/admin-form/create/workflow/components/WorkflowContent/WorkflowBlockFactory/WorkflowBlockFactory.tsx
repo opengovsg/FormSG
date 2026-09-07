@@ -4,7 +4,6 @@ import { useDisclosure } from '@chakra-ui/react'
 import { FormWorkflowStepDto } from 'formsg-shared/types'
 
 import {
-  completedStepNumberSelector,
   dismissCompletedStepSelector,
   editDataSelector,
   setToCreatingSelector,
@@ -14,6 +13,7 @@ import { DeleteStepModal } from '../../DeleteStepModal'
 import {
   CompletionPeekCard,
   CompletionPeekCardProps,
+  useReportedCompletedStep,
 } from '../../GuidedCreation'
 import { CompletionPeekMomentType } from '../../GuidedCreation/utils/completionPeekContent'
 import { ActiveStepBlock } from '../ActiveStepBlock'
@@ -30,7 +30,7 @@ export const WorkflowBlockFactory = ({
   step,
 }: WorkflowBlockFactoryProps): JSX.Element => {
   const editState = useAdminWorkflowStore(editDataSelector)
-  const completedStepNumber = useAdminWorkflowStore(completedStepNumberSelector)
+  const reportedStepNumber = useReportedCompletedStep()
   const dismissCompletedStep = useAdminWorkflowStore(
     dismissCompletedStepSelector,
   )
@@ -77,7 +77,7 @@ export const WorkflowBlockFactory = ({
       ) : (
         <InactiveStepBlock stepNumber={stepNumber} step={step} />
       )}
-      {completedStepNumber === stepNumber ? (
+      {reportedStepNumber === stepNumber ? (
         <CompletionPeekCard {...peekCardProps} />
       ) : null}
     </>
