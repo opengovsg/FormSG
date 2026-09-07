@@ -60,7 +60,7 @@ export const UserDto = UserBase.extend({
   created: DateString,
   lastAccessed: DateString.optional(),
   updatedAt: DateString,
-  grantSource: z.enum(['sso', 'otp', 'wogad']).optional(),
+  grantSource: z.enum(['sso', 'otp', 'wogad', 'one']).optional(),
 })
 export type UserDto = z.infer<typeof UserDto>
 
