@@ -45,6 +45,21 @@ describe('pendingFieldCreation', () => {
     })
   })
 
+  it('can be cleared without touching stateData, for trips that stage nothing', () => {
+    // The generic "Add fields" path promises the builder opens with nothing
+    // staged, even if an earlier staging was never consumed.
+    const { stageFieldCreation, clearPendingFieldCreation } =
+      useFieldBuilderStore.getState()
+
+    stageFieldCreation(emailField, 3)
+    clearPendingFieldCreation()
+
+    expect(useFieldBuilderStore.getState().pendingFieldCreation).toBeNull()
+    expect(useFieldBuilderStore.getState().stateData).toEqual({
+      state: FieldBuilderState.Inactive,
+    })
+  })
+
   it('clears itself on consumption, so a later mount does not reopen it', () => {
     const { stageFieldCreation, consumePendingFieldCreation, setToInactive } =
       useFieldBuilderStore.getState()

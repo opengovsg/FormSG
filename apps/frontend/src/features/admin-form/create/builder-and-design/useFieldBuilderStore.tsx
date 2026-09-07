@@ -48,6 +48,7 @@ export type FieldBuilderStore = {
     insertionIndex: number
   } | null
   stageFieldCreation: (field: FieldCreateDto, insertionIndex: number) => void
+  clearPendingFieldCreation: () => void
   consumePendingFieldCreation: () => void
 }
 
@@ -107,6 +108,7 @@ export const useFieldBuilderStore = create<FieldBuilderStore>()(
     pendingFieldCreation: null,
     stageFieldCreation: (field, insertionIndex) =>
       set({ pendingFieldCreation: { field, insertionIndex } }),
+    clearPendingFieldCreation: () => set({ pendingFieldCreation: null }),
     consumePendingFieldCreation: () => {
       const pending = get().pendingFieldCreation
       if (!pending) return
@@ -155,6 +157,11 @@ export const pendingFieldCreationSelector = (
 export const stageFieldCreationSelector = (
   state: FieldBuilderStore,
 ): FieldBuilderStore['stageFieldCreation'] => state.stageFieldCreation
+
+export const clearPendingFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['clearPendingFieldCreation'] =>
+  state.clearPendingFieldCreation
 
 export const consumePendingFieldCreationSelector = (
   state: FieldBuilderStore,
