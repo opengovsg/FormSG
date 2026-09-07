@@ -1,5 +1,10 @@
 export * from './en-sg'
 
+interface CompletionPeekText {
+  title: string
+  subtitle: string
+}
+
 interface CsvColumnText {
   title: string
   explanation: string
@@ -112,11 +117,11 @@ export interface Workflow {
   }
   questions: {
     tooltip: string
-    tooltipRedesign: string
     label: string
     labelRedesign: string
     placeholder: string
     placeholderRedesign: string
+    autoAddHelperTextRedesign: string
   }
   approvals: {
     title: string
@@ -124,10 +129,12 @@ export interface Workflow {
     notRequired: string
     toggle: {
       label: string
+      labelRedesign: string
       description: string
       descriptionRedesign: string
       tooltip: string
       placeholder: string
+      selectorLabelRedesign: string
     }
     validation: {
       noField: string
@@ -148,4 +155,21 @@ export interface Workflow {
     label: string
   }
   paymentEnabledNoSteps: string
+  completionEmail: {
+    title: string
+    divider: string
+  }
+  completionPeek: {
+    stepOneDone: CompletionPeekText
+    laterStepDone: CompletionPeekText
+    emailSetUp: CompletionPeekText
+    statusTracking: CompletionPeekText
+    guidedSetupFinished: CompletionPeekText
+    actions: {
+      declineAnotherStep: string
+      addAnotherStep: string
+      continue: string
+      finish: string
+    }
+  }
 }

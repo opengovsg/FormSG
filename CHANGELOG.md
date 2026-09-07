@@ -2,6 +2,62 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.17.0](https://github.com/opengovsg/formsg/compare/v9.16.0...v9.17.0) (2026-09-07)
+
+
+### Features
+
+* **workflow-builder-redesign:** person-framed approval control (#9850) ([#9850](https://github.com/opengovsg/formsg/commit/0083007c73ba45075b9f1d06afef6363bd2d6a3d))
+* **workflow:** add the five completion moments' copy (2/3) (#9941) ([#9941](https://github.com/opengovsg/formsg/commit/941280d570bb40b51e26322714647b7ec1d73ef2))
+* **workflow:** add the PeekCard component (1/3) (#9940) ([#9940](https://github.com/opengovsg/formsg/commit/1757be6bcda37601babab128e8ad4a6c77f1d5ad))
+* **workflow:** add the Spotlight wrapper (1/2) (#9945) ([#9945](https://github.com/opengovsg/formsg/commit/b5422b8a2f115c50bcd9e0ca6860988f29627fb4))
+* **workflow:** decide when the spotlight applies (2/2) (#9946) ([#9946](https://github.com/opengovsg/formsg/commit/5bdc82d7b9eba72918938847830a485863d6c912))
+* **workflow:** wire the peek card to its five moments (3/3) (#9942) ([#9942](https://github.com/opengovsg/formsg/commit/b525a4588617684822c2011e02c4fb8dffb64a55))
+
+
+### Bug Fixes
+
+* **theme:** add pointer cursor to Radio option hover (#9953) ([#9953](https://github.com/opengovsg/formsg/commit/366607ae9fed37580a328a01df765cb8418e4d9f))
+
+
+### Tests
+
+* **storybook:** repair the three interaction tests TurboSnap re-enabled (#9952) ([#9952](https://github.com/opengovsg/formsg/commit/9a43c3ee5a0a8c9eef0d42a97b6a75f4d4bdc608))
+
+## [9.16.0](https://github.com/opengovsg/formsg/compare/v9.15.2...v9.16.0) (2026-09-03)
+
+
+### Features
+
+* **workflow:** completion email card, editable (3/3) (#9874) ([#9874](https://github.com/opengovsg/formsg/commit/020af39399ae051f6b8da26361dfbf4bca0e51f1))
+* **workflow:** completion email card, read-only (2/3) (#9873) ([#9873](https://github.com/opengovsg/formsg/commit/60fcee9003dda3e194101fbb3aa1d757260cf043))
+* **workspace:** rework form-origin question into two-question flow (FRM-2572) (#9852) ([#9852](https://github.com/opengovsg/formsg/commit/fcf0df93f0da07dc00ca3e87ad3b17d61acf9971))
+* mrf payments admin surfaces (2/4) (#9798) ([#9798](https://github.com/opengovsg/formsg/commit/ec0d1a15ff3959185fe54bd19fec3421c32a3891))
+* mrf payments hardening (4/4) (#9800) ([#9800](https://github.com/opengovsg/formsg/commit/52d3b8058e3906b4aa6941d583f86096de339fe1))
+* mrf payments respondent flow (3/4) (#9799) ([#9799](https://github.com/opengovsg/formsg/commit/bf5db8ebf19fa32b4068fa1522989ca90cf1d3de))
+* mrf payments schema changes (1/4) (#9797) ([#9797](https://github.com/opengovsg/formsg/commit/3ce7aa4a9515abda71ab4906738a6fcb51838d90))
+
+
+### Bug Fixes
+
+* **ci:** correct TurboSnap's untraced globs so tracing works at all (#9950) ([#9950](https://github.com/opengovsg/formsg/commit/d2124b18b5fc5b3949d8c6f6ac0f755a5c29b2b3))
+* add factory mocks to prevent unlimited retries against localhost (#9913) ([#9913](https://github.com/opengovsg/formsg/commit/e18536654ae5fd38edd30a0c632fa9b121206893))
+
+
+### Tests
+
+* **workspace:** assert Q1's own required message in the origin story (#9948) ([#9948](https://github.com/opengovsg/formsg/commit/cb41c600487ff994689ac22f4c472b0ffd18dff1))
+
+
+### Chores
+
+* drop domain docs merged by accident in #9852 (#9949) ([#9852](https://github.com/opengovsg/formsg/commit/360be6173607778a5abec136050e2cb5bd63140c))
+
+
+### Refactors
+
+* **mrf-email:** extract the MRF completion email field group (1/3) (#9872) ([#9872](https://github.com/opengovsg/formsg/commit/40426be3a34d3c4eed57706eeec676a94277f45c))
+
 ## [9.15.2](https://github.com/opengovsg/formsg/compare/v9.15.1...v9.15.2) (2026-09-01)
 
 

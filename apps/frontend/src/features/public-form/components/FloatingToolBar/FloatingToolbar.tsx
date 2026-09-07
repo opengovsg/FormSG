@@ -1,15 +1,10 @@
 import { Stack } from '@chakra-ui/react'
-import { datadogLogs } from '@datadog/browser-logs'
-import { useGrowthBook } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants'
 
 import { noPrintCss } from '~utils/noPrintCss'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FloatingIssueFeedbackButton } from './FloatingIssueFeedbackButton'
-import { FloatingSaveDraftButton } from './FloatingSaveDraftButton'
 
 export const FloatingToolBar = (): JSX.Element | null => {
   const { isPreview, formId, submissionData } = usePublicFormContext()

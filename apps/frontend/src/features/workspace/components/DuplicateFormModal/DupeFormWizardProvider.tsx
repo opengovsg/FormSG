@@ -115,6 +115,7 @@ export const useDupeFormWizardContext = (
     title,
     responseMode,
     emails,
+    formOriginProcess,
     formOrigins,
   }: CreateFormWizardInputProps) => {
     if (!sourceFormId) {
@@ -124,6 +125,7 @@ export const useDupeFormWizardContext = (
     const metadata = buildFormClientMetadata({
       isPaperTrackingSetUpPageEnabled,
       isMrfCutoverEnabled,
+      formOriginProcess,
       formOrigins,
       formResponseMode: responseMode,
     })

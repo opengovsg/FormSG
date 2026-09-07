@@ -131,11 +131,12 @@ export const enSG: Workflow = {
   questions: {
     tooltip:
       'Respondent will only be able to fill the fields you have selected',
-    tooltipRedesign: 'This person can only fill in the fields you select.',
     label: 'Select field(s) for this respondent to fill',
     labelRedesign: 'Choose the fields this person fills in',
     placeholder: 'Select field(s) from your form',
     placeholderRedesign: 'Select fields from your form',
+    autoAddHelperTextRedesign:
+      'The approval field is added here automatically.',
   },
   approvals: {
     title: 'Approvals',
@@ -144,13 +145,16 @@ export const enSG: Workflow = {
     notRequired: 'Approval not required in this step',
     toggle: {
       label: 'Make this step an approval',
+      labelRedesign: "Make this person approve what's been filled in so far",
       description:
         'If respondent selects Yes, the form is Approved and continues to the next step. If they select No, the form is Not approved and stops at this step.',
       descriptionRedesign:
-        'If this person selects Yes, the form is Approved and continues to the next step. If they select No, the form is Not approved and stops at this step.',
+        'If they reject the submission, the workflow stops here.',
       tooltip:
         'Use this for steps that involve any type of decision, such as reviews or endorsements. Decision will be shown on dashboard and tracking links.',
       placeholder: 'Select a Yes/No field from your form',
+      selectorLabelRedesign:
+        'Select the Yes/No field for the approval decision',
     },
     validation: {
       noField: 'Please select a Yes/No field',
@@ -177,4 +181,39 @@ export const enSG: Workflow = {
   },
   paymentEnabledNoSteps:
     'Remove the payment field to add workflow steps. A form cannot have both a payment field and a workflow.',
+  completionEmail: {
+    title: 'Completion email',
+    divider: 'END OF WORKFLOW',
+  },
+  completionPeek: {
+    stepOneDone: {
+      title:
+        'Step 1 is the public-facing step. Anyone with your link starts here.',
+      subtitle: 'Now add the steps that route to specific people.',
+    },
+    laterStepDone: {
+      title: 'Nice, Step {stepNumber} is all set',
+      subtitle: 'Would you like to add another step?',
+    },
+    emailSetUp: {
+      title: "You've set up the completion email.",
+      subtitle: 'Next, set up an extra workflow setting.',
+    },
+    statusTracking: {
+      title: 'Your workflow is ready',
+      subtitle:
+        'Before you finish, you can let people check the status of their response.',
+    },
+    guidedSetupFinished: {
+      title: "You've finished guided setup",
+      subtitle:
+        'Use the Preview button on the top right to check what each step looks like.',
+    },
+    actions: {
+      declineAnotherStep: "No, I'm done",
+      addAnotherStep: 'Yes, add a step',
+      continue: 'Continue',
+      finish: 'Done',
+    },
+  },
 }

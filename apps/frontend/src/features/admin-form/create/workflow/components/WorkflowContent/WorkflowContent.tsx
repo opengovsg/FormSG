@@ -5,13 +5,16 @@ import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { StatusTrackerToggle } from '~features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
 
+import { CompletionEmailBlock } from './CompletionEmailBlock'
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'
 import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
 
 export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
+  const isRedesign = useIsWorkflowBuilderRedesign()
 
   if (isLoading) return null
   return (
@@ -38,7 +41,13 @@ export const WorkflowContent = (): JSX.Element | null => {
         ))}
         <NewStepBlock />
       </Stack>
-      {formWorkflow?.length ? <WorkflowCompletionMessageBlock /> : null}
+      {formWorkflow?.length ? (
+        isRedesign ? (
+          <CompletionEmailBlock />
+        ) : (
+          <WorkflowCompletionMessageBlock />
+        )
+      ) : null}
     </Stack>
   )
 }

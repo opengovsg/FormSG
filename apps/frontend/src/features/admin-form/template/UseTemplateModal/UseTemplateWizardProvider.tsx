@@ -81,6 +81,7 @@ export const useUseTemplateWizardContext = (
     title,
     responseMode,
     emails,
+    formOriginProcess,
     formOrigins,
   }: CreateFormWizardInputProps) => {
     if (!formId) return
@@ -88,6 +89,7 @@ export const useUseTemplateWizardContext = (
     const metadata = buildFormClientMetadata({
       isPaperTrackingSetUpPageEnabled,
       isMrfCutoverEnabled,
+      formOriginProcess,
       formOrigins,
       formResponseMode: responseMode,
     })

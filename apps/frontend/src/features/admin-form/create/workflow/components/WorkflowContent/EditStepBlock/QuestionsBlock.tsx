@@ -1,6 +1,6 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, FormHelperText } from '@chakra-ui/react'
 
 import { textStyles } from '~theme/textStyles'
 import { MultiSelect } from '~components/Dropdown'
@@ -15,7 +15,7 @@ import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 
-import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
+import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 interface QuestionsBlockProps {
@@ -35,7 +35,10 @@ export const QuestionsBlock = ({
   const {
     formState: { errors },
     control,
+    watch,
+    trigger,
   } = formMethods
+  const selectedApprovalField = watch(APPROVAL_FIELD_NAME)
 
   const items = formFields
     .filter((f) => {
@@ -70,11 +73,11 @@ export const QuestionsBlock = ({
           style={textStyles.h4}
           tooltipVariant="info"
           tooltipPlacement="top"
-          tooltipText={t(
+          tooltipText={
             isRedesign
-              ? 'features.adminForm.sidebar.workflow.questions.tooltipRedesign'
-              : 'features.adminForm.sidebar.workflow.questions.tooltip',
-          )}
+              ? undefined
+              : t('features.adminForm.sidebar.workflow.questions.tooltip')
+          }
         >
           {t(
             isRedesign
@@ -85,21 +88,39 @@ export const QuestionsBlock = ({
         <Controller
           control={control}
           name={FIELDS_TO_EDIT_NAME}
-          render={({ field: { value = [], ...field } }) => (
-            <MultiSelect
-              isDisabled={isLoading}
-              placeholder={t(
-                isRedesign
-                  ? 'features.adminForm.sidebar.workflow.questions.placeholderRedesign'
-                  : 'features.adminForm.sidebar.workflow.questions.placeholder',
-              )}
-              items={items}
-              isSelectedItemFullWidth
-              values={value}
-              {...field}
-            />
-          )}
+          render={({ field: { value = [], onChange, ...field } }) => {
+            // Re-validate approval_field as soon as `edit` changes, so removing
+            // the auto-added chip errors inline rather than at save.
+            const handleFieldsChange = (newValue: string[]) => {
+              onChange(newValue)
+              if (isRedesign && selectedApprovalField) {
+                void trigger(APPROVAL_FIELD_NAME)
+              }
+            }
+            return (
+              <MultiSelect
+                isDisabled={isLoading}
+                placeholder={t(
+                  isRedesign
+                    ? 'features.adminForm.sidebar.workflow.questions.placeholderRedesign'
+                    : 'features.adminForm.sidebar.workflow.questions.placeholder',
+                )}
+                items={items}
+                isSelectedItemFullWidth
+                values={value}
+                onChange={handleFieldsChange}
+                {...field}
+              />
+            )
+          }}
         />
+        {isRedesign && selectedApprovalField ? (
+          <FormHelperText>
+            {t(
+              'features.adminForm.sidebar.workflow.questions.autoAddHelperTextRedesign',
+            )}
+          </FormHelperText>
+        ) : null}
         <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
       </FormControl>
     </EditStepBlockContainer>
