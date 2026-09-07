@@ -27,6 +27,20 @@ export interface General extends HasTitle {
     }
     limitLessThanCurrent: string
   }
+  expiry: {
+    label: string
+    input: {
+      label: string
+      timeLabel: string
+      description: string
+    }
+    toast: {
+      success: string
+      successRemoved: string
+    }
+    dateInThePast: string
+    invalidTime: string
+  }
   customisation: {
     closedFormMessage: string
   }

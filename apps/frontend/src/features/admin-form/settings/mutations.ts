@@ -2,7 +2,9 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { formatInTimeZone } from 'date-fns-tz'
 
+import { DateString } from 'formsg-shared/types'
 import {
   FormAuthType,
   FormResponseMode,
@@ -32,6 +34,7 @@ import {
   updateBusinessInfo,
   updateFormAuthType,
   updateFormCaptcha,
+  updateFormCloseAt,
   updateFormEmails,
   updateFormEsrvcId,
   updateFormHasMultiLang,
@@ -168,6 +171,30 @@ export const useMutateFormSettings = () => {
               submissionLimit: formatOrdinal(newData.submissionLimit),
             })
           : t('features.adminForm.settings.general.limit.toast.successRemoved')
+        handleSuccess({ newData, toastDescription: toastStatusMessage })
+      },
+      onError: handleError,
+    },
+  )
+
+  const mutateFormCloseAt = useMutation(
+    (nextCloseAt: DateString | null) => updateFormCloseAt(formId, nextCloseAt),
+    {
+      onSuccess: (newData) => {
+        const toastStatusMessage = newData.closeAt
+          ? t('features.adminForm.settings.general.expiry.toast.success', {
+              // Same 12-hour rendering and zone label as the banner
+              // respondents see, so the admin confirms the deadline in the
+              // form it will be read in. The browser's own timezone would
+              // confirm a different wall-clock time than the deadline that was
+              // actually set, for any admin not currently in Singapore.
+              closeAt: formatInTimeZone(
+                new Date(newData.closeAt),
+                'Asia/Singapore',
+                "d MMM yyyy, h:mm a '(SGT)'",
+              ),
+            })
+          : t('features.adminForm.settings.general.expiry.toast.successRemoved')
         handleSuccess({ newData, toastDescription: toastStatusMessage })
       },
       onError: handleError,
@@ -592,6 +619,7 @@ export const useMutateFormSettings = () => {
     mutateFormWebhookUrl,
     mutateFormStatus,
     mutateFormLimit,
+    mutateFormCloseAt,
     mutateFormHasMultiLang,
     mutateFormSupportedLanguages,
     mutateFormInactiveMessage,

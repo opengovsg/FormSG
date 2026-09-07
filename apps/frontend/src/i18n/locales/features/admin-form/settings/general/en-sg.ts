@@ -30,6 +30,21 @@ export const enSG = {
     limitLessThanCurrent:
       'Submission limit must be greater than current submission count ({currentResponseCount})',
   },
+  expiry: {
+    label: 'Set a form closing date',
+    input: {
+      label: 'Closing date and time',
+      timeLabel: 'Closing time',
+      description:
+        'Your form will automatically close at the selected date and time (SGT).',
+    },
+    toast: {
+      success: 'Your form will now automatically close on {closeAt}.',
+      successRemoved: 'The closing date on your form is removed.',
+    },
+    dateInThePast: 'Closing date must be in the future',
+    invalidTime: 'Please enter a valid time',
+  },
   customisation: {
     closedFormMessage: 'Set message for closed form',
   },

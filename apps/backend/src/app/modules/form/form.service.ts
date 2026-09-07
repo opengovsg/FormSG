@@ -11,6 +11,7 @@ import {
   SubmissionType,
 } from 'formsg-shared/types'
 import { encryptString } from 'formsg-shared/utils/crypto'
+import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import { decodeBase64 } from 'tweetnacl-util'
@@ -24,6 +25,7 @@ import {
 } from '../../../types'
 import { smsConfig } from '../../config/features/sms.config'
 import { createLoggerWithLabel } from '../../config/logger'
+import { TIMEZONE } from '../../constants/timezone'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
@@ -54,6 +56,7 @@ import {
   PrivateFormError,
 } from './form.errors'
 import {
+  getCollabEmailsWithPermission,
   getSubmissionType,
   hasVerifiableMobileFieldformFields,
 } from './form.utils'
@@ -210,12 +213,33 @@ export const retrieveFormById = (
 }
 
 /**
+ * Whether a form's scheduled expiry has passed.
+ *
+ * Evaluated on demand rather than trusted from `status`, because the sweep that
+ * flips the status runs on an interval — between a form's deadline and the next
+ * sweep, `status` still reads Public even though the deadline has gone.
+ */
+const hasPassedCloseAt = (form: IPopulatedForm): boolean =>
+  !!form.closeAt && new Date(form.closeAt) <= new Date()
+
+/**
  * Method to ensure given form is available to the public.
+ *
+ * The scheduled-expiry check here is what actually enforces a deadline. The
+ * periodic sweep updates `status` and notifies the admin, but it lags the
+ * deadline by up to its interval; this closes that window so no response is
+ * accepted after the instant the admin set.
+ *
+ * Deliberately does *not* deactivate an expired form, unlike the submission
+ * limit check. Flipping the status here would remove the form from the sweep's
+ * `status: Public` query, and the admin would never be told it closed.
+ *
  * @param form the form to check
  * @returns ok(true) if form is public
  * @returns err(ApplicationError) if form has an invalid state
  * @returns err(FormDeletedError) if form has been deleted
- * @returns err(PrivateFormError) if form is private, the message will be the form inactive message
+ * @returns err(PrivateFormError) if form is private or past its scheduled
+ * expiry; the message will be the form inactive message
  */
 export const isFormPublic = (
   form: IPopulatedForm,
@@ -225,12 +249,198 @@ export const isFormPublic = (
   }
   switch (form.status) {
     case FormStatus.Public:
-      return ok(true)
+      return hasPassedCloseAt(form)
+        ? err(new PrivateFormError(form.inactiveMessage, form.title))
+        : ok(true)
     case FormStatus.Archived:
       return err(new FormDeletedError())
     case FormStatus.Private:
       return err(new PrivateFormError(form.inactiveMessage, form.title))
   }
+}
+
+/**
+ * Maximum number of forms closed in a single sweep. Bounds the blast radius of a
+ * sweep that runs after a long outage — the remainder is picked up by the next
+ * run rather than by one unbounded request.
+ */
+export const CLOSE_EXPIRED_FORMS_BATCH_LIMIT = 500
+
+export type ClosedExpiredForm = {
+  formId: string
+  title: string
+  closeAt: Date
+  /** Admin plus collaborators, i.e. everyone told the form has closed. */
+  emailRecipients: string[]
+}
+
+/**
+ * Closes every public form whose scheduled expiry has passed.
+ *
+ * Intended to be driven by a periodic sweep rather than by respondent traffic:
+ * nothing else runs at the close instant, so without this a form whose deadline
+ * passes while nobody visits it keeps reporting itself as open.
+ *
+ * Idempotent — a form already closed no longer matches the query, so re-running
+ * the sweep closes nothing twice.
+ *
+ * @param now the instant to evaluate deadlines against
+ * @param limit maximum forms to close in this sweep
+ * @returns ok(closed forms) listing what this sweep closed, capped at the batch limit
+ * @returns err(PossibleDatabaseError) if the query or update failed
+ */
+export const closeExpiredForms = (
+  now: Date = new Date(),
+  limit: number = CLOSE_EXPIRED_FORMS_BATCH_LIMIT,
+): ResultAsync<ClosedExpiredForm[], PossibleDatabaseError> => {
+  const logMeta = {
+    action: 'closeExpiredForms',
+    now: now.toISOString(),
+    limit,
+  }
+
+  return ResultAsync.fromPromise(
+    // Read the matching forms before updating them so the caller learns *which*
+    // forms closed, which the eventual admin notification needs. An updateMany
+    // alone would only yield a count.
+    FormModel.find({
+      status: FormStatus.Public,
+      // `$type: 'date'` rather than `$ne: null` so this query is eligible for
+      // the partial index on { status, closeAt } — MongoDB only uses a partial
+      // index when the query provably matches its filter expression, and it
+      // will not infer `$type` from `$ne: null`. It also subsumes the null
+      // check, since neither null nor a missing field is of type date.
+      closeAt: { $type: 'date', $lte: now },
+    })
+      .select('_id title closeAt admin permissionList')
+      // The notification goes to the admin and every collaborator, so their
+      // emails have to come back with the same read.
+      .populate({ path: 'admin', select: 'email' })
+      .limit(limit)
+      .lean()
+      .exec(),
+    (error) => {
+      logger.error({
+        message: 'Error finding forms past their scheduled closure',
+        meta: logMeta,
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((expiredForms) => {
+    if (expiredForms.length === 0) return okAsync([])
+
+    const formIds = expiredForms.map((form) => form._id)
+
+    return ResultAsync.fromPromise(
+      // Re-assert `status` in the update filter so a form reopened between the
+      // read and the write is left alone rather than clobbered.
+      FormModel.updateMany(
+        { _id: { $in: formIds }, status: FormStatus.Public },
+        { $set: { status: FormStatus.Private } },
+      ).exec(),
+      (error) => {
+        logger.error({
+          message: 'Error closing forms past their scheduled closure',
+          meta: { ...logMeta, formIds },
+          error,
+        })
+        return transformMongoError(error)
+      },
+    ).map((result) => {
+      logger.info({
+        message: 'Closed forms past their scheduled closure',
+        meta: {
+          ...logMeta,
+          matchedCount: expiredForms.length,
+          modifiedCount: result.modifiedCount,
+          isBatchFull: expiredForms.length === limit,
+        },
+      })
+
+      return expiredForms.map((form) => {
+        const adminEmail = (form.admin as unknown as { email?: string })?.email
+        return {
+          formId: String(form._id),
+          title: form.title,
+          // Declared as a wire-format DateString on the shared type but stored
+          // as a BSON date, so normalise instead of asserting either way.
+          closeAt: new Date(form.closeAt as unknown as string | Date),
+          emailRecipients: adminEmail
+            ? [
+                adminEmail,
+                ...getCollabEmailsWithPermission(form.permissionList),
+              ]
+            : [],
+        }
+      })
+    })
+  })
+}
+
+/**
+ * Notifies each form's admin and collaborators that their form has closed by
+ * reaching its scheduled expiry.
+ *
+ * Never rejects. A failed email must not fail the sweep or undo a closure that
+ * has already happened — the form really is closed, and reporting the sweep as
+ * failed would invite a retry that closes nothing and re-sends to everyone who
+ * did receive one.
+ *
+ * Best-effort and at-most-once: a form is only matched by the sweep while it is
+ * still public, so a send that fails here is not retried on the next run. The
+ * failure is logged and counted rather than silently dropped.
+ *
+ * @param closedForms the forms closed by this sweep
+ * @returns ok with how many notifications were sent and how many failed
+ */
+export const notifyFormsClosed = (
+  closedForms: ClosedExpiredForm[],
+): ResultAsync<{ sentCount: number; failedCount: number }, never> => {
+  const sends = closedForms.map((form) => {
+    if (form.emailRecipients.length === 0) {
+      logger.warn({
+        message: 'Closed form has no notification recipients',
+        meta: {
+          action: 'notifyFormsClosed',
+          formId: form.formId,
+        },
+      })
+      return okAsync(false)
+    }
+
+    return MailService.sendFormScheduledClosureNotification({
+      emailRecipients: form.emailRecipients,
+      formTitle: form.title,
+      formId: form.formId,
+      // 12-hour, with the zone spelled out because the email is read outside
+      // the app where nothing else establishes it. Seconds are dropped: a
+      // deadline is set to the minute, so they would be noise not precision.
+      closedAt: moment(form.closeAt)
+        .tz(TIMEZONE)
+        .format('D MMM YYYY, h:mm A [(SGT)]'),
+    })
+      .map(() => true)
+      .orElse((error) => {
+        logger.error({
+          message: 'Failed to send scheduled closure notification',
+          meta: {
+            action: 'notifyFormsClosed',
+            formId: form.formId,
+          },
+          error,
+        })
+        return okAsync(false)
+      })
+  })
+
+  return ResultAsync.combine(sends).map((results) => {
+    const sentCount = results.filter(Boolean).length
+    return {
+      sentCount,
+      failedCount: results.length - sentCount,
+    }
+  })
 }
 
 /**
