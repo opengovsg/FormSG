@@ -116,7 +116,38 @@ describe('myinfo.fapi.session.model', () => {
     })
   })
 
-  describe('consumeExchanged', () => {
+  describe('markFailed', () => {
+    it('should be consumable as a failed session afterwards', async () => {
+      const sessionId = await MyInfoFapiSession.createPending(pendingSession)
+
+      await MyInfoFapiSession.markFailed(sessionId)
+
+      await expect(MyInfoFapiSession.consume(sessionId)).resolves.toEqual({
+        status: 'failed',
+      })
+    })
+
+    it('should not overwrite a session someone else already exchanged', async () => {
+      const sessionId = await MyInfoFapiSession.createPending(pendingSession)
+      await MyInfoFapiSession.markExchanged(sessionId, {
+        accessToken: MOCK_ACCESS_TOKEN,
+        sub: MOCK_SUB,
+      })
+
+      await MyInfoFapiSession.markFailed(sessionId)
+
+      const loaded = await MyInfoFapiSession.loadForCallback(sessionId)
+      expect(loaded).toMatchObject({ phase: 'exchanged' })
+    })
+
+    it('should be a no-op for an unknown session id', async () => {
+      await expect(
+        MyInfoFapiSession.markFailed('does-not-exist'),
+      ).resolves.toBeUndefined()
+    })
+  })
+
+  describe('consume', () => {
     const exchange = async () => {
       const sessionId = await MyInfoFapiSession.createPending(pendingSession)
       await MyInfoFapiSession.markExchanged(sessionId, {
@@ -126,35 +157,50 @@ describe('myinfo.fapi.session.model', () => {
       return sessionId
     }
 
-    it('should return the decrypted token and DPoP key', async () => {
+    it('should return the decrypted token and DPoP key for an exchanged session', async () => {
       const sessionId = await exchange()
 
-      await expect(
-        MyInfoFapiSession.consumeExchanged(sessionId),
-      ).resolves.toEqual({
-        formId: MOCK_FORM_ID,
-        accessToken: MOCK_ACCESS_TOKEN,
-        sub: MOCK_SUB,
-        dpopPrivateJwk: MOCK_DPOP_JWK,
+      await expect(MyInfoFapiSession.consume(sessionId)).resolves.toEqual({
+        status: 'exchanged',
+        session: {
+          formId: MOCK_FORM_ID,
+          accessToken: MOCK_ACCESS_TOKEN,
+          sub: MOCK_SUB,
+          dpopPrivateJwk: MOCK_DPOP_JWK,
+        },
       })
     })
 
     it('should be single-use', async () => {
       const sessionId = await exchange()
+      await MyInfoFapiSession.consume(sessionId)
 
-      await MyInfoFapiSession.consumeExchanged(sessionId)
+      await expect(MyInfoFapiSession.consume(sessionId)).resolves.toEqual({
+        status: 'incomplete',
+      })
+    })
 
+    it('should report failed and delete a failed session', async () => {
+      const sessionId = await MyInfoFapiSession.createPending(pendingSession)
+      await MyInfoFapiSession.markFailed(sessionId)
+
+      await expect(MyInfoFapiSession.consume(sessionId)).resolves.toEqual({
+        status: 'failed',
+      })
       await expect(
-        MyInfoFapiSession.consumeExchanged(sessionId),
+        MyInfoFapiSession.loadForCallback(sessionId),
       ).resolves.toBeNull()
     })
 
-    it('should refuse a session that has not been exchanged', async () => {
+    it('should leave a pending session untouched', async () => {
       const sessionId = await MyInfoFapiSession.createPending(pendingSession)
 
+      await expect(MyInfoFapiSession.consume(sessionId)).resolves.toEqual({
+        status: 'incomplete',
+      })
       await expect(
-        MyInfoFapiSession.consumeExchanged(sessionId),
-      ).resolves.toBeNull()
+        MyInfoFapiSession.loadForCallback(sessionId),
+      ).resolves.not.toBeNull()
     })
   })
 

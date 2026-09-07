@@ -16,6 +16,7 @@ jest.mock('../myinfo.fapi.session.model', () => {
   const model = {
     loadForCallback: jest.fn(),
     markExchanged: jest.fn(),
+    markFailed: jest.fn().mockResolvedValue(undefined),
   }
   return { __esModule: true, default: () => model }
 })
@@ -171,6 +172,7 @@ describe('loginToMyInfoFapi', () => {
     )
 
     expect(MockMyInfoFapiService.exchangeCallback).not.toHaveBeenCalled()
+    expect(MockSession.markFailed).toHaveBeenCalledWith(MOCK_SESSION_ID)
     expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
   })
 
@@ -192,6 +194,7 @@ describe('loginToMyInfoFapi', () => {
     )
 
     expect(MockSession.markExchanged).not.toHaveBeenCalled()
+    expect(MockSession.markFailed).toHaveBeenCalledWith(MOCK_SESSION_ID)
     expect(res.clearCookie).not.toHaveBeenCalled()
     expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
   })

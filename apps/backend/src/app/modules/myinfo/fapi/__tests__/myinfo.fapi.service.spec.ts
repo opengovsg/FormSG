@@ -9,6 +9,7 @@ import {
   MyInfoFapiAuthRequestError,
   MyInfoFapiExchangeError,
   MyInfoFapiFetchError,
+  MyInfoFapiIncompleteLoginError,
   MyInfoFapiMissingSessionError,
   MyInfoFapiMissingUinFinError,
 } from '../myinfo.fapi.errors'
@@ -57,7 +58,10 @@ jest.mock('../myinfo.fapi.client', () => ({
 }))
 
 jest.mock('../myinfo.fapi.session.model', () => {
-  const model = { consumeExchanged: jest.fn(), createPending: jest.fn() }
+  const model = {
+    consume: jest.fn(),
+    createPending: jest.fn(),
+  }
   return { __esModule: true, default: () => model }
 })
 
@@ -383,11 +387,14 @@ describe('myinfo.fapi.service', () => {
     )
 
     it('should consume the session and return MyInfoData', async () => {
-      MockSession.consumeExchanged.mockResolvedValueOnce({
-        formId: MOCK_FORM_ID,
-        accessToken: 'mock-access-token',
-        sub: 'mock-sub',
-        dpopPrivateJwk: MOCK_DPOP_JWK,
+      MockSession.consume.mockResolvedValueOnce({
+        status: 'exchanged',
+        session: {
+          formId: MOCK_FORM_ID,
+          accessToken: 'mock-access-token',
+          sub: 'mock-sub',
+          dpopPrivateJwk: MOCK_DPOP_JWK,
+        },
       })
       MockClient.fetchUserInfo.mockResolvedValueOnce({
         sub: 'mock-sub',
@@ -397,22 +404,32 @@ describe('myinfo.fapi.service', () => {
       const result =
         await MyInfoFapiService.loadPersonForSession('mock-session-id')
 
-      expect(MockSession.consumeExchanged).toHaveBeenCalledWith(
-        'mock-session-id',
-      )
+      expect(MockSession.consume).toHaveBeenCalledWith('mock-session-id')
       const myInfoData = result._unsafeUnwrap()
       expect(myInfoData).toBeInstanceOf(MyInfoData)
       expect(myInfoData.getUinFin()).toBe('S1234567D')
     })
 
-    it('should error without calling userinfo when no exchanged session exists', async () => {
-      MockSession.consumeExchanged.mockResolvedValueOnce(null)
+    it('should error with MyInfoFapiMissingSessionError when the session was marked failed', async () => {
+      MockSession.consume.mockResolvedValueOnce({ status: 'failed' })
 
       const result =
         await MyInfoFapiService.loadPersonForSession('mock-session-id')
 
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         MyInfoFapiMissingSessionError,
+      )
+      expect(MockClient.fetchUserInfo).not.toHaveBeenCalled()
+    })
+
+    it('should error with MyInfoFapiIncompleteLoginError when the session is still pending', async () => {
+      MockSession.consume.mockResolvedValueOnce({ status: 'incomplete' })
+
+      const result =
+        await MyInfoFapiService.loadPersonForSession('mock-session-id')
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MyInfoFapiIncompleteLoginError,
       )
       expect(MockClient.fetchUserInfo).not.toHaveBeenCalled()
     })

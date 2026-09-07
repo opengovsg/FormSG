@@ -83,9 +83,10 @@ type MyInfoFapiLoginQueryParams =
  * Exchanges the Singpass authorization code for tokens and redirects to the form.
  * The code is single-use, expires in ~60 seconds, and is bound to a DPoP key
  * that only the session document holds, so the exchange happens here rather
- * than on form load. Failures still redirect to the form with the session
- * cookie intact, so form load raises ErrorCode.myInfo — the same outcome as a
- * spent v3 auth code.
+ * than on form load. Failures mark the session `failed` before redirecting,
+ * so form load raises ErrorCode.myInfo; a session that never reaches this
+ * callback at all is left `pending`, which form load treats as no attempt
+ * having been made rather than a failure.
  */
 export const loginToMyInfoFapi: ControllerHandler<
   unknown,
@@ -139,6 +140,13 @@ export const loginToMyInfoFapi: ControllerHandler<
         errorDescription: req.query.error_description,
       },
     })
+    await MyInfoFapiSession.markFailed(sessionId).catch((error) => {
+      logger.error({
+        message: 'Failed to record MyInfo FAPI login failure',
+        meta: formMeta,
+        error,
+      })
+    })
     return res.redirect(destination)
   }
 
@@ -166,6 +174,13 @@ export const loginToMyInfoFapi: ControllerHandler<
       message: 'MyInfo FAPI login error',
       meta: formMeta,
       error: exchangeResult.error,
+    })
+    await MyInfoFapiSession.markFailed(sessionId).catch((error) => {
+      logger.error({
+        message: 'Failed to record MyInfo FAPI login failure',
+        meta: formMeta,
+        error,
+      })
     })
     return res.redirect(destination)
   }
