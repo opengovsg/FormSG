@@ -1,6 +1,6 @@
 import { Box, Flex, Image, Stack, Text } from '@chakra-ui/react'
 
-import formSgLogo from '~/assets/svgs/brand/brand-hort-colour.svg'
+import formSgLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 
 const ILLUSTRATED_FORM_TITLE = 'My form'
 
@@ -34,7 +34,7 @@ export const FormIllustration = (): JSX.Element => (
         borderTop="1px solid"
         borderColor="neutral.300"
       >
-        <Image src={formSgLogo} alt="FormSG" h="1.75rem" />
+        <Image src={formSgLogo} alt="FormSG" w="2.5rem" h="2.5rem" />
       </Flex>
 
       <Flex
