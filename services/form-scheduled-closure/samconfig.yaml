@@ -12,7 +12,7 @@ stg:
   deploy:
     parameters:
       stack_name: form-scheduled-closure-stg
-      s3_bucket: TODO-form-scheduled-closure-code-zip-stg
+      s3_bucket: form-scheduled-closure-code-zip-stg-ab1a512 # Created by pulumi in formsg-infra to store AWS SAM builds.
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM
       s3_prefix: stg
@@ -25,7 +25,7 @@ stg-alt:
   deploy:
     parameters:
       stack_name: form-scheduled-closure-stg-alt
-      s3_bucket: TODO-form-scheduled-closure-code-zip-stg-alt
+      s3_bucket: form-scheduled-closure-code-zip-stg-alt-f26b4a5 # Created by pulumi in formsg-infra to store AWS SAM builds.
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM
       s3_prefix: stg-alt
@@ -38,7 +38,7 @@ stg-alt2:
   deploy:
     parameters:
       stack_name: form-scheduled-closure-stg-alt2
-      s3_bucket: TODO-form-scheduled-closure-code-zip-stg-alt2
+      s3_bucket: form-scheduled-closure-code-zip-stg-alt21-7cbc107 # Created by pulumi in formsg-infra to store AWS SAM builds.
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM
       s3_prefix: stg-alt2
@@ -64,7 +64,7 @@ uat:
   deploy:
     parameters:
       stack_name: form-scheduled-closure-uat
-      s3_bucket: TODO-form-scheduled-closure-code-zip-uat
+      s3_bucket: form-scheduled-closure-code-zip-uat-cff00dc # Created by pulumi in formsg-infra to store AWS SAM builds.
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM
       s3_prefix: uat
@@ -77,7 +77,7 @@ production:
   deploy:
     parameters:
       stack_name: form-scheduled-closure-production
-      s3_bucket: TODO-form-scheduled-closure-code-zip-prod
+      s3_bucket: form-scheduled-closure-code-zip-prod-4ecd621 # Created by pulumi in formsg-infra to store AWS SAM builds.
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM
       s3_prefix: production
