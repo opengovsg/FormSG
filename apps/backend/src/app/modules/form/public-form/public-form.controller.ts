@@ -32,6 +32,7 @@ import {
   clearMyInfoFapiSessionCookie,
   setMyInfoFapiSessionCookie,
 } from '../../myinfo/fapi/myinfo.fapi.controller'
+import { MyInfoFapiIncompleteLoginError } from '../../myinfo/fapi/myinfo.fapi.errors'
 import * as MyInfoFapiService from '../../myinfo/fapi/myinfo.fapi.service'
 import { MyInfoData } from '../../myinfo/myinfo.adapter'
 import {
@@ -219,10 +220,18 @@ export const handleGetPublicForm: ControllerHandler<
         const fapiFieldsResult =
           await MyInfoFapiService.loadPersonForSession(fapiSessionId)
         if (fapiFieldsResult.isErr()) {
+          const { error: fapiError } = fapiFieldsResult
+          // Respondent never reached, or hasn't yet reached, the Singpass
+          // callback (e.g. navigated back before completing login). Not a
+          // failure, treat as no login attempt.
+          if (fapiError instanceof MyInfoFapiIncompleteLoginError) {
+            return res.json({ form: publicForm, isIntranetUser })
+          }
+
           logger.error({
             message: 'MyInfo FAPI login error',
             meta: logMeta,
-            error: fapiFieldsResult.error,
+            error: fapiError,
           })
           return res.json({
             form: publicForm,
@@ -230,6 +239,7 @@ export const handleGetPublicForm: ControllerHandler<
             isIntranetUser,
           })
         }
+
         myInfoFields = fapiFieldsResult.value
         spcpSession = { userName: myInfoFields.getUinFin() }
         break
