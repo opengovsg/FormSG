@@ -3,6 +3,8 @@ import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
 
+import { BasicField } from 'formsg-shared/types'
+
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -13,11 +15,13 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
+import { useStageFieldAndNavigate } from '../../../hooks/useStageFieldAndNavigate'
 import { EditStepInputs } from '../../../types'
 import { nextEditFieldsForApproval } from '../utils/nextEditFieldsForApproval'
 
 import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
+import { FieldEmptyState } from './EmptyStates'
 
 interface ApprovalsBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
@@ -30,6 +34,7 @@ export const ApprovalsBlock = ({
 }: ApprovalsBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const stageFieldAndNavigate = useStageFieldAndNavigate()
   const {
     control,
     setValue,
@@ -163,6 +168,26 @@ export const ApprovalsBlock = ({
               },
             }}
             render={({ field: { value = '', onChange, ...rest } }) => {
+              // Also runs in the empty-state branch: it clears a stale
+              // approval_field id, and stale ids exist exactly when every
+              // Yes/No field is gone.
+              const displayValue = getValueIfNotDeleted(value)
+              // Swaps what the Controller renders, never the Controller
+              // itself, so the validate rules stay registered.
+              if (isRedesign && yesNoFieldItems.length === 0) {
+                return (
+                  <FieldEmptyState
+                    picker="yesno"
+                    message={t(
+                      'features.adminForm.sidebar.workflow.emptyStates.noYesNoField',
+                    )}
+                    actionLabel={t(
+                      'features.adminForm.sidebar.workflow.emptyStates.noYesNoFieldAction',
+                    )}
+                    onAction={() => stageFieldAndNavigate(BasicField.YesNo)}
+                  />
+                )
+              }
               const handleApprovalFieldChange = (newValue: string) => {
                 // Append to `edit` before handing the value to RHF. Setting
                 // approval_field revalidates it, and validate reads `edit`
@@ -189,7 +214,7 @@ export const ApprovalsBlock = ({
                     'features.adminForm.sidebar.workflow.approvals.toggle.placeholder',
                   )}
                   items={yesNoFieldItems}
-                  value={getValueIfNotDeleted(value)}
+                  value={displayValue}
                   isClearable
                   isDisabled={isLoading}
                   onChange={handleApprovalFieldChange}
