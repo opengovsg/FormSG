@@ -58,6 +58,12 @@ describe('the workflow tab intro screen', () => {
       expect(screen.getByText('My form')).toBeInTheDocument()
     })
 
+    it('shows the logo a real form falls back to', async () => {
+      await renderIntro()
+
+      expect(screen.getByAltText('FormSG')).toBeInTheDocument()
+    })
+
     it.each([
       ['guided', GUIDED],
       ['manual', MANUAL],
