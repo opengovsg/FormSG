@@ -154,6 +154,12 @@ export interface Workflow {
   stepName: {
     label: string
   }
+  intro: {
+    header: string
+    subheader: string
+    guided: string
+    manual: string
+  }
   guided: {
     continue: string
     back: string
