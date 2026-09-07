@@ -6,6 +6,8 @@ import { useAdminWorkflowStore } from '../adminWorkflowStore'
 import * as pageStories from '../CreatePageWorkflowTab.stories'
 import { AdminEditWorkflowState } from '../types'
 
+import { SPOTLIGHT_TEST_ID } from './Spotlight'
+
 const { NoWorkflow, NoWorkflowRedesignOn } = composeStories(pageStories)
 
 const NEW_HEADER = /workflows split your form into steps/i
@@ -62,6 +64,55 @@ describe('the workflow tab intro screen', () => {
       await renderIntro()
 
       expect(screen.getByAltText('FormSG')).toBeInTheDocument()
+    })
+
+    describe('the fork', () => {
+      it('paces the step one decision at a time from guided setup', async () => {
+        const user = userEvent.setup()
+        await renderIntro()
+
+        await act(async () => {
+          await user.click(screen.getByRole('button', GUIDED))
+        })
+
+        expect(useAdminWorkflowStore.getState().isGuidedSetup).toBe(true)
+        expect(screen.getAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1)
+        expect(
+          screen.getByRole('button', { name: /^continue$/i }),
+        ).toBeInTheDocument()
+      })
+
+      it('opens every section at once from manual setup', async () => {
+        const user = userEvent.setup()
+        await renderIntro()
+
+        await act(async () => {
+          await user.click(screen.getByRole('button', MANUAL))
+        })
+
+        expect(useAdminWorkflowStore.getState().isGuidedSetup).toBe(false)
+        expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(0)
+        expect(
+          screen.queryByRole('button', { name: /^continue$/i }),
+        ).not.toBeInTheDocument()
+      })
+
+      it('leaves manual setup without completion reports', async () => {
+        const user = userEvent.setup()
+        await renderIntro()
+
+        await act(async () => {
+          await user.click(screen.getByRole('button', MANUAL))
+        })
+        await act(async () => {
+          useAdminWorkflowStore.getState().setCompletedStep(0)
+          useAdminWorkflowStore.getState().setToInactive()
+        })
+
+        expect(
+          screen.queryByText(/step 1 is the public-facing step/i),
+        ).not.toBeInTheDocument()
+      })
     })
 
     it.each([

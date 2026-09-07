@@ -8,6 +8,7 @@ import Link from '~components/Link'
 import Tooltip from '~components/Tooltip'
 
 import {
+  setGuidedSetupSelector,
   setToCreatingSelector,
   useAdminWorkflowStore,
 } from '../adminWorkflowStore'
@@ -22,7 +23,13 @@ const INTRO_I18N_PREFIX = 'features.adminForm.sidebar.workflow.intro'
 export const EmptyWorkflow = (): JSX.Element => {
   const { t } = useTranslation()
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
+  const setGuidedSetup = useAdminWorkflowStore(setGuidedSetupSelector)
   const isRedesign = useIsWorkflowBuilderRedesign()
+
+  const startSetup = (isGuidedSetup: boolean) => () => {
+    setGuidedSetup(isGuidedSetup)
+    setToCreating()
+  }
   const { isPaymentEnabled } = useAdminFormWorkflow()
 
   const paymentBlockedLabel = isPaymentEnabled
@@ -46,8 +53,6 @@ export const EmptyWorkflow = (): JSX.Element => {
         </Text>
         <Tooltip
           label={paymentBlockedLabel}
-          // Disabled buttons swallow hover events; the wrapper span keeps the
-          // tooltip reachable exactly when it has something to say.
           shouldWrapChildren={isPaymentEnabled}
         >
           <Stack
@@ -56,12 +61,12 @@ export const EmptyWorkflow = (): JSX.Element => {
             my="2.5rem"
             justify="center"
           >
-            <Button onClick={setToCreating} isDisabled={isPaymentEnabled}>
+            <Button onClick={startSetup(true)} isDisabled={isPaymentEnabled}>
               {t(`${INTRO_I18N_PREFIX}.guided`)}
             </Button>
             <Button
               variant="outline"
-              onClick={setToCreating}
+              onClick={startSetup(false)}
               isDisabled={isPaymentEnabled}
             >
               {t(`${INTRO_I18N_PREFIX}.manual`)}
