@@ -18,8 +18,12 @@ export const GoLinkQrCodeMenu = ({
   })
   const { downloadQrCode, downloadingFormat } =
     useGoLinkQrCodeDownload(shortLink)
-  // The claimed-link row is already tight on a phone; the label would squeeze
-  // the suffix out of view, so the icon and aria-label carry it there.
+  // Below md, the Go-link row (see ShareFormModal) wraps this control onto
+  // its own line since it can no longer fit beside the input — stretch it
+  // full-width there so it reads as a deliberate action row instead of a
+  // detached, unlabelled blob, and keep the label visible now that it has
+  // room. This also frees the input's row of any competition for width, so
+  // the go-link suffix stops being squeezed/truncated on mobile.
   const isMobile = useIsMobile()
 
   return (
@@ -31,8 +35,9 @@ export const GoLinkQrCodeMenu = ({
             leftIcon={<BiDownload fontSize="1.25rem" />}
             isLoading={!!downloadingFormat}
             aria-label={t('goLink.qr.ariaLabel')}
+            isStretch={isMobile}
           >
-            {isMobile ? null : t('goLink.qr.menuLabel')}
+            {t('goLink.qr.menuLabel')}
           </Menu.Button>
           <Menu.List>
             <Menu.Item onClick={() => downloadQrCode('png')}>
