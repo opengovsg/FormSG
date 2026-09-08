@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Box, Container } from '@chakra-ui/react'
 
+import { useSidebarWidth } from '../common/CreatePageSidebarContext'
+
 import { EmptyWorkflow } from './components/EmptyWorkflow'
 import { WelcomeCard } from './components/GuidedCreation'
 import { WorkflowContent } from './components/WorkflowContent'
@@ -20,6 +22,7 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
     }, []),
   )
   const { isLoading, formWorkflow } = useAdminFormWorkflow()
+  const sidebarWidth = useSidebarWidth()
 
   const isEmptyWorkflow = useMemo(
     () => formWorkflow?.length === 0 && !createOrEditData,
@@ -46,6 +49,7 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
       bg="neutral.100"
       py={{ base: '2rem', md: '1rem' }}
       px={{ base: '1.5rem', md: '3.75rem' }}
+      pr={{ base: '1.5rem', md: `calc(3.75rem + ${sidebarWidth}px)` }}
     >
       <Container p={0} maxW="42.5rem">
         {isOnWelcomeCard ? (

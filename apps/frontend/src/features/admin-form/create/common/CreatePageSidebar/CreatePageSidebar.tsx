@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiGitMerge, BiQuestionMark } from 'react-icons/bi'
 import { Divider, Stack } from '@chakra-ui/react'
@@ -60,7 +60,22 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     handleLogicClick,
     handleEndpageClick,
     handleWorkflowClick,
+    reportSidebarWidth,
   } = useCreatePageSidebar()
+
+  const sidebarRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const sidebar = sidebarRef.current
+    if (!sidebar) return
+
+    const report = () =>
+      reportSidebarWidth(sidebar.getBoundingClientRect().width)
+
+    report()
+    const observer = new ResizeObserver(report)
+    observer.observe(sidebar)
+    return () => observer.disconnect()
+  }, [reportSidebarWidth])
 
   const handleDrawerBuilderClick = useCallback(() => {
     // Always show create field drawer when sidebar icon is tapped on mobile.
@@ -120,6 +135,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
 
   return (
     <Stack
+      ref={sidebarRef}
       bg="white"
       pos="sticky"
       top={0}
