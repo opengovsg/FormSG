@@ -179,6 +179,20 @@ export const enSG: Workflow = {
   stepName: {
     label: 'Step name',
   },
+  guidedMode: {
+    label: 'Guided mode',
+  },
+  skipGuidance: {
+    modal: {
+      title: 'Skip guided setup?',
+      bodyWithSteps:
+        "You'll set up your workflow yourself. Any steps you've already created will be kept.",
+      bodyWithoutSteps:
+        "You'll set up your workflow yourself. We won't show this guide again.",
+      confirm: 'Skip guidance',
+      cancel: 'Cancel',
+    },
+  },
   welcome: {
     header: "Let's start with Step 1",
     stepOne: 'Step 1 is what everyone who opens your form link fills in first.',
