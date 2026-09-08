@@ -1,4 +1,5 @@
 export * from './CompletionPeekCard'
+export * from './GuidedSetupToggle'
 export * from './PeekCard'
 export * from './useReportedCompletedStep'
 export * from './WelcomeCard'

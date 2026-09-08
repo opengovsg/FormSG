@@ -6,7 +6,7 @@ import { StatusTrackerToggle } from '~features/admin-form/settings/components/Em
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
-import { useReportedCompletedStep } from '../GuidedCreation'
+import { GuidedSetupToggle, useReportedCompletedStep } from '../GuidedCreation'
 
 import { CompletionEmailBlock } from './CompletionEmailBlock'
 import { NewStepBlock } from './NewStepBlock'
@@ -37,6 +37,7 @@ export const WorkflowContent = (): JSX.Element | null => {
           </Text>
           <Divider />
           <StatusTrackerToggle />
+          <GuidedSetupToggle />
         </Stack>
       </Box>
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>

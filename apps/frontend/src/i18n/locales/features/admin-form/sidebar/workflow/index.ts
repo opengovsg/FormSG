@@ -154,6 +154,18 @@ export interface Workflow {
   stepName: {
     label: string
   }
+  guidedMode: {
+    label: string
+  }
+  skipGuidance: {
+    modal: {
+      title: string
+      bodyWithSteps: string
+      bodyWithoutSteps: string
+      confirm: string
+      cancel: string
+    }
+  }
   welcome: {
     header: string
     stepOne: string
