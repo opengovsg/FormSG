@@ -15,6 +15,7 @@ import {
   cancelPendingSwitchSelector,
   completeSaveSelector,
   isCreatingStateSelector,
+  isGuidedSetupSelector,
   pendingSwitchToSelector,
   setToInactiveSelector,
   useAdminWorkflowStore,
@@ -134,6 +135,7 @@ export const EditStepBlock = ({
   const completeSave = useAdminWorkflowStore(completeSaveSelector)
   const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
   const isCreatingState = useAdminWorkflowStore(isCreatingStateSelector)
+  const isGuidedSetup = useAdminWorkflowStore(isGuidedSetupSelector)
   const isRedesign = useIsWorkflowBuilderRedesign()
 
   const formMethods = useForm<EditStepInputs>({
@@ -212,7 +214,7 @@ export const EditStepBlock = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
 
-  const isGuided = isRedesign && isCreatingState
+  const isGuided = isRedesign && isCreatingState && isGuidedSetup
 
   // Only the order differs between flag states, so build each section once and
   // swap the sequence rather than duplicating the subtree per branch.

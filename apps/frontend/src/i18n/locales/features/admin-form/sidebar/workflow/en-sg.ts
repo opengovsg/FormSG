@@ -179,6 +179,13 @@ export const enSG: Workflow = {
   stepName: {
     label: 'Step name',
   },
+  intro: {
+    header: 'Workflows split your form into steps',
+    subheader:
+      'Send each step to a different person. Each person only fills in their own part.',
+    guided: 'Start with guided setup',
+    manual: 'Set up manually',
+  },
   guided: {
     continue: 'Continue',
     back: 'Back',

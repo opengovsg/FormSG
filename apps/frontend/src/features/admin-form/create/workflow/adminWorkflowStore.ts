@@ -19,12 +19,15 @@ type AdminWorkflowStore = {
   completedStepNumber: number | null
   setCompletedStep: (stepNumber: number) => void
   dismissCompletedStep: () => void
+  isGuidedSetup: boolean
+  setGuidedSetup: (isGuidedSetup: boolean) => void
 }
 
 const INITIAL_STATE = {
   createOrEditData: null,
   pendingSwitchTo: null,
   completedStepNumber: null,
+  isGuidedSetup: true,
 }
 
 export const isCreatingStateSelector = (state: AdminWorkflowStore) =>
@@ -82,11 +85,18 @@ export const setCompletedStepSelector = (state: AdminWorkflowStore) =>
 export const dismissCompletedStepSelector = (state: AdminWorkflowStore) =>
   state.dismissCompletedStep
 
+export const isGuidedSetupSelector = (state: AdminWorkflowStore) =>
+  state.isGuidedSetup
+
+export const setGuidedSetupSelector = (state: AdminWorkflowStore) =>
+  state.setGuidedSetup
+
 export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
   devtools((set, get) => ({
     createOrEditData: null,
     pendingSwitchTo: null,
     completedStepNumber: null,
+    isGuidedSetup: true,
     setToCreating: () =>
       set({
         createOrEditData: {
@@ -111,6 +121,7 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
       }),
     setCompletedStep: (stepNumber) => set({ completedStepNumber: stepNumber }),
     dismissCompletedStep: () => set({ completedStepNumber: null }),
+    setGuidedSetup: (isGuidedSetup) => set({ isGuidedSetup }),
     setToInactive: () => set({ createOrEditData: null }),
     reset: () => set(INITIAL_STATE),
     requestSwitchTo: (stepNumber) =>
