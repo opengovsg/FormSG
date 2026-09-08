@@ -49,6 +49,13 @@ const HEADERS_RULES = {
   },
 }
 
+/**
+ * Masks the MRF submission edit key that respondents carry in the `referer`
+ * when their browser makes same-origin calls from `/<formId>/edit/<submissionId>?key=...`.
+ *
+ * Returns a copy: the caller passes `req.headers` straight in, and masking in
+ * place rewrites the live request object that downstream handlers still read.
+ */
 const maskRefererHeaders = (
   headers: ReqMeta['headers'],
 ): ReqMeta['headers'] => {
@@ -58,15 +65,16 @@ const maskRefererHeaders = (
   if (!headers?.referer) {
     return headers
   }
+  const masked = { ...headers }
   for (const [headerKey, { regex, replacement }] of Object.entries(
     HEADERS_RULES,
   )) {
-    const value = headers[headerKey]
+    const value = masked[headerKey]
     if (typeof value === 'string') {
-      headers[headerKey] = value.replace(regex, replacement)
+      masked[headerKey] = value.replace(regex, replacement)
     }
   }
-  return headers
+  return masked
 }
 
 /**
