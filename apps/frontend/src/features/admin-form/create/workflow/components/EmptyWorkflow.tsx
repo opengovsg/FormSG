@@ -10,12 +10,13 @@ import Tooltip from '~components/Tooltip'
 import {
   setGuidedSetupSelector,
   setToCreatingSelector,
+  showWelcomeCardSelector,
   useAdminWorkflowStore,
 } from '../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../hooks/useIsWorkflowBuilderRedesign'
 
-import { FormIllustration } from './FormIllustration'
+import { FormToWorkflowIllustration } from './FormToWorkflowIllustration'
 import { WorkflowSvgr } from './WorkflowSvgr'
 
 const INTRO_I18N_PREFIX = 'features.adminForm.sidebar.workflow.intro'
@@ -24,10 +25,15 @@ export const EmptyWorkflow = (): JSX.Element => {
   const { t } = useTranslation()
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
   const setGuidedSetup = useAdminWorkflowStore(setGuidedSetupSelector)
+  const showWelcomeCard = useAdminWorkflowStore(showWelcomeCardSelector)
   const isRedesign = useIsWorkflowBuilderRedesign()
 
   const startSetup = (isGuidedSetup: boolean) => () => {
     setGuidedSetup(isGuidedSetup)
+    if (isGuidedSetup) {
+      showWelcomeCard()
+      return
+    }
     setToCreating()
   }
   const { isPaymentEnabled } = useAdminFormWorkflow()
@@ -73,7 +79,7 @@ export const EmptyWorkflow = (): JSX.Element => {
             </Button>
           </Stack>
         </Tooltip>
-        <FormIllustration />
+        <FormToWorkflowIllustration />
       </Flex>
     )
   }

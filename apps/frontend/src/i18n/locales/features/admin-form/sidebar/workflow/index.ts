@@ -154,6 +154,12 @@ export interface Workflow {
   stepName: {
     label: string
   }
+  welcome: {
+    header: string
+    stepOne: string
+    whatNext: string
+    cta: string
+  }
   intro: {
     header: string
     subheader: string
