@@ -1,6 +1,12 @@
 import { composeStories } from '@storybook/react'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { http, HttpResponse } from 'msw'
+import { setupServer } from 'msw/node'
+
+import { SeenFlags } from 'formsg-shared/types'
+
+import { MOCK_USER } from '~/mocks/msw/handlers/user'
 
 import { useAdminWorkflowStore } from '../adminWorkflowStore'
 import * as pageStories from '../CreatePageWorkflowTab.stories'
@@ -17,17 +23,36 @@ const OLD_HEADER = /create a workflow to collect responses/i
 const GUIDED = { name: /start with guided setup/i }
 const MANUAL = { name: /set up manually/i }
 
+const server = setupServer()
+
+const withGuidedSetupFlag = (value: number | undefined) =>
+  server.use(
+    http.get('/api/v3/user', () =>
+      HttpResponse.json({
+        ...MOCK_USER,
+        flags:
+          value === undefined ? {} : { [SeenFlags.GuidedWorkflowSetup]: value },
+      }),
+    ),
+  )
+
 describe('the workflow tab intro screen', () => {
   beforeAll(() => {
+    server.listen({ onUnhandledRequest: 'bypass' })
     Element.prototype.scrollIntoView = vi.fn()
   })
+
+  afterAll(() => server.close())
 
   afterAll(() => {
     delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>)
       .scrollIntoView
   })
 
-  afterEach(() => useAdminWorkflowStore.getState().reset())
+  afterEach(() => {
+    server.resetHandlers()
+    useAdminWorkflowStore.getState().reset()
+  })
 
   describe('with the redesign flag on', () => {
     const renderIntro = async () => {
@@ -67,6 +92,35 @@ describe('the workflow tab intro screen', () => {
     })
 
     describe('the fork', () => {
+      it('skips the card for an admin who has been taught', async () => {
+        const user = userEvent.setup()
+        withGuidedSetupFlag(1)
+        await renderIntro()
+
+        await act(async () => {
+          await user.click(screen.getByRole('button', GUIDED))
+        })
+
+        expect(
+          screen.queryByText(/let's start with step 1/i),
+        ).not.toBeInTheDocument()
+        await waitFor(() =>
+          expect(screen.getAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1),
+        )
+      })
+
+      it('still shows the card to an admin seeded as pre-existing', async () => {
+        const user = userEvent.setup()
+        withGuidedSetupFlag(0)
+        await renderIntro()
+
+        await act(async () => {
+          await user.click(screen.getByRole('button', GUIDED))
+        })
+
+        expect(screen.getByText(/let's start with step 1/i)).toBeInTheDocument()
+      })
+
       it('orients on the welcome card before asking for anything', async () => {
         const user = userEvent.setup()
         await renderIntro()

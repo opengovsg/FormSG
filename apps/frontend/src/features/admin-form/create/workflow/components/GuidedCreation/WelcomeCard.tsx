@@ -14,6 +14,7 @@ import {
   startBuildingFromWelcomeSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
+import { useGuidedSetupTaught } from '../../hooks/useGuidedSetupTaught'
 import { FormToWorkflowIllustration } from '../FormToWorkflowIllustration'
 
 const WELCOME_I18N_PREFIX = 'features.adminForm.sidebar.workflow.welcome'
@@ -25,6 +26,7 @@ const LEAVE_DURATION_MS = 150
 export const WelcomeCard = (): JSX.Element => {
   const { t } = useTranslation()
   const startBuilding = useAdminWorkflowStore(startBuildingFromWelcomeSelector)
+  const { markTaught } = useGuidedSetupTaught()
   const prefersReducedMotion = usePrefersReducedMotion()
 
   const [showWorkflow, setShowWorkflow] = useState(false)
@@ -40,6 +42,7 @@ export const WelcomeCard = (): JSX.Element => {
   }, [prefersReducedMotion])
 
   const handleStartBuilding = () => {
+    markTaught()
     if (prefersReducedMotion) {
       startBuilding()
       return
