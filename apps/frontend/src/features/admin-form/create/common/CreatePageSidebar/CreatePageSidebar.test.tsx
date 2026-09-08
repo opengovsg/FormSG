@@ -60,6 +60,7 @@ vi.mock(
       handleLogicClick: vi.fn(),
       handleEndpageClick: vi.fn(),
       handleWorkflowClick: vi.fn(),
+      reportSidebarWidth: vi.fn(),
     }),
   }),
 )

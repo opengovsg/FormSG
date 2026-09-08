@@ -46,10 +46,15 @@ export type CreatePageSidebarContextProps = {
   isDrawerOpen: boolean
   fieldListTabIndex: FieldListTabIndex
   setFieldListTabIndex: (tabIndex: FieldListTabIndex) => void
+  sidebarWidth: number
+  reportSidebarWidth: (width: number) => void
 }
 const CreatePageSidebarContext = createContext<
   CreatePageSidebarContextProps | undefined
 >(undefined)
+
+export const useSidebarWidth = (): number =>
+  useContext(CreatePageSidebarContext)?.sidebarWidth ?? 0
 
 export const useCreatePageSidebar = (): CreatePageSidebarContextProps => {
   const context = useContext(CreatePageSidebarContext)
@@ -63,6 +68,13 @@ export const useCreatePageSidebar = (): CreatePageSidebarContextProps => {
 export const useCreatePageSidebarContext =
   (): CreatePageSidebarContextProps => {
     const isMobile = useIsMobile()
+    const [sidebarWidth, setSidebarWidth] = useState(0)
+    const reportSidebarWidth = useCallback(
+      (width: number) =>
+        setSidebarWidth((current) => (current === width ? current : width)),
+      [],
+    )
+
     const [activeTab, setActiveTab] = useState<DrawerTabs | null>(null)
     // Any pending tab due to unsaved changes.
     // Pending tab can be `null` if the next tab state is to be closed.
@@ -161,6 +173,8 @@ export const useCreatePageSidebarContext =
     }, [isMobile, pendingTab, setFieldsToInactive])
 
     return {
+      sidebarWidth,
+      reportSidebarWidth,
       activeTab,
       pendingTab,
       clearPendingTab,
