@@ -100,6 +100,33 @@ describe('myinfo.fapi.session.model', () => {
       ).resolves.toBe('notFound')
     })
 
+    it('should let a genuine exchange overwrite a failure recorded by the losing callback', async () => {
+      const sessionId = await MyInfoFapiSession.createPending(pendingSession)
+      await MyInfoFapiSession.markFailed(sessionId)
+
+      await expect(
+        MyInfoFapiSession.markExchanged(sessionId, {
+          accessToken: MOCK_ACCESS_TOKEN,
+          sub: MOCK_SUB,
+        }),
+      ).resolves.toBe('claimed')
+
+      const consumed = await MyInfoFapiSession.consume(sessionId)
+      expect(consumed).toMatchObject({
+        status: 'exchanged',
+        session: { accessToken: MOCK_ACCESS_TOKEN, sub: MOCK_SUB },
+      })
+    })
+
+    it('should offer the exchange material again while the session is failed', async () => {
+      const sessionId = await MyInfoFapiSession.createPending(pendingSession)
+      await MyInfoFapiSession.markFailed(sessionId)
+
+      const loaded = await MyInfoFapiSession.loadForCallback(sessionId)
+
+      expect(loaded).toMatchObject({ phase: 'pending' })
+    })
+
     it('should withhold the exchange material from a later callback', async () => {
       const sessionId = await MyInfoFapiSession.createPending(pendingSession)
       await MyInfoFapiSession.markExchanged(sessionId, {
@@ -203,6 +230,7 @@ describe('myinfo.fapi.session.model', () => {
       ).resolves.not.toBeNull()
     })
   })
+
 
   describe('indexes', () => {
     it('should expire sessions via a TTL index on expireAt', async () => {
