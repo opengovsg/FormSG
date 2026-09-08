@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { Divider, Stack } from '@chakra-ui/react'
+import { Box, Stack } from '@chakra-ui/react'
 
 import {
   FormWorkflowStep,
@@ -19,11 +19,15 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
+import { useGuidedStepReveal } from '../../../hooks/useGuidedStepReveal'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
+import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
+import { SpotlightGroup } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'
+import { GuidedActionGroup } from './GuidedActionGroup'
 import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
 import { StepNameBlock } from './StepNameBlock'
@@ -41,6 +45,8 @@ export interface EditLogicBlockProps {
 
 export const FIELDS_TO_EDIT_NAME = 'edit'
 export const APPROVAL_FIELD_NAME = 'approval_field'
+
+const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 
 /**
  * Builds a workflow step from form inputs, or undefined if they cannot form a
@@ -206,66 +212,104 @@ export const EditStepBlock = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
 
+  const isGuided = isRedesign && isCreatingState
+
   // Only the order differs between flag states, so build each section once and
   // swap the sequence rather than duplicating the subtree per branch.
   const questionsSection = (
-    <>
-      <Divider />
-      <QuestionsBlock
-        formMethods={formMethods}
-        isLoading={_isLoading}
-        isFirstStep={isFirstStep}
-      />
-    </>
+    <QuestionsBlock
+      key="fields"
+      formMethods={formMethods}
+      isLoading={_isLoading}
+      isFirstStep={isFirstStep}
+    />
   )
   const approvalsSection = isFirstStep ? null : (
-    <>
-      <Divider />
-      <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
-    </>
+    <ApprovalsBlock
+      key="what-they-do"
+      formMethods={formMethods}
+      stepNumber={stepNumber}
+    />
   )
+
+  const sections: JSX.Element[] = [
+    <StepNameBlock
+      key="name"
+      formMethods={formMethods}
+      stepNumber={stepNumber}
+    />,
+    <RespondentBlock
+      key="people"
+      user={user}
+      stepNumber={stepNumber}
+      formMethods={formMethods}
+      isLoading={_isLoading}
+    />,
+    ...(isRedesign
+      ? [approvalsSection, questionsSection]
+      : [questionsSection, approvalsSection]
+    ).filter((section): section is JSX.Element => section !== null),
+  ]
+
+  const reveal = useGuidedStepReveal({
+    sectionCount: sections.length,
+    isEnabled: isGuided,
+  })
+
+  const { visibleCount } = reveal
+
+  useEffect(() => {
+    if (!isGuided || visibleCount <= 1) return
+    const timeout = setTimeout(() => {
+      wrapperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }, SECTION_REVEAL_SCROLL_DELAY_MS)
+    return () => clearTimeout(timeout)
+  }, [isGuided, visibleCount])
 
   return (
     <Stack
       ref={wrapperRef}
-      py="2rem"
-      spacing="1.5rem"
+      spacing="0"
+      pt="0.5rem"
+      pb="2rem"
       borderRadius="4px"
       bg="white"
       border="1px solid"
-      borderColor="primary.500"
-      boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
+      borderColor={isGuided ? 'neutral.300' : 'primary.500'}
+      boxShadow={
+        isGuided ? 'none' : '0 0 0 1px var(--chakra-colors-primary-500)'
+      }
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />
-      <Divider />
-      <RespondentBlock
-        user={user}
-        stepNumber={stepNumber}
-        formMethods={formMethods}
-        isLoading={_isLoading}
-      />
-      {isRedesign ? (
-        <>
-          {approvalsSection}
-          {questionsSection}
-        </>
-      ) : (
-        <>
-          {questionsSection}
-          {approvalsSection}
-        </>
-      )}
-      <Divider />
-      <SaveActionGroup
-        isLoading={_isLoading}
-        handleSubmit={handleSubmit}
-        handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
-        handleCancel={setToInactive}
-        submitButtonLabel={submitButtonLabel}
-        ariaLabelName="step"
-      />
+      <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
+        {sections.slice(0, visibleCount)}
+      </SpotlightGroup>
+      <Box pt="1.5rem">
+        {isGuided ? (
+          <GuidedActionGroup
+            secondaryAction={getGuidedSecondaryAction({
+              sectionIndex: visibleCount - 1,
+              isFirstStep,
+            })}
+            isOnLastSection={reveal.isOnLastSection}
+            isLoading={isLoading}
+            onBack={reveal.goBack}
+            onCancel={setToInactive}
+            onContinue={reveal.advance}
+            onDone={handleSubmit}
+          />
+        ) : (
+          <SaveActionGroup
+            isLoading={_isLoading}
+            handleSubmit={handleSubmit}
+            handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
+            handleCancel={setToInactive}
+            submitButtonLabel={submitButtonLabel}
+            ariaLabelName="step"
+          />
+        )}
+      </Box>
     </Stack>
   )
 }

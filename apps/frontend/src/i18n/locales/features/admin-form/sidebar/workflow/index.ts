@@ -154,6 +154,12 @@ export interface Workflow {
   stepName: {
     label: string
   }
+  guided: {
+    continue: string
+    back: string
+    cancel: string
+    done: string
+  }
   paymentEnabledNoSteps: string
   completionEmail: {
     title: string
