@@ -1,4 +1,5 @@
 import expressWinston from 'express-winston'
+import { IncomingHttpHeaders } from 'http'
 import get from 'lodash/get'
 import winston from 'winston'
 
@@ -7,6 +8,79 @@ import { customFormat } from '../../config/logger'
 import { getRequestIp, getTrace, maskOAuthCode } from '../../utils/request'
 
 const LOGGER_LABEL = 'network'
+
+/**
+ * Request headers that may be written to the access log verbatim.
+ *
+ * This is an allowlist, not a blacklist. express-winston's default
+ * `requestWhitelist` includes `headers`, so every inbound header is logged
+ * unless something removes it, and `headerBlacklist` only removes the names
+ * we thought of in advance. That fails open: a header carrying a new
+ * credential leaks from the moment it is introduced until someone notices.
+ * Both `authorization` (public API keys) and the MRF key in `referer` reached
+ * production that way.
+ *
+ * Anything not listed here is dropped. Add to this list deliberately, and only
+ * for headers that cannot carry a secret.
+ */
+const LOGGED_HEADERS = [
+  'accept',
+  'accept-encoding',
+  'accept-language',
+  'cf-connecting-ip',
+  'cf-ipcountry',
+  'cf-ray',
+  'connection',
+  'content-length',
+  'content-type',
+  'host',
+  'origin',
+  // Query string stripped below: carries the MRF submission edit key.
+  'referer',
+  'sec-fetch-dest',
+  'sec-fetch-mode',
+  'sec-fetch-site',
+  'user-agent',
+  'x-amz-sns-message-type',
+  'x-forwarded-for',
+  'x-forwarded-port',
+  'x-forwarded-proto',
+  'x-request-id',
+] as const
+
+/**
+ * Drops the query string from a referer.
+ *
+ * `utils/request` masks the MRF key in the referer with a regex anchored to
+ * the end of the string, which quietly masks the wrong 24 characters if any
+ * param ever follows `key=`. Nothing needs the query string here: the path is
+ * what makes an access log line useful, and the query string is the only part
+ * that carries secrets. Dropping it is exact where a pattern match is a guess.
+ */
+const stripQueryString = (referer: string): string => {
+  const queryStart = referer.indexOf('?')
+  return queryStart === -1 ? referer : referer.slice(0, queryStart)
+}
+
+// Exported for testing: this is the gate that keeps credentials out of the
+// access log, so it is worth asserting on directly.
+export const pickLoggedHeaders = (
+  headers: IncomingHttpHeaders,
+): IncomingHttpHeaders => {
+  // Built as a plain record rather than an IncomingHttpHeaders: the latter
+  // narrows well-known names (`host` is `string`, not `string | string[]`),
+  // which a copy loop over a literal union of keys cannot satisfy.
+  const picked: Record<string, string | string[] | undefined> = {}
+  for (const name of LOGGED_HEADERS) {
+    if (name in headers) {
+      picked[name] = headers[name]
+    }
+  }
+  if (typeof picked.referer === 'string') {
+    picked.referer = stripQueryString(picked.referer)
+  }
+  return picked as IncomingHttpHeaders
+}
 
 type LogMeta = {
   clientIp: string
@@ -80,6 +154,9 @@ const loggingMiddleware = () => {
     // Singpass/Corppass/sgID login callbacks must be masked here.
     requestFilter: (req, propName) => {
       const value = get(req, propName)
+      if (propName === 'headers' && value && typeof value === 'object') {
+        return pickLoggedHeaders(value as IncomingHttpHeaders)
+      }
       if (propName === 'query' && value && typeof value === 'object') {
         const query = value as Record<string, unknown>
         if ('code' in query) {
@@ -88,6 +165,8 @@ const loggingMiddleware = () => {
       }
       return value
     },
+    // Redundant now that headers are allowlisted above, but kept as a second
+    // line of defence if the allowlist is ever widened carelessly.
     headerBlacklist: ['cookie', 'authorization'],
     ignoredRoutes: ['/'],
     skip: (req, res) => {
