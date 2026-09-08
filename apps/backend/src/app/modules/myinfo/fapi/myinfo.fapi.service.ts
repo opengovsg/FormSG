@@ -31,15 +31,35 @@ import {
 import getMyInfoFapiSessionModel, {
   MyInfoFapiExchangedSession,
   MyInfoFapiExchangeSession,
-  MyInfoFapiPendingSession,
 } from './myinfo.fapi.session.model'
 
 const logger = createLoggerWithLabel(module)
 const MyInfoFapiSession = getMyInfoFapiSessionModel(mongoose)
 
+type MyInfoFapiLoginStartResult = { sessionId: string; redirectUrl: string }
+type MyInfoFapiLoginStartError =
+  | MyInfoFapiConfigError
+  | MyInfoFapiAuthRequestError
+  | DatabaseError
+type MyInfoFetchPersonError =
+  | MyInfoFapiConfigError
+  | MyInfoFapiFetchError
+  | MyInfoFapiMissingUinFinError
+type MyInfoLoadPersonForSessionError =
+  | DatabaseError
+  | MyInfoFapiMissingSessionError
+  | MyInfoFapiIncompleteLoginError
+  | MyInfoFetchPersonError
+
+type AuthCode = {
+  code: string
+  state: string
+  iss?: string
+}
+
 /**
- * Identifying fields only. oauth4webapi `.cause` can be a full userinfo body,
- * and a plain object in the logger `error:` slot is dropped by the JSON formatter.
+ * Converts unknown OAuth failure into safe, structured logging metadata.
+ * Remove .cause from error object, as it may contain sensitive MyInfo userinfo data.
  */
 const oauthFailureMeta = (error: unknown): Record<string, unknown> => {
   if (!(error instanceof Error)) {
@@ -65,26 +85,9 @@ const oauthFailureMeta = (error: unknown): Record<string, unknown> => {
   }
 }
 
-type MyInfoFapiLoginStart = Pick<
-  MyInfoFapiPendingSession,
-  'state' | 'nonce' | 'codeVerifier' | 'dpopPrivateJwk'
-> & { redirectUrl: string }
-
-type AuthCode = {
-  code: string
-  state: string
-  iss?: string
-}
-
 /**
- * Starts a FAPI login: pushes the authorization request and persists the
- * pending session. The protocol secrets (state, nonce, PKCE verifier, DPoP
- * private key) never leave this module; callers get an opaque session id
- * and the URL to send the respondent to.
- * @param formId - The form ID.
- * @param encodedQuery - The encoded query.
- * @param requestedAttributes - The requested attributes.
- * @returns The session ID and redirect URL.
+ * Starts a FAPI login by making a PAR request, persisting the pending session in MongoDB,
+ * and returning the session ID and redirect URL.
  */
 export const startLogin = ({
   formId,
@@ -94,52 +97,8 @@ export const startLogin = ({
   formId: string
   encodedQuery?: string
   requestedAttributes: MyInfoAttribute[]
-}): ResultAsync<
-  { sessionId: string; redirectUrl: string },
-  MyInfoFapiConfigError | MyInfoFapiAuthRequestError | DatabaseError
-> => {
-  return buildLoginUrl({
-    formId,
-    scope: requestedAttrsToScopeString(requestedAttributes),
-  }).andThen(({ redirectUrl, state, nonce, codeVerifier, dpopPrivateJwk }) =>
-    ResultAsync.fromPromise(
-      MyInfoFapiSession.createPending({
-        formId,
-        encodedQuery,
-        state,
-        nonce,
-        codeVerifier,
-        dpopPrivateJwk,
-      }),
-      (error) => {
-        logger.error({
-          message: 'Failed to create MyInfo FAPI login session',
-          meta: { action: 'startLogin', formId },
-          error,
-        })
-        return new DatabaseError('Failed to create MyInfo FAPI login session')
-      },
-    ).map((sessionId) => ({ sessionId, redirectUrl })),
-  )
-}
-
-/**
- * Pushes an authorization request and returns the URL to send the respondent to,
- * along with the state that must survive the redirect.
- * @param formId - The form ID.
- * @param scope - The scope.
- * @returns The login start.
- */
-const buildLoginUrl = ({
-  formId,
-  scope,
-}: {
-  formId: string
-  scope: string
-}): ResultAsync<
-  MyInfoFapiLoginStart,
-  MyInfoFapiConfigError | MyInfoFapiAuthRequestError
-> => {
+}): ResultAsync<MyInfoFapiLoginStartResult, MyInfoFapiLoginStartError> => {
+  const scope = requestedAttrsToScopeString(requestedAttributes)
   return withConfig(
     async (config) => {
       const codeVerifier = client.randomPKCECodeVerifier()
@@ -169,7 +128,7 @@ const buildLoginUrl = ({
     },
     (error) => {
       const meta = {
-        action: 'buildLoginUrl',
+        action: 'startLogin',
         formId,
         scope,
         redirectUri: MYINFO_FAPI_REDIRECT_URI,
@@ -181,15 +140,31 @@ const buildLoginUrl = ({
       })
       return new MyInfoFapiAuthRequestError(undefined, meta)
     },
+  ).andThen(({ redirectUrl, state, nonce, codeVerifier, dpopPrivateJwk }) =>
+    ResultAsync.fromPromise(
+      MyInfoFapiSession.createPending({
+        formId,
+        encodedQuery,
+        state,
+        nonce,
+        codeVerifier,
+        dpopPrivateJwk,
+      }),
+      (error) => {
+        logger.error({
+          message: 'Failed to create MyInfo FAPI login session',
+          meta: { action: 'startLogin', formId },
+          error,
+        })
+        return new DatabaseError('Failed to create MyInfo FAPI login session')
+      },
+    ).map((sessionId) => ({ sessionId, redirectUrl })),
   )
 }
 
 /**
- * Exchanges the authorization code for tokens. openid-client verifies `iss`,
- * `state`, `nonce` and PKCE and decrypts the ID token, so none of that is repeated here.
- * @param code - The authorization code.
- * @param session - The pending session.
- * @returns The access token and subject.
+ * Exchanges the authorization code for access token and subject
+ * from MyInfo token exchange endpoint.
  */
 export const exchangeCallback = ({
   code,
@@ -219,8 +194,7 @@ export const exchangeCallback = ({
       const claims = tokens.claims()
       const sub = claims ? claims.sub : undefined
       if (!sub) {
-        // eslint-disable-next-line typesafe/no-throw-sync-func
-        throw new Error('MyInfo FAPI ID token had no sub')
+        return Promise.reject(new Error('MyInfo FAPI ID token had no sub'))
       }
       return { accessToken: tokens.access_token, sub }
     },
@@ -240,10 +214,7 @@ export const exchangeCallback = ({
 
 /**
  * Fetches person data from the MyInfo FAPI userinfo endpoint.
- * @param accessToken - The access token.
- * @param sub - The subject.
- * @param dpopPrivateJwk - The DPoP private JWK.
- * @returns The person data.
+ * Uses access token, subject and DPoP private JWK to authenticate the request.
  */
 export const fetchPerson = ({
   accessToken,
@@ -252,10 +223,7 @@ export const fetchPerson = ({
 }: Pick<
   MyInfoFapiExchangedSession,
   'accessToken' | 'sub' | 'dpopPrivateJwk'
->): ResultAsync<
-  IPersonResponse,
-  MyInfoFapiConfigError | MyInfoFapiFetchError | MyInfoFapiMissingUinFinError
-> => {
+>): ResultAsync<IPersonResponse, MyInfoFetchPersonError> => {
   return withConfig(
     async (config) => {
       const keyPair = await rehydrateDpopKeyPair(dpopPrivateJwk)
@@ -280,15 +248,13 @@ export const fetchPerson = ({
 }
 
 /**
- * Consumes a resolved login session. A still-pending session is left
- * untouched and reported as an incomplete login rather than a failure.
+ * Consumes an exchanged session and retrieves its person data. A session that
+ * is still pending is left untouched and reported as an incomplete login
+ * rather than a failure.
  */
-const consumeFapiSession = (
+export const loadPersonForSession = (
   sessionId: string,
-): ResultAsync<
-  MyInfoFapiExchangedSession,
-  DatabaseError | MyInfoFapiMissingSessionError | MyInfoFapiIncompleteLoginError
-> => {
+): ResultAsync<MyInfoData, MyInfoLoadPersonForSessionError> => {
   return ResultAsync.fromPromise(
     MyInfoFapiSession.consume(sessionId),
     (error) => {
@@ -299,40 +265,20 @@ const consumeFapiSession = (
       })
       return new DatabaseError('Failed to consume MyInfo FAPI session')
     },
-  ).andThen((consumed) => {
-    switch (consumed.status) {
-      case 'exchanged':
-        return okAsync(consumed.session)
-      case 'failed':
-        return errAsync(new MyInfoFapiMissingSessionError())
-      case 'incomplete':
-        return errAsync(new MyInfoFapiIncompleteLoginError())
-    }
-  })
-}
-
-/**
- * Consumes an exchanged login session and loads the person data it grants.
- * @param sessionId - The session ID.
- * @returns The person data.
- */
-export const loadPersonForSession = (
-  sessionId: string,
-): ResultAsync<
-  MyInfoData,
-  | DatabaseError
-  | MyInfoFapiMissingSessionError
-  | MyInfoFapiIncompleteLoginError
-  | MyInfoFapiConfigError
-  | MyInfoFapiFetchError
-  | MyInfoFapiMissingUinFinError
-> => {
-  return consumeFapiSession(sessionId)
+  )
+    .andThen((consumed) => {
+      switch (consumed.status) {
+        case 'exchanged':
+          return okAsync(consumed.session)
+        case 'failed':
+          return errAsync(new MyInfoFapiMissingSessionError())
+        case 'incomplete':
+          return errAsync(new MyInfoFapiIncompleteLoginError())
+      }
+    })
     .andThen(fetchPerson)
     .map((personResponse) => new MyInfoData(personResponse))
 }
-
-// Private functions
 
 const withConfig = <T, E>(
   run: (config: client.Configuration) => Promise<T>,

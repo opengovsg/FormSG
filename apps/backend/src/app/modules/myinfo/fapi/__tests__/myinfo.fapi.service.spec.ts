@@ -50,7 +50,6 @@ jest.mock('openid-client', () => {
 })
 
 jest.mock('../myinfo.fapi.client', () => ({
-  ...jest.requireActual('../myinfo.fapi.client'),
   getConfiguration: jest.fn(() =>
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     require('neverthrow').okAsync({ mock: 'configuration' }),
