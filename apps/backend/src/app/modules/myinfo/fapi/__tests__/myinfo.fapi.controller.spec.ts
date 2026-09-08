@@ -198,4 +198,28 @@ describe('loginToMyInfoFapi', () => {
     expect(res.clearCookie).not.toHaveBeenCalled()
     expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
   })
+
+  it('should record a failure when the exchange cannot be persisted', async () => {
+    MockSession.loadForCallback.mockResolvedValueOnce({
+      phase: 'pending',
+      target: MOCK_TARGET,
+      exchange: MOCK_EXCHANGE,
+    })
+    MockMyInfoFapiService.exchangeCallback.mockReturnValueOnce(
+      okAsync({ accessToken: 'mock-access-token', sub: 'mock-sub' }),
+    )
+    MockSession.markExchanged.mockRejectedValueOnce(new Error('mongo is down'))
+    const res = expressHandler.mockResponse()
+
+    await loginToMyInfoFapi(
+      mockCallback(SUCCESS_QUERY, MOCK_SESSION_ID),
+      res,
+      jest.fn(),
+    )
+
+    // Otherwise the session stays pending and form load reads the login as
+    // never attempted, dropping the respondent onto an unauthenticated form.
+    expect(MockSession.markFailed).toHaveBeenCalledWith(MOCK_SESSION_ID)
+    expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
+  })
 })
