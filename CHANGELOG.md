@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.17.1](https://github.com/opengovsg/formsg/compare/v9.17.0...v9.17.1) (2026-09-08)
+
+
+### Bug Fixes
+
+* **logging:** redact Authorization header from access logs (#9964) ([#9964](https://github.com/opengovsg/formsg/commit/9c65bec89e95a3237a0a7d34587c6c30655b0723))
+
 ## [9.17.0](https://github.com/opengovsg/formsg/compare/v9.16.0...v9.17.0) (2026-09-07)
 
 
