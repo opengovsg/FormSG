@@ -25,9 +25,16 @@ const cookieIdentity = {
   signed: true,
   httpOnly: true,
   secure: !config.isDevOrTest,
-  // Singpass callback is a cross-site top-level redirect, 'strict' drops it.
-  sameSite: 'lax' as const,
+  sameSite: 'lax' as const, // cannot use strict for cross-site redirects
 }
+
+type CallbackQuery = {
+  state: string
+  iss?: string
+}
+type MyInfoFapiLoginQueryParams =
+  | (CallbackQuery & { code: string })
+  | (CallbackQuery & { error: string; error_description?: string })
 
 export const setMyInfoFapiSessionCookie = (
   res: Response,
@@ -43,41 +50,25 @@ export const clearMyInfoFapiSessionCookie = (res: Response): void => {
   res.clearCookie(MYINFO_FAPI_SESSION_COOKIE_NAME, cookieIdentity)
 }
 
-/**
- * `iss` is optional here. Whether it is required is a property of the
- * discovered server metadata, and openid-client enforces it from there.
- */
 const callbackQuery = {
   state: Joi.string().required(),
-  iss: Joi.string().optional(),
+  iss: Joi.string().optional(), // follows from discovery endpoint
 }
 
-/**
- * Query must be either a code callback or a Singpass error callback.
- */
 const validateMyInfoFapiLogin = celebrate({
   [Segments.QUERY]: Joi.alternatives().try(
     Joi.object()
       .keys({ ...callbackQuery, code: Joi.string().required() })
-      .unknown(true),
+      .unknown(true), // code callback
     Joi.object()
       .keys({
         ...callbackQuery,
         error: Joi.string().required(),
         error_description: Joi.string().optional(),
       })
-      .unknown(true),
+      .unknown(true), // error callback
   ),
 })
-
-type CallbackQuery = {
-  state: string
-  iss?: string
-}
-
-type MyInfoFapiLoginQueryParams =
-  | (CallbackQuery & { code: string })
-  | (CallbackQuery & { error: string; error_description?: string })
 
 /**
  * Exchanges the Singpass authorization code for tokens and redirects to the form.
@@ -135,25 +126,19 @@ export const loginToMyInfoFapi: ControllerHandler<
       meta: {
         ...formMeta,
         error: req.query.error,
-        // Logged but never rendered: Singpass warns this is a spoofing vector.
-        errorDescription: req.query.error_description,
+        errorDescription: req.query.error_description, // logged but never rendered
       },
     })
-    await MyInfoFapiSession.markFailed(sessionId).catch((error) => {
-      logger.error({
-        message: 'Failed to record MyInfo FAPI login failure',
-        meta: formMeta,
-        error,
-      })
-    })
+    await recordFailure(sessionId, formMeta)
     return res.redirect(destination)
   }
 
-  // Duplicate callback (RBI forwarding race or a double click). The winner
-  // already holds a valid token; both requests share the cookie, so leave it.
+  // Duplicate callback (RBI forwarding race or a double click)
+  // Winner holds valid token, both requests share the cookie, so leave it.
   if (session.phase === 'exchanged') {
     logger.info({
-      message: 'Duplicate MyInfo FAPI callback, session already exchanged',
+      message:
+        'Duplicate MyInfo FAPI callback, session already exchanged with valid token',
       meta: formMeta,
     })
     return res.redirect(destination)
@@ -174,49 +159,55 @@ export const loginToMyInfoFapi: ControllerHandler<
       meta: formMeta,
       error: exchangeResult.error,
     })
-    await MyInfoFapiSession.markFailed(sessionId).catch((error) => {
-      logger.error({
-        message: 'Failed to record MyInfo FAPI login failure',
-        meta: formMeta,
-        error,
-      })
-    })
+    await recordFailure(sessionId, formMeta)
     return res.redirect(destination)
   }
 
-  const outcome: MyInfoFapiClaimOutcome = await MyInfoFapiSession.markExchanged(
-    sessionId,
-    exchangeResult.value,
-  ).catch((error) => {
+  let outcome: MyInfoFapiClaimOutcome
+  try {
+    outcome = await MyInfoFapiSession.markExchanged(
+      sessionId,
+      exchangeResult.value,
+    )
+  } catch (error) {
+    // Best-effort record the failed exchange before redirecting to the form.
     logger.error({
       message: 'Failed to record MyInfo FAPI token exchange',
-      meta: logMeta,
+      meta: formMeta,
       error,
     })
-    return 'notFound'
-  })
+    await recordFailure(sessionId, formMeta)
+    return res.redirect(destination)
+  }
 
   logger.info({
     message: 'Completed MyInfo FAPI token exchange',
     meta: { ...formMeta, outcome },
   })
+
   return res.redirect(destination)
 }
 
 /**
- * Handles the redirect from Singpass after the respondent has consented.
- * Mounted at GET /mi/fapi/login after authCallbackForwardingMiddleware.
+ * Best-effort marks the session as failed so form load can raise
+ * ErrorCode.myInfo. A write failure is logged and leaves the session unchanged.
  */
-export const handleMyInfoFapiLogin = [
-  validateMyInfoFapiLogin,
-  loginToMyInfoFapi,
-] as ControllerHandler[]
+const recordFailure = (
+  sessionId: string,
+  meta: { action: string; formId: string },
+): Promise<void> =>
+  MyInfoFapiSession.markFailed(sessionId).catch((error) => {
+    logger.error({
+      message: 'Failed to record MyInfo FAPI login failure',
+      meta,
+      error,
+    })
+  })
 
 /**
  * Form path to send the respondent to after the callback.
- * @param formId - The form ID.
- * @param encodedQuery - The encoded query.
- * @returns The redirect destination.
+ * Uses encodedQuery stored in MongoDB to reconstruct the original query string.
+ * Returns the base URL if no encodedQuery is present.
  */
 const redirectDestination = ({
   formId,
@@ -234,3 +225,12 @@ const redirectDestination = ({
     return base
   }
 }
+
+/**
+ * Validates the callback query and handles the callback from Singpass.
+ * Mounted at GET /mi/fapi/login after authCallbackForwardingMiddleware.
+ */
+export const handleMyInfoFapiLogin = [
+  validateMyInfoFapiLogin,
+  loginToMyInfoFapi,
+] as ControllerHandler[]
