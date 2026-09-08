@@ -88,7 +88,7 @@ const loggingMiddleware = () => {
       }
       return value
     },
-    headerBlacklist: ['cookie'],
+    headerBlacklist: ['cookie', 'authorization'],
     ignoredRoutes: ['/'],
     skip: (req, res) => {
       // Skip if it's ELB-HealthChecker to avoid polluting logs
