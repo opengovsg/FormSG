@@ -3,13 +3,13 @@ import { StatusCodes } from 'http-status-codes'
 
 import { authCallbackForwardingMiddleware } from '../../auth/auth.middlewares'
 
-import { getPublicJwks } from './myinfo.fapi.client'
 import {
   MYINFO_FAPI_JWKS_PATH,
   MYINFO_FAPI_REDIRECT_PATH,
   SINGPASS_JWKS_CACHE_TTL_SECONDS,
 } from './myinfo.fapi.constants'
 import { handleMyInfoFapiLogin } from './myinfo.fapi.controller'
+import { getPublicJwks } from './myinfo.fapi.jwks'
 
 export const MyInfoFapiRouter = Router()
 

@@ -12,13 +12,13 @@ import {
   requestedAttrsToScopeString,
   userInfoToPersonResponse,
 } from './myinfo.fapi.adapter'
-import {
-  exportPrivateJwk,
-  getConfiguration,
-  importEcSigningKey,
-  importEcVerificationKey,
-} from './myinfo.fapi.client'
+import { getConfiguration } from './myinfo.fapi.client'
 import { MYINFO_FAPI_REDIRECT_URI } from './myinfo.fapi.constants'
+import {
+  dpopOptions,
+  generateDpopKey,
+  rehydrateDpopKeyPair,
+} from './myinfo.fapi.dpop'
 import {
   MyInfoFapiAuthRequestError,
   MyInfoFapiConfigError,
@@ -33,12 +33,6 @@ import getMyInfoFapiSessionModel, {
   MyInfoFapiExchangeSession,
   MyInfoFapiPendingSession,
 } from './myinfo.fapi.session.model'
-
-/**
- * DPoP should be ≤2 minutes after iat
- * @see {@link https://docs.developer.singpass.gov.sg/docs/technical-specifications/technical-concepts/demonstrating-proof-of-possession-dpop}
- */
-const DPOP_EXPIRY_SECONDS = 120
 
 const logger = createLoggerWithLabel(module)
 const MyInfoFapiSession = getMyInfoFapiSessionModel(mongoose)
@@ -151,9 +145,7 @@ const buildLoginUrl = ({
       const codeVerifier = client.randomPKCECodeVerifier()
       const state = client.randomState()
       const nonce = client.randomNonce()
-      const keyPair = await client.randomDPoPKeyPair('ES256', {
-        extractable: true,
-      })
+      const { keyPair, privateJwk: dpopPrivateJwk } = await generateDpopKey()
       const url = await client.buildAuthorizationUrlWithPAR(
         config,
         {
@@ -172,7 +164,7 @@ const buildLoginUrl = ({
         state,
         nonce,
         codeVerifier,
-        dpopPrivateJwk: await exportPrivateJwk(keyPair.privateKey),
+        dpopPrivateJwk,
       }
     },
     (error) => {
@@ -349,29 +341,6 @@ const withConfig = <T, E>(
   return getConfiguration().andThen((config) =>
     ResultAsync.fromPromise(run(config), onError),
   )
-}
-
-const dpopOptions = (
-  config: client.Configuration,
-  keyPair: CryptoKeyPair,
-): client.DPoPOptions => {
-  return {
-    DPoP: client.getDPoPHandle(config, keyPair, {
-      [client.modifyAssertion]: (_header, payload) => {
-        if (typeof payload.iat === 'number') {
-          payload.exp = payload.iat + DPOP_EXPIRY_SECONDS
-        }
-      },
-    }),
-  }
-}
-
-const rehydrateDpopKeyPair = async (
-  jwk: JsonWebKey,
-): Promise<CryptoKeyPair> => {
-  const privateKey = await importEcSigningKey(jwk)
-  const publicKey = await importEcVerificationKey(jwk)
-  return { privateKey, publicKey }
 }
 
 const callbackUrl = ({ code, state, iss }: AuthCode): URL => {
