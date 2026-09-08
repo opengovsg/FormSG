@@ -9,6 +9,7 @@ export enum SeenFlags {
   LastSeenFeatureUpdateVersion = 'lastSeenFeatureUpdateVersion',
   SettingsNotification = 'settingsNotification',
   CreateBuilderMrfWorkflow = 'createBuilderMrfWorkflow',
+  GuidedWorkflowSetup = 'guidedWorkflowSetup',
 }
 
 // Base used for being referenced by schema/model in the backend.

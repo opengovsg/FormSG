@@ -14,6 +14,7 @@ import {
   useAdminWorkflowStore,
 } from '../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../hooks/useAdminFormWorkflow'
+import { useGuidedSetupTaught } from '../hooks/useGuidedSetupTaught'
 import { useIsWorkflowBuilderRedesign } from '../hooks/useIsWorkflowBuilderRedesign'
 
 import { FormToWorkflowIllustration } from './FormToWorkflowIllustration'
@@ -30,13 +31,14 @@ export const EmptyWorkflow = (): JSX.Element => {
 
   const startSetup = (isGuidedSetup: boolean) => () => {
     setGuidedSetup(isGuidedSetup)
-    if (isGuidedSetup) {
+    if (isGuidedSetup && !hasBeenTaught) {
       showWelcomeCard()
       return
     }
     setToCreating()
   }
   const { isPaymentEnabled } = useAdminFormWorkflow()
+  const { hasBeenTaught } = useGuidedSetupTaught()
 
   const paymentBlockedLabel = isPaymentEnabled
     ? t('features.adminForm.sidebar.workflow.paymentEnabledNoSteps')
