@@ -139,6 +139,12 @@ MyInfoFapiSessionSchema.statics.createPending = async function (
   return created._id
 }
 
+/**
+ * Load a session for a callback. For exchanged sessions, omit secrets so
+ * duplicate callbacks only redirect. Anything else (pending, or failed by an
+ * earlier duplicate callback) still returns the exchange material, so a
+ * replay can go on to succeed.
+ */
 MyInfoFapiSessionSchema.statics.loadForCallback = async function (
   sessionId: string,
 ): Promise<MyInfoFapiCallbackSession | null> {
@@ -168,12 +174,19 @@ MyInfoFapiSessionSchema.statics.loadForCallback = async function (
   }
 }
 
+/**
+ * Records a successful token exchange. Filtered on
+ * `phase: { $ne: 'exchanged' }`, not on `pending`: a session already marked
+ * `failed` by a losing duplicate callback (an RBI forwarding race or a double
+ * click) must still be claimable by the request that actually succeeded.
+ * An already-exchanged session is left alone and reported as such.
+ */
 MyInfoFapiSessionSchema.statics.markExchanged = async function (
   sessionId: string,
   tokens: { accessToken: string; sub: string },
 ): Promise<MyInfoFapiClaimOutcome> {
   const claimed = await this.findOneAndUpdate(
-    { _id: sessionId, phase: 'pending' },
+    { _id: sessionId, phase: { $ne: 'exchanged' } },
     {
       $set: {
         phase: 'exchanged',
