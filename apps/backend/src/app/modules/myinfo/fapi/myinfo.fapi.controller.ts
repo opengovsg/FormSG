@@ -94,18 +94,17 @@ export const loginToMyInfoFapi: ControllerHandler<
   unknown,
   MyInfoFapiLoginQueryParams
 > = async (req, res) => {
+  const logMeta = { action: 'loginToMyInfoFapi' }
   const sessionId: unknown =
     req.signedCookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]
 
   if (typeof sessionId !== 'string' || !sessionId) {
     logger.error({
       message: 'MyInfo FAPI callback without a session cookie',
-      meta: { action: 'loginToMyInfoFapi' },
+      meta: logMeta,
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
-
-  const logMeta = { action: 'loginToMyInfoFapi', sessionId }
 
   const session = await MyInfoFapiSession.loadForCallback(sessionId).catch(
     (error) => {
