@@ -21,6 +21,9 @@ type AdminWorkflowStore = {
   dismissCompletedStep: () => void
   isGuidedSetup: boolean
   setGuidedSetup: (isGuidedSetup: boolean) => void
+  isOnWelcomeCard: boolean
+  showWelcomeCard: () => void
+  startBuildingFromWelcome: () => void
 }
 
 const INITIAL_STATE = {
@@ -28,6 +31,7 @@ const INITIAL_STATE = {
   pendingSwitchTo: null,
   completedStepNumber: null,
   isGuidedSetup: true,
+  isOnWelcomeCard: false,
 }
 
 export const isCreatingStateSelector = (state: AdminWorkflowStore) =>
@@ -91,12 +95,22 @@ export const isGuidedSetupSelector = (state: AdminWorkflowStore) =>
 export const setGuidedSetupSelector = (state: AdminWorkflowStore) =>
   state.setGuidedSetup
 
+export const isOnWelcomeCardSelector = (state: AdminWorkflowStore) =>
+  state.isOnWelcomeCard
+
+export const showWelcomeCardSelector = (state: AdminWorkflowStore) =>
+  state.showWelcomeCard
+
+export const startBuildingFromWelcomeSelector = (state: AdminWorkflowStore) =>
+  state.startBuildingFromWelcome
+
 export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
   devtools((set, get) => ({
     createOrEditData: null,
     pendingSwitchTo: null,
     completedStepNumber: null,
     isGuidedSetup: true,
+    isOnWelcomeCard: false,
     setToCreating: () =>
       set({
         createOrEditData: {
@@ -122,6 +136,12 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
     setCompletedStep: (stepNumber) => set({ completedStepNumber: stepNumber }),
     dismissCompletedStep: () => set({ completedStepNumber: null }),
     setGuidedSetup: (isGuidedSetup) => set({ isGuidedSetup }),
+    showWelcomeCard: () => set({ isOnWelcomeCard: true }),
+    startBuildingFromWelcome: () =>
+      set({
+        isOnWelcomeCard: false,
+        createOrEditData: { state: AdminEditWorkflowState.CreatingStep },
+      }),
     setToInactive: () => set({ createOrEditData: null }),
     reset: () => set(INITIAL_STATE),
     requestSwitchTo: (stepNumber) =>

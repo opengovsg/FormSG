@@ -179,6 +179,13 @@ export const enSG: Workflow = {
   stepName: {
     label: 'Step name',
   },
+  welcome: {
+    header: "Let's start with Step 1",
+    stepOne: 'Step 1 is what everyone who opens your form link fills in first.',
+    whatNext:
+      "You'll name it, choose who fills it in, and pick which fields they see. Then you can add more steps.",
+    cta: "Let's go",
+  },
   intro: {
     header: 'Workflows split your form into steps',
     subheader:

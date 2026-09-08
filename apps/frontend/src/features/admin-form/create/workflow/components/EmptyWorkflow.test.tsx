@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/react'
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { useAdminWorkflowStore } from '../adminWorkflowStore'
@@ -67,7 +67,7 @@ describe('the workflow tab intro screen', () => {
     })
 
     describe('the fork', () => {
-      it('paces the step one decision at a time from guided setup', async () => {
+      it('orients on the welcome card before asking for anything', async () => {
         const user = userEvent.setup()
         await renderIntro()
 
@@ -76,7 +76,24 @@ describe('the workflow tab intro screen', () => {
         })
 
         expect(useAdminWorkflowStore.getState().isGuidedSetup).toBe(true)
-        expect(screen.getAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1)
+        expect(screen.getByText(/let's start with step 1/i)).toBeInTheDocument()
+        expect(useAdminWorkflowStore.getState().createOrEditData).toBeNull()
+      })
+
+      it('paces the step one decision at a time after the welcome card', async () => {
+        const user = userEvent.setup()
+        await renderIntro()
+
+        await act(async () => {
+          await user.click(screen.getByRole('button', GUIDED))
+        })
+        await act(async () => {
+          await user.click(screen.getByRole('button', { name: /let's go/i }))
+        })
+        await waitFor(() =>
+          expect(screen.getAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1),
+        )
+
         expect(
           screen.getByRole('button', { name: /^continue$/i }),
         ).toBeInTheDocument()
@@ -115,15 +132,12 @@ describe('the workflow tab intro screen', () => {
       })
     })
 
-    it.each([
-      ['guided', GUIDED],
-      ['manual', MANUAL],
-    ])('starts a step from the %s action', async (_label, action) => {
+    it('starts a step straight away from manual setup', async () => {
       const user = userEvent.setup()
       await renderIntro()
 
       await act(async () => {
-        await user.click(screen.getByRole('button', action))
+        await user.click(screen.getByRole('button', MANUAL))
       })
 
       expect(useAdminWorkflowStore.getState().createOrEditData).toEqual({
