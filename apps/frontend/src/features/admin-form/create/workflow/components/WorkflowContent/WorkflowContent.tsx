@@ -6,15 +6,19 @@ import { StatusTrackerToggle } from '~features/admin-form/settings/components/Em
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
+import { useReportedCompletedStep } from '../GuidedCreation'
 
 import { CompletionEmailBlock } from './CompletionEmailBlock'
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'
 import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
 
+export const STEP_CONNECTOR_TEST_ID = 'workflow-step-connector'
+
 export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isReportingCompletedStep = useReportedCompletedStep() !== null
 
   if (isLoading) return null
   return (
@@ -39,7 +43,7 @@ export const WorkflowContent = (): JSX.Element | null => {
         {formWorkflow?.map((step, i) => (
           <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
         ))}
-        <NewStepBlock />
+        {isReportingCompletedStep ? null : <NewStepBlock />}
       </Stack>
       {formWorkflow?.length ? (
         isRedesign ? (
@@ -53,7 +57,12 @@ export const WorkflowContent = (): JSX.Element | null => {
 }
 
 const WorkflowStepBlockDivider = () => (
-  <Box alignSelf="center" justifyContent="center" border="none">
+  <Box
+    data-testid={STEP_CONNECTOR_TEST_ID}
+    alignSelf="center"
+    justifyContent="center"
+    border="none"
+  >
     <Divider
       orientation="vertical"
       h="1rem"
