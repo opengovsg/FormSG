@@ -1,4 +1,4 @@
-import { KeyboardEvent, useCallback } from 'react'
+import { KeyboardEvent, useCallback, useEffect, useState } from 'react'
 import { IconType } from 'react-icons/lib'
 import {
   Box,
@@ -85,6 +85,24 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
       [handleSelect, props.isChecked],
     )
 
+    // Manually track the pressed state instead of relying on the native
+    // `:active` pseudo-class, since a `<label>` associated with a form
+    // control stays `:active` even after the cursor is dragged away from
+    // it, only clearing on the next hover instead of on mouseup.
+    const [isPressed, setIsPressed] = useState(false)
+
+    const handleMouseDown = useCallback(() => {
+      if (props.isDisabled || props.isReadOnly) return
+      setIsPressed(true)
+    }, [props.isDisabled, props.isReadOnly])
+
+    useEffect(() => {
+      if (!isPressed) return
+      const handleMouseUp = () => setIsPressed(false)
+      window.addEventListener('mouseup', handleMouseUp)
+      return () => window.removeEventListener('mouseup', handleMouseUp)
+    }, [isPressed])
+
     return (
       <Box
         as="label"
@@ -93,6 +111,7 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
         ml={props.side === 'right' ? '-1px' : undefined}
         role="button"
         ref={ref}
+        onMouseDown={handleMouseDown}
         aria-label={`${props.title} ${label} option, ${
           props.isChecked ? 'selected' : 'unselected'
         }`}
@@ -103,7 +122,12 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
           onKeyDown={handleSpacebar}
           aria-hidden
         />
-        <Box {...checkboxProps} __css={styles.option} aria-hidden>
+        <Box
+          {...checkboxProps}
+          __css={styles.option}
+          data-active={isPressed || undefined}
+          aria-hidden
+        >
           {leftIcon ? <Icon as={leftIcon} __css={styles.icon} /> : null}
           {label}
         </Box>
