@@ -16,9 +16,6 @@ beforeEach(reset)
 
 describe('pendingFieldCreation', () => {
   it('survives setToInactive', () => {
-    // The reason this slot exists. Opening the builder from another tab mounts
-    // BuilderAndDesignContent, which calls setToInactive as it mounts. A field
-    // written to stateData before the trip would be gone on arrival.
     const { stageFieldCreation, setToInactive } =
       useFieldBuilderStore.getState()
 
@@ -46,8 +43,6 @@ describe('pendingFieldCreation', () => {
   })
 
   it('can be cleared without touching stateData, for trips that stage nothing', () => {
-    // The generic "Add fields" path promises the builder opens with nothing
-    // staged, even if an earlier staging was never consumed.
     const { stageFieldCreation, clearPendingFieldCreation } =
       useFieldBuilderStore.getState()
 

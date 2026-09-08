@@ -40,9 +40,6 @@ export type FieldBuilderStore = {
     | null
   clearHoldingStateData: () => void
   moveFromHolding: () => void
-  // A field another tab asked the builder to open on. Survives setToInactive
-  // on purpose: the builder clears its own state as it mounts, so anything
-  // written to stateData before the trip is gone by the time it arrives.
   pendingFieldCreation: {
     field: FieldCreateDto
     insertionIndex: number
