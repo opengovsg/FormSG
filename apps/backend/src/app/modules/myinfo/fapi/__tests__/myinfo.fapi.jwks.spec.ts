@@ -28,11 +28,11 @@ const PUBLIC_ENC_KEY = {
 const PUBLIC_KEYS = [PUBLIC_SIG_KEY, PUBLIC_ENC_KEY]
 
 /** getPublicJwks memoises per module instance, so each test loads a fresh one. */
-const loadClient = () =>
+const loadJwks = () =>
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  require('../myinfo.fapi.client') as typeof import('../myinfo.fapi.client')
+  require('../myinfo.fapi.jwks') as typeof import('../myinfo.fapi.jwks')
 
-describe('myinfo.fapi.client', () => {
+describe('myinfo.fapi.jwks', () => {
   beforeEach(() => {
     jest.resetModules()
     mockRetrieveJsonContent.mockReset()
@@ -42,7 +42,7 @@ describe('myinfo.fapi.client', () => {
     it('should serve a keyset that holds only public keys', () => {
       mockRetrieveJsonContent.mockReturnValue({ keys: PUBLIC_KEYS })
 
-      expect(loadClient().getPublicJwks()._unsafeUnwrap()).toEqual({
+      expect(loadJwks().getPublicJwks()._unsafeUnwrap()).toEqual({
         keys: PUBLIC_KEYS,
       })
     })
@@ -52,7 +52,7 @@ describe('myinfo.fapi.client', () => {
         keys: [{ ...PUBLIC_SIG_KEY, d: 'mock-private-scalar' }, PUBLIC_ENC_KEY],
       })
 
-      const error = loadClient().getPublicJwks()._unsafeUnwrapErr()
+      const error = loadJwks().getPublicJwks()._unsafeUnwrapErr()
       expect(error.name).toBe('MyInfoFapiConfigError')
       expect(error.message).toMatch(/carries private key material/)
     })
@@ -60,7 +60,7 @@ describe('myinfo.fapi.client', () => {
     it('should refuse to serve a keyset without an encryption key', () => {
       mockRetrieveJsonContent.mockReturnValue({ keys: [PUBLIC_SIG_KEY] })
 
-      const error = loadClient().getPublicJwks()._unsafeUnwrapErr()
+      const error = loadJwks().getPublicJwks()._unsafeUnwrapErr()
       expect(error.name).toBe('MyInfoFapiConfigError')
       expect(error.message).toMatch(/needs one 'sig' and one 'enc' key/)
     })
@@ -68,7 +68,7 @@ describe('myinfo.fapi.client', () => {
     it('should refuse to serve an empty keyset', () => {
       mockRetrieveJsonContent.mockReturnValue({ keys: [] })
 
-      const error = loadClient().getPublicJwks()._unsafeUnwrapErr()
+      const error = loadJwks().getPublicJwks()._unsafeUnwrapErr()
       expect(error.name).toBe('MyInfoFapiConfigError')
       expect(error.message).toMatch(/needs one 'sig' and one 'enc' key/)
     })
