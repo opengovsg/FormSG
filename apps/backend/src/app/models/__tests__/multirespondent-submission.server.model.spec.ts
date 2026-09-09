@@ -763,6 +763,75 @@ describe('Multirespondent Submission Model', () => {
     })
   })
 
+  // #9973 retires the V3 *write* path only. Rows already carrying the older V3
+  // content version (mrfVersion 1) must keep rendering in the admin response
+  // view, downloading via the cursor, and retrying — all three read the row
+  // through the seams below, and all three need `mrfVersion` to survive the
+  // read so the reader picks the V3 shape.
+  describe('V3 read path (mrfVersion 1 rows)', () => {
+    const createV3Row = (formId: string) =>
+      MultirespondentSubmission.create({
+        form: formId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [YES_NO_FIELD],
+        form_logics: [],
+        workflow: [WORKFLOW_STEP_1],
+        submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+        encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        version: 3,
+        workflowStep: 0,
+        mrfVersion: 1,
+        attachmentMetadata: { someFileName: 'some url of attachment' },
+      })
+
+    it('renders: findEncryptedSubmissionById returns the V3 row with its content version intact', async () => {
+      const formId = new ObjectId().toHexString()
+      const row = await createV3Row(formId)
+
+      const actual =
+        await MultirespondentSubmission.findEncryptedSubmissionById(
+          formId,
+          row._id,
+        )
+
+      expect(actual).not.toBeNull()
+      expect(actual?.mrfVersion).toBe(1)
+      expect(actual?.encryptedContent).toBe(MOCK_ENCRYPTED_CONTENT)
+      expect(actual?.encryptedSubmissionSecretKey).toBe(
+        MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+      )
+    })
+
+    it('downloads: the response cursor yields the V3 row with its content version intact', async () => {
+      const formId = new ObjectId().toHexString()
+      await createV3Row(formId)
+
+      const cursor = MultirespondentSubmission.getSubmissionCursorByFormId(
+        formId,
+        {},
+      )
+      const retrieved: any[] = []
+      for await (const submission of cursor) {
+        retrieved.push(submission)
+      }
+
+      expect(retrieved).toHaveLength(1)
+      expect(retrieved[0].mrfVersion).toBe(1)
+      expect(retrieved[0].encryptedContent).toBe(MOCK_ENCRYPTED_CONTENT)
+    })
+
+    it('retries: the webhook view of a V3 row still resolves to submission version 3', async () => {
+      const formId = new ObjectId().toHexString()
+      const row = await createV3Row(formId)
+
+      const webhookView = await row.getWebhookView()
+
+      expect(webhookView.data.version).toBe(3)
+      expect(webhookView.data.encryptedContent).toBe(MOCK_ENCRYPTED_CONTENT)
+    })
+  })
+
   describe('step-token fields', () => {
     it('should persist and retrieve stepTokenHash and encryptedStepToken', async () => {
       // Arrange
