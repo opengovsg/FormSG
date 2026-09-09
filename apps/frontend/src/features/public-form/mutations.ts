@@ -30,7 +30,10 @@ import {
   uploadAttachmentToQuarantine,
 } from './PublicFormService'
 
-export const usePublicAuthMutations = (formId: string) => {
+export const usePublicAuthMutations = (
+  formId: string,
+  authType?: Exclude<FormAuthType, FormAuthType.NIL>,
+) => {
   const { storePrefillQuery } = useStorePrefillQuery()
 
   const toast = useToast({ status: 'success', isClosable: true })
@@ -42,7 +45,11 @@ export const usePublicAuthMutations = (formId: string) => {
     },
     {
       onSuccess: (redirectUrl) => {
-        setExpectedAuthFormId(formId)
+        // Only MyInfo carries the origin-wide FAPI session cookie that can be
+        // claimed by another form, so only MyInfo needs the tab-scoped guard.
+        if (authType === FormAuthType.MyInfo) {
+          setExpectedAuthFormId(formId)
+        }
         window.location.assign(redirectUrl)
       },
       onError: (error: Error) => {
