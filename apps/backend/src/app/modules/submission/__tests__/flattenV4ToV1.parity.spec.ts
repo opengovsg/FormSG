@@ -13,10 +13,10 @@
  * verifiable field carries `signature: undefined` as a present key that
  * `JSON.stringify` drops — the delivered bytes are the JSON.
  *
- * THIS FILE IS EXPECTED TO FAIL until the flatten is rewritten. Every failure
- * here is a real parity gap: the harness below reproduces the production chain
- * rather than approximating it, and a harness that cannot build the reference
- * throws rather than reporting a difference.
+ * Every failure here is a real parity gap: the harness below reproduces the
+ * production chain rather than approximating it, and a harness that cannot
+ * build the reference throws rather than reporting a difference. Do not
+ * normalise a difference away to make a case pass.
  *
  * It lives in the backend because the reference value is only obtainable from
  * backend code (`ParsedResponsesObject`, `omitResponseKeys`); the frontend
