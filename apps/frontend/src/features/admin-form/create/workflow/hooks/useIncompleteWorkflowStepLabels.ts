@@ -8,10 +8,6 @@ import { getWorkflowStepLabel } from '../utils/getWorkflowStepLabel'
 
 import { useAdminFormWorkflow } from './useAdminFormWorkflow'
 
-/**
- * Names of the workflow steps that are not finished, in step order (FRM-2489).
- * Runs the same predicate the backend uses, on the form already in the cache.
- */
 export const useIncompleteWorkflowStepLabels = (): string[] => {
   const { t } = useTranslation()
   const { formWorkflow, formFields } = useAdminFormWorkflow()

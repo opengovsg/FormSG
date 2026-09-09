@@ -3,19 +3,13 @@ import { FormStatus, FormWorkflowStep, WorkflowType } from '../types/form'
 
 import { checkIsOptionsMismatched } from './options-recipients-map-validation'
 
-/**
- * Only a live form needs a runnable workflow. Deliberately not gated on the
- * redesign flag; see PR #9856.
- */
 export const mustWorkflowBeComplete = ({
   formStatus,
 }: {
   formStatus?: FormStatus
 }): boolean => formStatus === FormStatus.Public
 
-// Every option of the selected dropdown needs at least one recipient, or a real submission routes nowhere.
 const isConditionalRoutingComplete = (
-  // Optional at runtime on a half-built step, though the type says otherwise.
   conditionalFieldId: FormFieldDto['_id'] | undefined,
   formFields: FormFieldDto[],
 ): boolean => {
@@ -24,7 +18,6 @@ const isConditionalRoutingComplete = (
   const conditionalField = formFields.find(
     (field) => String(field._id) === String(conditionalFieldId),
   )
-  // Deleting a field leaves an orphaned reference behind, with no cascade.
   if (!conditionalField || conditionalField.fieldType !== BasicField.Dropdown) {
     return false
   }
@@ -44,18 +37,11 @@ const isConditionalRoutingComplete = (
   )
 }
 
-/**
- * Whether a workflow step is complete enough to run. Needs a person, not fields;
- * step 0 is exempt. Ids are compared as strings since Mongoose hands back ObjectIds.
- *
- * @param stepNumber the step's position in the full, unfiltered workflow
- */
 export const isStepComplete = (
   step: FormWorkflowStep,
   formFields: FormFieldDto[],
   stepNumber: number,
 ): boolean => {
-  // An approval field the assigned person cannot see stalls the workflow permanently.
   if (
     step.approval_field &&
     !step.edit.map(String).includes(String(step.approval_field))
@@ -75,7 +61,6 @@ export const isStepComplete = (
   }
 }
 
-// The indices of every incomplete step in a workflow, in order; used to name the offending steps to the admin.
 export const getIncompleteStepNumbers = (
   workflow: FormWorkflowStep[],
   formFields: FormFieldDto[],

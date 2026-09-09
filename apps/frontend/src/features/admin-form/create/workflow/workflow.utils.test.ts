@@ -3,9 +3,6 @@ import { FormWorkflowStep, WorkflowType } from 'formsg-shared/types/form'
 
 import { isWorkflowFeedbackEligible } from './workflow.utils'
 
-// Covers only what this wrapper can get wrong on its own: the threshold and the positional index.
-
-// The first step's respondent is implicit, so these fixtures leave it empty.
 const firstStep = (edit: string[] = ['field1']): FormWorkflowStep => ({
   workflow_type: WorkflowType.Static,
   edit,
@@ -52,8 +49,6 @@ describe('isWorkflowFeedbackEligible', () => {
     expect(isWorkflowFeedbackEligible(workflow, formFields)).toBe(expected)
   })
 
-  // The empty-emails exemption is positional. Only index 0 gets it, otherwise
-  // any later Static step left unconfigured would count towards the threshold.
   it('should not exempt a later static step with no emails', () => {
     expect(
       isWorkflowFeedbackEligible(
@@ -63,9 +58,6 @@ describe('isWorkflowFeedbackEligible', () => {
     ).toBe(false)
   })
 
-  // Behaviour change, intended: the shared predicate requires every dropdown
-  // option to have a recipient, where the old feedback-only helper stopped at
-  // "a dropdown was chosen".
   it('should return false for a conditional step with an unmapped option', () => {
     expect(
       isWorkflowFeedbackEligible(

@@ -1089,9 +1089,7 @@ describe('multirespondent-submission.utils', () => {
       })
     })
 
-    // FRM-2489: a half-built conditional step can omit conditional_field; the submission path must not throw.
     it('should return an empty array for a conditional step with no dropdown chosen', () => {
-      // Arrange
       const mockForm = {
         form_fields: [
           generateDefaultField(BasicField.Dropdown, {
@@ -1101,14 +1099,12 @@ describe('multirespondent-submission.utils', () => {
         ],
       } as IPopulatedForm
 
-      // Act: no `conditional_field` on the step.
       const result = retrieveWorkflowStepEmailAddresses(
         mockForm,
         { workflow_type: WorkflowType.Conditional } as FormWorkflowStepDto,
         {} as FieldResponsesV4,
       )
 
-      // Assert
       expect(result._unsafeUnwrap()).toEqual([])
     })
 

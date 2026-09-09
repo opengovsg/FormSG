@@ -76,8 +76,6 @@ export const DynamicRespondentOption = ({
                       'features.adminForm.sidebar.workflow.dynamicRespondent.required',
                     ),
                 validate: (selectedValue) => {
-                  // Nothing chosen yet. When the form is live `required` has
-                  // already rejected this, so reaching here means it is allowed.
                   if (!selectedValue) return true
                   return (
                     isLoading ||

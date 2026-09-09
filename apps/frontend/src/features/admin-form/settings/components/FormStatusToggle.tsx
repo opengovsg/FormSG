@@ -85,7 +85,6 @@ export const FormStatusToggle = (): JSX.Element => {
   const emailModeConvertModalProps = useDisclosure()
   const { onOpen: onOpenEmailModeConvertModal } = emailModeConvertModalProps
 
-  // FRM-2489: block the publish client-side so the admin gets the steps named, not a generic toast.
   const incompleteWorkflowModalProps = useDisclosure()
   const { onOpen: onOpenIncompleteWorkflowModal } = incompleteWorkflowModalProps
   const incompleteStepLabels = useIncompleteWorkflowStepLabels()

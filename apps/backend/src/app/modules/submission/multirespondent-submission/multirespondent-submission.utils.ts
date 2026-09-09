@@ -130,7 +130,6 @@ export const extractEmailAnswersFromResponses = (
 
 const getConditionalFieldEmailRecipient = (
   form_fields: FormFieldSchema[] | FormFieldDto[],
-  // FRM-2489: a half-built step can omit this even though the type says required; guard rather than throw.
   fieldId: string | undefined,
   responses: FieldResponsesV4,
 ): string[] => {

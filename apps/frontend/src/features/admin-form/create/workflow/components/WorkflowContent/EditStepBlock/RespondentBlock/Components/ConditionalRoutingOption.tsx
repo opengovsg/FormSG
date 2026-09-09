@@ -436,7 +436,6 @@ export const ConditionalRoutingOption = ({
                       ),
                   validate: (selectedValue) => {
                     if (!selectedValue) return true
-                    // FRM-2489: routing must be finished before the form goes live, not before it can be saved.
                     if (isSavePermissive) return true
                     if (noEmailToOptionsMappingErrorMessage) {
                       return noEmailToOptionsMappingErrorMessage

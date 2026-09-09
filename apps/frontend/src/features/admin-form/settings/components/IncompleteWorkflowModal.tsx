@@ -27,14 +27,9 @@ export interface IncompleteWorkflowModalProps extends Pick<
   'onClose' | 'isOpen'
 > {
   formId: string
-  /** Names of the unfinished steps, in step order. */
   incompleteStepLabels: string[]
 }
 
-/**
- * Shown when an admin tries to open a form whose workflow is not finished.
- * Names the steps rather than explaining what's missing (FRM-2489).
- */
 export const IncompleteWorkflowModal = ({
   isOpen,
   onClose,

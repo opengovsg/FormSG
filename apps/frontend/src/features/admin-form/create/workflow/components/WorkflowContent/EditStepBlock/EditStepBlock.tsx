@@ -98,7 +98,6 @@ export const buildWorkflowStep = (
         emails: inputs.emails ?? [],
       }
     }
-    // FRM-2489: an unchosen respondent is omitted, not sent as ''.
     case WorkflowType.Dynamic: {
       return {
         ...workflowStepBase,

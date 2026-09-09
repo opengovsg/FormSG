@@ -73,7 +73,6 @@ export const getWebhookSettingsValidator = celebrate({
   }),
 })
 
-// FRM-2489: field / conditional_field may be omitted on a half-built step; completeness is checked in the service against form status.
 /**
  * Joi validator for POST /forms/:formId/workflow/ route.
  */

@@ -16,7 +16,6 @@ const baseInputs = (overrides: Partial<EditStepInputs> = {}) =>
   }) as EditStepInputs
 
 describe('buildWorkflowStep', () => {
-  // FRM-2489: an unchosen or emptied field/conditional_field is omitted, not sent as ''.
   it.each<[string, Partial<EditStepInputs>, string]>([
     ['dynamic, no field', { workflow_type: WorkflowType.Dynamic }, 'field'],
     [

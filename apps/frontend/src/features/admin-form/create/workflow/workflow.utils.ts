@@ -8,7 +8,6 @@ const COMPLETED_STEPS_FOR_FEEDBACK = 2
 /**
  * Whether a workflow has enough completed steps to prompt the admin for
  * feedback. Takes the whole workflow so the positional first-step rule stays
- * an implementation detail of `isStepComplete`.
  */
 export const isWorkflowFeedbackEligible = (
   workflow: FormWorkflowStep[],

@@ -2120,8 +2120,6 @@ describe('admin-form.service', () => {
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
     })
 
-    // FRM-2489. Not flag-gated: a form saved half-built while the flag was on
-    // must not become publishable by rolling the flag back.
     describe('publish gate', () => {
       const FIELD_ID = new ObjectId().toHexString()
 
@@ -4334,8 +4332,6 @@ describe('admin-form.service', () => {
     })
   })
 
-  // FRM-2489. Joi and Mongoose no longer check completeness, so this is the
-  // only guard left on a workflow mutation.
   describe('workflow completeness', () => {
     const FIELD_ID = new ObjectId().toHexString()
     const OTHER_FIELD_ID = new ObjectId().toHexString()
@@ -4349,7 +4345,6 @@ describe('admin-form.service', () => {
       },
     ]
 
-    /** Step 0: exempt from needing a respondent, not from needing fields. */
     const completeFirstStep = {
       _id: 'step0',
       workflow_type: WorkflowType.Static,
@@ -4389,10 +4384,6 @@ describe('admin-form.service', () => {
           }),
         })
 
-    // Only a live form is guarded, whatever the redesign flag says. Applying
-    // the check to a Private form would reject mutations on forms that saved
-    // legally before this check existed, and since the guard inspects the whole
-    // resulting workflow, a form with two such steps could not be repaired.
     it.each<[string, FormStatus, unknown[], unknown, boolean]>([
       [
         'private, incomplete',
@@ -4438,9 +4429,6 @@ describe('admin-form.service', () => {
       expect(result.isErr()).toBe(true)
     })
 
-    // A deletion can no longer *introduce* incompleteness: removing a step only
-    // shifts later steps earlier, and index 0 is the exempt position. So this
-    // guard catches incompleteness that was already there.
     it('should reject a deletion that leaves an incomplete step behind, without mutating', async () => {
       const workflow = [
         completeFirstStep,

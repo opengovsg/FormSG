@@ -1576,7 +1576,6 @@ export const updateFormWhitelistSetting = (
   })
 }
 
-/** The one place the form-fields cast lives, rather than at each call site. */
 const findIncompleteSteps = (
   form: IPopulatedForm,
   workflow: FormWorkflowDto,
@@ -1586,7 +1585,6 @@ const findIncompleteSteps = (
     form.form_fields as unknown as FormFieldDto[],
   )
 
-/** Names the steps for an admin, 1-indexed the way the builder shows them. */
 const incompleteStepsError = (
   stepNumbers: number[],
   action: string,
@@ -1595,11 +1593,6 @@ const incompleteStepsError = (
   return new MalformedParametersError(`Please complete ${described} ${action}.`)
 }
 
-/**
- * Rejects a workflow mutation that leaves the form in a disallowed state.
- * Checks the resulting workflow, not just the mutated step, so deletion is covered.
- * Not flag-gated; `mustWorkflowBeComplete` already limits this to live forms.
- */
 const checkResultingWorkflowIsAllowed = (
   form: IPopulatedForm,
   workflow: FormWorkflowDto,
@@ -1945,7 +1938,6 @@ export const deleteFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  // Built as a copy so a rejection below cannot leave the workflow already mutated.
   const updatedWorkflow = originalWorkflow.filter(
     (_step, index) => index !== stepNumber,
   )
@@ -2020,7 +2012,6 @@ export const updateFormSettings = (
     }
   }
 
-  // FRM-2489: a form must not go live holding a workflow that cannot run; not flag-gated.
   if (
     body.status === FormStatus.Public &&
     originalForm.responseMode === FormResponseMode.Multirespondent
