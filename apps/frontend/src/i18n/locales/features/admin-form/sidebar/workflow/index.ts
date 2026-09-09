@@ -123,6 +123,17 @@ export interface Workflow {
     placeholderRedesign: string
     autoAddHelperTextRedesign: string
   }
+  emptyStates: {
+    noEmailField: string
+    noEmailFieldAction: string
+    noDropdownField: string
+    noDropdownFieldAction: string
+    noYesNoField: string
+    noYesNoFieldAction: string
+    noFields: string
+    noFieldsMyInfoOnly: string
+    noFieldsAction: string
+  }
   approvals: {
     title: string
     yesNoDeleted: string

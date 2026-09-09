@@ -8,12 +8,15 @@ import {
   BasicField,
   FormFieldDto,
   FormResponseMode,
+  MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
 
 import { getAdminFormView } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter } from '~utils/storybook'
+
+import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
 
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 
@@ -148,6 +151,34 @@ const mrfFormViewWithFields = [
   }),
 ]
 
+const myinfo_field: FormFieldDto = {
+  title: 'Name',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  _id: '6200e1534ad4f00012848d93',
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+  allowPrefill: false,
+  myInfo: { attr: MyInfoAttribute.Name },
+}
+
+const mrfFormViewWith = (form_fields: FormFieldDto[]) => [
+  getAdminFormView({
+    mode: FormResponseMode.Multirespondent,
+    overrides: { form_fields },
+  }),
+]
+
+const withCreatePageSidebar = (Story: StoryFn) => (
+  <CreatePageSidebarProvider>
+    <Story />
+  </CreatePageSidebarProvider>
+)
+
 export default {
   component: EditStepBlock,
   title:
@@ -159,7 +190,10 @@ export default {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     onSubmit: () => {},
   },
-  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
+  decorators: [
+    withCreatePageSidebar,
+    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
+  ],
   parameters: {
     msw: {
       handlers: mrfFormViewWithFields,
@@ -170,6 +204,12 @@ export default {
 const redesignOn = new GrowthBook({
   features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
 })
+
+const withRedesignOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={redesignOn}>
+    <Story />
+  </GrowthBookProvider>
+)
 
 const GuidedCreation = ({ children }: { children: ReactNode }): JSX.Element => {
   const [isCreating, setIsCreating] = useState(false)
@@ -635,6 +675,77 @@ export const Step4ApprovalFieldNotInEditErrorMessage = {
         component:
           'When submit is clicked, validation error should occur since approval field is not in edit fields',
       },
+    },
+  },
+}
+
+const selectRespondentOption =
+  (label: string) =>
+  async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    const option = await canvas.findByRole(
+      'radio',
+      { name: new RegExp(label, 'i') },
+      { timeout: 5000 },
+    )
+    await waitFor(() => expect(option).toBeEnabled(), { timeout: 5000 })
+    await userEvent.click(option)
+    await waitFor(() => expect(option).toBeChecked(), { timeout: 5000 })
+  }
+
+export const EmptyStateFieldsPicker = {
+  args: { stepNumber: 0 },
+  decorators: [withRedesignOn],
+  parameters: { msw: { handlers: mrfFormViewWith([]) } },
+}
+
+export const EmptyStateFieldsPickerMyInfoOnly = {
+  args: { stepNumber: 1 },
+  decorators: [withRedesignOn],
+  parameters: { msw: { handlers: mrfFormViewWith([myinfo_field]) } },
+}
+
+export const EmptyStateEmailRouting = {
+  args: { stepNumber: 1 },
+  decorators: [withRedesignOn],
+  parameters: {
+    msw: {
+      handlers: mrfFormViewWith([
+        form_field_1,
+        form_field_5,
+        dropdown_field_valid_mapping,
+      ]),
+    },
+  },
+  play: selectRespondentOption('An email field from the form'),
+}
+
+export const EmptyStateConditionalRouting = {
+  args: { stepNumber: 1 },
+  decorators: [withRedesignOn],
+  parameters: {
+    msw: {
+      handlers: mrfFormViewWith([form_field_1, form_field_3, form_field_5]),
+    },
+  },
+  play: selectRespondentOption(
+    'Emails assigned to options in a dropdown field',
+  ),
+}
+
+export const EmptyStateApprovalField = {
+  args: {
+    stepNumber: 1,
+    defaultValues: { approval_field: 'deleted_objectId' },
+  },
+  decorators: [withRedesignOn],
+  parameters: {
+    msw: {
+      handlers: mrfFormViewWith([
+        form_field_3,
+        form_field_5,
+        dropdown_field_valid_mapping,
+      ]),
     },
   },
 }
