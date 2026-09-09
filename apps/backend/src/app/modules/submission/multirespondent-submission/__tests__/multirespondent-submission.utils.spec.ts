@@ -1400,64 +1400,24 @@ describe('multirespondent-submission.utils', () => {
 
   describe('getMrfVersion', () => {
     type WebhookType = Parameters<typeof getMrfVersion>[0]['webhookType']
+    // Every consumer class now writes the V4 row content version. The gate
+    // survives as a named seam for #9975, which reintroduces a consumer-type
+    // branch for the V1 backward-compatible shape.
     it.each<{
       name: string
       webhookType: WebhookType
-      isStepWriteTokenEnabled: boolean
       expected: MrfVersion
     }>([
+      { name: 'no webhook => V4', webhookType: undefined, expected: 2 },
+      { name: 'plumber => V4', webhookType: 'plumber', expected: 2 },
+      { name: 'generic => V4', webhookType: 'generic', expected: 2 },
       {
-        name: 'no webhook, write-guard off => V4',
-        webhookType: undefined,
-        isStepWriteTokenEnabled: false,
-        expected: 2,
-      },
-      {
-        name: 'no webhook, write-guard on => V4',
-        webhookType: undefined,
-        isStepWriteTokenEnabled: true,
-        expected: 2,
-      },
-      {
-        name: 'plumber, write-guard on => V4',
-        webhookType: 'plumber',
-        isStepWriteTokenEnabled: true,
-        expected: 2,
-      },
-      {
-        name: 'plumber, write-guard off => V3',
-        webhookType: 'plumber',
-        isStepWriteTokenEnabled: false,
-        expected: 1,
-      },
-      {
-        name: 'generic, write-guard off => V4',
-        webhookType: 'generic',
-        isStepWriteTokenEnabled: false,
-        expected: 2,
-      },
-      {
-        name: 'generic, write-guard on => V4',
-        webhookType: 'generic',
-        isStepWriteTokenEnabled: true,
-        expected: 2,
-      },
-      {
-        name: 'zapier is treated as generic, write-guard off => V4',
+        name: 'zapier is treated as generic => V4',
         webhookType: 'zapier',
-        isStepWriteTokenEnabled: false,
         expected: 2,
       },
-      {
-        name: 'zapier is treated as generic, write-guard on => V4',
-        webhookType: 'zapier',
-        isStepWriteTokenEnabled: true,
-        expected: 2,
-      },
-    ])('$name', ({ webhookType, isStepWriteTokenEnabled, expected }) => {
-      expect(getMrfVersion({ webhookType, isStepWriteTokenEnabled })).toBe(
-        expected,
-      )
+    ])('$name', ({ webhookType, expected }) => {
+      expect(getMrfVersion({ webhookType })).toBe(expected)
     })
   })
 })

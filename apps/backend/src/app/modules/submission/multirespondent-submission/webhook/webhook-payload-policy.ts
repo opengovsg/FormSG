@@ -6,7 +6,6 @@ export type WebhookConsumerType = 'plumber' | 'generic'
 
 export interface WebhookPayloadPolicyInput {
   webhookType: WebhookConsumerType
-  isStepWriteTokenEnabled: boolean
   submissionIndex: number
   submittedStepsLength: number
 }
@@ -40,13 +39,12 @@ export const getKeyPermissionsPolicy = ({
 
 export const getWebhookPayloadPolicy = ({
   webhookType,
-  isStepWriteTokenEnabled,
   submissionIndex,
   submittedStepsLength,
 }: WebhookPayloadPolicyInput): WebhookPayloadPolicy => {
-  const contentFormat: WebhookContentFormat = isStepWriteTokenEnabled
-    ? 'v4'
-    : 'v3'
+  // Every consumer resolves to V4. The two-value resolution driven by consumer
+  // type arrives with the V1 backward-compatible shape in #9975.
+  const contentFormat: WebhookContentFormat = 'v4'
 
   const keyPermissionsPolicy = getKeyPermissionsPolicy({
     webhookType,

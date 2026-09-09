@@ -15,7 +15,6 @@ describe('getWebhookPayloadPolicy', () => {
   it.each<{
     name: string
     webhookType: WebhookConsumerType
-    isStepWriteTokenEnabled: boolean
     latest: boolean
     expected: {
       contentFormat: WebhookContentFormat
@@ -24,9 +23,8 @@ describe('getWebhookPayloadPolicy', () => {
     }
   }>([
     {
-      name: 'plumber, write-token on, latest step',
+      name: 'plumber, latest step',
       webhookType: 'plumber',
-      isStepWriteTokenEnabled: true,
       latest: true,
       expected: {
         contentFormat: 'v4',
@@ -35,9 +33,8 @@ describe('getWebhookPayloadPolicy', () => {
       },
     },
     {
-      name: 'plumber, write-token on, non-latest step',
+      name: 'plumber, non-latest step',
       webhookType: 'plumber',
-      isStepWriteTokenEnabled: true,
       latest: false,
       expected: {
         contentFormat: 'v4',
@@ -46,20 +43,8 @@ describe('getWebhookPayloadPolicy', () => {
       },
     },
     {
-      name: 'plumber, write-token off, latest step (V3 downgrade)',
-      webhookType: 'plumber',
-      isStepWriteTokenEnabled: false,
-      latest: true,
-      expected: {
-        contentFormat: 'v3',
-        includeEncryptedSubmissionSecretKey: false,
-        includeEncryptedStepToken: false,
-      },
-    },
-    {
-      name: 'generic, write-token on, latest step',
+      name: 'generic, latest step',
       webhookType: 'generic',
-      isStepWriteTokenEnabled: true,
       latest: true,
       expected: {
         contentFormat: 'v4',
@@ -68,31 +53,8 @@ describe('getWebhookPayloadPolicy', () => {
       },
     },
     {
-      name: 'generic, write-token off, latest step (fail-safe)',
+      name: 'generic, non-latest step',
       webhookType: 'generic',
-      isStepWriteTokenEnabled: false,
-      latest: true,
-      expected: {
-        contentFormat: 'v3',
-        includeEncryptedSubmissionSecretKey: false,
-        includeEncryptedStepToken: false,
-      },
-    },
-    {
-      name: 'generic, write-token off, non-latest step (fail-safe)',
-      webhookType: 'generic',
-      isStepWriteTokenEnabled: false,
-      latest: false,
-      expected: {
-        contentFormat: 'v3',
-        includeEncryptedSubmissionSecretKey: false,
-        includeEncryptedStepToken: false,
-      },
-    },
-    {
-      name: 'generic, write-token on, non-latest step',
-      webhookType: 'generic',
-      isStepWriteTokenEnabled: true,
       latest: false,
       expected: {
         contentFormat: 'v4',
@@ -102,11 +64,10 @@ describe('getWebhookPayloadPolicy', () => {
     },
   ])(
     'returns the correct policy for $name',
-    ({ webhookType, isStepWriteTokenEnabled, latest, expected }) => {
+    ({ webhookType, latest, expected }) => {
       const submittedStepsLength = 3
       const input: WebhookPayloadPolicyInput = {
         webhookType,
-        isStepWriteTokenEnabled,
         submittedStepsLength,
         submissionIndex: latest ? submittedStepsLength - 1 : 0,
       }
@@ -114,18 +75,15 @@ describe('getWebhookPayloadPolicy', () => {
     },
   )
 
-  it('never includes the step token for a generic consumer, whatever the flags or step', () => {
-    for (const isStepWriteTokenEnabled of [true, false]) {
-      for (const submissionIndex of [0, 1, 2]) {
-        expect(
-          getWebhookPayloadPolicy({
-            webhookType: 'generic',
-            isStepWriteTokenEnabled,
-            submissionIndex,
-            submittedStepsLength: 3,
-          }).includeEncryptedStepToken,
-        ).toBe(false)
-      }
+  it('never includes the step token for a generic consumer, whatever the step', () => {
+    for (const submissionIndex of [0, 1, 2]) {
+      expect(
+        getWebhookPayloadPolicy({
+          webhookType: 'generic',
+          submissionIndex,
+          submittedStepsLength: 3,
+        }).includeEncryptedStepToken,
+      ).toBe(false)
     }
   })
 })
