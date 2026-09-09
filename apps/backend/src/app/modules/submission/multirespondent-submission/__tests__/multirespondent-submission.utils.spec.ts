@@ -391,7 +391,7 @@ describe('multirespondent-submission.utils', () => {
       jest.restoreAllMocks()
     })
 
-    it('should return error when children field is submitted', () => {
+    it('should return error when children field is submitted on a workflow step after the first', () => {
       // Arrange
       const mockFormId = 'mockFormId'
       const field1Id = 'field1'
@@ -417,14 +417,49 @@ describe('multirespondent-submission.utils', () => {
         visibleFieldIds: mockVisibleFieldIds,
         formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
+        workflowStep: 1,
       })
 
       // Assert
       expect(result.isErr()).toBe(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
       expect(result._unsafeUnwrapErr().message).toBe(
-        'Children field type is not supported for MRF submisisons',
+        'Children field type is only supported on the first MRF workflow step',
       )
+    })
+
+    it('should validate children field submitted on the first workflow step', () => {
+      // Arrange
+      const validateFieldV4Mock = jest
+        .spyOn(fieldValidation, 'validateFieldV4')
+        .mockReturnValue(ok(true))
+      const mockFormId = 'mockFormId'
+      const field1Id = 'field1'
+      const mockVisibleFieldIds = new Set([field1Id])
+      const mockFormFields = [
+        generateDefaultField(BasicField.Children, { _id: field1Id }),
+      ]
+      const mockResponses = {
+        [field1Id]: {
+          fieldType: BasicField.Children,
+          answer: {
+            child0: { value: { childname: { value: 'Phua Chu King' } } },
+          },
+        } as unknown as ParsedClearFormFieldResponsesV4[string],
+      }
+
+      // Act
+      const result = validateMrfFieldResponses({
+        formId: mockFormId,
+        visibleFieldIds: mockVisibleFieldIds,
+        formFields: mockFormFields as FormFieldDto[],
+        responses: mockResponses,
+        workflowStep: 0,
+      })
+
+      // Assert
+      expect(result.isOk()).toBe(true)
+      expect(validateFieldV4Mock).toHaveBeenCalledOnce()
     })
 
     it('should invoke validateFieldV4 with isVisible true when non-hidden and supported field type is submitted', () => {
@@ -451,6 +486,7 @@ describe('multirespondent-submission.utils', () => {
         visibleFieldIds: mockVisibleFieldIds,
         formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
+        workflowStep: 0,
       })
 
       // Assert
@@ -494,6 +530,7 @@ describe('multirespondent-submission.utils', () => {
         visibleFieldIds: mockVisibleFieldIds,
         formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
+        workflowStep: 0,
       })
 
       // Assert
@@ -557,6 +594,7 @@ describe('multirespondent-submission.utils', () => {
         formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
         previousResponses: mockPreviousResponses,
+        workflowStep: 0,
       })
 
       // Assert
@@ -762,6 +800,105 @@ describe('multirespondent-submission.utils', () => {
           question: 'Checkbox',
           answer: 'Option 1, Option 2, Custom Option',
           fieldType: BasicField.Checkbox,
+        },
+      ])
+    })
+
+    it('should handle children fields correctly when no record type is present', () => {
+      // The MyInfo adapter merges sponsored children in as extra,
+      // index-aligned entries alongside birth-record children (see
+      // myinfo.adapter.ts) — `type` is optional and only informational, so
+      // this asserts the field renders correctly even without it (e.g. a
+      // hand-typed response, or one from before `type` existed).
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Child',
+          fieldType: BasicField.Children,
+          childrenSubFields: ['childname', 'childgender', 'childrace'],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                childname: { value: 'Sponsored Child' },
+                childgender: { value: 'MALE' },
+                childrace: { value: 'INDIAN' },
+              },
+            },
+          },
+          question: 'Child',
+          provenance: {},
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
+
+      expect(result).toEqual([
+        {
+          question: 'Child 1 Name',
+          answer: 'Sponsored Child',
+          fieldType: BasicField.Children,
+        },
+        {
+          question: 'Child 1 Sex',
+          answer: 'MALE',
+          fieldType: BasicField.Children,
+        },
+        {
+          question: 'Child 1 Race',
+          answer: 'INDIAN',
+          fieldType: BasicField.Children,
+        },
+      ])
+    })
+
+    it('should append a Record Type row when the child value carries a recordtype', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Child',
+          fieldType: BasicField.Children,
+          childrenSubFields: ['childname'],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                childname: { value: 'Sponsored Child' },
+                recordtype: { value: 'Sponsored' },
+              },
+            },
+          },
+          question: 'Child',
+          provenance: {},
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
+
+      expect(result).toEqual([
+        {
+          question: 'Child 1 Name',
+          answer: 'Sponsored Child',
+          fieldType: BasicField.Children,
+        },
+        {
+          question: 'Child 1 Record Type',
+          answer: 'Sponsored',
+          fieldType: BasicField.Children,
         },
       ])
     })

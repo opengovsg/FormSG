@@ -1,3 +1,4 @@
+import { ChildrenAnswerV4 } from '@opengovsg/formsg-sdk'
 import { MAX_CHILDREN_PER_FIELD } from 'formsg-shared/constants/field/myinfo'
 import {
   ChildrenCompoundFieldBase,
@@ -187,11 +188,109 @@ export const constructChildrenValidator: ChildrenValidatorConstructor = (
   )
 
 // V4
-// Children are not used in MRF — always pass
-export const constructChildrenValidatorV4 =
-  (
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _childrenField: ChildrenCompoundFieldBase,
-  ): ResponseValidator<ParsedClearFormFieldResponseV4> =>
-  (response) =>
-    right(response)
+
+type ChildrenValidatorV4 = ResponseValidator<ParsedClearFormFieldResponseV4>
+type ChildrenValidatorV4Constructor = (
+  childrenField: ChildrenCompoundFieldBase,
+) => ChildrenValidatorV4
+
+const asChildrenAnswerV4 = (
+  response: ParsedClearFormFieldResponseV4,
+): ChildrenAnswerV4 => response.answer as ChildrenAnswerV4
+
+/**
+ * Returns a validator to check that at most one child was answered. Same
+ * invariant as the V3 validator's `validSingleChild`, keyed on
+ * MAX_CHILDREN_PER_FIELD, over the V4 keyed-map shape's own keys.
+ */
+const validSingleChildV4: ChildrenValidatorV4 = (response) => {
+  const answer = asChildrenAnswerV4(response)
+
+  return Object.keys(answer).length <= MAX_CHILDREN_PER_FIELD
+    ? right(response)
+    : left(
+        `ChildrenValidatorV4 (validSingleChildV4):\t more than ${MAX_CHILDREN_PER_FIELD} child answered`,
+      )
+}
+
+/**
+ * Returns a validation function to check that all sub-answers of the single
+ * child entry are non-empty once any of them is filled in. Mirrors V3's
+ * `validChildAnswersNonEmpty`; the V4 shape has no separate "no child
+ * selected" placeholder row, so a child entry with every sub-answer blank is
+ * exactly that case.
+ */
+const validChildAnswersNonEmptyV4: ChildrenValidatorV4 = (response) => {
+  const answer = asChildrenAnswerV4(response)
+  const childEntries = Object.values(answer)
+
+  return childEntries.every((child) => {
+    const subAnswers = Object.values(child.value)
+    const noChildSelected = subAnswers.every(
+      (subField) => subField.value.trim() === '',
+    )
+    return (
+      noChildSelected ||
+      subAnswers.every(
+        (subField) =>
+          typeof subField.value === 'string' && !!subField.value.trim(),
+      )
+    )
+  })
+    ? right(response)
+    : left(
+        `ChildrenValidatorV4 (validChildAnswersNonEmptyV4):\t inconsistent child sub-answers`,
+      )
+}
+
+/**
+ * Returns a validation function to check if there are invalid subfields
+ * given for children. Mirrors V3's `validChildSubFieldsValidator`.
+ */
+const validChildSubFieldsValidatorV4: ChildrenValidatorV4Constructor =
+  (childrenField) => (response) => {
+    const { childrenSubFields } = childrenField
+
+    const attrs = new Set(Object.values(MyInfoChildAttributes))
+    return (childrenSubFields ?? []).every((subfield) => attrs.has(subfield))
+      ? right(response)
+      : left(
+          `ChildrenValidatorV4 (validChildSubFieldsValidatorV4):\t one or more subfields are invalid`,
+        )
+  }
+
+/**
+ * Returns a validation function to check that every child entry's sub-answer
+ * keys are exactly the field's configured subfields, no more and no fewer.
+ * Mirrors V3's `validChildSubFieldsAndResponseSubFieldsMatch` and
+ * `validChildSubFieldsResponseValidator`, collapsed into one check since the
+ * V4 shape keys sub-answers by name rather than by parallel array position.
+ */
+const validChildSubFieldsMatchV4: ChildrenValidatorV4Constructor =
+  (childrenField) => (response) => {
+    const { childrenSubFields } = childrenField as ChildrenCompoundFieldBase
+    const expected = new Set(childrenSubFields ?? [])
+    const answer = asChildrenAnswerV4(response)
+
+    return Object.values(answer).every((child) => {
+      const keys = Object.keys(child.value)
+      return (
+        keys.length === expected.size &&
+        keys.every((key) => expected.has(key as MyInfoChildAttributes))
+      )
+    })
+      ? right(response)
+      : left(
+          `ChildrenValidatorV4 (validChildSubFieldsMatchV4):\t one or more subfields do not match the field's`,
+        )
+  }
+
+export const constructChildrenValidatorV4: ChildrenValidatorV4Constructor = (
+  childrenField,
+) =>
+  flow(
+    validSingleChildV4,
+    chain(validChildAnswersNonEmptyV4),
+    chain(validChildSubFieldsValidatorV4(childrenField)),
+    chain(validChildSubFieldsMatchV4(childrenField)),
+  )
