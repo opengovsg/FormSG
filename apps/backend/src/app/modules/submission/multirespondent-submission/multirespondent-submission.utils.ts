@@ -33,7 +33,6 @@ import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-arra
 import { validateFieldV4 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
-import { WebhookType } from '../../webhook/webhook.service'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
@@ -699,22 +698,19 @@ export const getMrfCookieName = ({
 
 export type MrfVersion = 1 | 2
 
-export const getMrfVersion = ({
-  webhookType,
-  isStepWriteTokenEnabled,
-}: {
-  webhookType?: WebhookType
-  isStepWriteTokenEnabled: boolean
-}): MrfVersion => {
-  switch (webhookType) {
-    case 'plumber':
-      return isStepWriteTokenEnabled ? 2 : 1
-    case undefined:
-    case 'zapier':
-    case 'generic':
-      return 2
-  }
-}
+/**
+ * The row content version every write path now produces. `1` remains in
+ * `MrfVersion` because rows written before the V4 cutover still carry it and
+ * must keep reading back (`mrfVersionToContentFormat`), but nothing writes it.
+ *
+ * This used to be `getMrfVersion({ webhookType })`, whose every branch
+ * returned 2 once `mrf-step-write-token` was retired. A function that ignores
+ * its only argument reads as if the consumer type still mattered, which is
+ * precisely the stale decision #9973 exists to remove. #9975 reintroduces a
+ * consumer-type branch here deliberately, for the V1 backward-compatible
+ * shape.
+ */
+export const MRF_VERSION_V4: MrfVersion = 2
 
 export const formatSubmittedStepTimestamp = ({
   submittedSteps,

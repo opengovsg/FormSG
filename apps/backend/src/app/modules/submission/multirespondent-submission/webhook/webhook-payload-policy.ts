@@ -6,23 +6,30 @@ export type WebhookConsumerType = 'plumber' | 'generic'
 
 export interface WebhookPayloadPolicyInput {
   webhookType: WebhookConsumerType
-  isStepWriteTokenEnabled: boolean
   submissionIndex: number
   submittedStepsLength: number
 }
 
 export interface KeyPermissionsPolicy {
   includeEncryptedSubmissionSecretKey: boolean
-  includeEncryptedStepToken: boolean
 }
 export interface WebhookPayloadPolicy extends KeyPermissionsPolicy {
   contentFormat: WebhookContentFormat
 }
 
+/**
+ * The wrapped submission secret key is the only key permission a consumer
+ * reads (see `webhook-reconstruction.ts`). A V4 payload's content is encrypted
+ * under the per-submission public key, so without the wrapped key the payload
+ * cannot be opened at all; a V3 or V1 payload has no use for it. Hence the
+ * permission is a function of the content format alone.
+ *
+ * `webhookType`, `submissionIndex` and `submittedStepsLength` stay in the
+ * input because callers resolve them anyway and a future key permission may
+ * need them; none of them may reintroduce a gate on the wrapped key, which a
+ * generic consumer on the V4 shape needs just as much as plumber does.
+ */
 export const getKeyPermissionsPolicy = ({
-  webhookType,
-  submissionIndex,
-  submittedStepsLength,
   contentFormat,
 }: {
   webhookType: WebhookConsumerType
@@ -30,23 +37,19 @@ export const getKeyPermissionsPolicy = ({
   submittedStepsLength: number
   contentFormat: WebhookContentFormat
 }): Omit<WebhookPayloadPolicy, 'contentFormat'> => {
-  const isLatestStep = submissionIndex === submittedStepsLength - 1
   return {
     includeEncryptedSubmissionSecretKey: contentFormat === 'v4',
-    includeEncryptedStepToken:
-      contentFormat === 'v4' && webhookType === 'plumber' && isLatestStep,
   }
 }
 
 export const getWebhookPayloadPolicy = ({
   webhookType,
-  isStepWriteTokenEnabled,
   submissionIndex,
   submittedStepsLength,
 }: WebhookPayloadPolicyInput): WebhookPayloadPolicy => {
-  const contentFormat: WebhookContentFormat = isStepWriteTokenEnabled
-    ? 'v4'
-    : 'v3'
+  // Every consumer resolves to V4. The two-value resolution driven by consumer
+  // type arrives with the V1 backward-compatible shape in #9975.
+  const contentFormat: WebhookContentFormat = 'v4'
 
   const keyPermissionsPolicy = getKeyPermissionsPolicy({
     webhookType,

@@ -842,8 +842,6 @@ export const createMultiRespondentFormSubmission = ({
         webhook: form.webhook,
         isMrfWebhooksEnabled:
           growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-        isStepWriteTokenEnabled:
-          growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false,
       })
 
       const saveSubmission = async () => {
@@ -1233,14 +1231,11 @@ const sendMrfInitialWebhookIfEligible = ({
   errorMessage?: string
 }): void => {
   const webhookType = getWebhookType(webhookUrl)
-  const isStepWriteTokenEnabled =
-    growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
 
   const shouldSend = shouldSendMrfWebhook({
     webhookType,
     isMrfWebhooksEnabled:
       growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-    isStepWriteTokenEnabled,
   })
   if (!shouldSend) {
     return
@@ -1276,7 +1271,6 @@ const sendMrfInitialWebhookIfEligible = ({
     .andThen((liveView) => {
       const policy = getWebhookPayloadPolicy({
         webhookType: webhookType === 'plumber' ? 'plumber' : 'generic',
-        isStepWriteTokenEnabled,
         submissionIndex,
         submittedStepsLength: submission.submittedSteps?.length ?? 0,
       })
@@ -1649,8 +1643,6 @@ export const updateMultiRespondentFormSubmission = ({
         webhook: snapshottedFormDef.webhook,
         isMrfWebhooksEnabled:
           growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-        isStepWriteTokenEnabled:
-          growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false,
       })
 
       const snapshot = shouldWriteSnapshot

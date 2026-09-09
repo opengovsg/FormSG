@@ -211,7 +211,6 @@ describe('[GATE] v4 per-step retry fidelity', () => {
         submissionIndex,
         policy: getWebhookPayloadPolicy({
           webhookType: 'plumber',
-          isStepWriteTokenEnabled: true,
           submissionIndex,
           submittedStepsLength: submission.submittedSteps?.length ?? 0,
         }),

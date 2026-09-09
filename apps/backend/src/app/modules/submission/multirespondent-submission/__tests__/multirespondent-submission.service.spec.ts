@@ -3768,18 +3768,13 @@ describe('multirespondent-submission.service', () => {
 
     const growthbookWithFlags = ({
       enableMrfWebhooks = false,
-      mrfStepWriteToken = false,
     }: {
       enableMrfWebhooks?: boolean
-      mrfStepWriteToken?: boolean
     }) =>
       ({
-        isOn: jest.fn((flag: string) =>
-          flag === featureFlags.enableMrfWebhooks
-            ? enableMrfWebhooks
-            : flag === featureFlags.mrfStepWriteToken
-              ? mrfStepWriteToken
-              : false,
+        isOn: jest.fn(
+          (flag: string) =>
+            flag === featureFlags.enableMrfWebhooks && enableMrfWebhooks,
         ),
         getFeatureValue: jest.fn((_flag: string, def: unknown) => def),
       }) as any
@@ -3986,24 +3981,19 @@ describe('multirespondent-submission.service', () => {
     })
 
     it.each`
-      label                          | enableMrfWebhooks | mrfStepWriteToken | expectWritten
-      ${'no flags'}                  | ${false}          | ${false}          | ${false}
-      ${'enable-mrf-webhooks only'}  | ${true}           | ${false}          | ${false}
-      ${'mrf-step-write-token only'} | ${false}          | ${true}           | ${false}
-      ${'both flags'}                | ${true}           | ${true}           | ${true}
+      label                       | enableMrfWebhooks | expectWritten
+      ${'flag off'}               | ${false}          | ${false}
+      ${'enable-mrf-webhooks on'} | ${true}           | ${true}
     `(
       'generic V4 create snapshot write ($label) -> written=$expectWritten',
-      async ({ enableMrfWebhooks, mrfStepWriteToken, expectWritten }) => {
+      async ({ enableMrfWebhooks, expectWritten }) => {
         const result = await createMultiRespondentFormSubmission({
           form: buildV4Form({
             webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: { action: 'test' },
-          growthbook: growthbookWithFlags({
-            enableMrfWebhooks,
-            mrfStepWriteToken,
-          }),
+          growthbook: growthbookWithFlags({ enableMrfWebhooks }),
         })
 
         expect(result.isOk()).toBe(true)
@@ -4038,7 +4028,8 @@ describe('multirespondent-submission.service', () => {
         }),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
-        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
+        // The only remaining way a generic webhook is undeliverable.
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: false }),
       })
 
       expect(result.isOk()).toBe(true)
@@ -4133,20 +4124,16 @@ describe('multirespondent-submission.service', () => {
     // ---- Send gate table ----
 
     it.each`
-      label                          | url            | enableMrfWebhooks | mrfStepWriteToken | expectSent
-      ${'plumber, no flags'}         | ${PLUMBER_URL} | ${false}          | ${false}          | ${true}
-      ${'plumber, webhooks only'}    | ${PLUMBER_URL} | ${true}           | ${false}          | ${true}
-      ${'plumber, write-token only'} | ${PLUMBER_URL} | ${false}          | ${true}           | ${true}
-      ${'plumber, both'}             | ${PLUMBER_URL} | ${true}           | ${true}           | ${true}
-      ${'generic, no flags'}         | ${GENERIC_URL} | ${false}          | ${false}          | ${false}
-      ${'generic, webhooks only'}    | ${GENERIC_URL} | ${true}           | ${false}          | ${false}
-      ${'generic, write-token only'} | ${GENERIC_URL} | ${false}          | ${true}           | ${false}
-      ${'generic, both'}             | ${GENERIC_URL} | ${true}           | ${true}           | ${true}
-      ${'zapier, webhooks only'}     | ${ZAPIER_URL}  | ${true}           | ${false}          | ${false}
-      ${'zapier, both'}              | ${ZAPIER_URL}  | ${true}           | ${true}           | ${true}
+      label                  | url            | enableMrfWebhooks | expectSent
+      ${'plumber, flag off'} | ${PLUMBER_URL} | ${false}          | ${true}
+      ${'plumber, flag on'}  | ${PLUMBER_URL} | ${true}           | ${true}
+      ${'generic, flag off'} | ${GENERIC_URL} | ${false}          | ${false}
+      ${'generic, flag on'}  | ${GENERIC_URL} | ${true}           | ${true}
+      ${'zapier, flag off'}  | ${ZAPIER_URL}  | ${false}          | ${false}
+      ${'zapier, flag on'}   | ${ZAPIER_URL}  | ${true}           | ${true}
     `(
       'send gate: $label -> sent=$expectSent',
-      async ({ url, enableMrfWebhooks, mrfStepWriteToken, expectSent }) => {
+      async ({ url, enableMrfWebhooks, expectSent }) => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
         const submission = buildSubmissionWithToken(undefined)
 
@@ -4156,10 +4143,7 @@ describe('multirespondent-submission.service', () => {
           form: buildV4Form({ webhook: { url, isRetryEnabled: true } as any }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
-          growthbook: growthbookWithFlags({
-            enableMrfWebhooks,
-            mrfStepWriteToken,
-          }),
+          growthbook: growthbookWithFlags({ enableMrfWebhooks }),
         })
         await flushPromises()
 
@@ -4189,10 +4173,7 @@ describe('multirespondent-submission.service', () => {
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
-          growthbook: growthbookWithFlags({
-            enableMrfWebhooks: true,
-            mrfStepWriteToken: true,
-          }),
+          growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
         })
         await flushPromises()
 
@@ -4204,43 +4185,88 @@ describe('multirespondent-submission.service', () => {
 
     // ---- Generic never receives the step token (write credential) ----
 
+    // Asserted on the posted body, not on a policy flag. The row genuinely
+    // carries a step token hash and a wrapped step token, and neither may
+    // appear anywhere in what the post-submission action hands the webhook
+    // sender — for plumber, the privileged consumer, as much as for generic
+    // and zapier. There is no boolean left to assert here: no payload type has
+    // a slot for a step token, and that is what this pins.
+    const STEP_TOKEN_HASH = 'SVC-STEP-TOKEN-HASH-SENTINEL'.padEnd(64, '0')
+    const ENCRYPTED_STEP_TOKEN =
+      'SVC-SENDER-PK-SENTINEL;SVC-NONCE-SENTINEL:SVC-CIPHER-SENTINEL'
+
+    /** Every key at every depth of the value. */
+    const collectKeys = (value: unknown): string[] => {
+      if (Array.isArray(value)) return value.flatMap(collectKeys)
+      if (value && typeof value === 'object') {
+        return Object.entries(value as Record<string, unknown>).flatMap(
+          ([key, child]) => [key, ...collectKeys(child)],
+        )
+      }
+      return []
+    }
+
     it.each`
-      enableMrfWebhooks | mrfStepWriteToken
-      ${false}          | ${false}
-      ${true}           | ${false}
-      ${false}          | ${true}
-      ${true}           | ${true}
+      label                 | url            | enableMrfWebhooks
+      ${'plumber'}          | ${PLUMBER_URL} | ${false}
+      ${'plumber, flag on'} | ${PLUMBER_URL} | ${true}
+      ${'generic'}          | ${GENERIC_URL} | ${true}
+      ${'zapier'}           | ${ZAPIER_URL}  | ${true}
     `(
-      'never sends encryptedStepToken to a generic consumer (webhooks=$enableMrfWebhooks, writeToken=$mrfStepWriteToken)',
-      async ({ enableMrfWebhooks, mrfStepWriteToken }) => {
+      'never puts a step token in the posted body ($label)',
+      async ({ url, enableMrfWebhooks }) => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+        const Model = getMultirespondentSubmissionModel(mongoose)
 
-        for (const url of [GENERIC_URL, ZAPIER_URL]) {
-          const submission = buildSubmissionWithToken('tok-generic')
+        // A real row, read back through the real getWebhookView, so the
+        // assertion cannot pass merely because the fixture had no token.
+        const row = await Model.create({
+          form: mockFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: twoStepWorkflow,
+          submissionPublicKey: 'pk',
+          encryptedSubmissionSecretKey: 'esk',
+          encryptedContent: 'ec',
+          verifiedContent: 'vc',
+          version: 2,
+          workflowStep: 0,
+          mrfVersion: 2,
+          submittedSteps: [
+            { isApproval: false, submittedAt: new Date().toISOString() },
+          ],
+          stepTokenHash: STEP_TOKEN_HASH,
+          encryptedStepToken: ENCRYPTED_STEP_TOKEN,
+        })
+        expect(row.encryptedStepToken).toBe(ENCRYPTED_STEP_TOKEN)
 
+        for (const snapshot of [buildSnapshot(), undefined]) {
           await performMultiRespondentPostSubmissionCreateActions({
-            submission,
-            snapshot: buildSnapshot(),
-            submissionId: submission._id.toString(),
+            submission: row,
+            snapshot,
+            submissionId: row._id.toString(),
             form: buildV4Form({
               webhook: { url, isRetryEnabled: true } as any,
             }),
             encryptedPayload: buildV4Payload(),
             logMeta: {} as any,
-            growthbook: growthbookWithFlags({
-              enableMrfWebhooks,
-              mrfStepWriteToken,
-            }),
+            growthbook: growthbookWithFlags({ enableMrfWebhooks }),
           })
         }
         await flushPromises()
 
+        expect(sendSpy).toHaveBeenCalled()
         for (const call of sendSpy.mock.calls) {
-          expect(
-            (call[3]?.data as Record<string, unknown> | undefined)?.[
-              'encryptedStepToken'
-            ],
-          ).toBeUndefined()
+          const body = call[3]
+          expect(body).toBeDefined()
+          const serialised = JSON.stringify(body)
+          expect(serialised).not.toContain(STEP_TOKEN_HASH)
+          expect(serialised).not.toContain(ENCRYPTED_STEP_TOKEN)
+          expect(serialised).not.toContain('SENTINEL')
+          expect(collectKeys(body)).not.toContain(
+            expect.stringMatching(/steptoken/i),
+          )
         }
       },
     )
@@ -4274,10 +4300,7 @@ describe('multirespondent-submission.service', () => {
         form: buildV4Form(),
         encryptedPayload: buildV4Payload(),
         logMeta: {} as any,
-        growthbook: growthbookWithFlags({
-          enableMrfWebhooks: true,
-          mrfStepWriteToken: true,
-        }),
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
       })
       await flushPromises()
 
@@ -4305,10 +4328,7 @@ describe('multirespondent-submission.service', () => {
         form: buildV4Form(),
         encryptedPayload: buildV4Payload(),
         logMeta: {} as any,
-        growthbook: growthbookWithFlags({
-          enableMrfWebhooks: true,
-          mrfStepWriteToken: true,
-        }),
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
       })
       await flushPromises()
 
@@ -4332,10 +4352,7 @@ describe('multirespondent-submission.service', () => {
         form: buildV4Form(),
         encryptedPayload: buildV4Payload(),
         logMeta: {} as any,
-        growthbook: growthbookWithFlags({
-          enableMrfWebhooks: true,
-          mrfStepWriteToken: true,
-        }),
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
       })
       await flushPromises()
 
@@ -4358,10 +4375,7 @@ describe('multirespondent-submission.service', () => {
         form: buildV4Form(),
         encryptedPayload: buildV4Payload(),
         logMeta: {} as any,
-        growthbook: growthbookWithFlags({
-          enableMrfWebhooks: true,
-          mrfStepWriteToken: true,
-        }),
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
       })
       await flushPromises()
 
@@ -4406,10 +4420,7 @@ describe('multirespondent-submission.service', () => {
         currentStepNumber: 1,
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: {} as any,
-        growthbook: growthbookWithFlags({
-          enableMrfWebhooks: true,
-          mrfStepWriteToken: true,
-        }),
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
       })
       await flushPromises()
 
@@ -4453,10 +4464,7 @@ describe('multirespondent-submission.service', () => {
         form: buildV4Form(),
         encryptedPayload: buildV4Payload(),
         logMeta: {} as any,
-        growthbook: growthbookWithFlags({
-          enableMrfWebhooks: true,
-          mrfStepWriteToken: true,
-        }),
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
       })
       await flushPromises()
 
@@ -4481,10 +4489,7 @@ describe('multirespondent-submission.service', () => {
         currentStepNumber: 0,
         encryptedPayload: buildV4Payload(),
         logMeta: {} as any,
-        growthbook: growthbookWithFlags({
-          enableMrfWebhooks: true,
-          mrfStepWriteToken: true,
-        }),
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
       })
       await flushPromises()
 
@@ -4543,10 +4548,7 @@ describe('multirespondent-submission.service', () => {
         currentStepNumber: 1,
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: {} as any,
-        growthbook: growthbookWithFlags({
-          enableMrfWebhooks: true,
-          mrfStepWriteToken: true,
-        }),
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
       })
       await flushPromises()
 
@@ -4707,18 +4709,13 @@ describe('multirespondent-submission.service', () => {
 
     const growthbookWithFlags = ({
       enableMrfWebhooks = false,
-      mrfStepWriteToken = false,
     }: {
       enableMrfWebhooks?: boolean
-      mrfStepWriteToken?: boolean
     }) =>
       ({
-        isOn: jest.fn((flag: string) =>
-          flag === featureFlags.enableMrfWebhooks
-            ? enableMrfWebhooks
-            : flag === featureFlags.mrfStepWriteToken
-              ? mrfStepWriteToken
-              : false,
+        isOn: jest.fn(
+          (flag: string) =>
+            flag === featureFlags.enableMrfWebhooks && enableMrfWebhooks,
         ),
         getAttributes: jest.fn(() => ({})),
         setAttributes: jest.fn(),
@@ -4759,10 +4756,7 @@ describe('multirespondent-submission.service', () => {
       const actualResult =
         await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
           mockSubmission,
-          growthbookWithFlags({
-            enableMrfWebhooks: false,
-            mrfStepWriteToken: false,
-          }),
+          growthbookWithFlags({ enableMrfWebhooks: false }),
         )
 
       // Assert
@@ -4782,7 +4776,6 @@ describe('multirespondent-submission.service', () => {
         .mockReturnValue(okAsync(true))
       const mockGrowthbook = growthbookWithFlags({
         enableMrfWebhooks: true,
-        mrfStepWriteToken: true,
       })
 
       // Act

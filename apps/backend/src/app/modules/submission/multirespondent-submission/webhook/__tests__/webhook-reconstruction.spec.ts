@@ -61,7 +61,6 @@ const makeV4Snapshot = () =>
 const PLUMBER_LATEST: WebhookPayloadPolicy = {
   contentFormat: 'v4',
   includeEncryptedSubmissionSecretKey: true,
-  includeEncryptedStepToken: true,
 }
 
 describe('reconstructMrfWebhookData', () => {
