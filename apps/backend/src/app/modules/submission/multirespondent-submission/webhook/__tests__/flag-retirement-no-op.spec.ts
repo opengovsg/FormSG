@@ -11,18 +11,17 @@
  * `webhook-send-eligibility.spec.ts`, `webhook-payload-policy.spec.ts` and the
  * `mrf version gate` block of `multirespondent-submission.middleware.spec.ts`.
  *
- * Scope note: the table covers the *observable* decision outputs — send
- * eligibility, snapshot-write eligibility, content format, the wrapped
- * submission secret key, and the row content version. It deliberately does not
- * cover `includeEncryptedStepToken`, which #9973 deletes outright: that field
+ * Scope note: this file covers send eligibility, snapshot-write eligibility,
+ * the content format and the wrapped submission secret key. The row content
+ * version is compared at the middleware seam instead, in the `mrf version
+ * gate` block of `multirespondent-submission.middleware.spec.ts`, which drives
+ * `encryptSubmission` over every consumer class — there is no per-consumer
+ * function left to table once the gate collapses to a constant. Nothing here
+ * covers `includeEncryptedStepToken`, which #9973 deletes outright: that field
  * had zero production consumers, so its disappearance is not observable.
  */
 import { WebhookType } from 'src/app/modules/webhook/webhook.service'
 
-import {
-  getMrfVersion,
-  MrfVersion,
-} from '../../multirespondent-submission.utils'
 import {
   getWebhookPayloadPolicy,
   WebhookConsumerType,
@@ -122,13 +121,6 @@ describe('[STEERING:T1] flag retirement is a no-op', () => {
         expect(policy.contentFormat).toBe<WebhookContentFormat>('v4')
         expect(policy.includeEncryptedSubmissionSecretKey).toBe(true)
       }
-    },
-  )
-
-  it.each<WebhookType | undefined>([undefined, 'plumber', 'generic', 'zapier'])(
-    'row content version for %s matches the flag-on output',
-    (webhookType) => {
-      expect(getMrfVersion({ webhookType })).toBe<MrfVersion>(2)
     },
   )
 })

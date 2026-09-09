@@ -57,7 +57,6 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { createNdiResponsesV4FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { VerifiedContentV3 } from '../../verified-content/verified-content.types'
-import { getWebhookType } from '../../webhook/webhook.service'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
@@ -91,7 +90,7 @@ import {
   StrippedAttachmentResponseV4,
 } from './multirespondent-submission.types'
 import {
-  getMrfVersion,
+  MRF_VERSION_V4,
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
 import * as stepToken from './step-token'
@@ -917,10 +916,7 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
-  const webhookUrl = formDef.webhook?.url
-  const mrfVersion = getMrfVersion({
-    webhookType: webhookUrl ? getWebhookType(webhookUrl) : undefined,
-  })
+  const mrfVersion = MRF_VERSION_V4
   const useV4Encryption = mrfVersion === 2
 
   const responsesToEncrypt = useV4Encryption

@@ -1134,7 +1134,7 @@ describe('Multirespondent Submission Middleware', () => {
         })
       })
 
-      describe('ignored inputs that never reach getMrfVersion', () => {
+      describe('ignored inputs that never affect the row version', () => {
         it('ignores webhookFormat on plumber (v1 still V4)', async () => {
           expectEncryptedAs(
             await runGate({
