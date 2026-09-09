@@ -93,6 +93,8 @@ export const enSG: PublicForm = {
     notAvailable: 'This form is not available.',
     notFound: 'Form not found',
     deleted: 'This form is no longer active',
+    authFormMismatch:
+      'This form does not match the form you authenticated for. Please refresh and try again.',
     private:
       'If you require further assistance, please contact the agency that gave you the form link.',
     takenDown:

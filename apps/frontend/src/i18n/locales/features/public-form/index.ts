@@ -67,6 +67,7 @@ export interface PublicForm {
     notAvailable: string
     notFound: string
     deleted: string
+    authFormMismatch: string
     private: string
     takenDown: string
 
