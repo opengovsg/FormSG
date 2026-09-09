@@ -207,6 +207,34 @@ const buildEntry = (
 }
 
 /**
+ * The two keys the server appends to a storage-mode response *after* it has
+ * been validated, in the order it appends them (`ParsedResponsesObject`:150
+ * then :153-155).
+ *
+ * They are appended here rather than parsed, because no shared zod response
+ * schema declares `isUserVerified` at all — `.parse` would strip it — and
+ * declaring it on `VerifiableResponseBase` would place it before `fieldType`,
+ * validating correctly while still failing byte parity.
+ *
+ * Both are read from the form-definition snapshot and never from the
+ * respondent's data: the MRF response schema accepts a client-supplied
+ * `myInfo: { attr }` and it is not trustworthy.
+ */
+const appendServerDerivedKeys = (
+  response: FieldResponse,
+  field: FormFieldDto,
+): FlattenedV1Response => {
+  const entry: FlattenedV1Response = response
+  if ('isVerifiable' in field && field.isVerifiable) {
+    entry.isUserVerified = true
+  }
+  if ('myInfo' in field && field.myInfo?.attr) {
+    entry.myInfo = { attr: field.myInfo.attr }
+  }
+  return entry
+}
+
+/**
  * Turns V4 responses plus a form-definition snapshot into the V1 entries a
  * storage-mode form produces from the same answers — the same array, in the
  * same order, with the same keys in the same order and the same values.
@@ -233,9 +261,16 @@ export const flattenV4ToFormFields = ({
   formFields: FormFieldDto[]
 }): FlattenedV1Response[] => {
   const entries: FieldResponse[] = []
+  // The snapshot field behind each emitted entry, positionally — the source of
+  // the server-derived keys appended once validation is done.
+  const emittingFields: FormFieldDto[] = []
   for (const field of formFields) {
     const entry = buildEntry(field, v4Responses[field._id]?.answer)
-    if (entry !== null) entries.push(entry)
+    if (entry === null) continue
+    entries.push(entry)
+    emittingFields.push(field)
   }
-  return validateResponses(entries)
+  return validateResponses(entries).map((response, index) =>
+    appendServerDerivedKeys(response, emittingFields[index]),
+  )
 }
