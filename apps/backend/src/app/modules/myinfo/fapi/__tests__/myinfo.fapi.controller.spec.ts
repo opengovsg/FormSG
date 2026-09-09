@@ -1,7 +1,15 @@
+/* eslint-disable import/first */
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import getMockLogger from '__tests__/unit/backend/helpers/jest-logger'
 import { Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
+
+import * as LoggerModule from 'src/app/config/logger'
+
+const mockLogger = getMockLogger()
+jest.mock('src/app/config/logger')
+jest.mocked(LoggerModule).createLoggerWithLabel.mockReturnValue(mockLogger)
 
 import { MYINFO_FAPI_SESSION_COOKIE_NAME } from '../myinfo.fapi.constants'
 import { loginToMyInfoFapi } from '../myinfo.fapi.controller'
@@ -220,6 +228,34 @@ describe('loginToMyInfoFapi', () => {
     // Otherwise the session stays pending and form load reads the login as
     // never attempted, dropping the respondent onto an unauthenticated form.
     expect(MockSession.markFailed).toHaveBeenCalledWith(MOCK_SESSION_ID)
+    expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
+  })
+
+  it('should log an error when the session is gone before the tokens are stored', async () => {
+    MockSession.loadForCallback.mockResolvedValueOnce({
+      phase: 'pending',
+      target: MOCK_TARGET,
+      exchange: MOCK_EXCHANGE,
+    })
+    MockMyInfoFapiService.exchangeCallback.mockReturnValueOnce(
+      okAsync({ accessToken: 'mock-access-token', sub: 'mock-sub' }),
+    )
+    MockSession.markExchanged.mockResolvedValueOnce('notFound')
+    const res = expressHandler.mockResponse()
+
+    await loginToMyInfoFapi(
+      mockCallback(SUCCESS_QUERY, MOCK_SESSION_ID),
+      res,
+      jest.fn(),
+    )
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message:
+          'MyInfo FAPI session was gone before the tokens could be stored',
+      }),
+    )
+    expect(mockLogger.info).not.toHaveBeenCalled()
     expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
   })
 })

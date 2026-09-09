@@ -180,6 +180,17 @@ export const loginToMyInfoFapi: ControllerHandler<
     return res.redirect(destination)
   }
 
+  if (outcome === 'notFound') {
+    // The session expired (TTL) while the respondent was on the Singpass
+    // screens, so the tokens have nowhere to go and form load will see no
+    // attempt at all rather than a failure.
+    logger.error({
+      message: 'MyInfo FAPI session was gone before the tokens could be stored',
+      meta: formMeta,
+    })
+    return res.redirect(destination)
+  }
+
   logger.info({
     message: 'Completed MyInfo FAPI token exchange',
     meta: { ...formMeta, outcome },
