@@ -32,7 +32,10 @@ import {
   clearMyInfoFapiSessionCookie,
   setMyInfoFapiSessionCookie,
 } from '../../myinfo/fapi/myinfo.fapi.controller'
-import { MyInfoFapiIncompleteLoginError } from '../../myinfo/fapi/myinfo.fapi.errors'
+import {
+  MyInfoFapiIncompleteLoginError,
+  MyInfoFapiSessionFormMismatchError,
+} from '../../myinfo/fapi/myinfo.fapi.errors'
 import * as MyInfoFapiService from '../../myinfo/fapi/myinfo.fapi.service'
 import { MyInfoData } from '../../myinfo/myinfo.adapter'
 import {
@@ -211,16 +214,23 @@ export const handleGetPublicForm: ControllerHandler<
       // have the prefilled data
       res.clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
 
-      // If FAPI session cookie exists, means user started with FAPI login
-      // Cookie is cleared here to avoid double login.
+      // If a FAPI session cookie exists, the user started a FAPI login.
       const fapiSessionId: unknown =
         req.signedCookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]
       if (typeof fapiSessionId === 'string' && fapiSessionId) {
-        clearMyInfoFapiSessionCookie(res)
-        const fapiFieldsResult =
-          await MyInfoFapiService.loadPersonForSession(fapiSessionId)
+        const fapiFieldsResult = await MyInfoFapiService.loadPersonForSession({
+          sessionId: fapiSessionId,
+          formId,
+        })
         if (fapiFieldsResult.isErr()) {
           const { error: fapiError } = fapiFieldsResult
+          // Another form can carry this origin-wide cookie. Leave both the
+          // cookie and session untouched for the form that started the login.
+          if (fapiError instanceof MyInfoFapiSessionFormMismatchError) {
+            return res.json({ form: publicForm, isIntranetUser })
+          }
+
+          clearMyInfoFapiSessionCookie(res)
           // Respondent never reached, or hasn't yet reached, the Singpass
           // callback (e.g. navigated back before completing login). Not a
           // failure, treat as no login attempt.
@@ -240,6 +250,7 @@ export const handleGetPublicForm: ControllerHandler<
           })
         }
 
+        clearMyInfoFapiSessionCookie(res)
         myInfoFields = fapiFieldsResult.value
         spcpSession = { userName: myInfoFields.getUinFin() }
         break

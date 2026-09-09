@@ -38,6 +38,7 @@ import { MYINFO_FAPI_SESSION_COOKIE_NAME } from '../../../myinfo/fapi/myinfo.fap
 import {
   MyInfoFapiIncompleteLoginError,
   MyInfoFapiMissingSessionError,
+  MyInfoFapiSessionFormMismatchError,
 } from '../../../myinfo/fapi/myinfo.fapi.errors'
 import * as MyInfoFapiService from '../../../myinfo/fapi/myinfo.fapi.service'
 import {
@@ -789,6 +790,36 @@ describe('public-form.controller', () => {
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
           errorCodes: [ErrorCode.myInfo],
+        })
+      })
+
+      it('should leave a session belonging to another form untouched', async () => {
+        MockMyInfoFapiService.loadPersonForSession.mockReturnValueOnce(
+          errAsync(new MyInfoFapiSessionFormMismatchError()),
+        )
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+
+        await PublicFormController.handleGetPublicForm(
+          mockReqWithFapiCookie,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(MockMyInfoFapiService.loadPersonForSession).toHaveBeenCalledWith(
+          {
+            sessionId: MOCK_FAPI_SESSION_ID,
+            formId: MOCK_FORM_ID,
+          },
+        )
+        expect(mockRes.clearCookie).not.toHaveBeenCalledWith(
+          MYINFO_FAPI_SESSION_COOKIE_NAME,
+          expect.anything(),
+        )
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: MOCK_MYINFO_FORM.getPublicView(),
+          isIntranetUser: false,
         })
       })
     })
