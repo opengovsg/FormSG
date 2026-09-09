@@ -1,0 +1,612 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`[STEERING:T2a] phase 1 is a no-op > address > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,address question-blockNumber,address question-streetName,address question-buildingName,address question-levelNumber,address question-unitNumber,address question-postalCode
+mockSubmissionId,09 Sep 2026 01:12:14 PM,10,Main Street,The Building,05,09,123456
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > address > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp
+mockSubmissionId,09 Sep 2026 01:12:14 PM
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > address > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000017","question":"address question","fieldType":"address","answerArray":["10","Main Street","The Building","05","09","123456"]}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > address > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000017","question":"address question","fieldType":"address","answerArray":[]}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > attachment > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,attachment question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,my document.pdf
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > attachment > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,attachment question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > attachment > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000010","question":"attachment question","answer":"my document.pdf","fieldType":"attachment"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > attachment > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000010","question":"attachment question","answer":"","fieldType":"attachment"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > checkbox > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,checkbox question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,a;b;Others: my other
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > checkbox > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,checkbox question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > checkbox > produces the same storage-mode responses array 1`] = `"[{"_id":"00000000000000000000000e","question":"checkbox question","answerArray":["a","b","Others: my other"],"fieldType":"checkbox"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > checkbox > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"00000000000000000000000e","question":"checkbox question","answerArray":[],"fieldType":"checkbox"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > children > produces the same admin CSV download 1`] = `"THREW: Response did not match any known type"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > children > produces the same admin CSV download when unanswered 1`] = `"THREW: Response did not match any known type"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > children > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000016","question":"children question","fieldType":"children","answerArray":[["Kid One","01/01/2015"]]}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > children > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000016","question":"children question","fieldType":"children","answerArray":[["",""]]}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > country_region > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,country_region question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,Singapore
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > country_region > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,country_region question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > country_region > produces the same storage-mode responses array 1`] = `"[{"_id":"00000000000000000000000c","question":"country_region question","answer":"Singapore","fieldType":"country_region"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > country_region > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"00000000000000000000000c","question":"country_region question","answer":"","fieldType":"country_region"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > date > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,date question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,09 Sep 2026
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > date > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,date question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > date > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000011","question":"date question","answer":"09 Sep 2026","fieldType":"date"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > date > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000011","question":"date question","answer":"","fieldType":"date"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > decimal > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,decimal question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,4.2
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > decimal > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,decimal question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > decimal > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000007","question":"decimal question","answer":"4.2","fieldType":"decimal"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > decimal > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000007","question":"decimal question","answer":"","fieldType":"decimal"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > dropdown > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,dropdown question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,Option A
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > dropdown > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,dropdown question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > dropdown > produces the same storage-mode responses array 1`] = `"[{"_id":"00000000000000000000000b","question":"dropdown question","answer":"Option A","fieldType":"dropdown"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > dropdown > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"00000000000000000000000b","question":"dropdown question","answer":"","fieldType":"dropdown"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > email > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,email question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,a@example.com
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > email > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,email question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > email > produces the same storage-mode responses array 1`] = `"[{"signature":"email-signature","_id":"000000000000000000000003","question":"email question","answer":"a@example.com","fieldType":"email"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > email > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000003","question":"email question","answer":"","fieldType":"email"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > homeno > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,homeno question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,+6561234567
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > homeno > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,homeno question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > homeno > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000005","question":"homeno question","answer":"+6561234567","fieldType":"homeno"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > homeno > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000005","question":"homeno question","answer":"","fieldType":"homeno"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > image > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp
+mockSubmissionId,09 Sep 2026 01:12:14 PM
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > image > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp
+mockSubmissionId,09 Sep 2026 01:12:14 PM
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > image > produces the same storage-mode responses array 1`] = `"[]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > image > produces the same storage-mode responses array when unanswered 1`] = `"[]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > mobile > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,mobile question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,+6598765432
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > mobile > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,mobile question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > mobile > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000004","question":"mobile question","answer":"+6598765432","fieldType":"mobile"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > mobile > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000004","question":"mobile question","answer":"","fieldType":"mobile"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > nric > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,nric question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,S1234567D
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > nric > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,nric question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > nric > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000013","question":"nric question","answer":"S1234567D","fieldType":"nric"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > nric > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000013","question":"nric question","answer":"","fieldType":"nric"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > number > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,number question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,42
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > number > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,number question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > number > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000006","question":"number question","answer":"42","fieldType":"number"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > number > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000006","question":"number question","answer":"","fieldType":"number"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > produces the same storage-mode responses array for an answered form of every field type 1`] = `"[{"_id":"000000000000000000000001","question":"section question","answer":"","isHeader":true,"fieldType":"section"},{"signature":"email-signature","_id":"000000000000000000000003","question":"email question","answer":"a@example.com","fieldType":"email"},{"_id":"000000000000000000000004","question":"mobile question","answer":"+6598765432","fieldType":"mobile"},{"_id":"000000000000000000000005","question":"homeno question","answer":"+6561234567","fieldType":"homeno"},{"_id":"000000000000000000000006","question":"number question","answer":"42","fieldType":"number"},{"_id":"000000000000000000000007","question":"decimal question","answer":"4.2","fieldType":"decimal"},{"_id":"000000000000000000000009","question":"textfield question","answer":"padded value","fieldType":"textfield"},{"_id":"00000000000000000000000a","question":"textarea question","answer":"padded\\nparagraph","fieldType":"textarea"},{"_id":"00000000000000000000000b","question":"dropdown question","answer":"Option A","fieldType":"dropdown"},{"_id":"00000000000000000000000c","question":"country_region question","answer":"Singapore","fieldType":"country_region"},{"_id":"00000000000000000000000d","question":"yes_no question","answer":"Yes","fieldType":"yes_no"},{"_id":"00000000000000000000000e","question":"checkbox question","answerArray":["a","b","Others: my other"],"fieldType":"checkbox"},{"_id":"00000000000000000000000f","question":"radiobutton question","answer":"Others: my radio other","fieldType":"radiobutton"},{"_id":"000000000000000000000010","question":"attachment question","answer":"my document.pdf","fieldType":"attachment"},{"_id":"000000000000000000000011","question":"date question","answer":"09 Sep 2026","fieldType":"date"},{"_id":"000000000000000000000012","question":"rating question","answer":"5","fieldType":"rating"},{"_id":"000000000000000000000013","question":"nric question","answer":"S1234567D","fieldType":"nric"},{"_id":"000000000000000000000014","question":"table question (Col A, Col B)","answerArray":[["cell a","cell b"]],"fieldType":"table"},{"_id":"000000000000000000000015","question":"uen question","answer":"T09LL0001B","fieldType":"uen"},{"_id":"000000000000000000000016","question":"children question","fieldType":"children","answerArray":[["Kid One","01/01/2015"]]},{"_id":"000000000000000000000017","question":"address question","fieldType":"address","answerArray":["10","Main Street","The Building","05","09","123456"]},{"_id":"000000000000000000000018","question":"signature question","answerArray":["draw","[[[1,2,0.5]]]"],"fieldType":"signature"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > produces the same storage-mode responses array for an unanswered form of every field type 1`] = `"[{"_id":"000000000000000000000001","question":"section question","answer":"","isHeader":true,"fieldType":"section"},{"_id":"000000000000000000000003","question":"email question","answer":"","fieldType":"email"},{"_id":"000000000000000000000004","question":"mobile question","answer":"","fieldType":"mobile"},{"_id":"000000000000000000000005","question":"homeno question","answer":"","fieldType":"homeno"},{"_id":"000000000000000000000006","question":"number question","answer":"","fieldType":"number"},{"_id":"000000000000000000000007","question":"decimal question","answer":"","fieldType":"decimal"},{"_id":"000000000000000000000009","question":"textfield question","answer":"","fieldType":"textfield"},{"_id":"00000000000000000000000a","question":"textarea question","answer":"","fieldType":"textarea"},{"_id":"00000000000000000000000b","question":"dropdown question","answer":"","fieldType":"dropdown"},{"_id":"00000000000000000000000c","question":"country_region question","answer":"","fieldType":"country_region"},{"_id":"00000000000000000000000d","question":"yes_no question","answer":"","fieldType":"yes_no"},{"_id":"00000000000000000000000e","question":"checkbox question","answerArray":[],"fieldType":"checkbox"},{"_id":"00000000000000000000000f","question":"radiobutton question","answer":"","fieldType":"radiobutton"},{"_id":"000000000000000000000010","question":"attachment question","answer":"","fieldType":"attachment"},{"_id":"000000000000000000000011","question":"date question","answer":"","fieldType":"date"},{"_id":"000000000000000000000012","question":"rating question","answer":"","fieldType":"rating"},{"_id":"000000000000000000000013","question":"nric question","answer":"","fieldType":"nric"},{"_id":"000000000000000000000014","question":"table question (Col A, Col B)","answerArray":[["",""],["",""]],"fieldType":"table"},{"_id":"000000000000000000000015","question":"uen question","answer":"","fieldType":"uen"},{"_id":"000000000000000000000016","question":"children question","fieldType":"children","answerArray":[["",""]]},{"_id":"000000000000000000000017","question":"address question","fieldType":"address","answerArray":[]},{"_id":"000000000000000000000018","question":"signature question","answerArray":["",""],"fieldType":"signature"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > radiobutton > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,radiobutton question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,Others: my radio other
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > radiobutton > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,radiobutton question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > radiobutton > produces the same storage-mode responses array 1`] = `"[{"_id":"00000000000000000000000f","question":"radiobutton question","answer":"Others: my radio other","fieldType":"radiobutton"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > radiobutton > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"00000000000000000000000f","question":"radiobutton question","answer":"","fieldType":"radiobutton"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > rating > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,rating question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,5
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > rating > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,rating question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > rating > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000012","question":"rating question","answer":"5","fieldType":"rating"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > rating > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000012","question":"rating question","answer":"","fieldType":"rating"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > section > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp
+mockSubmissionId,09 Sep 2026 01:12:14 PM
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > section > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp
+mockSubmissionId,09 Sep 2026 01:12:14 PM
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > section > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000001","question":"section question","answer":"","isHeader":true,"fieldType":"section"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > section > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000001","question":"section question","answer":"","isHeader":true,"fieldType":"section"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > signature > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,signature question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,Signature captured
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > signature > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,signature question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,Signature captured
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > signature > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000018","question":"signature question","answerArray":["draw","[[[1,2,0.5]]]"],"fieldType":"signature"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > signature > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000018","question":"signature question","answerArray":["",""],"fieldType":"signature"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > statement > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp
+mockSubmissionId,09 Sep 2026 01:12:14 PM
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > statement > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp
+mockSubmissionId,09 Sep 2026 01:12:14 PM
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > statement > produces the same storage-mode responses array 1`] = `"[]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > statement > produces the same storage-mode responses array when unanswered 1`] = `"[]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > table > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,"table question (Col A, Col B)"
+mockSubmissionId,09 Sep 2026 01:12:14 PM,cell a;cell b
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > table > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,"table question (Col A, Col B)","table question (Col A, Col B)"
+mockSubmissionId,09 Sep 2026 01:12:14 PM,;,;
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > table > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000014","question":"table question (Col A, Col B)","answerArray":[["cell a","cell b"]],"fieldType":"table"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > table > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000014","question":"table question (Col A, Col B)","answerArray":[["",""],["",""]],"fieldType":"table"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > textarea > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,textarea question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,"padded
+paragraph"
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > textarea > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,textarea question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > textarea > produces the same storage-mode responses array 1`] = `"[{"_id":"00000000000000000000000a","question":"textarea question","answer":"padded\\nparagraph","fieldType":"textarea"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > textarea > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"00000000000000000000000a","question":"textarea question","answer":"","fieldType":"textarea"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > textfield > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,textfield question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,padded value
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > textfield > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,textfield question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > textfield > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000009","question":"textfield question","answer":"padded value","fieldType":"textfield"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > textfield > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000009","question":"textfield question","answer":"","fieldType":"textfield"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > uen > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,uen question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,T09LL0001B
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > uen > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,uen question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > uen > produces the same storage-mode responses array 1`] = `"[{"_id":"000000000000000000000015","question":"uen question","answer":"T09LL0001B","fieldType":"uen"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > uen > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"000000000000000000000015","question":"uen question","answer":"","fieldType":"uen"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > yes_no > produces the same admin CSV download 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,yes_no question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,Yes
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > yes_no > produces the same admin CSV download when unanswered 1`] = `
+"﻿Expected total responses,1
+Success count,1
+Error count,0
+Unverified response count,0
+See download status column for download errors
+Response ID,Timestamp,yes_no question
+mockSubmissionId,09 Sep 2026 01:12:14 PM,
+"
+`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > yes_no > produces the same storage-mode responses array 1`] = `"[{"_id":"00000000000000000000000d","question":"yes_no question","answer":"Yes","fieldType":"yes_no"}]"`;
+
+exports[`[STEERING:T2a] phase 1 is a no-op > yes_no > produces the same storage-mode responses array when unanswered 1`] = `"[{"_id":"00000000000000000000000d","question":"yes_no question","answer":"","fieldType":"yes_no"}]"`;
