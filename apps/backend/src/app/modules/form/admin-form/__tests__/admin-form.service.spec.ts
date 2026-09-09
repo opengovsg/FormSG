@@ -4380,7 +4380,7 @@ describe('admin-form.service', () => {
 
     const mockDbSuccess = () =>
       jest
-        .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
         // @ts-ignore
         .mockReturnValue({
           exec: jest.fn().mockResolvedValue({
