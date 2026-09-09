@@ -27,6 +27,7 @@ awslocal s3 mb s3://$IMAGE_S3_BUCKET
 awslocal s3 mb s3://$LOGO_S3_BUCKET
 awslocal s3 mb s3://$ATTACHMENT_S3_BUCKET
 awslocal s3 mb s3://$SUBMISSION_HISTORY_V4_S3_BUCKET
+awslocal s3 mb s3://$SUBMISSION_HISTORY_V1_S3_BUCKET
 awslocal s3 mb s3://$STATIC_ASSETS_S3_BUCKET
 
 # Buckets for virus scanner

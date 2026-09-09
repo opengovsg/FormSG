@@ -14,10 +14,12 @@ import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.valida
 import { transformMongoError } from 'src/app/utils/handle-mongo-error'
 import { IEncryptedSubmissionSchema, WebhookView } from 'src/types'
 
+import { WebhookConsumerType } from '../../submission/multirespondent-submission/webhook/webhook-payload-policy'
 import { SubmissionNotFoundError } from '../../submission/submission.errors'
 import { WEBHOOK_MAX_CONTENT_LENGTH } from '../webhook.constants'
 import { WebhookQueueMessage } from '../webhook.message'
 import { WebhookProducer } from '../webhook.producer'
+import type { WebhookType } from '../webhook.service'
 import * as WebhookService from '../webhook.service'
 
 // define suite-wide mocks
@@ -504,6 +506,50 @@ describe('webhook.service', () => {
         String(testSubmission._id),
         { submissionIndex: 1, contentFormat: 'v4' },
       )
+    })
+  })
+
+  describe('toConsumerType', () => {
+    // The payload policy distinguishes two consumer classes, not three URL
+    // families. Zapier is an external consumer like any other: only plumber
+    // receives the native V4 envelope. Three tickets under #9972 depend on
+    // that single fact, so it lives in one function rather than in an inline
+    // ternary at every site.
+    it('classifies a plumber URL as plumber', () => {
+      expect(
+        WebhookService.toConsumerType(
+          WebhookService.getWebhookType('https://plumber.gov.sg/webhooks/abc'),
+        ),
+      ).toBe('plumber')
+    })
+
+    it('classifies a zapier URL as generic', () => {
+      expect(
+        WebhookService.toConsumerType(
+          WebhookService.getWebhookType(
+            'https://hooks.zapier.com/hooks/catch/123/abc',
+          ),
+        ),
+      ).toBe('generic')
+    })
+
+    it('classifies any other URL as generic', () => {
+      expect(
+        WebhookService.toConsumerType(
+          WebhookService.getWebhookType('https://example.com/hook'),
+        ),
+      ).toBe('generic')
+    })
+
+    it('maps every WebhookType, so a new family cannot slip through', () => {
+      const cases: [WebhookType, WebhookConsumerType][] = [
+        ['plumber', 'plumber'],
+        ['zapier', 'generic'],
+        ['generic', 'generic'],
+      ]
+      for (const [webhookType, expected] of cases) {
+        expect(WebhookService.toConsumerType(webhookType)).toBe(expected)
+      }
     })
   })
 })

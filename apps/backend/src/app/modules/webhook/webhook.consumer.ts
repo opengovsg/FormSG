@@ -26,7 +26,7 @@ import {
 import { WebhookQueueMessage } from './webhook.message'
 import { WebhookProducer } from './webhook.producer'
 import * as WebhookService from './webhook.service'
-import { getWebhookType } from './webhook.service'
+import { getWebhookType, toConsumerType } from './webhook.service'
 import { isSuccessfulResponse } from './webhook.utils'
 
 const logger = createLoggerWithLabel(module)
@@ -237,8 +237,7 @@ const resolveWebhookView = (
     return okAsync(webhookInfo.webhookView)
   }
 
-  const webhookType =
-    getWebhookType(webhookInfo.webhookUrl) === 'plumber' ? 'plumber' : 'generic'
+  const webhookType = toConsumerType(getWebhookType(webhookInfo.webhookUrl))
 
   return resolveSnapshotRetryView({
     liveView: webhookInfo.webhookView,

@@ -113,6 +113,10 @@ describe('[STEERING:T1] flag retirement is a no-op', () => {
       for (const submissionIndex of [0, 1, 2]) {
         const policy = getWebhookPayloadPolicy({
           webhookType,
+          // Mirrors the send path's pin: `sendMrfInitialWebhookIfEligible`
+          // passes `'v4'` until #9975 slice 3 wires the form's own setting,
+          // so this parity gate must exercise the same input.
+          webhookFormat: 'v4',
           submissionIndex,
           submittedStepsLength,
         })
