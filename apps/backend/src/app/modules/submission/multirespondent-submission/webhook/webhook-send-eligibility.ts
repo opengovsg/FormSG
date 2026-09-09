@@ -3,18 +3,16 @@ import { getWebhookType, WebhookType } from '../../../webhook/webhook.service'
 export const shouldSendMrfWebhook = ({
   webhookType,
   isMrfWebhooksEnabled,
-  isStepWriteTokenEnabled,
 }: {
   webhookType: WebhookType
   isMrfWebhooksEnabled: boolean
-  isStepWriteTokenEnabled: boolean
 }): boolean => {
   switch (webhookType) {
     case 'plumber':
       return true
     case 'zapier':
     case 'generic':
-      return isMrfWebhooksEnabled && isStepWriteTokenEnabled
+      return isMrfWebhooksEnabled
   }
 }
 
@@ -22,12 +20,10 @@ export const shouldWriteV4Snapshot = ({
   mrfVersion,
   webhook,
   isMrfWebhooksEnabled,
-  isStepWriteTokenEnabled,
 }: {
   mrfVersion: number
   webhook?: { url?: string; isRetryEnabled?: boolean }
   isMrfWebhooksEnabled: boolean
-  isStepWriteTokenEnabled: boolean
 }): boolean => {
   const url = webhook?.url
   if (mrfVersion !== 2 || !url || !webhook?.isRetryEnabled) return false
@@ -35,6 +31,5 @@ export const shouldWriteV4Snapshot = ({
   return shouldSendMrfWebhook({
     webhookType: getWebhookType(url),
     isMrfWebhooksEnabled,
-    isStepWriteTokenEnabled,
   })
 }

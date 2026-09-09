@@ -60,7 +60,6 @@ describe('[STEERING:T1] flag retirement is a no-op', () => {
           shouldSendMrfWebhook({
             webhookType,
             isMrfWebhooksEnabled,
-            isStepWriteTokenEnabled: true,
           }),
         ).toBe(EXPECTED_SEND[webhookType][isMrfWebhooksEnabled ? 'on' : 'off'])
       }
@@ -78,7 +77,6 @@ describe('[STEERING:T1] flag retirement is a no-op', () => {
             mrfVersion: 2,
             webhook: { url, isRetryEnabled: true },
             isMrfWebhooksEnabled,
-            isStepWriteTokenEnabled: true,
           }),
         ).toBe(EXPECTED_SEND[webhookType][isMrfWebhooksEnabled ? 'on' : 'off'])
 
@@ -89,7 +87,6 @@ describe('[STEERING:T1] flag retirement is a no-op', () => {
             mrfVersion: 1,
             webhook: { url, isRetryEnabled: true },
             isMrfWebhooksEnabled,
-            isStepWriteTokenEnabled: true,
           }),
         ).toBe(false)
         expect(
@@ -97,7 +94,6 @@ describe('[STEERING:T1] flag retirement is a no-op', () => {
             mrfVersion: 2,
             webhook: undefined,
             isMrfWebhooksEnabled,
-            isStepWriteTokenEnabled: true,
           }),
         ).toBe(false)
         expect(
@@ -105,7 +101,6 @@ describe('[STEERING:T1] flag retirement is a no-op', () => {
             mrfVersion: 2,
             webhook: { url, isRetryEnabled: false },
             isMrfWebhooksEnabled,
-            isStepWriteTokenEnabled: true,
           }),
         ).toBe(false)
       }
@@ -119,7 +114,6 @@ describe('[STEERING:T1] flag retirement is a no-op', () => {
       for (const submissionIndex of [0, 1, 2]) {
         const policy = getWebhookPayloadPolicy({
           webhookType,
-          isStepWriteTokenEnabled: true,
           submissionIndex,
           submittedStepsLength,
         })
@@ -134,9 +128,7 @@ describe('[STEERING:T1] flag retirement is a no-op', () => {
   it.each<WebhookType | undefined>([undefined, 'plumber', 'generic', 'zapier'])(
     'row content version for %s matches the flag-on output',
     (webhookType) => {
-      expect(
-        getMrfVersion({ webhookType, isStepWriteTokenEnabled: true }),
-      ).toBe<MrfVersion>(2)
+      expect(getMrfVersion({ webhookType })).toBe<MrfVersion>(2)
     },
   )
 })

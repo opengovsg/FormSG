@@ -172,7 +172,6 @@ describe('[GATE] v4 initial-send route parity', () => {
         submissionIndex,
         policy: getWebhookPayloadPolicy({
           webhookType,
-          isStepWriteTokenEnabled: true,
           submissionIndex,
           submittedStepsLength: submission.submittedSteps?.length ?? 0,
         }),

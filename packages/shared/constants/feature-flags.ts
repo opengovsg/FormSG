@@ -11,7 +11,6 @@ export const featureFlags = {
   ogpSuiteSso: 'ogp-suite-sso' as const,
   enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
-  mrfStepWriteToken: 'mrf-step-write-token' as const,
   useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
   spcpOidcPkce: 'spcp-oidc-pkce' as const,
   spcpOidcStateNonce: 'spcp-oidc-state-nonce' as const,

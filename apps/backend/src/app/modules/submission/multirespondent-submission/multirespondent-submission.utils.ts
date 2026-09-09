@@ -701,14 +701,11 @@ export type MrfVersion = 1 | 2
 
 export const getMrfVersion = ({
   webhookType,
-  isStepWriteTokenEnabled,
 }: {
   webhookType?: WebhookType
-  isStepWriteTokenEnabled: boolean
 }): MrfVersion => {
   switch (webhookType) {
     case 'plumber':
-      return isStepWriteTokenEnabled ? 2 : 1
     case undefined:
     case 'zapier':
     case 'generic':
