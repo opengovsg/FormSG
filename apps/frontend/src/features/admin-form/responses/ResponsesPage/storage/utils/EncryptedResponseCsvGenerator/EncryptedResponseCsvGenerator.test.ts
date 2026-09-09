@@ -479,6 +479,82 @@ describe('EncryptedResponseCsvGenerator', () => {
           expectedMrfRow,
         ])
       })
+
+      it('should fill payment columns for a payment-bearing encrypt row and leave them empty for mrf rows', () => {
+        // Arrange
+        // Payment-enabled storage-mode forms are migration-eligible, so a
+        // pre-migration encrypt row can carry the payment pseudo-fields that
+        // CsvRecord.materializeSubmissionData injects (reserved ids). MRF
+        // rows never carry payments (payments and workflows never combine on
+        // a form), so their payment cells must stay empty.
+        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0, true)
+        const sharedField = generateRecord(1)
+        const paymentStatusColumn: CsvRecordData = {
+          _id: '000000000000000000000004',
+          fieldType: 'textfield',
+          question: 'Payment status',
+          answer: 'Succeeded',
+        }
+        const paymentAmountColumn: CsvRecordData = {
+          _id: '000000000000000000000002',
+          fieldType: 'textfield',
+          question: 'Payment amount',
+          answer: 'S$31.41',
+        }
+        const workflowStatusColumn: CsvRecordData = {
+          _id: '000000000000000000010001',
+          fieldType: 'textfield',
+          question: 'Workflow status',
+          answer: 'Completed',
+        }
+        const encryptRecord = {
+          record: [sharedField, paymentStatusColumn, paymentAmountColumn],
+          created: mockCreatedEarly,
+          submissionId: 'mockEncryptSubmissionId',
+        }
+        const mrfRecord = {
+          record: [workflowStatusColumn, sharedField],
+          created: mockCreatedLater,
+          submissionId: 'mockMrfSubmissionId',
+        }
+        mrfGenerator.addRecord(encryptRecord)
+        mrfGenerator.addRecord(mrfRecord)
+
+        // Act
+        mrfGenerator.process()
+
+        // Assert
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          MRF_RESPONSE_TIMESTAMP_LABEL,
+          sharedField.question,
+          paymentStatusColumn.question,
+          paymentAmountColumn.question,
+          workflowStatusColumn.question,
+        ])
+        const expectedEncryptRow = stringify([
+          encryptRecord.submissionId,
+          getFormattedDate(encryptRecord.created),
+          sharedField.answer,
+          paymentStatusColumn.answer,
+          paymentAmountColumn.answer,
+          '',
+        ])
+        const expectedMrfRow = stringify([
+          mrfRecord.submissionId,
+          getFormattedDate(mrfRecord.created),
+          sharedField.answer,
+          '',
+          '',
+          workflowStatusColumn.answer,
+        ])
+        expect(mrfGenerator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedEncryptRow,
+          expectedMrfRow,
+        ])
+      })
     })
 
     describe('submissions with only answer key', () => {
