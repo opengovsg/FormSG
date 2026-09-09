@@ -1,3 +1,6 @@
+import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
+import { FormWebhook } from 'formsg-shared/types'
+
 import {
   contentFormatToWebhookVersion,
   getKeyPermissionsPolicy,
@@ -12,9 +15,15 @@ const CONSUMER_TYPES: WebhookConsumerType[] = ['plumber', 'generic']
 const CONTENT_FORMATS: WebhookContentFormat[] = ['v1', 'v3', 'v4']
 
 describe('getWebhookPayloadPolicy', () => {
+  // The full resolution table over consumer type x `webhookFormat` x the
+  // `enable-mrf-webhooks` flag lives in `webhook-format-resolution.spec.ts`.
+  // What is pinned here is the dimension that must NOT matter: the step
+  // position. Nothing about the wire shape or the key permissions may depend
+  // on whether the submission is the latest step.
   it.each<{
     name: string
     webhookType: WebhookConsumerType
+    webhookFormat: FormWebhook['webhookFormat']
     latest: boolean
     expected: {
       contentFormat: WebhookContentFormat
@@ -24,6 +33,7 @@ describe('getWebhookPayloadPolicy', () => {
     {
       name: 'plumber, latest step',
       webhookType: 'plumber',
+      webhookFormat: undefined,
       latest: true,
       expected: {
         contentFormat: 'v4',
@@ -33,6 +43,7 @@ describe('getWebhookPayloadPolicy', () => {
     {
       name: 'plumber, non-latest step',
       webhookType: 'plumber',
+      webhookFormat: undefined,
       latest: false,
       expected: {
         contentFormat: 'v4',
@@ -42,27 +53,30 @@ describe('getWebhookPayloadPolicy', () => {
     {
       name: 'generic, latest step',
       webhookType: 'generic',
+      webhookFormat: undefined,
       latest: true,
       expected: {
-        contentFormat: 'v4',
-        includeEncryptedSubmissionSecretKey: true,
+        contentFormat: 'v1',
+        includeEncryptedSubmissionSecretKey: false,
       },
     },
     {
       name: 'generic, non-latest step',
       webhookType: 'generic',
+      webhookFormat: undefined,
       latest: false,
       expected: {
-        contentFormat: 'v4',
-        includeEncryptedSubmissionSecretKey: true,
+        contentFormat: 'v1',
+        includeEncryptedSubmissionSecretKey: false,
       },
     },
   ])(
     'returns the correct policy for $name',
-    ({ webhookType, latest, expected }) => {
+    ({ webhookType, webhookFormat, latest, expected }) => {
       const submittedStepsLength = 3
       const input: WebhookPayloadPolicyInput = {
         webhookType,
+        webhookFormat,
         submittedStepsLength,
         submissionIndex: latest ? submittedStepsLength - 1 : 0,
       }
@@ -106,8 +120,12 @@ describe('contentFormatToWebhookVersion', () => {
     expect(contentFormatToWebhookVersion('v3')).toBe(3)
   })
 
-  it('maps v1 to submission version 2.1', () => {
-    expect(contentFormatToWebhookVersion('v1')).toBe(2.1)
+  it('maps v1 to the shared virus-scanner submission version', () => {
+    // Against the shared constant, not the literal `2.1`, so the V1 wire
+    // value cannot drift from the one storage mode sends.
+    expect(contentFormatToWebhookVersion('v1')).toBe(
+      VIRUS_SCANNER_SUBMISSION_VERSION,
+    )
   })
 })
 

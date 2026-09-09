@@ -190,6 +190,10 @@ describe('[GATE] v4 initial-send route parity', () => {
         submissionIndex,
         policy: getWebhookPayloadPolicy({
           webhookType,
+          // Mirrors the send path's pin: `sendMrfInitialWebhookIfEligible`
+          // passes `'v4'` until #9975 slice 3 wires the form's own setting,
+          // so this parity gate must exercise the same input.
+          webhookFormat: 'v4',
           submissionIndex,
           submittedStepsLength: submission.submittedSteps?.length ?? 0,
         }),
