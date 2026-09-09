@@ -1927,6 +1927,14 @@ describe('public-form.controller', () => {
 
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(MYINFO_LOGIN_COOKIE_NAME)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        MYINFO_AUTH_CODE_COOKIE_NAME,
+        MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+      )
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        MYINFO_FAPI_SESSION_COOKIE_NAME,
+        expect.anything(),
+      )
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })
