@@ -86,15 +86,20 @@ function convertTableAnswerToV3(
 function convertChildrenAnswerToV3(answer: ChildrenAnswerV4): {
   child: string[][]
   childFields: string[]
+  recordType?: string
 } {
   const childKeys = Object.keys(answer)
   if (childKeys.length === 0) {
     return { child: [], childFields: [] }
   }
 
-  // Extract childFields from the first child
+  // Extract childFields from the first child. recordtype rides inside
+  // `value` (see adapt-v3-to-v4.ts) but isn't a real MyInfo sub-field, so
+  // it's excluded here and surfaced separately below instead.
   const firstChild = answer[childKeys[0]]
-  const childFields = Object.keys(firstChild.value)
+  const childFields = Object.keys(firstChild.value).filter(
+    (attr) => attr !== 'recordtype'
+  )
 
   // Build child array
   const child: string[][] = []
@@ -107,7 +112,13 @@ function convertChildrenAnswerToV3(answer: ChildrenAnswerV4): {
     child.push(childValues)
   }
 
-  return { child, childFields }
+  return {
+    child,
+    childFields,
+    ...(firstChild.value.recordtype
+      ? { recordType: firstChild.value.recordtype.value }
+      : {}),
+  }
 }
 
 function convertAddressAnswerToV3(answer: AddressAnswerV4): {

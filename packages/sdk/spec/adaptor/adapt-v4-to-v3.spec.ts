@@ -2,7 +2,6 @@ import { adaptV4ToV3 } from '../../src/adapt-v4-to-v3'
 import { FieldResponsesV4 } from '../../src/types-v4'
 
 describe('adaptV4ToV3', () => {
-
   describe('generic string fields', () => {
     const stringFieldTypes = [
       'section',
@@ -317,6 +316,32 @@ describe('adaptV4ToV3', () => {
           ['Bob', '12'],
         ],
         childFields: ['name', 'age'],
+      })
+    })
+
+    it('should carry `value.recordtype` back as recordType, excluded from childFields', () => {
+      const v4: FieldResponsesV4 = {
+        field1: {
+          fieldType: 'children',
+          question: 'Q',
+          answer: {
+            child0: {
+              value: {
+                name: { value: 'Sponsored Child', myInfo: { attr: 'name' } },
+                recordtype: { value: 'Sponsored' },
+              },
+            },
+          },
+          provenance: {},
+        },
+      }
+
+      const result = adaptV4ToV3(v4)
+
+      expect(result.field1.answer).toEqual({
+        child: [['Sponsored Child']],
+        childFields: ['name'],
+        recordType: 'Sponsored',
       })
     })
 

@@ -3,7 +3,6 @@ import { FieldType, FormFieldsV3 } from '../../src/types'
 import { AddressAnswerV4 } from '../../src/types-v4'
 
 describe('adaptV3ToV4', () => {
-
   describe('generic string fields', () => {
     const stringFieldTypes = [
       'section',
@@ -250,13 +249,18 @@ describe('adaptV3ToV4', () => {
 
       const result = adaptV3ToV4(v3)
 
-      const tableAnswer = result.field1.answer as Record<string, { rowNum: number; value: Record<string, string> }>
+      const tableAnswer = result.field1.answer as Record<
+        string,
+        { rowNum: number; value: Record<string, string> }
+      >
       const rows = Object.entries(tableAnswer)
       expect(rows).toHaveLength(2)
 
       // Keys should be UUIDs
       for (const [key] of rows) {
-        expect(key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+        expect(key).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+        )
       }
 
       // Sort by rowNum to verify values
@@ -294,6 +298,54 @@ describe('adaptV3ToV4', () => {
           value: {
             name: { value: 'Bob', myInfo: { attr: 'name' } },
             age: { value: '12', myInfo: { attr: 'age' } },
+          },
+        },
+      })
+    })
+
+    it('should nest recordType into `value.recordtype` on the first child only', () => {
+      const v3: FormFieldsV3 = {
+        field1: {
+          fieldType: 'children',
+          answer: {
+            child: [['Sponsored Child', '10']],
+            childFields: ['name', 'age'],
+            recordType: 'Sponsored',
+          },
+        },
+      }
+
+      const result = adaptV3ToV4(v3)
+
+      expect(result.field1.answer).toEqual({
+        child0: {
+          value: {
+            name: { value: 'Sponsored Child', myInfo: { attr: 'name' } },
+            age: { value: '10', myInfo: { attr: 'age' } },
+            recordtype: { value: 'Sponsored' },
+          },
+        },
+      })
+    })
+
+    it('should omit `recordtype` when recordType is absent (legacy responses)', () => {
+      const v3: FormFieldsV3 = {
+        field1: {
+          fieldType: 'children',
+          answer: {
+            child: [['Born Child', '10']],
+            childFields: ['name', 'age'],
+          },
+        },
+      }
+
+      const result = adaptV3ToV4(v3)
+
+      expect(result.field1.answer).toEqual({
+        child0: {
+          value: {
+            name: { value: 'Born Child', myInfo: { attr: 'name' } },
+            age: { value: '10', myInfo: { attr: 'age' } },
           },
         },
       })
