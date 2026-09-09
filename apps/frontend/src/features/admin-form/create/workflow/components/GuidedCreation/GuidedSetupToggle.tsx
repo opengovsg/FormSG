@@ -16,12 +16,8 @@ import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 import Toggle from '~components/Toggle'
 
-import {
-  isGuidedSetupSelector,
-  setGuidedSetupSelector,
-  useAdminWorkflowStore,
-} from '../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { useGuidedSetupPreference } from '../../hooks/useGuidedSetupPreference'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
 
 const WORKFLOW_I18N_PREFIX = 'features.adminForm.sidebar.workflow'
@@ -31,8 +27,7 @@ export const GuidedSetupToggle = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const isRedesign = useIsWorkflowBuilderRedesign()
-  const isGuidedSetup = useAdminWorkflowStore(isGuidedSetupSelector)
-  const setGuidedSetup = useAdminWorkflowStore(setGuidedSetupSelector)
+  const { isGuidedSetup, setGuidedSetup } = useGuidedSetupPreference()
   const { formWorkflow } = useAdminFormWorkflow()
 
   const modalSize = useBreakpointValue({ base: 'mobile', md: 'md' })

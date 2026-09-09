@@ -33,3 +33,9 @@ export const EMERGENCY_CONTACT_KEY_PREFIX = 'has-seen-emergency-contact'
  * Key to store when was the last time user has seen the admin feedback modal
  */
 export const ADMIN_FEEDBACK_HISTORY_PREFIX = 'last-seen-admin-feedback-'
+
+/**
+ * Key to store whether an admin builds MRF workflows in guided mode. Their
+ * choice, so it outlives the workflow store's per-visit state.
+ */
+export const GUIDED_WORKFLOW_MODE_KEY_PREFIX = 'prefers-guided-workflow-'

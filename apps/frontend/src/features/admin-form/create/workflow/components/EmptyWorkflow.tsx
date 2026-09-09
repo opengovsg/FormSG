@@ -8,12 +8,12 @@ import Link from '~components/Link'
 import Tooltip from '~components/Tooltip'
 
 import {
-  setGuidedSetupSelector,
   setToCreatingSelector,
   showWelcomeCardSelector,
   useAdminWorkflowStore,
 } from '../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../hooks/useAdminFormWorkflow'
+import { useGuidedSetupPreference } from '../hooks/useGuidedSetupPreference'
 import { useGuidedSetupTaught } from '../hooks/useGuidedSetupTaught'
 import { useIsWorkflowBuilderRedesign } from '../hooks/useIsWorkflowBuilderRedesign'
 
@@ -25,7 +25,7 @@ const INTRO_I18N_PREFIX = 'features.adminForm.sidebar.workflow.intro'
 export const EmptyWorkflow = (): JSX.Element => {
   const { t } = useTranslation()
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
-  const setGuidedSetup = useAdminWorkflowStore(setGuidedSetupSelector)
+  const { setGuidedSetup } = useGuidedSetupPreference()
   const showWelcomeCard = useAdminWorkflowStore(showWelcomeCardSelector)
   const isRedesign = useIsWorkflowBuilderRedesign()
 
