@@ -4185,6 +4185,12 @@ describe('multirespondent-submission.service', () => {
 
     // ---- Generic never receives the step token (write credential) ----
 
+    // Asserted on the posted body, not on a policy flag. The row genuinely
+    // carries a step token hash and a wrapped step token, and neither may
+    // appear anywhere in what the post-submission action hands the webhook
+    // sender — for plumber, the privileged consumer, as much as for generic
+    // and zapier. There is no boolean left to assert here: no payload type has
+    // a slot for a step token, and that is what this pins.
     const STEP_TOKEN_HASH = 'SVC-STEP-TOKEN-HASH-SENTINEL'.padEnd(64, '0')
     const ENCRYPTED_STEP_TOKEN =
       'SVC-SENDER-PK-SENTINEL;SVC-NONCE-SENTINEL:SVC-CIPHER-SENTINEL'
@@ -4212,8 +4218,7 @@ describe('multirespondent-submission.service', () => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
         const Model = getMultirespondentSubmissionModel(mongoose)
 
-        // RATIONALE: For test correctness, we write a real row,
-        // read back through the real getWebhookView, so the
+        // A real row, read back through the real getWebhookView, so the
         // assertion cannot pass merely because the fixture had no token.
         const row = await Model.create({
           form: mockFormId,
