@@ -44,6 +44,7 @@ import { validateResponses } from './validate-responses'
  * after validation rather than parsed by it.
  */
 export type FlattenedV1Response = FieldResponse & {
+  isVisible?: true
   isUserVerified?: true
   myInfo?: { attr: MyInfoAttribute }
 }
@@ -207,8 +208,8 @@ const buildEntry = (
 }
 
 /**
- * The two keys the server appends to a storage-mode response *after* it has
- * been validated, in the order it appends them (`ParsedResponsesObject`:150
+ * The keys the server attaches to a storage-mode response *after* it has been
+ * validated, in the order it attaches them (`ParsedResponsesObject`:146, :150,
  * then :153-155).
  *
  * They are appended here rather than parsed, because no shared zod response
@@ -225,6 +226,17 @@ const appendServerDerivedKeys = (
   field: FormFieldDto,
 ): FlattenedV1Response => {
   const entry: FlattenedV1Response = response
+  // Reproducing a storage-mode wart, not an intended part of the contract.
+  // `encryptSubmission` routes an attachment response that carries content
+  // around `omitResponseKeys` entirely, so only the non-attachment branch
+  // strips `isVisible` and an answered attachment reaches the consumer with
+  // it still attached (`encrypt-submission.middleware.ts:482-492`). Byte
+  // parity is the contract, so the flatten emits it too. Fixing storage mode
+  // to strip it and dropping this is the better end state, and a larger,
+  // separately-reviewable change.
+  if (response.fieldType === BasicField.Attachment && response.answer) {
+    entry.isVisible = true
+  }
   if ('isVerifiable' in field && field.isVerifiable) {
     entry.isUserVerified = true
   }
