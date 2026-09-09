@@ -1,6 +1,6 @@
 {
   "name": "formsg-react-email-preview",
-  "version": "9.17.1",
+  "version": "9.18.0",
   "private": true,
   "scripts": {
     "build": "email build",

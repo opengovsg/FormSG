@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.18.0](https://github.com/opengovsg/formsg/compare/v9.17.1...v9.18.0) (2026-09-09)
+
+
+### Features
+
+* **workflow:** add the guided setup welcome card (4/7) (#9967) ([#9967](https://github.com/opengovsg/formsg/commit/d07dd53e9f80d5d31ad746406db7dca0d099f761))
+* **workflow:** let an admin turn guided mode off (6/7) (#9969) ([#9969](https://github.com/opengovsg/formsg/commit/45b99c05d98d97e7785fe23b1e5ab1ca30d096b2))
+* **workflow:** report a finished step under its card (2/7) (#9957) ([#9957](https://github.com/opengovsg/formsg/commit/b996edc478205c2625b150a685e20aa1753366ce))
+* **workflow:** reveal a step one decision at a time (1/7) (#9956) ([#9956](https://github.com/opengovsg/formsg/commit/79a51ec936f7a4603eb226b03eac65d81f822e8e))
+* **workflow:** rewrite the workflow tab intro screen (3/7) (#9963) ([#9963](https://github.com/opengovsg/formsg/commit/bd0f6ae3f725e776f78e52f9454ee6e57fc883bf))
+* **workflow:** show the welcome card once per admin (5/7) (#9968) ([#9968](https://github.com/opengovsg/formsg/commit/72db2c9a396457b5a383d2db77091dacdd0a090c))
+
+
+### Bug Fixes
+
+* **workflow:** centre the workflow view against the viewport (7/7) (#9970) ([#9970](https://github.com/opengovsg/formsg/commit/64a0ec1e31c3c182bc194e3452ce836659de8889))
+
 ## [9.17.1](https://github.com/opengovsg/formsg/compare/v9.17.0...v9.17.1) (2026-09-08)
 
 
