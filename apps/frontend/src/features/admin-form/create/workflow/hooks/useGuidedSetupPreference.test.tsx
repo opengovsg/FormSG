@@ -10,8 +10,6 @@ import {
 } from '../adminWorkflowStore'
 import * as pageStories from '../CreatePageWorkflowTab.stories'
 
-// The story's msw handlers stop at the form, so useUser resolves to nothing
-// and the per-admin key would never be built.
 const MOCK_USER_ID = 'mock-admin-id'
 vi.mock('~features/user/queries', () => ({
   useUser: () => ({ user: { _id: MOCK_USER_ID, flags: {} }, isLoading: false }),
@@ -22,8 +20,6 @@ const { WithWorkflowRedesignOn } = composeStories(pageStories)
 const SWITCH = { name: /guided mode/i }
 const CONFIRM = { name: /^skip guidance$/i }
 
-// jsdom here ships without localStorage, so useLocalStorage would silently
-// swallow every read and write and these tests would pass on nothing.
 let store: Record<string, string> = {}
 
 const isGuided = () => isGuidedSetupSelector(useAdminWorkflowStore.getState())
@@ -91,7 +87,6 @@ describe('remembering the guided mode choice', () => {
     await turnGuidedOff(ui)
     await waitFor(() => expect(guidedModeKeys()).toHaveLength(1))
 
-    // What a fresh page load looks like: default store, storage intact.
     act(() => {
       useAdminWorkflowStore.getState().reset()
       useAdminWorkflowStore.getState().setGuidedSetup(true)

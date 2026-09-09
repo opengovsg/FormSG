@@ -26,8 +26,6 @@ type AdminWorkflowStore = {
   startBuildingFromWelcome: () => void
 }
 
-// isGuidedSetup is deliberately absent: it is the admin's standing choice,
-// not per-visit state, and reset() runs every time the workflow tab unmounts.
 const INITIAL_STATE = {
   createOrEditData: null,
   pendingSwitchTo: null,
