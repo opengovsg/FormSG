@@ -794,6 +794,98 @@ describe('public-form.controller', () => {
         })
       })
 
+      it('should fall back to legacy MyInfo when FAPI verification fails', async () => {
+        const mockMyInfoData = new MyInfoData({
+          uinFin: 'mock-uin-fin',
+        } as IPersonResponse)
+        const mockReqWithBothCookies = expressHandler.mockRequest({
+          params: { formId: MOCK_FORM_ID },
+          others: {
+            cookies: {
+              [MYINFO_AUTH_CODE_COOKIE_NAME]: {
+                authCode: MOCK_AUTH_CODE,
+                state: MyInfoAuthCodeCookieState.Success,
+              },
+            },
+            signedCookies: {
+              [MYINFO_FAPI_SESSION_COOKIE_NAME]: MOCK_FAPI_SESSION_ID,
+            },
+          },
+        })
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+          cookie: jest.fn().mockReturnThis(),
+        })
+        MockMyInfoFapiService.loadPersonForSession.mockReturnValueOnce(
+          errAsync(new MyInfoFapiMissingSessionError()),
+        )
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          okAsync(MOCK_ACCESS_TOKEN),
+        )
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
+          okAsync(mockMyInfoData),
+        )
+        MockMyInfoService.prefillAndSaveMyInfoFields.mockReturnValueOnce(
+          okAsync([]),
+        )
+
+        await PublicFormController.handleGetPublicForm(
+          mockReqWithBothCookies,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(MockMyInfoFapiService.loadPersonForSession).toHaveBeenCalled()
+        expect(MockMyInfoService.retrieveAccessToken).toHaveBeenCalledWith(
+          MOCK_AUTH_CODE,
+        )
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: { ...MOCK_MYINFO_FORM.getPublicView(), form_fields: [] },
+          spcpSession: { userName: mockMyInfoData.getUinFin() },
+          isIntranetUser: false,
+        })
+      })
+
+      it('should use the first error when FAPI and legacy MyInfo both fail', async () => {
+        const mockReqWithBothCookies = expressHandler.mockRequest({
+          params: { formId: MOCK_FORM_ID },
+          others: {
+            cookies: {
+              [MYINFO_AUTH_CODE_COOKIE_NAME]: {
+                authCode: MOCK_AUTH_CODE,
+                state: MyInfoAuthCodeCookieState.Success,
+              },
+            },
+            signedCookies: {
+              [MYINFO_FAPI_SESSION_COOKIE_NAME]: MOCK_FAPI_SESSION_ID,
+            },
+          },
+        })
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+        MockMyInfoFapiService.loadPersonForSession.mockReturnValueOnce(
+          errAsync(new MyInfoFapiIncompleteLoginError()),
+        )
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          errAsync(new MyInfoCircuitBreakerError()),
+        )
+
+        await PublicFormController.handleGetPublicForm(
+          mockReqWithBothCookies,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(MockMyInfoService.retrieveAccessToken).toHaveBeenCalledWith(
+          MOCK_AUTH_CODE,
+        )
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: MOCK_MYINFO_FORM.getPublicView(),
+          isIntranetUser: false,
+        })
+      })
+
       it('should leave a session belonging to another form untouched', async () => {
         MockMyInfoFapiService.loadPersonForSession.mockReturnValueOnce(
           errAsync(new MyInfoFapiSessionFormMismatchError()),
