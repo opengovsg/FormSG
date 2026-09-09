@@ -127,41 +127,19 @@ export const buildFormFieldMetaMap = (
 }
 
 /**
- * Converts verified content (SPCP/sgID fields) into V4 response entries.
- */
-export const convertVerifiedToV4 = (
-  verifiedObj: Record<string, string>,
-): FieldResponsesV4 => {
-  const v4Verified: FieldResponsesV4 = {}
-  const verifiedFields = convertToResponseArray(verifiedObj)
-  for (const field of verifiedFields) {
-    // Verified fields always have a string answer (from getVerifiedFieldFromResponse)
-    if (!('answer' in field) || field.answer === undefined) continue
-    v4Verified[field._id] = {
-      fieldType: field.fieldType,
-      question: field.question,
-      answer: { value: field.answer },
-      provenance: {},
-    }
-  }
-  return v4Verified
-}
-
-/**
  * Converts V4 decrypted responses into FormField[] for use with the shared
  * augmentDecryptedResponses pipeline. Unanswered fields are included as
- * empty strings. Verified content (SPCP/sgID) is merged in before flattening.
+ * empty strings. Verified content (SPCP/sgID) is appended after the form
+ * fields, exactly as the storage-mode path does.
  */
 export const processDecryptedContentV4 = (
   formFields: FormFieldDto[],
   responses: FieldResponsesV4,
   verified?: Record<string, string>,
 ): VerifiedFormField[] => {
-  const v4Responses = verified
-    ? { ...responses, ...convertVerifiedToV4(verified) }
-    : responses
-  return flattenV4ToFormFields({
-    v4Responses,
+  const v1Fields = flattenV4ToFormFields({
+    v4Responses: responses,
     formFields,
   }) as VerifiedFormField[]
+  return verified ? v1Fields.concat(convertToResponseArray(verified)) : v1Fields
 }
