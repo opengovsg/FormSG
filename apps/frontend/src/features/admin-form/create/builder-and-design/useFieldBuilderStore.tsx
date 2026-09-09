@@ -40,6 +40,13 @@ export type FieldBuilderStore = {
     | null
   clearHoldingStateData: () => void
   moveFromHolding: () => void
+  pendingFieldCreation: {
+    field: FieldCreateDto
+    insertionIndex: number
+  } | null
+  stageFieldCreation: (field: FieldCreateDto, insertionIndex: number) => void
+  clearPendingFieldCreation: () => void
+  consumePendingFieldCreation: () => void
 }
 
 export const useFieldBuilderStore = create<FieldBuilderStore>()(
@@ -95,6 +102,22 @@ export const useFieldBuilderStore = create<FieldBuilderStore>()(
         set({ stateData })
       }
     },
+    pendingFieldCreation: null,
+    stageFieldCreation: (field, insertionIndex) =>
+      set({ pendingFieldCreation: { field, insertionIndex } }),
+    clearPendingFieldCreation: () => set({ pendingFieldCreation: null }),
+    consumePendingFieldCreation: () => {
+      const pending = get().pendingFieldCreation
+      if (!pending) return
+      set({
+        stateData: {
+          state: FieldBuilderState.CreatingField,
+          field: pending.field,
+          insertionIndex: pending.insertionIndex,
+        },
+        pendingFieldCreation: null,
+      })
+    },
     setToInactive: (holding?: boolean) => {
       const nextState: FieldBuilderStore['holdingStateData'] = {
         state: FieldBuilderState.Inactive,
@@ -123,6 +146,24 @@ export const updateCreateStateSelector = (
 export const updateEditStateSelector = (
   state: FieldBuilderStore,
 ): FieldBuilderStore['updateEditState'] => state.updateEditState
+
+export const pendingFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['pendingFieldCreation'] => state.pendingFieldCreation
+
+export const stageFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['stageFieldCreation'] => state.stageFieldCreation
+
+export const clearPendingFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['clearPendingFieldCreation'] =>
+  state.clearPendingFieldCreation
+
+export const consumePendingFieldCreationSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['consumePendingFieldCreation'] =>
+  state.consumePendingFieldCreation
 
 export const setToInactiveSelector = (
   state: FieldBuilderStore,
