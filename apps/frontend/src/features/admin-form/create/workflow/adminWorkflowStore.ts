@@ -26,11 +26,12 @@ type AdminWorkflowStore = {
   startBuildingFromWelcome: () => void
 }
 
+export const DEFAULT_IS_GUIDED_SETUP = true
+
 const INITIAL_STATE = {
   createOrEditData: null,
   pendingSwitchTo: null,
   completedStepNumber: null,
-  isGuidedSetup: true,
   isOnWelcomeCard: false,
 }
 
@@ -109,7 +110,7 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
     createOrEditData: null,
     pendingSwitchTo: null,
     completedStepNumber: null,
-    isGuidedSetup: true,
+    isGuidedSetup: DEFAULT_IS_GUIDED_SETUP,
     isOnWelcomeCard: false,
     setToCreating: () =>
       set({

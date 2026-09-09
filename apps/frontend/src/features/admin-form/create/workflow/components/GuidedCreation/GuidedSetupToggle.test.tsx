@@ -41,7 +41,10 @@ describe('the Guided mode switch', () => {
       .scrollIntoView
   })
 
-  afterEach(() => useAdminWorkflowStore.getState().reset())
+  afterEach(() => {
+    useAdminWorkflowStore.getState().reset()
+    useAdminWorkflowStore.getState().setGuidedSetup(true)
+  })
 
   it('sits in the workflow card, on by default', async () => {
     await openTab(WithWorkflowRedesignOn)
