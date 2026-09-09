@@ -886,6 +886,39 @@ describe('public-form.controller', () => {
         })
       })
 
+      it('should clear a FAPI session cookie that cannot be read', async () => {
+        const mockReqWithUnsignedCookie = expressHandler.mockRequest({
+          params: { formId: MOCK_FORM_ID },
+          others: {
+            cookies: {
+              [MYINFO_FAPI_SESSION_COOKIE_NAME]: 's:tampered-or-rotated',
+            },
+            signedCookies: {},
+          },
+        })
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+
+        await PublicFormController.handleGetPublicForm(
+          mockReqWithUnsignedCookie,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(
+          MockMyInfoFapiService.loadPersonForSession,
+        ).not.toHaveBeenCalled()
+        expect(mockRes.clearCookie).toHaveBeenCalledWith(
+          MYINFO_FAPI_SESSION_COOKIE_NAME,
+          expect.objectContaining({ httpOnly: true, signed: true }),
+        )
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: MOCK_MYINFO_FORM.getPublicView(),
+          isIntranetUser: false,
+        })
+      })
+
       it('should leave a session belonging to another form untouched', async () => {
         MockMyInfoFapiService.loadPersonForSession.mockReturnValueOnce(
           errAsync(new MyInfoFapiSessionFormMismatchError()),
