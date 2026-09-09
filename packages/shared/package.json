@@ -199,6 +199,10 @@
       "require": "./dist/utils/verified-content.js",
       "default": "./utils/verified-content.ts"
     },
+    "./utils/version": {
+      "require": "./dist/utils/version.js",
+      "default": "./utils/version.ts"
+    },
     "./modules/logic": {
       "require": "./dist/modules/logic/index.js",
       "default": "./modules/logic/index.ts"
