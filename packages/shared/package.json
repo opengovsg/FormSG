@@ -179,6 +179,10 @@
       "require": "./dist/utils/strip-workflow-emails.js",
       "default": "./utils/strip-workflow-emails.ts"
     },
+    "./utils/validate-responses": {
+      "require": "./dist/utils/validate-responses.js",
+      "default": "./utils/validate-responses.ts"
+    },
     "./utils/uen-validation": {
       "require": "./dist/utils/uen-validation.js",
       "default": "./utils/uen-validation.ts"
