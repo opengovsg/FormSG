@@ -1,12 +1,17 @@
-import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from '../constants/form'
-import { BasicField, FormFieldDto, MyInfoAttribute } from '../types/field'
-import { FieldResponse } from '../types/response'
+import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../constants/form'
+import {
+  AddressAttributes,
+  BasicField,
+  FieldResponse,
+  FormFieldDto,
+  MyInfoAttribute,
+} from '../types'
 
 import {
+  AddressAnswerInput,
   computeAddressAnswerValue,
   computeAttachmentAnswerValue,
   computeCheckboxAnswerValue,
-  computeChildrenAnswerValue,
   computeDateAnswerValue,
   computeRadioAnswerValue,
   computeSectionAnswerValue,
@@ -15,10 +20,13 @@ import {
   computeTableAnswerValue,
   computeVerifiableAnswerValue,
   computeYesNoAnswerValue,
+  RadioAnswerInput,
+  TableAnswerInput,
   throwUnsupportedFieldType,
 } from './response-value-rules'
 import {
   AddressAnswerV4,
+  AnswerV4,
   AttachmentAnswerV4,
   CheckboxAnswerV4,
   FieldResponsesV4Input,
@@ -28,131 +36,155 @@ import {
   TableAnswerV4,
   VerifiableAnswerV4,
 } from './v4-answer'
+import { validateResponses } from './validate-responses'
 
 /**
- * A V1 response entry as it appears on the wire, including the keys the server
- * appends after validation and which therefore no zod schema declares.
+ * A V1 response entry as it appears on the wire, including the server-derived
+ * keys that no zod response schema declares and which are therefore appended
+ * after validation rather than parsed by it.
  */
 export type FlattenedV1Response = FieldResponse & {
   isUserVerified?: true
   myInfo?: { attr: MyInfoAttribute }
-  isVisible?: true
 }
 
-const OTHERS_PREFIX = 'Others: '
-
-const GENERIC_STRING_FIELD_TYPES = new Set<string>([
-  'section',
-  'statement',
-  'image',
-  'number',
-  'decimal',
-  'textfield',
-  'textarea',
-  'homeno',
-  'dropdown',
-  'rating',
-  'nric',
-  'uen',
-  'date',
-  'country_region',
-  'yes_no',
-])
-
-const ADDRESS_FIELD_ORDER = [
-  'blockNumber',
-  'streetName',
-  'buildingName',
-  'levelNumber',
-  'unitNumber',
-  'postalCode',
-] as const
-
-const pickBase = (field: FormFieldDto) => ({
+/** `_id`, `fieldType` and the snapshot's question, before the answer keys. */
+const pickBase = <F extends FormFieldDto>(
+  field: F,
+): { _id: string; fieldType: F['fieldType']; question: string } => ({
   _id: field._id,
   fieldType: field.fieldType,
   question: field.title,
 })
 
 /**
- * The empty entry for a field the respondent never answered, built by handing
- * `undefined` to the same shared value rules the answered path uses. This is a
- * transcription of the frontend's `transformInputsToOutputs(field)` with no
- * input — `formsg-shared` cannot import the frontend, and the unanswered path
- * is the half of the flatten that is already byte-correct, so it delegates
- * exactly as it did before.
+ * The V4 answer, adapted into the plain input each shared value rule takes.
+ * These adapters are the only V4-specific code in the flatten; every byte of
+ * every answer is computed by `response-value-rules`.
+ */
+
+const toRadioInput = (answer?: RadioAnswerV4): RadioAnswerInput | undefined => {
+  if (answer === undefined) return undefined
+  // V4 flattens the Others sentinel away and carries the free-text answer in
+  // `value`; the rule re-derives the `Others: ` prefix from the sentinel.
+  return answer.isOthersInput
+    ? { value: CLIENT_RADIO_OTHERS_INPUT_VALUE, othersInput: answer.value }
+    : { value: answer.value }
+}
+
+const toTableInput = (answer?: TableAnswerV4): TableAnswerInput | undefined => {
+  if (answer === undefined) return undefined
+  // V4 keys rows by an opaque row id and carries the display order in
+  // `rowNum`, so the rows have to be re-ordered before the rule sees them.
+  return Object.values(answer)
+    .sort((a, b) => a.rowNum - b.rowNum)
+    .map((row) => {
+      const cells: Record<string, string | undefined> = {}
+      for (const [columnId, cell] of Object.entries(row.value)) {
+        cells[columnId] = typeof cell === 'string' ? cell : String(cell)
+      }
+      return cells
+    })
+}
+
+const toAddressInput = (
+  answer?: AddressAnswerV4,
+): AddressAnswerInput | undefined => {
+  if (answer === undefined) return undefined
+  const addressSubFields: AddressAttributes = {
+    postalCode: answer.postalCode.value,
+    blockNumber: answer.blockNumber.value,
+    streetName: answer.streetName.value,
+    buildingName: answer.buildingName.value,
+    levelNumber: answer.levelNumber.value,
+    unitNumber: answer.unitNumber.value,
+  }
+  return { addressSubFields }
+}
+
+/**
+ * The entry for one form field, before validation.
+ *
+ * `answer` is `undefined` when the respondent left the field alone, and the
+ * same rule handles both cases — the empty entry is what each rule returns for
+ * no input, so there is no parallel empty-value synthesizer to keep in step.
+ *
+ * `question` always comes from the form-definition snapshot. The V4 submission
+ * row carries none (the MRF middleware strips it), and a caller-supplied one
+ * is respondent data, so it is ignored even when present.
  *
  * Returns `null` for the field types that produce no entry at all.
  */
-const buildUnansweredEntry = (
+const buildEntry = (
   field: FormFieldDto,
-): FlattenedV1Response | null => {
-  const base = pickBase(field)
+  answer: AnswerV4 | undefined,
+): FieldResponse | null => {
   switch (field.fieldType) {
+    // Neither carries an answer, answered or not.
     case BasicField.Statement:
     case BasicField.Image:
       return null
     case BasicField.Section:
-      return { ...base, ...computeSectionAnswerValue() } as FlattenedV1Response
+      return { ...pickBase(field), ...computeSectionAnswerValue() }
     case BasicField.Email:
     case BasicField.Mobile:
       return {
-        ...base,
-        ...computeVerifiableAnswerValue(undefined),
-      } as FlattenedV1Response
+        ...pickBase(field),
+        ...computeVerifiableAnswerValue(answer as VerifiableAnswerV4),
+      }
     case BasicField.Date:
       return {
-        ...base,
-        ...computeDateAnswerValue(undefined),
-      } as FlattenedV1Response
+        ...pickBase(field),
+        ...computeDateAnswerValue((answer as StringAnswerV4)?.value),
+      }
     case BasicField.YesNo:
       return {
-        ...base,
-        ...computeYesNoAnswerValue(undefined),
-      } as FlattenedV1Response
+        ...pickBase(field),
+        ...computeYesNoAnswerValue((answer as StringAnswerV4)?.value),
+      }
     case BasicField.Attachment:
       return {
-        ...base,
-        ...computeAttachmentAnswerValue(undefined),
-      } as FlattenedV1Response
+        ...pickBase(field),
+        ...computeAttachmentAnswerValue((answer as AttachmentAnswerV4)?.value),
+      }
     case BasicField.Checkbox:
       return {
-        ...base,
-        ...computeCheckboxAnswerValue(undefined),
-      } as FlattenedV1Response
+        ...pickBase(field),
+        ...computeCheckboxAnswerValue(answer as CheckboxAnswerV4),
+      }
     case BasicField.Radio:
       return {
-        ...base,
-        ...computeRadioAnswerValue(undefined),
-      } as FlattenedV1Response
+        ...pickBase(field),
+        ...computeRadioAnswerValue(toRadioInput(answer as RadioAnswerV4)),
+      }
     case BasicField.Table:
       return {
-        ...base,
+        ...pickBase(field),
+        // The rule also returns a `question` naming the columns, overriding
+        // the snapshot title.
         ...computeTableAnswerValue({
           title: field.title,
           columns: field.columns,
           minimumRows: field.minimumRows,
-          input: undefined,
+          input: toTableInput(answer as TableAnswerV4),
         }),
-      } as FlattenedV1Response
+      }
     case BasicField.Address:
       return {
-        ...base,
-        ...computeAddressAnswerValue(undefined),
-      } as FlattenedV1Response
+        ...pickBase(field),
+        ...computeAddressAnswerValue(toAddressInput(answer as AddressAnswerV4)),
+      }
     case BasicField.Signature:
       return {
-        ...base,
-        ...computeSignatureAnswerValue(undefined),
-      } as FlattenedV1Response
+        ...pickBase(field),
+        ...computeSignatureAnswerValue(answer as SignatureAnswerV4),
+      }
     case BasicField.Children:
-      return {
-        ...base,
-        ...computeChildrenAnswerValue({
-          numberOfSubFields: field.childrenSubFields?.length,
-          input: undefined,
-        }),
-      } as FlattenedV1Response
+      // Decided: no MRF form should have a Children field, so support is out
+      // of scope and stays out. Throwing is the point — the previous
+      // passthrough turned a Children answer into a blank column in the admin
+      // CSV with no error at all.
+      throw new Error(`Unsupported field type: ${BasicField.Children}`)
     case BasicField.Number:
     case BasicField.Decimal:
     case BasicField.ShortText:
@@ -164,21 +196,34 @@ const buildUnansweredEntry = (
     case BasicField.Nric:
     case BasicField.Uen:
       return {
-        ...base,
-        ...computeSingleAnswerValue(undefined),
-      } as FlattenedV1Response
+        ...pickBase(field),
+        ...computeSingleAnswerValue((answer as StringAnswerV4)?.value),
+      }
     default:
+      // Every `BasicField` member above is classified, so `field` is `never`
+      // here. Adding a member to the enum breaks this line until it is.
       return throwUnsupportedFieldType(field)
   }
 }
 
 /**
- * Flattens V4 responses into V1 entries for consumption by the existing
- * CSV pipeline (CsvRecord, EncryptedResponseCsvGenerator, Response classes).
- * Also handles unanswered fields by inserting empty-string answers, to maintain
- * consistency. The output is ordered to match the form definition order
- * (consistent with the V3 processDecryptedContentV3 path). Fields present in
- * v4Responses but not in formFields are appended at the end (verified fields)
+ * Turns V4 responses plus a form-definition snapshot into the V1 entries a
+ * storage-mode form produces from the same answers — the same array, in the
+ * same order, with the same keys in the same order and the same values.
+ *
+ * The flatten owns ordering, empty-entry synthesis and question injection, and
+ * no per-field-type value logic: every answer byte comes from
+ * `response-value-rules`, and `validateResponses` is the last step of value and
+ * shape normalisation. Its per-type zod `.parse` is what makes the key set and
+ * key order structurally identical to storage mode's rather than merely
+ * test-identical — a verifiable field's `signature` sorting ahead of `_id`, and
+ * Address putting `question` before `fieldType`, both fall out of it for free.
+ *
+ * Entries are emitted for the fields in the snapshot and for nothing else. A
+ * `v4Responses` key with no matching form field is dropped: storage mode's
+ * `encryptedContent` holds one entry per form field, and verified content
+ * (SPCP/sgID) is concatenated by the caller afterwards, as the storage-mode
+ * admin path already does.
  */
 export const flattenV4ToFormFields = ({
   v4Responses,
@@ -187,156 +232,10 @@ export const flattenV4ToFormFields = ({
   v4Responses: FieldResponsesV4Input
   formFields: FormFieldDto[]
 }): FlattenedV1Response[] => {
-  const formFieldIdSet = new Set(formFields.map((ff) => ff._id))
-
-  // Fields in form definition order, including unanswered ones
-  const v1Fields: FlattenedV1Response[] = []
-
-  for (const ff of formFields) {
-    const field = v4Responses[ff._id]
-    if (!field) {
-      const emptyOutput = buildUnansweredEntry(ff)
-      if (emptyOutput) {
-        v1Fields.push(emptyOutput)
-      }
-      continue
-    }
-    const { fieldType, question } = field
-    const fieldId = ff._id
-
-    // Generic string fields (including yes_no)
-    if (GENERIC_STRING_FIELD_TYPES.has(fieldType)) {
-      const answer = field.answer as StringAnswerV4
-      v1Fields.push({
-        _id: fieldId,
-        question,
-        fieldType,
-        answer: answer.value,
-      } as FlattenedV1Response)
-      continue
-    }
-
-    switch (fieldType) {
-      case BasicField.Email:
-      case BasicField.Mobile: {
-        const answer = field.answer as VerifiableAnswerV4
-        v1Fields.push({
-          _id: fieldId,
-          question,
-          fieldType,
-          answer: answer.value,
-          ...(answer.signature !== undefined && {
-            signature: answer.signature,
-          }),
-        } as FlattenedV1Response)
-        break
-      }
-
-      case BasicField.Radio: {
-        const answer = field.answer as RadioAnswerV4
-        v1Fields.push({
-          _id: fieldId,
-          question,
-          fieldType,
-          answer: answer.isOthersInput
-            ? `${OTHERS_PREFIX}${answer.value}`
-            : answer.value,
-        } as FlattenedV1Response)
-        break
-      }
-
-      case BasicField.Checkbox: {
-        const answer = field.answer as CheckboxAnswerV4
-        const answerArray = answer.value.map((v) =>
-          v === CLIENT_CHECKBOX_OTHERS_INPUT_VALUE &&
-          answer.othersInput !== undefined
-            ? `${OTHERS_PREFIX}${answer.othersInput}`
-            : v,
-        )
-        v1Fields.push({
-          _id: fieldId,
-          question,
-          fieldType,
-          answerArray,
-        } as FlattenedV1Response)
-        break
-      }
-
-      case BasicField.Attachment: {
-        const answer = field.answer as AttachmentAnswerV4
-        v1Fields.push({
-          _id: fieldId,
-          question,
-          fieldType,
-          answer: answer.value,
-        } as FlattenedV1Response)
-        break
-      }
-
-      case BasicField.Table: {
-        const answer = field.answer as TableAnswerV4
-        const rows = Object.values(answer).sort((a, b) => a.rowNum - b.rowNum)
-        const answerArray: string[][] = rows.map((row) =>
-          Object.values(row.value).map(String),
-        )
-        v1Fields.push({
-          _id: fieldId,
-          question,
-          fieldType,
-          answerArray,
-        } as unknown as FlattenedV1Response)
-        break
-      }
-
-      case BasicField.Address: {
-        const answer = field.answer as AddressAnswerV4
-        const answerArray = ADDRESS_FIELD_ORDER.map((key) => answer[key].value)
-        v1Fields.push({
-          _id: fieldId,
-          question,
-          fieldType,
-          answerArray,
-        } as FlattenedV1Response)
-        break
-      }
-
-      case BasicField.Signature: {
-        const answer = field.answer as SignatureAnswerV4
-        v1Fields.push({
-          _id: fieldId,
-          question,
-          fieldType,
-          answerArray: [answer.type, JSON.stringify(answer.value)],
-        } as FlattenedV1Response)
-        break
-      }
-
-      default: {
-        // Passthrough for unknown field types
-        const answer = field.answer as StringAnswerV4
-        v1Fields.push({
-          _id: fieldId,
-          question,
-          fieldType,
-          answer: answer?.value ?? '',
-        } as FlattenedV1Response)
-        break
-      }
-    }
+  const entries: FieldResponse[] = []
+  for (const field of formFields) {
+    const entry = buildEntry(field, v4Responses[field._id]?.answer)
+    if (entry !== null) entries.push(entry)
   }
-
-  // Append any extra entries (e.g. verified SPCP/sgID fields) not in formFields
-  for (const [fieldId, fieldResponse] of Object.entries(v4Responses)) {
-    if (formFieldIdSet.has(fieldId)) continue
-    const { fieldType, question } = fieldResponse
-    const answer = fieldResponse.answer as StringAnswerV4
-    v1Fields.push({
-      _id: fieldId,
-      question,
-      fieldType,
-      answer: answer?.value ?? '',
-    } as FlattenedV1Response)
-  }
-
-  return v1Fields
+  return validateResponses(entries)
 }
