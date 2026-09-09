@@ -6,6 +6,7 @@ import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useUser } from '~features/user/queries'
 
 import {
+  DEFAULT_IS_GUIDED_SETUP,
   isGuidedSetupSelector,
   setGuidedSetupSelector,
   useAdminWorkflowStore,
@@ -24,8 +25,10 @@ export const useGuidedSetupPreference = (): GuidedSetupPreference => {
   const storageKey = user?._id
     ? `${GUIDED_WORKFLOW_MODE_KEY_PREFIX}${user._id}`
     : null
-  const [storedPreference, setStoredPreference] =
-    useLocalStorage<boolean>(storageKey)
+  const [storedPreference, setStoredPreference] = useLocalStorage<boolean>(
+    storageKey,
+    DEFAULT_IS_GUIDED_SETUP,
+  )
 
   useEffect(() => {
     if (storedPreference === undefined) return

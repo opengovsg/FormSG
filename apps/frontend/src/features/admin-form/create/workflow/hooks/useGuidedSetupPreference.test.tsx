@@ -11,8 +11,12 @@ import {
 import * as pageStories from '../CreatePageWorkflowTab.stories'
 
 const MOCK_USER_ID = 'mock-admin-id'
+const currentUserId = { value: MOCK_USER_ID }
 vi.mock('~features/user/queries', () => ({
-  useUser: () => ({ user: { _id: MOCK_USER_ID, flags: {} }, isLoading: false }),
+  useUser: () => ({
+    user: { _id: currentUserId.value, flags: {} },
+    isLoading: false,
+  }),
 }))
 
 const { WithWorkflowRedesignOn } = composeStories(pageStories)
@@ -67,6 +71,7 @@ describe('remembering the guided mode choice', () => {
 
   beforeEach(() => {
     store = {}
+    currentUserId.value = MOCK_USER_ID
     useAdminWorkflowStore.getState().reset()
     useAdminWorkflowStore.getState().setGuidedSetup(true)
   })
@@ -94,5 +99,16 @@ describe('remembering the guided mode choice', () => {
     await openTab()
 
     await waitFor(() => expect(isGuided()).toBe(false))
+  })
+
+  it('gives the guided default to a second admin in the same tab', async () => {
+    const ui = await openTab()
+    await turnGuidedOff(ui)
+    await waitFor(() => expect(isGuided()).toBe(false))
+
+    currentUserId.value = 'another-admin-id'
+    await openTab()
+
+    await waitFor(() => expect(isGuided()).toBe(true))
   })
 })
