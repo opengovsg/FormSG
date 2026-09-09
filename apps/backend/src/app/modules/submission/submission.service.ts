@@ -133,7 +133,7 @@ export const getFormSubmissionsCount = ({
     startDate?: string
     endDate?: string
   }
-  submissionType?: SubmissionType
+  submissionType?: SubmissionType | SubmissionType[]
 }): ResultAsync<number, MalformedParametersError | DatabaseError> => {
   if (
     isMalformedDate(dateRange.startDate) ||
@@ -145,7 +145,13 @@ export const getFormSubmissionsCount = ({
   const countQuery = {
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
-    ...(submissionType ? { submissionType } : {}),
+    ...(submissionType
+      ? {
+          submissionType: Array.isArray(submissionType)
+            ? { $in: submissionType }
+            : submissionType,
+        }
+      : {}),
   }
 
   return ResultAsync.fromPromise(
@@ -558,7 +564,15 @@ export const getSubmissionMetadata = (
   return getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
     (modelToUse) =>
       ResultAsync.fromPromise(
-        modelToUse.findSingleMetadata(formId, submissionId),
+        // Multirespondent forms mode-migrated from storage mode retain their
+        // pre-migration encrypt submissions, so metadata lookups must span
+        // both submission types via the base model.
+        responseMode === FormResponseMode.Multirespondent
+          ? SubmissionModel.findEncryptedOrMultirespondentSingleMetadata(
+              formId,
+              submissionId,
+            )
+          : modelToUse.findSingleMetadata(formId, submissionId),
         (error) => {
           logger.error({
             message: 'Failure retrieving metadata from database',
@@ -584,7 +598,14 @@ export const getSubmissionMetadataList = (
   getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
     (modelToUse) =>
       ResultAsync.fromPromise(
-        modelToUse.findAllMetadataByFormId(formId, { page }),
+        // See getSubmissionMetadata: mode-migrated multirespondent forms mix
+        // submission types, and the page and count must agree across both.
+        responseMode === FormResponseMode.Multirespondent
+          ? SubmissionModel.findAllEncryptedOrMultirespondentMetadataByFormId(
+              formId,
+              { page },
+            )
+          : modelToUse.findAllMetadataByFormId(formId, { page }),
         (error) => {
           logger.error({
             message: 'Failure retrieving metadata page from database',

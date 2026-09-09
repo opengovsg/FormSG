@@ -278,6 +278,155 @@ SubmissionSchema.statics.findEncryptedOrMultirespondentSubmissionById =
       .exec() as Promise<SubmissionData | null>
   }
 
+/**
+ * Builds a metadata entry for a document of either admin-viewable submission
+ * type. Multirespondent docs carry workflow-derived mrf metadata; encrypt
+ * docs carry payment metadata and no mrf metadata, so the dashboard renders
+ * them like a multirespondent submission with no workflow (empty cells).
+ */
+const buildMixedSubmissionMetadata = (
+  result: MixedMetadataAggregateResult,
+  currentNumber: number,
+): SubmissionMetadata => {
+  if (result.submissionType === SubmissionType.Multirespondent) {
+    return buildSubmissionMetadata({
+      result,
+      currentNumber,
+      mrfMeta: {
+        workflowStep: result.workflowStep ?? 0,
+        workflow: result.workflow ?? [],
+        submittedSteps: result.submittedSteps,
+      },
+    })
+  }
+  return buildSubmissionMetadata({
+    result,
+    currentNumber,
+    paymentMeta: result.payments?.[0],
+  })
+}
+
+const MIXED_METADATA_MATCH_SUBMISSION_TYPES = {
+  $in: [SubmissionType.Encrypt, SubmissionType.Multirespondent],
+}
+
+const MIXED_METADATA_AGGREGATE_PROJECTION = {
+  _id: 1,
+  created: 1,
+  submissionType: 1,
+  workflowStep: 1,
+  workflow: 1,
+  submittedSteps: 1,
+  'payments.payout': 1,
+  'payments.completedPayment': 1,
+  'payments.amount': 1,
+  'payments.email': 1,
+}
+
+SubmissionSchema.statics.findEncryptedOrMultirespondentSingleMetadata =
+  function (
+    this: ISubmissionModel,
+    formId: string,
+    submissionId: string,
+  ): Promise<SubmissionMetadata | null> {
+    const pageResults: Promise<MixedMetadataAggregateResult[]> = this.aggregate(
+      [
+        {
+          $match: {
+            submissionType: MIXED_METADATA_MATCH_SUBMISSION_TYPES,
+            form: new mongoose.Types.ObjectId(formId),
+            _id: new mongoose.Types.ObjectId(submissionId),
+          },
+        },
+        { $limit: 1 },
+        {
+          $lookup: {
+            from: 'payments',
+            localField: 'paymentId',
+            foreignField: '_id',
+            as: 'payments',
+          },
+        },
+        { $project: MIXED_METADATA_AGGREGATE_PROJECTION },
+      ],
+    ).exec()
+
+    return Promise.resolve(pageResults).then((results) => {
+      if (!results || results.length <= 0) {
+        return null
+      }
+      return buildMixedSubmissionMetadata(results[0], 1)
+    })
+  }
+
+SubmissionSchema.statics.findAllEncryptedOrMultirespondentMetadataByFormId =
+  function (
+    this: ISubmissionModel,
+    formId: string,
+    {
+      page = 1,
+      pageSize = 10,
+    }: {
+      page?: number
+      pageSize?: number
+    } = {},
+  ): Promise<{
+    metadata: SubmissionMetadata[]
+    count: number
+  }> {
+    const numToSkip = (page - 1) * pageSize
+    // Multirespondent forms mode-migrated from storage mode retain their
+    // pre-migration encrypt submissions; the page and the count must both
+    // span the same two submission types so rows and totals agree. Email
+    // submissions stay excluded from both.
+    const pageResults: Promise<MixedMetadataAggregateResult[]> = this.aggregate(
+      [
+        {
+          $match: {
+            submissionType: MIXED_METADATA_MATCH_SUBMISSION_TYPES,
+            form: new mongoose.Types.ObjectId(formId),
+          },
+        },
+        { $sort: { created: -1 } },
+        { $skip: numToSkip },
+        { $limit: pageSize },
+        {
+          $lookup: {
+            from: 'payments',
+            localField: 'paymentId',
+            foreignField: '_id',
+            as: 'payments',
+          },
+        },
+        { $project: MIXED_METADATA_AGGREGATE_PROJECTION },
+      ],
+    ).exec()
+
+    const count =
+      this.countDocuments({
+        form: new mongoose.Types.ObjectId(formId),
+        submissionType: MIXED_METADATA_MATCH_SUBMISSION_TYPES,
+      }).exec() ?? 0
+
+    return Promise.all([pageResults, count]).then(([results, count]) => {
+      let currentNumber = count - numToSkip
+
+      const metadata = results.map((result) => {
+        const metadataEntry = buildMixedSubmissionMetadata(
+          result,
+          currentNumber,
+        )
+        currentNumber--
+        return metadataEntry
+      })
+
+      return {
+        metadata,
+        count,
+      }
+    })
+  }
+
 SubmissionSchema.statics.getEncryptedOrMultirespondentSubmissionCursorByFormId =
   function (
     this: ISubmissionModel,
@@ -727,6 +876,15 @@ type MultiRespondentAggregates = Pick<
 >
 type MultiRespondentAggregateResult = MetadataAggregateResult &
   MultiRespondentAggregates
+
+/**
+ * Aggregate row spanning both admin-viewable submission types: the
+ * multirespondent fields are absent on encrypt documents.
+ */
+type MixedMetadataAggregateResult = MetadataAggregateResult &
+  Partial<MultiRespondentAggregates> & {
+    submissionType: SubmissionType
+  }
 
 /**
  * Returns an object which represents the encrypted submission

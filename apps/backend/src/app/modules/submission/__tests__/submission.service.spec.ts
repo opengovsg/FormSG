@@ -288,6 +288,64 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
     })
 
+    it('should count across submission types when an array of types is provided', async () => {
+      // Arrange
+      // A mode-migrated multirespondent form holds encrypt submissions
+      // alongside multirespondent ones; the count must span both while
+      // still excluding email submissions.
+      const encryptSubmissionCount = 4
+      const multirespondentSubmissionCount = 3
+      const subEncryptPromise = times(encryptSubmissionCount, () =>
+        Submission.create({
+          submissionType: SubmissionType.Encrypt,
+          form: MOCK_FORM_ID,
+          version: 1,
+          encryptedContent: 'some random encrypted content',
+        }),
+      )
+      const subEmailPromise = Submission.create({
+        submissionType: SubmissionType.Email,
+        form: MOCK_FORM_ID,
+        responseHash: 'hash',
+        responseSalt: 'salt',
+        recipientEmails: [],
+      })
+      const subMultirespondentPromise = times(
+        multirespondentSubmissionCount,
+        () =>
+          Submission.create({
+            submissionType: SubmissionType.Multirespondent,
+            form: MOCK_FORM_ID,
+            workflowStep: 0,
+            version: 3,
+            encryptedContent: 'some random encrypted content',
+            encryptedSubmissionSecretKey:
+              'some random encrypted submission secret key',
+            submissionPublicKey: 'some random submission public key',
+          }),
+      )
+      await Promise.all([
+        ...subEncryptPromise,
+        subEmailPromise,
+        ...subMultirespondentPromise,
+      ])
+
+      // Act
+      const actualResult = await SubmissionService.getFormSubmissionsCount({
+        formId: MOCK_FORM_ID.toHexString(),
+        submissionType: [
+          SubmissionType.Encrypt,
+          SubmissionType.Multirespondent,
+        ],
+      })
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(
+        encryptSubmissionCount + multirespondentSubmissionCount,
+      )
+    })
+
     it('should return correct form counts in range when date range is provided', async () => {
       // Arrange
       const expectedSubmissionCount = 4
@@ -1085,6 +1143,37 @@ describe('submission.service', () => {
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
     })
 
+    it('should look up multirespondent form metadata across both submission types via the base model', async () => {
+      // Arrange
+      const mockSubmissionId = new ObjectId().toHexString()
+      const expectedMetadata: SubmissionMetadata = {
+        number: 1,
+        refNo: mockSubmissionId as SubmissionId,
+        submissionTime: 'some submission time',
+        payments: null,
+      }
+      const mixedMetaSpy = jest
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSingleMetadata')
+        .mockResolvedValueOnce(expectedMetadata)
+      const mrfMetaSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'findSingleMetadata',
+      )
+
+      // Act
+      const actualResult = await SubmissionService.getSubmissionMetadata(
+        FormResponseMode.Multirespondent,
+        MOCK_FORM_ID,
+        mockSubmissionId,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedMetadata)
+      expect(mixedMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, mockSubmissionId)
+      expect(mrfMetaSpy).not.toHaveBeenCalled()
+    })
+
     it('should return null when given submissionId is not valid', async () => {
       // Arrange
       const invalidSubmissionId = 'not an id at all'
@@ -1176,6 +1265,41 @@ describe('submission.service', () => {
       expect(getMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
         page: undefined,
       })
+    })
+
+    it('should list multirespondent form metadata across both submission types via the base model', async () => {
+      // Arrange
+      const expectedResult = {
+        metadata: [
+          {
+            number: 2,
+            refNo: new ObjectId().toHexString(),
+            submissionTime: 'some submission time',
+          },
+        ] as SubmissionMetadata[],
+        count: 2,
+      }
+      const mixedMetaSpy = jest
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
+        .mockResolvedValueOnce(expectedResult)
+      const mrfMetaSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'findAllMetadataByFormId',
+      )
+
+      // Act
+      const actualResult = await SubmissionService.getSubmissionMetadataList(
+        FormResponseMode.Multirespondent,
+        MOCK_FORM_ID,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedResult)
+      expect(mixedMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
+        page: undefined,
+      })
+      expect(mrfMetaSpy).not.toHaveBeenCalled()
     })
 
     it('should return metadata list successfully with page param', async () => {
