@@ -36,10 +36,6 @@ export const DynamicRespondentOption = ({
   const isRedesign = useIsWorkflowBuilderRedesign()
   const stageFieldAndNavigate = useStageFieldAndNavigate()
 
-  // The radio stays selectable: disabling it would hide the reason.
-  // The empty state swaps what the Controller renders, never the Controller
-  // itself. Unmounting would unregister the `required` rule, and Save would
-  // pass validation, fail to build a step, and return silently.
   const showEmptyState = isRedesign && !emailFieldItems?.length
 
   return (

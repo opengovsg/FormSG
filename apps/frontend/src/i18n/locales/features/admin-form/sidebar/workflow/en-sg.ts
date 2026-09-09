@@ -146,8 +146,6 @@ export const enSG: Workflow = {
     noYesNoField: 'Your form has no Yes/No field yet.',
     noYesNoFieldAction: 'Add a Yes/No field',
     noFields: 'Your form has no fields yet.',
-    // TODO(MRF-MYINFO): Delete once MyInfo fields are supported in workflow
-    // steps >= 2; the restriction this explains will no longer exist.
     noFieldsMyInfoOnly:
       'Your form only has MyInfo fields, which can only be used in the first step.',
     noFieldsAction: 'Add fields',

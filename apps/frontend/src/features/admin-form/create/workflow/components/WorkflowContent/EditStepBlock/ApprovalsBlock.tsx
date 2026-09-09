@@ -168,12 +168,7 @@ export const ApprovalsBlock = ({
               },
             }}
             render={({ field: { value = '', onChange, ...rest } }) => {
-              // Also runs in the empty-state branch: it clears a stale
-              // approval_field id, and stale ids exist exactly when every
-              // Yes/No field is gone.
               const displayValue = getValueIfNotDeleted(value)
-              // Swaps what the Controller renders, never the Controller
-              // itself, so the validate rules stay registered.
               if (isRedesign && yesNoFieldItems.length === 0) {
                 return (
                   <FieldEmptyState

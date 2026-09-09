@@ -58,14 +58,8 @@ export const QuestionsBlock = ({
       icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
     }))
 
-  // Every fillable field was removed by the MyInfo restriction, so the
-  // generic "no fields yet" message would be false.
   const hasOnlyMyInfoFields = items.length === 0 && fillableFields.length > 0
 
-  // Rendered inside the Controller so `edit` stays registered, matching the
-  // other pickers. isRequired stays on over the empty state: fields are
-  // still needed for a publishable workflow, and "(optional)" would say
-  // otherwise.
   const showEmptyState = isRedesign && items.length === 0
 
   return (
@@ -108,7 +102,6 @@ export const QuestionsBlock = ({
                   actionLabel={t(
                     'features.adminForm.sidebar.workflow.emptyStates.noFieldsAction',
                   )}
-                  // No field type staged: the admin chooses what to build.
                   onAction={() => stageFieldAndNavigate()}
                 />
               )

@@ -362,10 +362,6 @@ export const ConditionalRoutingOption = ({
   const isRedesign = useIsWorkflowBuilderRedesign()
   const stageFieldAndNavigate = useStageFieldAndNavigate()
 
-  // The CSV block below is already gated on a selected dropdown field, so it
-  // stays hidden here without extra handling. The empty state swaps what the
-  // Controller renders, never the Controller itself: unmounting would
-  // unregister the `required` rule and Save would fail silently.
   const showEmptyState = isRedesign && !conditionalFieldItems.length
 
   const handleOpenModal = () => {
