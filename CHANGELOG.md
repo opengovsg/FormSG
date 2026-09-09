@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.18.1](https://github.com/opengovsg/formsg/compare/v9.18.0...v9.18.1) (2026-09-09)
+
+
+### Bug Fixes
+
+* use _id which is defined for generating hashedSubmitterId (#9985) ([#9985](https://github.com/opengovsg/formsg/commit/a00bbe802d440c4b5b66f9f783445fb3684aa2f9))
+
 ## [9.18.0](https://github.com/opengovsg/formsg/compare/v9.17.1...v9.18.0) (2026-09-09)
 
 
