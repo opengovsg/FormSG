@@ -1,11 +1,15 @@
 import {
   contentFormatToWebhookVersion,
+  getKeyPermissionsPolicy,
   getWebhookPayloadPolicy,
   mrfVersionToContentFormat,
   WebhookConsumerType,
   WebhookContentFormat,
   WebhookPayloadPolicyInput,
 } from '../webhook-payload-policy'
+
+const CONSUMER_TYPES: WebhookConsumerType[] = ['plumber', 'generic']
+const CONTENT_FORMATS: WebhookContentFormat[] = ['v1', 'v3', 'v4']
 
 describe('getWebhookPayloadPolicy', () => {
   it.each<{
@@ -124,6 +128,32 @@ describe('getWebhookPayloadPolicy', () => {
       }
     }
   })
+})
+
+describe('getKeyPermissionsPolicy', () => {
+  // The wrapped submission secret key is the only key permission a consumer
+  // actually reads (webhook-reconstruction.ts). A V4 payload's content is
+  // encrypted under the per-submission public key, so without it the payload
+  // cannot be opened at all — and a V3/V1 payload has no use for it. Hence:
+  // true exactly when the format is V4, for every consumer type.
+  it.each(CONSUMER_TYPES)(
+    'includes the wrapped submission secret key exactly for V4 (%s)',
+    (webhookType) => {
+      const submittedStepsLength = 3
+      for (const contentFormat of CONTENT_FORMATS) {
+        for (const submissionIndex of [0, 1, 2]) {
+          expect(
+            getKeyPermissionsPolicy({
+              webhookType,
+              contentFormat,
+              submissionIndex,
+              submittedStepsLength,
+            }).includeEncryptedSubmissionSecretKey,
+          ).toBe(contentFormat === 'v4')
+        }
+      }
+    },
+  )
 })
 
 describe('contentFormatToWebhookVersion', () => {
