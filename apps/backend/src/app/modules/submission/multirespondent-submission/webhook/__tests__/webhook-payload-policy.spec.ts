@@ -19,7 +19,6 @@ describe('getWebhookPayloadPolicy', () => {
     expected: {
       contentFormat: WebhookContentFormat
       includeEncryptedSubmissionSecretKey: boolean
-      includeEncryptedStepToken: boolean
     }
   }>([
     {
@@ -29,7 +28,6 @@ describe('getWebhookPayloadPolicy', () => {
       expected: {
         contentFormat: 'v4',
         includeEncryptedSubmissionSecretKey: true,
-        includeEncryptedStepToken: true,
       },
     },
     {
@@ -39,7 +37,6 @@ describe('getWebhookPayloadPolicy', () => {
       expected: {
         contentFormat: 'v4',
         includeEncryptedSubmissionSecretKey: true,
-        includeEncryptedStepToken: false,
       },
     },
     {
@@ -49,7 +46,6 @@ describe('getWebhookPayloadPolicy', () => {
       expected: {
         contentFormat: 'v4',
         includeEncryptedSubmissionSecretKey: true,
-        includeEncryptedStepToken: false,
       },
     },
     {
@@ -59,7 +55,6 @@ describe('getWebhookPayloadPolicy', () => {
       expected: {
         contentFormat: 'v4',
         includeEncryptedSubmissionSecretKey: true,
-        includeEncryptedStepToken: false,
       },
     },
   ])(
@@ -74,18 +69,6 @@ describe('getWebhookPayloadPolicy', () => {
       expect(getWebhookPayloadPolicy(input)).toEqual(expected)
     },
   )
-
-  it('never includes the step token for a generic consumer, whatever the step', () => {
-    for (const submissionIndex of [0, 1, 2]) {
-      expect(
-        getWebhookPayloadPolicy({
-          webhookType: 'generic',
-          submissionIndex,
-          submittedStepsLength: 3,
-        }).includeEncryptedStepToken,
-      ).toBe(false)
-    }
-  })
 })
 
 describe('getKeyPermissionsPolicy', () => {
