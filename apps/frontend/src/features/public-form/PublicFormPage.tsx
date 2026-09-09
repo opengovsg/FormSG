@@ -1,9 +1,6 @@
-import { useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import { Navigate, useLocation, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
-import { useToast } from '~hooks/useToast'
 import { fillMinHeightCss } from '~utils/fillHeightCss'
 
 import FloatingToolbar from './components/FloatingToolBar'
@@ -17,41 +14,17 @@ import { PublicFormLogo } from './components/FormLogo'
 import FormStartPage from './components/FormStartPage'
 import LanguageControl from './components/LanguageControl'
 import { PublicFormWrapper } from './components/PublicFormWrapper'
-import {
-  clearExpectedAuthFormId,
-  getExpectedAuthFormId,
-} from './utils/authRedirectStorage'
+import { useAuthFormMismatch } from './hooks/useAuthFormMismatch'
 import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
-  const { t } = useTranslation()
-  const toast = useToast({ isClosable: true })
-  const location = useLocation()
+  const isResolvingAuthFormMismatch = useAuthFormMismatch(formId)
 
   if (!formId) throw new Error('No formId provided')
 
-  const expectedAuthFormId = getExpectedAuthFormId()
-
-  useEffect(() => {
-    if (!expectedAuthFormId) return
-
-    if (expectedAuthFormId === formId) {
-      clearExpectedAuthFormId()
-      return
-    }
-
-    toast({
-      status: 'danger',
-      description: t('features.publicForm.errors.authFormMismatch'),
-    })
-  }, [expectedAuthFormId, formId, t, toast])
-
-  if (expectedAuthFormId && expectedAuthFormId !== formId) {
-    // Swap the mismatched formId in the current path (preserving any
-    // subroute, e.g. edit/:submissionId) rather than dropping to form root.
-    const redirectPath = location.pathname.replace(formId, expectedAuthFormId)
-    return <Navigate replace to={`${redirectPath}${location.search}`} />
+  if (isResolvingAuthFormMismatch) {
+    return <></>
   }
 
   // Get date time in miliseconds when user first loads the form

@@ -224,8 +224,8 @@ export const handleGetPublicForm: ControllerHandler<
         })
         if (fapiFieldsResult.isErr()) {
           const { error: fapiError } = fapiFieldsResult
-          // Another form can carry this origin-wide cookie. Leave both the
-          // cookie and session untouched for the form that started the login.
+          // The tab-scoped frontend guard decides whether a session belonging
+          // to another form should be discarded.
           if (fapiError instanceof MyInfoFapiSessionFormMismatchError) {
             return res.json({ form: publicForm, isIntranetUser })
           }
@@ -930,10 +930,18 @@ export const _handlePublicAuthLogout: ControllerHandler<
 
   const cookieName = PublicFormService.getCookieNameByAuthType(authType)
 
-  return res
-    .clearCookie(cookieName)
-    .status(200)
-    .json({ message: 'Successfully logged out.' })
+  res.clearCookie(cookieName)
+
+  // Addtional cookies to clear for MyInfo v3/v5
+  if (authType === FormAuthType.MyInfo) {
+    res.clearCookie(
+      MYINFO_AUTH_CODE_COOKIE_NAME,
+      MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+    )
+    clearMyInfoFapiSessionCookie(res)
+  }
+
+  return res.status(200).json({ message: 'Successfully logged out.' })
 }
 
 /**
