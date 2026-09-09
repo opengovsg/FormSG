@@ -4028,6 +4028,7 @@ describe('multirespondent-submission.service', () => {
         }),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
+        // The only remaining way a generic webhook is undeliverable.
         growthbook: growthbookWithFlags({ enableMrfWebhooks: false }),
       })
 
