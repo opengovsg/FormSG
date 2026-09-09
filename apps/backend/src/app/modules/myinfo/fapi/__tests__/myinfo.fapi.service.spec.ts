@@ -10,7 +10,7 @@ import {
   MyInfoFapiExchangeError,
   MyInfoFapiFetchError,
   MyInfoFapiIncompleteLoginError,
-  MyInfoFapiMissingSessionError,
+  MyInfoFapiLoginFailedError,
   MyInfoFapiMissingUinFinError,
   MyInfoFapiSessionFormMismatchError,
 } from '../myinfo.fapi.errors'
@@ -418,13 +418,13 @@ describe('myinfo.fapi.service', () => {
       expect(myInfoData.getUinFin()).toBe('S1234567D')
     })
 
-    it('should error with MyInfoFapiMissingSessionError when the session was marked failed', async () => {
+    it('should error with MyInfoFapiLoginFailedError when the session was marked failed', async () => {
       MockSession.consume.mockResolvedValueOnce({ status: 'failed' })
 
       const result = await loadPerson()
 
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-        MyInfoFapiMissingSessionError,
+        MyInfoFapiLoginFailedError,
       )
       expect(MockClient.fetchUserInfo).not.toHaveBeenCalled()
     })

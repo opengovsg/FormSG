@@ -37,7 +37,7 @@ import * as BillingService from '../../../billing/billing.service'
 import { MYINFO_FAPI_SESSION_COOKIE_NAME } from '../../../myinfo/fapi/myinfo.fapi.constants'
 import {
   MyInfoFapiIncompleteLoginError,
-  MyInfoFapiMissingSessionError,
+  MyInfoFapiLoginFailedError,
   MyInfoFapiSessionFormMismatchError,
 } from '../../../myinfo/fapi/myinfo.fapi.errors'
 import * as MyInfoFapiService from '../../../myinfo/fapi/myinfo.fapi.service'
@@ -774,7 +774,7 @@ describe('public-form.controller', () => {
 
       it('should return 200 with myInfoError when the login genuinely failed', async () => {
         MockMyInfoFapiService.loadPersonForSession.mockReturnValueOnce(
-          errAsync(new MyInfoFapiMissingSessionError()),
+          errAsync(new MyInfoFapiLoginFailedError()),
         )
         const mockRes = expressHandler.mockResponse({
           clearCookie: jest.fn().mockReturnThis(),
@@ -817,7 +817,7 @@ describe('public-form.controller', () => {
           cookie: jest.fn().mockReturnThis(),
         })
         MockMyInfoFapiService.loadPersonForSession.mockReturnValueOnce(
-          errAsync(new MyInfoFapiMissingSessionError()),
+          errAsync(new MyInfoFapiLoginFailedError()),
         )
         MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
           okAsync(MOCK_ACCESS_TOKEN),

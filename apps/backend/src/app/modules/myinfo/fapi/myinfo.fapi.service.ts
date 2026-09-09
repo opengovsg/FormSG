@@ -25,7 +25,7 @@ import {
   MyInfoFapiExchangeError,
   MyInfoFapiFetchError,
   MyInfoFapiIncompleteLoginError,
-  MyInfoFapiMissingSessionError,
+  MyInfoFapiLoginFailedError,
   MyInfoFapiMissingUinFinError,
   MyInfoFapiSessionFormMismatchError,
 } from './myinfo.fapi.errors'
@@ -48,7 +48,7 @@ type MyInfoFetchPersonError =
   | MyInfoFapiMissingUinFinError
 type MyInfoLoadPersonForSessionError =
   | DatabaseError
-  | MyInfoFapiMissingSessionError
+  | MyInfoFapiLoginFailedError
   | MyInfoFapiIncompleteLoginError
   | MyInfoFapiSessionFormMismatchError
   | MyInfoFetchPersonError
@@ -277,7 +277,7 @@ export const loadPersonForSession = ({
         case 'exchanged':
           return okAsync(consumed.session)
         case 'failed':
-          return errAsync(new MyInfoFapiMissingSessionError())
+          return errAsync(new MyInfoFapiLoginFailedError())
         case 'incomplete':
           return errAsync(new MyInfoFapiIncompleteLoginError())
         case 'formMismatch':

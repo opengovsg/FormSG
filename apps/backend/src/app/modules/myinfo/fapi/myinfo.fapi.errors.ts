@@ -6,9 +6,10 @@ export class MyInfoFapiConfigError extends ApplicationError {
   }
 }
 
-export class MyInfoFapiMissingSessionError extends ApplicationError {
-  constructor(message = 'MyInfo FAPI login session not found') {
-    super(message, undefined, ErrorCodes.MYINFO_FAPI_MISSING_SESSION)
+/** The callback was reached and the login did not succeed. */
+export class MyInfoFapiLoginFailedError extends ApplicationError {
+  constructor(message = 'MyInfo FAPI login did not succeed') {
+    super(message, undefined, ErrorCodes.MYINFO_FAPI_LOGIN_FAILED)
   }
 }
 
