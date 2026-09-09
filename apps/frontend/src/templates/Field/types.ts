@@ -153,6 +153,12 @@ export type ChildrenCompoundFieldValues = {
   child: string[][]
   // Array of attribute names
   childFields: MyInfoChildAttributes[]
+  // Which MyInfo record the picked child came from, as a display label
+  // (e.g. "Sponsored") — myInfoChildrenBirthRecords.type already carries
+  // labels, matching every other column. Not admin-configurable (unlike
+  // childFields) and not itself a sub-field, so it lives outside the
+  // child/childFields array pair rather than as one more positional entry.
+  recordType?: string
 }
 
 export type AddressCompoundFieldValues = {

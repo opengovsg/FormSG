@@ -233,6 +233,18 @@ const ChildrenBody = ({
     )
   }, [myInfoChildrenBirthRecords, childName])
 
+  // Not a rendered sub-field — just tags which MyInfo record the picked
+  // child came from, for admins reading the response/CSV later.
+  useEffect(() => {
+    if (indexOfChild < 0) {
+      return
+    }
+    const recordType = myInfoChildrenBirthRecords?.type?.[indexOfChild]
+    if (recordType) {
+      setValue(`${schema._id}.recordType`, recordType)
+    }
+  }, [indexOfChild, myInfoChildrenBirthRecords, schema._id, setValue])
+
   const getChildAttr = useCallback(
     (attr: MyInfoChildAttributes): string => {
       if (myInfoChildrenBirthRecords === undefined) {
