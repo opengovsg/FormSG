@@ -24,7 +24,15 @@ import {
 
 import { StoryRouter, viewports } from '~utils/storybook'
 
+import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
+
 import { CreatePageWorkflowTab } from './CreatePageWorkflowTab'
+
+const withCreatePageSidebar = (Story: StoryFn) => (
+  <CreatePageSidebarProvider>
+    <Story />
+  </CreatePageSidebarProvider>
+)
 
 const buildMswRoutes = (
   overrides?: Partial<AdminFormDto>,
@@ -34,7 +42,10 @@ const buildMswRoutes = (
 export default {
   title: 'Pages/AdminFormPage/Create/WorkflowTab',
   component: CreatePageWorkflowTab,
-  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
+  decorators: [
+    withCreatePageSidebar,
+    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
+  ],
   parameters: {
     layout: 'fullscreen',
     // Required so skeleton "animation" does not hide content.

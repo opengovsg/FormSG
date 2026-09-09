@@ -15,6 +15,8 @@ import { getAdminFormView } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter } from '~utils/storybook'
 
+import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
+
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 
 import { EditStepBlock } from './EditStepBlock'
@@ -148,6 +150,12 @@ const mrfFormViewWithFields = [
   }),
 ]
 
+const withCreatePageSidebar = (Story: StoryFn) => (
+  <CreatePageSidebarProvider>
+    <Story />
+  </CreatePageSidebarProvider>
+)
+
 export default {
   component: EditStepBlock,
   title:
@@ -159,7 +167,10 @@ export default {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     onSubmit: () => {},
   },
-  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
+  decorators: [
+    withCreatePageSidebar,
+    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
+  ],
   parameters: {
     msw: {
       handlers: mrfFormViewWithFields,
