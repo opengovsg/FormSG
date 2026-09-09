@@ -43,6 +43,7 @@ import {
 import * as MyInfoFapiService from '../../../myinfo/fapi/myinfo.fapi.service'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
+  MYINFO_AUTH_CODE_COOKIE_OPTIONS,
   MYINFO_LOGIN_COOKIE_NAME,
 } from '../../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../../myinfo/myinfo.service'
@@ -1645,6 +1646,65 @@ describe('public-form.controller', () => {
         expect.objectContaining({
           formEsrvcId: DEFAULT_ESRVC_ID,
         }),
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
+    })
+
+    it('should return 200 with the FAPI redirect url, clear the legacy auth code cookie and set the FAPI session cookie when the form has authType MyInfo and myinfoFapi is on', async () => {
+      // Arrange
+      const MOCK_REQ_WITH_FAPI = expressHandler.mockRequest({
+        params: {
+          formId: new ObjectId().toHexString(),
+        },
+        query: {
+          isPersistentLogin: true,
+        },
+        others: {
+          growthbook: {
+            isOn: jest.fn((flag: string) => flag === featureFlags.myinfoFapi),
+            getAttributes: jest.fn(() => ({})),
+            setAttributes: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+      })
+      const MOCK_FORM = {
+        admin: MOCK_ADMIN,
+        authType: FormAuthType.MyInfo,
+        esrvcId: 'MOCKED_FORM_ESRVC_ID',
+        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+      } as unknown as MyInfoForm<IFormDocument>
+      const MOCK_SESSION_ID = 'mockSessionId'
+
+      const mockRes = expressHandler.mockResponse()
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockMyInfoFapiService.startLogin.mockReturnValueOnce(
+        okAsync({
+          sessionId: MOCK_SESSION_ID,
+          redirectUrl: MOCK_REDIRECT_URL,
+        }),
+      )
+
+      // Act
+      await PublicFormController._handleFormAuthRedirect(
+        MOCK_REQ_WITH_FAPI,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        MYINFO_AUTH_CODE_COOKIE_NAME,
+        MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+      )
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        MYINFO_FAPI_SESSION_COOKIE_NAME,
+        MOCK_SESSION_ID,
+        expect.anything(),
       )
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.json).toHaveBeenCalledWith({

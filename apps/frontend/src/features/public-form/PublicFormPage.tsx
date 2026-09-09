@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Navigate, useParams } from 'react-router-dom'
+import { Navigate, useLocation, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
 import { useToast } from '~hooks/useToast'
@@ -21,13 +21,13 @@ import {
   clearExpectedAuthFormId,
   getExpectedAuthFormId,
 } from './utils/authRedirectStorage'
-import { getPublicFormUrl } from './utils/urls'
 import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
   const { t } = useTranslation()
   const toast = useToast({ isClosable: true })
+  const location = useLocation()
 
   if (!formId) throw new Error('No formId provided')
 
@@ -48,7 +48,10 @@ export const PublicFormPage = (): JSX.Element => {
   }, [expectedAuthFormId, formId, t, toast])
 
   if (expectedAuthFormId && expectedAuthFormId !== formId) {
-    return <Navigate replace to={getPublicFormUrl(expectedAuthFormId)} />
+    // Swap the mismatched formId in the current path (preserving any
+    // subroute, e.g. edit/:submissionId) rather than dropping to form root.
+    const redirectPath = location.pathname.replace(formId, expectedAuthFormId)
+    return <Navigate replace to={`${redirectPath}${location.search}`} />
   }
 
   // Get date time in miliseconds when user first loads the form
