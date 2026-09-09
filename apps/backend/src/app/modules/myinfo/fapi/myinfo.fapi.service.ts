@@ -27,6 +27,7 @@ import {
   MyInfoFapiIncompleteLoginError,
   MyInfoFapiMissingSessionError,
   MyInfoFapiMissingUinFinError,
+  MyInfoFapiSessionFormMismatchError,
 } from './myinfo.fapi.errors'
 import getMyInfoFapiSessionModel, {
   MyInfoFapiExchangedSession,
@@ -49,6 +50,7 @@ type MyInfoLoadPersonForSessionError =
   | DatabaseError
   | MyInfoFapiMissingSessionError
   | MyInfoFapiIncompleteLoginError
+  | MyInfoFapiSessionFormMismatchError
   | MyInfoFetchPersonError
 
 type AuthCode = {
@@ -252,11 +254,15 @@ export const fetchPerson = ({
  * is still pending is left untouched and reported as an incomplete login
  * rather than a failure.
  */
-export const loadPersonForSession = (
-  sessionId: string,
-): ResultAsync<MyInfoData, MyInfoLoadPersonForSessionError> => {
+export const loadPersonForSession = ({
+  sessionId,
+  formId,
+}: {
+  sessionId: string
+  formId: string
+}): ResultAsync<MyInfoData, MyInfoLoadPersonForSessionError> => {
   return ResultAsync.fromPromise(
-    MyInfoFapiSession.consume(sessionId),
+    MyInfoFapiSession.consume({ sessionId, formId }),
     (error) => {
       logger.error({
         message: 'Failed to consume MyInfo FAPI session',
@@ -274,6 +280,8 @@ export const loadPersonForSession = (
           return errAsync(new MyInfoFapiMissingSessionError())
         case 'incomplete':
           return errAsync(new MyInfoFapiIncompleteLoginError())
+        case 'formMismatch':
+          return errAsync(new MyInfoFapiSessionFormMismatchError())
       }
     })
     .andThen(fetchPerson)

@@ -85,6 +85,7 @@ export type MyInfoFapiConsumeOutcome =
   | { status: 'exchanged'; session: MyInfoFapiExchangedSession }
   | { status: 'failed' }
   | { status: 'incomplete' }
+  | { status: 'formMismatch' }
 
 export interface IMyInfoFapiSessionModel extends Model<IMyInfoFapiSessionSchema> {
   createPending(session: MyInfoFapiPendingSession): Promise<string>
@@ -94,7 +95,10 @@ export interface IMyInfoFapiSessionModel extends Model<IMyInfoFapiSessionSchema>
     tokens: { accessToken: string; sub: string },
   ): Promise<MyInfoFapiClaimOutcome>
   markFailed(sessionId: string): Promise<void>
-  consume(sessionId: string): Promise<MyInfoFapiConsumeOutcome>
+  consume(args: {
+    sessionId: string
+    formId: string
+  }): Promise<MyInfoFapiConsumeOutcome>
 }
 
 const requiredString = { type: String, required: true }
@@ -227,19 +231,32 @@ MyInfoFapiSessionSchema.statics.markFailed = async function (
 }
 
 /**
- * Consumes a resolved (exchanged or failed) session in one write. A session
- * still `pending` is left untouched: the respondent may yet complete login
- * elsewhere (e.g. a still-open Singpass tab), and the TTL index already
- * reaps genuinely abandoned sessions on its own.
+ * Consumes a resolved session only for the form that started it. A session
+ * for another form, or one still pending, is left untouched.
  */
-MyInfoFapiSessionSchema.statics.consume = async function (
-  sessionId: string,
-): Promise<MyInfoFapiConsumeOutcome> {
+MyInfoFapiSessionSchema.statics.consume = async function ({
+  sessionId,
+  formId,
+}: {
+  sessionId: string
+  formId: string
+}): Promise<MyInfoFapiConsumeOutcome> {
   const session = await this.findOneAndDelete(
-    { _id: sessionId, phase: { $in: ['exchanged', 'failed'] } },
+    {
+      _id: sessionId,
+      formId,
+      phase: { $in: ['exchanged', 'failed'] },
+    },
     { includeResultMetadata: false },
   )
   if (!session) {
+    const belongsToAnotherForm = await this.exists({
+      _id: sessionId,
+      formId: { $ne: formId },
+    })
+    if (belongsToAnotherForm) {
+      return { status: 'formMismatch' }
+    }
     return { status: 'incomplete' }
   }
   if (session.phase === 'failed' || !session.accessTokenEnc || !session.sub) {
