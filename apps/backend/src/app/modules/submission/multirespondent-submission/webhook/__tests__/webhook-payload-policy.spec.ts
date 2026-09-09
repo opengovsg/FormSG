@@ -72,27 +72,6 @@ describe('getWebhookPayloadPolicy', () => {
 })
 
 describe('getKeyPermissionsPolicy', () => {
-  it.each(CONSUMER_TYPES)(
-    'includes the wrapped submission secret key exactly for V4 (%s)',
-    (webhookType) => {
-      const submittedStepsLength = 3
-      for (const contentFormat of CONTENT_FORMATS) {
-        for (const submissionIndex of [0, 1, 2]) {
-          expect(
-            getKeyPermissionsPolicy({
-              webhookType,
-              contentFormat,
-              submissionIndex,
-              submittedStepsLength,
-            }).includeEncryptedSubmissionSecretKey,
-          ).toBe(contentFormat === 'v4')
-        }
-      }
-    },
-  )
-})
-
-describe('getKeyPermissionsPolicy', () => {
   // The wrapped submission secret key is the only key permission a consumer
   // actually reads (webhook-reconstruction.ts). A V4 payload's content is
   // encrypted under the per-submission public key, so without it the payload
