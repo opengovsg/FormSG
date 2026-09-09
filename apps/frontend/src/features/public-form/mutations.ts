@@ -10,6 +10,7 @@ import {
 import { useToast } from '~hooks/useToast'
 
 import { useStorePrefillQuery } from './hooks/useStorePrefillQuery'
+import { setExpectedAuthFormId } from './utils/authRedirectStorage'
 import {
   FieldIdToQuarantineKeyType,
   getAttachmentPresignedPostData,
@@ -41,6 +42,7 @@ export const usePublicAuthMutations = (formId: string) => {
     },
     {
       onSuccess: (redirectUrl) => {
+        setExpectedAuthFormId(formId)
         window.location.assign(redirectUrl)
       },
       onError: (error: Error) => {

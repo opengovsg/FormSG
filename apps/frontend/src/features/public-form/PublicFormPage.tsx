@@ -1,4 +1,5 @@
-import { useParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Navigate, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
 import { fillMinHeightCss } from '~utils/fillHeightCss'
@@ -14,12 +15,27 @@ import { PublicFormLogo } from './components/FormLogo'
 import FormStartPage from './components/FormStartPage'
 import LanguageControl from './components/LanguageControl'
 import { PublicFormWrapper } from './components/PublicFormWrapper'
+import {
+  clearExpectedAuthFormId,
+  getExpectedAuthFormId,
+} from './utils/authRedirectStorage'
+import { getPublicFormUrl } from './utils/urls'
 import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
 
   if (!formId) throw new Error('No formId provided')
+
+  const expectedAuthFormId = getExpectedAuthFormId()
+
+  useEffect(() => {
+    if (expectedAuthFormId === formId) clearExpectedAuthFormId()
+  }, [expectedAuthFormId, formId])
+
+  if (expectedAuthFormId && expectedAuthFormId !== formId) {
+    return <Navigate replace to={getPublicFormUrl(expectedAuthFormId)} />
+  }
 
   // Get date time in miliseconds when user first loads the form
   const startTime = Date.now()

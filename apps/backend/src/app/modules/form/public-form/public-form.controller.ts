@@ -749,6 +749,10 @@ export const _handleFormAuthRedirect: ControllerHandler<
       switch (form.authType) {
         case FormAuthType.MyInfo: {
           if (useMyInfoFapi) {
+            res.clearCookie(
+              MYINFO_AUTH_CODE_COOKIE_NAME,
+              MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+            )
             return MyInfoFapiService.startLogin({
               formId,
               encodedQuery,
@@ -758,6 +762,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
               return redirectUrl
             })
           }
+          clearMyInfoFapiSessionCookie(res)
           return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
             ([form, eserviceId]) =>
               MyInfoService.createRedirectURL({
