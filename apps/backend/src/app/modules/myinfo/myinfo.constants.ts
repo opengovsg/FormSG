@@ -46,6 +46,13 @@ export const MYINFO_LOGIN_COOKIE_OPTIONS = {
   maxAge: spcpMyInfoConfig.spCookieMaxAge,
 }
 
+/** See MYINFO_AUTH_CODE_COOKIE_CLEAR_OPTIONS for why maxAge is dropped. */
+export const MYINFO_LOGIN_COOKIE_CLEAR_OPTIONS = {
+  httpOnly: true,
+  sameSite: 'lax' as const,
+  secure: !config.isDevOrTest,
+}
+
 /**
  * Settings for the MyInfo auth code cookie
  */
@@ -54,6 +61,16 @@ export const MYINFO_AUTH_CODE_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: !config.isDevOrTest,
   maxAge: MYINFO_AUTH_CODE_COOKIE_AGE_MS,
+}
+
+/**
+ * Settings for clearing the MyInfo auth code cookie. maxAge is dropped because
+ * res.cookie derives expires from it, which would override the expiry
+ * res.clearCookie sets and leave an empty cookie in the jar.
+ */
+export const MYINFO_AUTH_CODE_COOKIE_CLEAR_OPTIONS = {
+  httpOnly: true,
+  secure: !config.isDevOrTest,
 }
 
 /**

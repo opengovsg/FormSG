@@ -42,8 +42,8 @@ import {
 } from '../../../myinfo/fapi/myinfo.fapi.errors'
 import * as MyInfoFapiService from '../../../myinfo/fapi/myinfo.fapi.service'
 import {
+  MYINFO_AUTH_CODE_COOKIE_CLEAR_OPTIONS,
   MYINFO_AUTH_CODE_COOKIE_NAME,
-  MYINFO_AUTH_CODE_COOKIE_OPTIONS,
   MYINFO_LOGIN_COOKIE_NAME,
 } from '../../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../../myinfo/myinfo.service'
@@ -1824,7 +1824,7 @@ describe('public-form.controller', () => {
       // Assert
       expect(mockRes.clearCookie).toHaveBeenCalledWith(
         MYINFO_AUTH_CODE_COOKIE_NAME,
-        MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+        MYINFO_AUTH_CODE_COOKIE_CLEAR_OPTIONS,
       )
       expect(mockRes.cookie).toHaveBeenCalledWith(
         MYINFO_FAPI_SESSION_COOKIE_NAME,
@@ -2054,11 +2054,11 @@ describe('public-form.controller', () => {
       expect(mockRes.clearCookie).toHaveBeenCalledWith(MYINFO_LOGIN_COOKIE_NAME)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(
         MYINFO_AUTH_CODE_COOKIE_NAME,
-        MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+        MYINFO_AUTH_CODE_COOKIE_CLEAR_OPTIONS,
       )
       expect(mockRes.clearCookie).toHaveBeenCalledWith(
         MYINFO_FAPI_SESSION_COOKIE_NAME,
-        expect.anything(),
+        expect.objectContaining({ signed: true, httpOnly: true }),
       )
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',

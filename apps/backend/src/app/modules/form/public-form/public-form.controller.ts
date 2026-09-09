@@ -39,8 +39,9 @@ import {
 import * as MyInfoFapiService from '../../myinfo/fapi/myinfo.fapi.service'
 import { MyInfoData } from '../../myinfo/myinfo.adapter'
 import {
+  MYINFO_AUTH_CODE_COOKIE_CLEAR_OPTIONS,
   MYINFO_AUTH_CODE_COOKIE_NAME,
-  MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+  MYINFO_LOGIN_COOKIE_CLEAR_OPTIONS,
   MYINFO_LOGIN_COOKIE_NAME,
   MYINFO_LOGIN_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
@@ -212,7 +213,10 @@ export const handleGetPublicForm: ControllerHandler<
     case FormAuthType.MyInfo: {
       // We always want to clear existing login cookies because we no longer
       // have the prefilled data
-      res.clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
+      res.clearCookie(
+        MYINFO_LOGIN_COOKIE_NAME,
+        MYINFO_LOGIN_COOKIE_CLEAR_OPTIONS,
+      )
 
       const authErrors: unknown[] = []
 
@@ -251,7 +255,7 @@ export const handleGetPublicForm: ControllerHandler<
           // Clear auth code cookie once found, as it can't be reused
           res.clearCookie(
             MYINFO_AUTH_CODE_COOKIE_NAME,
-            MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+            MYINFO_AUTH_CODE_COOKIE_CLEAR_OPTIONS,
           )
           const useEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
           const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
@@ -760,7 +764,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
           if (useMyInfoFapi) {
             res.clearCookie(
               MYINFO_AUTH_CODE_COOKIE_NAME,
-              MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+              MYINFO_AUTH_CODE_COOKIE_CLEAR_OPTIONS,
             )
             return MyInfoFapiService.startLogin({
               formId,
@@ -945,7 +949,7 @@ export const _handlePublicAuthLogout: ControllerHandler<
   if (authType === FormAuthType.MyInfo) {
     res.clearCookie(
       MYINFO_AUTH_CODE_COOKIE_NAME,
-      MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+      MYINFO_AUTH_CODE_COOKIE_CLEAR_OPTIONS,
     )
     clearMyInfoFapiSessionCookie(res)
   }
