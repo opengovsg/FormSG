@@ -18,6 +18,12 @@ export class MyInfoFapiIncompleteLoginError extends ApplicationError {
   }
 }
 
+export class MyInfoFapiSessionFormMismatchError extends ApplicationError {
+  constructor(message = 'MyInfo FAPI login session belongs to another form') {
+    super(message, undefined, ErrorCodes.MYINFO_FAPI_SESSION_FORM_MISMATCH)
+  }
+}
+
 export class MyInfoFapiAuthRequestError extends ApplicationError {
   constructor(
     message = 'Error while creating MyInfo FAPI authorization request',

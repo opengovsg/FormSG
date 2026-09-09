@@ -27,6 +27,9 @@ const pendingSession: MyInfoFapiPendingSession = {
   dpopPrivateJwk: MOCK_DPOP_JWK,
 }
 
+const consume = (sessionId: string, formId = MOCK_FORM_ID) =>
+  MyInfoFapiSession.consume({ sessionId, formId })
+
 describe('myinfo.fapi.session.model', () => {
   beforeAll(async () => await dbHandler.connect())
   afterEach(async () => await dbHandler.clearDatabase())
@@ -111,7 +114,7 @@ describe('myinfo.fapi.session.model', () => {
         }),
       ).resolves.toBe('claimed')
 
-      const consumed = await MyInfoFapiSession.consume(sessionId)
+      const consumed = await consume(sessionId)
       expect(consumed).toMatchObject({
         status: 'exchanged',
         session: { accessToken: MOCK_ACCESS_TOKEN, sub: MOCK_SUB },
@@ -149,7 +152,7 @@ describe('myinfo.fapi.session.model', () => {
 
       await MyInfoFapiSession.markFailed(sessionId)
 
-      await expect(MyInfoFapiSession.consume(sessionId)).resolves.toEqual({
+      await expect(consume(sessionId)).resolves.toEqual({
         status: 'failed',
       })
     })
@@ -187,7 +190,7 @@ describe('myinfo.fapi.session.model', () => {
     it('should return the decrypted token and DPoP key for an exchanged session', async () => {
       const sessionId = await exchange()
 
-      await expect(MyInfoFapiSession.consume(sessionId)).resolves.toEqual({
+      await expect(consume(sessionId)).resolves.toEqual({
         status: 'exchanged',
         session: {
           formId: MOCK_FORM_ID,
@@ -198,11 +201,22 @@ describe('myinfo.fapi.session.model', () => {
       })
     })
 
+    it('should leave a session for another form untouched', async () => {
+      const sessionId = await exchange()
+
+      await expect(consume(sessionId, 'another-form-id')).resolves.toEqual({
+        status: 'formMismatch',
+      })
+      await expect(consume(sessionId)).resolves.toMatchObject({
+        status: 'exchanged',
+      })
+    })
+
     it('should be single-use', async () => {
       const sessionId = await exchange()
-      await MyInfoFapiSession.consume(sessionId)
+      await consume(sessionId)
 
-      await expect(MyInfoFapiSession.consume(sessionId)).resolves.toEqual({
+      await expect(consume(sessionId)).resolves.toEqual({
         status: 'incomplete',
       })
     })
@@ -211,7 +225,7 @@ describe('myinfo.fapi.session.model', () => {
       const sessionId = await MyInfoFapiSession.createPending(pendingSession)
       await MyInfoFapiSession.markFailed(sessionId)
 
-      await expect(MyInfoFapiSession.consume(sessionId)).resolves.toEqual({
+      await expect(consume(sessionId)).resolves.toEqual({
         status: 'failed',
       })
       await expect(
@@ -222,7 +236,7 @@ describe('myinfo.fapi.session.model', () => {
     it('should leave a pending session untouched', async () => {
       const sessionId = await MyInfoFapiSession.createPending(pendingSession)
 
-      await expect(MyInfoFapiSession.consume(sessionId)).resolves.toEqual({
+      await expect(consume(sessionId)).resolves.toEqual({
         status: 'incomplete',
       })
       await expect(
@@ -230,7 +244,6 @@ describe('myinfo.fapi.session.model', () => {
       ).resolves.not.toBeNull()
     })
   })
-
 
   describe('indexes', () => {
     it('should expire sessions via a TTL index on expireAt', async () => {
