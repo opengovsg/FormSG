@@ -163,6 +163,10 @@
       "require": "./dist/utils/phone-num-validation.js",
       "default": "./utils/phone-num-validation.ts"
     },
+    "./utils/response-value-rules": {
+      "require": "./dist/utils/response-value-rules.js",
+      "default": "./utils/response-value-rules.ts"
+    },
     "./utils/signature": {
       "require": "./dist/utils/signature.js",
       "default": "./utils/signature.ts"
