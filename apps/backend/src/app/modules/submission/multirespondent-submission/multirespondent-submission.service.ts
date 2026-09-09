@@ -53,7 +53,7 @@ import {
 import * as FormService from '../../form/form.service'
 import { isFormMultirespondent } from '../../form/form.utils'
 import { WebhookFactory } from '../../webhook/webhook.factory'
-import { getWebhookType } from '../../webhook/webhook.service'
+import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
@@ -1270,7 +1270,7 @@ const sendMrfInitialWebhookIfEligible = ({
   )
     .andThen((liveView) => {
       const policy = getWebhookPayloadPolicy({
-        webhookType: webhookType === 'plumber' ? 'plumber' : 'generic',
+        webhookType: toConsumerType(webhookType),
         submissionIndex,
         submittedStepsLength: submission.submittedSteps?.length ?? 0,
       })
