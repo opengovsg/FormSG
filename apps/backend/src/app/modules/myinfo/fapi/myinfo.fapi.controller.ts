@@ -120,6 +120,21 @@ export const loginToMyInfoFapi: ControllerHandler<
   const destination = redirectDestination(session.target)
   const formMeta = { ...logMeta, formId: session.target.formId }
 
+  // One cookie slot holds one login, so a second login in another tab
+  // overwrites the first. A callback that belongs to the overwritten login
+  // must not resolve the session now in the cookie, or that form reports a
+  // failure for a login it never started.
+  if (
+    session.phase === 'pending' &&
+    session.exchange.state !== req.query.state
+  ) {
+    logger.warn({
+      message: 'MyInfo FAPI callback state does not match the session cookie',
+      meta: formMeta,
+    })
+    return res.redirect(destination)
+  }
+
   if ('error' in req.query) {
     logger.error({
       message: 'Singpass returned an error from the MyInfo FAPI consent flow',

@@ -231,6 +231,47 @@ describe('loginToMyInfoFapi', () => {
     expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
   })
 
+  it('should not resolve a session started by another tab', async () => {
+    MockSession.loadForCallback.mockResolvedValueOnce({
+      phase: 'pending',
+      target: { formId: 'another-form-id' },
+      exchange: { ...MOCK_EXCHANGE, state: 'a-newer-login-state' },
+    })
+    const res = expressHandler.mockResponse()
+
+    await loginToMyInfoFapi(
+      mockCallback(SUCCESS_QUERY, MOCK_SESSION_ID),
+      res,
+      jest.fn(),
+    )
+
+    expect(MockMyInfoFapiService.exchangeCallback).not.toHaveBeenCalled()
+    expect(MockSession.markFailed).not.toHaveBeenCalled()
+    expect(MockSession.markExchanged).not.toHaveBeenCalled()
+    expect(res.redirect).toHaveBeenCalledWith('/another-form-id')
+  })
+
+  it('should not fail a session started by another tab when Singpass returns an error', async () => {
+    MockSession.loadForCallback.mockResolvedValueOnce({
+      phase: 'pending',
+      target: MOCK_TARGET,
+      exchange: { ...MOCK_EXCHANGE, state: 'a-newer-login-state' },
+    })
+    const res = expressHandler.mockResponse()
+
+    await loginToMyInfoFapi(
+      mockCallback(
+        { error: 'access_denied', state: 'mock-state' },
+        MOCK_SESSION_ID,
+      ),
+      res,
+      jest.fn(),
+    )
+
+    expect(MockSession.markFailed).not.toHaveBeenCalled()
+    expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
+  })
+
   it('should log an error when the session is gone before the tokens are stored', async () => {
     MockSession.loadForCallback.mockResolvedValueOnce({
       phase: 'pending',
