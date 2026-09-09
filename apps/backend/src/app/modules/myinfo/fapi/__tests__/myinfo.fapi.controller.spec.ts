@@ -272,6 +272,32 @@ describe('loginToMyInfoFapi', () => {
     expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
   })
 
+  it('should log a declined consent as a warning, not an error', async () => {
+    MockSession.loadForCallback.mockResolvedValueOnce({
+      phase: 'pending',
+      target: MOCK_TARGET,
+      exchange: MOCK_EXCHANGE,
+    })
+    const res = expressHandler.mockResponse()
+
+    await loginToMyInfoFapi(
+      mockCallback(
+        { error: 'access_denied', state: 'mock-state' },
+        MOCK_SESSION_ID,
+      ),
+      res,
+      jest.fn(),
+    )
+
+    expect(mockLogger.error).not.toHaveBeenCalled()
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: 'Singpass returned an error from the MyInfo FAPI consent flow',
+      }),
+    )
+    expect(MockSession.markFailed).toHaveBeenCalledWith(MOCK_SESSION_ID)
+  })
+
   it('should log an error when the session is gone before the tokens are stored', async () => {
     MockSession.loadForCallback.mockResolvedValueOnce({
       phase: 'pending',

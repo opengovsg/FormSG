@@ -90,7 +90,7 @@ export const loginToMyInfoFapi: ControllerHandler<
     req.signedCookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]
 
   if (typeof sessionId !== 'string' || !sessionId) {
-    logger.error({
+    logger.warn({
       message: 'MyInfo FAPI callback without a session cookie',
       meta: logMeta,
     })
@@ -109,7 +109,8 @@ export const loginToMyInfoFapi: ControllerHandler<
   )
 
   if (!session) {
-    logger.error({
+    // Expected once the 15 minute TTL has run out, so not an outage signal.
+    logger.warn({
       message: 'MyInfo FAPI session not found or expired',
       meta: logMeta,
     })
@@ -136,7 +137,10 @@ export const loginToMyInfoFapi: ControllerHandler<
   }
 
   if ('error' in req.query) {
-    logger.error({
+    // A respondent who declines consent is a normal outcome; anything else
+    // from Singpass is not.
+    const level = req.query.error === 'access_denied' ? 'warn' : 'error'
+    logger[level]({
       message: 'Singpass returned an error from the MyInfo FAPI consent flow',
       meta: {
         ...formMeta,
