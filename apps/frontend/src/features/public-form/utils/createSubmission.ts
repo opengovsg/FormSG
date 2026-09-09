@@ -29,6 +29,7 @@ import {
   SubmissionAttachment,
   SubmissionAttachmentsMap,
 } from 'formsg-shared/types/submission'
+import { validateResponses } from 'formsg-shared/utils/validate-responses'
 
 import fileArrayBuffer from '~/utils/fileArrayBuffer'
 
@@ -43,7 +44,6 @@ import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
 import { FieldIdToQuarantineKeyType } from '../PublicFormService'
 
 import { transformInputsToOutputs } from './inputTransformation'
-import { validateResponses } from './validateResponses'
 
 /**
  * @returns StorageModeSubmissionContentDto
