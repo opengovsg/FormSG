@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Navigate, useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
+import { useToast } from '~hooks/useToast'
 import { fillMinHeightCss } from '~utils/fillHeightCss'
 
 import FloatingToolbar from './components/FloatingToolBar'
@@ -24,14 +26,26 @@ import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
+  const { t } = useTranslation()
+  const toast = useToast({ isClosable: true })
 
   if (!formId) throw new Error('No formId provided')
 
   const expectedAuthFormId = getExpectedAuthFormId()
 
   useEffect(() => {
-    if (expectedAuthFormId === formId) clearExpectedAuthFormId()
-  }, [expectedAuthFormId, formId])
+    if (!expectedAuthFormId) return
+
+    if (expectedAuthFormId === formId) {
+      clearExpectedAuthFormId()
+      return
+    }
+
+    toast({
+      status: 'danger',
+      description: t('features.publicForm.errors.authFormMismatch'),
+    })
+  }, [expectedAuthFormId, formId, t, toast])
 
   if (expectedAuthFormId && expectedAuthFormId !== formId) {
     return <Navigate replace to={getPublicFormUrl(expectedAuthFormId)} />
