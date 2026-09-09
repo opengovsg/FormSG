@@ -13,6 +13,12 @@ import { verifyValidUnicodeString } from './admin-form.utils'
 const webhookSettingsValidator = Joi.object({
   url: Joi.string().uri().allow(''),
   isRetryEnabled: Joi.boolean(),
+  // Only `'v1'` is settable. The mongoose path carries the full
+  // `['v1', 'v4']` enum, so enabling `'v4'` later is this one line and no
+  // migration — but a generic consumer on `v4` receives the workflow
+  // metadata, which is a decision to be taken deliberately rather than
+  // inherited from a permissive validator. See #9975.
+  webhookFormat: Joi.string().valid('v1'),
 }).min(1)
 
 /**
