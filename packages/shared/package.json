@@ -123,6 +123,10 @@
       "require": "./dist/utils/file-validation.js",
       "default": "./utils/file-validation.ts"
     },
+    "./utils/flatten-v4-to-v1": {
+      "require": "./dist/utils/flatten-v4-to-v1.js",
+      "default": "./utils/flatten-v4-to-v1.ts"
+    },
     "./utils/has-prop": {
       "require": "./dist/utils/has-prop.js",
       "default": "./utils/has-prop.ts"
@@ -182,6 +186,10 @@
     "./utils/strip-workflow-emails": {
       "require": "./dist/utils/strip-workflow-emails.js",
       "default": "./utils/strip-workflow-emails.ts"
+    },
+    "./utils/v4-answer": {
+      "require": "./dist/utils/v4-answer.js",
+      "default": "./utils/v4-answer.ts"
     },
     "./utils/validate-responses": {
       "require": "./dist/utils/validate-responses.js",
