@@ -49,14 +49,24 @@ const SubsequentStepRespondentBadges = ({
         </>
       )
     case WorkflowType.Dynamic:
-      return <FieldLogicBadge field={idToFieldMap[step.field]} />
+      return (
+        <FieldLogicBadge
+          field={idToFieldMap[step.field]}
+          defaults={{ variant: 'error', message: 'This field is missing' }}
+        />
+      )
     case WorkflowType.Conditional: {
       const selectedConditionalField = idToFieldMap[step.conditional_field]
       if (
         !selectedConditionalField ||
         selectedConditionalField.fieldType !== BasicField.Dropdown
       ) {
-        return <FieldLogicBadge field={selectedConditionalField} />
+        return (
+          <FieldLogicBadge
+            field={selectedConditionalField}
+            defaults={{ variant: 'error', message: 'This field is missing' }}
+          />
+        )
       }
       const selectedConditionalFieldOptions =
         selectedConditionalField.fieldOptions
@@ -75,6 +85,7 @@ const SubsequentStepRespondentBadges = ({
                 ? idToFieldMap[step.conditional_field]
                 : undefined
             }
+            defaults={{ variant: 'error', message: 'This field is missing' }}
           />
           {isOptionsMismatched ? (
             <FieldLogicBadge
