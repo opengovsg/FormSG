@@ -10,6 +10,10 @@ import {
 
 import { isMaskedInDatadogReplay, render } from '~/test-utils'
 
+import {
+  MRF_PENDING_RESPONSE_AT_LABEL,
+  MRF_WORKFLOW_STATUS_LABEL,
+} from '../constants'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 import { IndividualResponsePage } from './IndividualResponsePage'
@@ -26,9 +30,11 @@ vi.mock('react-router-dom', () => ({
   }),
 }))
 
+let mockResponseMode: FormResponseMode = FormResponseMode.Encrypt
+
 vi.mock('~features/admin-form/common/queries', () => ({
   useAdminForm: () => ({
-    data: { _id: 'mock-form-id', responseMode: FormResponseMode.Encrypt },
+    data: { _id: 'mock-form-id', responseMode: mockResponseMode },
   }),
 }))
 
@@ -99,6 +105,30 @@ vi.mock('./queries', () => ({
 }))
 
 describe('IndividualResponsePage', () => {
+  afterEach(() => {
+    mockResponseMode = FormResponseMode.Encrypt
+  })
+
+  it('shows the payment section for a pre-migration encrypt submission on a multirespondent form', () => {
+    // A mode-migrated multirespondent form holds pre-migration encrypt
+    // submissions; one with a completed payment decrypts to data with a
+    // payment and no mrf metadata or submission secret key.
+    mockResponseMode = FormResponseMode.Multirespondent
+
+    render(<IndividualResponsePage />)
+
+    // Payment details render presence-based, independent of response mode.
+    expect(screen.getByText(MOCK_PAYER_EMAIL)).toBeInTheDocument()
+    // The MRF chrome still renders (with an empty workflow) alongside the
+    // payment section.
+    expect(
+      screen.getByText(`${MRF_WORKFLOW_STATUS_LABEL}:`),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(`${MRF_PENDING_RESPONSE_AT_LABEL}:`),
+    ).toBeInTheDocument()
+  })
+
   it('masks decrypted answers, attachment names and payment details in session replays', () => {
     render(<IndividualResponsePage />)
 
