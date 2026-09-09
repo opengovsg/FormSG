@@ -42,9 +42,7 @@ import {
   createMultirespondentSubmissionDto,
   createPublicMultirespondentSubmissionDto,
   extractRespondentCopyEmailDatas,
-  getMrfVersion,
   getQuestionAnswerPairsForMultipleFields,
-  MrfVersion,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
@@ -1375,29 +1373,6 @@ describe('multirespondent-submission.utils', () => {
         }),
       )
       expect(result[3]).not.toHaveProperty('fieldType')
-    })
-  })
-
-  describe('getMrfVersion', () => {
-    type WebhookType = Parameters<typeof getMrfVersion>[0]['webhookType']
-    // Every consumer class now writes the V4 row content version. The gate
-    // survives as a named seam for #9975, which reintroduces a consumer-type
-    // branch for the V1 backward-compatible shape.
-    it.each<{
-      name: string
-      webhookType: WebhookType
-      expected: MrfVersion
-    }>([
-      { name: 'no webhook => V4', webhookType: undefined, expected: 2 },
-      { name: 'plumber => V4', webhookType: 'plumber', expected: 2 },
-      { name: 'generic => V4', webhookType: 'generic', expected: 2 },
-      {
-        name: 'zapier is treated as generic => V4',
-        webhookType: 'zapier',
-        expected: 2,
-      },
-    ])('$name', ({ webhookType, expected }) => {
-      expect(getMrfVersion({ webhookType })).toBe(expected)
     })
   })
 })
