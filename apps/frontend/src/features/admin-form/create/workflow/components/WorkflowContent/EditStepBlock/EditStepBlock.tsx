@@ -55,7 +55,7 @@ const SECTION_REVEAL_SCROLL_DELAY_MS = 100
  * handleSubmit first), so the field narrowing here is a type guarantee, not the
  * validation gate.
  */
-const buildWorkflowStep = (
+export const buildWorkflowStep = (
   rawInputs: EditStepInputs,
   isFirstStep: boolean,
 ): (FormWorkflowStep & { _id: string }) | undefined => {
@@ -99,20 +99,20 @@ const buildWorkflowStep = (
       }
     }
     case WorkflowType.Dynamic: {
-      if (!inputs.field) return undefined
       return {
         ...workflowStepBase,
         workflow_type: WorkflowType.Dynamic,
-        field: inputs.field,
-      }
+        ...(inputs.field ? { field: inputs.field } : {}),
+      } as FormWorkflowStep & { _id: string }
     }
     case WorkflowType.Conditional: {
-      if (!inputs.conditional_field) return undefined
       return {
         ...workflowStepBase,
         workflow_type: WorkflowType.Conditional,
-        conditional_field: inputs.conditional_field,
-      }
+        ...(inputs.conditional_field
+          ? { conditional_field: inputs.conditional_field }
+          : {}),
+      } as FormWorkflowStep & { _id: string }
     }
     default: {
       // Exhaustiveness check: a new WorkflowType breaks the build here until handled.

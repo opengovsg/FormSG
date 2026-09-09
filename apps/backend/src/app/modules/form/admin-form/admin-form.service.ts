@@ -45,6 +45,10 @@ import {
   isNricValid,
 } from 'formsg-shared/utils/nric-validation'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
+import {
+  getIncompleteStepNumbers,
+  mustWorkflowBeComplete,
+} from 'formsg-shared/utils/workflow-step-completion'
 import { assignIn, last, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -1572,6 +1576,37 @@ export const updateFormWhitelistSetting = (
   })
 }
 
+const findIncompleteSteps = (
+  form: IPopulatedForm,
+  workflow: FormWorkflowDto,
+): number[] =>
+  getIncompleteStepNumbers(
+    workflow,
+    form.form_fields as unknown as FormFieldDto[],
+  )
+
+const incompleteStepsError = (
+  stepNumbers: number[],
+  action: string,
+): MalformedParametersError => {
+  const described = stepNumbers.map((n) => `step ${n + 1}`).join(', ')
+  return new MalformedParametersError(`Please complete ${described} ${action}.`)
+}
+
+const checkResultingWorkflowIsAllowed = (
+  form: IPopulatedForm,
+  workflow: FormWorkflowDto,
+): Result<true, MalformedParametersError> => {
+  if (!mustWorkflowBeComplete({ formStatus: form.status })) {
+    return ok(true)
+  }
+
+  const incompleteStepNumbers = findIncompleteSteps(form, workflow)
+  return incompleteStepNumbers.length === 0
+    ? ok(true)
+    : err(incompleteStepsError(incompleteStepNumbers, 'before saving'))
+}
+
 export const createWorkflowStep = (
   originalForm: IPopulatedForm,
   newWorkflowStep: FormWorkflowStepDto,
@@ -1687,6 +1722,9 @@ export const createWorkflowStep = (
 
   // Create new workflow step
   const updatedWorkflow = originalWorkflow.concat(newWorkflowStep)
+
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
+  if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
@@ -1840,6 +1878,9 @@ export const updateFormWorkflowStep = (
     index === stepNumber ? updatedWorkflowStep : step,
   )
 
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
+  if (check.isErr()) return errAsync(check.error)
+
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
   ) as IMultirespondentFormModel
@@ -1891,15 +1932,22 @@ export const deleteFormWorkflowStep = (
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
   const originalWorkflow = originalMrfForm.workflow ?? []
 
+  // Express hands this over as a string; the route has no Joi cast.
+  const targetStepNumber = Number(stepNumber)
   const isStepNumberValid =
-    stepNumber >= 0 && stepNumber < originalWorkflow.length
+    Number.isInteger(targetStepNumber) &&
+    targetStepNumber >= 0 &&
+    targetStepNumber < originalWorkflow.length
   if (!isStepNumberValid) {
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  // Remove step with stepNumber from workflow
-  const updatedWorkflow = originalWorkflow
-  updatedWorkflow.splice(stepNumber, 1)
+  const updatedWorkflow = originalWorkflow.filter(
+    (_step, index) => index !== targetStepNumber,
+  )
+
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
+  if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
@@ -1963,6 +2011,24 @@ export const updateFormSettings = (
       return errAsync(
         new MalformedParametersError(
           'Please refresh your browser (Ctrl+Shift+R) to convert your form to storage mode before opening it to responses. If you encounter issues, please contact FormSG.',
+        ),
+      )
+    }
+  }
+
+  if (
+    body.status === FormStatus.Public &&
+    originalForm.responseMode === FormResponseMode.Multirespondent
+  ) {
+    const incompleteStepNumbers = findIncompleteSteps(
+      originalForm,
+      (originalForm as IPopulatedMultirespondentForm).workflow ?? [],
+    )
+    if (incompleteStepNumbers.length > 0) {
+      return errAsync(
+        incompleteStepsError(
+          incompleteStepNumbers,
+          'before opening your form to responses',
         ),
       )
     }

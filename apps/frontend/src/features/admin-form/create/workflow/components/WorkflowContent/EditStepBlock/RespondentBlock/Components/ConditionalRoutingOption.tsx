@@ -33,6 +33,7 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 import { useStageFieldAndNavigate } from '../../../../../hooks/useStageFieldAndNavigate'
 import { FieldEmptyState } from '../../EmptyStates'
 
@@ -361,6 +362,7 @@ export const ConditionalRoutingOption = ({
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
   const stageFieldAndNavigate = useStageFieldAndNavigate()
+  const isSavePermissive = useIsWorkflowSavePermissive()
 
   const showEmptyState = isRedesign && !conditionalFieldItems.length
 
@@ -416,7 +418,7 @@ export const ConditionalRoutingOption = ({
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <FormControl
             id="conditional_field"
-            isRequired
+            isRequired={!isSavePermissive}
             isInvalid={
               !!validateOptionsToRecipientsMapErrorMessage ||
               !!errors.conditional_field
@@ -427,10 +429,14 @@ export const ConditionalRoutingOption = ({
                 control={control}
                 name="conditional_field"
                 rules={{
-                  required: t(
-                    'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
-                  ),
+                  required: isSavePermissive
+                    ? false
+                    : t(
+                        'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
+                      ),
                   validate: (selectedValue) => {
+                    if (!selectedValue) return true
+                    if (isSavePermissive) return true
                     if (noEmailToOptionsMappingErrorMessage) {
                       return noEmailToOptionsMappingErrorMessage
                     }

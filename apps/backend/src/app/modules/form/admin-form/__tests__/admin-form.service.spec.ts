@@ -2119,6 +2119,73 @@ describe('admin-form.service', () => {
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
     })
+
+    describe('publish gate', () => {
+      const FIELD_ID = new ObjectId().toHexString()
+
+      const makeMrfForm = (status: FormStatus, workflow: unknown[]) =>
+        jest.mocked({
+          _id: new ObjectId(),
+          status,
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: [
+            { _id: FIELD_ID, fieldType: BasicField.ShortText, title: 'A' },
+          ],
+          workflow,
+        } as unknown as IPopulatedForm)
+
+      const firstStep = {
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [FIELD_ID],
+      }
+      const incompleteSecondStep = {
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [FIELD_ID],
+      }
+
+      it('should block publishing a form with an incomplete step', async () => {
+        const actualResult = await AdminFormService.updateFormSettings(
+          makeMrfForm(FormStatus.Private, [firstStep, incompleteSecondStep]),
+          { status: FormStatus.Public } as FormSettings,
+        )
+
+        expect(actualResult.isErr()).toBeTrue()
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          MalformedParametersError,
+        )
+        expect(actualResult._unsafeUnwrapErr().message).toContain('step 2')
+      })
+
+      it.each<[string, unknown[], Partial<FormSettings>]>([
+        [
+          'a settings change that leaves the form private',
+          [firstStep, incompleteSecondStep],
+          { title: 'a new title' },
+        ],
+        [
+          'publishing a complete workflow',
+          [
+            firstStep,
+            { ...incompleteSecondStep, emails: ['someone@example.com'] },
+          ],
+          { status: FormStatus.Public },
+        ],
+        [
+          'publishing a form with no workflow at all',
+          [],
+          { status: FormStatus.Public },
+        ],
+      ])('should not block %s', async (_name, workflow, settings) => {
+        const actualResult = await AdminFormService.updateFormSettings(
+          makeMrfForm(FormStatus.Private, workflow),
+          settings as FormSettings,
+        )
+
+        expect(actualResult.isErr()).toBeFalse()
+      })
+    })
   })
 
   describe('updateFormField', () => {
@@ -4262,6 +4329,149 @@ describe('admin-form.service', () => {
         // Assert
         expect(result.isOk()).toBe(true)
       })
+    })
+  })
+
+  describe('workflow completeness', () => {
+    const FIELD_ID = new ObjectId().toHexString()
+    const OTHER_FIELD_ID = new ObjectId().toHexString()
+
+    const MOCK_FORM_FIELDS = [
+      { _id: FIELD_ID, fieldType: BasicField.ShortText, title: 'A field' },
+      {
+        _id: OTHER_FIELD_ID,
+        fieldType: BasicField.ShortText,
+        title: 'Another field',
+      },
+    ]
+
+    const completeFirstStep = {
+      _id: 'step0',
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: [FIELD_ID],
+    }
+    const completeSecondStep = {
+      _id: 'step1',
+      workflow_type: WorkflowType.Static,
+      emails: ['someone@example.com'],
+      edit: [OTHER_FIELD_ID],
+    }
+    const incompleteSecondStep = {
+      _id: 'step1',
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: [OTHER_FIELD_ID],
+    }
+
+    const makeForm = (status: FormStatus, workflow: unknown[]) =>
+      ({
+        _id: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Multirespondent,
+        status,
+        form_fields: MOCK_FORM_FIELDS,
+        workflow,
+      }) as unknown as IPopulatedForm
+
+    const mockDbSuccess = () =>
+      jest
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({
+            _id: new ObjectId().toHexString(),
+            workflow: [],
+          }),
+        })
+
+    it.each<[string, FormStatus, unknown[], unknown, boolean]>([
+      [
+        'private, incomplete',
+        FormStatus.Private,
+        [completeFirstStep],
+        incompleteSecondStep,
+        true,
+      ],
+      [
+        'public, incomplete',
+        FormStatus.Public,
+        [completeFirstStep],
+        incompleteSecondStep,
+        false,
+      ],
+    ])(
+      'createWorkflowStep: %s -> ok=%s',
+      async (_name, status, workflow, step, expectOk) => {
+        mockDbSuccess()
+        const result = await AdminFormService.createWorkflowStep(
+          makeForm(status, workflow),
+          step as any,
+        )
+        expect(result.isOk()).toBe(expectOk)
+      },
+    )
+
+    it('should name the offending step, 1-indexed', async () => {
+      const result = await AdminFormService.createWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep]),
+        incompleteSecondStep as any,
+      )
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
+      expect(result._unsafeUnwrapErr().message).toContain('step 2')
+    })
+
+    it('should reject emptying a step on a public form', async () => {
+      const result = await AdminFormService.updateFormWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
+        1,
+        incompleteSecondStep as any,
+      )
+      expect(result.isErr()).toBe(true)
+    })
+
+    it('should reject a deletion that leaves an incomplete step behind, without mutating', async () => {
+      const workflow = [
+        completeFirstStep,
+        completeSecondStep,
+        incompleteSecondStep,
+      ]
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Public, workflow),
+        1,
+      )
+      expect(result.isErr()).toBe(true)
+      expect(workflow).toHaveLength(3)
+    })
+
+    it('should delete the step when the number arrives as a string', async () => {
+      jest
+        .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+        })
+      const workflow = [completeFirstStep, completeSecondStep]
+
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Private, workflow),
+        '1' as unknown as number,
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(MultirespondentFormModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        expect.anything(),
+        { workflow: [completeFirstStep] },
+        expect.anything(),
+      )
+    })
+
+    it('should allow a deletion that leaves a complete workflow', async () => {
+      mockDbSuccess()
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
+        1,
+      )
+      expect(result.isOk()).toBe(true)
     })
   })
 })

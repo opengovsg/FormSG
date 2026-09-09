@@ -16,7 +16,6 @@ import {
   FormFieldDto,
   FormLogoState,
   FormPaymentsField,
-  FormPaymentsField,
   FormPermission,
   FormResponseMode,
   FormStartPage,
@@ -47,7 +46,6 @@ import {
   IFormDocument,
   IFormSchema,
   ILogicSchema,
-  IMultirespondentFormSchema,
   IMultirespondentFormSchema,
   IPopulatedUser,
 } from 'src/types'
@@ -995,26 +993,32 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
-      it('should reject when a workflow contains missing keys', async () => {
-        // Arrange
-        const invalidFormObj = {
-          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
-          workflow: [
-            {
-              _id: new ObjectId(),
-              workflow_type: WorkflowType.Dynamic,
-              // Missing "field"
-            },
-          ],
-        }
+      it.each<[string, WorkflowType]>([
+        ['field', WorkflowType.Dynamic],
+        ['conditional_field', WorkflowType.Conditional],
+      ])(
+        'should save a %s step that has no %s chosen yet',
+        async (omittedKey, workflowType) => {
+          const form = new MultirespondentForm({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [
+              {
+                _id: new ObjectId(),
+                workflow_type: workflowType,
+                edit: [new ObjectId()],
+              },
+            ],
+          })
 
-        const invalidForm = new MultirespondentForm(invalidFormObj)
+          const saved = await form.save()
 
-        // Act + Assert
-        await expect(invalidForm.save()).rejects.toThrow(
-          mongoose.Error.ValidationError,
-        )
-      })
+          const persistedStep = (
+            saved.toObject() as { workflow?: Record<string, unknown>[] }
+          ).workflow?.[0] as Record<string, unknown>
+          expect(persistedStep.workflow_type).toEqual(workflowType)
+          expect(persistedStep).not.toHaveProperty(omittedKey)
+        },
+      )
 
       describe('payment invariants', () => {
         const ENABLED_PAYMENTS_FIELD = {

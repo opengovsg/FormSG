@@ -9,6 +9,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 import { useStageFieldAndNavigate } from '../../../../../hooks/useStageFieldAndNavigate'
 import { FieldEmptyState } from '../../EmptyStates'
 
@@ -35,6 +36,7 @@ export const DynamicRespondentOption = ({
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
   const stageFieldAndNavigate = useStageFieldAndNavigate()
+  const isSavePermissive = useIsWorkflowSavePermissive()
 
   const showEmptyState = isRedesign && !emailFieldItems?.length
 
@@ -61,17 +63,20 @@ export const DynamicRespondentOption = ({
             pt="0.5rem"
             isReadOnly={isLoading}
             id="field"
-            isRequired
+            isRequired={!isSavePermissive}
             isInvalid={!!errors.field}
           >
             <Controller
               control={control}
               name="field"
               rules={{
-                required: t(
-                  'features.adminForm.sidebar.workflow.dynamicRespondent.required',
-                ),
+                required: isSavePermissive
+                  ? false
+                  : t(
+                      'features.adminForm.sidebar.workflow.dynamicRespondent.required',
+                    ),
                 validate: (selectedValue) => {
+                  if (!selectedValue) return true
                   return (
                     isLoading ||
                     !emailFieldItems ||
