@@ -90,6 +90,7 @@ const convertTableAnswer = (
 const convertChildrenAnswer = (answer: {
   child: string[][]
   childFields: string[]
+  recordType?: string
 }): ChildrenAnswerV4 => {
   const result: ChildrenAnswerV4 = {}
   for (let i = 0; i < answer.child.length; i++) {
@@ -102,6 +103,14 @@ const convertChildrenAnswer = (answer: {
         value: answer.child[i][j] ?? '',
         myInfo: { attr },
       }
+    }
+    // recordType describes whichever one child was submitted (a Children
+    // field collects at most one), so it's only ever meaningful on the
+    // first entry. Nested inside `value` (not a sibling key) so any
+    // consumer that generically walks a child's sub-fields picks it up
+    // for free, with no special-casing.
+    if (i === 0 && answer.recordType) {
+      value.recordtype = { value: answer.recordType }
     }
     result[childKey] = { value }
   }
@@ -138,6 +147,7 @@ export const deriveQuestionFromMeta = (meta?: FormFieldMeta): string =>
   meta?.myInfo ? `[Myinfo] ${meta.question ?? ''}` : (meta?.question ?? '')
 
 // since v3 answer types when decrypted in sdk are not well-typed, we do best-effort conversion based on field type
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const convertAnswer = (fieldType: FieldType, answer: any): AnswerV4 => {
   if (GENERIC_STRING_FIELD_TYPES.has(fieldType)) {
     return convertStringAnswer(answer as string)

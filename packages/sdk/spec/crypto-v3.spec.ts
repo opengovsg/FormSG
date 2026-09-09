@@ -1,10 +1,10 @@
 import mockAxios from 'jest-mock-axios'
-import { decodeUTF8 } from '../src/util/encoding'
 
 import Crypto from '../src/crypto'
 import CryptoV3 from '../src/crypto-v3'
 import { SIGNING_KEYS } from '../src/resource/signing-keys'
 import { encryptMessage } from '../src/util/crypto'
+import { decodeUTF8 } from '../src/util/encoding'
 
 import {
   ciphertext,
@@ -102,6 +102,58 @@ describe('CryptoV3', function () {
     })
     // Assert
     expect(decrypted).toHaveProperty('responses', plaintext)
+  })
+
+  describe('MRF Children field (answerObject v4 shape)', () => {
+    // Children in MRF has no dedicated crypto handling — encrypt/decrypt
+    // operate generically on {fieldType, answer}. This proves the keyed-map
+    // v4 answer shape (which a sponsored child is indistinguishable within)
+    // survives the real cryptoV3 pipeline losslessly, not just by reading
+    // the encrypt/decrypt code and assuming it's shape-agnostic.
+    it('should encrypt and decrypt a Children field answer losslessly', () => {
+      // Arrange
+      const { publicKey, secretKey } = crypto.generate()
+      const childrenResponses = {
+        '68a1f2c3d4e5f6a7b8c9d0e1': {
+          fieldType: 'children',
+          question: '[Myinfo] Family (Children)',
+          answer: {
+            child0: {
+              value: {
+                childname: {
+                  value: 'Tan Wei Ling',
+                  myInfo: { attr: 'childname' },
+                },
+                childdateofbirth: {
+                  value: '2019-03-14',
+                  myInfo: { attr: 'childdateofbirth' },
+                },
+                childgender: {
+                  value: 'FEMALE',
+                  myInfo: { attr: 'childgender' },
+                },
+                childrace: {
+                  value: 'CHINESE',
+                  myInfo: { attr: 'childrace' },
+                },
+              },
+            },
+          },
+          provenance: {},
+          myInfo: { attr: 'childrenbirthrecords' },
+        },
+      }
+
+      // Act
+      const encrypted = crypto.encrypt(childrenResponses, publicKey)
+      const decrypted = crypto.decrypt(secretKey, {
+        ...encrypted,
+        version: INTERNAL_TEST_VERSION,
+      })
+
+      // Assert
+      expect(decrypted).toHaveProperty('responses', childrenResponses)
+    })
   })
 
   describe('decryptToV4 — MRF step-token recovery', () => {

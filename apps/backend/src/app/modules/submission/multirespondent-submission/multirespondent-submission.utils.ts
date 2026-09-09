@@ -1,5 +1,10 @@
-import type { FieldResponsesV4, FieldResponseV4 } from '@opengovsg/formsg-sdk'
+import type {
+  ChildrenAnswerV4,
+  FieldResponsesV4,
+  FieldResponseV4,
+} from '@opengovsg/formsg-sdk'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
+import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
   FormFieldDto,
@@ -202,12 +207,14 @@ export const validateMrfFieldResponses = ({
   formFields,
   responses,
   previousResponses,
+  workflowStep,
 }: {
   formId: string
   visibleFieldIds: FieldIdSet
   formFields: FormFieldDto[]
   responses: ParsedClearFormFieldResponsesV4
   previousResponses?: ParsedClearFormFieldResponsesV4
+  workflowStep: number
 }): Result<
   ParsedClearFormFieldResponsesV4,
   ValidateFieldErrorV4 | ProcessingError
@@ -227,11 +234,12 @@ export const validateMrfFieldResponses = ({
       )
     }
 
-    // Since Myinfo fields are not currently supported for MRF
-    if (response.fieldType === BasicField.Children) {
+    // MyInfo children field should only be allowed on the first workflow step
+    // until per-step Singpass verification exists.
+    if (response.fieldType === BasicField.Children && workflowStep !== 0) {
       return err(
         new ValidateFieldErrorV4(
-          'Children field type is not supported for MRF submisisons',
+          'Children field type is only supported on the first MRF workflow step',
         ),
       )
     }
@@ -428,6 +436,35 @@ const getQuestionAnswerPairsForOneField = ({
           fieldType,
         })
       }
+      return questionAnswerPairs
+    }
+    case BasicField.Children: {
+      // Mirrors storage mode's getAnswersForChild (submission.utils.ts):
+      // one pair per child per subfield, titled "Child N <subfield
+      // description>", so sponsored and birth-record children render
+      // identically to storage mode's PDF/CSV/email output. recordtype
+      // rides inside `value` like every other sub-field (see
+      // adapt-v3-to-v4.ts), so it needs no special-casing here — only a
+      // nicer label than the raw key, since it isn't in MYINFO_ATTRIBUTE_MAP.
+      const childrenAnswer = response.answer as ChildrenAnswerV4
+      const childKeys = Object.keys(childrenAnswer).sort(
+        (a, b) =>
+          Number(a.replace('child', '')) - Number(b.replace('child', '')),
+      )
+      childKeys.forEach((childKey, childIdx) => {
+        const child = childrenAnswer[childKey]
+        for (const [subField, subFieldAnswer] of Object.entries(child.value)) {
+          const description =
+            subField === 'recordtype'
+              ? 'Record Type'
+              : (MYINFO_ATTRIBUTE_MAP[subField]?.description ?? subField)
+          questionAnswerPairs.push({
+            question: `Child ${childIdx + 1} ${description}`,
+            answer: subFieldAnswer.value,
+            fieldType,
+          })
+        }
+      })
       return questionAnswerPairs
     }
     case BasicField.Radio: {

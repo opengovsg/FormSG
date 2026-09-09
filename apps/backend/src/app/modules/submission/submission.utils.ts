@@ -907,28 +907,47 @@ export const getAnswersForChild = (
     return []
   }
   return response.answerArray.flatMap((arr, childIdx) => {
-    return arr.map((answer, idx) => {
-      const subfield = subFields[idx]
-      return {
-        // Recreates the individual _id of the child field based on the parent field's _id and the subfield
-        // e.g., childrenbirthrecords.67585515e1ced6d790a91e14.childname.0
-        _id: `${MyInfoAttribute.ChildrenBirthRecords}.${response._id}.${subFields[idx]}.${childIdx}`,
+    const subFieldEntries: ProcessedSingleAnswerResponse[] = arr.map(
+      (answer, idx) => {
+        const subfield = subFields[idx]
+        return {
+          // Recreates the individual _id of the child field based on the parent field's _id and the subfield
+          // e.g., childrenbirthrecords.67585515e1ced6d790a91e14.childname.0
+          _id: `${MyInfoAttribute.ChildrenBirthRecords}.${response._id}.${subFields[idx]}.${childIdx}`,
+          fieldType: response.fieldType,
+          // qnChildIdx represents the index of the MyInfo field
+          // childIdx represents the index of the child in this MyInfo field.
+          // New submissions have one child; responses stored before v2.0 can have
+          // more and must keep exploding the same way.
+          question: `Child ${qnChildIdx + childIdx + 1} ${
+            MYINFO_ATTRIBUTE_MAP[subfield].description
+          }`,
+          myInfo: {
+            attr: subFields[idx] as unknown as MyInfoAttribute,
+          },
+          isVisible: response.isVisible,
+          isUserVerified: response.isUserVerified,
+          answer,
+        }
+      },
+    )
+    // recordType describes whichever one child was submitted (a Children
+    // field collects at most one), so it's only ever meaningful on the
+    // first (and, for current submissions, only) child.
+    if (childIdx === 0 && response.recordType) {
+      subFieldEntries.push({
+        _id: `${MyInfoAttribute.ChildrenBirthRecords}.${response._id}.recordtype.${childIdx}`,
         fieldType: response.fieldType,
-        // qnChildIdx represents the index of the MyInfo field
-        // childIdx represents the index of the child in this MyInfo field.
-        // New submissions have one child; responses stored before v2.0 can have
-        // more and must keep exploding the same way.
-        question: `Child ${qnChildIdx + childIdx + 1} ${
-          MYINFO_ATTRIBUTE_MAP[subfield].description
-        }`,
-        myInfo: {
-          attr: subFields[idx] as unknown as MyInfoAttribute,
-        },
+        question: `Child ${qnChildIdx + childIdx + 1} Record Type`,
         isVisible: response.isVisible,
         isUserVerified: response.isUserVerified,
-        answer,
-      }
-    })
+        // Already a display label by the time it's submitted — the picker
+        // echoes back myInfoChildrenBirthRecords.type, which the adapter
+        // fills with labels, not the raw ChildRecordType enum.
+        answer: response.recordType,
+      })
+    }
+    return subFieldEntries
   })
 }
 

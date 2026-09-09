@@ -732,6 +732,7 @@ export const validateMultirespondentSubmission = async (
                   formFields: form_fields,
                   responses: req.body.responses,
                   previousResponses,
+                  workflowStep,
                 })
               }),
           )

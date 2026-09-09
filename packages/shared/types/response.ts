@@ -157,6 +157,10 @@ export const ChildBirthRecordsResponse = ResponseBase.merge(
   fieldType: z.literal(BasicField.Children),
   // Basically same as Table
   answerArray: z.array(z.array(z.string())) as unknown as z.Schema<string[][]>,
+  // Which MyInfo record the picked child came from, as a display label
+  // (e.g. "Sponsored") — informational only, absent for a hand-typed or
+  // pre-existing response.
+  recordType: z.string().optional(),
 })
 
 export type ChildBirthRecordsResponse = z.infer<

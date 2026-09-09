@@ -103,9 +103,27 @@ export type AllowedMyInfoFieldOption = Exclude<
   | MyInfoAttribute.ChildSecondaryRace
 >
 
-export type MyInfoChildData = Partial<{
-  [key in MyInfoChildAttributes]: string[]
-}>
+/**
+ * Which MyInfo record a child came from. Informational only — the picker
+ * dedups by name and every sub-field is the shared intersection regardless
+ * of source (see myinfo.adapter.ts), so this never affects validation; it
+ * exists purely so admins can tell the two apart in CSV/response output.
+ */
+export enum ChildRecordType {
+  Nuclear = 'nuclear',
+  Sponsored = 'sponsored',
+}
+
+export type MyInfoChildData = Partial<
+  {
+    [key in MyInfoChildAttributes]: string[]
+  } & {
+    // Display labels (e.g. "Local"/"Sponsored"), not raw ChildRecordType
+    // values — matches every other column, which already holds
+    // display-ready strings (e.g. ChildGender's `.desc`).
+    type: string[]
+  }
+>
 
 export type AllowMyInfoBase = {
   myInfo?: {

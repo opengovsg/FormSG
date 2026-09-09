@@ -1,4 +1,4 @@
-import { MyInfoChildAttributes } from '../../../types/field'
+import { ChildRecordType, MyInfoChildAttributes } from '../../../types/field'
 
 /**
  * Child sub-fields no longer offered in the form builder. MyInfo returns
@@ -19,3 +19,9 @@ export const SELECTABLE_MYINFO_CHILD_ATTRIBUTES: MyInfoChildAttributes[] =
 
 /** A children field collects exactly one child. */
 export const MAX_CHILDREN_PER_FIELD = 1
+
+/** Respondent/admin-facing labels for ChildRecordType, used in CSV/response output. */
+export const CHILD_RECORD_TYPE_LABEL: Record<ChildRecordType, string> = {
+  [ChildRecordType.Nuclear]: 'Local',
+  [ChildRecordType.Sponsored]: 'Sponsored',
+}
