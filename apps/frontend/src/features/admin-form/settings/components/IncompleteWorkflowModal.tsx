@@ -60,7 +60,9 @@ export const IncompleteWorkflowModal = ({
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
-        <ModalHeader color="secondary.700">{title}</ModalHeader>
+        <ModalHeader color="secondary.700" pr="4rem">
+          {title}
+        </ModalHeader>
         <ModalBody whiteSpace="pre-wrap">
           <Text textStyle="body-2" color="secondary.500">
             {description}
