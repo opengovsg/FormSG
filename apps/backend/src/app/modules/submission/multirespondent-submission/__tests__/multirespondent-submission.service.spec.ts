@@ -4185,22 +4185,67 @@ describe('multirespondent-submission.service', () => {
 
     // ---- Generic never receives the step token (write credential) ----
 
+    // Asserted on the posted body, not on a policy flag. The row genuinely
+    // carries a step token hash and a wrapped step token, and neither may
+    // appear anywhere in what the post-submission action hands the webhook
+    // sender — for plumber, the privileged consumer, as much as for generic
+    // and zapier. There is no boolean left to assert here: no payload type has
+    // a slot for a step token, and that is what this pins.
+    const STEP_TOKEN_HASH = 'SVC-STEP-TOKEN-HASH-SENTINEL'.padEnd(64, '0')
+    const ENCRYPTED_STEP_TOKEN =
+      'SVC-SENDER-PK-SENTINEL;SVC-NONCE-SENTINEL:SVC-CIPHER-SENTINEL'
+
+    /** Every key at every depth of the value. */
+    const collectKeys = (value: unknown): string[] => {
+      if (Array.isArray(value)) return value.flatMap(collectKeys)
+      if (value && typeof value === 'object') {
+        return Object.entries(value as Record<string, unknown>).flatMap(
+          ([key, child]) => [key, ...collectKeys(child)],
+        )
+      }
+      return []
+    }
+
     it.each`
-      enableMrfWebhooks
-      ${false}
-      ${true}
+      label                 | url            | enableMrfWebhooks
+      ${'plumber'}          | ${PLUMBER_URL} | ${false}
+      ${'plumber, flag on'} | ${PLUMBER_URL} | ${true}
+      ${'generic'}          | ${GENERIC_URL} | ${true}
+      ${'zapier'}           | ${ZAPIER_URL}  | ${true}
     `(
-      'never sends encryptedStepToken to a generic consumer (webhooks=$enableMrfWebhooks)',
-      async ({ enableMrfWebhooks }) => {
+      'never puts a step token in the posted body ($label)',
+      async ({ url, enableMrfWebhooks }) => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+        const Model = getMultirespondentSubmissionModel(mongoose)
 
-        for (const url of [GENERIC_URL, ZAPIER_URL]) {
-          const submission = buildSubmissionWithToken('tok-generic')
+        // A real row, read back through the real getWebhookView, so the
+        // assertion cannot pass merely because the fixture had no token.
+        const row = await Model.create({
+          form: mockFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: twoStepWorkflow,
+          submissionPublicKey: 'pk',
+          encryptedSubmissionSecretKey: 'esk',
+          encryptedContent: 'ec',
+          verifiedContent: 'vc',
+          version: 2,
+          workflowStep: 0,
+          mrfVersion: 2,
+          submittedSteps: [
+            { isApproval: false, submittedAt: new Date().toISOString() },
+          ],
+          stepTokenHash: STEP_TOKEN_HASH,
+          encryptedStepToken: ENCRYPTED_STEP_TOKEN,
+        })
+        expect(row.encryptedStepToken).toBe(ENCRYPTED_STEP_TOKEN)
 
+        for (const snapshot of [buildSnapshot(), undefined]) {
           await performMultiRespondentPostSubmissionCreateActions({
-            submission,
-            snapshot: buildSnapshot(),
-            submissionId: submission._id.toString(),
+            submission: row,
+            snapshot,
+            submissionId: row._id.toString(),
             form: buildV4Form({
               webhook: { url, isRetryEnabled: true } as any,
             }),
@@ -4211,12 +4256,17 @@ describe('multirespondent-submission.service', () => {
         }
         await flushPromises()
 
+        expect(sendSpy).toHaveBeenCalled()
         for (const call of sendSpy.mock.calls) {
-          expect(
-            (call[3]?.data as Record<string, unknown> | undefined)?.[
-              'encryptedStepToken'
-            ],
-          ).toBeUndefined()
+          const body = call[3]
+          expect(body).toBeDefined()
+          const serialised = JSON.stringify(body)
+          expect(serialised).not.toContain(STEP_TOKEN_HASH)
+          expect(serialised).not.toContain(ENCRYPTED_STEP_TOKEN)
+          expect(serialised).not.toContain('SENTINEL')
+          expect(collectKeys(body)).not.toContain(
+            expect.stringMatching(/steptoken/i),
+          )
         }
       },
     )
