@@ -24,6 +24,7 @@
  */
 import { ObjectId } from 'bson'
 import { BasicField, FormFieldDto, FormResponseMode } from 'formsg-shared/types'
+import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
 
 import {
   FieldResponse,
@@ -38,7 +39,6 @@ import {
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { isAttachmentResponse } from '../submission.utils'
 
-import { flattenV4ToFormFields } from '~features/admin-form/responses/ResponsesPage/storage/utils/flattenV4ToFormFields'
 import {
   ATTACHMENT_FILE_NAME,
   buildDifferentialAnsweredInput,

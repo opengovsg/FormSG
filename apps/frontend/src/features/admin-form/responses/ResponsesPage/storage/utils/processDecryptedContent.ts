@@ -6,13 +6,12 @@ import {
 } from '@opengovsg/formsg-sdk'
 
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
 import {
   SgidFieldTitle,
   SPCPFieldTitle,
   VerifiedKeys,
 } from 'formsg-shared/utils/verified-content'
-
-import { flattenV4ToFormFields } from './flattenV4ToFormFields'
 
 /**
  * Returns a verifiedFormField matching the given verifiedKey containing the given value.
@@ -140,6 +139,6 @@ export const processDecryptedContentV4 = (
   const v1Fields = flattenV4ToFormFields({
     v4Responses: responses,
     formFields,
-  }) as VerifiedFormField[]
+  }) as unknown as VerifiedFormField[]
   return verified ? v1Fields.concat(convertToResponseArray(verified)) : v1Fields
 }
