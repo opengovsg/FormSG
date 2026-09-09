@@ -280,7 +280,7 @@ const submitEncryptModeForm = async (
   let hashedSubmitterId
   // Generate submitterId for Singpass auth modes
   if (submitterId && form.authType !== FormAuthType.NIL) {
-    hashedSubmitterId = generateHashedSubmitterId(submitterId, form.id)
+    hashedSubmitterId = generateHashedSubmitterId(submitterId, String(form._id))
   }
 
   // Encrypt Verified SPCP Fields
