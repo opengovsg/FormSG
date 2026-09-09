@@ -454,6 +454,10 @@ SubmissionSchema.statics.getEncryptedOrMultirespondentSubmissionCursorByFormId =
       encryptedContent: 1,
       verifiedContent: 1,
       attachmentMetadata: 1,
+      // Pre-migration encrypt submissions on a payment form carry a payment
+      // reference; multirespondent submissions never do (payments and
+      // workflows never combine on a form).
+      paymentId: 1,
       created: 1,
       version: 1,
       form_fields: 1,
