@@ -4443,6 +4443,28 @@ describe('admin-form.service', () => {
       expect(workflow).toHaveLength(3)
     })
 
+    it('should delete the step when the number arrives as a string', async () => {
+      jest
+        .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+        })
+      const workflow = [completeFirstStep, completeSecondStep]
+
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Private, workflow),
+        '1' as unknown as number,
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(MultirespondentFormModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        expect.anything(),
+        { workflow: [completeFirstStep] },
+        expect.anything(),
+      )
+    })
+
     it('should allow a deletion that leaves a complete workflow', async () => {
       mockDbSuccess()
       const result = await AdminFormService.deleteFormWorkflowStep(

@@ -1932,14 +1932,18 @@ export const deleteFormWorkflowStep = (
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
   const originalWorkflow = originalMrfForm.workflow ?? []
 
+  // Express hands this over as a string; the route has no Joi cast.
+  const targetStepNumber = Number(stepNumber)
   const isStepNumberValid =
-    stepNumber >= 0 && stepNumber < originalWorkflow.length
+    Number.isInteger(targetStepNumber) &&
+    targetStepNumber >= 0 &&
+    targetStepNumber < originalWorkflow.length
   if (!isStepNumberValid) {
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
   const updatedWorkflow = originalWorkflow.filter(
-    (_step, index) => index !== stepNumber,
+    (_step, index) => index !== targetStepNumber,
   )
 
   const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
