@@ -30,7 +30,7 @@ export interface IMyInfoFapiSessionSchema extends Document<string> {
   codeVerifier: string
   dpopPrivateJwkEnc: string
   accessTokenEnc?: string
-  sub?: string
+  subEnc?: string
   expireAt: Date
 }
 
@@ -119,7 +119,7 @@ const MyInfoFapiSessionSchema = new Schema<
     codeVerifier: requiredString,
     dpopPrivateJwkEnc: requiredString,
     accessTokenEnc: optionalString,
-    sub: optionalString,
+    subEnc: optionalString,
     expireAt: { type: Date, required: true },
   },
   { timestamps: { createdAt: 'created', updatedAt: false } },
@@ -195,7 +195,7 @@ MyInfoFapiSessionSchema.statics.markExchanged = async function (
       $set: {
         phase: 'exchanged',
         accessTokenEnc: await encrypt(tokens.accessToken),
-        sub: tokens.sub,
+        subEnc: await encrypt(tokens.sub),
       },
     },
     // Mongoose 7 otherwise resolves to the ModifyResult overload, which types
@@ -259,7 +259,11 @@ MyInfoFapiSessionSchema.statics.consume = async function ({
     }
     return { status: 'incomplete' }
   }
-  if (session.phase === 'failed' || !session.accessTokenEnc || !session.sub) {
+  if (
+    session.phase === 'failed' ||
+    !session.accessTokenEnc ||
+    !session.subEnc
+  ) {
     return { status: 'failed' }
   }
   return {
@@ -267,7 +271,7 @@ MyInfoFapiSessionSchema.statics.consume = async function ({
     session: {
       formId: session.formId,
       accessToken: await decrypt(session.accessTokenEnc),
-      sub: session.sub,
+      sub: await decrypt(session.subEnc),
       dpopPrivateJwk: await decryptJwk(session.dpopPrivateJwkEnc),
     },
   }

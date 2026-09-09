@@ -94,6 +94,22 @@ describe('myinfo.fapi.session.model', () => {
       expect(outcomes.sort()).toEqual(['alreadyExchanged', 'claimed'])
     })
 
+    it('should not persist the access token or sub in plaintext', async () => {
+      const sessionId = await MyInfoFapiSession.createPending(pendingSession)
+      await MyInfoFapiSession.markExchanged(sessionId, {
+        accessToken: MOCK_ACCESS_TOKEN,
+        sub: MOCK_SUB,
+      })
+
+      const raw = await mongoose.connection
+        .collection('myinfofapisessions')
+        .findOne({ _id: sessionId as unknown as mongoose.Types.ObjectId })
+
+      expect(JSON.stringify(raw)).not.toContain(MOCK_ACCESS_TOKEN)
+      expect(JSON.stringify(raw)).not.toContain(MOCK_SUB)
+      expect(String(raw?.subEnc).split('.')).toHaveLength(5)
+    })
+
     it('should report notFound when the session has expired away', async () => {
       await expect(
         MyInfoFapiSession.markExchanged('does-not-exist', {
