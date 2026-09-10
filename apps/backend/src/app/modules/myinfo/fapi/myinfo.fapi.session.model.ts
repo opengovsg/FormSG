@@ -12,11 +12,9 @@ import {
 export const MYINFO_FAPI_SESSION_SCHEMA_ID = 'MyInfoFapiSession'
 
 /**
- * A login session moves pending -> exchanged or pending -> failed exactly
- * once, then is deleted. All transitions filter on phase, so Mongo decides
- * which of two concurrent callbacks wins rather than a read-then-write race.
- * A session left `pending` (neither transition ever happened) means the
- * respondent never reached, or hasn't yet reached, the Singpass callback.
+ * pending -> exchanged or pending -> failed, exactly once. Transitions filter
+ * on phase so Mongo, not a read-then-write race, picks the winner between
+ * concurrent callbacks. `pending` means the Singpass callback hasn't landed.
  */
 export type MyInfoFapiSessionPhase = 'pending' | 'exchanged' | 'failed'
 
@@ -52,8 +50,8 @@ export type MyInfoFapiExchangeSession = Pick<
 >
 
 /**
- * The exchange material exists on the pending variant only, so a callback
- * cannot reach for it once someone else has already exchanged.
+ * Exchange material exists on the pending variant only, so a callback can't
+ * reach it once another has already exchanged.
  */
 export type MyInfoFapiCallbackSession =
   | {
@@ -71,15 +69,13 @@ export type MyInfoFapiExchangedSession = {
   dpopPrivateJwk: JsonWebKey
 }
 
-/**
- * `alreadyExchanged` is the legitimate duplicate-callback case and must not
- * be treated as an error.
- */
+/** `alreadyExchanged` is a legitimate duplicate callback, not an error. */
 export type MyInfoFapiClaimOutcome = 'claimed' | 'alreadyExchanged' | 'notFound'
 
 /**
- * `incomplete` is a session still `pending`, or already gone (TTL / unknown
- * id). It is not deleted, so a later callback can still succeed.
+ * `incomplete` covers a `pending` session or one already gone (TTL/unknown
+ * id). `failed` is reported without deleting: a losing duplicate callback may
+ * still be raced by the winner.
  */
 export type MyInfoFapiConsumeOutcome =
   | { status: 'exchanged'; session: MyInfoFapiExchangedSession }
@@ -144,10 +140,9 @@ MyInfoFapiSessionSchema.statics.createPending = async function (
 }
 
 /**
- * Load a session for a callback. For exchanged sessions, omit secrets so
- * duplicate callbacks only redirect. Anything else (pending, or failed by an
- * earlier duplicate callback) still returns the exchange material, so a
- * replay can go on to succeed.
+ * Omits secrets for an exchanged session so a duplicate callback only
+ * redirects; pending/failed still return exchange material so a replay can
+ * succeed.
  */
 MyInfoFapiSessionSchema.statics.loadForCallback = async function (
   sessionId: string,
@@ -179,11 +174,9 @@ MyInfoFapiSessionSchema.statics.loadForCallback = async function (
 }
 
 /**
- * Records a successful token exchange. Filtered on
- * `phase: { $ne: 'exchanged' }`, not on `pending`: a session already marked
- * `failed` by a losing duplicate callback (an RBI forwarding race or a double
- * click) must still be claimable by the request that actually succeeded.
- * An already-exchanged session is left alone and reported as such.
+ * Filters on `phase !== 'exchanged'`, not `pending`, so a session already
+ * marked `failed` by a losing duplicate callback can still be claimed by the
+ * winner.
  */
 MyInfoFapiSessionSchema.statics.markExchanged = async function (
   sessionId: string,
@@ -198,8 +191,7 @@ MyInfoFapiSessionSchema.statics.markExchanged = async function (
         sub: tokens.sub,
       },
     },
-    // Mongoose 7 otherwise resolves to the ModifyResult overload, which types
-    // `claimed` as always truthy even though the runtime returns the document.
+    // Otherwise Mongoose 7 types `claimed` as always truthy (ModifyResult overload).
     { includeResultMetadata: false },
   )
   if (claimed) {
@@ -216,10 +208,8 @@ MyInfoFapiSessionSchema.statics.markExchanged = async function (
 }
 
 /**
- * Records that the callback was reached but the login did not succeed
- * (Singpass returned an error, or the token exchange failed). Filtered on
- * `phase: 'pending'` so a session someone else already exchanged is left
- * alone rather than being overwritten with a failure.
+ * Filtered on `phase: 'pending'` so an already-exchanged session isn't
+ * overwritten with a failure.
  */
 MyInfoFapiSessionSchema.statics.markFailed = async function (
   sessionId: string,
@@ -231,8 +221,9 @@ MyInfoFapiSessionSchema.statics.markFailed = async function (
 }
 
 /**
- * Consumes a resolved session only for the form that started it. A session
- * for another form, or one still pending, is left untouched.
+ * Only for the form that started the session. Deletes on `exchanged`
+ * (single-use tokens); leaves `failed` in place since the winner may still
+ * claim it.
  */
 MyInfoFapiSessionSchema.statics.consume = async function ({
   sessionId,
@@ -241,14 +232,7 @@ MyInfoFapiSessionSchema.statics.consume = async function ({
   sessionId: string
   formId: string
 }): Promise<MyInfoFapiConsumeOutcome> {
-  const session = await this.findOneAndDelete(
-    {
-      _id: sessionId,
-      formId,
-      phase: { $in: ['exchanged', 'failed'] },
-    },
-    { includeResultMetadata: false },
-  )
+  const session = await this.findOne({ _id: sessionId, formId })
   if (!session) {
     const belongsToAnotherForm = await this.exists({
       _id: sessionId,
@@ -259,16 +243,27 @@ MyInfoFapiSessionSchema.statics.consume = async function ({
     }
     return { status: 'incomplete' }
   }
-  if (session.phase === 'failed' || !session.accessTokenEnc || !session.sub) {
+  if (session.phase === 'pending') {
+    return { status: 'incomplete' }
+  }
+  if (session.phase === 'failed') {
     return { status: 'failed' }
+  }
+
+  const exchanged = await this.findOneAndDelete(
+    { _id: sessionId, formId, phase: 'exchanged' },
+    { includeResultMetadata: false },
+  )
+  if (!exchanged || !exchanged.accessTokenEnc || !exchanged.sub) {
+    return { status: exchanged ? 'failed' : 'incomplete' }
   }
   return {
     status: 'exchanged',
     session: {
-      formId: session.formId,
-      accessToken: await decrypt(session.accessTokenEnc),
-      sub: session.sub,
-      dpopPrivateJwk: await decryptJwk(session.dpopPrivateJwkEnc),
+      formId: exchanged.formId,
+      accessToken: await decrypt(exchanged.accessTokenEnc),
+      sub: exchanged.sub,
+      dpopPrivateJwk: await decryptJwk(exchanged.dpopPrivateJwkEnc),
     },
   }
 }
