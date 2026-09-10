@@ -27,6 +27,16 @@ import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import * as BillingService from '../../billing/billing.service'
 import { ControllerHandler } from '../../core/core.types'
+import { MYINFO_FAPI_SESSION_COOKIE_NAME } from '../../myinfo/fapi/myinfo.fapi.constants'
+import {
+  clearMyInfoFapiSessionCookie,
+  setMyInfoFapiSessionCookie,
+} from '../../myinfo/fapi/myinfo.fapi.controller'
+import {
+  MyInfoFapiIncompleteLoginError,
+  MyInfoFapiSessionFormMismatchError,
+} from '../../myinfo/fapi/myinfo.fapi.errors'
+import * as MyInfoFapiService from '../../myinfo/fapi/myinfo.fapi.service'
 import { MyInfoData } from '../../myinfo/myinfo.adapter'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
@@ -203,6 +213,49 @@ export const handleGetPublicForm: ControllerHandler<
       // We always want to clear existing login cookies because we no longer
       // have the prefilled data
       res.clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
+
+      // If a FAPI session cookie exists, the user started a FAPI login.
+      const fapiSessionId: unknown =
+        req.signedCookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]
+      if (typeof fapiSessionId === 'string' && fapiSessionId) {
+        const fapiFieldsResult = await MyInfoFapiService.loadPersonForSession({
+          sessionId: fapiSessionId,
+          formId,
+        })
+        if (fapiFieldsResult.isErr()) {
+          const { error: fapiError } = fapiFieldsResult
+          // Another form can carry this origin-wide cookie. Leave both the
+          // cookie and session untouched for the form that started the login.
+          if (fapiError instanceof MyInfoFapiSessionFormMismatchError) {
+            return res.json({ form: publicForm, isIntranetUser })
+          }
+
+          clearMyInfoFapiSessionCookie(res)
+          // Respondent never reached, or hasn't yet reached, the Singpass
+          // callback (e.g. navigated back before completing login). Not a
+          // failure, treat as no login attempt.
+          if (fapiError instanceof MyInfoFapiIncompleteLoginError) {
+            return res.json({ form: publicForm, isIntranetUser })
+          }
+
+          logger.error({
+            message: 'MyInfo FAPI login error',
+            meta: logMeta,
+            error: fapiError,
+          })
+          return res.json({
+            form: publicForm,
+            errorCodes: [ErrorCode.myInfo],
+            isIntranetUser,
+          })
+        }
+
+        clearMyInfoFapiSessionCookie(res)
+        myInfoFields = fapiFieldsResult.value
+        spcpSession = { userName: myInfoFields.getUinFin() }
+        break
+      }
+
       const authCodeCookie: unknown = req.cookies[MYINFO_AUTH_CODE_COOKIE_NAME]
       // No auth code cookie because user is accessing the form before logging
       // in
@@ -691,8 +744,20 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const useStateNonce =
         req.growthbook?.isOn(featureFlags.spcpOidcStateNonce) ?? false
       const nonce = useStateNonce ? randomBytes(16).toString('hex') : undefined
+      const useMyInfoFapi =
+        req.growthbook?.isOn(featureFlags.myinfoFapi) ?? false
       switch (form.authType) {
-        case FormAuthType.MyInfo:
+        case FormAuthType.MyInfo: {
+          if (useMyInfoFapi) {
+            return MyInfoFapiService.startLogin({
+              formId,
+              encodedQuery,
+              requestedAttributes: form.getUniqueMyInfoAttrs(),
+            }).map(({ sessionId, redirectUrl }) => {
+              setMyInfoFapiSessionCookie(res, sessionId)
+              return redirectUrl
+            })
+          }
           return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
             ([form, eserviceId]) =>
               MyInfoService.createRedirectURL({
@@ -702,6 +767,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
                 encodedQuery,
               }),
           )
+        }
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
             const target = getRedirectTargetSpcpOidc(
