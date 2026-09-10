@@ -1116,20 +1116,20 @@ describe('Multirespondent Submission Middleware', () => {
         }
       }
 
-      describe('URL → consumer class via getWebhookType', () => {
-        it('classifies plumber.gov.sg as plumber (V4)', async () => {
+      describe('always V4 regardless of webhook URL', () => {
+        it('plumber.gov.sg is V4', async () => {
           expectEncryptedAs(await runGate({ webhookUrl: PLUMBER_URL }), 2)
         })
 
-        it('classifies example.com as generic (V4)', async () => {
+        it('example.com is V4', async () => {
           expectEncryptedAs(await runGate({ webhookUrl: GENERIC_URL }), 2)
         })
 
-        it('classifies hooks.zapier.com as generic (V4)', async () => {
+        it('hooks.zapier.com is V4', async () => {
           expectEncryptedAs(await runGate({ webhookUrl: ZAPIER_URL }), 2)
         })
 
-        it('no webhook URL is treated as none (V4)', async () => {
+        it('no webhook URL is V4', async () => {
           expectEncryptedAs(await runGate({ flags: [] }), 2)
         })
       })
