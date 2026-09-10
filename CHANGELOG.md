@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.20.0](https://github.com/opengovsg/formsg/compare/v9.19.0...v9.20.0) (2026-09-10)
+
+
+### Features
+
+* **myinfo:** add MyInfo FAPI 2.0 config and key plumbing (#9924) ([#9924](https://github.com/opengovsg/formsg/commit/89b0fe5cd845b02acddbfbb85dedeb71e0b20294))
+* **myinfo:** expose FAPI 2.0 login route (#9926) ([#9926](https://github.com/opengovsg/formsg/commit/a6f415ffc3df8a5c0194c8dc72fa3128b4b13f4b))
+* **myinfo:** implement MyInfo FAPI 2.0 client and login flow (#9925) ([#9925](https://github.com/opengovsg/formsg/commit/087a42169480aaced2ef1a8cf6f4159a85fd5499))
+* **myinfo:** migrate MyInfo login to FAPI 2.0 flow (#9927) ([#9927](https://github.com/opengovsg/formsg/commit/d46058b1608fda7cddf0f976159b31c55f739772))
+
+
+### Bug Fixes
+
+* **myinfo:** close FAPI review gaps (session race, cookie cleanup, logging) (#9995) ([#9995](https://github.com/opengovsg/formsg/commit/bf00795048903ca8c0cea9d442d25d6f15f311b0))
+* **myinfo:** redirect stale form tabs after MyInfo auth and clear stale FAPI cookies (#9986) ([#9986](https://github.com/opengovsg/formsg/commit/0a80ab9513483dcd9c187a29300522648f02f417))
+
+
+### Chores
+
+* **myinfo:** bump mockpass to 4.7.1 (#9923) ([#9923](https://github.com/opengovsg/formsg/commit/b59d71780dc63fb7076ba229bb8bc89ec8d87afe))
+
 ## [9.19.0](https://github.com/opengovsg/formsg/compare/v9.18.1...v9.19.0) (2026-09-10)
 
 
