@@ -144,7 +144,7 @@ export const validateMultirespondentSubmissionParams = celebrate({
 const multirespondentSubmissionKeySchema = Joi.object({
   submissionSecretKey: Joi.string().required(),
   // RATIONALE: step token is optional for backwards compatibility with
-  // in-flight submissions, whose rows carry no step token hash to verify against.
+  // in-flight submissions.
   stepToken: Joi.string().optional(),
 })
 

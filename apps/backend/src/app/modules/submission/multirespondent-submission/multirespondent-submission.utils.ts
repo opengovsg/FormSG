@@ -698,20 +698,8 @@ export const getMrfCookieName = ({
   return `Mrf_${formId}_${previousSubmissionId}`
 }
 
-export type MrfVersion = 1 | 2
+export type MrfVersion = 2
 
-/**
- * The row content version every write path now produces. `1` remains in
- * `MrfVersion` because rows written before the V4 cutover still carry it and
- * must keep reading back (`mrfVersionToContentFormat`), but nothing writes it.
- *
- * This used to be `getMrfVersion({ webhookType })`, whose every branch
- * returned 2 once `mrf-step-write-token` was retired. A function that ignores
- * its only argument reads as if the consumer type still mattered, which is
- * precisely the stale decision #9973 exists to remove. #9975 reintroduces a
- * consumer-type branch here deliberately, for the V1 backward-compatible
- * shape.
- */
 export const MRF_VERSION_V4: MrfVersion = 2
 
 export const formatSubmittedStepTimestamp = ({
