@@ -87,9 +87,9 @@ export const loginToMyInfoFapi: ControllerHandler<
     req.signedCookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]
 
   if (typeof sessionId !== 'string' || !sessionId) {
-    logger.error({
+    logger.warn({
       message: 'MyInfo FAPI callback without a session cookie',
-      meta: logMeta,
+      meta: { ...logMeta, reason: 'session_missing' },
     })
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
@@ -99,7 +99,7 @@ export const loginToMyInfoFapi: ControllerHandler<
     (error) => {
       logger.error({
         message: 'Failed to load MyInfo FAPI session',
-        meta: logMeta,
+        meta: { ...logMeta, reason: 'session_load_failed' },
         error,
       })
       return error
@@ -112,9 +112,9 @@ export const loginToMyInfoFapi: ControllerHandler<
 
   const session = loaded.value
   if (!session) {
-    logger.error({
+    logger.warn({
       message: 'MyInfo FAPI session not found or expired',
-      meta: logMeta,
+      meta: { ...logMeta, reason: 'session_missing' },
     })
     clearMyInfoFapiSessionCookie(res)
     return res.sendStatus(StatusCodes.BAD_REQUEST)
@@ -124,14 +124,29 @@ export const loginToMyInfoFapi: ControllerHandler<
   const formMeta = { ...logMeta, formId: session.target.formId }
 
   if ('error' in req.query) {
-    logger.error({
-      message: 'Singpass returned an error from the MyInfo FAPI consent flow',
-      meta: {
-        ...formMeta,
-        error: req.query.error,
-        errorDescription: req.query.error_description, // logged but never rendered
-      },
-    })
+    const oauthError = req.query.error
+    const errorDescription = req.query.error_description // logged but never rendered
+    if (oauthError === 'access_denied') {
+      logger.info({
+        message: 'Respondent declined MyInfo FAPI consent',
+        meta: {
+          ...formMeta,
+          reason: 'consent_denied',
+          oauthError,
+          errorDescription,
+        },
+      })
+    } else {
+      logger.error({
+        message: 'Singpass returned an error from the MyInfo FAPI consent flow',
+        meta: {
+          ...formMeta,
+          reason: 'oauth_error',
+          oauthError,
+          errorDescription,
+        },
+      })
+    }
     await recordFailure(sessionId, formMeta)
     return res.redirect(destination)
   }
@@ -159,7 +174,7 @@ export const loginToMyInfoFapi: ControllerHandler<
   if (exchangeResult.isErr()) {
     logger.error({
       message: 'MyInfo FAPI login error',
-      meta: formMeta,
+      meta: { ...formMeta, reason: 'exchange_failed' },
       error: exchangeResult.error,
     })
     await recordFailure(sessionId, formMeta)
@@ -173,7 +188,7 @@ export const loginToMyInfoFapi: ControllerHandler<
   if (claimed.isErr()) {
     logger.error({
       message: 'Failed to record MyInfo FAPI token exchange',
-      meta: formMeta,
+      meta: { ...formMeta, reason: 'persist_failed' },
       error: claimed.error,
     })
     await recordFailure(sessionId, formMeta)
@@ -203,7 +218,7 @@ const recordFailure = async (
   if (result.isErr()) {
     logger.error({
       message: 'Failed to record MyInfo FAPI login failure',
-      meta,
+      meta: { ...meta, reason: 'persist_failed' },
       error: result.error,
     })
   }
