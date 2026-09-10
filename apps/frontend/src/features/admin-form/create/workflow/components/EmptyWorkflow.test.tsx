@@ -25,16 +25,31 @@ const MANUAL = { name: /set up manually/i }
 
 const server = setupServer()
 
+let servedUsers = 0
+
 const withGuidedSetupFlag = (value: number | undefined) =>
   server.use(
-    http.get('/api/v3/user', () =>
-      HttpResponse.json({
+    http.get('/api/v3/user', () => {
+      servedUsers += 1
+      return HttpResponse.json({
         ...MOCK_USER,
         flags:
           value === undefined ? {} : { [SeenFlags.GuidedWorkflowSetup]: value },
-      }),
-    ),
+      })
+    }),
   )
+
+/**
+ * The intro screen renders before /api/v3/user resolves, but the fork reads the
+ * admin's seen-flag at click time. Without waiting, a click can beat the query
+ * and an admin who has been taught is treated as one who has not.
+ */
+const settleUser = async () => {
+  await waitFor(() => expect(servedUsers).toBeGreaterThan(0))
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0))
+  })
+}
 
 describe('the workflow tab intro screen', () => {
   beforeAll(() => {
@@ -49,6 +64,13 @@ describe('the workflow tab intro screen', () => {
       .scrollIntoView
   })
 
+  beforeEach(() => {
+    servedUsers = 0
+    // Serve an admin with no flags by default, so every test resolves the user
+    // query rather than relying on it failing.
+    withGuidedSetupFlag(undefined)
+  })
+
   afterEach(() => {
     server.resetHandlers()
     useAdminWorkflowStore.getState().reset()
@@ -60,6 +82,7 @@ describe('the workflow tab intro screen', () => {
         render(<NoWorkflowRedesignOn />)
       })
       await screen.findByText(NEW_HEADER, {}, { timeout: 10000 })
+      await settleUser()
     }
 
     it('says what a workflow does, and offers both ways in', async () => {

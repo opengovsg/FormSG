@@ -43,6 +43,7 @@ import {
 import * as MyInfoFapiService from '../../../myinfo/fapi/myinfo.fapi.service'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
+  MYINFO_AUTH_CODE_COOKIE_OPTIONS,
   MYINFO_LOGIN_COOKIE_NAME,
 } from '../../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../../myinfo/myinfo.service'
@@ -790,6 +791,98 @@ describe('public-form.controller', () => {
           form: MOCK_MYINFO_FORM.getPublicView(),
           isIntranetUser: false,
           errorCodes: [ErrorCode.myInfo],
+        })
+      })
+
+      it('should fall back to legacy MyInfo when FAPI verification fails', async () => {
+        const mockMyInfoData = new MyInfoData({
+          uinFin: 'mock-uin-fin',
+        } as IPersonResponse)
+        const mockReqWithBothCookies = expressHandler.mockRequest({
+          params: { formId: MOCK_FORM_ID },
+          others: {
+            cookies: {
+              [MYINFO_AUTH_CODE_COOKIE_NAME]: {
+                authCode: MOCK_AUTH_CODE,
+                state: MyInfoAuthCodeCookieState.Success,
+              },
+            },
+            signedCookies: {
+              [MYINFO_FAPI_SESSION_COOKIE_NAME]: MOCK_FAPI_SESSION_ID,
+            },
+          },
+        })
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+          cookie: jest.fn().mockReturnThis(),
+        })
+        MockMyInfoFapiService.loadPersonForSession.mockReturnValueOnce(
+          errAsync(new MyInfoFapiMissingSessionError()),
+        )
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          okAsync(MOCK_ACCESS_TOKEN),
+        )
+        MockMyInfoService.getMyInfoDataForForm.mockReturnValueOnce(
+          okAsync(mockMyInfoData),
+        )
+        MockMyInfoService.prefillAndSaveMyInfoFields.mockReturnValueOnce(
+          okAsync([]),
+        )
+
+        await PublicFormController.handleGetPublicForm(
+          mockReqWithBothCookies,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(MockMyInfoFapiService.loadPersonForSession).toHaveBeenCalled()
+        expect(MockMyInfoService.retrieveAccessToken).toHaveBeenCalledWith(
+          MOCK_AUTH_CODE,
+        )
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: { ...MOCK_MYINFO_FORM.getPublicView(), form_fields: [] },
+          spcpSession: { userName: mockMyInfoData.getUinFin() },
+          isIntranetUser: false,
+        })
+      })
+
+      it('should use the first error when FAPI and legacy MyInfo both fail', async () => {
+        const mockReqWithBothCookies = expressHandler.mockRequest({
+          params: { formId: MOCK_FORM_ID },
+          others: {
+            cookies: {
+              [MYINFO_AUTH_CODE_COOKIE_NAME]: {
+                authCode: MOCK_AUTH_CODE,
+                state: MyInfoAuthCodeCookieState.Success,
+              },
+            },
+            signedCookies: {
+              [MYINFO_FAPI_SESSION_COOKIE_NAME]: MOCK_FAPI_SESSION_ID,
+            },
+          },
+        })
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+        MockMyInfoFapiService.loadPersonForSession.mockReturnValueOnce(
+          errAsync(new MyInfoFapiIncompleteLoginError()),
+        )
+        MockMyInfoService.retrieveAccessToken.mockReturnValueOnce(
+          errAsync(new MyInfoCircuitBreakerError()),
+        )
+
+        await PublicFormController.handleGetPublicForm(
+          mockReqWithBothCookies,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(MockMyInfoService.retrieveAccessToken).toHaveBeenCalledWith(
+          MOCK_AUTH_CODE,
+        )
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: MOCK_MYINFO_FORM.getPublicView(),
+          isIntranetUser: false,
         })
       })
 
@@ -1652,6 +1745,65 @@ describe('public-form.controller', () => {
       })
     })
 
+    it('should return 200 with the FAPI redirect url, clear the legacy auth code cookie and set the FAPI session cookie when the form has authType MyInfo and myinfoFapi is on', async () => {
+      // Arrange
+      const MOCK_REQ_WITH_FAPI = expressHandler.mockRequest({
+        params: {
+          formId: new ObjectId().toHexString(),
+        },
+        query: {
+          isPersistentLogin: true,
+        },
+        others: {
+          growthbook: {
+            isOn: jest.fn((flag: string) => flag === featureFlags.myinfoFapi),
+            getAttributes: jest.fn(() => ({})),
+            setAttributes: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+      })
+      const MOCK_FORM = {
+        admin: MOCK_ADMIN,
+        authType: FormAuthType.MyInfo,
+        esrvcId: 'MOCKED_FORM_ESRVC_ID',
+        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
+      } as unknown as MyInfoForm<IFormDocument>
+      const MOCK_SESSION_ID = 'mockSessionId'
+
+      const mockRes = expressHandler.mockResponse()
+      MockFormService.retrieveFullFormById.mockReturnValueOnce(
+        okAsync(MOCK_FORM),
+      )
+      MockMyInfoFapiService.startLogin.mockReturnValueOnce(
+        okAsync({
+          sessionId: MOCK_SESSION_ID,
+          redirectUrl: MOCK_REDIRECT_URL,
+        }),
+      )
+
+      // Act
+      await PublicFormController._handleFormAuthRedirect(
+        MOCK_REQ_WITH_FAPI,
+        mockRes,
+        jest.fn(),
+      )
+
+      // Assert
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        MYINFO_AUTH_CODE_COOKIE_NAME,
+        MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+      )
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        MYINFO_FAPI_SESSION_COOKIE_NAME,
+        MOCK_SESSION_ID,
+        expect.anything(),
+      )
+      expect(mockRes.status).toHaveBeenCalledWith(200)
+      expect(mockRes.json).toHaveBeenCalledWith({
+        redirectURL: MOCK_REDIRECT_URL,
+      })
+    })
+
     it('should return 400 when the form has authType NIL', async () => {
       // Arrange
       const MOCK_FORM = {
@@ -1867,6 +2019,14 @@ describe('public-form.controller', () => {
 
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.clearCookie).toHaveBeenCalledWith(MYINFO_LOGIN_COOKIE_NAME)
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        MYINFO_AUTH_CODE_COOKIE_NAME,
+        MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+      )
+      expect(mockRes.clearCookie).toHaveBeenCalledWith(
+        MYINFO_FAPI_SESSION_COOKIE_NAME,
+        expect.anything(),
+      )
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })
