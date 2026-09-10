@@ -15,7 +15,6 @@ describe('shouldSendMrfWebhook', () => {
     isMrfWebhooksEnabled: boolean
     expected: boolean
   }>([
-    // Plumber is the privileged internal consumer: it is always delivered to.
     {
       webhookType: 'plumber',
       isMrfWebhooksEnabled: false,
@@ -26,7 +25,6 @@ describe('shouldSendMrfWebhook', () => {
       isMrfWebhooksEnabled: true,
       expected: true,
     },
-    // Every external consumer is governed by `enable-mrf-webhooks` alone.
     {
       webhookType: 'generic',
       isMrfWebhooksEnabled: false,

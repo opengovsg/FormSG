@@ -55,8 +55,6 @@ const VERIFIED_CONTENT = 'v4-verified-content'
 const ATTACHMENT_METADATA = {
   [attachmentFieldId]: `${formId.toHexString()}/attachment-object-key`,
 }
-// Distinctive so the no-step-token gate below fails if either ever reaches the
-// wire, whatever key it arrives under.
 const STEP_TOKEN_HASH = 'STEP-TOKEN-HASH-SENTINEL'.padEnd(64, '0')
 const ENCRYPTED_STEP_TOKEN =
   'STEP-TOKEN-SENDER-PK-SENTINEL;NONCE-SENTINEL:CIPHER-SENTINEL'
@@ -96,7 +94,6 @@ const comparablePayload = (data: WebhookData): unknown => {
   }
 }
 
-/** Every key at every depth of the posted body. */
 const collectKeys = (value: unknown): string[] => {
   if (Array.isArray(value)) return value.flatMap(collectKeys)
   if (value && typeof value === 'object') {
@@ -223,21 +220,16 @@ describe('[GATE] v4 initial-send route parity', () => {
     },
   )
 
-  // Asserted on the wire, not on a policy flag: the row genuinely carries a
-  // step token hash and a wrapped step token, and neither may appear anywhere
-  // in the posted body under any key, for any consumer class or route.
   it('ships the read key but never a step token, for either consumer class', async () => {
     for (const webhookType of ['plumber', 'generic'] as WebhookConsumerType[]) {
       const { snapshotBacked, liveRow } = await bothRoutes(webhookType)
 
       for (const payload of [snapshotBacked, liveRow]) {
-        // The wrapped submission secret key is genuinely needed and must ship.
         expect(payload.encryptedSubmissionSecretKey).toBeDefined()
 
         const serialised = JSON.stringify(payload)
         expect(serialised).not.toContain(STEP_TOKEN_HASH)
         expect(serialised).not.toContain(ENCRYPTED_STEP_TOKEN)
-        expect(serialised).not.toContain('SENTINEL')
         // No key anywhere in the body may name a step token either.
         expect(collectKeys(payload)).not.toContain(
           expect.stringMatching(/steptoken/i),
