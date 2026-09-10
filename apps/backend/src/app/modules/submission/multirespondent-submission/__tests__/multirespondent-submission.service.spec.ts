@@ -4211,7 +4211,7 @@ describe('multirespondent-submission.service', () => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
         const Model = getMultirespondentSubmissionModel(mongoose)
 
-        // RATIONALE: For test correctness, we write a real row, 
+        // RATIONALE: For test correctness, we write a real row,
         // read back through the real getWebhookView, so the
         // assertion cannot pass merely because the fixture had no token.
         const row = await Model.create({
