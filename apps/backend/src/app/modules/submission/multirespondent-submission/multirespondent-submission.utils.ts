@@ -33,7 +33,6 @@ import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-arra
 import { validateFieldV4 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
-import { WebhookType } from '../../webhook/webhook.service'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
@@ -699,24 +698,9 @@ export const getMrfCookieName = ({
   return `Mrf_${formId}_${previousSubmissionId}`
 }
 
-export type MrfVersion = 1 | 2
+export type MrfVersion = 2
 
-export const getMrfVersion = ({
-  webhookType,
-  isStepWriteTokenEnabled,
-}: {
-  webhookType?: WebhookType
-  isStepWriteTokenEnabled: boolean
-}): MrfVersion => {
-  switch (webhookType) {
-    case 'plumber':
-      return isStepWriteTokenEnabled ? 2 : 1
-    case undefined:
-    case 'zapier':
-    case 'generic':
-      return 2
-  }
-}
+export const MRF_VERSION_V4: MrfVersion = 2
 
 export const formatSubmittedStepTimestamp = ({
   submittedSteps,

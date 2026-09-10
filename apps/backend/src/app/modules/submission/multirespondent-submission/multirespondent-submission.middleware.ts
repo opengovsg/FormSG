@@ -7,7 +7,6 @@ import {
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
-import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FieldResponsesV3,
@@ -58,7 +57,6 @@ import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { createNdiResponsesV4FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { VerifiedContentV3 } from '../../verified-content/verified-content.types'
-import { getWebhookType } from '../../webhook/webhook.service'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
@@ -92,7 +90,7 @@ import {
   StrippedAttachmentResponseV4,
 } from './multirespondent-submission.types'
 import {
-  getMrfVersion,
+  MRF_VERSION_V4,
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
 import * as stepToken from './step-token'
@@ -145,8 +143,8 @@ export const validateMultirespondentSubmissionParams = celebrate({
 
 const multirespondentSubmissionKeySchema = Joi.object({
   submissionSecretKey: Joi.string().required(),
-  // RATIONALE: step token is optional for backwards compatibility with in-flight submissions
-  // and allow `mrf-step-write-token` gb flag to be off.
+  // RATIONALE: step token is optional for backwards compatibility with
+  // in-flight submissions.
   stepToken: Joi.string().optional(),
 })
 
@@ -513,9 +511,7 @@ export const validateMultirespondentSubmission = async (
     ok(mrfSubmission)
       // Step 0a: Verify write permissions by verifying step bearer token if exists
       .andThen((mrfSubmission) => {
-        const isStepWriteTokenEnabled =
-          req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
-        if (isStepWriteTokenEnabled && mrfSubmission?.stepTokenHash) {
+        if (mrfSubmission?.stepTokenHash) {
           const presentedToken = req.body.stepToken
           if (
             !presentedToken ||
@@ -920,14 +916,7 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
-  const isStepWriteTokenEnabled =
-    req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
-
-  const webhookUrl = formDef.webhook?.url
-  const mrfVersion = getMrfVersion({
-    webhookType: webhookUrl ? getWebhookType(webhookUrl) : undefined,
-    isStepWriteTokenEnabled,
-  })
+  const mrfVersion = MRF_VERSION_V4
   const useV4Encryption = mrfVersion === 2
 
   const responsesToEncrypt = useV4Encryption
@@ -972,20 +961,11 @@ export const encryptSubmission = async (
       req.body.version,
     )
 
-  let mintedStepToken:
-    | {
-        stepToken: string
-        stepTokenHash: string
-        encryptedStepToken: string
-      }
-    | undefined
-  if (isStepWriteTokenEnabled) {
-    const rawStepToken = stepToken.generate()
-    mintedStepToken = {
-      stepToken: rawStepToken,
-      stepTokenHash: stepToken.hash(rawStepToken),
-      encryptedStepToken: stepToken.wrap(rawStepToken, formPublicKey),
-    }
+  const rawStepToken = stepToken.generate()
+  const mintedStepToken = {
+    stepToken: rawStepToken,
+    stepTokenHash: stepToken.hash(rawStepToken),
+    encryptedStepToken: stepToken.wrap(rawStepToken, formPublicKey),
   }
 
   req.formsg.encryptedPayload = {

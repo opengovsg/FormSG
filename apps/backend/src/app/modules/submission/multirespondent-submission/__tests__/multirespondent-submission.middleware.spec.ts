@@ -1032,11 +1032,8 @@ describe('Multirespondent Submission Middleware', () => {
         return opened ? encodeUTF8(opened) : null
       }
 
-      it('should mint a step token whose hash and wrapped copy match the raw token when the flag is on', async () => {
+      it('should mint a step token whose hash and wrapped copy match the raw token', async () => {
         const mockReq = createMockEncryptReq(false)
-        mockReq.growthbook.isOn = jest.fn(
-          (flag: string) => flag === featureFlags.mrfStepWriteToken,
-        )
         const mockNext = jest.fn()
         const mockRes = createMockRes()
 
@@ -1053,26 +1050,9 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockNext).toHaveBeenCalled()
       })
 
-      it('should not mint a step token when the flag is off (flag-off path unchanged)', async () => {
-        const mockReq = createMockEncryptReq(false)
-        const mockNext = jest.fn()
-        const mockRes = createMockRes()
-
-        await encryptSubmission(mockReq, mockRes as any, mockNext)
-
-        const payload = mockReq.formsg.encryptedPayload
-        expect(payload.stepToken).toBeUndefined()
-        expect(payload.stepTokenHash).toBeUndefined()
-        expect(payload.encryptedStepToken).toBeUndefined()
-        expect(mockNext).toHaveBeenCalled()
-      })
-
       it('should mint a fresh, unique token on each advance (rotation)', async () => {
         const run = async () => {
           const mockReq = createMockEncryptReq(false)
-          mockReq.growthbook.isOn = jest.fn(
-            (flag: string) => flag === featureFlags.mrfStepWriteToken,
-          )
           await encryptSubmission(mockReq, createMockRes() as any, jest.fn())
           return mockReq.formsg.encryptedPayload.stepToken as string
         }
@@ -1136,61 +1116,30 @@ describe('Multirespondent Submission Middleware', () => {
         }
       }
 
-      describe('URL → consumer class via getWebhookType', () => {
-        it('classifies plumber.gov.sg as plumber (V4 when write-guard on)', async () => {
-          expectEncryptedAs(
-            await runGate({
-              webhookUrl: PLUMBER_URL,
-              flags: [featureFlags.mrfStepWriteToken],
-            }),
-            2,
-          )
+      describe('always V4 regardless of webhook URL', () => {
+        it('plumber.gov.sg is V4', async () => {
+          expectEncryptedAs(await runGate({ webhookUrl: PLUMBER_URL }), 2)
         })
 
-        it('classifies example.com as generic (V4 regardless of the flags)', async () => {
-          expectEncryptedAs(
-            await runGate({
-              webhookUrl: GENERIC_URL,
-              flags: [featureFlags.mrfStepWriteToken],
-            }),
-            2,
-          )
+        it('example.com is V4', async () => {
           expectEncryptedAs(await runGate({ webhookUrl: GENERIC_URL }), 2)
         })
 
-        it('classifies hooks.zapier.com as generic (V4 regardless of the flags)', async () => {
-          expectEncryptedAs(
-            await runGate({
-              webhookUrl: ZAPIER_URL,
-              flags: [featureFlags.mrfStepWriteToken],
-            }),
-            2,
-          )
+        it('hooks.zapier.com is V4', async () => {
           expectEncryptedAs(await runGate({ webhookUrl: ZAPIER_URL }), 2)
         })
 
-        it('no webhook URL is treated as none (V4)', async () => {
+        it('no webhook URL is V4', async () => {
           expectEncryptedAs(await runGate({ flags: [] }), 2)
         })
       })
 
-      describe('ignored inputs that never reach getMrfVersion', () => {
-        it('does not treat enableMrfWebhooks as a substitute for mrfStepWriteToken on plumber', async () => {
-          expectEncryptedAs(
-            await runGate({
-              webhookUrl: PLUMBER_URL,
-              flags: [featureFlags.enableMrfWebhooks],
-            }),
-            1,
-          )
-        })
-
-        it('ignores webhookFormat on plumber (v1 + write-guard still V4)', async () => {
+      describe('ignored inputs that never affect the row version', () => {
+        it('ignores webhookFormat on plumber (v1 still V4)', async () => {
           expectEncryptedAs(
             await runGate({
               webhookUrl: PLUMBER_URL,
               webhookFormat: 'v1',
-              flags: [featureFlags.mrfStepWriteToken],
             }),
             2,
           )
@@ -1440,11 +1389,9 @@ describe('Multirespondent Submission Middleware', () => {
       // Build a request whose decrypt-gate will pass (matching the beforeEach
       // mocks), varying only the step-token bits.
       const createGuardReq = ({
-        flagOn,
         stepTokenHash,
         presentedToken,
       }: {
-        flagOn: boolean
         stepTokenHash?: string
         presentedToken?: string
       }) => {
@@ -1468,11 +1415,7 @@ describe('Multirespondent Submission Middleware', () => {
         }
         mockReq.body.submissionSecretKey = 'submission-secret-key'
         mockReq.body.stepToken = presentedToken
-        mockReq.growthbook = {
-          isOn: jest.fn(
-            (flag: string) => flagOn && flag === featureFlags.mrfStepWriteToken,
-          ),
-        }
+        mockReq.growthbook = { isOn: jest.fn(() => false) }
         mockReq.formsg = {
           formDef: {
             _id: MOCK_FORM_ID,
@@ -1487,7 +1430,6 @@ describe('Multirespondent Submission Middleware', () => {
 
       it('should advance when a valid step token accompanies a valid decrypt', async () => {
         const mockReq = createGuardReq({
-          flagOn: true,
           stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
           presentedToken: RAW_STEP_TOKEN,
         })
@@ -1506,7 +1448,6 @@ describe('Multirespondent Submission Middleware', () => {
 
       it('should return 403 and not advance when the presented token is wrong (decrypt still valid)', async () => {
         const mockReq = createGuardReq({
-          flagOn: true,
           stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
           presentedToken: stepToken.generate(), // wrong token
         })
@@ -1525,7 +1466,6 @@ describe('Multirespondent Submission Middleware', () => {
 
       it('should return 403 when the token is absent but the row carries a hash (decrypt-gate alone no longer advances)', async () => {
         const mockReq = createGuardReq({
-          flagOn: true,
           stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
           presentedToken: undefined, // absent
         })
@@ -1550,7 +1490,6 @@ describe('Multirespondent Submission Middleware', () => {
         // is only ever delivered via next-step email links, and a zero-step
         // form sends none — so no caller can ever present a valid token.
         const mockReq = createGuardReq({
-          flagOn: true,
           stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
           presentedToken: undefined, // nobody ever received the raw token
         })
@@ -1578,27 +1517,7 @@ describe('Multirespondent Submission Middleware', () => {
 
       it('should advance on a legacy row without a hash even with no token (migration grace)', async () => {
         const mockReq = createGuardReq({
-          flagOn: true,
           stepTokenHash: undefined, // legacy in-flight row
-          presentedToken: undefined,
-        })
-        const mockNext = jest.fn()
-        const mockRes = createMockRes()
-
-        await validateMultirespondentSubmission(
-          mockReq,
-          mockRes as any,
-          mockNext,
-        )
-
-        expect(mockNext).toHaveBeenCalled()
-        expect(mockRes.status).not.toHaveBeenCalled()
-      })
-
-      it('should not require a token when the flag is off, even if the row carries a hash (regression)', async () => {
-        const mockReq = createGuardReq({
-          flagOn: false,
-          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
           presentedToken: undefined,
         })
         const mockNext = jest.fn()
