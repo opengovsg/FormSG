@@ -9,6 +9,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { ControllerHandler } from '../../core/core.types'
 
 import {
+  MYINFO_FAPI_SESSION_COOKIE_IDENTITY,
   MYINFO_FAPI_SESSION_COOKIE_NAME,
   MYINFO_FAPI_SESSION_MAX_AGE_MS,
 } from './myinfo.fapi.constants'
@@ -20,13 +21,6 @@ import getMyInfoFapiSessionModel, {
 
 const logger = createLoggerWithLabel(module)
 const MyInfoFapiSession = getMyInfoFapiSessionModel(mongoose)
-
-const cookieIdentity = {
-  signed: true,
-  httpOnly: true,
-  secure: !config.isDevOrTest,
-  sameSite: 'lax' as const, // cannot use strict for cross-site redirects
-}
 
 type CallbackQuery = {
   state: string
@@ -41,13 +35,16 @@ export const setMyInfoFapiSessionCookie = (
   sessionId: string,
 ): void => {
   res.cookie(MYINFO_FAPI_SESSION_COOKIE_NAME, sessionId, {
-    ...cookieIdentity,
+    ...MYINFO_FAPI_SESSION_COOKIE_IDENTITY,
     maxAge: MYINFO_FAPI_SESSION_MAX_AGE_MS,
   })
 }
 
 export const clearMyInfoFapiSessionCookie = (res: Response): void => {
-  res.clearCookie(MYINFO_FAPI_SESSION_COOKIE_NAME, cookieIdentity)
+  res.clearCookie(
+    MYINFO_FAPI_SESSION_COOKIE_NAME,
+    MYINFO_FAPI_SESSION_COOKIE_IDENTITY,
+  )
 }
 
 const callbackQuery = {

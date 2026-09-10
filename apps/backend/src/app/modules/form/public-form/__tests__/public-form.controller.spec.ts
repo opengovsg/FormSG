@@ -34,7 +34,10 @@ import {
 
 import * as AuthService from '../../../auth/auth.service'
 import * as BillingService from '../../../billing/billing.service'
-import { MYINFO_FAPI_SESSION_COOKIE_NAME } from '../../../myinfo/fapi/myinfo.fapi.constants'
+import {
+  MYINFO_FAPI_SESSION_COOKIE_IDENTITY,
+  MYINFO_FAPI_SESSION_COOKIE_NAME,
+} from '../../../myinfo/fapi/myinfo.fapi.constants'
 import {
   MyInfoFapiIncompleteLoginError,
   MyInfoFapiMissingSessionError,
@@ -879,6 +882,39 @@ describe('public-form.controller', () => {
 
         expect(MockMyInfoService.retrieveAccessToken).toHaveBeenCalledWith(
           MOCK_AUTH_CODE,
+        )
+        expect(mockRes.json).toHaveBeenCalledWith({
+          form: MOCK_MYINFO_FORM.getPublicView(),
+          isIntranetUser: false,
+        })
+      })
+
+      it('should clear a FAPI session cookie that cannot be read', async () => {
+        const mockReqWithUnsignedCookie = expressHandler.mockRequest({
+          params: { formId: MOCK_FORM_ID },
+          others: {
+            cookies: {
+              [MYINFO_FAPI_SESSION_COOKIE_NAME]: 's:tampered-or-rotated',
+            },
+            signedCookies: {},
+          },
+        })
+        const mockRes = expressHandler.mockResponse({
+          clearCookie: jest.fn().mockReturnThis(),
+        })
+
+        await PublicFormController.handleGetPublicForm(
+          mockReqWithUnsignedCookie,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(
+          MockMyInfoFapiService.loadPersonForSession,
+        ).not.toHaveBeenCalled()
+        expect(mockRes.clearCookie).toHaveBeenCalledWith(
+          MYINFO_FAPI_SESSION_COOKIE_NAME,
+          MYINFO_FAPI_SESSION_COOKIE_IDENTITY,
         )
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_MYINFO_FORM.getPublicView(),

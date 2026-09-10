@@ -238,6 +238,10 @@ export const handleGetPublicForm: ControllerHandler<
           clearMyInfoFapiSessionCookie(res)
           myInfoFields = fapiFieldsResult.value
         }
+      } else if (req.cookies[MYINFO_FAPI_SESSION_COOKIE_NAME]) {
+        // Present but unreadable (e.g. rotated SESSION_SECRET); drop it
+        // since nothing can consume it.
+        clearMyInfoFapiSessionCookie(res)
       }
 
       if (!myInfoFields) {
