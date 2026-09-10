@@ -216,8 +216,8 @@ export const handleGetPublicForm: ControllerHandler<
 
       const authErrors: unknown[] = []
 
-      // Prefer FAPI when its session cookie exists, but fall back to the legacy
-      // auth code when FAPI verification fails.
+      // Prefer FAPI when its cookie exists; fall back to the legacy auth code
+      // on failure.
       const fapiSessionId: unknown =
         req.signedCookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]
       if (typeof fapiSessionId === 'string' && fapiSessionId) {
@@ -229,8 +229,8 @@ export const handleGetPublicForm: ControllerHandler<
           const { error: fapiError } = fapiFieldsResult
           authErrors.push(fapiError)
 
-          // The tab-scoped frontend guard decides whether a session belonging
-          // to another form should be discarded.
+          // Frontend tab-scoping decides whether to discard a session for
+          // another form.
           if (!(fapiError instanceof MyInfoFapiSessionFormMismatchError)) {
             clearMyInfoFapiSessionCookie(res)
           }
@@ -238,6 +238,10 @@ export const handleGetPublicForm: ControllerHandler<
           clearMyInfoFapiSessionCookie(res)
           myInfoFields = fapiFieldsResult.value
         }
+      } else if (req.cookies[MYINFO_FAPI_SESSION_COOKIE_NAME]) {
+        // Present but unreadable (e.g. rotated SESSION_SECRET); drop it
+        // since nothing can consume it.
+        clearMyInfoFapiSessionCookie(res)
       }
 
       if (!myInfoFields) {
@@ -276,9 +280,8 @@ export const handleGetPublicForm: ControllerHandler<
           })
         }
 
-        // Respondent never reached, or hasn't yet reached, the Singpass
-        // callback (e.g. navigated back before completing login), or the FAPI
-        // session belongs to another tab. Treat either as no login attempt.
+        // Callback not yet reached, or the session belongs to another tab —
+        // treat either as no login attempt.
         if (
           firstAuthError instanceof MyInfoFapiIncompleteLoginError ||
           firstAuthError instanceof MyInfoFapiSessionFormMismatchError

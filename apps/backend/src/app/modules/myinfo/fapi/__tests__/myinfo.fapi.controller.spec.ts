@@ -3,11 +3,27 @@ import { Request } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
 
+import { createLoggerWithLabel } from '../../../../config/logger'
 import { MYINFO_FAPI_SESSION_COOKIE_NAME } from '../myinfo.fapi.constants'
 import { loginToMyInfoFapi } from '../myinfo.fapi.controller'
 import { MyInfoFapiExchangeError } from '../myinfo.fapi.errors'
 import * as MyInfoFapiService from '../myinfo.fapi.service'
 import getMyInfoFapiSessionModel from '../myinfo.fapi.session.model'
+
+jest.mock('../../../../config/logger', () => {
+  const logger = {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  }
+  return { createLoggerWithLabel: () => logger }
+})
+
+const mockLogger = createLoggerWithLabel(module) as {
+  info: jest.Mock
+  warn: jest.Mock
+  error: jest.Mock
+}
 
 jest.mock('../myinfo.fapi.service')
 const MockMyInfoFapiService = jest.mocked(MyInfoFapiService)
@@ -58,6 +74,12 @@ describe('loginToMyInfoFapi', () => {
 
     expect(res.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
     expect(MockSession.loadForCallback).not.toHaveBeenCalled()
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        meta: expect.objectContaining({ reason: 'session_missing' }),
+      }),
+    )
+    expect(mockLogger.error).not.toHaveBeenCalled()
   })
 
   it('should reject and clear the cookie when the session is gone', async () => {
@@ -75,6 +97,12 @@ describe('loginToMyInfoFapi', () => {
     expect(res.sendStatus).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
     expect(res.clearCookie).toHaveBeenCalled()
     expect(MockMyInfoFapiService.exchangeCallback).not.toHaveBeenCalled()
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        meta: expect.objectContaining({ reason: 'session_missing' }),
+      }),
+    )
+    expect(mockLogger.error).not.toHaveBeenCalled()
   })
 
   it('should exchange the code and redirect to the form on the happy path', async () => {
@@ -174,6 +202,47 @@ describe('loginToMyInfoFapi', () => {
     expect(MockMyInfoFapiService.exchangeCallback).not.toHaveBeenCalled()
     expect(MockSession.markFailed).toHaveBeenCalledWith(MOCK_SESSION_ID)
     expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      expect.objectContaining({
+        meta: expect.objectContaining({
+          reason: 'consent_denied',
+          oauthError: 'access_denied',
+        }),
+      }),
+    )
+    expect(mockLogger.error).not.toHaveBeenCalled()
+  })
+
+  it('should log a Singpass OAuth failure at error so it can be alarmed separately from consent declined', async () => {
+    MockSession.loadForCallback.mockResolvedValueOnce({
+      phase: 'pending',
+      target: MOCK_TARGET,
+      exchange: MOCK_EXCHANGE,
+    })
+    const res = expressHandler.mockResponse()
+
+    await loginToMyInfoFapi(
+      mockCallback(
+        {
+          error: 'server_error',
+          state: 'mock-state',
+        },
+        MOCK_SESSION_ID,
+      ),
+      res,
+      jest.fn(),
+    )
+
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      expect.objectContaining({
+        meta: expect.objectContaining({
+          reason: 'oauth_error',
+          oauthError: 'server_error',
+        }),
+      }),
+    )
+    expect(MockSession.markFailed).toHaveBeenCalledWith(MOCK_SESSION_ID)
+    expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
   })
 
   it('should keep the cookie when the exchange fails, so form load raises the MyInfo error', async () => {
@@ -197,6 +266,11 @@ describe('loginToMyInfoFapi', () => {
     expect(MockSession.markFailed).toHaveBeenCalledWith(MOCK_SESSION_ID)
     expect(res.clearCookie).not.toHaveBeenCalled()
     expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}`)
+    expect(mockLogger.error).toHaveBeenCalledWith(
+      expect.objectContaining({
+        meta: expect.objectContaining({ reason: 'exchange_failed' }),
+      }),
+    )
   })
 
   it('should record a failure when the exchange cannot be persisted', async () => {
