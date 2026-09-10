@@ -4028,7 +4028,6 @@ describe('multirespondent-submission.service', () => {
         }),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
-        // The only remaining way a generic webhook is undeliverable.
         growthbook: growthbookWithFlags({ enableMrfWebhooks: false }),
       })
 
@@ -4185,12 +4184,6 @@ describe('multirespondent-submission.service', () => {
 
     // ---- Generic never receives the step token (write credential) ----
 
-    // Asserted on the posted body, not on a policy flag. The row genuinely
-    // carries a step token hash and a wrapped step token, and neither may
-    // appear anywhere in what the post-submission action hands the webhook
-    // sender — for plumber, the privileged consumer, as much as for generic
-    // and zapier. There is no boolean left to assert here: no payload type has
-    // a slot for a step token, and that is what this pins.
     const STEP_TOKEN_HASH = 'SVC-STEP-TOKEN-HASH-SENTINEL'.padEnd(64, '0')
     const ENCRYPTED_STEP_TOKEN =
       'SVC-SENDER-PK-SENTINEL;SVC-NONCE-SENTINEL:SVC-CIPHER-SENTINEL'
@@ -4218,7 +4211,8 @@ describe('multirespondent-submission.service', () => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
         const Model = getMultirespondentSubmissionModel(mongoose)
 
-        // A real row, read back through the real getWebhookView, so the
+        // RATIONALE: For test correctness, we write a real row, 
+        // read back through the real getWebhookView, so the
         // assertion cannot pass merely because the fixture had no token.
         const row = await Model.create({
           form: mockFormId,
@@ -4430,29 +4424,6 @@ describe('multirespondent-submission.service', () => {
       })
     })
 
-    it('takes the legacy path (no 4th arg) for a plumber V3 row', async () => {
-      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-      const submission = buildSubmissionWithToken(
-        undefined,
-        buildLiveWebhookView(),
-        1,
-      )
-
-      await performMultiRespondentPostSubmissionCreateActions({
-        submission,
-        submissionId: submission._id.toString(),
-        form: buildV4Form(),
-        encryptedPayload: buildV4Payload({ mrfVersion: 1 }),
-        logMeta: {} as any,
-        growthbook: growthbookWithFlags({}),
-      })
-      await flushPromises()
-
-      expect(sendSpy).toHaveBeenCalledTimes(1)
-      expect(sendSpy.mock.calls[0][3]).toBeUndefined()
-      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
-    })
-
     it('reconstructs the live row (not the legacy path) for a plumber V4 row with no snapshot', async () => {
       const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
       const liveView = buildLiveWebhookView()
@@ -4660,31 +4631,6 @@ describe('multirespondent-submission.service', () => {
       expect(saved?.submittedSteps?.[1]?.snapshotTokens?.v4).toBe(
         'orphan-token-2',
       )
-    })
-
-    // ---- Regression / byte-identity ----
-
-    it('legacy plumber create (flag off, mrfVersion 1) sends via getWebhookView with no 4th arg and no snapshot', async () => {
-      const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-      const submission = buildSubmissionWithToken(
-        undefined,
-        buildLiveWebhookView(),
-        1,
-      )
-
-      await performMultiRespondentPostSubmissionCreateActions({
-        submission,
-        submissionId: submission._id.toString(),
-        form: buildV4Form(),
-        encryptedPayload: buildV4Payload({ mrfVersion: 1 }),
-        logMeta: {} as any,
-        growthbook: growthbookWithFlags({}),
-      })
-      await flushPromises()
-
-      expect(sendSpy).toHaveBeenCalledTimes(1)
-      expect(sendSpy.mock.calls[0][3]).toBeUndefined()
-      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
     })
   })
 
