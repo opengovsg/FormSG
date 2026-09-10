@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.21.0](https://github.com/opengovsg/formsg/compare/v9.20.0...v9.21.0) (2026-09-10)
+
+
+### Features
+
+* **workflow:** add the delete-workflow modal (2/5) (#9908) ([#9908](https://github.com/opengovsg/formsg/commit/949061c13c1d2a766def030ddaea73a822b72157))
+* **workflow:** delete a workflow, and refuse while the form is open (1/5, backend) (#9907) ([#9907](https://github.com/opengovsg/formsg/commit/81a56381f99f607c5e7b6437dfc66083b1b18aa0))
+* **workflow:** delete workflow design polish (4/5) (#9917) ([#9917](https://github.com/opengovsg/formsg/commit/3dda30beb46d00eb8c131ac41a6d668f9e3043d3))
+* **workflow:** give step 1 and the workflow card a delete button (3/5) (#9909) ([#9909](https://github.com/opengovsg/formsg/commit/b357d7dfb414e31e537da742e0c3fb8a6fd4a42a))
+
+
+### Bug Fixes
+
+* **workflow:** rest delete-modal focus on the dialog, not a button (5/5) (#9933) ([#9933](https://github.com/opengovsg/formsg/commit/fecba687a1170d486d91897c6afa1ba2b2d0354b))
+
+
+### Tests
+
+* **workflow:** give the intro screen tests a localStorage to write to (#9996) ([#9996](https://github.com/opengovsg/formsg/commit/49946f2be600b498361de6e7ec2ea61c5f5eb32f))
+
 ## [9.20.0](https://github.com/opengovsg/formsg/compare/v9.19.0...v9.20.0) (2026-09-10)
 
 
