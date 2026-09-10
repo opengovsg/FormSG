@@ -221,16 +221,25 @@ describe('myinfo.fapi.session.model', () => {
       })
     })
 
-    it('should report failed and delete a failed session', async () => {
+    it('should report failed without deleting, so a later callback can still claim', async () => {
       const sessionId = await MyInfoFapiSession.createPending(pendingSession)
       await MyInfoFapiSession.markFailed(sessionId)
 
       await expect(consume(sessionId)).resolves.toEqual({
         status: 'failed',
       })
+
       await expect(
-        MyInfoFapiSession.loadForCallback(sessionId),
-      ).resolves.toBeNull()
+        MyInfoFapiSession.markExchanged(sessionId, {
+          accessToken: MOCK_ACCESS_TOKEN,
+          sub: MOCK_SUB,
+        }),
+      ).resolves.toBe('claimed')
+
+      await expect(consume(sessionId)).resolves.toMatchObject({
+        status: 'exchanged',
+        session: { accessToken: MOCK_ACCESS_TOKEN, sub: MOCK_SUB },
+      })
     })
 
     it('should leave a pending session untouched', async () => {
