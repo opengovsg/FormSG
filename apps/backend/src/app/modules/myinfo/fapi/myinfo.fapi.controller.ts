@@ -2,6 +2,7 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { Response } from 'express'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
+import { ResultAsync } from 'neverthrow'
 
 import { Environment } from '../../../../types'
 import config from '../../../config/config'
@@ -15,7 +16,6 @@ import {
 } from './myinfo.fapi.constants'
 import { exchangeCallback } from './myinfo.fapi.service'
 import getMyInfoFapiSessionModel, {
-  MyInfoFapiClaimOutcome,
   MyInfoFapiRedirectTarget,
 } from './myinfo.fapi.session.model'
 
@@ -94,17 +94,23 @@ export const loginToMyInfoFapi: ControllerHandler<
     return res.sendStatus(StatusCodes.BAD_REQUEST)
   }
 
-  const session = await MyInfoFapiSession.loadForCallback(sessionId).catch(
+  const loaded = await ResultAsync.fromPromise(
+    MyInfoFapiSession.loadForCallback(sessionId),
     (error) => {
       logger.error({
         message: 'Failed to load MyInfo FAPI session',
         meta: logMeta,
         error,
       })
-      return null
+      return error
     },
   )
+  if (loaded.isErr()) {
+    clearMyInfoFapiSessionCookie(res)
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
 
+  const session = loaded.value
   if (!session) {
     logger.error({
       message: 'MyInfo FAPI session not found or expired',
@@ -160,18 +166,15 @@ export const loginToMyInfoFapi: ControllerHandler<
     return res.redirect(destination)
   }
 
-  let outcome: MyInfoFapiClaimOutcome
-  try {
-    outcome = await MyInfoFapiSession.markExchanged(
-      sessionId,
-      exchangeResult.value,
-    )
-  } catch (error) {
-    // Best-effort record the failed exchange before redirecting to the form.
+  const claimed = await ResultAsync.fromPromise(
+    MyInfoFapiSession.markExchanged(sessionId, exchangeResult.value),
+    (error) => error,
+  )
+  if (claimed.isErr()) {
     logger.error({
       message: 'Failed to record MyInfo FAPI token exchange',
       meta: formMeta,
-      error,
+      error: claimed.error,
     })
     await recordFailure(sessionId, formMeta)
     return res.redirect(destination)
@@ -179,7 +182,7 @@ export const loginToMyInfoFapi: ControllerHandler<
 
   logger.info({
     message: 'Completed MyInfo FAPI token exchange',
-    meta: { ...formMeta, outcome },
+    meta: { ...formMeta, outcome: claimed.value },
   })
 
   return res.redirect(destination)
@@ -189,17 +192,22 @@ export const loginToMyInfoFapi: ControllerHandler<
  * Best-effort marks the session as failed so form load can raise
  * ErrorCode.myInfo. A write failure is logged and leaves the session unchanged.
  */
-const recordFailure = (
+const recordFailure = async (
   sessionId: string,
   meta: { action: string; formId: string },
-): Promise<void> =>
-  MyInfoFapiSession.markFailed(sessionId).catch((error) => {
+): Promise<void> => {
+  const result = await ResultAsync.fromPromise(
+    MyInfoFapiSession.markFailed(sessionId),
+    (error) => error,
+  )
+  if (result.isErr()) {
     logger.error({
       message: 'Failed to record MyInfo FAPI login failure',
       meta,
-      error,
+      error: result.error,
     })
-  })
+  }
+}
 
 /**
  * Form path to send the respondent to after the callback.
