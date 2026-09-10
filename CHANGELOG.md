@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.19.0](https://github.com/opengovsg/formsg/compare/v9.18.1...v9.19.0) (2026-09-10)
+
+
+### Features
+
+* **workflow-builder-redesign:** actionable empty states for field pickers (#9911) ([#9911](https://github.com/opengovsg/formsg/commit/d726ab0c145f34371701b5ed0ca9789a37636404))
+* **workflow-builder-redesign:** save half-built steps, gate publishing on a runnable workflow (#9856) ([#9856](https://github.com/opengovsg/formsg/commit/fd580ffdff3d6dcf1a560c07b6df2b3dc03b118c))
+* **workflow-builder-redesign:** stage a field creation across tabs (#9959) ([#9959](https://github.com/opengovsg/formsg/commit/c343990e6d5b56145a742a960567e38255084eb7))
+
+
+### Bug Fixes
+
+* **workflow:** remember whether an admin builds in guided mode (#9991) ([#9991](https://github.com/opengovsg/formsg/commit/a493df308df6dd957567e2b18c94f0e264a57413))
+
+
+### Refactors
+
+* **mrf:** retire the mrf-step-write-token flag (prefactor) (#9990) ([#9990](https://github.com/opengovsg/formsg/commit/f3238158d3671d50891702278b0fe064a1988e9b))
+
 ## [9.18.1](https://github.com/opengovsg/formsg/compare/v9.18.0...v9.18.1) (2026-09-09)
 
 
