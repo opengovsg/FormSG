@@ -68,13 +68,10 @@ const validateMyInfoFapiLogin = celebrate({
 })
 
 /**
- * Exchanges the Singpass authorization code for tokens and redirects to the form.
- * The code is single-use, expires in ~60 seconds, and is bound to a DPoP key
- * that only the session document holds, so the exchange happens here rather
- * than on form load. Failures mark the session `failed` before redirecting,
- * so form load raises ErrorCode.myInfo; a session that never reaches this
- * callback at all is left `pending`, which form load treats as no attempt
- * having been made rather than a failure.
+ * Exchanges the Singpass code for tokens. Happens here, not on form load,
+ * because the code is single-use and bound to a DPoP key only the session
+ * holds. Failure marks the session `failed`; never reaching this callback
+ * leaves it `pending`, which form load treats as no attempt made.
  */
 export const loginToMyInfoFapi: ControllerHandler<
   unknown,
@@ -151,8 +148,8 @@ export const loginToMyInfoFapi: ControllerHandler<
     return res.redirect(destination)
   }
 
-  // Duplicate callback (RBI forwarding race or a double click)
-  // Winner holds valid token, both requests share the cookie, so leave it.
+  // Duplicate callback (RBI race or double click); the winner already holds
+  // a valid token, so leave the cookie for it.
   if (session.phase === 'exchanged') {
     logger.info({
       message:
@@ -204,8 +201,8 @@ export const loginToMyInfoFapi: ControllerHandler<
 }
 
 /**
- * Best-effort marks the session as failed so form load can raise
- * ErrorCode.myInfo. A write failure is logged and leaves the session unchanged.
+ * Best-effort: marks the session failed so form load raises ErrorCode.myInfo.
+ * A write failure is logged and the session is left unchanged.
  */
 const recordFailure = async (
   sessionId: string,
@@ -225,9 +222,8 @@ const recordFailure = async (
 }
 
 /**
- * Form path to send the respondent to after the callback.
- * Uses encodedQuery stored in MongoDB to reconstruct the original query string.
- * Returns the base URL if no encodedQuery is present.
+ * Form path to redirect to after the callback, rebuilt from the stored
+ * encodedQuery (or just the base URL if none).
  */
 const redirectDestination = ({
   formId,
