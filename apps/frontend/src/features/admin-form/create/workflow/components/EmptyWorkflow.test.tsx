@@ -51,20 +51,36 @@ const settleUser = async () => {
   })
 }
 
+let localStore: Record<string, string> = {}
+
 describe('the workflow tab intro screen', () => {
   beforeAll(() => {
     server.listen({ onUnhandledRequest: 'bypass' })
     Element.prototype.scrollIntoView = vi.fn()
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => localStore[key] ?? null,
+      setItem: (key: string, value: string) => {
+        localStore[key] = value
+      },
+      removeItem: (key: string) => {
+        delete localStore[key]
+      },
+      clear: () => {
+        localStore = {}
+      },
+    })
   })
 
   afterAll(() => server.close())
 
   afterAll(() => {
+    vi.unstubAllGlobals()
     delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>)
       .scrollIntoView
   })
 
   beforeEach(() => {
+    localStore = {}
     servedUsers = 0
     // Serve an admin with no flags by default, so every test resolves the user
     // query rather than relying on it failing.
