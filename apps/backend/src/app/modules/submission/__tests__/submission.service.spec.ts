@@ -1329,6 +1329,67 @@ describe('submission.service', () => {
         mockSubmissionId,
       )
     })
+
+    it('should look up multirespondent forms across both submission types via the base model', async () => {
+      // Arrange
+      // A mode-migrated multirespondent form can hold a pre-migration encrypt
+      // submission; the multirespondent read path must still find it.
+      const expected = {
+        submissionType: SubmissionType.Encrypt,
+        encryptedContent: 'mock encrypted content',
+        verifiedContent: 'mock verified content',
+        attachmentMetadata: new Map(),
+        created: new Date(),
+        version: 1,
+      } as unknown as StorageModeSubmissionData
+
+      const mixedLookupSpy = jest
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSubmissionById')
+        .mockResolvedValueOnce(expected)
+      const mrfLookupSpy = jest.spyOn(
+        MultirespondentSubmission,
+        'findEncryptedSubmissionById',
+      )
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await SubmissionService.getEncryptedSubmissionData(
+        FormResponseMode.Multirespondent,
+        mockFormId,
+        mockSubmissionId,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(actualResult._unsafeUnwrap()).toEqual(expected)
+      expect(mixedLookupSpy).toHaveBeenCalledWith(mockFormId, mockSubmissionId)
+      expect(mrfLookupSpy).not.toHaveBeenCalled()
+    })
+
+    it('should return SubmissionNotFoundError when the mixed-type lookup finds nothing', async () => {
+      // Arrange
+      jest
+        .spyOn(Submission, 'findEncryptedOrMultirespondentSubmissionById')
+        .mockResolvedValueOnce(null)
+      const mockFormId = new ObjectId().toHexString()
+      const mockSubmissionId = new ObjectId().toHexString()
+
+      // Act
+      const actualResult = await SubmissionService.getEncryptedSubmissionData(
+        FormResponseMode.Multirespondent,
+        mockFormId,
+        mockSubmissionId,
+      )
+
+      // Assert
+      expect(actualResult.isErr()).toEqual(true)
+      expect(actualResult._unsafeUnwrapErr()).toEqual(
+        new SubmissionNotFoundError(
+          'Unable to find encrypted submission from database',
+        ),
+      )
+    })
   })
 
   describe('getSubmissionCursor', () => {
