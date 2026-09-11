@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.22.1](https://github.com/opengovsg/formsg/compare/v9.22.0...v9.22.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* **workflow:** evaluate the deletion flag with the admin's email (#9998) ([#9998](https://github.com/opengovsg/formsg/commit/afe68943b8312107cddf055b3faeaef869849a2a))
+
 ## [9.22.0](https://github.com/opengovsg/formsg/compare/v9.21.0...v9.22.0) (2026-09-11)
 
 
