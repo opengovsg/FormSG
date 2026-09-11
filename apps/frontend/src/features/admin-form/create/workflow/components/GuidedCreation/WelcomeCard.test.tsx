@@ -71,7 +71,7 @@ describe('WelcomeCard', () => {
       screen.getByText(/everyone who opens your form link fills in first/i),
     ).toBeInTheDocument()
     expect(
-      screen.getByText(/name it, choose who fills it in/i),
+      screen.getByText(/name the step and pick which fields they see/i),
     ).toBeInTheDocument()
   })
 
