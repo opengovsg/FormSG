@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.22.0](https://github.com/opengovsg/formsg/compare/v9.21.0...v9.22.0) (2026-09-11)
+
+
+### Features
+
+* deploy scheduled form closure lambda (5/8) (#9881) ([#9881](https://github.com/opengovsg/formsg/commit/f9bec35ef8d6a4a490911f4499cd6c56e03f96ef))
+* enforce scheduled form closure (3/8) (#9879) ([#9879](https://github.com/opengovsg/formsg/commit/8bee1e8180dfe51a72b20d195f3172941baca8fc))
+* scheduled form closure admin ui (2/8) (#9878) ([#9878](https://github.com/opengovsg/formsg/commit/8181ab80317f9f96c5cd41e2ce69c444a5bb8ef2))
+* scheduled form closure schema (1/8) (#9877) ([#9877](https://github.com/opengovsg/formsg/commit/60d386600f7d38772b17afe022e923fd7d317bcd))
+* scheduled form closure sweep (4/8) (#9880) ([#9880](https://github.com/opengovsg/formsg/commit/32d25daac8275833958586e46d5d20e3e22d4b83))
+* style the scheduled closure notification email (7/8) (#9906) ([#9906](https://github.com/opengovsg/formsg/commit/4ac134c01ab24e554058965e7b7573f2b2f8e985))
+
+
+### Bug Fixes
+
+* 12-hour expiry time input and next-day default (6/8) (#9905) ([#9905](https://github.com/opengovsg/formsg/commit/9a7acdc61daa27b2c85f8824f52e6bf1de1318ae))
+* scheduled form closure v1.1 copy and beta badge (8/8) (#9918) ([#9918](https://github.com/opengovsg/formsg/commit/ea4577f9cd6c3d6ea27d5daa529649999d7a2da7))
+
 ## [9.21.0](https://github.com/opengovsg/formsg/compare/v9.20.0...v9.21.0) (2026-09-10)
 
 
