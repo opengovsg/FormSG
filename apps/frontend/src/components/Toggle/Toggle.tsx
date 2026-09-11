@@ -70,7 +70,12 @@ type ToggleWithParts = ComponentWithAs<'input', ToggleProps> & {
 const BetaBadge = () => {
   const { t } = useTranslation()
   return (
-    <Badge colorScheme="primary" variant="subtle" color="secondary.500">
+    <Badge
+      colorScheme="primary"
+      variant="subtle"
+      color="secondary.500"
+      ml="0.5rem"
+    >
       {t('features.common.betaBadgeLabel')}
     </Badge>
   )
@@ -101,12 +106,7 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
               <FormLabel.Label sx={{ ...styles.label, ...labelStyles }}>
                 <Text>
                   {label}
-                  {betaBadge ? (
-                    <>
-                      {' '}
-                      <BetaBadge />
-                    </>
-                  ) : null}
+                  {betaBadge ? <BetaBadge /> : null}
                 </Text>
               </FormLabel.Label>
               {tooltipText && (
