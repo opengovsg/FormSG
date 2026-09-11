@@ -209,13 +209,23 @@ export const retrieveFormById = (
   })
 }
 
+const hasPassedCloseAt = (form: IPopulatedForm): boolean =>
+  !!form.closeAt && new Date(form.closeAt) <= new Date()
+
 /**
  * Method to ensure given form is available to the public.
+ *
+ * The closeAt check is what enforces a deadline; the sweep only lags behind it.
+ * Unlike the submission limit check this does not deactivate the form, which
+ * would drop it from the sweep's `status: Public` query and leave the admin
+ * unnotified.
+ *
  * @param form the form to check
  * @returns ok(true) if form is public
  * @returns err(ApplicationError) if form has an invalid state
  * @returns err(FormDeletedError) if form has been deleted
- * @returns err(PrivateFormError) if form is private, the message will be the form inactive message
+ * @returns err(PrivateFormError) if form is private or past its scheduled
+ * expiry; the message will be the form inactive message
  */
 export const isFormPublic = (
   form: IPopulatedForm,
@@ -225,7 +235,9 @@ export const isFormPublic = (
   }
   switch (form.status) {
     case FormStatus.Public:
-      return ok(true)
+      return hasPassedCloseAt(form)
+        ? err(new PrivateFormError(form.inactiveMessage, form.title))
+        : ok(true)
     case FormStatus.Archived:
       return err(new FormDeletedError())
     case FormStatus.Private:

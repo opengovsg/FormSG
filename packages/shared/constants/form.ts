@@ -1,6 +1,8 @@
 const PUBLIC_FORM_FIELDS = [
   'admin',
   'authType',
+  // Exposed so respondents see the deadline before they start filling the form
+  'closeAt',
   'isSubmitterIdCollectionEnabled',
   'isSingleSubmission',
   'endPage',
