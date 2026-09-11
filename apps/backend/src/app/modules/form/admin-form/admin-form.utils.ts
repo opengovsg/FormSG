@@ -47,6 +47,7 @@ import {
 import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 
 import {
+  DeleteFirstWorkflowStepError,
   EditFieldError,
   FieldNotFoundError,
   GoGovAlreadyExistError,
@@ -61,6 +62,7 @@ import {
   ModelResponseInvalidSchemaFormatError,
   ModelResponseInvalidSyntaxError,
   PaymentChannelNotFoundError,
+  WorkflowDeletionDisabledError,
 } from './admin-form.errors'
 import {
   AssertFormFn,
@@ -89,6 +91,7 @@ export const mapRouteError = (
       }
     case InvalidFileTypeError:
     case CreatePresignedPostError:
+    case DeleteFirstWorkflowStepError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
@@ -96,6 +99,7 @@ export const mapRouteError = (
     case FormNotFoundError:
     case FieldNotFoundError:
     case LogicNotFoundError:
+    case WorkflowDeletionDisabledError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,

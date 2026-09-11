@@ -22,22 +22,27 @@ jest.mock('nodemailer', () => ({
 }))
 jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
-/**
- * The whole feature is behind `workflow-deletion`. Default it on, and turn it
- * off explicitly in the two tests about the flag itself, so every other test
- * reads as a statement about the feature rather than about the flag.
- *
- * The stub is mounted as middleware because `setupApp` builds a minimal app
- * without the global growthbook middleware the real server applies. Without
- * this, `req.growthbook` is undefined and every flag reads as off — which is
- * indistinguishable from the feature not working.
- */
-let isFlagOn = true
+let rolloutEmails: string[] = []
 
 const routerWithGrowthbook = Router()
 routerWithGrowthbook.use((req, _res, next) => {
-  ;(req as unknown as { growthbook: { isOn: () => boolean } }).growthbook = {
-    isOn: () => isFlagOn,
+  let attributes: Record<string, unknown> = {}
+  ;(
+    req as unknown as {
+      growthbook: {
+        getAttributes: () => Record<string, unknown>
+        setAttributes: (next: Record<string, unknown>) => void
+        isOn: () => boolean
+      }
+    }
+  ).growthbook = {
+    getAttributes: () => attributes,
+    setAttributes: (next) => {
+      attributes = next
+    },
+    isOn: () =>
+      typeof attributes.adminEmail === 'string' &&
+      rolloutEmails.includes(attributes.adminEmail),
   }
   next()
 })
@@ -73,11 +78,12 @@ describe('admin-form.workflow-deletion.routes', () => {
     const { user } = await dbHandler.insertFormCollectionReqs()
     request = await createAuthedSession(user.email, request)
     defaultUser = user
+    rolloutEmails = [user.email]
   })
   afterEach(async () => {
     await dbHandler.clearDatabase()
     jest.restoreAllMocks()
-    isFlagOn = true
+    rolloutEmails = []
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -117,8 +123,21 @@ describe('admin-form.workflow-deletion.routes', () => {
 
     // With the flag off the endpoint does not exist as far as anyone outside
     // the rollout is concerned.
-    it('should return 404 when the feature flag is off', async () => {
-      isFlagOn = false
+    it('should return 404 when the admin is not in the rollout', async () => {
+      rolloutEmails = []
+      const form = await createMrfForm(FormStatus.Private)
+
+      const response = await request.delete(`/admin/forms/${form._id}/workflow`)
+
+      expect(response.status).toEqual(404)
+      const stored = await FormModel.findById(form._id)
+      expect(
+        (stored as never as { workflow: unknown[] }).workflow,
+      ).toHaveLength(2)
+    })
+
+    it('should return 404 when only another admin is in the rollout', async () => {
+      rolloutEmails = ['someone-else@example.com']
       const form = await createMrfForm(FormStatus.Private)
 
       const response = await request.delete(`/admin/forms/${form._id}/workflow`)
@@ -158,8 +177,8 @@ describe('admin-form.workflow-deletion.routes', () => {
 
     // Flag off restores today's behaviour exactly, bug included. That is what
     // makes the flag a clean rollback rather than a partial one.
-    it('should fall back to the old behaviour when the flag is off', async () => {
-      isFlagOn = false
+    it('should fall back to the old behaviour when the admin is not in the rollout', async () => {
+      rolloutEmails = []
       const form = await createMrfForm(FormStatus.Private)
 
       const response = await request.delete(
