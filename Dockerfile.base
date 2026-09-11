@@ -24,7 +24,8 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/sdk/package.json ./packages/sdk/
 COPY apps/frontend/package.json ./apps/frontend/
 
-RUN pnpm install --frozen-lockfile --filter "!services/*" --filter "!packages/react-email-preview/*"
+RUN --mount=type=secret,id=npmrc,target=/build/.npmrc \
+    pnpm install --frozen-lockfile --filter "!services/*" --filter "!packages/react-email-preview/*"
 
 # =============================================================================
 # runtime-base: Minimal runtime image with system deps and non-root user
