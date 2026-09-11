@@ -20,7 +20,7 @@ export const FormExpiryBanner = (): JSX.Element | null => {
     // Only reachable in a tab left open across the deadline.
     if (closeAt <= new Date()) return null
 
-    return formatInTimeZone(closeAt, SGT, "d MMM yyyy, h:mmaaa '(SGT)'")
+    return formatInTimeZone(closeAt, SGT, "d MMM yyyy, h:mm a '(SGT)'")
   }, [form?.closeAt])
 
   if (!closesAt) return null
