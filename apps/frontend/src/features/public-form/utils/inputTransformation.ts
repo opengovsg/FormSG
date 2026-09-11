@@ -1,7 +1,3 @@
-import { format, parse } from 'date-fns'
-import { times } from 'lodash'
-
-import { DATE_PARSE_FORMAT } from 'formsg-shared/constants/dates'
 import {
   AddressCompoundFieldResponseV3,
   AttachmentFieldResponseV3,
@@ -25,14 +21,23 @@ import {
   RadioResponse,
   SignatureResponse,
   TableResponse,
-  TableRow,
 } from 'formsg-shared/types/response'
-import { removeAt } from 'formsg-shared/utils/immutable-array-fns'
-import { convertToSignatureStringOutput } from 'formsg-shared/utils/signature'
+import {
+  computeAddressAnswerValue,
+  computeAttachmentAnswerValue,
+  computeCheckboxAnswerValue,
+  computeChildrenAnswerValue,
+  computeDateAnswerValue,
+  computeRadioAnswerValue,
+  computeSectionAnswerValue,
+  computeSignatureAnswerValue,
+  computeSingleAnswerValue,
+  computeTableAnswerValue,
+  computeVerifiableAnswerValue,
+  computeYesNoAnswerValue,
+  throwUnsupportedFieldType,
+} from 'formsg-shared/utils/response-value-rules'
 
-import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants'
-import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
-import { createTableRow } from '~templates/Field/Table/utils/createRow'
 import {
   AddressCompoundFieldSchema,
   AddressCompoundFieldValues,
@@ -60,6 +65,17 @@ import {
   YesNoFieldValue,
 } from '~templates/Field/types'
 
+/**
+ * The frontend half of the storage-mode V1 producer: it reads the field schema
+ * and the react-hook-form input, then hands the plain values to the shared
+ * per-field-type value rules in `formsg-shared/utils/response-value-rules`.
+ *
+ * No answer value is computed here. The rules are shared because the backend's
+ * V4-to-V1 flatten has to produce byte-identical entries; a second copy of the
+ * trim, the date reformat, the table question composition or the checkbox
+ * Others repositioning would drift.
+ */
+
 export const pickBaseOutputFromSchema = <F extends FormFieldDto>(
   schema: F,
 ): BaseFieldOutput<F> => {
@@ -78,8 +94,7 @@ const transformToVerifiableOutput = <
 ): VerifiableAnswerOutput<F> => {
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer: input?.value ?? '',
-    signature: input?.signature,
+    ...computeVerifiableAnswerValue(input),
   }
 }
 
@@ -89,7 +104,7 @@ const transformToSingleAnswerOutput = <F extends FormFieldDto>(
 ): SingleAnswerOutput<F> => {
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer: input?.trim() ?? '',
+    ...computeSingleAnswerValue(input),
   }
 }
 
@@ -99,10 +114,7 @@ const transformToDateOutput = (
 ): SingleAnswerOutput<DateFieldSchema> => {
   return {
     ...pickBaseOutputFromSchema(schema),
-    // Convert input format to "DD MMM YYYY" format (if input exists).
-    answer: input
-      ? format(parse(input, DATE_PARSE_FORMAT, new Date()), 'dd MMM yyyy')
-      : '',
+    ...computeDateAnswerValue(input),
   }
 }
 
@@ -112,7 +124,7 @@ const transformToYesNoOutput = (
 ): SingleAnswerOutput<YesNoFieldSchema> => {
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer: input ?? '',
+    ...computeYesNoAnswerValue(input),
   }
 }
 
@@ -120,24 +132,16 @@ const transformToTableOutput = (
   schema: TableFieldSchema,
   input?: TableFieldValues | TableFieldResponsesV3,
 ): TableResponse => {
-  // Build table shape
-  // Set default input if undefined.
-  const populatedInput =
-    input ?? times(schema.minimumRows || 0, () => createTableRow(schema))
-  const orderedColumnIds = schema.columns.map((col) => col._id)
-  const answerArray = populatedInput.map(
-    (rowResponse) =>
-      orderedColumnIds.map(
-        (colId) => rowResponse[colId]?.trim() ?? '',
-      ) as TableRow,
-  )
   return {
     ...pickBaseOutputFromSchema(schema),
-    answerArray,
-    // override schema question title to include column titles as well.
-    question: `${schema.title} (${schema.columns
-      .map((col) => col.title)
-      .join(', ')})`,
+    // The table rule also returns `question`, overriding the schema title with
+    // one that names the columns.
+    ...computeTableAnswerValue({
+      title: schema.title,
+      columns: schema.columns,
+      minimumRows: schema.minimumRows,
+      input,
+    }),
   }
 }
 
@@ -147,7 +151,7 @@ const transformToAttachmentOutput = (
 ): AttachmentResponse => {
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer: input?.name ?? '',
+    ...computeAttachmentAnswerValue(input?.name),
   }
 }
 
@@ -155,23 +159,9 @@ const transformToCheckboxOutput = (
   schema: CheckboxFieldSchema,
   input?: CheckboxFieldValues | CheckboxFieldResponsesV3,
 ): CheckboxResponse => {
-  let answerArray: string[] = []
-  if (input !== undefined && input.value) {
-    const othersIndex = input.value.findIndex(
-      (v) => v === CHECKBOX_OTHERS_INPUT_VALUE,
-    )
-    // Others is checked, so we need to add the input at othersInput to the answer array
-    if (othersIndex !== -1) {
-      answerArray = removeAt(input.value, othersIndex)
-      answerArray.push(`Others: ${input.othersInput}`)
-    } else {
-      answerArray = input.value
-    }
-  }
-
   return {
     ...pickBaseOutputFromSchema(schema),
-    answerArray,
+    ...computeCheckboxAnswerValue(input),
   }
 }
 
@@ -179,23 +169,9 @@ const transformToRadioOutput = (
   schema: RadioFieldSchema,
   input?: RadioFieldValues | RadioFieldResponsesV3,
 ): RadioResponse => {
-  let answer = ''
-  if (input !== undefined) {
-    if ('value' in input) {
-      // RadioFieldValues, or value response in V3
-      answer = input.value
-      if (answer === RADIO_OTHERS_INPUT_VALUE && 'othersInput' in input) {
-        // Others is selected, so we need to use the input at othersInput for the answer instead.
-        answer = `Others: ${input.othersInput}`
-      }
-    } else {
-      // "Others" response in V3
-      answer = input.othersInput
-    }
-  }
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer,
+    ...computeRadioAnswerValue(input),
   }
 }
 
@@ -204,8 +180,7 @@ const transformToSectionOutput = (
 ): HeaderResponse => {
   return {
     ...pickBaseOutputFromSchema(schema),
-    answer: '',
-    isHeader: true,
+    ...computeSectionAnswerValue(),
   }
 }
 
@@ -213,13 +188,9 @@ const transformToSignatureOutput = (
   schema: SignatureFieldSchema,
   input?: SignatureFieldValues | SignatureFieldResponseV3,
 ): SignatureResponse => {
-  let answerArray: [string, string] = ['', '']
-  if (input && input.value.length > 0) {
-    answerArray = [input.type, convertToSignatureStringOutput(input.value)]
-  }
   return {
     ...pickBaseOutputFromSchema(schema),
-    answerArray,
+    ...computeSignatureAnswerValue(input),
   }
 }
 
@@ -227,16 +198,12 @@ const transformToChildOutput = (
   schema: ChildrenCompoundFieldSchema,
   input?: ChildrenCompoundFieldValues | ChildrenCompoundFieldResponsesV3,
 ): ChildBirthRecordsResponse => {
-  const noOfChildrenSubFields = schema.childrenSubFields?.length ?? 1
-  let answerArray: string[][]
-  if (input?.child) {
-    answerArray = input.child
-  } else {
-    answerArray = [Array(noOfChildrenSubFields).fill('')]
-  }
   return {
     ...pickBaseOutputFromSchema(schema),
-    answerArray,
+    ...computeChildrenAnswerValue({
+      numberOfSubFields: schema.childrenSubFields?.length,
+      input,
+    }),
   }
 }
 
@@ -244,30 +211,9 @@ const transformToAddressOutput = (
   schema: AddressCompoundFieldSchema,
   input?: AddressCompoundFieldValues | AddressCompoundFieldResponseV3,
 ): AddressResponse => {
-  let answerArray: string[] = []
-  // const attributes: string[] = [] // TODO: see if adding a [] of attributes for reference can help
-  if (input !== undefined) {
-    const {
-      postalCode,
-      blockNumber,
-      streetName,
-      buildingName,
-      levelNumber,
-      unitNumber,
-    } = input.addressSubFields
-    answerArray = [
-      blockNumber,
-      streetName,
-      buildingName,
-      levelNumber,
-      unitNumber,
-      postalCode,
-    ] // move postal code to the end of array
-  }
   return {
     ...pickBaseOutputFromSchema(schema),
-    answerArray,
-    // attributes,
+    ...computeAddressAnswerValue(input),
   }
 }
 
@@ -360,10 +306,7 @@ export const transformInputsToOutputs = (
         field,
         input as FormFieldValueOrFieldResponseAnswerV3<typeof field.fieldType>,
       )
-    default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _exhaustiveCheck: never = field
-      throw new Error(`Unsupported field type: ${_exhaustiveCheck}`)
-    }
+    default:
+      return throwUnsupportedFieldType(field)
   }
 }
