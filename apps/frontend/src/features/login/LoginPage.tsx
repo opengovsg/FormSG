@@ -20,10 +20,10 @@ import {
 } from '~features/analytics/AnalyticsService'
 
 import { LoginForm, LoginFormInputs } from './components/LoginForm'
+import { OneLoginButton } from './components/OneLoginButton'
 import { OrDivider } from './components/OrDivider'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
 import { SgidLoginButton } from './components/SgidLoginButton'
-import { SsoLoginButton } from './components/SsoLoginButton'
 import { WogadLoginButton } from './components/WogadLoginButton'
 import { LoginPageTemplate } from './LoginPageTemplate'
 import { useIsIntranetCheck, useIsOgpIpCheck, useIsRbiIpCheck } from './queries'
@@ -50,22 +50,20 @@ const isWogadLoginEnabled = ({
 
 const LoginOptionButtons = ({
   shouldShowWogadLogin,
-  shouldShowSsoLogin,
+  shouldShowOneLogin,
   shouldShowSgidLogin,
 }: {
   shouldShowWogadLogin: boolean
-  shouldShowSsoLogin: boolean
+  shouldShowOneLogin: boolean
   shouldShowSgidLogin: boolean
 }) => {
-  const isLoginOptionButtonsPresent =
-    shouldShowWogadLogin || shouldShowSsoLogin || shouldShowSgidLogin
-  return isLoginOptionButtonsPresent ? (
+  return (
     <Stack spacing="1rem">
       {shouldShowWogadLogin && <WogadLoginButton />}
-      {shouldShowSsoLogin && <SsoLoginButton />}
+      {shouldShowOneLogin && <OneLoginButton />}
       {shouldShowSgidLogin && <SgidLoginButton />}
     </Stack>
-  ) : undefined
+  )
 }
 
 const isDev = import.meta.env.MODE === 'development'
@@ -74,8 +72,11 @@ export const LoginPage = (): JSX.Element => {
   const { data: isIntranetIp = false } = useIsIntranetCheck()
   const { data: isRbiIp = false } = useIsRbiIpCheck()
   const { data: isOgpIp = false } = useIsOgpIpCheck()
+  // RATIONALE: one.gov.sg is the suite rebuild of sso.gov.sg, so it inherits
+  // sso's gate as-is. The IP check is a rollout knob, not a security control —
+  // the backend already whitelists domains and one.gov.sg verifies officers.
   const showOgpSuiteSso = useFeatureIsOn(featureFlags.ogpSuiteSso)
-  const shouldShowSsoLogin = (isOgpIp && showOgpSuiteSso) || isDev
+  const shouldShowOneLogin = (isOgpIp && showOgpSuiteSso) || isDev
   const wogadLoginFeatureValue = useFeatureValue(
     featureFlags.wogadLogin,
     WogadLoginFeatureValue.OFF,
@@ -173,7 +174,7 @@ export const LoginPage = (): JSX.Element => {
                 <LoginOptionButtons
                   key="buttons"
                   shouldShowWogadLogin={shouldShowWogadLogin}
-                  shouldShowSsoLogin={shouldShowSsoLogin}
+                  shouldShowOneLogin={shouldShowOneLogin}
                   shouldShowSgidLogin={shouldShowSgidLogin}
                 />,
                 <LoginForm key="form" onSubmit={handleSendOtp} />,
@@ -183,7 +184,7 @@ export const LoginPage = (): JSX.Element => {
                 <LoginOptionButtons
                   key="buttons"
                   shouldShowWogadLogin={shouldShowWogadLogin}
-                  shouldShowSsoLogin={shouldShowSsoLogin}
+                  shouldShowOneLogin={shouldShowOneLogin}
                   shouldShowSgidLogin={shouldShowSgidLogin}
                 />,
               ]}
