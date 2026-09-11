@@ -17,6 +17,41 @@ import {
   MoveS3FileParams,
 } from './types'
 
+/**
+ * ts-retry-promise wraps retried errors in its own RetryError, which exposes the
+ * original failure as `lastError`. We duck-type it (instead of `instanceof`)
+ * because the package's source/dist dual entry points make `instanceof` unsafe
+ * under ts-jest.
+ */
+const isRetryError = (err: unknown): err is { lastError: unknown } =>
+  !!err && typeof err === 'object' && 'lastError' in err
+
+/**
+ * Thrown when a HeadObject succeeds but the object has no VersionId.
+ * Retried like any other transient failure, then surfaced to the caller.
+ */
+export class MissingS3VersionIdError extends Error {
+  constructor() {
+    super('VersionId is empty')
+    this.name = 'MissingS3VersionIdError'
+    Object.setPrototypeOf(this, MissingS3VersionIdError.prototype)
+  }
+}
+
+/**
+ * Thrown when a HeadObject reports ContentLength === 0. S3 has had strong
+ * read-after-write consistency since 2020, so a 0-byte HeadObject can never
+ * recover on retry — this error is therefore non-retryable and short-circuits
+ * immediately so callers can log and bail without wasted invocations.
+ */
+export class ZeroByteS3ObjectError extends Error {
+  constructor() {
+    super('S3 object is 0 bytes')
+    this.name = 'ZeroByteS3ObjectError'
+    Object.setPrototypeOf(this, ZeroByteS3ObjectError.prototype)
+  }
+}
+
 export class S3Service {
   private readonly s3Client: S3Client
   private readonly isDevelopmentEnv: boolean
@@ -305,13 +340,13 @@ export class S3Service {
           const { VersionId: versionId, ContentLength } = response
 
           if (!versionId) {
-            const err = new Error('VersionId is empty')
+            const err = new MissingS3VersionIdError()
             logMissedAttempt(err)
             throw err
           }
 
           if (!ContentLength || ContentLength === 0) {
-            const err = new Error('Body is empty')
+            const err = new ZeroByteS3ObjectError()
             logMissedAttempt(err)
             throw err
           }
@@ -336,9 +371,18 @@ export class S3Service {
           delay: 2000,
           backoff: (attempt) =>
             1000 * Math.pow(2, attempt) + Math.floor(Math.random() * 1000),
+          // A 0-byte HeadObject can never recover under S3 strong
+          // read-after-write consistency, so do not retry it. 404 and
+          // missing-VersionId still retry as before.
+          retryIf: (err) => !(err instanceof ZeroByteS3ObjectError),
         },
       )
     } catch (err) {
+      // ts-retry-promise wraps retried errors in its RetryError (exposed via
+      // `lastError`); unwrap to the original cause so callers can branch on the
+      // typed error. The 0-byte case is never retried (see retryIf above) and
+      // surfaces unwrapped.
+      const cause = isRetryError(err) ? err.lastError : err
       this.logger.error(
         {
           meta: {
@@ -346,12 +390,12 @@ export class S3Service {
             status: 'failed',
             attempts: attempt,
           },
-          err,
+          err: cause,
         },
-        'Failed to get object version ID from s3 after retries',
+        'Failed to get object version ID from s3',
       )
 
-      throw err
+      throw cause
     }
   }
 }

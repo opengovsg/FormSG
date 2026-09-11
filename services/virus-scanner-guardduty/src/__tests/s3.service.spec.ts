@@ -3,7 +3,11 @@
 import { CopyObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3'
 
 import * as LoggerService from '../logger'
-import { S3Service } from '../s3.service'
+import {
+  MissingS3VersionIdError,
+  S3Service,
+  ZeroByteS3ObjectError,
+} from '../s3.service'
 
 const VersionId = 'mockObjectVersionId'
 // Mock S3Client
@@ -107,6 +111,16 @@ describe('S3Service', () => {
     })
   })
   describe('getS3ObjectVersionId', () => {
+    beforeEach(() => {
+      // The real retry backoff (2s/4s/8s/16s) would make these tests slow; fake
+      // timers let the retry waits resolve instantly. We advance up to 40s,
+      // which stays under the retry wrapper's 60s timeout.
+      jest.useFakeTimers()
+    })
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
     it('should return version id', async () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
@@ -121,7 +135,7 @@ describe('S3Service', () => {
       expect(versionIdResult).toEqual('mockObjectVersionId')
     })
 
-    it('should throw error and log if body is empty', async () => {
+    it('should short-circuit without retrying when the object is 0 bytes', async () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
       getResult = {
@@ -129,26 +143,40 @@ describe('S3Service', () => {
         VersionId: 'mockObjectVersionId',
       }
 
-      // Act + assert
+      // Act + assert. A 0-byte HeadObject is non-retryable, so no retry waits
+      // are scheduled and the promise settles immediately.
       await expect(
         mockS3Service.getS3ObjectVersionId({
           bucketName: 'bucketName',
           objectKey: 'objectKey',
         }),
-      ).rejects.toThrow('Body is empty')
+      ).rejects.toThrow(ZeroByteS3ObjectError)
 
+      // Only one attempt ran — proving the retry loop was short-circuited.
+      expect(mockLoggerWarn).toHaveBeenCalledTimes(1)
+      expect(mockLoggerWarn).toHaveBeenCalledWith(
+        expect.objectContaining({
+          meta: expect.objectContaining({ attempt: 1, status: 'missed' }),
+          err: expect.any(ZeroByteS3ObjectError),
+        }),
+        'getS3ObjectVersionId attempt failed',
+      )
       expect(mockLoggerError).toHaveBeenCalledTimes(1)
       expect(mockLoggerError).toHaveBeenCalledWith(
         expect.objectContaining({
-          bucketName: 'bucketName',
-          objectKey: 'objectKey',
-          err: new Error('Body is empty'),
+          meta: expect.objectContaining({
+            bucketName: 'bucketName',
+            objectKey: 'objectKey',
+            status: 'failed',
+            attempts: 1,
+          }),
+          err: expect.any(ZeroByteS3ObjectError),
         }),
         'Failed to get object version ID from s3',
       )
     })
 
-    it('should throw error and log if version id is empty', async () => {
+    it('should retry then fail when the version id is empty', async () => {
       // Arrange
       const mockS3Service = new S3Service(true, mockLogger)
       getResult = {
@@ -156,20 +184,31 @@ describe('S3Service', () => {
         VersionId: '',
       }
 
-      // Act + assert
-      await expect(
+      // Act + assert. missing-VersionId is still retried (unchanged), so we must
+      // attach the rejection assertion before advancing fake timers, otherwise
+      // the rejection fires unhandled while the retry waits are flushing.
+      // eslint-disable-next-line jest/valid-expect -- assertion is awaited below
+      const expectation = expect(
         mockS3Service.getS3ObjectVersionId({
           bucketName: 'bucketName',
           objectKey: 'objectKey',
         }),
-      ).rejects.toThrow('VersionId is empty')
+      ).rejects.toThrow(MissingS3VersionIdError)
+      await jest.advanceTimersByTimeAsync(40000)
+      await expectation
 
+      // 1 initial attempt + 3 retries = 4 attempts, all logged as missed.
+      expect(mockLoggerWarn).toHaveBeenCalledTimes(4)
       expect(mockLoggerError).toHaveBeenCalledTimes(1)
       expect(mockLoggerError).toHaveBeenCalledWith(
         expect.objectContaining({
-          bucketName: 'bucketName',
-          objectKey: 'objectKey',
-          err: new Error('VersionId is empty'),
+          meta: expect.objectContaining({
+            bucketName: 'bucketName',
+            objectKey: 'objectKey',
+            status: 'failed',
+            attempts: 4,
+          }),
+          err: expect.any(MissingS3VersionIdError),
         }),
         'Failed to get object version ID from s3',
       )
