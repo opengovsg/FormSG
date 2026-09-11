@@ -109,6 +109,8 @@ export type FormDeactivatedNotificationHtmlData = {
 export type FormScheduledClosureNotificationHtmlData = {
   formTitle: string
   formLink: string
+  /** Deep link to the form's settings, not the respondent-facing `formLink`. */
+  formSettingsLink: string
   /** Human-readable close instant, pre-formatted in SGT by the caller. */
   closedAt: string
   appName: string

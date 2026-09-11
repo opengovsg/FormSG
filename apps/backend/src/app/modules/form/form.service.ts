@@ -382,7 +382,8 @@ export const notifyFormsClosed = (
       emailRecipients: form.emailRecipients,
       formTitle: form.title,
       formId: form.formId,
-      closedAt: moment(form.closeAt).tz(TIMEZONE).format('D MMM YYYY, HH:mm'),
+      // 12-hour, matching the submission timestamps in every other email.
+      closedAt: moment(form.closeAt).tz(TIMEZONE).format('D MMM YYYY, hh:mm A'),
     })
       .map(() => true)
       .orElse((error) => {
