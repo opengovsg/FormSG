@@ -24,14 +24,14 @@ export const enSG: Workflow = {
     clickToEdit: 'Click to edit',
   },
   dynamicRespondent: {
-    title: 'An email field from the form',
+    title: 'An Email field from the form',
     required: 'Please select a field.',
     mustBeEmail: 'Field is not an email field',
     mustBeEmailRedesign: 'Choose an email field.',
     select: 'Select a field',
   },
   conditionalRouting: {
-    title: 'Emails assigned to options in a dropdown field',
+    title: 'Emails assigned to options in a Dropdown field',
     addEmailsToOptions: 'Add emails to options',
     addEmailsToOptionsRedesign: 'Assign emails to options',
     validation: {
@@ -48,10 +48,10 @@ export const enSG: Workflow = {
         cancel: "No, don't delete",
       },
       deleteWorkflow: {
-        title: 'Delete your workflow',
+        title: 'Delete entire workflow',
         description: [
-          'Responses already in progress will continue on the current workflow.',
-          'When you reopen your form, anyone with the link will be able to fill in every field.',
+          'Responses already started will continue using the current workflow.',
+          'When the form does not have a workflow, anyone with the link will be able to fill in every field.',
         ],
         confirm: 'Delete workflow',
         cancel: 'Cancel',
@@ -60,10 +60,10 @@ export const enSG: Workflow = {
       // two differ only in the title, and translators need whole sentences,
       // since clause order differs by language and stitched fragments break.
       deleteFirstStep: {
-        title: 'Deleting the first step removes your workflow',
+        title: 'Deleting the first steps remove entire workflow',
         description: [
-          'Responses already in progress will continue on the current workflow.',
-          'When you reopen your form, anyone with the link will be able to fill in every field.',
+          'Responses already started will continue using the current workflow.',
+          'When the form does not have a workflow, anyone with the link will be able to fill in every field.',
         ],
         confirm: 'Delete workflow',
         cancel: 'Cancel',
@@ -170,10 +170,10 @@ export const enSG: Workflow = {
       'The approval field is added here automatically.',
   },
   emptyStates: {
-    noEmailField: 'Your form has no email field yet.',
-    noEmailFieldAction: 'Add an email field',
-    noDropdownField: 'Your form has no dropdown field yet.',
-    noDropdownFieldAction: 'Add a dropdown field',
+    noEmailField: 'Your form has no Email field yet.',
+    noEmailFieldAction: 'Add an Email field',
+    noDropdownField: 'Your form has no Dropdown field yet.',
+    noDropdownFieldAction: 'Add a Dropdown field',
     noYesNoField: 'Your form has no Yes/No field yet.',
     noYesNoFieldAction: 'Add a Yes/No field',
     noFields: 'Your form has no fields yet.',
@@ -195,7 +195,7 @@ export const enSG: Workflow = {
         'If they reject the submission, the workflow stops here.',
       tooltip:
         'Use this for steps that involve any type of decision, such as reviews or endorsements. Decision will be shown on dashboard and tracking links.',
-      placeholder: 'Select a Yes/No field from your form',
+      placeholder: 'Select a field',
       selectorLabelRedesign:
         'Select the Yes/No field for the approval decision',
     },
@@ -223,13 +223,13 @@ export const enSG: Workflow = {
     label: 'Step name',
   },
   guidedMode: {
-    label: 'Guided mode',
+    label: 'Guided setup',
   },
   skipGuidance: {
     modal: {
       title: 'Skip guided setup?',
       bodyWithSteps:
-        "You'll set up your workflow yourself. Any steps you've already created will be kept.",
+        "You'll set up your workflow independently. Any steps you've created so far will be kept.",
       bodyWithoutSteps:
         "You'll set up your workflow yourself. We won't show this guide again.",
       confirm: 'Skip guidance',
@@ -240,13 +240,13 @@ export const enSG: Workflow = {
     header: "Let's start with Step 1",
     stepOne: 'Step 1 is what everyone who opens your form link fills in first.',
     whatNext:
-      "You'll name it, choose who fills it in, and pick which fields they see. Then you can add more steps.",
+      "You'll name the step and pick which fields they see. Then you can add more steps.",
     cta: "Let's go",
   },
   intro: {
     header: 'Workflows split your form into steps',
     subheader:
-      'Send each step to a different person. Each person only fills in their own part.',
+      'Send each step to a different person in sequence. Each person only fills in their own part.',
     guided: 'Start with guided setup',
     manual: 'Set up manually',
   },

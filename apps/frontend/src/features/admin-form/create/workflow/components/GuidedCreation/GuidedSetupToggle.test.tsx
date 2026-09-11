@@ -8,7 +8,7 @@ import { SPOTLIGHT_TEST_ID } from '../Spotlight'
 
 const { WithWorkflowRedesignOn, WithWorkflow } = composeStories(pageStories)
 
-const SWITCH = { name: /guided mode/i }
+const SWITCH = { name: /guided setup/i }
 const CONFIRM = { name: /^skip guidance$/i }
 const CONFIRM_TITLE = /skip guided setup\?/i
 
@@ -31,7 +31,7 @@ const openPacedStep = async () => {
   return ui
 }
 
-describe('the Guided mode switch', () => {
+describe('the Guided setup switch', () => {
   beforeAll(() => {
     Element.prototype.scrollIntoView = vi.fn()
   })
