@@ -60,7 +60,7 @@ export const enSG: Workflow = {
       // two differ only in the title, and translators need whole sentences,
       // since clause order differs by language and stitched fragments break.
       deleteFirstStep: {
-        title: 'Deleting the first steps remove entire workflow',
+        title: 'Deleting the first step removes the entire workflow',
         description: [
           'Responses already started will continue using the current workflow.',
           'When the form does not have a workflow, anyone with the link will be able to fill in every field.',
