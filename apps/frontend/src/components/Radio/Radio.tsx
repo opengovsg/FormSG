@@ -20,10 +20,12 @@ import {
   ChangeEvent,
   ChangeEventHandler,
   KeyboardEvent,
+  MouseEvent,
   SyntheticEvent,
   useCallback,
   useEffect,
   useMemo,
+  useRef,
 } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -44,7 +46,7 @@ import {
   useRadioGroupContext,
   UseRadioProps,
 } from '@chakra-ui/react'
-import { callAll, split } from '@chakra-ui/utils'
+import { callAll, callAllHandlers, split } from '@chakra-ui/utils'
 
 import { RADIO_THEME_KEY } from '~/theme/components/Radio'
 import { FieldColorScheme } from '~/theme/foundations/colours'
@@ -152,8 +154,26 @@ export const Radio = forwardRef<RadioProps, 'input'>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [layoutProps, otherProps] = split(htmlProps, layoutPropNames as any)
 
-    const checkboxProps = getCheckboxProps(otherProps)
-    const inputProps = getInputProps({}, ref)
+    const inputRef = useRef<HTMLInputElement>(null)
+    const mergedInputRef = useMergeRefs(inputRef, ref)
+
+    // A selected text range can suppress the label's implicit input activation.
+    const handleControlClick = useCallback(
+      (e: MouseEvent<HTMLSpanElement>) => {
+        if (props.isDisabled || isChecked) return
+        if (!inputRef.current || inputRef.current.disabled) return
+
+        e.preventDefault()
+        inputRef.current.click()
+      },
+      [isChecked, props.isDisabled],
+    )
+
+    const checkboxProps = getCheckboxProps({
+      ...otherProps,
+      onClick: callAllHandlers(props.onClick, handleControlClick),
+    })
+    const inputProps = getInputProps({}, mergedInputRef)
 
     const handleSelect = useCallback(
       (e: SyntheticEvent) => {
