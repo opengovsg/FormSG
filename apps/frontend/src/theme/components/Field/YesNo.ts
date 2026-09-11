@@ -55,7 +55,10 @@ const outlineOptionStyle: SystemStyleFunction = (props) => {
     _hover: {
       bg: `${c}.100`,
     },
-    _active: {
+    // Keyed off a manually-tracked `data-active` attribute rather than the
+    // native `_active` (`:active`) pseudo-class, which stays stuck on
+    // label-wrapped form controls after the cursor is dragged off them.
+    '&[data-active]': {
       bg: `${c}.300`,
       borderColor: activeBorderColor,
     },
@@ -67,7 +70,7 @@ const outlineOptionStyle: SystemStyleFunction = (props) => {
       p: '13px',
       border: '3px solid',
       borderColor: activeBorderColor,
-      _active: {
+      '&[data-active]': {
         bg: `${c}.300`,
       },
     },
