@@ -47,6 +47,7 @@ import {
 import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 
 import {
+  AdminFormInvalidPaymentAmountError,
   EditFieldError,
   FieldNotFoundError,
   GoGovAlreadyExistError,
@@ -61,7 +62,9 @@ import {
   ModelResponseInvalidSchemaFormatError,
   ModelResponseInvalidSyntaxError,
   PaymentChannelNotFoundError,
+  PaymentProductAmountLimitExceededError,
 } from './admin-form.errors'
+import { adminFormErrorKey } from './admin-form.i18n'
 import {
   AssertFormFn,
   EditFormFieldResult,
@@ -88,13 +91,23 @@ export const mapRouteError = (
         errorMessage: error.message,
       }
     case InvalidFileTypeError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+        errorMessageKey: error.messageKey,
+      }
     case CreatePresignedPostError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
       }
-    case FormNotFoundError:
     case FieldNotFoundError:
+      return {
+        statusCode: StatusCodes.NOT_FOUND,
+        errorMessage: error.message,
+        errorMessageKey: error.messageKey,
+      }
+    case FormNotFoundError:
     case LogicNotFoundError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
@@ -161,6 +174,18 @@ export const mapRouteError = (
         statusCode: StatusCodes.BAD_GATEWAY,
         errorMessage: coreErrorMessage ?? error.message,
       }
+    case AdminFormInvalidPaymentAmountError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+        errorMessageKey: error.messageKey,
+      }
+    case PaymentProductAmountLimitExceededError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
+        errorMessageKey: error.messageKey,
+      }
     case InvalidPaymentAmountError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
@@ -211,6 +236,7 @@ export const mapRouteError = (
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: 'Something went wrong. Please try creating fields again.',
+        errorMessageKey: adminFormErrorKey('fields.createFailed'),
       }
     default:
       logger.error({
