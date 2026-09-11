@@ -1,3 +1,4 @@
+import { GrowthBook } from '@growthbook/growthbook'
 import JoiDate from '@joi/date'
 import axios from 'axios'
 import { ObjectId } from 'bson'
@@ -56,7 +57,7 @@ import {
 } from 'formsg-shared/utils/crypto'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { ResultAsync } from 'neverthrow'
+import { errAsync, ResultAsync } from 'neverthrow'
 
 import { IFormDocument, IPopulatedForm } from '../../../../types'
 import { EncryptSubmissionDto, FormUpdateParams } from '../../../../types/api'
@@ -84,7 +85,12 @@ import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 import { getSubmissionType } from '../form.utils'
 
-import { EditFieldError, GoGovServerError } from './admin-form.errors'
+import {
+  DeleteFirstWorkflowStepError,
+  EditFieldError,
+  GoGovServerError,
+  WorkflowDeletionDisabledError,
+} from './admin-form.errors'
 import {
   createWorkflowStepValidator,
   getWebhookSettingsValidator,
@@ -1689,6 +1695,17 @@ export const handleUpdateWorkflowStep = [
   _handleUpdateWorkflowStep,
 ] as ControllerHandler[]
 
+const isWorkflowDeletionEnabledFor = (
+  growthbook: GrowthBook | undefined,
+  adminEmail: string,
+): boolean => {
+  void growthbook?.setAttributes({
+    ...growthbook.getAttributes(),
+    adminEmail,
+  })
+  return growthbook?.isOn(featureFlags.workflowDeletion) ?? false
+}
+
 /**
  * Handler for DELETE /:formId/workflow
  *
@@ -1713,20 +1730,15 @@ export const handleDeleteWorkflow: ControllerHandler<
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
-  // 404 rather than 403: while the feature is off this endpoint does not exist
-  // as far as anyone outside the rollout is concerned, and advertising it would
-  // invite exactly the destructive call the flag is holding back.
-  if (!req.growthbook?.isOn(featureFlags.workflowDeletion)) {
-    return res.status(StatusCodes.NOT_FOUND).json({ message: 'Not found' })
-  }
-
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      }),
+      isWorkflowDeletionEnabledFor(req.growthbook, user.email)
+        ? AuthService.getFormAfterPermissionChecks({
+            user,
+            formId,
+            level: PermissionLevel.Write,
+          })
+        : errAsync(new WorkflowDeletionDisabledError()),
     )
     .andThen((retrievedForm) =>
       AdminFormService.deleteFormWorkflow(retrievedForm),
@@ -1758,58 +1770,36 @@ export const handleDeleteWorkflowStep: ControllerHandler<
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
 
-  // Deleting step 1 means deleting the workflow, which has its own route and
-  // its own guard against doing it to an open form. Refusing here rather than
-  // redirecting: quietly performing a far more destructive operation than the
-  // caller asked for is worse than making them ask for it.
-  //
-  // Behind the flag, because with it off this route keeps today's behaviour
-  // exactly — including the bug where deleting step 1 shifts step 2 into the
-  // entry point. That is what makes the flag a clean rollback.
-  if (
-    req.growthbook?.isOn(featureFlags.workflowDeletion) &&
-    Number(stepNumber) === 0
-  ) {
-    return res.status(StatusCodes.BAD_REQUEST).json({
-      message:
-        'Deleting the first step means deleting the workflow; use DELETE /workflow',
-    })
-  }
-
-  // Step 1: Retrieve currently logged in user.
-  return (
-    UserService.getPopulatedUserById(sessionUserId)
-      .andThen((user) =>
-        // Step 2: Retrieve form with write permission check.
-        AuthService.getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Write,
-        }),
-      )
-      // Step 3: Delete workflow step.
-      .andThen((retrievedForm) =>
-        AdminFormService.deleteFormWorkflowStep(retrievedForm, stepNumber),
-      )
-      .map((updatedWorkflow) =>
-        res.status(StatusCodes.OK).json(updatedWorkflow),
-      )
-      .mapErr((error) => {
-        logger.error({
-          message: 'Error occurred when deleting form workflow step',
-          meta: {
-            action: 'handleDeleteWorkflowStep',
-            ...createReqMeta(req),
-            userId: sessionUserId,
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      isWorkflowDeletionEnabledFor(req.growthbook, user.email) &&
+      Number(stepNumber) === 0
+        ? errAsync(new DeleteFirstWorkflowStepError())
+        : AuthService.getFormAfterPermissionChecks({
+            user,
             formId,
-            stepNumber,
-          },
-          error,
-        })
-        const { errorMessage, statusCode } = mapRouteError(error)
-        return res.status(statusCode).json({ message: errorMessage })
+            level: PermissionLevel.Write,
+          }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.deleteFormWorkflowStep(retrievedForm, stepNumber),
+    )
+    .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when deleting form workflow step',
+        meta: {
+          action: 'handleDeleteWorkflowStep',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          stepNumber,
+        },
+        error,
       })
-  )
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
 }
 
 const LIMIT_IN_KB = 250
