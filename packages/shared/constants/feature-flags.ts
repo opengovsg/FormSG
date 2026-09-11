@@ -38,6 +38,7 @@ export const featureFlags = {
   mrfPayments: 'mrf-payments' as const,
   myinfoFapi: 'myinfo-fapi' as const,
   workflowDeletion: 'workflow-deletion' as const,
+  scheduledFormClosure: 'scheduled-form-closure' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

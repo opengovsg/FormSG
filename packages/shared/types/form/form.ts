@@ -208,6 +208,12 @@ export interface FormBase {
 
   inactiveMessage: string
   submissionLimit: number | null
+  /**
+   * Instant at which the form stops accepting responses, or `null` if it has no
+   * scheduled closure. Nullable rather than optional so that `null` is the only
+   * representation of "no closure" on the wire.
+   */
+  closeAt: DateString | null
   isListed: boolean
 
   esrvcId?: string

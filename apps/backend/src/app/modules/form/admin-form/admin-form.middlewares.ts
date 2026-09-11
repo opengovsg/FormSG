@@ -36,6 +36,7 @@ export const updateSettingsValidator = celebrate({
     inactiveMessage: Joi.string(),
     status: Joi.string().valid(...Object.values(FormStatus)),
     submissionLimit: Joi.number().allow(null),
+    closeAt: Joi.string().isoDate().allow(null),
     title: Joi.string(),
     webhook: webhookSettingsValidator,
     business: Joi.object({

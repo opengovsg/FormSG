@@ -48,6 +48,7 @@ const FORM_SETTINGS_FIELDS = [
   'inactiveMessage',
   'status',
   'submissionLimit',
+  'closeAt',
   'title',
   'webhook',
   'hasMultiLang',
