@@ -109,6 +109,11 @@ export interface PublicFormContextProps
   defaultFormValues: FormFieldValues
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap
+
+  /** Current workflow step being previewed (0-indexed). Only set in MRF preview. */
+  previewWorkflowStepNumber?: number
+  /** Workflow steps available for preview. Only set in MRF preview. */
+  previewWorkflowSteps?: Array<{ _id: string; step_name?: string }>
 }
 
 export const PublicFormContext = createContext<
