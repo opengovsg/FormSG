@@ -223,6 +223,7 @@ export const MrfEmailRecipientsFieldGroup = ({
                     }
                     isSelectedItemFullWidth
                     isDisabled={isLoading || isDisabled}
+                    maxItems={null}
                     {...rest}
                   />
                 )}
