@@ -53,7 +53,12 @@ export const GuidedSetupToggle = (): JSX.Element | null => {
 
   return (
     <>
-      <Toggle isChecked={isGuidedSetup} onChange={handleChange} label={label} />
+      <Toggle
+        isChecked={isGuidedSetup}
+        onChange={handleChange}
+        label={label}
+        betaBadge
+      />
 
       <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
         <ModalOverlay />
