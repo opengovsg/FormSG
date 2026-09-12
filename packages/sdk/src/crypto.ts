@@ -39,7 +39,7 @@ export default class Crypto extends CryptoBase {
    * @returns The encrypted basestring.
    */
   encrypt = (
-    msg: any,
+    msg: unknown,
     encryptionPublicKey: string,
     signingPrivateKey?: string
   ): EncryptedContent => {

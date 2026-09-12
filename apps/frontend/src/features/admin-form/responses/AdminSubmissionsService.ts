@@ -220,32 +220,33 @@ export const getAllDecryptedSubmission = async ({
   const decryptSubmissionPromises: Promise<DecryptedSubmission>[] = []
 
   const reader = submissionsStream.getReader()
-  let read: (result: ReadableStreamReadResult<string>) => void
 
-  await reader.read().then(
-    (read = async (result) => {
-      if (result.done) return
-      const { workerApi } = workerPool[currentSubmissionIndex % numWorkers]
-      decryptSubmissionPromises.push(
-        workerApi
-          .parseAndDecryptSubmissionData({
-            submissionStreamDtoString: result.value,
-            secretKey,
-            workerCtxOptions: {
-              formsgSdkMode: env.formsgSdkMode,
-            },
-          })
-          .then((result) => {
-            if (!result.isParseSuccessful || !result.isDecryptionSuccessful) {
-              throw new Error('One or more responses failed to decrypt.')
-            }
-            return { responses: result.decryptedResponses }
-          }),
-      )
-      currentSubmissionIndex++
-      return reader.read().then(read)
-    }),
-  )
+  const read = async (
+    result: ReadableStreamReadResult<string>,
+  ): Promise<void> => {
+    if (result.done) return
+    const { workerApi } = workerPool[currentSubmissionIndex % numWorkers]
+    decryptSubmissionPromises.push(
+      workerApi
+        .parseAndDecryptSubmissionData({
+          submissionStreamDtoString: result.value,
+          secretKey,
+          workerCtxOptions: {
+            formsgSdkMode: env.formsgSdkMode,
+          },
+        })
+        .then((result) => {
+          if (!result.isParseSuccessful || !result.isDecryptionSuccessful) {
+            throw new Error('One or more responses failed to decrypt.')
+          }
+          return { responses: result.decryptedResponses }
+        }),
+    )
+    currentSubmissionIndex++
+    return reader.read().then(read)
+  }
+
+  await reader.read().then(read)
 
   const decryptionResults = await Promise.all(
     decryptSubmissionPromises,

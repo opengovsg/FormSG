@@ -1,6 +1,6 @@
+import { MissingPublicKeyError, MissingSecretKeyError } from '../../src/errors'
 import { VERIFICATION_KEYS } from '../../src/resource/verification-keys'
 import Verification from '../../src/verification'
-import { MissingSecretKeyError, MissingPublicKeyError } from '../../src/errors'
 
 const TEST_PUBLIC_KEY = VERIFICATION_KEYS.test.publicKey
 const TEST_SECRET_KEY = VERIFICATION_KEYS.test.secretKey
@@ -71,7 +71,7 @@ describe('Verification', () => {
       publicKey: TEST_PUBLIC_KEY,
     })
 
-    let now: jest.MockInstance<number, any>
+    let now: jest.MockInstance<number, unknown[]>
 
     beforeAll(() => {
       now = jest.spyOn(Date, 'now').mockImplementation(() => {

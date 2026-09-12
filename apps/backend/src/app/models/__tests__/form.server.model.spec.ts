@@ -3822,10 +3822,8 @@ describe('Form Model', () => {
         // Assert
         expect(updatedForm).not.toBeNull()
         expect(
-          (
-            // oxlint-disable-next-line no-unsafe-optional-chaining -- guarded by the not.toBeNull() assertion above
-            updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>
-          ).toObject(),
+          (updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>) // oxlint-disable-line no-unsafe-optional-chaining -- guarded by the not.toBeNull() assertion above
+            .toObject(),
         ).toEqual([
           // Should be rearranged to the 0th index position, and the previously
           // 0th index field should be pushed to 1st index.
@@ -3850,10 +3848,8 @@ describe('Form Model', () => {
         // Assert
         expect(updatedForm).not.toBeNull()
         expect(
-          (
-            // oxlint-disable-next-line no-unsafe-optional-chaining -- guarded by the not.toBeNull() assertion above
-            updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>
-          ).toObject(),
+          (updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>) // oxlint-disable-line no-unsafe-optional-chaining -- guarded by the not.toBeNull() assertion above
+            .toObject(),
         ).toEqual([
           originalFields[0],
           originalFields[2],

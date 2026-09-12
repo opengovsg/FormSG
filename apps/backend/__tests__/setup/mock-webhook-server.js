@@ -21,7 +21,7 @@ const getDownloadsFolder = () => {
   let downloadsFolder = `${process.env.HOME}/Downloads`
   try {
     fs.statSync(downloadsFolder)
-  } catch (e) {
+  } catch {
     downloadsFolder = '/tmp'
   }
   return downloadsFolder
@@ -47,14 +47,14 @@ app.post('/', async (req, res) => {
   // Verify Signature
   try {
     formsgSdk.webhooks.authenticate(req.get('X-FormSG-Signature'), postUri)
-  } catch (e) {
+  } catch {
     return res.status(401).send({ message: 'Unauthorized' })
   }
   // Decrypt submission body
   try {
     const data = formsgSdk.crypto.decrypt(secretKey, req.body.data)
     return res.status(200).send(data)
-  } catch (e) {
+  } catch {
     return res.status(500).send({ message: 'Decryption failed' })
   }
 })
