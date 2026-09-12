@@ -80,7 +80,7 @@ export default class CryptoV3 extends CryptoBase {
    * @param form The base-64 encoded form public key for encrypting.
    * @returns The encrypted basestring.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   encrypt = (msg: any, formPublicKey: string): EncryptedContentV3 => {
     const submissionKeypair = generateKeypair()
 

@@ -62,9 +62,9 @@ const MOCK_BILLCHARGES_ARGS = {
   esrvcId: MOCK_ESRVCID,
   dateRange: MOCK_DATE_RANGE,
   todayDateRange: MOCK_DATE_RANGE,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // oxlint-disable-next-line typescript/no-empty-function
   setDateRange: async () => {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  // oxlint-disable-next-line typescript/no-empty-function
   onSubmitEsrvcId: async () => {},
 }
 

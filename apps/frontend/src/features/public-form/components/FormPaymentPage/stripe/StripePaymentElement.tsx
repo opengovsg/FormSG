@@ -233,7 +233,7 @@ const StripePaymentContainer = ({
         )
       default: {
         // Force TS to emit an error if the cases above are not exhaustive
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         const exhaustiveCheck: never = viewStates
         throw new Error(`Undefined view type: ${viewStates}`)
       }

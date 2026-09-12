@@ -197,7 +197,7 @@ export const MultiSelectProvider = ({
     defaultIsOpen,
     defaultInputValue: '',
     defaultHighlightedIndex: 0,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    // oxlint-disable-next-line typescript/no-empty-function
     scrollIntoView: () => {},
     onHighlightedIndexChange: ({ highlightedIndex }) => {
       if (

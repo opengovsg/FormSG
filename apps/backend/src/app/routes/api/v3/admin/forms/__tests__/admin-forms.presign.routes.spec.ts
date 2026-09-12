@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* oxlint-disable typescript/ban-ts-comment */
 import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'

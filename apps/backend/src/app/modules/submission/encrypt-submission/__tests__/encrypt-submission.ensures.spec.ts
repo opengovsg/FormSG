@@ -10,7 +10,7 @@ const createMockRes = () => ({
 })
 
 const createMockContext = (form: Partial<IPopulatedForm>) => ({
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   req: {} as any,
   res: createMockRes(),
   logMeta: { action: 'test' },

@@ -1,4 +1,4 @@
-/* eslint-disable import/first */
+/* oxlint-disable import/first */
 import getMockLogger from '__tests__/unit/backend/helpers/jest-logger'
 import { ObjectId } from 'bson'
 import { addHours, subHours, subMinutes, subSeconds } from 'date-fns'

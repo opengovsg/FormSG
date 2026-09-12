@@ -115,7 +115,7 @@ export const createCorppassParsedResponses = (
 }
 
 export const createNdiResponsesV3FromRecord = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   ndiResponses: Record<string, any>,
 ): FieldResponsesV3 => {
   const responses: FieldResponsesV3 = {}
@@ -145,7 +145,7 @@ export const createNdiResponsesV3FromRecord = (
 }
 
 export const createNdiResponsesV4FromRecord = (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   ndiResponses: Record<string, any>,
 ): FieldResponsesV4 => {
   const responses: FieldResponsesV4 = {}

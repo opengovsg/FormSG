@@ -44,7 +44,7 @@ export const SectionSidebar = (): JSX.Element => {
     return `${offsetPx}px`
     // Require ignore as miniHeaderRef is an object and dependency comparison
     // will never change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [miniHeaderRef?.current?.clientHeight])
 
   const navigatedSection = useMemo(() => {

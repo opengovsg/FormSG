@@ -47,7 +47,7 @@ const withoutPrivateMaterial = (jwk: TestJwk): TestJwk => {
 
 /** getPublicJwks memoises per module instance, so each test loads a fresh one. */
 const loadJwks = () =>
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // oxlint-disable-next-line typescript/no-require-imports
   require('../myinfo.fapi.jwks') as typeof import('../myinfo.fapi.jwks')
 
 describe('myinfo.fapi.jwks', () => {

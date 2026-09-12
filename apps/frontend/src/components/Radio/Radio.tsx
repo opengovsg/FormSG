@@ -149,7 +149,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
         name,
       })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     const [layoutProps, otherProps] = split(htmlProps, layoutPropNames as any)
 
     const checkboxProps = getCheckboxProps(otherProps)
@@ -161,7 +161,7 @@ export const Radio = forwardRef<RadioProps, 'input'>(
         if (isChecked && allowDeselect) {
           e.preventDefault()
           // Toggle off if onChange is given.
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // oxlint-disable-next-line typescript/ban-ts-comment
           // @ts-ignore
           onChange?.({ target: { value: '' } })
         }

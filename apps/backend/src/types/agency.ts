@@ -6,7 +6,7 @@ import { PublicView } from './database'
 export type AgencyInstanceMethods = PublicView<PublicAgencyDto>
 
 export interface IAgencySchema extends AgencyBase {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   _id: any
   created?: Date
   lastModified?: Date

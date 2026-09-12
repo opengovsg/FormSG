@@ -79,7 +79,7 @@ function verifySignature(
         fieldId,
         answer,
       })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
     } catch (error) {
       return false
     }
@@ -190,7 +190,7 @@ async function decryptSubmissionData(
     }
 
     default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
       const _: never = submissionData
       console.error('Invalid submission type encountered.')
       return {
@@ -283,7 +283,7 @@ async function _downloadAndDecryptSubmissionAttachments(
       ),
     )
     return { downloadedAttachmentsBlob, isDownloadSuccessful: true }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // oxlint-disable-next-line typescript/no-unused-vars
   } catch (err) {
     return {
       isDownloadSuccessful: false,

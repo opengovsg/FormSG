@@ -1,4 +1,4 @@
-/* eslint-disable playwright/expect-expect -- assertions are in helper */
+/* oxlint-disable playwright/expect-expect -- assertions are in helper */
 import mongoose from 'mongoose'
 import {
   BasicField,

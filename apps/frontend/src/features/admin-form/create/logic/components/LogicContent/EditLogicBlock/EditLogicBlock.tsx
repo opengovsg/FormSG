@@ -176,7 +176,7 @@ export const EditLogicBlock = ({
 
     hasSubmittedForPendingSwitch.current = true
     handleSubmit()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [pendingSwitchTo])
 
   return (

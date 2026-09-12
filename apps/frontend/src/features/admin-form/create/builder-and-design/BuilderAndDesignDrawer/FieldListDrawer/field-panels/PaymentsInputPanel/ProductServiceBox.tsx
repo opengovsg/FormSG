@@ -25,7 +25,7 @@ import { FormPaymentsInput } from './PaymentsInputPanel'
 import { ProductItem } from './ProductItem'
 import { ProductModal } from './ProductModal'
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+// oxlint-disable-next-line typescript/no-empty-function
 const noop = () => {}
 
 const AddProductButton = ({

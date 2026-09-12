@@ -37,7 +37,7 @@ const MockMyInfoGovClient = jest.mocked(
 )
 
 // Import last so that mocks are imported correctly
-// eslint-disable-next-line import/first
+// oxlint-disable-next-line import/first
 import { MyInfoRouter } from '../myinfo.routes'
 
 const myInfoApp = setupApp('/myinfo', MyInfoRouter)

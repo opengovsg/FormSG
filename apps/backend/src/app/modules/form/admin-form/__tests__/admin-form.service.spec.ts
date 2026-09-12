@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* oxlint-disable typescript/ban-ts-comment */
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { PresignedPost } from '@aws-sdk/s3-presigned-post'
 import { ObjectId } from 'bson'
@@ -2512,7 +2512,7 @@ describe('admin-form.service', () => {
       // Arrange
       const UPDATE_SPY = jest
         .spyOn(FormModel, 'findByIdAndUpdate')
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line typescript/ban-ts-comment
         // @ts-ignore
         .mockReturnValue({
           exec: jest.fn().mockResolvedValue(mockEmailForm),
@@ -2549,7 +2549,7 @@ describe('admin-form.service', () => {
       // Arrange
       const UPDATE_SPY = jest
         .spyOn(FormModel, 'findByIdAndUpdate')
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line typescript/ban-ts-comment
         // @ts-ignore
         .mockReturnValue({
           exec: jest.fn().mockResolvedValue(mockEncryptForm),

@@ -273,7 +273,7 @@ export const constructFieldResponseValidatorV4 = ({
       return () =>
         left('Unsupported field type: field should not be part of response')
     default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
       const exhaustiveCheck: never = formField
       return () => left('Unsupported field type')
     }

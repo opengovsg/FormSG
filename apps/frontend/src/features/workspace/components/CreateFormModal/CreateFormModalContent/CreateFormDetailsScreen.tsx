@@ -40,7 +40,7 @@ const getTrackingSubmissionActionName = (
       return 'dashboard.create.create_multirespondent'
 
     default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
       const _exhaustiveCheck: never = responseModeValue
     }
   }

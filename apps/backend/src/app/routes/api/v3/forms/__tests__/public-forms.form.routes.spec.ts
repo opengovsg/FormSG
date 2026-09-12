@@ -187,7 +187,7 @@ describe('public-form.form.routes', () => {
         data: {},
       })
       // Ignore TS error because .sign has multiple overloads
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // oxlint-disable-next-line typescript/ban-ts-comment
       // @ts-ignore
       MockJwtLib.sign.mockReturnValue(MOCK_MYINFO_JWT)
 

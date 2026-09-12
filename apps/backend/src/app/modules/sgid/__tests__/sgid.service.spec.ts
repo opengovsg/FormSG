@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* oxlint-disable typescript/ban-ts-comment */
 import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import { MyInfoAttribute } from 'formsg-shared/types'
 import fs from 'fs'

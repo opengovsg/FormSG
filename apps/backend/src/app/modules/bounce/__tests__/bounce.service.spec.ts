@@ -1,4 +1,4 @@
-/* eslint-disable import/first */
+/* oxlint-disable import/first */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import getMockLogger from '__tests__/unit/backend/helpers/jest-logger'
 import { ObjectId } from 'bson'

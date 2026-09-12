@@ -32,7 +32,7 @@ const makeLiveData = (overrides: Partial<WebhookData> = {}): WebhookData => ({
   created: new Date('2026-07-22T00:00:00.000Z'),
   attachmentDownloadUrls: { 'field-9': 'https://example.com/attachment' },
   workflowContent: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     workflow: [{ _id: 'step-def' }] as any,
     workflowStep: 2,
     submittedSteps: [0, 1, 2].map((index) =>

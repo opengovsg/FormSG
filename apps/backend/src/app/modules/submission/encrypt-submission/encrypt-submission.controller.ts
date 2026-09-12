@@ -622,7 +622,7 @@ const _createPaymentSubmission = async ({
       await stripe.paymentIntents.cancel(paymentIntent.id, {
         stripeAccount: targetAccountId,
       })
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
     } catch (stripeErr) {
       logger.error({
         message: 'Failed to cancel Stripe payment intent',

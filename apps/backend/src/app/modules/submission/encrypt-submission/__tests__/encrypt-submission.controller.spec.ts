@@ -110,9 +110,9 @@ describe('encrypt-submission.controller', () => {
     }
     beforeEach(() => {
       MockOidcService.getOidcService.mockReturnValue({
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwt: (_arg1) => ok('jwt'),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
       } as OidcServiceType<FormAuthType.SP>)
@@ -141,16 +141,16 @@ describe('encrypt-submission.controller', () => {
       MockOidcService.getOidcService.mockReset()
       MockOidcService.getOidcService
         .mockReturnValueOnce({
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // oxlint-disable-next-line typescript/no-unused-vars
           extractJwt: (_arg1) => ok('jwt'),
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // oxlint-disable-next-line typescript/no-unused-vars
           extractJwtPayload: (_arg1) =>
             okAsync(merge(MOCK_JWT_PAYLOAD_1, MOCK_COOKIE_TIMESTAMP)),
         } as OidcServiceType<FormAuthType.CP>)
         .mockReturnValueOnce({
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // oxlint-disable-next-line typescript/no-unused-vars
           extractJwt: (_arg1) => ok('jwt'),
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // oxlint-disable-next-line typescript/no-unused-vars
           extractJwtPayload: (_arg1) =>
             okAsync(merge(MOCK_JWT_PAYLOAD_2, MOCK_COOKIE_TIMESTAMP)),
         } as OidcServiceType<FormAuthType.CP>)
@@ -222,16 +222,16 @@ describe('encrypt-submission.controller', () => {
       MockOidcService.getOidcService.mockReset()
       MockOidcService.getOidcService
         .mockReturnValueOnce({
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // oxlint-disable-next-line typescript/no-unused-vars
           extractJwt: (_arg1) => ok('jwt'),
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // oxlint-disable-next-line typescript/no-unused-vars
           extractJwtPayload: (_arg1) =>
             okAsync(merge(MOCK_JWT_PAYLOAD_1, MOCK_COOKIE_TIMESTAMP)),
         } as OidcServiceType<FormAuthType.CP>)
         .mockReturnValueOnce({
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // oxlint-disable-next-line typescript/no-unused-vars
           extractJwt: (_arg1) => ok('jwt'),
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // oxlint-disable-next-line typescript/no-unused-vars
           extractJwtPayload: (_arg1) =>
             okAsync(merge(MOCK_JWT_PAYLOAD_2, MOCK_COOKIE_TIMESTAMP)),
         } as OidcServiceType<FormAuthType.CP>)
@@ -348,9 +348,9 @@ describe('encrypt-submission.controller', () => {
       }
       MockOidcService.getOidcService.mockReset()
       MockOidcService.getOidcService.mockReturnValueOnce({
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwt: (_arg1) => ok('jwt'),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
       } as OidcServiceType<FormAuthType.CP>)
@@ -422,9 +422,9 @@ describe('encrypt-submission.controller', () => {
     }
     beforeEach(() => {
       MockOidcService.getOidcService.mockReturnValue({
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwt: (_arg1) => ok('jwt'),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
       } as OidcServiceType<FormAuthType.SP>)
@@ -665,9 +665,9 @@ describe('encrypt-submission.controller', () => {
     }
     beforeEach(() => {
       MockOidcService.getOidcService.mockReturnValue({
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwt: (_arg1) => ok('jwt'),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
       } as OidcServiceType<FormAuthType.SP>)
@@ -881,9 +881,9 @@ describe('encrypt-submission.controller', () => {
       )
 
       MockOidcService.getOidcService.mockReturnValue({
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwt: (_arg1) => ok('jwt'),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
       } as OidcServiceType<FormAuthType.SP>)
@@ -950,9 +950,9 @@ describe('encrypt-submission.controller', () => {
     it('should store login nric and uen in verifiedContent if form isSubmitterIdCollectionEnabled is true for CP authType', async () => {
       // Arrange
       MockOidcService.getOidcService.mockReturnValue({
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwt: (_arg1) => ok('jwt'),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_CP_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
       } as OidcServiceType<FormAuthType.CP>)
@@ -1068,9 +1068,9 @@ describe('encrypt-submission.controller', () => {
     it('should not collect nric or uen if form isSubmitterIdCollectionEnabled is false for CP authType', async () => {
       // Arrange
       MockOidcService.getOidcService.mockReturnValue({
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwt: (_arg1) => ok('jwt'),
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         extractJwtPayload: (_arg1) =>
           okAsync(merge(MOCK_JWT_CP_PAYLOAD, MOCK_COOKIE_TIMESTAMP)),
       } as OidcServiceType<FormAuthType.CP>)

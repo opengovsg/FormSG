@@ -104,7 +104,7 @@ export const CompletionPeekCard = (
       case CompletionPeekMomentType.GuidedSetupFinished:
         return [{ label: labels.finish, onClick: props.onFinish }]
       default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         const _: never = props
         throw new Error('Unhandled completion peek moment.')
       }

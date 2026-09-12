@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+/* oxlint-disable react/only-export-components */
 import { createContext, useContext } from 'react'
 import { UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'

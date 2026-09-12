@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* oxlint-disable typescript/no-unused-vars */
 import { SyntheticEvent, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { UseQueryResult } from 'react-query'

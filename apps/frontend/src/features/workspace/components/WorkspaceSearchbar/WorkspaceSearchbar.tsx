@@ -125,7 +125,7 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
       observer.observe(filterRef.current)
 
       return () => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // oxlint-disable-next-line react/exhaustive-deps
         filterRef.current && observer.unobserve(filterRef.current)
       }
     }, [])

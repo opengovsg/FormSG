@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* oxlint-disable typescript/ban-ts-comment */
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'

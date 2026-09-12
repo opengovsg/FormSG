@@ -1,4 +1,4 @@
-/* eslint-disable typesafe/no-throw-sync-func */
+/* oxlint-disable typesafe/no-throw-sync-func */
 import { ObjectId } from 'bson'
 import {
   AddressResponse,

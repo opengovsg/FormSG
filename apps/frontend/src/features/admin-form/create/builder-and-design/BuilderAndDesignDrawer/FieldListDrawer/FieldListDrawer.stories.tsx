@@ -21,7 +21,7 @@ export default {
   decorators: [
     StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
     (Story: StoryFn) => (
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      // oxlint-disable-next-line typescript/no-empty-function
       <DragDropContext onDragEnd={() => {}}>
         <CreatePageSidebarProvider>
           <Story />

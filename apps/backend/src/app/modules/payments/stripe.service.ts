@@ -307,7 +307,7 @@ export const processStripeEventWithinSession = (
                   error,
                 })
                 // Directly throw write conflict errors to enable mongo transaction retries
-                // eslint-disable-next-line typesafe/no-throw-sync-func
+                // oxlint-disable-next-line typesafe/no-throw-sync-func
                 throw error
               }
 
@@ -385,7 +385,7 @@ export const processStripeEvent = (
             },
             (err) => {
               // Throw all application errors to trigger an abort.
-              // eslint-disable-next-line typesafe/no-throw-sync-func
+              // oxlint-disable-next-line typesafe/no-throw-sync-func
               throw err
             },
           ),

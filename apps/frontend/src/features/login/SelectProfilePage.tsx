@@ -153,7 +153,7 @@ export const SelectProfilePage = (): JSX.Element => {
       errorDisclosure.onOpen()
       setErrorContext(MODAL_ERRORS.NO_WORKEMAIL)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [profilesResponse.data?.profiles.length])
 
   const handleSetProfile = async (profile: SgidPublicOfficerEmployment) => {

@@ -473,7 +473,7 @@ export const createResponsesV4 = (
         break
       }
       default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         const _: never = ff
       }
     }

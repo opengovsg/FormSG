@@ -70,7 +70,7 @@ export class Pipeline<T> {
 
     const runner = async (index: number): Promise<void> => {
       if (index === prevIndex) {
-        // eslint-disable-next-line typesafe/no-throw-sync-func
+        // oxlint-disable-next-line typesafe/no-throw-sync-func
         throw new Error('next() called multiple times')
       }
 

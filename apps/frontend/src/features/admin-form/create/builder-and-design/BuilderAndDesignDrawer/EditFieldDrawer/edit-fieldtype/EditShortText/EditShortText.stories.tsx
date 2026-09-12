@@ -70,7 +70,7 @@ PrefillNoFieldId.args = {
 export const PrefillWithFieldId = Template.bind({})
 PrefillWithFieldId.args = {
   field: {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // oxlint-disable-next-line typescript/no-non-null-assertion
     ...PrefillNoFieldId.args.field!,
     _id: 'mock-field-id-allow-copy',
   },
@@ -79,7 +79,7 @@ PrefillWithFieldId.args = {
 export const PrefillLocked = Template.bind({})
 PrefillLocked.args = {
   field: {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    // oxlint-disable-next-line typescript/no-non-null-assertion
     ...PrefillWithFieldId.args.field!,
     lockPrefill: true,
   },

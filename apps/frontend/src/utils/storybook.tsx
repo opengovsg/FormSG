@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+/* oxlint-disable react/only-export-components */
 import { useEffect } from 'react'
 import {
   createMemoryRouter,
@@ -139,7 +139,7 @@ export const AdminFormCreatePageDecorator: Decorator = (storyFn) => {
 export const mockDateDecorator: Decorator = (storyFn, { parameters }) => {
   mockdate.reset()
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // oxlint-disable-next-line react/rules-of-hooks
   useEffect(() => {
     return () => mockdate.reset()
   }, [])

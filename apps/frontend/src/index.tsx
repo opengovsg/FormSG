@@ -18,13 +18,13 @@ registerChunkPreloadErrorListener()
 
 // Init Google Analytics
 declare global {
-  // eslint-disable-next-line no-var
+  // oxlint-disable-next-line no-var
   var dataLayer: unknown[]
 }
 
 window.dataLayer = window.dataLayer || []
 function gtag(...args: unknown[]) {
-  // eslint-disable-next-line prefer-rest-params
+  // oxlint-disable-next-line prefer-rest-params
   dataLayer.push(arguments)
 }
 gtag('js', new Date())

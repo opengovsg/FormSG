@@ -168,7 +168,7 @@ const FormLabelDescription = ({
   const mdComponents = useMdComponents({
     styles: mdComponentsStyles,
     overrides: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
       p: ({ node: _, ...mdProps }) => (
         <Text {...fieldProps} {...mdProps} sx={mdComponentsStyles.text} />
       ),
@@ -211,9 +211,9 @@ FormLabel.OptionalIndicator = ({
   // useFormControlContext is a ChakraUI hook that returns props passed down
   // from a parent ChakraUI's `FormControl` component.
   // Valid hook usage since composited component is still a component.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // oxlint-disable-next-line react/rules-of-hooks
   const field = useFormControlContext()
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // oxlint-disable-next-line react/rules-of-hooks
   const { t } = useTranslation()
 
   // If isRequired is explicitly provided, ignore form control context value.

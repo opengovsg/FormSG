@@ -17,7 +17,7 @@ interface BaseRatingComponent {
   /**
    * Radio styling props to spread on container.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   radioProps: Omit<HTMLProps<any>, never>
   /**
    * Value of the option.

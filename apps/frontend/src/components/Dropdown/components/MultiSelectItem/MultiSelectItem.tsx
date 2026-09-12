@@ -93,7 +93,7 @@ export const MultiSelectItem = ({
           ) {
             // Prevent Downshift's default behavior where backspace or delete will
             // remove the item from selection regardless of whether the input is disabled.
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // oxlint-disable-next-line typescript/ban-ts-comment
             // @ts-ignore
             event.nativeEvent.preventDownshiftDefault = true
           }

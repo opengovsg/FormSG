@@ -97,7 +97,7 @@ export type FormFieldSchema =
 export type OmitUnusedValidatorProps<F extends FormFieldSchema> = Merge<
   Omit<
     // Remove all functions from the given field schema.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    // oxlint-disable-next-line typescript/no-unsafe-function-type
     ConditionalExcept<F, Function>,
     // Remove unused
     'description' | keyof Document

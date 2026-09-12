@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* oxlint-disable typescript/ban-ts-comment */
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
@@ -3366,6 +3366,7 @@ describe('Form Model', () => {
         expect(actual).not.toBeNull()
         // Current fields should not be touched
         expect(
+          // oxlint-disable-next-line no-unsafe-optional-chaining -- guarded by the not.toBeNull() assertion above
           (actual?.form_fields as Types.DocumentArray<IFieldSchema>).toObject(),
         ).toEqual([originalFormFields[0], newField, originalFormFields[2]])
       })
@@ -3822,6 +3823,7 @@ describe('Form Model', () => {
         expect(updatedForm).not.toBeNull()
         expect(
           (
+            // oxlint-disable-next-line no-unsafe-optional-chaining -- guarded by the not.toBeNull() assertion above
             updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>
           ).toObject(),
         ).toEqual([
@@ -3849,6 +3851,7 @@ describe('Form Model', () => {
         expect(updatedForm).not.toBeNull()
         expect(
           (
+            // oxlint-disable-next-line no-unsafe-optional-chaining -- guarded by the not.toBeNull() assertion above
             updatedForm?.form_fields as Types.DocumentArray<IFieldSchema>
           ).toObject(),
         ).toEqual([

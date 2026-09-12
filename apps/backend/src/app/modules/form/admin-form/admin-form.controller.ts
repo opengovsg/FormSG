@@ -2184,7 +2184,7 @@ export const submitEncryptPreview: ControllerHandler<
     formId,
   }
 
-  // eslint-disable-next-line typesafe/no-await-without-trycatch
+  // oxlint-disable-next-line typesafe/no-await-without-trycatch
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
       // Step 2: Retrieve form with write permission check.

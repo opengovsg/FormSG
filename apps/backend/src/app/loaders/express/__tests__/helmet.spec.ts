@@ -122,7 +122,7 @@ describe('helmetMiddlewares', () => {
 
   it('should return the correct values from helmet', () => {
     const result = helmetMiddlewares()
-    /* eslint-disable @typescript-eslint/ban-ts-comment */
+    /* oxlint-disable typescript/ban-ts-comment */
     // @ts-ignore
     expect(result).toContain('xssFilter')
     // @ts-ignore
@@ -137,6 +137,6 @@ describe('helmetMiddlewares', () => {
     expect(result).toContain('referrerPolicy')
     // @ts-ignore
     expect(result).toContain('contentSecurityPolicy')
-    /* eslint-enable */
+    /* oxlint-enable */
   })
 })

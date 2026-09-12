@@ -1006,7 +1006,7 @@ export const handleNdiResponses = async (
   let responses = req.formsg.encryptedPayload.responses // to add NDI data to responses (used for email payload downstream)
 
   let verifiedContent: VerifiedContentV3 | undefined
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   let ndiResponses: Record<string, any> = {}
 
   const logMeta = {
@@ -1112,7 +1112,7 @@ export const handleNdiResponses = async (
   }
 
   // 2. Handle Ndi data for previous steps
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   const mrfSubmission = req.formsg.mrfSubmission
   const prevSubmissionSecretKey = req.body.submissionSecretKey
 
