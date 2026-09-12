@@ -116,7 +116,7 @@ const DecryptedAttachmentRow = ({
 const DecryptedAddressRow = ({ row }: DecryptedRowBaseProps): JSX.Element => {
   const transformedAddress = handleAddressResponseDisplay(
     row.answerArray as string[],
-  ).join(', ')
+  ).join('; ')
   return (
     <Stack>
       <DecryptedQuestionLabel row={row} />
@@ -158,7 +158,7 @@ export const DecryptedRow = memo(
             <DecryptedQuestionLabel row={row} />
             {row.answer && <Text textStyle="body-1">{row.answer}</Text>}
             {row.answerArray && (
-              <Text textStyle="body-1">{row.answerArray.join(', ')}</Text>
+              <Text textStyle="body-1">{row.answerArray.join('; ')}</Text>
             )}
           </Stack>
         )

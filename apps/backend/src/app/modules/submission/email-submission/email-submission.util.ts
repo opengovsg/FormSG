@@ -200,7 +200,7 @@ export const getAnswerForCheckbox = (
     myInfo: response.myInfo,
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
-    answer: response.answerArray.join(', '),
+    answer: response.answerArray.join('; '),
   }
 }
 
@@ -217,7 +217,7 @@ export const getAnswerForAddress = (
     myInfo: response.myInfo,
     isVisible: response.isVisible,
     isUserVerified: response.isUserVerified,
-    answer: handleAddressResponseDisplay(response.answerArray).join(', '),
+    answer: handleAddressResponseDisplay(response.answerArray).join('; '),
   }
 }
 
