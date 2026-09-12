@@ -7,6 +7,11 @@ blockExoticSubdeps: true
 
 minimumReleaseAge: 4320
 
+minimumReleaseAgeIgnoreMissingTime: false
+
+registries:
+  default: https://registry.npmjs.org/
+
 allowBuilds:
   bcrypt: true
   canvas: true
