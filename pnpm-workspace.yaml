@@ -7,11 +7,11 @@ blockExoticSubdeps: true
 
 minimumReleaseAge: 4320
 
-onlyBuiltDependencies:
-  - bcrypt
-  - canvas
-  - aws-lambda-ric
-  - microtime
+allowBuilds:
+  bcrypt: true
+  canvas: true
+  aws-lambda-ric: true
+  microtime: true
 
 overrides:
   '@babel/core@<7.29.6': ^7.29.6
@@ -148,11 +148,4 @@ patchedDependencies:
   '@serverless/dashboard-plugin@7.2.3': patches/@serverless__dashboard-plugin@7.2.3.patch
   braces@3.0.3: patches/braces@3.0.3.patch
 
-trustPolicy: no-downgrade
-
-trustPolicyExclude:
-  - semver@5.7.2
-  - semver@6.3.1
-  - mongoose@7.8.10
-
-trustPolicyIgnoreAfter: 1576800
+# trustPolicy: no-downgrade # TEMP: disabled — pnpm 12 validates trust policy on every install (not just on resolution changes, unlike 10.30). Re-enabled in the follow-up supply-chain hardening commit.
