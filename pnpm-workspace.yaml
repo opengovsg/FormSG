@@ -7,11 +7,27 @@ blockExoticSubdeps: true
 
 minimumReleaseAge: 4320
 
-onlyBuiltDependencies:
-  - bcrypt
-  - canvas
-  - aws-lambda-ric
-  - microtime
+allowBuilds:
+  bcrypt: true
+  canvas: true
+  aws-lambda-ric: true
+  microtime: true
+  '@datadog/native-appsec': true
+  '@datadog/native-iast-taint-tracking': true
+  '@datadog/native-metrics': true
+  '@datadog/pprof': true
+  aws-sdk: false
+  core-js: false
+  dd-trace: false
+  es5-ext: false
+  esbuild: true
+  fsevents: true
+  msw: true
+  protobufjs: false
+  serverless: false
+  sharp: true
+  unix-dgram: false
+  unrs-resolver: true
 
 overrides:
   '@babel/core@<7.29.6': ^7.29.6
@@ -156,4 +172,4 @@ trustPolicyExclude:
   - semver@6.3.1
   - mongoose@7.8.10
 
-trustPolicyIgnoreAfter: 1576800
+trustPolicyIgnoreAfter: 525600
