@@ -16,7 +16,7 @@ updates:
       prefix-development: 'chore'
       include: 'scope'
   - package-ecosystem: 'npm' # See documentation for possible values
-    directory: '/shared' # Location of package manifests
+    directory: '/packages/shared' # Location of package manifests
     schedule:
       interval: 'daily'
       time: '03:00'
@@ -24,4 +24,25 @@ updates:
     commit-message:
       prefix: 'fix'
       prefix-development: 'chore'
+      include: 'scope'
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope'
+  - package-ecosystem: 'docker'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope'
+  - package-ecosystem: 'docker'
+    directory: '/services/virus-scanner-guardduty'
+    schedule:
+      interval: 'monthly'
+    commit-message:
+      prefix: 'chore'
       include: 'scope'
