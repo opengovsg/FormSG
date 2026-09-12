@@ -1,6 +1,19 @@
 blockExoticSubdeps: true
 minimumReleaseAge: 4320 # 3 days
-# trustPolicy: no-downgrade # TEMP: disabled — pnpm 12 validates trust policy on every install (not just on resolution changes, unlike 10.30). Re-enabled in the follow-up supply-chain hardening commit.
+minimumReleaseAgeIgnoreMissingTime: false
+registries:
+  default: 'https://registry.npmjs.org/'
+trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 525600 # 1 year — packages published before provenance/trusted-publishing were common shouldn't need it retroactively
+trustPolicyExclude:
+  # Direct DB driver, forced to this exact patch via the mongoose override
+  # below for a security fix. 7.8.8 and 7.8.9 are published by the same
+  # npm user (vkarpov15, mongoose's long-time lead maintainer); neither
+  # has provenance/attestations at all. The flagged "downgrade" is
+  # specifically Trusted-Publisher (OIDC) status dropping between the two,
+  # consistent with a manual hotfix publish rather than a takeover signal.
+  # Investigated 2026-09-12.
+  - 'mongoose@7.8.9'
 packages:
   - 'apps/*'
   - 'packages/*'
@@ -141,4 +154,37 @@ allowBuilds:
   bcrypt: true
   canvas: true
   aws-lambda-ric: true
-  microtime: true
+  microtime: true # part of the original onlyBuiltDependencies list
+  # dd-trace's native addons for APM/RASP/profiling — real production
+  # observability/security features, verified functional (not nags)
+  '@datadog/native-appsec': true
+  '@datadog/native-iast-taint-tracking': true
+  '@datadog/native-metrics': true
+  '@datadog/pprof': true
+  # postinstall is just a v2-maintenance-mode console warning, no build step
+  aws-sdk: false
+  # postinstall is a donation-nag console message, wrapped in try/catch
+  core-js: false
+  # preinstall is only a Node-version compatibility guard, not a build step
+  dd-trace: false
+  # postinstall is a donation-nag console message, wrapped in try/catch + exit 0
+  es5-ext: false
+  # postinstall downloads the platform-specific binary; esbuild cannot run without it
+  esbuild: true
+  # macOS-only native file-watcher; faster local dev, optional elsewhere
+  fsevents: true
+  # postinstall runs `msw init`, keeping apps/frontend/public/mockServiceWorker.js
+  # in sync with the installed msw version — browser-based mocking needs this
+  msw: true
+  # postinstall only warns on a dependency-version-scheme mismatch, no build step
+  protobufjs: false
+  # postinstall is a "successfully installed" welcome message (already
+  # self-suppressed in CI via the CI env var), no build step
+  serverless: false
+  # postinstall downloads the platform-specific libvips binary; sharp cannot run without it
+  sharp: true
+  # optionalDependency of hot-shots (statsd client); hot-shots is designed to
+  # fall back gracefully when this native UDS binding isn't available
+  unix-dgram: false
+  # postinstall downloads/verifies the platform-specific native resolver binary
+  unrs-resolver: true
