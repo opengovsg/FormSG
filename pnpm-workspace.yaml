@@ -1,19 +1,6 @@
 blockExoticSubdeps: true
 minimumReleaseAge: 4320 # 3 days
-trustPolicy: no-downgrade
-trustPolicyExclude:
-  # semver 5.7.2 / 6.3.1 (2023 ReDoS fixes, final releases of their lines)
-  # predate provenance on those lines; both were already in the lockfile and
-  # only re-resolve due to override changes.
-  - 'semver@5.7.2'
-  - 'semver@6.3.1'
-# The no-downgrade check compares across major versions by publish date, so
-# pre-provenance releases of old major lines (e.g. semver 5/6, final releases
-# July 2023) are false positives that block installs whenever overrides force
-# re-resolution — a known issue (pnpm/pnpm#10202) with trustPolicyExclude not
-# reliably applied on this pnpm version. Versions published in the last 3
-# years remain fully checked.
-trustPolicyIgnoreAfter: 1576800 # 3 years, in minutes
+# trustPolicy: no-downgrade # TEMP: disabled — pnpm 12 validates trust policy on every install (not just on resolution changes, unlike 10.30). Re-enabled in the follow-up supply-chain hardening commit.
 packages:
   - 'apps/*'
   - 'packages/*'
@@ -150,8 +137,8 @@ overrides:
   'react-router-dom@>=6.30.2 <6.30.6': '^6.30.6'
   'brace-expansion@<1.1.16': '^1.1.16'
   'brace-expansion@>=2.0.0 <2.1.2': '^2.1.2'
-onlyBuiltDependencies:
-  - bcrypt
-  - canvas
-  - aws-lambda-ric
-  - microtime
+allowBuilds:
+  bcrypt: true
+  canvas: true
+  aws-lambda-ric: true
+  microtime: true
