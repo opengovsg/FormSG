@@ -19,8 +19,7 @@ export const taSG: PartialDeep<Fields> = {
   },
   email: {
     validation: {
-      domainDisallowed:
-        'உள்ளிடப்பட்ட மின்னஞ்சல் அனுமதிக்கப்பட்ட மின்னஞ்சலுக்குச் சொந்தமானதல்ல',
+      domainDisallowed: 'உள்ளிடப்பட்ட மின்னஞ்சல் அனுமதிக்கப்பட்ட மின்னஞ்சலுக்குச் சொந்தமானதல்ல',
     },
   },
   verification: {

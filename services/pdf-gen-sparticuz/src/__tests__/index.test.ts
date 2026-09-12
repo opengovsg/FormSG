@@ -1,4 +1,8 @@
-import { PdfLoadingError, PdfGenerationError, PuppeteerChromiumError } from '../errors'
+import {
+  PdfLoadingError,
+  PdfGenerationError,
+  PuppeteerChromiumError,
+} from '../errors'
 import { convertHtmlToPdf } from '../pdfGen'
 
 jest.mock('../pdfGen')
@@ -27,15 +31,15 @@ describe('Lambda Handler', () => {
       const response = await handler(null)
       expect(response.statusCode).toBe(400)
       expect(JSON.parse(response.body)).toEqual({
-        error: 'Malformed event: Expected to contain valid html property'
+        error: 'Malformed event: Expected to contain valid html property',
       })
     })
 
     it('should return 400 when html property is missing', async () => {
-      const response = await handler({url: 'https://www.example.com'})
+      const response = await handler({ url: 'https://www.example.com' })
       expect(response.statusCode).toBe(400)
       expect(JSON.parse(response.body)).toEqual({
-        error: 'Malformed event: Expected to contain valid html property'
+        error: 'Malformed event: Expected to contain valid html property',
       })
     })
 
@@ -43,45 +47,53 @@ describe('Lambda Handler', () => {
       const response = await handler({ html: 123 })
       expect(response.statusCode).toBe(400)
       expect(JSON.parse(response.body)).toEqual({
-        error: 'Malformed event: Expected to contain valid html property'
+        error: 'Malformed event: Expected to contain valid html property',
       })
     })
   })
 
   describe('PDF Generation', () => {
     it('should return 400 when PDF loading fails', async () => {
-      (convertHtmlToPdf as jest.Mock).mockRejectedValueOnce(new PdfLoadingError('Failed to load PDF'))
+      ;(convertHtmlToPdf as jest.Mock).mockRejectedValueOnce(
+        new PdfLoadingError('Failed to load PDF'),
+      )
       const response = await handler(validEvent)
       expect(response.statusCode).toBe(400)
       expect(JSON.parse(response.body)).toEqual({
-        error: 'Failed to load PDF'
+        error: 'Failed to load PDF',
       })
     })
 
     it('should return 500 when PDF generation fails', async () => {
-      (convertHtmlToPdf as jest.Mock).mockRejectedValueOnce(new PdfGenerationError('Failed to generate PDF'))
+      ;(convertHtmlToPdf as jest.Mock).mockRejectedValueOnce(
+        new PdfGenerationError('Failed to generate PDF'),
+      )
       const response = await handler(validEvent)
       expect(response.statusCode).toBe(500)
       expect(JSON.parse(response.body)).toEqual({
-        error: 'Failed to generate PDF'
+        error: 'Failed to generate PDF',
       })
     })
 
     it('should return 500 when Puppeteer fails', async () => {
-      (convertHtmlToPdf as jest.Mock).mockRejectedValueOnce(new PuppeteerChromiumError('Browser launch failed'))
+      ;(convertHtmlToPdf as jest.Mock).mockRejectedValueOnce(
+        new PuppeteerChromiumError('Browser launch failed'),
+      )
       const response = await handler(validEvent)
       expect(response.statusCode).toBe(500)
       expect(JSON.parse(response.body)).toEqual({
-        error: 'Browser launch failed'
+        error: 'Browser launch failed',
       })
     })
 
     it('should return 500 on unexpected errors', async () => {
-      (convertHtmlToPdf as jest.Mock).mockRejectedValueOnce(new Error('Unexpected error'))
+      ;(convertHtmlToPdf as jest.Mock).mockRejectedValueOnce(
+        new Error('Unexpected error'),
+      )
       const response = await handler(validEvent)
       expect(response.statusCode).toBe(500)
       expect(JSON.parse(response.body)).toEqual({
-        error: 'Unexpected server error'
+        error: 'Unexpected server error',
       })
     })
   })

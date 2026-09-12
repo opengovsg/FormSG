@@ -279,24 +279,23 @@ export const _handleGenerateOtp: ControllerHandler<
           logMeta,
           saltRounds: SALT_ROUNDS,
         }).andThen(({ otp, hashedOtp, otpPrefix }) =>
-          // Step 5: Send Otp
-          {
-            return VerificationService.sendNewOtp({
-              fieldId,
-              hashedOtp,
-              otp,
+        // Step 5: Send Otp
+        {
+          return VerificationService.sendNewOtp({
+            fieldId,
+            hashedOtp,
+            otp,
+            otpPrefix,
+            recipient: answer,
+            transactionId,
+            senderIp,
+          }) // Return the required data for next steps.
+            .map((updatedTransaction) => ({
+              updatedTransaction,
+              form,
               otpPrefix,
-              recipient: answer,
-              transactionId,
-              senderIp,
-            }) // Return the required data for next steps.
-              .map((updatedTransaction) => ({
-                updatedTransaction,
-                form,
-                otpPrefix,
-              }))
-          },
-        ),
+            }))
+        }),
       )
       .map(({ otpPrefix }) => {
         return res.status(StatusCodes.CREATED).json({ otpPrefix })

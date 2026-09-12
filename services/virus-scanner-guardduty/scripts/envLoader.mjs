@@ -1,4 +1,8 @@
-import { SSMClient, GetParameterCommand, ParameterNotFound } from '@aws-sdk/client-ssm'
+import {
+  SSMClient,
+  GetParameterCommand,
+  ParameterNotFound,
+} from '@aws-sdk/client-ssm'
 import fs from 'fs'
 import { exit } from 'process'
 
@@ -58,24 +62,31 @@ async function saveAllParameters() {
   const client = new SSMClient({ region: 'ap-southeast-1' })
   const parameterNamePrefix = `/virus-scanner-guardduty/${SHORT_ENV_MAP[process.env.ENV]}/`
 
-  const SSM_PARAMETER_STORE_KEYS = [...SSM_PARAMETER_STORE_COMPULOSRY_KEYS, ...SSM_PARAMETER_STORE_OPTIONAL_KEYS]
+  const SSM_PARAMETER_STORE_KEYS = [
+    ...SSM_PARAMETER_STORE_COMPULOSRY_KEYS,
+    ...SSM_PARAMETER_STORE_OPTIONAL_KEYS,
+  ]
   const requests = SSM_PARAMETER_STORE_KEYS.map((key) => {
     return client
       .send(new GetParameterCommand({ Name: `${parameterNamePrefix}${key}` }))
       .then((res) => {
         return { key, res }
-      }).catch(err => {
+      })
+      .catch((err) => {
         // Swallow ParameterNotFound errors for optional keys
-        if (SSM_PARAMETER_STORE_OPTIONAL_KEYS.includes(key) && err instanceof ParameterNotFound)
+        if (
+          SSM_PARAMETER_STORE_OPTIONAL_KEYS.includes(key) &&
+          err instanceof ParameterNotFound
+        )
           return { key, res: undefined }
         throw err
       })
   })
 
   const resolvedResponses = await Promise.all(requests)
-  const parameterString = resolvedResponses.filter(({ res }) => res !== undefined).map(
-    ({ key, res }) => `${key}=${res.Parameter.Value}`,
-  )
+  const parameterString = resolvedResponses
+    .filter(({ res }) => res !== undefined)
+    .map(({ key, res }) => `${key}=${res.Parameter.Value}`)
 
   // Add on NODE_ENV
   const parameterStringWithNodeEnv = [

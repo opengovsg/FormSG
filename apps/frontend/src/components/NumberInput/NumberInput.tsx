@@ -93,7 +93,7 @@ export const NumberInput = forwardRef<NumberInputProps, 'input'>(
 
     return (
       <Box {...htmlProps} __css={styles.root}>
-        {/* Using base input wrapper instead of `Input` component as the Input 
+        {/* Using base input wrapper instead of `Input` component as the Input
         component strips out some props such as `aria-invalid`, resulting in
         incorrect styling */}
         <chakra.input

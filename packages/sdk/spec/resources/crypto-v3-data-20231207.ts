@@ -27,7 +27,7 @@ const plaintext = {
   '5e771c7a6b3c5100240368e0': {
     fieldType: 'checkbox',
     answer: { value: ['Option 2'], othersInput: 'Another answer' },
-  }
+  },
 }
 
 const plainVerifiedText = { 'uinFin (Step 1)': 'S9912370B' }
@@ -51,5 +51,5 @@ export {
   formPublicKey,
   formSecretKey,
   submissionPublicKey,
-  submissionSecretKey
+  submissionSecretKey,
 }

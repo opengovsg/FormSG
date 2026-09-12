@@ -48,15 +48,15 @@ provider:
             - 'arn:aws:s3:::${env:GUARDDUTY_CLEAN_S3_BUCKET}/*'
         - Effect: Allow
           Action:
-          # AllowGuardDutyToMonitorEventBridgeManagedRule
-          - 'events:DescribeRule'
-          - 'events:ListTargetsByRule'
-          # AllowUpdateTargetAndDeleteManagedRule
-          - 'events:DeleteRule'
-          - 'events:PutTargets'
-          - 'events:RemoveTargets'
-          # AllowManagedRuleToSendS3EventsToGuardDuty
-          - 'events:PutRule'
+            # AllowGuardDutyToMonitorEventBridgeManagedRule
+            - 'events:DescribeRule'
+            - 'events:ListTargetsByRule'
+            # AllowUpdateTargetAndDeleteManagedRule
+            - 'events:DeleteRule'
+            - 'events:PutTargets'
+            - 'events:RemoveTargets'
+            # AllowManagedRuleToSendS3EventsToGuardDuty
+            - 'events:PutRule'
           Resource:
             - 'arn:aws:events:ap-southeast-1:*:rule/DO-NOT-DELETE-AmazonGuardDutyMalwareProtectionS3*'
 

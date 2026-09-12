@@ -160,9 +160,9 @@ export const SUBMITTED_STEP_VISIBILITY = {
 type SubmittedStepVisibility = typeof SUBMITTED_STEP_VISIBILITY
 
 type VisibleFieldsAt<B extends SubmittedStepBoundary> = {
-  [K in keyof SubmittedStepVisibility]: SubmittedStepVisibility[K][B] extends true
-    ? K
-    : never
+  [
+    K in keyof SubmittedStepVisibility
+  ]: SubmittedStepVisibility[K][B] extends true ? K : never
 }[keyof SubmittedStepVisibility]
 
 /**
