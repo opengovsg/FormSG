@@ -42,6 +42,11 @@ export const useToast = (useToastProps?: UseToastProps): UseToastReturn => {
     const impl = ({
       duration = 4000,
       position = 'top',
+      // NOTE: Chakra caps its own toast container at 560px, which is narrower
+      // than the 42.5rem width our Toast theme sets on desktop. The toast then
+      // overflows its container to the right and no longer looks centered, so
+      // the cap is removed and the theme is left to decide the width.
+      containerStyle = { maxWidth: 'unset' },
       render,
       status,
       ...rest
@@ -49,6 +54,7 @@ export const useToast = (useToastProps?: UseToastProps): UseToastReturn => {
       toast({
         duration,
         position,
+        containerStyle,
         ...rest,
         render:
           render ??
