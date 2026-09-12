@@ -143,7 +143,7 @@ jobs:
     steps:
       - name: Checkout branch source code into runner environment
         # Required for the frontend build env vars
-        uses: actions/checkout@v4.3.1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           # When called from the release workflow this is the new vX.Y.Z tag; for
           # the branch-triggered stg-alt/uat callers inputs.ref is empty and we
