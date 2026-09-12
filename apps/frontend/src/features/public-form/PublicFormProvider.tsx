@@ -833,7 +833,7 @@ export const PublicFormProvider = ({
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // oxlint-disable-next-line react/exhaustive-deps
   // RATIONALE: draftSubmission.lastUpdated is used as a source of truth to see if the draftSubmission has changed.
   const { draftResponsesToRestore, changedFieldIds } = useMemo(() => {
     return getRestoreDraftFormValues({
@@ -883,7 +883,6 @@ export const PublicFormProvider = ({
     isSaveDraftEnabled,
     hasDraft,
     hasUnrestorableFields,
-    hasShownRestoredDraftToast.current,
     showRestoredDraftToast,
     isPublicFormPage,
   ])

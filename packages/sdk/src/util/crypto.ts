@@ -64,7 +64,7 @@ export const decryptContent = (
       decodeBase64(submissionPublicKey),
       decodeBase64(formPrivateKey)
     )
-  } catch (err) {
+  } catch {
     return null
   }
 }
@@ -79,7 +79,7 @@ export const decryptContent = (
 export const verifySignedMessage = (
   msg: Uint8Array,
   publicKey: string
-): Record<string, any> => {
+): Record<string, unknown> => {
   const openedMessage = nacl.sign.open(msg, decodeBase64(publicKey))
   if (!openedMessage)
     throw new Error('Failed to open signed message with given public key')

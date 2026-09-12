@@ -45,7 +45,7 @@ export const hasAvailableDates = (
     return true
   }
 
-  for (let date = start; date <= end; date.setDate(date.getDate() + 1)) {
+  for (const date = start; date <= end; date.setDate(date.getDate() + 1)) {
     if (!isDateAnInvalidDay(date, invalidDays)) {
       return true
     }
