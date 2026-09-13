@@ -160,7 +160,7 @@
     "@types/validator": "^13.7.0",
     "@typescript-eslint/eslint-plugin": "^8.19.1",
     "@typescript-eslint/parser": "^8.19.1",
-    "@vitejs/plugin-react": "^4.3.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "@vitest/browser": "^4.1.12",
     "@vitest/browser-playwright": "^4.1.12",
     "concurrently": "^7.6.0",
@@ -182,7 +182,7 @@
     "prettier": "^3.2.5",
     "react-dev-inspector": "^2.0.1",
     "storybook": "10.6.2",
-    "vite": "^6.4.3",
+    "vite": "^8.2.2",
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^4.1.12"
