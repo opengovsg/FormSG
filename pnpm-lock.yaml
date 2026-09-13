@@ -1276,6 +1276,9 @@ importers:
       chromatic:
         specifier: ^6.2.0
         version: 6.2.0
+      concurrently:
+        specifier: ^7.6.0
+        version: 7.6.0
       env-cmd:
         specifier: ^10.1.0
         version: 10.1.0

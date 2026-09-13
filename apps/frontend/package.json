@@ -5,7 +5,7 @@
   "homepage": ".",
   "type": "module",
   "scripts": {
-    "build": "pnpm exec tsc && vite build",
+    "build": "concurrently -k -s all --raw \"pnpm exec tsc --noEmit\" \"vite build\"",
     "build-storybook": "storybook build",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "lint": "oxlint . && oxfmt --check .",
@@ -152,6 +152,7 @@
     "@types/validator": "^13.7.0",
     "@vitejs/plugin-react": "^4.3.1",
     "chromatic": "^6.2.0",
+    "concurrently": "^7.6.0",
     "env-cmd": "^10.1.0",
     "mockdate": "^3.0.5",
     "moment-timezone": "0.6.0",
