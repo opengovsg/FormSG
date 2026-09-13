@@ -20,6 +20,14 @@ const stubExports = (specifier: string) => {
     .join(';')}`
 }
 
+// .tsx tests render components and may rely on the global Storybook decorator
+// (Chakra/React Query/Router/MSW) even without calling composeStories directly
+// (e.g. DeleteWorkflowModal.test.tsx). Only plain .test.ts files are safely thin.
+const baseUnitTest = {
+  globals: true,
+  environment: 'jsdom' as const,
+}
+
 export default defineConfig((configEnv) => {
   const appConfig = viteConfig(configEnv)
   return mergeConfig(
@@ -32,10 +40,20 @@ export default defineConfig((configEnv) => {
           {
             extends: true,
             test: {
+              ...baseUnitTest,
               name: 'unit',
+              include: ['src/**/*.test.ts'],
+              setupFiles: ['./vitest-setup.thin.ts'],
+            },
+          },
+          {
+            extends: true,
+            test: {
+              ...baseUnitTest,
+              // Kept separate from the browser `storybook` project below.
+              name: 'unit-tsx',
+              include: ['src/**/*.test.tsx'],
               setupFiles: ['./vitest-setup.ts'],
-              globals: true,
-              environment: 'jsdom', // For storybook tests to work properly
             },
           },
           {
