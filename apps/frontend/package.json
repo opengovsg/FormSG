@@ -110,7 +110,7 @@
     "postinstall": "pnpm run gen:theme-typings",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "start": "vite",
-    "build": "concurrently -k -s all --raw \"pnpm exec tsc --noEmit\" \"vite build\"",
+    "build": "concurrently --kill-others-on-fail -s all --raw \"pnpm exec tsc -p tsconfig.build.json --noEmit\" \"vite build\"",
     "test": "vitest --project=unit",
     "test-storybook": "vitest run --project=storybook",
     "storybook": "storybook dev -p 6006",
