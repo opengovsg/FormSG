@@ -58,8 +58,8 @@ export default defineConfig(() => {
         ...baseRollupOptions,
         output: {
           // Manually chunk datadog-chunk.ts so it gets preloaded in index.html instead of app.
-          manualChunks: {
-            'datadog-chunk': ['datadog-chunk.ts'],
+          manualChunks(id) {
+            if (id.endsWith('/datadog-chunk.ts')) return 'datadog-chunk'
           },
         },
         // logLevel: 'silent' as const,
