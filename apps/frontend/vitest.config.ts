@@ -25,7 +25,10 @@ const stubExports = (specifier: string) => {
 // (e.g. DeleteWorkflowModal.test.tsx). Only plain .test.ts files are safely thin.
 const baseUnitTest = {
   globals: true,
-  environment: 'jsdom' as const,
+  environment: 'jsdom' as const, // For storybook tests to work properly
+  // Threads are cheaper to spin up than forked processes. This suite has no
+  // canvas/native-module usage that would need process isolation.
+  pool: 'threads' as const,
 }
 
 export default defineConfig((configEnv) => {
