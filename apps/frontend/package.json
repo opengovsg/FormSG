@@ -5,7 +5,7 @@
   "homepage": ".",
   "type": "module",
   "scripts": {
-    "build": "concurrently -k -s all --raw \"pnpm exec tsc --noEmit\" \"vite build\"",
+    "build": "concurrently --kill-others-on-fail -s all --raw \"pnpm exec tsc -p tsconfig.build.json --noEmit\" \"vite build\"",
     "build-storybook": "storybook build",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "lint": "oxlint . && oxfmt --check .",
