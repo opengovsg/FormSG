@@ -30,6 +30,7 @@ const baseTest = {
   globals: true,
   environment: 'jsdom' as const, // For storybook tests to work properly
   dangerouslyIgnoreUnhandledErrors: true, // there's some flakey unhandlederror surfaced by vitest, but there isn't enough information to discern if it is a real issue. Actual test failures, will still fail the tests.
+  pool: 'threads' as const,
 }
 
 export default defineConfig((configEnv) =>
