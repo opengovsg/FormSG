@@ -53,6 +53,7 @@ export default defineConfig(() => {
     build: {
       outDir: 'dist',
       emptyOutDir: true,
+      reportCompressedSize: false,
       rollupOptions: {
         ...baseRollupOptions,
         output: {
