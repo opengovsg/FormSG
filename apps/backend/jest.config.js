@@ -58,11 +58,7 @@ const commonProjectConfig = {
 
 /** @type {import('jest').Config} */
 module.exports = {
-  collectCoverage: false,
-  collectCoverageFrom: ['./src/**/*.{ts,js}', '!**/__tests__/**'],
-  coveragePathIgnorePatterns: ['./node_modules/', './tests'],
-  coverageReporters: ['lcov', 'text'],
-  maxWorkers: '4',
+  maxWorkers: '50%',
   projects: [
     {
       ...commonProjectConfig,

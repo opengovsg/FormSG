@@ -4,6 +4,7 @@ import { InvalidIdTokenError } from '../spcp.oidc.client.errors'
 import {
   extractNricOrForeignIdFromParsedSub,
   parseSub,
+  RETRY_FOREVER_OPTIONS,
   retryPromiseForever,
   retryPromiseThreeAttempts,
 } from '../spcp.oidc.util'
@@ -14,10 +15,14 @@ import {
 
 const MOCK_PROMISE_NAME = 'promise'
 
-// Set longer timeout for testing because
-// There does not seem to be an easy way to flush promise queue each of which fulfils with a delay
-// See https://github.com/facebook/jest/issues/2157
-jest.setTimeout(100000)
+// Control-flow tests below pass this override so they don't actually wait
+// out the real 10s NDI contract; that contract is locked in as data by the
+// 'RETRY_FOREVER_OPTIONS' test instead.
+const FAST_RETRY_FOREVER_OPTIONS = {
+  ...RETRY_FOREVER_OPTIONS,
+  minTimeout: 0,
+  maxTimeout: 0,
+}
 
 afterEach(() => {
   jest.clearAllMocks()
@@ -80,6 +85,16 @@ describe('SpOidcUtil', () => {
     })
   })
 
+  describe('RETRY_FOREVER_OPTIONS', () => {
+    it('retries indefinitely with exactly 10s between attempts per NDI spec', () => {
+      expect(RETRY_FOREVER_OPTIONS).toMatchObject({
+        forever: true,
+        minTimeout: 10000,
+        maxTimeout: 10000,
+      })
+    })
+  })
+
   describe('retryPromiseForever', () => {
     it('should retry if promise rejects immediately', async () => {
       // Arrange
@@ -91,7 +106,11 @@ describe('SpOidcUtil', () => {
 
       // Act
 
-      await retryPromiseForever(rejectPromiseOnce, MOCK_PROMISE_NAME)
+      await retryPromiseForever(
+        rejectPromiseOnce,
+        MOCK_PROMISE_NAME,
+        FAST_RETRY_FOREVER_OPTIONS,
+      )
 
       // Assert
       expect(rejectPromiseOnce).toHaveBeenCalledTimes(2)
@@ -109,7 +128,11 @@ describe('SpOidcUtil', () => {
 
       // Act
 
-      await retryPromiseForever(rejectPromiseOnceDelay, MOCK_PROMISE_NAME)
+      await retryPromiseForever(
+        rejectPromiseOnceDelay,
+        MOCK_PROMISE_NAME,
+        FAST_RETRY_FOREVER_OPTIONS,
+      )
 
       // Assert
       expect(rejectPromiseOnceDelay).toHaveBeenCalledTimes(2)
@@ -129,6 +152,7 @@ describe('SpOidcUtil', () => {
       const result = await retryPromiseForever(
         rejectPromiseThreeTimes,
         MOCK_PROMISE_NAME,
+        FAST_RETRY_FOREVER_OPTIONS,
       )
 
       // Assert
