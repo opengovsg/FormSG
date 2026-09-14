@@ -4,12 +4,14 @@ import { ObjectId } from 'bson'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
 import {
   BasicField,
-  ChildBirthRecordsResponseV3,
   FieldResponsesV3,
+  FormAuthType,
   FormFieldDto,
   FormWorkflowStepConditional,
   FormWorkflowStepDto,
   LongTextResponseV3,
+  MyInfoAttribute,
+  MyInfoChildAttributes,
   ShortTextResponseV3,
   SignatureVectorArray,
   SubmissionType,
@@ -391,40 +393,107 @@ describe('multirespondent-submission.utils', () => {
       jest.restoreAllMocks()
     })
 
-    it('should return error when children field is submitted', () => {
-      // Arrange
-      const mockFormId = 'mockFormId'
-      const field1Id = 'field1'
-      const mockVisibleFieldIds = new Set([field1Id])
-      const mockFormFields = [
-        generateDefaultField(BasicField.ShortText, {
-          _id: field1Id,
-        }),
-      ]
-      const mockResponses = {
-        [field1Id]: {
-          fieldType: BasicField.Children,
-          answer: {
-            child: [],
-            childFields: [],
-          },
-        } as ChildBirthRecordsResponseV3,
-      }
+    // Defaults for tests that are not exercising the Children gate.
+    const CHILDREN_GATE_CLOSED = {
+      workflowStep: 0,
+      formAuthType: FormAuthType.NIL,
+      isMrfChildrenEnabled: false,
+    }
 
-      // Act
-      const result = validateMrfFieldResponses({
-        formId: mockFormId,
-        visibleFieldIds: mockVisibleFieldIds,
-        formFields: mockFormFields as FormFieldDto[],
-        responses: mockResponses,
+    describe('Children gate', () => {
+      const mockFormId = 'mockFormId'
+      const childrenFieldId = new ObjectId().toHexString()
+      const mockVisibleFieldIds = new Set([childrenFieldId])
+      const mockFormFields = [
+        generateDefaultField(BasicField.Children, {
+          _id: childrenFieldId,
+          childrenSubFields: [MyInfoChildAttributes.ChildName],
+          myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+        }),
+      ] as FormFieldDto[]
+      const mockResponses = {
+        [childrenFieldId]: {
+          fieldType: BasicField.Children,
+          question: 'Children',
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: { value: 'Phua Chu King' },
+              },
+            },
+          },
+          provenance: {},
+        },
+      } as unknown as ParsedClearFormFieldResponsesV4
+
+      const actWithGate = (gate: {
+        workflowStep: number
+        formAuthType: FormAuthType
+        isMrfChildrenEnabled: boolean
+      }) =>
+        validateMrfFieldResponses({
+          formId: mockFormId,
+          visibleFieldIds: mockVisibleFieldIds,
+          formFields: mockFormFields,
+          responses: mockResponses,
+          ...gate,
+        })
+
+      it('should return error when the mrf-children flag is off', () => {
+        const result = actWithGate({
+          workflowStep: 0,
+          formAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: false,
+        })
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          'Children field type is not supported for this MRF submission',
+        )
       })
 
-      // Assert
-      expect(result.isErr()).toBe(true)
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
-      expect(result._unsafeUnwrapErr().message).toBe(
-        'Children field type is not supported for MRF submisisons',
-      )
+      it('should return error when the submission is not the initial step', () => {
+        const result = actWithGate({
+          workflowStep: 1,
+          formAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+      })
+
+      it('should return error when the form is not MyInfo-authed', () => {
+        const result = actWithGate({
+          workflowStep: 0,
+          formAuthType: FormAuthType.SP,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+      })
+
+      it('should accept a children response when flag is on, step is initial and form is MyInfo-authed', () => {
+        const validateFieldV4Mock = jest
+          .spyOn(fieldValidation, 'validateFieldV4')
+          .mockReturnValue(ok(true))
+
+        const result = actWithGate({
+          workflowStep: 0,
+          formAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isOk()).toBe(true)
+        expect(validateFieldV4Mock).toHaveBeenCalledWith({
+          formId: mockFormId,
+          formField: mockFormFields[0],
+          response: mockResponses[childrenFieldId],
+          isVisible: true,
+        })
+      })
     })
 
     it('should invoke validateFieldV4 with isVisible true when non-hidden and supported field type is submitted', () => {
@@ -451,6 +520,7 @@ describe('multirespondent-submission.utils', () => {
         visibleFieldIds: mockVisibleFieldIds,
         formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
+        ...CHILDREN_GATE_CLOSED,
       })
 
       // Assert
@@ -494,6 +564,7 @@ describe('multirespondent-submission.utils', () => {
         visibleFieldIds: mockVisibleFieldIds,
         formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
+        ...CHILDREN_GATE_CLOSED,
       })
 
       // Assert
@@ -557,6 +628,7 @@ describe('multirespondent-submission.utils', () => {
         formFields: mockFormFields as FormFieldDto[],
         responses: mockResponses,
         previousResponses: mockPreviousResponses,
+        ...CHILDREN_GATE_CLOSED,
       })
 
       // Assert
