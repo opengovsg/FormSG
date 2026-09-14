@@ -42,11 +42,19 @@ export const FieldEmptyState = ({
         height lets the content size the box, as `minH: 'auto'` intended, and
         the single line that results measures 2.75rem: 1.5rem of line box plus
         the base style's 9px padding and 1px borders. That is also the touch
-        target this wants on a phone. */}
+        target this wants on a phone.
+
+        `lineHeight` because subhead-1's 1.5rem is set for running text, where
+        lines need to be told apart. A wrapped button label is one phrase
+        broken across two lines, and that much leading pulls it apart into two
+        of them. Tightened only here, since the base style's value is right
+        everywhere a button label fits on one line and the leading never
+        shows. */}
         <Button
           variant="outline"
           size="sm"
           h="auto"
+          lineHeight="1.25rem"
           leftIcon={<BiLinkExternal />}
           onClick={onAction}
         >
