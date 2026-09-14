@@ -1,18 +1,23 @@
+import { MYINFO_ATTRIBUTE_MAP } from '../constants/field/myinfo'
 import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../constants/form'
 import {
   AddressAttributes,
   BasicField,
+  ChildBirthRecordsResponse,
   FieldResponse,
   FormFieldDto,
   LogicDto,
   MyInfoAttribute,
+  MyInfoChildAttributes,
 } from '../types'
 
 import {
   AddressAnswerInput,
+  ChildrenAnswerInput,
   computeAddressAnswerValue,
   computeAttachmentAnswerValue,
   computeCheckboxAnswerValue,
+  computeChildrenAnswerValue,
   computeDateAnswerValue,
   computeRadioAnswerValue,
   computeSectionAnswerValue,
@@ -30,6 +35,7 @@ import {
   AnswerV4,
   AttachmentAnswerV4,
   CheckboxAnswerV4,
+  ChildrenAnswerV4,
   FieldResponsesV4Input,
   RadioAnswerV4,
   SignatureAnswerV4,
@@ -77,6 +83,24 @@ const toTableInput = (answer?: TableAnswerV4): TableAnswerInput | undefined => {
       }
       return cells
     })
+}
+
+const toChildrenInput = (
+  subFields: MyInfoChildAttributes[],
+  answer?: ChildrenAnswerV4,
+): ChildrenAnswerInput | undefined => {
+  if (answer === undefined || Object.keys(answer).length === 0) {
+    return undefined
+  }
+  // NOTE: V4 keys children by an opaque `child<n>` key and subfield answers
+  // by attribute; V1 stores one row per child, cells ordered by the field's
+  // childrenSubFields. A subfield the child carries no data for becomes ''.
+  const child = Object.keys(answer)
+    .sort()
+    .map((childKey) =>
+      subFields.map((attr) => answer[childKey]?.value?.[attr]?.value ?? ''),
+    )
+  return { child }
 }
 
 /**
@@ -186,11 +210,16 @@ const buildEntry = (
         ...computeSignatureAnswerValue(answer as SignatureAnswerV4),
       }
     case BasicField.Children:
-      // RATIONALE: Currently, no MRF form should have a Children field,
-      // so support is out of scope.
-      throw new Error(
-        `Unsupported field type: ${field.fieldType} for field id: ${field._id}`,
-      )
+      return {
+        ...pickBase(field),
+        ...computeChildrenAnswerValue({
+          numberOfSubFields: field.childrenSubFields?.length,
+          input: toChildrenInput(
+            field.childrenSubFields ?? [],
+            answer as ChildrenAnswerV4,
+          ),
+        }),
+      }
     case BasicField.Number:
     case BasicField.Decimal:
     case BasicField.ShortText:
@@ -250,6 +279,42 @@ const appendServerDerivedKeys = (
 }
 
 /**
+ * Explodes a validated Children entry into one single-answer entry per child
+ * attribute, mirroring the storage-mode server's explosion before encryption
+ * (`formatMyInfoStorageResponseData` → `getAnswersForChild`,
+ * `submission.utils.ts`): same synthetic ids and `Child <n> <description>`
+ * questions, `myInfo` carrying the subfield attribute (not the parent's
+ * `childrenbirthrecords`) and sitting before `answer`. That key order differs
+ * from `appendServerDerivedKeys`, so Children bypasses it; `isVisible` is
+ * simply never added, matching what `omitResponseKeys` strips.
+ *
+ * @param qnChildIdx running count of children across earlier Children fields
+ * on the form, mirroring `ParsedResponsesObject`'s childIdx offset — a second
+ * Children field continues the numbering ("Child 2") rather than restarting.
+ */
+const explodeChildrenEntries = (
+  response: ChildBirthRecordsResponse,
+  field: FormFieldDto & { fieldType: BasicField.Children },
+  qnChildIdx: number,
+): FlattenedV1Response[] => {
+  const subFields = field.childrenSubFields ?? []
+  return response.answerArray.flatMap((childRow, childIdx) =>
+    childRow.map(
+      (answer, idx) =>
+        ({
+          _id: `${MyInfoAttribute.ChildrenBirthRecords}.${field._id}.${subFields[idx]}.${childIdx}`,
+          fieldType: BasicField.Children,
+          question: `Child ${qnChildIdx + childIdx + 1} ${
+            MYINFO_ATTRIBUTE_MAP[subFields[idx]].description
+          }`,
+          myInfo: { attr: subFields[idx] as unknown as MyInfoAttribute },
+          answer,
+        }) as unknown as FlattenedV1Response,
+    ),
+  )
+}
+
+/**
  * Converts V4 responses and a form-definition snapshot into the same V1
  * entries a storage-mode form produces.
  */
@@ -283,7 +348,15 @@ export const flattenV4ToFormFields = ({
     entries.push(entry)
     emittingFields.push(field)
   }
-  return validateResponses(entries).map((response, index) =>
-    appendServerDerivedKeys(response, emittingFields[index]),
-  )
+  let childQnIdx = 0
+  return validateResponses(entries).flatMap((response, index) => {
+    const field = emittingFields[index]
+    if (field.fieldType === BasicField.Children) {
+      const children = response as ChildBirthRecordsResponse
+      const exploded = explodeChildrenEntries(children, field, childQnIdx)
+      childQnIdx += children.answerArray.length
+      return exploded
+    }
+    return appendServerDerivedKeys(response, field)
+  })
 }
