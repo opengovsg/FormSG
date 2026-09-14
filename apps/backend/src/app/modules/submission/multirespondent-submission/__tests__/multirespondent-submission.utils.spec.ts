@@ -925,6 +925,109 @@ describe('multirespondent-submission.utils', () => {
       ])
     })
 
+    it('should expand children fields into one pair per child attribute', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildBirthCertNo,
+          ],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                // Keyed in reverse of the field subfield order: pairs must
+                // follow the field definition order, name first.
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: 'T1234567X',
+                },
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+              },
+            },
+          },
+          question: 'Children',
+          provenance: {},
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
+
+      // Question naming matches getAnswersForChild, used by email/storage
+      // modes, so MRF emails render children identically.
+      expect(result).toEqual([
+        {
+          question: 'Child 1 Name',
+          answer: 'Phua Chu King',
+          fieldType: BasicField.Children,
+        },
+        {
+          question: 'Child 1 Birth certificate number',
+          answer: 'T1234567X',
+          fieldType: BasicField.Children,
+        },
+      ])
+    })
+
+    it('should render a missing children subfield answer as an empty string', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildVaxxStatus,
+          ],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+              },
+            },
+          },
+          question: 'Children',
+          provenance: {},
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
+
+      expect(result).toEqual([
+        {
+          question: 'Child 1 Name',
+          answer: 'Phua Chu King',
+          fieldType: BasicField.Children,
+        },
+        {
+          question: 'Child 1 Vaccination status',
+          answer: '',
+          fieldType: BasicField.Children,
+        },
+      ])
+    })
+
     it('should handle table fields correctly', () => {
       const formFields: FormFieldSchema[] = [
         {
@@ -1454,6 +1557,55 @@ describe('multirespondent-submission.utils', () => {
       responseId: 'abc123',
       timestamp: '1 Jan 2025',
     }
+
+    it('should emit one entry per child attribute for children responses', () => {
+      const formFields = [
+        {
+          _id: '1',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildBirthCertNo,
+          ],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          question: 'Children',
+          provenance: {},
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: 'T1234567X',
+                },
+              },
+            },
+          },
+        },
+      } as unknown as FieldResponsesV4
+
+      const json = buildMrfResponseJson({
+        ...BASE_ARGS,
+        formFields,
+        responses,
+      })
+
+      expect(JSON.parse(json)).toEqual(
+        expect.arrayContaining([
+          { question: 'Child 1 Name', answer: 'Phua Chu King' },
+          {
+            question: 'Child 1 Birth certificate number',
+            answer: 'T1234567X',
+          },
+        ]),
+      )
+    })
 
     it('should prepend Form ID as the first entry, before Response ID and Timestamp', () => {
       const result = JSON.parse(
