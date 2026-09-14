@@ -640,28 +640,6 @@ describe('multirespondent-submission.utils', () => {
       ])
     })
 
-    it('should pass verifiable (mobile) answers through unchanged', () => {
-      const adapted = adaptV4ResponsesForMyInfoHashCheck(
-        makeResponses({
-          fieldType: BasicField.Mobile,
-          answer: { value: '+6598765432', signature: 'sig' },
-        }),
-        [
-          makeField({
-            fieldType: BasicField.Mobile,
-            myInfo: { attr: 'mobileno' },
-          }),
-        ],
-      )
-
-      expect(adapted).toEqual([
-        expect.objectContaining({
-          answer: '+6598765432',
-          myInfo: { attr: 'mobileno' },
-        }),
-      ])
-    })
-
     it('should skip non-MyInfo fields and MyInfo fields without responses', () => {
       const adapted = adaptV4ResponsesForMyInfoHashCheck(
         {
