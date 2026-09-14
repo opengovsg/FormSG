@@ -7,6 +7,7 @@ import {
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FieldResponsesV3,
@@ -729,6 +730,12 @@ export const validateMultirespondentSubmission = async (
                   formFields: form_fields,
                   responses: req.body.responses,
                   previousResponses,
+                  workflowStep,
+                  formAuthType: req.formsg.formDef.authType,
+                  // Fail closed: without a growthbook instance, Children
+                  // responses are rejected.
+                  isMrfChildrenEnabled:
+                    req.growthbook?.isOn(featureFlags.mrfChildren) ?? false,
                 })
               }),
           )
