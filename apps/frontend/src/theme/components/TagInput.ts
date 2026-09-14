@@ -29,6 +29,13 @@ const baseStyle = definePartsStyle({
       outline: 'none',
     },
     flexGrow: 1,
+    // An input carries an intrinsic width from its `size` attribute, and a
+    // flex item's `auto` minimum floors it there, so `flexGrow` can widen this
+    // field but nothing can narrow it. Below roughly 200px of container the
+    // field then runs out past the border it sits in. `0` lets it wrap onto
+    // its own line and shrink to the container instead, which is what the
+    // wrapping container was already built to do for the tags.
+    minW: 0,
     _disabled: {
       cursor: 'not-allowed',
     },
