@@ -71,8 +71,6 @@ const navTrackingOrder = () =>
   screen
     .getAllByRole('button')
     .map((el) => el.getAttribute('data-dd-action-name'))
-    // Drawer tabs only. Help and the collapse toggle sit in the same rail but
-    // are not tabs, and neither has a place in this ordering.
     .filter(
       (name) =>
         name?.startsWith('create_builder.drawer_tab.') &&
@@ -146,7 +144,6 @@ describe('CreatePageSidebar', () => {
 
     render(<CreatePageSidebar />)
 
-    // Expanded, the toggle floats alongside the rail rather than sitting in it.
     expect(navTrackingOrder()).not.toHaveLength(0)
     expect(screen.getByRole('button', { name: 'Help' })).toBeInTheDocument()
     expect(screen.getByTestId('sidebar-collapse-toggle')).toBeInTheDocument()
@@ -155,7 +152,6 @@ describe('CreatePageSidebar', () => {
       screen.getByRole('button', { name: 'Collapse sidebar' }),
     )
 
-    // The tabs and Help go with the rail; only the toggle is left.
     expect(navTrackingOrder()).toEqual([])
     expect(
       screen.queryByRole('button', { name: 'Help' }),

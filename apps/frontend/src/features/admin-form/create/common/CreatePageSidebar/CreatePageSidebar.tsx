@@ -68,16 +68,11 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     reportSidebarWidth,
   } = useCreatePageSidebar()
 
-  // Collapsing is a mobile-only affordance. Derived rather than stored, so
-  // widening past `md` restores the rail instead of stranding it hidden with
-  // no toggle left to bring it back.
   const [wantsCollapsed, setWantsCollapsed] = useState(false)
   const isCollapsed = isMobile && wantsCollapsed
 
   const sidebarRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
-    // Collapsed, the rail is unmounted, so there is nothing for the observer
-    // to measure and the last width would otherwise stand.
     if (isCollapsed) {
       reportSidebarWidth(0)
       return
@@ -151,10 +146,6 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   ) : null
 
   const collapseLabel = isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
-  // Fixed in both states, not docked in the rail. The rail stretches to the
-  // content's height rather than the viewport's, so its own bottom is
-  // thousands of pixels down a long form and a button parked there could only
-  // be reached by scrolling to the end of the form.
   const collapseToggle = !isMobile ? null : (
     <Box
       pos="fixed"
