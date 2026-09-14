@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.22.2](https://github.com/opengovsg/formsg/compare/v9.22.1...v9.22.2) (2026-09-14)
+
+
+### Bug Fixes
+
+* **workflow:** copy, approval-toggle color, beta badge, and completion-email card fixes (1/5-5/5) (#9997) ([#9997](https://github.com/opengovsg/formsg/commit/c4921b786006266b1cde243470f4f55280a4ae3a))
+
 ## [9.22.1](https://github.com/opengovsg/formsg/compare/v9.22.0...v9.22.1) (2026-09-11)
 
 
