@@ -15,6 +15,7 @@ import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import jwt from 'jsonwebtoken'
+import { get } from 'lodash'
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
@@ -264,7 +265,7 @@ export const validateMrfFieldResponses = ({
 const extractV4StringAnswer = (
   response: ParsedClearFormFieldResponseV4,
 ): string | undefined => {
-  const value = (response.answer as { value?: unknown } | null)?.value
+  const value = get(response.answer, 'value')
   return typeof value === 'string' ? value : undefined
 }
 
