@@ -12,15 +12,17 @@ export class MyInfoFapiMissingSessionError extends ApplicationError {
   }
 }
 
+// No ErrorCode: expected control flow
 export class MyInfoFapiIncompleteLoginError extends ApplicationError {
   constructor(message = 'MyInfo FAPI login not completed') {
-    super(message, undefined, ErrorCodes.MYINFO_FAPI_INCOMPLETE_LOGIN)
+    super(message)
   }
 }
 
+// No ErrorCode: expected control flow
 export class MyInfoFapiSessionFormMismatchError extends ApplicationError {
   constructor(message = 'MyInfo FAPI login session belongs to another form') {
-    super(message, undefined, ErrorCodes.MYINFO_FAPI_SESSION_FORM_MISMATCH)
+    super(message)
   }
 }
 
