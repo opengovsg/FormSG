@@ -11,20 +11,6 @@ export default {
   component: FieldEmptyState,
 } as Meta
 
-/**
- * The empty state never renders at the width of its own container. It sits
- * nested four levels deep, and the wrap these stories exist to watch only
- * happens at the width that nesting leaves, so the stand-in reproduces the
- * chain rather than the component in isolation:
- *
- *   CreatePageWorkflowTab  px 1.5rem (base)
- *   EditStepBlockContainer px 1.5rem (base)
- *   Radio                  px 0.5rem, plus a 1.5rem control and 0.5rem of
- *                          label spacing that only indent the left edge
- *
- * At a 320px viewport that leaves the InlineMessage 176px, and the button
- * inside it 112px once the info icon and the message padding are taken.
- */
 const NestedTemplate: StoryFn = (args) => (
   <Box bg="neutral.100" px="1.5rem">
     <Box bg="white" px="1.5rem">

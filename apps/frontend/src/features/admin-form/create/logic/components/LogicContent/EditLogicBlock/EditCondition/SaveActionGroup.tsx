@@ -33,10 +33,6 @@ export const SaveActionGroup = ({
   const isMobile = useIsMobile()
 
   return (
-    /* A row of three on a wide card, a column of three on a narrow one. The
-    save pair goes full width below `md`, which leaves the delete button
-    nowhere to sit on the same line, so the group turns down the page and
-    delete takes the last row on its own. */
     <Flex
       justify="space-between"
       align={{ base: 'stretch', md: 'center' }}
@@ -46,9 +42,6 @@ export const SaveActionGroup = ({
     >
       {handleDelete ? (
         <IconButton
-          /* Ordered last on mobile while staying first in the DOM, so the
-          reading and focus order still reaches delete before the save pair
-          on both layouts, and only the paint order differs. */
           order={{ base: 1, md: 0 }}
           alignSelf={{ base: 'center', md: 'auto' }}
           variant="clear"

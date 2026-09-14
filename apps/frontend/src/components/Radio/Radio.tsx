@@ -207,17 +207,6 @@ export const Radio = forwardRef<RadioProps, 'input'>(
     }
 
     const labelStyles: SystemStyleObject = {
-      // `flex` rather than `width: 'full'`. The label is a flex item sharing
-      // the row with the control and carrying `marginStart`, so a width of
-      // 100% asks for the whole content box on top of that 1.5rem control and
-      // 0.5rem margin, and the row overflows its own container by 2rem. Wide
-      // viewports hide it, because the label can shrink back to its
-      // min-content and still fit; narrow ones cannot, and the label's
-      // contents then hang past the container's right edge.
-      //
-      // `minWidth: 0` because a flex item's `auto` minimum floors it at
-      // min-content, which for a field is wide enough to reintroduce the
-      // overflow on the narrowest screens.
       ...(isLabelFullWidth ? { flex: 1, minWidth: 0 } : {}),
       userSelect: 'none',
       marginStart: spacing,
