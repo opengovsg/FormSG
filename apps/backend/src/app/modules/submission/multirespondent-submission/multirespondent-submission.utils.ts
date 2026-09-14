@@ -25,7 +25,10 @@ import {
   ISubmissionSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
-import { ParsedClearFormFieldResponsesV4 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponsesV4,
+  ParsedClearFormFieldResponseV4,
+} from '../../../../types/api'
 import config from '../../../config/config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
@@ -38,6 +41,7 @@ import {
   ProcessingError,
   ValidateFieldErrorV4,
 } from '../submission.errors'
+import { ProcessedFieldResponse } from '../submission.types'
 import { buildMrfMetadata } from '../submission.utils'
 
 import { MrfJwtPayload } from './multirespondent-submission.types'
@@ -250,6 +254,92 @@ export const validateMrfFieldResponses = ({
   }
 
   return ok(responses)
+}
+
+/**
+ * Every MyInfo-prefillable field type allowed on MRF (Children excluded)
+ * carries a V4 answer of shape `{ value: string, ... }`. Extracts the string
+ * value, or undefined for any other shape.
+ */
+const extractV4StringAnswer = (
+  response: ParsedClearFormFieldResponseV4,
+): string | undefined => {
+  const answer: unknown = response.answer
+  if (
+    typeof answer === 'object' &&
+    answer !== null &&
+    'value' in answer &&
+    typeof (answer as { value: unknown }).value === 'string'
+  ) {
+    return (answer as { value: string }).value
+  }
+  return undefined
+}
+
+/** V4 wire format for date answers, enforced by constructDateValidatorV4. */
+const V4_DATE_ANSWER_FORMAT = 'DD/MM/YYYY'
+/**
+ * Date wire format encrypt mode receives; checkMyInfoHashes' answer transform
+ * converts it to the 'YYYY-MM-DD' form that was hashed at prefill.
+ */
+const HASH_CHECK_DATE_FORMAT = 'DD MMM YYYY'
+
+/**
+ * Adapts parsed V4 clear responses (keyed by field id) into the
+ * ProcessedFieldResponse shape that MyInfoService.checkMyInfoHashes expects,
+ * so that MRF submissions can verify MyInfo prefill hashes exactly as encrypt
+ * mode does.
+ *
+ * The MyInfo attribute and fieldType are sourced from the *form definition*,
+ * never from the client payload — a respondent must not be able to skip the
+ * hash check by stripping or mislabelling the myInfo meta on a response.
+ *
+ * Children compound fields are not adapted: they are hard-rejected for MRF
+ * submissions in validateMrfFieldResponses, and their hashes use a different
+ * key scheme.
+ *
+ * @param responses parsed V4 clear responses, keyed by field id
+ * @param formFields the form's field definitions
+ * @returns responses on MyInfo fields, in checkMyInfoHashes-compatible shape
+ */
+export const adaptV4ResponsesForMyInfoHashCheck = (
+  responses: ParsedClearFormFieldResponsesV4,
+  formFields: FormFieldSchema[] | FormFieldDto[],
+): ProcessedFieldResponse[] => {
+  const adapted: ProcessedFieldResponse[] = []
+  for (const field of formFields) {
+    // Table fields have no myInfo key in the DTO union, hence the 'in' guard.
+    const attr = 'myInfo' in field ? field.myInfo?.attr : undefined
+    if (!attr) continue
+    if (field.fieldType === BasicField.Children) continue
+
+    const response = responses[field._id.toString()]
+    if (!response) continue
+
+    const rawValue = extractV4StringAnswer(response)
+    // Fail closed: a malformed answer on a MyInfo field compares as an empty
+    // string, which can never satisfy a stored hash.
+    let answer = rawValue ?? ''
+    if (field.fieldType === BasicField.Date && rawValue) {
+      const parsed = moment(rawValue, V4_DATE_ANSWER_FORMAT, true)
+      if (parsed.isValid()) {
+        answer = parsed.format(HASH_CHECK_DATE_FORMAT)
+      }
+    }
+
+    adapted.push({
+      _id: field._id.toString(),
+      question: field.title,
+      fieldType: field.fieldType,
+      answer,
+      myInfo: { attr },
+      // Responses on hidden fields are rejected upstream in
+      // validateMultirespondentSubmission, so any response present here is on
+      // a visible field.
+      isVisible: true,
+    } as ProcessedFieldResponse)
+  }
+  return adapted
 }
 
 /**
