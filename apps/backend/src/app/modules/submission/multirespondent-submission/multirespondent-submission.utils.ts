@@ -264,25 +264,9 @@ export const validateMrfFieldResponses = ({
 const extractV4StringAnswer = (
   response: ParsedClearFormFieldResponseV4,
 ): string | undefined => {
-  const answer: unknown = response.answer
-  if (
-    typeof answer === 'object' &&
-    answer !== null &&
-    'value' in answer &&
-    typeof (answer as { value: unknown }).value === 'string'
-  ) {
-    return (answer as { value: string }).value
-  }
-  return undefined
+  const value = (response.answer as { value?: unknown } | null)?.value
+  return typeof value === 'string' ? value : undefined
 }
-
-/** V4 wire format for date answers, enforced by constructDateValidatorV4. */
-const V4_DATE_ANSWER_FORMAT = 'DD/MM/YYYY'
-/**
- * Date wire format encrypt mode receives; checkMyInfoHashes' answer transform
- * converts it to the 'YYYY-MM-DD' form that was hashed at prefill.
- */
-const HASH_CHECK_DATE_FORMAT = 'DD MMM YYYY'
 
 /**
  * Adapts parsed V4 clear responses (keyed by field id) into the
@@ -321,9 +305,12 @@ export const adaptV4ResponsesForMyInfoHashCheck = (
     // string, which can never satisfy a stored hash.
     let answer = rawValue ?? ''
     if (field.fieldType === BasicField.Date && rawValue) {
-      const parsed = moment(rawValue, V4_DATE_ANSWER_FORMAT, true)
+      // V4 dates arrive as 'DD/MM/YYYY'; convert to the 'DD MMM YYYY' wire
+      // format encrypt mode receives, which checkMyInfoHashes' transform
+      // turns back into the 'YYYY-MM-DD' form hashed at prefill.
+      const parsed = moment(rawValue, 'DD/MM/YYYY', true)
       if (parsed.isValid()) {
-        answer = parsed.format(HASH_CHECK_DATE_FORMAT)
+        answer = parsed.format('DD MMM YYYY')
       }
     }
 
