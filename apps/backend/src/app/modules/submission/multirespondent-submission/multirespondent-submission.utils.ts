@@ -272,16 +272,10 @@ const extractV4StringAnswer = (
 /**
  * Adapts parsed V4 clear responses (keyed by field id) into the
  * ProcessedFieldResponse shape that MyInfoService.checkMyInfoHashes expects,
- * so that MRF submissions can verify MyInfo prefill hashes exactly as encrypt
- * mode does.
- *
+ * to verify MyInfo prefill hashes exactly as encrypt mode does.
  * The MyInfo attribute and fieldType are sourced from the *form definition*,
  * never from the client payload — a respondent must not be able to skip the
  * hash check by stripping or mislabelling the myInfo meta on a response.
- *
- * Children compound fields are not adapted: they are hard-rejected for MRF
- * submissions in validateMrfFieldResponses, and their hashes use a different
- * key scheme.
  *
  * @param responses parsed V4 clear responses, keyed by field id
  * @param formFields the form's field definitions
