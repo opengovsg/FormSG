@@ -735,18 +735,87 @@ describe('multirespondent-submission.utils', () => {
       expect(adapted).toEqual([])
     })
 
-    it('should skip Children compound fields', () => {
+    it('should adapt Children compound fields to the ProcessedChildrenResponse shape', () => {
+      const childrenSubFields = [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ]
       const adapted = adaptV4ResponsesForMyInfoHashCheck(
-        makeResponses({ fieldType: BasicField.Children, answer: {} }),
+        makeResponses({
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                // Keyed in reverse of the field subfield order: the adapter
+                // must order by the field definition, name first, since
+                // handleMyInfoChildHashResponse reads the name from index 0.
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: 'T1234567X',
+                },
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+              },
+            },
+          },
+        }),
         [
           makeField({
             fieldType: BasicField.Children,
-            myInfo: { attr: 'childrenbirthrecords' },
+            title: 'Children',
+            childrenSubFields,
+            myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
           }),
         ],
       )
 
-      expect(adapted).toEqual([])
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          _id: MYINFO_FIELD_ID,
+          fieldType: BasicField.Children,
+          answerArray: [['Phua Chu King', 'T1234567X']],
+          childSubFieldsArray: childrenSubFields,
+          myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+          isVisible: true,
+        }),
+      ])
+    })
+
+    it('should adapt missing or malformed Children subfield values to empty strings', () => {
+      const childrenSubFields = [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ]
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        makeResponses({
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: { value: 'Phua Chu King' },
+                // Malformed: value is not a string.
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: { nested: 'junk' },
+                },
+              },
+            },
+          },
+        }),
+        [
+          makeField({
+            fieldType: BasicField.Children,
+            childrenSubFields,
+            myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+          }),
+        ],
+      )
+
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          answerArray: [['Phua Chu King', '']],
+          childSubFieldsArray: childrenSubFields,
+        }),
+      ])
     })
 
     it('should fail closed with an empty answer when a MyInfo answer is malformed', () => {
