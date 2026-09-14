@@ -40,6 +40,7 @@ import { FieldEmptyState } from '../../EmptyStates'
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
 import { useWorkflowTypeValidation } from './hooks'
+import { NESTED_CONTROL_PR } from './layout'
 import { RespondentOptionProps } from './types'
 
 interface ConditionalRoutingOptionProps extends RespondentOptionProps {
@@ -417,6 +418,7 @@ export const ConditionalRoutingOption = ({
         </Text>
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <FormControl
+            pr={NESTED_CONTROL_PR}
             id="conditional_field"
             isRequired={!isSavePermissive}
             isInvalid={
