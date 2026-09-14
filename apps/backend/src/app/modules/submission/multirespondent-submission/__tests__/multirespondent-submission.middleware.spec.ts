@@ -12,6 +12,10 @@ import nacl from 'tweetnacl'
 import { decodeBase64, encodeBase64, encodeUTF8 } from 'tweetnacl-util'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
+import {
+  MyInfoHashDidNotMatchError,
+  MyInfoMissingHashError,
+} from 'src/app/modules/myinfo/myinfo.errors'
 import { MyInfoService } from 'src/app/modules/myinfo/myinfo.service'
 import * as MyInfoUtil from 'src/app/modules/myinfo/myinfo.util'
 import * as OidcService from 'src/app/modules/spcp/spcp.oidc.service'
@@ -51,6 +55,8 @@ jest.mock('../../../myinfo/myinfo.service', () => ({
   __esModule: true,
   MyInfoService: {
     verifyLoginJwt: jest.fn(),
+    fetchMyInfoHashes: jest.fn(),
+    checkMyInfoHashes: jest.fn(),
   },
 }))
 jest.mock('../../../verified-content/verified-content.service')
@@ -466,6 +472,13 @@ describe('Multirespondent Submission Middleware', () => {
     beforeEach(() => {
       jest.clearAllMocks()
       jest.resetAllMocks()
+      // Default MyInfo hash verification to a passing state; hash-check
+      // specific behaviour is covered in the 'MyInfo hash verification'
+      // describe block below.
+      jest.mocked(MyInfoService.fetchMyInfoHashes).mockReturnValue(okAsync({}))
+      jest
+        .mocked(MyInfoService.checkMyInfoHashes)
+        .mockReturnValue(okAsync(new Set()))
     })
 
     describe('submitterId is set', () => {
@@ -901,6 +914,220 @@ describe('Multirespondent Submission Middleware', () => {
       expect(mockReq.formsg.encryptedPayload.responses).toHaveProperty(
         'SingPass Validated NRIC',
       )
+    })
+
+    describe('MyInfo hash verification', () => {
+      const MOCK_MYINFO_FIELD_ID = new ObjectId().toHexString()
+
+      const MOCK_MYINFO_FORM = {
+        ...MOCK_FORM,
+        form_fields: [
+          {
+            _id: MOCK_MYINFO_FIELD_ID,
+            fieldType: BasicField.ShortText,
+            title: 'Name',
+            myInfo: { attr: 'name' },
+          },
+        ],
+      }
+
+      const MOCK_MYINFO_RESPONSES = {
+        [MOCK_MYINFO_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'John Tan' },
+          question: 'Name',
+          provenance: {},
+        },
+      }
+
+      const setupMyInfoLoginMocks = () => {
+        jest
+          .mocked(MyInfoUtil.extractMyInfoLoginJwt)
+          .mockReturnValue(ok('mock-jwt-string'))
+        jest
+          .mocked(MyInfoService.verifyLoginJwt)
+          .mockReturnValue(ok({ uinFin: 'S1234567A' }))
+        jest
+          .mocked(VerifiedContentService.getVerifiedContent)
+          .mockReturnValue(ok({ uinFin: 'S1234567A' }))
+        jest
+          .mocked(VerifiedContentService.encryptVerifiedContent)
+          .mockReturnValue(ok('encrypted-verified-content'))
+      }
+
+      const createMyInfoMockReq = () => {
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.body.responses = MOCK_MYINFO_RESPONSES
+        mockReq.formsg = {
+          formDef: MOCK_MYINFO_FORM,
+          mrfSubmission: MOCK_MRF_SUBMISSION,
+          encryptedPayload: {
+            submissionPublicKey: 'mockSubmissionPublicKey',
+          },
+        }
+        return mockReq
+      }
+
+      it('should allow the submission through when MyInfo hashes match', async () => {
+        // Arrange
+        setupMyInfoLoginMocks()
+        jest
+          .mocked(MyInfoService.fetchMyInfoHashes)
+          .mockReturnValue(okAsync({ name: 'mock-hash' }))
+        jest
+          .mocked(MyInfoService.checkMyInfoHashes)
+          .mockReturnValue(okAsync(new Set([MOCK_MYINFO_FIELD_ID])))
+
+        const mockNext = jest.fn()
+        const mockReq = createMyInfoMockReq()
+        const mockRes = createMockRes()
+
+        // Act
+        await handleNdiResponses(mockReq, mockRes as any, mockNext)
+
+        // Assert
+        expect(mockNext).toHaveBeenCalled()
+        expect(
+          jest.mocked(MyInfoService.fetchMyInfoHashes),
+        ).toHaveBeenCalledWith('S1234567A', MOCK_FORM_ID)
+        // The responses passed to the hash check must be adapted from the V4
+        // shape, with the myInfo attribute sourced from the form definition.
+        expect(
+          jest.mocked(MyInfoService.checkMyInfoHashes),
+        ).toHaveBeenCalledWith(
+          [
+            expect.objectContaining({
+              _id: MOCK_MYINFO_FIELD_ID,
+              fieldType: BasicField.ShortText,
+              answer: 'John Tan',
+              myInfo: { attr: 'name' },
+              isVisible: true,
+            }),
+          ],
+          { name: 'mock-hash' },
+        )
+      })
+
+      it('should reject the submission with 401 when a MyInfo answer does not match its hash', async () => {
+        // Arrange
+        setupMyInfoLoginMocks()
+        jest
+          .mocked(MyInfoService.fetchMyInfoHashes)
+          .mockReturnValue(okAsync({ name: 'mock-hash' }))
+        jest
+          .mocked(MyInfoService.checkMyInfoHashes)
+          .mockReturnValue(errAsync(new MyInfoHashDidNotMatchError()))
+
+        const mockNext = jest.fn()
+        const mockReq = createMyInfoMockReq()
+        const mockRes = createMockRes()
+
+        // Act
+        await handleNdiResponses(mockReq, mockRes as any, mockNext)
+
+        // Assert
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message: 'MyInfo verification failed.',
+            spcpSubmissionFailure: true,
+          }),
+        )
+      })
+
+      it('should reject the submission with 410 when MyInfo hashes are missing or expired', async () => {
+        // Arrange
+        setupMyInfoLoginMocks()
+        jest
+          .mocked(MyInfoService.fetchMyInfoHashes)
+          .mockReturnValue(errAsync(new MyInfoMissingHashError()))
+
+        const mockNext = jest.fn()
+        const mockReq = createMyInfoMockReq()
+        const mockRes = createMockRes()
+
+        // Act
+        await handleNdiResponses(mockReq, mockRes as any, mockNext)
+
+        // Assert
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(
+          jest.mocked(MyInfoService.checkMyInfoHashes),
+        ).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.GONE)
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message:
+              'MyInfo verification expired, please refresh and try again.',
+            spcpSubmissionFailure: true,
+          }),
+        )
+      })
+
+      it('should not perform the hash check for non-MyInfo submissions', async () => {
+        // Arrange
+        const mockNext = jest.fn()
+        const mockReq = createMyInfoMockReq()
+        mockReq.formsg.formDef = {
+          ...MOCK_MYINFO_FORM,
+          authType: FormAuthType.NIL,
+        }
+        const mockRes = createMockRes()
+
+        // Act
+        await handleNdiResponses(mockReq, mockRes as any, mockNext)
+
+        // Assert
+        expect(mockNext).toHaveBeenCalled()
+        expect(
+          jest.mocked(MyInfoService.fetchMyInfoHashes),
+        ).not.toHaveBeenCalled()
+        expect(
+          jest.mocked(MyInfoService.checkMyInfoHashes),
+        ).not.toHaveBeenCalled()
+      })
+
+      it('should not perform the hash check for step >= 2 submissions', async () => {
+        // Arrange
+        const mockNext = jest.fn()
+        const mockReq = createMyInfoMockReq()
+        mockReq.body.workflowStep = 1
+        mockReq.body.submissionSecretKey = 'prev-submission-secret'
+        mockReq.formsg.mrfSubmission = {
+          ...MOCK_MRF_SUBMISSION,
+          workflowStep: 1,
+          verifiedContent: 'verified-content',
+        }
+
+        const mockDecryptFromSubmissionKey = formsgSdk.cryptoV3
+          .decryptFromSubmissionKey as jest.Mock
+        mockDecryptFromSubmissionKey.mockReturnValue({
+          verified: { uinFin: 'S1234567A' },
+          submissionSecretKey: 'prev-submission-secret',
+          responses: {},
+        })
+        jest
+          .mocked(VerifiedContentService.encryptVerifiedContent)
+          .mockReturnValue(ok('encrypted-verified-content'))
+
+        const mockRes = createMockRes()
+
+        // Act
+        await handleNdiResponses(mockReq, mockRes as any, mockNext)
+
+        // Assert
+        expect(mockNext).toHaveBeenCalled()
+        expect(
+          jest.mocked(MyInfoService.fetchMyInfoHashes),
+        ).not.toHaveBeenCalled()
+        expect(
+          jest.mocked(MyInfoService.checkMyInfoHashes),
+        ).not.toHaveBeenCalled()
+      })
     })
   })
 

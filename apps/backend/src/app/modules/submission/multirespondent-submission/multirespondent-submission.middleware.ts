@@ -90,6 +90,7 @@ import {
   StrippedAttachmentResponseV4,
 } from './multirespondent-submission.types'
 import {
+  adaptV4ResponsesForMyInfoHashCheck,
   MRF_VERSION_V4,
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
@@ -1048,6 +1049,34 @@ export const handleNdiResponses = async (
 
         if (jwtPayloadResult.isOk()) {
           userName = jwtPayloadResult.value
+
+          // Verify the submitted MyInfo prefill answers against the hashes
+          // saved at prefill time, mirroring encrypt mode's
+          // validateStorageSubmission. Without this check a respondent could
+          // tamper with non-editable MyInfo-verified answers client-side.
+          const hashCheckResult = await MyInfoService.fetchMyInfoHashes(
+            userName,
+            formId,
+          ).andThen((hashes) =>
+            MyInfoService.checkMyInfoHashes(
+              adaptV4ResponsesForMyInfoHashCheck(
+                req.body.responses ?? {},
+                formDef.form_fields,
+              ),
+              hashes,
+            ),
+          )
+
+          if (hashCheckResult.isErr()) {
+            logger.error({
+              message: 'Error verifying MyInfo hashes',
+              meta: logMeta,
+              error: hashCheckResult.error,
+            })
+            return sendRouteError(res, mapRouteError(hashCheckResult.error), {
+              spcpSubmissionFailure: true,
+            })
+          }
         }
         break
       }
