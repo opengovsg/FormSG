@@ -39,6 +39,7 @@ import { ParsedClearFormFieldResponsesV4 } from 'src/types/api'
 import * as fieldValidation from '../../../../utils/field-validation'
 import { ValidateFieldErrorV4 } from '../../submission.errors'
 import {
+  adaptV4ResponsesForMyInfoHashCheck,
   buildMrfResponseJson,
   createMultirespondentSubmissionDto,
   createPublicMultirespondentSubmissionDto,
@@ -566,6 +567,151 @@ describe('multirespondent-submission.utils', () => {
         prevResponse: mockPreviousResponses[emailFieldId],
         isVisible: true,
       })
+    })
+  })
+
+  describe('adaptV4ResponsesForMyInfoHashCheck', () => {
+    const MYINFO_FIELD_ID = new ObjectId().toHexString()
+    const NON_MYINFO_FIELD_ID = new ObjectId().toHexString()
+
+    const makeField = (overrides: Record<string, unknown>) =>
+      ({
+        _id: MYINFO_FIELD_ID,
+        title: 'Name',
+        fieldType: BasicField.ShortText,
+        myInfo: { attr: 'name' },
+        ...overrides,
+      }) as unknown as FormFieldDto
+
+    const makeResponses = (
+      overrides: Record<string, unknown>,
+    ): ParsedClearFormFieldResponsesV4 =>
+      ({
+        [MYINFO_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'John Tan' },
+          question: 'Name',
+          provenance: {},
+          ...overrides,
+        },
+      }) as unknown as ParsedClearFormFieldResponsesV4
+
+    it('should adapt a MyInfo response with attr and fieldType sourced from the form definition', () => {
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        // Client-supplied myInfo meta and fieldType must be ignored; a
+        // respondent stripping or mislabelling them cannot skip the check.
+        makeResponses({ myInfo: undefined, fieldType: BasicField.LongText }),
+        [makeField({})],
+      )
+
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          _id: MYINFO_FIELD_ID,
+          question: 'Name',
+          fieldType: BasicField.ShortText,
+          answer: 'John Tan',
+          myInfo: { attr: 'name' },
+          isVisible: true,
+        }),
+      ])
+    })
+
+    it('should convert V4 date answers to the format checkMyInfoHashes expects', () => {
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        makeResponses({
+          fieldType: BasicField.Date,
+          answer: { value: '25/12/1990' },
+        }),
+        [
+          makeField({
+            fieldType: BasicField.Date,
+            myInfo: { attr: 'dob' },
+            title: 'Date of Birth',
+          }),
+        ],
+      )
+
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          fieldType: BasicField.Date,
+          answer: '25 Dec 1990',
+          myInfo: { attr: 'dob' },
+        }),
+      ])
+    })
+
+    it('should pass verifiable (mobile) answers through unchanged', () => {
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        makeResponses({
+          fieldType: BasicField.Mobile,
+          answer: { value: '+6598765432', signature: 'sig' },
+        }),
+        [
+          makeField({
+            fieldType: BasicField.Mobile,
+            myInfo: { attr: 'mobileno' },
+          }),
+        ],
+      )
+
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          answer: '+6598765432',
+          myInfo: { attr: 'mobileno' },
+        }),
+      ])
+    })
+
+    it('should skip non-MyInfo fields and MyInfo fields without responses', () => {
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        {
+          [NON_MYINFO_FIELD_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'free text' },
+            question: 'Comments',
+            provenance: {},
+          },
+        } as unknown as ParsedClearFormFieldResponsesV4,
+        [
+          makeField({}), // MyInfo field, but no response submitted for it
+          makeField({
+            _id: NON_MYINFO_FIELD_ID,
+            myInfo: undefined,
+            title: 'Comments',
+          }),
+        ],
+      )
+
+      expect(adapted).toEqual([])
+    })
+
+    it('should skip Children compound fields', () => {
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        makeResponses({ fieldType: BasicField.Children, answer: {} }),
+        [
+          makeField({
+            fieldType: BasicField.Children,
+            myInfo: { attr: 'childrenbirthrecords' },
+          }),
+        ],
+      )
+
+      expect(adapted).toEqual([])
+    })
+
+    it('should fail closed with an empty answer when a MyInfo answer is malformed', () => {
+      const adapted = adaptV4ResponsesForMyInfoHashCheck(
+        makeResponses({ answer: { unexpected: 'shape' } }),
+        [makeField({})],
+      )
+
+      expect(adapted).toEqual([
+        expect.objectContaining({
+          _id: MYINFO_FIELD_ID,
+          answer: '',
+          myInfo: { attr: 'name' },
+        }),
+      ])
     })
   })
 
