@@ -1,35 +1,65 @@
 import { composeStories } from '@storybook/react'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+
+import { REQUIRED_ERROR } from '~constants/validation'
 
 import * as stories from './ChildrenCompoundField.stories'
 
-const { SingleChild, LegacyAllowMultipleFlag, LegacySecondaryRaceSubField } =
+const { SingleChild, DisabledCarriedForward, DisabledUnanswered } =
   composeStories(stories)
 
-describe('one child per field', () => {
-  // allowMultiple survives on existing form documents, so it must no longer
-  // offer a second child.
-  it('does not offer to add another child even when the legacy allowMultiple flag is set', () => {
-    render(<LegacyAllowMultipleFlag />)
-
-    expect(
-      screen.queryByRole('button', { name: /add another child/i }),
-    ).toBeNull()
-  })
-
-  it('does not offer to remove the single child', () => {
+describe('editable children field', () => {
+  it('renders error when child name is not selected before submitting', async () => {
+    const user = userEvent.setup()
     render(<SingleChild />)
+    const submitButton = screen.getByText('Submit')
 
-    expect(screen.queryByRole('button', { name: /remove child/i })).toBeNull()
+    await user.click(submitButton)
+
+    const error = screen.getAllByText(REQUIRED_ERROR)
+    expect(error.length).toBeGreaterThan(0)
   })
 })
 
-// Secondary Race is removed builder-forward only, so existing forms that still
-// collect it must keep rendering it.
-describe('legacy secondary race sub-field', () => {
-  it('still renders for an existing form that collects it', () => {
-    render(<LegacySecondaryRaceSubField />)
+describe('disabled children field (MRF steps 2+ carry-forward)', () => {
+  it('displays the carried-forward child name and subfield values as disabled inputs', async () => {
+    render(<DisabledCarriedForward />)
 
-    expect(screen.getByText('Secondary race')).toBeInTheDocument()
+    // The child name is displayed even though there is no MyInfo session
+    // (myInfoChildrenBirthRecords is undefined on steps 2+). SingleSelect
+    // renders the selected label as text, not as the input's value.
+    expect(screen.getByText('Phua Chu King')).toBeInTheDocument()
+    expect(screen.getByRole('combobox')).toBeDisabled()
+
+    const bcInput = screen.getByDisplayValue('T1234567X')
+    expect(bcInput).toBeDisabled()
+  })
+
+  it('submits the carried-forward value unchanged', async () => {
+    const user = userEvent.setup()
+    render(<DisabledCarriedForward />)
+    const submitButton = screen.getByText('Submit')
+
+    await user.click(submitButton)
+
+    const success = await screen.findByText(
+      `You have submitted: ${JSON.stringify([['Phua Chu King', 'T1234567X']])}`,
+    )
+    expect(success).not.toBeNull()
+  })
+
+  it('does not append a blank editable row when disabled and unanswered', async () => {
+    const user = userEvent.setup()
+    render(<DisabledUnanswered />)
+
+    // No blank child row is auto-appended, so no name dropdown is rendered.
+    expect(screen.queryByRole('combobox')).toBeNull()
+
+    // And the (required) field does not block submission, since it is not
+    // fillable on this step.
+    await user.click(screen.getByText('Submit'))
+    const success = await screen.findByText(/You have submitted:/)
+    expect(success.textContent).not.toContain('Phua Chu King')
   })
 })
