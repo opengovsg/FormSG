@@ -351,7 +351,7 @@ export const Step2ConditionalRoutingEmpty = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -382,7 +382,7 @@ export const Step2ConditionalRouting = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -417,7 +417,7 @@ export const Step2ConditionalRoutingValidOptionsUploaded = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -452,7 +452,7 @@ export const Step2ConditionalRoutingInvalidOptionsUploadedErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -487,7 +487,7 @@ export const Step2ConditionalRoutingNoFieldSelectedErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -530,7 +530,7 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -564,7 +564,7 @@ export const Step2ConditionalRoutingReplace = {
 
     const conditionalOption = await canvas.findByRole(
       'radio',
-      { name: /Emails assigned to options in a dropdown field/i },
+      { name: /Emails assigned to options in a Dropdown field/i },
       { timeout: 5000 },
     )
     await waitFor(() => expect(conditionalOption).toBeEnabled(), {
@@ -717,7 +717,7 @@ export const EmptyStateEmailRouting = {
       ]),
     },
   },
-  play: selectRespondentOption('An email field from the form'),
+  play: selectRespondentOption('An Email field from the form'),
 }
 
 export const EmptyStateConditionalRouting = {
@@ -729,7 +729,7 @@ export const EmptyStateConditionalRouting = {
     },
   },
   play: selectRespondentOption(
-    'Emails assigned to options in a dropdown field',
+    'Emails assigned to options in a Dropdown field',
   ),
 }
 

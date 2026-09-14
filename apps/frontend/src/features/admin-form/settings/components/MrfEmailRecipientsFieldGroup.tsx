@@ -153,7 +153,7 @@ export const MrfEmailRecipientsFieldGroup = ({
       </Box>
       <Box>
         {workflowStepCount >= 1 && (
-          <Box>
+          <Box mb="1.5rem">
             <FormLabel mb="0.75rem" textColor="secondary.700">
               {t(
                 'features.adminForm.settings.emailNotifications.section.mrf.respondents.step1.label',
@@ -184,7 +184,7 @@ export const MrfEmailRecipientsFieldGroup = ({
           </Box>
         )}
         {workflowStepCount >= 2 && (
-          <Box my="1.5rem">
+          <Box mb="1.5rem">
             <FormLabel mb="0.75rem" textColor="secondary.700">
               {t(
                 isRedesign
@@ -223,6 +223,7 @@ export const MrfEmailRecipientsFieldGroup = ({
                     }
                     isSelectedItemFullWidth
                     isDisabled={isLoading || isDisabled}
+                    maxItems={null}
                     {...rest}
                   />
                 )}

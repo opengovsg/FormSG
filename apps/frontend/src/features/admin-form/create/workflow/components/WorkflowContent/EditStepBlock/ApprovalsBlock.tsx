@@ -103,7 +103,7 @@ export const ApprovalsBlock = ({
         isLoading={isLoading}
         onChange={onApprovalToggleChange}
         isChecked={isApprovalToggleChecked}
-        labelStyles={textStyles.h4}
+        labelStyles={{ ...textStyles.h4, color: 'inherit' }}
         label={t(
           isRedesign
             ? 'features.adminForm.sidebar.workflow.approvals.toggle.labelRedesign'
@@ -114,6 +114,7 @@ export const ApprovalsBlock = ({
             ? 'features.adminForm.sidebar.workflow.approvals.toggle.descriptionRedesign'
             : 'features.adminForm.sidebar.workflow.approvals.toggle.description',
         )}
+        descriptionStyles={isRedesign ? { color: 'secondary.700' } : undefined}
         tooltipText={
           isRedesign
             ? undefined
