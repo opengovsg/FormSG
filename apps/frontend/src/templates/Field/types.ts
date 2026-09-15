@@ -28,6 +28,7 @@ import {
   LongTextFieldBase,
   MobileFieldBase,
   MyInfoChildAttributes,
+  MyInfoChildrenScope,
   NricFieldBase,
   NumberFieldBase,
   RadioFieldBase,
@@ -153,6 +154,11 @@ export type ChildrenCompoundFieldValues = {
   child: string[][]
   // Array of attribute names
   childFields: MyInfoChildAttributes[]
+  // MyInfo scope each child's record came from, parallel to `child`; an
+  // undefined slot means the scope was never derived (e.g. pre-scope drafts
+  // and carried-forward answers) and submits without a type. Only 'local' is
+  // ever derived today; 'sponsored' once that scope is fetched.
+  childTypes?: (MyInfoChildrenScope | undefined)[]
 }
 
 export type AddressCompoundFieldValues = {
