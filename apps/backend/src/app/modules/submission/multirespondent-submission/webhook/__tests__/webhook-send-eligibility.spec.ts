@@ -1,8 +1,12 @@
+import { FormWebhook } from 'formsg-shared/types'
+
 import { WebhookType } from 'src/app/modules/webhook/webhook.service'
 
+import { SnapshotContentFormat } from '../submission-snapshot.schema'
 import {
+  holdsV1FirstStepInvariant,
+  resolveMrfSnapshotShape,
   shouldSendMrfWebhook,
-  shouldWriteV4Snapshot,
 } from '../webhook-send-eligibility'
 
 const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/x'
@@ -98,71 +102,103 @@ describe('shouldSendMrfWebhook', () => {
   )
 })
 
-describe('shouldWriteV4Snapshot', () => {
+describe('resolveMrfSnapshotShape', () => {
   it.each<{
     name: string
     mrfVersion: number
-    webhook?: { url?: string; isRetryEnabled?: boolean }
+    webhook?: {
+      url?: string
+      isRetryEnabled?: boolean
+      webhookFormat?: FormWebhook['webhookFormat']
+    }
     isMrfWebhooksEnabled: boolean
     workflowStepCount?: number
-    expected: boolean
+    expected: SnapshotContentFormat | undefined
   }>([
     {
       name: 'a V3 row never snapshots',
       mrfVersion: 1,
       webhook: { url: PLUMBER_URL, isRetryEnabled: true },
       isMrfWebhooksEnabled: true,
-      expected: false,
+      expected: undefined,
     },
     {
       name: 'no webhook url',
       mrfVersion: 2,
       webhook: undefined,
       isMrfWebhooksEnabled: true,
-      expected: false,
+      expected: undefined,
     },
     {
-      name: 'retries disabled',
+      name: 'retries disabled writes no V4 snapshot',
       mrfVersion: 2,
       webhook: { url: PLUMBER_URL, isRetryEnabled: false },
       isMrfWebhooksEnabled: true,
-      expected: false,
+      expected: undefined,
     },
     {
-      name: 'plumber needs no flag',
+      name: 'retries disabled writes no V1 snapshot either — PIN-16 keeps the retry term for both shapes at this site',
+      mrfVersion: 2,
+      webhook: { url: GENERIC_URL, isRetryEnabled: false },
+      isMrfWebhooksEnabled: true,
+      expected: undefined,
+    },
+    {
+      name: 'plumber needs no flag and snapshots V4',
       mrfVersion: 2,
       webhook: { url: PLUMBER_URL, isRetryEnabled: true },
       isMrfWebhooksEnabled: false,
-      expected: true,
+      expected: 'v4',
     },
     {
-      name: 'plumber snapshots a multi-step form, which V4 can represent',
+      name: 'plumber snapshots V4 on a multi-step form, which V4 can represent',
       mrfVersion: 2,
       webhook: { url: PLUMBER_URL, isRetryEnabled: true },
       isMrfWebhooksEnabled: false,
       workflowStepCount: 4,
-      expected: true,
+      expected: 'v4',
+    },
+    {
+      name: 'plumber ignores webhookFormat',
+      mrfVersion: 2,
+      webhook: { url: PLUMBER_URL, isRetryEnabled: true, webhookFormat: 'v1' },
+      isMrfWebhooksEnabled: true,
+      expected: 'v4',
     },
     {
       name: 'generic with the flag off is never delivered, so never snapshots',
       mrfVersion: 2,
       webhook: { url: GENERIC_URL, isRetryEnabled: true },
       isMrfWebhooksEnabled: false,
-      expected: false,
+      expected: undefined,
     },
     {
-      name: 'generic with enable-mrf-webhooks snapshots',
+      name: 'generic with no format set snapshots V1 by default',
       mrfVersion: 2,
       webhook: { url: GENERIC_URL, isRetryEnabled: true },
       isMrfWebhooksEnabled: true,
-      expected: true,
+      expected: 'v1',
     },
     {
-      name: 'zapier with enable-mrf-webhooks snapshots',
+      name: 'generic set explicitly to v1 snapshots V1',
+      mrfVersion: 2,
+      webhook: { url: GENERIC_URL, isRetryEnabled: true, webhookFormat: 'v1' },
+      isMrfWebhooksEnabled: true,
+      expected: 'v1',
+    },
+    {
+      name: 'generic set to v4 snapshots V4 — unreachable today, but the resolution is honest',
+      mrfVersion: 2,
+      webhook: { url: GENERIC_URL, isRetryEnabled: true, webhookFormat: 'v4' },
+      isMrfWebhooksEnabled: true,
+      expected: 'v4',
+    },
+    {
+      name: 'zapier routes as generic and snapshots V1',
       mrfVersion: 2,
       webhook: { url: ZAPIER_URL, isRetryEnabled: true },
       isMrfWebhooksEnabled: true,
-      expected: true,
+      expected: 'v1',
     },
     {
       name: 'a generic multi-step form is not delivered to, so it snapshots nothing',
@@ -170,7 +206,7 @@ describe('shouldWriteV4Snapshot', () => {
       webhook: { url: GENERIC_URL, isRetryEnabled: true },
       isMrfWebhooksEnabled: true,
       workflowStepCount: 2,
-      expected: false,
+      expected: undefined,
     },
   ])(
     '$name',
@@ -182,13 +218,30 @@ describe('shouldWriteV4Snapshot', () => {
       expected,
     }) => {
       expect(
-        shouldWriteV4Snapshot({
+        resolveMrfSnapshotShape({
           mrfVersion,
           webhook,
           isMrfWebhooksEnabled,
           workflowStepCount,
         }),
       ).toBe(expected)
+    },
+  )
+})
+
+describe('holdsV1FirstStepInvariant', () => {
+  it('holds on the first step', () => {
+    expect(holdsV1FirstStepInvariant({ submissionIndex: 0, logMeta: {} })).toBe(
+      true,
+    )
+  })
+
+  it.each([1, 2, 5])(
+    'fails loud on submission index %i, which a single-step workflow cannot produce',
+    (submissionIndex) => {
+      expect(holdsV1FirstStepInvariant({ submissionIndex, logMeta: {} })).toBe(
+        false,
+      )
     },
   )
 })

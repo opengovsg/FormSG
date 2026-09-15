@@ -3764,6 +3764,19 @@ describe('multirespondent-submission.service', () => {
       },
     ]
 
+    const oneStepWorkflow: FormWorkflowStepDto[] = [twoStepWorkflow[0]]
+
+    /**
+     * A non-plumber consumer is delivered to only on a form of at most one
+     * step (PIN-02), and resolves to the `v1` wire shape unless the form says
+     * otherwise. These cases predate both rules and are about the write
+     * condition, the send gate and the step token rather than the shape, so
+     * they keep exercising the V4 route explicitly. The `v1` route has its own
+     * spec, `webhook/__tests__/generic-v1-initial-send.spec.ts`.
+     */
+    const genericV4Webhook = (url: string) =>
+      ({ url, isRetryEnabled: true, webhookFormat: 'v4' }) as any
+
     const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
 
     const growthbookWithFlags = ({
@@ -3876,10 +3889,15 @@ describe('multirespondent-submission.service', () => {
       token: string | undefined,
       view: WebhookView = buildLiveWebhookView(),
       mrfVersion = 2,
+      // PIN-02 reads the workflow from the row itself, so the row's own copy
+      // is what decides eligibility for a non-plumber consumer.
+      overrides: Record<string, unknown> = {},
     ): IMultirespondentSubmissionSchema =>
       ({
         _id: new ObjectId(),
         mrfVersion,
+        workflow: twoStepWorkflow,
+        ...overrides,
         submittedSteps: [
           {
             isApproval: false,
@@ -3989,7 +4007,8 @@ describe('multirespondent-submission.service', () => {
       async ({ enableMrfWebhooks, expectWritten }) => {
         const result = await createMultiRespondentFormSubmission({
           form: buildV4Form({
-            webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+            workflow: oneStepWorkflow,
+            webhook: genericV4Webhook(GENERIC_URL),
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: { action: 'test' },
@@ -4135,12 +4154,20 @@ describe('multirespondent-submission.service', () => {
       'send gate: $label -> sent=$expectSent',
       async ({ url, enableMrfWebhooks, expectSent }) => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-        const submission = buildSubmissionWithToken(undefined)
+        const submission = buildSubmissionWithToken(undefined, undefined, 2, {
+          workflow: oneStepWorkflow,
+        })
 
         await performMultiRespondentPostSubmissionCreateActions({
           submission,
           submissionId: submission._id.toString(),
-          form: buildV4Form({ webhook: { url, isRetryEnabled: true } as any }),
+          form: buildV4Form({
+            workflow: oneStepWorkflow,
+            webhook:
+              url === PLUMBER_URL
+                ? ({ url, isRetryEnabled: true } as any)
+                : genericV4Webhook(url),
+          }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
           growthbook: growthbookWithFlags({ enableMrfWebhooks }),
@@ -4162,6 +4189,9 @@ describe('multirespondent-submission.service', () => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
         const submission = buildSubmissionWithToken(
           withSnapshot ? 'tok-generic' : undefined,
+          undefined,
+          2,
+          { workflow: oneStepWorkflow },
         )
 
         await performMultiRespondentPostSubmissionCreateActions({
@@ -4169,7 +4199,8 @@ describe('multirespondent-submission.service', () => {
           snapshot: withSnapshot ? buildSnapshot() : undefined,
           submissionId: submission._id.toString(),
           form: buildV4Form({
-            webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+            workflow: oneStepWorkflow,
+            webhook: genericV4Webhook(GENERIC_URL),
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
@@ -4225,7 +4256,7 @@ describe('multirespondent-submission.service', () => {
           submissionType: SubmissionType.Multirespondent,
           form_fields: [],
           form_logics: [],
-          workflow: twoStepWorkflow,
+          workflow: oneStepWorkflow,
           submissionPublicKey: 'pk',
           encryptedSubmissionSecretKey: 'esk',
           encryptedContent: 'ec',
@@ -4247,7 +4278,11 @@ describe('multirespondent-submission.service', () => {
             snapshot,
             submissionId: row._id.toString(),
             form: buildV4Form({
-              webhook: { url, isRetryEnabled: true } as any,
+              workflow: oneStepWorkflow,
+              webhook:
+                url === PLUMBER_URL
+                  ? ({ url, isRetryEnabled: true } as any)
+                  : genericV4Webhook(url),
             }),
             encryptedPayload: buildV4Payload(),
             logMeta: {} as any,
