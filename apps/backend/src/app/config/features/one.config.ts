@@ -94,7 +94,6 @@ export const isOneConfigured = (config: IOneVarsSchema): boolean => {
       meta: {
         action: 'isOneConfigured',
         discoveryUrl,
-        error,
       },
       error,
     })
