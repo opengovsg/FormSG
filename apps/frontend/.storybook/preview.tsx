@@ -68,11 +68,6 @@ export const parameters = {
     'en-SG': 'English',
   },
   layout: 'fullscreen',
-  // The viewport addon keeps its selection in a global, so it survives
-  // navigation between stories. Without a default, a story that sets no
-  // viewport inherits whatever the last one chose, and a desktop story clicked
-  // after a mobile one renders at 320px. Stories that want a viewport still
-  // set their own, which wins over this.
   viewport: { defaultViewport: 'reset' },
   docs: {
     theme: StorybookTheme.docs,

@@ -22,11 +22,6 @@ const workflow_step_1: FormWorkflowStepDto = {
   edit: [],
 }
 
-/**
- * `workflow` has to be set. The base mock form has no such key, and
- * `useWorkflowMutations` throws `No form workflow found` on a form without one,
- * which surfaces as the router's error page instead of the modal.
- */
 const buildMocks = (status: FormStatus) =>
   createFormBuilderMocks({
     responseMode: FormResponseMode.Multirespondent,
@@ -34,13 +29,6 @@ const buildMocks = (status: FormStatus) =>
     workflow: [workflow_step_1],
   })
 
-/**
- * `useWorkflowMutations` throws while the form query is still in flight, so
- * mounting the modal directly errors on the first render, before MSW can
- * answer. `WorkflowContent` never hits that because it returns null until the
- * form has loaded; this mirrors that guard so the stories mount the modal the
- * way the app does.
- */
 const AfterFormLoads = ({
   entryPoint,
 }: {
