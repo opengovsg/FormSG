@@ -54,7 +54,13 @@ export const getKeyPermissionsPolicy = ({
 }
 
 /**
- * Resolves the wire shape a consumer receives.
+ * Resolves the wire shape a consumer receives, and nothing else.
+ *
+ * Split out from `getWebhookPayloadPolicy` because the snapshot-write
+ * decision needs the same answer (PIN-12: the resolved wire shape selects the
+ * snapshot's shape and bucket) but has no submission index or step count to
+ * hand a full policy input. One function, so the bytes written and the bytes
+ * sent cannot resolve differently.
  *
  * | Consumer         | `webhookFormat` | Wire shape |
  * |------------------|-----------------|------------|
@@ -75,14 +81,26 @@ export const getKeyPermissionsPolicy = ({
  * carries `'v4'` and enabling it is meant to be a one-line validation change
  * rather than a change here.
  */
+export const resolveWireShape = ({
+  webhookType,
+  webhookFormat,
+}: Pick<
+  WebhookPayloadPolicyInput,
+  'webhookType' | 'webhookFormat'
+>): WebhookContentFormat =>
+  webhookType === 'plumber' ? 'v4' : (webhookFormat ?? 'v1')
+
+/**
+ * Resolves the wire shape together with the key permissions that follow from
+ * it. See {@link resolveWireShape} for the resolution table.
+ */
 export const getWebhookPayloadPolicy = ({
   webhookType,
   webhookFormat,
   submissionIndex,
   submittedStepsLength,
 }: WebhookPayloadPolicyInput): WebhookPayloadPolicy => {
-  const contentFormat: WebhookContentFormat =
-    webhookType === 'plumber' ? 'v4' : (webhookFormat ?? 'v1')
+  const contentFormat = resolveWireShape({ webhookType, webhookFormat })
 
   const keyPermissionsPolicy = getKeyPermissionsPolicy({
     webhookType,
