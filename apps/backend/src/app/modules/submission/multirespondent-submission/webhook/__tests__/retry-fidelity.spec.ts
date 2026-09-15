@@ -272,7 +272,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
     })
     await submission.save()
 
-    MockSnapshotStore.readV4Snapshot.mockReturnValue(okAsync(step1Snapshot))
+    MockSnapshotStore.readSnapshot.mockReturnValue(okAsync(step1Snapshot))
 
     const retried = await retryPayload({ submission, submissionIndex: 0 })
 
@@ -288,7 +288,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       workflowStep: 1,
       tokens: [STEP_1.token, STEP_2.token],
     })
-    MockSnapshotStore.readV4Snapshot.mockReturnValue(
+    MockSnapshotStore.readSnapshot.mockReturnValue(
       okAsync(
         snapshotFor({
           submission,
@@ -323,11 +323,11 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       submissionIndex: 2,
       workflowStep: 0,
     })
-    MockSnapshotStore.readV4Snapshot.mockReturnValue(okAsync(loopBackSnapshot))
+    MockSnapshotStore.readSnapshot.mockReturnValue(okAsync(loopBackSnapshot))
 
     const retried = await retryPayload({ submission, submissionIndex: 2 })
 
-    expect(MockSnapshotStore.readV4Snapshot).toHaveBeenCalledWith(
+    expect(MockSnapshotStore.readSnapshot).toHaveBeenCalledWith(
       expect.objectContaining({ submissionIndex: 2, token: 'tok-loop-back' }),
     )
     expect(retried.encryptedContent).toBe(STEP_2.encryptedContent)
@@ -350,7 +350,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       submissionIndex: 0,
       workflowStep: 0,
     })
-    MockSnapshotStore.readV4Snapshot.mockReturnValue(okAsync(step1Snapshot))
+    MockSnapshotStore.readSnapshot.mockReturnValue(okAsync(step1Snapshot))
 
     const liveView = await submission.getWebhookView()
     const v1LiveView: WebhookView = {
@@ -407,7 +407,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
         SnapshotFormatNotRecordedError,
       )
-      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+      expect(MockSnapshotStore.readSnapshot).not.toHaveBeenCalled()
     },
   )
 
@@ -423,7 +423,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       submissionIndex: 0,
       workflowStep: 0,
     })
-    MockSnapshotStore.readV4Snapshot.mockReturnValue(
+    MockSnapshotStore.readSnapshot.mockReturnValue(
       okAsync({
         ...omit(v4Snapshot, 'encryptedSubmissionSecretKey'),
         contentFormat: 'v1' as const,
@@ -455,7 +455,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
         workflowStep: 1,
         tokens: [STEP_1.token, STEP_2.token],
       })
-      MockSnapshotStore.readV4Snapshot.mockReturnValue(errAsync(storeError))
+      MockSnapshotStore.readSnapshot.mockReturnValue(errAsync(storeError))
 
       const liveView = await submission.getWebhookView()
       const result = await resolveSnapshotRetryView({
