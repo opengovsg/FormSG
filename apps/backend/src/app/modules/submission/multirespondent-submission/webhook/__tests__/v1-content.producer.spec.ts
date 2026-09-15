@@ -1,4 +1,4 @@
-import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import { BasicField, FormFieldDto, MyInfoAttribute } from 'formsg-shared/types'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { ErrorCodes } from 'src/app/modules/core/core.errors'
@@ -21,7 +21,52 @@ const textField = (_id: string, title: string): FormFieldDto =>
 
 const V1_VERSION = 2.1
 
+const myInfoField = (_id: string, title: string): FormFieldDto =>
+  ({
+    ...textField(_id, title),
+    myInfo: { attr: MyInfoAttribute.Name },
+  }) as unknown as FormFieldDto
+
 describe('buildV1EncryptedContent', () => {
+  it('should prefix the question of a read-only MyInfo field, exactly as storage mode does', () => {
+    // `question` is a consumer's join key and the CSV column name, so a bare
+    // title where storage mode sent `[Myinfo] Name` is a compatibility break.
+    const { publicKey, secretKey } = formsgSdk.crypto.generate()
+    const v4Responses = {
+      'field-1': {
+        fieldType: BasicField.ShortText,
+        answer: { value: 'Tan Ah Kow' },
+      },
+      'field-2': {
+        fieldType: BasicField.ShortText,
+        answer: { value: 'self-declared' },
+      },
+    }
+    const formFields = [
+      myInfoField('field-1', 'Name'),
+      myInfoField('field-2', 'Mobile number'),
+    ]
+
+    const encryptedContent = buildV1EncryptedContent({
+      v4Responses,
+      formFields,
+      formPublicKey: publicKey,
+      // Only the first was read-only for this respondent; the second was
+      // user-provided, so storage mode leaves it bare.
+      myInfoReadOnlyFieldIds: ['field-1'],
+      logMeta: LOG_META,
+    })._unsafeUnwrap()
+
+    const recovered = formsgSdk.crypto.decrypt(secretKey, {
+      encryptedContent,
+      version: V1_VERSION,
+    })
+    expect(recovered?.responses.map((entry) => entry.question)).toEqual([
+      '[Myinfo] Name',
+      'Mobile number',
+    ])
+  })
+
   it('should produce content the FORM secret key recovers, through the storage-mode class', () => {
     // Arrange
     const { publicKey, secretKey } = formsgSdk.crypto.generate()
@@ -37,6 +82,7 @@ describe('buildV1EncryptedContent', () => {
       },
       formFields,
       formPublicKey: publicKey,
+      myInfoReadOnlyFieldIds: [],
       logMeta: LOG_META,
     })
 
@@ -76,6 +122,7 @@ describe('buildV1EncryptedContent', () => {
       v4Responses,
       formFields,
       formPublicKey: publicKey,
+      myInfoReadOnlyFieldIds: [],
       logMeta: LOG_META,
     })._unsafeUnwrap()
 
@@ -109,6 +156,7 @@ describe('buildV1EncryptedContent', () => {
       },
       formFields: [textField('field-1', 'Your name')],
       formPublicKey: publicKey,
+      myInfoReadOnlyFieldIds: [],
       logMeta: LOG_META,
     })._unsafeUnwrap()
 
@@ -139,6 +187,7 @@ describe('buildV1EncryptedContent', () => {
         } as unknown as FormFieldDto,
       ],
       formPublicKey: publicKey,
+      myInfoReadOnlyFieldIds: [],
       logMeta: LOG_META,
     })
 

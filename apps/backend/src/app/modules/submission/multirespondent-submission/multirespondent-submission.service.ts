@@ -954,6 +954,9 @@ export const createMultiRespondentFormSubmission = ({
           // above is this very array.
           formFields: toPlainFormFields(form.form_fields),
           formPublicKey: form.publicKey,
+          // Resolved at submit time and persisted on the row beside this, so
+          // the wire and the admin's own surfaces prefix the same fields.
+          myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
           logMeta,
         })
         if (v1ContentResult.isErr()) {
