@@ -16,7 +16,6 @@ import {
   FormAuthType,
   FormResponseMode,
   FormWorkflowStepDto,
-  SubmissionType,
   WorkflowType,
 } from 'formsg-shared/types'
 import mongoose from 'mongoose'
