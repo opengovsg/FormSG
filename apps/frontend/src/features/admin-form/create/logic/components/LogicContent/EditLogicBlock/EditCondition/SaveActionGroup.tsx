@@ -35,11 +35,15 @@ export const SaveActionGroup = ({
   return (
     <Flex
       justify="space-between"
-      align="center"
+      align={{ base: 'stretch', md: 'center' }}
+      direction={{ base: 'column', md: 'row' }}
+      gap={{ base: '0.5rem', md: '0' }}
       px={{ base: '1.5rem', md: '2rem' }}
     >
       {handleDelete ? (
         <IconButton
+          order={{ base: 1, md: 0 }}
+          alignSelf={{ base: 'center', md: 'auto' }}
           variant="clear"
           colorScheme="danger"
           aria-label={t('features.adminForm.sidebar.logic.aria.delete', {
@@ -53,7 +57,7 @@ export const SaveActionGroup = ({
         <Box />
       )}
       <Stack
-        spacing="1rem"
+        spacing={{ base: '0.5rem', md: '1rem' }}
         direction={{ base: 'column', md: 'row-reverse' }}
         w="100%"
       >

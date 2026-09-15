@@ -13,6 +13,7 @@ import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflow
 import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 
 import { useWorkflowTypeValidation } from './hooks'
+import { NESTED_CONTROL_PR } from './layout'
 import { RespondentOptionProps } from './types'
 
 export const StaticRespondentOption = ({
@@ -49,6 +50,7 @@ export const StaticRespondentOption = ({
         {selectedWorkflowType === WorkflowType.Static ? (
           <FormControl
             pt="0.5rem"
+            pr={NESTED_CONTROL_PR}
             isReadOnly={isLoading}
             id="emails"
             isRequired={!isSavePermissive}

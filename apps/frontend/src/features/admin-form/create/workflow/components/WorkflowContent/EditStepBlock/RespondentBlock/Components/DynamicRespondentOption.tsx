@@ -14,6 +14,7 @@ import { useStageFieldAndNavigate } from '../../../../../hooks/useStageFieldAndN
 import { FieldEmptyState } from '../../EmptyStates'
 
 import { useWorkflowTypeValidation } from './hooks'
+import { NESTED_CONTROL_PR } from './layout'
 import { FieldItem, RespondentOptionProps } from './types'
 
 interface DynamicRespondentOptionProps extends RespondentOptionProps {
@@ -61,6 +62,7 @@ export const DynamicRespondentOption = ({
         {selectedWorkflowType === WorkflowType.Dynamic ? (
           <FormControl
             pt="0.5rem"
+            pr={NESTED_CONTROL_PR}
             isReadOnly={isLoading}
             id="field"
             isRequired={!isSavePermissive}

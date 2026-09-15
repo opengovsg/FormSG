@@ -36,6 +36,8 @@ export const FieldEmptyState = ({
         <Button
           variant="outline"
           size="sm"
+          h="auto"
+          lineHeight="1.25rem"
           leftIcon={<BiLinkExternal />}
           onClick={onAction}
         >
