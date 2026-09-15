@@ -19,8 +19,8 @@ import {
 } from './submission-snapshot.errors'
 import {
   parseSnapshot,
+  SnapshotContentFormat,
   SubmissionSnapshot,
-  SubmissionSnapshotV4,
 } from './submission-snapshot.schema'
 
 const logger = createLoggerWithLabel(module)
@@ -36,6 +36,20 @@ type SnapshotKeyParams = {
   submissionIndex: number
   token: string
 }
+
+/**
+ * The transitional V1 copies live in their own store, separate from the
+ * go-forward V4 one, so that the whole of the backward-compatibility data can
+ * be decommissioned wholesale at the V1 retirement rather than sifted out of
+ * a shared bucket (PIN-24 of #9972's user stories).
+ *
+ * One mapping, used by both the write and the read, so a V1 object can never
+ * be written to one store and looked for in the other.
+ */
+const bucketForShape = (contentFormat: SnapshotContentFormat): string =>
+  contentFormat === 'v1'
+    ? AwsConfig.submissionHistoryV1S3Bucket
+    : AwsConfig.submissionHistoryV4S3Bucket
 
 export const buildSnapshotKey = ({
   formId,
@@ -60,8 +74,8 @@ const isAccessDenied = (error: unknown): error is S3ServiceException => {
   return error instanceof S3ServiceException && error.name === 'AccessDenied'
 }
 
-export const writeV4Snapshot = (
-  snapshot: SubmissionSnapshotV4,
+export const writeSnapshot = (
+  snapshot: SubmissionSnapshot,
 ): ResultAsync<{ token: string; key: string }, SnapshotWriteError> => {
   const body = JSON.stringify(snapshot)
 
@@ -77,7 +91,7 @@ export const writeV4Snapshot = (
     })
 
     const params: PutObjectCommandInput = {
-      Bucket: AwsConfig.submissionHistoryV4S3Bucket,
+      Bucket: bucketForShape(snapshot.contentFormat),
       Key: key,
       Body: body,
       ContentType: 'application/json',
@@ -97,7 +111,8 @@ export const writeV4Snapshot = (
               message:
                 'Snapshot write exhausted retries on persistent precondition failure',
               meta: {
-                action: 'writeV4Snapshot',
+                action: 'writeSnapshot',
+                contentFormat: snapshot.contentFormat,
                 formId: snapshot.formId,
                 submissionId: snapshot.submissionId,
                 submissionIndex: snapshot.submissionIndex,
@@ -117,7 +132,8 @@ export const writeV4Snapshot = (
         logger.error({
           message: 'Snapshot write failed',
           meta: {
-            action: 'writeV4Snapshot',
+            action: 'writeSnapshot',
+            contentFormat: snapshot.contentFormat,
             formId: snapshot.formId,
             submissionId: snapshot.submissionId,
             submissionIndex: snapshot.submissionIndex,
@@ -131,12 +147,15 @@ export const writeV4Snapshot = (
   return attempt(MAX_WRITE_ATTEMPTS)
 }
 
-export const readV4Snapshot = ({
+export const readSnapshot = ({
   formId,
   submissionId,
   submissionIndex,
   token,
-}: SnapshotKeyParams): ResultAsync<
+  contentFormat,
+}: SnapshotKeyParams & {
+  contentFormat: SnapshotContentFormat
+}): ResultAsync<
   SubmissionSnapshot,
   SnapshotDataIntegrityError | SnapshotReadError | SnapshotAccessDeniedError
 > => {
@@ -150,7 +169,7 @@ export const readV4Snapshot = ({
   return ResultAsync.fromPromise(
     AwsConfig.s3.send(
       new GetObjectCommand({
-        Bucket: AwsConfig.submissionHistoryV4S3Bucket,
+        Bucket: bucketForShape(contentFormat),
         Key: key,
       }),
     ),
@@ -182,14 +201,14 @@ export const readV4Snapshot = ({
       if (isAccessDenied(error)) {
         logger.error({
           message: 'Snapshot read was denied by the store',
-          meta: { action: 'readV4Snapshot', key },
+          meta: { action: 'readSnapshot', contentFormat, key },
           error: error as Error,
         })
         return errAsync(new SnapshotAccessDeniedError(undefined, error))
       }
       logger.error({
         message: 'Snapshot read failed',
-        meta: { action: 'readV4Snapshot', key },
+        meta: { action: 'readSnapshot', contentFormat, key },
         error: error as Error,
       })
       return errAsync(new SnapshotReadError(undefined, error))
