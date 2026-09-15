@@ -75,7 +75,7 @@ const BetaBadge = () => {
       variant="subtle"
       color="secondary.500"
       borderRadius="full"
-      mr="0.5rem"
+      ml="0.5rem"
       flexShrink={0}
     >
       {t('features.common.betaBadgeLabel')}
@@ -105,10 +105,10 @@ export const Toggle = forwardRef<ToggleProps, 'input'>(
         {(label || description) && (
           <Box __css={styles.textContainer}>
             <Flex alignItems="center">
-              {betaBadge ? <BetaBadge /> : null}
               <FormLabel.Label sx={{ ...styles.label, ...labelStyles }}>
                 <Text>{label}</Text>
               </FormLabel.Label>
+              {betaBadge ? <BetaBadge /> : null}
               {tooltipText && (
                 <Tooltip
                   placement={tooltipPlacement}
