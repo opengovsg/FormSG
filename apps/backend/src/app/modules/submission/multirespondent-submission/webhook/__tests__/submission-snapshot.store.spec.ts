@@ -235,7 +235,11 @@ describe('readSnapshot', () => {
       .fn()
       .mockReturnValue(Promise.resolve(mockS3Body(JSON.stringify(snapshot))))
 
-    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
+    const result = await readSnapshot({
+      ...COORDS,
+      token: 'tok-1',
+      contentFormat: 'v4',
+    })
 
     expect(result.isOk()).toBe(true)
     expect(result._unsafeUnwrap()).toEqual(snapshot)
@@ -246,7 +250,11 @@ describe('readSnapshot', () => {
       .fn()
       .mockReturnValue(Promise.reject(mockS3Error('NoSuchKey', 404)))
 
-    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
+    const result = await readSnapshot({
+      ...COORDS,
+      token: 'tok-1',
+      contentFormat: 'v4',
+    })
 
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
@@ -258,7 +266,11 @@ describe('readSnapshot', () => {
       .fn()
       .mockReturnValue(Promise.reject(mockS3Error('AccessDenied', 403)))
 
-    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
+    const result = await readSnapshot({
+      ...COORDS,
+      token: 'tok-1',
+      contentFormat: 'v4',
+    })
 
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
@@ -280,7 +292,11 @@ describe('readSnapshot', () => {
         .fn()
         .mockReturnValue(Promise.reject(s3Error))
 
-      const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
+      const result = await readSnapshot({
+        ...COORDS,
+        token: 'tok-1',
+        contentFormat: 'v4',
+      })
 
       expect(result.isErr()).toBe(true)
       const error = result._unsafeUnwrapErr()
@@ -294,7 +310,11 @@ describe('readSnapshot', () => {
       .fn()
       .mockReturnValue(Promise.resolve({}))
 
-    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
+    const result = await readSnapshot({
+      ...COORDS,
+      token: 'tok-1',
+      contentFormat: 'v4',
+    })
 
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotDataIntegrityError)
   })
@@ -304,7 +324,11 @@ describe('readSnapshot', () => {
       .fn()
       .mockReturnValue(Promise.resolve(mockS3Body('{ not valid json')))
 
-    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
+    const result = await readSnapshot({
+      ...COORDS,
+      token: 'tok-1',
+      contentFormat: 'v4',
+    })
 
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
@@ -317,7 +341,11 @@ describe('readSnapshot', () => {
       .fn()
       .mockReturnValue(Promise.resolve(mockS3Body(JSON.stringify(bad))))
 
-    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
+    const result = await readSnapshot({
+      ...COORDS,
+      token: 'tok-1',
+      contentFormat: 'v4',
+    })
 
     expect(result.isErr()).toBe(true)
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotDataIntegrityError)
@@ -345,7 +373,9 @@ describe('the store each shape is routed to', () => {
     // Arrange
     const getObject = jest
       .fn()
-      .mockReturnValue(Promise.resolve(mockS3Body(JSON.stringify(makeV1Snapshot()))))
+      .mockReturnValue(
+        Promise.resolve(mockS3Body(JSON.stringify(makeV1Snapshot()))),
+      )
     ;(AwsConfig.s3.send as jest.Mock) = getObject
 
     // Act
