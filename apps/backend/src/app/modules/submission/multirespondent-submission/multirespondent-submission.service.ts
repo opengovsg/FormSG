@@ -128,18 +128,19 @@ const appUrl =
 
 /**
  * A populated form document holds `form_fields` as mongoose subdocuments,
- * while the row's own snapshot (and every test fixture) holds plain field
- * definitions. The shared flatten reads plain definitions, so normalise —
- * the same conversion the middleware makes when it snapshots the fields.
+ * while the row's own snapshot holds plain field definitions. The shared
+ * flatten reads plain definitions, and one of the things it reads is `_id`,
+ * which the V1 response schema requires to be a string.
+ *
+ * `toObject()` is NOT enough: it leaves an ObjectId as an ObjectId, so the
+ * flatten's `.parse` rejects the entry and the whole submission fails. A JSON
+ * round trip is what a `FormFieldDto` actually is — it is the shape the
+ * frontend receives — and it stringifies every id at every depth. On a plain
+ * object it is a deep clone and nothing else.
  */
 const toPlainFormFields = (
   formFields: IPopulatedMultirespondentForm['form_fields'],
-): FormFieldDto[] =>
-  formFields.map((field) =>
-    typeof (field as { toObject?: unknown }).toObject === 'function'
-      ? (field as unknown as { toObject: () => FormFieldDto }).toObject()
-      : (field as unknown as FormFieldDto),
-  )
+): FormFieldDto[] => JSON.parse(JSON.stringify(formFields)) as FormFieldDto[]
 
 export type SavedMultirespondentSubmission = {
   submission: IMultirespondentSubmissionSchema & {
@@ -932,9 +933,26 @@ export const createMultiRespondentFormSubmission = ({
         submissionId: String(submissionObjectId),
         submissionIndex: 0,
         workflowStep: 0,
+        createdAt: submittedStepMeta.submittedAt,
+      }
+
+      /**
+       * The row's verified content and attachments are encrypted under the
+       * *submission* public key, so neither can be copied onto a V1 payload:
+       * the consumer holds no submission secret key and would be handed
+       * artefacts it cannot open. Verified content is worse than useless —
+       * `crypto.decrypt` throws on a `verifiedContent` it cannot open and
+       * returns null for the whole payload, so copying it would cost the
+       * consumer the content too.
+       *
+       * Producing form-key copies of both is deliberately outside this slice:
+       * verified content is #9979, attachments are #9980. Until then a V1
+       * payload carries neither, which is what the PRD's note to the fan-out
+       * tickets says it should.
+       */
+      const v4OnlyContent = {
         verifiedContent,
         attachmentMetadata: Object.fromEntries(attachmentMetadata ?? new Map()),
-        createdAt: submittedStepMeta.submittedAt,
       }
 
       let snapshot: SubmissionSnapshot | undefined
@@ -948,8 +966,6 @@ export const createMultiRespondentFormSubmission = ({
         // served from this copy — and unlike V4 it has no valid fallback.
         const v1ContentResult = buildV1EncryptedContent({
           v4Responses: encryptedPayload.responses,
-          // The row's own field snapshot: `submissionContent.form_fields`
-          // above is this very array.
           // The row's own field snapshot: `submissionContent.form_fields`
           // above is this very array.
           formFields: toPlainFormFields(form.form_fields),
@@ -971,6 +987,7 @@ export const createMultiRespondentFormSubmission = ({
         // persist the send falls back to it and nothing needs building here.
         snapshot = buildV4Snapshot({
           ...snapshotBase,
+          ...v4OnlyContent,
           encryptedContent,
           encryptedSubmissionSecretKey,
         })
