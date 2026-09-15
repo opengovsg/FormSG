@@ -1,3 +1,4 @@
+import loadOpenidClient from '__tests__/unit/backend/helpers/load-openid-client'
 import { getValidatedIdTokenClaims } from 'oauth4webapi'
 import * as oidcClient from 'openid-client'
 
@@ -219,6 +220,52 @@ describe('AuthOneServiceClass', () => {
   })
 
   describe('retrieveAccessToken', () => {
+    it('rejects a spoofed callback issuer before sending the authorization code to the token endpoint', async () => {
+      const actualOidcClient = await loadOpenidClient()
+      const clientConfig = new actualOidcClient.Configuration(
+        {
+          issuer: MOCK_ISSUER,
+          token_endpoint: `${MOCK_ISSUER}/token`,
+          authorization_response_iss_parameter_supported: true,
+        },
+        VALID_CONFIG.clientId,
+        undefined,
+        actualOidcClient.None(),
+      )
+      const mockFetch = jest.fn()
+      clientConfig[actualOidcClient.customFetch] = mockFetch
+      mockDiscovery.mockResolvedValue(clientConfig)
+      mockAuthorizationCodeGrant.mockImplementationOnce(
+        actualOidcClient.authorizationCodeGrant,
+      )
+      const svc = new AuthOneServiceClass(VALID_CONFIG)
+      const callbackParams = new URLSearchParams({
+        code: 'mock-code',
+        state: 'mock-state',
+        iss: 'https://evil.example.com',
+      })
+
+      const result = await svc.retrieveAccessToken(
+        'mock-verifier',
+        'mock-state',
+        'mock-nonce',
+        `${ONE_LOGIN_CALLBACK_PATH}?${callbackParams}`,
+      )
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        OneCreateRedirectUrlError,
+      )
+      await expect(
+        mockAuthorizationCodeGrant.mock.results[0].value,
+      ).rejects.toMatchObject({
+        code: 'OAUTH_INVALID_RESPONSE',
+        cause: expect.objectContaining({
+          message: 'unexpected "iss" (issuer) response parameter value',
+        }),
+      })
+      expect(mockFetch).not.toHaveBeenCalled()
+    })
+
     it('passes the verifier, expected state and expected nonce to the code grant', async () => {
       mockDiscovery.mockResolvedValue(mockClientConfig)
       const mockTokens = {

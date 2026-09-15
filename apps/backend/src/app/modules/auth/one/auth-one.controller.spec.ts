@@ -148,10 +148,16 @@ describe('AuthOneController', () => {
 
     it('logs the user in with grantSource one and stores the IdP sid', async () => {
       mockHappyPathServices()
+      const callbackQuery = {
+        code: 'mock-code',
+        state: 'mock-state',
+        iss: MOCK_ISSUER,
+      }
+      const callbackUrl = `/api/v3/auth/one/login/callback?${new URLSearchParams(callbackQuery)}`
       const mockReq = expressHandler.mockRequest({
-        query: { code: 'mock-code', state: 'mock-state' },
+        query: callbackQuery,
         cookies: MOCK_CALLBACK_COOKIES,
-        others: { originalUrl: '/api/v3/auth/one/login/callback?code=x' },
+        others: { originalUrl: callbackUrl },
       })
       const mockRes = expressHandler.mockResponse()
 
@@ -161,7 +167,7 @@ describe('AuthOneController', () => {
         'mock-verifier',
         'mock-state',
         'mock-nonce',
-        '/api/v3/auth/one/login/callback?code=x',
+        callbackUrl,
       )
       expect(mockReq.session.user).toEqual({
         _id: 'mock-user-id',
