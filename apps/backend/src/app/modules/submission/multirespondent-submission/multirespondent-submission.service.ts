@@ -842,6 +842,9 @@ export const createMultiRespondentFormSubmission = ({
         webhook: form.webhook,
         isMrfWebhooksEnabled:
           growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+        // This is the row's own workflow copy: `submissionContent.workflow`
+        // above is this very array, and it is about to be persisted with it.
+        workflowStepCount: form.workflow?.length ?? 0,
       })
 
       const saveSubmission = async () => {
@@ -1236,6 +1239,10 @@ const sendMrfInitialWebhookIfEligible = ({
     webhookType,
     isMrfWebhooksEnabled:
       growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+    // PIN-02: read the workflow from the row, never the live form, so that
+    // editing the form after this submission was created cannot change
+    // whether it is eligible.
+    workflowStepCount: submission.workflow?.length ?? 0,
   })
   if (!shouldSend) {
     return
@@ -1656,6 +1663,9 @@ export const updateMultiRespondentFormSubmission = ({
         webhook: snapshottedFormDef.webhook,
         isMrfWebhooksEnabled:
           growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+        // The snapshotted definition IS the row's own persisted copy, so a
+        // workflow edited mid-flight cannot change this submission's answer.
+        workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
       })
 
       const snapshot = shouldWriteSnapshot
