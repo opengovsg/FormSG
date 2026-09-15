@@ -22,6 +22,7 @@ import {
 } from '../../../adminWorkflowStore'
 import { useGuidedStepReveal } from '../../../hooks/useGuidedStepReveal'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
+import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
 import { SpotlightGroup } from '../../Spotlight'
@@ -137,6 +138,8 @@ export const EditStepBlock = ({
   const isCreatingState = useAdminWorkflowStore(isCreatingStateSelector)
   const isGuidedSetup = useAdminWorkflowStore(isGuidedSetupSelector)
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const { cardRadius, activeCardBg, activeCardBorderWidth, activeCardShadow } =
+    useWorkflowSurfaces()
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
@@ -274,13 +277,11 @@ export const EditStepBlock = ({
       spacing="0"
       pt="0.5rem"
       pb="2rem"
-      borderRadius="4px"
-      bg="white"
-      border="1px solid"
+      borderRadius={cardRadius}
+      bg={isGuided ? 'white' : activeCardBg}
+      border={isGuided ? '1px solid' : `${activeCardBorderWidth} solid`}
       borderColor={isGuided ? 'neutral.300' : 'primary.500'}
-      boxShadow={
-        isGuided ? 'none' : '0 0 0 1px var(--chakra-colors-primary-500)'
-      }
+      boxShadow={isGuided ? 'none' : activeCardShadow}
       transitionProperty="common"
       transitionDuration="normal"
     >

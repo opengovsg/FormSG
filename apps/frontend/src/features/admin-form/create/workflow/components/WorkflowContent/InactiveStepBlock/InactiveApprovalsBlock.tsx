@@ -7,6 +7,8 @@ import { FormField, FormWorkflowStepDto } from 'formsg-shared/types'
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
+import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
+
 interface ApprovalStepBadgeProps {
   approvalFormField?: FormFieldWithQuestionNo<FormField>
   isDeleted?: boolean
@@ -54,13 +56,14 @@ export const InactiveApprovalsBlock = ({
   idToFieldMap,
 }: InactiveApprovalsBlockProps) => {
   const { t } = useTranslation()
+  const { sectionLabelTextStyle } = useWorkflowSurfaces()
   const approvalFormField = step.approval_field
     ? idToFieldMap[step.approval_field]
     : undefined
 
   return (
     <Stack>
-      <Text textStyle="subhead-3">
+      <Text textStyle={sectionLabelTextStyle}>
         {t('features.adminForm.sidebar.workflow.approvals.title')}
       </Text>
       <Stack direction="column" spacing="0.25rem">

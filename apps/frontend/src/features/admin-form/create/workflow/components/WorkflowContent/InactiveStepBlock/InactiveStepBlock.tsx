@@ -20,6 +20,7 @@ import {
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
+import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -112,6 +113,12 @@ export const InactiveStepBlock = ({
 }: InactiveStepBlockProps): JSX.Element | null => {
   const { t } = useTranslation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const {
+    cardRadius,
+    sectionLabelTextStyle,
+    iconRestColor,
+    iconTransitionDuration,
+  } = useWorkflowSurfaces()
   const { idToFieldMap } = useAdminFormWorkflow()
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
@@ -169,7 +176,7 @@ export const InactiveStepBlock = ({
   // Mirrors EditStepBlock's ordering; only the sequence differs by flag.
   const fieldsSection = (
     <Stack>
-      <Text textStyle="subhead-3">
+      <Text textStyle={sectionLabelTextStyle}>
         {t('features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill')}
       </Text>
       <Stack direction="column" spacing="0.25rem">
@@ -192,7 +199,7 @@ export const InactiveStepBlock = ({
         type="button"
         w="100%"
         textAlign="start"
-        borderRadius="4px"
+        borderRadius={cardRadius}
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
@@ -206,7 +213,7 @@ export const InactiveStepBlock = ({
           <StepLabel stepNumber={stepNumber} stepName={step.step_name} />
 
           <Stack>
-            <Text textStyle="subhead-3">
+            <Text textStyle={sectionLabelTextStyle}>
               {t(
                 isRedesign
                   ? 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondentRedesign'
@@ -260,9 +267,9 @@ export const InactiveStepBlock = ({
         right={{ base: '0.5rem', md: '2rem' }}
         pos="absolute"
         fontSize="1.5rem"
-        color="neutral.500"
+        color={iconRestColor}
         transitionProperty="common"
-        transitionDuration="normal"
+        transitionDuration={iconTransitionDuration}
         _groupHover={{ color: 'primary.500' }}
       />
     </Box>

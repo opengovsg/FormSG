@@ -12,6 +12,8 @@ import {
 
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
+import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
+
 import {
   formatEmailFieldLabel,
   formatNotifiedStepLabel,
@@ -47,6 +49,12 @@ export const InactiveCompletionEmailCard = ({
   onClick,
 }: InactiveCompletionEmailCardProps): JSX.Element => {
   const { t } = useTranslation()
+  const {
+    cardRadius,
+    sectionLabelTextStyle,
+    iconRestColor,
+    iconTransitionDuration,
+  } = useWorkflowSurfaces()
 
   // One group per control in the expanded card, same order, same labels, so the
   // two views cannot describe the same settings differently. Every label is
@@ -84,7 +92,7 @@ export const InactiveCompletionEmailCard = ({
         type="button"
         w="100%"
         textAlign="start"
-        borderRadius="4px"
+        borderRadius={cardRadius}
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
@@ -122,7 +130,7 @@ export const InactiveCompletionEmailCard = ({
                 // Bare Stack, so the label-to-chips gap is Chakra's 0.5rem
                 // default, the same as InactiveStepBlock's respondent block.
                 <Stack key={id}>
-                  <Text textStyle="subhead-3">{label}</Text>
+                  <Text textStyle={sectionLabelTextStyle}>{label}</Text>
                   {/* Chip row copied from InactiveStepBlock's respondent badges
                       rather than approximated, so both cards lay recipients out
                       identically. Values are unique within a group: emails are
@@ -155,9 +163,9 @@ export const InactiveCompletionEmailCard = ({
         right={{ base: '0.5rem', md: '2rem' }}
         pos="absolute"
         fontSize="1.5rem"
-        color="neutral.500"
+        color={iconRestColor}
         transitionProperty="common"
-        transitionDuration="normal"
+        transitionDuration={iconTransitionDuration}
         _groupHover={{ color: 'primary.500' }}
       />
     </Box>

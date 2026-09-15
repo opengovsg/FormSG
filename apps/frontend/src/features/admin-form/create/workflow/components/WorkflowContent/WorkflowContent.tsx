@@ -16,6 +16,7 @@ import { StatusTrackerToggle } from '~features/admin-form/settings/components/Em
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
+import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
 import { DeleteWorkflowModal } from '../DeleteWorkflowModal'
 import { GuidedSetupToggle, useReportedCompletedStep } from '../GuidedCreation'
 
@@ -30,6 +31,7 @@ export const WorkflowContent = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const { cardRadius, iconRestColor } = useWorkflowSurfaces()
   const isReportingCompletedStep = useReportedCompletedStep() !== null
   const {
     isOpen: isDeleteModalOpen,
@@ -50,7 +52,7 @@ export const WorkflowContent = (): JSX.Element | null => {
         bg="white"
         border="1px solid"
         borderColor="neutral.300"
-        borderRadius="4px"
+        borderRadius={cardRadius}
         padding="1.5rem"
       >
         <Stack gap={'1.5rem'}>
@@ -73,7 +75,7 @@ export const WorkflowContent = (): JSX.Element | null => {
               <IconButton
                 variant="clear"
                 colorScheme="danger"
-                color="neutral.500"
+                color={iconRestColor}
                 transitionProperty="common"
                 transitionDuration="normal"
                 _hover={{ color: 'danger.500', bg: 'danger.100' }}
