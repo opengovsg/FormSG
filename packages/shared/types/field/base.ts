@@ -103,9 +103,22 @@ export type AllowedMyInfoFieldOption = Exclude<
   | MyInfoAttribute.ChildSecondaryRace
 >
 
+export enum MyInfoChildrenScope {
+  Local = 'local',
+  Sponsored = 'sponsored',
+}
+
 export type MyInfoChildData = Partial<{
   [key in MyInfoChildAttributes]: string[]
-}>
+}> & {
+  /**
+   * MyInfo scope each child record was retrieved under, parallel to the
+   * attribute arrays. Absent today: only the local-children scope is fetched,
+   * so every record is local. Populated per record once the sponsored scope
+   * is retrieved as well.
+   */
+  scopes?: MyInfoChildrenScope[]
+}
 
 export type AllowMyInfoBase = {
   myInfo?: {
