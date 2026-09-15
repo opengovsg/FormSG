@@ -101,8 +101,9 @@ import {
 } from './webhook/webhook-reconstruction'
 import {
   holdsV1FirstStepInvariant,
-  resolveMrfSnapshotShape,
+  resolveMrfWireShape,
   shouldSendMrfWebhook,
+  shouldWriteMrfSnapshot,
 } from './webhook/webhook-send-eligibility'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
@@ -125,6 +126,21 @@ const appUrl =
   process.env.NODE_ENV === Environment.Dev
     ? config.app.feAppUrl
     : config.app.appUrl
+
+/**
+ * A populated form document holds `form_fields` as mongoose subdocuments,
+ * while the row's own snapshot (and every test fixture) holds plain field
+ * definitions. The shared flatten reads plain definitions, so normalise —
+ * the same conversion the middleware makes when it snapshots the fields.
+ */
+const toPlainFormFields = (
+  formFields: IPopulatedMultirespondentForm['form_fields'],
+): FormFieldDto[] =>
+  formFields.map((field) =>
+    typeof (field as { toObject?: unknown }).toObject === 'function'
+      ? (field as unknown as { toObject: () => FormFieldDto }).toObject()
+      : (field as unknown as FormFieldDto),
+  )
 
 export type SavedMultirespondentSubmission = {
   submission: IMultirespondentSubmissionSchema & {
@@ -863,7 +879,7 @@ export const createMultiRespondentFormSubmission = ({
         encryptedStepToken,
       }
 
-      const snapshotShape = resolveMrfSnapshotShape({
+      const wireShape = resolveMrfWireShape({
         mrfVersion,
         webhook: form.webhook,
         isMrfWebhooksEnabled:
@@ -871,6 +887,10 @@ export const createMultiRespondentFormSubmission = ({
         // This is the row's own workflow copy: `submissionContent.workflow`
         // above is this very array, and it is about to be persisted with it.
         workflowStepCount: form.workflow?.length ?? 0,
+      })
+      const shouldWriteSnapshot = shouldWriteMrfSnapshot({
+        wireShape,
+        isRetryEnabled: form.webhook?.isRetryEnabled,
       })
 
       const saveSubmission = async () => {
@@ -919,20 +939,19 @@ export const createMultiRespondentFormSubmission = ({
       }
 
       let snapshot: SubmissionSnapshot | undefined
-      if (snapshotShape === 'v1') {
+      if (wireShape === 'v1') {
         // The V1 copy has to be made here, from the plaintext in hand: the row
         // holds ciphertext under a submission key the server cannot open, so
         // after this request there is no way to build one at all (PIN-01).
+        //
+        // It is built whenever the delivery is V1, not only when a snapshot
+        // is persisted, because the initial send in this same request is
+        // served from this copy — and unlike V4 it has no valid fallback.
         const v1ContentResult = buildV1EncryptedContent({
           v4Responses: encryptedPayload.responses,
           // The row's own field snapshot: `submissionContent.form_fields`
           // above is this very array.
-          // `form_fields` on a populated form document is an array of
-          // mongoose subdocuments; the flatten reads plain field definitions,
-          // the same conversion the middleware makes when it snapshots them.
-          formFields: form.form_fields.map(
-            (field) => field.toObject() as FormFieldDto,
-          ),
+          formFields: toPlainFormFields(form.form_fields),
           // The row's own logic snapshot, persisted as `form_logics` above.
           // The shared flatten reads it to resolve `isVisible`, so a logic
           // edit after the fact cannot change a delivered payload.
@@ -949,7 +968,9 @@ export const createMultiRespondentFormSubmission = ({
           ...snapshotBase,
           encryptedContent: v1ContentResult.value,
         })
-      } else if (snapshotShape === 'v4') {
+      } else if (wireShape === 'v4' && shouldWriteSnapshot) {
+        // For V4 the live row IS the wire payload, so with no snapshot to
+        // persist the send falls back to it and nothing needs building here.
         snapshot = buildV4Snapshot({
           ...snapshotBase,
           encryptedContent,
@@ -957,11 +978,12 @@ export const createMultiRespondentFormSubmission = ({
         })
       }
 
+      const snapshotToWrite = shouldWriteSnapshot ? snapshot : undefined
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
-        snapshot
-          ? writeSnapshot(snapshot).map(({ token }) => {
+        snapshotToWrite
+          ? writeSnapshot(snapshotToWrite).map(({ token }) => {
               submittedStepMeta.snapshotTokens = {
-                [snapshot.contentFormat]: token,
+                [snapshotToWrite.contentFormat]: token,
               }
               return undefined
             })
@@ -1760,7 +1782,7 @@ export const updateMultiRespondentFormSubmission = ({
       submission.stepTokenHash = stepTokenHash
       submission.encryptedStepToken = encryptedStepToken
 
-      const resolvedSnapshotShape = resolveMrfSnapshotShape({
+      const resolvedWireShape = resolveMrfWireShape({
         mrfVersion,
         webhook: snapshottedFormDef.webhook,
         isMrfWebhooksEnabled:
@@ -1775,17 +1797,22 @@ export const updateMultiRespondentFormSubmission = ({
       // and write nothing. This site could not produce a form-key copy in any
       // case — the snapshotted definition carries no form public key, because
       // a single-step form never reaches this path.
-      const snapshotShape =
-        resolvedSnapshotShape === 'v1' &&
+      const wireShape =
+        resolvedWireShape === 'v1' &&
         !holdsV1FirstStepInvariant({
           submissionIndex,
           logMeta: { ...logMeta, submissionId },
         })
           ? undefined
-          : resolvedSnapshotShape
+          : resolvedWireShape
+
+      const shouldWriteSnapshot = shouldWriteMrfSnapshot({
+        wireShape,
+        isRetryEnabled: snapshottedFormDef.webhook?.isRetryEnabled,
+      })
 
       const snapshot =
-        snapshotShape === 'v4'
+        wireShape === 'v4' && shouldWriteSnapshot
           ? buildV4Snapshot({
               formId: String(snapshottedFormDef._id),
               submissionId: String(submission._id),

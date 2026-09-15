@@ -72,25 +72,20 @@ export const shouldSendMrfWebhook = ({
 }
 
 /**
- * PIN-12: one snapshot per step, in the delivered shape only — so the
- * snapshot-write decision is shape-aware, and the resolved wire shape selects
- * both the snapshot's shape and its store. A generic V1 form writes only a V1
- * snapshot and never a V4 one: no wrapped read key is stored for a consumer
- * class forbidden from receiving it, and there is no second S3 write to fail
- * under S3-first-abort.
+ * Resolves the wire shape this step submission would be delivered in, or
+ * `undefined` if no consumer receives it at all.
  *
- * PIN-16: the write condition at both submit sites is `enable-mrf-webhooks`
- * on AND a webhook URL present AND retries enabled, identical for the V4 and
- * V1 shapes. Keeping the retry term is what makes this merge inert and stops
- * us writing objects nothing will read — both submit sites serve the initial
- * send from the copy already in memory, so the snapshot is only ever read by a
- * retry, and under PIN-10 an unread object never expires. The term is dropped
- * only at the payment pending-submission site, where no in-memory copy exists
- * in the process that sends; that site belongs to #9978.
+ * PIN-12: the resolved wire shape selects both the snapshot's shape and its
+ * store, through the same `resolveWireShape` the send path uses, so the bytes
+ * written and the bytes sent cannot disagree about what they are. A generic V1
+ * form is snapshotted as V1 and never as V4: no wrapped read key is stored for
+ * a consumer class forbidden from receiving it, and there is no second S3
+ * write to fail under S3-first-abort.
  *
- * @returns the shape to snapshot in, or `undefined` to write no snapshot.
+ * Deliberately carries no retry term — that decides whether the copy is
+ * *persisted*, not whether one is made. See {@link shouldWriteMrfSnapshot}.
  */
-export const resolveMrfSnapshotShape = ({
+export const resolveMrfWireShape = ({
   mrfVersion,
   webhook,
   isMrfWebhooksEnabled,
@@ -99,14 +94,13 @@ export const resolveMrfSnapshotShape = ({
   mrfVersion: number
   webhook?: {
     url?: string
-    isRetryEnabled?: boolean
     webhookFormat?: FormWebhook['webhookFormat']
   }
   isMrfWebhooksEnabled: boolean
   workflowStepCount: number
 }): SnapshotContentFormat | undefined => {
   const url = webhook?.url
-  if (mrfVersion !== 2 || !url || !webhook?.isRetryEnabled) return undefined
+  if (mrfVersion !== 2 || !url) return undefined
 
   const webhookType = getWebhookType(url)
   if (
@@ -120,9 +114,6 @@ export const resolveMrfSnapshotShape = ({
     return undefined
   }
 
-  // The snapshot's shape IS the wire shape, resolved by the one function the
-  // send path resolves it with, so the bytes written and the bytes sent cannot
-  // disagree about what they are.
   const wireShape = resolveWireShape({
     webhookType: toConsumerType(webhookType),
     webhookFormat: webhook.webhookFormat,
@@ -133,6 +124,29 @@ export const resolveMrfSnapshotShape = ({
   // widened resolution has to be dealt with here.
   return wireShape === 'v3' ? undefined : wireShape
 }
+
+/**
+ * PIN-16: the snapshot-write condition at both submit sites is
+ * `enable-mrf-webhooks` on AND a webhook URL present AND retries enabled —
+ * the first two being exactly what {@link resolveMrfWireShape} answers.
+ *
+ * The retry term belongs here and nowhere else. Both submit sites perform the
+ * initial send inside the same request, so the copy already in memory serves
+ * it and the stored object is only ever read by a retry; writing one with
+ * retries disabled produces an object nothing will ever read, which under
+ * PIN-10's no-expiry rule accumulates permanently.
+ *
+ * It is dropped only at the payment pending-submission site, where the webhook
+ * fires from a separate process holding only the row, so no in-memory copy
+ * exists at any point. That site is #9978's.
+ */
+export const shouldWriteMrfSnapshot = ({
+  wireShape,
+  isRetryEnabled,
+}: {
+  wireShape: SnapshotContentFormat | undefined
+  isRetryEnabled?: boolean
+}): boolean => wireShape !== undefined && !!isRetryEnabled
 
 /**
  * PIN-02 retains `submissionIndex === 0` as an invariant assertion that fails
