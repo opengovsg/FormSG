@@ -861,6 +861,7 @@ export const createMultiRespondentFormSubmission = ({
         form: form._id,
         authType: form.authType,
         myInfoFields: form.getUniqueMyInfoAttrs(),
+        myInfoReadOnlyFields: encryptedPayload.myInfoReadOnlyFields,
         form_fields: form.form_fields,
         form_logics: form.form_logics,
         workflow: form.workflow,
