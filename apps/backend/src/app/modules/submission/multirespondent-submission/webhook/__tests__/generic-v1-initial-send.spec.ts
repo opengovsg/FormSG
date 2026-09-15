@@ -14,15 +14,19 @@ import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import {
   BasicField,
   FormAuthType,
-  FormResponseMode,
   FormWorkflowStepDto,
+  SubmissionType,
   WorkflowType,
 } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
-import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
+import getFormModel from 'src/app/models/form.server.model'
+import {
+  getEncryptSubmissionModel,
+  getMultirespondentSubmissionModel,
+} from 'src/app/models/submission.server.model'
 import { ApplicationError, ErrorCodes } from 'src/app/modules/core/core.errors'
 import {
   createMultiRespondentFormSubmission,
@@ -78,6 +82,7 @@ const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/x'
 
 const MultirespondentSubmissionModel =
   getMultirespondentSubmissionModel(mongoose)
+const EncryptSubmissionModel = getEncryptSubmissionModel(mongoose)
 
 const formId = new ObjectId()
 const shortTextId = new ObjectId().toHexString()
@@ -143,30 +148,49 @@ const step = (emails: string[] = []): FormWorkflowStepDto =>
   }) as FormWorkflowStepDto
 
 let formKeypair: { publicKey: string; secretKey: string }
+let formsBuilt = 0
 
-const buildForm = ({
+/**
+ * A REAL populated form document, not a plain object literal cast to one.
+ *
+ * This matters more than it looks: on a document, `form_fields` is an array of
+ * mongoose subdocuments whose `_id` is an ObjectId, and the V1 response schema
+ * requires a string. A literal fixture with hex-string ids makes the producer
+ * look correct while every real submission fails, so the fixture has to be the
+ * shape production actually holds.
+ */
+const buildForm = async ({
   workflow,
   webhook,
+  formFields = FORM_FIELDS,
+  authType = FormAuthType.NIL,
 }: {
   workflow: FormWorkflowStepDto[]
   webhook: Record<string, unknown>
-}): IPopulatedMultirespondentForm =>
-  ({
-    _id: formId,
-    title: 'Converged storage-mode form',
-    authType: FormAuthType.NIL,
-    responseMode: FormResponseMode.Multirespondent,
-    publicKey: formKeypair.publicKey,
-    form_fields: FORM_FIELDS,
-    form_logics: [],
-    workflow,
-    isSingleSubmission: false,
-    webhook,
-    admin: { _id: new ObjectId(), email: 'admin@example.gov.sg' },
-    emails: [],
-    stepsToNotify: [],
-    getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
-  }) as unknown as IPopulatedMultirespondentForm
+  formFields?: Record<string, unknown>[]
+  authType?: FormAuthType
+}): Promise<IPopulatedMultirespondentForm> => {
+  // A distinct admin per form: the helper creates the owning user too, and a
+  // test that builds two forms would otherwise collide on the email.
+  formsBuilt += 1
+  const { form } = await dbHandler.insertMultirespondentForm({
+    mailName: `admin-${formsBuilt}`,
+    formOptions: {
+      title: 'Converged storage-mode form',
+      authType,
+      publicKey: formKeypair.publicKey,
+      form_fields: formFields,
+      form_logics: [],
+      workflow,
+      webhook,
+    } as never,
+  })
+
+  const populated = await getFormModel(mongoose).getFullFormById(
+    String(form._id),
+  )
+  return populated as unknown as IPopulatedMultirespondentForm
+}
 
 const buildPayload = (
   overrides: Partial<MultirespondentSubmissionDto> = {},
@@ -195,6 +219,10 @@ const growthbookWith = (enableMrfWebhooks: boolean) =>
 
 const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
 
+/** The keys that survive serialisation — the delivered bytes are the JSON. */
+const serialisedKeysOf = (data: unknown): string[] =>
+  Object.keys(JSON.parse(JSON.stringify(data)) as Record<string, unknown>)
+
 /**
  * Runs the real submit path and then the real post-submission action, and
  * returns the body that was POSTed (or undefined if nothing was sent).
@@ -207,21 +235,23 @@ const submitAndCapturePostedBody = async ({
   webhook,
   enableMrfWebhooks = true,
   dropSnapshot = false,
+  payloadOverrides = {},
 }: {
   workflow: FormWorkflowStepDto[]
   webhook: Record<string, unknown>
   enableMrfWebhooks?: boolean
   dropSnapshot?: boolean
+  payloadOverrides?: Partial<MultirespondentSubmissionDto>
 }): Promise<{
   body?: WebhookData
   writtenSnapshots: SubmissionSnapshot[]
 }> => {
-  const form = buildForm({ workflow, webhook })
+  const form = await buildForm({ workflow, webhook })
   const growthbook = growthbookWith(enableMrfWebhooks)
 
   const created = await createMultiRespondentFormSubmission({
     form,
-    encryptedPayload: buildPayload(),
+    encryptedPayload: buildPayload(payloadOverrides),
     logMeta: { action: 'test' },
     growthbook,
   })
@@ -233,7 +263,7 @@ const submitAndCapturePostedBody = async ({
     snapshot: dropSnapshot ? undefined : snapshot,
     submissionId: submission._id.toString(),
     form,
-    encryptedPayload: buildPayload(),
+    encryptedPayload: buildPayload(payloadOverrides),
     logMeta: {} as never,
     growthbook,
   })
@@ -258,6 +288,7 @@ describe('[GATE] generic V1 initial send', () => {
   afterEach(async () => {
     await dbHandler.clearDatabase()
     jest.clearAllMocks()
+    formsBuilt = 0
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -270,7 +301,20 @@ describe('[GATE] generic V1 initial send', () => {
   })
 
   describe('the payload a consumer receives', () => {
-    it('should carry exactly the key set a storage-mode payload carries', async () => {
+    it('should carry exactly the key set a real storage-mode payload carries', async () => {
+      // The oracle is an actual storage-mode submission's own webhook view,
+      // not a hand-maintained list: a list would let the constant and the
+      // payload drift together while both assertions kept passing.
+      const storageRow = await EncryptSubmissionModel.create({
+        submissionType: SubmissionType.Encrypt,
+        form: formId,
+        encryptedContent: 'storage-mode-encrypted-content',
+        version: VIRUS_SCANNER_SUBMISSION_VERSION,
+      })
+      const storageKeys = serialisedKeysOf(
+        (await storageRow.getWebhookView())?.data,
+      )
+
       // Act
       const { body } = await submitAndCapturePostedBody({
         workflow: [step()],
@@ -278,13 +322,15 @@ describe('[GATE] generic V1 initial send', () => {
       })
 
       // Assert: the delivered bytes are the JSON, so compare what survives it.
-      // `verifiedContent` is undefined on this unauthenticated form and
-      // serialisation drops it, exactly as it does in storage mode.
+      // Neither side carries `verifiedContent` here — the storage row is
+      // unauthenticated, and the MRF row's copy is encrypted to a key the
+      // consumer does not hold, so this slice omits it (#9979).
       expect(body).toBeDefined()
-      const deliveredKeys = Object.keys(
-        JSON.parse(JSON.stringify(body)) as Record<string, unknown>,
-      )
-      expect(deliveredKeys).toEqual(
+      expect(serialisedKeysOf(body)).toEqual(storageKeys)
+
+      // And the constant the production assertion uses agrees with the real
+      // thing, so a drift in either is caught here.
+      expect(storageKeys).toEqual(
         STORAGE_SHAPED_PAYLOAD_KEYS.filter((key) => key !== 'verifiedContent'),
       )
     })
@@ -323,18 +369,15 @@ describe('[GATE] generic V1 initial send', () => {
       // `question` is the consumer's join key and the CSV column name, so a
       // bare title where storage mode sent `[Myinfo] Your name` would be a
       // compatibility break. The set comes from the row, resolved at submit.
-      const form = buildForm({
+      const myInfoForm = await buildForm({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
-      })
-      const myInfoForm = {
-        ...form,
-        form_fields: [
+        authType: FormAuthType.MyInfo,
+        formFields: [
           { ...FORM_FIELDS[0], myInfo: { attr: 'name' } },
           FORM_FIELDS[1],
         ],
-        getUniqueMyInfoAttrs: jest.fn().mockReturnValue(['name']),
-      } as unknown as IPopulatedMultirespondentForm
+      })
       const growthbook = growthbookWith(true)
       const payload = buildPayload({
         myInfoReadOnlyFields: [shortTextId],
@@ -367,6 +410,47 @@ describe('[GATE] generic V1 initial send', () => {
         '[Myinfo] Your name',
         'Your email',
       ])
+    })
+
+    it('should omit the row\u2019s verified content, which no form secret key can open', async () => {
+      // The row's `verifiedContent` is encrypted under the SUBMISSION public
+      // key. Copying it onto a V1 payload would not merely be useless: the
+      // SDK throws on a `verifiedContent` it cannot open and returns null for
+      // the whole payload, so the consumer would lose the content as well.
+      //
+      // Producing a form-key copy is #9979's work. Until then the key is
+      // absent, exactly as it is for an unauthenticated storage-mode form.
+      const { body } = await submitAndCapturePostedBody({
+        workflow: [step()],
+        webhook: { url: GENERIC_URL, isRetryEnabled: true },
+        payloadOverrides: {
+          verifiedContent: 'SUBMISSION-KEY-VERIFIED-CONTENT',
+        } as Partial<MultirespondentSubmissionDto>,
+      })
+
+      expect(body!.verifiedContent).toBeUndefined()
+      expect(JSON.stringify(body)).not.toContain(
+        'SUBMISSION-KEY-VERIFIED-CONTENT',
+      )
+      // And the consumer's own call still recovers the content.
+      const recovered = formsgSdk.crypto.decrypt(formKeypair.secretKey, {
+        encryptedContent: body!.encryptedContent,
+        verifiedContent: body!.verifiedContent,
+        version: VIRUS_SCANNER_SUBMISSION_VERSION,
+      })
+      expect(recovered?.responses).toEqual(EXPECTED_V1_ARRAY)
+    })
+
+    it('should omit the row\u2019s attachment keys, which point at submission-key objects', async () => {
+      // Same reasoning as verified content; form-key attachment copies are
+      // #9980. The key itself stays present and empty, as storage mode's is
+      // for a form with no attachments.
+      const { body } = await submitAndCapturePostedBody({
+        workflow: [step()],
+        webhook: { url: GENERIC_URL, isRetryEnabled: true },
+      })
+
+      expect(body!.attachmentDownloadUrls).toEqual({})
     })
 
     it('should be labelled with the version storage mode sends', async () => {
@@ -448,7 +532,7 @@ describe('[GATE] generic V1 initial send', () => {
 
     it('should judge eligibility on the row’s own workflow, not the form as later edited', async () => {
       // Arrange: a submission made on a single-step form.
-      const form = buildForm({
+      const form = await buildForm({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
       })
@@ -467,7 +551,7 @@ describe('[GATE] generic V1 initial send', () => {
         submission,
         snapshot,
         submissionId: submission._id.toString(),
-        form: buildForm({
+        form: await buildForm({
           workflow: [step(), step(), step()],
           webhook: { url: GENERIC_URL, isRetryEnabled: true },
         }),
@@ -502,7 +586,7 @@ describe('[GATE] generic V1 initial send', () => {
     })
 
     it('should record the token under the shape it was written in', async () => {
-      const form = buildForm({
+      const form = await buildForm({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
       })
@@ -614,7 +698,7 @@ describe('[GATE] generic V1 initial send', () => {
 
   describe('the row', () => {
     it('should stay V4-native whatever the wire shape', async () => {
-      const form = buildForm({
+      const form = await buildForm({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
       })
