@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.22.4](https://github.com/opengovsg/formsg/compare/v9.22.3...v9.22.4) (2026-09-15)
+
+
+### Dependencies
+
+* **deps:** patch 40+ vulnerable dependencies (2026-09 Dependabot batch) (#10007) ([#10007](https://github.com/opengovsg/formsg/commit/09b5080055642914eb46e556f89c49796e5a7ce2))
+
 ## [9.22.3](https://github.com/opengovsg/formsg/compare/v9.22.2...v9.22.3) (2026-09-15)
 
 
