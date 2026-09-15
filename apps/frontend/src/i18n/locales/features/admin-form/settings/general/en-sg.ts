@@ -42,7 +42,7 @@ export const enSG = {
       label: 'Closing date and time',
       timeLabel: 'Closing time',
       description:
-        'Your form will automatically close at the selected date and time (SGT).',
+        'Your form will automatically close at the set date and time (SGT). Responses after will not be accepted.',
     },
     toast: {
       success: 'Your form will now automatically close on {closeAt}.',
