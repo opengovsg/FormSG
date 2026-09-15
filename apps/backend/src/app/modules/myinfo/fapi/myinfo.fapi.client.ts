@@ -79,13 +79,14 @@ const buildConfiguration = (): ResultAsync<
         })
         return configuration
       })(),
-      (error) => {
+      () => {
+        const configError = new MyInfoFapiConfigError()
         logger.error({
           message: 'MyInfo FAPI client discovery failed',
           meta: { action: 'getConfiguration' },
-          error,
+          error: configError,
         })
-        return new MyInfoFapiConfigError()
+        return configError
       },
     ),
   )
