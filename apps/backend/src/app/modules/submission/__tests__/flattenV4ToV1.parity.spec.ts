@@ -25,6 +25,7 @@
 import { ObjectId } from 'bson'
 import { BasicField, FormFieldDto, FormResponseMode } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
+import { applyMyInfoPrefix } from 'formsg-shared/utils/myinfo-prefix'
 
 import {
   FieldResponse,
@@ -40,6 +41,7 @@ import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { isAttachmentResponse } from '../submission.utils'
 
 import {
+  ALL_MYINFO_FIELD_IDS,
   ATTACHMENT_FILE_NAME,
   buildAddMoreRowsTableField,
   buildBlankTableInputWithAddedRows,
@@ -47,6 +49,10 @@ import {
   buildDifferentialField,
   buildDifferentialFields,
   buildDifferentialInputs,
+  buildMyInfoAnsweredInput,
+  buildMyInfoField,
+  buildMyInfoFields,
+  buildMyInfoInputs,
   buildOptionalDifferentialField,
   buildOptionalDifferentialFields,
   buildOptionalVerifiableField,
@@ -56,6 +62,8 @@ import {
   buildVerifiableField,
   DIFFERENTIAL_FIELD_TYPES,
   FIELD_IDS,
+  MYINFO_FIELD_IDS,
+  MYINFO_FIELD_TYPES,
   VERIFIABLE_FIELD_IDS,
   VERIFIABLE_FIELD_TYPES,
 } from '~features/public-form/utils/__tests__/storageModeFixture'
@@ -125,6 +133,7 @@ const asFormDocument = (formFields: FormFieldDto[]): IFormDocument =>
 const storageModeReference = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
+  hashedFields?: Set<string>,
 ): unknown[] => {
   // 1. The browser. `submitStorageModeForm` uses the virus-scanning variant.
   const formData = createClearSubmissionWithVirusScanningFormData(
@@ -164,10 +173,12 @@ const storageModeReference = (
       `harness: the server rejected the browser's array — ${parsed.error.message}`,
     )
   }
-  // No hashed fields: the fixture carries no MyInfo field, so this is identity.
+  // `hashedFields` is the set of field ids whose answers were read-only MyInfo
+  // values for this respondent. `undefined` (no MyInfo auth) makes this step
+  // the identity; a non-empty set is what rewrites the question text.
   const serverResponses = formatMyInfoStorageResponseData(
     parsed.value.getAllResponses(),
-    undefined,
+    hashedFields,
   )
 
   // 4. `encryptSubmission`'s strip (`encrypt-submission.middleware.ts:485-495`).
@@ -210,21 +221,30 @@ const scanV4Attachments = (
 const flattenReference = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
+  readOnlyFieldIds: string[] = [],
 ): unknown[] =>
-  flattenV4ToFormFields({
-    v4Responses: scanV4Attachments(
-      createResponsesV4(formFields, formInputs, buildQuarantineMap()),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) as any,
-    formFields,
-  })
+  applyMyInfoPrefix(
+    flattenV4ToFormFields({
+      v4Responses: scanV4Attachments(
+        createResponsesV4(formFields, formInputs, buildQuarantineMap()),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ) as any,
+      formFields,
+    }),
+    readOnlyFieldIds,
+  )
 
 const expectByteParity = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
+  readOnlyFieldIds: string[] = [],
 ) => {
-  const A = storageModeReference(formFields, formInputs)
-  const B = flattenReference(formFields, formInputs)
+  const A = storageModeReference(
+    formFields,
+    formInputs,
+    readOnlyFieldIds.length > 0 ? new Set(readOnlyFieldIds) : undefined,
+  )
+  const B = flattenReference(formFields, formInputs, readOnlyFieldIds)
   expect(JSON.stringify(B)).toBe(JSON.stringify(A))
 }
 
@@ -297,6 +317,84 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
         [buildAddMoreRowsTableField()],
         buildBlankTableInputWithAddedRows(),
       )
+    })
+  })
+
+  /**
+   * The `[Myinfo] ` question prefix (#9975). Storage mode rewrites the question
+   * text of a MyInfo field whose attribute was read-only for this respondent,
+   * so the flatten's output has to be run through the shared prefix rule with
+   * the same set of field ids before it can match.
+   *
+   * Asserted with the same plain equality as every other case: no
+   * normalisation and no declared exception, because with the prefix
+   * reproduced the parity is real and an exception would hide it.
+   */
+  describe('MyInfo fields', () => {
+    describe.each(MYINFO_FIELD_TYPES)('%s', (fieldType) => {
+      const formFields = [buildMyInfoField(fieldType)]
+      const inputs = {
+        [MYINFO_FIELD_IDS[fieldType]]: buildMyInfoAnsweredInput(fieldType),
+      } as FormFieldValues
+
+      it('read-only for this respondent', () => {
+        expectByteParity(formFields, inputs, [MYINFO_FIELD_IDS[fieldType]])
+      })
+
+      it('user-provided for this respondent', () => {
+        expectByteParity(formFields, inputs, [])
+      })
+    })
+
+    describe('over a form of every MyInfo field type', () => {
+      it('all attributes read-only', () => {
+        expectByteParity(
+          buildMyInfoFields(),
+          buildMyInfoInputs(),
+          ALL_MYINFO_FIELD_IDS(),
+        )
+      })
+
+      it('no attribute read-only', () => {
+        expectByteParity(buildMyInfoFields(), buildMyInfoInputs(), [])
+      })
+
+      it('some attributes read-only', () => {
+        expectByteParity(buildMyInfoFields(), buildMyInfoInputs(), [
+          MYINFO_FIELD_IDS[BasicField.ShortText],
+          MYINFO_FIELD_IDS[BasicField.Date],
+        ])
+      })
+    })
+
+    /**
+     * Guards the gate itself: plain equality between two unprefixed arrays
+     * would pass for the wrong reason, so assert that the reference really does
+     * carry the prefix in the read-only case and really does not otherwise.
+     */
+    describe('the gate is not passing vacuously', () => {
+      it('the storage-mode reference carries the prefix when read-only', () => {
+        const questions = storageModeReference(
+          buildMyInfoFields(),
+          buildMyInfoInputs(),
+          new Set(ALL_MYINFO_FIELD_IDS()),
+        ).map((entry) => (entry as { question: string }).question)
+        expect(questions).toHaveLength(MYINFO_FIELD_TYPES.length)
+        expect(
+          questions.every((question) => question.startsWith('[Myinfo] ')),
+        ).toBe(true)
+      })
+
+      it('and carries none when nothing was read-only', () => {
+        const questions = storageModeReference(
+          buildMyInfoFields(),
+          buildMyInfoInputs(),
+          undefined,
+        ).map((entry) => (entry as { question: string }).question)
+        expect(
+          questions.some((question) => question.includes('[Myinfo]')),
+        ).toBe(false)
+      })
     })
   })
 
