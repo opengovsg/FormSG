@@ -116,7 +116,7 @@ export const handleLoginCallback: ControllerHandler<
   unknown,
   { code?: string; state: string; iss?: string }
 > = async (req, res) => {
-  const { code, state } = req.query // can trust on FE query
+  const { code } = req.query // can trust on FE query
   const codeVerifier = req.cookies[ONE_CODE_VERIFIER_COOKIE_NAME]
   const expectedState = req.cookies[ONE_STATE_COOKIE_NAME]
   const nonce = req.cookies[ONE_NONCE_COOKIE_NAME]
@@ -129,8 +129,6 @@ export const handleLoginCallback: ControllerHandler<
 
   const logMeta = {
     action: 'oneHandleLoginCallback',
-    code,
-    state,
     ...createReqMeta(req),
   }
 
