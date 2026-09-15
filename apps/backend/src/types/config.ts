@@ -176,6 +176,15 @@ export interface ISsoVarsSchema {
   clientSecret: string
 }
 
+export interface IOneVarsSchema {
+  discoveryUrl: string
+  clientId: string
+  // RATIONALE: JSON string of a JWK Set containing exactly one private
+  // signing key, used to authenticate via private_key_jwt (see
+  // auth-one.service.ts). one.gov.sg dropped client_secret_basic support.
+  clientJwksSecret: string
+}
+
 export interface IWogadVarsSchema {
   clientId: string
   clientSecret: string

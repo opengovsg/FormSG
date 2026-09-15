@@ -24,6 +24,7 @@ import {
   LOGIN_CALLBACK_FORWARDING_ROUTE,
   LOGIN_CALLBACK_ROUTE,
   LOGIN_ROUTE,
+  ONE_LOGIN_HOLDING_ROUTE,
   PAYMENT_PAGE_SUBROUTE,
   PRIVACY_POLICY_ROUTE,
   PUBLICFORM_ROUTE,
@@ -52,6 +53,7 @@ import { ChartsPage } from '~features/admin-form/responses/ChartsPage/ChartsPage
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 import { RbiProxyForwardingPage } from '~features/compatibility/RbiProxyForwardingPage'
 import { SelectProfilePage } from '~features/login'
+import { OneHoldingPage } from '~features/login/OneHoldingPage'
 import { SsoHoldingPage } from '~features/login/SsoHoldingPage'
 import { WogadHoldingPage } from '~features/login/WogadHoldingPage'
 import { FormPaymentPage } from '~features/public-form/components/FormPaymentPage/FormPaymentPage'
@@ -122,6 +124,10 @@ export const AppRouter = (): JSX.Element => {
         <Route
           path={WOGAD_LOGIN_HOLDING_ROUTE}
           element={<PublicElement strict element={<WogadHoldingPage />} />}
+        />
+        <Route
+          path={ONE_LOGIN_HOLDING_ROUTE}
+          element={<PublicElement strict element={<OneHoldingPage />} />}
         />
         <Route
           path={TEMP_LOGIN_ROUTE}
