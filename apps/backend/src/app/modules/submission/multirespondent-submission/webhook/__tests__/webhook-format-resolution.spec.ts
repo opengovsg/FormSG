@@ -33,7 +33,9 @@ const makeLiveData = (): WebhookData => ({
   encryptedSubmissionSecretKey: 'LIVE_ROW_KEY',
 })
 
-const makeSnapshot = (contentFormat: WebhookContentFormat): SubmissionSnapshot =>
+const makeSnapshot = (
+  contentFormat: WebhookContentFormat,
+): SubmissionSnapshot =>
   contentFormat === 'v4'
     ? {
         _v: 1,
@@ -56,6 +58,26 @@ const makeSnapshot = (contentFormat: WebhookContentFormat): SubmissionSnapshot =
         encryptedContent: 'FROZEN_V1_CONTENT',
         createdAt: '2026-07-22T00:00:00.000Z',
       }
+
+const reconstructNonPlumberPayload = (
+  webhookUrl: string,
+  webhookFormat: WebhookFormat,
+) => {
+  const webhookType = toConsumerType(getWebhookType(webhookUrl))
+  const policy = getWebhookPayloadPolicy({
+    webhookType,
+    webhookFormat,
+    submissionIndex: 0,
+    submittedStepsLength: 1,
+  })
+
+  return reconstructMrfWebhookData({
+    liveData: makeLiveData(),
+    snapshot: makeSnapshot(policy.contentFormat),
+    submissionIndex: 0,
+    policy,
+  })._unsafeUnwrap()
+}
 
 /**
  * The resolution table from #9975, driven from the webhook URL and the form's
@@ -171,39 +193,45 @@ describe('webhookFormat resolution', () => {
         },
       )
 
-      it.each(ROWS.filter((row) => row.webhookUrl !== PLUMBER_URL))(
+      it.each(
+        ROWS.filter(
+          (row) =>
+            row.webhookUrl !== PLUMBER_URL &&
+            row.expectedContentFormat === 'v1',
+        ),
+      )(
         'keeps the wrapped submission secret key and the step token off $name',
-        ({ webhookUrl, webhookFormat, expectedContentFormat }) => {
-          const webhookType = toConsumerType(getWebhookType(webhookUrl))
-          const policy = getWebhookPayloadPolicy({
-            webhookType,
-            webhookFormat,
-            submissionIndex: 0,
-            submittedStepsLength: 1,
-          })
-
-          const data = reconstructMrfWebhookData({
-            liveData: makeLiveData(),
-            snapshot: makeSnapshot(policy.contentFormat),
-            submissionIndex: 0,
-            policy,
-          })._unsafeUnwrap()
+        ({ webhookUrl, webhookFormat }) => {
+          const data = reconstructNonPlumberPayload(webhookUrl, webhookFormat)
 
           // A step token is a write credential and has never been part of a
           // non-plumber payload; asserted so it cannot quietly become one.
           expect(data).not.toHaveProperty('encryptedStepToken')
+          // V1 content is encrypted to the form public key, so a wrapped
+          // per-submission key would be both useless and a leak.
+          expect(data).not.toHaveProperty('encryptedSubmissionSecretKey')
+        },
+      )
 
-          if (expectedContentFormat === 'v1') {
-            // V1 content is encrypted to the form public key, so a wrapped
-            // per-submission key would be both useless and a leak.
-            expect(data).not.toHaveProperty('encryptedSubmissionSecretKey')
-          } else {
-            // Generic on V4 needs it — the content is encrypted under the
-            // per-submission public key and is unopenable without it. The
-            // invariant that keeps generic-V4 a read-only grant is the step
-            // token, not this key.
-            expect(data).toHaveProperty('encryptedSubmissionSecretKey')
-          }
+      it.each(
+        ROWS.filter(
+          (row) =>
+            row.webhookUrl !== PLUMBER_URL &&
+            row.expectedContentFormat === 'v4',
+        ),
+      )(
+        'puts the wrapped submission secret key on $name without a step token',
+        ({ webhookUrl, webhookFormat }) => {
+          const data = reconstructNonPlumberPayload(webhookUrl, webhookFormat)
+
+          // A step token is a write credential and has never been part of a
+          // non-plumber payload; asserted so it cannot quietly become one.
+          expect(data).not.toHaveProperty('encryptedStepToken')
+          // Generic on V4 needs the wrapped key — the content is encrypted
+          // under the per-submission public key and is unopenable without
+          // it. The invariant that keeps generic-V4 a read-only grant is
+          // the step token, not this key.
+          expect(data).toHaveProperty('encryptedSubmissionSecretKey')
         },
       )
     },
@@ -219,18 +247,7 @@ describe('webhookFormat resolution', () => {
     })
 
     it('a resolved v1 payload carries that version', () => {
-      const policy = getWebhookPayloadPolicy({
-        webhookType: 'generic',
-        webhookFormat: undefined,
-        submissionIndex: 0,
-        submittedStepsLength: 1,
-      })
-      const data = reconstructMrfWebhookData({
-        liveData: makeLiveData(),
-        snapshot: makeSnapshot(policy.contentFormat),
-        submissionIndex: 0,
-        policy,
-      })._unsafeUnwrap()
+      const data = reconstructNonPlumberPayload(GENERIC_URL, undefined)
 
       expect(data.version).toBe(VIRUS_SCANNER_SUBMISSION_VERSION)
     })
