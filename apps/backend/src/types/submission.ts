@@ -188,6 +188,7 @@ export type MultirespondentSubmissionCursorData = Pick<
   IMultirespondentSubmissionSchema,
   | 'form_fields'
   | 'form_logics'
+  | 'myInfoReadOnlyFields'
   | 'submissionType'
   | 'encryptedSubmissionSecretKey'
   | 'encryptedContent'
@@ -224,6 +225,7 @@ export type MultirespondentSubmissionData = {
   IMultirespondentSubmissionSchema,
   | 'form_fields'
   | 'form_logics'
+  | 'myInfoReadOnlyFields'
   | 'workflow'
   | 'submissionPublicKey'
   | 'encryptedSubmissionSecretKey'
