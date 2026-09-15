@@ -23,6 +23,7 @@ import { okAsync } from 'neverthrow'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
+import { ApplicationError, ErrorCodes } from 'src/app/modules/core/core.errors'
 import {
   createMultiRespondentFormSubmission,
   performMultiRespondentPostSubmissionCreateActions,
@@ -38,6 +39,24 @@ import { STORAGE_SHAPED_PAYLOAD_KEYS } from '../v1-payload'
 
 jest.mock('axios')
 const MockAxios = jest.mocked(axios)
+
+// Every module's logger, so the fail-loud path's log line — which is where
+// the alert hangs, the failure being inside a floating promise — is
+// observable. Built inside the factory because `jest.mock` is hoisted above
+// any `const` the module body declares.
+jest.mock('src/app/config/logger', () => {
+  const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
+  return {
+    ...jest.requireActual('src/app/config/logger'),
+    createLoggerWithLabel: () => logger,
+    __mockLogger: logger,
+  }
+})
+const mockLogger = (
+  jest.requireMock('src/app/config/logger') as {
+    __mockLogger: { error: jest.Mock }
+  }
+).__mockLogger
 
 jest.mock('src/app/modules/webhook/webhook.validation')
 const MockWebhookValidation = jest.mocked(WebhookValidationModule)
@@ -538,6 +557,11 @@ describe('[GATE] generic V1 initial send', () => {
       // The row holds ciphertext under a submission key the server cannot
       // open, so it is never a valid V1 payload. Delivering it would hand the
       // consumer content its form secret key cannot decrypt.
+      //
+      // `sendMrfInitialWebhookIfEligible` returns void and its ResultAsync is
+      // not awaited, so the failure surfaces as a log line inside a floating
+      // promise rather than a rejected request. That log line is what the
+      // alert hangs off, so it is what this asserts.
       const { body } = await submitAndCapturePostedBody({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
@@ -546,6 +570,18 @@ describe('[GATE] generic V1 initial send', () => {
 
       expect(body).toBeUndefined()
       expect(MockAxios.post).not.toHaveBeenCalled()
+
+      // Its own error code, so an alert on it cannot be confused with the
+      // snapshot-format error raised in normal operation.
+      const loggedCodes = mockLogger.error.mock.calls.map(
+        (call) =>
+          (call[0] as { error?: ApplicationError }).error?.code as
+            | number
+            | undefined,
+      )
+      expect(loggedCodes).toContain(
+        ErrorCodes.SUBMISSION_MRF_V1_SNAPSHOT_UNAVAILABLE,
+      )
     })
   })
 
