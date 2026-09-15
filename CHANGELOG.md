@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.23.0](https://github.com/opengovsg/formsg/compare/v9.22.4...v9.23.0) (2026-09-15)
+
+
+### Features
+
+* **create:** let the sidebar rail be collapsed on mobile (#10009) ([#10009](https://github.com/opengovsg/formsg/commit/815e9c6529b226b81d42c23736e4b2779211b3ec))
+
+
+### Bug Fixes
+
+* **settings:** beta badge placement and closing date copy (#10011) ([#10011](https://github.com/opengovsg/formsg/commit/44a9cec3e36acd2cf8988c528143ec7c21e95690))
+* **toast:** centre the top toast on desktop (#9999) ([#9999](https://github.com/opengovsg/formsg/commit/b629d07bb19c1a9d0e18537a55bce4ccc2b8ff9f))
+* **workflow:** gate workflow deletion on the redesign flag (#10017) ([#10017](https://github.com/opengovsg/formsg/commit/6348a14413f99216110156c45051605e74317311))
+* **workflow:** make the workflow builder usable on a phone (#10008) ([#10008](https://github.com/opengovsg/formsg/commit/32c673a41fbc5846f86794e8192c1bfb3df9b234))
+* **workflow:** render the delete-workflow modal stories (#10021) ([#10021](https://github.com/opengovsg/formsg/commit/e089bffacb0e5dd1164ac4765e8135835ae5799c))
+
 ## [9.22.4](https://github.com/opengovsg/formsg/compare/v9.22.3...v9.22.4) (2026-09-15)
 
 
