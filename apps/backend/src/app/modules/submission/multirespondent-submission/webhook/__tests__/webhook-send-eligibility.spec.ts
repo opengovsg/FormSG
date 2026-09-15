@@ -5,8 +5,9 @@ import { WebhookType } from 'src/app/modules/webhook/webhook.service'
 import { SnapshotContentFormat } from '../submission-snapshot.schema'
 import {
   holdsV1FirstStepInvariant,
-  resolveMrfSnapshotShape,
+  resolveMrfWireShape,
   shouldSendMrfWebhook,
+  shouldWriteMrfSnapshot,
 } from '../webhook-send-eligibility'
 
 const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/x'
@@ -102,7 +103,7 @@ describe('shouldSendMrfWebhook', () => {
   )
 })
 
-describe('resolveMrfSnapshotShape', () => {
+describe('resolveMrfWireShape', () => {
   it.each<{
     name: string
     mrfVersion: number
@@ -130,18 +131,18 @@ describe('resolveMrfSnapshotShape', () => {
       expected: undefined,
     },
     {
-      name: 'retries disabled writes no V4 snapshot',
+      name: 'retries disabled still resolves a shape — the retry term decides persistence, not delivery',
       mrfVersion: 2,
       webhook: { url: PLUMBER_URL, isRetryEnabled: false },
       isMrfWebhooksEnabled: true,
-      expected: undefined,
+      expected: 'v4',
     },
     {
-      name: 'retries disabled writes no V1 snapshot either — PIN-16 keeps the retry term for both shapes at this site',
+      name: 'retries disabled still resolves V1 for a generic consumer',
       mrfVersion: 2,
       webhook: { url: GENERIC_URL, isRetryEnabled: false },
       isMrfWebhooksEnabled: true,
-      expected: undefined,
+      expected: 'v1',
     },
     {
       name: 'plumber needs no flag and snapshots V4',
@@ -218,13 +219,39 @@ describe('resolveMrfSnapshotShape', () => {
       expected,
     }) => {
       expect(
-        resolveMrfSnapshotShape({
+        resolveMrfWireShape({
           mrfVersion,
           webhook,
           isMrfWebhooksEnabled,
           workflowStepCount,
         }),
       ).toBe(expected)
+    },
+  )
+})
+
+describe('shouldWriteMrfSnapshot', () => {
+  it.each<{
+    wireShape: SnapshotContentFormat | undefined
+    isRetryEnabled?: boolean
+    expected: boolean
+  }>([
+    // PIN-16: the retry term applies to both shapes at the submit sites. The
+    // initial send is served from the in-memory copy, so a snapshot written
+    // with retries off is an object nothing will ever read.
+    { wireShape: 'v4', isRetryEnabled: true, expected: true },
+    { wireShape: 'v1', isRetryEnabled: true, expected: true },
+    { wireShape: 'v4', isRetryEnabled: false, expected: false },
+    { wireShape: 'v1', isRetryEnabled: false, expected: false },
+    { wireShape: 'v1', isRetryEnabled: undefined, expected: false },
+    // Nothing is delivered, so there is nothing a retry could redeliver.
+    { wireShape: undefined, isRetryEnabled: true, expected: false },
+  ])(
+    'shape=$wireShape, retries=$isRetryEnabled => $expected',
+    ({ wireShape, isRetryEnabled, expected }) => {
+      expect(shouldWriteMrfSnapshot({ wireShape, isRetryEnabled })).toBe(
+        expected,
+      )
     },
   )
 })
