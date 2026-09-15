@@ -52,3 +52,17 @@ export class MyInfoFapiMissingUinFinError extends ApplicationError {
     super(message, undefined, ErrorCodes.MYINFO_FAPI_MISSING_UINFIN)
   }
 }
+
+export class MyInfoFapiCallbackError extends ApplicationError {
+  constructor(
+    message = 'MyInfo FAPI callback session missing, expired, or unreadable',
+  ) {
+    super(message, undefined, ErrorCodes.MYINFO_FAPI_CALLBACK)
+  }
+}
+
+export class MyInfoFapiPersistError extends ApplicationError {
+  constructor(message = 'Failed to persist MyInfo FAPI login session') {
+    super(message, undefined, ErrorCodes.MYINFO_FAPI_PERSIST)
+  }
+}

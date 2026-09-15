@@ -14,6 +14,10 @@ import {
   MYINFO_FAPI_SESSION_COOKIE_NAME,
   MYINFO_FAPI_SESSION_MAX_AGE_MS,
 } from './myinfo.fapi.constants'
+import {
+  MyInfoFapiCallbackError,
+  MyInfoFapiPersistError,
+} from './myinfo.fapi.errors'
 import { exchangeCallback } from './myinfo.fapi.service'
 import getMyInfoFapiSessionModel, {
   MyInfoFapiRedirectTarget,
@@ -97,7 +101,7 @@ export const loginToMyInfoFapi: ControllerHandler<
       logger.error({
         message: 'Failed to load MyInfo FAPI session',
         meta: { ...logMeta, reason: 'session_load_failed' },
-        error,
+        error: new MyInfoFapiCallbackError(),
       })
       return error
     },
@@ -186,7 +190,7 @@ export const loginToMyInfoFapi: ControllerHandler<
     logger.error({
       message: 'Failed to record MyInfo FAPI token exchange',
       meta: { ...formMeta, reason: 'persist_failed' },
-      error: claimed.error,
+      error: new MyInfoFapiPersistError(),
     })
     await recordFailure(sessionId, formMeta)
     return res.redirect(destination)

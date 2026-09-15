@@ -49,6 +49,18 @@ export const submitErrorCountMetric = ({
   })
 }
 
+export type MyInfoFapiAttemptStep = 'login_start' | 'userinfo_start'
+
+/**
+ * Counts a MyInfo FAPI attempt. `step` is a closed set so this stays two
+ * custom metrics (name × tag value), not one per form or session.
+ */
+export const submitMyInfoFapiAttemptMetric = (
+  step: MyInfoFapiAttemptStep,
+): void => {
+  tracer.dogstatsd.increment('formsg.myinfo.fapi.attempt', 1, { step })
+}
+
 /**
  * Used to profile latency of a function.
  * @returns An object containing a stop function that returns the elapsed time in milliseconds

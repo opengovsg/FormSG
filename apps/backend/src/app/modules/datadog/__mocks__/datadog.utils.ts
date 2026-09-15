@@ -21,3 +21,10 @@ export const setErrorCode = (_error: ApplicationError) => {
 export const submitErrorCountMetric = (_errorCode: number) => {
   return
 }
+
+export const submitMyInfoFapiAttemptMetric = (
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _step: 'login_start' | 'userinfo_start',
+) => {
+  return
+}

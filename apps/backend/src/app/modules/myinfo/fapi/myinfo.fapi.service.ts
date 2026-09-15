@@ -6,6 +6,7 @@ import * as client from 'openid-client'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { DatabaseError } from '../../core/core.errors'
+import { submitMyInfoFapiAttemptMetric } from '../../datadog/datadog.utils'
 import { MyInfoData } from '../myinfo.adapter'
 
 import {
@@ -27,6 +28,7 @@ import {
   MyInfoFapiIncompleteLoginError,
   MyInfoFapiMissingSessionError,
   MyInfoFapiMissingUinFinError,
+  MyInfoFapiPersistError,
   MyInfoFapiSessionFormMismatchError,
 } from './myinfo.fapi.errors'
 import getMyInfoFapiSessionModel, {
@@ -41,7 +43,7 @@ type MyInfoFapiLoginStartResult = { sessionId: string; redirectUrl: string }
 type MyInfoFapiLoginStartError =
   | MyInfoFapiConfigError
   | MyInfoFapiAuthRequestError
-  | DatabaseError
+  | MyInfoFapiPersistError
 type MyInfoFetchPersonError =
   | MyInfoFapiConfigError
   | MyInfoFapiFetchError
@@ -105,6 +107,7 @@ export const startLogin = ({
     message: 'Started MyInfo FAPI login',
     meta: { action: 'startLogin', formId },
   })
+  submitMyInfoFapiAttemptMetric('login_start')
   return withConfig(
     async (config) => {
       const codeVerifier = client.randomPKCECodeVerifier()
@@ -161,13 +164,16 @@ export const startLogin = ({
         codeVerifier,
         dpopPrivateJwk,
       }),
-      (error) => {
+      () => {
+        const persistError = new MyInfoFapiPersistError(
+          'Failed to create MyInfo FAPI login session',
+        )
         logger.error({
           message: 'Failed to create MyInfo FAPI login session',
           meta: { action: 'startLogin', formId },
-          error,
+          error: persistError,
         })
-        return new DatabaseError('Failed to create MyInfo FAPI login session')
+        return persistError
       },
     ).map((sessionId) => ({ sessionId, redirectUrl })),
   )
@@ -241,6 +247,7 @@ export const fetchPerson = ({
     message: 'Requesting MyInfo FAPI userinfo',
     meta: { action: 'fetchPerson' },
   })
+  submitMyInfoFapiAttemptMetric('userinfo_start')
   return withConfig(
     async (config) => {
       const keyPair = await rehydrateDpopKeyPair(dpopPrivateJwk)

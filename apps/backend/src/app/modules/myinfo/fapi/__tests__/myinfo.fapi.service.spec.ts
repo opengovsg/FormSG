@@ -2,7 +2,6 @@ import crypto from 'crypto'
 import { MyInfoAttribute } from 'formsg-shared/types'
 import * as client from 'openid-client'
 
-import { DatabaseError } from '../../../core/core.errors'
 import { MyInfoData } from '../../myinfo.adapter'
 import { MYINFO_FAPI_REDIRECT_URI } from '../myinfo.fapi.constants'
 import {
@@ -12,6 +11,7 @@ import {
   MyInfoFapiIncompleteLoginError,
   MyInfoFapiMissingSessionError,
   MyInfoFapiMissingUinFinError,
+  MyInfoFapiPersistError,
   MyInfoFapiSessionFormMismatchError,
 } from '../myinfo.fapi.errors'
 import * as MyInfoFapiService from '../myinfo.fapi.service'
@@ -208,7 +208,7 @@ describe('myinfo.fapi.service', () => {
         requestedAttributes: [MyInfoAttribute.Name],
       })
 
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseError)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MyInfoFapiPersistError)
     })
   })
 

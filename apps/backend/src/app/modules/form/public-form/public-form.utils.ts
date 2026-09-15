@@ -8,6 +8,7 @@ import { ErrorResponseData } from '../../core/core.types'
 import {
   MyInfoFapiAuthRequestError,
   MyInfoFapiConfigError,
+  MyInfoFapiPersistError,
 } from '../../myinfo/fapi/myinfo.fapi.errors'
 import { CreateRedirectUrlError } from '../../spcp/spcp.errors'
 import * as FormErrors from '../form.errors'
@@ -90,6 +91,7 @@ export const mapFormAuthError: MapRouteError = (
           'Please ensure that the form has authentication enabled. Please refresh and try again.',
       }
     case DatabaseError:
+    case MyInfoFapiPersistError:
     case CreateRedirectUrlError:
     case MyInfoFapiAuthRequestError:
     case MyInfoFapiConfigError:
