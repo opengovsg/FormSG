@@ -1,5 +1,6 @@
 import { FormFieldDto, LogicDto } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
+import { applyMyInfoPrefix } from 'formsg-shared/utils/myinfo-prefix'
 import { FieldResponsesV4Input } from 'formsg-shared/utils/v4-answer'
 import { err, ok, Result } from 'neverthrow'
 
@@ -34,6 +35,10 @@ const logger = createLoggerWithLabel(module)
  * Question text is injected from the form-definition snapshot passed in, never
  * from the respondent's payload.
  *
+ * The `[Myinfo] ` prefix is then applied through the same shared rule the two
+ * admin DTO builders use, so an admin's webhook and their own download never
+ * disagree about a column name — and `question` is a consumer's join key.
+ *
  * It returns a `Result` rather than throwing because the flatten throws on a
  * field type it cannot represent. That has to reject the submission with a
  * real status: the copy can only be made while the plaintext is in hand, so
@@ -44,6 +49,7 @@ export const buildV1EncryptedContent = ({
   formFields,
   formLogics,
   formPublicKey,
+  myInfoReadOnlyFieldIds,
   logMeta,
 }: {
   v4Responses: FieldResponsesV4Input
@@ -62,14 +68,21 @@ export const buildV1EncryptedContent = ({
    */
   formLogics: LogicDto[]
   formPublicKey: string
+  /**
+   * Ids of the fields whose answers were read-only MyInfo values for this
+   * respondent, as resolved at submit time and persisted on the row. Empty
+   * when the step ran and matched nothing, and when it never ran at all —
+   * both prefix nothing, which is the correct outcome for a form with no
+   * MyInfo auth.
+   */
+  myInfoReadOnlyFieldIds: readonly string[]
   logMeta: Record<string, unknown>
 }): Result<string, V1ContentProductionError> => {
   try {
-    const v1Fields = flattenV4ToFormFields({
-      v4Responses,
-      formFields,
-      formLogics,
-    })
+    const v1Fields = applyMyInfoPrefix(
+      flattenV4ToFormFields({ v4Responses, formFields, formLogics }),
+      myInfoReadOnlyFieldIds,
+    )
 
     return ok(formsgSdk.crypto.encrypt(v1Fields, formPublicKey))
   } catch (error) {
