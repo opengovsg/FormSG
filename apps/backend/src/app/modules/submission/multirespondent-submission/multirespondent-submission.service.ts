@@ -8,6 +8,7 @@ import {
   FormResponseMode,
   FormWebhook,
   FormWorkflowStepDto,
+  LogicDto,
   SubmittedApprovalStep,
   SubmittedNonApprovalStep,
   SubmittedStep,
@@ -53,8 +54,10 @@ import {
 } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { isFormMultirespondent } from '../../form/form.utils'
+import { WebhookPushToQueueError } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
+import { SnapshotRef } from '../../webhook/webhook.types'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
@@ -75,18 +78,31 @@ import {
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
-import { SnapshotWriteError } from './webhook/submission-snapshot.errors'
-import { buildV4Snapshot } from './webhook/submission-snapshot.producer'
-import { SubmissionSnapshotV4 } from './webhook/submission-snapshot.schema'
+import {
+  SnapshotWriteError,
+  V1ContentProductionError,
+  V1SnapshotUnavailableError,
+} from './webhook/submission-snapshot.errors'
+import {
+  buildV1Snapshot,
+  buildV4Snapshot,
+} from './webhook/submission-snapshot.producer'
+import { SubmissionSnapshot } from './webhook/submission-snapshot.schema'
 import { writeSnapshot } from './webhook/submission-snapshot.store'
+import { buildV1EncryptedContent } from './webhook/v1-content.producer'
+import { assertStorageShapedKeySet } from './webhook/v1-payload'
 import {
   getWebhookPayloadPolicy,
   mrfVersionToContentFormat,
 } from './webhook/webhook-payload-policy'
-import { reconstructMrfWebhookData } from './webhook/webhook-reconstruction'
 import {
+  reconstructMrfWebhookData,
+  reconstructV1WebhookData,
+} from './webhook/webhook-reconstruction'
+import {
+  holdsV1FirstStepInvariant,
+  resolveMrfSnapshotShape,
   shouldSendMrfWebhook,
-  shouldWriteV4Snapshot,
 } from './webhook/webhook-send-eligibility'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
@@ -114,7 +130,12 @@ export type SavedMultirespondentSubmission = {
   submission: IMultirespondentSubmissionSchema & {
     _id: mongoose.Types.ObjectId
   }
-  snapshot?: SubmissionSnapshotV4
+  /**
+   * The snapshot written for this step, in the shape it was written in. Only
+   * one shape is ever written per step (PIN-12), and the initial send is
+   * served from this copy rather than re-read from the store.
+   */
+  snapshot?: SubmissionSnapshot
 }
 
 export const checkFormIsMultirespondent = (
@@ -750,7 +771,10 @@ export const createMultiRespondentFormSubmission = ({
   growthbook?: GrowthBook
 }): ResultAsync<
   SavedMultirespondentSubmission,
-  AttachmentUploadError | SubmissionSaveError | SnapshotWriteError
+  | AttachmentUploadError
+  | SubmissionSaveError
+  | SnapshotWriteError
+  | V1ContentProductionError
 > => {
   logMeta = {
     ...logMeta,
@@ -839,7 +863,7 @@ export const createMultiRespondentFormSubmission = ({
         encryptedStepToken,
       }
 
-      const shouldWriteSnapshot = shouldWriteV4Snapshot({
+      const snapshotShape = resolveMrfSnapshotShape({
         mrfVersion,
         webhook: form.webhook,
         isMrfWebhooksEnabled:
@@ -884,26 +908,61 @@ export const createMultiRespondentFormSubmission = ({
         return submission.save()
       }
 
-      const snapshot = shouldWriteSnapshot
-        ? buildV4Snapshot({
-            formId: String(form._id),
-            submissionId: String(submissionObjectId),
-            submissionIndex: 0,
-            workflowStep: 0,
-            encryptedContent,
-            encryptedSubmissionSecretKey,
-            verifiedContent,
-            attachmentMetadata: Object.fromEntries(
-              attachmentMetadata ?? new Map(),
-            ),
-            createdAt: submittedStepMeta.submittedAt,
-          })
-        : undefined
+      const snapshotBase = {
+        formId: String(form._id),
+        submissionId: String(submissionObjectId),
+        submissionIndex: 0,
+        workflowStep: 0,
+        verifiedContent,
+        attachmentMetadata: Object.fromEntries(attachmentMetadata ?? new Map()),
+        createdAt: submittedStepMeta.submittedAt,
+      }
+
+      let snapshot: SubmissionSnapshot | undefined
+      if (snapshotShape === 'v1') {
+        // The V1 copy has to be made here, from the plaintext in hand: the row
+        // holds ciphertext under a submission key the server cannot open, so
+        // after this request there is no way to build one at all (PIN-01).
+        const v1ContentResult = buildV1EncryptedContent({
+          v4Responses: encryptedPayload.responses,
+          // The row's own field snapshot: `submissionContent.form_fields`
+          // above is this very array.
+          // `form_fields` on a populated form document is an array of
+          // mongoose subdocuments; the flatten reads plain field definitions,
+          // the same conversion the middleware makes when it snapshots them.
+          formFields: form.form_fields.map(
+            (field) => field.toObject() as FormFieldDto,
+          ),
+          // The row's own logic snapshot, persisted as `form_logics` above.
+          // The shared flatten reads it to resolve `isVisible`, so a logic
+          // edit after the fact cannot change a delivered payload.
+          formLogics: form.form_logics.map(
+            (logic) => logic.toObject() as LogicDto,
+          ),
+          formPublicKey: form.publicKey,
+          logMeta,
+        })
+        if (v1ContentResult.isErr()) {
+          return errAsync(v1ContentResult.error)
+        }
+        snapshot = buildV1Snapshot({
+          ...snapshotBase,
+          encryptedContent: v1ContentResult.value,
+        })
+      } else if (snapshotShape === 'v4') {
+        snapshot = buildV4Snapshot({
+          ...snapshotBase,
+          encryptedContent,
+          encryptedSubmissionSecretKey,
+        })
+      }
 
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
         snapshot
           ? writeSnapshot(snapshot).map(({ token }) => {
-              submittedStepMeta.snapshotTokens = { v4: token }
+              submittedStepMeta.snapshotTokens = {
+                [snapshot.contentFormat]: token,
+              }
               return undefined
             })
           : okAsync(undefined)
@@ -1229,8 +1288,14 @@ const sendMrfInitialWebhookIfEligible = ({
   errorMessage = 'Multirespondent submission webhook error',
 }: {
   submission: IMultirespondentSubmissionSchema
-  snapshot?: SubmissionSnapshotV4
+  snapshot?: SubmissionSnapshot
   webhookUrl: string
+  /**
+   * The form's `webhook.webhookFormat` setting, verbatim. Mandatory with
+   * `undefined` in its type so that a caller has to say what it knows: the
+   * default lives at resolution time, and a forgotten term would silently
+   * resolve a shape.
+   */
   webhookFormat: FormWebhook['webhookFormat']
   isRetryEnabled: boolean
   growthbook?: GrowthBook
@@ -1283,44 +1348,82 @@ const sendMrfInitialWebhookIfEligible = ({
     .andThen((liveView) => {
       const policy = getWebhookPayloadPolicy({
         webhookType: toConsumerType(webhookType),
-        // RATIONALE: Pinned to 'v4' until the V1 producer lands in the next PR, at which point this is
-        // replaced with the form's own `webhook.webhookFormat`.
-        webhookFormat: 'v4',
+        webhookFormat,
         submissionIndex,
         submittedStepsLength: submission.submittedSteps?.length ?? 0,
         logMeta,
       })
-      const snapshotDetails = snapshot
-        ? {
-            snapshot,
-            submissionIndex,
-          }
-        : {
-            snapshot: undefined,
-            submissionIndex: undefined,
-          }
+
+      const send = (
+        data: WebhookView['data'],
+        snapshotRef?: SnapshotRef,
+      ): ResultAsync<undefined, WebhookPushToQueueError> =>
+        WebhookFactory.sendInitialWebhook(
+          submission,
+          webhookUrl,
+          isRetryEnabled,
+          { data },
+          snapshotRef,
+        ).map(() => undefined)
+
+      if (policy.contentFormat === 'v1') {
+        // PIN-01: the V1 branch has no permitted fallback. The row holds
+        // ciphertext under a submission key the server cannot open, so it is
+        // never a valid V1 payload — with no snapshot there is nothing to
+        // send, and saying so loudly is the only correct outcome. Its own
+        // error code, because reusing the snapshot-format error would make
+        // this indistinguishable from normal operation in an alert.
+        //
+        // The payment path reaches here with no snapshot until #9978 adds the
+        // pending-submission write, which is why that ticket exists.
+        if (snapshot?.contentFormat !== 'v1') {
+          return errAsync(
+            new V1SnapshotUnavailableError(undefined, {
+              ...logMeta,
+              submissionIndex,
+              snapshotContentFormat: snapshot?.contentFormat,
+            }),
+          )
+        }
+        if (!holdsV1FirstStepInvariant({ submissionIndex, logMeta })) {
+          return errAsync(
+            new V1SnapshotUnavailableError(
+              'V1 delivery declined: the submission is past its first step',
+              { ...logMeta, submissionIndex },
+            ),
+          )
+        }
+
+        return assertStorageShapedKeySet(
+          reconstructV1WebhookData({ liveData: liveView.data, snapshot }),
+          logMeta,
+        ).asyncAndThen((data) =>
+          send(data, { submissionIndex, contentFormat: 'v1' }),
+        )
+      }
+
+      const snapshotDetails =
+        snapshot?.contentFormat === 'v4'
+          ? {
+              snapshot,
+              submissionIndex,
+            }
+          : {
+              snapshot: undefined,
+              submissionIndex: undefined,
+            }
       return reconstructMrfWebhookData({
         liveData: liveView.data,
         policy,
         ...snapshotDetails,
-      }).asyncAndThen((data) => {
-        const webhookView: WebhookView = { data }
-
-        const snapshotRef = snapshot
-          ? {
-              submissionIndex,
-              contentFormat: snapshot.contentFormat,
-            }
-          : undefined
-
-        return WebhookFactory.sendInitialWebhook(
-          submission,
-          webhookUrl,
-          isRetryEnabled,
-          webhookView,
-          snapshotRef,
-        ).map(() => undefined)
-      })
+      }).asyncAndThen((data) =>
+        send(
+          data,
+          snapshotDetails.snapshot
+            ? { submissionIndex, contentFormat: 'v4' }
+            : undefined,
+        ),
+      )
     })
     .mapErr((error) => {
       logger.error({
@@ -1342,7 +1445,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
-  snapshot?: SubmissionSnapshotV4
+  snapshot?: SubmissionSnapshot
   submissionId: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
@@ -1657,7 +1760,7 @@ export const updateMultiRespondentFormSubmission = ({
       submission.stepTokenHash = stepTokenHash
       submission.encryptedStepToken = encryptedStepToken
 
-      const shouldWriteSnapshot = shouldWriteV4Snapshot({
+      const resolvedSnapshotShape = resolveMrfSnapshotShape({
         mrfVersion,
         webhook: snapshottedFormDef.webhook,
         isMrfWebhooksEnabled:
@@ -1667,26 +1770,43 @@ export const updateMultiRespondentFormSubmission = ({
         workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
       })
 
-      const snapshot = shouldWriteSnapshot
-        ? buildV4Snapshot({
-            formId: String(snapshottedFormDef._id),
-            submissionId: String(submission._id),
-            submissionIndex,
-            workflowStep,
-            encryptedContent,
-            encryptedSubmissionSecretKey,
-            verifiedContent,
-            attachmentMetadata: Object.fromEntries(
-              attachmentMetadata ?? new Map(),
-            ),
-            createdAt: submittedStepMeta.submittedAt,
-          })
-        : undefined
+      // A `v1` shape here would mean a workflow of at most one step somehow
+      // taking a second submission: PIN-02's invariant, violated. Fail loud
+      // and write nothing. This site could not produce a form-key copy in any
+      // case — the snapshotted definition carries no form public key, because
+      // a single-step form never reaches this path.
+      const snapshotShape =
+        resolvedSnapshotShape === 'v1' &&
+        !holdsV1FirstStepInvariant({
+          submissionIndex,
+          logMeta: { ...logMeta, submissionId },
+        })
+          ? undefined
+          : resolvedSnapshotShape
+
+      const snapshot =
+        snapshotShape === 'v4'
+          ? buildV4Snapshot({
+              formId: String(snapshottedFormDef._id),
+              submissionId: String(submission._id),
+              submissionIndex,
+              workflowStep,
+              encryptedContent,
+              encryptedSubmissionSecretKey,
+              verifiedContent,
+              attachmentMetadata: Object.fromEntries(
+                attachmentMetadata ?? new Map(),
+              ),
+              createdAt: submittedStepMeta.submittedAt,
+            })
+          : undefined
 
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
         snapshot
           ? writeSnapshot(snapshot).map(({ token }) => {
-              submittedStepMeta.snapshotTokens = { v4: token }
+              submittedStepMeta.snapshotTokens = {
+                [snapshot.contentFormat]: token,
+              }
               return undefined
             })
           : okAsync(undefined)
@@ -1739,7 +1859,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
-  snapshot?: SubmissionSnapshotV4
+  snapshot?: SubmissionSnapshot
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
   currentStepNumber: number
