@@ -1,12 +1,49 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormResponseMode, FormStatus } from 'formsg-shared/types'
+import {
+  FormResponseMode,
+  FormStatus,
+  FormWorkflowStepDto,
+  WorkflowType,
+} from 'formsg-shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewports } from '~utils/storybook'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
+
 import { DeleteWorkflowModal } from './DeleteWorkflowModal'
+
+const workflow_step_1: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c6f8',
+  workflow_type: WorkflowType.Static,
+  emails: [],
+  edit: [],
+}
+
+const buildMocks = (status: FormStatus) =>
+  createFormBuilderMocks({
+    responseMode: FormResponseMode.Multirespondent,
+    status,
+    workflow: [workflow_step_1],
+  })
+
+const AfterFormLoads = ({
+  entryPoint,
+}: {
+  entryPoint: 'workflow-card' | 'first-step'
+}) => {
+  const { isLoading } = useAdminForm()
+  if (isLoading) return null
+  return (
+    <DeleteWorkflowModal
+      isOpen
+      onClose={() => undefined}
+      entryPoint={entryPoint}
+    />
+  )
+}
 
 /**
  * The modal has three states. Two of them are not variants of each other: one
@@ -19,12 +56,6 @@ import { DeleteWorkflowModal } from './DeleteWorkflowModal'
  * state is deliberately shared across both entry points, so there is no
  * first-step variant of it to shoot.
  */
-const buildMocks = (status: FormStatus) =>
-  createFormBuilderMocks({
-    responseMode: FormResponseMode.Multirespondent,
-    status,
-  })
-
 export default {
   title: 'Features/AdminForm/Workflow/DeleteWorkflowModal',
   component: DeleteWorkflowModal,
@@ -35,20 +66,10 @@ export default {
   },
 } as Meta
 
-const Template: StoryFn = () => (
-  <DeleteWorkflowModal
-    isOpen
-    onClose={() => undefined}
-    entryPoint="workflow-card"
-  />
-)
+const Template: StoryFn = () => <AfterFormLoads entryPoint="workflow-card" />
 
 const FirstStepTemplate: StoryFn = () => (
-  <DeleteWorkflowModal
-    isOpen
-    onClose={() => undefined}
-    entryPoint="first-step"
-  />
+  <AfterFormLoads entryPoint="first-step" />
 )
 
 /** Form closed: deleting is allowed, and the confirm button is destructive. */
