@@ -160,4 +160,13 @@ describe('isUenValid', () => {
       }
     }
   })
+
+  it('should reject a future T-series year with a valid checksum', () => {
+    // T99SS0032K has a valid checksum (via calcOtherCheckDigit) but year 99
+    // is in the future; with substring(-2) the guard compared 99 > 2026 and
+    // never fired, so this passed before the slice(-2) fix.
+    expect(isUenValid('T99SS0032K')).toBe(false)
+    // control: a valid historical T-series value still passes
+    expect(isUenValid('T09SS0032E')).toBe(true)
+  })
 })
