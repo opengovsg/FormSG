@@ -1,6 +1,7 @@
 import {
   BasicField,
   FormFieldDto,
+  MyInfoAttribute,
   MyInfoChildAttributes,
 } from 'formsg-shared/types'
 
@@ -357,8 +358,9 @@ export const buildOptionalVerifiableField = (
  * it. Encoding that as an expected difference would enshrine a state that has
  * been decided cannot exist; exhaustiveness covers Children instead.
  *
- * MyInfo variants are absent too — storage mode prepends `[Myinfo] ` to their
- * question text, and #9975 owns reproducing that.
+ * MyInfo variants live in their own list below rather than in this one: the
+ * `[Myinfo] ` question prefix depends on a per-respondent read-only set, so
+ * they are driven by a second parameter the non-MyInfo cases do not have.
  */
 export const DIFFERENTIAL_FIELD_TYPES: BasicField[] = ALL_FIELD_TYPES.filter(
   (fieldType) => fieldType !== BasicField.Children,
@@ -408,3 +410,93 @@ export const buildQuarantineMap = (): {
     quarantineBucketKey: ATTACHMENT_QUARANTINE_KEY,
   },
 ]
+
+/* -------------------------------------------------------------------------- *
+ * MyInfo additions — #9975
+ *
+ * Storage mode does not only append `myInfo: { attr }` to a MyInfo field's
+ * entry; for an attribute that was read-only for that respondent it also
+ * rewrites the question text, prepending `[Myinfo] `. `question` is a
+ * consumer's join key and the CSV column name, so MRF has to reproduce it.
+ *
+ * The read-only set is an extra input the non-MyInfo cases do not have, which
+ * is why these fields are a separate list rather than more entries in
+ * `DIFFERENTIAL_FIELD_TYPES`.
+ * -------------------------------------------------------------------------- */
+
+/**
+ * One attribute per field type MyInfo can produce, excluding Children —
+ * `MYINFO_FIELD_CONSTANTS` maps every non-Children attribute onto ShortText,
+ * Dropdown, Date or Mobile, so these four cover the whole surface.
+ */
+export const MYINFO_ATTR_BY_FIELD_TYPE = {
+  [BasicField.ShortText]: MyInfoAttribute.Name,
+  [BasicField.Dropdown]: MyInfoAttribute.Sex,
+  [BasicField.Date]: MyInfoAttribute.DateOfBirth,
+  [BasicField.Mobile]: MyInfoAttribute.MobileNo,
+} as const
+
+export type MyInfoFieldType = keyof typeof MYINFO_ATTR_BY_FIELD_TYPE
+
+export const MYINFO_FIELD_TYPES = Object.keys(
+  MYINFO_ATTR_BY_FIELD_TYPE,
+) as MyInfoFieldType[]
+
+export const MYINFO_FIELD_IDS: Record<MyInfoFieldType, string> = {
+  [BasicField.ShortText]: fieldId(0x201),
+  [BasicField.Dropdown]: fieldId(0x202),
+  [BasicField.Date]: fieldId(0x203),
+  [BasicField.Mobile]: fieldId(0x204),
+}
+
+/**
+ * A MyInfo field is the differential field of the same type, plus the `myInfo`
+ * sub-document the admin's form builder writes. Nothing about the *answer*
+ * differs, which is the point: only the question text does.
+ */
+export const buildMyInfoField = (fieldType: MyInfoFieldType): FormFieldDto =>
+  ({
+    ...buildDifferentialField(fieldType),
+    _id: MYINFO_FIELD_IDS[fieldType],
+    title: `myinfo ${fieldType} question`,
+    myInfo: { attr: MYINFO_ATTR_BY_FIELD_TYPE[fieldType] },
+    // What the form builder writes for a MyInfo dropdown: the options come
+    // from the attribute, and the validator reads them from there too.
+    ...(fieldType === BasicField.Dropdown
+      ? { fieldOptions: ['FEMALE', 'MALE', 'UNKNOWN'] }
+      : {}),
+  }) as unknown as FormFieldDto
+
+export const buildMyInfoFields = (): FormFieldDto[] =>
+  MYINFO_FIELD_TYPES.map(buildMyInfoField)
+
+/**
+ * Answer corrections the MyInfo validators require. A MyInfo Dropdown is
+ * validated against the *attribute's* option list, not the field's own
+ * (`dropdownValidator.ts:35`), so the generic differential answer would be
+ * rejected before any array is produced.
+ */
+const MYINFO_ANSWERED_INPUT_OVERRIDES: Partial<
+  Record<MyInfoFieldType, unknown>
+> = {
+  [BasicField.Dropdown]: '  MALE  ',
+}
+
+export const buildMyInfoAnsweredInput = (
+  fieldType: MyInfoFieldType,
+): unknown =>
+  fieldType in MYINFO_ANSWERED_INPUT_OVERRIDES
+    ? MYINFO_ANSWERED_INPUT_OVERRIDES[fieldType]
+    : buildDifferentialAnsweredInput(fieldType)
+
+export const buildMyInfoInputs = (): FormFieldValues => {
+  const inputs: Record<string, unknown> = {}
+  for (const fieldType of MYINFO_FIELD_TYPES) {
+    inputs[MYINFO_FIELD_IDS[fieldType]] = buildMyInfoAnsweredInput(fieldType)
+  }
+  return inputs as FormFieldValues
+}
+
+/** Every MyInfo field id — the "all attributes were read-only" case. */
+export const ALL_MYINFO_FIELD_IDS = (): string[] =>
+  MYINFO_FIELD_TYPES.map((fieldType) => MYINFO_FIELD_IDS[fieldType])
