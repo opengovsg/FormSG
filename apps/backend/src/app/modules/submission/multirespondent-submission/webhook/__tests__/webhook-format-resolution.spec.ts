@@ -181,6 +181,9 @@ describe('webhookFormat resolution', () => {
             shouldSendMrfWebhook({
               webhookType: urlFamily,
               isMrfWebhooksEnabled,
+              // A single-step workflow, so PIN-02's predicate is satisfied
+              // and the flag is the only remaining term.
+              workflowStepCount: 1,
             }),
           ).toBe(urlFamily === 'plumber' ? true : isMrfWebhooksEnabled)
         },

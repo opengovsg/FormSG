@@ -6,6 +6,7 @@ import {
   FormAuthType,
   FormFieldDto,
   FormResponseMode,
+  FormWebhook,
   FormWorkflowStepDto,
   SubmittedApprovalStep,
   SubmittedNonApprovalStep,
@@ -842,6 +843,9 @@ export const createMultiRespondentFormSubmission = ({
         webhook: form.webhook,
         isMrfWebhooksEnabled:
           growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+        // This is the row's own workflow copy: `submissionContent.workflow`
+        // above is this very array, and it is about to be persisted with it.
+        workflowStepCount: form.workflow?.length ?? 0,
       })
 
       const saveSubmission = async () => {
@@ -1217,6 +1221,7 @@ const sendMrfInitialWebhookIfEligible = ({
   submission,
   snapshot,
   webhookUrl,
+  webhookFormat,
   isRetryEnabled,
   growthbook,
   logMeta,
@@ -1225,6 +1230,7 @@ const sendMrfInitialWebhookIfEligible = ({
   submission: IMultirespondentSubmissionSchema
   snapshot?: SubmissionSnapshotV4
   webhookUrl: string
+  webhookFormat: FormWebhook['webhookFormat']
   isRetryEnabled: boolean
   growthbook?: GrowthBook
   logMeta: CustomLoggerParams['meta']
@@ -1234,8 +1240,13 @@ const sendMrfInitialWebhookIfEligible = ({
 
   const shouldSend = shouldSendMrfWebhook({
     webhookType,
+    webhookFormat,
     isMrfWebhooksEnabled:
       growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+    // PIN-02: read the workflow from the row, never the live form, so that
+    // editing the form after this submission was created cannot change
+    // whether it is eligible.
+    workflowStepCount: submission.workflow?.length ?? 0,
   })
   if (!shouldSend) {
     return
@@ -1413,6 +1424,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       submission,
       snapshot,
       webhookUrl,
+      webhookFormat: form.webhook?.webhookFormat,
       isRetryEnabled: !!form.webhook?.isRetryEnabled,
       growthbook,
       logMeta,
@@ -1499,6 +1511,7 @@ export const performMultirespondentPaymentPostSubmissionActions = (
     sendMrfInitialWebhookIfEligible({
       submission,
       webhookUrl,
+      webhookFormat: form.webhook?.webhookFormat,
       isRetryEnabled: !!form.webhook?.isRetryEnabled,
       growthbook,
       logMeta,
@@ -1648,6 +1661,9 @@ export const updateMultiRespondentFormSubmission = ({
         webhook: snapshottedFormDef.webhook,
         isMrfWebhooksEnabled:
           growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+        // The snapshotted definition IS the row's own persisted copy, so a
+        // workflow edited mid-flight cannot change this submission's answer.
+        workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
       })
 
       const snapshot = shouldWriteSnapshot
@@ -1777,6 +1793,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       submission,
       snapshot,
       webhookUrl,
+      webhookFormat: snapshottedFormDef.webhook?.webhookFormat,
       isRetryEnabled: !!snapshottedFormDef.webhook?.isRetryEnabled,
       growthbook,
       logMeta,
