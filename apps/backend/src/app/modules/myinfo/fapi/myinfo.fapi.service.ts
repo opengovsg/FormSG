@@ -101,6 +101,10 @@ export const startLogin = ({
   requestedAttributes: MyInfoAttribute[]
 }): ResultAsync<MyInfoFapiLoginStartResult, MyInfoFapiLoginStartError> => {
   const scope = requestedAttrsToScopeString(requestedAttributes)
+  logger.info({
+    message: 'Started MyInfo FAPI login',
+    meta: { action: 'startLogin', formId },
+  })
   return withConfig(
     async (config) => {
       const codeVerifier = client.randomPKCECodeVerifier()
@@ -226,6 +230,10 @@ export const fetchPerson = ({
   MyInfoFapiExchangedSession,
   'accessToken' | 'sub' | 'dpopPrivateJwk'
 >): ResultAsync<IPersonResponse, MyInfoFetchPersonError> => {
+  logger.info({
+    message: 'Requesting MyInfo FAPI userinfo',
+    meta: { action: 'fetchPerson' },
+  })
   return withConfig(
     async (config) => {
       const keyPair = await rehydrateDpopKeyPair(dpopPrivateJwk)
