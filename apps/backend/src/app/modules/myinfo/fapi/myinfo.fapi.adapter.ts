@@ -34,6 +34,7 @@ export const userInfoToPersonResponse = (
   const uinFin = personInfo?.uinfin?.value
 
   if (!personInfo || !uinFin) {
+    const missingUinFinError = new MyInfoFapiMissingUinFinError()
     logger.error({
       message: 'MyInfo FAPI userinfo had no uinfin',
       meta: {
@@ -41,8 +42,9 @@ export const userInfoToPersonResponse = (
         hasPersonInfo: !!personInfo,
         hasUinFin: !!uinFin,
       },
+      error: missingUinFinError,
     })
-    return err(new MyInfoFapiMissingUinFinError())
+    return err(missingUinFinError)
   }
 
   return ok({ uinFin, data: personInfo })

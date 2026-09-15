@@ -7,6 +7,7 @@ import { IFormSchema } from 'src/types'
 import { DatabaseError } from '../../core/core.errors'
 import { FormNotFoundError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
+import { MyInfoFapiAuthRequestError } from '../fapi/myinfo.fapi.errors'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
   MYINFO_AUTH_CODE_COOKIE_OPTIONS,
@@ -108,6 +109,24 @@ describe('MyInfoController', () => {
         MOCK_MYINFO_FORM._id,
       )
       expect(MockMyInfoService.createRedirectURL).not.toHaveBeenCalled()
+      expect(mockRes.json).toHaveBeenCalledWith({
+        message: expect.any(String),
+      })
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+    })
+
+    it('should return 500 when a FAPI auth request error occurs', async () => {
+      MockFormService.retrieveFormById.mockReturnValueOnce(
+        okAsync(MOCK_MYINFO_FORM),
+      )
+      MockMyInfoService.createRedirectURL.mockReturnValueOnce(
+        err(new MyInfoFapiAuthRequestError()),
+      )
+
+      await MyInfoController.respondWithRedirectURL(mockReq, mockRes, jest.fn())
+
       expect(mockRes.json).toHaveBeenCalledWith({
         message: expect.any(String),
       })

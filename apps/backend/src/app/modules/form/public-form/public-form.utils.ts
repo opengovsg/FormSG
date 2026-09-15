@@ -5,6 +5,10 @@ import { MapRouteError } from 'src/types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { ErrorResponseData } from '../../core/core.types'
+import {
+  MyInfoFapiAuthRequestError,
+  MyInfoFapiConfigError,
+} from '../../myinfo/fapi/myinfo.fapi.errors'
 import { CreateRedirectUrlError } from '../../spcp/spcp.errors'
 import * as FormErrors from '../form.errors'
 
@@ -87,6 +91,8 @@ export const mapFormAuthError: MapRouteError = (
       }
     case DatabaseError:
     case CreateRedirectUrlError:
+    case MyInfoFapiAuthRequestError:
+    case MyInfoFapiConfigError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,
