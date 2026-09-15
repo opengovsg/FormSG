@@ -10,7 +10,7 @@ import {
   SnapshotFormatNotRecordedError,
   SnapshotReadError,
 } from './submission-snapshot.errors'
-import { readV4Snapshot } from './submission-snapshot.store'
+import { readSnapshot } from './submission-snapshot.store'
 import {
   getKeyPermissionsPolicy,
   WebhookConsumerType,
@@ -83,11 +83,12 @@ export const resolveSnapshotRetryView = ({
     return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
   }
 
-  return readV4Snapshot({
+  return readSnapshot({
     formId: liveView.data.formId,
     submissionId,
     submissionIndex,
     token,
+    contentFormat,
   }).andThen((snapshot) => {
     if (snapshot.contentFormat !== contentFormat) {
       return errAsync(
