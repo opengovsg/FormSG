@@ -105,6 +105,14 @@ export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
         },
       ],
     },
+    // `default: undefined` is how mongoose is told to apply NO default: an
+    // array path otherwise auto-defaults to `[]`, which would make every row
+    // look like "the resolution ran and matched nothing". Absent has to stay
+    // distinguishable from `[]`. See `SubmissionBase.myInfoReadOnlyFields`.
+    myInfoReadOnlyFields: {
+      type: [String],
+      default: undefined,
+    },
     submissionType: {
       type: String,
       enum: Object.values(SubmissionType),
@@ -862,6 +870,7 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     submissionType: 1,
     form_fields: 1,
     form_logics: 1,
+    myInfoReadOnlyFields: 1,
     workflow: 1,
     workflowStep: 1,
     ...buildAdminSubmittedStepsMongoProjection(),
@@ -906,6 +915,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       submissionType: 1,
       form_fields: 1,
       form_logics: 1,
+      myInfoReadOnlyFields: 1,
       workflow: 1,
       submissionPublicKey: 1,
       encryptedSubmissionSecretKey: 1,
