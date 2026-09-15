@@ -60,3 +60,42 @@ export class SnapshotDataIntegrityError extends ApplicationError {
     super(message, meta, ErrorCodes.SUBMISSION_MRF_SNAPSHOT_DATA_INTEGRITY)
   }
 }
+
+/**
+ * Raised whenever a V1 delivery has no snapshot object to reconstruct from.
+ *
+ * This has its own code rather than reusing `SnapshotFormatNotRecordedError`
+ * on purpose: that error is raised both for a legitimately absent token and
+ * for the legacy retry path, so an alert on it could not tell a hard V1
+ * failure apart from normal operation. A V1 delivery has no permitted
+ * fallback — the row is never a valid V1 payload — so this is a hard failure
+ * and should be visible as one.
+ */
+export class V1SnapshotUnavailableError extends ApplicationError {
+  constructor(
+    message = 'No V1 submission snapshot is available for this delivery',
+    meta?: unknown,
+  ) {
+    super(message, meta, ErrorCodes.SUBMISSION_MRF_V1_SNAPSHOT_UNAVAILABLE)
+  }
+}
+
+/**
+ * Raised whenever the storage-shaped V1 copy could not be produced from the
+ * respondent's plaintext at submit time — an unsupported field type in the
+ * flatten, or a malformed response the shared validation rejects.
+ *
+ * It surfaces as its own error rather than an exception so that the copy's
+ * absence rejects the submission with a real status and message, exactly as a
+ * snapshot-write failure does. A V1 copy can only be made while the plaintext
+ * is in hand, so continuing without one would commit a submission that can
+ * never be delivered.
+ */
+export class V1ContentProductionError extends ApplicationError {
+  constructor(
+    message = 'Failed to save submission. Please try again later.',
+    meta?: unknown,
+  ) {
+    super(message, meta, ErrorCodes.SUBMISSION_MRF_V1_CONTENT_PRODUCTION)
+  }
+}
