@@ -60,7 +60,7 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
     const inputProps = getInputProps(undefined, ref)
     const checkboxProps = getCheckboxProps({
       onPointerDown: (event) => {
-        event.currentTarget.setPointerCapture(event.pointerId)
+        event.currentTarget.setPointerCapture?.(event.pointerId)
       },
     })
 
