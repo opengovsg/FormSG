@@ -16,7 +16,6 @@ import { StatusTrackerToggle } from '~features/admin-form/settings/components/Em
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
-import { useIsWorkflowDeletion } from '../../hooks/useIsWorkflowDeletion'
 import { DeleteWorkflowModal } from '../DeleteWorkflowModal'
 import { GuidedSetupToggle, useReportedCompletedStep } from '../GuidedCreation'
 
@@ -32,7 +31,6 @@ export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
   const isRedesign = useIsWorkflowBuilderRedesign()
   const isReportingCompletedStep = useReportedCompletedStep() !== null
-  const isWorkflowDeletion = useIsWorkflowDeletion()
   const {
     isOpen: isDeleteModalOpen,
     onClose: onDeleteModalClose,
@@ -71,7 +69,7 @@ export const WorkflowContent = (): JSX.Element | null => {
                 so cannot span two, and one call site does not warrant a
                 theme-wide variant that would invite use where plain danger is
                 correct. */}
-            {isWorkflowDeletion ? (
+            {isRedesign ? (
               <IconButton
                 variant="clear"
                 colorScheme="danger"
