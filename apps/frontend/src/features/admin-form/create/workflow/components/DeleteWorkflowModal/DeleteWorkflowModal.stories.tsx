@@ -1,12 +1,61 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormResponseMode, FormStatus } from 'formsg-shared/types'
+import {
+  FormResponseMode,
+  FormStatus,
+  FormWorkflowStepDto,
+  WorkflowType,
+} from 'formsg-shared/types'
 
 import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewports } from '~utils/storybook'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
+
 import { DeleteWorkflowModal } from './DeleteWorkflowModal'
+
+const workflow_step_1: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c6f8',
+  workflow_type: WorkflowType.Static,
+  emails: [],
+  edit: [],
+}
+
+/**
+ * `workflow` has to be set. The base mock form has no such key, and
+ * `useWorkflowMutations` throws `No form workflow found` on a form without one,
+ * which surfaces as the router's error page instead of the modal.
+ */
+const buildMocks = (status: FormStatus) =>
+  createFormBuilderMocks({
+    responseMode: FormResponseMode.Multirespondent,
+    status,
+    workflow: [workflow_step_1],
+  })
+
+/**
+ * `useWorkflowMutations` throws while the form query is still in flight, so
+ * mounting the modal directly errors on the first render, before MSW can
+ * answer. `WorkflowContent` never hits that because it returns null until the
+ * form has loaded; this mirrors that guard so the stories mount the modal the
+ * way the app does.
+ */
+const AfterFormLoads = ({
+  entryPoint,
+}: {
+  entryPoint: 'workflow-card' | 'first-step'
+}) => {
+  const { isLoading } = useAdminForm()
+  if (isLoading) return null
+  return (
+    <DeleteWorkflowModal
+      isOpen
+      onClose={() => undefined}
+      entryPoint={entryPoint}
+    />
+  )
+}
 
 /**
  * The modal has three states. Two of them are not variants of each other: one
@@ -19,12 +68,6 @@ import { DeleteWorkflowModal } from './DeleteWorkflowModal'
  * state is deliberately shared across both entry points, so there is no
  * first-step variant of it to shoot.
  */
-const buildMocks = (status: FormStatus) =>
-  createFormBuilderMocks({
-    responseMode: FormResponseMode.Multirespondent,
-    status,
-  })
-
 export default {
   title: 'Features/AdminForm/Workflow/DeleteWorkflowModal',
   component: DeleteWorkflowModal,
@@ -35,20 +78,10 @@ export default {
   },
 } as Meta
 
-const Template: StoryFn = () => (
-  <DeleteWorkflowModal
-    isOpen
-    onClose={() => undefined}
-    entryPoint="workflow-card"
-  />
-)
+const Template: StoryFn = () => <AfterFormLoads entryPoint="workflow-card" />
 
 const FirstStepTemplate: StoryFn = () => (
-  <DeleteWorkflowModal
-    isOpen
-    onClose={() => undefined}
-    entryPoint="first-step"
-  />
+  <AfterFormLoads entryPoint="first-step" />
 )
 
 /** Form closed: deleting is allowed, and the confirm button is destructive. */
