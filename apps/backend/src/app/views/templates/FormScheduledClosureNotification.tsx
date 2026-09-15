@@ -22,12 +22,14 @@ export const FormScheduledClosureNotification = ({
     <EmailLayout emailTitle="Form closed">
       <Text style={secondaryTextStyle}>Dear form admin(s),</Text>
       <Text style={secondaryTextStyle}>
-        Your <b>{formTitle}</b> (
+        Your form <b>{formTitle}</b> (
         <Link href={formLink} style={linkStyle}>
           {formLink}
         </Link>
         ) has been closed to new responses. It reached the closing date set by
-        you or your collaborators: <b>{closedAt}</b>.
+        you or your collaborators: <b>{closedAt}</b>. Responses submitted after
+        this time were not accepted, even if the form still appeared open for a
+        short while.
       </Text>
       <Text style={{ ...secondaryTextStyle, marginBottom: '24px' }}>
         If you need to keep collecting responses, you can reopen the form and
