@@ -119,7 +119,7 @@ LoadingDesktop.parameters = {
       '/api/v3/admin/forms',
       async () => {
         await MswDelay('infinite')
-        return HttpResponse.json()
+        return HttpResponse.json([])
       },
     ),
   ],
@@ -138,7 +138,7 @@ Empty.parameters = {
     http.get<never, never, AdminDashboardFormMetaDto[]>(
       '/api/v3/admin/forms',
       () => {
-        return HttpResponse.json()
+        return HttpResponse.json([])
       },
     ),
     getWorkspaces(),
@@ -165,7 +165,7 @@ EmptyWithAnnouncementModal.parameters = {
     http.get<never, never, AdminDashboardFormMetaDto[]>(
       '/api/v3/admin/forms',
       () => {
-        return HttpResponse.json()
+        return HttpResponse.json([])
       },
     ),
     ...BASE_MSW_HANDLERS,
