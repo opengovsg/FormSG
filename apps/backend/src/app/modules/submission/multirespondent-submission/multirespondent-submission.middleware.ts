@@ -96,6 +96,7 @@ import {
   stampMyInfoVerifiedOnResponses,
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
+import { resolveMrfMyInfoReadOnlyFields } from './myinfo-read-only-fields'
 import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
@@ -1135,6 +1136,32 @@ export const handleNdiResponses = async (
 
         if (jwtPayloadResult.isOk()) {
           userName = jwtPayloadResult.value
+
+          // Resolve the read-only MyInfo field ids that drive the `[Myinfo] `
+          // question prefix. Gated on the MRF webhook flag and MyInfo auth
+          // only, and deliberately NOT on a webhook URL being configured:
+          // under the V1 snapshot-write condition instead, two flagged MyInfo
+          // forms — one with a webhook, one without — would show different
+          // question text in their admins' own CSV downloads. Differing from
+          // the snapshot-write condition is the point here.
+          //
+          // This branch is already step-1-only and MyInfo exists only at step
+          // 1, so the update path needs no condition of its own.
+          if (req.growthbook?.isOn(featureFlags.enableMrfWebhooks)) {
+            req.formsg.encryptedPayload.myInfoReadOnlyFields =
+              await resolveMrfMyInfoReadOnlyFields({
+                uinFin: jwtPayloadResult.value,
+                formId,
+                authType,
+                // On the create path the row's own snapshot is the latest form
+                // definition — which is exactly what is about to be
+                // snapshotted alongside this list.
+                formFields:
+                  req.formsg.snapshottedFormDef?.form_fields ??
+                  formDef.form_fields,
+                responses: req.formsg.encryptedPayload.responses,
+              })
+          }
         }
         break
       }
