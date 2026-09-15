@@ -36,6 +36,14 @@ export const enSG: Share = {
     claim: 'Claim',
     claimAriaLabel: 'Claim Go link',
     copyAriaLabel: 'Copy respondent form link',
+    qr: {
+      menuLabel: 'QR code',
+      ariaLabel: 'Download QR code for this Go link',
+      downloadSvg: 'Download as SVG',
+      downloadPng: 'Download as PNG',
+      downloadError:
+        'Something went wrong while generating the QR code. Please try again.',
+    },
     success: {
       text: 'You have successfully claimed this link. This link will appear in your <goAccountLink>Go account</goAccountLink>',
     },

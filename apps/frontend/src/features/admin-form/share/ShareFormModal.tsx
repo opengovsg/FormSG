@@ -60,6 +60,8 @@ import { useListShortenerMutations } from '~features/link-shortener/mutations'
 import { useGoLink } from '~features/link-shortener/queries'
 import { useUser } from '~features/user/queries'
 
+import { GoLinkQrCodeMenu } from './GoLinkQrCodeMenu'
+
 type goLinkHelperTextType = {
   color: string
   icon: JSX.Element
@@ -413,8 +415,10 @@ export const ShareFormModal = ({
                         {t('goLink.label')}
                       </FormLabel>
                       <Skeleton isLoaded={!!formId}>
-                        <Stack direction="row" align="center">
-                          <InputGroup>
+                        {/* The QR menu shares this row once a link is claimed;
+                            wrapping keeps the suffix legible on narrow screens. */}
+                        <Stack direction="row" align="center" flexWrap="wrap">
+                          <InputGroup flex="1" minW="14rem">
                             <InputLeftAddon children={`go.gov.sg/`} />
                             <Input
                               value={goLinkSuffixInput}
@@ -435,6 +439,11 @@ export const ShareFormModal = ({
                               </InputRightElement>
                             ) : null}
                           </InputGroup>
+                          {goLinkSaved && goGovBaseUrl ? (
+                            <GoLinkQrCodeMenu
+                              shortLink={`${goGovBaseUrl}/${goLinkSuffixInput}`}
+                            />
+                          ) : null}
                           {goLinkSaved ? null : (
                             <Button
                               aria-label={t('goLink.claimAriaLabel')}
