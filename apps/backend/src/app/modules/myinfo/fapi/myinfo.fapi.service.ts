@@ -140,11 +140,16 @@ export const startLogin = ({
         redirectUri: MYINFO_FAPI_REDIRECT_URI,
         ...oauthFailureMeta(error),
       }
+      const fapiAuthRequestError = new MyInfoFapiAuthRequestError(
+        undefined,
+        meta,
+      )
       logger.error({
         message: 'MyInfo FAPI pushed authorization request failed',
         meta,
+        error: fapiAuthRequestError,
       })
-      return new MyInfoFapiAuthRequestError(undefined, meta)
+      return fapiAuthRequestError
     },
   ).andThen(({ redirectUrl, state, nonce, codeVerifier, dpopPrivateJwk }) =>
     ResultAsync.fromPromise(
@@ -205,6 +210,7 @@ export const exchangeCallback = ({
       return { accessToken: tokens.access_token, sub }
     },
     (error) => {
+      const fapiExchangeError = new MyInfoFapiExchangeError()
       logger.error({
         message: 'MyInfo FAPI token exchange failed',
         meta: {
@@ -212,8 +218,9 @@ export const exchangeCallback = ({
           formId: session.formId,
           ...oauthFailureMeta(error),
         },
+        error: fapiExchangeError,
       })
-      return new MyInfoFapiExchangeError()
+      return fapiExchangeError
     },
   )
 }
@@ -245,14 +252,16 @@ export const fetchPerson = ({
       )
     },
     (error) => {
+      const fapiFetchError = new MyInfoFapiFetchError()
       logger.error({
         message: 'MyInfo FAPI userinfo request failed',
         meta: {
           action: 'fetchPerson',
           ...oauthFailureMeta(error),
         },
+        error: fapiFetchError,
       })
-      return new MyInfoFapiFetchError()
+      return fapiFetchError
     },
   ).andThen(userInfoToPersonResponse)
 }
