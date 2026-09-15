@@ -26,6 +26,7 @@ import {
   MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildData,
+  MyInfoChildrenScope,
   MyInfoChildVaxxStatus,
 } from 'formsg-shared/types'
 import { formatMyinfoDate } from 'formsg-shared/utils/dates'
@@ -235,6 +236,22 @@ const ChildrenBody = ({
     )
   }, [myInfoChildrenBirthRecords, childName])
 
+  // Scope the selected child's record was retrieved under. `scopes` is only
+  // populated once sponsored children are fetched, so today this always
+  // derives 'local'.
+  const getChildScope = useCallback(
+    (name: string): MyInfoChildrenScope => {
+      const idx =
+        myInfoChildrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.indexOf(
+          name,
+        ) ?? -1
+      return (
+        myInfoChildrenBirthRecords?.scopes?.[idx] ?? MyInfoChildrenScope.Local
+      )
+    },
+    [myInfoChildrenBirthRecords],
+  )
+
   const getChildAttr = useCallback(
     (attr: MyInfoChildAttributes): string => {
       if (myInfoChildrenBirthRecords === undefined) {
@@ -302,7 +319,13 @@ const ChildrenBody = ({
                     items={childNameValues}
                     value={value as unknown as string}
                     isDisabled={isSubmitting || schema.disabled}
-                    onChange={onChange}
+                    onChange={(name) => {
+                      onChange(name)
+                      setValue(
+                        `${schema._id}.childTypes.${currChildBodyIdx}`,
+                        getChildScope(name),
+                      )
+                    }}
                   />
                 )}
               />

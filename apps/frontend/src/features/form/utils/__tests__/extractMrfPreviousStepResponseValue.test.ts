@@ -6,6 +6,7 @@ import {
   BasicField,
   FormFieldDto,
   MyInfoChildAttributes,
+  MyInfoChildrenScope,
 } from 'formsg-shared/types'
 
 import bufferToFile from '~utils/bufferToFile'
@@ -225,6 +226,8 @@ describe('extractMrfPreviousStepResponseValue', () => {
         MyInfoChildAttributes.ChildName,
         MyInfoChildAttributes.ChildBirthCertNo,
       ],
+      // No type on the wire answer → scope stays underived.
+      childTypes: [undefined],
     })
   })
 
@@ -254,6 +257,7 @@ describe('extractMrfPreviousStepResponseValue', () => {
         MyInfoChildAttributes.ChildName,
         MyInfoChildAttributes.ChildBirthCertNo,
       ],
+      childTypes: [undefined],
     })
   })
 
@@ -355,6 +359,7 @@ describe('extractMrfPreviousStepResponseValue', () => {
         [fieldIds.children]: {
           child: [['Phua Chu King', 'T1234567X']],
           childFields: childrenSubFields,
+          childTypes: [MyInfoChildrenScope.Local],
         },
       } as unknown as FormFieldValues
 

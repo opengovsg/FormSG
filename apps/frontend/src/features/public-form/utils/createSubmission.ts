@@ -412,7 +412,11 @@ export const createResponsesV4 = (
           input.childFields.forEach((attr, j) => {
             value[attr] = { value: child[j] ?? '', myInfo: { attr } }
           })
-          answer[`child${i}`] = { value }
+          // Scope derived by ChildrenCompoundField on child selection; inputs
+          // without a stamp (e.g. drafts saved before scopes existed) submit
+          // with no type.
+          const type = input.childTypes?.[i]
+          answer[`child${i}`] = { value, ...(type && { type }) }
         })
         returnedInputs[ff._id] = toWireResponseV4(ff.fieldType, answer)
         break
