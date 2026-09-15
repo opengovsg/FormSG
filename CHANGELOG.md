@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.22.3](https://github.com/opengovsg/formsg/compare/v9.22.2...v9.22.3) (2026-09-15)
+
+
+### Bug Fixes
+
+* **fapi logs:** add myinfo errors into logger.error (#10013) ([#10013](https://github.com/opengovsg/formsg/commit/33609acc9afce219255fbcb5630b82a4daef9a39))
+* correlate errors and logs and handle fapi error fallthrough (#10015) ([#10015](https://github.com/opengovsg/formsg/commit/ed35cced7ee83fa1f50cf3d9181d139a14a9209f))
+
+
+### Chores
+
+* **myinfo:** add logging for MyInfo FAPI login and userinfo requests (#10012) ([#10012](https://github.com/opengovsg/formsg/commit/48b0797a46d846c734fd047dc74c99bb16b68268))
+
 ## [9.22.2](https://github.com/opengovsg/formsg/compare/v9.22.1...v9.22.2) (2026-09-14)
 
 
