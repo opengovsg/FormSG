@@ -1,4 +1,16 @@
-import { getWebhookType, WebhookType } from '../../../webhook/webhook.service'
+import { FormWebhook } from 'formsg-shared/types'
+
+import { createLoggerWithLabel } from '../../../../config/logger'
+import {
+  getWebhookType,
+  toConsumerType,
+  WebhookType,
+} from '../../../webhook/webhook.service'
+
+import { SnapshotContentFormat } from './submission-snapshot.schema'
+import { resolveWireShape } from './webhook-payload-policy'
+
+const logger = createLoggerWithLabel(module)
 
 /**
  * PIN-02: the send predicate is form shape, not step index.
@@ -46,30 +58,96 @@ export const shouldSendMrfWebhook = ({
 }
 
 /**
- * PIN-16: the snapshot-write condition at both submit sites is
- * `enable-mrf-webhooks` on AND a webhook URL present AND retries enabled —
- * and, now, a form shape that is actually delivered to. A snapshot is only
- * ever read by a retry, so writing one for a submission no consumer receives
- * produces an object nothing will ever read, which under PIN-10's no-expiry
- * rule accumulates permanently.
+ * PIN-12: one snapshot per step, in the delivered shape only — so the
+ * snapshot-write decision is shape-aware, and the resolved wire shape selects
+ * both the snapshot's shape and its store. A generic V1 form writes only a V1
+ * snapshot and never a V4 one: no wrapped read key is stored for a consumer
+ * class forbidden from receiving it, and there is no second S3 write to fail
+ * under S3-first-abort.
+ *
+ * PIN-16: the write condition at both submit sites is `enable-mrf-webhooks`
+ * on AND a webhook URL present AND retries enabled, identical for the V4 and
+ * V1 shapes. Keeping the retry term is what makes this merge inert and stops
+ * us writing objects nothing will read — both submit sites serve the initial
+ * send from the copy already in memory, so the snapshot is only ever read by a
+ * retry, and under PIN-10 an unread object never expires. The term is dropped
+ * only at the payment pending-submission site, where no in-memory copy exists
+ * in the process that sends; that site belongs to #9978.
+ *
+ * @returns the shape to snapshot in, or `undefined` to write no snapshot.
  */
-export const shouldWriteV4Snapshot = ({
+export const resolveMrfSnapshotShape = ({
   mrfVersion,
   webhook,
   isMrfWebhooksEnabled,
   workflowStepCount,
 }: {
   mrfVersion: number
-  webhook?: { url?: string; isRetryEnabled?: boolean }
+  webhook?: {
+    url?: string
+    isRetryEnabled?: boolean
+    webhookFormat?: FormWebhook['webhookFormat']
+  }
   isMrfWebhooksEnabled: boolean
   workflowStepCount: number
-}): boolean => {
+}): SnapshotContentFormat | undefined => {
   const url = webhook?.url
-  if (mrfVersion !== 2 || !url || !webhook?.isRetryEnabled) return false
+  if (mrfVersion !== 2 || !url || !webhook?.isRetryEnabled) return undefined
 
-  return shouldSendMrfWebhook({
-    webhookType: getWebhookType(url),
-    isMrfWebhooksEnabled,
-    workflowStepCount,
+  const webhookType = getWebhookType(url)
+  if (
+    !shouldSendMrfWebhook({
+      webhookType,
+      isMrfWebhooksEnabled,
+      workflowStepCount,
+    })
+  ) {
+    return undefined
+  }
+
+  // The snapshot's shape IS the wire shape, resolved by the one function the
+  // send path resolves it with, so the bytes written and the bytes sent cannot
+  // disagree about what they are.
+  const wireShape = resolveWireShape({
+    webhookType: toConsumerType(webhookType),
+    webhookFormat: webhook.webhookFormat,
   })
+
+  // `v3` is the legacy row format, never a snapshot shape. The `mrfVersion`
+  // check above has already excluded it; narrowed rather than cast so that a
+  // widened resolution has to be dealt with here.
+  return wireShape === 'v3' ? undefined : wireShape
+}
+
+/**
+ * PIN-02 retains `submissionIndex === 0` as an invariant assertion that fails
+ * loud if ever violated — a consistency check, not the gate.
+ *
+ * The V1 shape resolves only for a workflow of at most one step, and such a
+ * form completes on its first submission, so a V1 resolution on a later step
+ * means the two facts have gone out of sync. Rather than deliver a payload
+ * whose completeness can no longer be reasoned about, say so loudly and
+ * decline.
+ *
+ * @returns true when the invariant holds and the V1 shape may proceed.
+ */
+export const holdsV1FirstStepInvariant = ({
+  submissionIndex,
+  logMeta,
+}: {
+  submissionIndex: number
+  logMeta: Record<string, unknown>
+}): boolean => {
+  if (submissionIndex === 0) return true
+
+  logger.error({
+    message:
+      'V1 wire shape resolved for a submission past its first step, which a single-step workflow cannot produce',
+    meta: {
+      action: 'holdsV1FirstStepInvariant',
+      ...logMeta,
+      submissionIndex,
+    },
+  })
+  return false
 }
