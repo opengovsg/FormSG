@@ -22,7 +22,6 @@ import {
 } from '../../../adminWorkflowStore'
 import { useGuidedStepReveal } from '../../../hooks/useGuidedStepReveal'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
-import { useIsWorkflowDeletion } from '../../../hooks/useIsWorkflowDeletion'
 import { EditStepInputs } from '../../../types'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
 import { SpotlightGroup } from '../../Spotlight'
@@ -160,7 +159,6 @@ export const EditStepBlock = ({
   }, [])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
-  const isWorkflowDeletion = useIsWorkflowDeletion()
 
   // RATIONALE: Returned formState is wrapped with a Proxy to improve
   // render performance, we must ead it before a render in order to enable
@@ -311,11 +309,9 @@ export const EditStepBlock = ({
             // opens differs — deleting step 1 means deleting the workflow —
             // but hiding the button left admins hunting for a delete that
             // does not exist, which is the behaviour FRM-2494 is about.
-            // Behind the flag, so with it off step 1 has no delete.
+            // Behind the redesign flag, so with it off step 1 has no delete.
             handleDelete={
-              !isFirstStep || isWorkflowDeletion
-                ? handleOpenDeleteModal
-                : undefined
+              !isFirstStep || isRedesign ? handleOpenDeleteModal : undefined
             }
             handleCancel={setToInactive}
             submitButtonLabel={submitButtonLabel}

@@ -1703,7 +1703,7 @@ const isWorkflowDeletionEnabledFor = (
     ...growthbook.getAttributes(),
     adminEmail,
   })
-  return growthbook?.isOn(featureFlags.workflowDeletion) ?? false
+  return growthbook?.isOn(featureFlags.workflowBuilderRedesign) ?? false
 }
 
 /**
