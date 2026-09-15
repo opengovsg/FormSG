@@ -5,7 +5,13 @@ import {
 } from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
 import { featureFlags } from 'formsg-shared/constants'
-import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormAuthType,
+  FormResponseMode,
+  MyInfoAttribute,
+  MyInfoChildAttributes,
+} from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, ok, okAsync } from 'neverthrow'
 import nacl from 'tweetnacl'
@@ -999,6 +1005,57 @@ describe('Multirespondent Submission Middleware', () => {
         ],
         { name: 'mock-hash' },
       )
+    })
+
+    it('should stamp provenance.myinfoVerified on responses whose child hash keys were verified', async () => {
+      // Arrange
+      setupMyInfoLoginMocks()
+      const childrenFieldId = new ObjectId().toHexString()
+      const childrenField = {
+        _id: childrenFieldId,
+        title: 'Children',
+        fieldType: BasicField.Children,
+        childrenSubFields: [MyInfoChildAttributes.ChildName],
+        myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+      }
+      const childrenResponse = {
+        fieldType: BasicField.Children,
+        question: 'Children',
+        provenance: {},
+        answer: {
+          child0: {
+            value: {
+              [MyInfoChildAttributes.ChildName]: { value: 'PHUA CHU KING' },
+            },
+          },
+        },
+      }
+      jest.mocked(MyInfoService.fetchMyInfoHashes).mockReturnValue(okAsync({}))
+      jest.mocked(MyInfoService.checkMyInfoHashes).mockReturnValue(
+        okAsync(
+          new Set([
+            `${MyInfoAttribute.ChildrenBirthRecords}.${childrenFieldId}.${MyInfoChildAttributes.ChildName}.0.PHUA CHU KING`,
+          ]) as any,
+        ),
+      )
+
+      const mockNext = jest.fn()
+      const mockReq = createMyInfoMockReq()
+      mockReq.formsg.formDef = {
+        ...MOCK_MYINFO_FORM_DEF,
+        form_fields: [childrenField],
+      }
+      mockReq.body.responses = { [childrenFieldId]: childrenResponse }
+      const mockRes = createMockRes()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, mockRes as any, mockNext)
+
+      // Assert: the verification outcome is recorded on the responses inside
+      // this middleware, i.e. before encryptSubmission snapshots them into
+      // the stored encryptedContent.
+      expect(mockNext).toHaveBeenCalled()
+      expect(childrenResponse.provenance).toEqual({ myinfoVerified: true })
     })
 
     it('should reject the submission with 401 when a MyInfo answer does not match its hash', async () => {

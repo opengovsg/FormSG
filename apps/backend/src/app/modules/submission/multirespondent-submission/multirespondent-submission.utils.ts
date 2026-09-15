@@ -13,6 +13,7 @@ import {
   FormMetadata,
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
+  MyInfoAttribute,
   PublicMultirespondentSubmissionDto,
   SubmissionType,
   WorkflowType,
@@ -43,6 +44,7 @@ import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import { validateFieldV4 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
+import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
 import {
   InvalidWorkflowTypeError,
@@ -412,6 +414,29 @@ export const adaptV4ResponsesForMyInfoHashCheck = (
     } as ProcessedFieldResponse)
   }
   return adapted
+}
+
+/**
+ * Stamps provenance.myinfoVerified on responses whose answers were actually
+ * verified against the MyInfo hashes saved at prefill time. verifiedKeys is
+ * checkMyInfoHashes' result: only keys that were compared AND matched appear
+ * in it (a mismatch fails the whole submission upstream); answers with no
+ * stored hash (e.g. user-filled child records) pass through unstamped. Hash
+ * keys are form-definition-driven, so a client cannot spoof a stamp by
+ * mislabelling its own payload. Mutates responses in place.
+ */
+export const stampMyInfoVerifiedOnResponses = (
+  responses: ParsedClearFormFieldResponsesV4,
+  verifiedKeys: Set<MyInfoKey>,
+): void => {
+  const verified = Array.from(verifiedKeys)
+  for (const [fieldId, response] of Object.entries(responses)) {
+    // TODO: implement stamping for all Myinfo fields
+    const childKeyPrefix = `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.`
+    if (verified.some((key) => key.startsWith(childKeyPrefix))) {
+      response.provenance = { ...response.provenance, myinfoVerified: true }
+    }
+  }
 }
 
 /**
