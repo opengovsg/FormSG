@@ -1,5 +1,4 @@
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
-import { getValidatedIdTokenClaims } from 'oauth4webapi'
 import * as oidcClient from 'openid-client'
 
 import { IOneVarsSchema } from 'src/types'
@@ -282,10 +281,21 @@ export class AuthOneServiceClass {
         scope: ['openid', 'email'].join(' '),
       }
 
-      const redirectTo: URL = oidcClient.buildAuthorizationUrl(
-        clientConfig,
-        params,
-      )
+      let redirectTo: URL
+      try {
+        redirectTo = oidcClient.buildAuthorizationUrl(clientConfig, params)
+      } catch (error) {
+        logger.error({
+          message: 'Error while building one.gov.sg authorization URL',
+          meta: logMeta,
+          error,
+        })
+        return errAsync(
+          new OneCreateRedirectUrlError(
+            'Failed to build authorization URL for one.gov.sg authentication',
+          ),
+        )
+      }
 
       return okAsync({
         redirectUrl: redirectTo.toString(),
@@ -346,7 +356,7 @@ export class AuthOneServiceClass {
     tokens: oidcClient.TokenEndpointResponse &
       oidcClient.TokenEndpointResponseHelpers,
   ): Result<OneIdTokenClaims, OneCreateRedirectUrlError> {
-    const claims = getValidatedIdTokenClaims(tokens)
+    const claims = tokens.claims()
 
     if (!claims || !claims.sub) {
       logger.error({

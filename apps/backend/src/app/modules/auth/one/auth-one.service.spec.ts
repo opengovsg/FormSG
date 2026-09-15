@@ -1,5 +1,4 @@
 import loadOpenidClient from '__tests__/unit/backend/helpers/load-openid-client'
-import { getValidatedIdTokenClaims } from 'oauth4webapi'
 import * as oidcClient from 'openid-client'
 
 import { IOneVarsSchema } from 'src/types'
@@ -31,8 +30,6 @@ const mockBuildAuthorizationUrl = jest.mocked(oidcClient.buildAuthorizationUrl)
 const mockAuthorizationCodeGrant = jest.mocked(
   oidcClient.authorizationCodeGrant,
 )
-const mockGetValidatedIdTokenClaims = jest.mocked(getValidatedIdTokenClaims)
-
 const MOCK_ISSUER = 'https://one.example.com/api/auth'
 
 // A real EC (P-256) private JWK — buildPrivateKeyJwtAuth imports it via
@@ -217,6 +214,22 @@ describe('AuthOneServiceClass', () => {
         `http://localhost:5000${ONE_LOGIN_CALLBACK_PATH}`,
       )
     })
+
+    it('errors instead of throwing when the authorization URL cannot be built', async () => {
+      mockBuildAuthorizationUrl.mockImplementation(() => {
+        throw new Error(
+          'authorization_endpoint must be configured on the resolved server metadata',
+        )
+      })
+      const svc = new AuthOneServiceClass(VALID_CONFIG)
+
+      const result = await svc.createRedirectUrl()
+
+      expect(result.isErr()).toBe(true)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        OneCreateRedirectUrlError,
+      )
+    })
   })
 
   describe('retrieveAccessToken', () => {
@@ -298,19 +311,25 @@ describe('AuthOneServiceClass', () => {
   })
 
   describe('retrieveClaims', () => {
-    const mockTokens = {} as oidcClient.TokenEndpointResponse &
-      oidcClient.TokenEndpointResponseHelpers
+    const mockTokensWithClaims = (
+      claims: Record<string, unknown> | undefined,
+    ) =>
+      ({
+        claims: () => claims,
+      }) as unknown as oidcClient.TokenEndpointResponse &
+        oidcClient.TokenEndpointResponseHelpers
 
     it('returns sub, email and sid from the validated id_token claims', () => {
       // ADR-0002: sub IS the verified government email, so no userinfo call.
-      mockGetValidatedIdTokenClaims.mockReturnValue({
-        sub: 'user@agency.gov.sg',
-        email: 'user@agency.gov.sg',
-        sid: 'mock-sid',
-      } as unknown as ReturnType<typeof getValidatedIdTokenClaims>)
       const svc = new AuthOneServiceClass(VALID_CONFIG)
 
-      const result = svc.retrieveClaims(mockTokens)
+      const result = svc.retrieveClaims(
+        mockTokensWithClaims({
+          sub: 'user@agency.gov.sg',
+          email: 'user@agency.gov.sg',
+          sid: 'mock-sid',
+        }),
+      )
 
       expect(result._unsafeUnwrap()).toEqual({
         sub: 'user@agency.gov.sg',
@@ -320,12 +339,11 @@ describe('AuthOneServiceClass', () => {
     })
 
     it('falls back to sub when the email claim is absent', () => {
-      mockGetValidatedIdTokenClaims.mockReturnValue({
-        sub: 'user@agency.gov.sg',
-      } as unknown as ReturnType<typeof getValidatedIdTokenClaims>)
       const svc = new AuthOneServiceClass(VALID_CONFIG)
 
-      const result = svc.retrieveClaims(mockTokens)
+      const result = svc.retrieveClaims(
+        mockTokensWithClaims({ sub: 'user@agency.gov.sg' }),
+      )
 
       expect(result._unsafeUnwrap()).toEqual({
         sub: 'user@agency.gov.sg',
@@ -335,10 +353,9 @@ describe('AuthOneServiceClass', () => {
     })
 
     it('errors when the id_token has no validated claims', () => {
-      mockGetValidatedIdTokenClaims.mockReturnValue(undefined)
       const svc = new AuthOneServiceClass(VALID_CONFIG)
 
-      const result = svc.retrieveClaims(mockTokens)
+      const result = svc.retrieveClaims(mockTokensWithClaims(undefined))
 
       expect(result.isErr()).toBe(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(
