@@ -11,10 +11,10 @@ export const featureFlags = {
   ogpSuiteSso: 'ogp-suite-sso' as const,
   enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
-  mrfStepWriteToken: 'mrf-step-write-token' as const,
   useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
+  spcpOidcPkce: 'spcp-oidc-pkce' as const,
+  spcpOidcStateNonce: 'spcp-oidc-state-nonce' as const,
   lambdaPdfGeneration: 'lambda-pdf-generation' as const,
-  enableSaveDraftButtonHeader: 'enable-save-draft-button-header' as const,
   adminEmailPdf: 'admin-email-pdf' as const,
   ogpHeader: 'enable-ogp-header' as const,
   ogpAwareness: 'ogp-awareness' as const,
@@ -35,6 +35,10 @@ export const featureFlags = {
   fiveStarAdminRating: '5star-admin-rating' as const,
   workflowBuilderRedesign: 'workflow-builder-redesign' as const,
   formIdJson: 'formid-json' as const,
+  mrfPayments: 'mrf-payments' as const,
+  myinfoFapi: 'myinfo-fapi' as const,
+  workflowDeletion: 'workflow-deletion' as const,
+  scheduledFormClosure: 'scheduled-form-closure' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

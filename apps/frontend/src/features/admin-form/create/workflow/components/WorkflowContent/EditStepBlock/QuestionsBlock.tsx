@@ -1,6 +1,6 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, FormHelperText } from '@chakra-ui/react'
 
 import { textStyles } from '~theme/textStyles'
 import { MultiSelect } from '~components/Dropdown'
@@ -14,9 +14,11 @@ import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
+import { useStageFieldAndNavigate } from '../../../hooks/useStageFieldAndNavigate'
 
-import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
+import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
+import { FieldEmptyState } from './EmptyStates'
 
 interface QuestionsBlockProps {
   isLoading: boolean
@@ -31,32 +33,34 @@ export const QuestionsBlock = ({
 }: QuestionsBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const stageFieldAndNavigate = useStageFieldAndNavigate()
   const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
   const {
     formState: { errors },
     control,
+    watch,
+    trigger,
   } = formMethods
+  const selectedApprovalField = watch(APPROVAL_FIELD_NAME)
 
-  const items = formFields
-    .filter((f) => {
-      // Only retain actual inputs (exclude header, statement, image)
-      const isFillableField = !NON_RESPONSE_FIELD_SET.has(f.fieldType)
-      const isMyInfoField = 'myInfo' in f
-      if (!isFillableField) {
-        return false
-      }
-      // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
-      // supported in workflow steps >= 2.
-      if (isMyInfoField && !isFirstStep) {
-        return false
-      }
-      return true
-    })
+  // Only retain actual inputs (exclude header, statement, image)
+  const fillableFields = formFields.filter(
+    (f) => !NON_RESPONSE_FIELD_SET.has(f.fieldType),
+  )
+
+  const items = fillableFields
+    // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
+    // supported in workflow steps >= 2.
+    .filter((f) => !('myInfo' in f) || isFirstStep)
     .map((f) => ({
       value: f._id,
       label: getLogicFieldLabel(idToFieldMap[f._id]),
       icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
     }))
+
+  const hasOnlyMyInfoFields = items.length === 0 && fillableFields.length > 0
+
+  const showEmptyState = isRedesign && items.length === 0
 
   return (
     <EditStepBlockContainer>
@@ -70,11 +74,11 @@ export const QuestionsBlock = ({
           style={textStyles.h4}
           tooltipVariant="info"
           tooltipPlacement="top"
-          tooltipText={t(
+          tooltipText={
             isRedesign
-              ? 'features.adminForm.sidebar.workflow.questions.tooltipRedesign'
-              : 'features.adminForm.sidebar.workflow.questions.tooltip',
-          )}
+              ? undefined
+              : t('features.adminForm.sidebar.workflow.questions.tooltip')
+          }
         >
           {t(
             isRedesign
@@ -85,21 +89,55 @@ export const QuestionsBlock = ({
         <Controller
           control={control}
           name={FIELDS_TO_EDIT_NAME}
-          render={({ field: { value = [], ...field } }) => (
-            <MultiSelect
-              isDisabled={isLoading}
-              placeholder={t(
-                isRedesign
-                  ? 'features.adminForm.sidebar.workflow.questions.placeholderRedesign'
-                  : 'features.adminForm.sidebar.workflow.questions.placeholder',
-              )}
-              items={items}
-              isSelectedItemFullWidth
-              values={value}
-              {...field}
-            />
-          )}
+          render={({ field: { value = [], onChange, ...field } }) => {
+            if (showEmptyState) {
+              return (
+                <FieldEmptyState
+                  picker="fields"
+                  message={t(
+                    hasOnlyMyInfoFields
+                      ? 'features.adminForm.sidebar.workflow.emptyStates.noFieldsMyInfoOnly'
+                      : 'features.adminForm.sidebar.workflow.emptyStates.noFields',
+                  )}
+                  actionLabel={t(
+                    'features.adminForm.sidebar.workflow.emptyStates.noFieldsAction',
+                  )}
+                  onAction={() => stageFieldAndNavigate()}
+                />
+              )
+            }
+            // Re-validate approval_field as soon as `edit` changes, so removing
+            // the auto-added chip errors inline rather than at save.
+            const handleFieldsChange = (newValue: string[]) => {
+              onChange(newValue)
+              if (isRedesign && selectedApprovalField) {
+                void trigger(APPROVAL_FIELD_NAME)
+              }
+            }
+            return (
+              <MultiSelect
+                isDisabled={isLoading}
+                placeholder={t(
+                  isRedesign
+                    ? 'features.adminForm.sidebar.workflow.questions.placeholderRedesign'
+                    : 'features.adminForm.sidebar.workflow.questions.placeholder',
+                )}
+                items={items}
+                isSelectedItemFullWidth
+                values={value}
+                onChange={handleFieldsChange}
+                {...field}
+              />
+            )
+          }}
         />
+        {isRedesign && selectedApprovalField ? (
+          <FormHelperText>
+            {t(
+              'features.adminForm.sidebar.workflow.questions.autoAddHelperTextRedesign',
+            )}
+          </FormHelperText>
+        ) : null}
         <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>
       </FormControl>
     </EditStepBlockContainer>

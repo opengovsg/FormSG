@@ -86,7 +86,25 @@ const Template: StoryFn<StoryChildrenCompoundFieldProps> = ({
   )
 }
 
-export const AllowMultipleChildren = Template.bind({})
-AllowMultipleChildren.args = {
+export const SingleChild = Template.bind({})
+SingleChild.args = {
+  schema: baseSchema,
+}
+
+/** An existing form document whose stored allowMultiple flag is still `true`. */
+export const LegacyAllowMultipleFlag = Template.bind({})
+LegacyAllowMultipleFlag.args = {
   schema: merge({}, baseSchema, { allowMultiple: true }),
+}
+
+/** An existing form that still lists secondary race in `childrenSubFields`. */
+export const LegacySecondaryRaceSubField = Template.bind({})
+LegacySecondaryRaceSubField.args = {
+  schema: merge({}, baseSchema, {
+    childrenSubFields: [
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildRace,
+      MyInfoChildAttributes.ChildSecondaryRace,
+    ],
+  }),
 }

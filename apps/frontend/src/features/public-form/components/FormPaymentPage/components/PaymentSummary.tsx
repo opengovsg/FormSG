@@ -4,10 +4,10 @@ import { Box, Divider, Flex, Text } from '@chakra-ui/react'
 import {
   ExtractTypeFromArray,
   FormColorTheme,
-  FormResponseMode,
   GetPaymentInfoDto,
   PaymentType,
-  PublicFormDto,
+  PublicStorageFormDto,
+  StrippedPublicMultirespondentFormDto,
 } from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
@@ -72,15 +72,12 @@ export const PaymentSummary = ({
   colorTheme,
   paymentInfoData,
 }: {
-  form: PublicFormDto
+  form: PublicStorageFormDto | StrippedPublicMultirespondentFormDto
   paymentAmount: number
   paymentItemName?: string | null
   colorTheme: FormColorTheme
   paymentInfoData: GetPaymentInfoDto
 }) => {
-  if (form.responseMode !== FormResponseMode.Encrypt) {
-    return <></>
-  }
   if (form.payments_field.payment_type === PaymentType.Products) {
     return (
       <ProductsPaymentSummary

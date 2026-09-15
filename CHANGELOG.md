@@ -2,6 +2,310 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.23.0](https://github.com/opengovsg/formsg/compare/v9.22.4...v9.23.0) (2026-09-15)
+
+
+### Features
+
+* **create:** let the sidebar rail be collapsed on mobile (#10009) ([#10009](https://github.com/opengovsg/formsg/commit/815e9c6529b226b81d42c23736e4b2779211b3ec))
+
+
+### Bug Fixes
+
+* **settings:** beta badge placement and closing date copy (#10011) ([#10011](https://github.com/opengovsg/formsg/commit/44a9cec3e36acd2cf8988c528143ec7c21e95690))
+* **toast:** centre the top toast on desktop (#9999) ([#9999](https://github.com/opengovsg/formsg/commit/b629d07bb19c1a9d0e18537a55bce4ccc2b8ff9f))
+* **workflow:** gate workflow deletion on the redesign flag (#10017) ([#10017](https://github.com/opengovsg/formsg/commit/6348a14413f99216110156c45051605e74317311))
+* **workflow:** make the workflow builder usable on a phone (#10008) ([#10008](https://github.com/opengovsg/formsg/commit/32c673a41fbc5846f86794e8192c1bfb3df9b234))
+* **workflow:** render the delete-workflow modal stories (#10021) ([#10021](https://github.com/opengovsg/formsg/commit/e089bffacb0e5dd1164ac4765e8135835ae5799c))
+
+## [9.22.4](https://github.com/opengovsg/formsg/compare/v9.22.3...v9.22.4) (2026-09-15)
+
+
+### Dependencies
+
+* **deps:** patch 40+ vulnerable dependencies (2026-09 Dependabot batch) (#10007) ([#10007](https://github.com/opengovsg/formsg/commit/09b5080055642914eb46e556f89c49796e5a7ce2))
+
+## [9.22.3](https://github.com/opengovsg/formsg/compare/v9.22.2...v9.22.3) (2026-09-15)
+
+
+### Bug Fixes
+
+* **fapi logs:** add myinfo errors into logger.error (#10013) ([#10013](https://github.com/opengovsg/formsg/commit/33609acc9afce219255fbcb5630b82a4daef9a39))
+* correlate errors and logs and handle fapi error fallthrough (#10015) ([#10015](https://github.com/opengovsg/formsg/commit/ed35cced7ee83fa1f50cf3d9181d139a14a9209f))
+
+
+### Chores
+
+* **myinfo:** add logging for MyInfo FAPI login and userinfo requests (#10012) ([#10012](https://github.com/opengovsg/formsg/commit/48b0797a46d846c734fd047dc74c99bb16b68268))
+
+## [9.22.2](https://github.com/opengovsg/formsg/compare/v9.22.1...v9.22.2) (2026-09-14)
+
+
+### Bug Fixes
+
+* **workflow:** copy, approval-toggle color, beta badge, and completion-email card fixes (1/5-5/5) (#9997) ([#9997](https://github.com/opengovsg/formsg/commit/c4921b786006266b1cde243470f4f55280a4ae3a))
+
+## [9.22.1](https://github.com/opengovsg/formsg/compare/v9.22.0...v9.22.1) (2026-09-11)
+
+
+### Bug Fixes
+
+* **workflow:** evaluate the deletion flag with the admin's email (#9998) ([#9998](https://github.com/opengovsg/formsg/commit/afe68943b8312107cddf055b3faeaef869849a2a))
+
+## [9.22.0](https://github.com/opengovsg/formsg/compare/v9.21.0...v9.22.0) (2026-09-11)
+
+
+### Features
+
+* deploy scheduled form closure lambda (5/8) (#9881) ([#9881](https://github.com/opengovsg/formsg/commit/f9bec35ef8d6a4a490911f4499cd6c56e03f96ef))
+* enforce scheduled form closure (3/8) (#9879) ([#9879](https://github.com/opengovsg/formsg/commit/8bee1e8180dfe51a72b20d195f3172941baca8fc))
+* scheduled form closure admin ui (2/8) (#9878) ([#9878](https://github.com/opengovsg/formsg/commit/8181ab80317f9f96c5cd41e2ce69c444a5bb8ef2))
+* scheduled form closure schema (1/8) (#9877) ([#9877](https://github.com/opengovsg/formsg/commit/60d386600f7d38772b17afe022e923fd7d317bcd))
+* scheduled form closure sweep (4/8) (#9880) ([#9880](https://github.com/opengovsg/formsg/commit/32d25daac8275833958586e46d5d20e3e22d4b83))
+* style the scheduled closure notification email (7/8) (#9906) ([#9906](https://github.com/opengovsg/formsg/commit/4ac134c01ab24e554058965e7b7573f2b2f8e985))
+
+
+### Bug Fixes
+
+* 12-hour expiry time input and next-day default (6/8) (#9905) ([#9905](https://github.com/opengovsg/formsg/commit/9a7acdc61daa27b2c85f8824f52e6bf1de1318ae))
+* scheduled form closure v1.1 copy and beta badge (8/8) (#9918) ([#9918](https://github.com/opengovsg/formsg/commit/ea4577f9cd6c3d6ea27d5daa529649999d7a2da7))
+
+## [9.21.0](https://github.com/opengovsg/formsg/compare/v9.20.0...v9.21.0) (2026-09-10)
+
+
+### Features
+
+* **workflow:** add the delete-workflow modal (2/5) (#9908) ([#9908](https://github.com/opengovsg/formsg/commit/949061c13c1d2a766def030ddaea73a822b72157))
+* **workflow:** delete a workflow, and refuse while the form is open (1/5, backend) (#9907) ([#9907](https://github.com/opengovsg/formsg/commit/81a56381f99f607c5e7b6437dfc66083b1b18aa0))
+* **workflow:** delete workflow design polish (4/5) (#9917) ([#9917](https://github.com/opengovsg/formsg/commit/3dda30beb46d00eb8c131ac41a6d668f9e3043d3))
+* **workflow:** give step 1 and the workflow card a delete button (3/5) (#9909) ([#9909](https://github.com/opengovsg/formsg/commit/b357d7dfb414e31e537da742e0c3fb8a6fd4a42a))
+
+
+### Bug Fixes
+
+* **workflow:** rest delete-modal focus on the dialog, not a button (5/5) (#9933) ([#9933](https://github.com/opengovsg/formsg/commit/fecba687a1170d486d91897c6afa1ba2b2d0354b))
+
+
+### Tests
+
+* **workflow:** give the intro screen tests a localStorage to write to (#9996) ([#9996](https://github.com/opengovsg/formsg/commit/49946f2be600b498361de6e7ec2ea61c5f5eb32f))
+
+## [9.20.0](https://github.com/opengovsg/formsg/compare/v9.19.0...v9.20.0) (2026-09-10)
+
+
+### Features
+
+* **myinfo:** add MyInfo FAPI 2.0 config and key plumbing (#9924) ([#9924](https://github.com/opengovsg/formsg/commit/89b0fe5cd845b02acddbfbb85dedeb71e0b20294))
+* **myinfo:** expose FAPI 2.0 login route (#9926) ([#9926](https://github.com/opengovsg/formsg/commit/a6f415ffc3df8a5c0194c8dc72fa3128b4b13f4b))
+* **myinfo:** implement MyInfo FAPI 2.0 client and login flow (#9925) ([#9925](https://github.com/opengovsg/formsg/commit/087a42169480aaced2ef1a8cf6f4159a85fd5499))
+* **myinfo:** migrate MyInfo login to FAPI 2.0 flow (#9927) ([#9927](https://github.com/opengovsg/formsg/commit/d46058b1608fda7cddf0f976159b31c55f739772))
+
+
+### Bug Fixes
+
+* **myinfo:** close FAPI review gaps (session race, cookie cleanup, logging) (#9995) ([#9995](https://github.com/opengovsg/formsg/commit/bf00795048903ca8c0cea9d442d25d6f15f311b0))
+* **myinfo:** redirect stale form tabs after MyInfo auth and clear stale FAPI cookies (#9986) ([#9986](https://github.com/opengovsg/formsg/commit/0a80ab9513483dcd9c187a29300522648f02f417))
+
+
+### Chores
+
+* **myinfo:** bump mockpass to 4.7.1 (#9923) ([#9923](https://github.com/opengovsg/formsg/commit/b59d71780dc63fb7076ba229bb8bc89ec8d87afe))
+
+## [9.19.0](https://github.com/opengovsg/formsg/compare/v9.18.1...v9.19.0) (2026-09-10)
+
+
+### Features
+
+* **workflow-builder-redesign:** actionable empty states for field pickers (#9911) ([#9911](https://github.com/opengovsg/formsg/commit/d726ab0c145f34371701b5ed0ca9789a37636404))
+* **workflow-builder-redesign:** save half-built steps, gate publishing on a runnable workflow (#9856) ([#9856](https://github.com/opengovsg/formsg/commit/fd580ffdff3d6dcf1a560c07b6df2b3dc03b118c))
+* **workflow-builder-redesign:** stage a field creation across tabs (#9959) ([#9959](https://github.com/opengovsg/formsg/commit/c343990e6d5b56145a742a960567e38255084eb7))
+
+
+### Bug Fixes
+
+* **workflow:** remember whether an admin builds in guided mode (#9991) ([#9991](https://github.com/opengovsg/formsg/commit/a493df308df6dd957567e2b18c94f0e264a57413))
+
+
+### Refactors
+
+* **mrf:** retire the mrf-step-write-token flag (prefactor) (#9990) ([#9990](https://github.com/opengovsg/formsg/commit/f3238158d3671d50891702278b0fe064a1988e9b))
+
+## [9.18.1](https://github.com/opengovsg/formsg/compare/v9.18.0...v9.18.1) (2026-09-09)
+
+
+### Bug Fixes
+
+* use _id which is defined for generating hashedSubmitterId (#9985) ([#9985](https://github.com/opengovsg/formsg/commit/a00bbe802d440c4b5b66f9f783445fb3684aa2f9))
+
+## [9.18.0](https://github.com/opengovsg/formsg/compare/v9.17.1...v9.18.0) (2026-09-09)
+
+
+### Features
+
+* **workflow:** add the guided setup welcome card (4/7) (#9967) ([#9967](https://github.com/opengovsg/formsg/commit/d07dd53e9f80d5d31ad746406db7dca0d099f761))
+* **workflow:** let an admin turn guided mode off (6/7) (#9969) ([#9969](https://github.com/opengovsg/formsg/commit/45b99c05d98d97e7785fe23b1e5ab1ca30d096b2))
+* **workflow:** report a finished step under its card (2/7) (#9957) ([#9957](https://github.com/opengovsg/formsg/commit/b996edc478205c2625b150a685e20aa1753366ce))
+* **workflow:** reveal a step one decision at a time (1/7) (#9956) ([#9956](https://github.com/opengovsg/formsg/commit/79a51ec936f7a4603eb226b03eac65d81f822e8e))
+* **workflow:** rewrite the workflow tab intro screen (3/7) (#9963) ([#9963](https://github.com/opengovsg/formsg/commit/bd0f6ae3f725e776f78e52f9454ee6e57fc883bf))
+* **workflow:** show the welcome card once per admin (5/7) (#9968) ([#9968](https://github.com/opengovsg/formsg/commit/72db2c9a396457b5a383d2db77091dacdd0a090c))
+
+
+### Bug Fixes
+
+* **workflow:** centre the workflow view against the viewport (7/7) (#9970) ([#9970](https://github.com/opengovsg/formsg/commit/64a0ec1e31c3c182bc194e3452ce836659de8889))
+
+## [9.17.1](https://github.com/opengovsg/formsg/compare/v9.17.0...v9.17.1) (2026-09-08)
+
+
+### Bug Fixes
+
+* **logging:** redact Authorization header from access logs (#9964) ([#9964](https://github.com/opengovsg/formsg/commit/9c65bec89e95a3237a0a7d34587c6c30655b0723))
+
+## [9.17.0](https://github.com/opengovsg/formsg/compare/v9.16.0...v9.17.0) (2026-09-07)
+
+
+### Features
+
+* **workflow-builder-redesign:** person-framed approval control (#9850) ([#9850](https://github.com/opengovsg/formsg/commit/0083007c73ba45075b9f1d06afef6363bd2d6a3d))
+* **workflow:** add the five completion moments' copy (2/3) (#9941) ([#9941](https://github.com/opengovsg/formsg/commit/941280d570bb40b51e26322714647b7ec1d73ef2))
+* **workflow:** add the PeekCard component (1/3) (#9940) ([#9940](https://github.com/opengovsg/formsg/commit/1757be6bcda37601babab128e8ad4a6c77f1d5ad))
+* **workflow:** add the Spotlight wrapper (1/2) (#9945) ([#9945](https://github.com/opengovsg/formsg/commit/b5422b8a2f115c50bcd9e0ca6860988f29627fb4))
+* **workflow:** decide when the spotlight applies (2/2) (#9946) ([#9946](https://github.com/opengovsg/formsg/commit/5bdc82d7b9eba72918938847830a485863d6c912))
+* **workflow:** wire the peek card to its five moments (3/3) (#9942) ([#9942](https://github.com/opengovsg/formsg/commit/b525a4588617684822c2011e02c4fb8dffb64a55))
+
+
+### Bug Fixes
+
+* **theme:** add pointer cursor to Radio option hover (#9953) ([#9953](https://github.com/opengovsg/formsg/commit/366607ae9fed37580a328a01df765cb8418e4d9f))
+
+
+### Tests
+
+* **storybook:** repair the three interaction tests TurboSnap re-enabled (#9952) ([#9952](https://github.com/opengovsg/formsg/commit/9a43c3ee5a0a8c9eef0d42a97b6a75f4d4bdc608))
+
+## [9.16.0](https://github.com/opengovsg/formsg/compare/v9.15.2...v9.16.0) (2026-09-03)
+
+
+### Features
+
+* **workflow:** completion email card, editable (3/3) (#9874) ([#9874](https://github.com/opengovsg/formsg/commit/020af39399ae051f6b8da26361dfbf4bca0e51f1))
+* **workflow:** completion email card, read-only (2/3) (#9873) ([#9873](https://github.com/opengovsg/formsg/commit/60fcee9003dda3e194101fbb3aa1d757260cf043))
+* **workspace:** rework form-origin question into two-question flow (FRM-2572) (#9852) ([#9852](https://github.com/opengovsg/formsg/commit/fcf0df93f0da07dc00ca3e87ad3b17d61acf9971))
+* mrf payments admin surfaces (2/4) (#9798) ([#9798](https://github.com/opengovsg/formsg/commit/ec0d1a15ff3959185fe54bd19fec3421c32a3891))
+* mrf payments hardening (4/4) (#9800) ([#9800](https://github.com/opengovsg/formsg/commit/52d3b8058e3906b4aa6941d583f86096de339fe1))
+* mrf payments respondent flow (3/4) (#9799) ([#9799](https://github.com/opengovsg/formsg/commit/bf5db8ebf19fa32b4068fa1522989ca90cf1d3de))
+* mrf payments schema changes (1/4) (#9797) ([#9797](https://github.com/opengovsg/formsg/commit/3ce7aa4a9515abda71ab4906738a6fcb51838d90))
+
+
+### Bug Fixes
+
+* **ci:** correct TurboSnap's untraced globs so tracing works at all (#9950) ([#9950](https://github.com/opengovsg/formsg/commit/d2124b18b5fc5b3949d8c6f6ac0f755a5c29b2b3))
+* add factory mocks to prevent unlimited retries against localhost (#9913) ([#9913](https://github.com/opengovsg/formsg/commit/e18536654ae5fd38edd30a0c632fa9b121206893))
+
+
+### Tests
+
+* **workspace:** assert Q1's own required message in the origin story (#9948) ([#9948](https://github.com/opengovsg/formsg/commit/cb41c600487ff994689ac22f4c472b0ffd18dff1))
+
+
+### Chores
+
+* drop domain docs merged by accident in #9852 (#9949) ([#9852](https://github.com/opengovsg/formsg/commit/360be6173607778a5abec136050e2cb5bd63140c))
+
+
+### Refactors
+
+* **mrf-email:** extract the MRF completion email field group (1/3) (#9872) ([#9872](https://github.com/opengovsg/formsg/commit/40426be3a34d3c4eed57706eeec676a94277f45c))
+
+## [9.15.2](https://github.com/opengovsg/formsg/compare/v9.15.1...v9.15.2) (2026-09-01)
+
+
+### Bug Fixes
+
+* inject gb attributes earlier the controller chain (#9914) ([#9914](https://github.com/opengovsg/formsg/commit/b3aa46909b9c8140011107c6507112995768bde8))
+
+
+### Chores
+
+* **logging:** redact client assertion and OAuth exchange codes from logs (#9896) ([#9896](https://github.com/opengovsg/formsg/commit/0aab7ae88ff7fab3f6c705411b2930268735a470))
+
+## [9.15.1](https://github.com/opengovsg/formsg/compare/v9.15.0...v9.15.1) (2026-08-31)
+
+
+### Bug Fixes
+
+* **design-drawer:** stop form title from autosaving before Save design (#9894) ([#9894](https://github.com/opengovsg/formsg/commit/100742d2de5ff3eecbabbc00315e00708a4e4c7f))
+* **responses:** put response metadata back on the type scale (#9904) ([#9904](https://github.com/opengovsg/formsg/commit/c5234339d3cadf82ae9d44bb23e0c34fe6d8719a))
+
+## [9.15.0](https://github.com/opengovsg/formsg/compare/v9.14.0...v9.15.0) (2026-08-27)
+
+
+### Features
+
+* **spcp:** add PKCE to Singpass/Corppass OIDC login (#9892) ([#9892](https://github.com/opengovsg/formsg/commit/b25dc6bc90375294ade33091ce8d287a1baec6a7))
+
+## [9.14.0](https://github.com/opengovsg/formsg/compare/v9.13.0...v9.14.0) (2026-08-27)
+
+
+### Features
+
+* **children:** remove Secondary Race and Allow-Multiple from the v1 children field (v2.0) (#9794) ([#9794](https://github.com/opengovsg/formsg/commit/c7e870163512fb96e18f0de32f14297cb9e1c9a6))
+
+## [9.13.0](https://github.com/opengovsg/formsg/compare/v9.12.0...v9.13.0) (2026-08-27)
+
+
+### Features
+
+* **mrf:** enqueue a snapshot-naming retry where a snapshot exists (#9866) ([#9866](https://github.com/opengovsg/formsg/commit/9429cfca489b31e3b28c21e04734f73c4a77d945))
+* **mrf:** make a step's snapshot readable and its read failures legible (#9863) ([#9863](https://github.com/opengovsg/formsg/commit/f93c9758fb81eaf7da68689e3d7295d3c89aa41d))
+* **mrf:** replay the failed step's snapshot on webhook retry (#9865) ([#9865](https://github.com/opengovsg/formsg/commit/6c3c0e3bf580d2efc6bb3f76cd733602b7718ac2))
+* **webhook:** version the retry queue message to name its step (#9864) ([#9864](https://github.com/opengovsg/formsg/commit/7b6a958b0215076c8982f7cc0ff786b0b2e9f7f4))
+
+
+### Refactors
+
+* **mrf:** ready the payload policy and reconstruction for replay (#9862) ([#9862](https://github.com/opengovsg/formsg/commit/ba2b247b776319a9fbca9ce89ac6cfa47fdd4b34))
+
+## [9.12.0](https://github.com/opengovsg/formsg/compare/v9.11.1...v9.12.0) (2026-08-25)
+
+
+### Features
+
+* **auth-wogad:** accept a PKCE code verifier at /verify (#9888) ([#9888](https://github.com/opengovsg/formsg/commit/99cb6130572e22db48dbcd7fd154cb095ef32ddc))
+* **auth-wogad:** issue an S256 PKCE challenge at /authUrl (#9889) ([#9889](https://github.com/opengovsg/formsg/commit/2c6382021dbff1cc5b5da0969dba322857d08fe1))
+
+
+### Bug Fixes
+
+* **public-form:** thread form colorScheme to issue feedback modal buttons (#9887) ([#9887](https://github.com/opengovsg/formsg/commit/17fbfde6b02d10d06358fbe20889359a8276e598))
+
+
+### Chores
+
+* remove unused commented out import (#9870) ([#9870](https://github.com/opengovsg/formsg/commit/f13af8f375b6e177c7e285f97873ffc8804a0724))
+
+## [9.11.1](https://github.com/opengovsg/formsg/compare/v9.11.0...v9.11.1) (2026-08-19)
+
+
+### Bug Fixes
+
+* **aws-s3:** floor presigned URL expiry to whole seconds (#9861) ([#9861](https://github.com/opengovsg/formsg/commit/064422a4804a42e8d1ccabeb74b2d20cc916bd06))
+* **snapshot-store:** finish aws-sdk v3 migration for the S5 snapshot store (#9868) ([#9868](https://github.com/opengovsg/formsg/commit/fd71a8e46440bffe27a2bccc9454d1c856b7d179))
+
+## [9.11.0](https://github.com/opengovsg/formsg/compare/v9.10.1...v9.11.0) (2026-08-18)
+
+
+### Features
+
+* **i18n/EditFieldDrawer:** extract edit-fieldtype component text (#9832) ([#9832](https://github.com/opengovsg/formsg/commit/6683df9fe1f2bf77fbcbd729685aa44ab9662411))
+* **save-draft:** enable save draft by default on forms created from scratch and remove flag requirements (#9833) ([#9833](https://github.com/opengovsg/formsg/commit/5e24250b3063aee06099062a6392380e517793bf))
+* track time spent on form creation selection screen via DD RUM custom action (#9855) ([#9855](https://github.com/opengovsg/formsg/commit/8cf32410929928ef70293804c03c12acf162a58a))
+
+
+### Chores
+
+* **frontend:** log chunk preload failures to Datadog (#9847) ([#9847](https://github.com/opengovsg/formsg/commit/fb27fabc2bb1b1a41429b2f3201ab9b7b435f793))
+
 ## [9.10.1](https://github.com/opengovsg/formsg/compare/v9.10.0...v9.10.1) (2026-08-17)
 
 

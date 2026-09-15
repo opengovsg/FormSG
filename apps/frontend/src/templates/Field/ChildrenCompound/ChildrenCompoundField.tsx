@@ -4,26 +4,20 @@ import {
   FieldArrayWithId,
   FieldError,
   useFieldArray,
-  UseFieldArrayRemove,
   useFormContext,
   UseFormReturn,
   useFormState,
 } from 'react-hook-form'
-import { BiPlus, BiTrash } from 'react-icons/bi'
 import {
   Box,
-  Divider,
   Flex,
   FormControl,
-  HStack,
   Input as ChakraInput,
   Spacer,
-  Text,
   VisuallyHidden,
   VStack,
 } from '@chakra-ui/react'
 import { get } from 'lodash'
-import simplur from 'simplur'
 
 import { DATE_DISPLAY_FORMAT } from 'formsg-shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
@@ -38,12 +32,10 @@ import { formatMyinfoDate } from 'formsg-shared/utils/dates'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 import { createChildrenValidationRules } from '~utils/fieldValidation'
-import { Button } from '~components/Button/Button'
 import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
-import { IconButton } from '~components/IconButton/IconButton'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import {
@@ -57,11 +49,18 @@ export interface ChildrenCompoundFieldProps extends BaseFieldProps {
   myInfoChildrenBirthRecords?: MyInfoChildData
 }
 
+const ARIA_CHILDREN_DESCRIPTION =
+  `This is a children field. There is 1 child. ` +
+  `Each child has multiple fields to fill. ` +
+  `You can fill the child by selecting the child's name from the child name dropdown.`
+
 /**
  * Compound field for child information.
  * This is "compound" because it can contain multiple subfields.
  * The internal data representation is an array of arrays, where each
- * subarray contains strings that represent the subfield array inputs.
+ * subarray contains strings that represent the subfield array inputs. The outer
+ * array holds one child, but stays an array so stored multi-child responses keep
+ * their shape.
  *
  * @precondition Must have a parent `react-hook-form#FormProvider` component.
  */
@@ -86,12 +85,10 @@ export const ChildrenCompoundField = ({
     | undefined
   const childError: FieldError[] | undefined = error ? error[0] : undefined
 
-  const { fields, append, remove } = useFieldArray<ChildrenCompoundFieldInputs>(
-    {
-      control: formContext.control,
-      name: `${schema._id}.child`,
-    },
-  )
+  const { fields, append } = useFieldArray<ChildrenCompoundFieldInputs>({
+    control: formContext.control,
+    name: `${schema._id}.child`,
+  })
 
   useEffect(() => {
     if (schema.childrenSubFields) {
@@ -109,19 +106,6 @@ export const ChildrenCompoundField = ({
     }
   }, [fields, append])
 
-  const ariaChildrenDescription = useMemo(() => {
-    let description = simplur`This is a children field. There [is|are] ${fields.length} child[|ren].`
-    description += `Each child has multiple fields to fill.`
-    description += `You can fill the child by selecting the child's name from the child name dropdown.`
-    if (schema.allowMultiple) {
-      description += ` You can add another child if you'd like by clicking the "Add another child" button below`
-    }
-
-    return description
-  }, [fields.length, schema.allowMultiple])
-
-  const numChild = fields.length ?? 0
-
   return (
     <FieldContainer
       schema={schema}
@@ -129,7 +113,7 @@ export const ChildrenCompoundField = ({
       errorKey={childrenInputName}
     >
       <VisuallyHidden id={`children-desc-${schema._id}`}>
-        {ariaChildrenDescription}
+        {ARIA_CHILDREN_DESCRIPTION}
       </VisuallyHidden>
       <VStack
         spacing={6}
@@ -147,10 +131,8 @@ export const ChildrenCompoundField = ({
                   currChildBodyIdx,
                   schema,
                   disableRequiredValidation,
-                  fields,
                   field,
                   colorTheme,
-                  remove,
                   myInfoChildrenBirthRecords,
                   isSubmitting,
                   formContext,
@@ -160,26 +142,6 @@ export const ChildrenCompoundField = ({
             ))}
           </VStack>
         </>
-        {schema.allowMultiple ? (
-          <HStack>
-            <Button
-              isDisabled={isSubmitting}
-              alignSelf="start"
-              leftIcon={<BiPlus />}
-              aria-label="Add another child"
-              onClick={() => {
-                append([''])
-              }}
-            >
-              Add another child
-            </Button>
-            <Spacer />
-            <Text
-              textStyle="body-2"
-              color="secondary.400"
-            >{simplur`${numChild} child[|ren] added`}</Text>
-          </HStack>
-        ) : null}
       </VStack>
     </FieldContainer>
   )
@@ -189,14 +151,8 @@ interface ChildrenBodyProps {
   currChildBodyIdx: number
   schema: ChildrenCompoundFieldSchema
   disableRequiredValidation?: boolean
-  fields: FieldArrayWithId<
-    ChildrenCompoundFieldInputs,
-    `${string}.child`,
-    'id'
-  >[]
   field: FieldArrayWithId<ChildrenCompoundFieldInputs, `${string}.child`, 'id'>
   colorTheme: FormColorTheme
-  remove: UseFieldArrayRemove
   myInfoChildrenBirthRecords?: MyInfoChildData
   isSubmitting: boolean
 
@@ -211,10 +167,8 @@ const ChildrenBody = ({
   currChildBodyIdx,
   schema,
   disableRequiredValidation,
-  fields,
   field,
   colorTheme,
-  remove,
   myInfoChildrenBirthRecords,
   isSubmitting,
   formContext,
@@ -352,19 +306,6 @@ const ChildrenBody = ({
               </FormErrorMessage>
             </FormControl>
           </Box>
-          <IconButton
-            variant="clear"
-            colorScheme="danger"
-            icon={<BiTrash />}
-            aria-label="Remove child"
-            alignSelf="end"
-            isDisabled={fields.length <= 1}
-            onClick={() => {
-              if (fields.length > 1) {
-                remove(fields.length - 1)
-              }
-            }}
-          />
         </Flex>
       </VStack>
       {schema.childrenSubFields
@@ -489,14 +430,6 @@ const ChildrenBody = ({
               return <div>Unsupported child subfield</div>
           }
         })}
-      {/* No divider on last child */}
-      {currChildBodyIdx < fields.length - 1 ? (
-        <>
-          <Spacer h="36px" />
-          <Divider />
-          <Spacer h="36px" />
-        </>
-      ) : null}
     </VStack>
   )
 }

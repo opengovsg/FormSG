@@ -12,6 +12,12 @@ export const enSG = {
       closed: 'CLOSED',
     },
     ariaLabel: 'Toggle form status',
+    incompleteWorkflowModal: {
+      title: 'Finish building your workflow before publishing your form.',
+      description: "These steps aren't finished yet:",
+      confirm: 'Go to workflow',
+      cancel: 'Cancel',
+    },
   },
   limit: {
     label: 'Set a response limit',
@@ -29,6 +35,21 @@ export const enSG = {
     },
     limitLessThanCurrent:
       'Submission limit must be greater than current submission count ({currentResponseCount})',
+  },
+  expiry: {
+    label: 'Set a form closing date',
+    input: {
+      label: 'Closing date and time',
+      timeLabel: 'Closing time',
+      description:
+        'Your form will automatically close at the set date and time (SGT). Responses after will not be accepted.',
+    },
+    toast: {
+      success: 'Your form will now automatically close on {closeAt}.',
+      successRemoved: 'The closing date on your form is removed.',
+    },
+    dateInThePast: 'Closing date must be in the future',
+    invalidTime: 'Please enter a valid time',
   },
   customisation: {
     closedFormMessage: 'Set message for closed form',

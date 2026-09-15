@@ -1,0 +1,25 @@
+name: Deploy Scheduled Closure Lambda to stg-alt
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  push:
+    branches:
+      - stg-alt
+
+jobs:
+  deploy-scheduled-closure-lambda:
+    name: Deploy Scheduled Closure Lambda
+    uses: ./.github/workflows/deploy-scheduled-closure-lambda.yml
+    with:
+      gha-environment: 'stg-alt'
+      checkoutBranch: 'stg-alt'
+      environment: 'stg-alt'
+    secrets:
+      cicd-role: ${{ secrets.IAC_AWS_CI_ROLE_TO_ASSUME }}

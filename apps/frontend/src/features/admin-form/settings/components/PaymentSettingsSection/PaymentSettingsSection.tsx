@@ -38,6 +38,7 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { useEnv } from '~features/env/queries'
 
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
+import { isPaymentCapableFormSettings } from '../../utils'
 
 import { BusinessInfoSection } from './BusinessInfoSection'
 import { GstToggleSection } from './GstToggleSection'
@@ -401,7 +402,7 @@ export const PaymentSettingsSection = (): JSX.Element => {
   const { data: { secretEnv } = {} } = useEnv()
   const isProductionEnv = secretEnv === 'production'
 
-  return settings?.responseMode === FormResponseMode.Encrypt ? (
+  return settings && isPaymentCapableFormSettings(settings) ? (
     <Skeleton isLoaded={!settingsIsLoading}>
       {settings.payments_channel.channel === PaymentChannel.Unconnected ? (
         <BeforeConnectionInstructions isProductionEnv={isProductionEnv} />

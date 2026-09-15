@@ -29,6 +29,7 @@ import {
   FormWorkflowDto,
   FormWorkflowStepDto,
   LogicDto,
+  MultirespondentFormSettings,
   PaymentChannel,
   SettingsUpdateDto,
   StartPageUpdateDto,
@@ -44,6 +45,10 @@ import {
   isNricValid,
 } from 'formsg-shared/utils/nric-validation'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
+import {
+  getIncompleteStepNumbers,
+  mustWorkflowBeComplete,
+} from 'formsg-shared/utils/workflow-step-completion'
 import { assignIn, last, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
@@ -95,6 +100,7 @@ import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
   FormInvalidResponseModeError,
   FormNotFoundError,
+  FormOpenToResponsesError,
   FormWhitelistSettingNotFoundError,
   LogicNotFoundError,
   TransferOwnershipError,
@@ -106,6 +112,7 @@ import {
   getLogicById,
   isFormEmailMode,
   isFormEncryptMode,
+  isFormMultirespondent,
 } from '../form.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
@@ -494,7 +501,8 @@ type MultirespondentFormToCreate = Merge<
  * @returns err(Database*Error) on database errors
  */
 export const createForm = (
-  formParams: Merge<IForm, { admin: string }>,
+  // isSaveDraftEnabled omitted: creation decides it, not the caller.
+  formParams: Omit<Merge<IForm, { admin: string }>, 'isSaveDraftEnabled'>,
   workspaceId?: string,
 ): ResultAsync<
   IFormDocument,
@@ -580,9 +588,13 @@ export const createForm = (
     }
   }
 
+  // Copied forms bypass createForm, so they keep inheriting their source's
+  // setting; the schema default stays false for forms predating the field.
+  const newFormParams = { ...formParams, isSaveDraftEnabled: true }
+
   if (workspaceId)
     return ResultAsync.fromPromise(
-      createFormInWorkspaceTransaction(formParams, workspaceId),
+      createFormInWorkspaceTransaction(newFormParams, workspaceId),
       (error) => {
         logger.error({
           message:
@@ -598,7 +610,7 @@ export const createForm = (
       },
     )
   return ResultAsync.fromPromise(
-    FormModel.create(formParams) as Promise<IFormDocument>,
+    FormModel.create(newFormParams) as Promise<IFormDocument>,
     (error) => {
       logger.error({
         message: 'Database error encountered when creating form',
@@ -1565,14 +1577,56 @@ export const updateFormWhitelistSetting = (
   })
 }
 
+const findIncompleteSteps = (
+  form: IPopulatedForm,
+  workflow: FormWorkflowDto,
+): number[] =>
+  getIncompleteStepNumbers(
+    workflow,
+    form.form_fields as unknown as FormFieldDto[],
+  )
+
+const incompleteStepsError = (
+  stepNumbers: number[],
+  action: string,
+): MalformedParametersError => {
+  const described = stepNumbers.map((n) => `step ${n + 1}`).join(', ')
+  return new MalformedParametersError(`Please complete ${described} ${action}.`)
+}
+
+const checkResultingWorkflowIsAllowed = (
+  form: IPopulatedForm,
+  workflow: FormWorkflowDto,
+): Result<true, MalformedParametersError> => {
+  if (!mustWorkflowBeComplete({ formStatus: form.status })) {
+    return ok(true)
+  }
+
+  const incompleteStepNumbers = findIncompleteSteps(form, workflow)
+  return incompleteStepNumbers.length === 0
+    ? ok(true)
+    : err(incompleteStepsError(incompleteStepNumbers, 'before saving'))
+}
+
 export const createWorkflowStep = (
   originalForm: IPopulatedForm,
   newWorkflowStep: FormWorkflowStepDto,
-): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+): ResultAsync<
+  FormWorkflowDto,
+  DatabaseError | FormNotFoundError | MalformedParametersError
+> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new FormInvalidResponseModeError(
         'Cannot update workflow step for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  if ((originalForm as IPopulatedMultirespondentForm).payments_field?.enabled) {
+    return errAsync(
+      new MalformedParametersError(
+        'Remove the payment field before adding workflow steps',
       ),
     )
   }
@@ -1670,13 +1724,16 @@ export const createWorkflowStep = (
   // Create new workflow step
   const updatedWorkflow = originalWorkflow.concat(newWorkflowStep)
 
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
+  if (check.isErr()) return errAsync(check.error)
+
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
   ) as IMultirespondentFormModel
 
   return ResultAsync.fromPromise(
-    MultirespondentFormModel.findByIdAndUpdate(
-      originalMrfForm._id,
+    MultirespondentFormModel.findOneAndUpdate(
+      { _id: originalMrfForm._id, 'payments_field.enabled': { $ne: true } },
       { workflow: updatedWorkflow },
       {
         new: true,
@@ -1698,7 +1755,13 @@ export const createWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      // The form exists (it was fetched to enter this function), so a miss
+      // here means the payments precondition failed.
+      return errAsync(
+        new MalformedParametersError(
+          'Remove the payment field before adding workflow steps',
+        ),
+      )
     }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
@@ -1816,6 +1879,9 @@ export const updateFormWorkflowStep = (
     index === stepNumber ? updatedWorkflowStep : step,
   )
 
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
+  if (check.isErr()) return errAsync(check.error)
+
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
   ) as IMultirespondentFormModel
@@ -1852,6 +1918,81 @@ export const updateFormWorkflowStep = (
   })
 }
 
+/**
+ * Deletes a form's entire workflow.
+ *
+ * This is what deleting step 1 means. A workflow's first step is the one that
+ * starts it, so removing it does not shorten the workflow — it stops there
+ * being one. Shifting step 2 up into its place, which is what deleting any
+ * other step does, would silently hand the workflow's entry point to a
+ * respondent who was never meant to have it.
+ *
+ * Refused while the form is open. Respondents may be part-way through a
+ * workflow right now, and pulling it out from under them mid-submission is not
+ * something an admin can undo. Closing the form first is a deliberate act that
+ * makes the consequence visible. The UI says the same thing in a modal, but
+ * this is the rule — the modal is a courtesy.
+ *
+ * Deliberately unrecoverable and deliberately total: every step goes, not just
+ * the first. The form reverts to an ordinary single-respondent form, which an
+ * empty workflow already means everywhere else in the codebase.
+ */
+export const deleteFormWorkflow = (
+  originalForm: IPopulatedForm,
+): ResultAsync<
+  FormWorkflowDto,
+  | DatabaseError
+  | FormNotFoundError
+  | FormInvalidResponseModeError
+  | FormOpenToResponsesError
+> => {
+  if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
+    return errAsync(
+      new FormInvalidResponseModeError(
+        'Cannot delete workflow for non-multirespondent mode forms',
+      ),
+    )
+  }
+
+  if (originalForm.status === FormStatus.Public) {
+    return errAsync(
+      new FormOpenToResponsesError(
+        'Close your form to new responses before deleting its workflow',
+      ),
+    )
+  }
+
+  const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+
+  const MultirespondentFormModel = getFormModelByResponseMode(
+    originalForm.responseMode,
+  ) as IMultirespondentFormModel
+
+  return ResultAsync.fromPromise(
+    MultirespondentFormModel.findByIdAndUpdate(
+      originalMrfForm._id,
+      { workflow: [] },
+      { new: true, runValidators: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error encountered while deleting form workflow in database',
+        meta: {
+          action: 'deleteFormWorkflow',
+          formId: originalMrfForm._id,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  })
+}
+
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
@@ -1867,15 +2008,23 @@ export const deleteFormWorkflowStep = (
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
   const originalWorkflow = originalMrfForm.workflow ?? []
 
+  // Express hands this over as a string; the route has no Joi cast. A strict
+  // equality check against 0 does not survive that, so compare the coercion.
+  const targetStepNumber = Number(stepNumber)
   const isStepNumberValid =
-    stepNumber >= 0 && stepNumber < originalWorkflow.length
+    Number.isInteger(targetStepNumber) &&
+    targetStepNumber >= 0 &&
+    targetStepNumber < originalWorkflow.length
   if (!isStepNumberValid) {
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  // Remove step with stepNumber from workflow
-  const updatedWorkflow = originalWorkflow
-  updatedWorkflow.splice(stepNumber, 1)
+  const updatedWorkflow = originalWorkflow.filter(
+    (_step, index) => index !== targetStepNumber,
+  )
+
+  const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
+  if (check.isErr()) return errAsync(check.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
@@ -1912,6 +2061,27 @@ export const deleteFormWorkflowStep = (
 }
 
 /**
+ * Clears a lapsed closeAt when an admin manually reopens a form, so the sweep
+ * does not immediately close it again. A future closeAt, or one supplied in the
+ * same request, is left alone.
+ */
+const withExpiredCloseAtCleared = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateDto,
+): SettingsUpdateDto => {
+  const isReopening = body.status === FormStatus.Public
+  const isReschedulingInSameRequest = body.closeAt !== undefined
+  const hasLapsedCloseAt =
+    !!originalForm.closeAt && new Date(originalForm.closeAt) <= new Date()
+
+  if (!isReopening || isReschedulingInSameRequest || !hasLapsedCloseAt) {
+    return body
+  }
+
+  return { ...body, closeAt: null }
+}
+
+/**
  * Updates form settings.
  * @param originalForm The original form to update settings for
  * @param body the subset of form settings to update
@@ -1944,6 +2114,24 @@ export const updateFormSettings = (
     }
   }
 
+  if (
+    body.status === FormStatus.Public &&
+    originalForm.responseMode === FormResponseMode.Multirespondent
+  ) {
+    const incompleteStepNumbers = findIncompleteSteps(
+      originalForm,
+      (originalForm as IPopulatedMultirespondentForm).workflow ?? [],
+    )
+    if (incompleteStepNumbers.length > 0) {
+      return errAsync(
+        incompleteStepsError(
+          incompleteStepNumbers,
+          'before opening your form to responses',
+        ),
+      )
+    }
+  }
+
   // Don't allow emails updates or single response per submitterId
   // if payments_field is enabled on the form
   if (isFormEncryptMode(originalForm)) {
@@ -1960,7 +2148,25 @@ export const updateFormSettings = (
     }
   }
 
-  const dotifiedSettingsToUpdate = dotifyObject(body)
+  if (isFormMultirespondent(originalForm)) {
+    const mrfBody = body as MultirespondentFormSettings
+    if (
+      originalForm.payments_field?.enabled &&
+      ((mrfBody.emails && mrfBody.emails.length > 0) ||
+        mrfBody.stepOneEmailNotificationFieldId ||
+        body.isSingleSubmission)
+    ) {
+      return errAsync(
+        new MalformedParametersError(
+          'Cannot update email notification or single submission settings when payments are enabled',
+        ),
+      )
+    }
+  }
+
+  const dotifiedSettingsToUpdate = dotifyObject(
+    withExpiredCloseAtCleared(originalForm, body),
+  )
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
 
   return ResultAsync.fromPromise(

@@ -16,6 +16,7 @@ import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedb
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import {
   createWorkflowStep,
+  deleteWorkflow,
   deleteWorkflowStep,
   updateWorkflowStep,
 } from './FormWorkflowService'
@@ -25,7 +26,7 @@ export const useWorkflowMutations = () => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const { formWorkflow } = useAdminFormWorkflow()
+  const { formWorkflow, formFields } = useAdminFormWorkflow()
   if (!formWorkflow) throw new Error('No form workflow found')
 
   const queryClient = useQueryClient()
@@ -62,7 +63,7 @@ export const useWorkflowMutations = () => {
           description: 'The step was successfully created.',
         })
 
-        if (isWorkflowFeedbackEligible(updatedWorkflow)) {
+        if (isWorkflowFeedbackEligible(updatedWorkflow, formFields ?? [])) {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
@@ -92,6 +93,23 @@ export const useWorkflowMutations = () => {
     },
   )
 
+  const deleteWorkflowMutation = useMutation(() => deleteWorkflow(formId), {
+    onSuccess: (updatedWorkflow) => {
+      toast.closeAll()
+      queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
+        if (!prev) throw new Error('Query should have been set')
+        if (prev.responseMode !== FormResponseMode.Multirespondent) {
+          throw new Error('Invalid response mode')
+        }
+        return { ...prev, workflow: updatedWorkflow }
+      })
+      toast({
+        description: 'Your workflow was deleted.',
+      })
+    },
+    onError: handleError,
+  })
+
   const updateStepMutation = useMutation(
     ({
       stepNumber,
@@ -116,7 +134,7 @@ export const useWorkflowMutations = () => {
           description: 'The step was successfully updated.',
         })
 
-        if (isWorkflowFeedbackEligible(updatedWorkflow)) {
+        if (isWorkflowFeedbackEligible(updatedWorkflow, formFields ?? [])) {
           useAdminFeedbackStore.getState().setEligible('workflow', formId)
         }
       },
@@ -127,6 +145,7 @@ export const useWorkflowMutations = () => {
   return {
     createStepMutation,
     deleteStepMutation,
+    deleteWorkflowMutation,
     updateStepMutation,
   }
 }

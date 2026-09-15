@@ -107,6 +107,23 @@ export const patchAdminFormSettings = ({
   )
 }
 
+export const getAdminFormStripeValidate = ({
+  delay = 0,
+}: {
+  delay?: number | 'infinite'
+} = {}) => {
+  return http.get<{ formId: string }, never>(
+    '/api/v3/admin/forms/:formId/stripe/validate',
+    async () => {
+      await MswDelay(delay)
+      return HttpResponse.json(
+        { account: { charges_enabled: true } },
+        { status: 200 },
+      )
+    },
+  )
+}
+
 export const putFormWhitelistSettingSimulateCsvStringValidationError = (
   formId: string,
 ) => {

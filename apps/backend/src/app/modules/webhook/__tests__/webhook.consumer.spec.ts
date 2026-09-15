@@ -7,8 +7,17 @@ import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
 import getSubmissionModel from 'src/app/models/submission.server.model'
+import {
+  SnapshotAccessDeniedError,
+  SnapshotDataIntegrityError,
+  SnapshotFormatNotRecordedError,
+  SnapshotReadError,
+} from 'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.errors'
+import { SubmissionSnapshotV4 } from 'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.schema'
+import * as SnapshotStore from 'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.store'
 import { SubmissionWebhookInfo } from 'src/types'
 
+import { QUEUE_MESSAGE_SNAPSHOT_VERSION } from '../webhook.constants'
 import { createWebhookQueueHandler } from '../webhook.consumer'
 import { WebhookPushToQueueError } from '../webhook.errors'
 import { WebhookProducer } from '../webhook.producer'
@@ -17,6 +26,11 @@ import { WebhookQueueMessageObject } from '../webhook.types'
 
 jest.mock('../webhook.service')
 const MockWebhookService = jest.mocked(WebhookService)
+
+jest.mock(
+  'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.store',
+)
+const MockSnapshotStore = jest.mocked(SnapshotStore)
 
 const SubmissionModel = getSubmissionModel(mongoose)
 
@@ -62,6 +76,51 @@ const MOCK_WEBHOOK_INFO = {
     },
   },
 } as SubmissionWebhookInfo
+
+const MOCK_FORM_ID = new ObjectId().toHexString()
+
+/**
+ * An MRF row that has advanced past the step a retry is redelivering: its
+ * content is the LATEST step's, so anything the retry ships from the live row
+ * is immediately visible.
+ */
+const MOCK_MRF_WEBHOOK_INFO: SubmissionWebhookInfo = {
+  isRetryEnabled: true,
+  webhookUrl: 'https://plumber.gov.sg/webhooks/retry',
+  webhookView: {
+    data: {
+      formId: MOCK_FORM_ID,
+      submissionId: VALID_MESSAGE_BODY.submissionId,
+      encryptedContent: 'latest-step-encrypted-content',
+      verifiedContent: 'latest-step-verified-content',
+      version: 4,
+      created: new Date('2026-07-22T00:00:00.000Z'),
+      attachmentDownloadUrls: {},
+      paymentContent: {},
+      workflowContent: {
+        workflow: [],
+        workflowStep: 1,
+        submittedSteps: [
+          { isApproval: false, submittedAt: '2026-07-22T00:00:00.000Z' },
+          { isApproval: false, submittedAt: '2026-07-22T01:00:00.000Z' },
+        ],
+      },
+    },
+  },
+  submittedStepSnapshotTokens: [{ v4: 'tok-step-0' }, { v4: 'tok-step-1' }],
+}
+
+const MOCK_SNAPSHOT: SubmissionSnapshotV4 = {
+  _v: 1,
+  contentFormat: 'v4',
+  formId: MOCK_FORM_ID,
+  submissionId: VALID_MESSAGE_BODY.submissionId,
+  submissionIndex: 0,
+  workflowStep: 0,
+  encryptedContent: 'frozen-step-0-encrypted-content',
+  encryptedSubmissionSecretKey: 'wrapped-read-key',
+  createdAt: '2026-07-22T00:00:00.000Z',
+}
 
 describe('webhook.consumer', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -282,6 +341,118 @@ describe('webhook.consumer', () => {
         MOCK_WEBHOOK_FAILURE_RESPONSE,
       )
       expect(FAILURE_PRODUCER.sendMessage).toHaveBeenCalled()
+    })
+
+    describe('snapshot replay', () => {
+      const SNAPSHOT_MESSAGE_BODY: WebhookQueueMessageObject = {
+        submissionId: VALID_MESSAGE_BODY.submissionId,
+        snapshotRef: {
+          submissionIndex: 0,
+          contentFormat: 'v4',
+        },
+        previousAttempts: [Date.now()],
+        nextAttempt: Date.now(),
+        _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
+      }
+      const SNAPSHOT_SQS_MESSAGE: Message = {
+        Body: JSON.stringify(SNAPSHOT_MESSAGE_BODY),
+      }
+
+      beforeEach(() => {
+        jest
+          .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
+          .mockResolvedValue(MOCK_MRF_WEBHOOK_INFO)
+        MockWebhookService.sendWebhook.mockReturnValue(
+          okAsync(MOCK_WEBHOOK_SUCCESS_RESPONSE),
+        )
+      })
+
+      it('should redeliver the frozen step submission, not the live row, for a snapshot message', async () => {
+        MockSnapshotStore.readV4Snapshot.mockReturnValue(okAsync(MOCK_SNAPSHOT))
+
+        await expect(
+          createWebhookQueueHandler(SUCCESS_PRODUCER)(SNAPSHOT_SQS_MESSAGE),
+        ).toResolve()
+
+        expect(MockSnapshotStore.readV4Snapshot).toHaveBeenCalledWith(
+          expect.objectContaining({
+            submissionIndex: 0,
+            token: 'tok-step-0',
+          }),
+        )
+        const [sentView] = MockWebhookService.sendWebhook.mock.calls[0]
+        expect(sentView.data.encryptedContent).toBe(
+          MOCK_SNAPSHOT.encryptedContent,
+        )
+      })
+
+      it('should redeliver from the live row for an in-flight legacy message', async () => {
+        await expect(
+          createWebhookQueueHandler(SUCCESS_PRODUCER)(VALID_SQS_MESSAGE),
+        ).toResolve()
+
+        expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+        expect(MockWebhookService.sendWebhook).toHaveBeenCalledWith(
+          MOCK_MRF_WEBHOOK_INFO.webhookView,
+          MOCK_MRF_WEBHOOK_INFO.webhookUrl,
+        )
+      })
+
+      it.each([
+        ['a data-integrity failure', new SnapshotDataIntegrityError()],
+        [
+          'a produce/deliver disagreement',
+          new SnapshotFormatNotRecordedError(),
+        ],
+      ])(
+        'should delete the message without attempting the webhook on %s',
+        async (_case, storeError) => {
+          MockSnapshotStore.readV4Snapshot.mockReturnValue(errAsync(storeError))
+
+          await expect(
+            createWebhookQueueHandler(SUCCESS_PRODUCER)(SNAPSHOT_SQS_MESSAGE),
+          ).toResolve()
+
+          expect(MockWebhookService.sendWebhook).not.toHaveBeenCalled()
+          expect(SUCCESS_PRODUCER.sendMessage).not.toHaveBeenCalled()
+        },
+      )
+
+      it.each([
+        ['a transient read failure', new SnapshotReadError()],
+        ['a denied read', new SnapshotAccessDeniedError()],
+      ])(
+        'should leave the message for redelivery, with no webhook attempt burned, on %s',
+        async (_case, storeError) => {
+          MockSnapshotStore.readV4Snapshot.mockReturnValue(errAsync(storeError))
+
+          await expect(
+            createWebhookQueueHandler(SUCCESS_PRODUCER)(SNAPSHOT_SQS_MESSAGE),
+          ).toReject()
+
+          expect(MockWebhookService.sendWebhook).not.toHaveBeenCalled()
+          expect(MockWebhookService.saveWebhookRecord).not.toHaveBeenCalled()
+          expect(SUCCESS_PRODUCER.sendMessage).not.toHaveBeenCalled()
+        },
+      )
+
+      it('should carry the named step submission into the requeued message when the retry fails', async () => {
+        MockSnapshotStore.readV4Snapshot.mockReturnValue(okAsync(MOCK_SNAPSHOT))
+        MockWebhookService.sendWebhook.mockReturnValue(
+          okAsync(MOCK_WEBHOOK_FAILURE_RESPONSE),
+        )
+
+        await expect(
+          createWebhookQueueHandler(SUCCESS_PRODUCER)(SNAPSHOT_SQS_MESSAGE),
+        ).toResolve()
+
+        const [requeued] = (SUCCESS_PRODUCER.sendMessage as jest.Mock).mock
+          .calls[0]
+        expect(requeued.snapshotRef).toEqual({
+          submissionIndex: 0,
+          contentFormat: 'v4',
+        })
+      })
     })
   })
 })

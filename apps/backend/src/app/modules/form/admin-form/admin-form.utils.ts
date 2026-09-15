@@ -39,6 +39,7 @@ import {
   ForbiddenFormError,
   FormDeletedError,
   FormNotFoundError,
+  FormOpenToResponsesError,
   LogicNotFoundError,
   PrivateFormError,
   TransferOwnershipError,
@@ -46,6 +47,7 @@ import {
 import { UNICODE_ESCAPED_REGEX } from '../form.utils'
 
 import {
+  DeleteFirstWorkflowStepError,
   EditFieldError,
   FieldNotFoundError,
   GoGovAlreadyExistError,
@@ -60,6 +62,7 @@ import {
   ModelResponseInvalidSchemaFormatError,
   ModelResponseInvalidSyntaxError,
   PaymentChannelNotFoundError,
+  WorkflowDeletionDisabledError,
 } from './admin-form.errors'
 import {
   AssertFormFn,
@@ -88,6 +91,7 @@ export const mapRouteError = (
       }
     case InvalidFileTypeError:
     case CreatePresignedPostError:
+    case DeleteFirstWorkflowStepError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
@@ -95,6 +99,7 @@ export const mapRouteError = (
     case FormNotFoundError:
     case FieldNotFoundError:
     case LogicNotFoundError:
+    case WorkflowDeletionDisabledError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
         errorMessage: error.message,
@@ -102,6 +107,13 @@ export const mapRouteError = (
     case FormDeletedError:
       return {
         statusCode: StatusCodes.GONE,
+        errorMessage: error.message,
+      }
+    // Conflict rather than forbidden: the admin is allowed to do this, just not
+    // while the form is open. Closing it makes the same request succeed.
+    case FormOpenToResponsesError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
         errorMessage: error.message,
       }
     case PrivateFormError:

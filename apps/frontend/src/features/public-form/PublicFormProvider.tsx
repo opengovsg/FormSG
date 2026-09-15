@@ -66,6 +66,7 @@ import {
   isFieldEnabledByMrfWorkflow,
 } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { extractMrfPreviousStepResponseValue } from '~features/form/utils/extractMrfPreviousStepResponseValue'
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 import { hasExistingFieldValue } from '~features/myinfo/utils'
 import { augmentWithMyInfo } from '~features/myinfo/utils/augmentWithMyInfo'
 import { extractPreviewValue } from '~features/myinfo/utils/extractPreviewValue'
@@ -673,9 +674,7 @@ export const PublicFormProvider = ({
     captchaType = CaptchaTypes.Recaptcha
   }
 
-  const isPaymentEnabled =
-    data?.form.responseMode === FormResponseMode.Encrypt &&
-    data.form.payments_field.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(data?.form)
 
   const hasMyInfoError = !!data?.errorCodes?.find(
     (errorCode) => errorCode === ErrorCode.myInfo,
@@ -1298,26 +1297,63 @@ export const PublicFormProvider = ({
               }
             })
         }
-        case FormResponseMode.Multirespondent:
+        case FormResponseMode.Multirespondent: {
+          // Payment fields only apply on creation: a payment-enabled form is
+          // necessarily zero-step, so the update path never carries them.
+          const mrfPaymentData =
+            !previousSubmissionId && form.payments_field?.enabled
+              ? {
+                  paymentReceiptEmail: paymentReceiptEmailField?.value,
+                  paymentProducts: paymentProducts?.filter<ProductItem>(
+                    (product): product is ProductItem =>
+                      product.selected && product.quantity > 0,
+                  ),
+                  ...(form.payments_field.payment_type === PaymentType.Variable
+                    ? {
+                        payments: {
+                          amount_cents: dollarsToCents(
+                            paymentVariableInputAmountField ?? '0',
+                          ),
+                        },
+                      }
+                    : {}),
+                }
+              : {}
+
           return (
             previousSubmissionId
               ? updateMultirespondentSubmissionMutation
               : submitMultirespondentFormMutation
           )
-            .mutateAsync(formData, {
-              onSuccess: ({ submissionId, timestamp, mrfStep }) => {
-                trackSubmitForm(form)
-                setSubmissionData({
-                  id: submissionId,
+            .mutateAsync(
+              { ...formData, ...mrfPaymentData },
+              {
+                onSuccess: ({
+                  submissionId,
                   timestamp,
                   mrfStep,
-                })
+                  // payment forms will have non-empty paymentData field
+                  paymentData,
+                }) => {
+                  trackSubmitForm(form)
+                  if (paymentData) {
+                    navigate(getPaymentPageUrl(formId, paymentData.paymentId))
+                    storePaymentMemory(paymentData.paymentId)
+                    return
+                  }
+                  setSubmissionData({
+                    id: submissionId,
+                    timestamp,
+                    mrfStep,
+                  })
+                },
               },
-            })
+            )
             .then(() => clearDraftSubmission())
             .catch(async (error) => {
               showErrorToast(error, form)
             })
+        }
       }
     },
     [

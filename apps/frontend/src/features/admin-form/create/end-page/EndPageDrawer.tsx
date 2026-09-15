@@ -12,7 +12,7 @@ import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 import validator from 'validator'
 
-import { FormEndPage, FormResponseMode } from 'formsg-shared/types'
+import { FormEndPage } from 'formsg-shared/types'
 
 import { REQUIRED_ERROR } from '~constants/validation'
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -24,6 +24,7 @@ import Textarea from '~components/Textarea'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 
 import {
   setIsDirtySelector,
@@ -244,9 +245,7 @@ export const EndPageDrawer = (): JSX.Element | null => {
   )
   const { t } = useTranslation()
 
-  const isPaymentEnabled =
-    form?.responseMode === FormResponseMode.Encrypt &&
-    form?.payments_field.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(form)
 
   useEffect(() => {
     setData(form?.endPage)

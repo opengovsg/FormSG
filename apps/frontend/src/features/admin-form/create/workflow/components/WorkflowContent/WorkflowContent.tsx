@@ -1,21 +1,50 @@
-import { Box, Divider, Stack, Text } from '@chakra-ui/react'
+import { useTranslation } from 'react-i18next'
+import { BiTrash } from 'react-icons/bi'
+import {
+  Box,
+  Divider,
+  Flex,
+  Stack,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
+import IconButton from '~components/IconButton'
 
 import { StatusTrackerToggle } from '~features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
+import { DeleteWorkflowModal } from '../DeleteWorkflowModal'
+import { GuidedSetupToggle, useReportedCompletedStep } from '../GuidedCreation'
 
+import { CompletionEmailBlock } from './CompletionEmailBlock'
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'
 import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
 
+export const STEP_CONNECTOR_TEST_ID = 'workflow-step-connector'
+
 export const WorkflowContent = (): JSX.Element | null => {
+  const { t } = useTranslation()
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
+  const isRedesign = useIsWorkflowBuilderRedesign()
+  const isReportingCompletedStep = useReportedCompletedStep() !== null
+  const {
+    isOpen: isDeleteModalOpen,
+    onClose: onDeleteModalClose,
+    onOpen: onDeleteModalOpen,
+  } = useDisclosure()
 
   if (isLoading) return null
   return (
     <Stack color="secondary.500" spacing="2.75rem" mt="1.5rem">
+      <DeleteWorkflowModal
+        isOpen={isDeleteModalOpen}
+        onClose={onDeleteModalClose}
+        entryPoint="workflow-card"
+      />
       {/* <HeaderBlock /> */}
       <Box
         bg="white"
@@ -25,26 +54,67 @@ export const WorkflowContent = (): JSX.Element | null => {
         padding="1.5rem"
       >
         <Stack gap={'1.5rem'}>
-          <Text as="h2" textStyle="h2">
-            Workflow
-          </Text>
+          <Flex align="center" justify="space-between">
+            <Text as="h2" textStyle="h2">
+              Workflow
+            </Text>
+            {/* Grey at rest, red on intent. A red button sitting in the
+                corner of a page reads as a warning about the page's state
+                rather than as an action, so the destructive colour waits until
+                the pointer is on it. The resting grey matches the pencil on
+                the step cards, so the two affordances read as one family.
+
+                The states are set inline rather than through a variant: the
+                clear variant derives every state from a single colorScheme and
+                so cannot span two, and one call site does not warrant a
+                theme-wide variant that would invite use where plain danger is
+                correct. */}
+            {isRedesign ? (
+              <IconButton
+                variant="clear"
+                colorScheme="danger"
+                color="neutral.500"
+                transitionProperty="common"
+                transitionDuration="normal"
+                _hover={{ color: 'danger.500', bg: 'danger.100' }}
+                _active={{ color: 'danger.500', bg: 'danger.200' }}
+                aria-label={t(
+                  'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
+                )}
+                icon={<BiTrash />}
+                onClick={onDeleteModalOpen}
+              />
+            ) : null}
+          </Flex>
           <Divider />
           <StatusTrackerToggle />
+          <GuidedSetupToggle />
         </Stack>
       </Box>
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (
           <WorkflowBlockFactory key={i} stepNumber={i} step={step} />
         ))}
-        <NewStepBlock />
+        {isReportingCompletedStep ? null : <NewStepBlock />}
       </Stack>
-      {formWorkflow?.length ? <WorkflowCompletionMessageBlock /> : null}
+      {formWorkflow?.length ? (
+        isRedesign ? (
+          <CompletionEmailBlock />
+        ) : (
+          <WorkflowCompletionMessageBlock />
+        )
+      ) : null}
     </Stack>
   )
 }
 
 const WorkflowStepBlockDivider = () => (
-  <Box alignSelf="center" justifyContent="center" border="none">
+  <Box
+    data-testid={STEP_CONNECTOR_TEST_ID}
+    alignSelf="center"
+    justifyContent="center"
+    border="none"
+  >
     <Divider
       orientation="vertical"
       h="1rem"

@@ -29,6 +29,7 @@ const baseStyle = definePartsStyle({
       outline: 'none',
     },
     flexGrow: 1,
+    minW: 0,
     _disabled: {
       cursor: 'not-allowed',
     },

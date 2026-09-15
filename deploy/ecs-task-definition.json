@@ -114,6 +114,10 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CRON_PAYMENT_API_SECRET"
         },
         {
+          "name": "CRON_SCHEDULED_CLOSURE_API_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CRON_SCHEDULED_CLOSURE_API_SECRET"
+        },
+        {
           "name": "SLACK_API_SECRET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SLACK_API_SECRET"
         },
@@ -260,6 +264,22 @@
         {
           "name": "SP_OIDC_RP_JWKS_SECRET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SP_OIDC_RP_JWKS_SECRET"
+        },
+        {
+          "name": "MYINFO_FAPI_ISSUER",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_ISSUER"
+        },
+        {
+          "name": "MYINFO_FAPI_CLIENT_ID",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_CLIENT_ID"
+        },
+        {
+          "name": "MYINFO_FAPI_RP_JWKS_PUBLIC",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_RP_JWKS_PUBLIC"
+        },
+        {
+          "name": "MYINFO_FAPI_RP_JWKS_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FAPI_RP_JWKS_SECRET"
         },
         {
           "name": "CP_OIDC_NDI_DISCOVERY_ENDPOINT",
@@ -438,6 +458,18 @@
         {
           "name": "WOGAD_AUTHORITY",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/WOGAD_AUTHORITY"
+        },
+        {
+          "name": "ONE_CLIENT_ID",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_CLIENT_ID"
+        },
+        {
+          "name": "ONE_OIDC_RP_JWKS_SECRET",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_OIDC_RP_JWKS_SECRET"
+        },
+        {
+          "name": "ONE_DISCOVERY_URL",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/ONE_DISCOVERY_URL"
         },
         {
           "name": "GUARDDUTY_QUARANTINE_S3_BUCKET",

@@ -18,9 +18,10 @@ import {
 } from '../spcp.errors'
 import { CpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.sp'
-import { JwtName } from '../spcp.types'
+import { CodeVerifierCookieName, JwtName } from '../spcp.types'
 
 import {
+  MOCK_CODE_VERIFIER_COOKIE_OPTIONS,
   MOCK_COOKIE_SETTINGS,
   MOCK_CP_FORM,
   MOCK_CP_OIDC_AUTHORISATION_CODE,
@@ -44,6 +45,10 @@ jest.mock('../spcp.oidc.service/spcp.oidc.service.sp')
 const MockSpOidcServiceClass = jest.mocked(SpOidcServiceClass)
 jest.mock('../spcp.oidc.service/spcp.oidc.service.cp')
 const MockCpOidcServiceClass = jest.mocked(CpOidcServiceClass)
+
+const { SpcpOidcServiceClass: ActualSpcpOidcServiceClass } = jest.requireActual(
+  '../spcp.oidc.service/spcp.oidc.service.base',
+) as typeof import('../spcp.oidc.service/spcp.oidc.service.base')
 jest.mock('../../billing/billing.service')
 const MockBillingService = jest.mocked(BillingService)
 jest.mock('src/app/modules/form/form.service')
@@ -54,10 +59,18 @@ MockConfig.isDevOrTest = false
 
 const MOCK_RESPONSE = expressHandler.mockResponse()
 
+const MOCK_SP_CODE_VERIFIER = 'mockSpCodeVerifier'
+const MOCK_CP_CODE_VERIFIER = 'mockCpCodeVerifier'
+
 const MOCK_SPOIDC_LOGIN_REQ = expressHandler.mockRequest({
   query: { state: MOCK_OIDC_STATE, code: MOCK_SP_OIDC_AUTHORISATION_CODE },
+  cookies: { [CodeVerifierCookieName.SP]: MOCK_SP_CODE_VERIFIER },
 })
 const MOCK_CPOIDC_LOGIN_REQ = expressHandler.mockRequest({
+  query: { state: MOCK_OIDC_STATE, code: MOCK_CP_OIDC_AUTHORISATION_CODE },
+  cookies: { [CodeVerifierCookieName.CP]: MOCK_CP_CODE_VERIFIER },
+})
+const MOCK_CPOIDC_LOGIN_REQ_NO_CODE_VERIFIER = expressHandler.mockRequest({
   query: { state: MOCK_OIDC_STATE, code: MOCK_CP_OIDC_AUTHORISATION_CODE },
 })
 
@@ -100,6 +113,17 @@ describe('spcp.controller', () => {
         mockSpOidcServiceClass.getCookieSettings.mockReturnValue(
           MOCK_COOKIE_SETTINGS,
         )
+        mockSpOidcServiceClass.getCodeVerifierCookieOptions.mockReturnValue(
+          MOCK_CODE_VERIFIER_COOKIE_OPTIONS,
+        )
+        mockSpOidcServiceClass.codeVerifierCookieName =
+          CodeVerifierCookieName.SP
+        mockSpOidcServiceClass.extractCodeVerifier.mockImplementation(
+          (cookies) => cookies[CodeVerifierCookieName.SP],
+        )
+        mockSpOidcServiceClass.getCodeVerifierCookieName.mockImplementation(
+          ActualSpcpOidcServiceClass.prototype.getCodeVerifierCookieName,
+        )
       })
 
       it('should set the cookie with the correct params and redirect to the destination', async () => {
@@ -112,7 +136,10 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_AUTHORISATION_CODE,
+          MOCK_SP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -139,6 +166,10 @@ describe('spcp.controller', () => {
           ...MOCK_COOKIE_SETTINGS,
         })
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
+        expect(MOCK_RESPONSE.clearCookie).toHaveBeenCalledWith(
+          CodeVerifierCookieName.SP,
+          expect.anything(),
+        )
       })
 
       it('should return 400 when token exchange fails', async () => {
@@ -154,12 +185,17 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_AUTHORISATION_CODE,
+          MOCK_SP_CODE_VERIFIER,
+        )
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
         expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
-        expect(mockSpOidcServiceClass.parseState).not.toHaveBeenCalled()
+        expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
+        )
         expect(mockSpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
         expect(mockSpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
@@ -180,7 +216,7 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        ).not.toHaveBeenCalled()
         expect(mockSpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
         )
@@ -209,7 +245,10 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_AUTHORISATION_CODE,
+          MOCK_SP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -242,7 +281,10 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_AUTHORISATION_CODE,
+          MOCK_SP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -270,7 +312,10 @@ describe('spcp.controller', () => {
 
         expect(
           mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_AUTHORISATION_CODE,
+          MOCK_SP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -302,7 +347,10 @@ describe('spcp.controller', () => {
 
         expect(
           mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_AUTHORISATION_CODE,
+          MOCK_SP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -338,7 +386,10 @@ describe('spcp.controller', () => {
 
         expect(
           mockSpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_SP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_SP_OIDC_AUTHORISATION_CODE,
+          MOCK_SP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -398,6 +449,17 @@ describe('spcp.controller', () => {
         mockCpOidcServiceClass.getCookieSettings.mockReturnValue(
           MOCK_COOKIE_SETTINGS,
         )
+        mockCpOidcServiceClass.getCodeVerifierCookieOptions.mockReturnValue(
+          MOCK_CODE_VERIFIER_COOKIE_OPTIONS,
+        )
+        mockCpOidcServiceClass.codeVerifierCookieName =
+          CodeVerifierCookieName.CP
+        mockCpOidcServiceClass.extractCodeVerifier.mockImplementation(
+          (cookies) => cookies[CodeVerifierCookieName.CP],
+        )
+        mockCpOidcServiceClass.getCodeVerifierCookieName.mockImplementation(
+          ActualSpcpOidcServiceClass.prototype.getCodeVerifierCookieName,
+        )
       })
 
       it('should set the cookie with the correct params and redirect to the destination', async () => {
@@ -410,7 +472,10 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_AUTHORISATION_CODE,
+          MOCK_CP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -437,6 +502,10 @@ describe('spcp.controller', () => {
           ...MOCK_COOKIE_SETTINGS,
         })
         expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
+        expect(MOCK_RESPONSE.clearCookie).toHaveBeenCalledWith(
+          CodeVerifierCookieName.CP,
+          expect.anything(),
+        )
       })
 
       it('should return 400 when token exchange fails', async () => {
@@ -452,17 +521,44 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_AUTHORISATION_CODE,
+          MOCK_CP_CODE_VERIFIER,
+        )
         expect(MOCK_RESPONSE.sendStatus).toHaveBeenCalledWith(400)
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.redirect).not.toHaveBeenCalled()
         expect(MockFormService.retrieveFullFormById).not.toHaveBeenCalled()
-        expect(mockCpOidcServiceClass.parseState).not.toHaveBeenCalled()
+        expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
+          MOCK_OIDC_STATE,
+        )
         expect(mockCpOidcServiceClass.createJWTPayload).not.toHaveBeenCalled()
         expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
         expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
         expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
         expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalled()
+      })
+
+      it('should proceed without code_verifier and still redirect when code verifier cookie is missing (backward compatibility with pre-PKCE in-flight logins)', async () => {
+        // Arrange
+        mockCpOidcServiceClass.jwtName = JwtName.CP
+
+        // Act
+        await loginHandler(
+          MOCK_CPOIDC_LOGIN_REQ_NO_CODE_VERIFIER,
+          MOCK_RESPONSE,
+          jest.fn(),
+        )
+
+        // Assert
+        expect(
+          mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE, undefined)
+        expect(MOCK_RESPONSE.clearCookie).toHaveBeenCalledWith(
+          CodeVerifierCookieName.CP,
+          expect.anything(),
+        )
+        expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
       })
 
       it('should return 400 when parse state fails', async () => {
@@ -478,7 +574,7 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
+        ).not.toHaveBeenCalled()
         expect(mockCpOidcServiceClass.parseState).toHaveBeenCalledWith(
           MOCK_OIDC_STATE,
         )
@@ -507,7 +603,10 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_AUTHORISATION_CODE,
+          MOCK_CP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -540,7 +639,10 @@ describe('spcp.controller', () => {
         // Assert
         expect(
           mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_AUTHORISATION_CODE,
+          MOCK_CP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -568,7 +670,10 @@ describe('spcp.controller', () => {
 
         expect(
           mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_AUTHORISATION_CODE,
+          MOCK_CP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -600,7 +705,10 @@ describe('spcp.controller', () => {
 
         expect(
           mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_AUTHORISATION_CODE,
+          MOCK_CP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )
@@ -636,7 +744,10 @@ describe('spcp.controller', () => {
 
         expect(
           mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
-        ).toHaveBeenCalledWith(MOCK_CP_OIDC_AUTHORISATION_CODE)
+        ).toHaveBeenCalledWith(
+          MOCK_CP_OIDC_AUTHORISATION_CODE,
+          MOCK_CP_CODE_VERIFIER,
+        )
         expect(MockFormService.retrieveFullFormById).toHaveBeenCalledWith(
           MOCK_TARGET,
         )

@@ -5,7 +5,7 @@ import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-dat
 import { ObjectId } from 'bson'
 import { FormAuthType, FormStatus } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
-import { err, errAsync } from 'neverthrow'
+import { errAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
@@ -263,7 +263,7 @@ describe('public-form.auth.routes', () => {
       })
       jest
         .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockResolvedValueOnce(err(new CreateRedirectUrlError()))
+        .mockReturnValueOnce(errAsync(new CreateRedirectUrlError()))
 
       // Act
       const response = await request

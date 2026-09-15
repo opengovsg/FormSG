@@ -21,7 +21,7 @@ const testSessionMiddlewares = () => {
   })
 
   return [
-    cookieParser(), // CookieParser should be above session
+    cookieParser('test-session-secret'), // CookieParser should be above session
     expressSession,
   ]
 }

@@ -915,8 +915,9 @@ export const getAnswersForChild = (
         _id: `${MyInfoAttribute.ChildrenBirthRecords}.${response._id}.${subFields[idx]}.${childIdx}`,
         fieldType: response.fieldType,
         // qnChildIdx represents the index of the MyInfo field
-        // childIdx represents the index of the child in this MyInfo field
-        // as there might be >1 child for each MyInfo child field if "Add another child" is used
+        // childIdx represents the index of the child in this MyInfo field.
+        // New submissions have one child; responses stored before v2.0 can have
+        // more and must keep exploding the same way.
         question: `Child ${qnChildIdx + childIdx + 1} ${
           MYINFO_ATTRIBUTE_MAP[subfield].description
         }`,

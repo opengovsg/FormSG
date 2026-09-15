@@ -102,6 +102,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Encrypt,
+        formOriginProcess: 'existing',
         formOrigins: {
           value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
         },
@@ -131,6 +132,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
+        formOriginProcess: 'existing',
         formOrigins: {
           value: [FormOrigin.Paper, FormOrigin.DigitalSpreadsheet],
         },
@@ -160,6 +162,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
+        formOriginProcess: 'existing',
         formOrigins: {
           value: [CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
           othersInput: 'Carrier pigeon',
@@ -192,6 +195,7 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
       result.current.formMethods.reset({
         title: 'My form',
         responseMode: FormResponseMode.Multirespondent,
+        formOriginProcess: 'existing',
         formOrigins: {
           value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
           othersInput: 'Carrier pigeon',
@@ -236,6 +240,32 @@ describe('useCreateFormWizardContext — paper-forms origin step', () => {
             value: [FormOrigin.Paper, CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
             othersInput: 'Carrier pigeon',
           },
+        },
+      }),
+    )
+  })
+
+  it('submits only the new-process value when formOriginProcess is "new", discarding stale Q2 ticks', async () => {
+    setFlags({ cutover: true, paperTracking: true })
+    const { result } = renderHook(() => useCreateFormWizardContext(vi.fn()))
+
+    act(() =>
+      result.current.formMethods.reset({
+        title: 'My form',
+        responseMode: FormResponseMode.Multirespondent,
+        formOriginProcess: 'new',
+        // Stale Q2 state left over from before the admin switched to "new".
+        formOrigins: { value: [FormOrigin.Paper] },
+      }),
+    )
+    await act(async () => {
+      await result.current.handleCreateStorageModeOrMultirespondentForm()
+    })
+
+    expect(mrfMutation.mutate.mock.calls[0][0]).toEqual(
+      expect.objectContaining({
+        metadata: {
+          formOrigins: { value: [FormOrigin.DigitalNew] },
         },
       }),
     )

@@ -1,5 +1,10 @@
 export * from './en-sg'
 
+interface CompletionPeekText {
+  title: string
+  subtitle: string
+}
+
 interface CsvColumnText {
   title: string
   explanation: string
@@ -7,6 +12,9 @@ interface CsvColumnText {
 }
 
 export interface Workflow {
+  aria: {
+    deleteWorkflow: string
+  }
   title: string
   respondentBlock: {
     stepRespondent: string
@@ -36,6 +44,26 @@ export interface Workflow {
     }
     modals: {
       deleteStep: {
+        title: string
+        description: string
+        confirm: string
+        cancel: string
+      }
+      deleteWorkflow: {
+        title: string
+        // Rendered as bullets. closeFormFirst stays a single string: one
+        // sentence as a lone bullet reads as a broken list.
+        description: string[]
+        confirm: string
+        cancel: string
+      }
+      deleteFirstStep: {
+        title: string
+        description: string[]
+        confirm: string
+        cancel: string
+      }
+      closeFormFirst: {
         title: string
         description: string
         confirm: string
@@ -112,11 +140,22 @@ export interface Workflow {
   }
   questions: {
     tooltip: string
-    tooltipRedesign: string
     label: string
     labelRedesign: string
     placeholder: string
     placeholderRedesign: string
+    autoAddHelperTextRedesign: string
+  }
+  emptyStates: {
+    noEmailField: string
+    noEmailFieldAction: string
+    noDropdownField: string
+    noDropdownFieldAction: string
+    noYesNoField: string
+    noYesNoFieldAction: string
+    noFields: string
+    noFieldsMyInfoOnly: string
+    noFieldsAction: string
   }
   approvals: {
     title: string
@@ -124,10 +163,12 @@ export interface Workflow {
     notRequired: string
     toggle: {
       label: string
+      labelRedesign: string
       description: string
       descriptionRedesign: string
       tooltip: string
       placeholder: string
+      selectorLabelRedesign: string
     }
     validation: {
       noField: string
@@ -146,5 +187,53 @@ export interface Workflow {
   }
   stepName: {
     label: string
+  }
+  guidedMode: {
+    label: string
+  }
+  skipGuidance: {
+    modal: {
+      title: string
+      bodyWithSteps: string
+      bodyWithoutSteps: string
+      confirm: string
+      cancel: string
+    }
+  }
+  welcome: {
+    header: string
+    stepOne: string
+    whatNext: string
+    cta: string
+  }
+  intro: {
+    header: string
+    subheader: string
+    guided: string
+    manual: string
+  }
+  guided: {
+    continue: string
+    back: string
+    cancel: string
+    done: string
+  }
+  paymentEnabledNoSteps: string
+  completionEmail: {
+    title: string
+    divider: string
+  }
+  completionPeek: {
+    stepOneDone: CompletionPeekText
+    laterStepDone: CompletionPeekText
+    emailSetUp: CompletionPeekText
+    statusTracking: CompletionPeekText
+    guidedSetupFinished: CompletionPeekText
+    actions: {
+      declineAnotherStep: string
+      addAnotherStep: string
+      continue: string
+      finish: string
+    }
   }
 }

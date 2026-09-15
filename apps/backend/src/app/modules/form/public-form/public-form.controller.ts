@@ -1,5 +1,6 @@
 import { HttpStatusCode } from 'axios'
 import { celebrate, Joi, Segments } from 'celebrate'
+import { randomBytes } from 'crypto'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   ErrorCode,
@@ -26,6 +27,16 @@ import { createReqMeta, getRequestIp } from '../../../utils/request'
 import { getFormIfPublic } from '../../auth/auth.service'
 import * as BillingService from '../../billing/billing.service'
 import { ControllerHandler } from '../../core/core.types'
+import { MYINFO_FAPI_SESSION_COOKIE_NAME } from '../../myinfo/fapi/myinfo.fapi.constants'
+import {
+  clearMyInfoFapiSessionCookie,
+  setMyInfoFapiSessionCookie,
+} from '../../myinfo/fapi/myinfo.fapi.controller'
+import {
+  MyInfoFapiIncompleteLoginError,
+  MyInfoFapiSessionFormMismatchError,
+} from '../../myinfo/fapi/myinfo.fapi.errors'
+import * as MyInfoFapiService from '../../myinfo/fapi/myinfo.fapi.service'
 import { MyInfoData } from '../../myinfo/myinfo.adapter'
 import {
   MYINFO_AUTH_CODE_COOKIE_NAME,
@@ -202,43 +213,94 @@ export const handleGetPublicForm: ControllerHandler<
       // We always want to clear existing login cookies because we no longer
       // have the prefilled data
       res.clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
-      const authCodeCookie: unknown = req.cookies[MYINFO_AUTH_CODE_COOKIE_NAME]
-      // No auth code cookie because user is accessing the form before logging
-      // in
-      if (!authCodeCookie) {
-        return res.json({
-          form: publicForm,
-          isIntranetUser,
-        })
-      }
-      // Clear auth code cookie once found, as it can't be reused
-      res.clearCookie(
-        MYINFO_AUTH_CODE_COOKIE_NAME,
-        MYINFO_AUTH_CODE_COOKIE_OPTIONS,
-      )
-      const useEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
-      const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
-        .asyncAndThen((authCode) => MyInfoService.retrieveAccessToken(authCode))
-        .andThen((accessToken) =>
-          MyInfoService.getMyInfoDataForForm(form, accessToken, useEsrvcId),
-        )
 
-      if (myInfoFieldsResult.isErr()) {
-        const error = myInfoFieldsResult.error
+      const authErrors: unknown[] = []
+
+      // Prefer FAPI when its cookie exists; fall back to the legacy auth code
+      // on failure.
+      const fapiSessionId: unknown =
+        req.signedCookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]
+      if (typeof fapiSessionId === 'string' && fapiSessionId) {
+        const fapiFieldsResult = await MyInfoFapiService.loadPersonForSession({
+          sessionId: fapiSessionId,
+          formId,
+        })
+        if (fapiFieldsResult.isErr()) {
+          const { error: fapiError } = fapiFieldsResult
+          authErrors.push(fapiError)
+
+          // Frontend tab-scoping decides whether to discard a session for
+          // another form.
+          if (!(fapiError instanceof MyInfoFapiSessionFormMismatchError)) {
+            clearMyInfoFapiSessionCookie(res)
+          }
+        } else {
+          clearMyInfoFapiSessionCookie(res)
+          myInfoFields = fapiFieldsResult.value
+        }
+      } else if (req.cookies[MYINFO_FAPI_SESSION_COOKIE_NAME]) {
+        // Present but unreadable (e.g. rotated SESSION_SECRET); drop it
+        // since nothing can consume it.
+        clearMyInfoFapiSessionCookie(res)
+      }
+
+      if (!myInfoFields) {
+        const authCodeCookie: unknown =
+          req.cookies[MYINFO_AUTH_CODE_COOKIE_NAME]
+        if (authCodeCookie) {
+          // Clear auth code cookie once found, as it can't be reused
+          res.clearCookie(
+            MYINFO_AUTH_CODE_COOKIE_NAME,
+            MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+          )
+          const useEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
+          const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
+            .asyncAndThen((authCode) =>
+              MyInfoService.retrieveAccessToken(authCode),
+            )
+            .andThen((accessToken) =>
+              MyInfoService.getMyInfoDataForForm(form, accessToken, useEsrvcId),
+            )
+
+          if (myInfoFieldsResult.isErr()) {
+            authErrors.push(myInfoFieldsResult.error)
+          } else {
+            myInfoFields = myInfoFieldsResult.value
+          }
+        }
+      }
+
+      if (!myInfoFields) {
+        const firstAuthError = authErrors[0]
+        if (!firstAuthError) {
+          // User is accessing the form before logging in.
+          return res.json({
+            form: publicForm,
+            isIntranetUser,
+          })
+        }
+
+        // Callback not yet reached, or the session belongs to another tab —
+        // treat either as no login attempt.
+        if (
+          firstAuthError instanceof MyInfoFapiIncompleteLoginError ||
+          firstAuthError instanceof MyInfoFapiSessionFormMismatchError
+        ) {
+          return res.json({ form: publicForm, isIntranetUser })
+        }
+
         logger.error({
           message: 'MyInfo login error',
           meta: logMeta,
-          error,
+          error: firstAuthError,
         })
-        // No need for cookie if data could not be retrieved
-        // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
         return res.json({
           form: publicForm,
           errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
-      myInfoFields = myInfoFieldsResult.value
+
       spcpSession = { userName: myInfoFields.getUinFin() }
       break
     }
@@ -675,8 +737,40 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const useFormsgEsrvcId = req.growthbook?.isOn(
         featureFlags.useFormsgEsrvcId,
       )
+      // TODO [CP-PKCE]: Cleanup this flag once PKCE rollout is verified.
+      // Add formId to growthbook attributes to allow for targeting in growthbook feature flags.
+      void req.growthbook?.setAttributes({
+        ...req.growthbook.getAttributes(),
+        formId,
+        adminEmail: form.admin.email,
+      })
+      const usePkce = req.growthbook?.isOn(featureFlags.spcpOidcPkce) ?? false
+      // TODO [CP-PKCE]: Cleanup this flag once the nonce state format is fully
+      // rolled out. Only emit the nonce state format once every instance is
+      // able to parse it, otherwise a callback served by an compute instance running
+      // the older parser rejects the state outright.
+      const useStateNonce =
+        req.growthbook?.isOn(featureFlags.spcpOidcStateNonce) ?? false
+      const nonce = useStateNonce ? randomBytes(16).toString('hex') : undefined
+      const useMyInfoFapi =
+        req.growthbook?.isOn(featureFlags.myinfoFapi) ?? false
       switch (form.authType) {
-        case FormAuthType.MyInfo:
+        case FormAuthType.MyInfo: {
+          if (useMyInfoFapi) {
+            res.clearCookie(
+              MYINFO_AUTH_CODE_COOKIE_NAME,
+              MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+            )
+            return MyInfoFapiService.startLogin({
+              formId,
+              encodedQuery,
+              requestedAttributes: form.getUniqueMyInfoAttrs(),
+            }).map(({ sessionId, redirectUrl }) => {
+              setMyInfoFapiSessionCookie(res, sessionId)
+              return redirectUrl
+            })
+          }
+          clearMyInfoFapiSessionCookie(res)
           return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
             ([form, eserviceId]) =>
               MyInfoService.createRedirectURL({
@@ -686,6 +780,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
                 encodedQuery,
               }),
           )
+        }
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
             const target = getRedirectTargetSpcpOidc(
@@ -693,11 +788,21 @@ export const _handleFormAuthRedirect: ControllerHandler<
               FormAuthType.SP,
               isPersistentLogin,
               encodedQuery,
+              nonce,
             )
-            return getOidcService(FormAuthType.SP).createRedirectUrl(
-              target,
-              form.esrvcId,
-            )
+            const oidcService = getOidcService(FormAuthType.SP)
+            return oidcService
+              .createRedirectUrl(target, form.esrvcId, usePkce)
+              .map(({ redirectUrl, codeVerifier }) => {
+                if (codeVerifier) {
+                  res.cookie(
+                    oidcService.getCodeVerifierCookieName(nonce),
+                    codeVerifier,
+                    oidcService.getCodeVerifierCookieOptions(),
+                  )
+                }
+                return redirectUrl
+              })
           })
         }
         case FormAuthType.CP: {
@@ -709,11 +814,21 @@ export const _handleFormAuthRedirect: ControllerHandler<
               FormAuthType.CP,
               isPersistentLogin,
               encodedQuery,
+              nonce,
             )
-            return getOidcService(FormAuthType.CP).createRedirectUrl(
-              target,
-              form.esrvcId,
-            )
+            const oidcService = getOidcService(FormAuthType.CP)
+            return oidcService
+              .createRedirectUrl(target, form.esrvcId, usePkce)
+              .map(({ redirectUrl, codeVerifier }) => {
+                if (codeVerifier) {
+                  res.cookie(
+                    oidcService.getCodeVerifierCookieName(nonce),
+                    codeVerifier,
+                    oidcService.getCodeVerifierCookieOptions(),
+                  )
+                }
+                return redirectUrl
+              })
           })
         }
         case FormAuthType.SGID:
@@ -823,10 +938,18 @@ export const _handlePublicAuthLogout: ControllerHandler<
 
   const cookieName = PublicFormService.getCookieNameByAuthType(authType)
 
-  return res
-    .clearCookie(cookieName)
-    .status(200)
-    .json({ message: 'Successfully logged out.' })
+  res.clearCookie(cookieName)
+
+  // Additional cookies to clear for MyInfo v3/v5
+  if (authType === FormAuthType.MyInfo) {
+    res.clearCookie(
+      MYINFO_AUTH_CODE_COOKIE_NAME,
+      MYINFO_AUTH_CODE_COOKIE_OPTIONS,
+    )
+    clearMyInfoFapiSessionCookie(res)
+  }
+
+  return res.status(200).json({ message: 'Successfully logged out.' })
 }
 
 /**

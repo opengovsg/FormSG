@@ -473,8 +473,37 @@ describe('webhook.service', () => {
       expect(result._unsafeUnwrap()).toBe(true)
       expect(MockWebhookQueueMessage.fromSubmissionId).toHaveBeenCalledWith(
         String(testSubmission._id),
+        // No snapshot for this step, so the retry names none and falls back to
+        // the live row.
+        undefined,
       )
       expect(MOCK_PRODUCER.sendMessage).toHaveBeenCalledWith(mockQueueMessage)
+    })
+
+    it('should enqueue a retry naming the step submission when that step froze a snapshot', async () => {
+      const mockQueueMessage =
+        'mockQueueMessage' as unknown as WebhookQueueMessage
+      MockWebhookQueueMessage.fromSubmissionId.mockReturnValueOnce(
+        ok(mockQueueMessage),
+      )
+      MockAxios.post.mockResolvedValue(MOCK_AXIOS_FAILURE_RESPONSE)
+      const MOCK_PRODUCER = generateMockProducer()
+
+      const result = await WebhookService.createInitialWebhookSender(
+        MOCK_PRODUCER,
+      )(
+        testSubmission,
+        MOCK_WEBHOOK_URL,
+        /* isRetryEnabled= */ true,
+        /* webhookView= */ undefined,
+        /* snapshotRef= */ { submissionIndex: 1, contentFormat: 'v4' },
+      )
+
+      expect(result._unsafeUnwrap()).toBe(true)
+      expect(MockWebhookQueueMessage.fromSubmissionId).toHaveBeenCalledWith(
+        String(testSubmission._id),
+        { submissionIndex: 1, contentFormat: 'v4' },
+      )
     })
   })
 })

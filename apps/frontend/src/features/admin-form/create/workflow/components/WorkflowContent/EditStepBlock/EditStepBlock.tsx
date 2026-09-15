@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
-import { Divider, Stack } from '@chakra-ui/react'
+import { Box, Stack } from '@chakra-ui/react'
 
 import {
   FormWorkflowStep,
@@ -15,14 +15,20 @@ import {
   cancelPendingSwitchSelector,
   completeSaveSelector,
   isCreatingStateSelector,
+  isGuidedSetupSelector,
   pendingSwitchToSelector,
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
+import { useGuidedStepReveal } from '../../../hooks/useGuidedStepReveal'
+import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { EditStepInputs } from '../../../types'
+import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
+import { SpotlightGroup } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'
+import { GuidedActionGroup } from './GuidedActionGroup'
 import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
 import { StepNameBlock } from './StepNameBlock'
@@ -39,6 +45,9 @@ export interface EditLogicBlockProps {
 }
 
 export const FIELDS_TO_EDIT_NAME = 'edit'
+export const APPROVAL_FIELD_NAME = 'approval_field'
+
+const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 
 /**
  * Builds a workflow step from form inputs, or undefined if they cannot form a
@@ -46,7 +55,7 @@ export const FIELDS_TO_EDIT_NAME = 'edit'
  * handleSubmit first), so the field narrowing here is a type guarantee, not the
  * validation gate.
  */
-const buildWorkflowStep = (
+export const buildWorkflowStep = (
   rawInputs: EditStepInputs,
   isFirstStep: boolean,
 ): (FormWorkflowStep & { _id: string }) | undefined => {
@@ -90,20 +99,20 @@ const buildWorkflowStep = (
       }
     }
     case WorkflowType.Dynamic: {
-      if (!inputs.field) return undefined
       return {
         ...workflowStepBase,
         workflow_type: WorkflowType.Dynamic,
-        field: inputs.field,
-      }
+        ...(inputs.field ? { field: inputs.field } : {}),
+      } as FormWorkflowStep & { _id: string }
     }
     case WorkflowType.Conditional: {
-      if (!inputs.conditional_field) return undefined
       return {
         ...workflowStepBase,
         workflow_type: WorkflowType.Conditional,
-        conditional_field: inputs.conditional_field,
-      }
+        ...(inputs.conditional_field
+          ? { conditional_field: inputs.conditional_field }
+          : {}),
+      } as FormWorkflowStep & { _id: string }
     }
     default: {
       // Exhaustiveness check: a new WorkflowType breaks the build here until handled.
@@ -126,6 +135,8 @@ export const EditStepBlock = ({
   const completeSave = useAdminWorkflowStore(completeSaveSelector)
   const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
   const isCreatingState = useAdminWorkflowStore(isCreatingStateSelector)
+  const isGuidedSetup = useAdminWorkflowStore(isGuidedSetupSelector)
+  const isRedesign = useIsWorkflowBuilderRedesign()
 
   const formMethods = useForm<EditStepInputs>({
     defaultValues,
@@ -203,48 +214,111 @@ export const EditStepBlock = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
 
+  const isGuided = isRedesign && isCreatingState && isGuidedSetup
+
+  // Only the order differs between flag states, so build each section once and
+  // swap the sequence rather than duplicating the subtree per branch.
+  const questionsSection = (
+    <QuestionsBlock
+      key="fields"
+      formMethods={formMethods}
+      isLoading={_isLoading}
+      isFirstStep={isFirstStep}
+    />
+  )
+  const approvalsSection = isFirstStep ? null : (
+    <ApprovalsBlock
+      key="what-they-do"
+      formMethods={formMethods}
+      stepNumber={stepNumber}
+    />
+  )
+
+  const sections: JSX.Element[] = [
+    <StepNameBlock
+      key="name"
+      formMethods={formMethods}
+      stepNumber={stepNumber}
+    />,
+    <RespondentBlock
+      key="people"
+      user={user}
+      stepNumber={stepNumber}
+      formMethods={formMethods}
+      isLoading={_isLoading}
+    />,
+    ...(isRedesign
+      ? [approvalsSection, questionsSection]
+      : [questionsSection, approvalsSection]
+    ).filter((section): section is JSX.Element => section !== null),
+  ]
+
+  const reveal = useGuidedStepReveal({
+    sectionCount: sections.length,
+    isEnabled: isGuided,
+  })
+
+  const { visibleCount } = reveal
+
+  useEffect(() => {
+    if (!isGuided || visibleCount <= 1) return
+    const timeout = setTimeout(() => {
+      wrapperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }, SECTION_REVEAL_SCROLL_DELAY_MS)
+    return () => clearTimeout(timeout)
+  }, [isGuided, visibleCount])
+
   return (
     <Stack
       ref={wrapperRef}
-      py="2rem"
-      spacing="1.5rem"
+      spacing="0"
+      pt="0.5rem"
+      pb="2rem"
       borderRadius="4px"
       bg="white"
       border="1px solid"
-      borderColor="primary.500"
-      boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
+      borderColor={isGuided ? 'neutral.300' : 'primary.500'}
+      boxShadow={
+        isGuided ? 'none' : '0 0 0 1px var(--chakra-colors-primary-500)'
+      }
       transitionProperty="common"
       transitionDuration="normal"
     >
-      <StepNameBlock formMethods={formMethods} stepNumber={stepNumber} />
-      <Divider />
-      <RespondentBlock
-        user={user}
-        stepNumber={stepNumber}
-        formMethods={formMethods}
-        isLoading={_isLoading}
-      />
-      <Divider />
-      <QuestionsBlock
-        formMethods={formMethods}
-        isLoading={_isLoading}
-        isFirstStep={isFirstStep}
-      />
-      {!isFirstStep ? (
-        <>
-          <Divider />
-          <ApprovalsBlock formMethods={formMethods} stepNumber={stepNumber} />
-        </>
-      ) : null}
-      <Divider />
-      <SaveActionGroup
-        isLoading={_isLoading}
-        handleSubmit={handleSubmit}
-        handleDelete={isFirstStep ? undefined : handleOpenDeleteModal}
-        handleCancel={setToInactive}
-        submitButtonLabel={submitButtonLabel}
-        ariaLabelName="step"
-      />
+      <SpotlightGroup activeIndex={reveal.activeIndex} isEnabled={isGuided}>
+        {sections.slice(0, visibleCount)}
+      </SpotlightGroup>
+      <Box pt="1.5rem">
+        {isGuided ? (
+          <GuidedActionGroup
+            secondaryAction={getGuidedSecondaryAction({
+              sectionIndex: visibleCount - 1,
+              isFirstStep,
+            })}
+            isOnLastSection={reveal.isOnLastSection}
+            isLoading={isLoading}
+            onBack={reveal.goBack}
+            onCancel={setToInactive}
+            onContinue={reveal.advance}
+            onDone={handleSubmit}
+          />
+        ) : (
+          <SaveActionGroup
+            isLoading={_isLoading}
+            handleSubmit={handleSubmit}
+            // Step 1 gets the same affordance as every other step. What it
+            // opens differs — deleting step 1 means deleting the workflow —
+            // but hiding the button left admins hunting for a delete that
+            // does not exist, which is the behaviour FRM-2494 is about.
+            // Behind the redesign flag, so with it off step 1 has no delete.
+            handleDelete={
+              !isFirstStep || isRedesign ? handleOpenDeleteModal : undefined
+            }
+            handleCancel={setToInactive}
+            submitButtonLabel={submitButtonLabel}
+            ariaLabelName="step"
+          />
+        )}
+      </Box>
     </Stack>
   )
 }

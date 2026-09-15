@@ -51,6 +51,10 @@ import {
   ProcessedFieldResponse,
 } from '../submission/submission.types'
 
+import {
+  MyInfoFapiAuthRequestError,
+  MyInfoFapiConfigError,
+} from './fapi/myinfo.fapi.errors'
 import { MyInfoData } from './myinfo.adapter'
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
@@ -268,6 +272,8 @@ export const mapRedirectURLError: MapRouteError = (
           'This form does not have MyInfo enabled. Please refresh and try again.',
       }
     case DatabaseError:
+    case MyInfoFapiAuthRequestError:
+    case MyInfoFapiConfigError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
         errorMessage: coreErrorMessage,

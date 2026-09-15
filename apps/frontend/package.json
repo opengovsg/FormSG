@@ -1,6 +1,6 @@
 {
   "name": "formsg-frontend",
-  "version": "9.10.1",
+  "version": "9.23.0",
   "private": true,
   "homepage": ".",
   "type": "module",
@@ -80,8 +80,8 @@
     "react-markdown": "^9.0.1",
     "react-query": "^3.34.2",
     "react-remove-scroll": "^2.5.10",
-    "react-router": "^6.30.4",
-    "react-router-dom": "^6.30.4",
+    "react-router": "^6.30.6",
+    "react-router-dom": "^6.30.6",
     "react-roving-tabindex": "^3.2.0",
     "react-swipeable": "^7.0.0",
     "react-table": "^7.7.0",
@@ -184,7 +184,7 @@
     "resize-observer-polyfill": "^1.5.1",
     "rimraf": "^3.0.2",
     "storybook": "8.6.18",
-    "vite": "^5.4.21",
+    "vite": "^6.4.3",
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^3.2.6"

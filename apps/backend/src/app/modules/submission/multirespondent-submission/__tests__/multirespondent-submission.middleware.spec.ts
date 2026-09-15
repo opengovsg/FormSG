@@ -29,6 +29,7 @@ import {
   handleNdiResponses,
   validateMultirespondentRemindBody,
   validateMultirespondentSubmission,
+  validatePaymentSubmission,
 } from '../multirespondent-submission.middleware'
 import {
   checkFormIsMultirespondent,
@@ -40,8 +41,18 @@ import * as stepToken from '../step-token'
 jest.mock('../../../feature-flags/feature-flags.service')
 jest.mock('../../../form/form.service')
 jest.mock('../multirespondent-submission.service')
-jest.mock('../../../spcp/spcp.oidc.service')
-jest.mock('../../../myinfo/myinfo.service')
+// RATIONALE: The factory mocks are required to prevent Jest from
+// hanging when automock is enabled, due to retries against localhost.
+jest.mock('../../../spcp/spcp.oidc.service', () => ({
+  __esModule: true,
+  getOidcService: jest.fn(),
+}))
+jest.mock('../../../myinfo/myinfo.service', () => ({
+  __esModule: true,
+  MyInfoService: {
+    verifyLoginJwt: jest.fn(),
+  },
+}))
 jest.mock('../../../verified-content/verified-content.service')
 jest.mock('src/app/modules/myinfo/myinfo.util')
 jest.mock('src/app/modules/spcp/spcp.util')
@@ -99,6 +110,13 @@ describe('Multirespondent Submission Middleware', () => {
         respondentEmails: ['test@example.com'],
       },
       formsg: undefined,
+      growthbook: {
+        isOn: jest.fn().mockReturnValue(false),
+        setAttributes: jest.fn().mockResolvedValue(undefined),
+        getAttributes: jest.fn().mockReturnValue({
+          unclobberedAttributeKey: 'unclobberedValue',
+        }),
+      },
       // Add Express request methods and properties
       get: jest.fn((name: string) => {
         if (name === 'cf-connecting-ip') return '127.0.0.1'
@@ -163,6 +181,7 @@ describe('Multirespondent Submission Middleware', () => {
       // Add other required properties to satisfy IPopulatedForm interface
       admin: {
         _id: new ObjectId(),
+        email: 'admin@example.com',
         agency: {
           fullName: 'Government Technology Agency',
         },
@@ -276,6 +295,11 @@ describe('Multirespondent Submission Middleware', () => {
       expect(getMultirespondentSubmission).toHaveBeenCalledWith(
         MOCK_SUBMISSION_ID,
       )
+      expect(mockReq.growthbook?.setAttributes).toHaveBeenCalledWith({
+        ...mockReq.growthbook?.getAttributes(),
+        formId: MOCK_FORM_ID,
+        adminEmail: MOCK_FORM.admin.email,
+      })
     })
 
     it('should return error response when submissionId exists but mrfSubmission is not found', async () => {
@@ -972,12 +996,6 @@ describe('Multirespondent Submission Middleware', () => {
       expect(jest.mocked(adaptV4ToV3)).not.toHaveBeenCalled()
       expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(2)
       expect(mockNext).toHaveBeenCalled()
-      expect(mockReq.growthbook.setAttributes).toHaveBeenCalledWith(
-        expect.objectContaining({
-          formId: MOCK_FORM_ID,
-          adminEmail: 'admin@example.com',
-        }),
-      )
     })
 
     it('should return 500 and not call next() when decryptFromSubmissionKey returns falsy', async () => {
@@ -1014,11 +1032,8 @@ describe('Multirespondent Submission Middleware', () => {
         return opened ? encodeUTF8(opened) : null
       }
 
-      it('should mint a step token whose hash and wrapped copy match the raw token when the flag is on', async () => {
+      it('should mint a step token whose hash and wrapped copy match the raw token', async () => {
         const mockReq = createMockEncryptReq(false)
-        mockReq.growthbook.isOn = jest.fn(
-          (flag: string) => flag === featureFlags.mrfStepWriteToken,
-        )
         const mockNext = jest.fn()
         const mockRes = createMockRes()
 
@@ -1035,26 +1050,9 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockNext).toHaveBeenCalled()
       })
 
-      it('should not mint a step token when the flag is off (flag-off path unchanged)', async () => {
-        const mockReq = createMockEncryptReq(false)
-        const mockNext = jest.fn()
-        const mockRes = createMockRes()
-
-        await encryptSubmission(mockReq, mockRes as any, mockNext)
-
-        const payload = mockReq.formsg.encryptedPayload
-        expect(payload.stepToken).toBeUndefined()
-        expect(payload.stepTokenHash).toBeUndefined()
-        expect(payload.encryptedStepToken).toBeUndefined()
-        expect(mockNext).toHaveBeenCalled()
-      })
-
       it('should mint a fresh, unique token on each advance (rotation)', async () => {
         const run = async () => {
           const mockReq = createMockEncryptReq(false)
-          mockReq.growthbook.isOn = jest.fn(
-            (flag: string) => flag === featureFlags.mrfStepWriteToken,
-          )
           await encryptSubmission(mockReq, createMockRes() as any, jest.fn())
           return mockReq.formsg.encryptedPayload.stepToken as string
         }
@@ -1118,61 +1116,30 @@ describe('Multirespondent Submission Middleware', () => {
         }
       }
 
-      describe('URL → consumer class via getWebhookType', () => {
-        it('classifies plumber.gov.sg as plumber (V4 when write-guard on)', async () => {
-          expectEncryptedAs(
-            await runGate({
-              webhookUrl: PLUMBER_URL,
-              flags: [featureFlags.mrfStepWriteToken],
-            }),
-            2,
-          )
+      describe('always V4 regardless of webhook URL', () => {
+        it('plumber.gov.sg is V4', async () => {
+          expectEncryptedAs(await runGate({ webhookUrl: PLUMBER_URL }), 2)
         })
 
-        it('classifies example.com as generic (V4 regardless of the flags)', async () => {
-          expectEncryptedAs(
-            await runGate({
-              webhookUrl: GENERIC_URL,
-              flags: [featureFlags.mrfStepWriteToken],
-            }),
-            2,
-          )
+        it('example.com is V4', async () => {
           expectEncryptedAs(await runGate({ webhookUrl: GENERIC_URL }), 2)
         })
 
-        it('classifies hooks.zapier.com as generic (V4 regardless of the flags)', async () => {
-          expectEncryptedAs(
-            await runGate({
-              webhookUrl: ZAPIER_URL,
-              flags: [featureFlags.mrfStepWriteToken],
-            }),
-            2,
-          )
+        it('hooks.zapier.com is V4', async () => {
           expectEncryptedAs(await runGate({ webhookUrl: ZAPIER_URL }), 2)
         })
 
-        it('no webhook URL is treated as none (V4)', async () => {
+        it('no webhook URL is V4', async () => {
           expectEncryptedAs(await runGate({ flags: [] }), 2)
         })
       })
 
-      describe('ignored inputs that never reach getMrfVersion', () => {
-        it('does not treat enableMrfWebhooks as a substitute for mrfStepWriteToken on plumber', async () => {
-          expectEncryptedAs(
-            await runGate({
-              webhookUrl: PLUMBER_URL,
-              flags: [featureFlags.enableMrfWebhooks],
-            }),
-            1,
-          )
-        })
-
-        it('ignores webhookFormat on plumber (v1 + write-guard still V4)', async () => {
+      describe('ignored inputs that never affect the row version', () => {
+        it('ignores webhookFormat on plumber (v1 still V4)', async () => {
           expectEncryptedAs(
             await runGate({
               webhookUrl: PLUMBER_URL,
               webhookFormat: 'v1',
-              flags: [featureFlags.mrfStepWriteToken],
             }),
             2,
           )
@@ -1422,11 +1389,9 @@ describe('Multirespondent Submission Middleware', () => {
       // Build a request whose decrypt-gate will pass (matching the beforeEach
       // mocks), varying only the step-token bits.
       const createGuardReq = ({
-        flagOn,
         stepTokenHash,
         presentedToken,
       }: {
-        flagOn: boolean
         stepTokenHash?: string
         presentedToken?: string
       }) => {
@@ -1450,11 +1415,7 @@ describe('Multirespondent Submission Middleware', () => {
         }
         mockReq.body.submissionSecretKey = 'submission-secret-key'
         mockReq.body.stepToken = presentedToken
-        mockReq.growthbook = {
-          isOn: jest.fn(
-            (flag: string) => flagOn && flag === featureFlags.mrfStepWriteToken,
-          ),
-        }
+        mockReq.growthbook = { isOn: jest.fn(() => false) }
         mockReq.formsg = {
           formDef: {
             _id: MOCK_FORM_ID,
@@ -1469,7 +1430,6 @@ describe('Multirespondent Submission Middleware', () => {
 
       it('should advance when a valid step token accompanies a valid decrypt', async () => {
         const mockReq = createGuardReq({
-          flagOn: true,
           stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
           presentedToken: RAW_STEP_TOKEN,
         })
@@ -1488,7 +1448,6 @@ describe('Multirespondent Submission Middleware', () => {
 
       it('should return 403 and not advance when the presented token is wrong (decrypt still valid)', async () => {
         const mockReq = createGuardReq({
-          flagOn: true,
           stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
           presentedToken: stepToken.generate(), // wrong token
         })
@@ -1507,7 +1466,6 @@ describe('Multirespondent Submission Middleware', () => {
 
       it('should return 403 when the token is absent but the row carries a hash (decrypt-gate alone no longer advances)', async () => {
         const mockReq = createGuardReq({
-          flagOn: true,
           stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
           presentedToken: undefined, // absent
         })
@@ -1524,9 +1482,41 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
       })
 
+      it('should reject a tokenless update to a zero-step submission (hash on row, raw token never delivered)', async () => {
+        // The guard itself is purely token-based — it knows nothing about
+        // payments. The payment-terminality guarantee (no post-payment edits)
+        // falls out of it structurally: a payment-enabled form is necessarily
+        // zero-step, the step token is minted at creation but its raw value
+        // is only ever delivered via next-step email links, and a zero-step
+        // form sends none — so no caller can ever present a valid token.
+        const mockReq = createGuardReq({
+          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+          presentedToken: undefined, // nobody ever received the raw token
+        })
+        // Zero-step everywhere it is recorded: the form definition and the
+        // submission's workflow snapshot must agree for the fixture to
+        // describe a real row (updates read the snapshot, creates the form).
+        mockReq.formsg.formDef.workflow = []
+        mockReq.formsg.mrfSubmission = {
+          ...mockReq.formsg.mrfSubmission,
+          workflow: [],
+          workflowStep: 0,
+        }
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await validateMultirespondentSubmission(
+          mockReq,
+          mockRes as any,
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      })
+
       it('should advance on a legacy row without a hash even with no token (migration grace)', async () => {
         const mockReq = createGuardReq({
-          flagOn: true,
           stepTokenHash: undefined, // legacy in-flight row
           presentedToken: undefined,
         })
@@ -1542,25 +1532,142 @@ describe('Multirespondent Submission Middleware', () => {
         expect(mockNext).toHaveBeenCalled()
         expect(mockRes.status).not.toHaveBeenCalled()
       })
+    })
+  })
 
-      it('should not require a token when the flag is off, even if the row carries a hash (regression)', async () => {
-        const mockReq = createGuardReq({
-          flagOn: false,
-          stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
-          presentedToken: undefined,
-        })
-        const mockNext = jest.fn()
-        const mockRes = createMockRes()
+  describe('validatePaymentSubmission', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const PRODUCT_ID = new ObjectId().toHexString()
 
-        await validateMultirespondentSubmission(
-          mockReq,
-          mockRes as any,
-          mockNext,
-        )
+    const PRODUCT_DEFINITION = {
+      _id: PRODUCT_ID,
+      name: 'Product A',
+      description: 'A product',
+      multi_qty: false,
+      min_qty: 1,
+      max_qty: 1,
+      amount_cents: 100_00,
+    }
 
-        expect(mockNext).toHaveBeenCalled()
-        expect(mockRes.status).not.toHaveBeenCalled()
+    // Uses the real PaymentsService.validatePaymentProducts, so these tests
+    // pin the full tamper-rejection behavior, not just the wiring.
+    const createPaymentReq = ({
+      formProducts,
+      paymentProducts,
+    }: {
+      formProducts?: unknown
+      paymentProducts?: unknown
+    }) => {
+      const req = createMockReq({ formId: MOCK_FORM_ID })
+      req.formsg = {
+        formDef: {
+          toObject: () => ({
+            _id: MOCK_FORM_ID,
+            payments_field: formProducts
+              ? { enabled: true, products: formProducts }
+              : undefined,
+          }),
+        },
+      }
+      if (paymentProducts) req.body.paymentProducts = paymentProducts
+      return req
+    }
+
+    it('should call next when the submission carries no payment products', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
       })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockRes.status).not.toHaveBeenCalled()
+    })
+
+    it('should call next when submitted products match the form definition', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockRes.status).not.toHaveBeenCalled()
+    })
+
+    it('should return 400 when payment products are submitted to a form without product definitions', async () => {
+      const mockReq = createPaymentReq({
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    it('should return 400 when a submitted product price is tampered', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          {
+            data: { ...PRODUCT_DEFINITION, amount_cents: 50 },
+            selected: true,
+            quantity: 1,
+          },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    it('should return 400 when quantity exceeds the single-quantity limit', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 2 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    it('should return 400 when the same product is selected twice', async () => {
+      const mockReq = createPaymentReq({
+        formProducts: [PRODUCT_DEFINITION],
+        paymentProducts: [
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+          { data: PRODUCT_DEFINITION, selected: true, quantity: 1 },
+        ],
+      })
+      const mockRes = createMockRes()
+      const mockNext = jest.fn()
+
+      await validatePaymentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
     })
   })
 })

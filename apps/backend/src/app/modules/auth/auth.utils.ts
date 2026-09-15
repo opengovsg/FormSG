@@ -4,12 +4,14 @@ import { StatusCodes } from 'http-status-codes'
 
 import { MapRouteError } from '../../../types/routing'
 import { cronPaymentConfig } from '../../config/features/payment-cron.config'
+import { cronScheduledClosureConfig } from '../../config/features/scheduled-closure-cron.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import * as MailErrors from '../../services/mail/mail.errors'
 import { HashingError } from '../../utils/hash'
 import * as CoreErrors from '../core/core.errors'
 import * as UserErrors from '../user/user.errors'
 
+import * as AuthOneErrors from './one/auth-one.errors'
 import * as AuthSsoErrors from './sso/auth-sso.errors'
 import * as AuthErrors from './auth.errors'
 
@@ -30,6 +32,7 @@ export const mapRouteError: MapRouteError = (error, coreErrorMessage) => {
         errorMessage: error.message,
       }
     case AuthSsoErrors.SsoNotWhitelistedError:
+    case AuthOneErrors.OneNotWhitelistedError:
       return {
         statusCode: StatusCodes.FORBIDDEN,
         errorMessage: error.message,
@@ -110,6 +113,16 @@ export const getUserIdFromSession = (
 
 export const isCronPaymentAuthValid = (header: IncomingHttpHeaders) => {
   return header['x-formsg-cron-payment-secret'] === cronPaymentConfig.apiSecret
+}
+
+export const isCronScheduledClosureAuthValid = (
+  header: IncomingHttpHeaders,
+) => {
+  const { apiSecret } = cronScheduledClosureConfig
+  // Fail closed: an unconfigured secret is the empty string, which an empty
+  // header value would otherwise match.
+  if (!apiSecret) return false
+  return header['x-formsg-cron-scheduled-closure-secret'] === apiSecret
 }
 
 export const isEmailInDomainWhitelist = (

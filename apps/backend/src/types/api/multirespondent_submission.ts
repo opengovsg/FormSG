@@ -3,6 +3,8 @@ import {
   FormFieldDto,
   FormLogic,
   FormResponseMode,
+  PaymentFieldsDto,
+  ProductItem,
   ResponseMetadata,
   SubmissionAttachmentsMap,
 } from 'formsg-shared/types'
@@ -16,6 +18,9 @@ export type ParsedMultirespondentSubmissionBody = {
   version: number
   workflowStep: number
   respondentEmails?: string[]
+  paymentReceiptEmail?: string
+  paymentProducts?: Array<ProductItem>
+  payments?: PaymentFieldsDto
 }
 
 export type SnapshottedFormDef = Pick<
@@ -68,4 +73,7 @@ export type MultirespondentSubmissionDto = {
   stepToken?: string
   stepTokenHash?: string
   encryptedStepToken?: string
+  paymentReceiptEmail?: string
+  paymentProducts?: Array<ProductItem>
+  payments?: PaymentFieldsDto
 }

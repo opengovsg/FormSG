@@ -231,6 +231,23 @@ describe('admin-form.form.routes', () => {
       )
     })
 
+    it('should offer save draft on a form created from scratch', async () => {
+      // Act
+      const response = await request.post('/admin/forms').send({
+        form: {
+          emails: defaultUser.email,
+          responseMode: FormResponseMode.Email,
+          title: 'new form gets save draft',
+        },
+      })
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body.isSaveDraftEnabled).toEqual(true)
+      const saved = await FormModel.findById(response.body._id)
+      expect(saved?.isSaveDraftEnabled).toEqual(true)
+    })
+
     it('should return 200 with newly created storage mode form', async () => {
       // Arrange
       const createStorageParams = {
@@ -1247,6 +1264,34 @@ describe('admin-form.form.routes', () => {
       )
     })
 
+    // Neither picking up the new-form default nor being reset by the copy.
+    it.each([true, false])(
+      "should inherit the source form's save draft setting of %s, rather than the new-form default",
+      async (isSaveDraftEnabled) => {
+        // Arrange
+        const formToDupe = await EmailFormModel.create({
+          title: `source form, save draft ${isSaveDraftEnabled}`,
+          emails: [defaultUser.email],
+          admin: defaultUser._id,
+          isSaveDraftEnabled,
+        })
+
+        // Act
+        const response = await request
+          .post(`/admin/forms/${formToDupe._id}/duplicate`)
+          .send({
+            responseMode: FormResponseMode.Email,
+            title: `duplicate, save draft ${isSaveDraftEnabled}`,
+            emails: [defaultUser.email],
+          })
+
+        // Assert
+        expect(response.status).toEqual(200)
+        const duplicated = await FormModel.findById(response.body._id)
+        expect(duplicated?.isSaveDraftEnabled).toEqual(isSaveDraftEnabled)
+      },
+    )
+
     it('should return 400 when body.emails is missing when duplicating to an email form', async () => {
       // Arrange
       const formToDupe = await EncryptFormModel.create({
@@ -1755,6 +1800,31 @@ describe('admin-form.form.routes', () => {
         String(templateForm._id),
       )
     })
+
+    // Template-started forms staying off is the accepted gap.
+    it.each([true, false])(
+      "should inherit the template's save draft setting of %s, rather than the new-form default",
+      async (isSaveDraftEnabled) => {
+        // Arrange
+        const templateForm = await createPublicTemplateForm()
+        await templateForm.updateOne({ isSaveDraftEnabled })
+
+        // Act
+        const response = await request
+          .post(`/admin/forms/${templateForm._id}/use-template`)
+          .send({
+            responseMode: FormResponseMode.Encrypt,
+            title: `form from template, save draft ${isSaveDraftEnabled}`,
+            publicKey: 'some random public key',
+            emails: [],
+          })
+
+        // Assert
+        expect(response.status).toEqual(200)
+        const started = await FormModel.findById(response.body._id)
+        expect(started?.isSaveDraftEnabled).toEqual(isSaveDraftEnabled)
+      },
+    )
 
     it('should return 400 when an unrecognised form origin code is provided', async () => {
       // Arrange

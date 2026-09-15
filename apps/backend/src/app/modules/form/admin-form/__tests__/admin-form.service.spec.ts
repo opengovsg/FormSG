@@ -1191,6 +1191,11 @@ describe('admin-form.service', () => {
   })
 
   describe('createForm', () => {
+    const withCreationDefaults = <T>(formParams: T) => ({
+      ...formParams,
+      isSaveDraftEnabled: true,
+    })
+
     it('should successfully create form', async () => {
       // Arrange
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
@@ -1212,7 +1217,7 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
-      expect(createSpy).toHaveBeenCalledWith(formParams)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     it('should return DatabaseValidationError on invalid form params whilst creating form', async () => {
@@ -1236,7 +1241,7 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
         DatabaseValidationError,
       )
-      expect(createSpy).toHaveBeenCalledWith(formParams)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     it('should return DatabaseConflictError on mongoose version error', async () => {
@@ -1259,7 +1264,7 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
         DatabaseConflictError,
       )
-      expect(createSpy).toHaveBeenCalledWith(formParams)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     it('should return DatabasePayloadError on form size error', async () => {
@@ -1287,7 +1292,7 @@ describe('admin-form.service', () => {
           formatErrorRecoveryMessage(mockErrorString),
         ),
       )
-      expect(createSpy).toHaveBeenCalledWith(formParams)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     it('should return DatabaseError on database error whilst creating form', async () => {
@@ -1310,7 +1315,7 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrapErr()).toEqual(
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
-      expect(createSpy).toHaveBeenCalledWith(formParams)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     // Creating into Workspace tests
@@ -1356,10 +1361,13 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
       expect(createFormInWorkspaceTransactionSpy).toHaveBeenCalledWith(
-        formParams,
+        withCreationDefaults(formParams),
         mockWorkspaceId,
       )
-      expect(createSpy).toHaveBeenCalledWith([formParams], { session: null })
+      expect(createSpy).toHaveBeenCalledWith(
+        [withCreationDefaults(formParams)],
+        { session: null },
+      )
       expect(addFormIdsToWorkspaceSpy).toHaveBeenCalledWith({
         workspaceId: mockWorkspaceId,
         formIds: [expectedForm._id],
@@ -1401,10 +1409,13 @@ describe('admin-form.service', () => {
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(createFormInWorkspaceTransactionSpy).toHaveBeenCalledWith(
-        formParams,
+        withCreationDefaults(formParams),
         mockWorkspaceId,
       )
-      expect(createSpy).toHaveBeenCalledWith([formParams], { session: null })
+      expect(createSpy).toHaveBeenCalledWith(
+        [withCreationDefaults(formParams)],
+        { session: null },
+      )
     })
 
     it('should return DatabaseError on database error whilst moving form into a workspace', async () => {
@@ -1449,10 +1460,13 @@ describe('admin-form.service', () => {
         new DatabaseError(formatErrorRecoveryMessage(mockErrorString)),
       )
       expect(createFormInWorkspaceTransactionSpy).toHaveBeenCalledWith(
-        formParams,
+        withCreationDefaults(formParams),
         mockWorkspaceId,
       )
-      expect(createSpy).toHaveBeenCalledWith([formParams], { session: null })
+      expect(createSpy).toHaveBeenCalledWith(
+        [withCreationDefaults(formParams)],
+        { session: null },
+      )
       expect(addFormIdsToWorkspaceSpy).toHaveBeenCalledWith({
         workspaceId: mockWorkspaceId,
         formIds: [expectedForm._id],
@@ -1977,6 +1991,86 @@ describe('admin-form.service', () => {
       })
     })
 
+    describe('payment-enabled multirespondent form', () => {
+      const PAYMENT_ENABLED_MRF = jest.mocked({
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Multirespondent,
+        payments_field: { enabled: true },
+      } as unknown as IPopulatedMultirespondentForm)
+
+      const STRIPE_CONNECTED_MRF = jest.mocked({
+        _id: new ObjectId(),
+        status: FormStatus.Public,
+        responseMode: FormResponseMode.Multirespondent,
+        payments_channel: { channel: PaymentChannel.Stripe },
+        payments_field: { enabled: false },
+      } as unknown as IPopulatedMultirespondentForm)
+
+      it.each([
+        [
+          'emails',
+          { emails: ['test@example.com'] } satisfies SettingsUpdateDto,
+        ],
+        [
+          'stepOneEmailNotificationFieldId',
+          {
+            stepOneEmailNotificationFieldId: new ObjectId().toHexString(),
+          } as SettingsUpdateDto,
+        ],
+        [
+          'isSingleSubmission',
+          { isSingleSubmission: true } satisfies SettingsUpdateDto,
+        ],
+      ])(
+        'should not allow %s update when payments are enabled',
+        async (_name, settingsToUpdate) => {
+          // Act
+          const actualResult = await AdminFormService.updateFormSettings(
+            PAYMENT_ENABLED_MRF,
+            settingsToUpdate,
+          )
+
+          // Assert
+          expect(actualResult.isErr()).toBeTrue()
+          expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+            MalformedParametersError,
+          )
+        },
+      )
+
+      it('should allow clearing emails when payments are enabled', async () => {
+        // Arrange
+        const settingsToUpdate: SettingsUpdateDto = { emails: [] }
+
+        // Act
+        const actualResult = await AdminFormService.updateFormSettings(
+          PAYMENT_ENABLED_MRF,
+          settingsToUpdate,
+        )
+
+        // Assert
+        expect(actualResult.isOk()).toBeTrue()
+      })
+
+      it('should allow emails update on a Stripe-connected MRF with payments disabled', async () => {
+        // Arrange: unlike encrypt mode, mere Stripe connection must not
+        // freeze MRF notification settings.
+        const settingsToUpdate: SettingsUpdateDto = {
+          emails: ['test@example.com'],
+        }
+
+        // Act
+        const actualResult = await AdminFormService.updateFormSettings(
+          STRIPE_CONNECTED_MRF,
+          settingsToUpdate,
+        )
+
+        // Assert
+        expect(actualResult.isOk()).toBeTrue()
+      })
+    })
+
     it('should not allow set form to public when form is email mode and isForceConvertToStorageMode is true', async () => {
       // Arrange
       const settingsToUpdate: SettingsUpdateDto = {
@@ -2024,6 +2118,172 @@ describe('admin-form.service', () => {
         { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
+    })
+
+    describe('publish gate', () => {
+      const FIELD_ID = new ObjectId().toHexString()
+
+      const makeMrfForm = (status: FormStatus, workflow: unknown[]) =>
+        jest.mocked({
+          _id: new ObjectId(),
+          status,
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: [
+            { _id: FIELD_ID, fieldType: BasicField.ShortText, title: 'A' },
+          ],
+          workflow,
+        } as unknown as IPopulatedForm)
+
+      const firstStep = {
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [FIELD_ID],
+      }
+      const incompleteSecondStep = {
+        workflow_type: WorkflowType.Static,
+        emails: [],
+        edit: [FIELD_ID],
+      }
+
+      it('should block publishing a form with an incomplete step', async () => {
+        const actualResult = await AdminFormService.updateFormSettings(
+          makeMrfForm(FormStatus.Private, [firstStep, incompleteSecondStep]),
+          { status: FormStatus.Public } as FormSettings,
+        )
+
+        expect(actualResult.isErr()).toBeTrue()
+        expect(actualResult._unsafeUnwrapErr()).toBeInstanceOf(
+          MalformedParametersError,
+        )
+        expect(actualResult._unsafeUnwrapErr().message).toContain('step 2')
+      })
+
+      it.each<[string, unknown[], Partial<FormSettings>]>([
+        [
+          'a settings change that leaves the form private',
+          [firstStep, incompleteSecondStep],
+          { title: 'a new title' },
+        ],
+        [
+          'publishing a complete workflow',
+          [
+            firstStep,
+            { ...incompleteSecondStep, emails: ['someone@example.com'] },
+          ],
+          { status: FormStatus.Public },
+        ],
+        [
+          'publishing a form with no workflow at all',
+          [],
+          { status: FormStatus.Public },
+        ],
+      ])('should not block %s', async (_name, workflow, settings) => {
+        const actualResult = await AdminFormService.updateFormSettings(
+          makeMrfForm(FormStatus.Private, workflow),
+          settings as FormSettings,
+        )
+
+        expect(actualResult.isErr()).toBeFalse()
+      })
+    })
+
+    describe('clearing a lapsed closeAt on manual reopen', () => {
+      const AN_HOUR_AGO = new Date(Date.now() - 60 * 60 * 1000)
+      const IN_AN_HOUR = new Date(Date.now() + 60 * 60 * 1000)
+
+      const formWithCloseAt = (closeAt: Date | null) =>
+        jest.mocked({
+          _id: new ObjectId(),
+          status: FormStatus.Private,
+          responseMode: FormResponseMode.Email,
+          closeAt,
+        } as unknown as IPopulatedForm)
+
+      it('should clear closeAt when reopening a form whose expiry has lapsed', async () => {
+        const form = formWithCloseAt(AN_HOUR_AGO)
+
+        await AdminFormService.updateFormSettings(form, {
+          status: FormStatus.Public,
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { status: FormStatus.Public, closeAt: null },
+          expect.anything(),
+        )
+      })
+
+      it('should keep a future closeAt when reopening, so a pre-scheduled expiry survives', async () => {
+        const form = formWithCloseAt(IN_AN_HOUR)
+
+        await AdminFormService.updateFormSettings(form, {
+          status: FormStatus.Public,
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { status: FormStatus.Public },
+          expect.anything(),
+        )
+      })
+
+      it('should not touch closeAt when the form has none', async () => {
+        const form = formWithCloseAt(null)
+
+        await AdminFormService.updateFormSettings(form, {
+          status: FormStatus.Public,
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { status: FormStatus.Public },
+          expect.anything(),
+        )
+      })
+
+      it('should respect a closeAt supplied in the same request over clearing it', async () => {
+        const form = formWithCloseAt(AN_HOUR_AGO)
+        const rescheduled = IN_AN_HOUR.toISOString() as never
+
+        await AdminFormService.updateFormSettings(form, {
+          status: FormStatus.Public,
+          closeAt: rescheduled,
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { status: FormStatus.Public, closeAt: rescheduled },
+          expect.anything(),
+        )
+      })
+
+      it('should not clear closeAt when closing a form rather than reopening it', async () => {
+        const form = formWithCloseAt(AN_HOUR_AGO)
+
+        await AdminFormService.updateFormSettings(form, {
+          status: FormStatus.Private,
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { status: FormStatus.Private },
+          expect.anything(),
+        )
+      })
+
+      it('should not clear closeAt when the update does not touch status', async () => {
+        const form = formWithCloseAt(AN_HOUR_AGO)
+
+        await AdminFormService.updateFormSettings(form, {
+          title: 'a new title',
+        })
+
+        expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { title: 'a new title' },
+          expect.anything(),
+        )
+      })
     })
   })
 
@@ -3888,7 +4148,7 @@ describe('admin-form.service', () => {
         } as unknown as IPopulatedForm
 
         jest
-          .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
           // @ts-ignore
           .mockReturnValue({
             exec: jest.fn().mockResolvedValue({
@@ -3931,7 +4191,7 @@ describe('admin-form.service', () => {
         } as unknown as IPopulatedForm
 
         jest
-          .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
           // @ts-ignore
           .mockReturnValue({
             exec: jest.fn().mockResolvedValue({
@@ -3954,6 +4214,103 @@ describe('admin-form.service', () => {
 
         // Assert
         expect(result.isOk()).toBe(true)
+      })
+    })
+
+    describe('payment gate', () => {
+      const NEW_STEP = {
+        workflow_type: WorkflowType.Static,
+        emails: ['step1@example.com'],
+        edit: [],
+      }
+
+      it('should reject adding a workflow step when payments are enabled', async () => {
+        // Arrange
+        const mockForm = {
+          _id: new ObjectId().toHexString(),
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: [],
+          workflow: [],
+          payments_field: { enabled: true },
+        } as unknown as IPopulatedForm
+
+        // Act
+        const result = await AdminFormService.createWorkflowStep(
+          mockForm,
+          NEW_STEP as any,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          MalformedParametersError,
+        )
+      })
+
+      it('should include the payments precondition in the update filter', async () => {
+        // Arrange
+        const mockFormId = new ObjectId().toHexString()
+        const mockForm = {
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: [],
+          workflow: [],
+          payments_field: { enabled: false },
+        } as unknown as IPopulatedForm
+
+        const updateSpy = jest
+          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+          // @ts-ignore
+          .mockReturnValue({
+            exec: jest.fn().mockResolvedValue({
+              _id: mockFormId,
+              workflow: [NEW_STEP],
+            }),
+          })
+
+        // Act
+        const result = await AdminFormService.createWorkflowStep(
+          mockForm,
+          NEW_STEP as any,
+        )
+
+        // Assert
+        expect(result.isOk()).toBe(true)
+        expect(updateSpy).toHaveBeenCalledWith(
+          { _id: mockFormId, 'payments_field.enabled': { $ne: true } },
+          { workflow: [NEW_STEP] },
+          { new: true, runValidators: true },
+        )
+      })
+
+      it('should reject when payments were enabled concurrently (filter misses)', async () => {
+        // Arrange
+        const mockForm = {
+          _id: new ObjectId().toHexString(),
+          responseMode: FormResponseMode.Multirespondent,
+          form_fields: [],
+          workflow: [],
+          payments_field: { enabled: false },
+        } as unknown as IPopulatedForm
+
+        jest
+          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+          // @ts-ignore
+          .mockReturnValue({
+            exec: jest.fn().mockResolvedValue(null),
+          })
+
+        // Act
+        const result = await AdminFormService.createWorkflowStep(
+          mockForm,
+          NEW_STEP as any,
+        )
+
+        // Assert
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          MalformedParametersError,
+        )
       })
     })
   })
@@ -4071,6 +4428,149 @@ describe('admin-form.service', () => {
         // Assert
         expect(result.isOk()).toBe(true)
       })
+    })
+  })
+
+  describe('workflow completeness', () => {
+    const FIELD_ID = new ObjectId().toHexString()
+    const OTHER_FIELD_ID = new ObjectId().toHexString()
+
+    const MOCK_FORM_FIELDS = [
+      { _id: FIELD_ID, fieldType: BasicField.ShortText, title: 'A field' },
+      {
+        _id: OTHER_FIELD_ID,
+        fieldType: BasicField.ShortText,
+        title: 'Another field',
+      },
+    ]
+
+    const completeFirstStep = {
+      _id: 'step0',
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: [FIELD_ID],
+    }
+    const completeSecondStep = {
+      _id: 'step1',
+      workflow_type: WorkflowType.Static,
+      emails: ['someone@example.com'],
+      edit: [OTHER_FIELD_ID],
+    }
+    const incompleteSecondStep = {
+      _id: 'step1',
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: [OTHER_FIELD_ID],
+    }
+
+    const makeForm = (status: FormStatus, workflow: unknown[]) =>
+      ({
+        _id: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Multirespondent,
+        status,
+        form_fields: MOCK_FORM_FIELDS,
+        workflow,
+      }) as unknown as IPopulatedForm
+
+    const mockDbSuccess = () =>
+      jest
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({
+            _id: new ObjectId().toHexString(),
+            workflow: [],
+          }),
+        })
+
+    it.each<[string, FormStatus, unknown[], unknown, boolean]>([
+      [
+        'private, incomplete',
+        FormStatus.Private,
+        [completeFirstStep],
+        incompleteSecondStep,
+        true,
+      ],
+      [
+        'public, incomplete',
+        FormStatus.Public,
+        [completeFirstStep],
+        incompleteSecondStep,
+        false,
+      ],
+    ])(
+      'createWorkflowStep: %s -> ok=%s',
+      async (_name, status, workflow, step, expectOk) => {
+        mockDbSuccess()
+        const result = await AdminFormService.createWorkflowStep(
+          makeForm(status, workflow),
+          step as any,
+        )
+        expect(result.isOk()).toBe(expectOk)
+      },
+    )
+
+    it('should name the offending step, 1-indexed', async () => {
+      const result = await AdminFormService.createWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep]),
+        incompleteSecondStep as any,
+      )
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MalformedParametersError)
+      expect(result._unsafeUnwrapErr().message).toContain('step 2')
+    })
+
+    it('should reject emptying a step on a public form', async () => {
+      const result = await AdminFormService.updateFormWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
+        1,
+        incompleteSecondStep as any,
+      )
+      expect(result.isErr()).toBe(true)
+    })
+
+    it('should reject a deletion that leaves an incomplete step behind, without mutating', async () => {
+      const workflow = [
+        completeFirstStep,
+        completeSecondStep,
+        incompleteSecondStep,
+      ]
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Public, workflow),
+        1,
+      )
+      expect(result.isErr()).toBe(true)
+      expect(workflow).toHaveLength(3)
+    })
+
+    it('should delete the step when the number arrives as a string', async () => {
+      jest
+        .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+        })
+      const workflow = [completeFirstStep, completeSecondStep]
+
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Private, workflow),
+        '1' as unknown as number,
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(MultirespondentFormModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        expect.anything(),
+        { workflow: [completeFirstStep] },
+        expect.anything(),
+      )
+    })
+
+    it('should allow a deletion that leaves a complete workflow', async () => {
+      mockDbSuccess()
+      const result = await AdminFormService.deleteFormWorkflowStep(
+        makeForm(FormStatus.Public, [completeFirstStep, completeSecondStep]),
+        1,
+      )
+      expect(result.isOk()).toBe(true)
     })
   })
 })

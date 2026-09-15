@@ -13,6 +13,7 @@ name: Release
 #            │      └─► deploy-stg / deploy-prod (deploy-ecs-*.yml)
 #            ├─► deploy-pdf-gen-stg / -prod
 #            ├─► deploy-virus-scanner-stg / -prod
+#            ├─► deploy-scheduled-closure-stg / -prod
 #            └─► publish-sdk          (only when the SDK was bumped)
 #
 # NOTE: pushing the bump commit to develop with GITHUB_TOKEN requires develop's
@@ -193,6 +194,28 @@ jobs:
       contents: read
       id-token: write
     uses: ./.github/workflows/deploy-pdf-gen-prod.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  deploy-scheduled-closure-stg:
+    name: Deploy scheduled closure to stg
+    needs: [release, build]
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy-scheduled-closure-stg.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+    secrets: inherit
+
+  deploy-scheduled-closure-prod:
+    name: Deploy scheduled closure to production
+    needs: [release, build]
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/deploy-scheduled-closure-prod.yml
     with:
       version: ${{ needs.release.outputs.version }}
     secrets: inherit

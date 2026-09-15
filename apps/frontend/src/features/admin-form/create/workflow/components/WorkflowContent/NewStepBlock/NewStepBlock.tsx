@@ -5,11 +5,15 @@ import { BiPlus } from 'react-icons/bi'
 import { FormWorkflowStep } from 'formsg-shared/types'
 
 import Button from '~components/Button'
+import Tooltip from '~components/Tooltip'
 
 import {
   cancelPendingSwitchSelector,
   completeSaveSelector,
+  createOrEditDataSelector,
   isCreatingStateSelector,
+  requestSwitchToCreatingSelector,
+  setCompletedStepSelector,
   setToCreatingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
@@ -19,23 +23,57 @@ import { EditStepBlock } from '../EditStepBlock'
 
 export const NewStepBlock = () => {
   const { t } = useTranslation()
-  const { formWorkflow } = useAdminFormWorkflow()
+  const { formWorkflow, isPaymentEnabled } = useAdminFormWorkflow()
   const { createStepMutation } = useWorkflowMutations()
-  const { isCreatingState, setToCreating, completeSave, cancelPendingSwitch } =
-    useAdminWorkflowStore((state) => ({
-      isCreatingState: isCreatingStateSelector(state),
-      setToCreating: setToCreatingSelector(state),
-      completeSave: completeSaveSelector(state),
-      cancelPendingSwitch: cancelPendingSwitchSelector(state),
-    }))
+  const {
+    isCreatingState,
+    stateData,
+    setToCreating,
+    requestSwitchToCreating,
+    completeSave,
+    cancelPendingSwitch,
+    setCompletedStep,
+  } = useAdminWorkflowStore((state) => ({
+    isCreatingState: isCreatingStateSelector(state),
+    stateData: createOrEditDataSelector(state),
+    setToCreating: setToCreatingSelector(state),
+    requestSwitchToCreating: requestSwitchToCreatingSelector(state),
+    completeSave: completeSaveSelector(state),
+    cancelPendingSwitch: cancelPendingSwitchSelector(state),
+    setCompletedStep: setCompletedStepSelector(state),
+  }))
+
+  const newStepNumber = formWorkflow?.length ?? 0
+
+  // Another card is open: hand it a pending switch so it saves first, the same
+  // way clicking a step card or the email card does. Calling setToCreating
+  // straight away unmounts that card and drops its edits with no save and no
+  // warning.
+  const handleAddStep = () => {
+    if (stateData) {
+      requestSwitchToCreating()
+      return
+    }
+    setToCreating()
+  }
+
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) =>
       createStepMutation.mutate(step, {
-        onSuccess: completeSave,
+        onSuccess: () => {
+          setCompletedStep(newStepNumber)
+          completeSave()
+        },
         // Drop any pending switch so a failed save can't redirect a later one.
         onError: cancelPendingSwitch,
       }),
-    [createStepMutation, completeSave, cancelPendingSwitch],
+    [
+      createStepMutation,
+      completeSave,
+      cancelPendingSwitch,
+      setCompletedStep,
+      newStepNumber,
+    ],
   )
 
   if (!formWorkflow) return null
@@ -51,8 +89,24 @@ export const NewStepBlock = () => {
       )}
     />
   ) : (
-    <Button onClick={setToCreating} variant="outline" leftIcon={<BiPlus />}>
-      {t('features.adminForm.sidebar.workflow.approvals.addStep')}
-    </Button>
+    <Tooltip
+      label={
+        isPaymentEnabled
+          ? t('features.adminForm.sidebar.workflow.paymentEnabledNoSteps')
+          : undefined
+      }
+      // Disabled buttons swallow hover events; the wrapper span keeps the
+      // tooltip reachable exactly when it has something to say.
+      shouldWrapChildren={isPaymentEnabled}
+    >
+      <Button
+        onClick={handleAddStep}
+        variant="outline"
+        leftIcon={<BiPlus />}
+        isDisabled={isPaymentEnabled}
+      >
+        {t('features.adminForm.sidebar.workflow.approvals.addStep')}
+      </Button>
+    </Tooltip>
   )
 }

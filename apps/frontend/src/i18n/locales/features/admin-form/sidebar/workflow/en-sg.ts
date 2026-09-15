@@ -10,6 +10,9 @@ import { Workflow } from '.'
 
 export const enSG: Workflow = {
   title: 'Add workflow',
+  aria: {
+    deleteWorkflow: 'Delete workflow',
+  },
   respondentBlock: {
     stepRespondent: 'Respondent in this step',
     stepRespondentRedesign: 'Who fills in this step?',
@@ -21,14 +24,14 @@ export const enSG: Workflow = {
     clickToEdit: 'Click to edit',
   },
   dynamicRespondent: {
-    title: 'An email field from the form',
+    title: 'An Email field from the form',
     required: 'Please select a field.',
     mustBeEmail: 'Field is not an email field',
     mustBeEmailRedesign: 'Choose an email field.',
     select: 'Select a field',
   },
   conditionalRouting: {
-    title: 'Emails assigned to options in a dropdown field',
+    title: 'Emails assigned to options in a Dropdown field',
     addEmailsToOptions: 'Add emails to options',
     addEmailsToOptionsRedesign: 'Assign emails to options',
     validation: {
@@ -43,6 +46,34 @@ export const enSG: Workflow = {
           'Are you sure you want to delete this step? This action cannot be undone.',
         confirm: 'Yes, delete step',
         cancel: "No, don't delete",
+      },
+      deleteWorkflow: {
+        title: 'Delete entire workflow',
+        description: [
+          'Responses already started will continue using the current workflow.',
+          'When the form does not have a workflow, anyone with the link will be able to fill in every field.',
+        ],
+        confirm: 'Delete workflow',
+        cancel: 'Cancel',
+      },
+      // Same consequences as deleteWorkflow, repeated rather than shared: the
+      // two differ only in the title, and translators need whole sentences,
+      // since clause order differs by language and stitched fragments break.
+      deleteFirstStep: {
+        title: 'Deleting the first step removes the entire workflow',
+        description: [
+          'Responses already started will continue using the current workflow.',
+          'When the form does not have a workflow, anyone with the link will be able to fill in every field.',
+        ],
+        confirm: 'Delete workflow',
+        cancel: 'Cancel',
+      },
+      closeFormFirst: {
+        title: 'Close your form first',
+        description:
+          'You can only delete your workflow when your form is closed to new responses.',
+        confirm: 'Go to settings',
+        cancel: 'Cancel',
       },
       deleteMapping: {
         title: 'Delete CSV file',
@@ -131,11 +162,24 @@ export const enSG: Workflow = {
   questions: {
     tooltip:
       'Respondent will only be able to fill the fields you have selected',
-    tooltipRedesign: 'This person can only fill in the fields you select.',
     label: 'Select field(s) for this respondent to fill',
     labelRedesign: 'Choose the fields this person fills in',
     placeholder: 'Select field(s) from your form',
     placeholderRedesign: 'Select fields from your form',
+    autoAddHelperTextRedesign:
+      'The approval field is added here automatically.',
+  },
+  emptyStates: {
+    noEmailField: 'Your form has no Email field yet.',
+    noEmailFieldAction: 'Add an Email field',
+    noDropdownField: 'Your form has no Dropdown field yet.',
+    noDropdownFieldAction: 'Add a Dropdown field',
+    noYesNoField: 'Your form has no Yes/No field yet.',
+    noYesNoFieldAction: 'Add a Yes/No field',
+    noFields: 'Your form has no fields yet.',
+    noFieldsMyInfoOnly:
+      'Your form only has MyInfo fields, which can only be used in the first step.',
+    noFieldsAction: 'Add fields',
   },
   approvals: {
     title: 'Approvals',
@@ -144,13 +188,16 @@ export const enSG: Workflow = {
     notRequired: 'Approval not required in this step',
     toggle: {
       label: 'Make this step an approval',
+      labelRedesign: "Make this person approve what's been filled in so far",
       description:
         'If respondent selects Yes, the form is Approved and continues to the next step. If they select No, the form is Not approved and stops at this step.',
       descriptionRedesign:
-        'If this person selects Yes, the form is Approved and continues to the next step. If they select No, the form is Not approved and stops at this step.',
+        'If they reject the submission, the workflow stops here.',
       tooltip:
         'Use this for steps that involve any type of decision, such as reviews or endorsements. Decision will be shown on dashboard and tracking links.',
-      placeholder: 'Select a Yes/No field from your form',
+      placeholder: 'Select a field',
+      selectorLabelRedesign:
+        'Select the Yes/No field for the approval decision',
     },
     validation: {
       noField: 'Please select a Yes/No field',
@@ -174,5 +221,76 @@ export const enSG: Workflow = {
   },
   stepName: {
     label: 'Step name',
+  },
+  guidedMode: {
+    label: 'Guided setup',
+  },
+  skipGuidance: {
+    modal: {
+      title: 'Skip guided setup?',
+      bodyWithSteps:
+        "You'll set up your workflow independently. Any steps you've created so far will be kept.",
+      bodyWithoutSteps:
+        "You'll set up your workflow yourself. We won't show this guide again.",
+      confirm: 'Skip guidance',
+      cancel: 'Cancel',
+    },
+  },
+  welcome: {
+    header: "Let's start with Step 1",
+    stepOne: 'Step 1 is what everyone who opens your form link fills in first.',
+    whatNext:
+      "You'll name the step and pick which fields they see. Then you can add more steps.",
+    cta: "Let's go",
+  },
+  intro: {
+    header: 'Workflows split your form into steps',
+    subheader:
+      'Send each step to a different person in sequence. Each person only fills in their own part.',
+    guided: 'Start with guided setup',
+    manual: 'Set up manually',
+  },
+  guided: {
+    continue: 'Continue',
+    back: 'Back',
+    cancel: 'Cancel',
+    done: 'Done',
+  },
+  paymentEnabledNoSteps:
+    'Remove the payment field to add workflow steps. A form cannot have both a payment field and a workflow.',
+  completionEmail: {
+    title: 'Completion email',
+    divider: 'END OF WORKFLOW',
+  },
+  completionPeek: {
+    stepOneDone: {
+      title:
+        'Step 1 is the public-facing step. Anyone with your link starts here.',
+      subtitle: 'Now add the steps that route to specific people.',
+    },
+    laterStepDone: {
+      title: 'Nice, Step {stepNumber} is all set',
+      subtitle: 'Would you like to add another step?',
+    },
+    emailSetUp: {
+      title: "You've set up the completion email.",
+      subtitle: 'Next, set up an extra workflow setting.',
+    },
+    statusTracking: {
+      title: 'Your workflow is ready',
+      subtitle:
+        'Before you finish, you can let people check the status of their response.',
+    },
+    guidedSetupFinished: {
+      title: "You've finished guided setup",
+      subtitle:
+        'Use the Preview button on the top right to check what each step looks like.',
+    },
+    actions: {
+      declineAnotherStep: "No, I'm done",
+      addAnotherStep: 'Yes, add a step',
+      continue: 'Continue',
+      finish: 'Done',
+    },
   },
 }

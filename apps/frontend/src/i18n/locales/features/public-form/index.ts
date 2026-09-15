@@ -5,6 +5,9 @@ import { Table } from './table'
 export * from './en-sg'
 
 export interface PublicForm {
+  expiry: {
+    banner: string
+  }
   backendErrors: {
     verification: {
       sessionExpired: string
@@ -67,6 +70,7 @@ export interface PublicForm {
     notAvailable: string
     notFound: string
     deleted: string
+    authFormMismatch: string
     private: string
     takenDown: string
 

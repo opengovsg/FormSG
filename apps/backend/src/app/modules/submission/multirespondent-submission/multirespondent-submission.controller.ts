@@ -3,17 +3,28 @@ import { featureFlags } from 'formsg-shared/constants'
 import {
   ErrorDto,
   FormResponseMode,
+  PaymentChannel,
+  PaymentType,
   PublicMultirespondentSubmissionDto,
   SubmissionType,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 import { StatusCodes } from 'http-status-codes'
+import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
+import Stripe from 'stripe'
 
-import { Environment } from '../../../../types'
+import { Environment, IPopulatedMultirespondentForm } from '../../../../types'
+import { StripePaymentMetadataDto } from '../../../../types/payment'
 import config, { isTest } from '../../../config/config'
+import { paymentConfig } from '../../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
-import { createLoggerWithLabel } from '../../../config/logger'
+import {
+  createLoggerWithLabel,
+  CustomLoggerParams,
+} from '../../../config/logger'
+import { stripe } from '../../../loaders/stripe'
+import getPaymentModel from '../../../models/payment.server.model'
 import * as CaptchaMiddleware from '../../../services/captcha/captcha.middleware'
 import * as TurnstileMiddleware from '../../../services/turnstile/turnstile.middleware'
 import { Pipeline } from '../../../utils/pipeline-middleware'
@@ -32,6 +43,11 @@ import {
   ensurePublicForm,
   ensureValidCaptcha,
 } from '../encrypt-submission/encrypt-submission.ensures'
+import {
+  getPaymentAmount,
+  getPaymentIntentDescription,
+  getStripePaymentMethod,
+} from '../encrypt-submission/encrypt-submission.utils'
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import {
   InvalidSubmissionTypeError,
@@ -48,6 +64,7 @@ import { ensureSubmitterIdIsWhitelisted } from './multirespondent-submission.ens
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
 import {
   checkFormIsMultirespondent,
+  createMultiRespondentFormPendingSubmission,
   createMultiRespondentFormSubmission,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
@@ -68,6 +85,7 @@ import {
 } from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
+const Payment = getPaymentModel(mongoose)
 
 const appUrl =
   process.env.NODE_ENV === Environment.Dev
@@ -121,6 +139,36 @@ const submitMultirespondentForm = async (
 
   const encryptedPayload = req.formsg.encryptedPayload
 
+  // Handle submissions for payment-enabled (necessarily zero-step) forms:
+  // the submission is saved as a pending submission and only promoted to a
+  // real submission when the Stripe webhook confirms the payment.
+  if (
+    form.payments_field?.enabled &&
+    form.payments_channel?.channel === PaymentChannel.Stripe
+  ) {
+    // Kill switch: with the flag off the submission is blocked outright — a
+    // payment submission must never fall through to the non-payment path.
+    const isMrfPaymentsEnabled = gb?.isOn(featureFlags.mrfPayments) ?? false
+    if (!isMrfPaymentsEnabled) {
+      logger.warn({
+        message:
+          'Blocked MRF payment submission: mrf-payments feature flag is off',
+        meta: logMeta,
+      })
+      return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
+        message:
+          'Payments are currently unavailable for this form. Please try again later, or contact the form admin.',
+      })
+    }
+    return _createPaymentSubmission({
+      req,
+      res,
+      form,
+      logMeta,
+      formId,
+    })
+  }
+
   const createMultiRespondentFormSubmissionResult =
     await createMultiRespondentFormSubmission({
       form,
@@ -159,6 +207,240 @@ const submitMultirespondentForm = async (
 }
 
 export const submitMultirespondentFormForTest = submitMultirespondentForm
+
+/**
+ * Payment path for zero-step multirespondent forms. Mirrors the encrypt-mode
+ * flow: create a Payment document and a pending submission, then a Stripe
+ * payment intent. Nothing observable (admin views, notifications) happens
+ * until the charge.succeeded webhook promotes the pending submission.
+ */
+const _createPaymentSubmission = async ({
+  req,
+  res,
+  form,
+  logMeta,
+  formId,
+}: {
+  req: SubmitMultirespondentFormHandlerRequest
+  res: Parameters<SubmitMultirespondentFormHandlerType>[1]
+  form: IPopulatedMultirespondentForm
+  formId: string
+  logMeta: CustomLoggerParams['meta']
+}) => {
+  const encryptedPayload = req.formsg.encryptedPayload
+  const paymentProducts = encryptedPayload.paymentProducts
+
+  const amount = getPaymentAmount(
+    form.payments_field,
+    encryptedPayload.payments,
+    paymentProducts,
+  )
+
+  const isPaymentTypeProducts =
+    form.payments_field.payment_type === PaymentType.Products
+
+  logger.info({
+    message: 'Incoming payments',
+    meta: {
+      ...logMeta,
+      paymentProducts,
+      paymentType: form.payments_field.payment_type,
+      amount,
+    },
+  })
+
+  // Step 0: Perform validation checks
+  if (!amount) {
+    logger.error({
+      message: 'Error when creating payment: amount is missing',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
+
+  const paymentMinAmount =
+    form.payments_field.global_min_amount_override ||
+    paymentConfig.minPaymentAmountCents
+
+  if (
+    amount < paymentMinAmount ||
+    amount > paymentConfig.maxPaymentAmountCents
+  ) {
+    logger.error({
+      message: 'Error when creating payment: amount is not within bounds',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
+
+  const paymentReceiptEmail =
+    encryptedPayload.paymentReceiptEmail?.toLowerCase()
+  if (!paymentReceiptEmail) {
+    logger.error({
+      message:
+        'Error when creating payment: payment receipt email not provided.',
+      meta: logMeta,
+    })
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message:
+        "The form's payment settings are invalid. Please contact the admin of the form to rectify the issue.",
+    })
+  }
+
+  const targetAccountId = form.payments_channel.target_account_id
+
+  // Step 1: Create payment without payment intent id and pending submission id.
+  const payment = new Payment({
+    formId,
+    targetAccountId,
+    amount,
+    email: paymentReceiptEmail,
+    responses: [],
+    ...(isPaymentTypeProducts ? { products: paymentProducts } : {}),
+    gstEnabled: form.payments_field.gst_enabled,
+    payment_fields_snapshot: form.payments_field,
+  })
+  const paymentId = payment.id
+
+  // Step 2: Create and save pending submission.
+  const createPendingSubmissionResult =
+    await createMultiRespondentFormPendingSubmission({
+      form,
+      encryptedPayload,
+      paymentId,
+      logMeta,
+    })
+  if (createPendingSubmissionResult.isErr()) {
+    const error = createPendingSubmissionResult.error
+    // Mirror encrypt mode: a pending-save failure blocks the respondent with
+    // a 400 so they can retry, rather than mapRouteError's generic 500.
+    if (error instanceof SubmissionSaveError) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'Could not save pending submission. For assistance, please contact the person who asked you to fill in this form.',
+      })
+    }
+    const { errorMessage, statusCode } = mapRouteError(error)
+    return res.status(statusCode).json({ message: errorMessage })
+  }
+  const pendingSubmission = createPendingSubmissionResult.value
+  const pendingSubmissionId = pendingSubmission.id
+
+  // Step 3: Create the payment intent via API call to stripe.
+  const metadata: StripePaymentMetadataDto = {
+    env: config.envSiteName,
+    formTitle: form.title,
+    formId,
+    submissionId: pendingSubmissionId,
+    paymentId,
+    paymentContactEmail: paymentReceiptEmail,
+  }
+
+  const createPaymentIntentParams: Stripe.PaymentIntentCreateParams = {
+    amount,
+    currency: paymentConfig.defaultCurrency,
+    ...getStripePaymentMethod(form),
+    description: getPaymentIntentDescription(form, paymentProducts),
+    receipt_email: paymentReceiptEmail,
+    metadata,
+  }
+
+  let paymentIntent
+  try {
+    paymentIntent = await stripe.paymentIntents.create(
+      createPaymentIntentParams,
+      { stripeAccount: targetAccountId },
+    )
+  } catch (err) {
+    logger.error({
+      message: 'Error when creating payment intent',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        createPaymentIntentParams,
+      },
+      error: err,
+    })
+    // Return a 502 error here since the issue was with Stripe.
+    return res.status(StatusCodes.BAD_GATEWAY).json({
+      message:
+        'There was a problem creating the payment intent. Please try again.',
+    })
+  }
+
+  const paymentIntentId = paymentIntent.id
+  logger.info({
+    message: 'Created payment intent from Stripe',
+    meta: {
+      ...logMeta,
+      pendingSubmissionId,
+      paymentIntentId,
+    },
+  })
+
+  // Step 4: Update payment document with payment intent id and pending
+  // submission id, and save it.
+  payment.paymentIntentId = paymentIntentId
+  payment.pendingSubmissionId = pendingSubmissionId
+  try {
+    await payment.save()
+  } catch (err) {
+    logger.error({
+      message: 'Error updating payment document with payment intent id',
+      meta: {
+        ...logMeta,
+        pendingSubmissionId,
+        paymentIntentId,
+      },
+      error: err,
+    })
+    // Cancel the payment intent if saving the document fails.
+    try {
+      await stripe.paymentIntents.cancel(paymentIntent.id, {
+        stripeAccount: targetAccountId,
+      })
+    } catch (stripeErr) {
+      logger.error({
+        message: 'Failed to cancel Stripe payment intent',
+        meta: {
+          ...logMeta,
+          pendingSubmissionId,
+          paymentIntentId,
+        },
+        error: stripeErr,
+      })
+    }
+    // Regardless of whether the cancellation succeeded or failed, block the
+    // submission so that user can try to resubmit
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message:
+        'There was a problem updating the payment document. Please try again.',
+    })
+  }
+
+  logger.info({
+    message: 'Saved payment document to DB',
+    meta: {
+      ...logMeta,
+      pendingSubmissionId,
+      paymentIntentId,
+      paymentId,
+    },
+  })
+
+  return res.json({
+    message: 'Form submission successful',
+    submissionId: pendingSubmissionId,
+    timestamp: (pendingSubmission.created || new Date()).getTime(),
+    paymentData: { paymentId },
+  })
+}
 
 const updateMultirespondentSubmission = async (
   req: UpdateMultirespondentSubmissionHandlerRequest,
@@ -272,6 +554,7 @@ export const handleMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
+  MultirespondentSubmissionMiddleware.validatePaymentSubmission,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   MultirespondentSubmissionMiddleware.handleNdiResponses,
   submitMultirespondentForm,

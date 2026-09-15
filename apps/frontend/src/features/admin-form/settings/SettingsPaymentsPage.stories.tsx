@@ -1,9 +1,15 @@
 import { Meta, StoryFn } from '@storybook/react'
 
-import { FormResponseMode, FormSettings } from 'formsg-shared/types'
+import {
+  FormResponseMode,
+  FormSettings,
+  PaymentChannel,
+  PaymentType,
+} from 'formsg-shared/types'
 
 import {
   getAdminFormSettings,
+  getAdminFormStripeValidate,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -15,6 +21,36 @@ const buildEncryptModeMswRoutes = (overrides?: Partial<FormSettings>) => [
   getAdminFormSettings({ overrides, mode: FormResponseMode.Encrypt }),
   patchAdminFormSettings({ overrides, mode: FormResponseMode.Encrypt }),
 ]
+
+const buildMrfModeMswRoutes = (overrides?: Partial<FormSettings>) => [
+  getAdminFormSettings({
+    overrides,
+    mode: FormResponseMode.Multirespondent,
+  }),
+  patchAdminFormSettings({
+    overrides,
+    mode: FormResponseMode.Multirespondent,
+  }),
+  getAdminFormStripeValidate(),
+]
+
+const MRF_STRIPE_CONNECTED_OVERRIDES: Partial<FormSettings> = {
+  payments_channel: {
+    channel: PaymentChannel.Stripe,
+    target_account_id: 'acct_mock123',
+    publishable_key: 'pk_test_mock123',
+    payment_methods: [],
+  },
+}
+
+const MRF_LIVE_PAYMENT_OVERRIDES: Partial<FormSettings> = {
+  ...MRF_STRIPE_CONNECTED_OVERRIDES,
+  payments_field: {
+    enabled: true,
+    payment_type: PaymentType.Products,
+    products: [],
+  },
+}
 
 export default {
   title: 'Pages/AdminFormPage/Settings/PaymentsTab',
@@ -61,6 +97,36 @@ IsSingleSubmissionDisabledWithoutEmailNotifications.parameters = {
         isSingleSubmission: false,
         emails: [],
       }),
+    },
+  },
+}
+
+// The MRF stories render without a GrowthBookProvider, so the mrf-payments
+// flag resolves to off — they exercise the kill-switch UI states.
+
+export const MrfWithFlagOffShowsUnsupportedMsg = Template.bind({})
+MrfWithFlagOffShowsUnsupportedMsg.parameters = {
+  msw: {
+    handlers: {
+      default: buildMrfModeMswRoutes(),
+    },
+  },
+}
+
+export const MrfStripeConnectedWithFlagOffKeepsUnlink = Template.bind({})
+MrfStripeConnectedWithFlagOffKeepsUnlink.parameters = {
+  msw: {
+    handlers: {
+      default: buildMrfModeMswRoutes(MRF_STRIPE_CONNECTED_OVERRIDES),
+    },
+  },
+}
+
+export const MrfLivePaymentWithFlagOffKeepsSettings = Template.bind({})
+MrfLivePaymentWithFlagOffKeepsSettings.parameters = {
+  msw: {
+    handlers: {
+      default: buildMrfModeMswRoutes(MRF_LIVE_PAYMENT_OVERRIDES),
     },
   },
 }

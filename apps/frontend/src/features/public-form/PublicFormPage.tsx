@@ -6,6 +6,7 @@ import { fillMinHeightCss } from '~utils/fillHeightCss'
 import FloatingToolbar from './components/FloatingToolBar'
 import { FormBanner } from './components/FormBanner'
 import FormEndPage from './components/FormEndPage'
+import { FormExpiryBanner } from './components/FormExpiryBanner'
 import FormFields from './components/FormFields'
 import { FormSectionsProvider } from './components/FormFields/FormSectionsContext'
 import { FormFooter } from './components/FormFooter'
@@ -14,12 +15,18 @@ import { PublicFormLogo } from './components/FormLogo'
 import FormStartPage from './components/FormStartPage'
 import LanguageControl from './components/LanguageControl'
 import { PublicFormWrapper } from './components/PublicFormWrapper'
+import { useAuthFormMismatch } from './hooks/useAuthFormMismatch'
 import { PublicFormProvider } from './PublicFormProvider'
 
 export const PublicFormPage = (): JSX.Element => {
   const { formId, submissionId } = useParams()
+  const isResolvingAuthFormMismatch = useAuthFormMismatch(formId)
 
   if (!formId) throw new Error('No formId provided')
+
+  if (isResolvingAuthFormMismatch) {
+    return <></>
+  }
 
   // Get date time in miliseconds when user first loads the form
   const startTime = Date.now()
@@ -34,6 +41,7 @@ export const PublicFormPage = (): JSX.Element => {
       <FormSectionsProvider>
         <Flex direction="column" css={fillMinHeightCss}>
           <FormBanner />
+          <FormExpiryBanner />
           <PublicFormLogo />
           <FormStartPage />
           <LanguageControl />

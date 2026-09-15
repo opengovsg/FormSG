@@ -68,6 +68,7 @@ export const parameters = {
     'en-SG': 'English',
   },
   layout: 'fullscreen',
+  viewport: { defaultViewport: 'reset' },
   docs: {
     theme: StorybookTheme.docs,
     inlineStories: true,

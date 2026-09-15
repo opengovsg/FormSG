@@ -11,6 +11,7 @@ import { useIsRbiIpCheck } from '~features/login/queries'
 const ALLOWED_FORWARDING_ROUTES = [
   '/sgid/login',
   '/mi/login',
+  '/mi/fapi/login',
   '/api/v3/singpass/login',
   '/api/v3/corppass/login',
   '/api/v3/auth/sgid/login/callback',

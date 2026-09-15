@@ -4,8 +4,10 @@ export interface ChildrenCompoundFieldBase extends MyInfoableFieldBase {
   fieldType: BasicField.Children
   // Stores the sub-field data.
   childrenSubFields?: MyInfoChildAttributes[]
-  // Whether the response should accept more than one children.
-  // Default (undefined) is no.
+  /**
+   * @deprecated A children field collects exactly one child. Retained only
+   * because existing form documents carry it; nothing reads it.
+   */
   allowMultiple?: boolean
 }
 

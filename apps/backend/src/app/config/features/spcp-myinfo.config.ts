@@ -47,6 +47,12 @@ type IMyInfoConfig = {
   myInfoClientId: string
   myInfoClientSecret: string
   myInfoJwtSecret: string
+  myInfoFapiIssuer: string
+  myInfoFapiClientId: string
+  myInfoFapiRpJwksPublic: string
+  myInfoFapiRpJwksSecret: string
+  myInfoFapiRpJwksPublicPath: string
+  myInfoFapiRpJwksSecretPath: string
 }
 
 // Config of MyInfo is coupled to that of Singpass
@@ -154,6 +160,42 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: String,
     default: null,
     env: 'MYINFO_JWT_SECRET',
+  },
+  myInfoFapiIssuer: {
+    doc: "Issuer identifier of Singpass' MyInfo FAPI 2.0 authorization server. Discovery is performed against <issuer>/.well-known/openid-configuration.",
+    format: String,
+    default: null,
+    env: 'MYINFO_FAPI_ISSUER',
+  },
+  myInfoFapiClientId: {
+    doc: "The Relying Party's client ID as registered in the Singpass Developer Portal for MyInfo FAPI 2.0.",
+    format: String,
+    default: null,
+    env: 'MYINFO_FAPI_CLIENT_ID',
+  },
+  myInfoFapiRpJwksPublic: {
+    doc: "The Relying Party's public JSON Web Key Set for MyInfo FAPI 2.0. Hosted at /mi/fapi/.well-known/jwks.json.",
+    format: validateIacStringParam,
+    default: null,
+    env: 'MYINFO_FAPI_RP_JWKS_PUBLIC',
+  },
+  myInfoFapiRpJwksSecret: {
+    doc: "The Relying Party's secret JSON Web Key Set for MyInfo FAPI 2.0. Signs client assertions and decrypts ID tokens and userinfo.",
+    format: validateIacStringParam,
+    default: null,
+    env: 'MYINFO_FAPI_RP_JWKS_SECRET',
+  },
+  myInfoFapiRpJwksPublicPath: {
+    doc: "Path to the Relying Party's public JSON Web Key Set for MyInfo FAPI 2.0.",
+    format: validateNonIacStringParam,
+    default: null,
+    env: 'MYINFO_FAPI_RP_JWKS_PUBLIC_PATH',
+  },
+  myInfoFapiRpJwksSecretPath: {
+    doc: "Path to the Relying Party's secret JSON Web Key Set for MyInfo FAPI 2.0.",
+    format: validateNonIacStringParam,
+    default: null,
+    env: 'MYINFO_FAPI_RP_JWKS_SECRET_PATH',
   },
   spOidcNdiDiscoveryEndpoint: {
     doc: "NDI's Singpass OIDC Discovery Endpoint",

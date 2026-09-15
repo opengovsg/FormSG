@@ -291,7 +291,6 @@ describe('encrypt-submission.controller', () => {
       const mockFormId = new ObjectId()
       const mockSpAuthTypeAndIsSingleSubmissionEnabledForm = {
         _id: mockFormId,
-        id: mockFormId.toHexString(),
         title: 'some form',
         authType: FormAuthType.SP,
         isSingleSubmission: true,
@@ -301,7 +300,7 @@ describe('encrypt-submission.controller', () => {
 
       const mockReq = merge(
         expressHandler.mockRequest({
-          params: { formId: 'some id' },
+          params: { formId: String(mockFormId) },
           body: {
             responses: [],
           },
@@ -329,13 +328,13 @@ describe('encrypt-submission.controller', () => {
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
         generateHashedSubmitterId(
           MOCK_JWT_PAYLOAD.userName.toUpperCase(),
-          mockSpAuthTypeAndIsSingleSubmissionEnabledForm.id,
+          String(mockFormId),
         ),
       )
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
         generateHashedSubmitterId(
           MOCK_JWT_PAYLOAD.userName.toUpperCase(),
-          mockSpAuthTypeAndIsSingleSubmissionEnabledForm.id,
+          String(mockFormId),
         ),
       )
     })
@@ -363,7 +362,6 @@ describe('encrypt-submission.controller', () => {
       const mockFormId = new ObjectId()
       const mockCpAuthTypeAndIsSingleSubmissionEnabledForm = {
         _id: mockFormId,
-        id: mockFormId.toHexString(),
         title: 'some form',
         authType: FormAuthType.CP,
         isSingleSubmission: true,
@@ -373,7 +371,7 @@ describe('encrypt-submission.controller', () => {
 
       const mockReq = merge(
         expressHandler.mockRequest({
-          params: { formId: 'some id' },
+          params: { formId: String(mockFormId) },
           body: {
             responses: [],
           },
@@ -401,13 +399,13 @@ describe('encrypt-submission.controller', () => {
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][1]).toEqual(
         generateHashedSubmitterId(
           MOCK_JWT_PAYLOAD.userName.toUpperCase(),
-          mockCpAuthTypeAndIsSingleSubmissionEnabledForm.id,
+          String(mockFormId),
         ),
       )
       expect(saveIfSubmitterIdIsUniqueSpy.mock.calls[0][2].submitterId).toEqual(
         generateHashedSubmitterId(
           MOCK_JWT_PAYLOAD.userName.toUpperCase(),
-          mockCpAuthTypeAndIsSingleSubmissionEnabledForm.id,
+          String(mockFormId),
         ),
       )
     })

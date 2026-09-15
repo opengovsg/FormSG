@@ -1,0 +1,87 @@
+version: 0.1
+
+# Each `s3_bucket` must exist before that environment's first deploy. They are
+# provisioned by pulumi in formsg-infra (`src/scheduledClosure.ts`), which also
+# creates the `/<ssm-env-site-name>/CRON_SCHEDULED_CLOSURE_API_SECRET` parameter.
+#
+# Pulumi suffixes bucket names randomly and regenerates the suffix on apply, so
+# take the name from the `scheduledClosureCodeZipBucket` output of an `up`,
+# never of a `preview`.
+
+stg:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg
+      s3_bucket: form-scheduled-closure-code-zip-stg-ab1a512 # Created by pulumi in formsg-infra to store AWS SAM builds.
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg SsmEnvSiteName=stg
+
+stg-alt:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg-alt
+      s3_bucket: form-scheduled-closure-code-zip-stg-alt-f26b4a5 # Created by pulumi in formsg-infra to store AWS SAM builds.
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg-alt
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt SsmEnvSiteName=stg-alt
+
+stg-alt2:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg-alt2
+      s3_bucket: form-scheduled-closure-code-zip-stg-alt21-7cbc107 # Created by pulumi in formsg-infra to store AWS SAM builds.
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg-alt2
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt2 SsmEnvSiteName=stg-alt21
+
+stg-alt3:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-stg-alt3
+      s3_bucket: form-scheduled-closure-code-zip-stg-alt3-64b2068 # Created by pulumi in formsg-infra to store AWS SAM builds.
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: stg-alt3
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=stg-alt3 SsmEnvSiteName=stg-alt3
+
+uat:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-uat
+      s3_bucket: form-scheduled-closure-code-zip-uat-cff00dc # Created by pulumi in formsg-infra to store AWS SAM builds.
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: uat
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=uat SsmEnvSiteName=uat
+
+production:
+  deploy:
+    parameters:
+      stack_name: form-scheduled-closure-production
+      s3_bucket: form-scheduled-closure-code-zip-prod-4ecd621 # Created by pulumi in formsg-infra to store AWS SAM builds.
+      region: ap-southeast-1
+      capabilities: CAPABILITY_IAM
+      s3_prefix: production
+      image_repositories: []
+      disable_rollback: false
+      confirm_changeset: true
+      parameter_overrides: Environment=production SsmEnvSiteName=prod

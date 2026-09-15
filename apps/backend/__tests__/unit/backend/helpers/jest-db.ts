@@ -1,11 +1,12 @@
 import MemoryDatabaseServer from '__tests__/setup/database'
-import mongoose, { Schema, Types } from 'mongoose'
 import { FormResponseMode } from 'formsg-shared/types'
+import mongoose, { Schema, Types } from 'mongoose'
 
 import getAgencyModel from 'src/app/models/agency.server.model'
 import getFormModel, {
   getEmailFormModel,
   getEncryptedFormModel,
+  getMultirespondentFormModel,
 } from 'src/app/models/form.server.model'
 import getFormFeedbackModel from 'src/app/models/form_feedback.server.model'
 import getSubmissionModel from 'src/app/models/submission.server.model'
@@ -17,9 +18,9 @@ import {
   IEmailFormSchema,
   IEncryptedForm,
   IEncryptedFormSchema,
-  IForm,
   IFormFeedbackSchema,
-  IFormSchema,
+  IMultirespondentForm,
+  IMultirespondentFormSchema,
   IPopulatedForm,
   ISubmissionSchema,
   IUserSchema,
@@ -233,6 +234,53 @@ const insertEncryptForm = async ({
   }
 }
 
+const insertMultirespondentForm = async ({
+  formId,
+  userId,
+  mailDomain = 'test.gov.sg',
+  mailName = 'test',
+  shortName = 'govtest',
+  formOptions = {},
+  userBetaFlags,
+}: {
+  formId?: Schema.Types.ObjectId
+  userId?: Schema.Types.ObjectId
+  mailName?: string
+  mailDomain?: string
+  shortName?: string
+  formOptions?: Partial<IMultirespondentForm>
+  userBetaFlags?: IUserSchema['betaFlags']
+} = {}): Promise<{
+  form: IMultirespondentFormSchema
+  user: IUserSchema
+  agency: IAgencySchema
+}> => {
+  const { user, agency } = await insertFormCollectionReqs({
+    userId,
+    mailDomain,
+    mailName,
+    shortName,
+    betaFlags: userBetaFlags,
+  })
+
+  const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
+
+  const form = await MultirespondentFormModel.create({
+    title: 'example form title',
+    admin: user._id,
+    responseMode: FormResponseMode.Multirespondent,
+    _id: formId,
+    publicKey: 'vuUYOfkrC7eiyqZ1OCZhMcjAvMQ7R4Z4zzDWB+og4G4=',
+    ...formOptions,
+  })
+
+  return {
+    form: form as IMultirespondentFormSchema,
+    user,
+    agency,
+  }
+}
+
 const getFullFormById = async (
   formId: string,
 ): Promise<IPopulatedForm | null> =>
@@ -300,6 +348,7 @@ const dbHandler = {
   clearCollection,
   insertEmailForm,
   insertEncryptForm,
+  insertMultirespondentForm,
   getFullFormById,
   insertFormSubmission,
   insertFormFeedback,

@@ -2,12 +2,11 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 
-import { FormResponseMode } from 'formsg-shared/types'
-
 import Toggle from '~components/Toggle'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
+import { isPaymentCapableFormSettings } from '../../utils'
 
 export const GstToggleSection = (): JSX.Element => {
   const { t } = useTranslation('translation', {
@@ -19,7 +18,7 @@ export const GstToggleSection = (): JSX.Element => {
   const hasGST = useMemo(
     () =>
       settings &&
-      settings.responseMode === FormResponseMode.Encrypt &&
+      isPaymentCapableFormSettings(settings) &&
       settings?.payments_field.gst_enabled,
     [settings],
   )
@@ -31,7 +30,7 @@ export const GstToggleSection = (): JSX.Element => {
       !settings ||
       isLoadingSettings ||
       mutateGST.isLoading ||
-      settings.responseMode !== FormResponseMode.Encrypt
+      !isPaymentCapableFormSettings(settings)
     ) {
       return
     }

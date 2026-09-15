@@ -2,6 +2,7 @@ import { Router } from 'express'
 
 import { authCallbackForwardingMiddleware } from '../auth/auth.middlewares'
 
+import { MyInfoFapiRouter } from './fapi/myinfo.fapi.routes'
 import { MYINFO_REDIRECT_PATH } from './myinfo.constants'
 import {
   handleMyInfoLogin,
@@ -26,3 +27,8 @@ MyInfoRouter.get(
   authCallbackForwardingMiddleware,
   handleMyInfoLogin,
 )
+
+/**
+ * MyInfo FAPI 2.0 routes, which run in parallel with MyInfo v3 during migration.
+ */
+MyInfoRouter.use(MyInfoFapiRouter)

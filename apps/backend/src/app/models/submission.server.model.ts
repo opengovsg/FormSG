@@ -179,10 +179,18 @@ SubmissionSchema.statics.retrieveWebhookInfoById = async function (
   ])) as IPopulatedWebhookSubmission | null
   if (!populatedSubmission) return null
   const webhookView = await populatedSubmission.getWebhookView()
+  const submittedStepSnapshotTokens = (
+    (populatedSubmission as IMultirespondentSubmissionSchema).submittedSteps ??
+    []
+  ).map((step) => step.snapshotTokens)
+
   return {
     webhookUrl: populatedSubmission.form.webhook?.url ?? '',
     isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
     webhookView,
+    ...(submittedStepSnapshotTokens.length > 0
+      ? { submittedStepSnapshotTokens }
+      : {}),
   }
 }
 
@@ -612,6 +620,11 @@ export const MultirespondentSubmissionSchema = new Schema<
   encryptedStepToken: {
     type: String,
     trim: true,
+  },
+  paymentId: {
+    type: Schema.Types.ObjectId,
+    // Defer loading of the ref due to circular dependency on schema IDs.
+    ref: () => PAYMENT_SCHEMA_ID,
   },
 })
 

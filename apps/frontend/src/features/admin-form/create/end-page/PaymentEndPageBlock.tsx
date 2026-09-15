@@ -1,13 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
-import {
-  AdminStorageFormDto,
-  FormDto,
-  FormResponseMode,
-} from 'formsg-shared/types/form'
+import { FormDto } from 'formsg-shared/types/form'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 import { DownloadReceiptBlock } from '../../../public-form/components/FormPaymentPage/stripe/components'
@@ -33,9 +30,7 @@ export const PaymentEndPageBlock = ({
     }
   }, [focusOnMount])
 
-  const isPaymentEnabled =
-    form?.responseMode === FormResponseMode.Encrypt &&
-    form.payments_field.enabled
+  const isPaymentEnabled = isFormPaymentsEnabled(form)
 
   const submittedAriaText = useMemo(() => {
     if (form?.title) {
@@ -52,9 +47,7 @@ export const PaymentEndPageBlock = ({
     return <></>
   }
 
-  const { paymentProducts, totalAmount } = paymentTypeSelection(
-    form as AdminStorageFormDto,
-  )
+  const { paymentProducts, totalAmount } = paymentTypeSelection(form)
 
   return (
     <Box>

@@ -13,6 +13,12 @@ export interface General extends HasTitle {
       closed: string
     }
     ariaLabel: string
+    incompleteWorkflowModal: {
+      title: string
+      description: string
+      confirm: string
+      cancel: string
+    }
   }
   limit: {
     label: string
@@ -26,6 +32,20 @@ export interface General extends HasTitle {
       successRemoved: string
     }
     limitLessThanCurrent: string
+  }
+  expiry: {
+    label: string
+    input: {
+      label: string
+      timeLabel: string
+      description: string
+    }
+    toast: {
+      success: string
+      successRemoved: string
+    }
+    dateInThePast: string
+    invalidTime: string
   }
   customisation: {
     closedFormMessage: string

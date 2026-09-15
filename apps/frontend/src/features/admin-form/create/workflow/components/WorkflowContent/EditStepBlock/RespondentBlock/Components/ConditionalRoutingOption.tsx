@@ -14,6 +14,7 @@ import Papa from 'papaparse'
 import isEmail from 'validator/lib/isEmail'
 
 import {
+  BasicField,
   DropdownFieldBase,
   FormFieldDto,
   WorkflowType,
@@ -32,10 +33,14 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
+import { useStageFieldAndNavigate } from '../../../../../hooks/useStageFieldAndNavigate'
+import { FieldEmptyState } from '../../EmptyStates'
 
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
 import { useWorkflowTypeValidation } from './hooks'
+import { NESTED_CONTROL_PR } from './layout'
 import { RespondentOptionProps } from './types'
 
 interface ConditionalRoutingOptionProps extends RespondentOptionProps {
@@ -357,6 +362,10 @@ export const ConditionalRoutingOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const stageFieldAndNavigate = useStageFieldAndNavigate()
+  const isSavePermissive = useIsWorkflowSavePermissive()
+
+  const showEmptyState = isRedesign && !conditionalFieldItems.length
 
   const handleOpenModal = () => {
     conditionalRoutingConfigSetValue('csvFile', null)
@@ -409,8 +418,9 @@ export const ConditionalRoutingOption = ({
         </Text>
         {selectedWorkflowType === WorkflowType.Conditional ? (
           <FormControl
+            pr={NESTED_CONTROL_PR}
             id="conditional_field"
-            isRequired
+            isRequired={!isSavePermissive}
             isInvalid={
               !!validateOptionsToRecipientsMapErrorMessage ||
               !!errors.conditional_field
@@ -421,10 +431,14 @@ export const ConditionalRoutingOption = ({
                 control={control}
                 name="conditional_field"
                 rules={{
-                  required: t(
-                    'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
-                  ),
+                  required: isSavePermissive
+                    ? false
+                    : t(
+                        'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
+                      ),
                   validate: (selectedValue) => {
+                    if (!selectedValue) return true
+                    if (isSavePermissive) return true
                     if (noEmailToOptionsMappingErrorMessage) {
                       return noEmailToOptionsMappingErrorMessage
                     }
@@ -445,18 +459,33 @@ export const ConditionalRoutingOption = ({
                     )
                   },
                 }}
-                render={({ field: { value = '', ...rest } }) => (
-                  <SingleSelect
-                    isDisabled={isLoading}
-                    isClearable={false}
-                    placeholder={t(
-                      'features.adminForm.sidebar.workflow.dynamicRespondent.select',
-                    )}
-                    items={conditionalFieldItems}
-                    value={value}
-                    {...rest}
-                  />
-                )}
+                render={({ field: { value = '', ...rest } }) =>
+                  showEmptyState ? (
+                    <FieldEmptyState
+                      picker="dropdown"
+                      message={t(
+                        'features.adminForm.sidebar.workflow.emptyStates.noDropdownField',
+                      )}
+                      actionLabel={t(
+                        'features.adminForm.sidebar.workflow.emptyStates.noDropdownFieldAction',
+                      )}
+                      onAction={() =>
+                        stageFieldAndNavigate(BasicField.Dropdown)
+                      }
+                    />
+                  ) : (
+                    <SingleSelect
+                      isDisabled={isLoading}
+                      isClearable={false}
+                      placeholder={t(
+                        'features.adminForm.sidebar.workflow.dynamicRespondent.select',
+                      )}
+                      items={conditionalFieldItems}
+                      value={value}
+                      {...rest}
+                    />
+                  )
+                }
               />
               {isSelectedConditionalFieldFound ? (
                 isOptionsToRecipientsMapAttached ? (

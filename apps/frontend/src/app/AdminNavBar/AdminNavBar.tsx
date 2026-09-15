@@ -167,6 +167,15 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
         status: 'success',
       })
     }
+    // v1 one.gov.sg logout is local-only (suite ADR-0003), so tell the user
+    // their IdP session is still live rather than silently leaving it open.
+    if (user?.grantSource === 'one') {
+      toast({
+        title: 'You have been logged out of FormSG.',
+        description: 'To log out from one.gov.sg, visit https://one.gov.sg',
+        status: 'success',
+      })
+    }
     if (user?.grantSource === 'wogad') {
       toast({
         description:

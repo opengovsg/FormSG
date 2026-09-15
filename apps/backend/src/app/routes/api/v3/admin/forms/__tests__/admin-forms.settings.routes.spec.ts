@@ -94,6 +94,64 @@ describe('admin-form.settings.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
+    it('should return 200 and persist closeAt when given a valid ISO date', async () => {
+      // Arrange
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+
+      const closeAt = '2026-12-31T15:59:00.000Z'
+      expect(formToUpdate.closeAt).toBeNull()
+
+      // Act
+      const response = await session
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
+        .send({ closeAt } as SettingsUpdateDto)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body.closeAt).toEqual(closeAt)
+    })
+
+    it('should return 200 and clear closeAt when given null', async () => {
+      // Arrange
+      const { form: formToUpdate, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+      await session
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
+        .send({ closeAt: '2026-12-31T15:59:00.000Z' } as SettingsUpdateDto)
+
+      // Act
+      const response = await session
+        .patch(`/admin/forms/${formToUpdate._id}/settings`)
+        .send({ closeAt: null } as SettingsUpdateDto)
+
+      // Assert
+      expect(response.status).toEqual(200)
+      expect(response.body.closeAt).toBeNull()
+    })
+
+    it('should return 400 when closeAt is not an ISO date', async () => {
+      // Arrange
+      const { form, user } = await dbHandler.insertEmailForm()
+      const session = await createAuthedSession(user.email, request)
+
+      // Act
+      const response = await session
+        .patch(`/admin/forms/${form._id}/settings`)
+        .send({ closeAt: 'not-a-date' })
+
+      // Assert
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual(
+        buildCelebrateError({
+          body: {
+            key: 'closeAt',
+            message: '"closeAt" must be in iso format',
+          },
+        }),
+      )
+    })
+
     it('should return 400 when patching with empty form settings', async () => {
       // Arrange
       // Log in user.

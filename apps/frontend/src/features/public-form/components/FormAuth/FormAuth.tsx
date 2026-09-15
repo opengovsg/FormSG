@@ -60,7 +60,7 @@ export const FormAuth = ({
   }, [form])
 
   const isMobile = useIsMobile()
-  const { handleLoginMutation } = usePublicAuthMutations(formId)
+  const { handleLoginMutation } = usePublicAuthMutations(formId, authType)
   const displayedAuthTypeText = getDispayedAuthTypeText(authType, t)
 
   return (

@@ -1,8 +1,10 @@
 import { ObjectId } from 'bson'
+import { omit } from 'lodash'
 
 import {
   DUE_TIME_TOLERANCE_SECONDS,
-  QUEUE_MESSAGE_VERSION,
+  QUEUE_MESSAGE_LIVE_ROW_VERSION,
+  QUEUE_MESSAGE_SNAPSHOT_VERSION,
   RETRY_INTERVALS,
 } from '../webhook.constants'
 import {
@@ -18,7 +20,18 @@ describe('WebhookQueueMessage', () => {
     submissionId: new ObjectId().toHexString(),
     previousAttempts: [Date.now()],
     nextAttempt: Date.now(),
-    _v: 0,
+    _v: QUEUE_MESSAGE_LIVE_ROW_VERSION,
+  }
+
+  const VALID_SNAPSHOT_MESSAGE: WebhookQueueMessageObject = {
+    submissionId: new ObjectId().toHexString(),
+    snapshotRef: {
+      submissionIndex: 1,
+      contentFormat: 'v4',
+    },
+    previousAttempts: [Date.now()],
+    nextAttempt: Date.now(),
+    _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
   }
 
   beforeEach(() => {
@@ -64,6 +77,59 @@ describe('WebhookQueueMessage', () => {
 
       expect(result._unsafeUnwrap().message).toEqual(VALID_MESSAGE)
     })
+
+    it('should parse a legacy message enqueued before the snapshot retry path shipped', () => {
+      const result = WebhookQueueMessage.deserialise(
+        JSON.stringify(VALID_MESSAGE),
+      )
+
+      const message = result._unsafeUnwrap()
+      expect(message.message._v).toBe(QUEUE_MESSAGE_LIVE_ROW_VERSION)
+      expect(message.snapshotRef).toBeUndefined()
+    })
+
+    it('should parse a snapshot message carrying its submission index and content format', () => {
+      const result = WebhookQueueMessage.deserialise(
+        JSON.stringify(VALID_SNAPSHOT_MESSAGE),
+      )
+
+      const message = result._unsafeUnwrap()
+      expect(message.message).toEqual(VALID_SNAPSHOT_MESSAGE)
+      expect(message.snapshotRef).toEqual({
+        submissionIndex: 1,
+        contentFormat: 'v4',
+      })
+    })
+
+    it.each([
+      'snapshotRef',
+      'snapshotRef.submissionIndex',
+      'snapshotRef.contentFormat',
+    ] as const)(
+      'should return WebhookQueueMessageParsingError when a snapshot message omits %s',
+      (field) => {
+        const result = WebhookQueueMessage.deserialise(
+          JSON.stringify(omit(VALID_SNAPSHOT_MESSAGE, field)),
+        )
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          WebhookQueueMessageParsingError,
+        )
+      },
+    )
+
+    it('should fail loud on an unknown message version rather than defaulting to a path', () => {
+      const result = WebhookQueueMessage.deserialise(
+        JSON.stringify({
+          ...VALID_SNAPSHOT_MESSAGE,
+          _v: QUEUE_MESSAGE_SNAPSHOT_VERSION + 1,
+        }),
+      )
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        WebhookQueueMessageParsingError,
+      )
+    })
   })
 
   describe('fromSubmissionId', () => {
@@ -83,7 +149,26 @@ describe('WebhookQueueMessage', () => {
         submissionId,
         previousAttempts: [MOCK_NOW],
         nextAttempt: expect.any(Number),
-        _v: QUEUE_MESSAGE_VERSION,
+        _v: QUEUE_MESSAGE_LIVE_ROW_VERSION,
+      })
+    })
+
+    it('should name the step submission and content format when a snapshot was recorded', () => {
+      const submissionId = new ObjectId().toHexString()
+      const result = WebhookQueueMessage.fromSubmissionId(submissionId, {
+        submissionIndex: 2,
+        contentFormat: 'v4',
+      })
+
+      expect(result._unsafeUnwrap().message).toEqual({
+        submissionId,
+        previousAttempts: [MOCK_NOW],
+        nextAttempt: expect.any(Number),
+        _v: QUEUE_MESSAGE_SNAPSHOT_VERSION,
+        snapshotRef: {
+          submissionIndex: 2,
+          contentFormat: 'v4',
+        },
       })
     })
   })
@@ -148,6 +233,18 @@ describe('WebhookQueueMessage', () => {
       expect(result.message.nextAttempt).toBeGreaterThan(
         VALID_MESSAGE.nextAttempt,
       )
+    })
+
+    it('should carry the named step submission and content format into the next attempt', () => {
+      const msg = new WebhookQueueMessage(VALID_SNAPSHOT_MESSAGE)
+
+      const result = msg.incrementAttempts()._unsafeUnwrap()
+
+      expect(result.snapshotRef).toEqual({
+        submissionIndex: 1,
+        contentFormat: 'v4',
+      })
+      expect(result.message._v).toBe(QUEUE_MESSAGE_SNAPSHOT_VERSION)
     })
 
     it('should return WebhookNoMoreRetriesError when retries have been exhausted', () => {

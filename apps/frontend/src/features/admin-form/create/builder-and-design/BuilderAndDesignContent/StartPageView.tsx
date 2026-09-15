@@ -94,6 +94,8 @@ export const StartPageView = () => {
     return form?.startPage
   }, [form?.startPage, startPageFromStore])
 
+  const previewTitle = startPageData?.title ?? form?.title
+
   // Color theme options and other design stuff, identical to public form
   const { logoImgSrc, ...formBannerLogoProps } = useFormBannerLogo({
     logoBucketUrl,
@@ -195,7 +197,7 @@ export const StartPageView = () => {
           {...formBannerLogoProps}
         />
         <FormHeader
-          title={form?.title}
+          title={previewTitle}
           showHeader
           loggedInId={
             form && form.authType !== FormAuthType.NIL

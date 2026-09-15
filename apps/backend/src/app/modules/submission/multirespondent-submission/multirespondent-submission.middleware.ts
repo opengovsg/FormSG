@@ -7,7 +7,6 @@ import {
 import { celebrate, Joi, Segments } from 'celebrate'
 import crypto from 'crypto'
 import { NextFunction } from 'express'
-import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FieldResponsesV3,
@@ -15,6 +14,7 @@ import {
   FormDto,
   FormFieldDto,
   FormResponseMode,
+  isPaymentsProducts,
   SubmissionType,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
@@ -36,6 +36,7 @@ import {
   SnapshottedFormDef,
 } from '../../../../types/api/multirespondent_submission'
 import { isDev } from '../../../config/config'
+import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
 import {
@@ -46,15 +47,16 @@ import { createReqMeta } from '../../../utils/request'
 import { isFieldResponseV4Equal } from '../../../utils/response-v4'
 import { DatabaseError } from '../../core/core.errors'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
+import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.constants'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
+import * as PaymentsService from '../../payments/payments.service'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { createNdiResponsesV4FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
 import { VerifiedContentV3 } from '../../verified-content/verified-content.types'
-import { getWebhookType } from '../../webhook/webhook.service'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
@@ -88,7 +90,7 @@ import {
   StrippedAttachmentResponseV4,
 } from './multirespondent-submission.types'
 import {
-  getMrfVersion,
+  MRF_VERSION_V4,
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
 import * as stepToken from './step-token'
@@ -114,14 +116,35 @@ const multirespondentSubmissionBodySchema = Joi.object({
   respondentEmails: Joi.array().items(Joi.string()),
 })
 
+// Payment fields are only accepted on submission creation: a payment-enabled
+// form is necessarily zero-step, so there are no later steps to update.
+const submitMultirespondentSubmissionBodySchema =
+  multirespondentSubmissionBodySchema.keys({
+    paymentProducts: Joi.array().items(
+      Joi.object().keys({
+        data: JoiPaymentProduct.required(),
+        selected: Joi.boolean(),
+        quantity: Joi.number().integer().positive().required(),
+      }),
+    ),
+    paymentReceiptEmail: Joi.string(),
+    payments: Joi.object({
+      amount_cents: Joi.number()
+        .integer()
+        .positive()
+        .min(paymentConfig.minPaymentAmountCents)
+        .max(paymentConfig.maxPaymentAmountCents),
+    }),
+  })
+
 export const validateMultirespondentSubmissionParams = celebrate({
-  [Segments.BODY]: multirespondentSubmissionBodySchema,
+  [Segments.BODY]: submitMultirespondentSubmissionBodySchema,
 })
 
 const multirespondentSubmissionKeySchema = Joi.object({
   submissionSecretKey: Joi.string().required(),
-  // RATIONALE: step token is optional for backwards compatibility with in-flight submissions
-  // and allow `mrf-step-write-token` gb flag to be off.
+  // RATIONALE: step token is optional for backwards compatibility with
+  // in-flight submissions.
   stepToken: Joi.string().optional(),
 })
 
@@ -251,7 +274,7 @@ export const createFormsgAndRetrieveForm = (
                 )
               }
             })
-            .map(() => {
+            .map(async () => {
               const formDef = formsg.formDef
               // Step 5: Check that the form def has a public key
               if (!formDef.publicKey) {
@@ -264,6 +287,14 @@ export const createFormsgAndRetrieveForm = (
 
               // Step 6: Set req.formsg
               req.formsg = formsg
+
+              // Step 7: Inject growthbook attributes to selectively whitelist.
+              const existingAttributes = req.growthbook?.getAttributes() ?? {}
+              await req.growthbook?.setAttributes({
+                ...existingAttributes,
+                formId,
+                adminEmail: formsg.formDef.admin.email,
+              })
 
               return next()
             })
@@ -480,9 +511,7 @@ export const validateMultirespondentSubmission = async (
     ok(mrfSubmission)
       // Step 0a: Verify write permissions by verifying step bearer token if exists
       .andThen((mrfSubmission) => {
-        const isStepWriteTokenEnabled =
-          req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
-        if (isStepWriteTokenEnabled && mrfSubmission?.stepTokenHash) {
+        if (mrfSubmission?.stepTokenHash) {
           const presentedToken = req.body.stepToken
           if (
             !presentedToken ||
@@ -717,6 +746,61 @@ export const validateMultirespondentSubmission = async (
   )
 }
 
+/**
+ * Middleware to validate payment content against the form definition,
+ * mirroring EncryptSubmissionMiddleware.validatePaymentSubmission. Without
+ * this, the charge is computed from the client's paymentProducts payload,
+ * so a respondent could tamper prices, quantities, or duplicates.
+ */
+export const validatePaymentSubmission = async (
+  req: MultirespondentSubmissionMiddlewareHandlerRequest,
+  res: Parameters<MultirespondentSubmissionMiddlewareHandlerType>[1],
+  next: NextFunction,
+) => {
+  const formDef = req.formsg.formDef.toObject()
+
+  const logMeta = {
+    action: 'validatePaymentSubmission',
+    formId: String(formDef._id),
+    ...createReqMeta(req),
+  }
+
+  const formDefProducts = formDef?.payments_field?.products
+  const submittedPaymentProducts = req.body.paymentProducts
+  if (submittedPaymentProducts) {
+    if (!isPaymentsProducts(formDefProducts)) {
+      // Payment definition does not allow for payment by product
+
+      logger.error({
+        message: 'Invalid form definition for payment by product',
+        meta: logMeta,
+      })
+
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        message:
+          'The payment settings in this form have been updated. Please refresh and try again.',
+      })
+    }
+    return PaymentsService.validatePaymentProducts(
+      formDefProducts,
+      submittedPaymentProducts,
+    )
+      .map(() => next())
+      .mapErr((error) => {
+        logger.error({
+          message: 'Error validating payment submission',
+          meta: logMeta,
+          error,
+        })
+        const { statusCode, errorMessage } = mapRouteError(error)
+        return res.status(statusCode).json({
+          message: errorMessage,
+        })
+      })
+  }
+  return next()
+}
+
 export const setCurrentWorkflowStep = async (
   req: ProcessedMultirespondentSubmissionHandlerRequest,
   res: Parameters<MultirespondentSubmissionMiddlewareHandlerType>[1],
@@ -786,12 +870,6 @@ export const encryptSubmission = async (
   res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
   next: NextFunction,
 ) => {
-  void req.growthbook?.setAttributes({
-    ...req.growthbook.getAttributes(),
-    formId: req.params.formId,
-    adminEmail: req.formsg.formDef.admin.email,
-  })
-
   const formDef = req.formsg.formDef
   const formPublicKey = formDef.publicKey
   const responses = req.body.responses
@@ -838,14 +916,7 @@ export const encryptSubmission = async (
     req.formsg.unencryptedAttachments = unencryptedAttachments
   }
 
-  const isStepWriteTokenEnabled =
-    req.growthbook?.isOn(featureFlags.mrfStepWriteToken) ?? false
-
-  const webhookUrl = formDef.webhook?.url
-  const mrfVersion = getMrfVersion({
-    webhookType: webhookUrl ? getWebhookType(webhookUrl) : undefined,
-    isStepWriteTokenEnabled,
-  })
+  const mrfVersion = MRF_VERSION_V4
   const useV4Encryption = mrfVersion === 2
 
   const responsesToEncrypt = useV4Encryption
@@ -890,20 +961,11 @@ export const encryptSubmission = async (
       req.body.version,
     )
 
-  let mintedStepToken:
-    | {
-        stepToken: string
-        stepTokenHash: string
-        encryptedStepToken: string
-      }
-    | undefined
-  if (isStepWriteTokenEnabled) {
-    const rawStepToken = stepToken.generate()
-    mintedStepToken = {
-      stepToken: rawStepToken,
-      stepTokenHash: stepToken.hash(rawStepToken),
-      encryptedStepToken: stepToken.wrap(rawStepToken, formPublicKey),
-    }
+  const rawStepToken = stepToken.generate()
+  const mintedStepToken = {
+    stepToken: rawStepToken,
+    stepTokenHash: stepToken.hash(rawStepToken),
+    encryptedStepToken: stepToken.wrap(rawStepToken, formPublicKey),
   }
 
   req.formsg.encryptedPayload = {
@@ -918,6 +980,9 @@ export const encryptSubmission = async (
     responses: responses as FieldResponsesV4,
     mrfVersion,
     ...mintedStepToken,
+    paymentReceiptEmail: req.body.paymentReceiptEmail,
+    paymentProducts: req.body.paymentProducts,
+    payments: req.body.payments,
   }
 
   return next()

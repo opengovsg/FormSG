@@ -2,15 +2,19 @@ import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, Text } from '@chakra-ui/react'
 
-import { WorkflowType } from 'formsg-shared/types'
+import { BasicField, WorkflowType } from 'formsg-shared/types'
 
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
+import { useStageFieldAndNavigate } from '../../../../../hooks/useStageFieldAndNavigate'
+import { FieldEmptyState } from '../../EmptyStates'
 
 import { useWorkflowTypeValidation } from './hooks'
+import { NESTED_CONTROL_PR } from './layout'
 import { FieldItem, RespondentOptionProps } from './types'
 
 interface DynamicRespondentOptionProps extends RespondentOptionProps {
@@ -32,6 +36,11 @@ export const DynamicRespondentOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const stageFieldAndNavigate = useStageFieldAndNavigate()
+  const isSavePermissive = useIsWorkflowSavePermissive()
+
+  const showEmptyState = isRedesign && !emailFieldItems?.length
+
   return (
     <>
       <Radio
@@ -53,19 +62,23 @@ export const DynamicRespondentOption = ({
         {selectedWorkflowType === WorkflowType.Dynamic ? (
           <FormControl
             pt="0.5rem"
+            pr={NESTED_CONTROL_PR}
             isReadOnly={isLoading}
             id="field"
-            isRequired
+            isRequired={!isSavePermissive}
             isInvalid={!!errors.field}
           >
             <Controller
               control={control}
               name="field"
               rules={{
-                required: t(
-                  'features.adminForm.sidebar.workflow.dynamicRespondent.required',
-                ),
+                required: isSavePermissive
+                  ? false
+                  : t(
+                      'features.adminForm.sidebar.workflow.dynamicRespondent.required',
+                    ),
                 validate: (selectedValue) => {
+                  if (!selectedValue) return true
                   return (
                     isLoading ||
                     !emailFieldItems ||
@@ -80,18 +93,31 @@ export const DynamicRespondentOption = ({
                   )
                 },
               }}
-              render={({ field: { value = '', ...rest } }) => (
-                <SingleSelect
-                  isDisabled={isLoading}
-                  isClearable={false}
-                  placeholder={t(
-                    'features.adminForm.sidebar.workflow.dynamicRespondent.select',
-                  )}
-                  items={emailFieldItems}
-                  value={value}
-                  {...rest}
-                />
-              )}
+              render={({ field: { value = '', ...rest } }) =>
+                showEmptyState ? (
+                  <FieldEmptyState
+                    picker="email"
+                    message={t(
+                      'features.adminForm.sidebar.workflow.emptyStates.noEmailField',
+                    )}
+                    actionLabel={t(
+                      'features.adminForm.sidebar.workflow.emptyStates.noEmailFieldAction',
+                    )}
+                    onAction={() => stageFieldAndNavigate(BasicField.Email)}
+                  />
+                ) : (
+                  <SingleSelect
+                    isDisabled={isLoading}
+                    isClearable={false}
+                    placeholder={t(
+                      'features.adminForm.sidebar.workflow.dynamicRespondent.select',
+                    )}
+                    items={emailFieldItems}
+                    value={value}
+                    {...rest}
+                  />
+                )
+              }
             />
             <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
           </FormControl>

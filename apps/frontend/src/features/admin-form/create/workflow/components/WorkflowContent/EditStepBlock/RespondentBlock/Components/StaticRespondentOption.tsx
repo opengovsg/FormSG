@@ -10,8 +10,10 @@ import Radio from '~components/Radio'
 import { TagInput } from '~components/TagInput'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 
 import { useWorkflowTypeValidation } from './hooks'
+import { NESTED_CONTROL_PR } from './layout'
 import { RespondentOptionProps } from './types'
 
 export const StaticRespondentOption = ({
@@ -28,6 +30,7 @@ export const StaticRespondentOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isSavePermissive = useIsWorkflowSavePermissive()
   return (
     <>
       <Radio
@@ -47,9 +50,10 @@ export const StaticRespondentOption = ({
         {selectedWorkflowType === WorkflowType.Static ? (
           <FormControl
             pt="0.5rem"
+            pr={NESTED_CONTROL_PR}
             isReadOnly={isLoading}
             id="emails"
-            isRequired
+            isRequired={!isSavePermissive}
             isInvalid={!!staticTagInputErrorMessage}
             key="emails"
           >
@@ -58,10 +62,12 @@ export const StaticRespondentOption = ({
               control={control}
               rules={{
                 validate: {
-                  required: (emails) =>
-                    !emails || emails.length === 0
+                  required: (emails) => {
+                    if (isSavePermissive) return true
+                    return !emails || emails.length === 0
                       ? 'You must enter at least one email to receive responses'
-                      : true,
+                      : true
+                  },
                   isEmails: (emails) =>
                     !emails ||
                     emails.every((email) => isEmail(email)) ||

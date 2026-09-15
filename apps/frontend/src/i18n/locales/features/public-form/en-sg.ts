@@ -4,6 +4,9 @@ import { enSG as table } from './table'
 import { PublicForm } from '.'
 
 export const enSG: PublicForm = {
+  expiry: {
+    banner: 'This form will stop accepting responses on {closesAt}.',
+  },
   backendErrors: {
     verification: {
       sessionExpired: 'Your session has expired, please refresh and try again.',
@@ -93,6 +96,8 @@ export const enSG: PublicForm = {
     notAvailable: 'This form is not available.',
     notFound: 'Form not found',
     deleted: 'This form is no longer active',
+    authFormMismatch:
+      'This form does not match the form you authenticated for. Please log in again.',
     private:
       'If you require further assistance, please contact the agency that gave you the form link.',
     takenDown:

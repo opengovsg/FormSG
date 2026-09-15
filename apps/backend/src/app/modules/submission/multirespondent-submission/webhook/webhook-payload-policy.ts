@@ -6,38 +6,47 @@ export type WebhookConsumerType = 'plumber' | 'generic'
 
 export interface WebhookPayloadPolicyInput {
   webhookType: WebhookConsumerType
-  isStepWriteTokenEnabled: boolean
   submissionIndex: number
   submittedStepsLength: number
 }
 
-export interface WebhookPayloadPolicy {
-  contentFormat: WebhookContentFormat
+export interface KeyPermissionsPolicy {
   includeEncryptedSubmissionSecretKey: boolean
-  includeEncryptedStepToken: boolean
+}
+export interface WebhookPayloadPolicy extends KeyPermissionsPolicy {
+  contentFormat: WebhookContentFormat
+}
+
+export const getKeyPermissionsPolicy = ({
+  contentFormat,
+}: {
+  webhookType: WebhookConsumerType
+  submissionIndex: number
+  submittedStepsLength: number
+  contentFormat: WebhookContentFormat
+}): Omit<WebhookPayloadPolicy, 'contentFormat'> => {
+  return {
+    includeEncryptedSubmissionSecretKey: contentFormat === 'v4',
+  }
 }
 
 export const getWebhookPayloadPolicy = ({
   webhookType,
-  isStepWriteTokenEnabled,
   submissionIndex,
   submittedStepsLength,
 }: WebhookPayloadPolicyInput): WebhookPayloadPolicy => {
-  const contentFormat: WebhookContentFormat = isStepWriteTokenEnabled
-    ? 'v4'
-    : 'v3'
+  const contentFormat: WebhookContentFormat = 'v4'
 
-  const includeEncryptedSubmissionSecretKey = contentFormat === 'v4'
-
-  const includeEncryptedStepToken =
-    contentFormat === 'v4' &&
-    webhookType === 'plumber' &&
-    submissionIndex === submittedStepsLength - 1
+  const keyPermissionsPolicy = getKeyPermissionsPolicy({
+    webhookType,
+    submissionIndex,
+    submittedStepsLength,
+    contentFormat,
+  })
 
   return {
     contentFormat,
-    includeEncryptedSubmissionSecretKey,
-    includeEncryptedStepToken,
+    ...keyPermissionsPolicy,
   }
 }
 

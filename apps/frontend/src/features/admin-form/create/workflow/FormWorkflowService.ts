@@ -20,6 +20,18 @@ export const deleteWorkflowStep = (formId: string, stepNumber: number) => {
   ).then(({ data }) => data)
 }
 
+/**
+ * Deletes the form's entire workflow.
+ *
+ * Also what deleting step 1 means — the API refuses to delete step 1 on its own
+ * precisely so that this is the only way to express it.
+ */
+export const deleteWorkflow = (formId: string) => {
+  return ApiService.delete<FormWorkflowDto>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/workflow`,
+  ).then(({ data }) => data)
+}
+
 export const updateWorkflowStep = (
   formId: string,
   stepNumber: number,

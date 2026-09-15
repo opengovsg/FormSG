@@ -420,6 +420,7 @@ describe('Multirespondent Submission Model', () => {
           encryptedContent: MOCK_ENCRYPTED_CONTENT,
           version: 1,
           workflowStep: 0,
+          mrfVersion: 2,
         })
         const expectedSubmission = pick(
           validSubmission,
@@ -434,6 +435,7 @@ describe('Multirespondent Submission Model', () => {
           'version',
           'submittedSteps',
           'workflowStep',
+          'mrfVersion',
         )
         // Native-ify arrays as mongoose documents contain a mongoose-specific array type.
         expectedSubmission.form_fields = JSON.parse(
@@ -690,6 +692,7 @@ describe('Multirespondent Submission Model', () => {
           attachmentMetadata: { someFileName: 'some url of attachment' },
           workflowStep: 0,
           encryptedStepToken: 'senderPublicKey;nonce:ciphertext',
+          mrfVersion: 2,
         })
 
         // Act
@@ -716,6 +719,7 @@ describe('Multirespondent Submission Model', () => {
           'workflowStep',
           'submittedSteps',
           'encryptedStepToken',
+          'mrfVersion',
         )
         expect(actual).not.toBeNull()
         expect(actual?.toJSON()).toEqual(expected)

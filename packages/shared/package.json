@@ -1,6 +1,6 @@
 {
   "name": "formsg-shared",
-  "version": "9.10.1",
+  "version": "9.23.0",
   "private": true,
   "description": "",
   "scripts": {
@@ -198,6 +198,10 @@
     "./utils/verified-content": {
       "require": "./dist/utils/verified-content.js",
       "default": "./utils/verified-content.ts"
+    },
+    "./utils/workflow-step-completion": {
+      "require": "./dist/utils/workflow-step-completion.js",
+      "default": "./utils/workflow-step-completion.ts"
     },
     "./modules/logic": {
       "require": "./dist/modules/logic/index.js",

@@ -1,5 +1,7 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   AttachmentSize,
   BasicField,
@@ -8,15 +10,29 @@ import {
 import {
   AdminFormDto,
   FormResponseMode,
+  FormStatus,
   FormWorkflowStepDto,
+  MultirespondentFormSettings,
   WorkflowType,
 } from 'formsg-shared/types/form'
 
-import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
+import {
+  createFormBuilderMocks,
+  getAdminFormSettings,
+  patchAdminFormSettings,
+} from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter, viewports } from '~utils/storybook'
 
+import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
+
 import { CreatePageWorkflowTab } from './CreatePageWorkflowTab'
+
+const withCreatePageSidebar = (Story: StoryFn) => (
+  <CreatePageSidebarProvider>
+    <Story />
+  </CreatePageSidebarProvider>
+)
 
 const buildMswRoutes = (
   overrides?: Partial<AdminFormDto>,
@@ -26,7 +42,10 @@ const buildMswRoutes = (
 export default {
   title: 'Pages/AdminFormPage/Create/WorkflowTab',
   component: CreatePageWorkflowTab,
-  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
+  decorators: [
+    withCreatePageSidebar,
+    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
+  ],
   parameters: {
     layout: 'fullscreen',
     // Required so skeleton "animation" does not hide content.
@@ -238,6 +257,16 @@ const FORM_WITH_WORKFLOW: Partial<AdminFormDto> = {
   workflow: [workflow_step_1, workflow_step_2],
 }
 
+const redesignOn = new GrowthBook({
+  features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
+})
+
+const withRedesignOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={redesignOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
 const Template: StoryFn = () => <CreatePageWorkflowTab />
 export const NoWorkflow = Template.bind({})
 
@@ -365,6 +394,41 @@ Step2InvalidConditionalRecipientSelected.parameters = {
           workflow_step_2_with_invalid_conditional_recipient,
         ],
       }),
+    },
+  },
+}
+
+// Paired with WithWorkflow to show the completion email seam in both flag
+// states: off keeps the inline message pointing at Settings, on replaces it
+// with the editable card.
+export const WithWorkflowRedesignOn = Template.bind({})
+WithWorkflowRedesignOn.decorators = [withRedesignOn]
+WithWorkflowRedesignOn.parameters = {
+  msw: {
+    handlers: [
+      ...buildMswRoutes(FORM_WITH_WORKFLOW),
+      getAdminFormSettings({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          // The shared mock form is Public by default, which renders the MRF
+          // email controls read-only.
+          status: FormStatus.Private,
+          emails: ['admin@example.gov.sg'],
+          stepsToNotify: [workflow_step_2._id],
+          stepOneEmailNotificationFieldId: form_field_5._id,
+        } satisfies Partial<MultirespondentFormSettings>,
+      }),
+      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+    ],
+  },
+}
+
+export const NoWorkflowRedesignOn = Template.bind({})
+NoWorkflowRedesignOn.decorators = [withRedesignOn]
+NoWorkflowRedesignOn.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({ ...FORM_WITH_WORKFLOW, workflow: [] }),
     },
   },
 }

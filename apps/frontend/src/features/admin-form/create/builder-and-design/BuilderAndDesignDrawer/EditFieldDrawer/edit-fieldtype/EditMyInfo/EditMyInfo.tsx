@@ -1,3 +1,4 @@
+import { Trans, useTranslation } from 'react-i18next'
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
 
@@ -32,6 +33,7 @@ const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {
 type EditMyInfoProps = EditFieldProps<MyInfoField>
 
 export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
+  const { t } = useTranslation()
   const extendedField = extendWithMyInfo(field)
   const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
   const { buttonText, handleUpdateField, isLoading, handleCancel } =
@@ -47,7 +49,9 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
   return (
     <CreatePageDrawerContentContainer>
       <VStack align="flex-start">
-        <Text textStyle="subhead-1">Data source</Text>
+        <Text textStyle="subhead-1">
+          {t('features.adminForm.sidebar.fields.myInfoPreview.dataSource')}
+        </Text>
         {extendedField.dataSource.map((dataSource, idx) => (
           <HStack key={idx} align="flex-start">
             <Icon fontSize="1.5rem" as={BiData}></Icon>
@@ -56,32 +60,42 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
         ))}
       </VStack>
       <VStack align="flex-start">
-        <Text textStyle="subhead-1">Verified for</Text>
+        <Text textStyle="subhead-1">
+          {t('features.adminForm.sidebar.fields.myInfoPreview.verifiedFor')}
+        </Text>
         {/* NOTE: Not creating an array from the keys then enumerating because order has to be enforced in UI.
          *  This allows the object to be created with arbitrary ordered keys.
          */}
         <HStack>
           <VerifiedIcon isVerified={extendedField.verifiedFor.singaporeans} />
-          <Text>Singaporeans</Text>
+          <Text>
+            {t('features.adminForm.sidebar.fields.myInfoPreview.singaporeans')}
+          </Text>
         </HStack>
         <HStack>
           <VerifiedIcon isVerified={extendedField.verifiedFor.pr} />
-          <Text>Permanent Residents</Text>
+          <Text>
+            {t(
+              'features.adminForm.sidebar.fields.myInfoPreview.permanentResidents',
+            )}
+          </Text>
         </HStack>
         <HStack>
           <VerifiedIcon
             isVerified={extendedField.verifiedFor.singpassforeigners}
           />
           <Text>
-            Foreigners with{' '}
-            <Link isExternal href={SINGPASS_FAQ}>
-              Singpass
-            </Link>
+            <Trans
+              i18nKey="features.adminForm.sidebar.fields.myInfoPreview.foreignersWithSingpass"
+              components={{ link: <Link isExternal href={SINGPASS_FAQ} /> }}
+            />
           </Text>
         </HStack>
       </VStack>
       <VStack align="flex-start">
-        <Text textStyle="subhead-1">Field details</Text>
+        <Text textStyle="subhead-1">
+          {t('features.adminForm.sidebar.fields.myInfoPreview.fieldDetails')}
+        </Text>
         <Text>{extendedField.details}</Text>
       </VStack>
       {fieldBuilderState === FieldBuilderState.CreatingField && (

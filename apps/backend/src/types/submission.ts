@@ -5,6 +5,7 @@ import {
   SubmissionBase,
   SubmissionMetadata,
   SubmissionType,
+  SubmittedStepSnapshotTokens,
   WebhookResponse,
 } from 'formsg-shared/types/submission'
 import mongoose, {
@@ -34,7 +35,7 @@ export interface WebhookData {
   created: IEncryptedSubmissionSchema['created']
   attachmentDownloadUrls: Record<string, string>
   paymentContent?: PaymentWebhookEventObject | object
-  workflowContent?: WorkflowWebhookEventObject | object
+  workflowContent?: WorkflowWebhookEventObject
   encryptedSubmissionSecretKey?: string
 }
 
@@ -46,6 +47,7 @@ export type SubmissionWebhookInfo = {
   webhookUrl: string
   isRetryEnabled: boolean
   webhookView: WebhookView
+  submittedStepSnapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
 }
 
 export type FindFormsWithSubsAboveResult = {
@@ -161,6 +163,8 @@ export interface IMultirespondentSubmissionSchema
   // Allows for population and correct typing
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   form: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  paymentId: any
   submissionType: SubmissionType.Multirespondent
   getWebhookView(): Promise<WebhookView>
   mrfVersion: number

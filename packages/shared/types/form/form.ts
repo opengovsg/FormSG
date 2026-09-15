@@ -208,6 +208,12 @@ export interface FormBase {
 
   inactiveMessage: string
   submissionLimit: number | null
+  /**
+   * Instant at which the form stops accepting responses, or `null` if it has no
+   * scheduled closure. Nullable rather than optional so that `null` is the only
+   * representation of "no closure" on the wire.
+   */
+  closeAt: DateString | null
   isListed: boolean
 
   esrvcId?: string
@@ -244,17 +250,20 @@ export interface WhitelistedSubmitterIdsWithReferenceOid extends WhitelistedSubm
   encryptedWhitelistedSubmitterIds: string // Object id of the encrypted whitelist
 }
 
-export interface StorageFormBase extends FormBase {
-  responseMode: FormResponseMode.Encrypt
-  publicKey: string
-  emails: string[]
+export interface PaymentFormBase extends FormBase {
   payments_channel: FormPaymentsChannel
   payments_field: FormPaymentsField
   business?: FormBusinessField
+}
+
+export interface StorageFormBase extends PaymentFormBase {
+  responseMode: FormResponseMode.Encrypt
+  publicKey: string
+  emails: string[]
   whitelistedSubmitterIds?: WhitelistedSubmitterIds | null
 }
 
-export interface MultirespondentFormBase extends FormBase {
+export interface MultirespondentFormBase extends PaymentFormBase {
   responseMode: FormResponseMode.Multirespondent
   publicKey: string
   workflow: FormWorkflow

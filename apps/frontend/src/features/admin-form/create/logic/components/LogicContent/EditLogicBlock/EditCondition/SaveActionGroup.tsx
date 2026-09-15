@@ -13,6 +13,11 @@ export interface SaveActionGroupProps {
   submitButtonLabel?: string
   isLoading: boolean
   ariaLabelName: string
+  /**
+   * Disables submit on its own, leaving cancel usable. For a card that is shown
+   * read-only rather than hidden, so it can still be closed.
+   */
+  isSubmitDisabled?: boolean
 }
 
 export const SaveActionGroup = ({
@@ -22,6 +27,7 @@ export const SaveActionGroup = ({
   handleSubmit,
   isLoading,
   ariaLabelName,
+  isSubmitDisabled,
 }: SaveActionGroupProps): JSX.Element => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
@@ -29,11 +35,15 @@ export const SaveActionGroup = ({
   return (
     <Flex
       justify="space-between"
-      align="center"
+      align={{ base: 'stretch', md: 'center' }}
+      direction={{ base: 'column', md: 'row' }}
+      gap={{ base: '0.5rem', md: '0' }}
       px={{ base: '1.5rem', md: '2rem' }}
     >
       {handleDelete ? (
         <IconButton
+          order={{ base: 1, md: 0 }}
+          alignSelf={{ base: 'center', md: 'auto' }}
           variant="clear"
           colorScheme="danger"
           aria-label={t('features.adminForm.sidebar.logic.aria.delete', {
@@ -47,12 +57,12 @@ export const SaveActionGroup = ({
         <Box />
       )}
       <Stack
-        spacing="1rem"
+        spacing={{ base: '0.5rem', md: '1rem' }}
         direction={{ base: 'column', md: 'row-reverse' }}
         w="100%"
       >
         <Button
-          isDisabled={isLoading}
+          isDisabled={isLoading || isSubmitDisabled}
           onClick={handleSubmit}
           isFullWidth={isMobile}
         >

@@ -49,14 +49,24 @@ const SubsequentStepRespondentBadges = ({
         </>
       )
     case WorkflowType.Dynamic:
-      return <FieldLogicBadge field={idToFieldMap[step.field]} />
+      return (
+        <FieldLogicBadge
+          field={idToFieldMap[step.field]}
+          defaults={{ variant: 'error', message: 'This field is missing' }}
+        />
+      )
     case WorkflowType.Conditional: {
       const selectedConditionalField = idToFieldMap[step.conditional_field]
       if (
         !selectedConditionalField ||
         selectedConditionalField.fieldType !== BasicField.Dropdown
       ) {
-        return <FieldLogicBadge field={selectedConditionalField} />
+        return (
+          <FieldLogicBadge
+            field={selectedConditionalField}
+            defaults={{ variant: 'error', message: 'This field is missing' }}
+          />
+        )
       }
       const selectedConditionalFieldOptions =
         selectedConditionalField.fieldOptions
@@ -75,6 +85,7 @@ const SubsequentStepRespondentBadges = ({
                 ? idToFieldMap[step.conditional_field]
                 : undefined
             }
+            defaults={{ variant: 'error', message: 'This field is missing' }}
           />
           {isOptionsMismatched ? (
             <FieldLogicBadge
@@ -155,6 +166,26 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
+  // Mirrors EditStepBlock's ordering; only the sequence differs by flag.
+  const fieldsSection = (
+    <Stack>
+      <Text textStyle="subhead-3">
+        {t('features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill')}
+      </Text>
+      <Stack direction="column" spacing="0.25rem">
+        {questionBadges}
+      </Stack>
+    </Stack>
+  )
+  // A step without approval says nothing worth a heading, and the reorder puts
+  // this at the top of the card where the noise is most costly. Steps whose
+  // approval field was deleted still render, to keep showing the error.
+  const hideEmptyApprovals = isRedesign && !step.approval_field
+  const approvalsSection =
+    isFirstStep || hideEmptyApprovals ? null : (
+      <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
+    )
+
   return (
     <Box pos="relative" role="group">
       <chakra.button
@@ -205,19 +236,17 @@ export const InactiveStepBlock = ({
             )}
           </Stack>
 
-          <Stack>
-            <Text textStyle="subhead-3">
-              {t(
-                'features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill',
-              )}
-            </Text>
-            <Stack direction="column" spacing="0.25rem">
-              {questionBadges}
-            </Stack>
-          </Stack>
-          {!isFirstStep ? (
-            <InactiveApprovalsBlock step={step} idToFieldMap={idToFieldMap} />
-          ) : null}
+          {isRedesign ? (
+            <>
+              {approvalsSection}
+              {fieldsSection}
+            </>
+          ) : (
+            <>
+              {fieldsSection}
+              {approvalsSection}
+            </>
+          )}
         </Stack>
       </chakra.button>
       {/* The whole card is the button, so the pencil is a visual affordance

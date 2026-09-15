@@ -1,6 +1,5 @@
-import { err, ok, Result } from 'neverthrow'
+import { ok, Result } from 'neverthrow'
 
-import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 import { WebhookData } from 'src/types/submission'
 
 import { SnapshotDataIntegrityError } from './submission-snapshot.errors'
@@ -10,40 +9,32 @@ import {
   WebhookPayloadPolicy,
 } from './webhook-payload-policy'
 
-export const reconstructMrfWebhookData = (input: {
+interface ReconstructMrfWebhookDataInputBase {
   liveData: WebhookData
-  snapshot?: SubmissionSnapshot
-  submissionIndex?: number
   policy: WebhookPayloadPolicy
-}): Result<WebhookData, SnapshotDataIntegrityError> => {
+}
+
+interface ReconstructMrfWebhookDataInputWithoutSnapshot extends ReconstructMrfWebhookDataInputBase {
+  snapshot: undefined
+  submissionIndex: undefined
+}
+
+interface ReconstructMrfWebhookDataInputWithSnapshot extends ReconstructMrfWebhookDataInputBase {
+  snapshot: SubmissionSnapshot
+  submissionIndex: number
+}
+
+type ReconstructMrfWebhookDataInput =
+  | ReconstructMrfWebhookDataInputWithSnapshot
+  | ReconstructMrfWebhookDataInputWithoutSnapshot
+
+export const reconstructMrfWebhookData = (
+  input: ReconstructMrfWebhookDataInput,
+): Result<WebhookData, SnapshotDataIntegrityError> => {
   const { liveData, snapshot, submissionIndex, policy } = input
 
-  if (submissionIndex === undefined) {
+  if (snapshot === undefined) {
     return ok(liveData)
-  }
-
-  if (!snapshot) {
-    return err(
-      new SnapshotDataIntegrityError(
-        'Snapshot missing on the snapshot reconstruction path',
-        { submissionId: liveData.submissionId, submissionIndex },
-      ),
-    )
-  }
-
-  const liveWorkflow = (liveData.workflowContent ??
-    {}) as Partial<WorkflowWebhookEventObject>
-  const workflowContent: WebhookData['workflowContent'] = {
-    ...liveWorkflow,
-    workflowStep: snapshot.workflowStep,
-    ...(Array.isArray(liveWorkflow.submittedSteps)
-      ? {
-          submittedSteps: liveWorkflow.submittedSteps.slice(
-            0,
-            submissionIndex + 1,
-          ),
-        }
-      : {}),
   }
 
   const reconstructed: WebhookData = {
@@ -54,7 +45,23 @@ export const reconstructMrfWebhookData = (input: {
     encryptedContent: snapshot.encryptedContent,
     verifiedContent: snapshot.verifiedContent,
     version: contentFormatToWebhookVersion(snapshot.contentFormat),
-    workflowContent,
+  }
+
+  const liveWorkflow = liveData.workflowContent
+
+  if (liveWorkflow !== undefined) {
+    reconstructed.workflowContent = {
+      ...liveWorkflow,
+      workflowStep: snapshot.workflowStep,
+      ...(Array.isArray(liveWorkflow.submittedSteps)
+        ? {
+            submittedSteps: liveWorkflow.submittedSteps.slice(
+              0,
+              submissionIndex + 1,
+            ),
+          }
+        : {}),
+    }
   }
 
   if (liveData.paymentContent !== undefined) {

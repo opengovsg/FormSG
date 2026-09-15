@@ -60,7 +60,7 @@ export const WorkflowStepDynamicSchema = new Schema<IWorkflowStepDynamicSchema>(
   {
     field: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
     },
   },
 )
@@ -69,7 +69,7 @@ export const WorkflowStepConditionalSchema =
   new Schema<IWorkflowStepConditionalSchema>({
     conditional_field: {
       type: Schema.Types.ObjectId,
-      required: true,
+      required: false,
     },
   })
 

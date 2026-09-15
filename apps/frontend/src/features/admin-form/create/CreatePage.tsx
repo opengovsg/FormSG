@@ -22,6 +22,7 @@ import {
 import { CreatePageContent } from './common/CreatePageContent'
 import { CreatePageSidebar } from './common/CreatePageSidebar'
 import { CreatePageSidebarProvider } from './common/CreatePageSidebarContext'
+import { OpenWorkflowTabOnArrival } from './common/OpenWorkflowTabOnArrival'
 import { FeatureTour } from './featureTour/FeatureTour'
 
 export const CreatePage = (): JSX.Element => {
@@ -62,6 +63,7 @@ export const CreatePage = (): JSX.Element => {
     <>
       <NavigationPrompt when={isDirty} />
       <CreatePageSidebarProvider>
+        <OpenWorkflowTabOnArrival />
         <DirtyModal />
         <Flex
           h="100%"

@@ -22,6 +22,7 @@ import {
   EmailRespondentConfirmationField,
   FormFieldSchema,
   IMultirespondentSubmissionSchema,
+  ISubmissionSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
 import { ParsedClearFormFieldResponsesV4 } from '../../../../types/api'
@@ -32,7 +33,6 @@ import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-arra
 import { validateFieldV4 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
-import { WebhookType } from '../../webhook/webhook.service'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
@@ -41,6 +41,12 @@ import {
 import { buildMrfMetadata } from '../submission.utils'
 
 import { MrfJwtPayload } from './multirespondent-submission.types'
+
+export const isSubmissionMultirespondentMode = (
+  submission: ISubmissionSchema,
+): submission is IMultirespondentSubmissionSchema => {
+  return submission.submissionType === SubmissionType.Multirespondent
+}
 
 /**
  * Creates and returns a MultirespondentSubmissionDto object from submissionData and
@@ -123,9 +129,11 @@ export const extractEmailAnswersFromResponses = (
 
 const getConditionalFieldEmailRecipient = (
   form_fields: FormFieldSchema[] | FormFieldDto[],
-  fieldId: string,
+  fieldId: string | undefined,
   responses: FieldResponsesV4,
 ): string[] => {
+  if (!fieldId) return [] // Not an error, the step was never finished.
+
   const conditionalField = form_fields.find(
     (field) => field._id.toString() === fieldId.toString(),
   )
@@ -690,24 +698,9 @@ export const getMrfCookieName = ({
   return `Mrf_${formId}_${previousSubmissionId}`
 }
 
-export type MrfVersion = 1 | 2
+export type MrfVersion = 2
 
-export const getMrfVersion = ({
-  webhookType,
-  isStepWriteTokenEnabled,
-}: {
-  webhookType?: WebhookType
-  isStepWriteTokenEnabled: boolean
-}): MrfVersion => {
-  switch (webhookType) {
-    case 'plumber':
-      return isStepWriteTokenEnabled ? 2 : 1
-    case undefined:
-    case 'zapier':
-    case 'generic':
-      return 2
-  }
-}
+export const MRF_VERSION_V4: MrfVersion = 2
 
 export const formatSubmittedStepTimestamp = ({
   submittedSteps,

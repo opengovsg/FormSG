@@ -5,7 +5,7 @@ import { ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-import { checkFormIsEncryptMode } from '../submission/encrypt-submission/encrypt-submission.service'
+import { checkFormIsEncryptModeOrMultirespondent } from '../submission/submission.utils'
 import * as UserService from '../user/user.service'
 
 import { getPaymentLogMeta } from './payment.service.utils'
@@ -39,7 +39,9 @@ export const downloadPaymentInvoice: ControllerHandler<{
 
   return ResultAsync.combine([
     PaymentService.findPaymentById(paymentId),
-    FormService.retrieveFullFormById(formId).andThen(checkFormIsEncryptMode),
+    FormService.retrieveFullFormById(formId).andThen(
+      checkFormIsEncryptModeOrMultirespondent,
+    ),
   ])
     .map(async ([payment, populatedForm]) => {
       // TODO [PDF-LAMBDA-GENERATION]: Remove setting of Growthbook targetting once pdf generation rollout is complete

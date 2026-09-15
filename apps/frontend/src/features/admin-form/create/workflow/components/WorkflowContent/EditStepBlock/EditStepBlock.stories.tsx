@@ -1,15 +1,24 @@
+import { ReactNode, useLayoutEffect, useState } from 'react'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
+import { StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FormFieldDto,
   FormResponseMode,
+  MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
 
 import { getAdminFormView } from '~/mocks/msw/handlers/admin-form'
 
 import { StoryRouter } from '~utils/storybook'
+
+import { CreatePageSidebarProvider } from '~features/admin-form/create/common'
+
+import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 
 import { EditStepBlock } from './EditStepBlock'
 
@@ -142,6 +151,34 @@ const mrfFormViewWithFields = [
   }),
 ]
 
+const myinfo_field: FormFieldDto = {
+  title: 'Name',
+  description: '',
+  required: true,
+  disabled: false,
+  fieldType: BasicField.ShortText,
+  _id: '6200e1534ad4f00012848d93',
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+  allowPrefill: false,
+  myInfo: { attr: MyInfoAttribute.Name },
+}
+
+const mrfFormViewWith = (form_fields: FormFieldDto[]) => [
+  getAdminFormView({
+    mode: FormResponseMode.Multirespondent,
+    overrides: { form_fields },
+  }),
+]
+
+const withCreatePageSidebar = (Story: StoryFn) => (
+  <CreatePageSidebarProvider>
+    <Story />
+  </CreatePageSidebarProvider>
+)
+
 export default {
   component: EditStepBlock,
   title:
@@ -153,12 +190,85 @@ export default {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     onSubmit: () => {},
   },
-  decorators: [StoryRouter({ initialEntries: ['/12345'], path: '/:formId' })],
+  decorators: [
+    withCreatePageSidebar,
+    StoryRouter({ initialEntries: ['/12345'], path: '/:formId' }),
+  ],
   parameters: {
     msw: {
       handlers: mrfFormViewWithFields,
     },
   },
+}
+
+const redesignOn = new GrowthBook({
+  features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },
+})
+
+const withRedesignOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={redesignOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
+const GuidedCreation = ({ children }: { children: ReactNode }): JSX.Element => {
+  const [isCreating, setIsCreating] = useState(false)
+
+  useLayoutEffect(() => {
+    useAdminWorkflowStore.getState().setToCreating()
+    setIsCreating(true)
+    return () => useAdminWorkflowStore.getState().reset()
+  }, [])
+
+  return (
+    <GrowthBookProvider growthbook={redesignOn}>
+      {isCreating ? children : null}
+    </GrowthBookProvider>
+  )
+}
+
+const withGuidedCreation = (Story: StoryFn) => (
+  <GuidedCreation>
+    <Story />
+  </GuidedCreation>
+)
+
+const revealSections =
+  (count: number) =>
+  async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    for (let i = 0; i < count; i++) {
+      await userEvent.click(
+        await canvas.findByRole('button', { name: 'Continue' }),
+      )
+    }
+  }
+
+export const GuidedStep1Name = {
+  args: { stepNumber: 0, submitButtonLabel: 'Add step' },
+  decorators: [withGuidedCreation],
+}
+
+export const GuidedStep1People = {
+  ...GuidedStep1Name,
+  play: revealSections(1),
+}
+
+export const GuidedStep1Fields = {
+  ...GuidedStep1Name,
+  play: revealSections(2),
+}
+
+export const GuidedStep2WhatTheyDo = {
+  args: { stepNumber: 1, submitButtonLabel: 'Add step' },
+  decorators: [withGuidedCreation],
+  play: revealSections(2),
+}
+
+export const GuidedStep2Fields = {
+  args: { stepNumber: 1, submitButtonLabel: 'Add step' },
+  decorators: [withGuidedCreation],
+  play: revealSections(3),
 }
 
 export const Step1Empty = {
@@ -241,7 +351,7 @@ export const Step2ConditionalRoutingEmpty = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -272,7 +382,7 @@ export const Step2ConditionalRouting = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -307,7 +417,7 @@ export const Step2ConditionalRoutingValidOptionsUploaded = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -342,7 +452,7 @@ export const Step2ConditionalRoutingInvalidOptionsUploadedErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -377,7 +487,7 @@ export const Step2ConditionalRoutingNoFieldSelectedErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -420,7 +530,7 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
       async () => {
         await userEvent.click(
           await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
+            'Emails assigned to options in a Dropdown field',
           ),
         )
       },
@@ -451,34 +561,37 @@ export const Step2ConditionalRoutingNoOptionsToReicipientsMapErrorMessage = {
 export const Step2ConditionalRoutingReplace = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        await userEvent.click(
-          await canvas.getByText(
-            'Emails assigned to options in a dropdown field',
-          ),
-        )
-      },
-      {
-        timeout: 5000,
-      },
-    )
-    await waitFor(
-      async () => {
-        const replaceButton = await canvas.getByLabelText(
-          'Click to replace file',
-        )
-        await userEvent.click(replaceButton)
-      },
+
+    const conditionalOption = await canvas.findByRole(
+      'radio',
+      { name: /Emails assigned to options in a Dropdown field/i },
       { timeout: 5000 },
     )
+    await waitFor(() => expect(conditionalOption).toBeEnabled(), {
+      timeout: 5000,
+    })
+    await userEvent.click(conditionalOption)
+    await waitFor(() => expect(conditionalOption).toBeChecked(), {
+      timeout: 5000,
+    })
+
+    const replaceButton = await canvas.findByLabelText(
+      'Click to replace file',
+      undefined,
+      { timeout: 5000 },
+    )
+    await waitFor(() => expect(replaceButton).toBeEnabled(), { timeout: 5000 })
+    await userEvent.click(replaceButton)
+
+    // Replacing opens the replace-CSV modal, which is what this story captures.
+    // The modal portals to the body, so it is outside canvasElement.
+    await expect(
+      await within(document.body).findByRole(
+        'dialog',
+        { name: /replace your csv file/i },
+        { timeout: 5000 },
+      ),
+    ).toBeInTheDocument()
   },
   args: {
     stepNumber: 3,
@@ -530,29 +643,21 @@ export const Step3AllSelectedValid = {
 export const Step4ApprovalFieldNotInEditErrorMessage = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const canvas = within(canvasElement)
-    await waitFor(
-      async () =>
-        expect(await canvas.getByText('Save step')).not.toBeDisabled(),
-      {
-        timeout: 5000,
-      },
+
+    const saveButton = await canvas.findByRole(
+      'button',
+      { name: 'Save step' },
+      { timeout: 5000 },
     )
-    await waitFor(
-      async () => {
-        await userEvent.click(await canvas.getByText('Save step'))
-      },
-      {
-        timeout: 5000,
-      },
-    )
+    await waitFor(() => expect(saveButton).toBeEnabled(), { timeout: 5000 })
+    await userEvent.click(saveButton)
+
     await expect(
-      await canvas.findByText((content) => {
-        return content
-          .toLowerCase()
-          .includes(
-            'the selected yes/no field has not been assigned to this respondent'.toLowerCase(),
-          )
-      }),
+      await canvas.findByText(
+        /the selected yes\/no field has not been assigned to this respondent/i,
+        undefined,
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument()
   },
   args: {
@@ -570,6 +675,77 @@ export const Step4ApprovalFieldNotInEditErrorMessage = {
         component:
           'When submit is clicked, validation error should occur since approval field is not in edit fields',
       },
+    },
+  },
+}
+
+const selectRespondentOption =
+  (label: string) =>
+  async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    const option = await canvas.findByRole(
+      'radio',
+      { name: new RegExp(label, 'i') },
+      { timeout: 5000 },
+    )
+    await waitFor(() => expect(option).toBeEnabled(), { timeout: 5000 })
+    await userEvent.click(option)
+    await waitFor(() => expect(option).toBeChecked(), { timeout: 5000 })
+  }
+
+export const EmptyStateFieldsPicker = {
+  args: { stepNumber: 0 },
+  decorators: [withRedesignOn],
+  parameters: { msw: { handlers: mrfFormViewWith([]) } },
+}
+
+export const EmptyStateFieldsPickerMyInfoOnly = {
+  args: { stepNumber: 1 },
+  decorators: [withRedesignOn],
+  parameters: { msw: { handlers: mrfFormViewWith([myinfo_field]) } },
+}
+
+export const EmptyStateEmailRouting = {
+  args: { stepNumber: 1 },
+  decorators: [withRedesignOn],
+  parameters: {
+    msw: {
+      handlers: mrfFormViewWith([
+        form_field_1,
+        form_field_5,
+        dropdown_field_valid_mapping,
+      ]),
+    },
+  },
+  play: selectRespondentOption('An Email field from the form'),
+}
+
+export const EmptyStateConditionalRouting = {
+  args: { stepNumber: 1 },
+  decorators: [withRedesignOn],
+  parameters: {
+    msw: {
+      handlers: mrfFormViewWith([form_field_1, form_field_3, form_field_5]),
+    },
+  },
+  play: selectRespondentOption(
+    'Emails assigned to options in a Dropdown field',
+  ),
+}
+
+export const EmptyStateApprovalField = {
+  args: {
+    stepNumber: 1,
+    defaultValues: { approval_field: 'deleted_objectId' },
+  },
+  decorators: [withRedesignOn],
+  parameters: {
+    msw: {
+      handlers: mrfFormViewWith([
+        form_field_3,
+        form_field_5,
+        dropdown_field_valid_mapping,
+      ]),
     },
   },
 }

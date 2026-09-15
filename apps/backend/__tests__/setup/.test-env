@@ -21,6 +21,11 @@ MYINFO_CLIENT_SECRET=mockClientSecret
 MYINFO_JWT_SECRET=mockJwtSecret
 SINGPASS_ESRVC_ID=Test-eServiceId-Sp # Needed for MyInfo
 
+MYINFO_FAPI_ISSUER=http://localhost:5156/singpass/v3/fapi
+MYINFO_FAPI_CLIENT_ID=mockFapiClientId
+MYINFO_FAPI_RP_JWKS_PUBLIC_PATH=./__tests__/setup/certs/test_myinfo_fapi_rp_public_jwks.json
+MYINFO_FAPI_RP_JWKS_SECRET_PATH=./__tests__/setup/certs/test_myinfo_fapi_rp_secret_jwks.json
+
 SGID_HOSTNAME=http://localhost:5156
 SGID_CLIENT_ID=sgidclientid
 SGID_CLIENT_SECRET=sgidclientsecret

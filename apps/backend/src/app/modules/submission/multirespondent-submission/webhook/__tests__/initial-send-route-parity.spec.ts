@@ -55,6 +55,9 @@ const VERIFIED_CONTENT = 'v4-verified-content'
 const ATTACHMENT_METADATA = {
   [attachmentFieldId]: `${formId.toHexString()}/attachment-object-key`,
 }
+const STEP_TOKEN_HASH = 'STEP-TOKEN-HASH-SENTINEL'.padEnd(64, '0')
+const ENCRYPTED_STEP_TOKEN =
+  'STEP-TOKEN-SENDER-PK-SENTINEL;NONCE-SENTINEL:CIPHER-SENTINEL'
 
 const workflow = [
   {
@@ -89,6 +92,16 @@ const comparablePayload = (data: WebhookData): unknown => {
       ]),
     ),
   }
+}
+
+const collectKeys = (value: unknown): string[] => {
+  if (Array.isArray(value)) return value.flatMap(collectKeys)
+  if (value && typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>).flatMap(
+      ([key, child]) => [key, ...collectKeys(child)],
+    )
+  }
+  return []
 }
 
 const capturePostedPayload = async (
@@ -141,6 +154,8 @@ describe('[GATE] v4 initial-send route parity', () => {
           snapshotTokens: { v4: 'tok-parity' },
         },
       ],
+      stepTokenHash: STEP_TOKEN_HASH,
+      encryptedStepToken: ENCRYPTED_STEP_TOKEN,
     })
 
   const bothRoutes = async (
@@ -172,7 +187,6 @@ describe('[GATE] v4 initial-send route parity', () => {
         submissionIndex,
         policy: getWebhookPayloadPolicy({
           webhookType,
-          isStepWriteTokenEnabled: true,
           submissionIndex,
           submittedStepsLength: submission.submittedSteps?.length ?? 0,
         }),
@@ -212,9 +226,14 @@ describe('[GATE] v4 initial-send route parity', () => {
 
       for (const payload of [snapshotBacked, liveRow]) {
         expect(payload.encryptedSubmissionSecretKey).toBeDefined()
-        expect(
-          (payload as unknown as Record<string, unknown>)['encryptedStepToken'],
-        ).toBeUndefined()
+
+        const serialised = JSON.stringify(payload)
+        expect(serialised).not.toContain(STEP_TOKEN_HASH)
+        expect(serialised).not.toContain(ENCRYPTED_STEP_TOKEN)
+        // No key anywhere in the body may name a step token either.
+        expect(collectKeys(payload)).not.toContain(
+          expect.stringMatching(/steptoken/i),
+        )
       }
     }
   })

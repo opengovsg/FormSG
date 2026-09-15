@@ -106,7 +106,12 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
         <FormErrorMessage>{errors?.description?.message}</FormErrorMessage>
       </FormControl>
       <FormControl isReadOnly={isLoading}>
-        <Toggle {...register('required')} label="Required" />
+        <Toggle
+          {...register('required')}
+          label={t(
+            'features.adminForm.sidebar.fields.commonFieldComponents.required',
+          )}
+        />
       </FormControl>
       <FormControl
         isRequired
@@ -129,9 +134,9 @@ export const EditDropdown = ({ field }: EditDropdownProps): JSX.Element => {
         </FormErrorMessage>
         {isFieldUsedForConditionalRouting ? (
           <InlineMessage mt="1rem" variant="warning">
-            This field is linked to a step in your workflow. If you make any
-            changes, ensure that the options and emails are updated in your CSV
-            file.
+            {t(
+              'features.adminForm.sidebar.fields.dropdown.conditionalRoutingWarning',
+            )}
           </InlineMessage>
         ) : null}
       </FormControl>

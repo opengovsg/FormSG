@@ -1,6 +1,8 @@
 const PUBLIC_FORM_FIELDS = [
   'admin',
   'authType',
+  // Exposed so respondents see the deadline before they start filling the form
+  'closeAt',
   'isSubmitterIdCollectionEnabled',
   'isSingleSubmission',
   'endPage',
@@ -30,6 +32,7 @@ export const STORAGE_PUBLIC_FORM_FIELDS = [
 
 export const MULTIRESPONDENT_PUBLIC_FORM_FIELDS = [
   ...PUBLIC_FORM_FIELDS,
+  'payments_field',
   'publicKey',
   'workflow',
   'hasStatusTracker',
@@ -47,6 +50,7 @@ const FORM_SETTINGS_FIELDS = [
   'inactiveMessage',
   'status',
   'submissionLimit',
+  'closeAt',
   'title',
   'webhook',
   'hasMultiLang',
@@ -70,7 +74,10 @@ export const STORAGE_FORM_SETTINGS_FIELDS = [
 
 export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   ...FORM_SETTINGS_FIELDS,
+  'payments_channel',
+  'payments_field',
   'publicKey',
+  'business',
   'emails',
   'stepsToNotify',
   'stepOneEmailNotificationFieldId',

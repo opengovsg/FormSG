@@ -1,6 +1,7 @@
 import {
   AccountInfo,
   AuthError,
+  AuthorizationCodeRequest,
   AuthorizationUrlRequest,
   ConfidentialClientApplication,
 } from '@azure/msal-node'
@@ -32,6 +33,29 @@ const ccaSingleton = isWogadConfigDefined
   : null
 const redirectUri = resolveAppUrl(`${wogad.redirectUri}`)
 
+export const WOGAD_CODE_VERIFIER_COOKIE_NAME = 'wogadCodeVerifier'
+export const WOGAD_CSRF_TOKEN_COOKIE_NAME = 'csrf_token'
+
+// RATIONALE: Shared with both res.cookie and res.clearCookie to ensure cookies match when cleared.
+export const WOGAD_AUTH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: !config.isDevOrTest,
+  sameSite: !config.isDevOrTest ? ('strict' as const) : undefined,
+  path: '/',
+}
+
+/**
+ * Generates an RFC 7636 S256 PKCE pair.
+ */
+const generatePkcePair = () => {
+  const codeVerifier = crypto.randomBytes(32).toString('base64url')
+  const codeChallenge = crypto
+    .createHash('sha256')
+    .update(codeVerifier)
+    .digest('base64url')
+  return { codeVerifier, codeChallenge }
+}
+
 const validateWogadConfig: ControllerHandler = (_req, res, next) => {
   if (!isWogadConfigDefined || !ccaSingleton) {
     return res.status(StatusCodes.METHOD_NOT_ALLOWED).json({
@@ -45,8 +69,9 @@ const validateWogadConfig: ControllerHandler = (_req, res, next) => {
  * Generates the WOG AD Authorization URL.
  *
  * Flow:
- * 1. After receiving the auth URL, the browser redirects to WOG AD with the csrf token in the state and completes the authentication challenge.
- * 2. Then, WOG AD will redirect the browser to the registered redirect URI with the code and the same csrf token the browser passed in its initial request.
+ * 1. Before generating the auth URL, the backend will generate a CSRF token and a PKCE verifier and challenge pair. It issues the challenge to the authorization endpoint.
+ * 2. After receiving the auth URL, the browser redirects to WOG AD with the csrf token in the state and completes the authentication challenge.d
+ * 3. Then, WOG AD will redirect the browser to the registered redirect URI with the code and the same csrf token the browser passed in its initial request.
  */
 const _generateAuthUrl: ControllerHandler<
   unknown,
@@ -67,17 +92,23 @@ const _generateAuthUrl: ControllerHandler<
 
   const csrfToken = crypto.randomBytes(32).toString('hex')
 
+  const { codeVerifier, codeChallenge } = generatePkcePair()
+
   const authCodeUrlParams: AuthorizationUrlRequest = {
     state: csrfToken,
     scopes: ['openid', 'email'],
     redirectUri,
+    codeChallenge,
+    codeChallengeMethod: 'S256',
   }
 
-  res.cookie('csrf_token', csrfToken, {
-    httpOnly: true,
-    secure: !config.isDevOrTest,
-    sameSite: !config.isDevOrTest ? 'strict' : undefined,
-  })
+  res.cookie(WOGAD_CSRF_TOKEN_COOKIE_NAME, csrfToken, WOGAD_AUTH_COOKIE_OPTIONS)
+
+  res.cookie(
+    WOGAD_CODE_VERIFIER_COOKIE_NAME,
+    codeVerifier,
+    WOGAD_AUTH_COOKIE_OPTIONS,
+  )
 
   const authUrl = await ccaSingleton.getAuthCodeUrl(authCodeUrlParams)
 
@@ -98,12 +129,13 @@ export const generateAuthUrl = [
  * 1. This endpoint is called after the browser is redirected to the redirect URI with the code and csrf token.
  * 2. Then, it will send over the code and csrf token to the backend.
  * 3. The backend will verify the csrf token matches before using the code to retrieve the access token.
- * 4. This access token will also include the additional metadata such as admin's email in the same HTTPS response payload.
+ * 4. The code verifier is included in the request, to verify the code is generated from the same browser which has the cookie.
+ * 5. This access token will also include the additional metadata such as admin's email in the same HTTPS response payload.
  * (Hence, no validation of signature is needed.)
- * 5. Once the access token is retrieved, we will perform checks on whitelist access.
- * 6. Then, we can modify the session to include the user's id and persist this session in the store as active.
- * 7. Also, we include a grant source to indicate that the user logged in via WOG AD. This is useful during logout.
- * 8. At this point, the user is logged in and can access the protected routes using FormSG's session mechanism.
+ * 6. Once the access token is retrieved, we will perform checks on whitelist access.
+ * 7. Then, we can modify the session to include the user's id and persist this session in the store as active.
+ * 8. Also, we include a grant source to indicate that the user logged in via WOG AD. This is useful during logout.
+ * 9. At this point, the user is logged in and can access the protected routes using FormSG's session mechanism.
  */
 const _handleVerifyWithCode: ControllerHandler<
   unknown,
@@ -123,7 +155,7 @@ const _handleVerifyWithCode: ControllerHandler<
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR)
   }
 
-  const csrfTokenFromCookie = req.cookies['csrf_token']
+  const csrfTokenFromCookie = req.cookies[WOGAD_CSRF_TOKEN_COOKIE_NAME]
   const csrfTokenFromBody = req.body['csrfToken']
 
   if (!csrfTokenFromCookie || csrfTokenFromCookie !== csrfTokenFromBody) {
@@ -137,11 +169,18 @@ const _handleVerifyWithCode: ControllerHandler<
   }
 
   const code = req.body['code']
+  const codeVerifier = req.cookies[WOGAD_CODE_VERIFIER_COOKIE_NAME]
 
-  const tokenRequest = {
+  // RATIONALE: Both cookies are single-use and scoped to this one login attempt. Clear
+  // before the exchange to prevent reuse, regardless of success or failure.
+  res.clearCookie(WOGAD_CODE_VERIFIER_COOKIE_NAME, WOGAD_AUTH_COOKIE_OPTIONS)
+  res.clearCookie(WOGAD_CSRF_TOKEN_COOKIE_NAME, WOGAD_AUTH_COOKIE_OPTIONS)
+
+  const tokenRequest: AuthorizationCodeRequest = {
     code,
     scopes: ['openid', 'email'],
     redirectUri,
+    codeVerifier,
   }
 
   let account: AccountInfo | null

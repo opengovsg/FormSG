@@ -12,9 +12,6 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useGrowthBook } from '@growthbook/growthbook-react'
-
-import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
 import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
@@ -55,11 +52,6 @@ export const MiniHeader = ({
     formId,
   } = usePublicFormContext()
   const { t } = useTranslation()
-
-  const isTest = import.meta.env.STORYBOOK_NODE_ENV === 'test'
-  const gb = useGrowthBook()
-  const enableFormHeaderSaveDraftButton =
-    gb?.isOn(featureFlags.enableSaveDraftButtonHeader) || isTest
 
   return (
     <Slide
@@ -102,7 +94,7 @@ export const MiniHeader = ({
                   t('features.publicForm.components.loadingTitle.title')}
               </Text>
             </Flex>
-            {isSaveDraftEnabled && enableFormHeaderSaveDraftButton && (
+            {isSaveDraftEnabled && (
               <FormHeaderSaveDraftButton
                 onSaveDraft={() => {
                   datadogLogs.logger.log(

@@ -1,4 +1,5 @@
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
+import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 import { ObjectId } from 'bson'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
 import {
@@ -42,9 +43,7 @@ import {
   createMultirespondentSubmissionDto,
   createPublicMultirespondentSubmissionDto,
   extractRespondentCopyEmailDatas,
-  getMrfVersion,
   getQuestionAnswerPairsForMultipleFields,
-  MrfVersion,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
@@ -1088,6 +1087,25 @@ describe('multirespondent-submission.utils', () => {
       })
     })
 
+    it('should return an empty array for a conditional step with no dropdown chosen', () => {
+      const mockForm = {
+        form_fields: [
+          generateDefaultField(BasicField.Dropdown, {
+            _id: 'someOtherField',
+            fieldOptions: ['Option A'],
+          }),
+        ],
+      } as IPopulatedForm
+
+      const result = retrieveWorkflowStepEmailAddresses(
+        mockForm,
+        { workflow_type: WorkflowType.Conditional } as FormWorkflowStepDto,
+        {} as FieldResponsesV4,
+      )
+
+      expect(result._unsafeUnwrap()).toEqual([])
+    })
+
     it('should return an empty array if the optionsToRecipientsMap does not contain an email mapping for the option selected', () => {
       // Arrange
       const mockConditionalFieldId = 'conditionalField'
@@ -1375,69 +1393,6 @@ describe('multirespondent-submission.utils', () => {
         }),
       )
       expect(result[3]).not.toHaveProperty('fieldType')
-    })
-  })
-
-  describe('getMrfVersion', () => {
-    type WebhookType = Parameters<typeof getMrfVersion>[0]['webhookType']
-    it.each<{
-      name: string
-      webhookType: WebhookType
-      isStepWriteTokenEnabled: boolean
-      expected: MrfVersion
-    }>([
-      {
-        name: 'no webhook, write-guard off => V4',
-        webhookType: undefined,
-        isStepWriteTokenEnabled: false,
-        expected: 2,
-      },
-      {
-        name: 'no webhook, write-guard on => V4',
-        webhookType: undefined,
-        isStepWriteTokenEnabled: true,
-        expected: 2,
-      },
-      {
-        name: 'plumber, write-guard on => V4',
-        webhookType: 'plumber',
-        isStepWriteTokenEnabled: true,
-        expected: 2,
-      },
-      {
-        name: 'plumber, write-guard off => V3',
-        webhookType: 'plumber',
-        isStepWriteTokenEnabled: false,
-        expected: 1,
-      },
-      {
-        name: 'generic, write-guard off => V4',
-        webhookType: 'generic',
-        isStepWriteTokenEnabled: false,
-        expected: 2,
-      },
-      {
-        name: 'generic, write-guard on => V4',
-        webhookType: 'generic',
-        isStepWriteTokenEnabled: true,
-        expected: 2,
-      },
-      {
-        name: 'zapier is treated as generic, write-guard off => V4',
-        webhookType: 'zapier',
-        isStepWriteTokenEnabled: false,
-        expected: 2,
-      },
-      {
-        name: 'zapier is treated as generic, write-guard on => V4',
-        webhookType: 'zapier',
-        isStepWriteTokenEnabled: true,
-        expected: 2,
-      },
-    ])('$name', ({ webhookType, isStepWriteTokenEnabled, expected }) => {
-      expect(getMrfVersion({ webhookType, isStepWriteTokenEnabled })).toBe(
-        expected,
-      )
     })
   })
 })
