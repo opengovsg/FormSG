@@ -10,17 +10,24 @@ import {
   SnapshotReadError,
   SnapshotWriteError,
 } from '../submission-snapshot.errors'
-import { buildV4Snapshot } from '../submission-snapshot.producer'
-import { SubmissionSnapshotV4 } from '../submission-snapshot.schema'
+import {
+  buildV1Snapshot,
+  buildV4Snapshot,
+} from '../submission-snapshot.producer'
+import {
+  SubmissionSnapshotV1,
+  SubmissionSnapshotV4,
+} from '../submission-snapshot.schema'
 import {
   buildSnapshotKey,
-  readV4Snapshot,
-  writeV4Snapshot,
+  readSnapshot,
+  writeSnapshot,
 } from '../submission-snapshot.store'
 
 jest.mock('src/app/config/config')
 
 const TEST_BUCKET = 'test-submission-history-v4-bucket'
+const TEST_V1_BUCKET = 'test-submission-history-v1-bucket'
 
 const COORDS = {
   formId: 'form-1',
@@ -34,6 +41,14 @@ const makeSnapshot = (): SubmissionSnapshotV4 =>
     workflowStep: 1,
     encryptedContent: 'encrypted-content-blob',
     encryptedSubmissionSecretKey: 'wrapped-read-key',
+    createdAt: '2026-07-22T00:00:00.000Z',
+  })
+
+const makeV1Snapshot = (): SubmissionSnapshotV1 =>
+  buildV1Snapshot({
+    ...COORDS,
+    workflowStep: 1,
+    encryptedContent: 'form-key-encrypted-content-blob',
     createdAt: '2026-07-22T00:00:00.000Z',
   })
 
@@ -74,7 +89,7 @@ const putRejectsThen = (
 type Uuid = ReturnType<typeof crypto.randomUUID>
 
 /**
- * Pins the tokens writeV4Snapshot generates so the keys under test are
+ * Pins the tokens writeSnapshot generates so the keys under test are
  * deterministic. Attempts beyond the supplied list get a distinct `tok-<n>`.
  */
 const mockTokens = (...tokens: string[]) => {
@@ -90,6 +105,9 @@ beforeEach(() => {
   ;(
     AwsConfig as unknown as { submissionHistoryV4S3Bucket: string }
   ).submissionHistoryV4S3Bucket = TEST_BUCKET
+  ;(
+    AwsConfig as unknown as { submissionHistoryV1S3Bucket: string }
+  ).submissionHistoryV1S3Bucket = TEST_V1_BUCKET
 })
 
 afterEach(() => {
@@ -104,7 +122,7 @@ describe('buildSnapshotKey', () => {
   })
 })
 
-describe('writeV4Snapshot', () => {
+describe('writeSnapshot', () => {
   it('should PUT exactly one object with the buildSnapshotKey Key, IfNoneMatch:*, and a Body that round-trips', async () => {
     // Arrange
     const snapshot = makeSnapshot()
@@ -113,7 +131,7 @@ describe('writeV4Snapshot', () => {
     mockTokens('tok-1')
 
     // Act
-    const result = await writeV4Snapshot(snapshot)
+    const result = await writeSnapshot(snapshot)
 
     // Assert
     expect(result.isOk()).toBe(true)
@@ -142,7 +160,7 @@ describe('writeV4Snapshot', () => {
     mockTokens('tok-collide', 'tok-win')
 
     // Act
-    const result = await writeV4Snapshot(snapshot)
+    const result = await writeSnapshot(snapshot)
 
     // Assert
     expect(result.isOk()).toBe(true)
@@ -166,7 +184,7 @@ describe('writeV4Snapshot', () => {
     ;(AwsConfig.s3.send as jest.Mock) = putObject
     mockTokens('tok-1')
 
-    const result = await writeV4Snapshot(snapshot)
+    const result = await writeSnapshot(snapshot)
 
     expect(result.isErr()).toBe(true)
     expect(putObject).toHaveBeenCalledTimes(1) // no retry on non-412
@@ -183,7 +201,7 @@ describe('writeV4Snapshot', () => {
     // Every attempt gets a distinct fresh token (tok-0, tok-1, ...).
     mockTokens()
 
-    const result = await writeV4Snapshot(snapshot)
+    const result = await writeSnapshot(snapshot)
 
     expect(result.isErr()).toBe(true)
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotWriteError)
@@ -196,7 +214,7 @@ describe('writeV4Snapshot', () => {
   })
 })
 
-describe('readV4Snapshot', () => {
+describe('readSnapshot', () => {
   it('should use buildSnapshotKey for the getObject Key (single key source)', async () => {
     const snapshot = makeSnapshot()
     const getObject = jest
@@ -204,7 +222,7 @@ describe('readV4Snapshot', () => {
       .mockReturnValue(Promise.resolve(mockS3Body(JSON.stringify(snapshot))))
     ;(AwsConfig.s3.send as jest.Mock) = getObject
 
-    await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+    await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
 
     const { input: params } = getObject.mock.calls[0][0]
     expect(params.Bucket).toBe(TEST_BUCKET)
@@ -217,7 +235,7 @@ describe('readV4Snapshot', () => {
       .fn()
       .mockReturnValue(Promise.resolve(mockS3Body(JSON.stringify(snapshot))))
 
-    const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
 
     expect(result.isOk()).toBe(true)
     expect(result._unsafeUnwrap()).toEqual(snapshot)
@@ -228,7 +246,7 @@ describe('readV4Snapshot', () => {
       .fn()
       .mockReturnValue(Promise.reject(mockS3Error('NoSuchKey', 404)))
 
-    const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
 
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
@@ -240,7 +258,7 @@ describe('readV4Snapshot', () => {
       .fn()
       .mockReturnValue(Promise.reject(mockS3Error('AccessDenied', 403)))
 
-    const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
 
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
@@ -262,7 +280,7 @@ describe('readV4Snapshot', () => {
         .fn()
         .mockReturnValue(Promise.reject(s3Error))
 
-      const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+      const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
 
       expect(result.isErr()).toBe(true)
       const error = result._unsafeUnwrapErr()
@@ -276,7 +294,7 @@ describe('readV4Snapshot', () => {
       .fn()
       .mockReturnValue(Promise.resolve({}))
 
-    const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
 
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotDataIntegrityError)
   })
@@ -286,7 +304,7 @@ describe('readV4Snapshot', () => {
       .fn()
       .mockReturnValue(Promise.resolve(mockS3Body('{ not valid json')))
 
-    const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
 
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
@@ -299,9 +317,46 @@ describe('readV4Snapshot', () => {
       .fn()
       .mockReturnValue(Promise.resolve(mockS3Body(JSON.stringify(bad))))
 
-    const result = await readV4Snapshot({ ...COORDS, token: 'tok-1' })
+    const result = await readSnapshot({ ...COORDS, token: 'tok-1', contentFormat: 'v4' })
 
     expect(result.isErr()).toBe(true)
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(SnapshotDataIntegrityError)
+  })
+})
+
+describe('the store each shape is routed to', () => {
+  it('should write a V1 snapshot to the V1 bucket and a V4 snapshot to the V4 bucket', async () => {
+    // Arrange
+    const putObject = putResolves()
+    ;(AwsConfig.s3.send as jest.Mock) = putObject
+    mockTokens('tok-v4', 'tok-v1')
+
+    // Act
+    await writeSnapshot(makeSnapshot())
+    await writeSnapshot(makeV1Snapshot())
+
+    // Assert: the shape decides the store, so a V1 consumer's objects can
+    // never land among the submission-key-encrypted ones.
+    expect(putObject.mock.calls[0][0].input.Bucket).toBe(TEST_BUCKET)
+    expect(putObject.mock.calls[1][0].input.Bucket).toBe(TEST_V1_BUCKET)
+  })
+
+  it('should read back from the bucket matching the recorded shape', async () => {
+    // Arrange
+    const getObject = jest
+      .fn()
+      .mockReturnValue(Promise.resolve(mockS3Body(JSON.stringify(makeV1Snapshot()))))
+    ;(AwsConfig.s3.send as jest.Mock) = getObject
+
+    // Act
+    const result = await readSnapshot({
+      ...COORDS,
+      token: 'tok-1',
+      contentFormat: 'v1',
+    })
+
+    // Assert
+    expect(result.isOk()).toBe(true)
+    expect(getObject.mock.calls[0][0].input.Bucket).toBe(TEST_V1_BUCKET)
   })
 })

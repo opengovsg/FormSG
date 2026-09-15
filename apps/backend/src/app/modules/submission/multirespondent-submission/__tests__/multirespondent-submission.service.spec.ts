@@ -63,8 +63,8 @@ jest.mock('../webhook/submission-snapshot.store', () => {
   const actual = jest.requireActual('../webhook/submission-snapshot.store')
   return {
     ...actual,
-    writeV4Snapshot: jest.fn(),
-    readV4Snapshot: jest.fn(),
+    writeSnapshot: jest.fn(),
+    readSnapshot: jest.fn(),
   }
 })
 const MockSnapshotStore = jest.mocked(SnapshotStore)
@@ -3891,10 +3891,10 @@ describe('multirespondent-submission.service', () => {
       }) as unknown as IMultirespondentSubmissionSchema
 
     beforeEach(() => {
-      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+      MockSnapshotStore.writeSnapshot.mockReturnValue(
         okAsync({ token: 'default-token', key: 'default-key' }),
       )
-      MockSnapshotStore.readV4Snapshot.mockReturnValue(okAsync(buildSnapshot()))
+      MockSnapshotStore.readSnapshot.mockReturnValue(okAsync(buildSnapshot()))
       jest
         .spyOn(webhookStatsdClient, 'increment')
         .mockImplementation(() => undefined as any)
@@ -3906,7 +3906,7 @@ describe('multirespondent-submission.service', () => {
     // ---- Committed-step-has-a-readable-snapshot (write side) ----
 
     it('writes a v4 snapshot matching the committed step and records the token on create', async () => {
-      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+      MockSnapshotStore.writeSnapshot.mockReturnValue(
         okAsync({ token: 'tok-create', key: 'key-create' }),
       )
 
@@ -3917,8 +3917,8 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeV4Snapshot).toHaveBeenCalledTimes(1)
-      const snapshot = MockSnapshotStore.writeV4Snapshot.mock.calls[0][0]
+      expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
+      const snapshot = MockSnapshotStore.writeSnapshot.mock.calls[0][0]
       expect(snapshot.submissionIndex).toBe(0)
       expect(snapshot.workflowStep).toBe(0)
       expect(snapshot.encryptedContent).toBe('v4-encrypted-content')
@@ -3947,7 +3947,7 @@ describe('multirespondent-submission.service', () => {
           { isApproval: false, submittedAt: new Date().toISOString() },
         ],
       })
-      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+      MockSnapshotStore.writeSnapshot.mockReturnValue(
         okAsync({ token: 'tok-update', key: 'key-update' }),
       )
 
@@ -3959,8 +3959,8 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeV4Snapshot).toHaveBeenCalledTimes(1)
-      const snapshot = MockSnapshotStore.writeV4Snapshot.mock.calls[0][0]
+      expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
+      const snapshot = MockSnapshotStore.writeSnapshot.mock.calls[0][0]
       expect(snapshot.submissionIndex).toBe(1)
       expect(snapshot.workflowStep).toBe(1)
       expect(snapshot.encryptedContent).toBe('v4-encrypted-content')
@@ -3977,7 +3977,7 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeV4Snapshot).not.toHaveBeenCalled()
+      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
     })
 
     it.each`
@@ -3997,7 +3997,7 @@ describe('multirespondent-submission.service', () => {
         })
 
         expect(result.isOk()).toBe(true)
-        expect(MockSnapshotStore.writeV4Snapshot).toHaveBeenCalledTimes(
+        expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(
           expectWritten ? 1 : 0,
         )
       },
@@ -4033,7 +4033,7 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeV4Snapshot).not.toHaveBeenCalled()
+      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
     })
 
     it('still writes a snapshot for a plumber V4 row with no flags on', async () => {
@@ -4045,7 +4045,7 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeV4Snapshot).toHaveBeenCalledTimes(1)
+      expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
     })
 
     it('does not write a snapshot when retries are disabled', async () => {
@@ -4058,11 +4058,11 @@ describe('multirespondent-submission.service', () => {
       })
 
       expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeV4Snapshot).not.toHaveBeenCalled()
+      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
     })
 
     it('aborts the save (fail-loud) when the snapshot write fails', async () => {
-      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+      MockSnapshotStore.writeSnapshot.mockReturnValue(
         errAsync(new SnapshotWriteError()),
       )
       const saveSpy = jest.spyOn(
@@ -4099,7 +4099,7 @@ describe('multirespondent-submission.service', () => {
           { isApproval: false, submittedAt: new Date().toISOString() },
         ],
       })
-      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+      MockSnapshotStore.writeSnapshot.mockReturnValue(
         errAsync(new SnapshotWriteError()),
       )
 
@@ -4277,10 +4277,10 @@ describe('multirespondent-submission.service', () => {
       const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
       // Any S3 GET on the initial send is a defect: stub the read path to fail
       // so a surviving read-back would drop the webhook.
-      MockSnapshotStore.readV4Snapshot.mockReturnValue(
+      MockSnapshotStore.readSnapshot.mockReturnValue(
         errAsync(new SnapshotDataIntegrityError('S3 GET must not be reached')),
       )
-      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+      MockSnapshotStore.writeSnapshot.mockReturnValue(
         okAsync({ token: 'tok-inmem', key: 'key-inmem' }),
       )
 
@@ -4304,7 +4304,7 @@ describe('multirespondent-submission.service', () => {
       })
       await flushPromises()
 
-      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+      expect(MockSnapshotStore.readSnapshot).not.toHaveBeenCalled()
       expect(sendSpy).toHaveBeenCalledTimes(1)
       const view = sendSpy.mock.calls[0][3]
       expect(view?.data.encryptedContent).toBe('v4-encrypted-content')
@@ -4399,7 +4399,7 @@ describe('multirespondent-submission.service', () => {
           { isApproval: false, submittedAt: new Date().toISOString() },
         ],
       })
-      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+      MockSnapshotStore.writeSnapshot.mockReturnValue(
         okAsync({ token: 'tok-step-2', key: 'key-step-2' }),
       )
 
@@ -4447,7 +4447,7 @@ describe('multirespondent-submission.service', () => {
 
       expect(sendSpy).toHaveBeenCalledTimes(1)
       expect(sendSpy.mock.calls[0][3]?.data).toEqual(liveView.data)
-      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+      expect(MockSnapshotStore.readSnapshot).not.toHaveBeenCalled()
     })
 
     // ---- D10: a recorded token never triggers a read on the initial send ----
@@ -4470,7 +4470,7 @@ describe('multirespondent-submission.service', () => {
       })
       await flushPromises()
 
-      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+      expect(MockSnapshotStore.readSnapshot).not.toHaveBeenCalled()
       expect(sendSpy).toHaveBeenCalledTimes(1)
       expect(sendSpy.mock.calls[0][3]?.data.encryptedContent).toBe(
         'frozen-content',
@@ -4496,7 +4496,7 @@ describe('multirespondent-submission.service', () => {
           { isApproval: false, submittedAt: new Date().toISOString() },
         ],
       })
-      MockSnapshotStore.writeV4Snapshot.mockReturnValue(
+      MockSnapshotStore.writeSnapshot.mockReturnValue(
         okAsync({ token: 'winner-token', key: 'winner-key' }),
       )
 
@@ -4529,7 +4529,7 @@ describe('multirespondent-submission.service', () => {
       })
       await flushPromises()
 
-      expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+      expect(MockSnapshotStore.readSnapshot).not.toHaveBeenCalled()
       expect(sendSpy).toHaveBeenCalledTimes(1)
       expect(sendSpy.mock.calls[0][3]?.data.encryptedContent).toBe(
         'v4-encrypted-content',
@@ -4569,7 +4569,7 @@ describe('multirespondent-submission.service', () => {
         logMeta: { action: 'test' },
       })
 
-      expect(MockSnapshotStore.writeV4Snapshot).toHaveBeenCalledTimes(1)
+      expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
       expect(result.isErr()).toBe(true)
       expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseConflictError)
       expect(mapRouteError(result._unsafeUnwrapErr()).statusCode).toBe(409)
@@ -4595,7 +4595,7 @@ describe('multirespondent-submission.service', () => {
           { isApproval: false, submittedAt: new Date().toISOString() },
         ],
       })
-      MockSnapshotStore.writeV4Snapshot.mockReturnValueOnce(
+      MockSnapshotStore.writeSnapshot.mockReturnValueOnce(
         okAsync({ token: 'orphan-token-1', key: 'orphan-key-1' }),
       )
       const saveSpy = jest
@@ -4622,7 +4622,7 @@ describe('multirespondent-submission.service', () => {
       saveSpy.mockRestore()
 
       // Resubmit: a fresh write mints a NEW token, recorded on the row.
-      MockSnapshotStore.writeV4Snapshot.mockReturnValueOnce(
+      MockSnapshotStore.writeSnapshot.mockReturnValueOnce(
         okAsync({ token: 'orphan-token-2', key: 'orphan-key-2' }),
       )
       const resubmit = await updateMultiRespondentFormSubmission({

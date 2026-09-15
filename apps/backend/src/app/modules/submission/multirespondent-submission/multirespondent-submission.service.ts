@@ -77,7 +77,7 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 import { SnapshotWriteError } from './webhook/submission-snapshot.errors'
 import { buildV4Snapshot } from './webhook/submission-snapshot.producer'
 import { SubmissionSnapshotV4 } from './webhook/submission-snapshot.schema'
-import { writeV4Snapshot } from './webhook/submission-snapshot.store'
+import { writeSnapshot } from './webhook/submission-snapshot.store'
 import {
   getWebhookPayloadPolicy,
   mrfVersionToContentFormat,
@@ -900,7 +900,7 @@ export const createMultiRespondentFormSubmission = ({
 
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
         snapshot
-          ? writeV4Snapshot(snapshot).map(({ token }) => {
+          ? writeSnapshot(snapshot).map(({ token }) => {
               submittedStepMeta.snapshotTokens = { v4: token }
               return undefined
             })
@@ -1686,7 +1686,7 @@ export const updateMultiRespondentFormSubmission = ({
 
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
         snapshot
-          ? writeV4Snapshot(snapshot).map(({ token }) => {
+          ? writeSnapshot(snapshot).map(({ token }) => {
               submittedStepMeta.snapshotTokens = { v4: token }
               return undefined
             })
