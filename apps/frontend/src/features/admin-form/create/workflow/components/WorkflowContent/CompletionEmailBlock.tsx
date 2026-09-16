@@ -18,6 +18,7 @@ import {
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 
 import { getCompletionEmailRecipients } from './utils/getCompletionEmailRecipients'
+import { isCompletionEmailCardReachable } from './utils/isCompletionEmailCardReachable'
 import { ActiveCompletionEmailCard } from './ActiveCompletionEmailCard'
 import { EndOfWorkflowDivider } from './EndOfWorkflowDivider'
 import { InactiveCompletionEmailCard } from './InactiveCompletionEmailCard'
@@ -44,12 +45,13 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
     requestSwitchToEmailCardSelector,
   )
 
-  // Not an MRF form, so the card does not apply at all. Unreachable from the
-  // workflow tab, which only exists on MRF forms, but it narrows the union.
-  if (settings && settings.responseMode !== FormResponseMode.Multirespondent) {
-    return null
+  if (!isCompletionEmailCardReachable({ settings, isSettingsError: isError })) {
+    return settings ? null : <WorkflowCompletionMessageBlock />
   }
-  const mrfSettings: MultirespondentFormSettings | undefined = settings
+  const mrfSettings: MultirespondentFormSettings | undefined =
+    settings?.responseMode === FormResponseMode.Multirespondent
+      ? settings
+      : undefined
 
   const handleClick = () => {
     if (stateData) {
@@ -80,19 +82,6 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
         emailFormFields,
       })
     : null
-
-  // Settings failed rather than merely arrived late. `data` is undefined for
-  // both a request in flight and a failed one, so without this the card reads
-  // the failure as loading and skeletons indefinitely, with no error and no
-  // retry. Falls back to the message the flag-off path shows, which keeps a
-  // working link to Settings and needs no new copy.
-  //
-  // Gated on `recipients` too, not `isError` alone: react-query keeps the last
-  // successful `data` when a refetch fails, and a stale summary is more use
-  // than the fallback.
-  if (!recipients && isError) {
-    return <WorkflowCompletionMessageBlock />
-  }
 
   return (
     // Measured: only 16px sits below this card today, from the tab's own
