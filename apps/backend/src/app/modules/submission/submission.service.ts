@@ -15,6 +15,7 @@ import {
   SubmissionPaymentDto,
   SubmissionType,
 } from 'formsg-shared/types'
+import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
 import { StatusCodes } from 'http-status-codes'
 import omit from 'lodash/omit'
 import moment from 'moment'
@@ -719,9 +720,28 @@ export const addMrfMetadata = (): Transform => {
       callback,
     ) => {
       if (data.submissionType === SubmissionType.Multirespondent) {
-        const { workflow, workflowStep, submittedSteps, ...rest } = data
+        const {
+          workflow,
+          workflowStep,
+          submittedSteps,
+          myInfoReadOnlyFields,
+          form_fields,
+          ...rest
+        } = data
         const dataWithMrfMeta = {
           ...rest,
+          // The CSV header is built client-side from these titles, so the
+          // MyInfo question prefix is applied on the way out — the same rule
+          // over the same row field the individual response page uses, so an
+          // admin's download and their webhook never disagree.
+          // `myInfoReadOnlyFields` is destructured out above: it is the
+          // server's input to the prefix and is never shipped.
+          form_fields:
+            form_fields &&
+            applyMyInfoPrefixToFormFields(
+              form_fields,
+              myInfoReadOnlyFields ?? [],
+            ),
           mrfMeta: buildMrfMetadata({
             workflow,
             workflowStep,

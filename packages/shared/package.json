@@ -147,6 +147,10 @@
       "require": "./dist/utils/logic.js",
       "default": "./utils/logic.ts"
     },
+    "./utils/myinfo-prefix": {
+      "require": "./dist/utils/myinfo-prefix.js",
+      "default": "./utils/myinfo-prefix.ts"
+    },
     "./utils/nric-validation": {
       "require": "./dist/utils/nric-validation.js",
       "default": "./utils/nric-validation.ts"
