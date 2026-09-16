@@ -196,6 +196,13 @@ const workflow_step_2: FormWorkflowStepDto = {
   edit: [form_field_3._id, form_field_4._id],
 }
 
+const workflow_step_2_with_no_emails: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c701',
+  workflow_type: WorkflowType.Static,
+  emails: [],
+  edit: [form_field_3._id, form_field_4._id],
+}
+
 const workflow_step_2_with_deleted_field: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1cnkl',
   workflow_type: WorkflowType.Static,
@@ -341,6 +348,22 @@ Step3ApprovalFieldDeleted.parameters = {
         ],
       }),
     },
+  },
+}
+
+export const Step2NoEmails = Template.bind({})
+Step2NoEmails.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [workflow_step_1, workflow_step_2_with_no_emails],
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'A step saved with Specific emails selected but no email entered. The redesign lets an incomplete step be saved, so the card has to show the same missing-field error the other respondent types show.',
   },
 }
 
