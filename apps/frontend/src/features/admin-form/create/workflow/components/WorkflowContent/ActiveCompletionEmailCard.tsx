@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Box, Divider, Stack, Text } from '@chakra-ui/react'
@@ -22,13 +22,17 @@ import { useMutateFormSettings } from '~features/admin-form/settings/mutations'
 import {
   cancelPendingSwitchSelector,
   completeSaveSelector,
+  dismissCompletedStepSelector,
   pendingSwitchToSelector,
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
+import { useIsGuidedEmailCard } from '../../hooks/useIsGuidedEmailCard'
 import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
+import { GuidedSecondaryAction } from '../../utils/guidedStepPolicy'
 
 import { EditStepBlockContainer } from './EditStepBlock/EditStepBlockContainer'
+import { GuidedActionGroup } from './EditStepBlock/GuidedActionGroup'
 import { CompletionEmailLabel } from './CompletionEmailLabel'
 
 export interface ActiveCompletionEmailCardProps {
@@ -53,6 +57,12 @@ export const ActiveCompletionEmailCard = ({
   const pendingSwitchTo = useAdminWorkflowStore(pendingSwitchToSelector)
   const completeSave = useAdminWorkflowStore(completeSaveSelector)
   const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
+  const dismissCompletedStep = useAdminWorkflowStore(
+    dismissCompletedStepSelector,
+  )
+  const isGuidedEntry = useIsGuidedEmailCard()
+
+  const isGuided = isGuidedEntry && !isDisabled
 
   const { stepsToNotify, emails, stepOneEmailNotificationFieldId } = settings
   const { mutateMrfEmailNotifications } = useMutateFormSettings()
@@ -77,6 +87,11 @@ export const ActiveCompletionEmailCard = ({
   // Must be read during render for the Proxy to track it. See EditStepBlock.
   const { isDirty } = formMethods.formState
 
+  const handleSaved = useCallback(() => {
+    dismissCompletedStep()
+    completeSave()
+  }, [dismissCompletedStep, completeSave])
+
   const handleSubmit = formMethods.handleSubmit((inputs) => {
     const nextEmails = inputs[OTHER_PARTIES_EMAIL_INPUT_NAME]
     const nextStepsToNotify = inputs[WORKFLOW_EMAIL_MULTISELECT_NAME]
@@ -89,7 +104,7 @@ export const ActiveCompletionEmailCard = ({
       isEqual(nextStepsToNotify, stepsToNotify) &&
       nextStepOneEmailNotificationFieldId === stepOneEmailNotificationFieldId
     ) {
-      completeSave()
+      handleSaved()
       return
     }
 
@@ -100,7 +115,7 @@ export const ActiveCompletionEmailCard = ({
         stepOneEmailNotificationFieldId: nextStepOneEmailNotificationFieldId,
       },
       // onError drops the pending switch so a failed save can't redirect a later one.
-      { onSuccess: completeSave, onError: cancelPendingSwitch },
+      { onSuccess: handleSaved, onError: cancelPendingSwitch },
     )
   }, cancelPendingSwitch)
 
@@ -207,14 +222,24 @@ export const ActiveCompletionEmailCard = ({
         </Box>
       </EditStepBlockContainer>
       <Divider />
-      <SaveActionGroup
-        isLoading={isLoading}
-        isSubmitDisabled={isDisabled}
-        handleSubmit={handleSubmit}
-        handleCancel={setToInactive}
-        submitButtonLabel={undefined}
-        ariaLabelName="completion email"
-      />
+      {isGuided ? (
+        <GuidedActionGroup
+          secondaryAction={GuidedSecondaryAction.Cancel}
+          isOnLastSection
+          isLoading={isLoading}
+          onCancel={setToInactive}
+          onDone={handleSubmit}
+        />
+      ) : (
+        <SaveActionGroup
+          isLoading={isLoading}
+          isSubmitDisabled={isDisabled}
+          handleSubmit={handleSubmit}
+          handleCancel={setToInactive}
+          submitButtonLabel={undefined}
+          ariaLabelName="completion email"
+        />
+      )}
     </Stack>
   )
 }

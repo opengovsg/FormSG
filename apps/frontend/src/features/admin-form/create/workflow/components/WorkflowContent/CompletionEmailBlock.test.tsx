@@ -12,6 +12,11 @@ const { Active, SettingsError } = composeStories(cardStories)
 
 const SETTINGS_LINK = /email notifications/i
 const DIVIDER = /end of workflow/i
+const STEP_ONE_DONE = /step 1 is the public-facing step/i
+const DECLINE = { name: /no, i'm done/i }
+const DONE = { name: /^done$/i }
+const CANCEL = { name: /^cancel$/i }
+const SAVE = { name: /save changes/i }
 
 describe('completion email seam', () => {
   // jsdom does not implement scrollIntoView, which the expanded card calls.
@@ -144,5 +149,80 @@ describe('completion email seam', () => {
     expect(
       await screen.findByText(/emails successfully updated/i),
     ).toBeInTheDocument()
+  })
+})
+
+describe('guided handover to the completion email card', () => {
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = vi.fn()
+  })
+
+  afterAll(() => {
+    delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>)
+      .scrollIntoView
+  })
+
+  afterEach(() => useAdminWorkflowStore.getState().reset())
+
+  const declineAnotherStep = async () => {
+    await act(async () => {
+      render(<WithWorkflowRedesignOn />)
+    })
+    await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
+    await act(async () => {
+      useAdminWorkflowStore.getState().setCompletedStep(0)
+    })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', DECLINE))
+    })
+  }
+
+  it('opens the card with the guided actions rather than Save changes', async () => {
+    await declineAnotherStep()
+
+    expect(await screen.findByRole('button', DONE)).toBeInTheDocument()
+    expect(screen.queryByRole('button', SAVE)).not.toBeInTheDocument()
+  })
+
+  it('returns to the report it came from when the admin cancels', async () => {
+    await declineAnotherStep()
+    await screen.findByRole('button', DONE)
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', CANCEL))
+    })
+
+    expect(await screen.findByText(STEP_ONE_DONE)).toBeInTheDocument()
+  })
+
+  it('ends the flow when the admin is done, so the report does not return', async () => {
+    await declineAnotherStep()
+
+    await act(async () => {
+      fireEvent.click(await screen.findByRole('button', DONE))
+    })
+
+    await waitFor(() =>
+      expect(useAdminWorkflowStore.getState().createOrEditData).toBeNull(),
+    )
+    expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
+  })
+
+  it('keeps Save changes when the card is opened on its own', async () => {
+    await act(async () => {
+      render(<WithWorkflowRedesignOn />)
+    })
+    const card = await screen.findByRole(
+      'button',
+      { name: /completion email/i },
+      { timeout: 10000 },
+    )
+
+    await act(async () => {
+      fireEvent.click(card)
+    })
+
+    expect(await screen.findByRole('button', SAVE)).toBeInTheDocument()
+    expect(screen.queryByRole('button', DONE)).not.toBeInTheDocument()
   })
 })
