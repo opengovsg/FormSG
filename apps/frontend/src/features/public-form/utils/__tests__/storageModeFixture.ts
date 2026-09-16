@@ -1,3 +1,5 @@
+import { times } from 'lodash'
+
 import {
   BasicField,
   FormFieldDto,
@@ -176,18 +178,76 @@ export const buildAnsweredInputs = (): FormFieldValues => {
   return inputs as FormFieldValues
 }
 
-/** Every field left untouched — the unanswered path. */
-export const buildUnansweredInputs = (): FormFieldValues =>
-  ({}) as FormFieldValues
+/**
+ * Every field rendered and left untouched, as react-hook-form actually holds
+ * it. `{}` — what this returned while the frozen snapshots were keyed off it —
+ * is a state no respondent's browser can be in, and it hid two parity gaps:
+ * with no key at all, both producers take their `input === undefined` branch
+ * and agree by default.
+ *
+ * `PublicFormProvider.tsx:339-349` seeds every field id with `''`, except a
+ * table, which is seeded with `minimumRows` blank rows because `useFieldArray`
+ * needs them to render its columns. A field component then overwrites that on
+ * mount wherever its own `Controller` carries a `defaultValue`:
+ *
+ * - Address — six subfield `Controller`s at `${_id}.addressSubFields.*`, each
+ *   `defaultValue=""` (`AddressField.tsx:160,209,240,275,304,331`), so the
+ *   field ends up a present object of empty strings.
+ * - Email — one `Controller` on the field id itself, `defaultValue={{ value:
+ *   '' }}` (`EmailFieldInput.tsx:65`).
+ * - Radio — a `Controller` on `${_id}.value`, `defaultValue=""`
+ *   (`RadioField.tsx:92`).
+ *
+ * Every other type carries no mount-time default and keeps the `''`. Mobile in
+ * particular does not (`MobileFieldInput.tsx:46-49` has no `defaultValue`),
+ * which is why it is absent from the list above rather than paired with Email.
+ */
+const blankTableRow = (): Record<string, string> =>
+  Object.fromEntries(TABLE_COLUMN_IDS.map((_id) => [_id, '']))
+
+const untouchedInput = (fieldType: BasicField): unknown => {
+  switch (fieldType) {
+    case BasicField.Table:
+      return times(TABLE_MINIMUM_ROWS, blankTableRow)
+    case BasicField.Address:
+      return {
+        addressSubFields: {
+          postalCode: '',
+          blockNumber: '',
+          streetName: '',
+          buildingName: '',
+          levelNumber: '',
+          unitNumber: '',
+        },
+      }
+    case BasicField.Email:
+      return { value: '' }
+    case BasicField.Radio:
+      return { value: '' }
+    default:
+      return ''
+  }
+}
+
+export const buildUnansweredInputs = (): FormFieldValues => {
+  const inputs: Record<string, unknown> = {}
+  for (const fieldType of ALL_FIELD_TYPES) {
+    inputs[FIELD_IDS[fieldType]] = untouchedInput(fieldType)
+  }
+  for (const fieldType of VERIFIABLE_FIELD_TYPES) {
+    inputs[VERIFIABLE_FIELD_IDS[fieldType]] = untouchedInput(fieldType)
+  }
+  return inputs as FormFieldValues
+}
 
 /* -------------------------------------------------------------------------- *
  * Differential (V4 -> V1 byte-parity) additions — #9984
  *
  * Everything below is additive. The exports above were frozen while the
  * `[STEERING:T2a]` no-op snapshots were keyed off them. Those snapshots and
- * that gate are gone, so the freeze is lifted — `buildUnansweredInputs` in
- * particular still returns `{}`, which is NOT what React Hook Form holds for a
- * rendered-but-untouched field, and correcting it is now allowed.
+ * that gate are gone, so the freeze is lifted — `buildUnansweredInputs` has
+ * since been corrected in place to return what React Hook Form really holds
+ * for a rendered-but-untouched field, which `{}` never was.
  *
  * The differential gate needs a stricter fixture than the snapshot does,
  * because its reference value runs through the server's `validateField`. The
@@ -400,6 +460,30 @@ export const buildDifferentialInputs = (
   }
   return inputs as FormFieldValues
 }
+
+/**
+ * A table the respondent added rows to and then submitted blank.
+ *
+ * `minimumRows` blank rows is the state `buildUnansweredInputs` already
+ * covers, and both producers agree on it. What they do not agree on is a row
+ * count the V4 wire cannot carry: `createResponsesV4` drops a table whose
+ * every cell is falsy, so the flatten only ever re-synthesises `minimumRows`
+ * rows, while the storage-mode producer keeps one row per row the respondent
+ * had on screen. The field needs `addMoreRows` for that state to be reachable
+ * at all — the frozen definition declares it `false`.
+ */
+export const buildAddMoreRowsTableField = (): FormFieldDto =>
+  ({
+    ...buildOptionalDifferentialField(BasicField.Table),
+    addMoreRows: true,
+  }) as unknown as FormFieldDto
+
+export const ADDED_TABLE_ROWS = TABLE_MINIMUM_ROWS + 1
+
+export const buildBlankTableInputWithAddedRows = (): FormFieldValues =>
+  ({
+    [FIELD_IDS[BasicField.Table]]: times(ADDED_TABLE_ROWS, blankTableRow),
+  }) as unknown as FormFieldValues
 
 /**
  * The attachment upload is mediated by the quarantine bucket on both submit
