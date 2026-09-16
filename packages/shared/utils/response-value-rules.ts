@@ -6,7 +6,11 @@ import {
   CLIENT_CHECKBOX_OTHERS_INPUT_VALUE,
   CLIENT_RADIO_OTHERS_INPUT_VALUE,
 } from '../constants/form'
-import { AddressAttributes, FormFieldDto, SignatureVectorArray } from '../types/field'
+import {
+  AddressAttributes,
+  FormFieldDto,
+  SignatureVectorArray,
+} from '../types/field'
 import { TableRow } from '../types/response'
 
 import { removeAt } from './immutable-array-fns'
@@ -250,6 +254,7 @@ export const computeAddressAnswerValue = (
   }
 }
 
-export const throwUnsupportedFieldType = (field: FormFieldDto): never => {
-  throw new Error(`Unsupported field type: ${field.fieldType} for field id: ${field._id}`)
+export const throwUnsupportedFieldType = (field: never): never => {
+  const { fieldType, _id } = field as FormFieldDto
+  throw new Error(`Unsupported field type: ${fieldType} for field id: ${_id}`)
 }

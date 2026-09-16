@@ -319,8 +319,13 @@ describe('response value rules', () => {
   describe('throwUnsupportedFieldType', () => {
     it('throws so an unclassified field type cannot be silently dropped', () => {
       expect(() =>
-        throwUnsupportedFieldType({ fieldType: 'not_a_field_type' } as never),
-      ).toThrow('Unsupported field type: [object Object]')
+        throwUnsupportedFieldType({
+          _id: '000000000000000000000001',
+          fieldType: 'not_a_field_type',
+        } as never),
+      ).toThrow(
+        'Unsupported field type: not_a_field_type for field id: 000000000000000000000001',
+      )
     })
   })
 })
