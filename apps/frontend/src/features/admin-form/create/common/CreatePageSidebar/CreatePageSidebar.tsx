@@ -147,108 +147,112 @@ export const CreatePageSidebar = (): JSX.Element | null => {
 
   const collapseLabel = isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
   const collapseToggle = !isMobile ? null : (
-    <Box
-      pos="fixed"
-      bottom="1rem"
-      left="0.5rem"
-      zIndex="docked"
-      data-testid="sidebar-collapse-toggle"
-    >
-      <Tooltip label={collapseLabel} placement="right">
-        <IconButton
-          variant="solid"
-          colorScheme="subtle"
-          size="lg"
-          alignSelf="center"
-          icon={isCollapsed ? <BiChevronsRight /> : <BiChevronsLeft />}
-          borderRadius="full"
-          aria-label={collapseLabel}
-          data-dd-action-name="create_builder.sidebar.toggle_collapse"
-          onClick={() => setWantsCollapsed((wasCollapsed) => !wasCollapsed)}
-        />
-      </Tooltip>
-    </Box>
+    <Tooltip label={collapseLabel} placement="right">
+      <IconButton
+        variant="solid"
+        colorScheme="subtle"
+        size="lg"
+        alignSelf="center"
+        icon={isCollapsed ? <BiChevronsRight /> : <BiChevronsLeft />}
+        borderRadius="full"
+        aria-label={collapseLabel}
+        data-dd-action-name="create_builder.sidebar.toggle_collapse"
+        onClick={() => setWantsCollapsed((wasCollapsed) => !wasCollapsed)}
+      />
+    </Tooltip>
   )
 
-  if (isCollapsed) return collapseToggle
+  if (isCollapsed) {
+    return (
+      <Box
+        pos="fixed"
+        bottom="1rem"
+        left="0.5rem"
+        zIndex="docked"
+        data-testid="sidebar-collapse-toggle"
+      >
+        {collapseToggle}
+      </Box>
+    )
+  }
 
   return (
-    <>
-      <Stack
-        ref={sidebarRef}
-        bg="white"
-        pos="sticky"
-        top={0}
-        px={showNavLabels ? '0.75rem' : '0.5rem'}
-        py="1rem"
-        borderRight="1px solid"
-        borderColor="neutral.300"
-        direction="column"
-        justifyContent="space-between"
-      >
-        <Stack spacing={showNavLabels ? '1rem' : '0.5rem'}>
-          <DrawerTabIcon
-            label={t('features.adminForm.sidebar.fields.builder.addFields')}
-            navLabel={
-              showNavLabels
-                ? t('features.adminForm.sidebar.navLabels.fields')
-                : undefined
-            }
-            trackingLabel="create_builder.drawer_tab.add_fields"
-            icon={<BxsWidget fontSize="1.5rem" />}
-            onClick={handleDrawerBuilderClick}
-            isActive={activeTab === DrawerTabs.Builder}
-            id={FEATURE_TOUR_IDS[0].id}
-          />
-          <DrawerTabIcon
-            label={t('features.adminForm.sidebar.headerAndInstructions.title')}
-            navLabel={
-              showNavLabels
-                ? t('features.adminForm.sidebar.navLabels.header')
-                : undefined
-            }
-            trackingLabel="create_builder.drawer_tab.edit_header"
-            icon={<BxsDockTop fontSize="1.5rem" />}
-            onClick={handleDrawerDesignClick}
-            isActive={activeTab === DrawerTabs.Design}
-            id={FEATURE_TOUR_IDS[1].id}
-          />
-          {/* Treatment slots Workflow into the middle, after Header. */}
-          {showNavLabels && workflowTab}
-          <DrawerTabIcon
-            label={t('features.adminForm.sidebar.logic.addLogicBtn')}
-            navLabel={
-              showNavLabels
-                ? t('features.adminForm.sidebar.navLabels.logic')
-                : undefined
-            }
-            trackingLabel="create_builder.drawer_tab.add_logic"
-            icon={<BiGitMerge fontSize="1.5rem" />}
-            onClick={handleDrawerLogicClick}
-            isActive={activeTab === DrawerTabs.Logic}
-            id={FEATURE_TOUR_IDS[2].id}
-          />
-          <DrawerTabIcon
-            label={t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
-            navLabel={
-              showNavLabels
-                ? t('features.adminForm.sidebar.navLabels.thankYou')
-                : undefined
-            }
-            trackingLabel="create_builder.drawer_tab.edit_thank_you_page"
-            icon={<PhHandsClapping fontSize="1.5rem" />}
-            onClick={handleDrawerEndpageClick}
-            isActive={activeTab === DrawerTabs.EndPage}
-            id={FEATURE_TOUR_IDS[3].id}
-          />
-          {/* Control keeps production's layout: Workflow at the bottom, below a divider. */}
-          {!showNavLabels && isMrf && (
-            <>
-              <Divider />
-              {workflowTab}
-            </>
-          )}
-        </Stack>
+    <Stack
+      ref={sidebarRef}
+      bg="white"
+      pos="sticky"
+      top={0}
+      px={showNavLabels ? '0.75rem' : '0.5rem'}
+      py="1rem"
+      borderRight="1px solid"
+      borderColor="neutral.300"
+      direction="column"
+      justifyContent="space-between"
+    >
+      <Stack spacing={showNavLabels ? '1rem' : '0.5rem'}>
+        <DrawerTabIcon
+          label={t('features.adminForm.sidebar.fields.builder.addFields')}
+          navLabel={
+            showNavLabels
+              ? t('features.adminForm.sidebar.navLabels.fields')
+              : undefined
+          }
+          trackingLabel="create_builder.drawer_tab.add_fields"
+          icon={<BxsWidget fontSize="1.5rem" />}
+          onClick={handleDrawerBuilderClick}
+          isActive={activeTab === DrawerTabs.Builder}
+          id={FEATURE_TOUR_IDS[0].id}
+        />
+        <DrawerTabIcon
+          label={t('features.adminForm.sidebar.headerAndInstructions.title')}
+          navLabel={
+            showNavLabels
+              ? t('features.adminForm.sidebar.navLabels.header')
+              : undefined
+          }
+          trackingLabel="create_builder.drawer_tab.edit_header"
+          icon={<BxsDockTop fontSize="1.5rem" />}
+          onClick={handleDrawerDesignClick}
+          isActive={activeTab === DrawerTabs.Design}
+          id={FEATURE_TOUR_IDS[1].id}
+        />
+        {/* Treatment slots Workflow into the middle, after Header. */}
+        {showNavLabels && workflowTab}
+        <DrawerTabIcon
+          label={t('features.adminForm.sidebar.logic.addLogicBtn')}
+          navLabel={
+            showNavLabels
+              ? t('features.adminForm.sidebar.navLabels.logic')
+              : undefined
+          }
+          trackingLabel="create_builder.drawer_tab.add_logic"
+          icon={<BiGitMerge fontSize="1.5rem" />}
+          onClick={handleDrawerLogicClick}
+          isActive={activeTab === DrawerTabs.Logic}
+          id={FEATURE_TOUR_IDS[2].id}
+        />
+        <DrawerTabIcon
+          label={t('features.adminForm.sidebar.thankYou.thankYouPage.title')}
+          navLabel={
+            showNavLabels
+              ? t('features.adminForm.sidebar.navLabels.thankYou')
+              : undefined
+          }
+          trackingLabel="create_builder.drawer_tab.edit_thank_you_page"
+          icon={<PhHandsClapping fontSize="1.5rem" />}
+          onClick={handleDrawerEndpageClick}
+          isActive={activeTab === DrawerTabs.EndPage}
+          id={FEATURE_TOUR_IDS[3].id}
+        />
+        {/* Control keeps production's layout: Workflow at the bottom, below a divider. */}
+        {!showNavLabels && isMrf && (
+          <>
+            <Divider />
+            {workflowTab}
+          </>
+        )}
+      </Stack>
+      <Stack spacing="0.5rem">
         <Tooltip label="Help" placement="right">
           <IconButton
             variant="solid"
@@ -266,8 +270,8 @@ export const CreatePageSidebar = (): JSX.Element | null => {
             }}
           />
         </Tooltip>
+        {collapseToggle}
       </Stack>
-      {collapseToggle}
-    </>
+    </Stack>
   )
 }
