@@ -11,7 +11,6 @@ export const featureFlags = {
   ogpSuiteSso: 'ogp-suite-sso' as const,
   enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
-  useFormsgEsrvcId: 'use-formsg-esrvcid' as const,
   spcpOidcPkce: 'spcp-oidc-pkce' as const,
   spcpOidcStateNonce: 'spcp-oidc-state-nonce' as const,
   lambdaPdfGeneration: 'lambda-pdf-generation' as const,
@@ -36,7 +35,6 @@ export const featureFlags = {
   workflowBuilderRedesign: 'workflow-builder-redesign' as const,
   formIdJson: 'formid-json' as const,
   mrfPayments: 'mrf-payments' as const,
-  myinfoFapi: 'myinfo-fapi' as const,
   workflowDeletion: 'workflow-deletion' as const,
   scheduledFormClosure: 'scheduled-form-closure' as const,
 }
