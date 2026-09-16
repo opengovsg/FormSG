@@ -163,6 +163,10 @@
       "require": "./dist/utils/phone-num-validation.js",
       "default": "./utils/phone-num-validation.ts"
     },
+    "./utils/response-value-rules": {
+      "require": "./dist/utils/response-value-rules.js",
+      "default": "./utils/response-value-rules.ts"
+    },
     "./utils/signature": {
       "require": "./dist/utils/signature.js",
       "default": "./utils/signature.ts"
@@ -178,6 +182,10 @@
     "./utils/strip-workflow-emails": {
       "require": "./dist/utils/strip-workflow-emails.js",
       "default": "./utils/strip-workflow-emails.ts"
+    },
+    "./utils/validate-responses": {
+      "require": "./dist/utils/validate-responses.js",
+      "default": "./utils/validate-responses.ts"
     },
     "./utils/uen-validation": {
       "require": "./dist/utils/uen-validation.js",
