@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 import * as pageStories from '../../../CreatePageWorkflowTab.stories'
+import { AdminEditWorkflowState } from '../../../types'
 import { SPOTLIGHT_TEST_ID } from '../../Spotlight'
 
 const {
@@ -218,5 +219,32 @@ describe('what an unfinished step is allowed to save as', () => {
 
     expect(await screen.findByText(NO_RESPONDENT_TYPE)).toBeInTheDocument()
     expect(screen.getByText(NO_YES_NO_FIELD)).toBeInTheDocument()
+  })
+})
+
+describe('a guided step card that has not reached its last section', () => {
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = vi.fn()
+  })
+
+  afterAll(() => {
+    delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>)
+      .scrollIntoView
+  })
+
+  afterEach(() => useAdminWorkflowStore.getState().reset())
+
+  it('stays put when another step is clicked, rather than saving a half step', async () => {
+    await openNewStepCard(WithWorkflowRedesignOn)
+
+    await act(async () => {
+      useAdminWorkflowStore.getState().requestSwitchTo(0)
+    })
+
+    expect(useAdminWorkflowStore.getState().pendingSwitchTo).toBeNull()
+    expect(useAdminWorkflowStore.getState().createOrEditData).toEqual({
+      state: AdminEditWorkflowState.CreatingStep,
+    })
+    expect(await findOpenCard()).toBeInTheDocument()
   })
 })
