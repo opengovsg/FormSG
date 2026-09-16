@@ -181,9 +181,11 @@ const buildEntry = (
         ...computeSignatureAnswerValue(answer as SignatureAnswerV4),
       }
     case BasicField.Children:
-      // RATIONALE: Currently, no MRF form should have a Children field, 
-      // so support is out of scope. 
-      return throwUnsupportedFieldType(field)
+      // RATIONALE: Currently, no MRF form should have a Children field,
+      // so support is out of scope.
+      throw new Error(
+        `Unsupported field type: ${field.fieldType} for field id: ${field._id}`,
+      )
     case BasicField.Number:
     case BasicField.Decimal:
     case BasicField.ShortText:

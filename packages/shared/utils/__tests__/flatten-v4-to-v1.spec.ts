@@ -93,15 +93,14 @@ describe('exhaustiveness', () => {
   })
 
   it('throws on an unknown field type rather than emitting an entry', () => {
-    expect(
-      () =>
-        flattenV4ToFormFields({
-          v4Responses: {},
-          formFields: [shortTextField({ fieldType: 'a_field_type_from_2030' })],
-        }),
-      // The shared helper takes `never`, so it can only stringify the field it
-      // was handed; the throw itself is the contract, not the wording.
-    ).toThrow('Unsupported field type')
+    expect(() =>
+      flattenV4ToFormFields({
+        v4Responses: {},
+        formFields: [shortTextField({ fieldType: 'a_field_type_from_2030' })],
+      }),
+    ).toThrow(
+      'Unsupported field type: a_field_type_from_2030 for field id: 000000000000000000000001',
+    )
   })
 
   it('routes its default through the `never` check, so a new BasicField member breaks the build', () => {
