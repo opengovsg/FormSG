@@ -332,6 +332,28 @@ Step3Approval.parameters = {
   },
 }
 
+export const Step3ApprovalRedesignOn = Template.bind({})
+Step3ApprovalRedesignOn.decorators = [withRedesignOn]
+Step3ApprovalRedesignOn.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
+        workflow: [
+          workflow_step_1,
+          workflow_step_2,
+          workflow_step_3_with_approval,
+        ],
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'A step whose approval field is already chosen, on a closed form. Toggling the approval off and on again puts the same field back.',
+  },
+}
+
 export const Step3ApprovalFieldDeleted = Template.bind({})
 Step3ApprovalFieldDeleted.parameters = {
   msw: {

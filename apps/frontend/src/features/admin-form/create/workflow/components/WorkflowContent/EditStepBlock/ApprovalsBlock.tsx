@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl } from '@chakra-ui/react'
@@ -70,9 +70,30 @@ export const ApprovalsBlock = ({
     })
     .filter(Boolean)
 
+  const lastChosenApprovalField = useRef(selectedApprovalField ?? '')
+
+  const assignApprovalFieldToStep = (approvalFieldId: string) => {
+    const currentEdit = getValues(FIELDS_TO_EDIT_NAME) ?? []
+    const nextEdit = nextEditFieldsForApproval({
+      edit: currentEdit,
+      approvalFieldId,
+      isEnabled: isRedesign,
+    })
+    if (nextEdit !== currentEdit) {
+      setValue(FIELDS_TO_EDIT_NAME, nextEdit, { shouldDirty: true })
+    }
+  }
+
   const onApprovalToggleChange = () => {
     const nextIsApprovalToggleChecked = !isApprovalToggleChecked
-    if (!nextIsApprovalToggleChecked) {
+    if (nextIsApprovalToggleChecked) {
+      const remembered = lastChosenApprovalField.current
+      if (remembered && yesNoFieldIds.includes(remembered)) {
+        assignApprovalFieldToStep(remembered)
+        setValue(APPROVAL_FIELD_NAME, remembered, { shouldDirty: true })
+      }
+    } else {
+      lastChosenApprovalField.current = getValues(APPROVAL_FIELD_NAME) ?? ''
       setValue(APPROVAL_FIELD_NAME, '', { shouldDirty: true })
       clearErrors(APPROVAL_FIELD_NAME)
     }
@@ -167,15 +188,7 @@ export const ApprovalsBlock = ({
                 )
               }
               const handleApprovalFieldChange = (newValue: string) => {
-                const currentEdit = getValues(FIELDS_TO_EDIT_NAME) ?? []
-                const nextEdit = nextEditFieldsForApproval({
-                  edit: currentEdit,
-                  approvalFieldId: newValue,
-                  isEnabled: isRedesign,
-                })
-                if (nextEdit !== currentEdit) {
-                  setValue(FIELDS_TO_EDIT_NAME, nextEdit, { shouldDirty: true })
-                }
+                assignApprovalFieldToStep(newValue)
                 onChange(newValue)
               }
               return (
