@@ -1,20 +1,18 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
+import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
+import { createHmac } from 'crypto'
 import { FormAuthType, FormStatus } from 'formsg-shared/types'
 import jwt from 'jsonwebtoken'
-import { errAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
-import {
-  MOCK_ACCESS_TOKEN,
-  MOCK_AUTH_CODE,
-  MOCK_MYINFO_JWT,
-} from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
-import { MYINFO_AUTH_CODE_COOKIE_NAME } from 'src/app/modules/myinfo/myinfo.constants'
-import { MyInfoAuthCodeCookieState } from 'src/app/modules/myinfo/myinfo.types'
+import { MOCK_MYINFO_JWT } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
+import { MYINFO_FAPI_SESSION_COOKIE_NAME } from 'src/app/modules/myinfo/fapi/myinfo.fapi.constants'
+import * as MyInfoFapiService from 'src/app/modules/myinfo/fapi/myinfo.fapi.service'
+import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
 
 import * as AuthService from '../../../../../modules/auth/auth.service'
 import {
@@ -32,28 +30,18 @@ const MockCpOidcClient = jest.mocked(CpOidcClient)
 jest.mock('jsonwebtoken')
 const MockJwtLib = jest.mocked(jwt)
 
-jest.mock('@opengovsg/myinfo-gov-client', () => {
-  return {
-    MyInfoGovClient: jest.fn().mockReturnValue({
-      extractUinFin: jest.fn(),
-      getPerson: jest.fn(),
-      getAccessToken: jest.fn(),
-    }),
-    MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
-    MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client')
-      .MyInfoSource,
-    MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
-      .MyInfoAddressType,
-    MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
-      .MyInfoAttribute,
-  }
-})
-
-const MockMyInfoGovClient = jest.mocked(
-  new MyInfoClient.MyInfoGovClient({} as IMyInfoConfig),
-)
+jest.mock('src/app/modules/myinfo/fapi/myinfo.fapi.service')
+const MockMyInfoFapiService = jest.mocked(MyInfoFapiService)
 
 const app = setupApp('/forms', PublicFormsRouter)
+const MOCK_FAPI_SESSION_ID = 'mock-fapi-session-id'
+const MOCK_SIGNED_FAPI_COOKIE = `${MYINFO_FAPI_SESSION_COOKIE_NAME}=s:${MOCK_FAPI_SESSION_ID}.${createHmac(
+  'sha256',
+  'test-session-secret',
+)
+  .update(MOCK_FAPI_SESSION_ID)
+  .digest('base64')
+  .replace(/=+$/, '')}`
 
 describe('public-form.form.routes', () => {
   let request: Session
@@ -179,13 +167,14 @@ describe('public-form.form.routes', () => {
     })
     it('should return 200 with public form when form has FormAuthType.MyInfo and valid formId', async () => {
       // Arrange
-      MockMyInfoGovClient.getAccessToken.mockResolvedValueOnce(
-        MOCK_ACCESS_TOKEN,
+      MockMyInfoFapiService.loadPersonForSession.mockReturnValueOnce(
+        okAsync(
+          new MyInfoData({
+            uinFin: MOCK_UINFIN,
+            data: {},
+          } as IPersonResponse),
+        ),
       )
-      MockMyInfoGovClient.getPerson.mockResolvedValueOnce({
-        uinFin: MOCK_UINFIN,
-        data: {},
-      })
       // Ignore TS error because .sign has multiple overloads
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
@@ -209,20 +198,11 @@ describe('public-form.form.routes', () => {
           isIntranetUser: false,
         }),
       )
-      const authCodeCookie = JSON.stringify({
-        authCode: MOCK_AUTH_CODE,
-        state: MyInfoAuthCodeCookieState.Success,
-      })
 
       // Act
       const actualResponse = await request
         .get(`/forms/${form._id}`)
-        .set('Cookie', [
-          // The j: indicates that the cookie is in JSON
-          `${MYINFO_AUTH_CODE_COOKIE_NAME}=j:${encodeURIComponent(
-            authCodeCookie,
-          )}`,
-        ])
+        .set('Cookie', [MOCK_SIGNED_FAPI_COOKIE])
 
       // Assert
       expect(actualResponse.status).toEqual(200)
@@ -231,10 +211,6 @@ describe('public-form.form.routes', () => {
 
     it('should return 404 if the form does not exist', async () => {
       // Arrange
-      const cookie = JSON.stringify({
-        authCode: MOCK_AUTH_CODE,
-        state: MyInfoAuthCodeCookieState.Success,
-      })
       const MOCK_FORM_ID = new ObjectId().toHexString()
       const expectedResponseBody = JSON.parse(
         JSON.stringify({
@@ -243,12 +219,7 @@ describe('public-form.form.routes', () => {
       )
 
       // Act
-      const actualResponse = await request
-        .get(`/forms/${MOCK_FORM_ID}`)
-        .set('Cookie', [
-          // The j: indicates that the cookie is in JSON
-          `${MYINFO_AUTH_CODE_COOKIE_NAME}=j:${encodeURIComponent(cookie)}`,
-        ])
+      const actualResponse = await request.get(`/forms/${MOCK_FORM_ID}`)
 
       // Assert
       expect(actualResponse.status).toEqual(404)
