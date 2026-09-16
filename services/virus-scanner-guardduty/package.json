@@ -9,7 +9,8 @@
     "tsc": "tsc",
     "dev": "pnpm run env && docker-compose -f docker-compose.dev.yml up --build",
     "deploy": "pnpm run env && sls deploy --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\" --conceal",
-    "package": "pnpm run env && sls package --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\""
+    "package": "pnpm run env && sls package --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\"",
+    "test": "dotenv -e .env.development -- jest"
   },
   "author": "",
   "license": "ISC",
