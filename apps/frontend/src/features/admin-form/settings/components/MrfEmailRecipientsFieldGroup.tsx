@@ -35,14 +35,11 @@ export interface MrfEmailRecipientControlProps {
   isDisabled: boolean
   isHighContrast: boolean
   otherPartiesPlaceholder?: string
-  /** Settings dedupes then submits here; the card only dedupes. */
   onOtherPartiesBlur: () => void
-  /** Settings submits here; the card passes nothing. */
   onSelectBlur?: () => void
 }
 
 export interface MrfEmailRecipientsFieldGroupProps extends MrfEmailRecipientControlProps {
-  /** Sits above the first control, sharing its wrapper. */
   heading?: ReactNode
 }
 
@@ -54,9 +51,6 @@ const OtherPartiesRecipientControl = ({
   onOtherPartiesBlur,
 }: MrfEmailRecipientControlProps): JSX.Element => {
   const { t } = useTranslation()
-  // Subscribed here rather than taken as a prop: RHF's formState is a Proxy that
-  // only tracks what is read during render, so a consumer that forgot to read
-  // errors would silently pass stale ones.
   const { errors } = useFormState({
     control,
     name: OTHER_PARTIES_EMAIL_INPUT_NAME,
@@ -232,11 +226,6 @@ const WorkflowStepsRecipientControl = ({
   )
 }
 
-/**
- * The recipient controls that apply to this form, in order, each rendered
- * without spacing of its own so a caller can lay them out or spotlight them
- * one at a time.
- */
 export const useMrfEmailRecipientControls = (
   props: MrfEmailRecipientControlProps,
 ): JSX.Element[] => {
@@ -254,15 +243,6 @@ export const useMrfEmailRecipientControls = (
   ]
 }
 
-/**
- * The MRF completion email recipient controls, without any form or mutation of
- * their own. Shared by Settings > Email notifications and the completion email
- * card on the workflow tab, so the two cannot drift.
- *
- * Save behaviour is injected rather than baked in: the two consumers commit at
- * different moments. Everything else, including which controls appear at which
- * workflow step count, is identical by construction.
- */
 export const MrfEmailRecipientsFieldGroup = ({
   heading,
   ...controlProps

@@ -239,7 +239,7 @@ GuidedActive.parameters = {
   docs: {
     description: {
       story:
-        'Reached by declining another step on a peek card. Cancel returns to that peek card rather than collapsing, so Save changes is replaced by the guided Cancel and Done pair the step cards use.',
+        'Reached by declining another step on a peek card. Opens on the first recipient section, with a spotlight band on it and the rest revealed one Continue at a time. Cancel on the first section returns to that peek card.',
     },
   },
 }
