@@ -183,7 +183,9 @@ export const ApprovalsBlock = ({
                     actionLabel={t(
                       'features.adminForm.sidebar.workflow.emptyStates.noYesNoFieldAction',
                     )}
-                    onAction={() => stageFieldAndNavigate(BasicField.YesNo)}
+                    onAction={() =>
+                      stageFieldAndNavigate(BasicField.YesNo, getValues())
+                    }
                   />
                 )
               }

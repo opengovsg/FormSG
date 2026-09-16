@@ -40,17 +40,16 @@ export const QuestionsBlock = ({
     control,
     watch,
     trigger,
+    getValues,
   } = formMethods
   const selectedApprovalField = watch(APPROVAL_FIELD_NAME)
 
-  // Only retain actual inputs (exclude header, statement, image)
   const fillableFields = formFields.filter(
     (f) => !NON_RESPONSE_FIELD_SET.has(f.fieldType),
   )
 
   const items = fillableFields
     // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
-    // supported in workflow steps >= 2.
     .filter((f) => !('myInfo' in f) || isFirstStep)
     .map((f) => ({
       value: f._id,
@@ -102,12 +101,10 @@ export const QuestionsBlock = ({
                   actionLabel={t(
                     'features.adminForm.sidebar.workflow.emptyStates.noFieldsAction',
                   )}
-                  onAction={() => stageFieldAndNavigate()}
+                  onAction={() => stageFieldAndNavigate(undefined, getValues())}
                 />
               )
             }
-            // Re-validate approval_field as soon as `edit` changes, so removing
-            // the auto-added chip errors inline rather than at save.
             const handleFieldsChange = (newValue: string[]) => {
               onChange(newValue)
               if (isRedesign && selectedApprovalField) {
