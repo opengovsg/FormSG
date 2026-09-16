@@ -2,6 +2,7 @@ import {
   AddressAnswerV4,
   AttachmentAnswerV4,
   CheckboxAnswerV4,
+  ChildrenAnswerV4,
   FieldResponsesV4,
   GENERIC_STRING_FIELD_TYPES as SDK_GENERIC_STRING_FIELD_TYPES,
   RadioAnswerV4,
@@ -13,7 +14,8 @@ import {
 import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
-import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
+import { BasicField, FormFieldDto, MyInfoAttribute } from 'formsg-shared/types'
 
 import { transformInputsToOutputs } from '~features/public-form/utils/inputTransformation'
 
@@ -33,6 +35,37 @@ const ADDRESS_FIELD_ORDER = [
   'unitNumber',
   'postalCode',
 ] as const
+
+/**
+ * Explodes a Children field into one FormField per child attribute, matching
+ * how encrypt mode stores children (the BE's formatMyInfoStorageResponseData
+ * → getAnswersForChild explodes them before encryption), so MRF CSVs get the
+ * same per-attribute columns with the same synthetic ids and questions.
+ * A missing answer yields empty per-attribute entries for one child, matching
+ * encrypt mode's always-present (possibly all-empty) children response.
+ */
+const explodeChildrenToFormFields = (
+  ff: FormFieldDto & { fieldType: BasicField.Children },
+  answer: ChildrenAnswerV4 | undefined,
+): FormField[] => {
+  const subFields = ff.childrenSubFields ?? []
+  const childKeys =
+    answer && Object.keys(answer).length > 0
+      ? Object.keys(answer).sort()
+      : [undefined]
+
+  return childKeys.flatMap((childKey, childIdx) =>
+    subFields.map((attr) => ({
+      _id: `${MyInfoAttribute.ChildrenBirthRecords}.${ff._id}.${attr}.${childIdx}`,
+      question: `Child ${childIdx + 1} ${MYINFO_ATTRIBUTE_MAP[attr].description}`,
+      fieldType: BasicField.Children,
+      answer:
+        childKey === undefined
+          ? ''
+          : (answer?.[childKey]?.value?.[attr]?.value ?? ''),
+    })),
+  )
+}
 
 /**
  * Flattens V4 responses into FormField[] for consumption by the existing
@@ -56,6 +89,21 @@ export const flattenV4ToFormFields = ({
 
   for (const ff of formFields) {
     const field = v4Responses[ff._id]
+
+    // Children explode into per-attribute entries whether answered or not,
+    // so the CSV always carries the same columns as encrypt mode.
+    if (ff.fieldType === BasicField.Children) {
+      v1Fields.push(
+        ...explodeChildrenToFormFields(
+          ff,
+          field?.fieldType === BasicField.Children
+            ? (field.answer as ChildrenAnswerV4)
+            : undefined,
+        ),
+      )
+      continue
+    }
+
     if (!field) {
       // Reuse v3 transform to get the correct empty output shape per field type.
       // This returns null for Statement/Image (excluded, matching v3 behavior)
