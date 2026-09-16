@@ -472,6 +472,23 @@ NoWorkflowRedesignOn.parameters = {
   },
 }
 
+export const NewStepOnPrivateFormRedesignOn = Template.bind({})
+NewStepOnPrivateFormRedesignOn.decorators = [withRedesignOn]
+NewStepOnPrivateFormRedesignOn.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'The shared mock form is public, which makes every step save strictly. A closed form saves permissively, so an unfinished step can be kept and flagged on its card instead.',
+  },
+}
+
 export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({}, 'infinite') } },

@@ -83,7 +83,16 @@ export const buildWorkflowStep = (
     step_name: inputs.step_name,
   }
 
-  switch (inputs.workflow_type) {
+  const workflowType: WorkflowType | undefined = inputs.workflow_type
+  if (!workflowType) {
+    return {
+      ...workflowStepBase,
+      workflow_type: WorkflowType.Static,
+      emails: inputs.emails ?? [],
+    }
+  }
+
+  switch (workflowType) {
     case WorkflowType.Static: {
       return {
         ...workflowStepBase,
@@ -108,7 +117,7 @@ export const buildWorkflowStep = (
       } as FormWorkflowStep & { _id: string }
     }
     default: {
-      const exhaustiveCheck: never = inputs
+      const exhaustiveCheck: never = workflowType
       return exhaustiveCheck
     }
   }
