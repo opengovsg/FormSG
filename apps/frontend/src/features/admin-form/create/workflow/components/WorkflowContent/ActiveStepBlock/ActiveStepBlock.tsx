@@ -7,9 +7,11 @@ import { datadogRum } from '~utils/datadog'
 import {
   cancelPendingSwitchSelector,
   completeSaveSelector,
+  stepDraftSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useWorkflowMutations } from '../../../mutations'
+import { AdminEditWorkflowState } from '../../../types'
 import { EditStepBlock } from '../EditStepBlock'
 
 export interface ActiveStepBlockProps {
@@ -19,7 +21,6 @@ export interface ActiveStepBlockProps {
 }
 
 const handleTracking = (step: FormWorkflowStep, stepNumber: number) => {
-  // stepNumber is 0-indexed
   if (stepNumber === 0) {
     const hasFieldsSelected = step.edit.length > 0
     if (hasFieldsSelected) {
@@ -47,6 +48,12 @@ export const ActiveStepBlock = ({
   const { updateStepMutation } = useWorkflowMutations()
   const completeSave = useAdminWorkflowStore(completeSaveSelector)
   const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
+  const stepDraft = useAdminWorkflowStore(stepDraftSelector)
+  const draftInputs =
+    stepDraft?.target.state === AdminEditWorkflowState.EditingStep &&
+    stepDraft.target.stepNumber === stepNumber
+      ? stepDraft.inputs
+      : undefined
 
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) => {
@@ -58,7 +65,6 @@ export const ActiveStepBlock = ({
         },
         {
           onSuccess: completeSave,
-          // Drop any pending switch so a failed save can't redirect a later one.
           onError: cancelPendingSwitch,
         },
       )
@@ -72,7 +78,7 @@ export const ActiveStepBlock = ({
       isLoading={updateStepMutation.isLoading}
       handleOpenDeleteModal={handleOpenDeleteModal}
       onSubmit={handleSubmit}
-      defaultValues={step}
+      defaultValues={draftInputs ? { ...step, ...draftInputs } : step}
       submitButtonLabel="Save step"
     />
   )

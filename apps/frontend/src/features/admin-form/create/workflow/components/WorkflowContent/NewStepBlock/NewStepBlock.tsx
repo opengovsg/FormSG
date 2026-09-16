@@ -15,10 +15,12 @@ import {
   requestSwitchToCreatingSelector,
   setCompletedStepSelector,
   setToCreatingSelector,
+  stepDraftSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useWorkflowMutations } from '../../../mutations'
+import { AdminEditWorkflowState } from '../../../types'
 import { EditStepBlock } from '../EditStepBlock'
 
 export const NewStepBlock = () => {
@@ -43,12 +45,14 @@ export const NewStepBlock = () => {
     setCompletedStep: setCompletedStepSelector(state),
   }))
 
+  const stepDraft = useAdminWorkflowStore(stepDraftSelector)
+  const draftInputs =
+    stepDraft?.target.state === AdminEditWorkflowState.CreatingStep
+      ? stepDraft.inputs
+      : undefined
+
   const newStepNumber = formWorkflow?.length ?? 0
 
-  // Another card is open: hand it a pending switch so it saves first, the same
-  // way clicking a step card or the email card does. Calling setToCreating
-  // straight away unmounts that card and drops its edits with no save and no
-  // warning.
   const handleAddStep = () => {
     if (stateData) {
       requestSwitchToCreating()
@@ -64,7 +68,6 @@ export const NewStepBlock = () => {
           setCompletedStep(newStepNumber)
           completeSave()
         },
-        // Drop any pending switch so a failed save can't redirect a later one.
         onError: cancelPendingSwitch,
       }),
     [
@@ -83,7 +86,7 @@ export const NewStepBlock = () => {
       stepNumber={formWorkflow.length}
       isLoading={createStepMutation.isLoading}
       onSubmit={handleSubmit}
-      defaultValues={{ edit: [] }}
+      defaultValues={draftInputs ?? { edit: [] }}
       submitButtonLabel={t(
         'features.adminForm.sidebar.workflow.approvals.addStep',
       )}
@@ -95,8 +98,6 @@ export const NewStepBlock = () => {
           ? t('features.adminForm.sidebar.workflow.paymentEnabledNoSteps')
           : undefined
       }
-      // Disabled buttons swallow hover events; the wrapper span keeps the
-      // tooltip reachable exactly when it has something to say.
       shouldWrapChildren={isPaymentEnabled}
     >
       <Button

@@ -11,8 +11,15 @@ import {
 import { getFieldCreationMeta } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 import { useCreatePageSidebar } from '~features/admin-form/create/common'
 
+import {
+  stashStepDraftSelector,
+  useAdminWorkflowStore,
+} from '../adminWorkflowStore'
+import { EditStepInputs } from '../types'
+
 export const useStageFieldAndNavigate = () => {
   const { handleBuilderClick } = useCreatePageSidebar()
+  const stashStepDraft = useAdminWorkflowStore(stashStepDraftSelector)
   const stageFieldCreation = useFieldBuilderStore(stageFieldCreationSelector)
   const clearPendingFieldCreation = useFieldBuilderStore(
     clearPendingFieldCreationSelector,
@@ -21,7 +28,10 @@ export const useStageFieldAndNavigate = () => {
   const fieldCount = form?.form_fields?.length ?? 0
 
   return useCallback(
-    (fieldType?: BasicField) => {
+    (fieldType?: BasicField, draftInputs?: Partial<EditStepInputs>) => {
+      if (draftInputs) {
+        stashStepDraft(draftInputs)
+      }
       handleBuilderClick(false)
       if (!fieldType) {
         clearPendingFieldCreation()
@@ -34,6 +44,7 @@ export const useStageFieldAndNavigate = () => {
       stageFieldCreation,
       clearPendingFieldCreation,
       fieldCount,
+      stashStepDraft,
     ],
   )
 }
