@@ -40,7 +40,7 @@ export const SaveActionGroup = ({
         <IconButton
           order={{ base: 1, md: 0 }}
           alignSelf={{ base: 'stretch', md: 'auto' }}
-          w={{ base: '100%', md: 'auto' }}
+          w={isMobile ? '100%' : undefined}
           variant="clear"
           colorScheme="danger"
           aria-label={t('features.adminForm.sidebar.logic.aria.delete', {
