@@ -8,7 +8,6 @@ import { BasicField } from 'formsg-shared/types'
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
 import Toggle from '~components/Toggle'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
@@ -120,15 +119,8 @@ export const ApprovalsBlock = ({
       {isApprovalToggleChecked ? (
         <FormControl
           isInvalid={!!errors.approval_field?.message}
-          {...(isRedesign ? { isRequired: !isSavePermissive, mt: '1rem' } : {})}
+          {...(isRedesign ? { isRequired: !isSavePermissive } : {})}
         >
-          {isRedesign ? (
-            <FormLabel style={textStyles.h4}>
-              {t(
-                'features.adminForm.sidebar.workflow.approvals.toggle.selectorLabelRedesign',
-              )}
-            </FormLabel>
-          ) : null}
           <Controller
             name={APPROVAL_FIELD_NAME}
             control={control}

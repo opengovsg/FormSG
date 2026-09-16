@@ -56,9 +56,6 @@ export const enSG: Workflow = {
         confirm: 'Delete workflow',
         cancel: 'Cancel',
       },
-      // Same consequences as deleteWorkflow, repeated rather than shared: the
-      // two differ only in the title, and translators need whole sentences,
-      // since clause order differs by language and stitched fragments break.
       deleteFirstStep: {
         title: 'Deleting the first step removes the entire workflow',
         description: [
@@ -196,8 +193,6 @@ export const enSG: Workflow = {
       tooltip:
         'Use this for steps that involve any type of decision, such as reviews or endorsements. Decision will be shown on dashboard and tracking links.',
       placeholder: 'Select a field',
-      selectorLabelRedesign:
-        'Select the Yes/No field for the approval decision',
     },
     validation: {
       noField: 'Please select a Yes/No field',

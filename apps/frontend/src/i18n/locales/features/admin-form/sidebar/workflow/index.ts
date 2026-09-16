@@ -51,8 +51,6 @@ export interface Workflow {
       }
       deleteWorkflow: {
         title: string
-        // Rendered as bullets. closeFormFirst stays a single string: one
-        // sentence as a lone bullet reads as a broken list.
         description: string[]
         confirm: string
         cancel: string
@@ -168,7 +166,6 @@ export interface Workflow {
       descriptionRedesign: string
       tooltip: string
       placeholder: string
-      selectorLabelRedesign: string
     }
     validation: {
       noField: string
