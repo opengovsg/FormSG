@@ -7,10 +7,7 @@ import { validateResponses } from '../validate-responses'
  * rejects missing ones, and rebuilds the object from the schema's own key
  * order.
  *
- * Assertions here are on `JSON.stringify`, not `Object.keys`, because a
- * verifiable field carries `signature: undefined` as a *present* key that
- * `JSON.stringify` drops — the two disagree, and the delivered bytes are the
- * JSON.
+ * NOTE: We assert on `JSON.stringify` since the JSON is used as the delivered output.
  */
 describe('validateResponses', () => {
   const shortTextEntry = {
@@ -37,9 +34,7 @@ describe('validateResponses', () => {
   })
 
   it('strips a key the schema does not declare', () => {
-    // `isVisible` is set by the frontend's hidden-input filter and must never
-    // reach the wire. `myInfo` is *not* a good example here: the MyInfo-able
-    // schemas declare it, so it survives.
+    // Assert:`isVisible` is removed by the storage mode's frontend hidden-input filter and should similarly be stripped here.
     const [entry] = validateResponses([{ ...shortTextEntry, isVisible: true }])
 
     expect(JSON.stringify(entry)).toBe(

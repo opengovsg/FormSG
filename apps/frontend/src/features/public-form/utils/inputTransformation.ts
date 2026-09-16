@@ -65,17 +65,6 @@ import {
   YesNoFieldValue,
 } from '~templates/Field/types'
 
-/**
- * The frontend half of the storage-mode V1 producer: it reads the field schema
- * and the react-hook-form input, then hands the plain values to the shared
- * per-field-type value rules in `formsg-shared/utils/response-value-rules`.
- *
- * No answer value is computed here. The rules are shared because the backend's
- * V4-to-V1 flatten has to produce byte-identical entries; a second copy of the
- * trim, the date reformat, the table question composition or the checkbox
- * Others repositioning would drift.
- */
-
 export const pickBaseOutputFromSchema = <F extends FormFieldDto>(
   schema: F,
 ): BaseFieldOutput<F> => {
@@ -134,8 +123,6 @@ const transformToTableOutput = (
 ): TableResponse => {
   return {
     ...pickBaseOutputFromSchema(schema),
-    // The table rule also returns `question`, overriding the schema title with
-    // one that names the columns.
     ...computeTableAnswerValue({
       title: schema.title,
       columns: schema.columns,

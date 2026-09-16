@@ -14,19 +14,7 @@ import { convertToSignatureStringOutput } from './signature'
 
 /**
  * The per-field-type rules that decide what a V1 response entry's answer keys
- * contain. Storage mode has always applied these in the browser; the backend's
- * V4-to-V1 flatten needs the identical rules, so they live here rather than in
- * either producer.
- *
- * Each rule is pure and takes only plain values — a title, a column-id list, an
- * answer string. Nothing here knows about a form field *schema*: reading a
- * schema is the caller's job, which is what keeps this module free of both the
- * frontend's field-schema layer and the SDK.
- *
- * Each rule returns just the answer-bearing keys of the entry. Callers spread
- * them onto the entry's `_id` / `question` / `fieldType` base. The one
- * exception is the table rule, which also returns a `question`, because
- * composing the column titles into the question text is itself a value rule.
+ * contain. Defined here so they can be shared between the frontend and backend.
  */
 
 export type SingleAnswerValueOutput = { answer: string }
@@ -208,6 +196,7 @@ export const computeTableAnswerValue = ({
   )
   return {
     answerArray,
+    // override schema question title to include column titles as well.
     question: `${title} (${columns.map((col) => col.title).join(', ')})`,
   }
 }
@@ -261,13 +250,6 @@ export const computeAddressAnswerValue = (
   }
 }
 
-/**
- * The exhaustive-switch escape hatch: a field type nobody has classified must
- * fail loudly rather than be silently dropped from a submission.
- *
- * Takes `never`, so a new `BasicField` member breaks compilation at every
- * producer that switches over field types.
- */
 export const throwUnsupportedFieldType = (fieldType: never): never => {
   throw new Error(`Unsupported field type: ${fieldType}`)
 }

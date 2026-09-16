@@ -20,13 +20,7 @@ import {
  * The per-field-type value rules that decide what a storage-mode V1 entry's
  * answer keys contain.
  *
- * The expected values below are the bytes measured on the pre-hoist frontend
- * `transformInputsToOutputs` (see #9974's baseline table), so this suite can
- * disagree with the implementation rather than restating it.
- *
- * Assertions are on `JSON.stringify`, never `Object.keys`: a verifiable field
- * carries `signature: undefined` as a *present* key that `JSON.stringify`
- * drops, and the delivered bytes are the JSON.
+ * NOTE: We assert on `JSON.stringify` since the JSON is used as the delivered output.
  */
 
 const TABLE_COLUMNS = [
@@ -43,11 +37,6 @@ type ValueRuleCase = {
   unansweredJson: string
 }
 
-/**
- * Keyed off `BasicField` on purpose: adding a field type to the enum breaks
- * compilation here until someone classifies it — either with a case, or with
- * `null` to say "this type emits no response entry at all".
- */
 const VALUE_RULE_CASES: Record<BasicField, ValueRuleCase | null> = {
   [BasicField.Statement]: null,
   [BasicField.Image]: null,
@@ -75,10 +64,6 @@ const VALUE_RULE_CASES: Record<BasicField, ValueRuleCase | null> = {
     unanswered: () => computeVerifiableAnswerValue(undefined),
     unansweredJson: '{"answer":""}',
   },
-
-  // Every generic single-answer type is trimmed. The trim is one of the four
-  // rules the CSV producer omits today, so it is asserted per type rather than
-  // once.
   [BasicField.HomeNo]: {
     answered: () => computeSingleAnswerValue('  +6561234567  '),
     answeredJson: '{"answer":"+6561234567"}',
