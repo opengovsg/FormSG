@@ -99,12 +99,14 @@ export const ChildrenCompoundField = ({
     }
   }, [schema.childrenSubFields, formContext, schema._id])
 
-  // Initialize with a single child section
+  // Initialize with a single child section. Skip when the field is disabled
+  // (e.g. read-only carry-forward on MRF steps 2+): appending would render a
+  // blank row where there is no answer to display and no way to fill it.
   useEffect(() => {
-    if (!fields || !fields.length) {
+    if (!schema.disabled && (!fields || !fields.length)) {
       append([''], { shouldFocus: false })
     }
-  }, [fields, append])
+  }, [fields, append, schema.disabled])
 
   return (
     <FieldContainer
@@ -279,24 +281,27 @@ const ChildrenBody = ({
             <FormControl
               key={field.id}
               isRequired
+              isDisabled={schema.disabled}
               isInvalid={!!error?.[CHILD_NAME_INDEX]}
             >
               <Controller
                 control={control}
                 name={childNamePath}
                 rules={{
-                  required: REQUIRED_ERROR,
+                  required: schema.disabled ? false : REQUIRED_ERROR,
                 }}
                 render={({
                   field: { value, onChange, onBlur, ref, ...rest },
                 }) => (
                   <SingleSelect
                     {...rest}
-                    placeholder={"Select your child's name"}
+                    placeholder={
+                      schema.disabled ? undefined : "Select your child's name"
+                    }
                     colorScheme={`theme-${colorTheme}`}
                     items={childNameValues}
                     value={value as unknown as string}
-                    isDisabled={isSubmitting}
+                    isDisabled={isSubmitting || schema.disabled}
                     onChange={onChange}
                   />
                 )}
@@ -334,7 +339,10 @@ const ChildrenBody = ({
             // @ts-expect-error type inference issue
             setValue(fieldPath, myInfoFormattedValue, { shouldValidate: true })
           }
-          const isDisabled = isSubmitting || !!myInfoValue
+          // schema.disabled: whole-field read-only (MRF carry-forward on
+          // steps 2+, where there is no MyInfo session to prefill from).
+          // myInfoValue: individual subfield locked by MyInfo prefill.
+          const isDisabled = isSubmitting || !!myInfoValue || schema.disabled
           switch (subField) {
             case MyInfoChildAttributes.ChildBirthCertNo: {
               return (

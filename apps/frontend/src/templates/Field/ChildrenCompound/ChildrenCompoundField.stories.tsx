@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
-import { merge } from 'lodash'
+import { get, merge } from 'lodash'
 
 import {
   BasicField,
@@ -47,20 +47,23 @@ const baseSchema: ChildrenCompoundFieldSchema = {
 }
 
 interface StoryChildrenCompoundFieldProps extends ChildrenCompoundFieldProps {
-  childrenBirthRecords: MyInfoChildData
+  childrenBirthRecords?: MyInfoChildData
+  defaultValues?: Record<string, unknown>
 }
 
 const Template: StoryFn<StoryChildrenCompoundFieldProps> = ({
   childrenBirthRecords,
+  defaultValues,
   ...args
 }) => {
-  const formMethods = useForm()
+  const formMethods = useForm({ defaultValues })
 
   const [submitValues, setSubmitValues] = useState<string>()
 
-  const onSubmit = (values: Record<string, string | undefined>) => {
+  const onSubmit = (values: Record<string, unknown>) => {
+    // Form values are nested under the field id (RHF nests on dots).
     setSubmitValues(
-      JSON.stringify(values[`${args.schema._id}.child`]) ||
+      JSON.stringify(get(values, `${args.schema._id}.child`)) ||
         'Nothing was selected',
     )
   }
@@ -95,6 +98,41 @@ SingleChild.args = {
 export const LegacyAllowMultipleFlag = Template.bind({})
 LegacyAllowMultipleFlag.args = {
   schema: merge({}, baseSchema, { allowMultiple: true }),
+}
+
+/**
+ * MRF steps 2+: the step-1 answer is carried forward read-only. There is no
+ * MyInfo session (myInfoChildrenBirthRecords is undefined), so the values come
+ * solely from the previous step's response; nothing is editable and no blank
+ * row is appended.
+ */
+export const DisabledCarriedForward = Template.bind({})
+DisabledCarriedForward.args = {
+  schema: merge({}, baseSchema, {
+    disabled: true,
+    childrenSubFields: [
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildBirthCertNo,
+    ],
+  }),
+  defaultValues: {
+    [baseSchema._id]: {
+      child: [['Phua Chu King', 'T1234567X']],
+      childFields: [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ],
+    },
+  },
+}
+
+/**
+ * MRF steps 2+ where step 1 left the field unanswered: disabled with no
+ * carried-forward value must not auto-append a blank editable row.
+ */
+export const DisabledUnanswered = Template.bind({})
+DisabledUnanswered.args = {
+  schema: merge({}, baseSchema, { disabled: true }),
 }
 
 /** An existing form that still lists secondary race in `childrenSubFields`. */
