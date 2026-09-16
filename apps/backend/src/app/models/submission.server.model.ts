@@ -31,6 +31,7 @@ import {
   MultirespondentSubmissionData,
   StorageModeSubmissionCursorData,
   StorageModeSubmissionData,
+  SubmissionData,
   SubmissionWebhookInfo,
   WebhookData,
   WebhookView,
@@ -238,6 +239,43 @@ SubmissionSchema.statics.saveIfSubmitterIdIsUnique = async function (
   await session.endSession()
   return afterCreateRes[0]
 }
+
+SubmissionSchema.statics.findEncryptedOrMultirespondentSubmissionById =
+  function (
+    this: ISubmissionModel,
+    formId: string,
+    submissionId: string,
+  ): Promise<SubmissionData | null> {
+    // Multirespondent forms mode-migrated from storage mode retain their
+    // pre-migration encrypt submissions, so this lookup spans both types.
+    // Email submissions have no encrypted content and stay excluded.
+    return this.findOne({
+      _id: submissionId,
+      form: formId,
+      submissionType: {
+        $in: [SubmissionType.Encrypt, SubmissionType.Multirespondent],
+      },
+    })
+      .select({
+        submissionType: 1,
+        encryptedContent: 1,
+        verifiedContent: 1,
+        attachmentMetadata: 1,
+        paymentId: 1,
+        created: 1,
+        version: 1,
+        form_fields: 1,
+        form_logics: 1,
+        workflow: 1,
+        submissionPublicKey: 1,
+        encryptedSubmissionSecretKey: 1,
+        workflowStep: 1,
+        mrfVersion: 1,
+        ...buildAdminSubmittedStepsMongoProjection(),
+        encryptedStepToken: 1,
+      })
+      .exec() as Promise<SubmissionData | null>
+  }
 
 // Exported for use in pending submissions model
 export const EmailSubmissionSchema = new Schema<IEmailSubmissionSchema>({
