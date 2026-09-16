@@ -82,6 +82,9 @@ export type MultirespondentSubmissionContent = {
   form: IPopulatedMultirespondentForm['_id']
   authType: IPopulatedMultirespondentForm['authType']
   myInfoFields: MyInfoAttribute[]
+  // Absent when the read-only resolution never ran. See
+  // `SubmissionBase.myInfoReadOnlyFields` in shared.
+  myInfoReadOnlyFields?: string[]
   form_fields: IPopulatedMultirespondentForm['form_fields']
   form_logics: IPopulatedMultirespondentForm['form_logics']
   workflow: IPopulatedMultirespondentForm['workflow']

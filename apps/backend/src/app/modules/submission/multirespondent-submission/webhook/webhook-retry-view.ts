@@ -10,7 +10,7 @@ import {
   SnapshotFormatNotRecordedError,
   SnapshotReadError,
 } from './submission-snapshot.errors'
-import { readV4Snapshot } from './submission-snapshot.store'
+import { readSnapshot } from './submission-snapshot.store'
 import {
   getKeyPermissionsPolicy,
   WebhookConsumerType,
@@ -70,9 +70,12 @@ export const resolveSnapshotRetryView = ({
   const { workflowContent } = liveView.data
   const submittedStepsLength = workflowContent?.submittedSteps?.length ?? 0
 
-  // RATIONALE: Only `v4` exists today, so a message naming `v1`
-  // resolves to not recorded until future backward compatibility to
-  // widens the row schema to carry the v1 copy.
+  // A V1 snapshot IS written now (#9975), so this no longer means "the shape
+  // does not exist" — it means the retry path has not been taught to read it
+  // yet, which is #9977's work. Until then a V1 retry is refused rather than
+  // reconstructed, which is the safe direction: the alternative would be
+  // falling back to the live row, and the row can never express a V1 payload.
+  // The initial send is unaffected; it is served from the in-memory copy.
   if (contentFormat === 'v1') {
     return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
   }
@@ -83,11 +86,12 @@ export const resolveSnapshotRetryView = ({
     return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
   }
 
-  return readV4Snapshot({
+  return readSnapshot({
     formId: liveView.data.formId,
     submissionId,
     submissionIndex,
     token,
+    contentFormat,
   }).andThen((snapshot) => {
     if (snapshot.contentFormat !== contentFormat) {
       return errAsync(
