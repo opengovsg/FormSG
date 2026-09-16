@@ -120,6 +120,13 @@ export const computeSectionAnswerValue = (): SectionAnswerValueOutput => ({
 /**
  * The Others entry is removed from wherever it was selected and pushed to the
  * END of the array, so a form's option order is not preserved around it.
+ *
+ * `othersInput` is coalesced with `??` rather than guarded with `in`, because
+ * the two producers disagree on the key and agree on the value: the browser
+ * hands over react-hook-form's object, where the key is present and
+ * `undefined`, while V4 content omits it entirely. `??` cannot tell those
+ * apart; `in` can, and would emit `Others: undefined` for one producer and
+ * the bare sentinel for the other.
  */
 export const computeCheckboxAnswerValue = (
   input?: CheckboxAnswerInput,
@@ -131,7 +138,7 @@ export const computeCheckboxAnswerValue = (
     )
     if (othersIndex !== -1) {
       answerArray = removeAt(input.value, othersIndex)
-      answerArray.push(`Others: ${input.othersInput}`)
+      answerArray.push(`Others: ${input.othersInput ?? ''}`)
     } else {
       answerArray = input.value
     }
