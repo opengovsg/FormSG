@@ -44,6 +44,13 @@ const SubsequentStepRespondentBadges = ({
 }: RespondentBadgeProps): JSX.Element => {
   switch (step.workflow_type) {
     case WorkflowType.Static:
+      if (step.emails.length === 0) {
+        return (
+          <FieldLogicBadge
+            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
+          />
+        )
+      }
       return (
         <>
           {step.emails.map((email) => (
