@@ -51,8 +51,6 @@ export const useWorkflowMutations = () => {
       onSuccess: (updatedWorkflow) => {
         toast.closeAll()
         queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
-          // Should not happen, should not be able to update field if there is no
-          // existing data.
           if (!prev) throw new Error('Query should have been set')
           if (prev.responseMode !== FormResponseMode.Multirespondent) {
             throw new Error('Invalid response mode')
@@ -77,8 +75,6 @@ export const useWorkflowMutations = () => {
       onSuccess: (updatedWorkflow) => {
         toast.closeAll()
         queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
-          // Should not happen, should not be able to update field if there is no
-          // existing data.
           if (!prev) throw new Error('Query should have been set')
           if (prev.responseMode !== FormResponseMode.Multirespondent) {
             throw new Error('Invalid response mode')
@@ -104,7 +100,7 @@ export const useWorkflowMutations = () => {
         return { ...prev, workflow: updatedWorkflow }
       })
       toast({
-        description: 'Your workflow was deleted.',
+        description: 'Your workflow was successfully deleted.',
       })
     },
     onError: handleError,
@@ -122,8 +118,6 @@ export const useWorkflowMutations = () => {
       onSuccess: (updatedWorkflow) => {
         toast.closeAll()
         queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
-          // Should not happen, should not be able to update field if there is no
-          // existing data.
           if (!prev) throw new Error('Query should have been set')
           if (prev.responseMode !== FormResponseMode.Multirespondent) {
             throw new Error('Invalid response mode')
