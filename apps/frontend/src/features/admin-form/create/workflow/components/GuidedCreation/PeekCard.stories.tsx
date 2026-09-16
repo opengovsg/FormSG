@@ -11,11 +11,6 @@ export default {
   component: PeekCard,
 } as Meta<PeekCardProps>
 
-/**
- * The tucked variant only reads correctly beneath a card of matching width, so
- * the stories that use it supply a stand-in for the card above rather than
- * floating the peek card on its own.
- */
 const CardAbove = (): JSX.Element => (
   <Box
     bg="white"
