@@ -135,7 +135,6 @@ export const InactiveStepBlock = ({
 
   const handleClick = useCallback(() => {
     if (stateData) {
-      // Another step is open: auto-save it and switch here.
       requestSwitchTo(stepNumber)
       return
     }
@@ -182,7 +181,6 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
-  // Mirrors EditStepBlock's ordering; only the sequence differs by flag.
   const fieldsSection = (
     <Stack>
       <Text textStyle={sectionLabelTextStyle}>
@@ -193,9 +191,6 @@ export const InactiveStepBlock = ({
       </Stack>
     </Stack>
   )
-  // A step without approval says nothing worth a heading, and the reorder puts
-  // this at the top of the card where the noise is most costly. Steps whose
-  // approval field was deleted still render, to keep showing the error.
   const hideEmptyApprovals = isRedesign && !step.approval_field
   const approvalsSection =
     isFirstStep || hideEmptyApprovals ? null : (
@@ -265,9 +260,6 @@ export const InactiveStepBlock = ({
           )}
         </Stack>
       </chakra.button>
-      {/* The whole card is the button, so the pencil is a visual affordance
-      only: no click target, no tab stop, hidden from AT. It reacts to hover on
-      the card via the wrapper's role="group". */}
       <Icon
         as={BiPencil}
         aria-hidden
