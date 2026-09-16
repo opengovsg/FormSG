@@ -83,6 +83,7 @@ MOCKPASS_UID=S8979373D # Not used by mockpass but keep in sync with MOCKPASS_UEN
 MOCKPASS_UEN=123456789A
 SP_RP_JWKS_ENDPOINT=http://localhost:5000/sp/.well-known/jwks.json
 CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
+FAPI_CLIENT_JWKS_ENDPOINT=http://localhost:5000/mi/fapi/.well-known/jwks.json
 
 # WOG AD env vars for testing
 WOGAD_CLIENT_ID=test-client-id
