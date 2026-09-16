@@ -58,7 +58,11 @@ export const YesNoOption = forwardRef<YesNoOptionProps, 'input'>(
     // Empty object needed here as ref is the second argument,
     // and ref is required so that any refs passed in gets forwarded.
     const inputProps = getInputProps(undefined, ref)
-    const checkboxProps = getCheckboxProps()
+    const checkboxProps = getCheckboxProps({
+      onPointerDown: (event) => {
+        event.currentTarget.setPointerCapture?.(event.pointerId)
+      },
+    })
 
     const handleSelect = useCallback(() => {
       // Do not do anything if the input is readonly

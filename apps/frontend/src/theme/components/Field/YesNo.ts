@@ -55,7 +55,7 @@ const outlineOptionStyle: SystemStyleFunction = (props) => {
     _hover: {
       bg: `${c}.100`,
     },
-    _active: {
+    '&[data-active]': {
       bg: `${c}.300`,
       borderColor: activeBorderColor,
     },
@@ -67,7 +67,7 @@ const outlineOptionStyle: SystemStyleFunction = (props) => {
       p: '13px',
       border: '3px solid',
       borderColor: activeBorderColor,
-      _active: {
+      '&[data-active]': {
         bg: `${c}.300`,
       },
     },
