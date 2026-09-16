@@ -5,10 +5,11 @@ import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-dat
 import { ObjectId } from 'bson'
 import { FormAuthType, FormStatus } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
-import { errAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
+import * as MyInfoFapiService from 'src/app/modules/myinfo/fapi/myinfo.fapi.service'
 import { getRedirectTargetSpcpOidc } from 'src/app/modules/spcp/spcp.util'
 
 import * as FormService from '../../../../../modules/form/form.service'
@@ -21,6 +22,8 @@ import { SpOidcServiceClass } from '../../../../../modules/spcp/spcp.oidc.servic
 import { PublicFormsRouter } from '../public-forms.routes'
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
+jest.mock('src/app/modules/myinfo/fapi/myinfo.fapi.service')
+const MockMyInfoFapiService = jest.mocked(MyInfoFapiService)
 
 const app = setupApp('/forms', PublicFormsRouter)
 describe('public-form.auth.routes', () => {
@@ -115,6 +118,13 @@ describe('public-form.auth.routes', () => {
           esrvcId: new ObjectId().toHexString(),
         },
       })
+      const MOCK_REDIRECT_URL = 'https://singpass.gov.sg/fapi/authorize?foo=bar'
+      MockMyInfoFapiService.startLogin.mockReturnValueOnce(
+        okAsync({
+          sessionId: new ObjectId().toHexString(),
+          redirectUrl: MOCK_REDIRECT_URL,
+        }),
+      )
 
       // Act
       const response = await request
@@ -123,12 +133,10 @@ describe('public-form.auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(StatusCodes.OK)
-      expect(response.body).toMatchObject({
-        redirectURL: expect.toIncludeMultiple([
-          String(form._id),
-          form.esrvcId!,
-        ]),
-      })
+      expect(response.body).toMatchObject({ redirectURL: MOCK_REDIRECT_URL })
+      expect(MockMyInfoFapiService.startLogin).toHaveBeenCalledWith(
+        expect.objectContaining({ formId: String(form._id) }),
+      )
     })
 
     it('should return 400 when the request has an invalid type for isPersistentLogin', async () => {
@@ -178,32 +186,6 @@ describe('public-form.auth.routes', () => {
       // Assert
       expect(response.status).toEqual(StatusCodes.BAD_REQUEST)
       expect(response.body).toEqual(expectedResponse)
-    })
-
-    it('should return 200 with the redirect URL when the form has no esrvcId', async () => {
-      // Arrange
-      const FORM_ESRVC_ID = 'MOCKED_FORM_ESRVC_ID'
-      const { form } = await dbHandler.insertEncryptForm({
-        formOptions: {
-          authType: FormAuthType.MyInfo,
-          status: FormStatus.Public,
-          esrvcId: FORM_ESRVC_ID,
-        },
-      })
-
-      // Act
-      const response = await request
-        .get(`/forms/${form._id}/auth/redirect`)
-        .query({ isPersistentLogin: false })
-
-      // Assert
-      expect(response.status).toEqual(StatusCodes.OK)
-      expect(response.body).toMatchObject({
-        redirectURL: expect.toIncludeMultiple([
-          String(form._id),
-          form.esrvcId!,
-        ]),
-      })
     })
 
     it('should return 404 when the form is not in the database', async () => {
