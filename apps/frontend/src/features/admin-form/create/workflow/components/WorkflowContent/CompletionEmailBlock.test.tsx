@@ -19,10 +19,6 @@ const CANCEL = { name: /^cancel$/i }
 const SAVE = { name: /save changes/i }
 
 describe('completion email seam', () => {
-  // jsdom does not implement scrollIntoView, which the expanded card calls.
-  // It has to be assigned rather than spied, because vi.spyOn needs the
-  // property to already exist. Deleted afterwards so the global does not leak
-  // into other suites.
   beforeAll(() => {
     Element.prototype.scrollIntoView = vi.fn()
   })
@@ -34,8 +30,6 @@ describe('completion email seam', () => {
 
   afterEach(() => useAdminWorkflowStore.getState().reset())
 
-  // The flag-off path must stay exactly as it was: an inline message pointing
-  // at Settings, with no trace of the new card.
   it('keeps the Settings inline message when the redesign flag is off', async () => {
     await act(async () => {
       render(<WithWorkflow />)
@@ -58,15 +52,11 @@ describe('completion email seam', () => {
     ).not.toBeInTheDocument()
   })
 
-  // Save-before-switch is the one path that can lose an admin's edits, and it
-  // already shipped a data-loss bug once (#9849), so it is worth rendering for.
   it('saves pending edits before handing over to another card', async () => {
     await act(async () => {
       render(<Active />)
     })
 
-    // fireEvent rather than userEvent: the tag input manages its own roving
-    // tabindex, which userEvent's focus handling does not drive in jsdom.
     const tagInput = await screen.findByRole('textbox', {}, { timeout: 10000 })
     await act(async () => {
       fireEvent.change(tagInput, {
@@ -80,18 +70,14 @@ describe('completion email seam', () => {
       await screen.findByText('newperson@example.gov.sg'),
     ).toBeInTheDocument()
 
-    // Stands in for clicking a step card, which is what sets a pending switch.
     await act(async () => {
       useAdminWorkflowStore.getState().requestSwitchTo(0)
     })
 
-    // The success toast is the observable proof that the edit was saved, not
-    // merely dropped on the way to the next card.
     expect(
       await screen.findByText(/emails successfully updated/i),
     ).toBeInTheDocument()
 
-    // And only then does the switch complete.
     await waitFor(() =>
       expect(useAdminWorkflowStore.getState().createOrEditData).toEqual({
         state: AdminEditWorkflowState.EditingStep,
@@ -100,9 +86,6 @@ describe('completion email seam', () => {
     )
   })
 
-  // A failed settings request leaves `data` undefined, exactly as one still in
-  // flight does, so the card would otherwise skeleton with no error and no
-  // retry. The fallback keeps a working route to Settings.
   it('falls back to the Settings message when the settings request fails', async () => {
     await act(async () => {
       render(<SettingsError />)
@@ -113,9 +96,6 @@ describe('completion email seam', () => {
     ).toBeInTheDocument()
     expect(screen.queryByText(DIVIDER)).not.toBeInTheDocument()
   })
-  // Add step used to call setToCreating directly, which unmounted the open card
-  // and dropped its edits with no save and no warning. It now goes through the
-  // same pending-switch mechanism as clicking another card.
   it('saves pending edits before Add step opens the new step form', async () => {
     await act(async () => {
       render(<WithWorkflowRedesignOn />)
@@ -144,8 +124,6 @@ describe('completion email seam', () => {
       fireEvent.click(screen.getByRole('button', { name: /add step/i }))
     })
 
-    // The toast is the observable proof the edit was saved rather than dropped
-    // on the way to the new step form.
     expect(
       await screen.findByText(/emails successfully updated/i),
     ).toBeInTheDocument()
