@@ -30,8 +30,6 @@ describe('PeekCard', () => {
     ).not.toBeInTheDocument()
   })
 
-  // The reason actions is an array rather than one onDone callback: each action
-  // carries its own handler, so two of them cannot be collapsed into one.
   it('should give each action its own handler', () => {
     const onDecline = vi.fn()
     const onAccept = vi.fn()
