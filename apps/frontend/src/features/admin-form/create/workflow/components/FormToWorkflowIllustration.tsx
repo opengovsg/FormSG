@@ -15,7 +15,7 @@ const ILLUSTRATED_FORM_TITLE = 'My form'
 
 const ILLUSTRATED_STEP_COUNT = 3
 
-const CROSSFADE_MS = 500
+const CROSSFADE_MS = 1200
 
 const SkeletonLine = ({ w, h = '0.5rem' }: { w: string; h?: string }) => (
   <Box bg="secondary.200" borderRadius="3px" w={w} h={h} flexShrink={0} />
