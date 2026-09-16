@@ -43,6 +43,7 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   const view = getCompletionEmailBlockView({
     settings,
     isSettingsError: isError,
+    workflowStepCount: formWorkflow?.length ?? 0,
   })
 
   if (view === CompletionEmailBlockView.None) return null

@@ -9,10 +9,34 @@ const MRF = { responseMode: FormResponseMode.Multirespondent } as FormSettings
 const EMAIL_MODE = { responseMode: FormResponseMode.Email } as FormSettings
 
 describe('getCompletionEmailBlockView', () => {
-  it('shows the card on an MRF form', () => {
+  it('shows the card on an MRF form with two steps', () => {
     expect(
-      getCompletionEmailBlockView({ settings: MRF, isSettingsError: false }),
+      getCompletionEmailBlockView({
+        settings: MRF,
+        isSettingsError: false,
+        workflowStepCount: 2,
+      }),
     ).toBe(CompletionEmailBlockView.Card)
+  })
+
+  it.each([0, 1])('shows nothing at %i workflow steps', (workflowStepCount) => {
+    expect(
+      getCompletionEmailBlockView({
+        settings: MRF,
+        isSettingsError: false,
+        workflowStepCount,
+      }),
+    ).toBe(CompletionEmailBlockView.None)
+  })
+
+  it('shows nothing at one step even when the settings never arrived', () => {
+    expect(
+      getCompletionEmailBlockView({
+        settings: undefined,
+        isSettingsError: true,
+        workflowStepCount: 1,
+      }),
+    ).toBe(CompletionEmailBlockView.None)
   })
 
   it('shows nothing on a form that is not MRF', () => {
@@ -20,6 +44,7 @@ describe('getCompletionEmailBlockView', () => {
       getCompletionEmailBlockView({
         settings: EMAIL_MODE,
         isSettingsError: false,
+        workflowStepCount: 2,
       }),
     ).toBe(CompletionEmailBlockView.None)
   })
@@ -29,6 +54,7 @@ describe('getCompletionEmailBlockView', () => {
       getCompletionEmailBlockView({
         settings: undefined,
         isSettingsError: false,
+        workflowStepCount: 2,
       }),
     ).toBe(CompletionEmailBlockView.Card)
   })
@@ -38,6 +64,7 @@ describe('getCompletionEmailBlockView', () => {
       getCompletionEmailBlockView({
         settings: undefined,
         isSettingsError: true,
+        workflowStepCount: 2,
       }),
     ).toBe(CompletionEmailBlockView.SettingsMessage)
   })
@@ -47,6 +74,7 @@ describe('getCompletionEmailBlockView', () => {
       getCompletionEmailBlockView({
         settings: MRF,
         isSettingsError: true,
+        workflowStepCount: 2,
       }),
     ).toBe(CompletionEmailBlockView.Card)
   })
