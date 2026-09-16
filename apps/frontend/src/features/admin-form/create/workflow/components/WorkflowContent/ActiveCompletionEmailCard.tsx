@@ -26,6 +26,7 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
+import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
 
 import { EditStepBlockContainer } from './EditStepBlock/EditStepBlockContainer'
 import { CompletionEmailLabel } from './CompletionEmailLabel'
@@ -47,6 +48,7 @@ export const ActiveCompletionEmailCard = ({
   isDisabled,
 }: ActiveCompletionEmailCardProps): JSX.Element => {
   const { t } = useTranslation()
+  const { cardRadius } = useWorkflowSurfaces()
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
   const pendingSwitchTo = useAdminWorkflowStore(pendingSwitchToSelector)
   const completeSave = useAdminWorkflowStore(completeSaveSelector)
@@ -151,7 +153,7 @@ export const ActiveCompletionEmailCard = ({
       ref={wrapperRef}
       py="2rem"
       spacing="1.5rem"
-      borderRadius="4px"
+      borderRadius={cardRadius}
       bg="white"
       border="1px solid"
       borderColor="primary.500"

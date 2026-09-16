@@ -2,6 +2,7 @@ import { Children, ReactNode } from 'react'
 import { Box, Divider, Stack, usePrefersReducedMotion } from '@chakra-ui/react'
 
 import { useIsWorkflowBuilderRedesign } from '../hooks/useIsWorkflowBuilderRedesign'
+import { useWorkflowSurfaces } from '../hooks/useWorkflowSurfaces'
 
 export const SPOTLIGHT_TEST_ID = 'workflow-spotlight'
 
@@ -106,6 +107,7 @@ export const Spotlight = ({
   // Gated here rather than at each call site: flag-off has to be untouched
   // children everywhere, and that is the same thing isEnabled already means.
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const { cardRadius } = useWorkflowSurfaces()
 
   if (!isEnabled || !isRedesign) return <>{children}</>
 
@@ -116,11 +118,7 @@ export const Spotlight = ({
       data-testid={SPOTLIGHT_TEST_ID}
       py={BAND_GAP}
       bg={isActive ? 'primary.100' : 'transparent'}
-      // `4px` is the workflow builder's radius: the step card, EditStepBlock,
-      // InactiveStepBlock and StepLabel all use it. The band is a surface
-      // inside that card, so a rounder corner reads as a different kind of
-      // object rather than a lit section of the same one.
-      borderRadius={isActive ? '4px' : '0'}
+      borderRadius={isActive ? cardRadius : '0'}
       // Always 1px on both edges, colour-switched. Toggling a border itself
       // would move the section by a pixel every time the spotlight arrived or
       // left, and every band carries both so their heights stay identical.

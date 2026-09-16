@@ -13,6 +13,7 @@ import {
 import { textStyles } from '~theme/textStyles'
 import FormLabel from '~components/FormControl/FormLabel'
 
+import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
 
 import { EditStepBlockContainer } from './EditStepBlockContainer'
@@ -30,6 +31,7 @@ export const StepNameBlock = ({
   formMethods,
 }: StepNameProps): JSX.Element => {
   const { t } = useTranslation()
+  const { cardRadius, stepLabelTextStyle } = useWorkflowSurfaces()
   const {
     formState: { errors },
     control,
@@ -53,8 +55,8 @@ export const StepNameBlock = ({
             px="1rem"
             borderWidth="1px"
             borderColor="secondary.300"
-            borderRadius="4px"
-            textStyle="subhead-3"
+            borderRadius={cardRadius}
+            textStyle={stepLabelTextStyle}
           >
             {stepNumber + 1}
           </Text>
