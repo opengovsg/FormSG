@@ -35,6 +35,7 @@ export const PeekCard = ({
       borderStyle="solid"
       borderColor="primary.200"
       borderWidth={isTucked ? '0 1px 1px' : '1px'}
+      boxShadow="md"
       py="1.5rem"
       px={{ base: '1.5rem', md: '2rem' }}
     >
