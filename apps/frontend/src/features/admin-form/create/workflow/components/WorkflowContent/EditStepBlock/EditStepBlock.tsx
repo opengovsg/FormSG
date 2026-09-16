@@ -293,7 +293,7 @@ export const EditStepBlock = ({
           <GuidedActionGroup
             secondaryAction={getGuidedSecondaryAction({
               sectionIndex: visibleCount - 1,
-              isFirstStep,
+              canCancel: !isFirstStep,
             })}
             isOnLastSection={reveal.isOnLastSection}
             isLoading={isLoading}
