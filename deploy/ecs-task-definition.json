@@ -69,14 +69,6 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/AZURE_OPENAI_API_KEY"
         },
         {
-          "name": "SINGPASS_ESRVC_ID",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SINGPASS_ESRVC_ID"
-        },
-        {
-          "name": "MYINFO_CLIENT_SECRET",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_CLIENT_SECRET"
-        },
-        {
           "name": "MYINFO_JWT_SECRET",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_JWT_SECRET"
         },
@@ -224,22 +216,6 @@
         {
           "name": "SPCP_COOKIE_DOMAIN",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SPCP_COOKIE_DOMAIN"
-        },
-        {
-          "name": "MYINFO_CLIENT_CONFIG",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_CLIENT_CONFIG"
-        },
-        {
-          "name": "MYINFO_CERT",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_CERT"
-        },
-        {
-          "name": "MYINFO_FORMSG_KEY",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_FORMSG_KEY"
-        },
-        {
-          "name": "MYINFO_CLIENT_ID",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/MYINFO_CLIENT_ID"
         },
         {
           "name": "SP_OIDC_NDI_DISCOVERY_ENDPOINT",

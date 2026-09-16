@@ -1,4 +1,3 @@
-import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import convict, { Path, Schema } from 'convict'
 import { url } from 'convict-format-with-validator'
 
@@ -38,14 +37,6 @@ type ISpcpConfig = {
 }
 
 type IMyInfoConfig = {
-  spEsrvcId: string // Needed for MyInfo
-  myInfoClientMode: MyInfoMode
-  myInfoKey: string
-  myInfoCert: string
-  myInfoKeyPath: string
-  myInfoCertPath: string
-  myInfoClientId: string
-  myInfoClientSecret: string
   myInfoJwtSecret: string
   myInfoFapiIssuer: string
   myInfoFapiClientId: string
@@ -106,54 +97,6 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: 'int',
     default: 6 * HOUR_IN_MILLIS,
     env: 'CP_COOKIE_MAX_AGE',
-  },
-  spEsrvcId: {
-    doc: 'e-service ID registered with National Digital Identity office for SingPass authentication. Needed for MyInfo.',
-    format: String,
-    default: null,
-    env: 'SINGPASS_ESRVC_ID',
-  },
-  myInfoClientMode: {
-    doc: 'Configures MyInfoGovClient. Set this to either `stg` or `prod` to fetch MyInfo data from the corresponding endpoints.',
-    format: Object.values(MyInfoMode),
-    default: MyInfoMode.Production,
-    env: 'MYINFO_CLIENT_CONFIG',
-  },
-  myInfoKey: {
-    doc: 'MyInfo private key, which is used to decrypt data and sign requests when communicating with MyInfo.',
-    format: validateIacStringParam,
-    default: null,
-    env: 'MYINFO_FORMSG_KEY',
-  },
-  myInfoCert: {
-    doc: "MyInfo's public certificate, which is used to verify their signature.",
-    format: validateIacStringParam,
-    default: null,
-    env: 'MYINFO_CERT',
-  },
-  myInfoKeyPath: {
-    doc: 'Path to MyInfo private key',
-    format: validateNonIacStringParam,
-    default: null,
-    env: 'MYINFO_FORMSG_KEY_PATH',
-  },
-  myInfoCertPath: {
-    doc: 'Path to MyInfo public certificate',
-    format: validateNonIacStringParam,
-    default: null,
-    env: 'MYINFO_CERT_PATH',
-  },
-  myInfoClientId: {
-    doc: 'OAuth2 client ID registered with MyInfo.',
-    format: String,
-    default: null,
-    env: 'MYINFO_CLIENT_ID',
-  },
-  myInfoClientSecret: {
-    doc: 'OAuth2 client secret registered with MyInfo.',
-    format: String,
-    default: null,
-    env: 'MYINFO_CLIENT_SECRET',
   },
   myInfoJwtSecret: {
     doc: 'Secret for signing MyInfo JWT.',
