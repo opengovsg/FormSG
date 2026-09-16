@@ -14,7 +14,11 @@ import { ADDRESS_SUBFIELD_KEYS } from '@opengovsg/formsg-sdk'
 
 import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { CountryRegion } from 'formsg-shared/constants/countryRegion'
-import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormFieldDto,
+  MyInfoChildrenScope,
+} from 'formsg-shared/types'
 
 import bufferToFile from '~utils/bufferToFile'
 import {
@@ -122,15 +126,24 @@ export const extractMrfPreviousStepResponseValue = (
       // (subarray index i maps to childFields[i]).
       const answer = previousFieldResponse.answer as ChildrenAnswerV4
       const childFields = field.childrenSubFields ?? []
-      const child = Object.keys(answer)
-        .sort()
-        .map((childKey) =>
-          childFields.map(
-            (attr) => answer[childKey]?.value?.[attr]?.value ?? '',
-          ),
-        )
+      const childKeys = Object.keys(answer).sort()
+      const child = childKeys.map((childKey) =>
+        childFields.map((attr) => answer[childKey]?.value?.[attr]?.value ?? ''),
+      )
       if (child.length === 0) return
-      return { child, childFields }
+      // Preserve each child's original MyInfo scope so re-submission on later
+      // steps neither re-stamps nor invents it: absent (pre-scope answers) or
+      // unrecognised wire values stay unstamped.
+      const childTypes = childKeys.map(
+        (childKey): MyInfoChildrenScope | undefined => {
+          const type = answer[childKey]?.type
+          return type === MyInfoChildrenScope.Local ||
+            type === MyInfoChildrenScope.Sponsored
+            ? type
+            : undefined
+        },
+      )
+      return { child, childFields, childTypes }
     }
     case BasicField.Section:
     case BasicField.Image:
