@@ -51,6 +51,10 @@ describe('isStepComplete', () => {
     }) as FormWorkflowStep
 
   const formFields = [makeField(FIELD_ID, BasicField.YesNo)]
+  const withEmailField = [
+    ...formFields,
+    makeField(OTHER_FIELD_ID, BasicField.Email),
+  ]
   const withDropdown = (map?: Record<string, string[]>) => [
     ...formFields,
     makeDropdown(map),
@@ -72,17 +76,48 @@ describe('isStepComplete', () => {
     expect(isStepComplete(step, formFields, stepNumber)).toBe(expected)
   })
 
-  it.each<[string, string | undefined, boolean]>([
-    ['no field chosen', undefined, false],
-    ['a field chosen', OTHER_FIELD_ID, true],
-  ])('dynamic: %s -> %s', (_name, field, expected) => {
+  it.each<[string, string | undefined, FormFieldDto[], boolean]>([
+    ['no field chosen', undefined, withEmailField, false],
+    ['the chosen field was deleted', OTHER_FIELD_ID, formFields, false],
+    ['the chosen field is not an email field', FIELD_ID, withEmailField, false],
+    ['an email field chosen', OTHER_FIELD_ID, withEmailField, true],
+  ])('dynamic: %s -> %s', (_name, field, fields, expected) => {
     const step = {
       workflow_type: WorkflowType.Dynamic,
       edit: [FIELD_ID],
       field,
     } as unknown as FormWorkflowStep
-    expect(isStepComplete(step, formFields, 1)).toBe(expected)
+    expect(isStepComplete(step, fields, 1)).toBe(expected)
   })
+
+  it.each<[string, FormWorkflowStep, FormFieldDto[], number, boolean]>([
+    [
+      'every field it points at was deleted',
+      staticStep({ edit: [OTHER_FIELD_ID] }),
+      formFields,
+      1,
+      false,
+    ],
+    [
+      'every field it points at was deleted, on step 0',
+      staticStep({ edit: [OTHER_FIELD_ID], emails: [] }),
+      formFields,
+      0,
+      false,
+    ],
+    [
+      'one of its fields survives',
+      staticStep({ edit: [OTHER_FIELD_ID, FIELD_ID] }),
+      formFields,
+      1,
+      true,
+    ],
+  ])(
+    'deleted fields: %s -> %s',
+    (_name, step, fields, stepNumber, expected) => {
+      expect(isStepComplete(step, fields, stepNumber)).toBe(expected)
+    },
+  )
 
   it.each<[string, string | undefined, FormFieldDto[], boolean]>([
     ['no dropdown chosen', undefined, formFields, false],
@@ -131,6 +166,12 @@ describe('isStepComplete', () => {
     ['reachable approval field', { approval_field: FIELD_ID }, 1, true],
     ['no approval field', {}, 1, true],
     [
+      'approval field that is no longer a Yes/No field',
+      { approval_field: DROPDOWN_ID, edit: [DROPDOWN_ID] },
+      1,
+      false,
+    ],
+    [
       'unreachable on step 0',
       { approval_field: OTHER_FIELD_ID, emails: [] },
       0,
@@ -153,7 +194,10 @@ describe('isStepComplete', () => {
         emails: [EMAIL],
         approval_field: new ObjectId(EDIT_HEX),
       } as unknown as FormWorkflowStep
-      expect(isStepComplete(step, [], 1)).toBe(true)
+      const fields = [
+        { _id: new ObjectId(EDIT_HEX), fieldType: BasicField.YesNo },
+      ] as unknown as FormFieldDto[]
+      expect(isStepComplete(step, fields, 1)).toBe(true)
     })
 
     it('should match a conditional field given as an ObjectId', () => {
@@ -163,6 +207,7 @@ describe('isStepComplete', () => {
         conditional_field: new ObjectId(DROPDOWN_HEX),
       } as unknown as FormWorkflowStep
       const fields = [
+        { _id: new ObjectId(EDIT_HEX), fieldType: BasicField.YesNo },
         {
           _id: new ObjectId(DROPDOWN_HEX),
           fieldType: BasicField.Dropdown,
