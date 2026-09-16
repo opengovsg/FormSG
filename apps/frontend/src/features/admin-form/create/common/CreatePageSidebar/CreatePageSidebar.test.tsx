@@ -146,7 +146,12 @@ describe('CreatePageSidebar', () => {
 
     expect(navTrackingOrder()).not.toHaveLength(0)
     expect(screen.getByRole('button', { name: 'Help' })).toBeInTheDocument()
-    expect(screen.getByTestId('sidebar-collapse-toggle')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Collapse sidebar' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByTestId('sidebar-collapse-toggle'),
+    ).not.toBeInTheDocument()
 
     await userEvent.click(
       screen.getByRole('button', { name: 'Collapse sidebar' }),
@@ -156,6 +161,7 @@ describe('CreatePageSidebar', () => {
     expect(
       screen.queryByRole('button', { name: 'Help' }),
     ).not.toBeInTheDocument()
+    expect(screen.getByTestId('sidebar-collapse-toggle')).toBeInTheDocument()
 
     await userEvent.click(
       screen.getByRole('button', { name: 'Expand sidebar' }),
@@ -163,6 +169,9 @@ describe('CreatePageSidebar', () => {
 
     expect(navTrackingOrder()).not.toHaveLength(0)
     expect(screen.getByRole('button', { name: 'Help' })).toBeInTheDocument()
+    expect(
+      screen.queryByTestId('sidebar-collapse-toggle'),
+    ).not.toBeInTheDocument()
   })
 
   it('omits the workflow tab and divider for non-MRF forms', () => {
