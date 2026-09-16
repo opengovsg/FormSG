@@ -6,8 +6,12 @@ import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 import { SPOTLIGHT_TEST_ID } from '../../Spotlight'
 
-const { NoWorkflowRedesignOn, WithWorkflowRedesignOn, WithWorkflow } =
-  composeStories(pageStories)
+const {
+  NoWorkflowRedesignOn,
+  WithWorkflowRedesignOn,
+  WithWorkflow,
+  NewStepOnPrivateFormRedesignOn,
+} = composeStories(pageStories)
 
 const STEP_NAME_LABEL = /step name/i
 const PEOPLE_LABEL = /who fills in this step/i
@@ -158,5 +162,62 @@ describe('one decision at a time', () => {
       ).toBeInTheDocument()
       expect(screen.queryByRole('button', CONTINUE)).not.toBeInTheDocument()
     })
+  })
+})
+
+describe('what an unfinished step is allowed to save as', () => {
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = vi.fn()
+  })
+
+  afterAll(() => {
+    delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>)
+      .scrollIntoView
+  })
+
+  afterEach(() => useAdminWorkflowStore.getState().reset())
+
+  const WHAT_THEY_DO = { name: WHAT_THEY_DO_LABEL }
+  const APPROVAL_SELECTOR_LABEL = /select the yes\/no field for the approval/i
+  const NO_RESPONDENT_TYPE = /please choose who fills in this step/i
+  const NO_YES_NO_FIELD = /select a yes\/no field/i
+
+  const reachDoneWithNothingChosen = async (
+    Story: typeof WithWorkflowRedesignOn,
+  ) => {
+    const user = await openNewStepCard(Story)
+    const advance = async () => {
+      await act(async () => {
+        await user.click(screen.getByRole('button', CONTINUE))
+      })
+    }
+
+    await advance()
+    await advance()
+
+    await act(async () => {
+      await user.click(screen.getByRole('checkbox', WHAT_THEY_DO))
+    })
+    expect(screen.getByText(APPROVAL_SELECTOR_LABEL)).toBeInTheDocument()
+    await advance()
+
+    expect(screen.getByText(FIELDS_LABEL)).toBeInTheDocument()
+    await act(async () => {
+      await user.click(screen.getByRole('button', DONE))
+    })
+  }
+
+  it('keeps both prompts quiet while the form is closed', async () => {
+    await reachDoneWithNothingChosen(NewStepOnPrivateFormRedesignOn)
+
+    expect(screen.queryByText(NO_RESPONDENT_TYPE)).not.toBeInTheDocument()
+    expect(screen.queryByText(NO_YES_NO_FIELD)).not.toBeInTheDocument()
+  })
+
+  it('still blocks on both once the form is public', async () => {
+    await reachDoneWithNothingChosen(WithWorkflowRedesignOn)
+
+    expect(await screen.findByText(NO_RESPONDENT_TYPE)).toBeInTheDocument()
+    expect(screen.getByText(NO_YES_NO_FIELD)).toBeInTheDocument()
   })
 })
