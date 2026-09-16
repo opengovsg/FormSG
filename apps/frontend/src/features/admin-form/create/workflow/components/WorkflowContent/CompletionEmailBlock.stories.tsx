@@ -95,8 +95,6 @@ const mocks = (
     mode: FormResponseMode.Multirespondent,
     delay: settingsDelay,
     overrides: {
-      // The shared mock form is Public by default, which would render every
-      // story read-only. Editable stories must say so explicitly.
       status: FormStatus.Private,
       ...settingsOverrides,
     },
@@ -132,13 +130,10 @@ export default {
 
 const Template: StoryFn = () => <CompletionEmailBlock />
 
-/** Opens the card, for the stories that document its expanded state. */
 const OpenedTemplate: StoryFn = () => {
   const setToEditingEmailCard = useAdminWorkflowStore(
     setToEditingEmailCardSelector,
   )
-  // Resets on unmount, so switching between the Active and Inactive stories
-  // does not leak an open card into the next one.
   useEffect(() => {
     setToEditingEmailCard()
     return () => useAdminWorkflowStore.getState().reset()
@@ -146,7 +141,6 @@ const OpenedTemplate: StoryFn = () => {
   return <CompletionEmailBlock />
 }
 
-/** Enters the card the way the guided flow does, from a step's peek card. */
 const GuidedTemplate: StoryFn = () => {
   const setCompletedStep = useAdminWorkflowStore(setCompletedStepSelector)
   const continueToEmailCard = useAdminWorkflowStore(continueToEmailCardSelector)
@@ -222,8 +216,6 @@ ActiveOnPublicForm.parameters = {
 export const SettingsError = Template.bind({})
 SettingsError.storyName = 'Settings request failed'
 SettingsError.parameters = {
-  // Overridden inline rather than by teaching the shared settings handler about
-  // failures, which every other story would then carry.
   msw: {
     handlers: [
       mocks(NOTHING_CONFIGURED)[0],

@@ -171,8 +171,6 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
         pendingSwitchTo: { state: AdminEditWorkflowState.CreatingStep },
       }),
     cancelPendingSwitch: () => set({ pendingSwitchTo: null }),
-    // Hand over to a pending switch, or collapse when there is none: a null
-    // pending target is exactly the collapsed state.
     completeSave: () => {
       const pendingSwitchTo = get().pendingSwitchTo
       set({
