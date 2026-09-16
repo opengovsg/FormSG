@@ -26,6 +26,8 @@ import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
 
+const MISSING_FIELD_MESSAGE = 'This field is missing'
+
 interface InactiveStepBlockProps {
   stepNumber: number
   step: FormWorkflowStepDto
@@ -53,7 +55,7 @@ const SubsequentStepRespondentBadges = ({
       return (
         <FieldLogicBadge
           field={idToFieldMap[step.field]}
-          defaults={{ variant: 'error', message: 'This field is missing' }}
+          defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
         />
       )
     case WorkflowType.Conditional: {
@@ -65,7 +67,7 @@ const SubsequentStepRespondentBadges = ({
         return (
           <FieldLogicBadge
             field={selectedConditionalField}
-            defaults={{ variant: 'error', message: 'This field is missing' }}
+            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
           />
         )
       }
@@ -86,7 +88,7 @@ const SubsequentStepRespondentBadges = ({
                 ? idToFieldMap[step.conditional_field]
                 : undefined
             }
-            defaults={{ variant: 'error', message: 'This field is missing' }}
+            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
           />
           {isOptionsMismatched ? (
             <FieldLogicBadge
