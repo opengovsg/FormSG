@@ -269,6 +269,31 @@ describe('response value rules', () => {
         computeCheckboxAnswerValue({ value: false, othersInput: 'ignored' }),
       ).toEqual({ answerArray: [] })
     })
+
+    /**
+     * Both producers can present the sentinel with no free text to go with
+     * it, and they present it differently: the browser holds `othersInput` as
+     * a present `undefined`, V4 content omits the key. Neither may reach the
+     * admin's CSV or a webhook consumer as the string `undefined`, and the two
+     * must produce the same bytes — which is why the rule coalesces the value
+     * instead of testing for the key.
+     */
+    it('renders a present but undefined othersInput as a bare prefix', () => {
+      expect(
+        computeCheckboxAnswerValue({
+          value: ['a', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+          othersInput: undefined,
+        }),
+      ).toEqual({ answerArray: ['a', 'Others: '] })
+    })
+
+    it('renders an absent othersInput key identically', () => {
+      expect(
+        computeCheckboxAnswerValue({
+          value: ['a', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+        }),
+      ).toEqual({ answerArray: ['a', 'Others: '] })
+    })
   })
 
   describe('radio', () => {
@@ -319,8 +344,13 @@ describe('response value rules', () => {
   describe('throwUnsupportedFieldType', () => {
     it('throws so an unclassified field type cannot be silently dropped', () => {
       expect(() =>
-        throwUnsupportedFieldType({ fieldType: 'not_a_field_type' } as never),
-      ).toThrow('Unsupported field type: [object Object]')
+        throwUnsupportedFieldType({
+          _id: '000000000000000000000001',
+          fieldType: 'not_a_field_type',
+        } as never),
+      ).toThrow(
+        'Unsupported field type: not_a_field_type for field id: 000000000000000000000001',
+      )
     })
   })
 })
