@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { BiEnvelope } from 'react-icons/bi'
 import { Flex, Icon, Stack, Text } from '@chakra-ui/react'
 
+import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
+
 /**
  * Header for the completion email card. Mirrors StepLabel's shape so the card
  * sits in the same rhythm as the step cards above it, with an envelope in place
@@ -9,12 +11,13 @@ import { Flex, Icon, Stack, Text } from '@chakra-ui/react'
  */
 export const CompletionEmailLabel = (): JSX.Element => {
   const { t } = useTranslation()
+  const { cardRadius, stepLabelTextStyle } = useWorkflowSurfaces()
   return (
     <Stack
       direction="row"
       spacing="1.5rem"
       alignItems="center"
-      textStyle="subhead-3"
+      textStyle={stepLabelTextStyle}
     >
       {/* Measured against StepLabel's number box, which renders 44.51 x 42px:
       42px tall from 0.5rem padding + subhead-3's 1.5rem line box + 1px borders,
@@ -25,7 +28,7 @@ export const CompletionEmailLabel = (): JSX.Element => {
         flexShrink={0}
         borderWidth="1px"
         borderColor="secondary.300"
-        borderRadius="4px"
+        borderRadius={cardRadius}
         alignItems="center"
         justifyContent="center"
       >
