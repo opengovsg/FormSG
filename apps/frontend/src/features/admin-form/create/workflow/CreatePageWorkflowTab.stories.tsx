@@ -48,9 +48,6 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    // Required so skeleton "animation" does not hide content.
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
     chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     msw: {
       handlers: {
@@ -363,7 +360,7 @@ Step2NoEmails.parameters = {
   },
   documentation: {
     storyDescription:
-      'A step saved with Specific emails selected but no email entered. The redesign lets an incomplete step be saved, so the card has to show the same missing-field error the other respondent types show.',
+      'Specific emails selected, none entered. Saving an incomplete step is allowed, so the card shows the missing-field error.',
   },
 }
 
@@ -421,9 +418,6 @@ Step2InvalidConditionalRecipientSelected.parameters = {
   },
 }
 
-// Paired with WithWorkflow to show the completion email seam in both flag
-// states: off keeps the inline message pointing at Settings, on replaces it
-// with the editable card.
 export const WithWorkflowRedesignOn = Template.bind({})
 WithWorkflowRedesignOn.decorators = [withRedesignOn]
 WithWorkflowRedesignOn.parameters = {
@@ -433,8 +427,6 @@ WithWorkflowRedesignOn.parameters = {
       getAdminFormSettings({
         mode: FormResponseMode.Multirespondent,
         overrides: {
-          // The shared mock form is Public by default, which renders the MRF
-          // email controls read-only.
           status: FormStatus.Private,
           emails: ['admin@example.gov.sg'],
           stepsToNotify: [workflow_step_2._id],
