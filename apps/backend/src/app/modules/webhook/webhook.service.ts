@@ -18,6 +18,7 @@ import getSubmissionModel from '../../models/submission.server.model'
 import { getSignedS3Url } from '../../utils/aws-s3'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../core/core.errors'
+import type { WebhookConsumerType } from '../submission/multirespondent-submission/webhook/webhook-payload-policy'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import { WEBHOOK_MAX_CONTENT_LENGTH } from './webhook.constants'
@@ -241,6 +242,29 @@ export const getWebhookType = (webhookUrl: string): WebhookType => {
       ? 'plumber'
       : 'generic'
   return webhookType
+}
+
+/**
+ * Narrows a URL family to the consumer class the payload policy reasons
+ * about. Zapier is an external consumer like any other, so it classifies as
+ * `generic`; only plumber receives the native V4 envelope.
+ *
+ * Eligibility, wire-shape resolution and the #9976 settings validation all
+ * rest on that single fact, so it lives here rather than as an inline
+ * `=== 'plumber' ? 'plumber' : 'generic'` ternary repeated at every site —
+ * where adding a fourth URL family would silently classify it as generic in
+ * some places and not others.
+ */
+export const toConsumerType = (
+  webhookType: WebhookType,
+): WebhookConsumerType => {
+  switch (webhookType) {
+    case 'plumber':
+      return 'plumber'
+    case 'zapier':
+    case 'generic':
+      return 'generic'
+  }
 }
 
 /**

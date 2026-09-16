@@ -211,6 +211,9 @@ describe('[GATE] v4 per-step retry fidelity', () => {
         submissionIndex,
         policy: getWebhookPayloadPolicy({
           webhookType: 'plumber',
+          // Plumber ignores the setting; passed explicitly because the key
+          // is mandatory, so no call site can forget the term by accident.
+          webhookFormat: undefined,
           submissionIndex,
           submittedStepsLength: submission.submittedSteps?.length ?? 0,
         }),
