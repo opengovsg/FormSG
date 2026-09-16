@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.24.0](https://github.com/opengovsg/formsg/compare/v9.23.0...v9.24.0) (2026-09-16)
+
+
+### Features
+
+* **auth-one:** replace sso.gov.sg login with one.gov.sg (#9902) ([#9902](https://github.com/opengovsg/formsg/commit/b2314a8dd9687a6ad45d7d9433c43eadf6cab066))
+
 ## [9.23.0](https://github.com/opengovsg/formsg/compare/v9.22.4...v9.23.0) (2026-09-15)
 
 
