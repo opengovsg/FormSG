@@ -25,6 +25,8 @@ import {
 import { StoryRouter } from '~utils/storybook'
 
 import {
+  continueToEmailCardSelector,
+  setCompletedStepSelector,
   setToEditingEmailCardSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
@@ -144,6 +146,18 @@ const OpenedTemplate: StoryFn = () => {
   return <CompletionEmailBlock />
 }
 
+/** Enters the card the way the guided flow does, from a step's peek card. */
+const GuidedTemplate: StoryFn = () => {
+  const setCompletedStep = useAdminWorkflowStore(setCompletedStepSelector)
+  const continueToEmailCard = useAdminWorkflowStore(continueToEmailCardSelector)
+  useEffect(() => {
+    setCompletedStep(0)
+    continueToEmailCard()
+    return () => useAdminWorkflowStore.getState().reset()
+  }, [setCompletedStep, continueToEmailCard])
+  return <CompletionEmailBlock />
+}
+
 export const InactiveEmpty = Template.bind({})
 InactiveEmpty.storyName = 'Inactive, nothing configured'
 InactiveEmpty.parameters = {
@@ -222,6 +236,18 @@ SettingsError.parameters = {
     description: {
       story:
         'With no recipients to summarise the card would skeleton indefinitely, since a failed request and one still in flight both leave the data undefined. Falls back to the message the flag-off path shows, so the admin still gets a working link to Settings.',
+    },
+  },
+}
+
+export const GuidedActive = GuidedTemplate.bind({})
+GuidedActive.storyName = 'Active, reached from guided setup'
+GuidedActive.parameters = {
+  msw: { handlers: mocks(FULLY_CONFIGURED) },
+  docs: {
+    description: {
+      story:
+        'Reached by declining another step on a peek card. Cancel returns to that peek card rather than collapsing, so Save changes is replaced by the guided Cancel and Done pair the step cards use.',
     },
   },
 }
