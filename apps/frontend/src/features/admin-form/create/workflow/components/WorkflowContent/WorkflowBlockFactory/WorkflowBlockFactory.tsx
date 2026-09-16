@@ -12,6 +12,7 @@ import {
   setToCreatingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
+import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { DeleteStepModal } from '../../DeleteStepModal'
 import { DeleteWorkflowModal } from '../../DeleteWorkflowModal'
 import {
@@ -45,6 +46,7 @@ export const WorkflowBlockFactory = ({
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
   const continueToEmailCard = useAdminWorkflowStore(continueToEmailCardSelector)
   const { data: settings, isError: isSettingsError } = useAdminFormSettings()
+  const { formWorkflow } = useAdminFormWorkflow()
   const {
     isOpen: isDeleteModalOpen,
     onClose: onDeleteModalClose,
@@ -57,8 +59,11 @@ export const WorkflowBlockFactory = ({
   )
 
   const onDeclineAnotherStep =
-    getCompletionEmailBlockView({ settings, isSettingsError }) ===
-    CompletionEmailBlockView.Card
+    getCompletionEmailBlockView({
+      settings,
+      isSettingsError,
+      workflowStepCount: formWorkflow?.length ?? 0,
+    }) === CompletionEmailBlockView.Card
       ? continueToEmailCard
       : dismissCompletedStep
 
