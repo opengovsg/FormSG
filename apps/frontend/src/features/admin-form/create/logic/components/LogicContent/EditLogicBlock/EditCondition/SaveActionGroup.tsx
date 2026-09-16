@@ -13,10 +13,6 @@ export interface SaveActionGroupProps {
   submitButtonLabel?: string
   isLoading: boolean
   ariaLabelName: string
-  /**
-   * Disables submit on its own, leaving cancel usable. For a card that is shown
-   * read-only rather than hidden, so it can still be closed.
-   */
   isSubmitDisabled?: boolean
 }
 
@@ -43,7 +39,8 @@ export const SaveActionGroup = ({
       {handleDelete ? (
         <IconButton
           order={{ base: 1, md: 0 }}
-          alignSelf={{ base: 'center', md: 'auto' }}
+          alignSelf={{ base: 'stretch', md: 'auto' }}
+          w={{ base: '100%', md: 'auto' }}
           variant="clear"
           colorScheme="danger"
           aria-label={t('features.adminForm.sidebar.logic.aria.delete', {
