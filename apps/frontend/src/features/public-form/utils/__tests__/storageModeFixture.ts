@@ -173,3 +173,238 @@ export const buildAnsweredInputs = (): FormFieldValues => {
 /** Every field left untouched — the unanswered path. */
 export const buildUnansweredInputs = (): FormFieldValues =>
   ({}) as FormFieldValues
+
+/* -------------------------------------------------------------------------- *
+ * Differential (V4 -> V1 byte-parity) additions — #9984
+ *
+ * Everything below is additive. The exports above are frozen: the
+ * `[STEERING:T2a]` no-op snapshots are keyed off them, and rewriting a snapshot
+ * that exists to prove phase 1 changed nothing would defeat its purpose.
+ *
+ * The differential gate needs a stricter fixture than the snapshot does,
+ * because its reference value runs through the server's `validateField`. The
+ * frozen fixture was only ever fed to the browser producer, so several of its
+ * values are ones a real server would reject outright — those are corrected
+ * here rather than in place.
+ * -------------------------------------------------------------------------- */
+
+/**
+ * OTP-verified email and mobile. The frozen fixture declares both with
+ * `isVerifiable: false`, which is why the original 26-field probe never saw
+ * `isUserVerified` — the server appends it only when `formField.isVerifiable`
+ * (`ParsedResponsesObject.class.ts:150`).
+ */
+export const VERIFIABLE_FIELD_IDS: Record<
+  BasicField.Email | BasicField.Mobile,
+  string
+> = {
+  [BasicField.Email]: fieldId(0x101),
+  [BasicField.Mobile]: fieldId(0x102),
+}
+
+export const VERIFIABLE_FIELD_TYPES = [
+  BasicField.Email,
+  BasicField.Mobile,
+] as const
+
+/**
+ * Values only. The signature has to be minted at test time by whoever holds
+ * the verification secret key: the backend's `makeSignatureValidator` really
+ * does authenticate it, so a placeholder makes the storage-mode reference
+ * unbuildable rather than merely unrealistic.
+ */
+export const VERIFIABLE_ANSWER_VALUE: Record<
+  BasicField.Email | BasicField.Mobile,
+  string
+> = {
+  [BasicField.Email]: 'verified@example.com',
+  [BasicField.Mobile]: '+6591234567',
+}
+
+export const buildVerifiableAnsweredInput = (
+  fieldType: BasicField.Email | BasicField.Mobile,
+  sign: (fieldId: string, answer: string) => string,
+): { value: string; signature: string } => {
+  const value = VERIFIABLE_ANSWER_VALUE[fieldType]
+  return { value, signature: sign(VERIFIABLE_FIELD_IDS[fieldType], value) }
+}
+
+/**
+ * Field-definition corrections the server's validators require.
+ * - Table columns need a `columnType`; `createAnswerFieldFromColumn` builds a
+ *   per-cell validator from it and rejects the row without one.
+ * - Attachment needs an `attachmentSize`; the size validator parses it into
+ *   the byte limit, and `NaN` fails every file.
+ * - the `ValidationOptions` / `ratingOptions` / `fieldOptions` sub-documents
+ *   are dereferenced unguarded by their validators, so their absence is a
+ *   `TypeError` rather than a rejection.
+ */
+const tableColumns = (required: boolean) =>
+  TABLE_COLUMN_IDS.map((_id, i) => {
+    const column = {
+      _id,
+      title: TABLE_COLUMN_TITLES[i],
+      required,
+      columnType: BasicField.ShortText,
+      ValidationOptions: { selectedValidation: null, customVal: null },
+    }
+    // `createAnswerFieldFromColumn` calls `column.toObject()` — a column is a
+    // mongoose subdocument in production.
+    return { ...column, toObject: () => column }
+  })
+
+const DIFFERENTIAL_FIELD_OVERRIDES: Partial<
+  Record<BasicField, Record<string, unknown>>
+> = {
+  [BasicField.Attachment]: { attachmentSize: '1' },
+  [BasicField.Number]: {
+    ValidationOptions: {
+      selectedValidation: null,
+      LengthValidationOptions: {
+        selectedLengthValidation: null,
+        customVal: null,
+      },
+      RangeValidationOptions: { customMin: null, customMax: null },
+    },
+  },
+  [BasicField.Decimal]: {
+    ValidationOptions: { customMin: null, customMax: null },
+    validateByValue: false,
+  },
+  [BasicField.ShortText]: {
+    ValidationOptions: { selectedValidation: null, customVal: null },
+  },
+  [BasicField.LongText]: {
+    ValidationOptions: { selectedValidation: null, customVal: null },
+  },
+  [BasicField.Dropdown]: { fieldOptions: ['Option A', 'Option B'] },
+  [BasicField.Checkbox]: {
+    ValidationOptions: { customMin: null, customMax: null },
+  },
+  [BasicField.Rating]: { ratingOptions: { steps: 5, shape: 'Heart' } },
+  [BasicField.Table]: { columns: tableColumns(true) },
+}
+
+export const buildDifferentialField = (fieldType: BasicField): FormFieldDto =>
+  ({
+    ...buildField(fieldType),
+    ...DIFFERENTIAL_FIELD_OVERRIDES[fieldType],
+  }) as unknown as FormFieldDto
+
+export const buildVerifiableField = (
+  fieldType: BasicField.Email | BasicField.Mobile,
+): FormFieldDto =>
+  ({
+    ...buildDifferentialField(fieldType),
+    _id: VERIFIABLE_FIELD_IDS[fieldType],
+    title: `verified ${fieldType} question`,
+    isVerifiable: true,
+  }) as unknown as FormFieldDto
+
+/**
+ * Answer corrections the server's validators require. Each one is a value the
+ * frozen fixture supplies that a real submission could never carry.
+ * - `country_region` is upper-cased by `PublicFormProvider.handleSubmitForm`,
+ *   and the validator only accepts the upper-case options.
+ * - the frozen UEN fails its own check digit.
+ * - the table declares `minimumRows: 2` with `addMoreRows: false`, so exactly
+ *   two rows are admissible.
+ */
+const DIFFERENTIAL_ANSWERED_INPUT_OVERRIDES: Partial<
+  Record<BasicField, unknown>
+> = {
+  [BasicField.CountryRegion]: '  SINGAPORE  ',
+  [BasicField.Uen]: '  T16LL0604C  ',
+  [BasicField.Table]: [
+    { [TABLE_COLUMN_IDS[0]]: ' cell a ', [TABLE_COLUMN_IDS[1]]: 'cell b' },
+    { [TABLE_COLUMN_IDS[0]]: ' cell c ', [TABLE_COLUMN_IDS[1]]: 'cell d' },
+  ],
+}
+
+export const buildDifferentialAnsweredInput = (
+  fieldType: BasicField,
+): unknown =>
+  fieldType in DIFFERENTIAL_ANSWERED_INPUT_OVERRIDES
+    ? DIFFERENTIAL_ANSWERED_INPUT_OVERRIDES[fieldType]
+    : buildAnsweredInput(fieldType)
+
+/**
+ * The unanswered path can only be measured on optional fields: the reference
+ * runs `validateField`, which rejects a blank answer to a required field
+ * before any array is produced. A table's columns carry their own `required`,
+ * so they have to be relaxed too.
+ */
+export const buildOptionalDifferentialField = (
+  fieldType: BasicField,
+): FormFieldDto =>
+  ({
+    ...buildDifferentialField(fieldType),
+    required: false,
+    ...(fieldType === BasicField.Table ? { columns: tableColumns(false) } : {}),
+  }) as unknown as FormFieldDto
+
+export const buildOptionalVerifiableField = (
+  fieldType: BasicField.Email | BasicField.Mobile,
+): FormFieldDto =>
+  ({
+    ...buildVerifiableField(fieldType),
+    required: false,
+  }) as unknown as FormFieldDto
+
+/**
+ * Children is deliberately absent: storage mode expands one Children field
+ * into one entry per child, while the target flatten is specified to throw on
+ * it. Encoding that as an expected difference would enshrine a state that has
+ * been decided cannot exist; exhaustiveness covers Children instead.
+ *
+ * MyInfo variants are absent too — storage mode prepends `[Myinfo] ` to their
+ * question text, and #9975 owns reproducing that.
+ */
+export const DIFFERENTIAL_FIELD_TYPES: BasicField[] = ALL_FIELD_TYPES.filter(
+  (fieldType) => fieldType !== BasicField.Children,
+)
+
+/** One field of every differential type, plus the two verifiable ones. */
+export const buildDifferentialFields = (): FormFieldDto[] => [
+  ...DIFFERENTIAL_FIELD_TYPES.map(buildDifferentialField),
+  ...VERIFIABLE_FIELD_TYPES.map(buildVerifiableField),
+]
+
+/** The same form with every field optional, for the unanswered path. */
+export const buildOptionalDifferentialFields = (): FormFieldDto[] => [
+  ...DIFFERENTIAL_FIELD_TYPES.map(buildOptionalDifferentialField),
+  ...VERIFIABLE_FIELD_TYPES.map(buildOptionalVerifiableField),
+]
+
+export const buildDifferentialInputs = (
+  sign: (fieldId: string, answer: string) => string,
+): FormFieldValues => {
+  const inputs: Record<string, unknown> = {}
+  for (const fieldType of DIFFERENTIAL_FIELD_TYPES) {
+    const input = buildDifferentialAnsweredInput(fieldType)
+    if (input !== undefined) inputs[FIELD_IDS[fieldType]] = input
+  }
+  for (const fieldType of VERIFIABLE_FIELD_TYPES) {
+    inputs[VERIFIABLE_FIELD_IDS[fieldType]] = buildVerifiableAnsweredInput(
+      fieldType,
+      sign,
+    )
+  }
+  return inputs as FormFieldValues
+}
+
+/**
+ * The attachment upload is mediated by the quarantine bucket on both submit
+ * paths, so both producers need the same map.
+ */
+export const ATTACHMENT_QUARANTINE_KEY = 'quarantine-bucket-key'
+
+export const buildQuarantineMap = (): {
+  fieldId: string
+  quarantineBucketKey: string
+}[] => [
+  {
+    fieldId: FIELD_IDS[BasicField.Attachment],
+    quarantineBucketKey: ATTACHMENT_QUARANTINE_KEY,
+  },
+]
