@@ -3,7 +3,10 @@ import { useDisclosure } from '@chakra-ui/react'
 
 import { FormWorkflowStepDto } from 'formsg-shared/types'
 
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
+
 import {
+  continueToEmailCardSelector,
   dismissCompletedStepSelector,
   editDataSelector,
   setToCreatingSelector,
@@ -19,6 +22,7 @@ import {
 import { CompletionPeekMomentType } from '../../GuidedCreation/utils/completionPeekContent'
 import { ActiveStepBlock } from '../ActiveStepBlock'
 import { InactiveStepBlock } from '../InactiveStepBlock'
+import { isCompletionEmailCardReachable } from '../utils/isCompletionEmailCardReachable'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 export interface WorkflowBlockFactoryProps {
@@ -36,6 +40,8 @@ export const WorkflowBlockFactory = ({
     dismissCompletedStepSelector,
   )
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
+  const continueToEmailCard = useAdminWorkflowStore(continueToEmailCardSelector)
+  const { data: settings, isError: isSettingsError } = useAdminFormSettings()
   const {
     isOpen: isDeleteModalOpen,
     onClose: onDeleteModalClose,
@@ -47,18 +53,25 @@ export const WorkflowBlockFactory = ({
     [editState?.stepNumber, stepNumber],
   )
 
+  const onDeclineAnotherStep = isCompletionEmailCardReachable({
+    settings,
+    isSettingsError,
+  })
+    ? continueToEmailCard
+    : dismissCompletedStep
+
   const peekCardProps: CompletionPeekCardProps = isFirstStepByStepNumber(
     stepNumber,
   )
     ? {
         type: CompletionPeekMomentType.StepOneDone,
-        onDeclineAnotherStep: dismissCompletedStep,
+        onDeclineAnotherStep,
         onAddAnotherStep: setToCreating,
       }
     : {
         type: CompletionPeekMomentType.LaterStepDone,
         stepNumber,
-        onDeclineAnotherStep: dismissCompletedStep,
+        onDeclineAnotherStep,
         onAddAnotherStep: setToCreating,
       }
   // A workflow without its first step has no entry point, so deleting step 1 is

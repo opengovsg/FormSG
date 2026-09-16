@@ -7,6 +7,7 @@ type AdminWorkflowStore = {
   setToCreating: () => void
   setToEditing: (stepNumber: number) => void
   setToEditingEmailCard: () => void
+  continueToEmailCard: () => void
   setToInactive: () => void
   reset: () => void
   createOrEditData: CreateOrEditData | null
@@ -59,6 +60,9 @@ export const isEditingEmailCardSelector = (state: AdminWorkflowStore) =>
 
 export const setToEditingEmailCardSelector = (state: AdminWorkflowStore) =>
   state.setToEditingEmailCard
+
+export const continueToEmailCardSelector = (state: AdminWorkflowStore) =>
+  state.continueToEmailCard
 
 export const setToInactiveSelector = (state: AdminWorkflowStore) =>
   state.setToInactive
@@ -133,6 +137,12 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
           state: AdminEditWorkflowState.EditingEmailCard,
         },
         completedStepNumber: null,
+      }),
+    continueToEmailCard: () =>
+      set({
+        createOrEditData: {
+          state: AdminEditWorkflowState.EditingEmailCard,
+        },
       }),
     setCompletedStep: (stepNumber) => set({ completedStepNumber: stepNumber }),
     dismissCompletedStep: () => set({ completedStepNumber: null }),
