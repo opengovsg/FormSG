@@ -178,7 +178,6 @@ describe('what an unfinished step is allowed to save as', () => {
   afterEach(() => useAdminWorkflowStore.getState().reset())
 
   const WHAT_THEY_DO = { name: WHAT_THEY_DO_LABEL }
-  const APPROVAL_SELECTOR_LABEL = /select the yes\/no field for the approval/i
   const NO_RESPONDENT_TYPE = /please choose who fills in this step/i
   const NO_YES_NO_FIELD = /select a yes\/no field/i
 
@@ -198,7 +197,7 @@ describe('what an unfinished step is allowed to save as', () => {
     await act(async () => {
       await user.click(screen.getByRole('checkbox', WHAT_THEY_DO))
     })
-    expect(screen.getByText(APPROVAL_SELECTOR_LABEL)).toBeInTheDocument()
+    expect(screen.getByRole('checkbox', WHAT_THEY_DO)).toBeChecked()
     await advance()
 
     expect(screen.getByText(FIELDS_LABEL)).toBeInTheDocument()
