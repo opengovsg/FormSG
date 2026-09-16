@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.25.0](https://github.com/opengovsg/formsg/compare/v9.24.0...v9.25.0) (2026-09-16)
+
+
+### Features
+
+* **workflow:** apply FRM-2503's surface conventions to the step cards (#10023) ([#10023](https://github.com/opengovsg/formsg/commit/c14bada9f291e843e45875e6b0f68e5bff09e905))
+
+
+### Bug Fixes
+
+* **create:** stack the collapse toggle under Help instead of over it (#10022) ([#10022](https://github.com/opengovsg/formsg/commit/83856112fa6f3f0329531430f094e4f46f51d331))
+* **workspace:** mock an empty form list in the Empty dashboard stories (#10024) ([#10024](https://github.com/opengovsg/formsg/commit/22c504d8e57e84b223a6a44feac3eae35c1999ff))
+* **yes-no-field:** clear stuck pressed state on mouseup off the option (#9971) ([#9971](https://github.com/opengovsg/formsg/commit/979c61430b06f83df8ab408e432c821cdca294cf))
+
 ## [9.24.0](https://github.com/opengovsg/formsg/compare/v9.23.0...v9.24.0) (2026-09-16)
 
 
