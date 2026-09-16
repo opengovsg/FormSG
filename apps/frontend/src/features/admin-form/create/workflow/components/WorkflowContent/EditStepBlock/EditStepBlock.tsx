@@ -35,7 +35,6 @@ import { RespondentBlock } from './RespondentBlock'
 import { StepNameBlock } from './StepNameBlock'
 
 export interface EditLogicBlockProps {
-  /** Sets default values of inputs if this is provided */
   defaultValues?: Partial<EditStepInputs>
   onSubmit: (inputs: FormWorkflowStep) => void
 
@@ -50,12 +49,6 @@ export const APPROVAL_FIELD_NAME = 'approval_field'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 
-/**
- * Builds a workflow step from form inputs, or undefined if they cannot form a
- * valid step. Inputs are assumed already validated (both save paths run
- * handleSubmit first), so the field narrowing here is a type guarantee, not the
- * validation gate.
- */
 export const buildWorkflowStep = (
   rawInputs: EditStepInputs,
   isFirstStep: boolean,
@@ -94,7 +87,6 @@ export const buildWorkflowStep = (
     case WorkflowType.Static: {
       return {
         ...workflowStepBase,
-        // Need to explicitly set workflow_type in this object to help with typechecking.
         workflow_type: WorkflowType.Static,
         emails: inputs.emails ?? [],
       }
@@ -116,7 +108,6 @@ export const buildWorkflowStep = (
       } as FormWorkflowStep & { _id: string }
     }
     default: {
-      // Exhaustiveness check: a new WorkflowType breaks the build here until handled.
       const exhaustiveCheck: never = inputs
       return exhaustiveCheck
     }
@@ -153,9 +144,6 @@ export const EditStepBlock = ({
     if (wrapperRef.current) {
       wrapperRef.current.scrollIntoView({
         behavior: 'smooth',
-        // Block required so parent (with overflow:hidden) will not be scrolled
-        // and causing unscrollable white space.
-        // See https://stackoverflow.com/questions/48634459/scrollintoview-block-vs-inline/48635751#48635751
         block: 'nearest',
       })
     }
@@ -163,50 +151,27 @@ export const EditStepBlock = ({
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
-  // RATIONALE: Returned formState is wrapped with a Proxy to improve
-  // render performance, we must ead it before a render in order to enable
-  // the state update.
   const { isDirty } = formMethods.formState
 
-  // Shared by the Save button and the auto-save-on-switch effect. An invalid
-  // submit cancels any pending switch so the card stays open; the Save-button
-  // path never has a pending switch, so that cancel is a no-op there.
   const handleSubmit = formMethods.handleSubmit((inputs: EditStepInputs) => {
     const step = buildWorkflowStep(inputs, isFirstStep)
     if (!step) {
-      // Inputs passed validation but cannot form a step. Without this the
-      // pending switch would never resolve and the card would be stuck open.
       cancelPendingSwitch()
       return
     }
     onSubmit(step)
   }, cancelPendingSwitch)
 
-  // Guards the auto-save effect against re-entry: the mutation's isLoading
-  // only flips true on the render after mutate() is called, and handleSubmit's
-  // validation is promise-based, so a second card click landing in that window
-  // would pass the isLoading check and submit again (double-saving an existing
-  // step, or creating a new step twice). Set synchronously before submitting;
-  // cleared when the pending switch resolves (pendingSwitchTo returns to null
-  // on cancel, or this card unmounts on success).
   const hasSubmittedForPendingSwitch = useRef(false)
 
-  // Auto-save when another step is clicked while this one is open.
-  // InactiveStepBlock sets pendingSwitchTo; this effect is dormant until it does.
   useEffect(() => {
     if (pendingSwitchTo === null) {
       hasSubmittedForPendingSwitch.current = false
       return
     }
 
-    // A save is already in flight; its onSuccess completes the switch.
-    // Submitting again would double-save and collapse the target.
     if (isLoading || hasSubmittedForPendingSwitch.current) return
 
-    // A new step has nothing persisted yet, so it must always run validation
-    // (like the Add step button): an incomplete new step blocks the switch. An
-    // existing step that wasn't touched can switch directly without a
-    // redundant save.
     if (!isCreatingState && !isDirty) {
       completeSave()
       return
@@ -219,8 +184,6 @@ export const EditStepBlock = ({
 
   const isGuided = isRedesign && isCreatingState && isGuidedSetup
 
-  // Only the order differs between flag states, so build each section once and
-  // swap the sequence rather than duplicating the subtree per branch.
   const questionsSection = (
     <QuestionsBlock
       key="fields"
@@ -306,11 +269,6 @@ export const EditStepBlock = ({
           <SaveActionGroup
             isLoading={_isLoading}
             handleSubmit={handleSubmit}
-            // Step 1 gets the same affordance as every other step. What it
-            // opens differs — deleting step 1 means deleting the workflow —
-            // but hiding the button left admins hunting for a delete that
-            // does not exist, which is the behaviour FRM-2494 is about.
-            // Behind the redesign flag, so with it off step 1 has no delete.
             handleDelete={
               !isFirstStep || isRedesign ? handleOpenDeleteModal : undefined
             }
