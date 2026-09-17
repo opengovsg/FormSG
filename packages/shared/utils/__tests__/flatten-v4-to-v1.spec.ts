@@ -12,18 +12,6 @@ import {
 import { flattenV4ToFormFields } from '../flatten-v4-to-v1'
 import { FieldResponsesV4Input } from '../v4-answer'
 
-/**
- * The flatten's own unit gates. Byte parity with the storage-mode producer is
- * measured elsewhere — `apps/backend/.../flattenV4ToV1.parity.spec.ts`, which
- * is the only place both producers can be run on one input. What is asserted
- * here is what that differential gate structurally cannot see: where the
- * question text comes from, that an unclassified field type throws rather than
- * emitting a blank entry, that nothing outside the form definition is emitted,
- * and the `myInfo` append (the differential fixture carries no MyInfo field,
- * because storage mode also rewrites their question text and #9975 owns
- * reproducing that prefix).
- */
-
 const FIELD_ID = '000000000000000000000001'
 
 const shortTextField = (
@@ -60,8 +48,6 @@ describe('question injection', () => {
   })
 
   it('ignores a question carried on the V4 response', () => {
-    // The MRF middleware strips `question` on the way in, so anything that
-    // reaches the flatten under that key is respondent-supplied.
     const v4Responses = {
       [FIELD_ID]: {
         fieldType: BasicField.ShortText,
@@ -89,8 +75,6 @@ describe('question injection', () => {
 
 describe('exhaustiveness', () => {
   it('throws on a Children field rather than emitting a blank entry', () => {
-    // Decided: no MRF form should have a Children field. The old passthrough
-    // exported `answer: ""` — a blank CSV column with no error.
     expect(() =>
       flattenV4ToFormFields({
         formLogics: [],
@@ -118,8 +102,6 @@ describe('exhaustiveness', () => {
   })
 
   it('routes its default through the `never` check, so a new BasicField member breaks the build', () => {
-    // The compiler is the real gate here and cannot be asserted from a test;
-    // what is asserted is that the construction giving it to us still exists.
     expect(
       readFileSync(join(__dirname, '..', 'flatten-v4-to-v1.ts'), 'utf8'),
     ).toContain('return throwUnsupportedFieldType(field)')
@@ -320,11 +302,11 @@ const showAddressWhenYes = (): LogicDto =>
   }) as LogicDto
 
 /**
- * V4 content drops an untouched Address and a logic-hidden one alike, so the
- * flatten reconstructs the difference storage mode records: six empty strings
- * for the field the respondent saw, an empty array for the field logic hid.
- * The byte-level assertion lives in the differential gate; what is pinned here
- * is that visibility, and only visibility, decides between the two.
+ * RATIONALE: V4 content omits an untouched Address and a logic-hidden one
+ * alike. The flatten must reconstruct the storage-mode difference: six empty
+ * strings when visible, an empty array when hidden. This suite pins that
+ * visibility alone decides between the two; the byte-level check lives in
+ * the differential gate.
  */
 describe('an Address with no answer in the V4 content', () => {
   it('reconstructs six empty subfields when the field was visible', () => {
@@ -405,14 +387,11 @@ const showAddressWhenRadioOthers = (): LogicDto =>
   }) as LogicDto
 
 /**
- * Radio is the one logic condition type whose V4 answer shape cannot be handed
- * to the evaluator as-is: V4 flattens the Others sentinel away and carries the
- * free text in `value`, while the evaluator's client branch matches an
- * `Others` condition on an absent `value` plus a non-empty `othersInput`.
- *
- * These cases fail if the transformer forwards the V4 answer unconverted — the
- * condition would then be evaluated against the respondent's own words, which
- * is a silently wrong visibility answer rather than a type error.
+ * RATIONALE: V4 drops the Others sentinel and puts the free text in `value`.
+ * The evaluator instead matches an `Others` condition on an absent `value`
+ * with a non-empty `othersInput`. Radio is the only condition type needing
+ * this conversion. An unconverted answer evaluates against the respondent's
+ * own words — a silently wrong visibility answer, not a type error.
  */
 describe('a Radio `Others` answer as a logic condition', () => {
   it('satisfies an `Others` condition and shows the Address', () => {
@@ -456,8 +435,9 @@ describe('a Radio `Others` answer as a logic condition', () => {
   })
 
   it('leaves an answered Address alone whatever the logic says', () => {
-    // The visibility pass used to be skipped unless the form held an Address
-    // at all; an answered Address takes its value from the answer either way.
+    // RATIONALE: Regression guard. The visibility pass used to be skipped
+    // unless the form held an Address; an answered Address must keep its
+    // value regardless.
     const flattened = flattenV4ToFormFields({
       v4Responses: {
         [RADIO_ID]: {

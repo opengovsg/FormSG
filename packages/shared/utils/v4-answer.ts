@@ -1,8 +1,6 @@
 import { SignatureVectorArray } from '../types/field'
 
 /**
- * The V4 answer shapes, as they arrive on the MRF V4 format.
- *
  * NOTE: Some of these are re-declared here, since the
  * shared package should not depend on the SDK.
  */

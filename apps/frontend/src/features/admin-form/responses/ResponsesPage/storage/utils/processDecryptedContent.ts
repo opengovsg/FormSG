@@ -126,10 +126,11 @@ export const buildFormFieldMetaMap = (
 }
 
 /**
- * Converts V4 decrypted responses into FormField[] for use with the shared
- * augmentDecryptedResponses pipeline. Unanswered fields are included as
- * empty strings. Verified content (SPCP/sgID) is appended after the form
- * fields, exactly as the storage-mode path does.
+ * Converts V4 decrypted responses into FormField[] for the shared
+ * augmentDecryptedResponses pipeline.
+ *
+ * NOTE: Verified content (SPCP/sgID) is appended after the form fields, the
+ * same way the storage-mode path does it.
  */
 export const processDecryptedContentV4 = (
   formFields: FormFieldDto[],
