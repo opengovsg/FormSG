@@ -165,11 +165,27 @@ async function decryptSubmissionData(
       }
 
       mrfSubmissionSecretKey = decryptedV4.submissionSecretKey
-      decryptedResponses = processDecryptedContentV4(
-        submissionData.form_fields,
-        decryptedV4.responses,
-        decryptedV4.verified,
-      )
+      try {
+        decryptedResponses = processDecryptedContentV4(
+          submissionData.form_fields,
+          submissionData.form_logics,
+          decryptedV4.responses,
+          decryptedV4.verified,
+        )
+      } catch (err) {
+        const error = err as Error
+        datadogLogs.logger.error('Could not adapt V4 content to V1', {
+          submissionId: submissionData._id,
+          error: {
+            message: error?.message,
+            name: error?.name,
+            stack: error?.stack,
+          },
+        })
+        return {
+          isSubmissionDecryptionSuccessful: false,
+        }
+      }
       break
     }
 
