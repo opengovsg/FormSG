@@ -181,11 +181,11 @@ const buildEntry = (
         ...computeSignatureAnswerValue(answer as SignatureAnswerV4),
       }
     case BasicField.Children:
-      // Decided: no MRF form should have a Children field, so support is out
-      // of scope and stays out. Throwing is the point — the previous
-      // passthrough turned a Children answer into a blank column in the admin
-      // CSV with no error at all.
-      throw new Error(`Unsupported field type: ${BasicField.Children}`)
+      // RATIONALE: Currently, no MRF form should have a Children field,
+      // so support is out of scope.
+      throw new Error(
+        `Unsupported field type: ${field.fieldType} for field id: ${field._id}`,
+      )
     case BasicField.Number:
     case BasicField.Decimal:
     case BasicField.ShortText:
@@ -201,8 +201,6 @@ const buildEntry = (
         ...computeSingleAnswerValue((answer as StringAnswerV4)?.value),
       }
     default:
-      // Every `BasicField` member above is classified, so `field` is `never`
-      // here. Adding a member to the enum breaks this line until it is.
       return throwUnsupportedFieldType(field)
   }
 }
