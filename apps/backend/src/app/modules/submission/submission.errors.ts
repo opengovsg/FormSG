@@ -182,6 +182,21 @@ export class GuardDutyInvalidFileKeyError extends ApplicationError {
   }
 }
 
+/**
+ * The attachment's quarantine bucket key is a valid UUID but the object is no
+ * longer in the quarantine bucket. In practice this is almost always a
+ * network-level replay of a submission request whose attachments were already
+ * scanned and moved to the clean bucket, so the message nudges the respondent
+ * to check for an existing acknowledgement instead of resubmitting.
+ */
+export class GuardDutyFileAlreadyScannedError extends ApplicationError {
+  constructor(
+    message = 'Your submission may have already been received. Please check for an acknowledgement or confirmation email before submitting again.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_GD_FILE_ALREADY_SCANNED)
+  }
+}
+
 export class VirusScanFailedError extends ApplicationError {
   constructor(message = 'Virus scan failed. Please try again.') {
     super(message, undefined, ErrorCodes.SUBMISSION_VIRUS_SCAN_FAILED)

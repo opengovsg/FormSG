@@ -74,6 +74,7 @@ import {
   AttachmentUploadError,
   DownloadCleanFileFailedError,
   GuardDutyDownloadCleanFileFailedError,
+  GuardDutyFileAlreadyScannedError,
   GuardDutyInvalidFileKeyError,
   GuardDutyMaliciousFileDetectedError,
   GuardDutyParseVirusScannerLambdaPayloadError,
@@ -1146,6 +1147,7 @@ export const transformAttachmentMetasToSignedUrls = (
 type TriggerGuardDutyScanningError =
   | GuardDutyVirusScanFailedError
   | GuardDutyInvalidFileKeyError
+  | GuardDutyFileAlreadyScannedError
   | GuardDutyMaliciousFileDetectedError
   | GuardDutyParseVirusScannerLambdaPayloadError
 
@@ -1206,9 +1208,10 @@ export const triggerGuardDutyScanning = (
         if (error instanceof ParseVirusScannerLambdaPayloadError) {
           return new GuardDutyParseVirusScannerLambdaPayloadError()
         } else if (error.statusCode === StatusCodes.NOT_FOUND) {
-          return new GuardDutyInvalidFileKeyError(
-            'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
-          )
+          // File key is valid but not in the quarantine bucket - almost always
+          // a replayed request whose attachments were already scanned and moved
+          // to the clean bucket.
+          return new GuardDutyFileAlreadyScannedError()
         } else if (error.statusCode !== StatusCodes.BAD_REQUEST) {
           return new GuardDutyVirusScanFailedError()
         }
