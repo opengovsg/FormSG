@@ -191,6 +191,10 @@
       "require": "./dist/utils/v4-answer.js",
       "default": "./utils/v4-answer.ts"
     },
+    "./utils/v4-logic": {
+      "require": "./dist/utils/v4-logic.js",
+      "default": "./utils/v4-logic.ts"
+    },
     "./utils/validate-responses": {
       "require": "./dist/utils/validate-responses.js",
       "default": "./utils/validate-responses.ts"

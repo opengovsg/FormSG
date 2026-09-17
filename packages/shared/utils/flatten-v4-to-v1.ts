@@ -4,6 +4,7 @@ import {
   BasicField,
   FieldResponse,
   FormFieldDto,
+  LogicDto,
   MyInfoAttribute,
 } from '../types'
 
@@ -36,7 +37,9 @@ import {
   TableAnswerV4,
   VerifiableAnswerV4,
 } from './v4-answer'
+import { getVisibleFieldIds } from './logic'
 import { validateResponses } from './validate-responses'
+import { fieldResponsesV4ToLogicFieldResponseTransformer } from './v4-logic'
 
 /**
  * A V1 response entry as it appears on the wire, including the server-derived
@@ -88,10 +91,31 @@ const toTableInput = (answer?: TableAnswerV4): TableAnswerInput | undefined => {
     })
 }
 
-const toAddressInput = (
-  answer?: AddressAnswerV4,
-): AddressAnswerInput | undefined => {
-  if (answer === undefined) return undefined
+/**
+ * RATIONALE: This is sent by visible and optional address fields that the respondent leaves empty in Storage mode webhooks.
+ * Thus, we reconstruct the same value.
+ */
+const UNTOUCHED_ADDRESS_INPUT: AddressAnswerInput = {
+  addressSubFields: {
+    postalCode: '',
+    blockNumber: '',
+    streetName: '',
+    buildingName: '',
+    levelNumber: '',
+    unitNumber: '',
+  },
+}
+
+const toAddressInput = ({
+  answer,
+  isVisible,
+}: {
+  answer?: AddressAnswerV4
+  isVisible: boolean
+}): AddressAnswerInput | undefined => {
+  if (answer === undefined) {
+    return isVisible ? UNTOUCHED_ADDRESS_INPUT : undefined
+  }
   const addressSubFields: AddressAttributes = {
     postalCode: answer.postalCode.value,
     blockNumber: answer.blockNumber.value,
@@ -119,6 +143,7 @@ const toAddressInput = (
 const buildEntry = (
   field: FormFieldDto,
   answer: AnswerV4 | undefined,
+  isVisible: boolean,
 ): FieldResponse | null => {
   switch (field.fieldType) {
     // Neither carries an answer, answered or not.
@@ -173,7 +198,9 @@ const buildEntry = (
     case BasicField.Address:
       return {
         ...pickBase(field),
-        ...computeAddressAnswerValue(toAddressInput(answer as AddressAnswerV4)),
+        ...computeAddressAnswerValue(
+          toAddressInput({ answer: answer as AddressAnswerV4, isVisible }),
+        ),
       }
     case BasicField.Signature:
       return {
@@ -266,16 +293,31 @@ const appendServerDerivedKeys = (
 export const flattenV4ToFormFields = ({
   v4Responses,
   formFields,
+  formLogics,
 }: {
   v4Responses: FieldResponsesV4Input
   formFields: FormFieldDto[]
+  formLogics: LogicDto[]
 }): FlattenedV1Response[] => {
+  const visibleFieldIds = formLogics.length
+    ? getVisibleFieldIds(
+        fieldResponsesV4ToLogicFieldResponseTransformer(
+          v4Responses,
+          formFields,
+        ),
+        { form_fields: formFields, form_logics: formLogics },
+      )
+    : null
   const entries: FieldResponse[] = []
   // The snapshot field behind each emitted entry, positionally — the source of
   // the server-derived keys appended once validation is done.
   const emittingFields: FormFieldDto[] = []
   for (const field of formFields) {
-    const entry = buildEntry(field, v4Responses[field._id]?.answer)
+    const entry = buildEntry(
+      field,
+      v4Responses[field._id]?.answer,
+      visibleFieldIds === null || visibleFieldIds.has(field._id),
+    )
     if (entry === null) continue
     entries.push(entry)
     emittingFields.push(field)
