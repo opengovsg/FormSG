@@ -506,4 +506,32 @@ describe('webhook.service', () => {
       )
     })
   })
+
+  describe('toConsumerType', () => {
+    it('classifies a plumber URL as plumber', () => {
+      expect(
+        WebhookService.toConsumerType(
+          WebhookService.getWebhookType('https://plumber.gov.sg/webhooks/abc'),
+        ),
+      ).toBe('plumber')
+    })
+
+    it('classifies a zapier URL as generic', () => {
+      expect(
+        WebhookService.toConsumerType(
+          WebhookService.getWebhookType(
+            'https://hooks.zapier.com/hooks/catch/123/abc',
+          ),
+        ),
+      ).toBe('generic')
+    })
+
+    it('classifies any other URL as generic', () => {
+      expect(
+        WebhookService.toConsumerType(
+          WebhookService.getWebhookType('https://example.com/hook'),
+        ),
+      ).toBe('generic')
+    })
+  })
 })
