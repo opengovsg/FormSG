@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, Text } from '@chakra-ui/react'
 
 import { BasicField } from 'formsg-shared/types'
 
@@ -17,6 +17,7 @@ import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilde
 import { useIsWorkflowSavePermissive } from '../../../hooks/useIsWorkflowSavePermissive'
 import { useStageFieldAndNavigate } from '../../../hooks/useStageFieldAndNavigate'
 import { EditStepInputs } from '../../../types'
+import { useIsSpotlightActiveSection } from '../../Spotlight'
 import { nextEditFieldsForApproval } from '../utils/nextEditFieldsForApproval'
 
 import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
@@ -35,6 +36,7 @@ export const ApprovalsBlock = ({
   const { t } = useTranslation()
   const isRedesign = useIsWorkflowBuilderRedesign()
   const isSavePermissive = useIsWorkflowSavePermissive()
+  const isActiveSection = useIsSpotlightActiveSection()
   const stageFieldAndNavigate = useStageFieldAndNavigate()
   const {
     control,
@@ -113,6 +115,11 @@ export const ApprovalsBlock = ({
 
   return (
     <EditStepBlockContainer>
+      {isActiveSection ? (
+        <Text textStyle="body-2" color="secondary.400">
+          {t('features.adminForm.sidebar.workflow.guidedHints.approvals')}
+        </Text>
+      ) : null}
       <Toggle
         isLoading={isLoading}
         onChange={onApprovalToggleChange}

@@ -220,6 +220,13 @@ export const enSG: Workflow = {
   guidedMode: {
     label: 'Guided setup',
   },
+  guidedHints: {
+    stepName: "Name this step, or keep it as 'Step {stepNumber}'.",
+    respondent:
+      'Pick who fills in this step. You can always change this later.',
+    approvals:
+      'Choose what they do in this step. Most steps just need people to fill in fields.',
+  },
   skipGuidance: {
     modal: {
       title: 'Skip guided setup?',

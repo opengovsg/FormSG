@@ -14,6 +14,7 @@ import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 
 import { useAdminFormWorkflow } from '../../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsSpotlightActiveSection } from '../../../Spotlight'
 import { isFirstStepByStepNumber } from '../../utils/isFirstStepByStepNumber'
 import { EditStepBlockContainer } from '../EditStepBlockContainer'
 
@@ -42,6 +43,7 @@ export const RespondentBlock = ({
   const { emailFormFields = [], dropdownFormFields = [] } =
     useAdminFormWorkflow()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isActiveSection = useIsSpotlightActiveSection()
 
   const emailFieldItems = emailFormFields.map(
     ({ _id, questionNumber, title, fieldType }) => ({
@@ -87,6 +89,11 @@ export const RespondentBlock = ({
                 : 'features.adminForm.sidebar.workflow.respondentBlock.select',
             )}
           </FormLabel>
+          {isActiveSection ? (
+            <Text textStyle="body-2" color="secondary.400" mb="0.5rem">
+              {t('features.adminForm.sidebar.workflow.guidedHints.respondent')}
+            </Text>
+          ) : null}
           <Stack spacing="0.25rem">
             <Radio.RadioGroup value={selectedWorkflowType}>
               <DynamicRespondentOption
