@@ -57,6 +57,7 @@ import {
   AttachmentSizeLimitExceededError,
   AttachmentTooLargeError,
   DownloadCleanFileFailedError,
+  GuardDutyFileAlreadyScannedError,
   GuardDutyInvalidFileKeyError,
   InvalidFieldIdError,
   InvalidFileExtensionError,
@@ -2871,7 +2872,7 @@ describe('submission.service', () => {
       )
     })
 
-    it('should return errAsync if lambda returns an errored response (e.g. file not found) when a valid file key is used', async () => {
+    it('should return GuardDutyFileAlreadyScannedError if lambda cannot find the file for a valid file key (e.g. replayed request)', async () => {
       // Arrange
       const failurePayload = {
         statusCode: 404,
@@ -2894,9 +2895,7 @@ describe('submission.service', () => {
       expect(awsSpy).toHaveBeenCalledOnce()
       expect(actualResult.isErr()).toEqual(true)
       expect(actualResult._unsafeUnwrapErr()).toEqual(
-        new GuardDutyInvalidFileKeyError(
-          'GUARDDUTY Invalid file key - file key is not found in the quarantine bucket. The file must be uploaded first.',
-        ),
+        new GuardDutyFileAlreadyScannedError(),
       )
     })
 

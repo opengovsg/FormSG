@@ -140,6 +140,7 @@ import {
   ExpectedResponseNotFoundError,
   FeatureDisabledError,
   GuardDutyDownloadCleanFileFailedError,
+  GuardDutyFileAlreadyScannedError,
   GuardDutyInvalidFileKeyError,
   GuardDutyMaliciousFileDetectedError,
   GuardDutyParseVirusScannerLambdaPayloadError,
@@ -447,6 +448,7 @@ const errorMapper: MapRouteError = (
     case InvalidFieldIdError:
     case InvalidFileKeyError:
     case GuardDutyInvalidFileKeyError:
+    case GuardDutyFileAlreadyScannedError:
     case GuardDutyMaliciousFileDetectedError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,
