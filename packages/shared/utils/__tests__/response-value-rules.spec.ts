@@ -271,12 +271,10 @@ describe('response value rules', () => {
     })
 
     /**
-     * Both producers can present the sentinel with no free text to go with
-     * it, and they present it differently: the browser holds `othersInput` as
-     * a present `undefined`, V4 content omits the key. Neither may reach the
-     * admin's CSV or a webhook consumer as the string `undefined`, and the two
-     * must produce the same bytes — which is why the rule coalesces the value
-     * instead of testing for the key.
+     * RATIONALE: The browser holds a present-but-`undefined` `othersInput`;
+     * V4 content omits the key instead. The rule must coalesce the value,
+     * not test for the key, so both cases produce the same bytes and neither
+     * shows the consumer a literal `"undefined"`.
      */
     it('renders a present but undefined othersInput as a bare prefix', () => {
       expect(
@@ -287,7 +285,7 @@ describe('response value rules', () => {
       ).toEqual({ answerArray: ['a', 'Others: '] })
     })
 
-    it('renders an absent othersInput key identically', () => {
+    it('renders an absent othersInput key as a bare prefix', () => {
       expect(
         computeCheckboxAnswerValue({
           value: ['a', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],

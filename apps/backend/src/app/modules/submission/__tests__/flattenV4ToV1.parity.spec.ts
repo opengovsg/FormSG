@@ -1,9 +1,6 @@
-/* eslint-disable typesafe/no-throw-sync-func -- if the test cannot make
-   the reference, it must stop. Do not show this as a difference. */
 /**
- * Byte-parity tests between:
- * - the storage-mode plaintext the SERVER encrypts, and
- * - the V4 -> V1 flatten's output for the same inputs.
+ * Byte-parity gate: compares the storage-mode plaintext the server encrypts
+ * against the V4 -> V1 flatten's output for the same inputs.
  *
  * NOTE: The test compares JSON strings, not object keys since JSON is the
  * data that the server encrypts.
@@ -52,18 +49,10 @@ import {
 } from '~features/public-form/utils/createSubmission'
 import { FormFieldValues } from '~templates/Field'
 
-// `~/env` reads `import.meta`, which ts-jest's CommonJS output cannot parse.
-// It is only reached transitively via `~utils/formSdk`, which none of the
-// producers under test call. `jest.mock` is hoisted above the imports.
 jest.mock('~/env', () => ({ env: { formsgSdkMode: 'test' } }))
 
 const ATTACHMENT_CONTENT = Buffer.from('attachment contents')
 
-/**
- * `makeSignatureValidator` really authenticates the OTP signature
- * (`field-validation/validators/common.ts:44-51`), so the reference can only
- * be built with one minted from the same secret key the server verifies with.
- */
 const sign = (fieldId: string, answer: string): string =>
   formsgSdk.verification.generateSignature({
     transactionId: 'mock-transaction-id',
@@ -72,12 +61,6 @@ const sign = (fieldId: string, answer: string): string =>
     answer,
   })
 
-/**
- * `getQuestion` is a mongoose instance method (`app/models/field/baseField.ts`),
- * so a POJO form definition has to carry it the way
- * `__tests__/unit/backend/helpers/generate-form-data.ts` already does. This is
- * the model's implementation verbatim, not an approximation.
- */
 const asFormFieldSchema = (field: FormFieldDto): FormFieldSchema =>
   ({
     ...field,
@@ -100,29 +83,24 @@ const asFormDocument = (formFields: FormFieldDto[]): IFormDocument =>
   }) as unknown as IFormDocument
 
 /**
- * A = the array `encryptSubmission` hands to `formsgSdk.crypto.encrypt`.
- *
- * `validateStorageSubmission` discards the browser's array outright
- * (`req.body.responses = formatMyInfoStorageResponseData(...)`,
- * `encrypt-submission.middleware.ts:426`) and runs before `encryptSubmission`
- * in `handleStorageSubmission`, so the browser's array is only the input to
- * the server's, never the reference itself.
+ * Builds A: the array `encryptSubmission` hands to `formsgSdk.crypto.encrypt`.
  */
 const storageModeReference = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
 ): unknown[] => {
-  // 1. The browser. `submitStorageModeForm` uses the virus-scanning variant.
+  // 1. Browser: `submitStorageModeForm`, virus-scanning variant.
   const formData = createClearSubmissionWithVirusScanningFormData(
     { formFields, formInputs },
     buildQuarantineMap(),
   )
   const body = formData.get('body')
-  if (typeof body !== 'string') {
-    throw new Error('harness: expected a string body from the browser producer')
-  }
-  const browserResponses = (JSON.parse(body) as { responses: FieldResponse[] })
-    .responses
+  expect(typeof body).toBe('string')
+  const browserResponses = (
+    JSON.parse(body as string) as {
+      responses: FieldResponse[]
+    }
+  ).responses
 
   // 2. `addAttachmentToResponses` appends `filename` and `content` from the
   //    multipart parts (`receiver.utils.ts:120-130`), then
@@ -145,20 +123,13 @@ const storageModeReference = (
     asFormDocument(formFields),
     scannedResponses as FieldResponse[],
   )
-  if (parsed.isErr()) {
-    throw new Error(
-      `harness: the server rejected the browser's array — ${parsed.error.message}`,
-    )
-  }
-  // No hashed fields: the fixture carries no MyInfo field, so this is identity.
+  expect(parsed.isOk()).toBe(true)
   const serverResponses = formatMyInfoStorageResponseData(
-    parsed.value.getAllResponses(),
+    parsed._unsafeUnwrap().getAllResponses(),
     undefined,
   )
 
-  // 4. `encryptSubmission`'s strip (`encrypt-submission.middleware.ts:485-495`).
-  //    Note that the attachment branch does NOT call `omitResponseKeys`, so an
-  //    attachment entry keeps `isVisible`.
+  // 4. `encryptSubmission`'s strip from the encrypt-submission middleware.
   return serverResponses.map((response) =>
     isAttachmentResponse(response)
       ? { ...response, filename: undefined, content: undefined }
@@ -167,12 +138,12 @@ const storageModeReference = (
 }
 
 /**
- * The MRF equivalent of step 2: `triggerGuardDutyScanThenDownloadCleanFileChainV4`
- * promotes the filename into `answer.value` (`submission.service.ts:1345-1362`),
- * and the middleware strips `content`/`filename` before encryption
- * (`multirespondent-submission.middleware.ts:897-909`). Applying it keeps the
- * attachment comparison about the flatten rather than about which producer got
- * a quarantine key.
+ * MRF equivalent of step 2. `triggerGuardDutyScanThenDownloadCleanFileChainV4`
+ * promotes the filename into `answer.value`; the middleware strips
+ * `content`/`filename` before encryption
+ *
+ * RATIONALE: Applying this keeps the attachment comparison about the
+ * flatten, not about which producer got a quarantine key.
  */
 const scanV4Attachments = (
   v4Responses: MrfWireResponsesV4,
@@ -273,35 +244,23 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
   })
 
   /**
-   * The one accepted divergence, pinned rather than fixed.
+   * Accepted divergence.
    *
-   * The unanswered cases above cover a table at exactly `minimumRows`, which
-   * both producers agree on: the V4 producer drops the blank table and
-   * `computeTableAnswerValue` re-synthesises exactly that many rows. A
-   * respondent who clicks "Add another row" and then submits the table blank
-   * is a different state, and the row count exists only in the browser — the
-   * V4 wire does not carry it, the form definition does not hold it, and
-   * changing the wire to carry it is not available: an untouched field that
-   * reaches the wire is rejected outright at step 1 of a multi-step form
-   * (`multirespondent-submission.middleware.ts:609-617`).
+   * Divergence:
+   * - V4 payload omits respondent added unfilled optional rows.
+   * - V1 captures this.
    *
-   * So the flatten emits the field's own `minimumRows`, and this case pins
-   * that number. The assertions below are deliberately narrow: the row COUNT
-   * is allowed to differ and nothing else is, so the accepted difference
-   * cannot quietly widen. No answer is lost either way — every cell is blank
-   * on both sides.
+   *  Why this divergence is accepted:
+   * - We cannot reconstruct the respondent's added rows without modifying the V4 payload.
+   * - Thus, we use the next best thing: the field's own `minimumRows`.
    */
   describe('a blank table the respondent added rows to', () => {
     const tableField = buildAddMoreRowsTableField()
-    // Read off the field, not a fixture constant, so the pin tracks the
-    // definition: `minimumRows` is exactly what the flatten re-synthesises.
+    // RATIONALE: Read `minimumRows` off the field, not a fixture constant,
+    // so the pin tracks the definition the flatten re-synthesises from.
     const { minimumRows } = tableField as unknown as { minimumRows: number }
     const formInputs = buildBlankTableInputWithAddedRows()
 
-    // The form under test holds this one field, so each side is a one-entry
-    // array and the table entry is the whole of it. Built in `beforeAll` and
-    // not at collection time, so a harness that cannot build the reference
-    // fails these cases rather than aborting the whole file.
     let A: unknown[]
     let B: unknown[]
     beforeAll(() => {
@@ -346,8 +305,7 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
           buildQuarantineMap(),
         ),
       )
-      // The wire shape genuinely carries no question — the MRF middleware
-      // strips it (`question: Joi.any().strip()`).
+      // RATIONALE: The received V4 responses carries no question — the MRF middleware strips it
       expect(Object.values(v4Responses).every((r) => !('question' in r))).toBe(
         true,
       )

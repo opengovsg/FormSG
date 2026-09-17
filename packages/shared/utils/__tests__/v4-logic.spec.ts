@@ -18,8 +18,8 @@ describe('fieldResponsesV4ToLogicFieldResponseTransformer', () => {
   })
 
   it('moves a Radio Others free text into `othersInput`', () => {
-    // The evaluator matches an `Others` condition on a non-empty `othersInput`
-    // with no `value`; V4 carries the free text in `value` instead.
+    // NOTE: The evaluator matches an `Others` condition on a non-empty
+    // `othersInput` with no `value`. V4 puts the free text in `value` instead.
     const formFields = [field('1', BasicField.Radio)]
     const v4Responses = {
       '1': {
@@ -53,8 +53,8 @@ describe('fieldResponsesV4ToLogicFieldResponseTransformer', () => {
   })
 
   it('emits a non-logicable field with no value at all', () => {
-    // Presence still matters: a condition field that is itself hidden fails its
-    // condition, so the evaluator needs every answered field in the list.
+    // RATIONALE: The evaluator needs every answered field in the list, even
+    // with no value — a hidden condition field must still fail its condition.
     const formFields = [field('1', BasicField.Address)]
     const v4Responses = {
       '1': {
@@ -93,7 +93,8 @@ describe('fieldResponsesV4ToLogicFieldResponseTransformer', () => {
   })
 
   it('reads `fieldType` from the form field, never from the response', () => {
-    // The MRF response schema accepts a client-supplied `fieldType`.
+    // NOTE: The MRF response schema also accepts a client-supplied `fieldType`;
+    // it must not be trusted.
     const formFields = [field('1', BasicField.YesNo)]
     const v4Responses = {
       '1': { fieldType: BasicField.Radio, answer: { value: 'Yes' } },

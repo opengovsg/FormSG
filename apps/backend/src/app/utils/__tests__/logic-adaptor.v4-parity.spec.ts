@@ -15,21 +15,15 @@ import { fieldResponsesV4ToLogicFieldResponseTransformer } from 'formsg-shared/u
 import { getVisibleFieldIdsV3 } from '../logic-adaptor'
 
 /**
- * The MRF middleware evaluates logic by downgrading V4 to V3 and handing the
- * result to `getVisibleFieldIdsV3`. The shared flatten evaluates the same logic
+ * These tests evaluate the differential, since both methods must both
+ * have evaluate to the same field visibility given the same input.
+ *
+ * This is done by asserting equality for:
+ * - the MRF middleware evaluates logic by downgrading V4 to V3 and handing the
+ * result to `getVisibleFieldIdsV3`.
+ * - The shared flatten evaluates the same logic
  * by mapping V4 straight to the evaluator's own input via
  * `fieldResponsesV4ToLogicFieldResponseTransformer`, with no V3 hop.
- *
- * Both answer the same question — which fields were visible — and they must
- * answer it identically, because the two are used on the same submission: the
- * middleware validates against its answer at submit time, and the flatten
- * decides an Address's bytes with its own. A disagreement produces content that
- * validated under one visibility answer and was serialised under another, and
- * nothing in either path would report it.
- *
- * This spec is therefore differential: every case asserts the two sets are
- * equal. Cases that could pass vacuously (both paths returning everything, or
- * nothing) also pin the expected set by hand.
  */
 
 const ids = Object.fromEntries(
@@ -78,11 +72,6 @@ const ALL_FIELDS = Object.values(BasicField).map(
   fieldOf,
 ) as unknown as FormDto['form_fields']
 
-/**
- * A representative V4 answer per field type. The values matter only where the
- * type can be a logic condition; the rest are present so that both transformers
- * see a fully answered submission.
- */
 const answerOf = (fieldType: BasicField): unknown => {
   switch (fieldType) {
     case BasicField.YesNo:
@@ -143,7 +132,6 @@ const answersFor = (
 
 const ALL_TYPES = Object.values(BasicField)
 
-/** Shows `show` when `field` satisfies `state`/`value`. */
 const showWhen = ({
   _id,
   field,
