@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.26.0](https://github.com/opengovsg/formsg/compare/v9.25.1...v9.26.0) (2026-09-17)
+
+
+### Features
+
+* **shared:** byte-parity V4->V1 flatten in the shared package (#9984) (#9993) ([#9984](https://github.com/opengovsg/formsg/commit/85470e7a7d99eb69afbe3c3820b0ff73747a79d3))
+* swap admin response v4 -> v1 mapping to shared flatten (#10052) ([#10052](https://github.com/opengovsg/formsg/commit/34af5f2815be0f2129f08db96f60a15d26f9836b))
+
+
+### Bug Fixes
+
+* **submission:** distinguish replayed submissions from invalid file keys (#10048) ([#10048](https://github.com/opengovsg/formsg/commit/f3aa1b9c8bb80e8a29501250723bf1897e924e92))
+
 ## [9.25.1](https://github.com/opengovsg/formsg/compare/v9.25.0...v9.25.1) (2026-09-17)
 
 
