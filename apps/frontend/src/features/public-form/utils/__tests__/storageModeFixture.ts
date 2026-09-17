@@ -11,15 +11,14 @@ import { CHECKBOX_OTHERS_INPUT_VALUE } from '~templates/Field/Checkbox/constants
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
 
 /**
- * One field of every `BasicField` type, plus answered and unanswered inputs for
- * each.
+ * One field of every `BasicField` type, plus answered and unanswered inputs
+ * for each.
  *
- * The consumer is the differential byte-parity gate
- * (`apps/backend/src/app/modules/submission/__tests__/flattenV4ToV1.parity.spec.ts`),
- * which builds both sides of the comparison from this one surface: the
- * storage-mode reference and the V4 -> V1 flatten's output. Keep it here rather
- * than in the backend, because the inputs are the frontend's
- * `FormFieldValues` — what the respondent's browser actually holds.
+ * RATIONALE: Lives in the frontend, not the backend, because the inputs are
+ * `FormFieldValues` — what the respondent's browser actually holds. The
+ * differential byte-parity gate
+ * (`apps/backend/src/app/modules/submission/__tests__/flattenV4ToV1.parity.spec.ts`)
+ * builds both comparison sides from this one surface.
  */
 
 const fieldId = (n: number) => n.toString(16).padStart(24, '0')
@@ -105,12 +104,12 @@ export const buildAllFields = (): FormFieldDto[] =>
 export const ATTACHMENT_FILE_NAME = 'my document.pdf'
 
 /**
- * Deliberately padded / Others-bearing values, so the trim, the date reformat,
- * the table question composition and the checkbox Others repositioning are all
- * exercised rather than being invisible no-ops.
+ * RATIONALE: Values are deliberately padded and Others-bearing, so the trim,
+ * date reformat, table question composition and checkbox Others
+ * repositioning are all exercised rather than invisible no-ops.
  *
- * `undefined` means "this field type takes no input" — the Attachment entry is
- * a special case, filled in with a real `File` by `buildAnsweredInputs`.
+ * NOTE: `undefined` means the field type takes no input. Attachment is a
+ * special case, filled in with a real `File` by `buildAnsweredInputs`.
  */
 export const ANSWERED_INPUT_BY_FIELD_TYPE: Record<BasicField, unknown> = {
   [BasicField.Section]: undefined,
@@ -180,27 +179,25 @@ export const buildAnsweredInputs = (): FormFieldValues => {
 
 /**
  * Every field rendered and left untouched, as react-hook-form actually holds
- * it. `{}` — what this returned while the frozen snapshots were keyed off it —
- * is a state no respondent's browser can be in, and it hid two parity gaps:
- * with no key at all, both producers take their `input === undefined` branch
- * and agree by default.
+ * it.
  *
- * `PublicFormProvider.tsx:339-349` seeds every field id with `''`, except a
- * table, which is seeded with `minimumRows` blank rows because `useFieldArray`
- * needs them to render its columns. A field component then overwrites that on
- * mount wherever its own `Controller` carries a `defaultValue`:
+ * RATIONALE: Not `{}`. `{}` is a state no respondent's browser can be in — it
+ * hid two parity gaps, because with no key at all both producers take their
+ * `input === undefined` branch and agree by default.
  *
- * - Address — six subfield `Controller`s at `${_id}.addressSubFields.*`, each
- *   `defaultValue=""` (`AddressField.tsx:160,209,240,275,304,331`), so the
- *   field ends up a present object of empty strings.
- * - Email — one `Controller` on the field id itself, `defaultValue={{ value:
- *   '' }}` (`EmailFieldInput.tsx:65`).
+ * NOTE: `PublicFormProvider.tsx:339-349` seeds every field id with `''`,
+ * except a table, seeded with `minimumRows` blank rows for `useFieldArray`.
+ * A field component overwrites that on mount if its own `Controller` carries
+ * a `defaultValue`:
+ * - Address — six subfield `Controller`s at `${_id}.addressSubFields.*`,
+ *   each `defaultValue=""` (`AddressField.tsx:160,209,240,275,304,331`) —
+ *   ends up a present object of empty strings.
+ * - Email — one `Controller` on the field id, `defaultValue={{ value: '' }}`
+ *   (`EmailFieldInput.tsx:65`).
  * - Radio — a `Controller` on `${_id}.value`, `defaultValue=""`
  *   (`RadioField.tsx:92`).
- *
- * Every other type carries no mount-time default and keeps the `''`. Mobile in
- * particular does not (`MobileFieldInput.tsx:46-49` has no `defaultValue`),
- * which is why it is absent from the list above rather than paired with Email.
+ * Every other type keeps the bare `''`. Mobile has no mount-time default
+ * either (`MobileFieldInput.tsx:46-49`), which is why it's absent above.
  */
 const blankTableRow = (): Record<string, string> =>
   Object.fromEntries(TABLE_COLUMN_IDS.map((_id) => [_id, '']))
@@ -243,21 +240,20 @@ export const buildUnansweredInputs = (): FormFieldValues => {
 /* -------------------------------------------------------------------------- *
  * Differential (V4 -> V1 byte-parity) additions — #9984
  *
- * Everything below is additive. The exports above were frozen while the
- * `[STEERING:T2a]` no-op snapshots were keyed off them. Those snapshots and
- * that gate are gone, so the freeze is lifted — `buildUnansweredInputs` has
- * since been corrected in place to return what React Hook Form really holds
- * for a rendered-but-untouched field, which `{}` never was.
+ * RATIONALE: Everything below is additive. The exports above were frozen for
+ * the now-removed `[STEERING:T2a]` no-op snapshots, so the freeze is lifted;
+ * `buildUnansweredInputs` is corrected in place to return what React Hook
+ * Form really holds for a rendered-but-untouched field, which `{}` never was.
  *
- * The differential gate needs a stricter fixture than the snapshot does,
- * because its reference value runs through the server's `validateField`. The
- * frozen fixture was only ever fed to the browser producer, so several of its
- * values are ones a real server would reject outright — those are corrected
- * here rather than in place.
+ * RATIONALE: The differential gate needs a stricter fixture than the
+ * snapshot, because its reference value runs through the server's
+ * `validateField`. The frozen fixture was only ever fed to the browser
+ * producer, so some of its values are ones a real server would reject —
+ * those are corrected here, not in place.
  * -------------------------------------------------------------------------- */
 
 /**
- * OTP-verified email and mobile. The frozen fixture declares both with
+ * NOTE: The frozen fixture declares email and mobile with
  * `isVerifiable: false`, which is why the original 26-field probe never saw
  * `isUserVerified` — the server appends it only when `formField.isVerifiable`
  * (`ParsedResponsesObject.class.ts:150`).
@@ -276,10 +272,10 @@ export const VERIFIABLE_FIELD_TYPES = [
 ] as const
 
 /**
- * Values only. The signature has to be minted at test time by whoever holds
- * the verification secret key: the backend's `makeSignatureValidator` really
- * does authenticate it, so a placeholder makes the storage-mode reference
- * unbuildable rather than merely unrealistic.
+ * RATIONALE: Values only, no signature. `makeSignatureValidator` really
+ * authenticates the signature, so it must be minted at test time by whoever
+ * holds the verification secret key — a placeholder would make the
+ * storage-mode reference unbuildable, not merely unrealistic.
  */
 export const VERIFIABLE_ANSWER_VALUE: Record<
   BasicField.Email | BasicField.Mobile,
@@ -298,14 +294,13 @@ export const buildVerifiableAnsweredInput = (
 }
 
 /**
- * Field-definition corrections the server's validators require.
- * - Table columns need a `columnType`; `createAnswerFieldFromColumn` builds a
- *   per-cell validator from it and rejects the row without one.
- * - Attachment needs an `attachmentSize`; the size validator parses it into
- *   the byte limit, and `NaN` fails every file.
- * - the `ValidationOptions` / `ratingOptions` / `fieldOptions` sub-documents
- *   are dereferenced unguarded by their validators, so their absence is a
- *   `TypeError` rather than a rejection.
+ * RATIONALE: Field-definition corrections the server's validators require.
+ * - Table columns need `columnType`; `createAnswerFieldFromColumn` rejects a
+ *   row without one.
+ * - Attachment needs `attachmentSize`; `NaN` fails every file.
+ * - `ValidationOptions` / `ratingOptions` / `fieldOptions` are dereferenced
+ *   unguarded, so a missing sub-document throws a `TypeError`, not a
+ *   rejection.
  */
 const tableColumns = (required: boolean) =>
   TABLE_COLUMN_IDS.map((_id, i) => {
@@ -316,8 +311,8 @@ const tableColumns = (required: boolean) =>
       columnType: BasicField.ShortText,
       ValidationOptions: { selectedValidation: null, customVal: null },
     }
-    // `createAnswerFieldFromColumn` calls `column.toObject()` — a column is a
-    // mongoose subdocument in production.
+    // NOTE: `createAnswerFieldFromColumn` calls `column.toObject()` — a
+    // column is a mongoose subdocument in production.
     return { ...column, toObject: () => column }
   })
 
@@ -370,12 +365,12 @@ export const buildVerifiableField = (
   }) as unknown as FormFieldDto
 
 /**
- * Answer corrections the server's validators require. Each one is a value the
- * frozen fixture supplies that a real submission could never carry.
- * - `country_region` is upper-cased by `PublicFormProvider.handleSubmitForm`,
- *   and the validator only accepts the upper-case options.
- * - the frozen UEN fails its own check digit.
- * - the table declares `minimumRows: 2` with `addMoreRows: false`, so exactly
+ * RATIONALE: Answer corrections the server's validators require — the frozen
+ * fixture supplies values a real submission could never carry.
+ * - `country_region` is upper-cased by `PublicFormProvider.handleSubmitForm`;
+ *   the validator only accepts the upper-case options.
+ * - The frozen UEN fails its own check digit.
+ * - The table declares `minimumRows: 2` with `addMoreRows: false`, so exactly
  *   two rows are admissible.
  */
 const DIFFERENTIAL_ANSWERED_INPUT_OVERRIDES: Partial<
@@ -397,10 +392,10 @@ export const buildDifferentialAnsweredInput = (
     : buildAnsweredInput(fieldType)
 
 /**
- * The unanswered path can only be measured on optional fields: the reference
- * runs `validateField`, which rejects a blank answer to a required field
- * before any array is produced. A table's columns carry their own `required`,
- * so they have to be relaxed too.
+ * RATIONALE: The unanswered path can only be measured on optional fields —
+ * the reference runs `validateField`, which rejects a blank answer to a
+ * required field before any array is produced. A table's columns carry their
+ * own `required`, so they must be relaxed too.
  */
 export const buildOptionalDifferentialField = (
   fieldType: BasicField,
@@ -420,13 +415,13 @@ export const buildOptionalVerifiableField = (
   }) as unknown as FormFieldDto
 
 /**
- * Children is deliberately absent: storage mode expands one Children field
- * into one entry per child, while the target flatten is specified to throw on
- * it. Encoding that as an expected difference would enshrine a state that has
- * been decided cannot exist; exhaustiveness covers Children instead.
+ * RATIONALE: Children is absent. Storage mode expands one Children field
+ * into one entry per child, while the flatten is specified to throw on it.
+ * Encoding that as an expected difference would enshrine a state that's
+ * been decided cannot exist — exhaustiveness covers Children instead.
  *
- * MyInfo variants are absent too — storage mode prepends `[Myinfo] ` to their
- * question text, and #9975 owns reproducing that.
+ * NOTE: MyInfo variants are absent too. Storage mode prepends `[Myinfo] ` to
+ * their question text, and #9975 owns reproducing that.
  */
 export const DIFFERENTIAL_FIELD_TYPES: BasicField[] = ALL_FIELD_TYPES.filter(
   (fieldType) => fieldType !== BasicField.Children,
@@ -464,13 +459,12 @@ export const buildDifferentialInputs = (
 /**
  * A table the respondent added rows to and then submitted blank.
  *
- * `minimumRows` blank rows is the state `buildUnansweredInputs` already
- * covers, and both producers agree on it. What they do not agree on is a row
- * count the V4 wire cannot carry: `createResponsesV4` drops a table whose
- * every cell is falsy, so the flatten only ever re-synthesises `minimumRows`
- * rows, while the storage-mode producer keeps one row per row the respondent
- * had on screen. The field needs `addMoreRows` for that state to be reachable
- * at all — the frozen definition declares it `false`.
+ * RATIONALE: `buildUnansweredInputs` already covers `minimumRows` blank
+ * rows, where both producers agree. They disagree on a row count the V4
+ * wire cannot carry: `createResponsesV4` drops a table whose every cell is
+ * falsy, so the flatten always re-synthesises `minimumRows` rows, while
+ * storage mode keeps one row per row the respondent had on screen. Reaching
+ * that state needs `addMoreRows`, which the frozen definition sets `false`.
  */
 export const buildAddMoreRowsTableField = (): FormFieldDto =>
   ({
@@ -486,8 +480,8 @@ export const buildBlankTableInputWithAddedRows = (): FormFieldValues =>
   }) as unknown as FormFieldValues
 
 /**
- * The attachment upload is mediated by the quarantine bucket on both submit
- * paths, so both producers need the same map.
+ * NOTE: Both submit paths mediate the attachment upload through the
+ * quarantine bucket, so both producers need the same map.
  */
 export const ATTACHMENT_QUARANTINE_KEY = 'quarantine-bucket-key'
 

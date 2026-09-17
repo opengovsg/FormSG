@@ -1,16 +1,9 @@
 import { SignatureVectorArray } from '../types/field'
 
 /**
- * The V4 answer shapes, as they arrive on the MRF wire.
- *
- * These are re-declared here rather than imported from `@opengovsg/formsg-sdk`
- * on purpose: `formsg-shared` must not depend on the SDK (nor on the frontend),
- * and the flatten only ever reads a handful of plain fields off each answer.
- * `response-value-rules.ts` sets the same precedent with its `*AnswerInput`
- * types. The SDK remains the authority on the wire format; if it changes, this
- * file follows.
+ * NOTE: Some of these are re-declared here, since the
+ * shared package should not depend on the SDK.
  */
-
 export type StringAnswerV4 = { value: string }
 export type VerifiableAnswerV4 = { value: string; signature?: string }
 export type RadioAnswerV4 = { value: string; isOthersInput: boolean }
@@ -55,18 +48,15 @@ export type AnswerV4 =
   | AddressAnswerV4
   | SignatureAnswerV4
 
-/**
- * One V4 wire response. `fieldType` is typed as a bare string because the SDK
- * types it as its own `FieldType` string union rather than `BasicField`, and a
- * caller holding the SDK's type must be able to pass it straight through.
- *
- * `question` is optional because the MRF middleware strips it on the way in
- * (`question: Joi.any().strip()`); only the SDK's frontend decrypt path
- * re-injects one.
- */
 export type FieldResponseV4Input = {
+  // RATIONALE: `string`, not `BasicField` or the SDK's `FieldType` union, so
+  // an SDK `FieldResponseV4` can be passed through without a cast. Shared
+  // cannot import the SDK type.
   fieldType: string
   answer: AnswerV4
+  // RATIONALE: optional even though the SDK type requires it. Joi removes
+  // `question` from the request body (`question: Joi.any().strip()`).
+  // Decrypt puts it back.
   question?: string
 }
 

@@ -1,21 +1,16 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
-import { BasicField, FormFieldDto, MyInfoAttribute } from '../../types'
+import {
+  BasicField,
+  FormFieldDto,
+  LogicConditionState,
+  LogicDto,
+  LogicType,
+  MyInfoAttribute,
+} from '../../types'
 import { flattenV4ToFormFields } from '../flatten-v4-to-v1'
 import { FieldResponsesV4Input } from '../v4-answer'
-
-/**
- * The flatten's own unit gates. Byte parity with the storage-mode producer is
- * measured elsewhere — `apps/backend/.../flattenV4ToV1.parity.spec.ts`, which
- * is the only place both producers can be run on one input. What is asserted
- * here is what that differential gate structurally cannot see: where the
- * question text comes from, that an unclassified field type throws rather than
- * emitting a blank entry, that nothing outside the form definition is emitted,
- * and the `myInfo` append (the differential fixture carries no MyInfo field,
- * because storage mode also rewrites their question text and #9975 owns
- * reproducing that prefix).
- */
 
 const FIELD_ID = '000000000000000000000001'
 
@@ -45,6 +40,7 @@ describe('question injection', () => {
 
     expect(
       flattenV4ToFormFields({
+        formLogics: [],
         v4Responses: shortTextAnswer('an answer'),
         formFields,
       }).map((entry) => entry.question),
@@ -52,8 +48,6 @@ describe('question injection', () => {
   })
 
   it('ignores a question carried on the V4 response', () => {
-    // The MRF middleware strips `question` on the way in, so anything that
-    // reaches the flatten under that key is respondent-supplied.
     const v4Responses = {
       [FIELD_ID]: {
         fieldType: BasicField.ShortText,
@@ -63,7 +57,11 @@ describe('question injection', () => {
     } as unknown as FieldResponsesV4Input
 
     expect(
-      flattenV4ToFormFields({ v4Responses, formFields: [shortTextField()] }),
+      flattenV4ToFormFields({
+        formLogics: [],
+        v4Responses,
+        formFields: [shortTextField()],
+      }),
     ).toEqual([
       {
         _id: FIELD_ID,
@@ -77,10 +75,9 @@ describe('question injection', () => {
 
 describe('exhaustiveness', () => {
   it('throws on a Children field rather than emitting a blank entry', () => {
-    // Decided: no MRF form should have a Children field. The old passthrough
-    // exported `answer: ""` — a blank CSV column with no error.
     expect(() =>
       flattenV4ToFormFields({
+        formLogics: [],
         v4Responses: {},
         formFields: [
           shortTextField({
@@ -95,6 +92,7 @@ describe('exhaustiveness', () => {
   it('throws on an unknown field type rather than emitting an entry', () => {
     expect(() =>
       flattenV4ToFormFields({
+        formLogics: [],
         v4Responses: {},
         formFields: [shortTextField({ fieldType: 'a_field_type_from_2030' })],
       }),
@@ -104,8 +102,6 @@ describe('exhaustiveness', () => {
   })
 
   it('routes its default through the `never` check, so a new BasicField member breaks the build', () => {
-    // The compiler is the real gate here and cannot be asserted from a test;
-    // what is asserted is that the construction giving it to us still exists.
     expect(
       readFileSync(join(__dirname, '..', 'flatten-v4-to-v1.ts'), 'utf8'),
     ).toContain('return throwUnsupportedFieldType(field)')
@@ -126,6 +122,7 @@ describe('entries come from the form definition and nowhere else', () => {
 
     expect(
       flattenV4ToFormFields({
+        formLogics: [],
         v4Responses,
         formFields: [shortTextField()],
       }).map((entry) => entry._id),
@@ -135,6 +132,7 @@ describe('entries come from the form definition and nowhere else', () => {
   it('emits an empty entry for a field the respondent never answered', () => {
     expect(
       flattenV4ToFormFields({
+        formLogics: [],
         v4Responses: {},
         formFields: [shortTextField()],
       }),
@@ -151,6 +149,7 @@ describe('entries come from the form definition and nowhere else', () => {
   it('emits no entry at all for Statement and Image, answered or not', () => {
     expect(
       flattenV4ToFormFields({
+        formLogics: [],
         v4Responses: {
           [FIELD_ID]: {
             fieldType: BasicField.Statement,
@@ -179,6 +178,7 @@ describe('the server-derived keys come from the snapshot', () => {
     expect(
       JSON.stringify(
         flattenV4ToFormFields({
+          formLogics: [],
           v4Responses: shortTextAnswer('Alice'),
           formFields,
         }),
@@ -207,7 +207,11 @@ describe('the server-derived keys come from the snapshot', () => {
     } as unknown as FieldResponsesV4Input
 
     expect(
-      flattenV4ToFormFields({ v4Responses, formFields: [shortTextField()] }),
+      flattenV4ToFormFields({
+        formLogics: [],
+        v4Responses,
+        formFields: [shortTextField()],
+      }),
     ).toEqual([
       {
         _id: FIELD_ID,
@@ -234,7 +238,9 @@ describe('the server-derived keys come from the snapshot', () => {
     } as unknown as FieldResponsesV4Input
 
     expect(
-      JSON.stringify(flattenV4ToFormFields({ v4Responses, formFields })),
+      JSON.stringify(
+        flattenV4ToFormFields({ formLogics: [], v4Responses, formFields }),
+      ),
     ).toBe(
       JSON.stringify([
         {
@@ -253,9 +259,212 @@ describe('the server-derived keys come from the snapshot', () => {
   it('never reports a field the snapshot does not mark verifiable', () => {
     expect(
       flattenV4ToFormFields({
+        formLogics: [],
         v4Responses: shortTextAnswer('an answer'),
         formFields: [shortTextField({ isVerifiable: false })],
       })[0],
     ).not.toHaveProperty('isUserVerified')
+  })
+})
+
+const ADDRESS_ID = '000000000000000000000010'
+const YESNO_ID = '000000000000000000000011'
+
+const addressField = (): FormFieldDto =>
+  ({
+    _id: ADDRESS_ID,
+    fieldType: BasicField.Address,
+    title: 'address question',
+    description: '',
+    required: false,
+    disabled: false,
+  }) as unknown as FormFieldDto
+
+const yesNoField = (): FormFieldDto =>
+  ({
+    _id: YESNO_ID,
+    fieldType: BasicField.YesNo,
+    title: 'show the address?',
+    description: '',
+    required: false,
+    disabled: false,
+  }) as unknown as FormFieldDto
+
+/** Shows the Address only when the Yes/No field answers `Yes`. */
+const showAddressWhenYes = (): LogicDto =>
+  ({
+    _id: '000000000000000000000012',
+    logicType: LogicType.ShowFields,
+    conditions: [
+      { field: YESNO_ID, state: LogicConditionState.Equal, value: 'Yes' },
+    ],
+    show: [ADDRESS_ID],
+  }) as LogicDto
+
+/**
+ * RATIONALE: V4 content omits an untouched Address and a logic-hidden one
+ * alike. The flatten must reconstruct the storage-mode difference: six empty
+ * strings when visible, an empty array when hidden. This suite pins that
+ * visibility alone decides between the two; the byte-level check lives in
+ * the differential gate.
+ */
+describe('an Address with no answer in the V4 content', () => {
+  it('reconstructs six empty subfields when the field was visible', () => {
+    expect(
+      flattenV4ToFormFields({
+        v4Responses: {},
+        formFields: [addressField()],
+        formLogics: [],
+      }),
+    ).toEqual([
+      {
+        _id: ADDRESS_ID,
+        question: 'address question',
+        fieldType: BasicField.Address,
+        answerArray: ['', '', '', '', '', ''],
+      },
+    ])
+  })
+
+  it('emits an empty array when logic hid the field', () => {
+    const flattened = flattenV4ToFormFields({
+      v4Responses: {
+        [YESNO_ID]: { fieldType: BasicField.YesNo, answer: { value: 'No' } },
+      },
+      formFields: [yesNoField(), addressField()],
+      formLogics: [showAddressWhenYes()],
+    })
+
+    expect(flattened.find((entry) => entry._id === ADDRESS_ID)).toEqual({
+      _id: ADDRESS_ID,
+      question: 'address question',
+      fieldType: BasicField.Address,
+      answerArray: [],
+    })
+  })
+
+  it('reconstructs the subfields when the same logic shows the field', () => {
+    const flattened = flattenV4ToFormFields({
+      v4Responses: {
+        [YESNO_ID]: { fieldType: BasicField.YesNo, answer: { value: 'Yes' } },
+      },
+      formFields: [yesNoField(), addressField()],
+      formLogics: [showAddressWhenYes()],
+    })
+
+    expect(flattened.find((entry) => entry._id === ADDRESS_ID)).toEqual({
+      _id: ADDRESS_ID,
+      question: 'address question',
+      fieldType: BasicField.Address,
+      answerArray: ['', '', '', '', '', ''],
+    })
+  })
+})
+
+const RADIO_ID = '000000000000000000000013'
+
+const radioField = (): FormFieldDto =>
+  ({
+    _id: RADIO_ID,
+    fieldType: BasicField.Radio,
+    title: 'why?',
+    description: '',
+    required: false,
+    disabled: false,
+    fieldOptions: ['a reason'],
+    othersRadioButton: true,
+  }) as unknown as FormFieldDto
+
+/** Shows the Address only when the Radio answer is an `Others` free text. */
+const showAddressWhenRadioOthers = (): LogicDto =>
+  ({
+    _id: '000000000000000000000014',
+    logicType: LogicType.ShowFields,
+    conditions: [
+      { field: RADIO_ID, state: LogicConditionState.Equal, value: 'Others' },
+    ],
+    show: [ADDRESS_ID],
+  }) as LogicDto
+
+/**
+ * RATIONALE: V4 drops the Others sentinel and puts the free text in `value`.
+ * The evaluator instead matches an `Others` condition on an absent `value`
+ * with a non-empty `othersInput`. Radio is the only condition type needing
+ * this conversion. An unconverted answer evaluates against the respondent's
+ * own words — a silently wrong visibility answer, not a type error.
+ */
+describe('a Radio `Others` answer as a logic condition', () => {
+  it('satisfies an `Others` condition and shows the Address', () => {
+    const flattened = flattenV4ToFormFields({
+      v4Responses: {
+        [RADIO_ID]: {
+          fieldType: BasicField.Radio,
+          answer: { value: 'my own reason', isOthersInput: true },
+        },
+      },
+      formFields: [radioField(), addressField()],
+      formLogics: [showAddressWhenRadioOthers()],
+    })
+
+    expect(flattened.find((entry) => entry._id === ADDRESS_ID)).toEqual({
+      _id: ADDRESS_ID,
+      question: 'address question',
+      fieldType: BasicField.Address,
+      answerArray: ['', '', '', '', '', ''],
+    })
+  })
+
+  it('leaves the Address hidden when a listed option was chosen instead', () => {
+    const flattened = flattenV4ToFormFields({
+      v4Responses: {
+        [RADIO_ID]: {
+          fieldType: BasicField.Radio,
+          answer: { value: 'a reason' },
+        },
+      },
+      formFields: [radioField(), addressField()],
+      formLogics: [showAddressWhenRadioOthers()],
+    })
+
+    expect(flattened.find((entry) => entry._id === ADDRESS_ID)).toEqual({
+      _id: ADDRESS_ID,
+      question: 'address question',
+      fieldType: BasicField.Address,
+      answerArray: [],
+    })
+  })
+
+  it('leaves an answered Address alone whatever the logic says', () => {
+    // RATIONALE: Regression guard. The visibility pass used to be skipped
+    // unless the form held an Address; an answered Address must keep its
+    // value regardless.
+    const flattened = flattenV4ToFormFields({
+      v4Responses: {
+        [RADIO_ID]: {
+          fieldType: BasicField.Radio,
+          answer: { value: 'a reason' },
+        },
+        [ADDRESS_ID]: {
+          fieldType: BasicField.Address,
+          answer: {
+            postalCode: { value: '123456' },
+            blockNumber: { value: '1' },
+            streetName: { value: 'a street' },
+            buildingName: { value: '' },
+            levelNumber: { value: '' },
+            unitNumber: { value: '' },
+          },
+        },
+      },
+      formFields: [radioField(), addressField()],
+      formLogics: [showAddressWhenRadioOthers()],
+    })
+
+    expect(flattened.find((entry) => entry._id === ADDRESS_ID)).toEqual({
+      _id: ADDRESS_ID,
+      question: 'address question',
+      fieldType: BasicField.Address,
+      answerArray: ['1', 'a street', '', '', '', '123456'],
+    })
   })
 })
