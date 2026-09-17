@@ -41,6 +41,8 @@ import { isAttachmentResponse } from '../submission.utils'
 
 import {
   ATTACHMENT_FILE_NAME,
+  buildAddMoreRowsTableField,
+  buildBlankTableInputWithAddedRows,
   buildDifferentialAnsweredInput,
   buildDifferentialField,
   buildDifferentialFields,
@@ -279,6 +281,21 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
       expectByteParity(
         buildOptionalDifferentialFields(),
         buildUnansweredInputs(),
+      )
+    })
+  })
+
+  /**
+   * The unanswered cases above cover a table at exactly `minimumRows`, which
+   * both producers agree on. A respondent who clicks "Add another row" and
+   * then submits the table blank is a different state, and it is the one the
+   * V4 wire cannot carry: the row count exists only in the browser.
+   */
+  describe('a blank table the respondent added rows to', () => {
+    it('keeps one row per row the respondent had on screen', () => {
+      expectByteParity(
+        [buildAddMoreRowsTableField()],
+        buildBlankTableInputWithAddedRows(),
       )
     })
   })
