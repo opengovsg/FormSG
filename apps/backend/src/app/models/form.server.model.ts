@@ -896,6 +896,15 @@ const compileFormModel = (db: Mongoose): IFormModel => {
           type: Boolean,
           default: false,
         },
+        // Deliberately no `default`: an absent value resolves to `'v1'` at
+        // read time instead (`getWebhookPayloadPolicy`), so existing rows
+        // need no migration and absent is indistinguishable from an explicit
+        // `'v1'` by construction. The enum carries both values while request
+        // validation accepts only `'v1'`. See #9975.
+        webhookFormat: {
+          type: String,
+          enum: ['v1', 'v4'],
+        },
       },
 
       /**
