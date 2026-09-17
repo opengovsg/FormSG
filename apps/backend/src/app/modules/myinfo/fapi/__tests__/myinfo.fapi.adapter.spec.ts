@@ -34,6 +34,17 @@ describe('myinfo.fapi.adapter', () => {
       expect(scopes).toContain('childrenbirthrecords.dob')
     })
 
+    it('should request the sponsored children scopes alongside birth records', () => {
+      const scopes = requestedAttrsToScopeString([
+        InternalAttr.ChildName,
+        InternalAttr.ChildBirthCertNo,
+      ]).split(' ')
+
+      expect(scopes).toContain('sponsoredchildrenrecords.name')
+      // Sponsored children carry no birth certificate number.
+      expect(scopes).not.toContain('sponsoredchildrenrecords.birthcertno')
+    })
+
     it('should de-duplicate repeated attributes', () => {
       const scopes = requestedAttrsToScopeString([
         InternalAttr.Name,

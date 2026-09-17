@@ -1,12 +1,22 @@
 import {
   IPerson,
   IPersonResponse,
+  MyInfoAttribute as ExternalAttr,
   MyInfoVehicleFull,
 } from '@opengovsg/myinfo-gov-client'
-import { MyInfoAttribute } from 'formsg-shared/types'
+import {
+  MyInfoAttribute,
+  MyInfoChildAttributes,
+  MyInfoChildrenScope,
+  MyInfoChildVaxxStatus,
+} from 'formsg-shared/types'
 import type { SetRequired } from 'type-fest'
 
-import { MyInfoData } from '../myinfo.adapter'
+import {
+  internalAttrListToScopes,
+  internalAttrToSponsoredChildScope,
+  MyInfoData,
+} from '../myinfo.adapter'
 
 import { MOCK_UINFIN } from './myinfo.test.constants'
 import {
@@ -30,6 +40,49 @@ import {
   MYINFO_VEHNO_AVAILABLE,
   MYINFO_VEHNO_UNAVAILABLE,
 } from './myinfo.test.data'
+
+const ALL_CHILD_ATTRS = [
+  MyInfoAttribute.ChildName,
+  MyInfoAttribute.ChildBirthCertNo,
+  MyInfoAttribute.ChildDateOfBirth,
+  MyInfoAttribute.ChildVaxxStatus,
+  MyInfoAttribute.ChildGender,
+  MyInfoAttribute.ChildRace,
+  MyInfoAttribute.ChildSecondaryRace,
+]
+
+const META = { source: '1', classification: 'C', lastupdated: '2024-01-01' }
+
+const BIRTH_RECORD = {
+  ...META,
+  name: { value: 'LOCAL CHILD' },
+  birthcertno: { value: 'T1234567A' },
+  dob: { value: '2015-01-02' },
+  sex: { code: 'F', desc: 'FEMALE' },
+  race: { code: 'CN', desc: 'CHINESE' },
+  secondaryrace: { code: 'MY', desc: 'MALAY' },
+  vaccinationrequirements: [
+    { requirement: { code: '1M3D', desc: '' }, fulfilled: { value: true } },
+  ],
+}
+
+const SPONSORED_RECORD = {
+  ...META,
+  nric: { value: 'T2345678B' },
+  name: { value: 'SPONSORED CHILD' },
+  dob: { value: '2016-03-04' },
+  sex: { code: 'M', desc: 'MALE' },
+  race: { code: 'IN', desc: 'INDIAN' },
+  secondaryrace: { code: 'CN', desc: 'CHINESE' },
+  vaccinationrequirements: [
+    { requirement: { code: '1M3D', desc: '' }, fulfilled: { value: false } },
+  ],
+}
+
+const toPersonResponse = (data: Record<string, unknown>): IPersonResponse => ({
+  uinFin: MOCK_UINFIN,
+  data: data as unknown as IPerson,
+})
 
 describe('myinfo.adapter', () => {
   describe('MyInfoData', () => {
@@ -541,6 +594,190 @@ describe('myinfo.adapter', () => {
           expect(actual.isReadOnly).toEqual(true)
         })
       })
+    })
+
+    describe('getChildrenBirthRecords', () => {
+      it('should append sponsored children after birth records and label scopes', () => {
+        const data = new MyInfoData(
+          toPersonResponse({
+            childrenbirthrecords: [BIRTH_RECORD],
+            sponsoredchildrenrecords: [SPONSORED_RECORD],
+          }),
+        )
+
+        const result = data.getChildrenBirthRecords(ALL_CHILD_ATTRS)
+
+        expect(result).toEqual({
+          [MyInfoChildAttributes.ChildName]: ['LOCAL CHILD', 'SPONSORED CHILD'],
+          // Sponsored children have no birth certificate number.
+          [MyInfoChildAttributes.ChildBirthCertNo]: ['T1234567A', ''],
+          [MyInfoChildAttributes.ChildDateOfBirth]: [
+            '2015-01-02',
+            '2016-03-04',
+          ],
+          [MyInfoChildAttributes.ChildVaxxStatus]: [
+            MyInfoChildVaxxStatus.ONEM3D_FULFILLED,
+            MyInfoChildVaxxStatus.ONEM3D_NOT_FULFILLED,
+          ],
+          [MyInfoChildAttributes.ChildGender]: ['FEMALE', 'MALE'],
+          [MyInfoChildAttributes.ChildRace]: ['CHINESE', 'INDIAN'],
+          [MyInfoChildAttributes.ChildSecondaryRace]: ['MALAY', 'CHINESE'],
+          scopes: [MyInfoChildrenScope.Local, MyInfoChildrenScope.Sponsored],
+        })
+      })
+
+      it('should return sponsored children when there are no birth records', () => {
+        const data = new MyInfoData(
+          toPersonResponse({
+            sponsoredchildrenrecords: [SPONSORED_RECORD],
+          }),
+        )
+
+        const result = data.getChildrenBirthRecords([
+          MyInfoAttribute.ChildName,
+          MyInfoAttribute.ChildBirthCertNo,
+        ])
+
+        expect(result).toEqual({
+          [MyInfoChildAttributes.ChildName]: ['SPONSORED CHILD'],
+          [MyInfoChildAttributes.ChildBirthCertNo]: [''],
+          scopes: [MyInfoChildrenScope.Sponsored],
+        })
+      })
+
+      it('should keep birth-record-only behaviour when there are no sponsored records', () => {
+        const data = new MyInfoData(
+          toPersonResponse({
+            childrenbirthrecords: [BIRTH_RECORD],
+          }),
+        )
+
+        const result = data.getChildrenBirthRecords([MyInfoAttribute.ChildName])
+
+        expect(result).toEqual({
+          [MyInfoChildAttributes.ChildName]: ['LOCAL CHILD'],
+          scopes: [MyInfoChildrenScope.Local],
+        })
+      })
+
+      it('should emit blank values for not-applicable and NRIC-only sponsored records', () => {
+        const data = new MyInfoData(
+          toPersonResponse({
+            childrenbirthrecords: [],
+            sponsoredchildrenrecords: [
+              { source: '3' },
+              { ...META, nric: { value: 'T3456789C' } },
+            ],
+          }),
+        )
+
+        const result = data.getChildrenBirthRecords([
+          MyInfoAttribute.ChildName,
+          MyInfoAttribute.ChildGender,
+        ])
+
+        expect(result).toEqual({
+          [MyInfoChildAttributes.ChildName]: ['', ''],
+          [MyInfoChildAttributes.ChildGender]: ['', ''],
+          scopes: [
+            MyInfoChildrenScope.Sponsored,
+            MyInfoChildrenScope.Sponsored,
+          ],
+        })
+      })
+
+      it('should return undefined when neither children data item is present', () => {
+        const data = new MyInfoData(toPersonResponse({}))
+
+        expect(data.getChildrenBirthRecords(ALL_CHILD_ATTRS)).toBeUndefined()
+      })
+    })
+  })
+
+  describe('internalAttrToSponsoredChildScope', () => {
+    it('should map every child sub-field except birth cert number', () => {
+      expect(internalAttrToSponsoredChildScope(MyInfoAttribute.ChildName)).toBe(
+        'sponsoredchildrenrecords.name',
+      )
+      expect(
+        internalAttrToSponsoredChildScope(MyInfoAttribute.ChildDateOfBirth),
+      ).toBe('sponsoredchildrenrecords.dob')
+      expect(
+        internalAttrToSponsoredChildScope(MyInfoAttribute.ChildVaxxStatus),
+      ).toBe('sponsoredchildrenrecords.vaccinationrequirements')
+      expect(
+        internalAttrToSponsoredChildScope(MyInfoAttribute.ChildGender),
+      ).toBe('sponsoredchildrenrecords.sex')
+      expect(internalAttrToSponsoredChildScope(MyInfoAttribute.ChildRace)).toBe(
+        'sponsoredchildrenrecords.race',
+      )
+      expect(
+        internalAttrToSponsoredChildScope(MyInfoAttribute.ChildSecondaryRace),
+      ).toBe('sponsoredchildrenrecords.secondaryrace')
+      expect(
+        internalAttrToSponsoredChildScope(MyInfoAttribute.ChildBirthCertNo),
+      ).toBeUndefined()
+    })
+
+    it('should return undefined for non-child attributes', () => {
+      expect(
+        internalAttrToSponsoredChildScope(MyInfoAttribute.Name),
+      ).toBeUndefined()
+    })
+  })
+
+  describe('internalAttrListToScopes', () => {
+    it('should request the sponsored scope alongside each birth-record child scope', () => {
+      const scopes = internalAttrListToScopes([
+        MyInfoAttribute.ChildName,
+        MyInfoAttribute.ChildDateOfBirth,
+      ])
+
+      expect(scopes).toEqual(
+        expect.arrayContaining([
+          'childrenbirthrecords.name',
+          'sponsoredchildrenrecords.name',
+          'childrenbirthrecords.dob',
+          'sponsoredchildrenrecords.dob',
+          ExternalAttr.UinFin,
+        ]),
+      )
+    })
+
+    it('should not request a sponsored scope for birth cert number', () => {
+      const scopes = internalAttrListToScopes([
+        MyInfoAttribute.ChildBirthCertNo,
+      ])
+
+      expect(scopes).toContain('childrenbirthrecords.birthcertno')
+      expect(
+        scopes.filter((s) =>
+          s.startsWith(ExternalAttr.SponsoredChildrenRecords),
+        ),
+      ).toEqual(
+        // Only the MockPass-compatibility compound scope added under NODE_ENV=test.
+        [ExternalAttr.SponsoredChildrenRecords],
+      )
+    })
+
+    it('should not request any sponsored scope when no child attribute is requested', () => {
+      const scopes = internalAttrListToScopes([
+        MyInfoAttribute.Name,
+        MyInfoAttribute.Sex,
+      ])
+
+      expect(
+        scopes.some((s) => s.startsWith(ExternalAttr.SponsoredChildrenRecords)),
+      ).toBe(false)
+    })
+
+    it('should not emit duplicate scopes', () => {
+      const scopes = internalAttrListToScopes([
+        MyInfoAttribute.ChildName,
+        MyInfoAttribute.ChildName,
+      ])
+
+      expect(scopes).toEqual(Array.from(new Set(scopes)))
     })
   })
 })
