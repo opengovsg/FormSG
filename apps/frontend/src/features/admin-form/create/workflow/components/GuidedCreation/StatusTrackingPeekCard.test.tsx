@@ -4,7 +4,8 @@ import { act, render, screen } from '@testing-library/react'
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import * as pageStories from '../../CreatePageWorkflowTab.stories'
 
-const { WithWorkflowRedesignOn, WithWorkflow } = composeStories(pageStories)
+const { WithWorkflowRedesignOn, WithWorkflow, NoCompletionEmailRedesignOn } =
+  composeStories(pageStories)
 
 const TRACKER_LABEL =
   /allow (people|respondents) to track their submission status/i
@@ -21,7 +22,15 @@ describe('where the status tracker setting lives', () => {
       .scrollIntoView
   })
 
-  afterEach(() => useAdminWorkflowStore.getState().reset())
+  afterEach(() =>
+    act(() => {
+      useAdminWorkflowStore.getState().reset()
+      useAdminWorkflowStore.setState({
+        isGuidedSetup: true,
+        hasSavedCompletionEmail: false,
+      })
+    }),
+  )
 
   const renderTab = async (Story: typeof WithWorkflowRedesignOn) => {
     await act(async () => {
@@ -52,5 +61,29 @@ describe('where the status tracker setting lives', () => {
 
     expect(screen.queryByText(PEEK_TITLE)).not.toBeInTheDocument()
     expect(screen.getAllByText(TRACKER_LABEL)).toHaveLength(1)
+  })
+
+  it('waits for the completion email card before showing', async () => {
+    await renderTab(NoCompletionEmailRedesignOn)
+
+    expect(screen.queryByText(PEEK_TITLE)).not.toBeInTheDocument()
+    expect(screen.queryAllByText(TRACKER_LABEL)).toHaveLength(0)
+  })
+
+  it('appears once that card reports a save, and stays', async () => {
+    await renderTab(NoCompletionEmailRedesignOn)
+
+    await act(async () => {
+      useAdminWorkflowStore.getState().markCompletionEmailSaved()
+    })
+
+    expect(await screen.findByText(PEEK_TITLE)).toBeInTheDocument()
+
+    await act(async () => {
+      useAdminWorkflowStore.getState().setToEditingEmailCard()
+      useAdminWorkflowStore.getState().setToInactive()
+    })
+
+    expect(screen.getByText(PEEK_TITLE)).toBeInTheDocument()
   })
 })

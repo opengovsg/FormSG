@@ -30,6 +30,8 @@ type AdminWorkflowStore = {
   isOnWelcomeCard: boolean
   showWelcomeCard: () => void
   startBuildingFromWelcome: () => void
+  hasSavedCompletionEmail: boolean
+  markCompletionEmailSaved: () => void
   stepDraft: StepDraft | null
   stashStepDraft: (inputs: Partial<EditStepInputs>) => void
   restoreStepDraft: () => void
@@ -118,6 +120,12 @@ export const showWelcomeCardSelector = (state: AdminWorkflowStore) =>
 export const startBuildingFromWelcomeSelector = (state: AdminWorkflowStore) =>
   state.startBuildingFromWelcome
 
+export const hasSavedCompletionEmailSelector = (state: AdminWorkflowStore) =>
+  state.hasSavedCompletionEmail
+
+export const markCompletionEmailSavedSelector = (state: AdminWorkflowStore) =>
+  state.markCompletionEmailSaved
+
 export const stepDraftSelector = (state: AdminWorkflowStore) => state.stepDraft
 
 export const stashStepDraftSelector = (state: AdminWorkflowStore) =>
@@ -137,6 +145,8 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
     isGuidedSetup: DEFAULT_IS_GUIDED_SETUP,
     isOnWelcomeCard: false,
     stepDraft: null,
+    hasSavedCompletionEmail: false,
+    markCompletionEmailSaved: () => set({ hasSavedCompletionEmail: true }),
     setToCreating: () =>
       set({
         createOrEditData: {

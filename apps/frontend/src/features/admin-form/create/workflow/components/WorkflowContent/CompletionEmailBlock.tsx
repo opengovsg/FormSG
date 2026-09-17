@@ -92,7 +92,9 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
             onClick={handleClick}
           />
         )}
-        <StatusTrackingPeekCard />
+        <StatusTrackingPeekCard
+          hasConfiguredRecipients={recipients ? !recipients.isEmpty : false}
+        />
       </Stack>
     </Stack>
   )

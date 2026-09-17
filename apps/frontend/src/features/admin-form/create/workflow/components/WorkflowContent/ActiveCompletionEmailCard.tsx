@@ -24,6 +24,7 @@ import {
   cancelPendingSwitchSelector,
   completeSaveSelector,
   dismissCompletedStepSelector,
+  markCompletionEmailSavedSelector,
   pendingSwitchToSelector,
   setToInactiveSelector,
   useAdminWorkflowStore,
@@ -58,6 +59,9 @@ export const ActiveCompletionEmailCard = ({
   const dismissCompletedStep = useAdminWorkflowStore(
     dismissCompletedStepSelector,
   )
+  const markCompletionEmailSaved = useAdminWorkflowStore(
+    markCompletionEmailSavedSelector,
+  )
   const isGuidedEntry = useIsGuidedEmailCard()
 
   const isGuided = isGuidedEntry && !isDisabled
@@ -85,9 +89,10 @@ export const ActiveCompletionEmailCard = ({
   const { isDirty } = formMethods.formState
 
   const handleSaved = useCallback(() => {
+    markCompletionEmailSaved()
     dismissCompletedStep()
     completeSave()
-  }, [dismissCompletedStep, completeSave])
+  }, [markCompletionEmailSaved, dismissCompletedStep, completeSave])
 
   const handleSubmit = formMethods.handleSubmit((inputs) => {
     const nextEmails = inputs[OTHER_PARTIES_EMAIL_INPUT_NAME]
