@@ -1031,13 +1031,15 @@ describe('Multirespondent Submission Middleware', () => {
         },
       }
       jest.mocked(MyInfoService.fetchMyInfoHashes).mockReturnValue(okAsync({}))
-      jest.mocked(MyInfoService.checkMyInfoHashes).mockReturnValue(
-        okAsync(
-          new Set([
-            `${MyInfoAttribute.ChildrenBirthRecords}.${childrenFieldId}.${MyInfoChildAttributes.ChildName}.0.PHUA CHU KING`,
-          ]) as any,
-        ),
-      )
+      jest
+        .mocked(MyInfoService.checkMyInfoHashes)
+        .mockReturnValue(
+          okAsync(
+            new Set([
+              `${MyInfoAttribute.ChildrenBirthRecords}.${childrenFieldId}.${MyInfoChildAttributes.ChildName}.0.PHUA CHU KING`,
+            ]) as any,
+          ),
+        )
 
       const mockNext = jest.fn()
       const mockReq = createMyInfoMockReq()
