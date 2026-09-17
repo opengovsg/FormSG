@@ -144,6 +144,7 @@ export const getDecryptedSubmissionById = async ({
 
       processedContent = processDecryptedContentV4(
         encryptedSubmission.form_fields,
+        encryptedSubmission.form_logics,
         decryptedV4.responses,
         decryptedV4.verified,
       )

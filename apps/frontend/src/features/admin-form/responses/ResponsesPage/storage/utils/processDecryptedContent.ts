@@ -5,7 +5,7 @@ import {
   FormFieldMeta,
 } from '@opengovsg/formsg-sdk'
 
-import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import { BasicField, FormFieldDto, LogicDto } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
 import {
   SgidFieldTitle,
@@ -133,12 +133,14 @@ export const buildFormFieldMetaMap = (
  */
 export const processDecryptedContentV4 = (
   formFields: FormFieldDto[],
+  formLogics: LogicDto[],
   responses: FieldResponsesV4,
   verified?: Record<string, string>,
 ): VerifiedFormField[] => {
   const v1Fields = flattenV4ToFormFields({
     v4Responses: responses,
     formFields,
+    formLogics,
   }) as unknown as VerifiedFormField[]
   return verified ? v1Fields.concat(convertToResponseArray(verified)) : v1Fields
 }

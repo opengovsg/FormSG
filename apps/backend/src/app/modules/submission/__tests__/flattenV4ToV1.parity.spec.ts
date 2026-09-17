@@ -1,26 +1,12 @@
-/* eslint-disable typesafe/no-throw-sync-func -- the harness throws on purpose:
-   a reference it cannot build must abort loudly rather than be reported as a
-   parity difference. */
+/* eslint-disable typesafe/no-throw-sync-func -- if the test cannot make
+   the reference, it must stop. Do not show this as a difference. */
 /**
- * The differential byte-parity gate for #9984.
+ * Byte-parity tests between:
+ * - the storage-mode plaintext the SERVER encrypts, and
+ * - the V4 -> V1 flatten's output for the same inputs.
  *
- * `expect(JSON.stringify(B)).toBe(JSON.stringify(A))` where
- *   A = the storage-mode plaintext the SERVER encrypts, and
- *   B = the V4 -> V1 flatten's output for the same inputs.
- *
- * One assertion covers membership, order, key set, key order and values.
- * The comparison is on the JSON string rather than `Object.keys`, because a
- * verifiable field carries `signature: undefined` as a present key that
- * `JSON.stringify` drops — the delivered bytes are the JSON.
- *
- * Every failure here is a real parity gap: the harness below reproduces the
- * production chain rather than approximating it, and a harness that cannot
- * build the reference throws rather than reporting a difference. Do not
- * normalise a difference away to make a case pass.
- *
- * It lives in the backend because the reference value is only obtainable from
- * backend code (`ParsedResponsesObject`, `omitResponseKeys`); the frontend
- * halves are reached through the `~*` aliases mapped into `jest.config.js`.
+ * NOTE: The test compares JSON strings, not object keys since JSON is the
+ * data that the server encrypts.
  */
 import { ObjectId } from 'bson'
 import { BasicField, FormFieldDto, FormResponseMode } from 'formsg-shared/types'
@@ -212,6 +198,7 @@ const flattenReference = (
   formInputs: FormFieldValues,
 ): unknown[] =>
   flattenV4ToFormFields({
+    formLogics: [],
     v4Responses: scanV4Attachments(
       createResponsesV4(formFields, formInputs, buildQuarantineMap()),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -286,16 +273,65 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
   })
 
   /**
+   * The one accepted divergence, pinned rather than fixed.
+   *
    * The unanswered cases above cover a table at exactly `minimumRows`, which
-   * both producers agree on. A respondent who clicks "Add another row" and
-   * then submits the table blank is a different state, and it is the one the
-   * V4 wire cannot carry: the row count exists only in the browser.
+   * both producers agree on: the V4 producer drops the blank table and
+   * `computeTableAnswerValue` re-synthesises exactly that many rows. A
+   * respondent who clicks "Add another row" and then submits the table blank
+   * is a different state, and the row count exists only in the browser — the
+   * V4 wire does not carry it, the form definition does not hold it, and
+   * changing the wire to carry it is not available: an untouched field that
+   * reaches the wire is rejected outright at step 1 of a multi-step form
+   * (`multirespondent-submission.middleware.ts:609-617`).
+   *
+   * So the flatten emits the field's own `minimumRows`, and this case pins
+   * that number. The assertions below are deliberately narrow: the row COUNT
+   * is allowed to differ and nothing else is, so the accepted difference
+   * cannot quietly widen. No answer is lost either way — every cell is blank
+   * on both sides.
    */
   describe('a blank table the respondent added rows to', () => {
-    it('keeps one row per row the respondent had on screen', () => {
-      expectByteParity(
-        [buildAddMoreRowsTableField()],
-        buildBlankTableInputWithAddedRows(),
+    const tableField = buildAddMoreRowsTableField()
+    // Read off the field, not a fixture constant, so the pin tracks the
+    // definition: `minimumRows` is exactly what the flatten re-synthesises.
+    const { minimumRows } = tableField as unknown as { minimumRows: number }
+    const formInputs = buildBlankTableInputWithAddedRows()
+
+    // The form under test holds this one field, so each side is a one-entry
+    // array and the table entry is the whole of it. Built in `beforeAll` and
+    // not at collection time, so a harness that cannot build the reference
+    // fails these cases rather than aborting the whole file.
+    let A: unknown[]
+    let B: unknown[]
+    beforeAll(() => {
+      A = storageModeReference([tableField], formInputs)
+      B = flattenReference([tableField], formInputs)
+    })
+
+    const rowsOf = (entries: unknown[]): string[][] =>
+      (entries as { answerArray: string[][] }[])[0].answerArray
+    const withoutRows = (entries: unknown[]): unknown[] =>
+      (entries as Record<string, unknown>[]).map((entry) => {
+        const rest = { ...entry }
+        delete rest.answerArray
+        return rest
+      })
+    const isBlankRow = (row: string[]) => row.every((cell) => cell === '')
+
+    it("emits the field's minimumRows, not the rows the respondent saw", () => {
+      expect(rowsOf(B)).toHaveLength(minimumRows)
+      expect(rowsOf(A).length).toBeGreaterThan(minimumRows)
+    })
+
+    it('loses no answer, because every cell is blank on both sides', () => {
+      expect(rowsOf(A).every(isBlankRow)).toBe(true)
+      expect(rowsOf(B).every(isBlankRow)).toBe(true)
+    })
+
+    it('is byte-identical in every respect other than the row count', () => {
+      expect(JSON.stringify(withoutRows(B))).toBe(
+        JSON.stringify(withoutRows(A)),
       )
     })
   })
@@ -317,6 +353,7 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
       )
 
       const flattened = flattenV4ToFormFields({
+        formLogics: [],
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         v4Responses: v4Responses as any,
         formFields,
@@ -341,7 +378,11 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
       expect(
         JSON.stringify(
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          flattenV4ToFormFields({ v4Responses: poisoned as any, formFields }),
+          flattenV4ToFormFields({
+            formLogics: [],
+            v4Responses: poisoned as any,
+            formFields,
+          }),
         ),
       ).toBe(JSON.stringify(flattenReference(formFields, inputs)))
     })

@@ -28,13 +28,13 @@ const RESPONSES: FieldResponsesV4 = {
 
 describe('processDecryptedContentV4', () => {
   it('returns only the form fields when there is no verified content', () => {
-    const result = processDecryptedContentV4(FORM_FIELDS, RESPONSES)
+    const result = processDecryptedContentV4(FORM_FIELDS, [], RESPONSES)
 
     expect(result.map((field) => field._id)).toEqual([FIELD_ID])
   })
 
   it('appends the Singpass verified NRIC after the form fields', () => {
-    const result = processDecryptedContentV4(FORM_FIELDS, RESPONSES, {
+    const result = processDecryptedContentV4(FORM_FIELDS, [], RESPONSES, {
       'uinFin (Step 1)': 'S1234567A',
     })
 
@@ -51,7 +51,7 @@ describe('processDecryptedContentV4', () => {
   })
 
   it('appends the Corppass verified UEN then UID, in verified-object order', () => {
-    const result = processDecryptedContentV4(FORM_FIELDS, RESPONSES, {
+    const result = processDecryptedContentV4(FORM_FIELDS, [], RESPONSES, {
       'cpUen (Step 1)': 'T09LL0001B',
       'cpUid (Step 1)': 'S1234567A',
     })
@@ -72,7 +72,7 @@ describe('processDecryptedContentV4', () => {
   })
 
   it('appends the sgID verified NRIC after the form fields', () => {
-    const result = processDecryptedContentV4(FORM_FIELDS, RESPONSES, {
+    const result = processDecryptedContentV4(FORM_FIELDS, [], RESPONSES, {
       sgidUinFin: 'S1234567A',
     })
 
@@ -89,7 +89,7 @@ describe('processDecryptedContentV4', () => {
   })
 
   it('emits nothing for an unrecognised verified key', () => {
-    const result = processDecryptedContentV4(FORM_FIELDS, RESPONSES, {
+    const result = processDecryptedContentV4(FORM_FIELDS, [], RESPONSES, {
       notAVerifiedKey: 'some value',
     })
 
@@ -107,7 +107,7 @@ describe('processDecryptedContentV4', () => {
       },
     ] as unknown as FormFieldDto[]
 
-    const result = processDecryptedContentV4(formFields, RESPONSES, {
+    const result = processDecryptedContentV4(formFields, [], RESPONSES, {
       'uinFin (Step 1)': 'S1234567A',
     })
 
