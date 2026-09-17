@@ -10,12 +10,14 @@ import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
 import {
   createOrEditDataSelector,
+  hasReachedCompletionEmailSelector,
   isEditingEmailCardSelector,
   requestSwitchToEmailCardSelector,
   setToEditingEmailCardSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowGuidedMode } from '../../hooks/useIsWorkflowGuidedMode'
 import { StatusTrackingPeekCard } from '../GuidedCreation'
 
 import {
@@ -40,6 +42,10 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   const requestSwitchToEmailCard = useAdminWorkflowStore(
     requestSwitchToEmailCardSelector,
   )
+  const isGuidedMode = useIsWorkflowGuidedMode()
+  const hasReachedCompletionEmail = useAdminWorkflowStore(
+    hasReachedCompletionEmailSelector,
+  )
 
   const view = getCompletionEmailBlockView({
     settings,
@@ -48,6 +54,7 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   })
 
   if (view === CompletionEmailBlockView.None) return null
+  if (isGuidedMode && !hasReachedCompletionEmail) return null
   if (view === CompletionEmailBlockView.SettingsMessage) {
     return <WorkflowCompletionMessageBlock />
   }
@@ -92,9 +99,7 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
             onClick={handleClick}
           />
         )}
-        <StatusTrackingPeekCard
-          hasConfiguredRecipients={recipients ? !recipients.isEmpty : false}
-        />
+        <StatusTrackingPeekCard />
       </Stack>
     </Stack>
   )

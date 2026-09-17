@@ -25,7 +25,19 @@ const OTHERS = /any email addresses you choose/i
 const STEP_ONE_FIELD = /an email address collected from an email field/i
 const WORKFLOW_STEPS = /people who fill in a workflow step/i
 
+const resetStore = (isGuidedSetup: boolean) =>
+  act(() => {
+    useAdminWorkflowStore.getState().reset()
+    useAdminWorkflowStore.setState({
+      isGuidedSetup,
+      hasReachedCompletionEmail: false,
+      hasSavedCompletionEmail: false,
+    })
+  })
+
 describe('completion email seam', () => {
+  beforeEach(() => resetStore(false))
+
   beforeAll(() => {
     Element.prototype.scrollIntoView = vi.fn()
   })
@@ -35,7 +47,7 @@ describe('completion email seam', () => {
       .scrollIntoView
   })
 
-  afterEach(() => useAdminWorkflowStore.getState().reset())
+  afterEach(() => resetStore(true))
 
   it('keeps the Settings inline message when the redesign flag is off', async () => {
     await act(async () => {
@@ -147,7 +159,9 @@ describe('guided handover to the completion email card', () => {
       .scrollIntoView
   })
 
-  afterEach(() => useAdminWorkflowStore.getState().reset())
+  beforeEach(() => resetStore(true))
+
+  afterEach(() => resetStore(true))
 
   const declineAnotherStep = async () => {
     await act(async () => {
@@ -232,6 +246,7 @@ describe('guided handover to the completion email card', () => {
   })
 
   it('keeps Save changes and all three sections when opened on its own', async () => {
+    resetStore(false)
     await act(async () => {
       render(<WithWorkflowRedesignOn />)
     })
@@ -261,7 +276,9 @@ describe('when the workflow stops at step 1', () => {
       .scrollIntoView
   })
 
-  afterEach(() => useAdminWorkflowStore.getState().reset())
+  beforeEach(() => resetStore(true))
+
+  afterEach(() => resetStore(true))
 
   it('shows no completion email block at all', async () => {
     await act(async () => {

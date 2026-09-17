@@ -22,15 +22,26 @@ describe('where the status tracker setting lives', () => {
       .scrollIntoView
   })
 
-  afterEach(() =>
+  const resetStore = (isGuidedSetup: boolean) =>
     act(() => {
       useAdminWorkflowStore.getState().reset()
       useAdminWorkflowStore.setState({
-        isGuidedSetup: true,
+        isGuidedSetup,
+        hasReachedCompletionEmail: false,
         hasSavedCompletionEmail: false,
       })
-    }),
-  )
+    })
+
+  const finishTheEmailCard = () =>
+    act(() => {
+      useAdminWorkflowStore.getState().continueToEmailCard()
+      useAdminWorkflowStore.getState().markCompletionEmailSaved()
+      useAdminWorkflowStore.getState().setToInactive()
+    })
+
+  beforeEach(() => resetStore(true))
+
+  afterEach(() => resetStore(true))
 
   const renderTab = async (Story: typeof WithWorkflowRedesignOn) => {
     await act(async () => {
@@ -41,16 +52,15 @@ describe('where the status tracker setting lives', () => {
 
   it('moves to a peek card under the completion email card in guided mode', async () => {
     await renderTab(WithWorkflowRedesignOn)
+    await finishTheEmailCard()
 
     expect(await screen.findByText(PEEK_TITLE)).toBeInTheDocument()
     expect(screen.getAllByText(TRACKER_LABEL)).toHaveLength(1)
   })
 
   it('stays in the workflow card when guided setup is off', async () => {
+    resetStore(false)
     await renderTab(WithWorkflowRedesignOn)
-    await act(async () => {
-      useAdminWorkflowStore.getState().setGuidedSetup(false)
-    })
 
     expect(screen.queryByText(PEEK_TITLE)).not.toBeInTheDocument()
     expect(screen.getAllByText(TRACKER_LABEL)).toHaveLength(1)
@@ -72,10 +82,7 @@ describe('where the status tracker setting lives', () => {
 
   it('appears once that card reports a save, and stays', async () => {
     await renderTab(NoCompletionEmailRedesignOn)
-
-    await act(async () => {
-      useAdminWorkflowStore.getState().markCompletionEmailSaved()
-    })
+    await finishTheEmailCard()
 
     expect(await screen.findByText(PEEK_TITLE)).toBeInTheDocument()
 
@@ -85,5 +92,14 @@ describe('where the status tracker setting lives', () => {
     })
 
     expect(screen.getByText(PEEK_TITLE)).toBeInTheDocument()
+  })
+
+  it('shows no completion email card at all until the flow reaches it', async () => {
+    await renderTab(WithWorkflowRedesignOn)
+
+    expect(screen.queryByText(/end of workflow/i)).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /completion email/i }),
+    ).not.toBeInTheDocument()
   })
 })

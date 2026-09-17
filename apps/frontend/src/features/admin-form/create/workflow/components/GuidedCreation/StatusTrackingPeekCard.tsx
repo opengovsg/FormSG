@@ -14,21 +14,14 @@ import {
 } from './utils/completionPeekContent'
 import { PeekCard } from './PeekCard'
 
-export interface StatusTrackingPeekCardProps {
-  hasConfiguredRecipients: boolean
-}
-
-export const StatusTrackingPeekCard = ({
-  hasConfiguredRecipients,
-}: StatusTrackingPeekCardProps): JSX.Element | null => {
+export const StatusTrackingPeekCard = (): JSX.Element | null => {
   const { t } = useTranslation()
   const isGuidedMode = useIsWorkflowGuidedMode()
   const hasSavedCompletionEmail = useAdminWorkflowStore(
     hasSavedCompletionEmailSelector,
   )
 
-  if (!isGuidedMode) return null
-  if (!hasSavedCompletionEmail && !hasConfiguredRecipients) return null
+  if (!isGuidedMode || !hasSavedCompletionEmail) return null
 
   const { title, subtitle } = getCompletionPeekContent(t, {
     type: CompletionPeekMomentType.StatusTracking,
