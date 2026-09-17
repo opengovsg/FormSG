@@ -16,6 +16,7 @@ import { StatusTrackerToggle } from '~features/admin-form/settings/components/Em
 
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowGuidedMode } from '../../hooks/useIsWorkflowGuidedMode'
 import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
 import { DeleteWorkflowModal } from '../DeleteWorkflowModal'
 import { GuidedSetupToggle, useReportedCompletedStep } from '../GuidedCreation'
@@ -31,6 +32,7 @@ export const WorkflowContent = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isGuidedMode = useIsWorkflowGuidedMode()
   const { cardRadius, iconRestColor } = useWorkflowSurfaces()
   const isReportingCompletedStep = useReportedCompletedStep() !== null
   const {
@@ -47,7 +49,6 @@ export const WorkflowContent = (): JSX.Element | null => {
         onClose={onDeleteModalClose}
         entryPoint="workflow-card"
       />
-      {/* <HeaderBlock /> */}
       <Box
         bg="white"
         border="1px solid"
@@ -60,17 +61,6 @@ export const WorkflowContent = (): JSX.Element | null => {
             <Text as="h2" textStyle="h2">
               Workflow
             </Text>
-            {/* Grey at rest, red on intent. A red button sitting in the
-                corner of a page reads as a warning about the page's state
-                rather than as an action, so the destructive colour waits until
-                the pointer is on it. The resting grey matches the pencil on
-                the step cards, so the two affordances read as one family.
-
-                The states are set inline rather than through a variant: the
-                clear variant derives every state from a single colorScheme and
-                so cannot span two, and one call site does not warrant a
-                theme-wide variant that would invite use where plain danger is
-                correct. */}
             {isRedesign ? (
               <IconButton
                 variant="clear"
@@ -89,7 +79,7 @@ export const WorkflowContent = (): JSX.Element | null => {
             ) : null}
           </Flex>
           <Divider />
-          <StatusTrackerToggle />
+          {isGuidedMode ? null : <StatusTrackerToggle />}
           <GuidedSetupToggle />
         </Stack>
       </Box>

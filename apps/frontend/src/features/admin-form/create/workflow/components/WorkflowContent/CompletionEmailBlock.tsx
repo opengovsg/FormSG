@@ -16,6 +16,7 @@ import {
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { StatusTrackingPeekCard } from '../GuidedCreation'
 
 import {
   CompletionEmailBlockView,
@@ -79,17 +80,20 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   return (
     <Stack spacing="1.5rem" pb={{ base: '1rem', md: '3rem' }}>
       <EndOfWorkflowDivider />
-      {isEditing && mrfSettings ? (
-        <ActiveCompletionEmailCard
-          settings={mrfSettings}
-          isDisabled={isDisabled}
-        />
-      ) : (
-        <InactiveCompletionEmailCard
-          recipients={recipients}
-          onClick={handleClick}
-        />
-      )}
+      <Stack spacing="0">
+        {isEditing && mrfSettings ? (
+          <ActiveCompletionEmailCard
+            settings={mrfSettings}
+            isDisabled={isDisabled}
+          />
+        ) : (
+          <InactiveCompletionEmailCard
+            recipients={recipients}
+            onClick={handleClick}
+          />
+        )}
+        <StatusTrackingPeekCard />
+      </Stack>
     </Stack>
   )
 }

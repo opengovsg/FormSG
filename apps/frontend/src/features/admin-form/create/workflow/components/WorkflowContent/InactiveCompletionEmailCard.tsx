@@ -25,25 +25,10 @@ const PREFIX =
   'features.adminForm.settings.emailNotifications.section.mrf.respondents'
 
 export interface InactiveCompletionEmailCardProps {
-  /**
-   * Null while the settings query is still in flight. Required rather than
-   * optional so that omitting it is a type error instead of a card that
-   * skeletons forever.
-   *
-   * A failed query is not this component's to represent: the caller renders the
-   * flag-off message instead of the card, so null here only ever means loading.
-   */
   recipients: CompletionEmailRecipients | null
   onClick: () => void
 }
 
-/**
- * Collapsed completion email card: a summary of who gets notified, or an
- * instruction to pick someone when nothing is configured yet.
- *
- * Chrome matches InactiveStepBlock exactly, including the pencil being a
- * hover-only affordance rather than a control of its own.
- */
 export const InactiveCompletionEmailCard = ({
   recipients,
   onClick,
@@ -56,12 +41,6 @@ export const InactiveCompletionEmailCard = ({
     iconTransitionDuration,
   } = useWorkflowSurfaces()
 
-  // One group per control in the expanded card, same order, same labels, so the
-  // two views cannot describe the same settings differently. Every label is
-  // Settings' own string; none of this copy is new.
-  //
-  // Keyed on `id` rather than `label`: labels are translated, so they are not
-  // ours to guarantee unique.
   const groups = recipients
     ? [
         {
@@ -87,7 +66,7 @@ export const InactiveCompletionEmailCard = ({
     : []
 
   return (
-    <Box pos="relative" role="group">
+    <Box pos="relative" zIndex={1} role="group">
       <chakra.button
         type="button"
         w="100%"
@@ -106,19 +85,11 @@ export const InactiveCompletionEmailCard = ({
           <CompletionEmailLabel />
 
           {!recipients ? (
-            // Settings arrive after the form, so the card holds its frame and
-            // label rather than the whole block appearing late. Sized bars
-            // rather than a <Skeleton isLoaded> wrapper because the loaded
-            // content has two different shapes, and neither is honest to size a
-            // placeholder against.
             <Stack spacing="0.25rem">
               <Skeleton h="1.5rem" w="60%" />
               <Skeleton h="1.5rem" w="40%" />
             </Stack>
           ) : recipients.isEmpty ? (
-            // Reuses the Settings instruction rather than an absence message:
-            // this is the state every new form starts in, so it should tell the
-            // admin what to do next.
             <Text color="secondary.400">
               {t(
                 'features.adminForm.settings.emailNotifications.section.mrf.selectRecipientWorkflow',
@@ -127,15 +98,8 @@ export const InactiveCompletionEmailCard = ({
           ) : (
             <Stack spacing="1.5rem">
               {groups.map(({ id, label, values }) => (
-                // Bare Stack, so the label-to-chips gap is Chakra's 0.5rem
-                // default, the same as InactiveStepBlock's respondent block.
                 <Stack key={id}>
                   <Text textStyle={sectionLabelTextStyle}>{label}</Text>
-                  {/* Chip row copied from InactiveStepBlock's respondent badges
-                      rather than approximated, so both cards lay recipients out
-                      identically. Values are unique within a group: emails are
-                      deduplicated in the helper, step labels carry their step
-                      number, and step 1 is a single value. */}
                   <Flex
                     flexDir={{ base: 'column', md: 'row' }}
                     gap={{ base: '0.5rem', md: '1rem' }}
@@ -152,9 +116,6 @@ export const InactiveCompletionEmailCard = ({
           )}
         </Stack>
       </chakra.button>
-      {/* The whole card is the button, so the pencil is a visual affordance
-      only: no click target, no tab stop, hidden from AT. It reacts to hover on
-      the card via the wrapper's role="group". */}
       <Icon
         as={BiPencil}
         aria-hidden
