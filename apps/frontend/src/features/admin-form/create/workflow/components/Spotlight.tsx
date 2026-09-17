@@ -59,7 +59,14 @@ export const Spotlight = ({
       transition={
         prefersReducedMotion
           ? 'none'
-          : 'opacity 0.3s ease, background 0.3s ease, outline-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease'
+          : [
+              'opacity 0.3s ease',
+              'background 0.3s ease',
+              'outline-color 0.3s ease',
+              'transform 0.3s ease',
+              'box-shadow 0.3s ease',
+              ...(isActive ? [] : ['border-radius 0.3s ease']),
+            ].join(', ')
       }
     >
       <SpotlightActiveContext.Provider value={isActive}>
