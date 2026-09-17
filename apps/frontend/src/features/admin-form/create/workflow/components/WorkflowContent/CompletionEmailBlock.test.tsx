@@ -30,7 +30,6 @@ const resetStore = (isGuidedSetup: boolean) =>
     useAdminWorkflowStore.getState().reset()
     useAdminWorkflowStore.setState({
       isGuidedSetup,
-      hasReachedCompletionEmail: false,
       hasSavedCompletionEmail: false,
     })
   })

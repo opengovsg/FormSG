@@ -27,15 +27,16 @@ describe('where the status tracker setting lives', () => {
       useAdminWorkflowStore.getState().reset()
       useAdminWorkflowStore.setState({
         isGuidedSetup,
-        hasReachedCompletionEmail: false,
         hasSavedCompletionEmail: false,
       })
     })
 
   const finishTheEmailCard = () =>
     act(() => {
+      useAdminWorkflowStore.getState().setCompletedStep(1)
       useAdminWorkflowStore.getState().continueToEmailCard()
       useAdminWorkflowStore.getState().markCompletionEmailSaved()
+      useAdminWorkflowStore.getState().dismissCompletedStep()
       useAdminWorkflowStore.getState().setToInactive()
     })
 
@@ -94,12 +95,33 @@ describe('where the status tracker setting lives', () => {
     expect(screen.getByText(PEEK_TITLE)).toBeInTheDocument()
   })
 
-  it('shows no completion email card at all until the flow reaches it', async () => {
+  it('hides the completion email card while a step is reporting', async () => {
     await renderTab(WithWorkflowRedesignOn)
+    await act(async () => {
+      useAdminWorkflowStore.getState().setCompletedStep(1)
+    })
 
     expect(screen.queryByText(/end of workflow/i)).not.toBeInTheDocument()
     expect(
       screen.queryByRole('button', { name: /completion email/i }),
     ).not.toBeInTheDocument()
+  })
+
+  it('brings it back with the report when the email card is cancelled', async () => {
+    await renderTab(WithWorkflowRedesignOn)
+    await act(async () => {
+      useAdminWorkflowStore.getState().setCompletedStep(1)
+      useAdminWorkflowStore.getState().continueToEmailCard()
+    })
+    expect(await screen.findByText(/end of workflow/i)).toBeInTheDocument()
+
+    await act(async () => {
+      useAdminWorkflowStore.getState().setToInactive()
+    })
+
+    expect(screen.queryByText(/end of workflow/i)).not.toBeInTheDocument()
+    expect(
+      await screen.findByText(/nice, step 2 is all set/i),
+    ).toBeInTheDocument()
   })
 })
