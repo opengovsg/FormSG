@@ -11,6 +11,7 @@ import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 import {
   completedStepNumberSelector,
   createOrEditDataSelector,
+  isCreatingStateSelector,
   isEditingEmailCardSelector,
   requestSwitchToEmailCardSelector,
   setToEditingEmailCardSelector,
@@ -44,6 +45,7 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   )
   const isGuidedMode = useIsWorkflowGuidedMode()
   const completedStepNumber = useAdminWorkflowStore(completedStepNumberSelector)
+  const isCreatingStep = useAdminWorkflowStore(isCreatingStateSelector)
 
   const view = getCompletionEmailBlockView({
     settings,
@@ -52,8 +54,8 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   })
 
   if (view === CompletionEmailBlockView.None) return null
-  const isReportingCompletedStep = completedStepNumber !== null
-  if (isGuidedMode && isReportingCompletedStep && !isEditing) return null
+  const isMidStep = isCreatingStep || completedStepNumber !== null
+  if (isGuidedMode && isMidStep && !isEditing) return null
   if (view === CompletionEmailBlockView.SettingsMessage) {
     return <WorkflowCompletionMessageBlock />
   }

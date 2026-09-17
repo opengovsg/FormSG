@@ -124,4 +124,27 @@ describe('where the status tracker setting lives', () => {
       await screen.findByText(/nice, step 2 is all set/i),
     ).toBeInTheDocument()
   })
+
+  it('hides the completion email card from Add step until the flow returns', async () => {
+    await renderTab(WithWorkflowRedesignOn)
+    await finishTheEmailCard()
+    expect(await screen.findByText(PEEK_TITLE)).toBeInTheDocument()
+
+    await act(async () => {
+      useAdminWorkflowStore.getState().setToCreating()
+    })
+    expect(screen.queryByText(/end of workflow/i)).not.toBeInTheDocument()
+
+    await act(async () => {
+      useAdminWorkflowStore.getState().setCompletedStep(2)
+      useAdminWorkflowStore.getState().completeSave()
+    })
+    expect(screen.queryByText(/end of workflow/i)).not.toBeInTheDocument()
+
+    await act(async () => {
+      useAdminWorkflowStore.getState().continueToEmailCard()
+    })
+
+    expect(await screen.findByText(/end of workflow/i)).toBeInTheDocument()
+  })
 })
