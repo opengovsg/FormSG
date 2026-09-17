@@ -8,8 +8,12 @@ import { SPOTLIGHT_TEST_ID } from '../Spotlight'
 
 import * as cardStories from './CompletionEmailBlock.stories'
 
-const { WithWorkflow, WithWorkflowRedesignOn, Step1RedesignOn } =
-  composeStories(pageStories)
+const {
+  WithWorkflow,
+  WithWorkflowRedesignOn,
+  WithWorkflowRedesignOnClosedForm,
+  Step1RedesignOn,
+} = composeStories(pageStories)
 const { Active, SettingsError } = composeStories(cardStories)
 
 const SETTINGS_LINK = /email notifications/i
@@ -116,7 +120,7 @@ describe('completion email seam', () => {
   })
   it('saves pending edits before Add step opens the new step form', async () => {
     await act(async () => {
-      render(<WithWorkflowRedesignOn />)
+      render(<WithWorkflowRedesignOnClosedForm />)
     })
 
     const card = await screen.findByRole(
