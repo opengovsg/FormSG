@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import {
@@ -14,12 +15,22 @@ import IconButton from '~components/IconButton'
 
 import { StatusTrackerToggle } from '~features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
 
+import {
+  guidedWrapUpSelector,
+  useAdminWorkflowStore,
+} from '../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowGuidedMode } from '../../hooks/useIsWorkflowGuidedMode'
 import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
+import { GuidedWrapUp } from '../../types'
 import { DeleteWorkflowModal } from '../DeleteWorkflowModal'
-import { GuidedSetupToggle, useReportedCompletedStep } from '../GuidedCreation'
+import {
+  GuidedSetupFinishedPeekCard,
+  GuidedSetupToggle,
+  useReportedCompletedStep,
+} from '../GuidedCreation'
+import { Spotlight } from '../Spotlight'
 
 import { CompletionEmailBlock } from './CompletionEmailBlock'
 import { NewStepBlock } from './NewStepBlock'
@@ -33,6 +44,18 @@ export const WorkflowContent = (): JSX.Element | null => {
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
   const isRedesign = useIsWorkflowBuilderRedesign()
   const isGuidedMode = useIsWorkflowGuidedMode()
+  const guidedWrapUp = useAdminWorkflowStore(guidedWrapUpSelector)
+  const isOnStatusTracking =
+    isGuidedMode && guidedWrapUp === GuidedWrapUp.StatusTracking
+  const workflowCardRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!isOnStatusTracking) return
+    workflowCardRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }, [isOnStatusTracking])
   const { cardRadius, iconRestColor } = useWorkflowSurfaces()
   const isReportingCompletedStep = useReportedCompletedStep() !== null
   const {
@@ -49,40 +72,48 @@ export const WorkflowContent = (): JSX.Element | null => {
         onClose={onDeleteModalClose}
         entryPoint="workflow-card"
       />
-      <Box
-        bg="white"
-        border="1px solid"
-        borderColor="neutral.300"
-        borderRadius={cardRadius}
-        padding="1.5rem"
-      >
-        <Stack gap={'1.5rem'}>
-          <Flex align="center" justify="space-between">
-            <Text as="h2" textStyle="h2">
-              Workflow
-            </Text>
-            {isRedesign ? (
-              <IconButton
-                variant="clear"
-                colorScheme="danger"
-                color={iconRestColor}
-                transitionProperty="common"
-                transitionDuration="normal"
-                _hover={{ color: 'danger.500', bg: 'danger.100' }}
-                _active={{ color: 'danger.500', bg: 'danger.200' }}
-                aria-label={t(
-                  'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
-                )}
-                icon={<BiTrash />}
-                onClick={onDeleteModalOpen}
-              />
-            ) : null}
-          </Flex>
-          <Divider />
-          {isGuidedMode ? null : <StatusTrackerToggle />}
-          <GuidedSetupToggle />
-        </Stack>
-      </Box>
+      <Stack spacing="0">
+        <Box
+          ref={workflowCardRef}
+          bg="white"
+          border="1px solid"
+          borderColor="neutral.300"
+          borderRadius={cardRadius}
+          padding="1.5rem"
+          pos="relative"
+          zIndex={1}
+        >
+          <Stack gap={'1.5rem'}>
+            <Flex align="center" justify="space-between">
+              <Text as="h2" textStyle="h2">
+                Workflow
+              </Text>
+              {isRedesign ? (
+                <IconButton
+                  variant="clear"
+                  colorScheme="danger"
+                  color={iconRestColor}
+                  transitionProperty="common"
+                  transitionDuration="normal"
+                  _hover={{ color: 'danger.500', bg: 'danger.100' }}
+                  _active={{ color: 'danger.500', bg: 'danger.200' }}
+                  aria-label={t(
+                    'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
+                  )}
+                  icon={<BiTrash />}
+                  onClick={onDeleteModalOpen}
+                />
+              ) : null}
+            </Flex>
+            <Divider />
+            <GuidedSetupToggle />
+            <Spotlight isActive isEnabled={isOnStatusTracking}>
+              <StatusTrackerToggle />
+            </Spotlight>
+          </Stack>
+        </Box>
+        <GuidedSetupFinishedPeekCard />
+      </Stack>
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (
           <WorkflowBlockFactory key={i} stepNumber={i} step={step} />

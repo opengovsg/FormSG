@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import * as pageStories from '../../CreatePageWorkflowTab.stories'
-import { AdminEditWorkflowState } from '../../types'
+import { AdminEditWorkflowState, GuidedWrapUp } from '../../types'
 import { SPOTLIGHT_TEST_ID } from '../Spotlight'
 
 import * as cardStories from './CompletionEmailBlock.stories'
@@ -30,7 +30,7 @@ const resetStore = (isGuidedSetup: boolean) =>
     useAdminWorkflowStore.getState().reset()
     useAdminWorkflowStore.setState({
       isGuidedSetup,
-      hasSavedCompletionEmail: false,
+      guidedWrapUp: GuidedWrapUp.None,
     })
   })
 
@@ -182,45 +182,23 @@ describe('guided handover to the completion email card', () => {
     })
   }
 
-  it('opens on the first recipient section, with nothing else revealed', async () => {
+  it('opens with every recipient control in one band', async () => {
     await declineAnotherStep()
 
     expect(screen.getByText(OTHERS)).toBeInTheDocument()
-    expect(screen.queryByText(STEP_ONE_FIELD)).not.toBeInTheDocument()
-    expect(screen.queryByText(WORKFLOW_STEPS)).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', SAVE)).not.toBeInTheDocument()
-    expect(screen.getByRole('button', CONTINUE)).toBeInTheDocument()
-  })
-
-  it('reveals one recipient section per Continue, with a band on each', async () => {
-    await declineAnotherStep()
-    expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1)
-
-    await clickButton(CONTINUE)
-
     expect(screen.getByText(STEP_ONE_FIELD)).toBeInTheDocument()
-    expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(2)
-
-    await clickButton(CONTINUE)
-
     expect(screen.getByText(WORKFLOW_STEPS)).toBeInTheDocument()
-    expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(3)
-    expect(screen.getByRole('button', DONE)).toBeInTheDocument()
+    expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1)
   })
 
-  it('offers Back once past the first section, and Cancel on it', async () => {
+  it('offers Cancel and Done, with nothing to step through', async () => {
     await declineAnotherStep()
+
     expect(screen.getByRole('button', CANCEL)).toBeInTheDocument()
+    expect(screen.getByRole('button', DONE)).toBeInTheDocument()
+    expect(screen.queryByRole('button', CONTINUE)).not.toBeInTheDocument()
     expect(screen.queryByRole('button', BACK)).not.toBeInTheDocument()
-
-    await clickButton(CONTINUE)
-    expect(screen.getByRole('button', BACK)).toBeInTheDocument()
-    expect(screen.queryByRole('button', CANCEL)).not.toBeInTheDocument()
-
-    await clickButton(BACK)
-
-    expect(screen.queryByText(STEP_ONE_FIELD)).not.toBeInTheDocument()
-    expect(screen.getByRole('button', CANCEL)).toBeInTheDocument()
+    expect(screen.queryByRole('button', SAVE)).not.toBeInTheDocument()
   })
 
   it('returns to the report it came from when the admin cancels', async () => {
@@ -233,8 +211,6 @@ describe('guided handover to the completion email card', () => {
 
   it('ends the flow when the admin is done, so the report does not return', async () => {
     await declineAnotherStep()
-    await clickButton(CONTINUE)
-    await clickButton(CONTINUE)
 
     await clickButton(DONE)
 

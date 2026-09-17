@@ -17,6 +17,13 @@ export type CreateOrEditData =
   | { state: AdminEditWorkflowState.EditingStep; stepNumber: number }
   | { state: AdminEditWorkflowState.EditingEmailCard }
 
+export enum GuidedWrapUp {
+  None = 'none',
+  EmailSaved = 'email-saved',
+  StatusTracking = 'status-tracking',
+  Done = 'done',
+}
+
 export interface StepDraft {
   target: CreateOrEditData
   inputs: Partial<EditStepInputs>

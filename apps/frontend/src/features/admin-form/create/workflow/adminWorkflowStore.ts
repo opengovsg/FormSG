@@ -5,6 +5,7 @@ import {
   AdminEditWorkflowState,
   CreateOrEditData,
   EditStepInputs,
+  GuidedWrapUp,
   StepDraft,
 } from './types'
 
@@ -30,8 +31,8 @@ type AdminWorkflowStore = {
   isOnWelcomeCard: boolean
   showWelcomeCard: () => void
   startBuildingFromWelcome: () => void
-  hasSavedCompletionEmail: boolean
-  markCompletionEmailSaved: () => void
+  guidedWrapUp: GuidedWrapUp
+  setGuidedWrapUp: (stage: GuidedWrapUp) => void
   stepDraft: StepDraft | null
   stashStepDraft: (inputs: Partial<EditStepInputs>) => void
   restoreStepDraft: () => void
@@ -120,11 +121,11 @@ export const showWelcomeCardSelector = (state: AdminWorkflowStore) =>
 export const startBuildingFromWelcomeSelector = (state: AdminWorkflowStore) =>
   state.startBuildingFromWelcome
 
-export const hasSavedCompletionEmailSelector = (state: AdminWorkflowStore) =>
-  state.hasSavedCompletionEmail
+export const guidedWrapUpSelector = (state: AdminWorkflowStore) =>
+  state.guidedWrapUp
 
-export const markCompletionEmailSavedSelector = (state: AdminWorkflowStore) =>
-  state.markCompletionEmailSaved
+export const setGuidedWrapUpSelector = (state: AdminWorkflowStore) =>
+  state.setGuidedWrapUp
 
 export const stepDraftSelector = (state: AdminWorkflowStore) => state.stepDraft
 
@@ -145,8 +146,8 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
     isGuidedSetup: DEFAULT_IS_GUIDED_SETUP,
     isOnWelcomeCard: false,
     stepDraft: null,
-    hasSavedCompletionEmail: false,
-    markCompletionEmailSaved: () => set({ hasSavedCompletionEmail: true }),
+    guidedWrapUp: GuidedWrapUp.None,
+    setGuidedWrapUp: (stage) => set({ guidedWrapUp: stage }),
     setToCreating: () =>
       set({
         createOrEditData: {

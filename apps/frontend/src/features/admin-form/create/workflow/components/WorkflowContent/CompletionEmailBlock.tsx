@@ -19,7 +19,7 @@ import {
 } from '../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowGuidedMode } from '../../hooks/useIsWorkflowGuidedMode'
-import { StatusTrackingPeekCard } from '../GuidedCreation'
+import { EmailSetUpPeekCard } from '../GuidedCreation'
 
 import {
   CompletionEmailBlockView,
@@ -100,7 +100,7 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
             onClick={handleClick}
           />
         )}
-        <StatusTrackingPeekCard />
+        <EmailSetUpPeekCard />
       </Stack>
     </Stack>
   )
