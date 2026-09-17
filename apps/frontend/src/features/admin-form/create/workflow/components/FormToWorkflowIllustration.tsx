@@ -13,6 +13,12 @@ import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 
 const ILLUSTRATED_FORM_TITLE = 'My form'
 
+export const ILLUSTRATION_MAX_W = '25rem'
+
+export const ILLUSTRATION_FORM_LAYER_TEST_ID = 'workflow-illustration-form'
+
+export const ILLUSTRATION_STEPS_LAYER_TEST_ID = 'workflow-illustration-steps'
+
 const ILLUSTRATED_STEP_COUNT = 3
 
 const CROSSFADE_MS = 1200
@@ -172,10 +178,11 @@ export const FormToWorkflowIllustration = ({
     : `opacity ${CROSSFADE_MS}ms ease, transform ${CROSSFADE_MS}ms ease`
 
   return (
-    <Box w="100%" maxW="25rem" position="relative">
+    <Box w="100%" maxW={ILLUSTRATION_MAX_W} display="grid">
       <Box
-        position={showWorkflow ? 'absolute' : 'relative'}
-        inset={showWorkflow ? 0 : undefined}
+        data-testid={ILLUSTRATION_FORM_LAYER_TEST_ID}
+        gridArea="1 / 1"
+        alignSelf="start"
         opacity={showWorkflow ? 0 : 1}
         transform={showWorkflow ? 'scale(0.97)' : 'scale(1)'}
         transition={crossfade}
@@ -187,8 +194,9 @@ export const FormToWorkflowIllustration = ({
       </Box>
 
       <Box
-        position={showWorkflow ? 'relative' : 'absolute'}
-        inset={showWorkflow ? undefined : 0}
+        data-testid={ILLUSTRATION_STEPS_LAYER_TEST_ID}
+        gridArea="1 / 1"
+        alignSelf="start"
         opacity={showWorkflow ? 1 : 0}
         transform={showWorkflow ? 'scale(1)' : 'scale(0.97)'}
         transition={crossfade}
