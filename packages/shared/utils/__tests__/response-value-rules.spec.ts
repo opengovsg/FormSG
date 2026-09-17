@@ -269,6 +269,29 @@ describe('response value rules', () => {
         computeCheckboxAnswerValue({ value: false, othersInput: 'ignored' }),
       ).toEqual({ answerArray: [] })
     })
+
+    /**
+     * RATIONALE: The browser holds a present-but-`undefined` `othersInput`;
+     * V4 content omits the key instead. The rule must coalesce the value,
+     * not test for the key, so both cases produce the same bytes and neither
+     * shows the consumer a literal `"undefined"`.
+     */
+    it('renders a present but undefined othersInput as a bare prefix', () => {
+      expect(
+        computeCheckboxAnswerValue({
+          value: ['a', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+          othersInput: undefined,
+        }),
+      ).toEqual({ answerArray: ['a', 'Others: '] })
+    })
+
+    it('renders an absent othersInput key as a bare prefix', () => {
+      expect(
+        computeCheckboxAnswerValue({
+          value: ['a', CLIENT_CHECKBOX_OTHERS_INPUT_VALUE],
+        }),
+      ).toEqual({ answerArray: ['a', 'Others: '] })
+    })
   })
 
   describe('radio', () => {
@@ -319,8 +342,13 @@ describe('response value rules', () => {
   describe('throwUnsupportedFieldType', () => {
     it('throws so an unclassified field type cannot be silently dropped', () => {
       expect(() =>
-        throwUnsupportedFieldType({ fieldType: 'not_a_field_type' } as never),
-      ).toThrow('Unsupported field type: [object Object]')
+        throwUnsupportedFieldType({
+          _id: '000000000000000000000001',
+          fieldType: 'not_a_field_type',
+        } as never),
+      ).toThrow(
+        'Unsupported field type: not_a_field_type for field id: 000000000000000000000001',
+      )
     })
   })
 })
