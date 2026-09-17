@@ -1271,6 +1271,19 @@ const sendMrfInitialWebhookIfEligible = ({
     .andThen((liveView) => {
       const policy = getWebhookPayloadPolicy({
         webhookType: toConsumerType(webhookType),
+        // PINNED TO 'v4' UNTIL #9975 CONTINUED (slice 3), which replaces this
+        // with the form's own `webhook.webhookFormat`.
+        //
+        // The resolution itself is wired and under test; the V1 content
+        // producer and the V1 snapshot are not. Passing the form's setting
+        // here today would resolve `v1` for a generic consumer while the
+        // snapshot still holds V4 ciphertext, and the payload's `version`
+        // comes from `snapshot.contentFormat`, not from the policy. The
+        // consumer would then receive V4 content labelled `2.1` with the
+        // wrapped submission secret key withheld — right version, no key to
+        // open it, undeliverable. Pinning keeps every send byte-identical to
+        // today, in both flag directions.
+        webhookFormat: 'v4',
         submissionIndex,
         submittedStepsLength: submission.submittedSteps?.length ?? 0,
       })
