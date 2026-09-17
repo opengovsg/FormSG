@@ -167,6 +167,7 @@ async function decryptSubmissionData(
       mrfSubmissionSecretKey = decryptedV4.submissionSecretKey
       decryptedResponses = processDecryptedContentV4(
         submissionData.form_fields,
+        submissionData.form_logics,
         decryptedV4.responses,
         decryptedV4.verified,
       )
