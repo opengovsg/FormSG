@@ -15,7 +15,10 @@ import {
   getMyInfoChildHashKey,
   hashFieldValues,
 } from '../../../myinfo/myinfo.util'
-import { adaptV4ResponsesForMyInfoHashCheck } from '../multirespondent-submission.utils'
+import {
+  adaptV4ResponsesForMyInfoHashCheck,
+  stampMyInfoVerifiedOnResponses,
+} from '../multirespondent-submission.utils'
 
 /**
  * End-to-end parity check for MRF Children hash verification: hashes are
@@ -176,5 +179,35 @@ describe('MRF Children MyInfo hash check parity', () => {
     )
 
     expect(results.size).toBe(0)
+  })
+
+  describe('stampMyInfoVerifiedOnResponses', () => {
+    it('should stamp provenance.myinfoVerified when the response has verified child hash keys', () => {
+      const responses = makeV4Responses()
+      const verifiedKeys = new Set(
+        CHILDREN_SUBFIELDS.map((attr) =>
+          getMyInfoChildHashKey(FIELD_ID, attr, 0, CHILD_NAME),
+        ),
+      )
+
+      stampMyInfoVerifiedOnResponses(responses, verifiedKeys)
+
+      expect(responses[FIELD_ID].provenance).toEqual({ myinfoVerified: true })
+    })
+
+    it('should not stamp when no verified key belongs to the field (user-filled child pass-through)', () => {
+      const responses = makeV4Responses()
+      const otherFieldKey = getMyInfoChildHashKey(
+        new ObjectId().toHexString(),
+        MyInfoChildAttributes.ChildName,
+        0,
+        CHILD_NAME,
+      )
+
+      stampMyInfoVerifiedOnResponses(responses, new Set([otherFieldKey]))
+      stampMyInfoVerifiedOnResponses(responses, new Set())
+
+      expect(responses[FIELD_ID].provenance).toEqual({})
+    })
   })
 })

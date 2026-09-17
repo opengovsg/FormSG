@@ -10,6 +10,7 @@ import {
   MyInfoAttribute as InternalAttr,
   MyInfoChildAttributes,
   MyInfoChildData,
+  MyInfoChildrenScope,
   MyInfoChildVaxxStatus,
   MyInfoDataTransformer,
 } from 'formsg-shared/types'
@@ -326,7 +327,15 @@ export class MyInfoData implements MyInfoDataTransformer<
         .filter((attr) => myInfoAttrsSet.has(attr as unknown as InternalAttr))
         .map((attr) => [attr, this.#accessChildrenAttrFromMyInfo(attr)]),
     )
-    return result
+    return {
+      ...result,
+      // Every record here came from the local childrenbirthrecords data item
+      // (the only children scope FormSG requests). When the sponsored scope is
+      // fetched too, label each record by the data item it came from.
+      scopes: this.#personData.childrenbirthrecords.map(
+        () => MyInfoChildrenScope.Local,
+      ),
+    }
   }
 
   _formatFieldValue(attr: ExternalAttr): string | undefined {
