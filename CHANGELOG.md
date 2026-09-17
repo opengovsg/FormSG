@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.25.1](https://github.com/opengovsg/formsg/compare/v9.25.0...v9.25.1) (2026-09-17)
+
+
+### Refactors
+
+* **shared:** hoist the storage-mode response value rules and validateResponses (#9974) (#9989) ([#9974](https://github.com/opengovsg/formsg/commit/6bb62251bd6067a91d9bbe7e7d6eebfdbccd8836))
+
 ## [9.25.0](https://github.com/opengovsg/formsg/compare/v9.24.0...v9.25.0) (2026-09-16)
 
 
