@@ -18,6 +18,7 @@ import getSubmissionModel from '../../models/submission.server.model'
 import { getSignedS3Url } from '../../utils/aws-s3'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../core/core.errors'
+import type { WebhookConsumerType } from '../submission/multirespondent-submission/webhook/webhook-payload-policy'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import { WEBHOOK_MAX_CONTENT_LENGTH } from './webhook.constants'
@@ -241,6 +242,22 @@ export const getWebhookType = (webhookUrl: string): WebhookType => {
       ? 'plumber'
       : 'generic'
   return webhookType
+}
+
+/**
+ * Narrows the URL family represented by WebhookType to
+ * the consumer class the payload policy reasons about.
+ */
+export const toConsumerType = (
+  webhookType: WebhookType,
+): WebhookConsumerType => {
+  switch (webhookType) {
+    case 'plumber':
+      return 'plumber'
+    case 'zapier':
+    case 'generic':
+      return 'generic'
+  }
 }
 
 /**
