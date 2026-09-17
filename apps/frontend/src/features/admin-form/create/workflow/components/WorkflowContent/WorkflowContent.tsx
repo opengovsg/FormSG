@@ -39,6 +39,8 @@ import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock
 
 export const STEP_CONNECTOR_TEST_ID = 'workflow-step-connector'
 
+const WORKFLOW_CARD_PADDING = '1.5rem'
+
 export const WorkflowContent = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
@@ -47,6 +49,10 @@ export const WorkflowContent = (): JSX.Element | null => {
   const guidedWrapUp = useAdminWorkflowStore(guidedWrapUpSelector)
   const isOnStatusTracking =
     isGuidedMode && guidedWrapUp === GuidedWrapUp.StatusTracking
+  const showStatusTracker =
+    !isGuidedMode ||
+    guidedWrapUp === GuidedWrapUp.StatusTracking ||
+    guidedWrapUp === GuidedWrapUp.Done
   const workflowCardRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
@@ -79,7 +85,7 @@ export const WorkflowContent = (): JSX.Element | null => {
           border="1px solid"
           borderColor="neutral.300"
           borderRadius={cardRadius}
-          padding="1.5rem"
+          padding={WORKFLOW_CARD_PADDING}
           pos="relative"
           zIndex={1}
         >
@@ -107,9 +113,15 @@ export const WorkflowContent = (): JSX.Element | null => {
             </Flex>
             <Divider />
             <GuidedSetupToggle />
-            <Spotlight isActive isEnabled={isOnStatusTracking}>
-              <StatusTrackerToggle />
-            </Spotlight>
+            {showStatusTracker ? (
+              <Box mx={`-${WORKFLOW_CARD_PADDING}`}>
+                <Spotlight isActive isEnabled={isOnStatusTracking}>
+                  <Box px={WORKFLOW_CARD_PADDING}>
+                    <StatusTrackerToggle />
+                  </Box>
+                </Spotlight>
+              </Box>
+            ) : null}
           </Stack>
         </Box>
         <GuidedSetupFinishedPeekCard />

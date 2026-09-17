@@ -11,7 +11,7 @@ const EMAIL_SET_UP = /you've set up the completion email/i
 const FINISHED = /you've finished guided setup/i
 const TRACKER_LABEL =
   /allow (people|respondents) to track their submission status/i
-const GUIDED_TOGGLE = /guided setup/i
+const GUIDED_TOGGLE = /^guided setup$/i
 const CONTINUE = { name: /^continue$/i }
 const DONE = { name: /^done$/i }
 
@@ -49,13 +49,35 @@ describe('the guided wrap-up after the completion email', () => {
       useAdminWorkflowStore.getState().setGuidedWrapUp(stage)
     })
 
-  it('keeps the status tracker under the guided setup toggle', async () => {
+  it('withholds the status tracker until the flow reaches it', async () => {
     await renderTab()
 
-    const toggles = screen.getAllByRole('checkbox')
-    const labels = toggles.map((toggle) => toggle.getAttribute('aria-label'))
-    expect(labels.join(' ')).toMatch(GUIDED_TOGGLE)
+    expect(screen.queryAllByText(TRACKER_LABEL)).toHaveLength(0)
+
+    await atStage(GuidedWrapUp.EmailSaved)
+    expect(screen.queryAllByText(TRACKER_LABEL)).toHaveLength(0)
+
+    await atStage(GuidedWrapUp.StatusTracking)
     expect(screen.getAllByText(TRACKER_LABEL)).toHaveLength(1)
+  })
+
+  it('keeps the status tracker after the last card is dismissed', async () => {
+    await renderTab()
+    await atStage(GuidedWrapUp.Done)
+
+    expect(screen.getAllByText(TRACKER_LABEL)).toHaveLength(1)
+  })
+
+  it('shows the status tracker below the guided setup toggle', async () => {
+    resetStore(false)
+    await renderTab()
+
+    const guided = screen.getByText(GUIDED_TOGGLE)
+    const tracker = screen.getByText(TRACKER_LABEL)
+    expect(
+      guided.compareDocumentPosition(tracker) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
   })
 
   it('reports the email card, then hands over to the status tracker', async () => {
