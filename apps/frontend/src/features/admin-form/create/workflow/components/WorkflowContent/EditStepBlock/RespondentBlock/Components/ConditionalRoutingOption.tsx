@@ -72,6 +72,12 @@ const getFileName = (
 ) =>
   `conditional_routing_form_${formId ?? ''}_field_${fieldTitle ?? ''}_mapping.csv`
 
+const EMPTY_STATE_ACTION_STYLES = {
+  size: 'sm',
+  h: 'auto',
+  lineHeight: '1.25rem',
+} as const
+
 export const ConditionalRoutingOption = ({
   isLoading,
   formMethods,
@@ -501,7 +507,10 @@ export const ConditionalRoutingOption = ({
                   <Button
                     w="100%"
                     variant="outline"
-                    leftIcon={<BiPlus fontSize="1.5rem" />}
+                    {...(isRedesign ? EMPTY_STATE_ACTION_STYLES : {})}
+                    leftIcon={
+                      <BiPlus fontSize={isRedesign ? undefined : '1.5rem'} />
+                    }
                     onClick={handleOpenModal}
                     isDisabled={!isSelectedConditionalFieldFound}
                   >
