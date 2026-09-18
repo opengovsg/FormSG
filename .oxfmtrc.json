@@ -5,6 +5,28 @@
   "singleQuote": true,
   "printWidth": 80,
   "sortPackageJson": false,
+  "sortImports": {
+    "newlinesBetween": true,
+    "sortSideEffects": false,
+    "customGroups": [
+      {
+        "groupName": "src-alias",
+        "elementNamePattern": ["src", "src/**"]
+      },
+      {
+        "groupName": "tests-alias",
+        "elementNamePattern": ["tests", "tests/**"]
+      }
+    ],
+    "groups": [
+      "side_effect",
+      ["builtin", "external"],
+      "src-alias",
+      "tests-alias",
+      ["parent", "sibling", "index"],
+      "unknown"
+    ]
+  },
   "ignorePatterns": [
     "apps/frontend/node_modules",
     "apps/frontend/.pnp",
@@ -30,7 +52,73 @@
     {
       "files": ["apps/frontend/**"],
       "options": {
-        "tabWidth": 2
+        "tabWidth": 2,
+        "sortImports": {
+          "newlinesBetween": true,
+          "sortSideEffects": false,
+          "customGroups": [
+            {
+              "groupName": "react",
+              "elementNamePattern": ["react", "react/**", "react-*", "react-*/**"]
+            },
+            {
+              "groupName": "formsg-shared",
+              "elementNamePattern": ["formsg-shared", "formsg-shared/**"]
+            },
+            {
+              "groupName": "alias-root",
+              "elementNamePattern": ["~", "~/**"]
+            },
+            {
+              "groupName": "alias-typings",
+              "elementNamePattern": ["~typings", "~typings/**"]
+            },
+            {
+              "groupName": "alias-lib",
+              "elementNamePattern": [
+                "~assets",
+                "~assets/**",
+                "~theme",
+                "~theme/**",
+                "~contexts",
+                "~contexts/**",
+                "~constants",
+                "~constants/**",
+                "~hooks",
+                "~hooks/**",
+                "~utils",
+                "~utils/**",
+                "~services",
+                "~services/**",
+                "~components",
+                "~components/**",
+                "~templates",
+                "~templates/**"
+              ]
+            },
+            {
+              "groupName": "alias-app",
+              "elementNamePattern": [
+                "~pages",
+                "~pages/**",
+                "~features",
+                "~features/**"
+              ]
+            }
+          ],
+          "groups": [
+            "side_effect",
+            "react",
+            ["builtin", "external"],
+            "formsg-shared",
+            "alias-root",
+            "alias-typings",
+            "alias-lib",
+            "alias-app",
+            ["parent", "sibling", "index"],
+            "unknown"
+          ]
+        }
       }
     },
     {

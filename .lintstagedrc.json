@@ -1,5 +1,8 @@
 {
-  "{apps/backend,packages,services}/**/*.{ts,js}": ["oxlint --fix"],
+  "{apps/backend,packages,services}/**/*.{ts,js}": [
+    "oxfmt --write",
+    "oxlint --fix"
+  ],
   "{apps/backend,packages,services}/**/*.tsx": [
     "oxfmt --write",
     "oxlint --fix"

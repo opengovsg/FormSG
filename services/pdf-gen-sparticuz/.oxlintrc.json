@@ -7,15 +7,5 @@
   "env": {
     "builtin": true
   },
-  "ignorePatterns": ["**/*.mjs"],
-  "overrides": [
-    {
-      "files": ["**/*.ts", "**/*.js"],
-      "rules": {
-        "no-console": "off",
-        "typesafe/no-throw-sync-func": "off"
-      },
-      "jsPlugins": ["eslint-plugin-typesafe"]
-    }
-  ]
+  "ignorePatterns": ["**/*.mjs"]
 }

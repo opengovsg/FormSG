@@ -1,6 +1,8 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["unicorn"],
+  "plugins": [
+    "unicorn"
+  ],
   "categories": {
     "correctness": "off"
   },
@@ -73,7 +75,9 @@
   },
   "overrides": [
     {
-      "files": ["**/*.ts"],
+      "files": [
+        "**/*.ts"
+      ],
       "rules": {
         "constructor-super": "off",
         "getter-return": "off",
@@ -113,28 +117,19 @@
         "typescript/prefer-as-const": "error",
         "typescript/prefer-namespace-keyword": "error",
         "typescript/triple-slash-reference": "error",
-        "simple-import-sort/imports": [
-          "error",
-          {
-            "groups": [
-              ["^\\u0000"],
-              ["^@?\\w"],
-              ["^(src)(/.*|$)"],
-              ["^(tests)(/.*|$)"],
-              ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
-              ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"]
-            ]
-          }
-        ],
         "import/first": "error",
         "import/newline-after-import": "error",
         "import/no-duplicates": "error"
       },
-      "plugins": ["typescript", "import"],
-      "jsPlugins": ["eslint-plugin-simple-import-sort"]
+      "plugins": [
+        "typescript",
+        "import"
+      ]
     },
     {
-      "files": ["**/*.spec.ts"],
+      "files": [
+        "**/*.spec.ts"
+      ],
       "env": {
         "jest": true
       },
@@ -159,21 +154,34 @@
         "jest/valid-expect-in-promise": "error",
         "jest/valid-title": "error"
       },
-      "plugins": ["jest"]
+      "plugins": [
+        "jest"
+      ]
     },
     {
-      "files": ["**/*.ts", "**/*.js"],
+      "files": [
+        "**/*.ts",
+        "**/*.js"
+      ],
       "rules": {
         "typescript/no-non-null-assertion": "error"
       },
-      "plugins": ["typescript"]
+      "plugins": [
+        "typescript"
+      ]
     },
     {
-      "files": ["**/*.spec.ts", "**/*.spec.js", "**/__tests__/**/*.ts"],
+      "files": [
+        "**/*.spec.ts",
+        "**/*.spec.js",
+        "**/__tests__/**/*.ts"
+      ],
       "rules": {
         "typescript/no-non-null-assertion": "off"
       },
-      "plugins": ["typescript"]
+      "plugins": [
+        "typescript"
+      ]
     }
   ]
 }

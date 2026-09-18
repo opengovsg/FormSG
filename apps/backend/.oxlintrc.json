@@ -1,6 +1,8 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["unicorn"],
+  "plugins": [
+    "unicorn"
+  ],
   "categories": {
     "correctness": "off"
   },
@@ -76,7 +78,10 @@
   },
   "overrides": [
     {
-      "files": ["**/*.ts", "**/*.tsx"],
+      "files": [
+        "**/*.ts",
+        "**/*.tsx"
+      ],
       "rules": {
         "constructor-super": "off",
         "getter-return": "off",
@@ -116,32 +121,24 @@
         "typescript/prefer-as-const": "error",
         "typescript/prefer-namespace-keyword": "error",
         "typescript/triple-slash-reference": "error",
-        "simple-import-sort/imports": [
-          "error",
-          {
-            "groups": [
-              ["^\\u0000"],
-              ["^@?\\w"],
-              ["^(src)(/.*|$)"],
-              ["^(tests)(/.*|$)"],
-              ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
-              ["^\\./(?=.*/)(?!\\/?$)", "^\\.(?!\\/?$)", "^\\.\\/?$"]
-            ]
-          }
-        ],
         "import/first": "error",
         "import/newline-after-import": "error",
         "import/no-duplicates": "error",
         "typesafe/no-throw-sync-func": "error"
       },
-      "plugins": ["typescript", "import"],
+      "plugins": [
+        "typescript",
+        "import"
+      ],
       "jsPlugins": [
-        "eslint-plugin-simple-import-sort",
         "eslint-plugin-typesafe"
       ]
     },
     {
-      "files": ["**/*.spec.ts", "**/__tests__/**/*.ts"],
+      "files": [
+        "**/*.spec.ts",
+        "**/__tests__/**/*.ts"
+      ],
       "env": {
         "jest": true
       },
@@ -167,21 +164,34 @@
         "jest/valid-title": "error",
         "typescript/no-explicit-any": "off"
       },
-      "plugins": ["jest", "typescript"]
+      "plugins": [
+        "jest",
+        "typescript"
+      ]
     },
     {
-      "files": ["**/*.ts", "**/*.js"],
+      "files": [
+        "**/*.ts",
+        "**/*.js"
+      ],
       "rules": {
         "typescript/no-non-null-assertion": "error"
       },
-      "plugins": ["typescript"]
+      "plugins": [
+        "typescript"
+      ]
     },
     {
-      "files": ["**/*.spec.ts", "**/__tests__/**/*.ts"],
+      "files": [
+        "**/*.spec.ts",
+        "**/__tests__/**/*.ts"
+      ],
       "rules": {
         "typescript/no-non-null-assertion": "off"
       },
-      "plugins": ["typescript"]
+      "plugins": [
+        "typescript"
+      ]
     }
   ]
 }

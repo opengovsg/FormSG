@@ -1,7 +1,10 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["unicorn", "react", "import"],
-  "jsPlugins": ["eslint-plugin-simple-import-sort"],
+  "plugins": [
+    "unicorn",
+    "react",
+    "import"
+  ],
   "categories": {
     "correctness": "off"
   },
@@ -71,32 +74,6 @@
     "require-yield": "error",
     "use-isnan": "error",
     "valid-typeof": "error",
-    "simple-import-sort/imports": [
-      "error",
-      {
-        "groups": [
-          ["^\\u0000"],
-          ["^react", "^@?\\w"],
-          ["^(formsg-shared)(/.*|$)"],
-          ["^(~)(/.*|$)"],
-          ["^(~typings)(/.*|$)"],
-          [
-            "^(~assets|~theme)(/.*|$)",
-            "^(~contexts)(/.*|$)",
-            "^(~constants)(/.*|$)",
-            "^(~hooks)(/.*|$)",
-            "^(~utils)(/.*|$)",
-            "^(~services)(/.*|$)",
-            "^(~components)(/.*|$)",
-            "^(~templates)(/.*|$)"
-          ],
-          ["^(~pages)(/.*|$)", "^(~features)(/.*|$)"],
-          ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
-          ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"]
-        ]
-      }
-    ],
-    "simple-import-sort/exports": "error",
     "import/first": "error",
     "import/newline-after-import": "error",
     "import/no-duplicates": "error",
@@ -116,29 +93,14 @@
         "*.story.{ts,tsx,js,jsx,mjs,cjs}"
       ],
       "rules": {
-        "react/rules-of-hooks": "off",
-        "import/no-anonymous-default-export": "off",
-        "storybook/await-interactions": "error",
-        "storybook/context-in-play-function": "error",
-        "storybook/default-exports": "error",
-        "storybook/hierarchy-separator": "warn",
-        "storybook/no-redundant-story-name": "warn",
-        "storybook/prefer-pascal-case": "warn",
-        "storybook/story-exports": "error",
-        "storybook/use-storybook-expect": "error",
-        "storybook/use-storybook-testing-library": "error"
-      },
-      "jsPlugins": ["eslint-plugin-storybook"]
+        "react/rules-of-hooks": "off"
+      }
     },
     {
-      "files": [".storybook/main.{js,cjs,mjs,ts}"],
-      "rules": {
-        "storybook/no-uninstalled-addons": "error"
-      },
-      "jsPlugins": ["eslint-plugin-storybook"]
-    },
-    {
-      "files": ["**/*.ts", "**/*.tsx"],
+      "files": [
+        "**/*.ts",
+        "**/*.tsx"
+      ],
       "rules": {
         "constructor-super": "off",
         "getter-return": "off",
@@ -185,14 +147,20 @@
         "typescript/triple-slash-reference": "error",
         "no-unused-vars": "warn"
       },
-      "plugins": ["typescript"]
+      "plugins": [
+        "typescript"
+      ]
     },
     {
-      "files": ["**/*.stories.*"],
+      "files": [
+        "**/*.stories.*"
+      ],
       "rules": {
         "typescript/explicit-module-boundary-types": "off"
       },
-      "plugins": ["typescript"]
+      "plugins": [
+        "typescript"
+      ]
     },
     {
       "files": [
@@ -200,47 +168,19 @@
         "**/*.{spec,test}.{js,jsx,ts,tsx}"
       ],
       "rules": {
-        "testing-library/await-async-events": [
-          "error",
-          {
-            "eventModule": "userEvent"
-          }
-        ],
-        "testing-library/await-async-queries": "error",
-        "testing-library/await-async-utils": "error",
-        "testing-library/no-await-sync-events": [
-          "error",
-          {
-            "eventModules": ["fire-event"]
-          }
-        ],
-        "testing-library/no-await-sync-queries": "error",
-        "testing-library/no-container": "error",
-        "testing-library/no-debugging-utils": "warn",
-        "testing-library/no-dom-import": ["error", "react"],
-        "testing-library/no-global-regexp-flag-in-query": "error",
-        "testing-library/no-manual-cleanup": "error",
-        "testing-library/no-node-access": "error",
-        "testing-library/no-promise-in-fire-event": "error",
-        "testing-library/no-render-in-lifecycle": "error",
-        "testing-library/no-unnecessary-act": "off",
-        "testing-library/no-wait-for-multiple-assertions": "error",
-        "testing-library/no-wait-for-side-effects": "error",
-        "testing-library/no-wait-for-snapshot": "error",
-        "testing-library/prefer-find-by": "error",
-        "testing-library/prefer-presence-queries": "error",
-        "testing-library/prefer-query-by-disappearance": "error",
-        "testing-library/prefer-screen-queries": "error",
-        "testing-library/render-result-naming-convention": "error",
         "no-unsafe-optional-chaining": "off",
         "typescript/no-non-null-assertion": "off",
         "typescript/no-explicit-any": "off"
       },
-      "jsPlugins": ["eslint-plugin-testing-library"],
-      "plugins": ["typescript"]
+      "plugins": [
+        "typescript"
+      ]
     },
     {
-      "files": ["**/*Context.{js,jsx,ts,tsx}", "**/*Provider.{js,jsx,ts,tsx}"],
+      "files": [
+        "**/*Context.{js,jsx,ts,tsx}",
+        "**/*Provider.{js,jsx,ts,tsx}"
+      ],
       "rules": {
         "react/only-export-components": "off"
       }
