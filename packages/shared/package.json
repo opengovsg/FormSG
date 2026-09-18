@@ -255,8 +255,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "lint": "pnpm exec oxlint --quiet --fix .",
-    "lint-ci": "pnpm exec oxlint --quiet .",
+    "lint": "pnpm exec oxlint --quiet .",
+    "lint:fix": "pnpm exec oxlint --quiet --fix .",
     "test": "pnpm exec jest --config jest.config.js",
     "test:ci": "pnpm exec jest --config jest.config.js --coverage"
   },

@@ -86,17 +86,7 @@ nvm use
 ### Linting
 
 ```bash
-# Lint all packages
 pnpm lint
-
-# Individual packages
-pnpm lint:backend
-pnpm lint:frontend
-pnpm lint:shared
-
-# CI linting (with caching)
-pnpm lint-ci:backend
-pnpm lint-ci:shared
 ```
 
 ### Workarounds

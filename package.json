@@ -9,7 +9,7 @@
     "url": "https://github.com/opengovsg/formsg.git"
   },
   "scripts": {
-    "build": "pnpm clean && pnpm --recursive --filter formsg-sdk --filter formsg-shared --filter formsg-frontend --filter formsg-backend build",
+    "build": "turbo run build --filter=@opengovsg/formsg-sdk --filter=formsg-shared --filter=formsg-frontend --filter=formsg-backend",
     "build:backend": "pnpm --filter formsg-backend build",
     "build:frontend": "pnpm --filter formsg-frontend build",
     "build:sdk": "pnpm --filter @opengovsg/formsg-sdk build",
@@ -20,12 +20,8 @@
     "dev:frontend": "pnpm --filter formsg-frontend start",
     "dev:pdf-gen": "pnpm --prefix services/pdf-gen-sparticuz run dev",
     "dev:virus-scanner-guardduty": "pnpm --prefix services/virus-scanner-guardduty run dev",
-    "lint": "pnpm lint:backend && pnpm lint:shared && pnpm lint:frontend",
-    "lint-ci:backend": "pnpm --filter formsg-backend lint-ci",
-    "lint-ci:shared": "pnpm --filter formsg-shared lint-ci",
-    "lint:backend": "pnpm --filter formsg-backend lint",
-    "lint:frontend": "pnpm --filter formsg-frontend lint",
-    "lint:shared": "pnpm --filter formsg-shared lint",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
     "pre-commit": "lint-staged",
     "prepare": "husky",
     "start": "pnpm --filter formsg-backend start",
@@ -61,7 +57,8 @@
     "oxfmt": "0.67.0",
     "oxlint": "1.82.0",
     "rimraf": "^5.0.5",
-    "skills": "^1.5.7"
+    "skills": "^1.5.7",
+    "turbo": "2.10.13"
   },
   "config": {
     "//": [
