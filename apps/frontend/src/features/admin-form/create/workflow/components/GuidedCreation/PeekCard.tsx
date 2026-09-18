@@ -3,6 +3,11 @@ import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 
+const TUCK_OVERLAP = '0.5rem'
+
+const TUCKED_CAST_SHADOW =
+  'inset 0 0.5rem 0.75rem -0.5rem rgba(97, 108, 137, 0.3)'
+
 export interface PeekCardAction {
   label: string
   onClick: () => void
@@ -35,7 +40,10 @@ export const PeekCard = ({
       borderStyle="solid"
       borderColor="primary.200"
       borderWidth={isTucked ? '0 1px 1px' : '1px'}
-      py="1.5rem"
+      mt={isTucked ? `-${TUCK_OVERLAP}` : undefined}
+      boxShadow={isTucked ? TUCKED_CAST_SHADOW : undefined}
+      pt={isTucked ? `calc(1.5rem + ${TUCK_OVERLAP})` : '1.5rem'}
+      pb="1.5rem"
       px={{ base: '1.5rem', md: '2rem' }}
     >
       <Stack spacing="1rem">

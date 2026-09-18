@@ -198,7 +198,7 @@ export const InactiveStepBlock = ({
     )
 
   return (
-    <Box pos="relative" role="group">
+    <Box pos="relative" zIndex={1} role="group">
       <chakra.button
         type="button"
         w="100%"
