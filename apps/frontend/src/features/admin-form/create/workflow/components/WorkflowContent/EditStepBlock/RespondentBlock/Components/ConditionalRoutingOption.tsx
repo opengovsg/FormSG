@@ -53,12 +53,6 @@ export interface ConditionalRoutingConfig {
   csvFile: File | null
 }
 
-/**
- * Parses the conditional routing CSV file, validating that it has the required csv template file headers.
- * @param csvFile - The CSV file to parse
- * @returns A promise that resolves to the CSV content as a string
- * @throws Error if CSV headers are invalid (must have 'Options' and 'Emails' columns)
- */
 const parseConditionalRoutingTemplateCsv = async (csvFile: File) =>
   parseCsvFile(csvFile, (headerRow) => {
     return {
@@ -470,7 +464,7 @@ export const ConditionalRoutingOption = ({
                         'features.adminForm.sidebar.workflow.emptyStates.noDropdownFieldAction',
                       )}
                       onAction={() =>
-                        stageFieldAndNavigate(BasicField.Dropdown)
+                        stageFieldAndNavigate(BasicField.Dropdown, getValues())
                       }
                     />
                   ) : (
