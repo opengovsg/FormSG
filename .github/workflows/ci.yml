@@ -63,6 +63,17 @@ jobs:
       - uses: ./.github/actions/setup
       - run: pnpm lint
 
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+      - run: pnpm typecheck
+        env:
+          NODE_OPTIONS: '--max-old-space-size=4096'
+
   backend_test_shards:
     runs-on: ubuntu-latest
     strategy:

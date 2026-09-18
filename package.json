@@ -37,6 +37,7 @@
     "test:sdk:coverage": "pnpm --filter @opengovsg/formsg-sdk test:coverage",
     "test:shared": "pnpm --filter formsg-shared test",
     "test:shared:ci": "pnpm --filter formsg-shared test:ci",
+    "typecheck": "turbo run typecheck",
     "version": "auto-changelog -p && git add CHANGELOG.md"
   },
   "dependencies": {

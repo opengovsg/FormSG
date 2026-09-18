@@ -62,7 +62,8 @@
     "lint": "oxlint --quiet src/",
     "lint:fix": "oxlint --quiet --fix src/",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "typecheck": "tsc -p tsconfig.cjs.json --noEmit && tsc -p tsconfig.esm.json --noEmit"
   },
   "dependencies": {
     "@stablelib/base64": "^1.0.1",
