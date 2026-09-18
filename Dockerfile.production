@@ -40,6 +40,8 @@ COPY --from=build /build/packages/sdk/dist /opt/formsg/packages/sdk/dist
 
 # Copy required node_modules, package.json scripts and built backend dist for the backend start script to run
 COPY --from=build /build/pnpm-workspace.yaml /opt/formsg/pnpm-workspace.yaml
+# RATIONALE: Lock file kept in image so SBOM scanners (Wiz, etc) can inventory dependencies. 
+COPY --from=build /build/pnpm-lock.yaml /opt/formsg/pnpm-lock.yaml
 COPY --from=build /build/node_modules /opt/formsg/node_modules
 COPY --from=build /build/package.json /opt/formsg/package.json
 
