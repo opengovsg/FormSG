@@ -173,24 +173,6 @@ export const EditStepBlock = ({
 
   const hasSubmittedForPendingSwitch = useRef(false)
 
-  useEffect(() => {
-    if (pendingSwitchTo === null) {
-      hasSubmittedForPendingSwitch.current = false
-      return
-    }
-
-    if (isLoading || hasSubmittedForPendingSwitch.current) return
-
-    if (!isCreatingState && !isDirty) {
-      completeSave()
-      return
-    }
-
-    hasSubmittedForPendingSwitch.current = true
-    handleSubmit()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pendingSwitchTo])
-
   const isGuided = isRedesign && isCreatingState && isGuidedSetup
 
   const questionsSection = (
@@ -234,6 +216,29 @@ export const EditStepBlock = ({
   })
 
   const { visibleCount } = reveal
+
+  useEffect(() => {
+    if (pendingSwitchTo === null) {
+      hasSubmittedForPendingSwitch.current = false
+      return
+    }
+
+    if (isLoading || hasSubmittedForPendingSwitch.current) return
+
+    if (isGuided && !reveal.isOnLastSection) {
+      cancelPendingSwitch()
+      return
+    }
+
+    if (!isCreatingState && !isDirty) {
+      completeSave()
+      return
+    }
+
+    hasSubmittedForPendingSwitch.current = true
+    handleSubmit()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSwitchTo])
 
   useEffect(() => {
     if (!isGuided || visibleCount <= 1) return
