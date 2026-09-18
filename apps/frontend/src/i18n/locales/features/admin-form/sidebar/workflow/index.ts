@@ -188,6 +188,11 @@ export interface Workflow {
   guidedMode: {
     label: string
   }
+  guidedHints: {
+    stepName: string
+    respondent: string
+    approvals: string
+  }
   skipGuidance: {
     modal: {
       title: string
