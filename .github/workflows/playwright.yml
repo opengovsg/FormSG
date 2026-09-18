@@ -9,16 +9,13 @@ on:
       - stg-alt3
       - uat
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, synchronize]
     branches-ignore:
       - stg
       - stg-alt
       - stg-alt2
       - stg-alt3
       - uat
-
-env:
-  PLAYWRIGHT_CACHE_KEY: ${{ runner.os }}-playwright-${{ github.sha }}
 
 jobs:
   setup:
@@ -53,7 +50,7 @@ jobs:
             packages/sdk/dist
             services/virus-scanner/build
             services/virus-scanner-guardduty/build
-          key: ${{ env.PLAYWRIGHT_CACHE_KEY }}
+          key: ${{ runner.os }}-playwright-${{ github.sha }}
 
   test:
     needs: setup
@@ -104,7 +101,7 @@ jobs:
             packages/sdk/dist
             services/virus-scanner/build
             services/virus-scanner-guardduty/build
-          key: ${{ env.PLAYWRIGHT_CACHE_KEY }}
+          key: ${{ runner.os }}-playwright-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
