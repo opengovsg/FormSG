@@ -1,8 +1,5 @@
 name: CI
 
-env:
-  BUILD_CACHE_KEY: ${{ runner.os }}-build-${{ github.sha }}
-
 on:
   push:
     branches-ignore:
@@ -63,31 +60,8 @@ jobs:
               - packages/sdk/jest.config.js
               - pnpm-lock.yaml
 
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-        with:
-          fetch-depth: 0
-      - uses: ./.github/actions/setup
-      - run: pnpm build
-        env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
-          AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
-      - name: Upload build files
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: always()
-        with:
-          name: build-output
-          path: |
-            package*.json
-            dist/
-      - uses: ./.github/actions/save-build-cache
-        with:
-          cache-key: ${{ env.BUILD_CACHE_KEY }}
-
   frontend_test:
-    needs: [changes, build]
+    needs: changes
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -95,17 +69,14 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
-        with:
-          install: false
-      - uses: ./.github/actions/restore-build-cache
-        with:
-          cache-key: ${{ env.BUILD_CACHE_KEY }}
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --trust-lockfile
+      - name: Build test dependencies
+        run: pnpm turbo run build --filter=formsg-frontend^...
         env:
-          HUSKY: '0'
-      - uses: ./.github/actions/configure-datadog-test-visibility
+          NODE_OPTIONS: '--max-old-space-size=4096'
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
+          languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - name: Run frontend test
@@ -125,7 +96,7 @@ jobs:
       - run: pnpm lint
 
   backend_test_shards:
-    needs: [changes, build]
+    needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     strategy:
@@ -138,19 +109,18 @@ jobs:
           fetch-depth: 0
       - uses: ./.github/actions/setup
         with:
-          install: false
           job-index: ${{ matrix.shard }}
-      - uses: ./.github/actions/restore-build-cache
-        with:
-          cache-key: ${{ env.BUILD_CACHE_KEY }}
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --trust-lockfile
+      - name: Build test dependencies
+        run: pnpm turbo run build --filter=formsg-backend^...
         env:
-          HUSKY: '0'
+          NODE_OPTIONS: '--max-old-space-size=4096'
+          AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       - run: pnpm install --prefix services/pdf-gen-sparticuz
       - run: pnpm install --prefix services/virus-scanner-guardduty
-      - uses: ./.github/actions/configure-datadog-test-visibility
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
+          languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - run: pnpm test:backend:ci --shard=${{ matrix.shard }}/3
@@ -185,8 +155,10 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
-      - uses: ./.github/actions/configure-datadog-test-visibility
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
+          languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - run: pnpm test:shared:ci
@@ -206,8 +178,10 @@ jobs:
         with:
           fetch-depth: 0
       - uses: ./.github/actions/setup
-      - uses: ./.github/actions/configure-datadog-test-visibility
+      - name: Configure Datadog Test Visibility
+        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
+          languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - run: pnpm test:sdk:coverage

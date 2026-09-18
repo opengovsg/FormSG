@@ -2,10 +2,6 @@ name: Setup
 description: Install Node, pnpm, cache turbo outputs, and install workspace dependencies.
 
 inputs:
-  install:
-    description: Run pnpm install. Set false when restoring node_modules from build cache first.
-    required: false
-    default: 'true'
   job-index:
     description: Distinguishes matrix legs that write different .turbo contents
     required: false
@@ -35,7 +31,6 @@ runs:
           ${{ runner.os }}-turbo-${{ github.job }}-${{ inputs.job-index }}-
 
     - name: Install dependencies
-      if: inputs.install == 'true'
       shell: bash
       env:
         HUSKY: '0'
