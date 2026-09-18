@@ -154,5 +154,12 @@ trustPolicyExclude:
   - semver@5.7.2
   - semver@6.3.1
   - mongoose@7.8.10
+  # AWS SDK v2 (and other v4-range consumers) pin the 4.x line; 4.5.7 is
+  # the `legacy` dist-tag, published by the same long-time maintainer
+  # (amitgupta) as 4.5.5/4.5.6. None of those 4.x patches have provenance.
+  # The flagged "downgrade" is Trusted-Publisher (OIDC) status dropping
+  # versus later 5.x releases that GitHub Actions publishes; 4.5.7 itself
+  # is a manual legacy hotfix, not a takeover signal. Investigated 2026-09-18.
+  - fast-xml-parser@4.5.7
 
 trustPolicyIgnoreAfter: 1576800
