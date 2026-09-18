@@ -1,31 +1,20 @@
 {
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.oxc": "explicit"
   },
-  "eslint.validate": [
-    "javascript",
-    "typescript"
-  ],
   "editor.formatOnSave": true,
-  "[javascript]": {
-    "editor.formatOnSave": false
-  },
-  "[typescript]": {
-    "editor.formatOnSave": false
-  },
+  "editor.defaultFormatter": "oxc.oxc-vscode",
   "[html]": {
     "editor.codeActionsOnSave": {
-      "source.fixAll.eslint": "never"
+      "source.fixAll.oxc": "never"
     },
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "chat.mcp.discovery.enabled": {
     "claude-desktop": true
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "markdown.extension.toc.omittedFromToc": {
-    "README.md": [
-      "## Table of Contents"
-    ]
+    "README.md": ["## Table of Contents"]
   }
 }

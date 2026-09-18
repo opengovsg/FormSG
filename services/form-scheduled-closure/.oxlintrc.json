@@ -1,0 +1,13 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../tooling/oxlint/base.json"],
+  "plugins": [],
+  "env": {
+    "es2022": true,
+    "node": true
+  },
+  "rules": {
+    "no-undef": "error",
+    "no-unexpected-multiline": "error"
+  }
+}
