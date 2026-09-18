@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next'
+
 import { Box } from '@chakra-ui/react'
 
 import { FormColorTheme } from 'formsg-shared/types'
 
-import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
+import { useMdComponents } from '~hooks/useMdComponents'
 import { useSectionColor } from '~templates/Field/Section/useSectionColor'
 
 interface FormInstructionsProps {

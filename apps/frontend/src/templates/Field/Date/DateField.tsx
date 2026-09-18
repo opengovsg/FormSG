@@ -9,6 +9,7 @@ import { FormColorTheme } from 'formsg-shared/types'
 import { DateSelectedValidation } from 'formsg-shared/types/field'
 import { isDateAnInvalidDay } from 'formsg-shared/utils/date-validation'
 
+import { DatePicker } from '~components/DatePicker'
 import {
   isDateAfterToday,
   isDateBeforeToday,
@@ -16,7 +17,6 @@ import {
   loadDateFromNormalizedDate,
 } from '~utils/date'
 import { useDateValidationRules } from '~utils/fieldValidation'
-import { DatePicker } from '~components/DatePicker'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DateFieldSchema, SingleAnswerFieldInput } from '../types'

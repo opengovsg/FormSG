@@ -4,7 +4,6 @@ import { useFormSections } from '~features/public-form/components/FormFields/For
 
 import { BaseFieldProps } from '../FieldContainer'
 import { SectionFieldSchema } from '../types'
-
 import { SectionField } from './SectionField'
 
 export interface SectionFieldContainerProps extends BaseFieldProps {

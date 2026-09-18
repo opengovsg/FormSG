@@ -16,7 +16,6 @@ import {
 import { useDashboard } from '~features/workspace/queries'
 
 import { CreateFormFlowStates } from '../CreateFormModal/CreateFormWizardContext'
-
 import { useDupeFormWizardContext } from './DupeFormWizardProvider'
 
 vi.mock('react-i18next', () => ({

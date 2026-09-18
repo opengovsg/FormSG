@@ -16,7 +16,6 @@ import {
   UpdateFieldData,
 } from '../../../types'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
-
 import { extractTransactionFields, getExpiryDate } from './verification.util'
 
 const VERIFICATION_SCHEMA_ID = 'Verification'

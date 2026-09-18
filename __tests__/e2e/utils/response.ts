@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test'
 import { format, parse } from 'date-fns'
-import { readFileSync } from 'fs'
 import { BasicField, FormResponseMode } from 'formsg-shared/types'
+import { readFileSync } from 'fs'
 
 import {
   DATE_INPUT_FORMAT,
@@ -9,7 +9,6 @@ import {
   E2eFieldMetadata,
   FormResponseView,
 } from '../constants'
-
 import { isMyInfoableFieldType, isVerifiableFieldType } from './field'
 
 // Utility for getting responses for tables

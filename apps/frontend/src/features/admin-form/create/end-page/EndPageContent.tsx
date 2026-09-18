@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+
 import { Box, Flex, Stack } from '@chakra-ui/react'
 
 import {
@@ -21,7 +22,6 @@ import {
 } from '~features/public-form/components/FormLogo'
 
 import { useDesignColorTheme } from '../builder-and-design/utils/useDesignColorTheme'
-
 import { PaymentEndPageBlock } from './PaymentEndPageBlock'
 import { dataSelector, useEndPageStore } from './useEndPageStore'
 

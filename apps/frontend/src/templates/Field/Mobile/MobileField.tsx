@@ -1,6 +1,5 @@
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { MobileFieldSchema } from '../types'
-
 import { MobileFieldInput } from './MobileFieldInput'
 
 export interface MobileFieldProps extends BaseFieldProps {

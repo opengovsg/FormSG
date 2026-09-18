@@ -6,6 +6,7 @@ import {
   UseFormTrigger,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import {
   Button,
   ButtonGroup,
@@ -23,8 +24,8 @@ import {
 } from '@chakra-ui/react'
 import isEmail from 'validator/lib/isEmail'
 
-import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 import { ModalCloseButton } from '~components/Modal'
+import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
 
 import { useUserMutations } from '~features/user/mutations'
 import { useDashboard } from '~features/workspace/queries'

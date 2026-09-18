@@ -6,7 +6,6 @@ import { createLoggerWithLabel } from '../../config/logger'
 import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-
 import { getOidcService } from './spcp.oidc.service'
 
 const logger = createLoggerWithLabel(module)

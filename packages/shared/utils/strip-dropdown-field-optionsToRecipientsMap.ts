@@ -1,4 +1,5 @@
 import { omit } from 'lodash'
+
 import { BasicField, FormFieldDto } from '../types'
 
 export function stripDropdownFieldOptionsToRecipientsMap(

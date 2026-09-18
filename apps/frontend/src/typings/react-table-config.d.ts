@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-empty-interface */
+/* oxlint-disable typescript/no-explicit-any */
+/* oxlint-disable typescript/no-empty-object-type */
 // Since usePagination and useSortBy are considered plugins, it is necessary to declare the types explicitly.
 // The types are taken from ( https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/react-table)
 
@@ -18,7 +18,7 @@ declare module 'react-table' {
       // feature set, this is a safe default.
       Record<string, any> {}
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  // oxlint-disable-next-line typescript/no-empty-object-type
   export interface Hooks<
     D extends Record<string, unknown> = Record<string, unknown>,
   > extends UseSortByHooks<D> {}

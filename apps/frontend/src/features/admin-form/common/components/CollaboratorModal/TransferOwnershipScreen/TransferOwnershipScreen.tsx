@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
+
 import {
   ModalBody,
   ModalFooter,
@@ -8,8 +9,8 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useMutateCollaborators } from '~features/admin-form/common/mutations'
 

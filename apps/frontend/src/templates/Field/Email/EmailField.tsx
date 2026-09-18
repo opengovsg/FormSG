@@ -2,7 +2,6 @@ import { InputProps } from '~components/Input'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { EmailFieldSchema } from '../types'
-
 import { EmailFieldInput } from './EmailFieldInput'
 
 export interface EmailFieldProps extends BaseFieldProps {

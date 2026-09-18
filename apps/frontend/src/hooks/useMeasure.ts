@@ -1,6 +1,7 @@
 // from react-use https://github.com/streamich/react-use/blob/master/src/useMeasure.ts
 // modified to debounce setRect call prevent rerenders during animation
 import { useLayoutEffect, useMemo, useState } from 'react'
+
 import { debounce } from 'lodash'
 
 export type UseMeasureRect = Pick<

@@ -12,6 +12,7 @@ import {
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiSolidMagicWand } from 'react-icons/bi'
+
 import {
   Box,
   Button,
@@ -331,7 +332,7 @@ const MagicFormBuilderCreateFormPrompt = ({
                       return
                     }
                     onVisionPromptSubmit(imageDataUrls)
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    // oxlint-disable-next-line typescript/no-unused-vars
                   } catch (error) {
                     setVisionError('attachment', {
                       type: 'manual',

@@ -1,6 +1,6 @@
-import Webhooks from '../src/webhooks'
-import { SIGNING_KEYS } from '../src/resource/signing-keys'
 import { MissingSecretKeyError, WebhookAuthenticateError } from '../src/errors'
+import { SIGNING_KEYS } from '../src/resource/signing-keys'
+import Webhooks from '../src/webhooks'
 
 const webhooksPublicKey = SIGNING_KEYS.test.publicKey
 const signingSecretKey = SIGNING_KEYS.test.secretKey
@@ -176,7 +176,7 @@ describe('Webhooks', () => {
     ).toThrow(MissingSecretKeyError)
   })
 
-  it('should reject signatures generated more than 5 minutes ago', () => {
+  it('should reject signatures generated more than 5 minutes ago (via generateSignature/constructHeader)', () => {
     const epoch = Date.now() - 5 * 60 * 1000 - 1 // 5min 1s into the past
     const signature = webhooks.generateSignature({
       uri,

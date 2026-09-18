@@ -29,7 +29,6 @@ import {
 } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 import { findApiUserById } from '../user/user.service'
-
 import {
   InvalidDomainError,
   InvalidOtpError,

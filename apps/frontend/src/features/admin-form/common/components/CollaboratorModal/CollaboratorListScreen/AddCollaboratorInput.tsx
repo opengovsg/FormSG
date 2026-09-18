@@ -1,17 +1,18 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { FormPermission } from 'formsg-shared/types'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useMutateCollaborators } from '~features/admin-form/common/mutations'
 
@@ -19,7 +20,6 @@ import { useAdminFormCollaborators } from '../../../queries'
 import { useCollaboratorWizard } from '../CollaboratorWizardContext'
 import { DropdownRole } from '../constants'
 import { roleToPermission } from '../utils'
-
 import { PermissionDropdown } from './PermissionDropdown'
 
 export type AddCollaboratorInputs = {

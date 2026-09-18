@@ -1,18 +1,19 @@
 import { useMemo } from 'react'
 import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { RatingFieldBase, RatingShape } from 'formsg-shared/types/field'
 
-import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
+import { createBaseValidationRules } from '~utils/fieldValidation'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'

@@ -1,4 +1,5 @@
 import { Controller, useForm } from 'react-hook-form'
+
 import {
   FormControl,
   FormErrorMessage,
@@ -8,8 +9,8 @@ import {
 } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
+import { viewports } from '~utils/storybook'
 
 import { YesNo, YesNoProps } from './YesNo'
 

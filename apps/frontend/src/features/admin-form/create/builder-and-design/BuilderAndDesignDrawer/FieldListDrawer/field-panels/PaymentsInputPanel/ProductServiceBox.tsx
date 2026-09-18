@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
+
 import {
   Box,
   Divider,
@@ -20,12 +21,11 @@ import FormLabel from '~components/FormControl/FormLabel'
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 
 import { dataSelector, usePaymentStore } from '../usePaymentStore'
-
 import { FormPaymentsInput } from './PaymentsInputPanel'
 import { ProductItem } from './ProductItem'
 import { ProductModal } from './ProductModal'
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+// oxlint-disable-next-line typescript/no-empty-function
 const noop = () => {}
 
 const AddProductButton = ({

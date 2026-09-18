@@ -7,7 +7,6 @@ import {
   CreateFormFlowStates,
   useCreateFormWizard,
 } from '../CreateFormWizardContext'
-
 import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
 import { CreateFormOriginScreen } from './CreateFormOriginScreen'
 import { getCreateFormProgress } from './createFormProgress'

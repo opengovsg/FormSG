@@ -1,7 +1,6 @@
 import { SIGNING_KEYS } from '../resource/signing-keys'
 import { VERIFICATION_KEYS } from '../resource/verification-keys'
 import { PackageMode } from '../types'
-
 import STAGE from './stage'
 
 /**

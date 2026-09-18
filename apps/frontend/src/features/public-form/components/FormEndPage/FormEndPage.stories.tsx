@@ -1,4 +1,5 @@
 import { MemoryRouter } from 'react-router-dom'
+
 import { Meta, StoryFn } from '@storybook/react'
 
 import { FormColorTheme } from 'formsg-shared/types'

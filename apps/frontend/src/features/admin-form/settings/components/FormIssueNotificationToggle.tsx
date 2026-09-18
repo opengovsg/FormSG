@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Skeleton } from '@chakra-ui/react'
 
 import Toggle from '~components/Toggle'

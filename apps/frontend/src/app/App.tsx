@@ -2,13 +2,14 @@ import { Inspector, InspectParams } from 'react-dev-inspector'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
+
 import { ChakraProvider } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
 
-import { theme } from '~theme/index'
 import { AuthProvider } from '~contexts/AuthContext'
 import { GrowthBookProvider } from '~contexts/GrowthbookContext'
 import { HttpError } from '~services/ApiService'
+import { theme } from '~theme/index'
 
 import { TurnstileChallengeProvider } from '~features/turnstile/TurnstileChallengeProvider'
 

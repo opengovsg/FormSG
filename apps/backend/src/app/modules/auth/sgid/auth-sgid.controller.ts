@@ -11,7 +11,6 @@ import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
 import { SessionUser } from '../auth.types'
 import { mapRouteError } from '../auth.utils'
-
 import { AuthSgidService, SGID_LOGIN_OAUTH_STATE } from './auth-sgid.service'
 
 const logger = createLoggerWithLabel(module)

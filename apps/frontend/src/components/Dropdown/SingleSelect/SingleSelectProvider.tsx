@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { VirtuosoHandle } from 'react-virtuoso'
+
 import {
   FormControlOptions,
   useFormControlProps,
@@ -146,7 +147,7 @@ export const SingleSelectProvider = ({
         onChange(itemToValue(selectedItem))
       }
     },
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    // oxlint-disable-next-line typescript/no-empty-function
     scrollIntoView: () => {},
     onHighlightedIndexChange: ({ highlightedIndex }) => {
       if (

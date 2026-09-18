@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Box, Flex } from '@chakra-ui/react'
 
 import { Language } from 'formsg-shared/types'
@@ -8,7 +9,6 @@ import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
-
 import { FormInstructions } from './FormInstructions'
 
 export const PUBLICFORM_INSTRUCTIONS_SECTIONID = 'instructions'

@@ -2,7 +2,6 @@ import { adaptV4ToV3 } from '../../src/adapt-v4-to-v3'
 import { FieldResponsesV4 } from '../../src/types-v4'
 
 describe('adaptV4ToV3', () => {
-
   describe('generic string fields', () => {
     const stringFieldTypes = [
       'section',

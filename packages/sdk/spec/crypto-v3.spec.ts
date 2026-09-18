@@ -1,11 +1,10 @@
 import mockAxios from 'jest-mock-axios'
-import { decodeUTF8 } from '../src/util/encoding'
 
 import Crypto from '../src/crypto'
 import CryptoV3 from '../src/crypto-v3'
 import { SIGNING_KEYS } from '../src/resource/signing-keys'
 import { encryptMessage } from '../src/util/crypto'
-
+import { decodeUTF8 } from '../src/util/encoding'
 import {
   ciphertext,
   formPublicKey,

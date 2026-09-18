@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { BiX } from 'react-icons/bi'
+
 import {
   Alert,
   AlertDescription,
@@ -12,8 +13,8 @@ import {
 } from '@chakra-ui/react'
 
 import { BxsCheckCircle, BxsErrorCircle } from '~assets/icons'
-import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 export type ToastStatus =
   | 'info'

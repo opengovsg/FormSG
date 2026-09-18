@@ -1,6 +1,6 @@
+import { isDate, parseISO } from 'date-fns'
 import type { Opaque } from 'type-fest'
 import { z } from 'zod'
-import { isDate, parseISO } from 'date-fns'
 
 export type DateString = Opaque<string, 'DateString'>
 

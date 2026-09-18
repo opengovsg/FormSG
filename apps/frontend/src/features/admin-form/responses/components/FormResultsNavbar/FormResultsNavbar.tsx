@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
+
 import { Flex } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { FormResponseMode } from 'formsg-shared/types'
 
+import Badge from '~components/Badge'
 import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
   RESULTS_CHARTS_SUBROUTE,
@@ -13,9 +15,8 @@ import {
   RESULTS_RESPONSES_SUBROUTE,
 } from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
-import { noPrintCss } from '~utils/noPrintCss'
-import Badge from '~components/Badge'
 import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
+import { noPrintCss } from '~utils/noPrintCss'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 

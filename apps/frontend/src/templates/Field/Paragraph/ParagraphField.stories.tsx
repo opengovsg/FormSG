@@ -6,7 +6,6 @@ import { BasicField } from 'formsg-shared/types/field'
 import { viewports } from '~utils/storybook'
 
 import { ParagraphFieldSchema } from '../types'
-
 import {
   ParagraphField as ParagraphFieldComponent,
   ParagraphFieldProps,

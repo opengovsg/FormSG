@@ -17,7 +17,7 @@ async function globalSetup(): Promise<void> {
     await mongod.start()
 
     const uri = mongod.getUri()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     ;(global as any).__MONGOINSTANCE = mongod
     process.env.MONGO_URI = `${uri.slice(0, uri.lastIndexOf('/'))}/${
       setupConfig.Database

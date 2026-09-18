@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Box, Flex, FormControl, Stack } from '@chakra-ui/react'
 
 import { validatePostalCode } from 'formsg-shared/utils/address-validation'
 
+import Button from '~components/Button'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
+import Input from '~components/Input'
 import {
   useBlockNumberValidationRules,
   useLevelNumberValidationRules,
@@ -12,10 +17,6 @@ import {
   useStreetNameValidationRules,
   useUnitNumberValidationRules,
 } from '~utils/fieldValidation'
-import Button from '~components/Button'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 
 import { verifyAddress } from '../../../services/OneMapService'
 import { BaseFieldProps } from '../FieldContainer'

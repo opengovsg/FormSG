@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box, Flex, FlexProps, Skeleton, Stack } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 
@@ -32,11 +33,10 @@ import {
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
-
-import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
-import { FormBuilderFieldsSkeleton } from './FormBuilder/FormBuilderFieldsSkeleton'
 import BuilderAndDesignPlaceholder from './BuilderAndDesignPlaceholder'
+import { EmptyFormPlaceholder } from './BuilderAndDesignPlaceholder/EmptyFormPlaceholder'
 import { BuilderFields } from './BuilderFields'
+import { FormBuilderFieldsSkeleton } from './FormBuilder/FormBuilderFieldsSkeleton'
 import { PaymentView } from './PaymentView'
 import { StartPageView } from './StartPageView'
 import { useBuilderFields } from './useBuilderFields'

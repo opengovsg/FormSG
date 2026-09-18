@@ -83,8 +83,6 @@ import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { getMyInfoAttr } from '../modules/myinfo/myinfo.util'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
-
-import { ProductSchema } from './payments/productSchema'
 import {
   BaseFieldSchema,
   createAddressFieldSchema,
@@ -122,6 +120,7 @@ import WorkflowStepSchema, {
   WorkflowStepDynamicSchema,
   WorkflowStepStaticSchema,
 } from './form_workflow_step.server.schema'
+import { ProductSchema } from './payments/productSchema'
 import getUserModel from './user.server.model'
 import { isPositiveInteger } from './utils'
 
@@ -603,7 +602,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         required: [true, 'Form name cannot be blank'],
         minlength: [4, 'Form name must be at least 4 characters'],
         maxlength: [200, 'Form name can have a maximum of 200 characters'],
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line typescript/ban-ts-comment
         // @ts-ignore
         trim: true,
       },
@@ -1289,7 +1288,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
     // Must use undefined check since number can be 0; i.e. falsey.
     if (to !== undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // oxlint-disable-next-line typescript/no-explicit-any
       formFields.splice(to, 0, newField as any) // Typings are not complete for splice.
     } else {
       formFields.push(newField)
@@ -1304,7 +1303,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
     const formFields = this.form_fields as Types.DocumentArray<IFieldSchema>
     // Must use undefined check since number can be 0; i.e. falsey.
     if (to !== undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // oxlint-disable-next-line typescript/no-explicit-any
       formFields.splice(to, 0, ...(newFields as any[])) // Typings are not complete for splice.
     } else {
       formFields.push(...newFields)

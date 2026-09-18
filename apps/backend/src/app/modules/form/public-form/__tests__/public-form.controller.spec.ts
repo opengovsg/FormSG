@@ -1,5 +1,5 @@
-import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
+import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
 import { Request } from 'express'
 import { featureFlags } from 'formsg-shared/constants'

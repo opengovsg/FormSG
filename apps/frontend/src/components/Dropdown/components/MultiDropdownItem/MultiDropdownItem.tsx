@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+
 import {
   Flex,
   Icon,
@@ -17,7 +18,6 @@ import {
 } from '~components/Dropdown/utils/itemUtils'
 
 import { DropdownItemTextHighlighter } from '../DropdownItem/DropdownItemTextHighlighter'
-
 import { ItemCheckboxIcon } from './ItemCheckboxIcon'
 
 export interface MultiDropdownItemProps {

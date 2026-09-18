@@ -15,7 +15,6 @@ import {
   ResponseValidatorConstructor,
 } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
-
 import {
   makeSignatureValidator,
   makeSignatureValidatorV4,

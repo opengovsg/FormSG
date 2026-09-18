@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import {
   Badge,
   Box,
@@ -19,7 +20,6 @@ import Tooltip from '~components/Tooltip'
 import { TooltipProps } from '~components/Tooltip/Tooltip'
 
 import FormLabel from '../FormControl/FormLabel'
-
 import { Switch, SwitchProps } from './Switch'
 
 export interface ToggleProps extends Omit<SwitchProps, 'children'> {

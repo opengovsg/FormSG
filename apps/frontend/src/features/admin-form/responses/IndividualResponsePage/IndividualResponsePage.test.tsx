@@ -1,4 +1,5 @@
 import { PropsWithChildren } from 'react'
+
 import { screen } from '@testing-library/react'
 
 import {
@@ -11,7 +12,6 @@ import {
 import { isMaskedInDatadogReplay, render } from '~/test-utils'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
-
 import { IndividualResponsePage } from './IndividualResponsePage'
 
 vi.mock('react-i18next', () => ({

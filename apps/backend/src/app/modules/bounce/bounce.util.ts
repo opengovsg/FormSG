@@ -4,7 +4,6 @@ import {
   IEmailNotification,
 } from '../../../types'
 import { UserWithContactNumber } from '../user/user.types'
-
 import { SendBounceSmsNotificationError } from './bounce.errors'
 
 /**

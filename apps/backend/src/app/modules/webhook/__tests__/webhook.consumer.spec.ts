@@ -1,5 +1,5 @@
-import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { Message } from '@aws-sdk/client-sqs'
+import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { addHours } from 'date-fns'
 import { WebhookResponse } from 'formsg-shared/types'

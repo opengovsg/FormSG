@@ -8,19 +8,20 @@ import {
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useDebounce } from 'react-use'
+
 import { Box, Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import { cloneDeep } from 'lodash'
 import validator from 'validator'
 
 import { FormEndPage } from 'formsg-shared/types'
 
-import { REQUIRED_ERROR } from '~constants/validation'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
+import { REQUIRED_ERROR } from '~constants/validation'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -37,7 +38,6 @@ import {
 import { CreatePageDrawerCloseButton } from '../common/CreatePageDrawer/CreatePageDrawerCloseButton'
 import { CreatePageDrawerContainer } from '../common/CreatePageDrawer/CreatePageDrawerContainer'
 import { CreatePageSideBarLayoutProvider } from '../common/CreatePageSideBarLayoutContext'
-
 import {
   dataSelector,
   resetDataSelector,

@@ -113,7 +113,7 @@ export class CsvRecord {
       case MRF_PENDING_RESPONSE_AT_LABEL:
         return '000000000000000000010002'
       default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         const _: never = key
         throw new Error('Invalid key')
       }

@@ -10,7 +10,6 @@ import { StatusCodes } from 'http-status-codes'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
-
 import * as WorkspaceService from './workspace.service'
 import { mapRouteError } from './workspace.utils'
 

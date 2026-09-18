@@ -13,7 +13,6 @@ db.getCollection('payments').countDocuments({
   payment_fields_snapshot: { $type: 'array' },
 })
 
-
 // UPDATE
 db.getCollection('payments').aggregate([
   {

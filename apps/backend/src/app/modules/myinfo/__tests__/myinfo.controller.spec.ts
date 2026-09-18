@@ -16,7 +16,6 @@ import * as MyInfoController from '../myinfo.controller'
 import { MyInfoParseRelayStateError } from '../myinfo.errors'
 import { MyInfoService } from '../myinfo.service'
 import { MyInfoAuthCodeCookieState } from '../myinfo.types'
-
 import {
   MOCK_AUTH_CODE,
   MOCK_FORM_ID,

@@ -7,6 +7,7 @@ import {
   useFormContext,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Box, FormControl } from '@chakra-ui/react'
 import { get, isEmpty, isEqual } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -17,20 +18,19 @@ import {
   StorageFormSettings,
 } from 'formsg-shared/types/form'
 
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
+import { TagInput } from '~components/TagInput'
 import {
   useOptionalAdminEmailValidationRules,
   useRequiredAdminEmailValidationRules,
 } from '~utils/formValidation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import { TagInput } from '~components/TagInput'
 
 import { useIsWorkflowBuilderRedesign } from '~features/admin-form/create/workflow/hooks/useIsWorkflowBuilderRedesign'
 import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
-
 import { RespondentCopyToggle } from './EmailNotificationsSection/RespondentCopyToggle'
 
 interface EmailFormSectionProps {

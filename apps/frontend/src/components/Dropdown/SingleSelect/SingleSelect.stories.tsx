@@ -1,18 +1,18 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiHeading, BiRadioCircleMarked } from 'react-icons/bi'
+
 import { FormControl } from '@chakra-ui/react'
 import { useArgs } from '@storybook/preview-api'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { fixedHeightDecorator } from '~utils/storybook'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import { fixedHeightDecorator } from '~utils/storybook'
 
 import { ComboboxItem } from '../types'
 import { itemToValue } from '../utils/itemUtils'
-
 import { SingleSelect, SingleSelectProps } from './SingleSelect'
 
 const INITIAL_COMBOBOX_ITEMS: ComboboxItem[] = [

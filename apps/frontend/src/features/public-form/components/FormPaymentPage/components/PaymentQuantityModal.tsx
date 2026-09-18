@@ -1,6 +1,7 @@
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiMinus, BiPlus } from 'react-icons/bi'
+
 import {
   FormControl,
   HStack,
@@ -16,11 +17,11 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 import { ModalCloseButton } from '~components/Modal'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 interface PaymentQuantityModalProps extends Pick<
   UseDisclosureReturn,

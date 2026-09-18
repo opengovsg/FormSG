@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { SubmitHandler, useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Box, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
@@ -20,7 +21,6 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { PaymentPreview } from '../../../../templates/Field/PaymentPreview/PaymentPreview'
 import { PublicFormPaymentResumeModal } from '../FormPaymentPage/FormPaymentResumeModal'
-
 import { PublicFormSubmitButton } from './PublicFormSubmitButton'
 import { VisibleFormFields } from './VisibleFormFields'
 

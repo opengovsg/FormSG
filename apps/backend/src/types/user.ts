@@ -52,13 +52,13 @@ export interface IUserModel extends Model<IUserSchema> {
 }
 
 export interface IPopulatedUser extends Omit<IUserSchema, 'apiToken'> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   _id: any
   agency: AgencyDocument
 }
 
 export interface IPopulatedApiUser extends IUserSchema {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   _id: any
   agency: AgencyDocument
 }

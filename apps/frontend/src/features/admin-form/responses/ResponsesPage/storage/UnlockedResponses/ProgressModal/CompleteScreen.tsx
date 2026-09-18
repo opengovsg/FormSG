@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import {
   Badge,
   Icon,
@@ -13,11 +14,11 @@ import {
 import simplur from 'simplur'
 
 import { BxsCheckCircle, BxsXCircle } from '~assets/icons'
-import { useIsMobile } from '~hooks/useIsMobile'
-import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 import { ModalCloseButton } from '~components/Modal'
+import { useIsMobile } from '~hooks/useIsMobile'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 import { DownloadResult } from '../../types'
 

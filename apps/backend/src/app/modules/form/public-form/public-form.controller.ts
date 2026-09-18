@@ -78,7 +78,6 @@ import {
   PrivateFormError,
 } from '../form.errors'
 import * as FormService from '../form.service'
-
 import * as PublicFormService from './public-form.service'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
 
@@ -403,7 +402,7 @@ export const handleGetPublicForm: ControllerHandler<
     }
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
       const exhaustiveCheck: never = authType
     }
   }
@@ -611,7 +610,7 @@ export const handleGetPublicForm: ControllerHandler<
     }
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
       const exhaustiveCheck: never = authType
     }
   }
@@ -633,7 +632,7 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
     formId,
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   const formResult = await getFormIfPublic(formId)
   // Early return if form is not public or any error occurred.
   if (formResult.isErr()) {

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiCog } from 'react-icons/bi'
+
 import { Box, ButtonGroup, Collapse, Flex, IconButton } from '@chakra-ui/react'
 
 import { FormAuthType, FormLogoState, FormStartPage } from 'formsg-shared/types'

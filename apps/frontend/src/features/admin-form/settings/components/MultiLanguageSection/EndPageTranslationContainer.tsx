@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Divider, Flex, Text } from '@chakra-ui/react'
 import _ from 'lodash'
 

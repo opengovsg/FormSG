@@ -12,7 +12,7 @@ export type ComboboxItem<T = string> =
       disabled?: boolean
       /** Icon to display in input field when item is selected, if available */
       icon?: As
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // oxlint-disable-next-line typescript/no-explicit-any
       [key: string]: any
     }
   | string

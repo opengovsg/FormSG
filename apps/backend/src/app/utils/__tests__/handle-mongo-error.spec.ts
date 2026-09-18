@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* oxlint-disable typescript/ban-ts-comment */
 import { Error as MongooseError, mongo as mongodb } from 'mongoose'
 
 import {

@@ -2,7 +2,6 @@ import { composeStories } from '@storybook/react'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
 import * as pageStories from '../CreatePageWorkflowTab.stories'
-
 import { INTRO_ILLUSTRATION_TEST_ID } from './EmptyWorkflow'
 import {
   ILLUSTRATION_FORM_LAYER_TEST_ID,

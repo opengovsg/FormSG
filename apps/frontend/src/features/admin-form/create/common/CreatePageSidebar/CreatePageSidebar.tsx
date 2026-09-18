@@ -6,6 +6,7 @@ import {
   BiGitMerge,
   BiQuestionMark,
 } from 'react-icons/bi'
+
 import { Box, Divider, Stack } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
@@ -15,10 +16,10 @@ import { FormResponseMode, SeenFlags } from 'formsg-shared/types'
 import { MultiParty, PhHandsClapping } from '~assets/icons'
 import { BxsDockTop } from '~assets/icons/BxsDockTop'
 import { BxsWidget } from '~assets/icons/BxsWidget'
-import { FORM_GUIDE } from '~constants/links'
-import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
+import { FORM_GUIDE } from '~constants/links'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import {
@@ -39,7 +40,6 @@ import {
   useFieldBuilderStore,
 } from '../../builder-and-design/useFieldBuilderStore'
 import { FEATURE_TOUR_IDS } from '../../featureTour/constants'
-
 import { DrawerTabIcon } from './DrawerTabIcon'
 
 export const CreatePageSidebar = (): JSX.Element | null => {

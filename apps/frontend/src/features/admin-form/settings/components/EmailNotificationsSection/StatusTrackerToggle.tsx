@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiLinkExternal } from 'react-icons/bi'
+
 import { Icon, Link, Skeleton, Text } from '@chakra-ui/react'
 
 import { STATUS_TRACKER_PREVIEW_LINK } from 'formsg-shared/constants'

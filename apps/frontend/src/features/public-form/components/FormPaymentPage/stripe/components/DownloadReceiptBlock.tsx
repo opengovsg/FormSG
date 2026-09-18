@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { BiDownload } from 'react-icons/bi'
+
 import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 import { format } from 'date-fns'
 
@@ -10,8 +11,8 @@ import {
 } from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
-import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
+import { useToast } from '~hooks/useToast'
 
 import { getPaymentInvoiceDownloadUrl } from '~features/public-form/utils/urls'
 

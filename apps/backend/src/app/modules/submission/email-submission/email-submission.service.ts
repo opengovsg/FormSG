@@ -22,7 +22,6 @@ import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import { isEmailModeForm, transformEmails } from '../../form/form.utils'
 import { ResponseModeError } from '../submission.errors'
 import { ProcessedFieldResponse } from '../submission.types'
-
 import {
   DIGEST_TYPE,
   HASH_ITERATIONS,

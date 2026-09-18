@@ -19,7 +19,6 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
 import { DraggableBasicFieldListOption } from '../FieldListOption'
-
 import { FieldSection } from './FieldSection'
 import { filterFieldsBySearchValue } from './utils'
 

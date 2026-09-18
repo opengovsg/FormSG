@@ -1,5 +1,6 @@
 import { Controller, RegisterOptions, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, HStack } from '@chakra-ui/react'
 
 import {
@@ -8,10 +9,10 @@ import {
   formatCurrency,
 } from 'formsg-shared/utils/payments'
 
-import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
 
 import { useEnv } from '~features/env/queries'
 

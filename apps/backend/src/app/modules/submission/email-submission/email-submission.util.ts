@@ -88,7 +88,6 @@ import {
   ProcessedTableResponse,
 } from '../submission.types'
 import { getAnswersForChild, getMyInfoPrefix } from '../submission.utils'
-
 import {
   ATTACHMENT_PREFIX,
   SIGNATURE_PREFIX,

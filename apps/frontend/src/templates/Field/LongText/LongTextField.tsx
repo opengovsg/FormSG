@@ -3,8 +3,8 @@
  */
 import { useFormContext } from 'react-hook-form'
 
-import { useTextValidationRules } from '~utils/fieldValidation'
 import Textarea from '~components/Textarea'
+import { useTextValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { LongTextFieldSchema, SingleAnswerFieldInput } from '../types'

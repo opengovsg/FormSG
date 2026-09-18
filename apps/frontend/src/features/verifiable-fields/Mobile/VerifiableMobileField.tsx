@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
-import { baseMobileValidationFn } from '~utils/fieldValidation'
 import { MobileFieldInput, MobileFieldProps } from '~templates/Field/Mobile'
 import { MobileFieldSchema } from '~templates/Field/types'
+import { baseMobileValidationFn } from '~utils/fieldValidation'
 
 import { VerifiableFieldContainer } from '../components/VerifiableFieldContainer'
 import { VerifiableFieldSchema } from '../types'

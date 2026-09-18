@@ -7,7 +7,6 @@ import { AgencyDocument, IPopulatedUser } from 'src/types'
 
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
-
 import {
   ONE_CODE_VERIFIER_COOKIE_NAME,
   ONE_NONCE_COOKIE_NAME,

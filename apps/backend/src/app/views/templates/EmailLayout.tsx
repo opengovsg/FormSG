@@ -21,7 +21,6 @@ import {
 import React from 'react'
 
 import { FORMSG_LOGO_URL } from '../../constants/formsg-logo'
-
 import {
   buttonContainerStyle,
   buttonInnerStyle,

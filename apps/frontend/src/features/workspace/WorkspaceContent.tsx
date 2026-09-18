@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
+
 import { Box, Container, Grid, useDisclosure } from '@chakra-ui/react'
 
+import InlineMessage from '~components/InlineMessage'
 import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
-import InlineMessage from '~components/InlineMessage'
 
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { useUser } from '~features/user/queries'

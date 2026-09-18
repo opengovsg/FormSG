@@ -1,4 +1,5 @@
 import { forwardRef, useCallback, useMemo } from 'react'
+
 import {
   Flex,
   Icon,
@@ -12,7 +13,6 @@ import Input from '~components/Input'
 
 import { useSelectContext } from '../../SelectContext'
 import { itemToIcon, itemToLabelString } from '../../utils/itemUtils'
-
 import { ComboboxClearButton } from './ComboboxClearButton'
 import { ToggleChevron } from './ToggleChevron'
 

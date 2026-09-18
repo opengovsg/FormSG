@@ -28,7 +28,6 @@ import {
 import type { Merge, RequiredDeep, SetOptional } from 'type-fest'
 
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
-
 import { PublicView } from './database'
 import { FormFieldSchema } from './field'
 import { FormLogicSchema } from './form_logic'
@@ -77,7 +76,7 @@ export type IForm = Merge<
   SetOptional<FormBase, FormDefaultableKey>,
   {
     // Loosen types here to allow for IPopulatedForm extension
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // oxlint-disable-next-line typescript/no-explicit-any
     admin: any
     permission?: FormPermission[]
     form_fields?: FormFieldSchema[]

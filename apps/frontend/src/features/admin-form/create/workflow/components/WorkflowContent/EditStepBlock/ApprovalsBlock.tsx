@@ -1,14 +1,15 @@
 import { useCallback, useRef, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, Text } from '@chakra-ui/react'
 
 import { BasicField } from 'formsg-shared/types'
 
-import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Toggle from '~components/Toggle'
+import { textStyles } from '~theme/textStyles'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
@@ -19,7 +20,6 @@ import { useStageFieldAndNavigate } from '../../../hooks/useStageFieldAndNavigat
 import { EditStepInputs } from '../../../types'
 import { useIsSpotlightActiveSection } from '../../Spotlight'
 import { nextEditFieldsForApproval } from '../utils/nextEditFieldsForApproval'
-
 import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 import { FieldEmptyState } from './EmptyStates'

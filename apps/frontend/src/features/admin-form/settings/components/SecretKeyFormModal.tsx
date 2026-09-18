@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt, BiUpload } from 'react-icons/bi'
+
 import {
   Container,
   FormControl,
@@ -12,7 +13,6 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
-import { SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -20,6 +20,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
+import { SECRET_KEY_REGEX } from '~utils/secretKeyValidation'
 
 import {
   ACK_NAME,
@@ -27,7 +28,6 @@ import {
   SecretKeyFormInputs,
   useSecretKeyForm,
 } from '../hooks/useSecretKeyForm'
-
 import { FormActivationSvg } from './FormActivationSvg'
 
 export interface SecretKeyFormModalProps extends Pick<

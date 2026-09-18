@@ -1,16 +1,19 @@
 ## Problem
+
 <!-- What problem are you trying to solve? What issue does this close? -->
 
 Closes [insert issue #]
 
 ## Solution
+
 <!-- How did you solve the problem? -->
 
-**Breaking Changes** 
+**Breaking Changes**
 <!-- Does this PR contain any backward incompatible changes? If so, what are they and should there be special considerations for release? -->
+
 - [ ] Yes - this PR contains breaking changes
-    - Details ...
-- [ ] No - this PR is backwards compatible  
+  - Details ...
+- [ ] No - this PR is backwards compatible
 
 **Features**:
 
@@ -33,9 +36,11 @@ Closes [insert issue #]
 <!-- [insert screenshot here] -->
 
 ## Tests
+
 <!-- What tests should be run to confirm functionality? -->
 
 ## Deploy Notes
+
 <!-- Notes regarding deployment of the contained body of work.  -->
 <!-- These should note any new dependencies, new scripts, etc. -->
 

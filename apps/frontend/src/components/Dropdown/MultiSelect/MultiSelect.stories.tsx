@@ -1,19 +1,19 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { BiRadioCircleMarked } from 'react-icons/bi'
+
 import { FormControl } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 import { get } from 'lodash'
 import difference from 'lodash/difference'
 
-import { fixedHeightDecorator, viewports } from '~utils/storybook'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import { fixedHeightDecorator, viewports } from '~utils/storybook'
 
 import { ComboboxItem } from '../types'
 import { itemToValue } from '../utils/itemUtils'
-
 import { MultiSelect, MultiSelectProps } from './MultiSelect'
 
 const INITIAL_COMBOBOX_ITEMS: ComboboxItem[] = [

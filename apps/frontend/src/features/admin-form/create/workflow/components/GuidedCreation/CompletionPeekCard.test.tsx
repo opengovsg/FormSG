@@ -7,9 +7,8 @@ import { Language } from 'formsg-shared/types'
 import i18n from '~/i18n/i18n'
 
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
-
-import { CompletionPeekMomentType } from './utils/completionPeekContent'
 import { CompletionPeekCard } from './CompletionPeekCard'
+import { CompletionPeekMomentType } from './utils/completionPeekContent'
 
 const withFlag = (isOn: boolean) =>
   new GrowthBook({

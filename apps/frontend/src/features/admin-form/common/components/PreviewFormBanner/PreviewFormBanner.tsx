@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BiArrowBack, BiDotsHorizontalRounded, BiShow } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
 import { Waypoint } from 'react-waypoint'
+
 import {
   Divider,
   Drawer,
@@ -22,10 +23,10 @@ import {
 
 import { FormId } from 'formsg-shared/types/form/form'
 
-import { FORMSG_UAT } from '~constants/links'
-import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 import Button, { ButtonProps } from '~components/Button'
 import Link from '~components/Link'
+import { FORMSG_UAT } from '~constants/links'
+import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
 // Explicit deep import to avoid circular dependency warnings by rollup.

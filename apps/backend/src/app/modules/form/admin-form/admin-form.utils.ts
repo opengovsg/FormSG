@@ -45,7 +45,6 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { UNICODE_ESCAPED_REGEX } from '../form.utils'
-
 import {
   DeleteFirstWorkflowStepError,
   EditFieldError,
@@ -577,7 +576,7 @@ export const mapGoGovErrors = (error: AxiosError): GoGovError => {
     default:
       return new GoGovServerError(
         `GoGov server returned ${error.response?.status} error code with ${
-          (error.response?.data as GoGovReturnedData).message
+          (error.response?.data as GoGovReturnedData | undefined)?.message
         } message`,
       )
   }

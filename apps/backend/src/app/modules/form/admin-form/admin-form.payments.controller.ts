@@ -31,7 +31,6 @@ import { checkFormIsEncryptModeOrMultirespondent } from '../../submission/submis
 import { getPopulatedUserById } from '../../user/user.service'
 import * as UserService from '../../user/user.service'
 import { ForbiddenFormError } from '../form.errors'
-
 import { PaymentChannelNotFoundError } from './admin-form.errors'
 import { JoiPaymentProduct } from './admin-form.payments.constants'
 import * as AdminFormPaymentService from './admin-form.payments.service'

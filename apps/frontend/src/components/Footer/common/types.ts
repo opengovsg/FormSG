@@ -9,7 +9,7 @@ export type FooterLink = {
 }
 
 export type FooterLinkWithIcon = FooterLink & {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   Icon: (props: any) => JSX.Element
 }
 

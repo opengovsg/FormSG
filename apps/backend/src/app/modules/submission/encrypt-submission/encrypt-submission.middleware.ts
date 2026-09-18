@@ -38,7 +38,6 @@ import {
   mapRouteError,
   sendRouteError,
 } from '../submission.utils'
-
 import {
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,
@@ -362,11 +361,11 @@ export const validateStorageSubmission = async (
       for (const response of parsedResponses.getAllResponses()) {
         // `isVisible` is being stripped out here. Why: https://github.com/opengovsg/FormSG/pull/6907
         if (response.isVisible) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // oxlint-disable-next-line typescript/no-unused-vars
           const { isVisible: _, ...rest } = response
           if (!isAttachmentResponse(rest)) responses.push(rest)
           else {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // oxlint-disable-next-line typescript/no-unused-vars
             const { filename: __, content: ___, ...restAttachments } = rest
             responses.push({
               ...restAttachments,

@@ -1,5 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Flex, Text } from '@chakra-ui/react'
 
 import { FormStartPage, Language } from 'formsg-shared/types'

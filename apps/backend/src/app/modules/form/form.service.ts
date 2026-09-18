@@ -48,7 +48,6 @@ import { IntranetService } from '../intranet/intranet.service'
 import { getMyInfoFieldOptions } from '../myinfo/myinfo.util'
 import { MissingSubmitterIdError } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
-
 import {
   FormDeletedError,
   FormNotFoundError,
@@ -863,7 +862,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       }
     default: {
       // Force TS to emit an error if the cases above are not exhaustive
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
       const exhaustiveCheck: never = fieldType
       break
     }

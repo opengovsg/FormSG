@@ -10,7 +10,7 @@ import dbHandler from '../../../../../__tests__/unit/backend/helpers/jest-db'
 jest.mock('src/app/config/config')
 const MockConfig = jest.mocked(config)
 
-// eslint-disable-next-line import/first
+// oxlint-disable-next-line import/first
 import getMyInfoHashModel from 'src/app/modules/myinfo/myinfo_hash.model'
 
 const MyInfoHash = getMyInfoHashModel(mongoose)

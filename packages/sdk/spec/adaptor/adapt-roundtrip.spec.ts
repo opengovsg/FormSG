@@ -1,8 +1,8 @@
 import { adaptV3ToV4 } from '../../src/adapt-v3-to-v4'
 import { adaptV4ToV3 } from '../../src/adapt-v4-to-v3'
-import { plaintext } from '../resources/crypto-v3-data-20260428'
 import { FormFieldsV3 } from '../../src/types'
 import { FieldResponsesV4, TableAnswerV4 } from '../../src/types-v4'
+import { plaintext } from '../resources/crypto-v3-data-20260428'
 
 /**
  * Normalise table answer keys so that two V4 objects can be compared even when
@@ -72,7 +72,7 @@ describe('v3 ↔ v4 round-trip backwards compatibility (2026-04-28 data)', () =>
 
     for (const fieldId of Object.keys(v3Original)) {
       expect(v3RoundTripped[fieldId].fieldType).toBe(
-        v3Original[fieldId].fieldType,
+        v3Original[fieldId].fieldType
       )
       expect(v4Second[fieldId].fieldType).toBe(v4First[fieldId].fieldType)
     }

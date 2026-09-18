@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDotsHorizontalRounded } from 'react-icons/bi'
+
 import {
   Box,
   ButtonGroup,
@@ -13,10 +14,10 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 

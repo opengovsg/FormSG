@@ -2,9 +2,9 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
+import Button from '~components/Button'
 import { FORM_GUIDE } from '~constants/links'
 import { LOGIN_ROUTE } from '~constants/routes'
-import Button from '~components/Button'
 import { PublicHeader } from '~templates/PublicHeader'
 
 export const AppPublicHeader = ({ bg }: { bg?: string }): JSX.Element => {

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box, Flex, Stack, Text, VisuallyHidden } from '@chakra-ui/react'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'

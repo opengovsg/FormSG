@@ -1,16 +1,17 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box, FormControl, useDisclosure } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { MobileFieldBase } from 'formsg-shared/types/field'
 
-import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
+import { createBaseValidationRules } from '~utils/fieldValidation'
 
 import { useSmsQuota } from '~features/admin-form/common/queries'
 
@@ -18,7 +19,6 @@ import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
-
 import { ContactSupportMessage } from './ContactSupportMessage'
 import { SmsCountMessage } from './SmsCountMessage'
 import { SmsCountsModal } from './SmsCountsModal'

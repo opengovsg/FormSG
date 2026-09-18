@@ -1,5 +1,6 @@
 import { FormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Divider, Flex, Text } from '@chakra-ui/react'
 
 import { FormField, Language } from 'formsg-shared/types'

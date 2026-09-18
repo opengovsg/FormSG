@@ -11,7 +11,6 @@ import PostmanSmsService from '../../services/postman-sms/postman-sms.service'
 import { getRequestIp } from '../../utils/request'
 import { getUserIdFromSession } from '../auth/auth.utils'
 import { ControllerHandler } from '../core/core.types'
-
 import { UNAUTHORIZED_USER_MESSAGE } from './user.constant'
 import {
   validateContactOtpVerificationParams,

@@ -132,7 +132,7 @@ function convertSignatureAnswerToV3(answer: SignatureAnswerV4): {
 
 /** Main adaptor */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 function convertAnswerToV3(fieldType: FieldType, answer: AnswerV4): any {
   if (GENERIC_STRING_FIELD_TYPES.has(fieldType)) {
     return convertStringAnswerToV3(answer as StringAnswerV4)

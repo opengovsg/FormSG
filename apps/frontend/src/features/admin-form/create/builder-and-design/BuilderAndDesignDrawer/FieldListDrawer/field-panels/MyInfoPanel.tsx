@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
+
 import { Box, Text } from '@chakra-ui/react'
 import { Droppable } from '@hello-pangea/dnd'
 
@@ -11,10 +12,10 @@ import {
   MyInfoAttribute,
 } from 'formsg-shared/types'
 
-import { GUIDE_MYINFO_BUILDER_FIELD } from '~constants/links'
-import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
+import { GUIDE_MYINFO_BUILDER_FIELD } from '~constants/links'
+import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
 
 import {
   CREATE_MYINFO_CHILDREN_DROP_ID,
@@ -34,7 +35,6 @@ import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
 import { DraggableMyInfoFieldListOption } from '../FieldListOption'
-
 import { FieldSection } from './FieldSection'
 import { filterFieldsBySearchValue } from './utils'
 

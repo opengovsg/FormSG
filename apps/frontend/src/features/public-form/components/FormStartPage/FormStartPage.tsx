@@ -3,7 +3,6 @@ import { useMemo } from 'react'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
-
 import { FormHeader } from './FormHeader'
 import { useFormHeader } from './useFormHeader'
 

@@ -1,15 +1,15 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
+
 import { Divider, Flex, Grid, Icon, Stack, Text } from '@chakra-ui/react'
 
-import { GUIDE_FORM_LOGIC } from '~constants/links'
 import Button from '~components/Button'
 import Link from '~components/Link'
+import { GUIDE_FORM_LOGIC } from '~constants/links'
 
 import { useAdminLogicStore } from '../adminLogicStore'
 import { ALLOWED_FIELDS_META } from '../constants'
-
 import { LogicSvgr } from './LogicSvgr'
 
 export const EmptyLogic = (): JSX.Element => {

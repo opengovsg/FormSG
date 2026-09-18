@@ -1,5 +1,6 @@
 // Context provides multi-select handlers. Mostly complemented by SelectContext.
 import { createContext, useContext } from 'react'
+
 import {
   UseMultipleSelectionActions,
   UseMultipleSelectionPropGetters,

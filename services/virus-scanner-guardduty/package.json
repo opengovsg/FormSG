@@ -3,16 +3,16 @@
   "version": "9.28.0",
   "private": true,
   "description": "",
-  "scripts": {
-    "env": "ENV=${ENV:-'development'} node scripts/envLoader.mjs",
-    "build": "tsc",
-    "tsc": "tsc",
-    "dev": "pnpm run env && docker-compose -f docker-compose.dev.yml up --build",
-    "deploy": "pnpm run env && sls deploy --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\" --conceal",
-    "package": "pnpm run env && sls package --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\""
-  },
-  "author": "",
   "license": "ISC",
+  "author": "",
+  "scripts": {
+    "build": "tsc",
+    "deploy": "pnpm run env && sls deploy --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\" --conceal",
+    "dev": "pnpm run env && docker-compose -f docker-compose.dev.yml up --build",
+    "env": "ENV=${ENV:-'development'} node scripts/envLoader.mjs",
+    "package": "pnpm run env && sls package --stage ${ENV:-'staging'} --param=\"provisionedConcurrency=${CONCURRENCY}\"",
+    "tsc": "tsc"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.529.1",
     "@aws-sdk/client-ssm": "^3.363.0",

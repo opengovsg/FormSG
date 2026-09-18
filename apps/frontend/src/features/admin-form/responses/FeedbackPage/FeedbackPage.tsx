@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { UseMutationResult } from 'react-query'
 import { useParams } from 'react-router-dom'
+
 import {
   Box,
   ButtonGroup,
@@ -17,9 +18,9 @@ import { ProcessedFeedbackMeta, ProcessedIssueMeta } from 'formsg-shared/types'
 import Pagination from '~/components/Pagination'
 
 import { BxsInfoCircle } from '~assets/icons'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { ButtonProps } from '~components/Button'
 import Tooltip from '~components/Tooltip'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import {
   DownloadFormFeedbackMutationArgs,
@@ -30,9 +31,6 @@ import {
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { useFormFeedback, useFormIssues } from '../queries'
-
-import { useIssueTableColumns } from './issue/IssueTable'
-import { useReviewTableColumns } from './review/ReviewTable'
 import { EmptyFeedback } from './EmptyFeedback'
 import { FeedbackDownloadButton } from './FeedbackDownloadButton'
 import {
@@ -40,6 +38,8 @@ import {
   FeedbackPageSkeletonMobile,
 } from './FeedbackSkeleton'
 import { FeedbackTable } from './FeedbackTable'
+import { useIssueTableColumns } from './issue/IssueTable'
+import { useReviewTableColumns } from './review/ReviewTable'
 
 enum FeedbackType {
   Issues = 'issues',

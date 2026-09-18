@@ -71,7 +71,7 @@ export const paymentTypeSelection = (
     }
 
     default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
       const _: never = payments_field
     }
   }

@@ -10,7 +10,6 @@ import { CreateFormFlowStates } from '~features/workspace/components/CreateFormM
 import { useEmailModeFeedbackMutation } from '~features/workspace/mutations'
 
 import { useUseTemplateMutations } from '../mutation'
-
 import { useUseTemplateWizardContext } from './UseTemplateWizardProvider'
 
 vi.mock('react-i18next', () => ({

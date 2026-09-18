@@ -1,5 +1,6 @@
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, Stack, useBreakpointValue } from '@chakra-ui/react'
 
 import { OTP_LENGTH, OTP_REGEX } from 'formsg-shared/constants'

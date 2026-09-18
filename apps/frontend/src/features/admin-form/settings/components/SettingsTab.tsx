@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { As, Box, Icon, Tab } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'

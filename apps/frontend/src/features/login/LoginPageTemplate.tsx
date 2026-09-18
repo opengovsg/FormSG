@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
+
 import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
@@ -9,11 +10,11 @@ import { AppFooter } from '~/app/AppFooter'
 import { FCC } from '~typings/react'
 
 import BrandLogoSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
-import { LANDING_ROUTE } from '~constants/routes'
-import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
 import Link from '~components/Link'
+import { LANDING_ROUTE } from '~constants/routes'
 import { AppGrid } from '~templates/AppGrid'
+import { getBannerProps } from '~utils/getBannerProps'
 
 import { useEnv } from '~features/env/queries'
 

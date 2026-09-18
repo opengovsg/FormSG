@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+
 import {
   Modal,
   ModalBody,
@@ -10,11 +11,11 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { useBrowserStm } from '~hooks/payments'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import ButtonGroup from '~components/ButtonGroup'
 import { ModalCloseButton } from '~components/Modal'
+import { useBrowserStm } from '~hooks/payments'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { getPaymentPageUrl } from '~features/public-form/utils/urls'
 

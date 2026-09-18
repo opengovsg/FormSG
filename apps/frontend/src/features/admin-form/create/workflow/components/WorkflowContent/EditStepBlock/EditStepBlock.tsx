@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
+
 import { Box, Stack } from '@chakra-ui/react'
 
 import {
@@ -27,7 +28,6 @@ import { EditStepInputs } from '../../../types'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
 import { SpotlightGroup } from '../../Spotlight'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
-
 import { ApprovalsBlock } from './ApprovalsBlock'
 import { GuidedActionGroup } from './GuidedActionGroup'
 import { QuestionsBlock } from './QuestionsBlock'
@@ -237,7 +237,7 @@ export const EditStepBlock = ({
 
     hasSubmittedForPendingSwitch.current = true
     handleSubmit()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [pendingSwitchTo])
 
   useEffect(() => {

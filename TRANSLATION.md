@@ -46,6 +46,7 @@ This approach allows us to:
 Our translations are organized using a hierarchy of TypeScript files. We use a type-safe approach to ensure all translations are properly structured and complete.
 
 ### Directory Structure
+
 ```
 apps/frontend/src/i18n/locales/
 
@@ -71,18 +72,18 @@ Example:
 ```typescript
 // index.ts - defines the structure
 
-export interface FieldValidation {
-  required: string;
-  invalidEmail: string;
+export interface FieldValidation {
+  required: string
+  invalidEmail: string
   // ...
 }
 
 // en-sg.ts - implements the structure for English
-export const enSG: FieldValidation = {
-  required: 'This field is required',
-  invalidEmail: 'Please enter a valid email',
+export const enSG: FieldValidation = {
+  required: 'This field is required',
+  invalidEmail: 'Please enter a valid email',
   // ...
-};
+}
 ```
 
 ## **Forking FormSG for Your Country or Agency**
@@ -93,13 +94,13 @@ If you are forking FormSG for use in another country or government agency, here 
 
 1. **Determine Your Locale Code**: Use standard locale codes like `en-us` (English-US), `fr-fr` (French-France), etc.
 2. **Create Base Locale Files**:
-    - Create new locale files in each translation directory (e.g., `fr-fr.ts`)
-    - Start by copying the English version and translating each string
+   - Create new locale files in each translation directory (e.g., `fr-fr.ts`)
+   - Start by copying the English version and translating each string
 3. **Register Your Locale**:
-    - Add your locale to the language options in i18n.ts
-    - Configure the language detection and fallback options
+   - Add your locale to the language options in i18n.ts
+   - Configure the language detection and fallback options
 4. **Update Default Locale** (if needed):
-    - Change the default locale in your configuration to match your country
+   - Change the default locale in your configuration to match your country
 
 ### Country-Specific Customizations
 
@@ -129,11 +130,11 @@ For example, to add French translations:
 
 ```typescript
 // fr-fr.ts
-export const frFR: FieldValidation = {
-  required: 'Ce champ est obligatoire',
-  invalidEmail: 'Veuillez entrer une adresse email valide',
+export const frFR: FieldValidation = {
+  required: 'Ce champ est obligatoire',
+  invalidEmail: 'Veuillez entrer une adresse email valide',
   // ...
-};
+}
 ```
 
 ## **Recommended Development Tools**

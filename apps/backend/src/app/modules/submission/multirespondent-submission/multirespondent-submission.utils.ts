@@ -39,7 +39,6 @@ import {
   ValidateFieldErrorV4,
 } from '../submission.errors'
 import { buildMrfMetadata } from '../submission.utils'
-
 import { MrfJwtPayload } from './multirespondent-submission.types'
 
 export const isSubmissionMultirespondentMode = (

@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { BiSave } from 'react-icons/bi'
+
 import { Text } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'
 

@@ -6,7 +6,6 @@ import * as MultirespondentSubmissionController from '../../../../modules/submis
 import * as SubmissionController from '../../../../modules/submission/submission.controller'
 import * as WogaaController from '../../../../modules/wogaa/wogaa.controller'
 import { limitRate } from '../../../../utils/limit-rate'
-
 import { authAndInjectFeedbackFormUrl } from './public-form.middleware'
 
 export const PublicFormsSubmissionsRouter = Router()

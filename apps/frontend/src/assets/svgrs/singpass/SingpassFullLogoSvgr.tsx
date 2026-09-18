@@ -1,4 +1,5 @@
 import { forwardRef, memo, SVGProps } from 'react'
+
 import { chakra } from '@chakra-ui/react'
 
 const MemoSingpassFullLogoSvgr = memo(

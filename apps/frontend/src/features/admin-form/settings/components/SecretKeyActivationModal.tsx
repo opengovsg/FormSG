@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next'
+
 import { UseDisclosureReturn } from '@chakra-ui/react'
 
 import { FormStatus } from 'formsg-shared/types/form/form'
 
 import { useMutateFormSettings } from '../mutations'
-
 import { SecretKeyFormModal } from './SecretKeyFormModal'
 
 export interface SecretKeyActivationModalProps extends Pick<

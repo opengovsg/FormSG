@@ -1,5 +1,6 @@
 // Pure component for reusability
 import ReactFocusLock from 'react-focus-lock'
+
 import {
   Drawer,
   DrawerContent,

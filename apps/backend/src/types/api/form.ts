@@ -1,5 +1,4 @@
 import { IForm } from '../form'
-
 import { EditFormFieldParams } from './field'
 
 /**

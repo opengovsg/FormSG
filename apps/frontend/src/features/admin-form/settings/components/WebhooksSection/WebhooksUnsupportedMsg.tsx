@@ -1,7 +1,7 @@
 import { Flex, Text } from '@chakra-ui/react'
 
-import { GUIDE_WEBHOOKS } from '~constants/links'
 import Link from '~components/Link'
+import { GUIDE_WEBHOOKS } from '~constants/links'
 
 import { SettingsUnsupportedSvgr } from '~features/admin-form/settings/svgrs/SettingsUnsupportedSvgr'
 

@@ -8,8 +8,8 @@ import {
   FormFieldWithId,
 } from 'formsg-shared/types/field'
 
-import { useCountryRegionValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
+import { useCountryRegionValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { SingleAnswerFieldInput } from '../types'

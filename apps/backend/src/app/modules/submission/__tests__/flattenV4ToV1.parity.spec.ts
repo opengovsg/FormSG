@@ -8,20 +8,6 @@
 import { ObjectId } from 'bson'
 import { BasicField, FormFieldDto, FormResponseMode } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
-
-import {
-  FieldResponse,
-  FormFieldSchema,
-  IFormDocument,
-} from '../../../../types'
-import formsgSdk from '../../../config/formsg-sdk'
-import {
-  formatMyInfoStorageResponseData,
-  omitResponseKeys,
-} from '../encrypt-submission/encrypt-submission.utils'
-import ParsedResponsesObject from '../ParsedResponsesObject.class'
-import { isAttachmentResponse } from '../submission.utils'
-
 import {
   ATTACHMENT_FILE_NAME,
   buildAddMoreRowsTableField,
@@ -48,6 +34,19 @@ import {
   MrfWireResponsesV4,
 } from '~features/public-form/utils/createSubmission'
 import { FormFieldValues } from '~templates/Field'
+
+import {
+  FieldResponse,
+  FormFieldSchema,
+  IFormDocument,
+} from '../../../../types'
+import formsgSdk from '../../../config/formsg-sdk'
+import {
+  formatMyInfoStorageResponseData,
+  omitResponseKeys,
+} from '../encrypt-submission/encrypt-submission.utils'
+import ParsedResponsesObject from '../ParsedResponsesObject.class'
+import { isAttachmentResponse } from '../submission.utils'
 
 jest.mock('~/env', () => ({ env: { formsgSdkMode: 'test' } }))
 

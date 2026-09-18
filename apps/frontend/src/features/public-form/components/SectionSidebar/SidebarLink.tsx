@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box, chakra, useStyleConfig, VisuallyHidden } from '@chakra-ui/react'
 
 import { Language } from 'formsg-shared/types'

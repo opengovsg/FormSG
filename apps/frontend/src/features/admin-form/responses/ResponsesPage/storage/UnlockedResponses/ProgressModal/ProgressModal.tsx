@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+
 import {
   Modal,
   ModalContent,
@@ -11,7 +12,6 @@ import { XMotionBox } from '~templates/MotionBox'
 
 import { CanceledResult, DownloadResult } from '../../types'
 import { isCanceledResult } from '../../utils/typeguards'
-
 import { CompleteScreen } from './CompleteScreen'
 import { ProgressModalContent } from './ProgressModalContent'
 

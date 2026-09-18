@@ -2,7 +2,6 @@ import { MyInfoAttribute } from 'formsg-shared/types'
 import { Document, Model } from 'mongoose'
 
 import { MyInfoChildKey } from '../app/modules/myinfo/myinfo.types'
-
 import { IFormSchema } from './form'
 
 export type IHashes = Partial<{

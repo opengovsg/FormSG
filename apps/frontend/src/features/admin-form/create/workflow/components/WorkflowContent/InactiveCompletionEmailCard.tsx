@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
+
 import {
   Box,
   chakra,
@@ -13,13 +14,12 @@ import {
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 
 import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
-
+import { CompletionEmailLabel } from './CompletionEmailLabel'
 import {
   formatEmailFieldLabel,
   formatNotifiedStepLabel,
 } from './utils/completionEmailLabels'
 import { CompletionEmailRecipients } from './utils/getCompletionEmailRecipients'
-import { CompletionEmailLabel } from './CompletionEmailLabel'
 
 const PREFIX =
   'features.adminForm.settings.emailNotifications.section.mrf.respondents'

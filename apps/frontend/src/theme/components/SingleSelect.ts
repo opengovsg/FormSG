@@ -25,7 +25,7 @@ export const parts = anatomy('singleselect')
 const itemBaseStyle: SystemStyleFunction = (props) => {
   const menuItemStyle = Menu.baseStyle?.(props).item ?? {}
   return merge(menuItemStyle, {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // oxlint-disable-next-line typescript/ban-ts-comment
     // @ts-ignore
     _selected: menuItemStyle._focus,
   })

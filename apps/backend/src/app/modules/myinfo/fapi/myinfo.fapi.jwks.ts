@@ -4,7 +4,6 @@ import { err, ok, Result, ResultAsync } from 'neverthrow'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { retrieveJsonContent } from '../../../utils/iac'
-
 import { MyInfoFapiConfigError } from './myinfo.fapi.errors'
 
 const logger = createLoggerWithLabel(module)

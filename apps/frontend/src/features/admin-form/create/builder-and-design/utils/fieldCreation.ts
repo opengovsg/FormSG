@@ -17,7 +17,6 @@ import {
   MYINFO_MOBILEFIELD_META,
   MYINFO_TEXTFIELD_META,
 } from '../constants'
-
 import { createShortTextColumn } from './columnCreation'
 
 /**

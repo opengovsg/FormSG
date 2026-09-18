@@ -7,13 +7,12 @@ import {
 } from '../../adminWorkflowStore'
 import { useIsWorkflowGuidedMode } from '../../hooks/useIsWorkflowGuidedMode'
 import { GuidedWrapUp } from '../../types'
-
+import { PeekCard } from './PeekCard'
 import {
   CompletionPeekMomentType,
   getCompletionPeekActionLabels,
   getCompletionPeekContent,
 } from './utils/completionPeekContent'
-import { PeekCard } from './PeekCard'
 
 export const GuidedSetupFinishedPeekCard = (): JSX.Element | null => {
   const { t } = useTranslation()

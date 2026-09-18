@@ -1,4 +1,4 @@
-/* eslint-disable no-loss-of-precision */
+/* oxlint-disable no-loss-of-precision */
 /**
  * DO NOT MODIFY THE DATA BELOW.
  *

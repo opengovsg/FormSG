@@ -8,7 +8,6 @@ import { isDev } from '../../../config/config'
 import { isSsoConfigured, sso } from '../../../config/features/sso.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { resolveAppUrl } from '../../../utils/urls'
-
 import { SsoCreateRedirectUrlError } from './auth-sso.errors'
 
 const logger = createLoggerWithLabel(module)

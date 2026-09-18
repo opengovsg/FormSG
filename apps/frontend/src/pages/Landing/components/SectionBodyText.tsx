@@ -1,7 +1,7 @@
 import { Box, BoxProps } from '@chakra-ui/react'
 
-import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 interface SectionBodyTextProps extends BoxProps {
   children: string

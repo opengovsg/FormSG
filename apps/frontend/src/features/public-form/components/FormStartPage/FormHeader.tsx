@@ -2,6 +2,7 @@ import { RefObject, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiLogOutCircle } from 'react-icons/bi'
 import { Waypoint } from 'react-waypoint'
+
 import {
   Box,
   Flex,
@@ -15,10 +16,10 @@ import { datadogLogs } from '@datadog/browser-logs'
 
 import { BxMenuAltLeft } from '~assets/icons/BxMenuAltLeft'
 import { BxsTimeFive } from '~assets/icons/BxsTimeFive'
-import { ThemeColorScheme } from '~theme/foundations/colours'
-import { noPrintCss } from '~utils/noPrintCss'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
+import { ThemeColorScheme } from '~theme/foundations/colours'
+import { noPrintCss } from '~utils/noPrintCss'
 
 import { FormHeaderSaveDraftButton } from '~features/public-form/components/FormStartPage/FormHeaderSaveDraftButton'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'

@@ -28,7 +28,6 @@ import {
   Refresh,
   SigningKey,
 } from '../spcp.oidc.client.types'
-
 import {
   CP_OIDC_NDI_DISCOVERY_ENDPOINT,
   CP_OIDC_NDI_JWKS_ENDPOINT,

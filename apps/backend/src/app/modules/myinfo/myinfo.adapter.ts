@@ -15,7 +15,6 @@ import {
 } from 'formsg-shared/types'
 
 import { createLoggerWithLabel } from '../../config/logger'
-
 import {
   formatAddress,
   formatBasicField,

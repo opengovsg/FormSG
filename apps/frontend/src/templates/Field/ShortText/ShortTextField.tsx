@@ -3,8 +3,8 @@
  */
 import { useFormContext } from 'react-hook-form'
 
-import { useTextValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
+import { useTextValidationRules } from '~utils/fieldValidation'
 
 import { PrefillMap } from '../../../features/public-form/components/FormFields/FormFields'
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'

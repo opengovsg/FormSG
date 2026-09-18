@@ -20,7 +20,6 @@ import {
   ResponseModeError,
   SubmissionNotFoundError,
 } from '../submission/submission.errors'
-
 import {
   ConfirmedPaymentNotFoundError,
   PaymentAccountInformationError,

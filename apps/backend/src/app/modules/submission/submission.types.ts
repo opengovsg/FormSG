@@ -20,7 +20,6 @@ import {
   FieldResponse,
   SingleAnswerFieldResponse,
 } from '../../../types/response'
-
 import { ParseVirusScannerLambdaPayloadError } from './submission.errors'
 
 export type AttachmentMetadata = Map<string, string>

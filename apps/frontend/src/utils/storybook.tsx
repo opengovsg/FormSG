@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+/* oxlint-disable react/only-export-components */
 import { useEffect } from 'react'
 import {
   createMemoryRouter,
@@ -6,6 +6,7 @@ import {
   Route,
   RouterProvider,
 } from 'react-router-dom'
+
 import { Box, BoxProps, Center, useDisclosure } from '@chakra-ui/react'
 import { Decorator } from '@storybook/react'
 import dayjs from 'dayjs'
@@ -13,12 +14,12 @@ import mockdate from 'mockdate'
 
 import { theme } from '~/theme'
 
-import { AuthContext } from '~contexts/AuthContext'
 import {
   EMERGENCY_CONTACT_KEY_PREFIX,
   FEATURE_TOUR_KEY_PREFIX,
   ROLLOUT_ANNOUNCEMENT_KEY_PREFIX,
 } from '~constants/localStorage'
+import { AuthContext } from '~contexts/AuthContext'
 
 import { AdminFormLayout } from '~features/admin-form/common/AdminFormLayout'
 import { BuilderAndDesignContext } from '~features/admin-form/create/builder-and-design/BuilderAndDesignContext'
@@ -139,7 +140,7 @@ export const AdminFormCreatePageDecorator: Decorator = (storyFn) => {
 export const mockDateDecorator: Decorator = (storyFn, { parameters }) => {
   mockdate.reset()
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // oxlint-disable-next-line react/rules-of-hooks
   useEffect(() => {
     return () => mockdate.reset()
   }, [])

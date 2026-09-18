@@ -4,7 +4,7 @@ import { Input } from './Input'
 
 export const Textarea = {
   variants: {
-    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    // oxlint-disable-next-line typescript/explicit-module-boundary-types
     outline: (props: StyleFunctionProps) => {
       return {
         ...Input.variants.outline(props).field,

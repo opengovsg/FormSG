@@ -1,5 +1,6 @@
 import { Trans, useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
+
 import {
   Badge,
   Flex,
@@ -14,10 +15,10 @@ import {
   Wrap,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { DownloadOptions } from '../../types'
 

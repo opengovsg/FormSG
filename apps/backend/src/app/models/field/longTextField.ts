@@ -1,7 +1,6 @@
 import { Schema } from 'mongoose'
 
 import { ILongTextFieldSchema } from '../../../types'
-
 import { TextValidationOptionsSchema } from './common/textValidationOptionsSchema'
 
 const createLongTextFieldSchema = () => {

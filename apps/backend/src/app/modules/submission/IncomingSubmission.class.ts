@@ -12,7 +12,6 @@ import {
   getLogicUnitPreventingSubmit,
   getVisibleFieldIds,
 } from '../../utils/logic-adaptor'
-
 import { ProcessingError, ValidateFieldError } from './submission.errors'
 import {
   FilteredResponse,

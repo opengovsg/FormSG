@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { BxsErrorCircle, BxsInfoCircle } from '~assets/icons'
@@ -9,7 +10,6 @@ import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { getLogicFieldLabel } from '../utils/getLogicFieldLabel'
-
 import { LogicBadge } from './LogicBadge'
 
 interface FieldLogicBadgeProps {

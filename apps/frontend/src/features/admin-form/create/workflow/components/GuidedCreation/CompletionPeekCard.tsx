@@ -2,14 +2,13 @@ import { useTranslation } from 'react-i18next'
 
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
-
+import { PeekCard, PeekCardActions } from './PeekCard'
 import {
   CompletionPeekMomentType,
   getCompletionPeekActionLabels,
   getCompletionPeekContent,
   isCompletionPeekTucked,
 } from './utils/completionPeekContent'
-import { PeekCard, PeekCardActions } from './PeekCard'
 
 /**
  * A moment plus the callbacks its actions need.
@@ -104,7 +103,7 @@ export const CompletionPeekCard = (
       case CompletionPeekMomentType.GuidedSetupFinished:
         return [{ label: labels.finish, onClick: props.onFinish }]
       default: {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         const _: never = props
         throw new Error('Unhandled completion peek moment.')
       }

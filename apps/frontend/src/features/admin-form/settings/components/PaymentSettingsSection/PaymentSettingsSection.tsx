@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink, useParams, useSearchParams } from 'react-router-dom'
+
 import {
   As,
   Box,
@@ -27,19 +28,18 @@ import {
 } from 'formsg-shared/types'
 
 import { BxsCheckCircle, BxsError, BxsInfoCircle } from '~assets/icons'
-import { GUIDE_STRIPE_ONBOARDING } from '~constants/links'
 import Checkbox from '~components/Checkbox'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Link from '~components/Link'
+import { GUIDE_STRIPE_ONBOARDING } from '~constants/links'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useEnv } from '~features/env/queries'
 
 import { useAdminFormPayments, useAdminFormSettings } from '../../queries'
 import { isPaymentCapableFormSettings } from '../../utils'
-
 import { BusinessInfoSection } from './BusinessInfoSection'
 import { GstToggleSection } from './GstToggleSection'
 import { usePaymentGuideLink } from './queries'

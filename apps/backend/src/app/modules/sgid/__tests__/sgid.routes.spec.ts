@@ -20,7 +20,6 @@ import {
 } from '../sgid.errors'
 import { SgidRouter } from '../sgid.routes'
 import { SgidService as RealSgidService } from '../sgid.service'
-
 import {
   MOCK_AUTH_CODE,
   MOCK_CODE_VERIFIER,

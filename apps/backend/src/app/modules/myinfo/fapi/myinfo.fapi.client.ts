@@ -4,7 +4,6 @@ import * as client from 'openid-client'
 import config from '../../../config/config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../../config/logger'
-
 import { MyInfoFapiConfigError } from './myinfo.fapi.errors'
 import { loadSecretKeys } from './myinfo.fapi.jwks'
 

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { Controller, RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, Skeleton } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
@@ -12,11 +13,6 @@ import {
   FormFieldDto,
 } from 'formsg-shared/types/field'
 
-import {
-  ACCEPTED_FILETYPES_SPREADSHEET,
-  GUIDE_EMAIL_RELIABILITY,
-} from '~constants/links'
-import { createBaseValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown'
 import type { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -25,6 +21,11 @@ import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
+import {
+  ACCEPTED_FILETYPES_SPREADSHEET,
+  GUIDE_EMAIL_RELIABILITY,
+} from '~constants/links'
+import { createBaseValidationRules } from '~utils/fieldValidation'
 
 import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
 import { getAttachmentSizeLimit } from '~features/admin-form/create/builder-and-design/utils/getAttachmentSizeLimit'
@@ -33,7 +34,6 @@ import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
-
 import { AttachmentStackedBar } from './AttachmentStackedBar'
 
 type EditAttachmentProps = EditFieldProps<AttachmentFieldBase>

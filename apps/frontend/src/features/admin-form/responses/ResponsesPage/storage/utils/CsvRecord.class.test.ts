@@ -7,7 +7,6 @@ import {
 } from '~features/admin-form/responses/constants'
 
 import { CsvRecordStatus } from '../types'
-
 import { CsvRecord } from './CsvRecord.class'
 
 describe('CsvRecord', () => {

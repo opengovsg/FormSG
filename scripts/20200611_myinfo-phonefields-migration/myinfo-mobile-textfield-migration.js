@@ -84,7 +84,7 @@ db.getCollection('forms').updateMany(
         'filter.myInfo.attr': 'mobileno',
       },
     ],
-  }
+  },
 )
 // !!!! END OF MAIN UPDATE SCRIPT !!!!
 

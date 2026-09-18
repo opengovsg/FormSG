@@ -33,7 +33,6 @@ import {
 } from '../form/form.errors'
 import { SGIDMyInfoData } from '../sgid/sgid.adapter'
 import { ProcessedFieldResponse } from '../submission/submission.types'
-
 import { internalAttrListToScopes, MyInfoData } from './myinfo.adapter'
 import {
   MYINFO_CONSENT_PAGE_PURPOSE,

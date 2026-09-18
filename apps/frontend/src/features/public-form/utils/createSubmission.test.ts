@@ -6,7 +6,6 @@ import { FormFieldValues } from '~templates/Field'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
 
 import { FieldIdToQuarantineKeyType } from '../PublicFormService'
-
 import { createResponsesV4 } from './createSubmission'
 
 const fieldId = (n: number) => n.toString(16).padStart(24, '0')

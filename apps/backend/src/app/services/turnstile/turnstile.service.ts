@@ -3,7 +3,6 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { turnstileConfig } from '../../config/features/turnstile.config'
 import { createLoggerWithLabel } from '../../config/logger'
-
 import { TURNSTILE_CAPTCHA_VERIFY_URL } from './turnstile.constants'
 import {
   MissingTurnstileError,

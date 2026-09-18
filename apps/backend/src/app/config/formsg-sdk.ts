@@ -1,9 +1,9 @@
 import formsgSdkPackage from '@opengovsg/formsg-sdk'
 import * as vfnConstants from 'formsg-shared/utils/verification'
 
+import { formsgSdkMode } from './config'
 import { verifiedFieldsConfig } from './features/verified-fields.config'
 import { webhooksAndVerifiedContentConfig } from './features/webhook-verified-content.config'
-import { formsgSdkMode } from './config'
 
 const formsgSdk = formsgSdkPackage({
   webhookSecretKey: webhooksAndVerifiedContentConfig.signingSecretKey,

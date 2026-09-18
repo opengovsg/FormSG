@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   Drawer,
@@ -22,11 +23,11 @@ import { Workspace } from 'formsg-shared/types/workspace'
 
 import { AdminNavBar } from '~/app/AdminNavBar/AdminNavBar'
 
-import { useIsMobile } from '~hooks/useIsMobile'
-import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
+import { useIsMobile } from '~hooks/useIsMobile'
+import { getBannerProps } from '~utils/getBannerProps'
 
 import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'

@@ -1,18 +1,17 @@
 import { ObjectId } from 'bson'
 
 import {
-  getIncompleteStepNumbers,
-  isStepComplete,
-  mustWorkflowBeComplete,
-} from '../workflow-step-completion'
-
-import {
   BasicField,
   FormFieldDto,
   FormStatus,
   FormWorkflowStep,
   WorkflowType,
 } from '../../types'
+import {
+  getIncompleteStepNumbers,
+  isStepComplete,
+  mustWorkflowBeComplete,
+} from '../workflow-step-completion'
 
 describe('mustWorkflowBeComplete', () => {
   it.each<[FormStatus | undefined, boolean]>([

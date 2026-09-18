@@ -12,7 +12,6 @@ import {
 import { bounceLifeSpan } from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
-
 import {
   hasEmailBeenDelivered,
   hasEmailBounced,

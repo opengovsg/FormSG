@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BiLockAlt, BiMailSend } from 'react-icons/bi'
+
 import { Stack, UnorderedList } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 import { values } from 'lodash'

@@ -15,7 +15,6 @@ import {
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
 import * as AiModel from '../ai-model'
-
 import { VALID_ALL_FIELDS_INCLUDED_RESPONSE } from './admin-form.assistance.service.spec.constants'
 
 const MockedAiModel = jest.mocked(AiModel)

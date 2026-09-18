@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import {
   Container,
   Divider,
@@ -23,7 +24,6 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { DecryptedSubmission } from '../../AdminSubmissionsService'
 import { useStorageResponsesContext } from '../../ResponsesPage/storage'
 import { useAllSubmissionData } from '../queries'
-
 import { EmptyChartsContainer } from './components/EmptyChartsContainer'
 import { FIELD_TO_CHART, FormChart } from './components/FormChart'
 import WordCloud, { WordCloudProps } from './components/WordCloud'

@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next'
+
 import { Box, forwardRef } from '@chakra-ui/react'
 
 import { FormColorTheme, Language } from 'formsg-shared/types'
 
+import { MarkdownText } from '~components/MarkdownText'
 import { useMdComponents } from '~hooks/useMdComponents'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
-import { MarkdownText } from '~components/MarkdownText'
 
 import { SectionFieldContainerProps } from './SectionFieldContainer'
 import { useSectionColor } from './useSectionColor'

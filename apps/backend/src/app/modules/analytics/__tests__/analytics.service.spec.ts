@@ -17,7 +17,6 @@ import {
   getSubmissionCount,
   getUserCount,
 } from '../analytics.service'
-
 import { AnalyticsTestError } from './analytics.error'
 
 const FormModel = getFormModel(mongoose)

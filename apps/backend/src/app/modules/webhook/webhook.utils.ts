@@ -7,7 +7,6 @@ import { err, ok, Result } from 'neverthrow'
 
 import { TIMEZONE } from '../../constants/timezone'
 import { randomUniformInt } from '../../utils/random-uniform'
-
 import { MAX_DELAY_SECONDS, RETRY_INTERVALS } from './webhook.constants'
 import { WebhookNoMoreRetriesError } from './webhook.errors'
 

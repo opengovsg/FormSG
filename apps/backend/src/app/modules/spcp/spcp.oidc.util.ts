@@ -5,7 +5,6 @@ import { pick } from 'lodash'
 import promiseRetry from 'promise-retry'
 
 import { createLoggerWithLabel } from '../../config/logger'
-
 import { InvalidIdTokenError } from './spcp.oidc.client.errors'
 import {
   CPJWTVerifyResult,
@@ -141,7 +140,7 @@ export const parseSub = (sub: string): ParsedSub | InvalidIdTokenError => {
       const pair = keyValuePair.split('=')
       if (pair.length !== 2) {
         // Error thrown is caught in catch block
-        // eslint-disable-next-line typesafe/no-throw-sync-func
+        // oxlint-disable-next-line typesafe/no-throw-sync-func
         throw new Error()
       }
       return {

@@ -8,7 +8,6 @@ import type {
 
 import { azureOpenAIConfig } from '../../../config/features/azureopenai.config'
 import { createLoggerWithLabel } from '../../../config/logger'
-
 import {
   ModelGetClientFailureError,
   ModelResponseFailureError,

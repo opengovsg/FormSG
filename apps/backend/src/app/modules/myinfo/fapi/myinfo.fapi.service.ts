@@ -7,7 +7,6 @@ import * as client from 'openid-client'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { DatabaseError } from '../../core/core.errors'
 import { MyInfoData } from '../myinfo.adapter'
-
 import {
   requestedAttrsToScopeString,
   userInfoToPersonResponse,

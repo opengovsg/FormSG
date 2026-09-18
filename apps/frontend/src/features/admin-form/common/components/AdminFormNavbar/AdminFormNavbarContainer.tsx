@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom'
+
 import { useDisclosure } from '@chakra-ui/react'
 
 import { FormStatus } from 'formsg-shared/types'
@@ -9,7 +10,6 @@ import { ShareFormModal } from '~features/admin-form/share'
 
 import { useAdminForm, useAdminFormCollaborators } from '../../queries'
 import CollaboratorModal from '../CollaboratorModal'
-
 import { AdminFormNavbar } from './AdminFormNavbar'
 
 const useAdminFormNavbar = () => {

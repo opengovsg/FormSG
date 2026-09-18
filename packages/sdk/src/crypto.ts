@@ -1,15 +1,6 @@
 import axios from 'axios'
 import nacl from 'tweetnacl'
 
-import {
-  areAttachmentFieldIdsValid,
-  convertEncryptedAttachmentToFileContent,
-  decryptContent,
-  encryptMessage,
-  verifySignedMessage,
-} from './util/crypto'
-import { decodeBase64, decodeUTF8, encodeUTF8 } from './util/encoding'
-import { determineIsFormFields } from './util/validate'
 import CryptoBase from './crypto-base'
 import { AttachmentDecryptionError, MissingPublicKeyError } from './errors'
 import {
@@ -22,6 +13,15 @@ import {
   EncryptedContent,
   FormField,
 } from './types'
+import {
+  areAttachmentFieldIdsValid,
+  convertEncryptedAttachmentToFileContent,
+  decryptContent,
+  encryptMessage,
+  verifySignedMessage,
+} from './util/crypto'
+import { decodeBase64, decodeUTF8, encodeUTF8 } from './util/encoding'
+import { determineIsFormFields } from './util/validate'
 
 export default class Crypto extends CryptoBase {
   signingPublicKey?: string
@@ -39,7 +39,7 @@ export default class Crypto extends CryptoBase {
    * @returns The encrypted basestring.
    */
   encrypt = (
-    msg: any,
+    msg: unknown,
     encryptionPublicKey: string,
     signingPrivateKey?: string
   ): EncryptedContent => {

@@ -10,10 +10,9 @@ import * as MailErrors from '../../services/mail/mail.errors'
 import { HashingError } from '../../utils/hash'
 import * as CoreErrors from '../core/core.errors'
 import * as UserErrors from '../user/user.errors'
-
+import * as AuthErrors from './auth.errors'
 import * as AuthOneErrors from './one/auth-one.errors'
 import * as AuthSsoErrors from './sso/auth-sso.errors'
-import * as AuthErrors from './auth.errors'
 
 const logger = createLoggerWithLabel(module)
 

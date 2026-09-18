@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronRight } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
+
 import {
   Box,
   Divider,
@@ -24,14 +25,14 @@ import { StatusCodes } from 'http-status-codes'
 import { SUPPORT_FORM_LINK } from 'formsg-shared/constants'
 import { SgidPublicOfficerEmployment } from 'formsg-shared/types/auth'
 
+import Button from '~components/Button'
+import { ModalCloseButton } from '~components/Modal'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE, LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
 import { ApiService, HttpError } from '~services/ApiService'
-import Button from '~components/Button'
-import { ModalCloseButton } from '~components/Modal'
 
 import { useUser } from '~features/user/queries'
 
@@ -153,7 +154,7 @@ export const SelectProfilePage = (): JSX.Element => {
       errorDisclosure.onOpen()
       setErrorContext(MODAL_ERRORS.NO_WORKEMAIL)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [profilesResponse.data?.profiles.length])
 
   const handleSetProfile = async (profile: SgidPublicOfficerEmployment) => {

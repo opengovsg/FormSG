@@ -8,6 +8,7 @@ import {
   UseFormReturn,
   useFormState,
 } from 'react-hook-form'
+
 import {
   Box,
   Flex,
@@ -30,12 +31,12 @@ import {
 } from 'formsg-shared/types'
 import { formatMyinfoDate } from 'formsg-shared/utils/dates'
 
-import { REQUIRED_ERROR } from '~constants/validation'
-import { createChildrenValidationRules } from '~utils/fieldValidation'
 import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
+import { REQUIRED_ERROR } from '~constants/validation'
+import { createChildrenValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import {
@@ -156,7 +157,7 @@ interface ChildrenBodyProps {
   myInfoChildrenBirthRecords?: MyInfoChildData
   isSubmitting: boolean
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   formContext: UseFormReturn<ChildrenCompoundFieldInputs, any>
   error: FieldError[] | undefined
 }

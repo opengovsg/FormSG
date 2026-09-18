@@ -3,7 +3,6 @@ import { Meta, StoryFn } from '@storybook/react'
 import { BasicField } from 'formsg-shared/types/field'
 
 import { SectionFieldSchema } from '../types'
-
 import {
   SectionField as SectionFieldComponent,
   SectionFieldProps,

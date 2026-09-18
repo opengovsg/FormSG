@@ -1,5 +1,6 @@
 import { Suspense, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
+
 import {
   Box,
   Center,
@@ -31,7 +32,6 @@ import {
 } from '../components'
 import { PaymentHeader } from '../components/PaymentHeader'
 import { useGetPaymentInfo } from '../queries'
-
 import { GenericMessageBlock, StripePaymentBlock } from './components'
 import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'
@@ -233,7 +233,7 @@ const StripePaymentContainer = ({
         )
       default: {
         // Force TS to emit an error if the cases above are not exhaustive
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // oxlint-disable-next-line typescript/no-unused-vars
         const exhaustiveCheck: never = viewStates
         throw new Error(`Undefined view type: ${viewStates}`)
       }

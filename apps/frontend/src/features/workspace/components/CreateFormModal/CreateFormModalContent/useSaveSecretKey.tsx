@@ -6,6 +6,7 @@ import {
   useState,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { useClipboard } from '@chakra-ui/react'
 import dedent from 'dedent'
 import FileSaver from 'file-saver'

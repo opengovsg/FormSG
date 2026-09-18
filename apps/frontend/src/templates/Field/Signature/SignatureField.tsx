@@ -5,6 +5,7 @@ import {
   useFormContext,
   useFormState,
 } from 'react-hook-form'
+
 import { Box, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 import getStroke from 'perfect-freehand'
 
@@ -16,10 +17,10 @@ import {
   SIGNATURE_STROKE_THINNING,
 } from 'formsg-shared/utils/signature'
 
-import { createSignatureValidationRules } from '~utils/fieldValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import { createSignatureValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps } from '../FieldContainer'
 import {

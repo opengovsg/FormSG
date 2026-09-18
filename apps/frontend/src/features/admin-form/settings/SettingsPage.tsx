@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BiCodeBlock, BiCog, BiDollar, BiKey, BiMailSend } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
 import { useNavigate, useParams } from 'react-router-dom'
+
 import {
   Box,
   Flex,
@@ -20,7 +21,6 @@ import { useDraggable } from '~hooks/useDraggable'
 import { useUser } from '~features/user/queries'
 
 import { useAdminFormCollaborators } from '../common/queries'
-
 import { SettingsTab } from './components/SettingsTab'
 import { useAdminFormSettings } from './queries'
 import { SettingsAuthPage } from './SettingsAuthPage'

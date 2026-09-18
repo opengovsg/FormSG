@@ -1,4 +1,6 @@
 import keyBy from 'lodash/keyBy'
+
+import { Language } from '../../../types'
 import {
   BasicField,
   MyInfoAttribute,
@@ -8,12 +10,11 @@ import {
 } from '../../../types/field'
 import { myInfoCountries } from './myinfo-countries'
 import { myInfoDialects } from './myinfo-dialects'
+import { myInfoHdbTypes } from './myinfo-hdb-types'
+import { myInfoHousingTypes } from './myinfo-housing-types'
 import { myInfoNationalities } from './myinfo-nationalities'
 import { myInfoOccupations } from './myinfo-occupations'
 import { myInfoRaces } from './myinfo-races'
-import { myInfoHousingTypes } from './myinfo-housing-types'
-import { myInfoHdbTypes } from './myinfo-hdb-types'
-import { Language } from '../../../types'
 
 export * from './myinfo-countries'
 export * from './myinfo-dialects'

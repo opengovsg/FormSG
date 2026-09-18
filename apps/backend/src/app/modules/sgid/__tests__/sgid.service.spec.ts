@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* oxlint-disable typescript/ban-ts-comment */
 import { generatePkcePair, SgidClient } from '@opengovsg/sgid-client'
 import { MyInfoAttribute } from 'formsg-shared/types'
 import fs from 'fs'
@@ -15,7 +15,6 @@ import {
   SgidVerifyJwtError,
 } from '../sgid.errors'
 import { SgidServiceClass } from '../sgid.service'
-
 import {
   MOCK_ACCESS_TOKEN,
   MOCK_AUTH_CODE,

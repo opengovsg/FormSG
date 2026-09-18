@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+
 import {
   Box,
   Flex,
@@ -13,8 +14,8 @@ import { PaymentElement, useElements, useStripe } from '@stripe/react-stripe-js'
 import { GetPaymentInfoDto } from 'formsg-shared/types'
 import { FormColorTheme } from 'formsg-shared/types/form'
 
-import { useBrowserStm } from '~hooks/payments'
 import Button from '~components/Button'
+import { useBrowserStm } from '~hooks/payments'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 

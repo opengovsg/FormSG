@@ -5,7 +5,7 @@
 // when the submission is initially created (i.e. the workflow is started),
 
 // BEFORE
-// COUNT existing number of MRF submissions with no workflow key 
+// COUNT existing number of MRF submissions with no workflow key
 db.submissions.aggregate([
   {
     $match: {

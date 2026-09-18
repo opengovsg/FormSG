@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiLogInCircle } from 'react-icons/bi'
+
 import { Box, Stack } from '@chakra-ui/react'
 
 import {
@@ -11,8 +12,8 @@ import { FormAuthType } from 'formsg-shared/types/form'
 
 import InlineMessage from '~/components/InlineMessage'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { usePublicAuthMutations } from '~features/public-form/mutations'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'

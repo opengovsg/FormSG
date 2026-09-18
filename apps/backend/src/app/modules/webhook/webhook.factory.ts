@@ -1,5 +1,4 @@
 import { webhooksAndVerifiedContentConfig } from '../../config/features/webhook-verified-content.config'
-
 import { startWebhookConsumer } from './webhook.consumer'
 import { WebhookProducer } from './webhook.producer'
 import * as WebhookService from './webhook.service'

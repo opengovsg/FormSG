@@ -1,6 +1,7 @@
 import { forwardRef, useMemo } from 'react'
 import { Controller, get, useFormContext, useFormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   CheckboxGroup as ChakraCheckboxGroup,
@@ -11,16 +12,15 @@ import {
 
 import { FormColorTheme, Language } from 'formsg-shared/types'
 
-import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
-import { useCheckboxValidationRules } from '~utils/fieldValidation'
-import { getFieldOptionsInSelectedLanguage } from '~utils/multiLanguage'
 import Checkbox from '~components/Checkbox'
 import { CheckboxProps } from '~components/Checkbox/Checkbox'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
+import { useCheckboxValidationRules } from '~utils/fieldValidation'
+import { getFieldOptionsInSelectedLanguage } from '~utils/multiLanguage'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { CheckboxFieldInputs, CheckboxFieldSchema } from '../types'
-
 import {
   CHECKBOX_OTHERS_INPUT_KEY,
   CHECKBOX_OTHERS_INPUT_VALUE,

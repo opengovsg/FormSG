@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
+
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
 import { FormDto } from 'formsg-shared/types/form'
@@ -8,7 +9,6 @@ import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnable
 import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 import { DownloadReceiptBlock } from '../../../public-form/components/FormPaymentPage/stripe/components'
-
 import { paymentTypeSelection } from './payment.utils'
 
 export interface PaymentEndPageBlockProps {

@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+
 import {
   Box,
   Container,
@@ -16,8 +17,8 @@ import { AppPublicHeader } from '~/app/AppPublicHeader'
 
 import { FCC } from '~typings/react'
 
-import { OSS_README } from '~constants/links'
 import Link from '~components/Link'
+import { OSS_README } from '~constants/links'
 
 interface listItemMarkerProps {
   prependSequenceMarker?: string

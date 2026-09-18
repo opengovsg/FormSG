@@ -10,7 +10,6 @@ import { errAsync, ResultAsync } from 'neverthrow'
 
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
-
 import {
   SnapshotAccessDeniedError,
   SnapshotDataIntegrityError,

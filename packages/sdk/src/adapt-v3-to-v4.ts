@@ -1,4 +1,3 @@
-import { generateUUID } from './util/crypto'
 import {
   ADDRESS_SUBFIELD_KEYS,
   GENERIC_STRING_FIELD_TYPES,
@@ -21,6 +20,7 @@ import {
   VerifiableAnswerV4,
   YesNoAnswerV4,
 } from './types-v4'
+import { generateUUID } from './util/crypto'
 
 const convertStringAnswer = (answer: string): StringAnswerV4 => {
   return { value: answer }
@@ -138,6 +138,7 @@ export const deriveQuestionFromMeta = (meta?: FormFieldMeta): string =>
   meta?.myInfo ? `[Myinfo] ${meta.question ?? ''}` : (meta?.question ?? '')
 
 // since v3 answer types when decrypted in sdk are not well-typed, we do best-effort conversion based on field type
+// oxlint-disable-next-line typescript/no-explicit-any -- widening to unknown requires an `as X` cast at every one of the ~9 branches below; real fix is giving FormFieldsV3.answer a proper per-fieldType union
 const convertAnswer = (fieldType: FieldType, answer: any): AnswerV4 => {
   if (GENERIC_STRING_FIELD_TYPES.has(fieldType)) {
     return convertStringAnswer(answer as string)

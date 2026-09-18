@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
+
 import { Flex, Text } from '@chakra-ui/react'
 
-import { OGP_POSTMAN } from '~constants/links'
 import Link from '~components/Link'
+import { OGP_POSTMAN } from '~constants/links'
 
 import { EmptyResponsesSvgr } from './EmptyResponsesSvgr'
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
+
 import { Box, FormControl, Skeleton, Stack } from '@chakra-ui/react'
 
 import { isMobilePhoneNumber } from 'formsg-shared/utils/phone-num-validation'

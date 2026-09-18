@@ -1,6 +1,5 @@
 import { BasicField, FormFieldDto } from '../types/field'
 import { FormStatus, FormWorkflowStep, WorkflowType } from '../types/form'
-
 import { checkIsOptionsMismatched } from './options-recipients-map-validation'
 
 export const mustWorkflowBeComplete = ({

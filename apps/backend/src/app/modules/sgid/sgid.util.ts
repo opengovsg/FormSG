@@ -5,7 +5,6 @@ import { err, ok, Result } from 'neverthrow'
 import { IFormSchema, SgidFieldTitle } from '../../../types'
 import { AuthTypeMismatchError } from '../form/form.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
-
 import {
   SgidForm,
   SGIDJwtAccessPayload,

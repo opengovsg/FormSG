@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BiX } from 'react-icons/bi'
+
 import { VisuallyHidden } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'

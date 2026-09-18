@@ -71,7 +71,7 @@ const validateS3BucketUrl = (
     region,
   }: { isDev: boolean; hasTrailingSlash: boolean; region: string },
 ) => {
-  /* eslint-disable typesafe/no-throw-sync-func
+  /* oxlint-disable typesafe/no-throw-sync-func
     --------
     The convict package expects format validation functions to throw Errors */
   if (!validator.isURL(val, { require_tld: !isDev })) {
@@ -97,7 +97,7 @@ const validateS3BucketUrl = (
       `region should be ${region}, or url should be for Cloudflare R2`,
     )
   }
-  /* eslint-enable typesafe/no-throw-sync-func */
+  /* oxlint-enable typesafe/no-throw-sync-func */
 }
 
 // If the default value does not match the format specified, the configuration built from this schema

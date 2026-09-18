@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box, Flex } from '@chakra-ui/react'
 
 import InlineMessage from '~components/InlineMessage'
@@ -13,7 +14,6 @@ import {
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
-
 import { FormBuilder } from './FormBuilder'
 
 interface BuilderAndDesignContentProps {

@@ -26,7 +26,6 @@ import { getOidcService } from '../spcp/spcp.oidc.service'
 import { MrfJwtPayload } from '../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
 import * as SubmissionService from '../submission/submission.service'
-
 import { MrfJwtValidationError } from './verification.errors'
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'
@@ -279,24 +278,23 @@ export const _handleGenerateOtp: ControllerHandler<
           logMeta,
           saltRounds: SALT_ROUNDS,
         }).andThen(({ otp, hashedOtp, otpPrefix }) =>
-          // Step 5: Send Otp
-          {
-            return VerificationService.sendNewOtp({
-              fieldId,
-              hashedOtp,
-              otp,
+        // Step 5: Send Otp
+        {
+          return VerificationService.sendNewOtp({
+            fieldId,
+            hashedOtp,
+            otp,
+            otpPrefix,
+            recipient: answer,
+            transactionId,
+            senderIp,
+          }) // Return the required data for next steps.
+            .map((updatedTransaction) => ({
+              updatedTransaction,
+              form,
               otpPrefix,
-              recipient: answer,
-              transactionId,
-              senderIp,
-            }) // Return the required data for next steps.
-              .map((updatedTransaction) => ({
-                updatedTransaction,
-                form,
-                otpPrefix,
-              }))
-          },
-        ),
+            }))
+        }),
       )
       .map(({ otpPrefix }) => {
         return res.status(StatusCodes.CREATED).json({ otpPrefix })

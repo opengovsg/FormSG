@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
 import { useParams } from 'react-router-dom'
+
 import { formatInTimeZone } from 'date-fns-tz'
 
 import { DateString } from 'formsg-shared/types'
@@ -25,7 +26,6 @@ import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedb
 
 import { updateFormPayments } from '../common/AdminFormPageService'
 import { adminFormKeys } from '../common/queries'
-
 import { adminFormSettingsKeys } from './queries'
 import {
   createStripeAccount,

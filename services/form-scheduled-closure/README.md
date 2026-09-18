@@ -5,7 +5,7 @@ Periodic sweep that closes FormSG forms whose admin-set expiry date has passed.
 ## Why this exists
 
 A form stops accepting responses when an admin closes it by hand or when it hits
-its response limit. Neither covers the common case of a *deadline*. Admins can
+its response limit. Neither covers the common case of a _deadline_. Admins can
 now set an expiry date in Settings → General, but nothing in the system runs
 code at that instant — so without this job, a form whose deadline passes while
 nobody visits it keeps reporting itself as open.
@@ -22,7 +22,7 @@ Store and calls one protected endpoint:
 - `POST /api/v3/cron/close-expired-forms`
 
 which finds public forms with `closeAt <= now`, flips them to private, and
-reports which ones it closed. Everything that decides *what* to close lives in
+reports which ones it closed. Everything that decides _what_ to close lives in
 the backend so it can reuse the existing models, logging and mailer.
 
 The endpoint caps each sweep at 500 forms and returns `hasMore`. The Lambda
@@ -32,13 +32,13 @@ backlog after an outage drains without any single request being unbounded.
 ### Sweep interval and lag
 
 The schedule interval is the worst-case lag between a form's deadline and its
-*status* flipping to closed. It runs every minute, the floor EventBridge allows,
+_status_ flipping to closed. It runs every minute, the floor EventBridge allows,
 so an admin who published a deadline to the minute sees the form's status agree
 with it within one.
 
 Sweeping faster is cheap: when nothing is due, a run is one query against the
 partial `{ status, closeAt }` index that matches nothing. What it buys, though,
-is only how quickly the *status* catches up. Late responses are already rejected
+is only how quickly the _status_ catches up. Late responses are already rejected
 at the instant of the deadline: `isFormPublic` in `form.service.ts` evaluates
 `closeAt` on every load and submit rather than trusting `status`. So a shorter
 interval tightens what the admin sees, not what respondents can do.
@@ -63,10 +63,10 @@ pnpm run sam-deploy --config-env stg
 CI does this via `.github/workflows/deploy-scheduled-closure-lambda.yml`, which
 is invoked per environment the same way pdf-gen is:
 
-| Environment | Trigger | Artifact bucket |
-| --- | --- | --- |
-| `stg-alt`, `stg-alt2`, `stg-alt3`, `uat` | push to the branch of that name | provisioned |
-| `stg`, `production` | `release.yml` (manual dispatch), which fans out to both | provisioned |
+| Environment                              | Trigger                                                 | Artifact bucket |
+| ---------------------------------------- | ------------------------------------------------------- | --------------- |
+| `stg-alt`, `stg-alt2`, `stg-alt3`, `uat` | push to the branch of that name                         | provisioned     |
+| `stg`, `production`                      | `release.yml` (manual dispatch), which fans out to both | provisioned     |
 
 To try a feature branch end to end, push it to `stg-alt3`.
 
@@ -104,7 +104,7 @@ secret's value is set per stack with:
 pulumi config set --secret CRON_SCHEDULED_CLOSURE_API_SECRET "$(openssl rand -hex 32)" --stack stg-alt3
 ```
 
-This is the *same* parameter the backend reads for its own
+This is the _same_ parameter the backend reads for its own
 `CRON_SCHEDULED_CLOSURE_API_SECRET` env var — one copy, read by both sides, so
 they cannot drift. (The payment cron does it differently: a pulumi-managed
 parameter for the backend plus a separate hand-created blob for its lambda. A
@@ -157,5 +157,5 @@ did receive an email.
 ## Manual reopen
 
 Reopening a form whose expiry has already lapsed clears `closeAt`, so the sweep
-does not immediately re-close it. A *future* expiry survives a reopen, letting an
+does not immediately re-close it. A _future_ expiry survives a reopen, letting an
 admin schedule a deadline on a form that is not open yet. See PRD Q5.

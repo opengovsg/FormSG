@@ -8,6 +8,7 @@ import {
   useResizeColumns,
   useTable,
 } from 'react-table'
+
 import {
   BadgeProps,
   Flex,
@@ -38,7 +39,6 @@ import {
 } from '~features/admin-form/responses/constants'
 
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
-
 import { SendReminderButton } from './SendReminderButton'
 import { getNetAmount } from './utils'
 

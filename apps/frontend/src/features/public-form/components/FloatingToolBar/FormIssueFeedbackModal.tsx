@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
+
 import {
   chakra,
   FormControl,
@@ -18,16 +19,16 @@ import isEmail from 'validator/lib/isEmail'
 
 import { BasicField, SubmitFormIssueBodyDto } from 'formsg-shared/types'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
-import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
-import { useIsMobile } from '~hooks/useIsMobile'
-import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 import Textarea from '~components/Textarea'
+import { INVALID_EMAIL_ERROR, REQUIRED_ERROR } from '~constants/validation'
+import { useIsMobile } from '~hooks/useIsMobile'
+import { useToast } from '~hooks/useToast'
+import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { useSubmitFormIssueMutations } from '~features/public-form/mutations'
 

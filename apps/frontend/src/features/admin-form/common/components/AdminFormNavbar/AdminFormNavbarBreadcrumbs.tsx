@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { BiHomeAlt } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
+
 import { Icon, Skeleton, Stack, Text } from '@chakra-ui/react'
 
+import Link from '~components/Link'
 import { DASHBOARD_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
-import Link from '~components/Link'
 
 import { AdminFormNavbarProps } from './AdminFormNavbar'
 

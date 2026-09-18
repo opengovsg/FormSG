@@ -12,7 +12,6 @@ import {
   SignatureVectorArray,
 } from '../types/field'
 import { TableRow } from '../types/response'
-
 import { removeAt } from './immutable-array-fns'
 import { convertToSignatureStringOutput } from './signature'
 

@@ -50,7 +50,6 @@ import {
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
 } from '../submission/submission.types'
-
 import {
   MyInfoFapiAuthRequestError,
   MyInfoFapiConfigError,

@@ -1,8 +1,8 @@
 import { ChangeEventHandler, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { GUIDE_WEBHOOKS } from '~constants/links'
 import Toggle from '~components/Toggle'
+import { GUIDE_WEBHOOKS } from '~constants/links'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'

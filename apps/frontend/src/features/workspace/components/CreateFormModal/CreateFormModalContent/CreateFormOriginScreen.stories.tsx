@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
+
 import { Modal, ModalContent } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 import { expect, screen, userEvent } from '@storybook/test'
@@ -7,14 +8,13 @@ import { expect, screen, userEvent } from '@storybook/test'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form/form'
 
-import { fullScreenDecorator } from '~utils/storybook'
 import { ModalCloseButton } from '~components/Modal'
+import { fullScreenDecorator } from '~utils/storybook'
 
 import {
   CreateFormWizardContextReturn,
   CreateFormWizardInputProps,
 } from '../CreateFormWizardContext'
-
 import { CreateFormOriginScreen } from './CreateFormOriginScreen'
 
 export default {

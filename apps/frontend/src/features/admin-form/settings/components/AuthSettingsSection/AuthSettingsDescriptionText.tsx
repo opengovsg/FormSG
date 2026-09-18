@@ -1,7 +1,7 @@
 import { Text } from '@chakra-ui/react'
 
-import { GUIDE_SPCP_ESRVCID } from '~constants/links'
 import Link from '~components/Link'
+import { GUIDE_SPCP_ESRVCID } from '~constants/links'
 
 export const AuthSettingsDescriptionText = () => {
   return (

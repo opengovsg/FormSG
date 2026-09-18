@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from 'react-query'
+
 import { ChakraProvider } from '@chakra-ui/react'
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { act, render, screen, waitFor } from '@testing-library/react'
@@ -16,7 +17,6 @@ import { theme } from '~theme/index'
 
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import { AdminEditWorkflowState } from '../../types'
-
 import { WelcomeCard } from './WelcomeCard'
 
 let flagWrites: unknown[] = []

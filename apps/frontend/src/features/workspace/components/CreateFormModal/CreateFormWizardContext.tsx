@@ -1,4 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
+/* oxlint-disable react/only-export-components */
 import { createContext, useContext } from 'react'
 import { UseFormHandleSubmit, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -9,8 +9,8 @@ import {
 } from 'formsg-shared/types/form/form'
 import { CheckboxFieldResponsesV3 } from 'formsg-shared/types/response-v3'
 
-import formsgSdk from '~utils/formSdk'
 import { CheckboxFieldValues } from '~templates/Field'
+import formsgSdk from '~utils/formSdk'
 
 export enum CreateFormFlowStates {
   Landing = 'landing',

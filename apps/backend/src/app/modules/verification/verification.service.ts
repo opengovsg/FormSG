@@ -28,7 +28,6 @@ import {
 } from '../core/core.errors'
 import { FormNotFoundError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
-
 import {
   FieldNotFoundInTransactionError,
   MissingHashDataError,

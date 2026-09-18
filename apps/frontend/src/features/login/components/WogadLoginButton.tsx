@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
+
 import { Flex, Text } from '@chakra-ui/react'
 import { delay } from 'lodash'
 
+import Button from '~components/Button'
 import { useToast } from '~hooks/useToast'
 import { getWogadAuthUrl } from '~services/AuthService'
-import Button from '~components/Button'
 
 export const WogadLoginButton = (): JSX.Element | null => {
   const [isRetryDelayWindow, setRetryDelayWindow] = useState(false)

@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next'
+
 import { ModalBody, ModalHeader, Stack } from '@chakra-ui/react'
 
 import { useAdminFormCollaborators } from '~features/admin-form/common/queries'
 
 import { useCollaboratorWizard } from '../CollaboratorWizardContext'
-
 import { AddCollaboratorInput } from './AddCollaboratorInput'
 import { CollaboratorList } from './CollaboratorList'
 

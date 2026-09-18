@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Stack } from '@chakra-ui/react'
 import { merge } from 'lodash'
 
@@ -16,7 +17,6 @@ import {
 } from '../../../adminLogicStore'
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
 import { EditLogicInputs } from '../../../types'
-
 import {
   AddConditionDivider,
   EditConditionBlock,
@@ -176,7 +176,7 @@ export const EditLogicBlock = ({
 
     hasSubmittedForPendingSwitch.current = true
     handleSubmit()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [pendingSwitchTo])
 
   return (

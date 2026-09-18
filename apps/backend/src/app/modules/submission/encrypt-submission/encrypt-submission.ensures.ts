@@ -16,9 +16,9 @@ const logger = createLoggerWithLabel(module)
 
 type FormSubmissionPipelineContext = {
   // FIXME: Replace with actual request and response types
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   req: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   res: any
   logMeta: CustomLoggerParams['meta']
   form: IPopulatedForm

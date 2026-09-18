@@ -7,7 +7,6 @@ import {
   PublicFormContext,
   PublicFormContextProps,
 } from '../../PublicFormContext'
-
 import { FloatingToolBar } from './FloatingToolbar'
 
 export default {

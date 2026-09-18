@@ -2,24 +2,24 @@ import { useEffect, useMemo, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiShow, BiX } from 'react-icons/bi'
+
 import { FormControl, Stack, Text } from '@chakra-ui/react'
 import get from 'lodash/get'
 
 import { FormFieldDto } from 'formsg-shared/types/field'
 import { LogicType } from 'formsg-shared/types/form'
 
-import { useWatchDependency } from '~hooks/useWatchDependency'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import InlineMessage from '~components/InlineMessage'
 import Textarea from '~components/Textarea'
+import { useWatchDependency } from '~hooks/useWatchDependency'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditLogicInputs } from '~features/admin-form/create/logic/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { getLogicFieldLabel } from '../../utils/getLogicFieldLabel'
-
 import { BlockLabelText } from './BlockLabelText'
 
 interface ThenShowBlockProps {

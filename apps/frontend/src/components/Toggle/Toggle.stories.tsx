@@ -1,9 +1,9 @@
 import { useForm } from 'react-hook-form'
+
 import { VStack } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
 import Button from '../Button'
-
 import { Toggle, ToggleProps } from './Toggle'
 
 export default {

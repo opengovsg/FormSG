@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiCheck, BiFilter, BiSearch, BiX } from 'react-icons/bi'
+
 import {
   Box,
   ButtonGroup,
@@ -24,10 +25,10 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { FilterOption } from '~features/workspace/types'
 import {

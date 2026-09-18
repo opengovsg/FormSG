@@ -7,7 +7,6 @@ import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
 import { EditFieldProps } from '../common/types'
-
 import { EditImage } from './EditImage'
 
 const DEFAULT_IMAGE_FIELD: EditFieldProps<ImageFieldBase>['field'] = {

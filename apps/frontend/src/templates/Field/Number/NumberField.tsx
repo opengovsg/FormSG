@@ -2,8 +2,8 @@ import { Controller, useFormContext } from 'react-hook-form'
 
 import { FormColorTheme } from 'formsg-shared/types'
 
-import { useNumberValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
+import { useNumberValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { NumberFieldSchema, SingleAnswerFieldInput } from '../types'

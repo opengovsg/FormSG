@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
+
 import {
   Box,
   chakra,
@@ -20,7 +21,6 @@ import {
   useAdminLogicStore,
 } from '../../../adminLogicStore'
 import { useAdminFormLogic } from '../../../hooks/useAdminFormLogic'
-
 import { FieldLogicBadge } from './FieldLogicBadge'
 import { LogicBadge } from './LogicBadge'
 import { LogicConditionValues } from './LogicConditionValues'

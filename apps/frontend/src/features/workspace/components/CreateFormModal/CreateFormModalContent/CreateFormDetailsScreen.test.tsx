@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react'
 import { useForm } from 'react-hook-form'
+
 import { ChakraProvider, Modal, ModalContent, theme } from '@chakra-ui/react'
 import { render, screen } from '@testing-library/react'
 
@@ -11,7 +12,6 @@ import {
   CreateFormWizardContextReturn,
   CreateFormWizardInputProps,
 } from '../CreateFormWizardContext'
-
 import { CreateFormDetailsScreen } from './CreateFormDetailsScreen'
 
 vi.mock('react-i18next', () => ({

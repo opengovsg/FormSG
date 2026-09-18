@@ -34,9 +34,6 @@ import {
 import { downloadFormIssue } from '../responses/FeedbackPage/issue/IssueService'
 import { downloadFormReview } from '../responses/FeedbackPage/review/ReviewService'
 import { sendReminderForPendingMrfResponse } from '../responses/ResponsesPage/storage/UnlockedResponses/ResponsesTable/reminders/ReminderService'
-
-import { useCollaboratorWizard } from './components/CollaboratorModal/CollaboratorWizardContext'
-import { permissionsToRole } from './components/CollaboratorModal/utils'
 import {
   updateFormEndPage,
   updateFormPaymentProducts,
@@ -48,6 +45,8 @@ import {
   transferFormOwner,
   updateFormCollaborators,
 } from './AdminViewFormService'
+import { useCollaboratorWizard } from './components/CollaboratorModal/CollaboratorWizardContext'
+import { permissionsToRole } from './components/CollaboratorModal/utils'
 import { adminFormKeys } from './queries'
 
 export type MutateAddCollaboratorArgs = {
@@ -485,7 +484,7 @@ export const usePreviewFormMutations = (formId: string) => {
   )
 
   const submitStorageModeFormMutation = useMutation(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // oxlint-disable-next-line typescript/no-unused-vars
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
       return submitStorageModeFormPreview({ formId })
     },
@@ -499,7 +498,7 @@ export const usePreviewFormMutations = (formId: string) => {
   )
 
   const submitStorageModeFormFetchMutation = useMutation(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // oxlint-disable-next-line typescript/no-unused-vars
     (args: Omit<SubmitStorageFormArgs, 'formId'>) => {
       return submitStorageModeFormPreviewWithFetch({ formId })
     },

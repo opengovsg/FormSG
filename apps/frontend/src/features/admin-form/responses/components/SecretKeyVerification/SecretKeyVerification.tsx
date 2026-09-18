@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Container, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import SecretKeyVerificationInput from '~components/SecretKeyVerificationInput'

@@ -1,7 +1,6 @@
 import { Link, Text } from '@react-email/components'
 
 import { FormScheduledClosureNotificationHtmlData } from '../../services/mail/mail.types'
-
 import { EmailButton, EmailLayout, EmailMargin } from './EmailLayout'
 import { linkStyle, secondaryTextStyle } from './emailStyles'
 

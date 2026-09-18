@@ -1,8 +1,9 @@
 import { ReactNode } from 'react'
+
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 const TUCK_OVERLAP = '0.5rem'
 

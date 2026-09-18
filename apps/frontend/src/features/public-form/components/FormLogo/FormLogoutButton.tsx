@@ -1,10 +1,11 @@
 import { BiLogOutCircle } from 'react-icons/bi'
+
 import { Box } from '@chakra-ui/react'
 
-import { ThemeColorScheme } from '~theme/foundations/colours'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
+import { useIsMobile } from '~hooks/useIsMobile'
+import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { FormBannerLogoProps } from './FormBannerLogo'
 

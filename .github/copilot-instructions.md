@@ -98,6 +98,7 @@ pnpm lint:shared
 pnpm lint-ci:backend
 pnpm lint-ci:shared
 ```
+
 ### Workarounds
 
 ```bash
@@ -133,10 +134,12 @@ export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
 #### Usage Guidelines
 
 **Repository Name**: Must use `opengovsg/FormSG` (exact case)
+
 - ✅ Correct: `opengovsg/FormSG`
 - ❌ Wrong: `opengovsg/formsg`, `OpenGovSG/FormSG`
 
 **When to Use DeepWiki**:
+
 - ✅ Conceptual/architecture questions
 - ✅ Understanding design patterns
 - ✅ Onboarding to unfamiliar subsystems
@@ -144,12 +147,14 @@ export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
 - ✅ "Why" questions about implementation decisions
 
 **When NOT to Use DeepWiki**:
+
 - ❌ Finding exact file paths or line numbers
 - ❌ Debugging specific issues (use workspace search)
 - ❌ Implementation details (use semantic_search)
 - ❌ Recent code changes (may not be indexed)
 
 **Limitations**:
+
 - No file paths or line numbers in responses
 - May not reflect latest commits
 - Cannot show actual code snippets
@@ -158,6 +163,7 @@ export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
 #### Example Queries
 
 **Good DeepWiki Questions**:
+
 ```
 - "How does the MRF workflow system handle state transitions?"
 - "What are the security measures in FormSG's submission pipeline?"
@@ -167,6 +173,7 @@ export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
 ```
 
 **Better as Workspace Search**:
+
 ```
 - "Where is the virus scanning middleware registered?" → Use semantic_search
 - "Show me the MRF controller code" → Use semantic_search + read_file
@@ -183,6 +190,7 @@ For complex questions requiring both understanding and implementation:
 3. **Read targeted files**: Examine actual implementation
 
 **Example**:
+
 ```
 Task: "I need to modify the MRF workflow validation logic"
 
@@ -263,9 +271,10 @@ formsg/
 ### Result Types
 
 We use `neverthrow` library extensively:
+
 ```typescript
-Result<T, E>       // Sync results
-ResultAsync<T, E>  // Async results
+Result<T, E> // Sync results
+ResultAsync<T, E> // Async results
 ```
 
 Prefer `.andThen()`, `.map()`, `.mapErr()` chains over try-catch.
@@ -273,6 +282,7 @@ Prefer `.andThen()`, `.map()`, `.mapErr()` chains over try-catch.
 ### Middleware Pipelines
 
 Express middleware are composed into arrays:
+
 ```typescript
 export const handleStorageSubmission = [
   CaptchaMiddleware.validateCaptchaParams,
@@ -300,18 +310,21 @@ Position matters - validation → processing → persistence.
 **Testing Patterns**:
 
 **Backend Unit Tests**:
+
 - Location: `apps/backend/__tests__/unit/` or co-located `*.spec.ts`
 - Framework: Jest with ts-jest
 - Pattern: Mirror source structure
 - Example: `apps/backend/src/app/modules/form/__tests__/form.service.spec.ts`
 
 **Frontend Unit Tests**:
+
 - Location: `apps/frontend/__tests__/` or co-located
 - Framework: Vitest
 - Mocking: MSW (Mock Service Worker) in `~/mocks/msw/handlers/`
 - Pattern: Test components, hooks, utilities
 
 **E2E Tests**:
+
 - Location: `__tests__/e2e/`
 - Framework: Playwright
 - Files: `*.spec.ts` (e.g., `login.spec.ts`, `encrypt-submission.spec.ts`)
@@ -319,6 +332,7 @@ Position matters - validation → processing → persistence.
 - Run separate from dev environment (stop Docker containers first)
 
 **Test Utilities**:
+
 - Frontend MSW handlers: `apps/frontend/src/mocks/msw/handlers/`
 - Storybook decorators: `~utils/storybook.tsx`
 - Backend test setup: `apps/backend/__tests__/setup/`
@@ -339,7 +353,6 @@ Position matters - validation → processing → persistence.
 
 ### Import Path Aliases
 
-
 ### Feature-Based Structure
 
 ```
@@ -355,6 +368,7 @@ features/
 ```
 
 **Example**: `features/admin-form/`
+
 - `AdminFormService.ts` - API calls
 - `queries.ts` - `useAdminForm()`, `useAdminFormSettings()`
 - `mutations.ts` - `useCreateFormMutation()`, `useUpdateFormMutation()`
@@ -362,29 +376,27 @@ features/
 ### State Management Patterns
 
 **React Query for Server State**:
+
 ```typescript
 // Query
-const { data, isLoading } = useQuery(
-  ['formKey', formId],
-  () => fetchForm(formId),
+const { data, isLoading } = useQuery(['formKey', formId], () =>
+  fetchForm(formId),
 )
 
 // Mutation with cache invalidation
-const mutation = useMutation(
-  (data) => createForm(data),
-  {
-    onSuccess: () => {
-      queryClient.invalidateQueries(['forms'])
-      toast({ description: 'Form created!' })
-    },
-    onError: (error) => {
-      toast({ status: 'danger', description: error.message })
-    },
+const mutation = useMutation((data) => createForm(data), {
+  onSuccess: () => {
+    queryClient.invalidateQueries(['forms'])
+    toast({ description: 'Form created!' })
   },
-)
+  onError: (error) => {
+    toast({ status: 'danger', description: error.message })
+  },
+})
 ```
 
 **React Context for App State**:
+
 - `AuthContext` - User authentication state
 - `PublicFormContext` - Public form submission context
 - `BuilderAndDesignContext` - Form builder state
@@ -392,6 +404,7 @@ const mutation = useMutation(
 ### Chakra UI Patterns
 
 **Component Composition**:
+
 ```typescript
 // Compound component pattern
 <Menu>
@@ -404,6 +417,7 @@ const mutation = useMutation(
 ```
 
 **Responsive Design**:
+
 ```typescript
 // Breakpoint values
 const isMobile = useBreakpointValue({ base: true, md: false })
@@ -413,11 +427,13 @@ const isMobile = useBreakpointValue({ base: true, md: false })
 ```
 
 **Custom Hooks**:
+
 - `useToast()` - Custom toast notifications
 - `useDisclosure()` - Modal/drawer state management
 - `useIsMobile()` - Responsive breakpoint detection
 
 **Theme Customization**:
+
 - Location: `apps/frontend/src/theme/`
 - Components: `theme/components/` - Custom component styles
 - Colors: `theme/foundations/colours.ts`
@@ -426,11 +442,13 @@ const isMobile = useBreakpointValue({ base: true, md: false })
 ### Component Development
 
 **Storybook Stories**:
+
 - Co-located: `ComponentName.stories.tsx`
 - Run: `cd apps/frontend && pnpm storybook`
 - Used for isolated component development and documentation
 
 **Component Structure**:
+
 ```typescript
 // ComponentName.tsx
 export interface ComponentNameProps {
@@ -462,6 +480,7 @@ export default {
 ### Route Organization
 
 **Backend routing hierarchy**:
+
 ```
 apps/backend/src/app/routes/
 ├── api/
@@ -477,6 +496,7 @@ apps/backend/src/app/routes/
 ```
 
 **File Pattern**:
+
 - File: `*.routes.ts`
 - Export: `export const [Name]Router = Router()`
 - Registration: Imported and mounted in parent router
@@ -484,6 +504,7 @@ apps/backend/src/app/routes/
 ### Controller Patterns
 
 **Middleware Array Composition**:
+
 ```typescript
 // Position matters: validation → auth → business logic → handler
 export const handleSubmission = [
@@ -499,6 +520,7 @@ Router.post('/submit', ...handleSubmission)
 ```
 
 **Error Handling Pattern**:
+
 ```typescript
 // In controller/handler
 const result = await service.doSomething()
@@ -519,6 +541,7 @@ return result
 ### Database Patterns
 
 **Mongoose Discriminator Pattern**:
+
 ```typescript
 // Base schema
 const FormSchema = new Schema({
@@ -528,24 +551,30 @@ const FormSchema = new Schema({
 
 // Discriminated models
 const EmailFormModel = FormModel.discriminator('emailForm', EmailFormSchema)
-const EncryptFormModel = FormModel.discriminator('encryptForm', EncryptFormSchema)
+const EncryptFormModel = FormModel.discriminator(
+  'encryptForm',
+  EncryptFormSchema,
+)
 
 // Usage
 form.responseMode // 'email' | 'encrypt' | 'multirespondent'
 ```
 
 **Model Interfaces**:
+
 - `I[Model]Schema` - Document interface (what's stored)
 - `I[Model]Model` - Model static methods interface
 - Example: `IFormSchema`, `IFormModel`
 
 **Schema Location**:
+
 - Models: `apps/backend/src/types/[model].ts`
 - Schema files: Co-located with module or in `models/`
 
 ### Service Layer Pattern
 
 **Result-based Services**:
+
 ```typescript
 // Service returns Result/ResultAsync
 export const createForm = (
@@ -566,6 +595,7 @@ export const createForm = (
 ### For Locating Code
 
 **Best tool order**:
+
 1. `semantic_search` - For conceptual code search
 2. `grep_search` - For exact string matches
 3. `file_search` - For file name patterns
@@ -574,6 +604,7 @@ export const createForm = (
 ### For Understanding Architecture
 
 **Best tool order**:
+
 1. `ask_question` (DeepWiki) - For conceptual overview
 2. `semantic_search` - For related code
 3. `read_file` - For specific implementations
@@ -581,18 +612,21 @@ export const createForm = (
 ### Common Search Patterns
 
 **Finding middleware registration**:
+
 ```
 semantic_search("middleware_name registration controller")
 → Returns controller files with middleware arrays
 ```
 
 **Finding all usages**:
+
 ```
 grep_search("functionName", includePattern: "**/*.ts")
 → Returns all files using the function
 ```
 
 **Understanding a subsystem**:
+
 ```
 1. ask_question("opengovsg/FormSG", "How does [subsystem] work?")
 2. semantic_search("[subsystem] implementation")
@@ -607,6 +641,7 @@ grep_search("functionName", includePattern: "**/*.ts")
 
 ❌ **Don't** assume all forms work the same way
 ✅ **Do** check `form.responseMode` and use appropriate type guards:
+
 - `isFormEncryptMode(form)`
 - `isFormMultirespondent(form)`
 
@@ -632,6 +667,7 @@ grep_search("functionName", includePattern: "**/*.ts")
 ### 5. Authentication Context
 
 Singapore-specific:
+
 - **SingPass**: Citizen authentication
 - **CorpPass**: Corporate authentication
 - **sgID**: Alternative digital identity
@@ -650,6 +686,7 @@ Singapore-specific:
 ### Commit Messages
 
 **Use Conventional Commits** format:
+
 ```
 feat: add payment receipt download
 fix: resolve form duplication bug

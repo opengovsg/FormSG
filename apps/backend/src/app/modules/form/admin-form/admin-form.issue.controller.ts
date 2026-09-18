@@ -13,7 +13,6 @@ import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
 import * as IssueService from '../../issue/issue.service'
 import * as UserService from '../../user/user.service'
-
 import { PermissionLevel } from './admin-form.types'
 import { mapRouteError } from './admin-form.utils'
 

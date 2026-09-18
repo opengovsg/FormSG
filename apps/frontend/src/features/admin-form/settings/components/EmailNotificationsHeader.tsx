@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { BiBulb } from 'react-icons/bi'
+
 import { Flex, Icon } from '@chakra-ui/react'
 
-import { GUIDE_FORM_MRF, OGP_PLUMBER } from '~constants/links'
-import { useMdComponents } from '~hooks/useMdComponents'
 import InlineMessage from '~components/InlineMessage'
 import { MarkdownText } from '~components/MarkdownText'
+import { GUIDE_FORM_MRF, OGP_PLUMBER } from '~constants/links'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 const MRFAdvertisingInfobox = () => {
   const mdComponents = useMdComponents()
