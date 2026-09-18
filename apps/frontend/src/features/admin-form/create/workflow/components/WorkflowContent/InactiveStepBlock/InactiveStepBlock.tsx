@@ -26,6 +26,8 @@ import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
 
+const MISSING_FIELD_MESSAGE = 'This field is missing'
+
 interface InactiveStepBlockProps {
   stepNumber: number
   step: FormWorkflowStepDto
@@ -42,6 +44,13 @@ const SubsequentStepRespondentBadges = ({
 }: RespondentBadgeProps): JSX.Element => {
   switch (step.workflow_type) {
     case WorkflowType.Static:
+      if (step.emails.length === 0) {
+        return (
+          <FieldLogicBadge
+            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
+          />
+        )
+      }
       return (
         <>
           {step.emails.map((email) => (
@@ -53,7 +62,7 @@ const SubsequentStepRespondentBadges = ({
       return (
         <FieldLogicBadge
           field={idToFieldMap[step.field]}
-          defaults={{ variant: 'error', message: 'This field is missing' }}
+          defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
         />
       )
     case WorkflowType.Conditional: {
@@ -65,7 +74,7 @@ const SubsequentStepRespondentBadges = ({
         return (
           <FieldLogicBadge
             field={selectedConditionalField}
-            defaults={{ variant: 'error', message: 'This field is missing' }}
+            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
           />
         )
       }
@@ -86,7 +95,7 @@ const SubsequentStepRespondentBadges = ({
                 ? idToFieldMap[step.conditional_field]
                 : undefined
             }
-            defaults={{ variant: 'error', message: 'This field is missing' }}
+            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
           />
           {isOptionsMismatched ? (
             <FieldLogicBadge
@@ -126,7 +135,6 @@ export const InactiveStepBlock = ({
 
   const handleClick = useCallback(() => {
     if (stateData) {
-      // Another step is open: auto-save it and switch here.
       requestSwitchTo(stepNumber)
       return
     }
@@ -173,7 +181,6 @@ export const InactiveStepBlock = ({
     ))
   }, [idToFieldMap, step.edit])
 
-  // Mirrors EditStepBlock's ordering; only the sequence differs by flag.
   const fieldsSection = (
     <Stack>
       <Text textStyle={sectionLabelTextStyle}>
@@ -184,9 +191,6 @@ export const InactiveStepBlock = ({
       </Stack>
     </Stack>
   )
-  // A step without approval says nothing worth a heading, and the reorder puts
-  // this at the top of the card where the noise is most costly. Steps whose
-  // approval field was deleted still render, to keep showing the error.
   const hideEmptyApprovals = isRedesign && !step.approval_field
   const approvalsSection =
     isFirstStep || hideEmptyApprovals ? null : (
@@ -256,9 +260,6 @@ export const InactiveStepBlock = ({
           )}
         </Stack>
       </chakra.button>
-      {/* The whole card is the button, so the pencil is a visual affordance
-      only: no click target, no tab stop, hidden from AT. It reacts to hover on
-      the card via the wrapper's role="group". */}
       <Icon
         as={BiPencil}
         aria-hidden

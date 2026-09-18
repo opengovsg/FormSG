@@ -48,9 +48,6 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    // Required so skeleton "animation" does not hide content.
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
     chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     msw: {
       handlers: {
@@ -193,6 +190,13 @@ const workflow_step_2: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1c6f9',
   workflow_type: WorkflowType.Static,
   emails: ['test_1@tech.gov.sg', 'test_2@tech.gov.sg'],
+  edit: [form_field_3._id, form_field_4._id],
+}
+
+const workflow_step_2_with_no_emails: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c701',
+  workflow_type: WorkflowType.Static,
+  emails: [],
   edit: [form_field_3._id, form_field_4._id],
 }
 
@@ -344,6 +348,22 @@ Step3ApprovalFieldDeleted.parameters = {
   },
 }
 
+export const Step2NoEmails = Template.bind({})
+Step2NoEmails.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [workflow_step_1, workflow_step_2_with_no_emails],
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'Specific emails selected, none entered. Saving an incomplete step is allowed, so the card shows the missing-field error.',
+  },
+}
+
 export const Step2FieldDeleted = Template.bind({})
 Step2FieldDeleted.parameters = {
   msw: {
@@ -398,9 +418,6 @@ Step2InvalidConditionalRecipientSelected.parameters = {
   },
 }
 
-// Paired with WithWorkflow to show the completion email seam in both flag
-// states: off keeps the inline message pointing at Settings, on replaces it
-// with the editable card.
 export const WithWorkflowRedesignOn = Template.bind({})
 WithWorkflowRedesignOn.decorators = [withRedesignOn]
 WithWorkflowRedesignOn.parameters = {
@@ -410,8 +427,6 @@ WithWorkflowRedesignOn.parameters = {
       getAdminFormSettings({
         mode: FormResponseMode.Multirespondent,
         overrides: {
-          // The shared mock form is Public by default, which renders the MRF
-          // email controls read-only.
           status: FormStatus.Private,
           emails: ['admin@example.gov.sg'],
           stepsToNotify: [workflow_step_2._id],
