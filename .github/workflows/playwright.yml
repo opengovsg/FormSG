@@ -2,7 +2,6 @@ name: Playwright Tests
 
 env:
   NODE_VERSION: '22.22'
-  PNPM_VERSION: '12.4.1'
 
 on:
   push:
@@ -34,8 +33,6 @@ jobs:
           fetch-depth: 0
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -85,8 +82,6 @@ jobs:
           fetch-depth: 0
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
