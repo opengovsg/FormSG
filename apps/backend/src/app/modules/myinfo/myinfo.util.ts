@@ -24,13 +24,11 @@ import { hasProp } from 'formsg-shared/utils/has-prop'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import moment from 'moment'
-import mongoose, { FlattenMaps } from 'mongoose'
+import { FlattenMaps } from 'mongoose'
 import { err, ok, Result } from 'neverthrow'
-import { v4 as uuidv4, validate as validateUUID } from 'uuid'
 
 import {
   IFieldSchema,
-  IFormSchema,
   IHashes,
   IMyInfo,
   MapRouteError,
@@ -39,11 +37,6 @@ import {
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError } from '../core/core.errors'
-import {
-  AuthTypeMismatchError,
-  FormAuthNoEsrvcIdError,
-  FormNotFoundError,
-} from '../form/form.errors'
 import { SGIDMyInfoData } from '../sgid/sgid.adapter'
 import { SGID_MYINFO_LOGIN_COOKIE_NAME } from '../sgid/sgid.constants'
 import {
@@ -51,29 +44,19 @@ import {
   ProcessedFieldResponse,
 } from '../submission/submission.types'
 
-import {
-  MyInfoFapiAuthRequestError,
-  MyInfoFapiConfigError,
-} from './fapi/myinfo.fapi.errors'
 import { MyInfoData } from './myinfo.adapter'
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
-  MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
-  MyInfoInvalidAuthCodeCookieError,
   MyInfoMissingHashError,
   MyInfoMissingLoginCookieError,
 } from './myinfo.errors'
 import {
-  MyInfoAuthCodeCookiePayload,
-  MyInfoAuthCodeCookieState,
   MyInfoChildKey,
   MyInfoComparePromises,
-  MyInfoForm,
   MyInfoHashPromises,
   MyInfoLoginCookiePayload,
-  MyInfoRelayState,
   VisibleMyInfoResponse,
 } from './myinfo.types'
 
@@ -250,50 +233,6 @@ export const mapVerifyMyInfoError: MapRouteError = (error) => {
 }
 
 /**
- * Maps errors while creating MyInfo redirect URL to status codes and messages.
- * @param error Error to be mapped
- * @param coreErrorMessage Default error message
- */
-export const mapRedirectURLError: MapRouteError = (
-  error,
-  coreErrorMessage = 'Something went wrong. Please refresh and try again.',
-) => {
-  switch (error.constructor) {
-    case FormNotFoundError:
-      return {
-        statusCode: StatusCodes.NOT_FOUND,
-        errorMessage:
-          'Could not find the form requested. Please refresh and try again.',
-      }
-    case AuthTypeMismatchError:
-      return {
-        statusCode: StatusCodes.BAD_REQUEST,
-        errorMessage:
-          'This form does not have MyInfo enabled. Please refresh and try again.',
-      }
-    case DatabaseError:
-    case MyInfoFapiAuthRequestError:
-    case MyInfoFapiConfigError:
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
-      }
-    default:
-      logger.error({
-        message: 'Unknown route error observed',
-        meta: {
-          action: 'mapRedirectURLError',
-        },
-        error,
-      })
-      return {
-        statusCode: StatusCodes.INTERNAL_SERVER_ERROR,
-        errorMessage: coreErrorMessage,
-      }
-  }
-}
-
-/**
  * Retrieves the field options which should be provided with a MyInfo
  * dropdown field.
  * @param myInfoAttr MyInfo attribute
@@ -303,47 +242,6 @@ export const getMyInfoFieldOptions = (
 ): string[] => {
   const [myInfoField] = myInfoTypes.filter((type) => type.name === myInfoAttr)
   return myInfoField?.fieldOptions || []
-}
-
-/**
- * Creates state which MyInfo should forward back once user has logged in.
- * @param formId ID of form which user is logging into
- */
-export const createRelayState = (
-  formId: string,
-  encodedQuery?: string,
-): string =>
-  JSON.stringify({
-    uuid: uuidv4(),
-    formId,
-    encodedQuery,
-  })
-
-/**
- * returns form with an e-service ID if form is a MyInfo form
- * @param form Form to validate
- */
-export const getMyInfoEserviceIdInForm = <T extends IFormSchema>(
-  form: T,
-  useFormsgEsrvcId?: boolean,
-): Result<
-  [MyInfoForm<T>, string],
-  FormAuthNoEsrvcIdError | AuthTypeMismatchError
-> => {
-  if (isMyInfoForm(form)) {
-    const esrvcId = useFormsgEsrvcId
-      ? spcpMyInfoConfig.spEsrvcId
-      : form.esrvcId || spcpMyInfoConfig.spEsrvcId
-    return ok([form, esrvcId])
-  }
-  return err(new AuthTypeMismatchError(FormAuthType.MyInfo, form.authType))
-}
-
-// Typeguard to ensure that form is MyInfo authType
-const isMyInfoForm = <F extends IFormSchema>(
-  form: F,
-): form is MyInfoForm<F> => {
-  return form.authType === FormAuthType.MyInfo
 }
 
 /**
@@ -359,37 +257,6 @@ export const isMyInfoLoginCookie = (
     hasProp(cookie, 'uinFin') &&
     typeof cookie.uinFin === 'string'
   )
-}
-
-/**
- * Type guard for MyInfo auth code cookie.
- * @param cookie Unknown object
- */
-export const isMyInfoAuthCodeCookie = (
-  cookie: unknown,
-): cookie is MyInfoAuthCodeCookiePayload => {
-  if (
-    cookie &&
-    typeof cookie === 'object' &&
-    hasProp(cookie, 'state') &&
-    typeof cookie.state === 'string'
-  ) {
-    // Test for success state
-    if (
-      cookie.state === MyInfoAuthCodeCookieState.Success &&
-      hasProp(cookie, 'authCode') &&
-      typeof cookie.authCode === 'string' &&
-      cookie.authCode.length
-    ) {
-      return true
-    } else if (
-      // Test for any other valid state
-      Object.values<string>(MyInfoAuthCodeCookieState).includes(cookie.state)
-    ) {
-      return true
-    }
-  }
-  return false
 }
 
 /**
@@ -413,26 +280,6 @@ export const extractMyInfoLoginJwt = (
 }
 
 /**
- * Extracts a MyInfo auth code cookie from a request's cookies, and validates
- * its shape.
- * @param cookies Cookies in a request
- */
-export const extractAuthCode = (
-  cookie: unknown,
-): Result<
-  string,
-  MyInfoInvalidAuthCodeCookieError | MyInfoCookieStateError
-> => {
-  if (!isMyInfoAuthCodeCookie(cookie)) {
-    return err(new MyInfoInvalidAuthCodeCookieError(cookie))
-  }
-  if (cookie.state !== MyInfoAuthCodeCookieState.Success) {
-    return err(new MyInfoCookieStateError())
-  }
-  return ok(cookie.authCode)
-}
-
-/**
  * Creates a MyInfo login cookie signed by FormSG
  * @param uinFin UIN/FIN to be signed
  * @returns JWT signed by FormSG
@@ -446,18 +293,6 @@ export const createMyInfoLoginCookie = (uinFin: string): string => {
     expiresIn: spcpMyInfoConfig.spCookieMaxAge / 1000,
   })
 }
-
-export const isMyInfoRelayState = (obj: unknown): obj is MyInfoRelayState =>
-  typeof obj === 'object' &&
-  !!obj &&
-  hasProp(obj, 'formId') &&
-  typeof obj.formId === 'string' &&
-  mongoose.Types.ObjectId.isValid(obj.formId) &&
-  hasProp(obj, 'uuid') &&
-  typeof obj.uuid === 'string' &&
-  validateUUID(obj.uuid) &&
-  ((hasProp(obj, 'encodedQuery') && typeof obj.encodedQuery === 'string') ||
-    !hasProp(obj, 'encodedQuery'))
 
 const MyInfoChildAttributeSet = new Set(Object.values(MyInfoChildAttributes))
 

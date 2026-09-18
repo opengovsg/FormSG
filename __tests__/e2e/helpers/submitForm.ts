@@ -86,6 +86,19 @@ const accessForm = async (
 }
 
 /**
+ * Completes login on Mockpass' login page.
+ * @param {Page} page Playwright page
+ * @param {string} nric the nric of the persona to log in as
+ */
+const loginWithMockpassPersona = async (
+  page: Page,
+  nric: string,
+): Promise<void> => {
+  await page.locator('#loginModelbtn:visible').first().click()
+  await page.locator('#id-input').fill(`${nric} [MyInfo]`)
+}
+
+/**
  * Navigates to the public form page and ensures that the title of the form is correct.
  * @param {Page} page Playwright page
  * @param {E2eSettingsOptions} formSettings the settings used to create the form
@@ -119,8 +132,7 @@ const authForm = async (
 
   // Mockpass talks to FormSG to login here.
   if (formSettings.authType === FormAuthType.MyInfo) {
-    // Click the consent button to share info with FormSG
-    await page.getByRole('button', { name: 'Submit' }).click()
+    await loginWithMockpassPersona(page, formSettings.nric)
   }
 
   // Redirected to the form fields page. Verify log out button is visible with

@@ -39,17 +39,11 @@ import {
 import * as MyInfoFapiService from '../../myinfo/fapi/myinfo.fapi.service'
 import { MyInfoData } from '../../myinfo/myinfo.adapter'
 import {
-  MYINFO_AUTH_CODE_COOKIE_NAME,
-  MYINFO_AUTH_CODE_COOKIE_OPTIONS,
   MYINFO_LOGIN_COOKIE_NAME,
   MYINFO_LOGIN_COOKIE_OPTIONS,
 } from '../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../myinfo/myinfo.service'
-import {
-  createMyInfoLoginCookie,
-  extractAuthCode,
-  getMyInfoEserviceIdInForm,
-} from '../../myinfo/myinfo.util'
+import { createMyInfoLoginCookie } from '../../myinfo/myinfo.util'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import {
   SGID_CODE_VERIFIER_COOKIE_NAME,
@@ -214,10 +208,6 @@ export const handleGetPublicForm: ControllerHandler<
       // have the prefilled data
       res.clearCookie(MYINFO_LOGIN_COOKIE_NAME, MYINFO_LOGIN_COOKIE_OPTIONS)
 
-      const authErrors: unknown[] = []
-
-      // Prefer FAPI when its cookie exists; fall back to the legacy auth code
-      // on failure.
       const fapiSessionId: unknown =
         req.signedCookies?.[MYINFO_FAPI_SESSION_COOKIE_NAME]
       if (typeof fapiSessionId === 'string' && fapiSessionId) {
@@ -227,76 +217,45 @@ export const handleGetPublicForm: ControllerHandler<
         })
         if (fapiFieldsResult.isErr()) {
           const { error: fapiError } = fapiFieldsResult
-          authErrors.push(fapiError)
 
           // Frontend tab-scoping decides whether to discard a session for
           // another form.
           if (!(fapiError instanceof MyInfoFapiSessionFormMismatchError)) {
             clearMyInfoFapiSessionCookie(res)
           }
-        } else {
-          clearMyInfoFapiSessionCookie(res)
-          myInfoFields = fapiFieldsResult.value
-        }
-      } else if (req.cookies[MYINFO_FAPI_SESSION_COOKIE_NAME]) {
-        // Present but unreadable (e.g. rotated SESSION_SECRET); drop it
-        // since nothing can consume it.
-        clearMyInfoFapiSessionCookie(res)
-      }
 
-      if (!myInfoFields) {
-        const authCodeCookie: unknown =
-          req.cookies[MYINFO_AUTH_CODE_COOKIE_NAME]
-        if (authCodeCookie) {
-          // Clear auth code cookie once found, as it can't be reused
-          res.clearCookie(
-            MYINFO_AUTH_CODE_COOKIE_NAME,
-            MYINFO_AUTH_CODE_COOKIE_OPTIONS,
-          )
-          const useEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
-          const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
-            .asyncAndThen((authCode) =>
-              MyInfoService.retrieveAccessToken(authCode),
-            )
-            .andThen((accessToken) =>
-              MyInfoService.getMyInfoDataForForm(form, accessToken, useEsrvcId),
-            )
-
-          if (myInfoFieldsResult.isErr()) {
-            authErrors.push(myInfoFieldsResult.error)
-          } else {
-            myInfoFields = myInfoFieldsResult.value
+          // Callback not yet reached, or the session belongs to another tab —
+          // treat either as no login attempt.
+          if (
+            fapiError instanceof MyInfoFapiIncompleteLoginError ||
+            fapiError instanceof MyInfoFapiSessionFormMismatchError
+          ) {
+            return res.json({ form: publicForm, isIntranetUser })
           }
-        }
-      }
 
-      if (!myInfoFields) {
-        const firstAuthError = authErrors[0]
-        if (!firstAuthError) {
-          // User is accessing the form before logging in.
+          logger.error({
+            message: 'MyInfo login error',
+            meta: logMeta,
+            error: fapiError,
+          })
           return res.json({
             form: publicForm,
+            errorCodes: [ErrorCode.myInfo],
             isIntranetUser,
           })
         }
 
-        // Callback not yet reached, or the session belongs to another tab —
-        // treat either as no login attempt.
-        if (
-          firstAuthError instanceof MyInfoFapiIncompleteLoginError ||
-          firstAuthError instanceof MyInfoFapiSessionFormMismatchError
-        ) {
-          return res.json({ form: publicForm, isIntranetUser })
+        clearMyInfoFapiSessionCookie(res)
+        myInfoFields = fapiFieldsResult.value
+      } else {
+        if (req.cookies[MYINFO_FAPI_SESSION_COOKIE_NAME]) {
+          // Present but unreadable (e.g. rotated SESSION_SECRET); drop it
+          // since nothing can consume it.
+          clearMyInfoFapiSessionCookie(res)
         }
-
-        logger.error({
-          message: 'MyInfo login error',
-          meta: logMeta,
-          error: firstAuthError,
-        })
+        // User is accessing the form before logging in.
         return res.json({
           form: publicForm,
-          errorCodes: [ErrorCode.myInfo],
           isIntranetUser,
         })
       }
@@ -734,9 +693,6 @@ export const _handleFormAuthRedirect: ControllerHandler<
   return FormService.retrieveFullFormById(formId)
     .andThen((form) => {
       formAuthType = form.authType
-      const useFormsgEsrvcId = req.growthbook?.isOn(
-        featureFlags.useFormsgEsrvcId,
-      )
       // TODO [CP-PKCE]: Cleanup this flag once PKCE rollout is verified.
       // Add formId to growthbook attributes to allow for targeting in growthbook feature flags.
       void req.growthbook?.setAttributes({
@@ -752,35 +708,16 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const useStateNonce =
         req.growthbook?.isOn(featureFlags.spcpOidcStateNonce) ?? false
       const nonce = useStateNonce ? randomBytes(16).toString('hex') : undefined
-      const useMyInfoFapi =
-        req.growthbook?.isOn(featureFlags.myinfoFapi) ?? false
       switch (form.authType) {
-        case FormAuthType.MyInfo: {
-          if (useMyInfoFapi) {
-            res.clearCookie(
-              MYINFO_AUTH_CODE_COOKIE_NAME,
-              MYINFO_AUTH_CODE_COOKIE_OPTIONS,
-            )
-            return MyInfoFapiService.startLogin({
-              formId,
-              encodedQuery,
-              requestedAttributes: form.getUniqueMyInfoAttrs(),
-            }).map(({ sessionId, redirectUrl }) => {
-              setMyInfoFapiSessionCookie(res, sessionId)
-              return redirectUrl
-            })
-          }
-          clearMyInfoFapiSessionCookie(res)
-          return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
-            ([form, eserviceId]) =>
-              MyInfoService.createRedirectURL({
-                formEsrvcId: eserviceId,
-                formId,
-                requestedAttributes: form.getUniqueMyInfoAttrs(),
-                encodedQuery,
-              }),
-          )
-        }
+        case FormAuthType.MyInfo:
+          return MyInfoFapiService.startLogin({
+            formId,
+            encodedQuery,
+            requestedAttributes: form.getUniqueMyInfoAttrs(),
+          }).map(({ sessionId, redirectUrl }) => {
+            setMyInfoFapiSessionCookie(res, sessionId)
+            return redirectUrl
+          })
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
             const target = getRedirectTargetSpcpOidc(
@@ -940,12 +877,8 @@ export const _handlePublicAuthLogout: ControllerHandler<
 
   res.clearCookie(cookieName)
 
-  // Additional cookies to clear for MyInfo v3/v5
+  // Additional cookies to clear for MyInfo
   if (authType === FormAuthType.MyInfo) {
-    res.clearCookie(
-      MYINFO_AUTH_CODE_COOKIE_NAME,
-      MYINFO_AUTH_CODE_COOKIE_OPTIONS,
-    )
     clearMyInfoFapiSessionCookie(res)
   }
 

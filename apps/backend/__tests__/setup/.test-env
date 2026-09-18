@@ -13,13 +13,7 @@ CP_OIDC_RP_REDIRECT_URL=http://localhost:5000/api/v3/corppass/login
 CP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/setup/certs/test_cp_rp_public_jwks.json
 CP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/setup/certs/test_cp_rp_secret_jwks.json
 
-MYINFO_CLIENT_CONFIG=dev
-MYINFO_FORMSG_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-MYINFO_CERT_PATH=./node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-MYINFO_CLIENT_ID=mockClientId
-MYINFO_CLIENT_SECRET=mockClientSecret
 MYINFO_JWT_SECRET=mockJwtSecret
-SINGPASS_ESRVC_ID=Test-eServiceId-Sp # Needed for MyInfo
 
 MYINFO_FAPI_ISSUER=http://localhost:5156/singpass/v3/fapi
 MYINFO_FAPI_CLIENT_ID=mockFapiClientId
@@ -90,6 +84,7 @@ MOCKPASS_UID=S8979373D # Not used by mockpass but keep in sync with MOCKPASS_UEN
 MOCKPASS_UEN=123456789A
 SP_RP_JWKS_ENDPOINT=http://localhost:5000/sp/.well-known/jwks.json
 CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
+FAPI_CLIENT_JWKS_ENDPOINT=http://localhost:5000/mi/fapi/.well-known/jwks.json
 
 # WOG AD env vars for testing
 WOGAD_CLIENT_ID=test-client-id
