@@ -1,12 +1,16 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://help.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-
 version: 2
+registries:
+  chainguard-npm:
+    type: npm-registry
+    url: https://libraries.cgr.dev/javascript/
+    username: ${{secrets.CG_LIBRARIES_USER}}
+    password: ${{secrets.CG_LIBRARIES_PASS}}
+    replaces-base: true
 updates:
-  - package-ecosystem: 'npm' # See documentation for possible values
-    directory: '/' # Location of package manifests
+  - package-ecosystem: 'npm'
+    directory: '/'
+    registries:
+      - chainguard-npm
     schedule:
       interval: 'daily'
       time: '01:00'
@@ -15,8 +19,10 @@ updates:
       prefix: 'fix'
       prefix-development: 'chore'
       include: 'scope'
-  - package-ecosystem: 'npm' # See documentation for possible values
-    directory: '/shared' # Location of package manifests
+  - package-ecosystem: 'npm'
+    directory: '/shared'
+    registries:
+      - chainguard-npm
     schedule:
       interval: 'daily'
       time: '03:00'
