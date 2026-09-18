@@ -4,7 +4,9 @@
   "trailingComma": "all",
   "singleQuote": true,
   "printWidth": 80,
-  "sortPackageJson": false,
+  "sortPackageJson": {
+    "sortScripts": true
+  },
   "sortImports": {
     "newlinesBetween": true,
     "sortSideEffects": false,
@@ -59,7 +61,12 @@
           "customGroups": [
             {
               "groupName": "react",
-              "elementNamePattern": ["react", "react/**", "react-*", "react-*/**"]
+              "elementNamePattern": [
+                "react",
+                "react/**",
+                "react-*",
+                "react-*/**"
+              ]
             },
             {
               "groupName": "formsg-shared",

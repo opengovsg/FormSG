@@ -6,7 +6,9 @@
     "node": true
   },
   "rules": {
-    "no-console": "warn"
+    "no-console": "warn",
+    "import/default": "off",
+    "import/namespace": "off"
   },
   "overrides": [
     {
@@ -25,11 +27,7 @@
       }
     },
     {
-      "files": [
-        "**/*.spec.ts",
-        "**/*.spec.js",
-        "**/__tests__/**/*.ts"
-      ],
+      "files": ["**/*.spec.ts", "**/*.spec.js", "**/__tests__/**/*.ts"],
       "plugins": ["typescript", "jest"],
       "env": {
         "jest": true
@@ -54,6 +52,8 @@
         "jest/valid-expect": "error",
         "jest/valid-expect-in-promise": "error",
         "jest/valid-title": "error",
+        "jest/require-to-throw-message": "off",
+        "jest/prefer-snapshot-hint": "off",
         "typescript/no-explicit-any": "off",
         "typescript/no-non-null-assertion": "off"
       }
