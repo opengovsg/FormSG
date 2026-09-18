@@ -1,22 +1,23 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { FormControl } from '@chakra-ui/react'
+import { FormControl, Text } from '@chakra-ui/react'
 
 import { BasicField } from 'formsg-shared/types'
 
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
 import Toggle from '~components/Toggle'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowSavePermissive } from '../../../hooks/useIsWorkflowSavePermissive'
 import { useStageFieldAndNavigate } from '../../../hooks/useStageFieldAndNavigate'
 import { EditStepInputs } from '../../../types'
+import { useIsSpotlightActiveSection } from '../../Spotlight'
 import { nextEditFieldsForApproval } from '../utils/nextEditFieldsForApproval'
 
 import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
@@ -34,6 +35,8 @@ export const ApprovalsBlock = ({
 }: ApprovalsBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isSavePermissive = useIsWorkflowSavePermissive()
+  const isActiveSection = useIsSpotlightActiveSection()
   const stageFieldAndNavigate = useStageFieldAndNavigate()
   const {
     control,
@@ -69,13 +72,30 @@ export const ApprovalsBlock = ({
     })
     .filter(Boolean)
 
+  const lastChosenApprovalField = useRef(selectedApprovalField ?? '')
+
+  const assignApprovalFieldToStep = (approvalFieldId: string) => {
+    const currentEdit = getValues(FIELDS_TO_EDIT_NAME) ?? []
+    const nextEdit = nextEditFieldsForApproval({
+      edit: currentEdit,
+      approvalFieldId,
+      isEnabled: isRedesign,
+    })
+    if (nextEdit !== currentEdit) {
+      setValue(FIELDS_TO_EDIT_NAME, nextEdit, { shouldDirty: true })
+    }
+  }
+
   const onApprovalToggleChange = () => {
     const nextIsApprovalToggleChecked = !isApprovalToggleChecked
-    if (!nextIsApprovalToggleChecked) {
-      // shouldDirty is required for auto-save-on-switch to notice this change:
-      // the toggle's own state is React state, not RHF, so clearing the field
-      // is the only thing that marks the form dirty. Without it, toggling
-      // approval off and clicking another card discards the change silently.
+    if (nextIsApprovalToggleChecked) {
+      const remembered = lastChosenApprovalField.current
+      if (remembered && yesNoFieldIds.includes(remembered)) {
+        assignApprovalFieldToStep(remembered)
+        setValue(APPROVAL_FIELD_NAME, remembered, { shouldDirty: true })
+      }
+    } else {
+      lastChosenApprovalField.current = getValues(APPROVAL_FIELD_NAME) ?? ''
       setValue(APPROVAL_FIELD_NAME, '', { shouldDirty: true })
       clearErrors(APPROVAL_FIELD_NAME)
     }
@@ -84,10 +104,6 @@ export const ApprovalsBlock = ({
 
   const getValueIfNotDeleted = useCallback(
     (value: string) => {
-      // Why: When the Yes/No field has been deleted, the approval_field is still set to the
-      // invalid form field id but cannot be seen or cleared in the SingleSelect component
-      // since no matching Yes/No item can be found.
-      // Hence, we clear the approval_field to allow the user to re-select a new valid value.
       if (!isLoading && value && !yesNoFieldIds.includes(value)) {
         setValue(APPROVAL_FIELD_NAME, '')
         return ''
@@ -99,6 +115,11 @@ export const ApprovalsBlock = ({
 
   return (
     <EditStepBlockContainer>
+      {isActiveSection ? (
+        <Text textStyle="body-2" color="secondary.400">
+          {t('features.adminForm.sidebar.workflow.guidedHints.approvals')}
+        </Text>
+      ) : null}
       <Toggle
         isLoading={isLoading}
         onChange={onApprovalToggleChange}
@@ -126,21 +147,14 @@ export const ApprovalsBlock = ({
       {isApprovalToggleChecked ? (
         <FormControl
           isInvalid={!!errors.approval_field?.message}
-          {...(isRedesign ? { isRequired: true, mt: '1rem' } : {})}
+          {...(isRedesign ? { isRequired: !isSavePermissive } : {})}
         >
-          {isRedesign ? (
-            <FormLabel style={textStyles.h4}>
-              {t(
-                'features.adminForm.sidebar.workflow.approvals.toggle.selectorLabelRedesign',
-              )}
-            </FormLabel>
-          ) : null}
           <Controller
             name={APPROVAL_FIELD_NAME}
             control={control}
             rules={{
               validate: (value) => {
-                if (!value && isApprovalToggleChecked) {
+                if (!value && isApprovalToggleChecked && !isSavePermissive) {
                   return t(
                     isRedesign
                       ? 'features.adminForm.sidebar.workflow.approvals.validation.noFieldRedesign'
@@ -152,10 +166,6 @@ export const ApprovalsBlock = ({
                     'features.adminForm.sidebar.workflow.approvals.validation.fieldAlreadyUsed',
                   )
                 }
-                // Read `edit` live rather than via the watched closure: the
-                // sibling QuestionsBlock calls trigger() synchronously in its
-                // onChange, before this component re-renders, so a closed-over
-                // value would be one change stale.
                 if (
                   value &&
                   !(getValues(FIELDS_TO_EDIT_NAME) ?? []).includes(value)
@@ -180,28 +190,14 @@ export const ApprovalsBlock = ({
                     actionLabel={t(
                       'features.adminForm.sidebar.workflow.emptyStates.noYesNoFieldAction',
                     )}
-                    onAction={() => stageFieldAndNavigate(BasicField.YesNo)}
+                    onAction={() =>
+                      stageFieldAndNavigate(BasicField.YesNo, getValues())
+                    }
                   />
                 )
               }
               const handleApprovalFieldChange = (newValue: string) => {
-                // Append to `edit` before handing the value to RHF. Setting
-                // approval_field revalidates it, and validate reads `edit`
-                // live, so doing that first makes the field look unassigned
-                // and raises "not assigned to this person" for the very field
-                // this handler is about to assign.
-                const currentEdit = getValues(FIELDS_TO_EDIT_NAME) ?? []
-                const nextEdit = nextEditFieldsForApproval({
-                  edit: currentEdit,
-                  approvalFieldId: newValue,
-                  isEnabled: isRedesign,
-                })
-                // The helper returns `currentEdit` itself when there is nothing
-                // to add, so a reference check is enough to skip the no-op
-                // setValue and keep flag-off dirty tracking untouched.
-                if (nextEdit !== currentEdit) {
-                  setValue(FIELDS_TO_EDIT_NAME, nextEdit, { shouldDirty: true })
-                }
+                assignApprovalFieldToStep(newValue)
                 onChange(newValue)
               }
               return (

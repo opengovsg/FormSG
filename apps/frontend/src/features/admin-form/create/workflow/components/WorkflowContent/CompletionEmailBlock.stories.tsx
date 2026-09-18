@@ -25,6 +25,8 @@ import {
 import { StoryRouter } from '~utils/storybook'
 
 import {
+  continueToEmailCardSelector,
+  setCompletedStepSelector,
   setToEditingEmailCardSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
@@ -93,8 +95,6 @@ const mocks = (
     mode: FormResponseMode.Multirespondent,
     delay: settingsDelay,
     overrides: {
-      // The shared mock form is Public by default, which would render every
-      // story read-only. Editable stories must say so explicitly.
       status: FormStatus.Private,
       ...settingsOverrides,
     },
@@ -130,17 +130,25 @@ export default {
 
 const Template: StoryFn = () => <CompletionEmailBlock />
 
-/** Opens the card, for the stories that document its expanded state. */
 const OpenedTemplate: StoryFn = () => {
   const setToEditingEmailCard = useAdminWorkflowStore(
     setToEditingEmailCardSelector,
   )
-  // Resets on unmount, so switching between the Active and Inactive stories
-  // does not leak an open card into the next one.
   useEffect(() => {
     setToEditingEmailCard()
     return () => useAdminWorkflowStore.getState().reset()
   }, [setToEditingEmailCard])
+  return <CompletionEmailBlock />
+}
+
+const GuidedTemplate: StoryFn = () => {
+  const setCompletedStep = useAdminWorkflowStore(setCompletedStepSelector)
+  const continueToEmailCard = useAdminWorkflowStore(continueToEmailCardSelector)
+  useEffect(() => {
+    setCompletedStep(0)
+    continueToEmailCard()
+    return () => useAdminWorkflowStore.getState().reset()
+  }, [setCompletedStep, continueToEmailCard])
   return <CompletionEmailBlock />
 }
 
@@ -208,8 +216,6 @@ ActiveOnPublicForm.parameters = {
 export const SettingsError = Template.bind({})
 SettingsError.storyName = 'Settings request failed'
 SettingsError.parameters = {
-  // Overridden inline rather than by teaching the shared settings handler about
-  // failures, which every other story would then carry.
   msw: {
     handlers: [
       mocks(NOTHING_CONFIGURED)[0],
@@ -222,6 +228,18 @@ SettingsError.parameters = {
     description: {
       story:
         'With no recipients to summarise the card would skeleton indefinitely, since a failed request and one still in flight both leave the data undefined. Falls back to the message the flag-off path shows, so the admin still gets a working link to Settings.',
+    },
+  },
+}
+
+export const GuidedActive = GuidedTemplate.bind({})
+GuidedActive.storyName = 'Active, reached from guided setup'
+GuidedActive.parameters = {
+  msw: { handlers: mocks(FULLY_CONFIGURED) },
+  docs: {
+    description: {
+      story:
+        'Reached by declining another step on a peek card. Opens on the first recipient section, with a spotlight band on it and the rest revealed one Continue at a time. Cancel on the first section returns to that peek card.',
     },
   },
 }

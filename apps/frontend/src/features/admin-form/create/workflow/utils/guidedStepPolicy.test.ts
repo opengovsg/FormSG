@@ -4,24 +4,24 @@ import {
 } from './guidedStepPolicy'
 
 describe('getGuidedSecondaryAction', () => {
-  it('offers nothing on the first section of step 1', () => {
+  it('offers nothing on a first section with nothing to cancel to', () => {
     expect(
-      getGuidedSecondaryAction({ sectionIndex: 0, isFirstStep: true }),
+      getGuidedSecondaryAction({ sectionIndex: 0, canCancel: false }),
     ).toBe(GuidedSecondaryAction.None)
   })
 
-  it('offers Cancel on the first section of a later step', () => {
-    expect(
-      getGuidedSecondaryAction({ sectionIndex: 0, isFirstStep: false }),
-    ).toBe(GuidedSecondaryAction.Cancel)
+  it('offers Cancel on a first section that has somewhere to cancel to', () => {
+    expect(getGuidedSecondaryAction({ sectionIndex: 0, canCancel: true })).toBe(
+      GuidedSecondaryAction.Cancel,
+    )
   })
 
   it.each([1, 2, 3])(
     'offers Back on section %i, which has one behind it',
     (sectionIndex) => {
-      expect(
-        getGuidedSecondaryAction({ sectionIndex, isFirstStep: true }),
-      ).toBe(GuidedSecondaryAction.Back)
+      expect(getGuidedSecondaryAction({ sectionIndex, canCancel: false })).toBe(
+        GuidedSecondaryAction.Back,
+      )
     },
   )
 })

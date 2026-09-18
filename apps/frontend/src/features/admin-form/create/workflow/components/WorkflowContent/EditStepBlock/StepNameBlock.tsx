@@ -15,6 +15,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
+import { useIsSpotlightActiveSection } from '../../Spotlight'
 
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
@@ -32,6 +33,7 @@ export const StepNameBlock = ({
 }: StepNameProps): JSX.Element => {
   const { t } = useTranslation()
   const { cardRadius, stepLabelTextStyle } = useWorkflowSurfaces()
+  const isActiveSection = useIsSpotlightActiveSection()
   const {
     formState: { errors },
     control,
@@ -70,6 +72,13 @@ export const StepNameBlock = ({
             <FormLabel isRequired style={textStyles.h4} textStyle={'subhead-1'}>
               {t('features.adminForm.sidebar.workflow.stepName.label')}
             </FormLabel>
+            {isActiveSection && stepNumber > 0 ? (
+              <Text textStyle="body-2" color="secondary.400" mb="0.5rem">
+                {t('features.adminForm.sidebar.workflow.guidedHints.stepName', {
+                  stepNumber: stepNumber + 1,
+                })}
+              </Text>
+            ) : null}
             <Controller
               control={control}
               name={STEP_NAME}

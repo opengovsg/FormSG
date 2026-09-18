@@ -9,9 +9,9 @@ export interface GuidedActionGroupProps {
   secondaryAction: GuidedSecondaryAction
   isOnLastSection: boolean
   isLoading: boolean
-  onBack: () => void
+  onBack?: () => void
   onCancel: () => void
-  onContinue: () => void
+  onContinue?: () => void
   onDone: () => void
 }
 

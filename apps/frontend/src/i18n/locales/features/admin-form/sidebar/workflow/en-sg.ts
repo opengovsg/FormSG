@@ -56,9 +56,6 @@ export const enSG: Workflow = {
         confirm: 'Delete workflow',
         cancel: 'Cancel',
       },
-      // Same consequences as deleteWorkflow, repeated rather than shared: the
-      // two differ only in the title, and translators need whole sentences,
-      // since clause order differs by language and stitched fragments break.
       deleteFirstStep: {
         title: 'Deleting the first step removes the entire workflow',
         description: [
@@ -72,6 +69,13 @@ export const enSG: Workflow = {
         title: 'Close your form first',
         description:
           'You can only delete your workflow when your form is closed to new responses.',
+        confirm: 'Go to settings',
+        cancel: 'Cancel',
+      },
+      closeFormFirstToEdit: {
+        title: 'Close your form first',
+        description:
+          'You can only edit your workflow when your form is closed to new responses.',
         confirm: 'Go to settings',
         cancel: 'Cancel',
       },
@@ -196,8 +200,6 @@ export const enSG: Workflow = {
       tooltip:
         'Use this for steps that involve any type of decision, such as reviews or endorsements. Decision will be shown on dashboard and tracking links.',
       placeholder: 'Select a field',
-      selectorLabelRedesign:
-        'Select the Yes/No field for the approval decision',
     },
     validation: {
       noField: 'Please select a Yes/No field',
@@ -224,6 +226,13 @@ export const enSG: Workflow = {
   },
   guidedMode: {
     label: 'Guided setup',
+  },
+  guidedHints: {
+    stepName: "Name this step, or keep it as 'Step {stepNumber}'.",
+    respondent:
+      'Pick who fills in this step. You can always change this later.',
+    approvals:
+      'Choose what they do in this step. Most steps just need people to fill in fields.',
   },
   skipGuidance: {
     modal: {
@@ -282,7 +291,7 @@ export const enSG: Workflow = {
         'Before you finish, you can let people check the status of their response.',
     },
     guidedSetupFinished: {
-      title: "You've finished guided setup",
+      title: "You've finished guided setup.",
       subtitle:
         'Use the Preview button on the top right to check what each step looks like.',
     },

@@ -1,6 +1,8 @@
 import { Box, Stack } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
+import { viewports } from '~utils/storybook'
+
 import { PeekCard, PeekCardProps } from './PeekCard'
 
 export default {
@@ -9,11 +11,6 @@ export default {
   component: PeekCard,
 } as Meta<PeekCardProps>
 
-/**
- * The tucked variant only reads correctly beneath a card of matching width, so
- * the stories that use it supply a stand-in for the card above rather than
- * floating the peek card on its own.
- */
 const CardAbove = (): JSX.Element => (
   <Box
     bg="white"
@@ -54,6 +51,27 @@ TwoActions.parameters = {
     description: {
       story:
         'The case that shapes the API. The secondary is a clear variant and the primary is solid, with the primary last.',
+    },
+  },
+}
+
+export const MobileTwoActions = TuckedTemplate.bind({})
+MobileTwoActions.storyName = 'Tucked, two actions, mobile'
+MobileTwoActions.args = {
+  title: 'Nice, Step 2 is all set',
+  subtitle: 'Would you like to add another step?',
+  actions: [
+    { label: "No, I'm done", onClick: () => undefined },
+    { label: 'Yes, add a step', onClick: () => undefined },
+  ],
+}
+MobileTwoActions.parameters = {
+  viewport: { defaultViewport: 'mobile1' },
+  chromatic: { viewports: [viewports.xs] },
+  docs: {
+    description: {
+      story:
+        'Side by side the two labels overflow a phone, so they stack full width with the primary on top.',
     },
   },
 }

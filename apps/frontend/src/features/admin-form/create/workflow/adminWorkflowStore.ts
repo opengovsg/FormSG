@@ -1,12 +1,19 @@
 import create from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-import { AdminEditWorkflowState, CreateOrEditData } from './types'
+import {
+  AdminEditWorkflowState,
+  CreateOrEditData,
+  EditStepInputs,
+  GuidedWrapUp,
+  StepDraft,
+} from './types'
 
 type AdminWorkflowStore = {
   setToCreating: () => void
   setToEditing: (stepNumber: number) => void
   setToEditingEmailCard: () => void
+  continueToEmailCard: () => void
   setToInactive: () => void
   reset: () => void
   createOrEditData: CreateOrEditData | null
@@ -24,6 +31,12 @@ type AdminWorkflowStore = {
   isOnWelcomeCard: boolean
   showWelcomeCard: () => void
   startBuildingFromWelcome: () => void
+  guidedWrapUp: GuidedWrapUp
+  setGuidedWrapUp: (stage: GuidedWrapUp) => void
+  stepDraft: StepDraft | null
+  stashStepDraft: (inputs: Partial<EditStepInputs>) => void
+  restoreStepDraft: () => void
+  clearStepDraft: () => void
 }
 
 export const DEFAULT_IS_GUIDED_SETUP = true
@@ -59,6 +72,9 @@ export const isEditingEmailCardSelector = (state: AdminWorkflowStore) =>
 
 export const setToEditingEmailCardSelector = (state: AdminWorkflowStore) =>
   state.setToEditingEmailCard
+
+export const continueToEmailCardSelector = (state: AdminWorkflowStore) =>
+  state.continueToEmailCard
 
 export const setToInactiveSelector = (state: AdminWorkflowStore) =>
   state.setToInactive
@@ -105,6 +121,23 @@ export const showWelcomeCardSelector = (state: AdminWorkflowStore) =>
 export const startBuildingFromWelcomeSelector = (state: AdminWorkflowStore) =>
   state.startBuildingFromWelcome
 
+export const guidedWrapUpSelector = (state: AdminWorkflowStore) =>
+  state.guidedWrapUp
+
+export const setGuidedWrapUpSelector = (state: AdminWorkflowStore) =>
+  state.setGuidedWrapUp
+
+export const stepDraftSelector = (state: AdminWorkflowStore) => state.stepDraft
+
+export const stashStepDraftSelector = (state: AdminWorkflowStore) =>
+  state.stashStepDraft
+
+export const restoreStepDraftSelector = (state: AdminWorkflowStore) =>
+  state.restoreStepDraft
+
+export const clearStepDraftSelector = (state: AdminWorkflowStore) =>
+  state.clearStepDraft
+
 export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
   devtools((set, get) => ({
     createOrEditData: null,
@@ -112,12 +145,16 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
     completedStepNumber: null,
     isGuidedSetup: DEFAULT_IS_GUIDED_SETUP,
     isOnWelcomeCard: false,
+    stepDraft: null,
+    guidedWrapUp: GuidedWrapUp.None,
+    setGuidedWrapUp: (stage) => set({ guidedWrapUp: stage }),
     setToCreating: () =>
       set({
         createOrEditData: {
           state: AdminEditWorkflowState.CreatingStep,
         },
         completedStepNumber: null,
+        stepDraft: null,
       }),
     setToEditing: (stepNumber) =>
       set({
@@ -126,6 +163,7 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
           stepNumber,
         },
         completedStepNumber: null,
+        stepDraft: null,
       }),
     setToEditingEmailCard: () =>
       set({
@@ -133,6 +171,13 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
           state: AdminEditWorkflowState.EditingEmailCard,
         },
         completedStepNumber: null,
+        stepDraft: null,
+      }),
+    continueToEmailCard: () =>
+      set({
+        createOrEditData: {
+          state: AdminEditWorkflowState.EditingEmailCard,
+        },
       }),
     setCompletedStep: (stepNumber) => set({ completedStepNumber: stepNumber }),
     dismissCompletedStep: () => set({ completedStepNumber: null }),
@@ -143,7 +188,7 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
         isOnWelcomeCard: false,
         createOrEditData: { state: AdminEditWorkflowState.CreatingStep },
       }),
-    setToInactive: () => set({ createOrEditData: null }),
+    setToInactive: () => set({ createOrEditData: null, stepDraft: null }),
     reset: () => set(INITIAL_STATE),
     requestSwitchTo: (stepNumber) =>
       set({
@@ -161,13 +206,23 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
         pendingSwitchTo: { state: AdminEditWorkflowState.CreatingStep },
       }),
     cancelPendingSwitch: () => set({ pendingSwitchTo: null }),
-    // Hand over to a pending switch, or collapse when there is none: a null
-    // pending target is exactly the collapsed state.
+    stashStepDraft: (inputs) => {
+      const createOrEditData = get().createOrEditData
+      if (!createOrEditData) return
+      set({ stepDraft: { target: createOrEditData, inputs } })
+    },
+    restoreStepDraft: () => {
+      const stepDraft = get().stepDraft
+      if (!stepDraft) return
+      set({ createOrEditData: stepDraft.target })
+    },
+    clearStepDraft: () => set({ stepDraft: null }),
     completeSave: () => {
       const pendingSwitchTo = get().pendingSwitchTo
       set({
         createOrEditData: pendingSwitchTo,
         pendingSwitchTo: null,
+        stepDraft: null,
         ...(pendingSwitchTo ? { completedStepNumber: null } : {}),
       })
     },

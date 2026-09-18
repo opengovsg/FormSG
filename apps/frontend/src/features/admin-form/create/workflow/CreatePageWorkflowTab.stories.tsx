@@ -48,9 +48,6 @@ export default {
   ],
   parameters: {
     layout: 'fullscreen',
-    // Required so skeleton "animation" does not hide content.
-    // Pass a very short delay to avoid bug where Chromatic takes a snapshot before
-    // the story has loaded
     chromatic: { pauseAnimationAtEnd: true, delay: 300 },
     msw: {
       handlers: {
@@ -196,6 +193,13 @@ const workflow_step_2: FormWorkflowStepDto = {
   edit: [form_field_3._id, form_field_4._id],
 }
 
+const workflow_step_2_with_no_emails: FormWorkflowStepDto = {
+  _id: '61e6857c9c794b0012f1c701',
+  workflow_type: WorkflowType.Static,
+  emails: [],
+  edit: [form_field_3._id, form_field_4._id],
+}
+
 const workflow_step_2_with_deleted_field: FormWorkflowStepDto = {
   _id: '61e6857c9c794b0012f1cnkl',
   workflow_type: WorkflowType.Static,
@@ -328,6 +332,28 @@ Step3Approval.parameters = {
   },
 }
 
+export const Step3ApprovalRedesignOn = Template.bind({})
+Step3ApprovalRedesignOn.decorators = [withRedesignOn]
+Step3ApprovalRedesignOn.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
+        workflow: [
+          workflow_step_1,
+          workflow_step_2,
+          workflow_step_3_with_approval,
+        ],
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'A step whose approval field is already chosen, on a closed form. Toggling the approval off and on again puts the same field back.',
+  },
+}
+
 export const Step3ApprovalFieldDeleted = Template.bind({})
 Step3ApprovalFieldDeleted.parameters = {
   msw: {
@@ -341,6 +367,22 @@ Step3ApprovalFieldDeleted.parameters = {
         ],
       }),
     },
+  },
+}
+
+export const Step2NoEmails = Template.bind({})
+Step2NoEmails.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        workflow: [workflow_step_1, workflow_step_2_with_no_emails],
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'Specific emails selected, none entered. Saving an incomplete step is allowed, so the card shows the missing-field error.',
   },
 }
 
@@ -398,9 +440,6 @@ Step2InvalidConditionalRecipientSelected.parameters = {
   },
 }
 
-// Paired with WithWorkflow to show the completion email seam in both flag
-// states: off keeps the inline message pointing at Settings, on replaces it
-// with the editable card.
 export const WithWorkflowRedesignOn = Template.bind({})
 WithWorkflowRedesignOn.decorators = [withRedesignOn]
 WithWorkflowRedesignOn.parameters = {
@@ -410,8 +449,6 @@ WithWorkflowRedesignOn.parameters = {
       getAdminFormSettings({
         mode: FormResponseMode.Multirespondent,
         overrides: {
-          // The shared mock form is Public by default, which renders the MRF
-          // email controls read-only.
           status: FormStatus.Private,
           emails: ['admin@example.gov.sg'],
           stepsToNotify: [workflow_step_2._id],
@@ -423,6 +460,74 @@ WithWorkflowRedesignOn.parameters = {
   },
 }
 
+export const WithWorkflowRedesignOnClosedForm = Template.bind({})
+WithWorkflowRedesignOnClosedForm.decorators = [withRedesignOn]
+WithWorkflowRedesignOnClosedForm.parameters = {
+  msw: {
+    handlers: [
+      ...buildMswRoutes({ ...FORM_WITH_WORKFLOW, status: FormStatus.Private }),
+      getAdminFormSettings({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          status: FormStatus.Private,
+          emails: ['admin@example.gov.sg'],
+          stepsToNotify: [workflow_step_2._id],
+          stepOneEmailNotificationFieldId: form_field_5._id,
+        } satisfies Partial<MultirespondentFormSettings>,
+      }),
+      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+    ],
+  },
+}
+
+export const NoCompletionEmailRedesignOn = Template.bind({})
+NoCompletionEmailRedesignOn.decorators = [withRedesignOn]
+NoCompletionEmailRedesignOn.parameters = {
+  msw: {
+    handlers: [
+      ...buildMswRoutes(FORM_WITH_WORKFLOW),
+      getAdminFormSettings({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          status: FormStatus.Private,
+          emails: [],
+          stepsToNotify: [],
+          stepOneEmailNotificationFieldId: '',
+        } satisfies Partial<MultirespondentFormSettings>,
+      }),
+      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+    ],
+  },
+  documentation: {
+    storyDescription:
+      'A workflow whose completion email has never been set up. The status tracking peek card waits for that card to be saved.',
+  },
+}
+
+export const Step1RedesignOn = Template.bind({})
+Step1RedesignOn.decorators = [withRedesignOn]
+Step1RedesignOn.parameters = {
+  msw: {
+    handlers: [
+      ...buildMswRoutes({ ...FORM_WITH_WORKFLOW, workflow: [workflow_step_1] }),
+      getAdminFormSettings({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          status: FormStatus.Private,
+          emails: ['admin@example.gov.sg'],
+          stepsToNotify: [],
+          stepOneEmailNotificationFieldId: form_field_5._id,
+        } satisfies Partial<MultirespondentFormSettings>,
+      }),
+      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+    ],
+  },
+  documentation: {
+    storyDescription:
+      'A workflow that stops at step 1. The completion email card waits for a second step, so the page ends at the Add step button.',
+  },
+}
+
 export const NoWorkflowRedesignOn = Template.bind({})
 NoWorkflowRedesignOn.decorators = [withRedesignOn]
 NoWorkflowRedesignOn.parameters = {
@@ -430,6 +535,23 @@ NoWorkflowRedesignOn.parameters = {
     handlers: {
       default: buildMswRoutes({ ...FORM_WITH_WORKFLOW, workflow: [] }),
     },
+  },
+}
+
+export const NewStepOnPrivateFormRedesignOn = Template.bind({})
+NewStepOnPrivateFormRedesignOn.decorators = [withRedesignOn]
+NewStepOnPrivateFormRedesignOn.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'The shared mock form is public, which makes every step save strictly. A closed form saves permissively, so an unfinished step can be kept and flagged on its card instead.',
   },
 }
 

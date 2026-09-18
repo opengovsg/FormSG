@@ -12,15 +12,22 @@ export enum AdminEditWorkflowState {
   EditingEmailCard,
 }
 
-/**
- * Which card is open. Also what an in-flight save is handing over to, so that
- * "the open card" and "the card we are switching to" are the same shape and
- * need no translation between them.
- */
 export type CreateOrEditData =
   | { state: AdminEditWorkflowState.CreatingStep }
   | { state: AdminEditWorkflowState.EditingStep; stepNumber: number }
   | { state: AdminEditWorkflowState.EditingEmailCard }
+
+export enum GuidedWrapUp {
+  None = 'none',
+  EmailSaved = 'email-saved',
+  StatusTracking = 'status-tracking',
+  Done = 'done',
+}
+
+export interface StepDraft {
+  target: CreateOrEditData
+  inputs: Partial<EditStepInputs>
+}
 
 export type EditStepInputs = FormWorkflowStep & {
   _id: string

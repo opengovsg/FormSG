@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
-import { Flex, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
 import { GUIDE_FORM_MRF } from '~constants/links'
 import Button from '~components/Button'
@@ -17,10 +18,15 @@ import { useGuidedSetupPreference } from '../hooks/useGuidedSetupPreference'
 import { useGuidedSetupTaught } from '../hooks/useGuidedSetupTaught'
 import { useIsWorkflowBuilderRedesign } from '../hooks/useIsWorkflowBuilderRedesign'
 
-import { FormToWorkflowIllustration } from './FormToWorkflowIllustration'
+import {
+  FormToWorkflowIllustration,
+  ILLUSTRATION_MAX_W,
+} from './FormToWorkflowIllustration'
 import { WorkflowSvgr } from './WorkflowSvgr'
 
 const INTRO_I18N_PREFIX = 'features.adminForm.sidebar.workflow.intro'
+
+export const INTRO_ILLUSTRATION_TEST_ID = 'workflow-intro-illustration'
 
 export const EmptyWorkflow = (): JSX.Element => {
   const { t } = useTranslation()
@@ -28,6 +34,7 @@ export const EmptyWorkflow = (): JSX.Element => {
   const { setGuidedSetup } = useGuidedSetupPreference()
   const showWelcomeCard = useAdminWorkflowStore(showWelcomeCardSelector)
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const [isIllustrationHovered, setIsIllustrationHovered] = useState(false)
 
   const startSetup = (isGuidedSetup: boolean) => () => {
     setGuidedSetup(isGuidedSetup)
@@ -81,7 +88,15 @@ export const EmptyWorkflow = (): JSX.Element => {
             </Button>
           </Stack>
         </Tooltip>
-        <FormToWorkflowIllustration />
+        <Box
+          data-testid={INTRO_ILLUSTRATION_TEST_ID}
+          w="100%"
+          maxW={ILLUSTRATION_MAX_W}
+          onMouseEnter={() => setIsIllustrationHovered(true)}
+          onMouseLeave={() => setIsIllustrationHovered(false)}
+        >
+          <FormToWorkflowIllustration showWorkflow={isIllustrationHovered} />
+        </Box>
       </Flex>
     )
   }

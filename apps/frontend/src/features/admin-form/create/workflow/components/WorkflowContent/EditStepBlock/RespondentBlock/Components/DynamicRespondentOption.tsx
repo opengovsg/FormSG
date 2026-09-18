@@ -32,6 +32,7 @@ export const DynamicRespondentOption = ({
     register,
     formState: { errors },
     control,
+    getValues,
   } = formMethods
 
   const workflowTypeValidation = useWorkflowTypeValidation()
@@ -103,7 +104,9 @@ export const DynamicRespondentOption = ({
                     actionLabel={t(
                       'features.adminForm.sidebar.workflow.emptyStates.noEmailFieldAction',
                     )}
-                    onAction={() => stageFieldAndNavigate(BasicField.Email)}
+                    onAction={() =>
+                      stageFieldAndNavigate(BasicField.Email, getValues())
+                    }
                   />
                 ) : (
                   <SingleSelect

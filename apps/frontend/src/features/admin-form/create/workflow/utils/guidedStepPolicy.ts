@@ -6,13 +6,13 @@ export enum GuidedSecondaryAction {
 
 export interface GuidedSecondaryActionInput {
   sectionIndex: number
-  isFirstStep: boolean
+  canCancel: boolean
 }
 
 export const getGuidedSecondaryAction = ({
   sectionIndex,
-  isFirstStep,
+  canCancel,
 }: GuidedSecondaryActionInput): GuidedSecondaryAction => {
   if (sectionIndex > 0) return GuidedSecondaryAction.Back
-  return isFirstStep ? GuidedSecondaryAction.None : GuidedSecondaryAction.Cancel
+  return canCancel ? GuidedSecondaryAction.Cancel : GuidedSecondaryAction.None
 }

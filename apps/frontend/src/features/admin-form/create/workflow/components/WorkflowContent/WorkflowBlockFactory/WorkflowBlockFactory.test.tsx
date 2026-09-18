@@ -8,6 +8,7 @@ import i18n from '~/i18n/i18n'
 
 import { useAdminWorkflowStore } from '../../../adminWorkflowStore'
 import * as pageStories from '../../../CreatePageWorkflowTab.stories'
+import { AdminEditWorkflowState } from '../../../types'
 import { STEP_CONNECTOR_TEST_ID } from '../WorkflowContent'
 
 const { WithWorkflowRedesignOn, WithWorkflow } = composeStories(pageStories)
@@ -80,7 +81,7 @@ describe('completion peek card after a step is built', () => {
     ).toBeInTheDocument()
   })
 
-  it('goes away for good when the admin says they are done', async () => {
+  it('hands over to the completion email card when the admin says they are done', async () => {
     const user = userEvent.setup()
     await renderWorkflow(WithWorkflowRedesignOn)
     await finishCreating(0)
@@ -90,7 +91,24 @@ describe('completion peek card after a step is built', () => {
     })
 
     expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
-    expect(useAdminWorkflowStore.getState().completedStepNumber).toBeNull()
+    expect(useAdminWorkflowStore.getState().createOrEditData).toEqual({
+      state: AdminEditWorkflowState.EditingEmailCard,
+    })
+  })
+
+  it('remembers the step it reported on, so cancelling can bring it back', async () => {
+    const user = userEvent.setup()
+    await renderWorkflow(WithWorkflowRedesignOn)
+    await finishCreating(0)
+
+    await act(async () => {
+      await user.click(screen.getByRole('button', DECLINE))
+    })
+    await act(async () => {
+      useAdminWorkflowStore.getState().setToInactive()
+    })
+
+    expect(await screen.findByText(STEP_ONE_DONE)).toBeInTheDocument()
   })
 
   it('stays out of the way while the step it reports on is open for editing', async () => {

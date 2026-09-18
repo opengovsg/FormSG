@@ -53,12 +53,6 @@ export interface ConditionalRoutingConfig {
   csvFile: File | null
 }
 
-/**
- * Parses the conditional routing CSV file, validating that it has the required csv template file headers.
- * @param csvFile - The CSV file to parse
- * @returns A promise that resolves to the CSV content as a string
- * @throws Error if CSV headers are invalid (must have 'Options' and 'Emails' columns)
- */
 const parseConditionalRoutingTemplateCsv = async (csvFile: File) =>
   parseCsvFile(csvFile, (headerRow) => {
     return {
@@ -77,6 +71,12 @@ const getFileName = (
   fieldTitle: string | undefined,
 ) =>
   `conditional_routing_form_${formId ?? ''}_field_${fieldTitle ?? ''}_mapping.csv`
+
+const EMPTY_STATE_ACTION_STYLES = {
+  size: 'sm',
+  h: 'auto',
+  lineHeight: '1.25rem',
+} as const
 
 export const ConditionalRoutingOption = ({
   isLoading,
@@ -470,7 +470,7 @@ export const ConditionalRoutingOption = ({
                         'features.adminForm.sidebar.workflow.emptyStates.noDropdownFieldAction',
                       )}
                       onAction={() =>
-                        stageFieldAndNavigate(BasicField.Dropdown)
+                        stageFieldAndNavigate(BasicField.Dropdown, getValues())
                       }
                     />
                   ) : (
@@ -507,7 +507,10 @@ export const ConditionalRoutingOption = ({
                   <Button
                     w="100%"
                     variant="outline"
-                    leftIcon={<BiPlus fontSize="1.5rem" />}
+                    {...(isRedesign ? EMPTY_STATE_ACTION_STYLES : {})}
+                    leftIcon={
+                      <BiPlus fontSize={isRedesign ? undefined : '1.5rem'} />
+                    }
                     onClick={handleOpenModal}
                     isDisabled={!isSelectedConditionalFieldFound}
                   >
