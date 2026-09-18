@@ -35,11 +35,6 @@ jobs:
       - name: Setup
         uses: ./.github/actions/setup
         if: steps.filter.outputs.frontend == 'true'
-      - name: Build test dependencies
-        if: steps.filter.outputs.frontend == 'true'
-        run: pnpm turbo run build --filter=formsg-frontend^...
-        env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
       - name: Configure Datadog Test Visibility
         if: steps.filter.outputs.frontend == 'true'
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
@@ -103,12 +98,6 @@ jobs:
         if: steps.filter.outputs.backend == 'true'
         with:
           job-index: ${{ matrix.shard }}
-      - name: Build test dependencies
-        if: steps.filter.outputs.backend == 'true'
-        run: pnpm turbo run build --filter=formsg-backend^...
-        env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
-          AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       - name: Configure Datadog Test Visibility
         if: steps.filter.outputs.backend == 'true'
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
@@ -116,7 +105,7 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
-      - run: pnpm test:backend:ci --shard=${{ matrix.shard }}/3
+      - run: pnpm test:backend:ci -- --shard=${{ matrix.shard }}/3
         if: steps.filter.outputs.backend == 'true'
         env:
           DD_TAGS: layer:backend
