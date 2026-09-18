@@ -90,6 +90,7 @@ import {
   StrippedAttachmentResponseV4,
 } from './multirespondent-submission.types'
 import {
+  adaptV4ResponsesForMyInfoHashCheck,
   MRF_VERSION_V4,
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
@@ -860,6 +861,60 @@ export const setCurrentWorkflowStep = async (
         return sendRouteError(res, mapRouteError(error))
       })
   )
+}
+
+/**
+ * Verifies the submitted MyInfo prefill answers against the hashes saved at
+ * prefill time, mirroring encrypt mode's validateStorageSubmission. Without
+ * this check a respondent could tamper with non-editable MyInfo-verified
+ * answers client-side.
+ *
+ * Must run before encryptSubmission, which snapshots the responses into the
+ * stored encryptedContent. MyInfo prefill only happens on the first step, so
+ * updates to an existing submission (mrfSubmission present) skip the check.
+ */
+export const verifyMyInfoHashes = async (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formId } = req.params
+  const { formDef, mrfSubmission } = req.formsg
+
+  if (formDef.authType !== FormAuthType.MyInfo || mrfSubmission) {
+    return next()
+  }
+
+  const logMeta = {
+    action: 'verifyMyInfoHashes',
+    formId,
+    ...createReqMeta(req),
+  }
+
+  return extractMyInfoLoginJwt(req.cookies, formDef.authType)
+    .andThen(MyInfoService.verifyLoginJwt)
+    .asyncAndThen(({ uinFin }) =>
+      MyInfoService.fetchMyInfoHashes(uinFin, formId).andThen((hashes) =>
+        MyInfoService.checkMyInfoHashes(
+          adaptV4ResponsesForMyInfoHashCheck(
+            req.body.responses ?? {},
+            formDef.form_fields,
+          ),
+          hashes,
+        ),
+      ),
+    )
+    .map(() => next())
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error verifying MyInfo hashes',
+        meta: logMeta,
+        error,
+      })
+      return sendRouteError(res, mapRouteError(error), {
+        spcpSubmissionFailure: true,
+      })
+    })
 }
 
 /**
