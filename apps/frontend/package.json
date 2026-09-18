@@ -7,6 +7,8 @@
   "scripts": {
     "build": "vite build",
     "build-storybook": "storybook build",
+    "format:check": "oxfmt --check .",
+    "format:fix": "oxfmt --write .",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",

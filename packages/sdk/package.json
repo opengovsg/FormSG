@@ -59,6 +59,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
+    "format:check": "oxfmt --check .",
+    "format:fix": "oxfmt --write .",
     "lint": "oxlint --quiet src/",
     "lint:fix": "oxlint --quiet --fix src/",
     "test": "jest",

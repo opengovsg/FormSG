@@ -15,6 +15,12 @@
     "lint:fix": {
       "cache": false
     },
+    "format:check": {
+      "outputs": []
+    },
+    "format:fix": {
+      "cache": false
+    },
     "test": {
       "dependsOn": ["^build"],
       "outputs": []
