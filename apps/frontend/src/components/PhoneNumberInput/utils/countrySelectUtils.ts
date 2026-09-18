@@ -1,4 +1,4 @@
-import { CountryCode } from 'libphonenumber-js/types'
+import { CountryCode } from 'libphonenumber-js'
 
 /**
  * Simple mapping constant retrieved from

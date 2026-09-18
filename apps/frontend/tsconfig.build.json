@@ -1,0 +1,14 @@
+// Build tsconfig, excludes stories/tests/Storybook from the production typecheck.
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/*.stories.ts",
+    "**/*.stories.tsx",
+    ".storybook",
+    "vitest-setup.ts"
+  ]
+}

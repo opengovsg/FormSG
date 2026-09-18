@@ -3,7 +3,6 @@ import { BuildOptions, defineConfig, PluginOption } from 'vite'
 // @ts-expect-error missing type definitions
 import nodePolyfills from 'vite-plugin-node-stdlib-browser'
 import svgr from 'vite-plugin-svgr'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 /**
  * Replaces @VITE_APP_* placeholders in source with their corresponding
@@ -53,18 +52,22 @@ export default defineConfig(() => {
     build: {
       outDir: 'dist',
       emptyOutDir: true,
+      reportCompressedSize: false,
       rollupOptions: {
         ...baseRollupOptions,
         output: {
           // Manually chunk datadog-chunk.ts so it gets preloaded in index.html instead of app.
-          manualChunks: {
-            'datadog-chunk': ['datadog-chunk.ts'],
+          manualChunks(id) {
+            if (id.endsWith('/datadog-chunk.ts')) return 'datadog-chunk'
           },
         },
         // logLevel: 'silent' as const,
       },
     },
     base: './',
+    resolve: {
+      tsconfigPaths: true,
+    },
     server: {
       proxy: {
         '/api/v3': 'http://127.0.0.1:5001',
@@ -72,7 +75,6 @@ export default defineConfig(() => {
     },
     plugins: [
       replaceEnvPlaceholders(),
-      tsconfigPaths(),
       nodePolyfills(),
       react(),
       svgr({
@@ -84,7 +86,6 @@ export default defineConfig(() => {
       }),
     ],
     worker: {
-      plugins: () => [tsconfigPaths()],
       format: 'es' as const,
     },
   }

@@ -8,15 +8,42 @@
       "require": "./dist/types/index.js",
       "default": "./types/index.ts"
     },
+    "./types/agency": {
+      "default": "./types/agency.ts"
+    },
+    "./types/analytics": {
+      "default": "./types/analytics.ts"
+    },
+    "./types/auth": {
+      "default": "./types/auth.ts"
+    },
     "./types/captcha": {
       "require": "./dist/types/captcha.js",
       "default": "./types/captcha.ts"
     },
+    "./types/core": {
+      "default": "./types/core.ts"
+    },
     "./types/errorCodes": {
       "default": "./types/errorCodes.ts"
     },
+    "./types/generic": {
+      "default": "./types/generic.ts"
+    },
     "./types/payment": {
       "default": "./types/payment.ts"
+    },
+    "./types/response": {
+      "default": "./types/response.ts"
+    },
+    "./types/response-v3": {
+      "default": "./types/response-v3.ts"
+    },
+    "./types/user": {
+      "default": "./types/user.ts"
+    },
+    "./types/workspace": {
+      "default": "./types/workspace.ts"
     },
     "./types/form": {
       "default": "./types/form/index.ts"
@@ -27,11 +54,17 @@
     "./types/form/form_logo": {
       "default": "./types/form/form_logo.ts"
     },
+    "./types/form/form_auth": {
+      "default": "./types/form/form_auth.ts"
+    },
     "./types/form/workflow": {
       "default": "./types/form/workflow.ts"
     },
     "./types/field": {
       "default": "./types/field/index.ts"
+    },
+    "./types/field/childrenCompoundField": {
+      "default": "./types/field/childrenCompoundField.ts"
     },
     "./types/submission": {
       "default": "./types/submission.ts"
