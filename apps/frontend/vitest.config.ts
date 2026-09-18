@@ -29,8 +29,18 @@ const storybookTests = testFilesNeedingStorybook()
 const baseTest = {
   globals: true,
   environment: 'jsdom' as const, // For storybook tests to work properly
-  dangerouslyIgnoreUnhandledErrors: true, // there's some flakey unhandlederror surfaced by vitest, but there isn't enough information to discern if it is a real issue. Actual test failures, will still fail the tests.
   pool: 'threads' as const,
+}
+
+/** MSW socket teardown can throw read EINVAL when dd-trace instruments net in CI. */
+function isMswSocketTeardownNoise(error: Error & { code?: string }): boolean {
+  if (error.code !== 'EINVAL') return false
+  const stack = error.stack ?? ''
+  return (
+    error.message.includes('read') ||
+    stack.includes('@mswjs/interceptors') ||
+    stack.includes('MockHttpSocket')
+  )
 }
 
 export default defineConfig((configEnv) =>
@@ -38,6 +48,13 @@ export default defineConfig((configEnv) =>
     viteConfig(configEnv),
     defineConfig({
       test: {
+        // Root-only options (Vitest 5 NonProjectOptions); ignored inside projects[].
+        dangerouslyIgnoreUnhandledErrors: true, // there's some flakey unhandlederror surfaced by vitest, but there isn't enough information to discern if it is a real issue. Actual test failures, will still fail the tests.
+        onUnhandledError(error) {
+          if (isMswSocketTeardownNoise(error as Error & { code?: string })) {
+            return false
+          }
+        },
         projects: [
           {
             extends: true,
