@@ -199,7 +199,7 @@ The team uses macOS for development.
 Make you sure have the following node version & package manager on your machine:
 
 - `"node": ">=22.12.0"`
-- `"pnpm": ">=10.30.3"`
+- `"pnpm": ">=12.4.1"`
 - `"mongo": ">=4.0.0"`
 - Python 3.7+ (for LocalStack)
 
