@@ -1,0 +1,9 @@
+{
+  // Intentionally muted: this folder is not in lint CI. Do not remove
+  // plugins: [] or correctness off — oxlint defaults would start linting it.
+  "$schema": "../node_modules/oxlint/configuration_schema.json",
+  "plugins": [],
+  "categories": {
+    "correctness": "off"
+  }
+}
