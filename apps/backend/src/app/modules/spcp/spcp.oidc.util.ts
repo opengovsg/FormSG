@@ -3,6 +3,7 @@ import { JWTVerifyResult } from 'jose'
 import { EC, ECPrivate } from 'jwk-to-pem'
 import { pick } from 'lodash'
 import promiseRetry from 'promise-retry'
+import { OperationOptions } from 'retry'
 
 import { createLoggerWithLabel } from '../../config/logger'
 import { InvalidIdTokenError } from './spcp.oidc.client.errors'
@@ -77,51 +78,54 @@ export const retryPromiseThreeAttempts = <T>(
  * @param promiseName to log in logger
  * @returns promise with unlimited attempts
  */
+// NDI spec: refresh-ahead retries indefinitely, exactly 10s between attempts.
+// Exported as data (not inlined) so a test can assert the 10s contract
+// without actually waiting 10s per attempt.
+export const RETRY_FOREVER_OPTIONS: OperationOptions = {
+  retries: 0,
+  forever: true, // Retries indefinitely until success. See https://github.com/tim-kos/node-retry/blob/11efd6e4e896e06b7873df4f6e187c1e6dd2cf1b/test/integration/test-forever.js for example implementation.
+  minTimeout: 10000, // Exactly 10s between each retry attempt
+  maxTimeout: 10000, // Exactly 10s between each retry attempt
+}
+
 export const retryPromiseForever = <T>(
   promiseFn: () => Promise<T>,
   promiseName: string,
+  retryOptions: OperationOptions = RETRY_FOREVER_OPTIONS,
 ): Promise<T> => {
-  return promiseRetry(
-    async (retry, attemptNo) => {
+  return promiseRetry(async (retry, attemptNo) => {
+    logger.info({
+      message: 'Attempting promise',
+      meta: {
+        action: 'retryPromiseForever',
+        promise: promiseName,
+        attemptNo,
+      },
+    })
+    try {
+      const result = await promiseFn()
       logger.info({
-        message: 'Attempting promise',
+        message: 'Promise resolved',
         meta: {
           action: 'retryPromiseForever',
           promise: promiseName,
           attemptNo,
         },
       })
-      try {
-        const result = await promiseFn()
-        logger.info({
-          message: 'Promise resolved',
-          meta: {
-            action: 'retryPromiseForever',
-            promise: promiseName,
-            attemptNo,
-          },
-        })
-        return result
-      } catch (e) {
-        logger.warn({
-          message: 'Promise rejected',
-          meta: {
-            action: 'retryPromiseForever',
-            promise: promiseName,
-            attemptNo,
-          },
-          error: pick(e, ['message', 'stack', 'code']),
-        })
-        return retry(e)
-      }
-    },
-    {
-      retries: 0,
-      forever: true, // Retries indefinitely until success. See https://github.com/tim-kos/node-retry/blob/11efd6e4e896e06b7873df4f6e187c1e6dd2cf1b/test/integration/test-forever.js for example implementation.
-      minTimeout: 10000, // Exactly 10s between each retry attempt
-      maxTimeout: 10000, // Exactly 10s between each retry attempt
-    },
-  )
+      return result
+    } catch (e) {
+      logger.warn({
+        message: 'Promise rejected',
+        meta: {
+          action: 'retryPromiseForever',
+          promise: promiseName,
+          attemptNo,
+        },
+        error: pick(e, ['message', 'stack', 'code']),
+      })
+      return retry(e)
+    }
+  }, retryOptions)
 }
 
 /**
