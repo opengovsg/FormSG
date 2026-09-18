@@ -15,7 +15,7 @@ name: Publish SDK
 
 env:
   NODE_VERSION: '22.22'
-  PNPM_VERSION: '10.30.3'
+  PNPM_VERSION: '12.4.1'
   SDK_PACKAGE: '@opengovsg/formsg-sdk'
 
 on:

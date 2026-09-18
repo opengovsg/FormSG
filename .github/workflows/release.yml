@@ -28,7 +28,7 @@ permissions:
 
 env:
   NODE_VERSION: '22.22'
-  PNPM_VERSION: '10.30.3'
+  PNPM_VERSION: '12.4.1'
   CTV_VERSION: '12.6.1' # commit-and-tag-version version used by this workflow
 
 jobs:
