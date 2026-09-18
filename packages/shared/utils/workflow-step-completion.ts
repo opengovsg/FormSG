@@ -9,6 +9,20 @@ export const mustWorkflowBeComplete = ({
   formStatus?: FormStatus
 }): boolean => formStatus === FormStatus.Public
 
+const findFormField = (
+  fieldId: FormFieldDto['_id'] | undefined,
+  formFields: FormFieldDto[],
+): FormFieldDto | undefined =>
+  fieldId === undefined
+    ? undefined
+    : formFields.find((field) => String(field._id) === String(fieldId))
+
+const isFieldOfType = (
+  fieldId: FormFieldDto['_id'] | undefined,
+  formFields: FormFieldDto[],
+  fieldType: BasicField,
+): boolean => findFormField(fieldId, formFields)?.fieldType === fieldType
+
 const isConditionalRoutingComplete = (
   conditionalFieldId: FormFieldDto['_id'] | undefined,
   formFields: FormFieldDto[],
@@ -42,9 +56,18 @@ export const isStepComplete = (
   formFields: FormFieldDto[],
   stepNumber: number,
 ): boolean => {
+  if (step.approval_field) {
+    if (!step.edit.map(String).includes(String(step.approval_field))) {
+      return false
+    }
+    if (!isFieldOfType(step.approval_field, formFields, BasicField.YesNo)) {
+      return false
+    }
+  }
+
   if (
-    step.approval_field &&
-    !step.edit.map(String).includes(String(step.approval_field))
+    step.edit.length > 0 &&
+    !step.edit.some((fieldId) => findFormField(fieldId, formFields))
   ) {
     return false
   }
@@ -55,7 +78,7 @@ export const isStepComplete = (
     case WorkflowType.Static:
       return step.emails.length > 0
     case WorkflowType.Dynamic:
-      return !!step.field
+      return isFieldOfType(step.field, formFields, BasicField.Email)
     case WorkflowType.Conditional:
       return isConditionalRoutingComplete(step.conditional_field, formFields)
   }
