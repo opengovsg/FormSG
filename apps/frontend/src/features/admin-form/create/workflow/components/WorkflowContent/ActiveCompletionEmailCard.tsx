@@ -25,13 +25,14 @@ import {
   completeSaveSelector,
   dismissCompletedStepSelector,
   pendingSwitchToSelector,
+  setGuidedWrapUpSelector,
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
-import { useGuidedStepReveal } from '../../hooks/useGuidedStepReveal'
 import { useIsGuidedEmailCard } from '../../hooks/useIsGuidedEmailCard'
 import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
-import { getGuidedSecondaryAction } from '../../utils/guidedStepPolicy'
+import { GuidedWrapUp } from '../../types'
+import { GuidedSecondaryAction } from '../../utils/guidedStepPolicy'
 import { SpotlightGroup } from '../Spotlight'
 
 import { EditStepBlockContainer } from './EditStepBlock/EditStepBlockContainer'
@@ -58,6 +59,7 @@ export const ActiveCompletionEmailCard = ({
   const dismissCompletedStep = useAdminWorkflowStore(
     dismissCompletedStepSelector,
   )
+  const setGuidedWrapUp = useAdminWorkflowStore(setGuidedWrapUpSelector)
   const isGuidedEntry = useIsGuidedEmailCard()
 
   const isGuided = isGuidedEntry && !isDisabled
@@ -85,9 +87,10 @@ export const ActiveCompletionEmailCard = ({
   const { isDirty } = formMethods.formState
 
   const handleSaved = useCallback(() => {
+    setGuidedWrapUp(GuidedWrapUp.EmailSaved)
     dismissCompletedStep()
     completeSave()
-  }, [dismissCompletedStep, completeSave])
+  }, [setGuidedWrapUp, dismissCompletedStep, completeSave])
 
   const handleSubmit = formMethods.handleSubmit((inputs) => {
     const nextEmails = inputs[OTHER_PARTIES_EMAIL_INPUT_NAME]
@@ -137,21 +140,6 @@ export const ActiveCompletionEmailCard = ({
     onOtherPartiesBlur: handleOtherPartiesBlur,
   })
 
-  const reveal = useGuidedStepReveal({
-    sectionCount: recipientControls.length,
-    isEnabled: isGuided,
-  })
-
-  const { visibleCount } = reveal
-
-  useEffect(() => {
-    if (!isGuided || visibleCount <= 1) return
-    const timeout = setTimeout(() => {
-      wrapperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-    }, SECTION_REVEAL_SCROLL_DELAY_MS)
-    return () => clearTimeout(timeout)
-  }, [isGuided, visibleCount])
-
   const hasSubmittedForPendingSwitch = useRef(false)
 
   useEffect(() => {
@@ -178,6 +166,8 @@ export const ActiveCompletionEmailCard = ({
         ref={wrapperRef}
         py="2rem"
         spacing="0"
+        pos="relative"
+        zIndex={1}
         borderRadius={cardRadius}
         bg="white"
         border="1px solid"
@@ -196,24 +186,21 @@ export const ActiveCompletionEmailCard = ({
           </EditStepBlockContainer>
         </Box>
         <Divider />
-        <SpotlightGroup activeIndex={reveal.activeIndex}>
-          {recipientControls.slice(0, visibleCount).map((recipientControl) => (
-            <EditStepBlockContainer key={recipientControl.key}>
-              {recipientControl}
-            </EditStepBlockContainer>
-          ))}
+        <SpotlightGroup activeIndex={0}>
+          <Stack spacing="1.5rem">
+            {recipientControls.map((recipientControl) => (
+              <EditStepBlockContainer key={recipientControl.key}>
+                {recipientControl}
+              </EditStepBlockContainer>
+            ))}
+          </Stack>
         </SpotlightGroup>
         <Box pt="1.5rem">
           <GuidedActionGroup
-            secondaryAction={getGuidedSecondaryAction({
-              sectionIndex: visibleCount - 1,
-              canCancel: true,
-            })}
-            isOnLastSection={reveal.isOnLastSection}
+            secondaryAction={GuidedSecondaryAction.Cancel}
+            isOnLastSection
             isLoading={isLoading}
-            onBack={reveal.goBack}
             onCancel={setToInactive}
-            onContinue={reveal.advance}
             onDone={handleSubmit}
           />
         </Box>
@@ -226,6 +213,8 @@ export const ActiveCompletionEmailCard = ({
       ref={wrapperRef}
       py="2rem"
       spacing="1.5rem"
+      pos="relative"
+      zIndex={1}
       borderRadius={cardRadius}
       bg="white"
       border="1px solid"

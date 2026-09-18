@@ -5,6 +5,7 @@ import {
   AdminEditWorkflowState,
   CreateOrEditData,
   EditStepInputs,
+  GuidedWrapUp,
   StepDraft,
 } from './types'
 
@@ -30,6 +31,8 @@ type AdminWorkflowStore = {
   isOnWelcomeCard: boolean
   showWelcomeCard: () => void
   startBuildingFromWelcome: () => void
+  guidedWrapUp: GuidedWrapUp
+  setGuidedWrapUp: (stage: GuidedWrapUp) => void
   stepDraft: StepDraft | null
   stashStepDraft: (inputs: Partial<EditStepInputs>) => void
   restoreStepDraft: () => void
@@ -118,6 +121,12 @@ export const showWelcomeCardSelector = (state: AdminWorkflowStore) =>
 export const startBuildingFromWelcomeSelector = (state: AdminWorkflowStore) =>
   state.startBuildingFromWelcome
 
+export const guidedWrapUpSelector = (state: AdminWorkflowStore) =>
+  state.guidedWrapUp
+
+export const setGuidedWrapUpSelector = (state: AdminWorkflowStore) =>
+  state.setGuidedWrapUp
+
 export const stepDraftSelector = (state: AdminWorkflowStore) => state.stepDraft
 
 export const stashStepDraftSelector = (state: AdminWorkflowStore) =>
@@ -137,6 +146,8 @@ export const useAdminWorkflowStore = create<AdminWorkflowStore>()(
     isGuidedSetup: DEFAULT_IS_GUIDED_SETUP,
     isOnWelcomeCard: false,
     stepDraft: null,
+    guidedWrapUp: GuidedWrapUp.None,
+    setGuidedWrapUp: (stage) => set({ guidedWrapUp: stage }),
     setToCreating: () =>
       set({
         createOrEditData: {

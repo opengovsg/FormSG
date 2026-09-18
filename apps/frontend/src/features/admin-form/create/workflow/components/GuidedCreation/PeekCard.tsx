@@ -1,3 +1,4 @@
+import { ReactNode } from 'react'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
 import { useIsMobile } from '~hooks/useIsMobile'
@@ -20,7 +21,8 @@ export type PeekCardActions =
 export interface PeekCardProps {
   title: string
   subtitle?: string
-  actions: PeekCardActions
+  actions?: PeekCardActions
+  children?: ReactNode
   isTucked?: boolean
 }
 
@@ -28,6 +30,7 @@ export const PeekCard = ({
   title,
   subtitle,
   actions,
+  children,
   isTucked = true,
 }: PeekCardProps): JSX.Element => {
   const isMobile = useIsMobile()
@@ -57,25 +60,28 @@ export const PeekCard = ({
             </Text>
           ) : null}
         </Stack>
-        <Flex
-          direction={{ base: 'column-reverse', md: 'row' }}
-          justify="flex-end"
-          gap={{ base: '0.5rem', md: '0.75rem' }}
-        >
-          {actions.map((action, index) => (
-            <Button
-              key={`${index}-${action.label}`}
-              variant={index === actions.length - 1 ? undefined : 'clear'}
-              colorScheme={
-                index === actions.length - 1 ? undefined : 'secondary'
-              }
-              isFullWidth={isMobile}
-              onClick={action.onClick}
-            >
-              {action.label}
-            </Button>
-          ))}
-        </Flex>
+        {children}
+        {actions ? (
+          <Flex
+            direction={{ base: 'column-reverse', md: 'row' }}
+            justify="flex-end"
+            gap={{ base: '0.5rem', md: '0.75rem' }}
+          >
+            {actions.map((action, index) => (
+              <Button
+                key={`${index}-${action.label}`}
+                variant={index === actions.length - 1 ? undefined : 'clear'}
+                colorScheme={
+                  index === actions.length - 1 ? undefined : 'secondary'
+                }
+                isFullWidth={isMobile}
+                onClick={action.onClick}
+              >
+                {action.label}
+              </Button>
+            ))}
+          </Flex>
+        ) : null}
       </Stack>
     </Box>
   )

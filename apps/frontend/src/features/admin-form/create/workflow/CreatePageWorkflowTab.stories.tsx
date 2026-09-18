@@ -460,6 +460,30 @@ WithWorkflowRedesignOn.parameters = {
   },
 }
 
+export const NoCompletionEmailRedesignOn = Template.bind({})
+NoCompletionEmailRedesignOn.decorators = [withRedesignOn]
+NoCompletionEmailRedesignOn.parameters = {
+  msw: {
+    handlers: [
+      ...buildMswRoutes(FORM_WITH_WORKFLOW),
+      getAdminFormSettings({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          status: FormStatus.Private,
+          emails: [],
+          stepsToNotify: [],
+          stepOneEmailNotificationFieldId: '',
+        } satisfies Partial<MultirespondentFormSettings>,
+      }),
+      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+    ],
+  },
+  documentation: {
+    storyDescription:
+      'A workflow whose completion email has never been set up. The status tracking peek card waits for that card to be saved.',
+  },
+}
+
 export const Step1RedesignOn = Template.bind({})
 Step1RedesignOn.decorators = [withRedesignOn]
 Step1RedesignOn.parameters = {

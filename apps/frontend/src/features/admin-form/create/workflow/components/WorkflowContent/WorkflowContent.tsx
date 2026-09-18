@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import {
@@ -14,11 +15,22 @@ import IconButton from '~components/IconButton'
 
 import { StatusTrackerToggle } from '~features/admin-form/settings/components/EmailNotificationsSection/StatusTrackerToggle'
 
+import {
+  guidedWrapUpSelector,
+  useAdminWorkflowStore,
+} from '../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowGuidedMode } from '../../hooks/useIsWorkflowGuidedMode'
 import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
+import { GuidedWrapUp } from '../../types'
 import { DeleteWorkflowModal } from '../DeleteWorkflowModal'
-import { GuidedSetupToggle, useReportedCompletedStep } from '../GuidedCreation'
+import {
+  GuidedSetupFinishedPeekCard,
+  GuidedSetupToggle,
+  useReportedCompletedStep,
+} from '../GuidedCreation'
+import { Spotlight } from '../Spotlight'
 
 import { CompletionEmailBlock } from './CompletionEmailBlock'
 import { NewStepBlock } from './NewStepBlock'
@@ -27,10 +39,29 @@ import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock
 
 export const STEP_CONNECTOR_TEST_ID = 'workflow-step-connector'
 
+const WORKFLOW_CARD_PADDING = '1.5rem'
+
 export const WorkflowContent = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isGuidedMode = useIsWorkflowGuidedMode()
+  const guidedWrapUp = useAdminWorkflowStore(guidedWrapUpSelector)
+  const isOnStatusTracking =
+    isGuidedMode && guidedWrapUp === GuidedWrapUp.StatusTracking
+  const showStatusTracker =
+    !isGuidedMode ||
+    guidedWrapUp === GuidedWrapUp.StatusTracking ||
+    guidedWrapUp === GuidedWrapUp.Done
+  const workflowCardRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!isOnStatusTracking) return
+    workflowCardRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }, [isOnStatusTracking])
   const { cardRadius, iconRestColor } = useWorkflowSurfaces()
   const isReportingCompletedStep = useReportedCompletedStep() !== null
   const {
@@ -47,52 +78,54 @@ export const WorkflowContent = (): JSX.Element | null => {
         onClose={onDeleteModalClose}
         entryPoint="workflow-card"
       />
-      {/* <HeaderBlock /> */}
-      <Box
-        bg="white"
-        border="1px solid"
-        borderColor="neutral.300"
-        borderRadius={cardRadius}
-        padding="1.5rem"
-      >
-        <Stack gap={'1.5rem'}>
-          <Flex align="center" justify="space-between">
-            <Text as="h2" textStyle="h2">
-              Workflow
-            </Text>
-            {/* Grey at rest, red on intent. A red button sitting in the
-                corner of a page reads as a warning about the page's state
-                rather than as an action, so the destructive colour waits until
-                the pointer is on it. The resting grey matches the pencil on
-                the step cards, so the two affordances read as one family.
-
-                The states are set inline rather than through a variant: the
-                clear variant derives every state from a single colorScheme and
-                so cannot span two, and one call site does not warrant a
-                theme-wide variant that would invite use where plain danger is
-                correct. */}
-            {isRedesign ? (
-              <IconButton
-                variant="clear"
-                colorScheme="danger"
-                color={iconRestColor}
-                transitionProperty="common"
-                transitionDuration="normal"
-                _hover={{ color: 'danger.500', bg: 'danger.100' }}
-                _active={{ color: 'danger.500', bg: 'danger.200' }}
-                aria-label={t(
-                  'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
-                )}
-                icon={<BiTrash />}
-                onClick={onDeleteModalOpen}
-              />
+      <Stack spacing="0">
+        <Box
+          ref={workflowCardRef}
+          bg="white"
+          border="1px solid"
+          borderColor="neutral.300"
+          borderRadius={cardRadius}
+          padding={WORKFLOW_CARD_PADDING}
+          pos="relative"
+          zIndex={1}
+        >
+          <Stack gap={'1.5rem'}>
+            <Flex align="center" justify="space-between">
+              <Text as="h2" textStyle="h2">
+                Workflow
+              </Text>
+              {isRedesign ? (
+                <IconButton
+                  variant="clear"
+                  colorScheme="danger"
+                  color={iconRestColor}
+                  transitionProperty="common"
+                  transitionDuration="normal"
+                  _hover={{ color: 'danger.500', bg: 'danger.100' }}
+                  _active={{ color: 'danger.500', bg: 'danger.200' }}
+                  aria-label={t(
+                    'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
+                  )}
+                  icon={<BiTrash />}
+                  onClick={onDeleteModalOpen}
+                />
+              ) : null}
+            </Flex>
+            <Divider />
+            <GuidedSetupToggle />
+            {showStatusTracker ? (
+              <Box mx={`-${WORKFLOW_CARD_PADDING}`}>
+                <Spotlight isActive isEnabled={isOnStatusTracking}>
+                  <Box px={WORKFLOW_CARD_PADDING}>
+                    <StatusTrackerToggle />
+                  </Box>
+                </Spotlight>
+              </Box>
             ) : null}
-          </Flex>
-          <Divider />
-          <StatusTrackerToggle />
-          <GuidedSetupToggle />
-        </Stack>
-      </Box>
+          </Stack>
+        </Box>
+        <GuidedSetupFinishedPeekCard />
+      </Stack>
       <Stack spacing="0" divider={<WorkflowStepBlockDivider />}>
         {formWorkflow?.map((step, i) => (
           <WorkflowBlockFactory key={i} stepNumber={i} step={step} />

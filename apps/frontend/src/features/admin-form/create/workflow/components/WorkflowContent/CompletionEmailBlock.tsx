@@ -9,13 +9,17 @@ import {
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
 import {
+  completedStepNumberSelector,
   createOrEditDataSelector,
+  isCreatingStateSelector,
   isEditingEmailCardSelector,
   requestSwitchToEmailCardSelector,
   setToEditingEmailCardSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
+import { useIsWorkflowGuidedMode } from '../../hooks/useIsWorkflowGuidedMode'
+import { EmailSetUpPeekCard } from '../GuidedCreation'
 
 import {
   CompletionEmailBlockView,
@@ -39,6 +43,9 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   const requestSwitchToEmailCard = useAdminWorkflowStore(
     requestSwitchToEmailCardSelector,
   )
+  const isGuidedMode = useIsWorkflowGuidedMode()
+  const completedStepNumber = useAdminWorkflowStore(completedStepNumberSelector)
+  const isCreatingStep = useAdminWorkflowStore(isCreatingStateSelector)
 
   const view = getCompletionEmailBlockView({
     settings,
@@ -47,6 +54,8 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   })
 
   if (view === CompletionEmailBlockView.None) return null
+  const isMidStep = isCreatingStep || completedStepNumber !== null
+  if (isGuidedMode && isMidStep && !isEditing) return null
   if (view === CompletionEmailBlockView.SettingsMessage) {
     return <WorkflowCompletionMessageBlock />
   }
@@ -79,17 +88,20 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
   return (
     <Stack spacing="1.5rem" pb={{ base: '1rem', md: '3rem' }}>
       <EndOfWorkflowDivider />
-      {isEditing && mrfSettings ? (
-        <ActiveCompletionEmailCard
-          settings={mrfSettings}
-          isDisabled={isDisabled}
-        />
-      ) : (
-        <InactiveCompletionEmailCard
-          recipients={recipients}
-          onClick={handleClick}
-        />
-      )}
+      <Stack spacing="0">
+        {isEditing && mrfSettings ? (
+          <ActiveCompletionEmailCard
+            settings={mrfSettings}
+            isDisabled={isDisabled}
+          />
+        ) : (
+          <InactiveCompletionEmailCard
+            recipients={recipients}
+            onClick={handleClick}
+          />
+        )}
+        <EmailSetUpPeekCard />
+      </Stack>
     </Stack>
   )
 }

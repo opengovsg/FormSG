@@ -284,7 +284,7 @@ export const enSG: Workflow = {
         'Before you finish, you can let people check the status of their response.',
     },
     guidedSetupFinished: {
-      title: "You've finished guided setup",
+      title: "You've finished guided setup.",
       subtitle:
         'Use the Preview button on the top right to check what each step looks like.',
     },
