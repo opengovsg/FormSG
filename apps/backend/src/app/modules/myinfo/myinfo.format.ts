@@ -60,7 +60,7 @@ export const formatAddress = (addr: MyInfoAddress | undefined): string => {
       result += line1.value
     }
     if (line2.value) {
-      result += ', ' + line2.value
+      result += '; ' + line2.value
     }
     return result
   }
@@ -178,7 +178,7 @@ export const formatVehicleNumbers = (
       vehicleNumbers.push(vehicle.vehicleno.value)
     }
   })
-  return vehicleNumbers.join(', ')
+  return vehicleNumbers.join('; ')
 }
 
 /**
