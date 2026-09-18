@@ -30,8 +30,6 @@ describe('PeekCard', () => {
     ).not.toBeInTheDocument()
   })
 
-  // The reason actions is an array rather than one onDone callback: each action
-  // carries its own handler, so two of them cannot be collapsed into one.
   it('should give each action its own handler', () => {
     const onDecline = vi.fn()
     const onAccept = vi.fn()
@@ -55,8 +53,6 @@ describe('PeekCard', () => {
     expect(onDecline).toHaveBeenCalledTimes(1)
   })
 
-  // Primary last is positional, so the order actions arrive in is the order
-  // they render in. Getting this backwards would put the solid button first.
   it('should render actions in the order given, primary last', () => {
     render(
       <PeekCard
@@ -71,5 +67,21 @@ describe('PeekCard', () => {
     expect(
       screen.getAllByRole('button').map((button) => button.textContent),
     ).toEqual(["No, I'm done", 'Yes, add a step'])
+  })
+
+  it('should stretch each action to full width on a phone', () => {
+    render(
+      <PeekCard
+        title="Nice, Step 2 is all set"
+        actions={[
+          { label: "No, I'm done", onClick: () => undefined },
+          { label: 'Yes, add a step', onClick: () => undefined },
+        ]}
+      />,
+    )
+
+    screen.getAllByRole('button').forEach((button) => {
+      expect(button).toHaveStyle({ width: '100%' })
+    })
   })
 })
