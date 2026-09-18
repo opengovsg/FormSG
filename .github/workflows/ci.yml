@@ -1,7 +1,7 @@
 name: CI
 
 env:
-  NODE_VERSION: '22.22'
+  BUILD_CACHE_KEY: ${{ runner.os }}-build-${{ github.sha }}
 
 on:
   push:
@@ -63,37 +63,13 @@ jobs:
               - packages/sdk/jest.config.js
               - pnpm-lock.yaml
 
-  install:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-        with:
-          fetch-depth: 0
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-      - name: Use Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install
-
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-      - name: Use Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install
+      - uses: ./.github/actions/setup
       - run: pnpm build
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
@@ -106,61 +82,30 @@ jobs:
           path: |
             package*.json
             dist/
-      - name: Cache build artifacts
-        uses: actions/cache/save@v3
+      - uses: ./.github/actions/save-build-cache
         with:
-          path: |
-            node_modules
-            apps/frontend/node_modules
-            apps/backend/node_modules
-            packages/shared/node_modules
-            packages/sdk/node_modules
-            apps/frontend/dist
-            apps/backend/dist
-            packages/shared/dist
-            packages/sdk/dist
-            services/virus-scanner/build
-            services/virus-scanner-guardduty/build
-          key: ${{ runner.os }}-build-${{ github.sha }}
+          cache-key: ${{ env.BUILD_CACHE_KEY }}
 
   frontend_test:
-    needs: [changes, install, build]
+    needs: [changes, build]
     if: ${{ needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-      - name: Use Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: ./.github/actions/setup
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - name: Restore build artifacts
-        uses: actions/cache/restore@v3
+          install: false
+      - uses: ./.github/actions/restore-build-cache
         with:
-          path: |
-            node_modules
-            apps/frontend/node_modules
-            apps/backend/node_modules
-            packages/shared/node_modules
-            packages/sdk/node_modules
-            apps/frontend/dist
-            apps/backend/dist
-            packages/shared/dist
-            packages/sdk/dist
-            services/virus-scanner/build
-            services/virus-scanner-guardduty/build
-          key: ${{ runner.os }}-build-${{ github.sha }}
-          fail-on-cache-miss: true
+          cache-key: ${{ env.BUILD_CACHE_KEY }}
       - name: Install dependencies
-        run: pnpm install
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
+        run: pnpm install --frozen-lockfile --trust-lockfile
+        env:
+          HUSKY: '0'
+      - uses: ./.github/actions/configure-datadog-test-visibility
         with:
-          languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - name: Run frontend test
@@ -176,19 +121,11 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-      - name: Use Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install
+      - uses: ./.github/actions/setup
       - run: pnpm lint
 
   backend_test_shards:
-    needs: [changes, install, build]
+    needs: [changes, build]
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     strategy:
@@ -199,38 +136,21 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-      - name: Use Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: ./.github/actions/setup
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - name: Restore build artifacts
-        uses: actions/cache/restore@v3
+          install: false
+          job-index: ${{ matrix.shard }}
+      - uses: ./.github/actions/restore-build-cache
         with:
-          path: |
-            node_modules
-            apps/frontend/node_modules
-            apps/backend/node_modules
-            packages/shared/node_modules
-            packages/sdk/node_modules
-            apps/frontend/dist
-            apps/backend/dist
-            packages/shared/dist
-            packages/sdk/dist
-            services/virus-scanner/build
-            services/virus-scanner-guardduty/build
-          key: ${{ runner.os }}-build-${{ github.sha }}
-          fail-on-cache-miss: true
+          cache-key: ${{ env.BUILD_CACHE_KEY }}
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile --trust-lockfile
+        env:
+          HUSKY: '0'
       - run: pnpm install --prefix services/pdf-gen-sparticuz
       - run: pnpm install --prefix services/virus-scanner-guardduty
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
+      - uses: ./.github/actions/configure-datadog-test-visibility
         with:
-          languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - run: pnpm test:backend:ci --shard=${{ matrix.shard }}/3
@@ -257,26 +177,16 @@ jobs:
           fi
 
   shared_test:
-    needs: [changes, install]
+    needs: changes
     if: ${{ needs.changes.outputs.shared == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-      - name: Use Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/configure-datadog-test-visibility
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
-        with:
-          languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - run: pnpm test:shared:ci
@@ -288,26 +198,16 @@ jobs:
     # Mirrors the old formsg-javascript-sdk ci.yml `test` job — jest against
     # packages/sdk/spec/**, no build step required (ts-jest compiles at test
     # time). Gated on changes in packages/sdk so unrelated PRs are unaffected.
-    needs: [changes, install]
+    needs: changes
     if: ${{ needs.changes.outputs.sdk == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-      - name: Use Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+      - uses: ./.github/actions/setup
+      - uses: ./.github/actions/configure-datadog-test-visibility
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-      - name: Install dependencies
-        run: pnpm install
-      - name: Configure Datadog Test Visibility
-        uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
-        with:
-          languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - run: pnpm test:sdk:coverage

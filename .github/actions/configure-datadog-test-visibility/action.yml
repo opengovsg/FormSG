@@ -1,0 +1,20 @@
+name: Configure Datadog Test Visibility
+description: Enable Datadog test visibility for JavaScript test runs.
+
+inputs:
+  service-name:
+    description: Datadog service name
+    required: true
+  api-key:
+    description: Datadog API key
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure Datadog Test Visibility
+      uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
+      with:
+        languages: js
+        service-name: ${{ inputs.service-name }}
+        api-key: ${{ inputs.api-key }}
