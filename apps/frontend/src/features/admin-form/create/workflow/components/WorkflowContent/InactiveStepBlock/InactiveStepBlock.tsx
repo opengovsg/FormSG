@@ -1,7 +1,15 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
-import { Box, chakra, Flex, Icon, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  chakra,
+  Flex,
+  Icon,
+  Stack,
+  Text,
+  useDisclosure,
+} from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 
 import { BasicField, FormField } from 'formsg-shared/types'
@@ -20,7 +28,9 @@ import {
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
+import { useIsWorkflowEditBlocked } from '../../../hooks/useIsWorkflowEditBlocked'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
+import { CloseFormToEditModal } from '../../CloseFormToEditModal'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
@@ -132,14 +142,31 @@ export const InactiveStepBlock = ({
   const setToEditing = useAdminWorkflowStore(setToEditingSelector)
   const stateData = useAdminWorkflowStore(createOrEditDataSelector)
   const requestSwitchTo = useAdminWorkflowStore(requestSwitchToSelector)
+  const isEditBlocked = useIsWorkflowEditBlocked()
+  const {
+    isOpen: isBlockedModalOpen,
+    onClose: onBlockedModalClose,
+    onOpen: onBlockedModalOpen,
+  } = useDisclosure()
 
   const handleClick = useCallback(() => {
+    if (isEditBlocked) {
+      onBlockedModalOpen()
+      return
+    }
     if (stateData) {
       requestSwitchTo(stepNumber)
       return
     }
     setToEditing(stepNumber)
-  }, [stateData, stepNumber, setToEditing, requestSwitchTo])
+  }, [
+    isEditBlocked,
+    onBlockedModalOpen,
+    stateData,
+    stepNumber,
+    setToEditing,
+    requestSwitchTo,
+  ])
 
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
@@ -199,6 +226,10 @@ export const InactiveStepBlock = ({
 
   return (
     <Box pos="relative" zIndex={1} role="group">
+      <CloseFormToEditModal
+        isOpen={isBlockedModalOpen}
+        onClose={onBlockedModalClose}
+      />
       <chakra.button
         type="button"
         w="100%"

@@ -72,6 +72,13 @@ export const enSG: Workflow = {
         confirm: 'Go to settings',
         cancel: 'Cancel',
       },
+      closeFormFirstToEdit: {
+        title: 'Close your form first',
+        description:
+          'You can only edit your workflow when your form is closed to new responses.',
+        confirm: 'Go to settings',
+        cancel: 'Cancel',
+      },
       deleteMapping: {
         title: 'Delete CSV file',
         description:

@@ -460,6 +460,26 @@ WithWorkflowRedesignOn.parameters = {
   },
 }
 
+export const WithWorkflowRedesignOnClosedForm = Template.bind({})
+WithWorkflowRedesignOnClosedForm.decorators = [withRedesignOn]
+WithWorkflowRedesignOnClosedForm.parameters = {
+  msw: {
+    handlers: [
+      ...buildMswRoutes({ ...FORM_WITH_WORKFLOW, status: FormStatus.Private }),
+      getAdminFormSettings({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          status: FormStatus.Private,
+          emails: ['admin@example.gov.sg'],
+          stepsToNotify: [workflow_step_2._id],
+          stepOneEmailNotificationFieldId: form_field_5._id,
+        } satisfies Partial<MultirespondentFormSettings>,
+      }),
+      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+    ],
+  },
+}
+
 export const NoCompletionEmailRedesignOn = Template.bind({})
 NoCompletionEmailRedesignOn.decorators = [withRedesignOn]
 NoCompletionEmailRedesignOn.parameters = {
