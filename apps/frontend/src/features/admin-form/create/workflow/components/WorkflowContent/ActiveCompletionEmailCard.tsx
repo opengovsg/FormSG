@@ -15,6 +15,7 @@ import {
   MrfEmailRecipientsFormData,
   OTHER_PARTIES_EMAIL_INPUT_NAME,
   STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME,
+  useMrfEmailRecipientControls,
   WORKFLOW_EMAIL_MULTISELECT_NAME,
 } from '~features/admin-form/settings/components/MrfEmailRecipientsFieldGroup'
 import { useMutateFormSettings } from '~features/admin-form/settings/mutations'
@@ -27,13 +28,17 @@ import {
   setToInactiveSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
+import { useGuidedStepReveal } from '../../hooks/useGuidedStepReveal'
 import { useIsGuidedEmailCard } from '../../hooks/useIsGuidedEmailCard'
 import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
-import { GuidedSecondaryAction } from '../../utils/guidedStepPolicy'
+import { getGuidedSecondaryAction } from '../../utils/guidedStepPolicy'
+import { SpotlightGroup } from '../Spotlight'
 
 import { EditStepBlockContainer } from './EditStepBlock/EditStepBlockContainer'
 import { GuidedActionGroup } from './EditStepBlock/GuidedActionGroup'
 import { CompletionEmailLabel } from './CompletionEmailLabel'
+
+const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 
 export interface ActiveCompletionEmailCardProps {
   settings: MultirespondentFormSettings
@@ -124,6 +129,29 @@ export const ActiveCompletionEmailCard = ({
     }
   }
 
+  const recipientControls = useMrfEmailRecipientControls({
+    control,
+    isDisabled,
+    isHighContrast: true,
+    otherPartiesPlaceholder,
+    onOtherPartiesBlur: handleOtherPartiesBlur,
+  })
+
+  const reveal = useGuidedStepReveal({
+    sectionCount: recipientControls.length,
+    isEnabled: isGuided,
+  })
+
+  const { visibleCount } = reveal
+
+  useEffect(() => {
+    if (!isGuided || visibleCount <= 1) return
+    const timeout = setTimeout(() => {
+      wrapperRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }, SECTION_REVEAL_SCROLL_DELAY_MS)
+    return () => clearTimeout(timeout)
+  }, [isGuided, visibleCount])
+
   const hasSubmittedForPendingSwitch = useRef(false)
 
   useEffect(() => {
@@ -143,6 +171,55 @@ export const ActiveCompletionEmailCard = ({
     handleSubmit()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingSwitchTo])
+
+  if (isGuided) {
+    return (
+      <Stack
+        ref={wrapperRef}
+        py="2rem"
+        spacing="0"
+        borderRadius={cardRadius}
+        bg="white"
+        border="1px solid"
+        borderColor="neutral.300"
+        transitionProperty="common"
+        transitionDuration="normal"
+      >
+        <Box pb="1.5rem">
+          <EditStepBlockContainer>
+            <CompletionEmailLabel />
+            <Text textStyle="body-1" textColor="secondary.700">
+              {t(
+                'features.adminForm.settings.emailNotifications.section.mrf.selectRecipientWorkflow',
+              )}
+            </Text>
+          </EditStepBlockContainer>
+        </Box>
+        <Divider />
+        <SpotlightGroup activeIndex={reveal.activeIndex}>
+          {recipientControls.slice(0, visibleCount).map((recipientControl) => (
+            <EditStepBlockContainer key={recipientControl.key}>
+              {recipientControl}
+            </EditStepBlockContainer>
+          ))}
+        </SpotlightGroup>
+        <Box pt="1.5rem">
+          <GuidedActionGroup
+            secondaryAction={getGuidedSecondaryAction({
+              sectionIndex: visibleCount - 1,
+              canCancel: true,
+            })}
+            isOnLastSection={reveal.isOnLastSection}
+            isLoading={isLoading}
+            onBack={reveal.goBack}
+            onCancel={setToInactive}
+            onContinue={reveal.advance}
+            onDone={handleSubmit}
+          />
+        </Box>
+      </Stack>
+    )
+  }
 
   return (
     <Stack
@@ -189,24 +266,14 @@ export const ActiveCompletionEmailCard = ({
         </Box>
       </EditStepBlockContainer>
       <Divider />
-      {isGuided ? (
-        <GuidedActionGroup
-          secondaryAction={GuidedSecondaryAction.Cancel}
-          isOnLastSection
-          isLoading={isLoading}
-          onCancel={setToInactive}
-          onDone={handleSubmit}
-        />
-      ) : (
-        <SaveActionGroup
-          isLoading={isLoading}
-          isSubmitDisabled={isDisabled}
-          handleSubmit={handleSubmit}
-          handleCancel={setToInactive}
-          submitButtonLabel={undefined}
-          ariaLabelName="completion email"
-        />
-      )}
+      <SaveActionGroup
+        isLoading={isLoading}
+        isSubmitDisabled={isDisabled}
+        handleSubmit={handleSubmit}
+        handleCancel={setToInactive}
+        submitButtonLabel={undefined}
+        ariaLabelName="completion email"
+      />
     </Stack>
   )
 }

@@ -4,6 +4,7 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import * as pageStories from '../../CreatePageWorkflowTab.stories'
 import { AdminEditWorkflowState } from '../../types'
+import { SPOTLIGHT_TEST_ID } from '../Spotlight'
 
 import * as cardStories from './CompletionEmailBlock.stories'
 
@@ -16,7 +17,12 @@ const STEP_ONE_DONE = /step 1 is the public-facing step/i
 const DECLINE = { name: /no, i'm done/i }
 const DONE = { name: /^done$/i }
 const CANCEL = { name: /^cancel$/i }
+const CONTINUE = { name: /^continue$/i }
+const BACK = { name: /^back$/i }
 const SAVE = { name: /save changes/i }
+const OTHERS = /any email addresses you choose/i
+const STEP_ONE_FIELD = /an email address collected from an email field/i
+const WORKFLOW_STEPS = /people who fill in a workflow step/i
 
 describe('completion email seam', () => {
   beforeAll(() => {
@@ -153,32 +159,70 @@ describe('guided handover to the completion email card', () => {
     await act(async () => {
       fireEvent.click(screen.getByRole('button', DECLINE))
     })
+    await screen.findByText(OTHERS)
   }
 
-  it('opens the card with the guided actions rather than Save changes', async () => {
+  const clickButton = async (name: { name: RegExp }) => {
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', name))
+    })
+  }
+
+  it('opens on the first recipient section, with nothing else revealed', async () => {
     await declineAnotherStep()
 
-    expect(await screen.findByRole('button', DONE)).toBeInTheDocument()
+    expect(screen.getByText(OTHERS)).toBeInTheDocument()
+    expect(screen.queryByText(STEP_ONE_FIELD)).not.toBeInTheDocument()
+    expect(screen.queryByText(WORKFLOW_STEPS)).not.toBeInTheDocument()
     expect(screen.queryByRole('button', SAVE)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', CONTINUE)).toBeInTheDocument()
+  })
+
+  it('reveals one recipient section per Continue, with a band on each', async () => {
+    await declineAnotherStep()
+    expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(1)
+
+    await clickButton(CONTINUE)
+
+    expect(screen.getByText(STEP_ONE_FIELD)).toBeInTheDocument()
+    expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(2)
+
+    await clickButton(CONTINUE)
+
+    expect(screen.getByText(WORKFLOW_STEPS)).toBeInTheDocument()
+    expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(3)
+    expect(screen.getByRole('button', DONE)).toBeInTheDocument()
+  })
+
+  it('offers Back once past the first section, and Cancel on it', async () => {
+    await declineAnotherStep()
+    expect(screen.getByRole('button', CANCEL)).toBeInTheDocument()
+    expect(screen.queryByRole('button', BACK)).not.toBeInTheDocument()
+
+    await clickButton(CONTINUE)
+    expect(screen.getByRole('button', BACK)).toBeInTheDocument()
+    expect(screen.queryByRole('button', CANCEL)).not.toBeInTheDocument()
+
+    await clickButton(BACK)
+
+    expect(screen.queryByText(STEP_ONE_FIELD)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', CANCEL)).toBeInTheDocument()
   })
 
   it('returns to the report it came from when the admin cancels', async () => {
     await declineAnotherStep()
-    await screen.findByRole('button', DONE)
 
-    await act(async () => {
-      fireEvent.click(screen.getByRole('button', CANCEL))
-    })
+    await clickButton(CANCEL)
 
     expect(await screen.findByText(STEP_ONE_DONE)).toBeInTheDocument()
   })
 
   it('ends the flow when the admin is done, so the report does not return', async () => {
     await declineAnotherStep()
+    await clickButton(CONTINUE)
+    await clickButton(CONTINUE)
 
-    await act(async () => {
-      fireEvent.click(await screen.findByRole('button', DONE))
-    })
+    await clickButton(DONE)
 
     await waitFor(() =>
       expect(useAdminWorkflowStore.getState().createOrEditData).toBeNull(),
@@ -186,7 +230,7 @@ describe('guided handover to the completion email card', () => {
     expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
   })
 
-  it('keeps Save changes when the card is opened on its own', async () => {
+  it('keeps Save changes and all three sections when opened on its own', async () => {
     await act(async () => {
       render(<WithWorkflowRedesignOn />)
     })
@@ -201,6 +245,7 @@ describe('guided handover to the completion email card', () => {
     })
 
     expect(await screen.findByRole('button', SAVE)).toBeInTheDocument()
-    expect(screen.queryByRole('button', DONE)).not.toBeInTheDocument()
+    expect(screen.getByText(WORKFLOW_STEPS)).toBeInTheDocument()
+    expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(0)
   })
 })
