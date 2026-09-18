@@ -18,15 +18,8 @@ on:
       - uat
 
 jobs:
-  # JOB to run change detection
-  changes:
+  frontend_test:
     runs-on: ubuntu-latest
-    # Set job outputs to values from filter step
-    outputs:
-      backend: ${{ steps.filter.outputs.backend }}
-      frontend: ${{ steps.filter.outputs.frontend }}
-      shared: ${{ steps.filter.outputs.shared }}
-      sdk: ${{ steps.filter.outputs.sdk }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -39,47 +32,22 @@ jobs:
               - __tests__/**
               - apps/frontend/**
               - pnpm-lock.yaml
-            backend:
-              - apps/backend/src/**
-              - apps/backend/__tests__/**
-              - apps/backend/package.json
-              - pnpm-lock.yaml
-              - .github/workflows/ci.yml
-            shared:
-              - packages/shared/constants/**
-              - packages/shared/modules/**
-              - packages/shared/types/**
-              - packages/shared/utils/**
-              - packages/shared/package.json
-              - pnpm-lock.yaml
-            sdk:
-              - packages/sdk/src/**
-              - packages/sdk/spec/**
-              - packages/sdk/package.json
-              - packages/sdk/tsconfig*.json
-              - packages/sdk/jest.config.js
-              - pnpm-lock.yaml
-
-  frontend_test:
-    needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
-        with:
-          fetch-depth: 0
       - uses: ./.github/actions/setup
+        if: steps.filter.outputs.frontend == 'true'
       - name: Build test dependencies
+        if: steps.filter.outputs.frontend == 'true'
         run: pnpm turbo run build --filter=formsg-frontend^...
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
       - name: Configure Datadog Test Visibility
+        if: steps.filter.outputs.frontend == 'true'
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - name: Run frontend test
+        if: steps.filter.outputs.frontend == 'true'
         env:
           DD_TAGS: layer:frontend
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
@@ -96,8 +64,6 @@ jobs:
       - run: pnpm lint
 
   backend_test_shards:
-    needs: changes
-    if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -107,23 +73,39 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            backend:
+              - apps/backend/src/**
+              - apps/backend/__tests__/**
+              - apps/backend/package.json
+              - pnpm-lock.yaml
+              - .github/workflows/ci.yml
       - uses: ./.github/actions/setup
+        if: steps.filter.outputs.backend == 'true'
         with:
           job-index: ${{ matrix.shard }}
       - name: Build test dependencies
+        if: steps.filter.outputs.backend == 'true'
         run: pnpm turbo run build --filter=formsg-backend^...
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       - run: pnpm install --prefix services/pdf-gen-sparticuz
+        if: steps.filter.outputs.backend == 'true'
       - run: pnpm install --prefix services/virus-scanner-guardduty
+        if: steps.filter.outputs.backend == 'true'
       - name: Configure Datadog Test Visibility
+        if: steps.filter.outputs.backend == 'true'
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - run: pnpm test:backend:ci --shard=${{ matrix.shard }}/3
+        if: steps.filter.outputs.backend == 'true'
         env:
           DD_TAGS: layer:backend
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
@@ -131,8 +113,7 @@ jobs:
 
   backend_test:
     # Aggregator preserving the stable `backend_test` check name for branch
-    # protection. Must also pass when shards are skipped (paths-filter gate),
-    # since a skipped required check counts as passing.
+    # protection.
     if: always()
     needs: backend_test_shards
     runs-on: ubuntu-latest
@@ -141,27 +122,39 @@ jobs:
         env:
           SHARDS_RESULT: ${{ needs.backend_test_shards.result }}
         run: |
-          if [ "$SHARDS_RESULT" != "success" ] && [ "$SHARDS_RESULT" != "skipped" ]; then
+          if [ "$SHARDS_RESULT" != "success" ]; then
             echo "Backend test shards finished with: $SHARDS_RESULT"
             exit 1
           fi
 
   shared_test:
-    needs: changes
-    if: ${{ needs.changes.outputs.shared == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            shared:
+              - packages/shared/constants/**
+              - packages/shared/modules/**
+              - packages/shared/types/**
+              - packages/shared/utils/**
+              - packages/shared/package.json
+              - pnpm-lock.yaml
       - uses: ./.github/actions/setup
+        if: steps.filter.outputs.shared == 'true'
       - name: Configure Datadog Test Visibility
+        if: steps.filter.outputs.shared == 'true'
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - run: pnpm test:shared:ci
+        if: steps.filter.outputs.shared == 'true'
         env:
           DD_TAGS: layer:shared
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
@@ -170,21 +163,33 @@ jobs:
     # Mirrors the old formsg-javascript-sdk ci.yml `test` job — jest against
     # packages/sdk/spec/**, no build step required (ts-jest compiles at test
     # time). Gated on changes in packages/sdk so unrelated PRs are unaffected.
-    needs: changes
-    if: ${{ needs.changes.outputs.sdk == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            sdk:
+              - packages/sdk/src/**
+              - packages/sdk/spec/**
+              - packages/sdk/package.json
+              - packages/sdk/tsconfig*.json
+              - packages/sdk/jest.config.js
+              - pnpm-lock.yaml
       - uses: ./.github/actions/setup
+        if: steps.filter.outputs.sdk == 'true'
       - name: Configure Datadog Test Visibility
+        if: steps.filter.outputs.sdk == 'true'
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
         with:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
       - run: pnpm test:sdk:coverage
+        if: steps.filter.outputs.sdk == 'true'
         env:
           DD_TAGS: layer:sdk
           NODE_OPTIONS: --max-old-space-size=4096 -r ${{ env.DD_TRACE_PACKAGE }}
