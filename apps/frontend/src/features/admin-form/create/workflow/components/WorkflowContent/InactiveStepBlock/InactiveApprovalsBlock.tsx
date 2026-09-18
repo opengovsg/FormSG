@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Stack, Text } from '@chakra-ui/react'
 import { Dictionary } from 'lodash'
 

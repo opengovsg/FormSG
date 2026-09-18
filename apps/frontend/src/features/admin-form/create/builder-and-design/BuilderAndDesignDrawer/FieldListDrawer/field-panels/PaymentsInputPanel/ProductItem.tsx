@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDotsHorizontalRounded, BiEditAlt, BiTrash } from 'react-icons/bi'
+
 import {
   Box,
   ButtonGroup,
@@ -22,9 +23,9 @@ import {
 import { Product } from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button, { ButtonProps } from '~components/Button'
 import IconButton from '~components/IconButton'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 export const ProductItem = ({
   product,

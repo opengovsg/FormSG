@@ -84,7 +84,6 @@ import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 import { getSubmissionType } from '../form.utils'
-
 import {
   DeleteFirstWorkflowStepError,
   EditFieldError,

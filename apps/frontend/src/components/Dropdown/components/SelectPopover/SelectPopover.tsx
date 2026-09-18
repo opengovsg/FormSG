@@ -1,4 +1,5 @@
 import { useLayoutEffect, useMemo, useRef } from 'react'
+
 import { Box, useMergeRefs, useOutsideClick } from '@chakra-ui/react'
 import {
   autoUpdate,
@@ -12,7 +13,6 @@ import {
 import type { FCC } from '~typings/react'
 
 import { useSelectContext } from '../../SelectContext'
-
 import { SelectPopoverContext } from './SelectPopoverContext'
 
 export const SelectPopoverProvider: FCC = ({ children }): JSX.Element => {

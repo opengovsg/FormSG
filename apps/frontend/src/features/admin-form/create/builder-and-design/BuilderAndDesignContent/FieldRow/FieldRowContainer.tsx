@@ -10,6 +10,7 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiCog, BiDuplicate, BiGridHorizontal, BiTrash } from 'react-icons/bi'
 import { useIsMutating } from 'react-query'
+
 import {
   Box,
   ButtonGroup,
@@ -26,10 +27,10 @@ import { isEqual, times } from 'lodash'
 import { FormColorTheme, FormResponseMode } from 'formsg-shared/types'
 import { BasicField, FormFieldDto } from 'formsg-shared/types/field'
 
-import { useIsMobile } from '~hooks/useIsMobile'
-import { useToast } from '~hooks/useToast'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
+import { useIsMobile } from '~hooks/useIsMobile'
+import { useToast } from '~hooks/useToast'
 import {
   AddressCompoundField,
   AttachmentField,
@@ -88,7 +89,6 @@ import {
   useFieldBuilderStore,
 } from '../../useFieldBuilderStore'
 import { getAttachmentSizeLimit } from '../../utils/getAttachmentSizeLimit'
-
 import { SectionFieldRow } from './SectionFieldRow'
 import { VerifiableFieldBuilderContainer } from './VerifiableFieldBuilderContainer'
 

@@ -36,7 +36,6 @@ import { FormDeactivatedNotification } from '../../views/templates/FormDeactivat
 import { FormScheduledClosureNotification } from '../../views/templates/FormScheduledClosureNotification'
 import { SmsThresholdWarningNotification } from '../../views/templates/SmsThresholdWarningNotification'
 import { smsThreshold } from '../sms/sms.utils'
-
 import { EMAIL_HEADERS, EmailType } from './mail.constants'
 import {
   AutoreplyPdfGenerationError,

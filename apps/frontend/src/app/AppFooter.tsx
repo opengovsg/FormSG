@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
-import { APP_FOOTER_LINKS } from '~constants/links'
 import Footer, { FooterProps } from '~components/Footer'
+import { APP_FOOTER_LINKS } from '~constants/links'
 
 type AppFooterProps = Pick<
   FooterProps,

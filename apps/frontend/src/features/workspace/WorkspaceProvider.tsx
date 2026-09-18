@@ -7,6 +7,7 @@ import {
   useState,
 } from 'react'
 import { useSearchParams } from 'react-router-dom'
+
 import fuzzysort from 'fuzzysort'
 
 import { FormId, FormResponseMode, FormStatus } from 'formsg-shared/types'

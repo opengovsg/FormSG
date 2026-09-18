@@ -45,7 +45,6 @@ import {
   TransferOwnershipError,
 } from '../form.errors'
 import { UNICODE_ESCAPED_REGEX } from '../form.utils'
-
 import {
   DeleteFirstWorkflowStepError,
   EditFieldError,

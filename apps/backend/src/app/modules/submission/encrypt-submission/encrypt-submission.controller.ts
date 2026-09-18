@@ -56,7 +56,6 @@ import {
   sendRouteError,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
-
 import {
   ensureFormWithinSubmissionLimits,
   ensurePublicForm,

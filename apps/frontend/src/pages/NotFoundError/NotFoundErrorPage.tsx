@@ -1,15 +1,16 @@
 import { Helmet } from 'react-helmet-async'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink, useNavigate } from 'react-router-dom'
+
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
 import { AppFooter } from '~/app/AppFooter'
 
-import { useAuth } from '~contexts/AuthContext'
-import { DASHBOARD_ROUTE } from '~constants/routes'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import Link from '~components/Link'
+import { DASHBOARD_ROUTE } from '~constants/routes'
+import { useAuth } from '~contexts/AuthContext'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { NotFoundSvgr } from './NotFoundSvgr'
 

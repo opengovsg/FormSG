@@ -1,7 +1,6 @@
 import { Schema } from 'mongoose'
 
 import { IChildrenCompoundFieldSchema } from '../../../types'
-
 import { MyInfoSchema } from './baseField'
 
 const createchildrenCompoundFieldSchema = () => {

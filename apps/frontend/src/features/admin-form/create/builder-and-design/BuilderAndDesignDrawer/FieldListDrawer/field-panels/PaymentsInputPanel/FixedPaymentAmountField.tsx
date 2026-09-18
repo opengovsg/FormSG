@@ -1,13 +1,14 @@
 import { Controller, RegisterOptions, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl } from '@chakra-ui/react'
 
-import { GUIDE_PAYMENTS_INVOICE_DIFFERENCES } from '~constants/links'
-import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import MoneyInput from '~components/MoneyInput'
+import { GUIDE_PAYMENTS_INVOICE_DIFFERENCES } from '~constants/links'
+import { usePaymentFieldValidation } from '~hooks/usePaymentFieldValidation'
 
 import { FormPaymentsInput } from './PaymentsInputPanel'
 

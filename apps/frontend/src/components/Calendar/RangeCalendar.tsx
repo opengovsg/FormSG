@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+
 import {
   Box,
   forwardRef,
@@ -7,7 +8,6 @@ import {
 } from '@chakra-ui/react'
 import { compareAsc } from 'date-fns'
 
-import { CalendarStylesProvider } from './CalendarBase/CalendarStyleProvider'
 import {
   CalendarAria,
   CalendarBaseProps,
@@ -16,6 +16,7 @@ import {
   CalendarTodayButton,
   DateRangeValue,
 } from './CalendarBase'
+import { CalendarStylesProvider } from './CalendarBase/CalendarStyleProvider'
 
 export interface RangeCalendarProps extends CalendarBaseProps {
   /**

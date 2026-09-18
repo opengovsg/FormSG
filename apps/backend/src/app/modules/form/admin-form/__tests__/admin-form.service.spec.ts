@@ -1,6 +1,6 @@
+import { PresignedPost } from '@aws-sdk/s3-presigned-post'
 /* oxlint-disable typescript/ban-ts-comment */
 import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
-import { PresignedPost } from '@aws-sdk/s3-presigned-post'
 import { ObjectId } from 'bson'
 import {
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,

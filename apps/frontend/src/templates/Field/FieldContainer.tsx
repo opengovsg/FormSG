@@ -6,15 +6,16 @@
  */
 import { FieldError, useFormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Box, FormControl, Grid } from '@chakra-ui/react'
 import { get } from 'lodash'
 
 import { FormColorTheme, Language } from 'formsg-shared/types/form'
 
-import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Badge from '~components/Badge'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
 

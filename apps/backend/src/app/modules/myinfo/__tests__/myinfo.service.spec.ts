@@ -1,6 +1,6 @@
+import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
 /* oxlint-disable typescript/ban-ts-comment */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import { MyInfoAttribute } from 'formsg-shared/types'
@@ -30,7 +30,6 @@ import {
   MyInfoParseRelayStateError,
 } from '../myinfo.errors'
 import { MyInfoRelayState } from '../myinfo.types'
-
 import {
   MOCK_ACCESS_TOKEN,
   MOCK_AUTH_CODE,

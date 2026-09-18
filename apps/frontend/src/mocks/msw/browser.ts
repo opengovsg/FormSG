@@ -1,7 +1,7 @@
 import { setupWorker } from 'msw/browser'
 
-import { workspaceHandlers } from './handlers/workspace'
 import { handlers } from './handlers'
+import { workspaceHandlers } from './handlers/workspace'
 
 // This configures a Service Worker with the given request handlers.
 export const worker = setupWorker(...handlers)

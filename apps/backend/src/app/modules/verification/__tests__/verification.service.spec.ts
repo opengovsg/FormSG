@@ -51,7 +51,6 @@ import {
   SendOtpParams,
   VerifyOtpParams,
 } from '../verification.types'
-
 import {
   generateFieldParams,
   generatePaymentContactFieldParams,

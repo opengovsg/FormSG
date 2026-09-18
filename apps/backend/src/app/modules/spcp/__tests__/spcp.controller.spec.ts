@@ -19,7 +19,6 @@ import {
 import { CpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../spcp.oidc.service/spcp.oidc.service.sp'
 import { CodeVerifierCookieName, JwtName } from '../spcp.types'
-
 import {
   MOCK_CODE_VERIFIER_COOKIE_OPTIONS,
   MOCK_COOKIE_SETTINGS,

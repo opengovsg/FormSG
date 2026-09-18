@@ -36,8 +36,7 @@ db.getCollection('forms')
 // After
 // Should be higher than count in BEFORE
 db.getCollection('forms').find({
-    responseMode: 'multirespondent',
-    stepOneEmailNotificationFieldId: { $exists: true },
-    status: 'PUBLIC',
-  })
-  
+  responseMode: 'multirespondent',
+  stepOneEmailNotificationFieldId: { $exists: true },
+  status: 'PUBLIC',
+})

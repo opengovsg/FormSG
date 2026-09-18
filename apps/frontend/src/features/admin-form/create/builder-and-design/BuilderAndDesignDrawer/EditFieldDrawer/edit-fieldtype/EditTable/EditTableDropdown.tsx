@@ -1,11 +1,12 @@
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl } from '@chakra-ui/react'
 import { get } from 'lodash'
 
-import { REQUIRED_ERROR } from '~constants/validation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import { REQUIRED_ERROR } from '~constants/validation'
 
 import { EditTableInputs } from './EditTable'
 import { EditTableDropdownInput } from './EditTableDropdownInput'

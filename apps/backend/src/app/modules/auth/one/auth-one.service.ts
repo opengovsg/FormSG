@@ -7,7 +7,6 @@ import { isDev } from '../../../config/config'
 import { isOneConfigured, one } from '../../../config/features/one.config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { resolveAppUrl } from '../../../utils/urls'
-
 import { ONE_LOGIN_CALLBACK_PATH } from './auth-one.constants'
 import { OneCreateRedirectUrlError } from './auth-one.errors'
 

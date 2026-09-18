@@ -18,9 +18,9 @@ See our metrics and success stories here!
 
 **Before this guide existed**, government teams worldwide successfully forked and deployed FormSG for their local contexts.&#x20;
 
-* :flag\_lk: Sri Lanka ([FormLK](https://forms.gov.lk/))
-* :flag\_kh: Cambodia ([FormKH](https://form.gov.kh/))
-* :flag\_vn: Vietnam ([FormVN](https://form.gov.vn/))
+- :flag\_lk: Sri Lanka ([FormLK](https://forms.gov.lk/))
+- :flag\_kh: Cambodia ([FormKH](https://form.gov.kh/))
+- :flag\_vn: Vietnam ([FormVN](https://form.gov.vn/))
 
 These earlier implementations prove FormSG's adaptability and demonstrate that self-hosting is not only possible but practical for government use.
 
@@ -30,11 +30,11 @@ These earlier implementations prove FormSG's adaptability and demonstrate that s
 
 <summary>✅ FormSG if a good fit if</summary>
 
-* Processing a lot of forms monthly
-* Need data sovereignty for citizen information
-* Want to eliminate vendor lock-in
-* Have technical team (or can hire contractors)
-* Current form solution costs >$50k/year
+- Processing a lot of forms monthly
+- Need data sovereignty for citizen information
+- Want to eliminate vendor lock-in
+- Have technical team (or can hire contractors)
+- Current form solution costs >$50k/year
 
 </details>
 
@@ -42,10 +42,10 @@ These earlier implementations prove FormSG's adaptability and demonstrate that s
 
 <summary>❌ FormSG may not fit if</summary>
 
-* Need vendor support/SLAs
-* Processing <100 forms monthly
-* No technical capabilities
-* Need immediate deployment (<1 month)
+- Need vendor support/SLAs
+- Processing <100 forms monthly
+- No technical capabilities
+- Need immediate deployment (<1 month)
 
 </details>
 
@@ -53,10 +53,10 @@ These earlier implementations prove FormSG's adaptability and demonstrate that s
 
 <summary><span data-gb-custom-inline data-tag="emoji" data-code="1f914">🤔</span> More Benefits</summary>
 
-* Integrate with any government system
-* Customize workflows without vendor charges
-* Scale without per-form fees
-* Own your citizen data
+- Integrate with any government system
+- Customize workflows without vendor charges
+- Scale without per-form fees
+- Own your citizen data
 
 </details>
 
@@ -70,19 +70,19 @@ with experienced contractors.
 {% column %}
 **Minimum Technical Skills Needed:**
 
-* Basic Linux server administration
-* Docker or container orchestration experience
-* Environment variable and secrets management
-* Working with Node.js applications
-* Understanding of web application security
-{% endcolumn %}
+- Basic Linux server administration
+- Docker or container orchestration experience
+- Environment variable and secrets management
+- Working with Node.js applications
+- Understanding of web application security
+  {% endcolumn %}
 
 {% column %}
 **Team Capabilities:**
 
-* **Small teams (1-2 people)**: Full-stack developers who can learn DevOps
-* **Medium teams (2-4 people)**: Mix of development and infrastructure skills
-* **Large teams (5+ people)**: Can specialize in DevOps, development, and security
+- **Small teams (1-2 people)**: Full-stack developers who can learn DevOps
+- **Medium teams (2-4 people)**: Mix of development and infrastructure skills
+- **Large teams (5+ people)**: Can specialize in DevOps, development, and security
 
 These skills can be distributed across your team based on size.
 {% endcolumn %}
@@ -94,34 +94,34 @@ These skills can be distributed across your team based on size.
 
 **For more technical info**
 
-* [aws-production-deployment.md](aws-production-deployment.md "mention")
-* [infrastructure-guidance.md](infrastructure-guidance.md "mention")
-* [component-customization.md](component-customization.md "mention")
+- [aws-production-deployment.md](aws-production-deployment.md 'mention')
+- [infrastructure-guidance.md](infrastructure-guidance.md 'mention')
+- [component-customization.md](component-customization.md 'mention')
 
 ### Legal and Compliance Considerations
 
 #### ⚠️ CRITICAL: Remove Singapore Government Branding
 
-**BEFORE ANY DEPLOYMENT**: You MUST remove Singapore-specific branding to avoid legal issues and trademark violations. **See** [legal-and-compliance.md](legal-and-compliance.md "mention") on on complete removal instructions.
+**BEFORE ANY DEPLOYMENT**: You MUST remove Singapore-specific branding to avoid legal issues and trademark violations. **See** [legal-and-compliance.md](legal-and-compliance.md 'mention') on on complete removal instructions.
 
 ### Cost-Benefit Analysis Framework
 
 **Initial Investment:**
 
-* **Setup Time**: 160-300 hours (4-8 weeks of effort)
-* **Infrastructure**: $120-300/month
-* **Timeline**: 2-3 months to production
+- **Setup Time**: 160-300 hours (4-8 weeks of effort)
+- **Infrastructure**: $120-300/month
+- **Timeline**: 2-3 months to production
 
 **Ongoing Investment:**
 
-* **Maintenance**: \~0.25 FTE annually (10-20 hours/month)
-* **Infrastructure**: $120-300/month continues
+- **Maintenance**: \~0.25 FTE annually (10-20 hours/month)
+- **Infrastructure**: $120-300/month continues
 
 **Typical Return:**
 
-* **Break-even**: 6-12 months vs commercial solutions
-* **Annual savings**: $50-100k vs enterprise form platforms
-* **Plus**: Data sovereignty, no vendor lock-in, unlimited forms
+- **Break-even**: 6-12 months vs commercial solutions
+- **Annual savings**: $50-100k vs enterprise form platforms
+- **Plus**: Data sovereignty, no vendor lock-in, unlimited forms
 
 _Note: Smaller deployments need less time. Many teams start simple and grow._
 
@@ -150,7 +150,7 @@ Time estimates and costs are approximations and may vary significantly based on 
 3. **Vendor Comparison**: Evaluate commercial alternatives side-by-side
 4. **Pilot Project**: Start with non-critical forms to reduce risk
 
-***
+---
 
 {% hint style="success" %}
 **Key Takeaway**: FormSG is a powerful, flexible government forms platform that requires technical investment but provides complete control and customization. Success depends on having the right skills, resources, and commitment to the implementation journey.

@@ -1,7 +1,6 @@
 import { Box, Container, Divider, Stack, Text } from '@chakra-ui/react'
 
 import { ChartsSvgr } from '../assets/svgr/ChartsSvgr'
-
 import { ChartsSupportedFieldsInfoBox } from './ChartsSupportedFieldsInfoBox'
 
 export const EmptyChartsContainer = ({

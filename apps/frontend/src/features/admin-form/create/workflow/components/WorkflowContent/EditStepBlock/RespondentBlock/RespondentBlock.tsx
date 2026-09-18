@@ -1,13 +1,14 @@
 import { UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { UserDto } from 'formsg-shared/types'
 
-import { textStyles } from '~theme/textStyles'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Radio from '~components/Radio'
+import { textStyles } from '~theme/textStyles'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
@@ -17,7 +18,6 @@ import { useIsWorkflowBuilderRedesign } from '../../../../hooks/useIsWorkflowBui
 import { useIsSpotlightActiveSection } from '../../../Spotlight'
 import { isFirstStepByStepNumber } from '../../utils/isFirstStepByStepNumber'
 import { EditStepBlockContainer } from '../EditStepBlockContainer'
-
 import { ConditionalRoutingOption } from './Components/ConditionalRoutingOption'
 import { DynamicRespondentOption } from './Components/DynamicRespondentOption'
 import { StaticRespondentOption } from './Components/StaticRespondentOption'

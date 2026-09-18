@@ -5,7 +5,6 @@ import { Producer } from 'sqs-producer'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-
 import { WebhookPushToQueueError } from './webhook.errors'
 import { WebhookQueueMessage } from './webhook.message'
 import { calculateDelaySeconds } from './webhook.utils'

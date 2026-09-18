@@ -13,7 +13,6 @@ import {
   FormAuthNoEsrvcIdError,
 } from '../form/form.errors'
 import { ProcessedSingleAnswerResponse } from '../submission/submission.types'
-
 import {
   CorppassJwtPayloadFromCookie,
   ExtractedCorppassNDIPayload,

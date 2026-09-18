@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 import { http, HttpResponse } from 'msw'
@@ -30,7 +31,6 @@ import {
   setToEditingEmailCardSelector,
   useAdminWorkflowStore,
 } from '../../adminWorkflowStore'
-
 import { CompletionEmailBlock } from './CompletionEmailBlock'
 
 const emailField: FormFieldDto = {

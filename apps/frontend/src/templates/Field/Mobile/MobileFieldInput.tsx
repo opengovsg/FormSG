@@ -4,10 +4,10 @@ import {
   useFormContext,
 } from 'react-hook-form'
 
-import { useMobileValidationRules } from '~utils/fieldValidation'
 import PhoneNumberInput, {
   PhoneNumberInputProps,
 } from '~components/PhoneNumberInput'
+import { useMobileValidationRules } from '~utils/fieldValidation'
 
 import { MobileFieldSchema, VerifiableFieldInput } from '../types'
 

@@ -4,7 +4,6 @@ import Crypto from '../src/crypto'
 import { MissingPublicKeyError } from '../src/errors'
 import { SIGNING_KEYS } from '../src/resource/signing-keys'
 import { encodeBase64 } from '../src/util/encoding'
-
 import {
   ciphertext,
   formPublicKey,

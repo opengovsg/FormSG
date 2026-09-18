@@ -1,8 +1,8 @@
 import nacl from 'tweetnacl'
 
+import { EncryptedFileContent } from './types'
 import { generateKeypair } from './util/crypto'
 import { decodeBase64, encodeBase64 } from './util/encoding'
-import { EncryptedFileContent } from './types'
 
 export default class CryptoBase {
   /**

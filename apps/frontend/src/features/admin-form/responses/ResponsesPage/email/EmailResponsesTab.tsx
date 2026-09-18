@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next'
+
 import { Container, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import { useFormResponsesCount } from '../../queries'
 import { EmptyResponses } from '../common/EmptyResponses'
-
 import { EmailResponsesSvgr } from './EmailResponsesSvgr'
 
 export const EmailResponsesTab = (): JSX.Element => {

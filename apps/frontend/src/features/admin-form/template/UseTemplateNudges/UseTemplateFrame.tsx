@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Box, Flex, Portal, Text } from '@chakra-ui/react'
 
 // Sit above page-level sticky chrome (sticky = 1100, banner = 1200, overlay = 1300)

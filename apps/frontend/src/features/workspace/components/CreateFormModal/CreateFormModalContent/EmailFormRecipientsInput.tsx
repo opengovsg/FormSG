@@ -1,18 +1,19 @@
 import { Control, Controller, RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Skeleton } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
 import { FormResponseMode } from 'formsg-shared/types/form/form'
 
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import Input from '~components/Input'
+import { TagInput } from '~components/TagInput'
 import {
   useOptionalAdminEmailValidationRules,
   useRequiredAdminEmailValidationRules,
 } from '~utils/formValidation'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Input from '~components/Input'
-import { TagInput } from '~components/TagInput'
 
 import { useUser } from '~features/user/queries'
 

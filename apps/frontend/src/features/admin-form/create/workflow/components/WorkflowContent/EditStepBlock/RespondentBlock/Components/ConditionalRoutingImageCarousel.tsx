@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+
 import { Button, Image, Stack, Text } from '@chakra-ui/react'
 
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'

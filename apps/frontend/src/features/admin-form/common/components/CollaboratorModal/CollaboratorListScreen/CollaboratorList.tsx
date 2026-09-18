@@ -1,19 +1,19 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
+
 import { Spacer, Stack, StackDivider } from '@chakra-ui/react'
 
 import { FormPermission } from 'formsg-shared/types/form/form'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton, { IconButtonProps } from '~components/IconButton'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useMutateCollaborators } from '../../../mutations'
 import { useAdminFormCollaborators } from '../../../queries'
 import { useCollaboratorWizard } from '../CollaboratorWizardContext'
 import { DropdownRole } from '../constants'
 import { permissionsToRole, roleToPermission } from '../utils'
-
 import { CollaboratorRow } from './CollaboratorRow'
 import { PermissionDropdown } from './PermissionDropdown'
 import { ViewOnlyPermission } from './ViewOnlyPermission'

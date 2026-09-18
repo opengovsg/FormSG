@@ -7,9 +7,8 @@ import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { checkFormIsEncryptModeOrMultirespondent } from '../submission/submission.utils'
 import * as UserService from '../user/user.service'
-
-import { getPaymentLogMeta } from './payment.service.utils'
 import * as PaymentProofService from './payment-proof.service'
+import { getPaymentLogMeta } from './payment.service.utils'
 import * as PaymentService from './payments.service'
 
 const logger = createLoggerWithLabel(module)

@@ -1,14 +1,13 @@
+import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { FormAuthType } from 'formsg-shared/types'
 import session, { Session } from 'supertest-session'
 import { v4 as uuidv4 } from 'uuid'
 
 import { MyInfoAuthCodeCookieState } from '../myinfo.types'
-
 import {
   MOCK_ACCESS_TOKEN,
   MOCK_AUTH_CODE,

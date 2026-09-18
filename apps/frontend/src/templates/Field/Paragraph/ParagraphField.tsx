@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next'
+
 import { Box } from '@chakra-ui/react'
 
 import { Language } from 'formsg-shared/types'
 
+import { MarkdownText } from '~components/MarkdownText'
 import { useMdComponents } from '~hooks/useMdComponents'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
-import { MarkdownText } from '~components/MarkdownText'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { ParagraphFieldSchema } from '../types'

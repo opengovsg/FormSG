@@ -1,10 +1,11 @@
 import { Navigate, useLocation } from 'react-router-dom'
+
 import { Flex } from '@chakra-ui/react'
 
-import { useAuth } from '~contexts/AuthContext'
-import { DASHBOARD_ROUTE } from '~constants/routes'
-import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
+import { DASHBOARD_ROUTE } from '~constants/routes'
+import { useAuth } from '~contexts/AuthContext'
+import { fillHeightCss } from '~utils/fillHeightCss'
 
 interface PublicElementProps {
   /**

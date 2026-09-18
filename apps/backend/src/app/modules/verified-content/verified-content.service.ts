@@ -4,7 +4,6 @@ import { err, ok, Result } from 'neverthrow'
 import { webhooksAndVerifiedContentConfig } from '../../config/features/webhook-verified-content.config'
 import formsgSdk from '../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../config/logger'
-
 import { EncryptVerifiedContentError } from './verified-content.errors'
 import {
   EncryptVerificationContentParams,

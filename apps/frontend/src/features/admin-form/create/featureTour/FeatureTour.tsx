@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import Joyride, { ACTIONS, CallBackProps, EVENTS, STATUS } from 'react-joyride'
+
 import { useToken } from '@chakra-ui/react'
 
 import { getFeatureSteps } from './constants'

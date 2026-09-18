@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+
 import { Flex, Stack, Text } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
-import { LANDING_ROUTE } from '~constants/routes'
 import Spinner from '~components/Spinner'
+import { LANDING_ROUTE } from '~constants/routes'
 
 import { useIsRbiIpCheck } from '~features/login/queries'
 

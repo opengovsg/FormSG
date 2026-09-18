@@ -1,14 +1,6 @@
-import { PublicUserDto, UserDto } from '../user'
-import {
-  BasicField,
-  FormField,
-  FormFieldDto,
-  MyInfoChildData,
-  TranslationMapping,
-} from '../field'
-
-import { FormLogo } from './form_logo'
+import type { Schema } from 'mongoose'
 import type { Except, Merge, Tagged, PartialDeep } from 'type-fest'
+
 import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
@@ -18,10 +10,20 @@ import {
   STORAGE_FORM_SETTINGS_FIELDS,
   STORAGE_PUBLIC_FORM_FIELDS,
 } from '../../constants/form'
+import { ErrorCode } from '../errorCodes'
+import {
+  BasicField,
+  FormField,
+  FormFieldDto,
+  MyInfoChildData,
+  TranslationMapping,
+} from '../field'
 import { DateString } from '../generic'
-import { CheckboxFieldResponsesV3 } from '../response-v3'
-import { FormLogic, LogicDto } from './form_logic'
 import { PaymentChannel, PaymentMethodType, PaymentType } from '../payment'
+import { CheckboxFieldResponsesV3 } from '../response-v3'
+import { PublicUserDto, UserDto } from '../user'
+import { FormLogic, LogicDto } from './form_logic'
+import { FormLogo } from './form_logo'
 import { Product } from './product'
 import {
   FormWorkflow,
@@ -29,9 +31,6 @@ import {
   FormWorkflowStepDto,
   StrippedFormWorkflowDto,
 } from './workflow'
-import { ErrorCode } from '../errorCodes'
-
-import type { Schema } from 'mongoose'
 
 export type FormId = Tagged<string, 'FormId'>
 

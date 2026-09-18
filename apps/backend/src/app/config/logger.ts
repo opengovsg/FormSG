@@ -9,7 +9,6 @@ import { format, Logger, LoggerOptions, loggers, transports } from 'winston'
 import WinstonCloudWatch from 'winston-cloudwatch'
 
 import { Environment } from '../../types'
-
 import { aws, customCloudWatchGroup, isDev, nodeEnv } from './config'
 
 // Params to enforce the logging format.

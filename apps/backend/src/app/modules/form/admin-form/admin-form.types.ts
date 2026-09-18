@@ -9,7 +9,6 @@ import {
   IUserSchema,
 } from '../../../../types'
 import { ForbiddenFormError } from '../form.errors'
-
 import { EditFieldError } from './admin-form.errors'
 
 export enum PermissionLevel {

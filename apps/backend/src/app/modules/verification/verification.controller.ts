@@ -26,7 +26,6 @@ import { getOidcService } from '../spcp/spcp.oidc.service'
 import { MrfJwtPayload } from '../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
 import * as SubmissionService from '../submission/submission.service'
-
 import { MrfJwtValidationError } from './verification.errors'
 import * as VerificationService from './verification.service'
 import { Transaction } from './verification.types'

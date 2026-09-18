@@ -1,5 +1,6 @@
 import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, Text } from '@chakra-ui/react'
 
 import { BasicField, WorkflowType } from 'formsg-shared/types'
@@ -12,7 +13,6 @@ import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflow
 import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
 import { useStageFieldAndNavigate } from '../../../../../hooks/useStageFieldAndNavigate'
 import { FieldEmptyState } from '../../EmptyStates'
-
 import { useWorkflowTypeValidation } from './hooks'
 import { NESTED_CONTROL_PR } from './layout'
 import { FieldItem, RespondentOptionProps } from './types'

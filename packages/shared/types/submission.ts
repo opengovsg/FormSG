@@ -2,18 +2,18 @@ import type { Opaque, RequireAtLeastOne } from 'type-fest'
 import { z } from 'zod'
 
 import { ErrorDto } from './core'
+import { ErrorCode } from './errorCodes'
 import { FormFieldDto, MyInfoAttribute, PaymentFieldsDto } from './field'
-import { FormAuthType, StrippedFormFieldDto } from './form/form'
-import { DateString } from './generic'
-import { EmailResponse, FieldResponse, MobileResponse } from './response'
-import { PaymentStatus } from './payment'
 import {
   FormWorkflowDto,
   LogicDto,
   ProductItem,
   StrippedFormWorkflowDto,
 } from './form'
-import { ErrorCode } from './errorCodes'
+import { FormAuthType, StrippedFormFieldDto } from './form/form'
+import { DateString } from './generic'
+import { PaymentStatus } from './payment'
+import { EmailResponse, FieldResponse, MobileResponse } from './response'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 

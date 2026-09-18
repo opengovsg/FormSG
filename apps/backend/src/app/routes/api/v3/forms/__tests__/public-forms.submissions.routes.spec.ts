@@ -25,7 +25,6 @@ import {
 // Import last so mocks are imported correctly
 // oxlint-disable-next-line import/first
 import { PublicFormsRouter } from '../public-forms.routes'
-
 import {
   MOCK_ATTACHMENT_RESPONSE,
   MOCK_CHECKBOX_FIELD,

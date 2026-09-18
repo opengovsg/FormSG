@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
@@ -8,7 +9,6 @@ import { BasicField } from 'formsg-shared/types/field'
 import Button from '~components/Button'
 
 import { DecimalFieldSchema } from '../types'
-
 import {
   DecimalField as DecimalFieldComponent,
   DecimalFieldProps,

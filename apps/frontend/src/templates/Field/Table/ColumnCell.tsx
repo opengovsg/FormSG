@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { UseTableCellProps } from 'react-table'
+
 import { FormControl, VisuallyHidden } from '@chakra-ui/react'
 import { get } from 'lodash'
 
@@ -14,17 +15,17 @@ import {
   ShortTextColumnBase,
 } from 'formsg-shared/types/field'
 
+import { SingleSelect } from '~components/Dropdown'
+import { ComboboxItem } from '~components/Dropdown/types'
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import FormLabel from '~components/FormControl/FormLabel'
+import Input from '~components/Input'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useIsPrint } from '~hooks/useIsPrint'
 import {
   createBaseValidationRules,
   useDropdownValidationRules,
 } from '~utils/fieldValidation'
-import { SingleSelect } from '~components/Dropdown'
-import { ComboboxItem } from '~components/Dropdown/types'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import FormLabel from '~components/FormControl/FormLabel'
-import Input from '~components/Input'
 
 import { TableFieldInputs } from '../types'
 

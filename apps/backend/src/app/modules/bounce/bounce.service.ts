@@ -23,7 +23,6 @@ import { getCollabEmailsWithPermission } from '../form/form.utils'
 import * as UserService from '../user/user.service'
 import { UserWithContactNumber } from '../user/user.types'
 import { isUserWithContactNumber } from '../user/user.utils'
-
 import {
   InvalidNotificationError,
   MissingEmailHeadersError,

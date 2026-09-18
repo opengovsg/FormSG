@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Box, Stack } from '@chakra-ui/react'
 
 import { FormColorTheme, FormFieldWithId } from 'formsg-shared/types'

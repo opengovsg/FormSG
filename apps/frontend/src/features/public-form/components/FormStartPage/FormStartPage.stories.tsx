@@ -1,4 +1,5 @@
 import { MemoryRouter } from 'react-router-dom'
+
 import { Meta, StoryFn } from '@storybook/react'
 
 import { FormColorTheme } from 'formsg-shared/types/form/form'
@@ -16,7 +17,6 @@ import { getMobileViewParameters } from '~utils/storybook'
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 import { FormSectionsProvider } from '../FormFields/FormSectionsContext'
-
 import {
   MiniHeader as MiniHeaderComponent,
   MiniHeaderProps,

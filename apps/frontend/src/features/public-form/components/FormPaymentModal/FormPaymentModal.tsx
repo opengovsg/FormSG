@@ -1,5 +1,6 @@
 import { MouseEvent, MouseEventHandler } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import {
   Modal,
   ModalBody,
@@ -9,10 +10,10 @@ import {
   ModalOverlay,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import ButtonGroup from '~components/ButtonGroup'
 import { ModalCloseButton } from '~components/Modal'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 type FormPaymentModalProps = {
   onSubmit: MouseEventHandler<HTMLButtonElement> | undefined

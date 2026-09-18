@@ -1,4 +1,3 @@
-import { generateUUID } from './util/crypto'
 import {
   ADDRESS_SUBFIELD_KEYS,
   GENERIC_STRING_FIELD_TYPES,
@@ -21,6 +20,7 @@ import {
   VerifiableAnswerV4,
   YesNoAnswerV4,
 } from './types-v4'
+import { generateUUID } from './util/crypto'
 
 const convertStringAnswer = (answer: string): StringAnswerV4 => {
   return { value: answer }

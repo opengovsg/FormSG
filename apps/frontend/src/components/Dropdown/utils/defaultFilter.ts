@@ -1,7 +1,6 @@
 import fuzzysort from 'fuzzysort'
 
 import { ComboboxItem } from '../types'
-
 import { itemIsObject } from './itemUtils'
 
 export const defaultFilter = <Item extends ComboboxItem>(

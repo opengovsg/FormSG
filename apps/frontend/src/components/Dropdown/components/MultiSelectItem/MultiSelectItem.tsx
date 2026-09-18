@@ -1,4 +1,5 @@
 import { MouseEvent, useCallback, useMemo } from 'react'
+
 import { Flex, Icon, Stack, TagLabel } from '@chakra-ui/react'
 
 import { useMultiSelectContext } from '~components/Dropdown/MultiSelectContext'

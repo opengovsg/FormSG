@@ -1,5 +1,4 @@
 import { useAdminFormSettings } from '../../queries'
-
 import { AuthSettingsSection } from './AuthSettingsSection'
 import { AuthSettingsSectionSkeleton } from './AuthSettingsSectionSkeleton'
 

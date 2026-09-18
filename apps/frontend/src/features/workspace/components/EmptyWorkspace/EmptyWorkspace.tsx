@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
+
 import { Flex, Text } from '@chakra-ui/react'
 
+import Button from '~components/Button'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { fillHeightCss } from '~utils/fillHeightCss'
-import Button from '~components/Button'
 
 import { EmptyWorkspaceSvgr } from './EmptyWorkspaceSvgr'
 

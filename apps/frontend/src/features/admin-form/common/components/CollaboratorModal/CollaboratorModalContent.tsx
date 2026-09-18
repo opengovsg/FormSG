@@ -1,11 +1,11 @@
 import { XMotionBox } from '~templates/MotionBox'
 
-import { RemoveSelfScreen } from './RemoveSelfScreen/RemoveSelfScreen'
 import { CollaboratorListScreen } from './CollaboratorListScreen'
 import {
   CollaboratorFlowStates,
   useCollaboratorWizard,
 } from './CollaboratorWizardContext'
+import { RemoveSelfScreen } from './RemoveSelfScreen/RemoveSelfScreen'
 import { TransferOwnershipScreen } from './TransferOwnershipScreen'
 
 /**

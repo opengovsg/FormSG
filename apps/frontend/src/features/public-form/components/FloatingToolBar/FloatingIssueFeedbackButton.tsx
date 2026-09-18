@@ -1,9 +1,10 @@
 import { BiQuestionMark } from 'react-icons/bi'
+
 import { useDisclosure } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'
 

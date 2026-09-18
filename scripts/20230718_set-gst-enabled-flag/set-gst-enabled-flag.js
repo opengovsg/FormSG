@@ -1,9 +1,9 @@
 /* eslint-disable */
 
 /**
- * This script adds the `gstEnabled` flag to the payments collection and sets the flag for all existing documents to true. 
+ * This script adds the `gstEnabled` flag to the payments collection and sets the flag for all existing documents to true.
  * It also adds the `gst_enabled` flag to the `payments_field` in the form collection, and sets the flag for all existing
- * documents with a `payments_field` to true. 
+ * documents with a `payments_field` to true.
  */
 
 // PAYMENTS COLLECTION
@@ -12,34 +12,25 @@
 db.getCollection('payments').countDocuments({})
 
 // Count total number of payments with no gstEnabled flag value. This should be equal to the total number of payments.
-db
-  .getCollection('payments')
-  .countDocuments({ gstEnabled: { $exists: false } })
+db.getCollection('payments').countDocuments({ gstEnabled: { $exists: false } })
 
 // UPDATE
-db.getCollection('payments').updateMany({}, [
-  { $set: { gstEnabled: true } },
-])
+db.getCollection('payments').updateMany({}, [{ $set: { gstEnabled: true } }])
 
 // AFTER
 // Count total number of payments with gstEnabled flag value. This should be equal to the total number of payments.
-db
-  .getCollection('payments')
-  .countDocuments({ gstEnabled: { $exists: true } })
+db.getCollection('payments').countDocuments({ gstEnabled: { $exists: true } })
 
 // Count total number of payments with no gstEnabled flag value. This should be equal to 0
-db
-  .getCollection('payments')
-  .countDocuments({ gstEnabled: { $exists: false } })
-
+db.getCollection('payments').countDocuments({ gstEnabled: { $exists: false } })
 
 // FORM COLLECTION
 // BEFORE
 
 // Count number of forms that contains the payments_field property
-db.getCollection("forms").find(
-    {payments_field: {$ne: null }},
-).count()
+db.getCollection('forms')
+  .find({ payments_field: { $ne: null } })
+  .count()
 
 // Count total number of forms with no gstEnabled flag value. This should be equal to 0.
 db.getCollection('forms')
@@ -47,7 +38,7 @@ db.getCollection('forms')
   .count()
 
 // UPDATE all forms (with payment fields) gst_enabled flag to true
-db.getCollection('forms').updateMany({ payments_field: { $ne: null } },  [
+db.getCollection('forms').updateMany({ payments_field: { $ne: null } }, [
   { $set: { payments_field: { gst_enabled: true } } },
 ])
 
@@ -63,8 +54,7 @@ db.getCollection('forms')
   .find({
     $and: [
       { payments_field: { $ne: null } },
-      { payments_field: {gst_enabled: { $ne: null }} },
+      { payments_field: { gst_enabled: { $ne: null } } },
     ],
   })
   .count()
-

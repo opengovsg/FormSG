@@ -11,7 +11,6 @@ import { ControllerHandler } from '../core/core.types'
 import { IntranetService } from '../intranet/intranet.service'
 import { UNAUTHORIZED_USER_MESSAGE } from '../user/user.constant'
 import * as UserService from '../user/user.service'
-
 import { UnauthorizedError } from './auth.errors'
 import { getUserByApiKey } from './auth.service'
 import {

@@ -33,16 +33,15 @@ import { validateResponses } from 'formsg-shared/utils/validate-responses'
 
 import fileArrayBuffer from '~/utils/fileArrayBuffer'
 
-import formsgSdk from '~utils/formSdk'
 import {
   AttachmentFieldSchema,
   FormFieldValue,
   FormFieldValues,
 } from '~templates/Field'
 import { RADIO_OTHERS_INPUT_VALUE } from '~templates/Field/Radio/constants'
+import formsgSdk from '~utils/formSdk'
 
 import { FieldIdToQuarantineKeyType } from '../PublicFormService'
-
 import { transformInputsToOutputs } from './inputTransformation'
 
 /**

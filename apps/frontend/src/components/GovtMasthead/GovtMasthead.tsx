@@ -1,5 +1,6 @@
 import React from 'react'
 import { BiChevronDown, BiChevronUp, BiSolidErrorCircle } from 'react-icons/bi'
+
 import {
   Box,
   chakra,
@@ -14,8 +15,8 @@ import {
 
 import { BxsBank } from '~assets/icons/BxsBank'
 import { BxsLockAlt } from '~assets/icons/BxsLockAlt'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Link from '~components/Link'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { GovtMastheadIcon } from './GovtMastheadIcon'
 import { GovtMastheadItem } from './GovtMastheadItem'

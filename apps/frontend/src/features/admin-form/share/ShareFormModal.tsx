@@ -3,6 +3,7 @@ import { Trans, useTranslation } from 'react-i18next'
 import { BiLinkExternal } from 'react-icons/bi'
 import { RemoveScroll } from 'react-remove-scroll'
 import { useNavigate } from 'react-router-dom'
+
 import {
   Box,
   Divider,
@@ -37,12 +38,6 @@ import {
 
 import { BxsCheckCircle, BxsErrorCircle } from '~/assets/icons'
 
-import {
-  ADMINFORM_ROUTE,
-  ADMINFORM_SETTINGS_SUBROUTE,
-  ADMINFORM_USETEMPLATE_ROUTE,
-} from '~constants/routes'
-import { HttpError } from '~services/ApiService'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
@@ -52,6 +47,12 @@ import Link from '~components/Link'
 import { ModalCloseButton } from '~components/Modal'
 import { Tab } from '~components/Tabs'
 import Textarea from '~components/Textarea'
+import {
+  ADMINFORM_ROUTE,
+  ADMINFORM_SETTINGS_SUBROUTE,
+  ADMINFORM_USETEMPLATE_ROUTE,
+} from '~constants/routes'
+import { HttpError } from '~services/ApiService'
 import { CopyButton } from '~templates/CopyButton'
 
 import { useEnv } from '~features/env/queries'

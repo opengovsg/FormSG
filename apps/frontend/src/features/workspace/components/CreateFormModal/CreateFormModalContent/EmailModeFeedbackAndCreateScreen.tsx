@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { FormProvider, RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
+
 import {
   Container,
   FormControl,
@@ -15,11 +16,11 @@ import {
 
 import { BasicField } from 'formsg-shared/types'
 
-import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
-import { useFormTitleValidationRules } from '~utils/formValidation'
 import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
+import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import { CheckboxField, CheckboxFieldSchema } from '~templates/Field'
+import { useFormTitleValidationRules } from '~utils/formValidation'
 
 import { useAdminUseEmailModeFormView } from '~features/public-form/queries'
 
@@ -27,7 +28,6 @@ import {
   CreateFormWizardInputProps,
   useCreateFormWizard,
 } from '../CreateFormWizardContext'
-
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.

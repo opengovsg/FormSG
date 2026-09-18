@@ -10,7 +10,6 @@ import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { stripe } from '../../loaders/stripe'
 import { ControllerHandler } from '../core/core.types'
-
 import {
   StripeMetadataIncorrectEnvError,
   StripeMetadataInvalidError,

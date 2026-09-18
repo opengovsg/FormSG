@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Controller, RegisterOptions, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   CheckboxGroup,
@@ -21,13 +22,6 @@ import {
 } from 'formsg-shared/types/field'
 import { hasAvailableDates } from 'formsg-shared/utils/date-validation'
 
-import {
-  getRemainingDaysOfTheWeek,
-  isDateOutOfRange,
-  loadDateFromNormalizedDate,
-  normalizeDateToUtc,
-} from '~utils/date'
-import { createBaseValidationRules } from '~utils/fieldValidation'
 import Checkbox from '~components/Checkbox'
 import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown'
@@ -36,6 +30,13 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
+import {
+  getRemainingDaysOfTheWeek,
+  isDateOutOfRange,
+  loadDateFromNormalizedDate,
+  normalizeDateToUtc,
+} from '~utils/date'
+import { createBaseValidationRules } from '~utils/fieldValidation'
 
 import { useCreatePageSidebarLayout } from '~features/admin-form/create/common/CreatePageSideBarLayoutContext'
 

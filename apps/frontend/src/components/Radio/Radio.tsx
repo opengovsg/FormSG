@@ -26,6 +26,7 @@ import {
   useMemo,
 } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   chakra,
@@ -50,7 +51,6 @@ import { RADIO_THEME_KEY } from '~/theme/components/Radio'
 import { FieldColorScheme } from '~/theme/foundations/colours'
 
 import Input, { InputProps } from '../Input'
-
 import { RadioGroup } from './RadioGroup'
 import { useRadioGroupWithOthers } from './useRadioGroupWithOthers'
 

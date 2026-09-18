@@ -7,7 +7,6 @@ import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-
 import {
   SGID_CODE_VERIFIER_COOKIE_NAME,
   SGID_COOKIE_NAME,

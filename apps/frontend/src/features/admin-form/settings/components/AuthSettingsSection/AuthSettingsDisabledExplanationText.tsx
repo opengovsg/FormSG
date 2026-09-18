@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Box, List, ListItem } from '@chakra-ui/react'
 
 import { FormResponseMode } from 'formsg-shared/types'

@@ -1,16 +1,3 @@
-import {
-  decryptContent,
-  encryptMessage,
-  generateKeypair,
-  verifySignedMessage,
-} from './util/crypto'
-import {
-  decodeBase64,
-  decodeUTF8,
-  encodeBase64,
-  encodeUTF8,
-} from './util/encoding'
-import { determineIsFormFieldsV3 } from './util/validate'
 import { adaptV3ToV4, deriveQuestionFromMeta } from './adapt-v3-to-v4'
 import CryptoBase from './crypto-base'
 import { MissingPublicKeyError } from './errors'
@@ -27,6 +14,19 @@ import {
   FieldResponsesV4,
   FormFieldMeta,
 } from './types-v4'
+import {
+  decryptContent,
+  encryptMessage,
+  generateKeypair,
+  verifySignedMessage,
+} from './util/crypto'
+import {
+  decodeBase64,
+  decodeUTF8,
+  encodeBase64,
+  encodeUTF8,
+} from './util/encoding'
+import { determineIsFormFieldsV3 } from './util/validate'
 
 /**
  * Checks whether decrypted responses are already in V4 format.

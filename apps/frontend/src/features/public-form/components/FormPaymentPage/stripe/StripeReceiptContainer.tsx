@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+
 import { Box, Stack, useToast } from '@chakra-ui/react'
 
 import { FormPaymentsField, ProductItemForReceipt } from 'formsg-shared/types'
@@ -12,7 +13,6 @@ import {
 } from '../../FormEndPage/components/FeedbackBlock'
 import { PaymentStack } from '../components'
 import { useGetPaymentReceiptStatus } from '../queries'
-
 import { DownloadReceiptBlock, GenericMessageBlock } from './components'
 
 export const StripeReceiptContainer = ({

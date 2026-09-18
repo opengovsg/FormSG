@@ -5,7 +5,6 @@ import { pick } from 'lodash'
 import promiseRetry from 'promise-retry'
 
 import { createLoggerWithLabel } from '../../config/logger'
-
 import { InvalidIdTokenError } from './spcp.oidc.client.errors'
 import {
   CPJWTVerifyResult,

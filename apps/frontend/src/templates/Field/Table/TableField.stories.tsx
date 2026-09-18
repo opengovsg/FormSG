@@ -1,16 +1,16 @@
 import { useEffect, useMemo, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 import { assign, merge, times } from 'lodash'
 
 import { BasicField } from 'formsg-shared/types/field'
 
-import { viewports } from '~utils/storybook'
 import Button from '~components/Button'
+import { viewports } from '~utils/storybook'
 
 import { TableFieldSchema } from '../types'
-
 import {
   TableField as TableFieldComponent,
   TableFieldProps,

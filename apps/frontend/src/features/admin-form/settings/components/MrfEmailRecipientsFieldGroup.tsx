@@ -6,14 +6,15 @@ import {
   useFormState,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Box, FormControl, FormErrorMessage, Skeleton } from '@chakra-ui/react'
 import { get, isEmpty, noop } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
-import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormLabel from '~components/FormControl/FormLabel'
 import { TagInput } from '~components/TagInput'
+import { useOptionalAdminEmailValidationRules } from '~utils/formValidation'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks/useAdminFormWorkflow'
@@ -140,7 +141,7 @@ const StepOneRecipientControl = ({
           control={control}
           name={STEP_1_RESPONDENT_NOTIFY_EMAIL_SINGLESELECT_NAME}
           render={({
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // oxlint-disable-next-line typescript/no-unused-vars
             field: { value, onBlur, ...rest },
           }) => (
             <SingleSelect
@@ -190,7 +191,7 @@ const WorkflowStepsRecipientControl = ({
           control={control}
           name={WORKFLOW_EMAIL_MULTISELECT_NAME}
           render={({
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // oxlint-disable-next-line typescript/no-unused-vars
             field: { value: values = [], onChange, onBlur, ...rest },
           }) => (
             <MultiSelect

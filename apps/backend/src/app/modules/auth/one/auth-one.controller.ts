@@ -11,7 +11,6 @@ import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
 import { isEmailInDomainWhitelist, mapRouteError } from '../auth.utils'
-
 import {
   ONE_CODE_VERIFIER_COOKIE_NAME,
   ONE_NONCE_COOKIE_NAME,

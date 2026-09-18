@@ -28,7 +28,6 @@ import {
 import type { Merge, RequiredDeep, SetOptional } from 'type-fest'
 
 import { OverrideProps } from '../app/modules/form/admin-form/admin-form.types'
-
 import { PublicView } from './database'
 import { FormFieldSchema } from './field'
 import { FormLogicSchema } from './form_logic'

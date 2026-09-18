@@ -15,7 +15,6 @@ import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import { ApiRouter } from '../../routes/api'
 import { LegacyRedirectRouter } from '../../routes/legacy-redirect'
 import { SpOidcJwksRouter } from '../../routes/singpass'
-
 import {
   catchNonExistentStaticRoutesMiddleware,
   errorHandlerMiddlewares,

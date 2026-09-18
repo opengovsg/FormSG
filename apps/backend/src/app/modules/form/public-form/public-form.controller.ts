@@ -78,7 +78,6 @@ import {
   PrivateFormError,
 } from '../form.errors'
 import * as FormService from '../form.service'
-
 import * as PublicFormService from './public-form.service'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
 

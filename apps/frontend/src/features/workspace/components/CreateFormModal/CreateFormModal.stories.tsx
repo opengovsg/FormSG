@@ -3,6 +3,7 @@ import { SyntheticEvent, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { UseQueryResult } from 'react-query'
 import { MemoryRouter } from 'react-router-dom'
+
 import {
   Modal,
   ModalContent,
@@ -21,17 +22,17 @@ import { getUser, MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
 
 import { ApiError } from '~typings/core'
 
-import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
 import { ModalCloseButton } from '~components/Modal'
+import { fullScreenDecorator, LoggedInDecorator } from '~utils/storybook'
 
 import { WorkspaceProvider } from '~features/workspace/WorkspaceProvider'
 
+import { CreateFormModal, CreateFormModalProps } from './CreateFormModal'
 import {
   EmailModeCreationScreen,
   EmailModeFeedbackScreen,
 } from './CreateFormModalContent/EmailModeFeedbackAndCreateScreen'
 import { SaveSecretKeyScreen } from './CreateFormModalContent/SaveSecretKeyScreen'
-import { CreateFormModal, CreateFormModalProps } from './CreateFormModal'
 import {
   CreateFormFlowStates,
   CreateFormWizardContextReturn,

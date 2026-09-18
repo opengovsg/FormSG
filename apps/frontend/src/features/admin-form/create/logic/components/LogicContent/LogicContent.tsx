@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Stack } from '@chakra-ui/react'
 
 import InlineMessage from '~components/InlineMessage'
@@ -8,7 +9,6 @@ import {
   useAdminLogicStore,
 } from '../../adminLogicStore'
 import { useAdminFormLogic } from '../../hooks/useAdminFormLogic'
-
 import { HeaderBlock } from './HeaderBlock'
 import { LogicBlockFactory } from './LogicBlockFactory'
 import { NewLogicBlock } from './NewLogicBlock'

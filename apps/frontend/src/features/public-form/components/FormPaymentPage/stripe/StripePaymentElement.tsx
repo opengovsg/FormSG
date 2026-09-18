@@ -1,5 +1,6 @@
 import { Suspense, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
+
 import {
   Box,
   Center,
@@ -31,7 +32,6 @@ import {
 } from '../components'
 import { PaymentHeader } from '../components/PaymentHeader'
 import { useGetPaymentInfo } from '../queries'
-
 import { GenericMessageBlock, StripePaymentBlock } from './components'
 import { useGetPaymentStatusFromStripe } from './queries'
 import { StripeReceiptContainer } from './StripeReceiptContainer'

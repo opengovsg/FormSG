@@ -2,7 +2,7 @@
 
 // Number of forms with permissionList.read key - expect 0 after running update
 db.forms.count({
-  permissionList: { $elemMatch: { read: { $exists: true } } }
+  permissionList: { $elemMatch: { read: { $exists: true } } },
 })
 
 {
@@ -10,13 +10,13 @@ db.forms.count({
   const permissionListWithReadKey = [
     {
       $match: {
-        permissionList: { $elemMatch: { read: { $exists: true } } }
+        permissionList: { $elemMatch: { read: { $exists: true } } },
       },
     },
     { $project: { permissionList: 1 } },
     { $unwind: '$permissionList' },
     { $match: { 'permissionList.read': { $exists: true } } },
-    { $count: 'numObjs' }
+    { $count: 'numObjs' },
   ]
 
   db.getCollection('forms').aggregate(permissionListWithReadKey)
@@ -26,13 +26,12 @@ db.forms.count({
 db.forms.update(
   { 'permissionList.read': { $exists: true } },
   { $unset: { 'permissionList.$[elem].read': 1 } },
-  { arrayFilters: [{ 'elem.read': { $exists: true } }], multi: true }
+  { arrayFilters: [{ 'elem.read': { $exists: true } }], multi: true },
 )
-
 
 // Check again, should be 0.
 db.forms.count({
-  permissionList: { $elemMatch: { read: { $exists: true } } }
+  permissionList: { $elemMatch: { read: { $exists: true } } },
 })
 
 // Check again, should be 0
@@ -41,13 +40,13 @@ db.forms.count({
   const permissionListWithReadKey = [
     {
       $match: {
-        permissionList: { $elemMatch: { read: { $exists: true } } }
+        permissionList: { $elemMatch: { read: { $exists: true } } },
       },
     },
     { $project: { permissionList: 1 } },
     { $unwind: '$permissionList' },
     { $match: { 'permissionList.read': { $exists: true } } },
-    { $count: 'numObjs' }
+    { $count: 'numObjs' },
   ]
 
   db.getCollection('forms').aggregate(permissionListWithReadKey)

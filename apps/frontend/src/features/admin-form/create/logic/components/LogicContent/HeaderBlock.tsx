@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Flex, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { ALLOWED_FIELDS_META } from '../../constants'

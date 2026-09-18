@@ -1,6 +1,7 @@
 import { useCallback, useContext, useMemo } from 'react'
 import { DropzoneProps, useDropzone } from 'react-dropzone'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   forwardRef,
@@ -21,7 +22,6 @@ import { ThemeColorScheme } from '~theme/foundations/colours'
 
 import { PublicFormContext } from '~features/public-form/PublicFormContext'
 
-import { downloadFile } from './utils/downloadFile'
 import { AttachmentStylesProvider } from './AttachmentContext'
 import { AttachmentDropzone } from './AttachmentDropzone'
 import { AttachmentFileInfo } from './AttachmentFileInfo'
@@ -30,6 +30,7 @@ import {
   getInvalidFileExtensionsInZip,
   getReadableFileSize,
 } from './utils'
+import { downloadFile } from './utils/downloadFile'
 
 const IMAGE_UPLOAD_TYPES_TO_COMPRESS = ['image/jpeg', 'image/png']
 

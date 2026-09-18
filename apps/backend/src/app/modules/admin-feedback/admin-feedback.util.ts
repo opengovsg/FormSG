@@ -3,7 +3,6 @@ import { StatusCodes } from 'http-status-codes'
 import { MapRouteError } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import { ApplicationError, DatabaseError } from '../core/core.errors'
-
 import { MissingAdminFeedbackError } from './admin-feedback.errors'
 
 const logger = createLoggerWithLabel(module)

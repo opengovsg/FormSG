@@ -9,8 +9,8 @@ import {
 } from 'formsg-shared/types/form/form'
 import { CheckboxFieldResponsesV3 } from 'formsg-shared/types/response-v3'
 
-import formsgSdk from '~utils/formSdk'
 import { CheckboxFieldValues } from '~templates/Field'
+import formsgSdk from '~utils/formSdk'
 
 export enum CreateFormFlowStates {
   Landing = 'landing',

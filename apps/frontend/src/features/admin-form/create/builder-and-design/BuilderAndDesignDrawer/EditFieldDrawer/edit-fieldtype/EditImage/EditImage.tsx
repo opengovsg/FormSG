@@ -3,15 +3,13 @@ import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
 import { useParams } from 'react-router-dom'
+
 import { FormControl } from '@chakra-ui/react'
 import { extend, get, isEmpty, pick } from 'lodash'
 
 import { MB } from 'formsg-shared/constants/file'
 import { ImageFieldBase } from 'formsg-shared/types/field'
 
-import { useToast } from '~hooks/useToast'
-import { createBaseValidationRules } from '~utils/fieldValidation'
-import { uploadImage } from '~services/FileHandlerService'
 import {
   getByteFileSize,
   getReadableFileSize,
@@ -19,12 +17,14 @@ import {
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Textarea from '~components/Textarea'
+import { useToast } from '~hooks/useToast'
+import { uploadImage } from '~services/FileHandlerService'
+import { createBaseValidationRules } from '~utils/fieldValidation'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
-
 import { UploadedImage, UploadImageInput } from './UploadImageInput'
 
 type EditImageProps = EditFieldProps<ImageFieldBase>

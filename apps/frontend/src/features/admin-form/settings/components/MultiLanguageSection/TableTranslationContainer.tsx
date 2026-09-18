@@ -1,5 +1,6 @@
 import { FieldError, useFormContext } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Divider, Flex, FormControl, Text } from '@chakra-ui/react'
 
 import { Language } from 'formsg-shared/types'

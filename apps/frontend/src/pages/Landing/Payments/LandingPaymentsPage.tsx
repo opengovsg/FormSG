@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import {
   Accordion,
   Box,
@@ -24,9 +25,9 @@ import { AppPublicHeader } from '~/app/AppPublicHeader'
 
 import { BxsCheckCircle } from '~assets/icons'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import Link from '~components/Link'
+import { useIsMobile } from '~hooks/useIsMobile'
 import {
   EmailField,
   EmailFieldSchema,
@@ -43,7 +44,6 @@ import { HelpAccordionItem } from '../components/HelpAccordionItem'
 import { LandingSection } from '../components/LandingSection'
 import { SectionBodyText } from '../components/SectionBodyText'
 import { SectionTitleText } from '../components/SectionTitleText'
-
 import paymentsImg from './assets/images/graphic_payments.svg'
 import helpCenterImg from './assets/images/help_center.svg'
 import featureFlexibleImg from './assets/images/icon_pay_flexible.svg'

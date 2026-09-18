@@ -9,7 +9,6 @@ import {
   IUserSchema,
   PublicUser,
 } from '../../types'
-
 import getAgencyModel, { AGENCY_SCHEMA_ID } from './agency.server.model'
 
 const { MongoError } = mongodb

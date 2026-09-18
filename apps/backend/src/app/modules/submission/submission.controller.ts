@@ -24,7 +24,6 @@ import { ControllerHandler } from '../core/core.types'
 import { PermissionLevel } from '../form/admin-form/admin-form.types'
 import { PaymentNotFoundError } from '../payments/payments.errors'
 import { getPopulatedUserById } from '../user/user.service'
-
 import { createStorageModeSubmissionDto } from './encrypt-submission/encrypt-submission.utils'
 import { createMultirespondentSubmissionDto } from './multirespondent-submission/multirespondent-submission.utils'
 import { InvalidSubmissionTypeError } from './submission.errors'

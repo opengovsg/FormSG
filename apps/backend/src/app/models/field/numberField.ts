@@ -6,7 +6,6 @@ import {
 import { Schema } from 'mongoose'
 
 import { INumberFieldSchema } from '../../../types'
-
 import { MyInfoSchema } from './baseField'
 
 const createNumberFieldSchema = () => {

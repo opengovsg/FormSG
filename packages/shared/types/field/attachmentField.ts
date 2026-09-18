@@ -1,5 +1,6 @@
-import { BasicField, FieldBase } from './base'
 import type { PresignedPost } from '@aws-sdk/s3-presigned-post'
+
+import { BasicField, FieldBase } from './base'
 
 export enum AttachmentSize {
   OneMb = '1',

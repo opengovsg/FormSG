@@ -1,6 +1,6 @@
 import { expect, Page } from '@playwright/test'
-import { parsePhoneNumber } from 'libphonenumber-js'
 import { BasicField, FormAuthType } from 'formsg-shared/types'
+import { parsePhoneNumber } from 'libphonenumber-js'
 
 import { IFormSchema } from 'src/types'
 

@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink, useParams } from 'react-router-dom'
 import { useDebounce } from 'react-use'
+
 import {
   Box,
   Divider,
@@ -33,13 +34,13 @@ import {
 } from 'formsg-shared/types'
 import { centsToDollars, dollarsToCents } from 'formsg-shared/utils/payments'
 
-import { ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE } from '~constants/routes'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Toggle from '~components/Toggle'
+import { ADMINFORM_SETTINGS_PAYMENTS_SUBROUTE } from '~constants/routes'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -61,7 +62,6 @@ import {
   setToInactiveSelector,
   usePaymentStore,
 } from '../usePaymentStore'
-
 import { FixedPaymentAmountField } from './FixedPaymentAmountField'
 import { ProductServiceBox } from './ProductServiceBox'
 import { VariablePaymentAmountField } from './VariablePaymentAmountField'

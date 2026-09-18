@@ -10,7 +10,6 @@ import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
 import { isEmailInDomainWhitelist, mapRouteError } from '../auth.utils'
-
 import {
   SSO_CODE_VERIFIER_COOKIE_NAME,
   SSO_NONCE_NAME,

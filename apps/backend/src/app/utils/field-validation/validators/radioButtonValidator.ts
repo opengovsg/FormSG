@@ -13,7 +13,6 @@ import {
   ResponseValidatorConstructor,
 } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
-
 import { notEmptySingleAnswerResponse } from './common'
 import { isOneOfOptions, isOtherOption } from './options'
 

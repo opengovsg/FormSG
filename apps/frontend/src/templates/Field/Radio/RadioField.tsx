@@ -1,20 +1,20 @@
 import { useMemo } from 'react'
 import { Controller, useFormContext, useFormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, useMultiStyleConfig } from '@chakra-ui/react'
 import { get } from 'lodash'
 
 import { FormColorTheme, Language } from 'formsg-shared/types'
 
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import Radio, { OthersInput } from '~components/Radio'
 import { RADIO_THEME_KEY } from '~theme/components/Radio'
 import { useRadioValidationRules } from '~utils/fieldValidation'
 import { getFieldOptionsInSelectedLanguage } from '~utils/multiLanguage'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import Radio, { OthersInput } from '~components/Radio'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { RadioFieldInputs, RadioFieldSchema } from '../types'
-
 import { RADIO_OTHERS_INPUT_KEY, RADIO_OTHERS_INPUT_VALUE } from './constants'
 
 export interface RadioFieldProps extends BaseFieldProps {

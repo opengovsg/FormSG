@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import {
   Modal,
   ModalContent,
@@ -14,7 +15,6 @@ import { XMotionBox } from '~templates/MotionBox'
 import { CanceledResult, DownloadOptions, DownloadResult } from '../../types'
 import { isCanceledResult } from '../../utils/typeguards'
 import { CompleteScreen, ProgressModalContent } from '../ProgressModal'
-
 import { CanceledScreen } from './CanceledScreen'
 import { ConfirmationScreen } from './ConfirmationScreen'
 

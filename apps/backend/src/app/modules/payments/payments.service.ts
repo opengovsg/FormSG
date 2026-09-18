@@ -26,7 +26,6 @@ import {
 } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
 import { findSubmissionById } from '../submission/submission.service'
-
 import {
   ConfirmedPaymentNotFoundError,
   InvalidPaymentProductsError,

@@ -1,4 +1,5 @@
 import { BiLayout } from 'react-icons/bi'
+
 import { Flex, Icon } from '@chakra-ui/react'
 
 import Link from '~components/Link'

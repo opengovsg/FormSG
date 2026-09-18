@@ -26,7 +26,6 @@ import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import * as PendingSubmissionModel from '../pending-submission/pending-submission.service'
 import { checkFormIsEncryptModeOrMultirespondent } from '../submission/submission.utils'
-
 import { getPaymentLogMeta } from './payment.service.utils'
 import { PaymentAccountInformationError } from './payments.errors'
 import * as PaymentService from './payments.service'

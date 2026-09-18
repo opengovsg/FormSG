@@ -13,11 +13,14 @@ db.getCollection('users')
   .count()
 
 // Delete sgid Flag ~ number updated should match number which had flag
-db.getCollection('users').updateMany({}, {
-  $unset: {
-    'betaFlags.sgid': 1,
-  }
-})
+db.getCollection('users').updateMany(
+  {},
+  {
+    $unset: {
+      'betaFlags.sgid': 1,
+    },
+  },
+)
 
 // Check total user count
 db.getCollection('users').count()

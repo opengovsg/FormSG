@@ -1,8 +1,9 @@
 import { BiSolidInfoCircle } from 'react-icons/bi'
+
 import { Flex, Icon } from '@chakra-ui/react'
 
-import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 export default function DataClassificationInfoBox() {
   const mdComponents = useMdComponents({})

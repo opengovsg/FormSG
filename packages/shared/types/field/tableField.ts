@@ -1,4 +1,5 @@
 import type { Merge } from 'type-fest'
+
 import { FieldBase, BasicField, TranslationMapping } from './base'
 import { DropdownFieldBase } from './dropdownField'
 import { ShortTextFieldBase } from './shortTextField'

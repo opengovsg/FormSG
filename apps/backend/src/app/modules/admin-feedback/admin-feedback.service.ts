@@ -6,7 +6,6 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 import { createLoggerWithLabel } from '../../config/logger'
 import getAdminFeedbackModel from '../../models/admin_feedback.server.model'
 import { DatabaseError } from '../core/core.errors'
-
 import { MissingAdminFeedbackError } from './admin-feedback.errors'
 
 const AdminFeedbackModel = getAdminFeedbackModel(mongoose)

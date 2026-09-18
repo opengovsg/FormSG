@@ -1,7 +1,6 @@
 import { Flex, forwardRef, Popover, PopoverAnchor } from '@chakra-ui/react'
 
 import { useDatePicker } from '../DatePickerContext'
-
 import { DatePickerInput } from './DatePickerInput'
 
 export const DatePickerWrapper = forwardRef<object, 'input'>(

@@ -7,7 +7,7 @@ import {
   LogicDto,
   MyInfoAttribute,
 } from '../types'
-
+import { getVisibleFieldIds } from './logic'
 import {
   AddressAnswerInput,
   computeAddressAnswerValue,
@@ -37,9 +37,8 @@ import {
   TableAnswerV4,
   VerifiableAnswerV4,
 } from './v4-answer'
-import { getVisibleFieldIds } from './logic'
-import { validateResponses } from './validate-responses'
 import { fieldResponsesV4ToLogicFieldResponseTransformer } from './v4-logic'
+import { validateResponses } from './validate-responses'
 
 export type FlattenedV1Response = FieldResponse & {
   isVisible?: true

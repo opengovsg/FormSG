@@ -73,7 +73,6 @@ import {
 } from '../verification.errors'
 import getVerificationModel from '../verification.model'
 import * as VerificationService from '../verification.service'
-
 import {
   MOCK_HASHED_OTP,
   MOCK_OTP,

@@ -8,7 +8,6 @@ import { AgencyDocument, IPopulatedUser } from 'src/types'
 import * as UserService from '../../user/user.service'
 import { InvalidDomainError } from '../auth.errors'
 import * as AuthService from '../auth.service'
-
 import * as AuthWogadController from './auth-wogad.controller'
 
 const MockAuthService = jest.mocked(AuthService)

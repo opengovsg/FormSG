@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import { useSwipeable } from 'react-swipeable'
+
 import {
   Flex,
   Modal,
@@ -11,12 +12,11 @@ import {
   Stack,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { ProgressIndicator } from '../../components/ProgressIndicator/ProgressIndicator'
-
 import { NEW_FEATURES } from './components/AnnouncementsFeatureList'
 import { NewFeatureContent } from './components/NewFeatureContent'
 

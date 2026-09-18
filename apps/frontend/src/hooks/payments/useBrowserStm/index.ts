@@ -1,5 +1,4 @@
 import { useLocalStorage } from '../../useLocalStorage'
-
 import {
   addEntry,
   deleteEntry,

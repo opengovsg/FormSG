@@ -17,7 +17,6 @@ import { FormId, PublicFormViewDto } from 'formsg-shared/types/form/form'
 import { FetchNewTransactionResponse } from '~features/verifiable-fields'
 
 import mockFormLogo from '../assets/mockFormLogo.png'
-
 import { MOCK_ENVS } from './env'
 
 export const SHOW_FIELDS_ON_YES_LOGIC: ShowFieldLogicDto = {

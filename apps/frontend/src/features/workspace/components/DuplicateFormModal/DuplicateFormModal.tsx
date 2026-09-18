@@ -1,4 +1,5 @@
 import { RemoveScroll } from 'react-remove-scroll'
+
 import {
   Modal,
   ModalContent,
@@ -10,7 +11,6 @@ import { FormId } from 'formsg-shared/types/form/form'
 
 import { CreateFormModalContent } from '../CreateFormModal/CreateFormModalContent'
 import { CreateFormFlowStates } from '../CreateFormModal/CreateFormWizardContext'
-
 import { DupeFormWizardProvider } from './DupeFormWizardProvider'
 
 export type DuplicateFormModalProps = Pick<

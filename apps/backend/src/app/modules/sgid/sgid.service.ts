@@ -8,7 +8,6 @@ import { sgid } from '../../config/features/sgid.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { retrieveFileContent } from '../../utils/iac'
 import { ApplicationError } from '../core/core.errors'
-
 import { internalAttrListToScopes } from './sgid.adapter'
 import {
   SgidCreateRedirectUrlError,

@@ -13,7 +13,7 @@ db.getCollection('smscounts').count({ smsType: 'VERIFICATION' })
 // Count of forms using our twilio acc (B)
 db.getCollection('smscounts').count({
   smsType: 'VERIFICATION',
-msgSrvcSid: {$eq: formTwilioId},
+  msgSrvcSid: { $eq: formTwilioId },
 })
 
 // Count of forms using their own twilio acc (C)
@@ -23,7 +23,6 @@ db.getCollection('smscounts').count({
   msgSrvcSid: { $ne: formTwilioId },
 })
 
-
 // == UPDATE ==
 // Update verifications which have message service id equal to form twilio id
 db.getCollection('smscounts').updateMany(
@@ -32,7 +31,7 @@ db.getCollection('smscounts').updateMany(
     $set: {
       isOnboardedAccount: false,
     },
-  }
+  },
 )
 
 // Update verifications whose message service id is not equal to form twilio id
@@ -42,7 +41,7 @@ db.getCollection('smscounts').updateMany(
     $set: {
       isOnboardedAccount: true,
     },
-  }
+  },
 )
 
 // == POST-UPDATE CHECKS ==
@@ -52,12 +51,12 @@ db.getCollection('smscounts').updateMany(
 db.getCollection('smscounts').count({
   smsType: 'VERIFICATION',
   msgSrvcSid: { $eq: formTwilioId },
-  isOnboardedAccount: false
+  isOnboardedAccount: false,
 })
 
 // Count of forms using their own twilio acc
 db.getCollection('smscounts').count({
   smsType: 'VERIFICATION',
   msgSrvcSid: { $ne: formTwilioId },
-  isOnboardedAccount: true
+  isOnboardedAccount: true,
 })

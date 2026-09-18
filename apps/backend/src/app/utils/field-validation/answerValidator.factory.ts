@@ -13,7 +13,6 @@ import {
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
-
 import {
   constructAddressValidator,
   constructAddressValidatorV4,

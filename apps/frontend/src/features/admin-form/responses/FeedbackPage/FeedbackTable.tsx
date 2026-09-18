@@ -7,6 +7,7 @@ import {
   useSortBy,
   useTable,
 } from 'react-table'
+
 import { Flex, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
 import {

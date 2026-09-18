@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next'
 
 import { CategoryHeader } from '../CategoryHeader'
-
 import { FormMultiLanguageToggle } from './FormMultiLanguageToggle'
 
 export const MultiLanguageSection = (): JSX.Element => {

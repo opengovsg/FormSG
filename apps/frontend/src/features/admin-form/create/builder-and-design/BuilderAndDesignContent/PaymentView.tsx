@@ -2,15 +2,16 @@ import { useCallback, useEffect, useRef } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiCog, BiTrash } from 'react-icons/bi'
+
 import { Box, ButtonGroup, Collapse, Flex } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { FormFieldDto, FormResponseMode } from 'formsg-shared/types'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
+import { useIsMobile } from '~hooks/useIsMobile'
 import { PaymentPreview } from '~templates/Field/PaymentPreview/PaymentPreview'
 
 import { useAdminForm } from '~features/admin-form/common/queries'

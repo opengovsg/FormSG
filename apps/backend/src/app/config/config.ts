@@ -16,7 +16,6 @@ import {
   MailConfig,
   PublicApiConfig,
 } from '../../types'
-
 import {
   compulsoryVarsSchema,
   loadS3BucketUrlSchema,

@@ -38,7 +38,6 @@ import {
   mapRouteError,
   sendRouteError,
 } from '../submission.utils'
-
 import {
   EncryptedPayloadExistsError,
   FormsgReqBodyExistsError,

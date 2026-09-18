@@ -4,8 +4,8 @@ import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { CountryRegion } from 'formsg-shared/constants/countryRegion'
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
-import bufferToFile from '~utils/bufferToFile'
 import { FormFieldValues } from '~templates/Field'
+import bufferToFile from '~utils/bufferToFile'
 
 import { createResponsesV4 } from '~features/public-form/utils/createSubmission'
 

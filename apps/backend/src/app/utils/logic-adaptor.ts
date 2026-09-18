@@ -14,7 +14,6 @@ import { err, ok, Result } from 'neverthrow'
 
 import { FieldResponse, IFormDocument } from '../../types'
 import { ProcessingError } from '../modules/submission/submission.errors'
-
 import { isLogicableField, isNotLogicableField } from './typeguards'
 
 export { FieldIdSet } from 'formsg-shared/utils/logic'

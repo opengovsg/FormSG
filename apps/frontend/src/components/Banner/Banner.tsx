@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { BiX } from 'react-icons/bi'
+
 import {
   Box,
   CloseButton,
@@ -12,9 +13,9 @@ import {
 
 import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 
-import { BannerVariant } from '~theme/components/Banner'
-import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
+import { useMdComponents } from '~hooks/useMdComponents'
+import { BannerVariant } from '~theme/components/Banner'
 
 export interface BannerProps {
   variant?: BannerVariant

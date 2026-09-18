@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload, BiEditAlt, BiTrash } from 'react-icons/bi'
+
 import { Flex, Text, VisuallyHidden } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'

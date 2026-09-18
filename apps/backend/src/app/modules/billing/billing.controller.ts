@@ -6,7 +6,6 @@ import moment from 'moment-timezone'
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
-
 import { validateGetBillingInfoParams } from './billing.middlewares'
 import * as BillingService from './billing.service'
 

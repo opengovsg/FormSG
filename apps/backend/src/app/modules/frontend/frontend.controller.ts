@@ -8,7 +8,6 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 import { createMetatags } from '../form/public-form/public-form.service'
-
 import { getClientEnvVars, getEnvScriptHtml } from './frontend.service'
 
 const logger = createLoggerWithLabel(module)

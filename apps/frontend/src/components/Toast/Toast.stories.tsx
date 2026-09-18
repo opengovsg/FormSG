@@ -2,8 +2,8 @@
 import { SimpleGrid, Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
-import { useToast, UseToastProps } from '~hooks/useToast'
 import Button from '~components/Button'
+import { useToast, UseToastProps } from '~hooks/useToast'
 
 import { Toast, ToastProps } from './Toast'
 

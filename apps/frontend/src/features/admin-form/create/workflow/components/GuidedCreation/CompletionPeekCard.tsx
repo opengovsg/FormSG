@@ -2,14 +2,13 @@ import { useTranslation } from 'react-i18next'
 
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
-
+import { PeekCard, PeekCardActions } from './PeekCard'
 import {
   CompletionPeekMomentType,
   getCompletionPeekActionLabels,
   getCompletionPeekContent,
   isCompletionPeekTucked,
 } from './utils/completionPeekContent'
-import { PeekCard, PeekCardActions } from './PeekCard'
 
 /**
  * A moment plus the callbacks its actions need.

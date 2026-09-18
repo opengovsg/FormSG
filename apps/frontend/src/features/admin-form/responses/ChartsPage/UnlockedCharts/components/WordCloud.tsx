@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactWordcloud from 'react-wordcloud'
+
 import { Text, VStack } from '@chakra-ui/react'
 
 export type WordCloudProps = {

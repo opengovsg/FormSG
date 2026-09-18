@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useThrottle } from 'react-use'
+
 import {
   Box,
   CheckboxGroup,
@@ -16,16 +17,15 @@ import simplur from 'simplur'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import Menu from '~components/Menu'
+import { useToast } from '~hooks/useToast'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import { CanceledResult, DownloadOptions, DownloadResult } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
-
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
 

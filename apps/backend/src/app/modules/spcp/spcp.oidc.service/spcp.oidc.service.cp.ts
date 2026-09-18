@@ -22,7 +22,6 @@ import {
   isCorppassJwtPayload,
   isExtractedCorppassNDIPayload,
 } from '../spcp.util'
-
 import { SpcpOidcServiceClass } from './spcp.oidc.service.base'
 import { CpOidcProps } from './spcp.oidc.service.types'
 

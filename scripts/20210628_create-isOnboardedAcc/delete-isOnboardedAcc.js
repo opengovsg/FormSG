@@ -16,7 +16,7 @@ db.getCollection('smscounts').updateMany(
     $unset: {
       isOnboardedAccount: false,
     },
-  }
+  },
 )
 
 // == POST-UPDATE CHECKS ==
@@ -25,6 +25,6 @@ db.getCollection('smscounts').updateMany(
 db.getCollection('smscounts').count({
   smsType: 'VERIFICATION',
   isOnboardedAccount: {
-    $exists: true
-  }
+    $exists: true,
+  },
 })

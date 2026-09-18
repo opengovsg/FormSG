@@ -6,7 +6,6 @@ import {
   EncryptedFileContent,
   Keypair,
 } from '../types'
-
 import { decodeBase64, encodeBase64, encodeUTF8 } from './encoding'
 
 /**

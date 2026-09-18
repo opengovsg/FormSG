@@ -37,7 +37,6 @@ import {
   PendingSubmissionNotFoundError,
   SubmissionNotFoundError,
 } from '../submission/submission.errors'
-
 import { getPaymentLogMeta } from './payment.service.utils'
 import {
   ConfirmedPaymentNotFoundError,

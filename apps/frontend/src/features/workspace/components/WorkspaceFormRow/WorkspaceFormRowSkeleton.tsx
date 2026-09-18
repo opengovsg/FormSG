@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiDotsHorizontalRounded } from 'react-icons/bi'
+
 import {
   Box,
   ButtonGroup,
@@ -11,9 +12,9 @@ import {
 } from '@chakra-ui/react'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 const RowDropdownButtonSkeleton = () => {
   const { t } = useTranslation()

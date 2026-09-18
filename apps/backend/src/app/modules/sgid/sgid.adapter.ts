@@ -4,7 +4,6 @@ import {
 } from 'formsg-shared/types'
 
 import { createLoggerWithLabel } from '../../config/logger'
-
 import {
   SGID_MYINFO_NRIC_NUMBER_SCOPE,
   SGIDScope as ExternalAttr,

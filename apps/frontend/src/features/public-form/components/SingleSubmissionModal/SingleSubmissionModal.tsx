@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+
 import {
   Button,
   Modal,
@@ -15,8 +16,8 @@ import {
 
 import { FORM_SINGLE_SUBMISSION_VALIDATION_ERROR_MESSAGE } from 'formsg-shared/constants'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import ButtonGroup from '~components/ButtonGroup'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 import { getPublicFormUrl } from '~features/public-form/utils/urls'

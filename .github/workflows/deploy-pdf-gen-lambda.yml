@@ -1,4 +1,4 @@
-name: Deploy PDF Generator Lambda 
+name: Deploy PDF Generator Lambda
 
 on:
   workflow_call:
@@ -20,7 +20,7 @@ on:
         required: false
         default: 'ap-southeast-1'
         type: string
-    secrets: 
+    secrets:
       cicd-role:
         description: 'AWS IAM role to assume by GitHub action runner'
         required: true

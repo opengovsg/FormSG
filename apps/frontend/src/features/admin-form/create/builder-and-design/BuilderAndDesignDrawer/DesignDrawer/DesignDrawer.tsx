@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
 import { useParams } from 'react-router-dom'
 import { useDebounce } from 'react-use'
+
 import {
   Box,
   Divider,
@@ -28,11 +29,11 @@ import {
   FormStartPage,
 } from 'formsg-shared/types'
 
-import { useToast } from '~hooks/useToast'
-import { uploadLogo } from '~services/FileHandlerService'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import NumberInput from '~components/NumberInput'
 import Radio from '~components/Radio'
+import { useToast } from '~hooks/useToast'
+import { uploadLogo } from '~services/FileHandlerService'
 
 import { useMutateFormPage } from '~features/admin-form/common/mutations'
 import { useCreatePageSidebar } from '~features/admin-form/create/common/CreatePageSidebarContext'
@@ -64,7 +65,6 @@ import {
   UploadedImage,
   UploadImageInput,
 } from '../EditFieldDrawer/edit-fieldtype/EditImage/UploadImageInput'
-
 import { DesignFormTitleInput } from './DesignFormTitleInput'
 
 type DesignDrawerProps = {

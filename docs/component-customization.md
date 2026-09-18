@@ -8,6 +8,7 @@ Before customizing components, understand how FormSG's architecture connects:
 
 {% columns fullWidth="true" %}
 {% column width="58.333333333333336%" %}
+
 ```mermaid
 graph TB
     subgraph "Government Users"
@@ -63,30 +64,30 @@ graph TB
     class Payment,Scanning hard
 ```
 
-
 {% endcolumn %}
 
 {% column %}
+
 ### Why Customize?
 
 Teams often need to adapt FormSG for:
 
-* **🏛️ Existing Infrastructure**: Integrate with current systems and contracts
-* **🌍 Data Sovereignty**: Keep data within your jurisdiction
-* **💰 Cost Optimization**: Leverage existing volume discounts
-* **🔒 Compliance**: Meet specific regulatory requirements
-* **🔧 Operational Consistency**: Use familiar tools and processes
+- **🏛️ Existing Infrastructure**: Integrate with current systems and contracts
+- **🌍 Data Sovereignty**: Keep data within your jurisdiction
+- **💰 Cost Optimization**: Leverage existing volume discounts
+- **🔒 Compliance**: Meet specific regulatory requirements
+- **🔧 Operational Consistency**: Use familiar tools and processes
 
 **The good news**: FormSG's modular design makes selective replacement possible.
 
 \
 **Customization Impact Zones:**
 
-* **🟢 Low Impact** - External services with standard interfaces
-* **🟡 Medium Impact** - Integration complexity but well-documented patterns
-* **🔴 High Impact** - Deep integration requiring significant development
-{% endcolumn %}
-{% endcolumns %}
+- **🟢 Low Impact** - External services with standard interfaces
+- **🟡 Medium Impact** - Integration complexity but well-documented patterns
+- **🔴 High Impact** - Deep integration requiring significant development
+  {% endcolumn %}
+  {% endcolumns %}
 
 ### Default Services and Alternatives
 
@@ -106,33 +107,31 @@ Understanding **what FormSG uses by default** and your replacement options helps
 {% step %}
 **Phase 1: Easy Wins** (Week 1-2)
 
-* ✅ Email service replacement
-* ✅ Static file hosting
-* ✅ Basic monitoring
-{% endstep %}
+- ✅ Email service replacement
+- ✅ Static file hosting
+- ✅ Basic monitoring
+  {% endstep %}
 
 {% step %}
 **Phase 2: Infrastructure Services** (Week 3-6)
 
-* 🟡 Database migration
-* 🟡 Object storage replacement
-* 🟡 Identity provider integration
-{% endstep %}
+- 🟡 Database migration
+- 🟡 Object storage replacement
+- 🟡 Identity provider integration
+  {% endstep %}
 
 {% step %}
 **Phase 3: Advanced Integrations** (Week 7-12)
 
-* 🔴 Payment processing
-* 🔴 File scanning services
-* 🔴 SMS/notification systems
-{% endstep %}
-{% endstepper %}
+- 🔴 Payment processing
+- 🔴 File scanning services
+- 🔴 SMS/notification systems
+  {% endstep %}
+  {% endstepper %}
 
 {% hint style="success" %}
 **💡 Success Tip**: Validate each component replacement in a development environment before applying to production.
 {% endhint %}
-
-
 
 ### 🟢 Easy Replacements: Quick Wins
 
@@ -183,11 +182,11 @@ MAIL_FROM=noreply@yourorg.gov
 
 **Validation Steps:**
 
-* [ ] **Test admin login OTP delivery** - most critical email function
-* [ ] **Test form submission notifications** - verify HTML templates render
-* [ ] **Check bounce handling** - ensure failed deliveries are logged
-* [ ] **Monitor delivery rates** - compare with previous email service
-{% endtab %}
+- [ ] **Test admin login OTP delivery** - most critical email function
+- [ ] **Test form submission notifications** - verify HTML templates render
+- [ ] **Check bounce handling** - ensure failed deliveries are logged
+- [ ] **Monitor delivery rates** - compare with previous email service
+      {% endtab %}
 
 {% tab title="Object Storage (S3-Compatible)" %}
 **Why**: Reduce AWS dependency, use existing storage infrastructure.
@@ -235,14 +234,14 @@ ATTACHMENT_S3_BUCKET=formsg-attachments
 
 **Validation Steps:**
 
-* [ ] **Test file uploads** in form builder (images, logos)
-* [ ] **Test attachment handling** in storage mode forms
-* [ ] **Verify presigned URL generation** for secure file access
-* [ ] **Check lifecycle policies** if using bucket versioning
-{% endtab %}
-{% endtabs %}
+- [ ] **Test file uploads** in form builder (images, logos)
+- [ ] **Test attachment handling** in storage mode forms
+- [ ] **Verify presigned URL generation** for secure file access
+- [ ] **Check lifecycle policies** if using bucket versioning
+      {% endtab %}
+      {% endtabs %}
 
-***
+---
 
 ### 🟡 Medium Complexity: Infrastructure Services
 
@@ -275,13 +274,13 @@ MONGODB_CONNECT_TIMEOUT_MS=10000
 
 **Database Migration Checklist:**
 
-* [ ] **Backup existing data** before migration
-* [ ] **Test aggregation pipelines** (FormSG uses complex queries)
-* [ ] **Validate transaction support** (required for consistency)
-* [ ] **Check TTL index support** (for session cleanup)
-* [ ] **Monitor performance** after migration
-{% endtab %}
-{% endtabs %}
+- [ ] **Backup existing data** before migration
+- [ ] **Test aggregation pipelines** (FormSG uses complex queries)
+- [ ] **Validate transaction support** (required for consistency)
+- [ ] **Check TTL index support** (for session cleanup)
+- [ ] **Monitor performance** after migration
+      {% endtab %}
+      {% endtabs %}
 
 ### 🔴 Advanced Replacements: Complex Integrations
 
@@ -294,44 +293,44 @@ graph TD
     %% User Actions
     User[👤 User Uploads File]
     Admin[👨‍💼 Admin Downloads File]
-    
+
     %% Storage Components
     Quarantine[🔒 Quarantine Storage<br/>Temporary holding]
     Clean[✅ Clean Storage<br/>Verified safe files]
-    
+
     %% Security Pipeline
     Scanner[🛡️ Malware Protection<br/>Automatic background scanning]
     Tagging[🏷️ Scan Result Tags<br/>Status metadata]
     Checker[🔍 Scan Checker<br/>Polls for completion]
-    
+
     %% Results
     CleanResult[✅ File Clean<br/>Safe for access]
     InfectedResult[⚠️ Threat Detected<br/>File quarantined]
-    
+
     %% Form Processing
     FormData[📝 Form Submission<br/>Encrypted metadata stored]
-    
+
     %% Main Flow
     User --> Quarantine
     User --> FormData
-    
+
     %% Security Pipeline
     Quarantine -.-> Scanner
     Scanner --> Tagging
     Tagging -.-> Quarantine
-    
+
     %% Result Checking
     Checker --> Quarantine
     Checker --> CleanResult
     Checker --> InfectedResult
-    
+
     %% Clean File Access
     CleanResult --> Clean
     Clean --> Admin
-    
+
     %% Infected File Handling
     InfectedResult --> Quarantine
-    
+
     %% Styling
     classDef user fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
     classDef storage fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
@@ -339,7 +338,7 @@ graph TD
     classDef safe fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
     classDef danger fill:#ffebee,stroke:#f44336,stroke-width:2px
     classDef process fill:#f8f9fa,stroke:#6c757d,stroke-width:2px
-    
+
     class User,Admin user
     class Quarantine,Clean storage
     class Scanner,Tagging,Checker security
@@ -350,11 +349,11 @@ graph TD
 
 **Current Security Implementation:**
 
-* **Automatic scanning** - Files scanned in background without blocking submission
-* **Tag-based results** - Scan results stored as file metadata tags
-* **Polling mechanism** - System checks for scan completion before allowing access
-* **Fail secure** - Files remain quarantined until explicitly marked clean
-* **Audit trail** - All scanning results logged for compliance
+- **Automatic scanning** - Files scanned in background without blocking submission
+- **Tag-based results** - Scan results stored as file metadata tags
+- **Polling mechanism** - System checks for scan completion before allowing access
+- **Fail secure** - Files remain quarantined until explicitly marked clean
+- **Audit trail** - All scanning results logged for compliance
 
 When changing implementation of virus scanner, do test with **known malware samples** (EICAR test files).
 
@@ -367,50 +366,50 @@ graph TD
     %% User Actions
     User[👤 User Submits Form<br/>with Payment]
     Admin[👨‍💼 Admin Reviews<br/>Completed Submissions]
-    
+
     %% Initial Processing
     Pending[📋 Pending Submission<br/>Temporary storage]
     PaymentDoc[💳 Payment Document<br/>Status tracking]
     Provider[💰 Payment Provider<br/>External processing]
-    
+
     %% Real-time Updates
     Webhook[🔔 Webhook Events<br/>Status notifications]
     Processor[⚙️ Event Processor<br/>Status updates]
-    
+
     %% Reconciliation System
     Scheduler[⏰ Scheduled Reconciliation<br/>Every 30 minutes]
     Verification[🔍 Status Verification<br/>Cross-check with provider]
-    
+
     %% Final States
     Finalized[✅ Finalized Submission<br/>Payment confirmed]
     Failed[❌ Failed Payment<br/>Submission rejected]
     Notifications[📧 Notifications<br/>Confirmations sent]
-    
+
     %% Main Flow
     User --> Pending
     User --> PaymentDoc
     PaymentDoc --> Provider
-    
+
     %% Real-time Updates
     Provider --> Webhook
     Webhook --> Processor
     Processor --> PaymentDoc
-    
+
     %% Reconciliation Flow
     Scheduler --> Verification
     Verification --> PaymentDoc
     Verification --> Provider
-    
+
     %% Final Processing
     Processor --> Finalized
     Processor --> Failed
     Verification --> Finalized
     Verification --> Failed
-    
+
     %% Completion
     Finalized --> Admin
     Finalized --> Notifications
-    
+
     %% Styling
     classDef user fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
     classDef processing fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
@@ -419,7 +418,7 @@ graph TD
     classDef final fill:#f8f9fa,stroke:#6c757d,stroke-width:2px
     classDef success fill:#e8f5e8,stroke:#4caf50,stroke-width:2px
     classDef failure fill:#ffebee,stroke:#f44336,stroke-width:2px
-    
+
     class User,Admin user
     class Pending,PaymentDoc,Processor processing
     class Provider,Webhook payment
@@ -431,13 +430,13 @@ graph TD
 
 **Payment Reliability Features:**
 
-* **Dual verification** - Webhooks + scheduled reconciliation
-* **Status consistency** - Automatic cross-checking with payment provider
-* **Failure recovery** - Handles missed events and processing errors
-* **Audit trail** - Complete payment history and reconciliation logs
-* **Automatic cleanup** - Cancels stale payments and handles edge cases
+- **Dual verification** - Webhooks + scheduled reconciliation
+- **Status consistency** - Automatic cross-checking with payment provider
+- **Failure recovery** - Handles missed events and processing errors
+- **Audit trail** - Complete payment history and reconciliation logs
+- **Automatic cleanup** - Cancels stale payments and handles edge cases
 
-***
+---
 
 {% hint style="success" %}
 **🎯 Success Metrics**: Your customization is successful when FormSG functions identically to the original, but with your preferred infrastructure components. Focus on maintaining security, performance, and user experience throughout the process.

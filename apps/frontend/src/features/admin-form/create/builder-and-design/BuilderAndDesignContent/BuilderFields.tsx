@@ -12,7 +12,6 @@ import {
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 import { useDesignColorTheme } from '../utils/useDesignColorTheme'
-
 import FieldRow from './FieldRow'
 
 interface BuilderFieldsProps {

@@ -10,7 +10,6 @@ import {
   ParsedClearAttachmentAnswerV4,
   ParsedClearFormFieldResponseV4,
 } from '../../../types/api/submission'
-
 import { isGenericStringAnswerResponseV4 } from './field-validation.guards'
 
 export const checkIsResponseChangedV4 = ({

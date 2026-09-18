@@ -1,6 +1,7 @@
 import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
+
 import {
   Box,
   Container,
@@ -13,16 +14,15 @@ import {
 
 import { FormResponseMode } from 'formsg-shared/types/form/form'
 
-import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
+import { GUIDE_PREVENT_EMAIL_BOUNCE } from '~constants/links'
 
 import DataClassificationInfoBox from '~features/admin-form/settings/components/DataClassificationInfoBox'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
-
 import { EmailFormRecipientsInput } from './EmailFormRecipientsInput'
 import { EscapeHatchLink } from './EscapeHatchLink'
 import { FormResponseOptions } from './FormResponseOptions'

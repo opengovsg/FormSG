@@ -35,9 +35,7 @@ const compareScreenshotsBetween = (formIds, beforePrefix, afterPrefix) => {
   const AFTER = '2019-12-10-06-42' // Edit to be name of folder containing screenshots taken after script
   console.info(`Comparing ${BEFORE} to ${AFTER}`)
   // Run script
-  await compareScreenshotsBetween(
-    formIdsToCheck,
-    BEFORE,
-    AFTER,
-  ).each((result) => console.info(result))
+  await compareScreenshotsBetween(formIdsToCheck, BEFORE, AFTER).each(
+    (result) => console.info(result),
+  )
 })()

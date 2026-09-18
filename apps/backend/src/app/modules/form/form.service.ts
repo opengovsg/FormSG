@@ -48,7 +48,6 @@ import { IntranetService } from '../intranet/intranet.service'
 import { getMyInfoFieldOptions } from '../myinfo/myinfo.util'
 import { MissingSubmitterIdError } from '../submission/submission.errors'
 import * as SubmissionService from '../submission/submission.service'
-
 import {
   FormDeletedError,
   FormNotFoundError,

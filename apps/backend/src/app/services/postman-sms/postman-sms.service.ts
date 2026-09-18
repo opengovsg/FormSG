@@ -16,7 +16,6 @@ import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import MailService from '../mail/mail.service'
 import * as SmsService from '../sms/sms.service'
 import { LogType } from '../sms/sms.types'
-
 import { InvalidNumberError, SmsSendError } from './postman-sms.errors'
 import {
   BouncedSubmissionSmsData,

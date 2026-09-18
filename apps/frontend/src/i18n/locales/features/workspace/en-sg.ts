@@ -1,7 +1,7 @@
+import { Workspace } from '.'
 import { enSG as header } from './header'
 import { enSG as modals } from './modals'
 import { enSG as sideMenu } from './side-menu'
-import { Workspace } from '.'
 
 export const enSG: Workspace = {
   common: {

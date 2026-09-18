@@ -1,4 +1,5 @@
 import { BiImage } from 'react-icons/bi'
+
 import { Box, Icon, Stack, Text } from '@chakra-ui/react'
 
 export interface InvalidImageProps {

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
+
 import { Box, Container, Divider, Stack } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
@@ -14,12 +15,11 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import { ResponsesPageSkeleton } from '../ResponsesPage/ResponsesPageSkeleton'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
-
+import { CHARTS_FALLBACK_MAX_RESPONSE_COUNT } from './constants'
+import UnlockedCharts from './UnlockedCharts'
 import { ChartsSvgr } from './UnlockedCharts/assets/svgr/ChartsSvgr'
 import { ChartsSupportedFieldsInfoBox } from './UnlockedCharts/components/ChartsSupportedFieldsInfoBox'
 import { EmptyChartsContainer } from './UnlockedCharts/components/EmptyChartsContainer'
-import { CHARTS_FALLBACK_MAX_RESPONSE_COUNT } from './constants'
-import UnlockedCharts from './UnlockedCharts'
 
 export const ChartsPage = (): JSX.Element => {
   const { t } = useTranslation()

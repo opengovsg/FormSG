@@ -29,7 +29,6 @@ import {
   SpcpDomainSettings,
 } from '../spcp.types'
 import { extractFormId } from '../spcp.util'
-
 import {
   CreateRedirectUrlResult,
   SpcpOidcProps,

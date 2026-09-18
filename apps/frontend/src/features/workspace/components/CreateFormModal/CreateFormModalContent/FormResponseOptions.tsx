@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Flex, forwardRef, Stack, UnorderedList } from '@chakra-ui/react'
 
 import { FormResponseMode } from 'formsg-shared/types/form/form'

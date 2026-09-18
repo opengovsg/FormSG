@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box, Text, VisuallyHidden } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 import { format } from 'date-fns'
@@ -14,9 +15,9 @@ import {
 
 import { OgpAwarenessBadge } from '~assets/svgrs/brand/OgpAwarenessBadge'
 import { OgpAwarenessBanner } from '~assets/svgrs/brand/OgpAwarenessBanner'
+import { MarkdownText } from '~components/MarkdownText'
 import { useMdComponents } from '~hooks/useMdComponents'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
-import { MarkdownText } from '~components/MarkdownText'
 
 import { SubmitAnotherResponseButton } from '~features/public-form/components/FormEndPage/SubmitAnotherResponseButton'
 import { SubmissionData } from '~features/public-form/PublicFormContext'

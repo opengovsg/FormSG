@@ -1,5 +1,4 @@
 import { format } from 'date-fns'
-import { keyBy } from 'lodash'
 import {
   AttachmentFieldBase,
   AttachmentSize,
@@ -29,6 +28,7 @@ import {
   UenFieldBase,
   YesNoFieldBase,
 } from 'formsg-shared/types'
+import { keyBy } from 'lodash'
 
 export const DATE_INPUT_FORMAT = 'dd/MM/yyyy'
 export const DATE_RESPONSE_FORMAT = 'dd MMM yyyy'

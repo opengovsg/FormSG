@@ -12,6 +12,7 @@ import {
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiSolidMagicWand } from 'react-icons/bi'
+
 import {
   Box,
   Button,

@@ -15,7 +15,6 @@ import {
   SgidVerifyJwtError,
 } from '../sgid.errors'
 import { SgidServiceClass } from '../sgid.service'
-
 import {
   MOCK_ACCESS_TOKEN,
   MOCK_AUTH_CODE,

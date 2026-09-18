@@ -8,6 +8,7 @@ import {
   useNavigate,
   useParams,
 } from 'react-router-dom'
+
 import {
   Box,
   ButtonGroup,
@@ -24,16 +25,15 @@ import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
 
-import { noPrintCss } from '~utils/noPrintCss'
 import IconButton from '~components/IconButton'
+import { noPrintCss } from '~utils/noPrintCss'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useUser } from '~features/user/queries'
 
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
-
-import { downloadResponsePdf } from './utils/generateResponsePdf'
 import { useIndividualSubmission } from './queries'
+import { downloadResponsePdf } from './utils/generateResponsePdf'
 
 export const IndividualResponseNavbar = (): JSX.Element => {
   const { state } = useLocation()

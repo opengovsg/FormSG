@@ -1,5 +1,6 @@
 import { ReactNode, useCallback } from 'react'
 import { BiLeftArrowAlt } from 'react-icons/bi'
+
 import { Stack, Text } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'

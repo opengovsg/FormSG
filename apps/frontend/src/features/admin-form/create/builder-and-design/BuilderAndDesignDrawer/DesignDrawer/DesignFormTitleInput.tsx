@@ -1,11 +1,12 @@
 import { Control, Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl } from '@chakra-ui/react'
 
-import { useFormTitleValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import { useFormTitleValidationRules } from '~utils/formValidation'
 
 import { FormStartPageInput } from '../../../builder-and-design/useDesignStore'
 

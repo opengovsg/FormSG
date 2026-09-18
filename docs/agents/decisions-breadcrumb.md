@@ -2,7 +2,7 @@
 
 During implementation, the agent drops **breadcrumbs** — small structured decision notes — into `.scratch/<feature>/decisions.md` in this repo. `prepare-for-review` reads them at PR time and surfaces each one either in the PR body (as a bullet under "Alternatives considered") or as an inline review comment anchored to a specific line.
 
-Breadcrumbs exist so that rationale is captured at the moment of choice, not reconstructed after the fact. ADRs cover hard-to-reverse architectural decisions; breadcrumbs cover the smaller in-impl judgment calls where an ADR would be overkill but a reviewer would still benefit from knowing *why this and not that*.
+Breadcrumbs exist so that rationale is captured at the moment of choice, not reconstructed after the fact. ADRs cover hard-to-reverse architectural decisions; breadcrumbs cover the smaller in-impl judgment calls where an ADR would be overkill but a reviewer would still benefit from knowing _why this and not that_.
 
 ## File layout
 
@@ -14,19 +14,21 @@ If the file does not exist when the implementation starts, the implementation sk
 
 ```md
 ## decision: <kebab-case-slug>
+
 **kind**: pr-body | inline
-**file**: <path>             # required if kind=inline
-**line**: <line-number>      # required if kind=inline
+**file**: <path> # required if kind=inline
+**line**: <line-number> # required if kind=inline
 **why**: <one paragraph explaining the choice>
-**alternatives**:            # optional
-  - <option>: <why rejected>
-  - <option>: <why rejected>
+**alternatives**: # optional
+
+- <option>: <why rejected>
+- <option>: <why rejected>
 ```
 
 Field semantics:
 
 - `kind: pr-body` — folded into the PR body's "Alternatives considered" sub-section under Solution. Use for design choices a reviewer can evaluate without staring at a specific line.
-- `kind: inline` — posted as an inline PR review comment on `file:line`. Use when the *exact code at that location* is the surprising bit and the reviewer will want context right there.
+- `kind: inline` — posted as an inline PR review comment on `file:line`. Use when the _exact code at that location_ is the surprising bit and the reviewer will want context right there.
 - `why` — the load-bearing field. Be honest about the actual reason. If the reason was "this was the first thing that worked", say so.
 - `alternatives` — only what was actually weighed. Fabricating plausible alternatives defeats the entire purpose.
 
@@ -34,23 +36,27 @@ Field semantics:
 
 ```md
 ## decision: use-map-not-record-for-session-store
+
 **kind**: pr-body
 **why**: Session keys are constructed from untrusted user input, so `Map` is safer than a plain object — no risk of prototype pollution if a key happens to be `__proto__`. The slight readability cost is worth it for the security guarantee at a boundary.
 **alternatives**:
-  - Plain `Record<string, Session>`: rejected for the prototype-pollution reason above.
-  - A wrapped class with explicit get/set: rejected as over-engineered for two call sites.
+
+- Plain `Record<string, Session>`: rejected for the prototype-pollution reason above.
+- A wrapped class with explicit get/set: rejected as over-engineered for two call sites.
 ```
 
 ## Example — kind: inline
 
 ```md
 ## decision: token-expiry-uses-inclusive-comparison
+
 **kind**: inline
 **file**: src/auth/token.ts
 **line**: 42
-**why**: RFC 7519 §4.1.4 defines `exp` as a time *on or after which* the token must be rejected — meaning the token is valid up to and including the exact expiry second. The `<=` here is intentional; a strict `<` would expire tokens one second too early.
+**why**: RFC 7519 §4.1.4 defines `exp` as a time _on or after which_ the token must be rejected — meaning the token is valid up to and including the exact expiry second. The `<=` here is intentional; a strict `<` would expire tokens one second too early.
 **alternatives**:
-  - Strict `<`: rejected — would expire tokens one second early, breaking parity with libraries that follow the spec.
+
+- Strict `<`: rejected — would expire tokens one second early, breaking parity with libraries that follow the spec.
 ```
 
 ## What does not belong here

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useFormContext } from 'react-hook-form'
+
 import { Divider, Flex, FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { PAYMENT_PRODUCT_FIELD_ID } from 'formsg-shared/constants'

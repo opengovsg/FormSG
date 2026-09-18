@@ -14,7 +14,6 @@ import {
   Response,
 } from '../csv-response-classes'
 import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'
-
 import { EncryptedResponseCsvGenerator } from './EncryptedResponseCsvGenerator'
 
 const UTF8_BYTE_ORDER_MARK = '\uFEFF'

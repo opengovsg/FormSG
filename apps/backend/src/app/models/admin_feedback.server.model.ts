@@ -1,7 +1,6 @@
 import { Mongoose, Schema } from 'mongoose'
 
 import { IAdminFeedbackModel, IAdminFeedbackSchema } from '../../types'
-
 import { USER_SCHEMA_ID } from './user.server.model'
 
 // alias of model Id

@@ -311,7 +311,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - run: pnpm lint-ci:shared
-  
+
   shared_test:
     needs: [changes, install]
     if: ${{ needs.changes.outputs.shared == 'true' }}

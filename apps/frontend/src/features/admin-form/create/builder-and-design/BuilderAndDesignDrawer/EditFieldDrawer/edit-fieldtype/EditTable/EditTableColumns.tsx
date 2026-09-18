@@ -7,6 +7,7 @@ import {
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiPlus, BiTrash } from 'react-icons/bi'
+
 import {
   FormControl,
   Grid,
@@ -18,7 +19,6 @@ import { pick } from 'lodash'
 
 import { BasicField, TableFieldBase } from 'formsg-shared/types/field'
 
-import { createBaseValidationRules } from '~utils/fieldValidation'
 import Button from '~components/Button'
 import { SingleSelect } from '~components/Dropdown'
 import { ComboboxItem } from '~components/Dropdown/types'
@@ -27,11 +27,11 @@ import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 import Toggle from '~components/Toggle'
+import { createBaseValidationRules } from '~utils/fieldValidation'
 
 import { createShortTextColumn } from '~features/admin-form/create/builder-and-design/utils/columnCreation'
 
 import { BASICFIELD_TO_DRAWER_META } from '../../../../../constants'
-
 import { EditTableInputs } from './EditTable'
 import { EditTableDropdown } from './EditTableDropdown'
 

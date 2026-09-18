@@ -1,6 +1,6 @@
+import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import MyInfoClient, { IMyInfoConfig } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { FormAuthType, FormStatus } from 'formsg-shared/types'
 import jwt from 'jsonwebtoken'
@@ -22,7 +22,6 @@ import {
   SpOidcClient,
 } from '../../../../../modules/spcp/spcp.oidc.client'
 import { PublicFormsRouter } from '../public-forms.routes'
-
 import { MOCK_UINFIN } from './public-forms.routes.spec.constants'
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')

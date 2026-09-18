@@ -6,7 +6,6 @@ import {
 import merge from 'lodash/merge'
 
 import { textStyles } from '../textStyles'
-
 import { Link } from './Link'
 
 export type ThemeButtonVariant =

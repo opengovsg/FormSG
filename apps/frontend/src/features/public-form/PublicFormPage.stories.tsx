@@ -32,12 +32,12 @@ import {
   _getFromIndexedDBForTest,
   _removeFromIndexedDBForTest,
 } from '~hooks/useIndexedDb'
+import { ShortTextFieldSchema } from '~templates/Field'
 import {
   getMobileViewParameters,
   getTabletViewParameters,
   StoryRouter,
 } from '~utils/storybook'
-import { ShortTextFieldSchema } from '~templates/Field'
 
 import { SAVE_DRAFT_INDEXEDDB_STORE_NAME } from '~features/form/constants'
 

@@ -1,4 +1,5 @@
 import { BiCheck, BiCopy } from 'react-icons/bi'
+
 import { Icon, useClipboard } from '@chakra-ui/react'
 
 import IconButton, { IconButtonProps } from '~components/IconButton'

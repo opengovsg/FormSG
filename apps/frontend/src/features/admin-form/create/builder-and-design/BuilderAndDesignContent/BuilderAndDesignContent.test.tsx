@@ -7,7 +7,6 @@ import {
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 import { getFieldCreationMeta } from '../utils/fieldCreation'
-
 import { BuilderAndDesignContent } from './BuilderAndDesignContent'
 
 vi.mock('./FormBuilder', () => ({ FormBuilder: () => null }))

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { BiCheck, BiInfoCircle } from 'react-icons/bi'
 import { IconType } from 'react-icons/lib'
+
 import { Box, Divider, Flex, Icon, Link, Text } from '@chakra-ui/react'
 import { keyBy } from 'lodash'
 

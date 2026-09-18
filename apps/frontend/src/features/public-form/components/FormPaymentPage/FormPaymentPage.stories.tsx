@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { Meta, StoryFn } from '@storybook/react'
 
 import { FormColorTheme, PaymentType } from 'formsg-shared/types'
@@ -14,14 +15,14 @@ import { StoryRouter } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
-import { GenericMessageBlock as GenericMessageBlockComponent } from './stripe/components'
-import { StripeReceiptContainer } from './stripe/StripeReceiptContainer'
 import {
   CreatePaymentIntentFailureBlock,
   FixedPaymentItemDetailsBlock,
   PaymentStack,
 } from './components'
 import { FormPaymentPage } from './FormPaymentPage'
+import { GenericMessageBlock as GenericMessageBlockComponent } from './stripe/components'
+import { StripeReceiptContainer } from './stripe/StripeReceiptContainer'
 
 const DEFAULT_MSW_HANDLERS = [
   ...envHandlers,

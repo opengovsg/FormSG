@@ -5,6 +5,7 @@ import {
   useRef,
 } from 'react'
 import { useFocusEffect, useRovingTabIndex } from 'react-roving-tabindex'
+
 import { TagLabel } from '@chakra-ui/react'
 
 import { Tag, TagCloseButton, TagProps } from '~components/Tag/Tag'

@@ -6,6 +6,7 @@ import 'inter-ui/inter.css'
 
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
+
 import { ChakraProvider } from '@chakra-ui/react'
 import { withThemeFromJSXProvider } from '@storybook/addon-themes'
 import { Decorator, ReactRenderer } from '@storybook/react'
@@ -19,7 +20,6 @@ import * as dayjsUtils from '~utils/dayjs'
 
 import i18n from '../src/i18n/i18n'
 import { theme } from '../src/theme'
-
 import { StorybookTheme } from './themes'
 
 initialize({

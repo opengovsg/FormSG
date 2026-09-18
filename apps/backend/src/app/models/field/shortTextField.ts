@@ -1,9 +1,8 @@
 import { Schema } from 'mongoose'
 
 import { IShortTextFieldSchema } from '../../../types'
-
-import { TextValidationOptionsSchema } from './common/textValidationOptionsSchema'
 import { MyInfoSchema } from './baseField'
+import { TextValidationOptionsSchema } from './common/textValidationOptionsSchema'
 
 const createShortTextFieldSchema = () => {
   const ShortTextFieldSchema = new Schema<IShortTextFieldSchema>({

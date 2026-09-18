@@ -14,7 +14,6 @@ import {
   ResponseValidatorConstructor,
 } from '../../../../types/field/utils/validation'
 import { ProcessedCheckboxResponse } from '../../../modules/submission/submission.types'
-
 import { isOtherOption } from './options'
 
 type CheckboxValidator = ResponseValidator<ProcessedCheckboxResponse>

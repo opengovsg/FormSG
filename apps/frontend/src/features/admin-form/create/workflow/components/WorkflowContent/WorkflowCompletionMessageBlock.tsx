@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
+
 import { Link, Text } from '@chakra-ui/react'
 
 import InlineMessage from '~components/InlineMessage'

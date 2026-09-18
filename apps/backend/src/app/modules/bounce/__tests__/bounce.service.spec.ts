@@ -22,7 +22,6 @@ import {
 
 import { DatabaseError } from '../../core/core.errors'
 import { UserWithContactNumber } from '../../user/user.types'
-
 import {
   makeBounceNotification,
   makeDeliveryNotification,

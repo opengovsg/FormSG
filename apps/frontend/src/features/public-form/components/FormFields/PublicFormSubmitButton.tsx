@@ -1,6 +1,7 @@
 import { MouseEventHandler, useMemo, useState } from 'react'
 import { useFormState, UseFormTrigger, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import {
   Flex,
   Stack,
@@ -17,12 +18,12 @@ import {
   MyInfoFormField,
 } from 'formsg-shared/types'
 
-import { useIsMobile } from '~hooks/useIsMobile'
-import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 import Button, { ButtonProps } from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import Tooltip from '~components/Tooltip'
+import { useIsMobile } from '~hooks/useIsMobile'
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
+import { getValueInSelectedLanguage } from '~utils/multiLanguage'
 
 import { getLogicUnitPreventingSubmit } from '~features/logic/utils'
 import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'

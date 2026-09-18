@@ -1,4 +1,5 @@
 import { forwardRef, useCallback } from 'react'
+
 import { Box, chakra, Flex, Icon, useMergeRefs } from '@chakra-ui/react'
 
 import { FCC } from '~typings/react'
@@ -8,7 +9,6 @@ import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useMultiSelectContext } from '~components/Dropdown/MultiSelectContext'
 
 import { useSelectContext } from '../../SelectContext'
-
 import { SelectedItems } from './SelectedItems'
 
 const MultiItemsContainer: FCC = ({ children }) => {

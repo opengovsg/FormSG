@@ -8,7 +8,6 @@ import { Environment } from '../../../../types'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { ControllerHandler } from '../../core/core.types'
-
 import {
   MYINFO_FAPI_SESSION_COOKIE_IDENTITY,
   MYINFO_FAPI_SESSION_COOKIE_NAME,

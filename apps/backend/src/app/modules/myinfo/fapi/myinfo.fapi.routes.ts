@@ -2,7 +2,6 @@ import { Router } from 'express'
 import { StatusCodes } from 'http-status-codes'
 
 import { authCallbackForwardingMiddleware } from '../../auth/auth.middlewares'
-
 import {
   MYINFO_FAPI_JWKS_PATH,
   MYINFO_FAPI_REDIRECT_PATH,

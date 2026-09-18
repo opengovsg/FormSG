@@ -19,7 +19,6 @@ import {
   SingpassJwtPayloadFromCookie,
 } from '../spcp.types'
 import { isSingpassJwtPayload } from '../spcp.util'
-
 import { SpcpOidcServiceClass } from './spcp.oidc.service.base'
 import { SpOidcProps } from './spcp.oidc.service.types'
 

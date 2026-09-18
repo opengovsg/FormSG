@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { RegisterOptions, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Flex, FormControl } from '@chakra-ui/react'
 
 import { OTP_LENGTH, OTP_REGEX } from 'formsg-shared/constants'

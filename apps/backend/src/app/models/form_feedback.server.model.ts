@@ -1,7 +1,6 @@
 import { Cursor as QueryCursor, Mongoose, QueryOptions, Schema } from 'mongoose'
 
 import { IFormFeedbackModel, IFormFeedbackSchema } from '../../types'
-
 import { FORM_SCHEMA_ID } from './form.server.model'
 import { SUBMISSION_SCHEMA_ID } from './submission.server.model'
 

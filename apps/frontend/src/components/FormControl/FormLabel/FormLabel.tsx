@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   FormLabel as ChakraFormLabel,
@@ -12,10 +13,10 @@ import {
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsInfoCircle } from '~assets/icons/BxsInfoCircle'
-import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
 import Tooltip from '~components/Tooltip'
 import { TooltipProps } from '~components/Tooltip/Tooltip'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 export interface FormLabelProps extends ChakraFormLabelProps {
   /**

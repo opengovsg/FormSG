@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiSearch } from 'react-icons/bi'
+
 import {
   Box,
   Divider,
@@ -25,7 +26,6 @@ import { CreatePageDrawerCloseButton } from '../../../common'
 import { FieldListTabIndex } from '../../constants'
 import MagicFormBuilderSmallButton from '../../MagicFormBuilder/components/MagicFormBuilderSmallButton'
 import { useMagicFormBuilder } from '../../MagicFormBuilder/useMagicFormBuilder'
-
 import {
   BasicFieldPanel,
   MyInfoFieldPanel,

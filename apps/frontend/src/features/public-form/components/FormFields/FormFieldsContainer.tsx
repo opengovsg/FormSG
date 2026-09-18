@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box } from '@chakra-ui/react'
 
 import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
@@ -7,7 +8,6 @@ import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FormAuth } from '../FormAuth'
-
 import { FormFields } from './FormFields'
 import { FormFieldsSkeleton } from './FormFieldsSkeleton'
 

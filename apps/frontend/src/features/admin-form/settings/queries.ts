@@ -6,7 +6,6 @@ import { FormSettings } from 'formsg-shared/types/form/form'
 import { EncryptedStringsMessageContent } from 'formsg-shared/utils/crypto'
 
 import { adminFormKeys } from '../common/queries'
-
 import {
   getFormEncryptedWhitelistedSubmitterIds,
   getFormSettings,

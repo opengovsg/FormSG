@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   Flex,
@@ -14,18 +15,17 @@ import { BasicField } from 'formsg-shared/types'
 
 import ResendOtpButton from '~/templates/ResendOtpButton'
 
-import { HttpError } from '~services/ApiService'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import { HttpError } from '~services/ApiService'
 
 import { useBgColor } from '~features/public-form/components/PublicFormWrapper'
 import { useFormColorScheme } from '~features/public-form/utils/useFormColorScheme'
 import { useFormColorTheme } from '~features/public-form/utils/useFormColorTheme'
 
 import { VerifiableFieldType } from '../../types'
-
 import { EmailOtpSvgr } from './EmailOtpSvgr'
 import { MobileOtpSvgr } from './MobileOtpSvgr'
 

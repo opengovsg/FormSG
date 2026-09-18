@@ -1,11 +1,12 @@
 import { Browser, Page } from 'puppeteer-core'
+import puppeteer from 'puppeteer-core'
+
 import {
   PdfLoadingError,
   PdfGenerationError,
   PuppeteerChromiumError,
 } from '../errors'
 import { convertHtmlToPdf } from '../pdfGen'
-import puppeteer from 'puppeteer-core'
 
 jest.mock('puppeteer-core')
 jest.mock('@sparticuz/chromium', () => ({

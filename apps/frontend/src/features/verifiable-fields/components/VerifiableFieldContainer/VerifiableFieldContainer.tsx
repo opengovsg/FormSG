@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiCheck } from 'react-icons/bi'
+
 import { Box, Stack } from '@chakra-ui/react'
 
 import { BasicField, FormFieldWithId } from 'formsg-shared/types/field'

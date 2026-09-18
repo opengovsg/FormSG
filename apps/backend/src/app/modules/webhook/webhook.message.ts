@@ -2,7 +2,6 @@ import { differenceInSeconds } from 'date-fns'
 import { Result } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../config/logger'
-
 import {
   DUE_TIME_TOLERANCE_SECONDS,
   QUEUE_MESSAGE_LIVE_ROW_VERSION,

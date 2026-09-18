@@ -22,7 +22,6 @@ import { compareHash, hashData, HashingError } from '../../utils/hash'
 import { generateOtpWithHash } from '../../utils/otp'
 import { InvalidDomainError } from '../auth/auth.errors'
 import { DatabaseError } from '../core/core.errors'
-
 import { InvalidOtpError, MissingUserError } from './user.errors'
 
 const logger = createLoggerWithLabel(module)

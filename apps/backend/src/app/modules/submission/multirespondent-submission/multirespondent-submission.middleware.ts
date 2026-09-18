@@ -76,7 +76,6 @@ import {
   mapRouteError,
   sendRouteError,
 } from '../submission.utils'
-
 import {
   checkFormIsMultirespondent,
   getMultirespondentSubmission,

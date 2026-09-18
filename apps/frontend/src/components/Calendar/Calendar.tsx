@@ -6,7 +6,6 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-import { CalendarStylesProvider } from './CalendarBase/CalendarStyleProvider'
 import {
   CalendarAria,
   CalendarBaseProps,
@@ -14,6 +13,7 @@ import {
   CalendarProvider,
   CalendarTodayButton,
 } from './CalendarBase'
+import { CalendarStylesProvider } from './CalendarBase/CalendarStyleProvider'
 
 export interface CalendarProps extends CalendarBaseProps {
   /**

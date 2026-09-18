@@ -20,7 +20,6 @@ import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../core/core.errors'
 import type { WebhookConsumerType } from '../submission/multirespondent-submission/webhook/webhook-payload-policy'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
-
 import { WEBHOOK_MAX_CONTENT_LENGTH } from './webhook.constants'
 import {
   WebhookFailedWithAxiosError,

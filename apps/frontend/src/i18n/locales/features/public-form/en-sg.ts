@@ -1,7 +1,7 @@
+import { PublicForm } from '.'
 import { enSG as fields } from './fields'
 import { enSG as payment } from './payment'
 import { enSG as table } from './table'
-import { PublicForm } from '.'
 
 export const enSG: PublicForm = {
   expiry: {

@@ -1,7 +1,7 @@
-import { getSigningPublicKey, getVerificationPublicKey } from './util/publicKey'
 import Crypto from './crypto'
 import CryptoV3 from './crypto-v3'
 import { PackageInitParams } from './types'
+import { getSigningPublicKey, getVerificationPublicKey } from './util/publicKey'
 import Verification from './verification'
 import Webhooks from './webhooks'
 

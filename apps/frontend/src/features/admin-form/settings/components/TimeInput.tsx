@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from 'react'
+
 import { forwardRef, InputGroup, InputRightElement } from '@chakra-ui/react'
 
 import Button from '~components/Button'

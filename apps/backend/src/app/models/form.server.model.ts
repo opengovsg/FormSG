@@ -83,8 +83,6 @@ import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
 import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
 import { getMyInfoAttr } from '../modules/myinfo/myinfo.util'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
-
-import { ProductSchema } from './payments/productSchema'
 import {
   BaseFieldSchema,
   createAddressFieldSchema,
@@ -122,6 +120,7 @@ import WorkflowStepSchema, {
   WorkflowStepDynamicSchema,
   WorkflowStepStaticSchema,
 } from './form_workflow_step.server.schema'
+import { ProductSchema } from './payments/productSchema'
 import getUserModel from './user.server.model'
 import { isPositiveInteger } from './utils'
 
