@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.27.0](https://github.com/opengovsg/formsg/compare/v9.26.0...v9.27.0) (2026-09-18)
+
+
+### Features
+
+* **config:** require SUBMISSION_HISTORY_V1_S3_BUCKET at start-up (#10055) ([#10055](https://github.com/opengovsg/formsg/commit/1d8a8e6a59abf80704e960f01d9b7b1989e4f466))
+* **security:** add lock for wiz to inventory our deps for SBOM (#10059) ([#10059](https://github.com/opengovsg/formsg/commit/276ade3a8ed147fadd8d598b6acc90be3dba8c81))
+
+
+### Refactors
+
+* **webhook:** use shared function for webhook consumer (#10056) ([#10056](https://github.com/opengovsg/formsg/commit/93e13cd2cb952ac907dbff2a1fd2158dc5758d4d))
+
 ## [9.26.0](https://github.com/opengovsg/formsg/compare/v9.25.1...v9.26.0) (2026-09-17)
 
 
