@@ -23,7 +23,10 @@ import getSubmissionModel, {
 import { buildMrfMetadata } from 'src/app/modules/submission/submission.utils'
 import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 
-import { ISubmissionSchema } from '../../../types'
+import {
+  ISubmissionSchema,
+  MultirespondentSubmissionData,
+} from '../../../types'
 import getPaymentModel from '../payment.server.model'
 
 jest.mock('dns', () => ({
@@ -688,6 +691,146 @@ describe('Submission Model', () => {
 
         // Assert
         expect(actualResult).toEqual([])
+      })
+    })
+
+    describe('findEncryptedOrMultirespondentSubmissionById', () => {
+      it('should find an encrypt submission on the form', async () => {
+        // Arrange
+        const submission = await EncryptedSubmission.create(
+          MOCK_ENCRYPT_SUBMISSION_PARAMS,
+        )
+
+        // Act
+        const actualResult =
+          await Submission.findEncryptedOrMultirespondentSubmissionById(
+            MOCK_FORM_ID.toHexString(),
+            submission._id.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult).not.toBeNull()
+        expect(actualResult?.submissionType).toEqual(SubmissionType.Encrypt)
+        expect(actualResult?.encryptedContent).toEqual(MOCK_ENCRYPTED_CONTENT)
+        expect(actualResult?.version).toEqual(1)
+      })
+
+      it('should find an encrypt submission with version 2.1', async () => {
+        // Arrange
+        const submission = await EncryptedSubmission.create({
+          ...MOCK_ENCRYPT_SUBMISSION_PARAMS,
+          version: 2.1,
+        })
+
+        // Act
+        const actualResult =
+          await Submission.findEncryptedOrMultirespondentSubmissionById(
+            MOCK_FORM_ID.toHexString(),
+            submission._id.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult?.submissionType).toEqual(SubmissionType.Encrypt)
+        expect(actualResult?.version).toEqual(2.1)
+      })
+
+      it('should find a multirespondent submission on the form', async () => {
+        // Arrange
+        const submission = await MultirespondentSubmission.create(
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+
+        // Act
+        const actualResult =
+          await Submission.findEncryptedOrMultirespondentSubmissionById(
+            MOCK_FORM_ID.toHexString(),
+            submission._id.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult).not.toBeNull()
+        expect(actualResult?.submissionType).toEqual(
+          SubmissionType.Multirespondent,
+        )
+        const mrfResult = actualResult as MultirespondentSubmissionData
+        expect(mrfResult.encryptedSubmissionSecretKey).toEqual(
+          'This is an encrypted secret key',
+        )
+        expect(mrfResult.workflow).toBeDefined()
+      })
+
+      it('should find every submission type on a mode-migrated form holding encrypt, v3 and v4 submissions', async () => {
+        // Arrange
+        const encryptSubmission = await EncryptedSubmission.create(
+          MOCK_ENCRYPT_SUBMISSION_PARAMS,
+        )
+        const mrfV3Submission = await MultirespondentSubmission.create(
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+        const mrfV4Submission = await MultirespondentSubmission.create({
+          ...MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+          version: 4,
+          mrfVersion: 2,
+        })
+
+        // Act
+        const results = await Promise.all(
+          [encryptSubmission, mrfV3Submission, mrfV4Submission].map(
+            (submission) =>
+              Submission.findEncryptedOrMultirespondentSubmissionById(
+                MOCK_FORM_ID.toHexString(),
+                submission._id.toHexString(),
+              ),
+          ),
+        )
+
+        // Assert
+        expect(results[0]?.submissionType).toEqual(SubmissionType.Encrypt)
+        expect(results[1]?.submissionType).toEqual(
+          SubmissionType.Multirespondent,
+        )
+        expect(results[1]?.version).toEqual(3)
+        expect(results[2]?.submissionType).toEqual(
+          SubmissionType.Multirespondent,
+        )
+        expect(results[2]?.version).toEqual(4)
+        expect(
+          (results[2] as MultirespondentSubmissionData).mrfVersion,
+        ).toEqual(2)
+      })
+
+      it('should return null for an email submission on the same form', async () => {
+        // Arrange
+        const submission = await EmailSubmission.create(
+          MOCK_EMAIL_SUBMISSION_PARAMS,
+        )
+
+        // Act
+        const actualResult =
+          await Submission.findEncryptedOrMultirespondentSubmissionById(
+            MOCK_FORM_ID.toHexString(),
+            submission._id.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult).toBeNull()
+      })
+
+      it('should return null when the submission belongs to another form', async () => {
+        // Arrange
+        const submission = await EncryptedSubmission.create(
+          MOCK_ENCRYPT_SUBMISSION_PARAMS,
+        )
+
+        // Act
+        const actualResult =
+          await Submission.findEncryptedOrMultirespondentSubmissionById(
+            new ObjectId().toHexString(),
+            submission._id.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult).toBeNull()
       })
     })
 
