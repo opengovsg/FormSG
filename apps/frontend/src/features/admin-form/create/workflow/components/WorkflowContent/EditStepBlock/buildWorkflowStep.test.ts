@@ -52,4 +52,14 @@ describe('buildWorkflowStep', () => {
       buildWorkflowStep(baseInputs(overrides), true)?.workflow_type,
     ).toEqual(expected)
   })
+
+  it('should save a step with no respondent type as static with no emails', () => {
+    const step = buildWorkflowStep(
+      baseInputs({ workflow_type: undefined }),
+      false,
+    )
+
+    expect(step?.workflow_type).toEqual(WorkflowType.Static)
+    expect(step).toHaveProperty('emails', [])
+  })
 })
