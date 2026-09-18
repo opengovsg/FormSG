@@ -108,10 +108,6 @@ jobs:
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
           AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
-      - run: pnpm install --prefix services/pdf-gen-sparticuz
-        if: steps.filter.outputs.backend == 'true'
-      - run: pnpm install --prefix services/virus-scanner-guardduty
-        if: steps.filter.outputs.backend == 'true'
       - name: Configure Datadog Test Visibility
         if: steps.filter.outputs.backend == 'true'
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
