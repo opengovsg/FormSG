@@ -5,16 +5,19 @@
   "homepage": ".",
   "type": "module",
   "scripts": {
-    "build": "concurrently --kill-others-on-fail -s all --raw \"pnpm exec tsc -p tsconfig.build.json --noEmit\" \"vite build\"",
+    "build": "vite build",
     "build-storybook": "storybook build",
+    "format:check": "oxfmt --check .",
+    "format:fix": "oxfmt --write .",
     "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
-    "lint": "oxlint . && oxfmt --check .",
-    "lint:fix": "oxlint --fix . && oxfmt --write .",
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
     "postinstall": "pnpm run gen:theme-typings",
     "start": "vite",
     "storybook": "storybook dev -p 6006",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "pnpm exec tsc -p tsconfig.build.json --noEmit"
   },
   "dependencies": {
     "@chakra-ui/anatomy": "^2.2.2",

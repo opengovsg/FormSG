@@ -1,8 +1,5 @@
 name: Playwright Tests
 
-env:
-  NODE_VERSION: '22.22'
-
 on:
   push:
     branches-ignore:
@@ -12,7 +9,7 @@ on:
       - stg-alt3
       - uat
   pull_request:
-    types: [opened, reopened]
+    types: [opened, reopened, synchronize]
     branches-ignore:
       - stg
       - stg-alt
@@ -31,20 +28,15 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
-      - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-      - name: Install dependencies
-        run: pnpm install
+      - name: Setup
+        uses: ./.github/actions/setup
       - name: Build
         env:
           NODE_OPTIONS: --max-old-space-size=4096
           VITE_APP_FORMSG_SDK_MODE: 'test'
-        run: pnpm build:sdk && pnpm --filter formsg-shared --filter formsg-monorepo build
+        run: pnpm build
       - name: Cache build artifacts
-        uses: actions/cache/save@v3.5.0
+        uses: actions/cache/save@6f8efc29b200d32929f49075959781ed54ec270c # v3.5.0
         with:
           path: |
             node_modules
@@ -58,20 +50,24 @@ jobs:
             packages/sdk/dist
             services/virus-scanner/build
             services/virus-scanner-guardduty/build
-          key: ${{ runner.os }}-build-playwright-${{ github.sha }}
+          key: ${{ runner.os }}-playwright-${{ github.sha }}
+
   test:
     needs: setup
     timeout-minutes: 30
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        project:
-          [
-            'chromium-login',
-            'chromium-encrypt-submission',
-            'firefox-login',
-            'firefox-encrypt-submission',
-          ]
+        include:
+          - project: chromium-login
+            browser: chromium
+          - project: chromium-encrypt-submission
+            browser: chromium
+          - project: firefox-login
+            browser: firefox
+          - project: firefox-encrypt-submission
+            browser: firefox
     env:
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       DD_TAGS: layer:e2e
@@ -82,11 +78,16 @@ jobs:
           fetch-depth: 0
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22.22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
       - name: Restore build artifacts
-        uses: actions/cache/restore@v3.5.0
+        uses: actions/cache/restore@6f8efc29b200d32929f49075959781ed54ec270c # v3.5.0
         with:
           path: |
             node_modules
@@ -100,7 +101,7 @@ jobs:
             packages/sdk/dist
             services/virus-scanner/build
             services/virus-scanner-guardduty/build
-          key: ${{ runner.os }}-build-playwright-${{ github.sha }}
+          key: ${{ runner.os }}-playwright-${{ github.sha }}
           fail-on-cache-miss: true
       - name: Configure Datadog Test Visibility
         uses: datadog/test-visibility-github-action@7f2b515b64333229315f4701adc590ee6586b270 # v1.0.5
@@ -108,8 +109,8 @@ jobs:
           languages: js
           service-name: ${{ secrets.DD_SERVICE }}
           api-key: ${{ secrets.DD_API_KEY }}
-      - name: Install Playwright Browsers
-        run: pnpm exec playwright install --with-deps
+      - name: Install Playwright browser
+        run: pnpm exec playwright install ${{ matrix.browser }} --with-deps
       - name: Run Playwright tests
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
