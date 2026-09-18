@@ -20,15 +20,14 @@ import {
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowGuidedMode } from '../../hooks/useIsWorkflowGuidedMode'
 import { EmailSetUpPeekCard } from '../GuidedCreation'
-
+import { ActiveCompletionEmailCard } from './ActiveCompletionEmailCard'
+import { EndOfWorkflowDivider } from './EndOfWorkflowDivider'
+import { InactiveCompletionEmailCard } from './InactiveCompletionEmailCard'
 import {
   CompletionEmailBlockView,
   getCompletionEmailBlockView,
 } from './utils/getCompletionEmailBlockView'
 import { getCompletionEmailRecipients } from './utils/getCompletionEmailRecipients'
-import { ActiveCompletionEmailCard } from './ActiveCompletionEmailCard'
-import { EndOfWorkflowDivider } from './EndOfWorkflowDivider'
-import { InactiveCompletionEmailCard } from './InactiveCompletionEmailCard'
 import { WorkflowCompletionMessageBlock } from './WorkflowCompletionMessageBlock'
 
 export const CompletionEmailBlock = (): JSX.Element | null => {

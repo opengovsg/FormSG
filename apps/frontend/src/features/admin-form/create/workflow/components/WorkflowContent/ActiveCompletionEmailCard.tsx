@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Box, Divider, Stack, Text } from '@chakra-ui/react'
 import { isEqual, uniq } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -34,10 +35,9 @@ import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
 import { GuidedWrapUp } from '../../types'
 import { GuidedSecondaryAction } from '../../utils/guidedStepPolicy'
 import { SpotlightGroup } from '../Spotlight'
-
+import { CompletionEmailLabel } from './CompletionEmailLabel'
 import { EditStepBlockContainer } from './EditStepBlock/EditStepBlockContainer'
 import { GuidedActionGroup } from './EditStepBlock/GuidedActionGroup'
-import { CompletionEmailLabel } from './CompletionEmailLabel'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 

@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
+
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
-import { GUIDE_FORM_MRF } from '~constants/links'
 import Button from '~components/Button'
 import Link from '~components/Link'
 import Tooltip from '~components/Tooltip'
+import { GUIDE_FORM_MRF } from '~constants/links'
 
 import {
   setToCreatingSelector,
@@ -17,7 +18,6 @@ import { useAdminFormWorkflow } from '../hooks/useAdminFormWorkflow'
 import { useGuidedSetupPreference } from '../hooks/useGuidedSetupPreference'
 import { useGuidedSetupTaught } from '../hooks/useGuidedSetupTaught'
 import { useIsWorkflowBuilderRedesign } from '../hooks/useIsWorkflowBuilderRedesign'
-
 import {
   FormToWorkflowIllustration,
   ILLUSTRATION_MAX_W,

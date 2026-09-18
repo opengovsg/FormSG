@@ -4,7 +4,6 @@ import {
   isGuidedSetupSelector,
   useAdminWorkflowStore,
 } from '../adminWorkflowStore'
-
 import { useIsWorkflowBuilderRedesign } from './useIsWorkflowBuilderRedesign'
 
 export const useIsGuidedEmailCard = (): boolean => {

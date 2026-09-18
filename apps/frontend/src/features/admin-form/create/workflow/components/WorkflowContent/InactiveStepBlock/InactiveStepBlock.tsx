@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPencil } from 'react-icons/bi'
+
 import {
   Box,
   chakra,
@@ -33,7 +34,6 @@ import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { CloseFormToEditModal } from '../../CloseFormToEditModal'
 import { StepLabel } from '../StepLabel'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
-
 import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
 
 const MISSING_FIELD_MESSAGE = 'This field is missing'
