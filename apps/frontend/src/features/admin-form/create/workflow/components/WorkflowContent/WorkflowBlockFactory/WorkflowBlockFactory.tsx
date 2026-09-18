@@ -3,7 +3,10 @@ import { useDisclosure } from '@chakra-ui/react'
 
 import { FormWorkflowStepDto } from 'formsg-shared/types'
 
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
+
 import {
+  continueToEmailCardSelector,
   dismissCompletedStepSelector,
   editDataSelector,
   setToCreatingSelector,
@@ -19,6 +22,7 @@ import {
 import { CompletionPeekMomentType } from '../../GuidedCreation/utils/completionPeekContent'
 import { ActiveStepBlock } from '../ActiveStepBlock'
 import { InactiveStepBlock } from '../InactiveStepBlock'
+import { isCompletionEmailCardReachable } from '../utils/isCompletionEmailCardReachable'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 export interface WorkflowBlockFactoryProps {
@@ -36,6 +40,8 @@ export const WorkflowBlockFactory = ({
     dismissCompletedStepSelector,
   )
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
+  const continueToEmailCard = useAdminWorkflowStore(continueToEmailCardSelector)
+  const { data: settings, isError: isSettingsError } = useAdminFormSettings()
   const {
     isOpen: isDeleteModalOpen,
     onClose: onDeleteModalClose,
@@ -47,25 +53,27 @@ export const WorkflowBlockFactory = ({
     [editState?.stepNumber, stepNumber],
   )
 
+  const onDeclineAnotherStep = isCompletionEmailCardReachable({
+    settings,
+    isSettingsError,
+  })
+    ? continueToEmailCard
+    : dismissCompletedStep
+
   const peekCardProps: CompletionPeekCardProps = isFirstStepByStepNumber(
     stepNumber,
   )
     ? {
         type: CompletionPeekMomentType.StepOneDone,
-        onDeclineAnotherStep: dismissCompletedStep,
+        onDeclineAnotherStep,
         onAddAnotherStep: setToCreating,
       }
     : {
         type: CompletionPeekMomentType.LaterStepDone,
         stepNumber,
-        onDeclineAnotherStep: dismissCompletedStep,
+        onDeclineAnotherStep,
         onAddAnotherStep: setToCreating,
       }
-  // A workflow without its first step has no entry point, so deleting step 1 is
-  // deleting the workflow. Same button, same modal as the workflow's own
-  // delete: the outcome is the same, and two different modals would imply
-  // otherwise. The modal is told where it was opened from so it can explain
-  // the jump from step to workflow, which the card's own button need not.
   const isFirstStep = isFirstStepByStepNumber(stepNumber)
 
   return (
