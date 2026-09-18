@@ -32,7 +32,8 @@ jobs:
               - __tests__/**
               - apps/frontend/**
               - pnpm-lock.yaml
-      - uses: ./.github/actions/setup
+      - name: Setup
+        uses: ./.github/actions/setup
         if: steps.filter.outputs.frontend == 'true'
       - name: Build test dependencies
         if: steps.filter.outputs.frontend == 'true'
@@ -60,7 +61,8 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/setup
+      - name: Setup
+        uses: ./.github/actions/setup
       - run: pnpm lint
 
   typecheck:
@@ -69,7 +71,8 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
-      - uses: ./.github/actions/setup
+      - name: Setup
+        uses: ./.github/actions/setup
       - run: pnpm typecheck
         env:
           NODE_OPTIONS: '--max-old-space-size=4096'
@@ -94,7 +97,8 @@ jobs:
               - apps/backend/package.json
               - pnpm-lock.yaml
               - .github/workflows/ci.yml
-      - uses: ./.github/actions/setup
+      - name: Setup
+        uses: ./.github/actions/setup
         if: steps.filter.outputs.backend == 'true'
         with:
           job-index: ${{ matrix.shard }}
@@ -155,7 +159,8 @@ jobs:
               - packages/shared/utils/**
               - packages/shared/package.json
               - pnpm-lock.yaml
-      - uses: ./.github/actions/setup
+      - name: Setup
+        uses: ./.github/actions/setup
         if: steps.filter.outputs.shared == 'true'
       - name: Configure Datadog Test Visibility
         if: steps.filter.outputs.shared == 'true'
@@ -190,7 +195,8 @@ jobs:
               - packages/sdk/tsconfig*.json
               - packages/sdk/jest.config.js
               - pnpm-lock.yaml
-      - uses: ./.github/actions/setup
+      - name: Setup
+        uses: ./.github/actions/setup
         if: steps.filter.outputs.sdk == 'true'
       - name: Configure Datadog Test Visibility
         if: steps.filter.outputs.sdk == 'true'
