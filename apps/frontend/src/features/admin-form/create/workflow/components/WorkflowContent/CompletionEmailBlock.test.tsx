@@ -8,7 +8,8 @@ import { SPOTLIGHT_TEST_ID } from '../Spotlight'
 
 import * as cardStories from './CompletionEmailBlock.stories'
 
-const { WithWorkflow, WithWorkflowRedesignOn } = composeStories(pageStories)
+const { WithWorkflow, WithWorkflowRedesignOn, Step1RedesignOn } =
+  composeStories(pageStories)
 const { Active, SettingsError } = composeStories(cardStories)
 
 const SETTINGS_LINK = /email notifications/i
@@ -247,5 +248,51 @@ describe('guided handover to the completion email card', () => {
     expect(await screen.findByRole('button', SAVE)).toBeInTheDocument()
     expect(screen.getByText(WORKFLOW_STEPS)).toBeInTheDocument()
     expect(screen.queryAllByTestId(SPOTLIGHT_TEST_ID)).toHaveLength(0)
+  })
+})
+
+describe('when the workflow stops at step 1', () => {
+  beforeAll(() => {
+    Element.prototype.scrollIntoView = vi.fn()
+  })
+
+  afterAll(() => {
+    delete (Element.prototype as Partial<Pick<Element, 'scrollIntoView'>>)
+      .scrollIntoView
+  })
+
+  afterEach(() => useAdminWorkflowStore.getState().reset())
+
+  it('shows no completion email block at all', async () => {
+    await act(async () => {
+      render(<Step1RedesignOn />)
+    })
+    await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
+
+    expect(screen.queryByText(DIVIDER)).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: /completion email/i }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: SETTINGS_LINK }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('dismisses the report instead of handing over, since there is nowhere to go', async () => {
+    await act(async () => {
+      render(<Step1RedesignOn />)
+    })
+    await screen.findByRole('button', { name: /add step/i }, { timeout: 10000 })
+    await act(async () => {
+      useAdminWorkflowStore.getState().setCompletedStep(0)
+    })
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', DECLINE))
+    })
+
+    expect(useAdminWorkflowStore.getState().createOrEditData).toBeNull()
+    expect(useAdminWorkflowStore.getState().completedStepNumber).toBeNull()
+    expect(screen.queryByText(STEP_ONE_DONE)).not.toBeInTheDocument()
   })
 })

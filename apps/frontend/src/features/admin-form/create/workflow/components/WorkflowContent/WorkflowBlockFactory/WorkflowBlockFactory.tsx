@@ -12,6 +12,7 @@ import {
   setToCreatingSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
+import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { DeleteStepModal } from '../../DeleteStepModal'
 import { DeleteWorkflowModal } from '../../DeleteWorkflowModal'
 import {
@@ -22,7 +23,10 @@ import {
 import { CompletionPeekMomentType } from '../../GuidedCreation/utils/completionPeekContent'
 import { ActiveStepBlock } from '../ActiveStepBlock'
 import { InactiveStepBlock } from '../InactiveStepBlock'
-import { isCompletionEmailCardReachable } from '../utils/isCompletionEmailCardReachable'
+import {
+  CompletionEmailBlockView,
+  getCompletionEmailBlockView,
+} from '../utils/getCompletionEmailBlockView'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 export interface WorkflowBlockFactoryProps {
@@ -42,6 +46,7 @@ export const WorkflowBlockFactory = ({
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
   const continueToEmailCard = useAdminWorkflowStore(continueToEmailCardSelector)
   const { data: settings, isError: isSettingsError } = useAdminFormSettings()
+  const { formWorkflow } = useAdminFormWorkflow()
   const {
     isOpen: isDeleteModalOpen,
     onClose: onDeleteModalClose,
@@ -53,12 +58,14 @@ export const WorkflowBlockFactory = ({
     [editState?.stepNumber, stepNumber],
   )
 
-  const onDeclineAnotherStep = isCompletionEmailCardReachable({
-    settings,
-    isSettingsError,
-  })
-    ? continueToEmailCard
-    : dismissCompletedStep
+  const onDeclineAnotherStep =
+    getCompletionEmailBlockView({
+      settings,
+      isSettingsError,
+      workflowStepCount: formWorkflow?.length ?? 0,
+    }) === CompletionEmailBlockView.Card
+      ? continueToEmailCard
+      : dismissCompletedStep
 
   const peekCardProps: CompletionPeekCardProps = isFirstStepByStepNumber(
     stepNumber,

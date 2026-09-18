@@ -17,8 +17,11 @@ import {
 } from '../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 
+import {
+  CompletionEmailBlockView,
+  getCompletionEmailBlockView,
+} from './utils/getCompletionEmailBlockView'
 import { getCompletionEmailRecipients } from './utils/getCompletionEmailRecipients'
-import { isCompletionEmailCardReachable } from './utils/isCompletionEmailCardReachable'
 import { ActiveCompletionEmailCard } from './ActiveCompletionEmailCard'
 import { EndOfWorkflowDivider } from './EndOfWorkflowDivider'
 import { InactiveCompletionEmailCard } from './InactiveCompletionEmailCard'
@@ -37,8 +40,15 @@ export const CompletionEmailBlock = (): JSX.Element | null => {
     requestSwitchToEmailCardSelector,
   )
 
-  if (!isCompletionEmailCardReachable({ settings, isSettingsError: isError })) {
-    return settings ? null : <WorkflowCompletionMessageBlock />
+  const view = getCompletionEmailBlockView({
+    settings,
+    isSettingsError: isError,
+    workflowStepCount: formWorkflow?.length ?? 0,
+  })
+
+  if (view === CompletionEmailBlockView.None) return null
+  if (view === CompletionEmailBlockView.SettingsMessage) {
+    return <WorkflowCompletionMessageBlock />
   }
   const mrfSettings: MultirespondentFormSettings | undefined =
     settings?.responseMode === FormResponseMode.Multirespondent

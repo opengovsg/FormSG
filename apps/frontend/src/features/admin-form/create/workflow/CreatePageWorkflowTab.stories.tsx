@@ -438,6 +438,30 @@ WithWorkflowRedesignOn.parameters = {
   },
 }
 
+export const Step1RedesignOn = Template.bind({})
+Step1RedesignOn.decorators = [withRedesignOn]
+Step1RedesignOn.parameters = {
+  msw: {
+    handlers: [
+      ...buildMswRoutes({ ...FORM_WITH_WORKFLOW, workflow: [workflow_step_1] }),
+      getAdminFormSettings({
+        mode: FormResponseMode.Multirespondent,
+        overrides: {
+          status: FormStatus.Private,
+          emails: ['admin@example.gov.sg'],
+          stepsToNotify: [],
+          stepOneEmailNotificationFieldId: form_field_5._id,
+        } satisfies Partial<MultirespondentFormSettings>,
+      }),
+      patchAdminFormSettings({ mode: FormResponseMode.Multirespondent }),
+    ],
+  },
+  documentation: {
+    storyDescription:
+      'A workflow that stops at step 1. The completion email card waits for a second step, so the page ends at the Add step button.',
+  },
+}
+
 export const NoWorkflowRedesignOn = Template.bind({})
 NoWorkflowRedesignOn.decorators = [withRedesignOn]
 NoWorkflowRedesignOn.parameters = {
