@@ -4,6 +4,17 @@
   "private": true,
   "homepage": ".",
   "type": "module",
+  "scripts": {
+    "build": "pnpm exec tsc && vite build",
+    "build-storybook": "storybook build",
+    "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
+    "lint": "oxlint . && oxfmt --check .",
+    "lint:fix": "oxlint --fix . && oxfmt --write .",
+    "postinstall": "pnpm run gen:theme-typings",
+    "start": "vite",
+    "storybook": "storybook dev -p 6006",
+    "test": "vitest"
+  },
   "dependencies": {
     "@chakra-ui/anatomy": "^2.2.2",
     "@chakra-ui/checkbox": "^2.3.2",
@@ -107,29 +118,6 @@
     "vite-plugin-node-stdlib-browser": "^0.2.1",
     "zustand": "^4.1.1"
   },
-  "scripts": {
-    "postinstall": "pnpm run gen:theme-typings",
-    "gen:theme-typings": "chakra-cli tokens --template augmentation src/theme/index.ts || true",
-    "start": "vite",
-    "build": "pnpm exec tsc && vite build",
-    "test": "vitest",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "lint": "oxlint . && oxfmt --check .",
-    "lint:fix": "oxlint --fix . && oxfmt --write ."
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
   "devDependencies": {
     "@chakra-ui/cli": "^2.4.1",
     "@storybook/addon-a11y": "8.6.18",
@@ -177,8 +165,20 @@
     "vite-tsconfig-paths": "^4.3.2",
     "vitest": "^3.2.6"
   },
-  "proxy": "http://localhost:5001",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
   "msw": {
     "workerDirectory": "public"
-  }
+  },
+  "proxy": "http://localhost:5001"
 }

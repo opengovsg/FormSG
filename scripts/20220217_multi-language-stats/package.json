@@ -2,12 +2,12 @@
   "name": "202202117_multi-language-forms-stats",
   "version": "1.0.0",
   "description": "",
+  "license": "ISC",
+  "author": "",
   "main": "index.js",
   "scripts": {
     "get_data": "source .env.production && node index.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "lodash": "^4.17.21",
     "mongodb": "^4.4.0"
