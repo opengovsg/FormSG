@@ -3,10 +3,10 @@
 # =============================================================================
 # build-base: Full build toolchain with pre-installed node_modules
 # =============================================================================
-FROM node:22.22.2-alpine3.22 AS build-base
+FROM node:22.22.2-alpine3.22@sha256:b77017c37f430e4466ff497058948a2f16e8b59779600d53711eeb7b999b0f4e AS build-base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@10.30.3
+RUN npm install -g pnpm@12.4.1
 
 # Install build dependencies (same as Dockerfile.production build stage)
 RUN apk upgrade --no-cache && \
@@ -29,10 +29,10 @@ RUN pnpm install --frozen-lockfile --filter "!services/*" --filter "!packages/re
 # =============================================================================
 # runtime-base: Minimal runtime image with system deps and non-root user
 # =============================================================================
-FROM node:22.22.2-alpine3.22 AS runtime-base
+FROM node:22.22.2-alpine3.22@sha256:b77017c37f430e4466ff497058948a2f16e8b59779600d53711eeb7b999b0f4e AS runtime-base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN npm install -g pnpm@10.30.3
+RUN npm install -g pnpm@12.4.1
 
 RUN apk upgrade --no-cache && \
     apk add --no-cache \

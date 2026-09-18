@@ -28,7 +28,6 @@ permissions:
 
 env:
   NODE_VERSION: '22.22'
-  PNPM_VERSION: '10.30.3'
   CTV_VERSION: '12.6.1' # commit-and-tag-version version used by this workflow
 
 jobs:
@@ -52,7 +51,7 @@ jobs:
       # actions/checkout persists the DEPLOY_KEY for the origin remote, so the
       # push steps below can write the bump commit and tags back to develop.
       - name: Checkout develop
-        uses: actions/checkout@v4.3.1
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           ref: develop
           ssh-key: ${{ secrets.DEPLOY_KEY }}
@@ -66,11 +65,9 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
 
       - name: Use Node.js
-        uses: actions/setup-node@v4.4.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 

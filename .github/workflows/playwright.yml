@@ -2,7 +2,6 @@ name: Playwright Tests
 
 env:
   NODE_VERSION: '22.22'
-  PNPM_VERSION: '10.30.3'
 
 on:
   push:
@@ -29,14 +28,12 @@ jobs:
       AWS_SDK_JS_SUPPRESS_MAINTENANCE_MODE_MESSAGE: 1
       DD_TAGS: layer:e2e
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Install dependencies
@@ -80,14 +77,12 @@ jobs:
       DD_TAGS: layer:e2e
       SHARD_COUNT: 4
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
-        with:
-          version: ${{ env.PNPM_VERSION }}
-      - uses: actions/setup-node@v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: ${{ env.NODE_VERSION }}
       - name: Restore build artifacts
@@ -119,7 +114,7 @@ jobs:
         env:
           NODE_OPTIONS: -r ${{ env.DD_TRACE_PACKAGE }}
         run: pnpm exec playwright test --project=${{ matrix.project }}
-      - uses: actions/upload-artifact@v4.6.2
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: playwright-report-${{ matrix.project }}
