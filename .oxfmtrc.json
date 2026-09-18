@@ -30,6 +30,7 @@
     ]
   },
   "ignorePatterns": [
+    "CHANGELOG.md",
     "apps/frontend/node_modules",
     "apps/frontend/.pnp",
     "apps/frontend/.pnp.js",
