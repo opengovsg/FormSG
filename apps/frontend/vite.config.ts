@@ -3,7 +3,6 @@ import { BuildOptions, defineConfig, PluginOption } from 'vite'
 // @ts-expect-error missing type definitions
 import nodePolyfills from 'vite-plugin-node-stdlib-browser'
 import svgr from 'vite-plugin-svgr'
-import tsconfigPaths from 'vite-tsconfig-paths'
 
 /**
  * Replaces @VITE_APP_* placeholders in source with their corresponding
@@ -66,6 +65,9 @@ export default defineConfig(() => {
       },
     },
     base: './',
+    resolve: {
+      tsconfigPaths: true,
+    },
     server: {
       proxy: {
         '/api/v3': 'http://127.0.0.1:5001',
@@ -73,7 +75,6 @@ export default defineConfig(() => {
     },
     plugins: [
       replaceEnvPlaceholders(),
-      tsconfigPaths(),
       nodePolyfills(),
       react(),
       svgr({
@@ -85,7 +86,6 @@ export default defineConfig(() => {
       }),
     ],
     worker: {
-      plugins: () => [tsconfigPaths()],
       format: 'es' as const,
     },
   }
