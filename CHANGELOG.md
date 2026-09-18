@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.28.0](https://github.com/opengovsg/formsg/compare/v9.27.0...v9.28.0) (2026-09-18)
+
+
+### Features
+
+* **workflow:** land the workflow polish stack onto develop (#10029-#10057) (#10067) ([#10029](https://github.com/opengovsg/formsg/commit/a061792c08cf67c042e49bf9ae69e0cf111a57dd))
+
 ## [9.27.0](https://github.com/opengovsg/formsg/compare/v9.26.0...v9.27.0) (2026-09-18)
 
 
