@@ -31,7 +31,7 @@ const REDESIGN: WorkflowSurfaces = {
   sectionLabelTextStyle: 'subhead-2',
   iconRestColor: 'secondary.300',
   iconTransitionDuration: 'fast',
-  activeCardBg: 'primary.100',
+  activeCardBg: 'primary.50',
   activeCardBorderWidth: '2px',
   activeCardShadow: 'none',
 }

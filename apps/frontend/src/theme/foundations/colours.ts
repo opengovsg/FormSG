@@ -18,9 +18,6 @@ export type ThemeColorScheme =
   | 'subtle'
   | 'content'
 
-/**
- * Available color schemes to use for form field colors
- */
 export type FieldColorScheme = Extract<
   ThemeColorScheme,
   | 'primary'
@@ -36,6 +33,7 @@ export type FieldColorScheme = Extract<
 >
 
 const primaryColourPalette = {
+  50: '#FAFBFE',
   100: '#F6F7FC',
   200: '#E4E7F6',
   300: '#B7C0E6',
