@@ -23,7 +23,6 @@ import {
   VerificationKeyError,
 } from '../spcp.oidc.client.errors'
 import { CryptoKeys, Refresh, SigningKey } from '../spcp.oidc.client.types'
-
 import {
   SP_OIDC_NDI_DISCOVERY_ENDPOINT,
   SP_OIDC_NDI_JWKS_ENDPOINT,
