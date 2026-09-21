@@ -100,14 +100,15 @@ export const ChildrenCompoundField = ({
     }
   }, [schema.childrenSubFields, formContext, schema._id])
 
-  // Initialize with a single child section. Skip when the field is disabled
-  // (e.g. read-only carry-forward on MRF steps 2+): appending would render a
-  // blank row where there is no answer to display and no way to fill it.
+  // Initialize with a single child section, even when disabled: on an MRF,
+  // disabled just means "not editable in this step", and a field owned by a
+  // later step must still render its (disabled, empty) subfields under the
+  // title like every other field type does.
   useEffect(() => {
-    if (!schema.disabled && (!fields || !fields.length)) {
+    if (!fields || !fields.length) {
       append([''], { shouldFocus: false })
     }
-  }, [fields, append, schema.disabled])
+  }, [fields, append])
 
   return (
     <FieldContainer
