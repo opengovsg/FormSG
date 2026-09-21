@@ -6,6 +6,6 @@ export const MyInfoRouter = Router()
 
 /**
  * Routes for MyInfo v5 FAPI endpoints
- * @route /api/mi/fapi
+ * @route /mi
  */
 MyInfoRouter.use(MyInfoFapiRouter)
