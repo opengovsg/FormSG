@@ -4,6 +4,7 @@ import type {
   FieldResponseV4,
 } from '@opengovsg/formsg-sdk'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
+import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
   ChildrenCompoundFieldBase,
@@ -619,6 +620,29 @@ const getQuestionAnswerPairsForOneField = ({
 
       answer = selectedAnswers.join(', ')
       break
+    }
+    case BasicField.Children: {
+      if (formField.fieldType !== BasicField.Children) break
+      const childrenAnswer = response.answer as ChildrenAnswerV4
+      const subFields = formField.childrenSubFields ?? []
+
+      // One pair per child attribute, named exactly like getAnswersForChild
+      // (used by email/storage modes) so MRF emails match encrypt-mode
+      // emails: "Child <n> <attribute description>".
+      Object.keys(childrenAnswer)
+        .sort()
+        .forEach((childKey, childIdx) => {
+          for (const subField of subFields) {
+            questionAnswerPairs.push({
+              question: `Child ${childIdx + 1} ${
+                MYINFO_ATTRIBUTE_MAP[subField].description
+              }`,
+              answer: childrenAnswer[childKey]?.value?.[subField]?.value ?? '',
+              fieldType,
+            })
+          }
+        })
+      return questionAnswerPairs
     }
     case BasicField.Signature: {
       const signatureAnswer = response.answer as {
