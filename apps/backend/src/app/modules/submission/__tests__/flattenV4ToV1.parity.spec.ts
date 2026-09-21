@@ -6,7 +6,12 @@
  * data that the server encrypts.
  */
 import { ObjectId } from 'bson'
-import { BasicField, FormFieldDto, FormResponseMode } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormFieldDto,
+  FormResponseMode,
+  MyInfoAttribute,
+} from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
 
 import {
@@ -15,6 +20,7 @@ import {
   IFormDocument,
 } from '../../../../types'
 import formsgSdk from '../../../config/formsg-sdk'
+import { MyInfoKey } from '../../myinfo/myinfo.types'
 import {
   formatMyInfoStorageResponseData,
   omitResponseKeys,
@@ -37,6 +43,7 @@ import {
   buildUnansweredInputs,
   buildVerifiableAnsweredInput,
   buildVerifiableField,
+  CHILDREN_SUB_FIELDS,
   DIFFERENTIAL_FIELD_TYPES,
   FIELD_IDS,
   VERIFIABLE_FIELD_IDS,
@@ -88,6 +95,7 @@ const asFormDocument = (formFields: FormFieldDto[]): IFormDocument =>
 const storageModeReference = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
+  hashedFields?: Set<MyInfoKey>,
 ): unknown[] => {
   // 1. Browser: `submitStorageModeForm`, virus-scanning variant.
   const formData = createClearSubmissionWithVirusScanningFormData(
@@ -126,7 +134,7 @@ const storageModeReference = (
   expect(parsed.isOk()).toBe(true)
   const serverResponses = formatMyInfoStorageResponseData(
     parsed._unsafeUnwrap().getAllResponses(),
-    undefined,
+    hashedFields,
   )
 
   // 4. `encryptSubmission`'s strip from the encrypt-submission middleware.
@@ -167,22 +175,38 @@ const scanV4Attachments = (
 const flattenReference = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
-): unknown[] =>
-  flattenV4ToFormFields({
+  myinfoVerifiedIds: string[] = [],
+): unknown[] => {
+  const v4Responses = scanV4Attachments(
+    createResponsesV4(formFields, formInputs, buildQuarantineMap()),
+  ) as Record<string, unknown>
+  // `verifyMyInfoHashes` stamps this on the server before the response is
+  // stored; the flatten reads it in place of the hashedFields gate.
+  for (const fieldId of myinfoVerifiedIds) {
+    if (v4Responses[fieldId] !== undefined) {
+      ;(
+        v4Responses[fieldId] as { provenance?: { myinfoVerified: boolean } }
+      ).provenance = { myinfoVerified: true }
+    }
+  }
+  return flattenV4ToFormFields({
     formLogics: [],
-    v4Responses: scanV4Attachments(
-      createResponsesV4(formFields, formInputs, buildQuarantineMap()),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ) as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    v4Responses: v4Responses as any,
     formFields,
   })
+}
 
 const expectByteParity = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
+  options: {
+    hashedFields?: Set<MyInfoKey>
+    myinfoVerifiedIds?: string[]
+  } = {},
 ) => {
-  const A = storageModeReference(formFields, formInputs)
-  const B = flattenReference(formFields, formInputs)
+  const A = storageModeReference(formFields, formInputs, options.hashedFields)
+  const B = flattenReference(formFields, formInputs, options.myinfoVerifiedIds)
   expect(JSON.stringify(B)).toBe(JSON.stringify(A))
 }
 
@@ -226,6 +250,47 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
       expectByteParity(
         [buildOptionalVerifiableField(fieldType)],
         buildUnansweredInputs(),
+      )
+    })
+  })
+
+  describe('a MyInfo Children field', () => {
+    // Children only reach storage on a MyInfo form, where hashedFields is
+    // always present, so the reference must run the explode path
+    // (`formatMyInfoStorageResponseData` -> `getAnswersForChild`).
+    const childrenField = {
+      ...buildDifferentialField(BasicField.Children),
+      myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+    } as unknown as FormFieldDto
+    const fieldId = childrenField._id
+
+    it('answered and hash-verified', () => {
+      // Hashed child keys append the child's name to the exploded id
+      // (`getMyInfoChildHashKey`), which is what getMyInfoPrefix's
+      // startsWith check matches against.
+      const hashedFields = new Set(
+        CHILDREN_SUB_FIELDS.map(
+          (attr) =>
+            `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.${attr}.0.Kid One`,
+        ),
+      ) as Set<MyInfoKey>
+
+      expectByteParity(
+        [childrenField],
+        {
+          [fieldId]: buildDifferentialAnsweredInput(BasicField.Children),
+        } as FormFieldValues,
+        { hashedFields, myinfoVerifiedIds: [fieldId] },
+      )
+    })
+
+    it('unanswered', () => {
+      // No MyInfo child data: the field still explodes into empty
+      // per-attribute entries, but nothing is hashed so nothing is prefixed.
+      expectByteParity(
+        [{ ...childrenField, required: false } as FormFieldDto],
+        buildUnansweredInputs(),
+        { hashedFields: new Set() },
       )
     })
   })

@@ -25,7 +25,7 @@ stg-alt:
   deploy:
     parameters:
       stack_name: form-scheduled-closure-stg-alt
-      s3_bucket: form-scheduled-closure-code-zip-stg-alt-f26b4a5 # Created by pulumi in formsg-infra to store AWS SAM builds.
+      s3_bucket: form-scheduled-closure-code-zip-stg-alt-72bf236 # Created by pulumi in formsg-infra to store AWS SAM builds.
       region: ap-southeast-1
       capabilities: CAPABILITY_IAM
       s3_prefix: stg-alt

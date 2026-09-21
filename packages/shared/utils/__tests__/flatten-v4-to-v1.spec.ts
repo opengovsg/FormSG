@@ -166,6 +166,35 @@ describe('Children fields explode like encrypt mode stores them', () => {
     ).toEqual(['', ''])
   })
 
+  it('prefixes questions with [Myinfo] when the response is myinfoVerified', () => {
+    const v4Responses = {
+      [CHILDREN_FIELD_ID]: {
+        fieldType: BasicField.Children,
+        provenance: { myinfoVerified: true },
+        answer: {
+          child0: {
+            value: {
+              [MyInfoChildAttributes.ChildName]: {
+                value: 'Phua Chu King',
+              },
+            },
+          },
+        },
+      },
+    } as unknown as FieldResponsesV4Input
+
+    expect(
+      flattenV4ToFormFields({
+        formLogics: [],
+        v4Responses,
+        formFields: [childrenField()],
+      }).map((entry) => entry.question),
+    ).toEqual([
+      '[Myinfo] Child 1 Name',
+      '[Myinfo] Child 1 Birth certificate number',
+    ])
+  })
+
   it('fills a missing subfield answer with an empty string', () => {
     const v4Responses = {
       [CHILDREN_FIELD_ID]: {

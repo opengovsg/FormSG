@@ -49,12 +49,13 @@ describe('disabled children field (MRF steps 2+ carry-forward)', () => {
     expect(success).not.toBeNull()
   })
 
-  it('does not append a blank editable row when disabled and unanswered', async () => {
+  it('renders a disabled blank row when disabled and unanswered', async () => {
     const user = userEvent.setup()
     render(<DisabledUnanswered />)
 
-    // No blank child row is auto-appended, so no name dropdown is rendered.
-    expect(screen.queryByRole('combobox')).toBeNull()
+    // A blank child row is still bootstrapped (disabled means "not editable
+    // in this step", not "hide the field body"), rendered as disabled inputs.
+    expect(screen.getByRole('combobox')).toBeDisabled()
 
     // And the (required) field does not block submission, since it is not
     // fillable on this step.

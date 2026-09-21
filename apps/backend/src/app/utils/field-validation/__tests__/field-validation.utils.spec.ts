@@ -516,4 +516,54 @@ describe('checkIsResponseChangedV4', () => {
       expect(result).toBe(true)
     })
   })
+
+  describe('children field type', () => {
+    const generateChildrenAnswerV4 = (name: string) => ({
+      child0: {
+        value: {
+          childname: { value: name, myInfo: { attr: 'childname' } },
+          childbirthcertno: { value: 'T1234567X' },
+        },
+      },
+    })
+
+    it('returns false if previous response is present but has not changed', () => {
+      const response = generateResponseV4(
+        BasicField.Children,
+        generateChildrenAnswerV4('Phua Chu King'),
+      )
+      // Deep-clone: steps 2+ rebuild the carried-forward answer from form
+      // state, so equality must be structural, not referential.
+      const prevResponse = JSON.parse(
+        JSON.stringify(response),
+      ) as ParsedClearFormFieldResponseV4
+      const result = checkIsResponseChangedV4({ response, prevResponse })
+      expect(result).toBe(false)
+    })
+
+    it('returns true if no previous response is present', () => {
+      const response = generateResponseV4(
+        BasicField.Children,
+        generateChildrenAnswerV4('Phua Chu King'),
+      )
+      const result = checkIsResponseChangedV4({
+        response,
+        prevResponse: undefined,
+      })
+      expect(result).toBe(true)
+    })
+
+    it('returns true if a child subfield value has changed', () => {
+      const response = generateResponseV4(
+        BasicField.Children,
+        generateChildrenAnswerV4('Phua Chu King'),
+      )
+      const prevResponse = generateResponseV4(
+        BasicField.Children,
+        generateChildrenAnswerV4('Phua Chu Kang'),
+      )
+      const result = checkIsResponseChangedV4({ response, prevResponse })
+      expect(result).toBe(true)
+    })
+  })
 })
