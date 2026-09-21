@@ -8,97 +8,56 @@ import {
   mrfVersionToContentFormat,
   WebhookConsumerType,
   WebhookContentFormat,
-  WebhookPayloadPolicyInput,
 } from '../webhook-payload-policy'
 
-const CONSUMER_TYPES: WebhookConsumerType[] = ['plumber', 'generic']
 const CONTENT_FORMATS: WebhookContentFormat[] = ['v1', 'v3', 'v4']
 
 describe('getWebhookPayloadPolicy', () => {
-  describe('workflow step does not affect the payload policy', () => {
-    it.each<{
-      name: string
-      webhookType: WebhookConsumerType
-      webhookFormat: FormWebhook['webhookFormat']
-      latest: boolean
+  it.each<{
+    name: string
+    webhookType: WebhookConsumerType
+    webhookFormat: FormWebhook['webhookFormat']
+    expected: {
+      contentFormat: WebhookContentFormat
+      includeEncryptedSubmissionSecretKey: boolean
+    }
+  }>([
+    {
+      name: 'plumber',
+      webhookType: 'plumber',
+      webhookFormat: undefined,
       expected: {
-        contentFormat: WebhookContentFormat
-        includeEncryptedSubmissionSecretKey: boolean
-      }
-    }>([
-      {
-        name: 'plumber, latest step',
-        webhookType: 'plumber',
-        webhookFormat: undefined,
-        latest: true,
-        expected: {
-          contentFormat: 'v4',
-          includeEncryptedSubmissionSecretKey: true,
-        },
+        contentFormat: 'v4',
+        includeEncryptedSubmissionSecretKey: true,
       },
-      {
-        name: 'plumber, non-latest step',
-        webhookType: 'plumber',
-        webhookFormat: undefined,
-        latest: false,
-        expected: {
-          contentFormat: 'v4',
-          includeEncryptedSubmissionSecretKey: true,
-        },
+    },
+    {
+      name: 'generic, unset format',
+      webhookType: 'generic',
+      webhookFormat: undefined,
+      expected: {
+        contentFormat: 'v1',
+        includeEncryptedSubmissionSecretKey: false,
       },
-      {
-        name: 'generic, latest step',
-        webhookType: 'generic',
-        webhookFormat: undefined,
-        latest: true,
-        expected: {
-          contentFormat: 'v1',
-          includeEncryptedSubmissionSecretKey: false,
-        },
-      },
-      {
-        name: 'generic, non-latest step',
-        webhookType: 'generic',
-        webhookFormat: undefined,
-        latest: false,
-        expected: {
-          contentFormat: 'v1',
-          includeEncryptedSubmissionSecretKey: false,
-        },
-      },
-    ])(
-      'returns the correct policy for $name',
-      ({ webhookType, webhookFormat, latest, expected }) => {
-        const submittedStepsLength = 3
-        const input: WebhookPayloadPolicyInput = {
-          webhookType,
-          webhookFormat,
-          submittedStepsLength,
-          submissionIndex: latest ? submittedStepsLength - 1 : 0,
-        }
-        expect(getWebhookPayloadPolicy(input)).toEqual(expected)
-      },
-    )
-  })
+    },
+  ])(
+    'returns the correct policy for $name',
+    ({ webhookType, webhookFormat, expected }) => {
+      expect(getWebhookPayloadPolicy({ webhookType, webhookFormat })).toEqual(
+        expected,
+      )
+    },
+  )
 })
 
 describe('getKeyPermissionsPolicy', () => {
-  it.each(CONSUMER_TYPES)(
+  it.each(CONTENT_FORMATS)(
     'includes the wrapped submission secret key only for V4 (%s)',
-    (webhookType) => {
-      const submittedStepsLength = 3
-      for (const contentFormat of CONTENT_FORMATS) {
-        for (const submissionIndex of [0, 1, 2]) {
-          expect(
-            getKeyPermissionsPolicy({
-              webhookType,
-              contentFormat,
-              submissionIndex,
-              submittedStepsLength,
-            }).includeEncryptedSubmissionSecretKey,
-          ).toBe(contentFormat === 'v4')
-        }
-      }
+    (contentFormat) => {
+      expect(
+        getKeyPermissionsPolicy({ contentFormat })
+          .includeEncryptedSubmissionSecretKey,
+      ).toBe(contentFormat === 'v4')
     },
   )
 })

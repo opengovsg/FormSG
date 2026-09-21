@@ -212,8 +212,6 @@ describe('[GATE] v4 per-step retry fidelity', () => {
         policy: getWebhookPayloadPolicy({
           webhookType: 'plumber',
           webhookFormat: undefined,
-          submissionIndex,
-          submittedStepsLength: submission.submittedSteps?.length ?? 0,
         }),
       })._unsafeUnwrap(),
     })
@@ -234,7 +232,6 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       liveView,
       submissionId: String(submission._id),
       snapshotRef: { submissionIndex, contentFormat },
-      webhookType: 'plumber',
       submittedStepSnapshotTokens: (submission.submittedSteps ?? []).map(
         (step) => step.snapshotTokens,
       ),
@@ -367,7 +364,6 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       liveView: v1LiveView,
       submissionId: String(submission._id),
       snapshotRef: { submissionIndex: 0, contentFormat: 'v4' },
-      webhookType: 'plumber',
       submittedStepSnapshotTokens: (submission.submittedSteps ?? []).map(
         (step) => step.snapshotTokens,
       ),
@@ -405,7 +401,6 @@ describe('[GATE] v4 per-step retry fidelity', () => {
         liveView,
         submissionId: String(submission._id),
         snapshotRef: { submissionIndex: 0, contentFormat },
-        webhookType: 'plumber',
         submittedStepSnapshotTokens: [recordedTokens],
       })
 
@@ -440,7 +435,6 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       liveView,
       submissionId: String(submission._id),
       snapshotRef: { submissionIndex: 0, contentFormat: 'v4' },
-      webhookType: 'plumber',
       submittedStepSnapshotTokens: (submission.submittedSteps ?? []).map(
         (step) => step.snapshotTokens,
       ),
@@ -468,7 +462,6 @@ describe('[GATE] v4 per-step retry fidelity', () => {
         liveView,
         submissionId: String(submission._id),
         snapshotRef: { submissionIndex: 0, contentFormat: 'v4' },
-        webhookType: 'plumber',
         submittedStepSnapshotTokens: (submission.submittedSteps ?? []).map(
           (step) => step.snapshotTokens,
         ),

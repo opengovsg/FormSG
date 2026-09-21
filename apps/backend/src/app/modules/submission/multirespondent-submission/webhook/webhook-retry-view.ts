@@ -13,7 +13,6 @@ import {
 import { readV4Snapshot } from './submission-snapshot.store'
 import {
   getKeyPermissionsPolicy,
-  WebhookConsumerType,
   WebhookPayloadPolicy,
 } from './webhook-payload-policy'
 import { reconstructMrfWebhookData } from './webhook-reconstruction'
@@ -24,27 +23,15 @@ export type SnapshotRetryError =
   | SnapshotAccessDeniedError
   | SnapshotFormatNotRecordedError
 
-interface GetRecordedPayloadPolicyInput {
-  snapshotRef: SnapshotRef
-  webhookType: WebhookConsumerType
-  submittedStepsLength: number
-}
-
 export const getRecordedPayloadPolicy = ({
   snapshotRef,
-  webhookType,
-  submittedStepsLength,
-}: GetRecordedPayloadPolicyInput): WebhookPayloadPolicy => {
-  const { contentFormat, submissionIndex } = snapshotRef
-  const keyPermissionsPolicy = getKeyPermissionsPolicy({
-    webhookType,
-    submissionIndex,
-    submittedStepsLength,
-    contentFormat,
-  })
+}: {
+  snapshotRef: SnapshotRef
+}): WebhookPayloadPolicy => {
+  const { contentFormat } = snapshotRef
   return {
     contentFormat,
-    ...keyPermissionsPolicy,
+    ...getKeyPermissionsPolicy({ contentFormat }),
   }
 }
 
@@ -57,18 +44,14 @@ export const resolveSnapshotRetryView = ({
   submissionId,
   snapshotRef,
   submittedStepSnapshotTokens,
-  webhookType,
 }: {
   liveView: WebhookView
   submissionId: string
   snapshotRef: SnapshotRef
   submittedStepSnapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
-  webhookType: WebhookConsumerType
 }): ResultAsync<WebhookView, SnapshotRetryError> => {
   const meta = { submissionId, snapshotRef }
   const { submissionIndex, contentFormat } = snapshotRef
-  const { workflowContent } = liveView.data
-  const submittedStepsLength = workflowContent?.submittedSteps?.length ?? 0
 
   // RATIONALE: Only `v4` exists today, so a message naming `v1`
   // resolves to not recorded until future backward compatibility to
@@ -102,11 +85,7 @@ export const resolveSnapshotRetryView = ({
       liveData: liveView.data,
       snapshot,
       submissionIndex,
-      policy: getRecordedPayloadPolicy({
-        snapshotRef,
-        webhookType,
-        submittedStepsLength,
-      }),
+      policy: getRecordedPayloadPolicy({ snapshotRef }),
     }).map((data) => ({ data }))
   })
 }
