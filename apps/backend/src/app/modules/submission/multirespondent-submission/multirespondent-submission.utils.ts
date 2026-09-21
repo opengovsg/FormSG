@@ -43,6 +43,7 @@ import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
 import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-array-to-png'
 import { validateFieldV4 } from '../../../utils/field-validation'
+import { checkIsResponseChangedV4 } from '../../../utils/field-validation/field-validation.utils'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
@@ -258,14 +259,18 @@ export const validateMrfFieldResponses = ({
     // Children (MyInfo child records) responses are only accepted on the
     // initial submission of a MyInfo-authed form, and only while the
     // mrf-children feature flag is on. MyInfo sessions exist only on step 1;
-    // steps 2+ may still carry the step-1 answer forward as a non-editable
-    // response, which is compared against the previous submission upstream
-    // and skipped by checkIsResponseChangedV4 below.
+    // steps 2+ carry the step-1 answer forward as a non-editable response,
+    // which is accepted only when identical to the previous submission —
+    // a tampered carried-forward answer is still rejected here.
     if (response.fieldType === BasicField.Children) {
       const isChildrenResponseAllowed =
         isMrfChildrenEnabled &&
-        workflowStep === 0 &&
-        formAuthType === FormAuthType.MyInfo
+        formAuthType === FormAuthType.MyInfo &&
+        (workflowStep === 0 ||
+          !checkIsResponseChangedV4({
+            response,
+            prevResponse: previousResponses?.[responseId],
+          }))
       if (!isChildrenResponseAllowed) {
         return err(
           new ValidateFieldErrorV4(

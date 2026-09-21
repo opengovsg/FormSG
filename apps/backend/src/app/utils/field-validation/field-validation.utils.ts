@@ -62,6 +62,8 @@ export const checkIsResponseChangedV4 = ({
       return (
         JSON.stringify(response.answer) !== JSON.stringify(prevResponse.answer)
       )
+    case BasicField.Children:
+      return !isEqual(response.answer, prevResponse.answer)
     case BasicField.Attachment: {
       const a = response.answer as ParsedClearAttachmentAnswerV4
       const p = prevResponse.answer as ParsedClearAttachmentAnswerV4
