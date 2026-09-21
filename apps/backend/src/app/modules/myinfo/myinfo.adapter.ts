@@ -435,9 +435,9 @@ export class MyInfoData implements MyInfoDataTransformer<
   /**
    * Merges the respondent's own (birth-record) children and sponsored
    * children into one column-oriented MyInfoChildData. Birth records keep the
-   * leading indices: stored MyInfo hashes are keyed by a child's position in
-   * the column, so appending is the only order that leaves existing keys
-   * intact. `scopes` labels each index with the data item it came from.
+   * leading indices so the merged column is a pure extension of what a
+   * local-only fetch returned. `scopes` labels each index with the data item
+   * it came from.
    */
   getChildrenBirthRecords(
     allMyInfoAttrs: InternalAttr[],

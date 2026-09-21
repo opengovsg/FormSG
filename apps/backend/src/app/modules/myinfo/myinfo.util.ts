@@ -522,12 +522,45 @@ export const getMyInfoChildHashKey = (
 }
 
 /**
+ * Finds the hashes stored at prefill for one child sub-field, matched by
+ * field, sub-field and child name regardless of the child's position in the
+ * MyInfo column.
+ *
+ * Prefill keys a hash by the child's index in the MyInfo data, but a
+ * submission only carries the child the respondent selected, so its position
+ * in the answer is unrelated to that index (with one child per field it is
+ * always 0). Matching on name instead lets any MyInfo child verify, not just
+ * the first. Several hashes come back when two children share a name.
+ */
+const findMyInfoChildHashes = (
+  hashes: IHashes,
+  fieldId: string,
+  childAttr: MyInfoChildAttributes,
+  childName: string,
+): string[] => {
+  const prefix = `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.${childAttr}.`
+  return Object.entries(hashes).flatMap(([key, hash]) => {
+    if (!hash || !key.startsWith(prefix)) return []
+    // Remainder is `<childIdx>.<childName>`; the name may itself contain dots.
+    const rest = key.slice(prefix.length)
+    const dot = rest.indexOf('.')
+    return dot >= 0 && rest.slice(dot + 1) === childName ? [hash] : []
+  })
+}
+
+/**
  * This function is responsible for checking the validity of hashes of
  * MyInfo Child fields.
  *
- * NOTE: if the hashes comparison fail, it assumes that it's a manually user
- * inputted child. As such, it will just not indicate in the response
- * that it is MyInfo verified.
+ * Each submitted child is compared against the hashes prefill stored for a
+ * MyInfo child of the same name, whatever position that child held in the
+ * MyInfo data. The comparison is recorded under the submitted child's own
+ * positional key, which is the key downstream consumers (the `[MyInfo]`
+ * prefix in storage mode, `provenance.myinfoVerified` in MRF) match on.
+ *
+ * NOTE: if no hash exists for a submitted child, it assumes that it's a
+ * manually user inputted child. As such, it will just not indicate in the
+ * response that it is MyInfo verified.
  * @param field the processed response
  * @param hashes a map containing all the attributes mapped to hashes
  * @param myInfoResponsesMap the response to give to the user
@@ -547,16 +580,27 @@ export const handleMyInfoChildHashResponse = (
     const childName = childAnswer[0]
     // Validate each answer (child)
     childAnswer.forEach((attrAnswer, subFieldIndex) => {
+      const subField = subFields[subFieldIndex]
       const key = getMyInfoChildHashKey(
         field._id,
-        subFields[subFieldIndex],
+        subField,
         childIndex,
         childName,
       )
-      const hash = hashes[key]
+      const candidateHashes = findMyInfoChildHashes(
+        hashes,
+        field._id,
+        subField,
+        childName,
+      )
       // Intentional, to allow user-filled fields to pass through.
-      if (hash) {
-        myInfoResponsesMap.set(key, bcrypt.compare(attrAnswer, hash))
+      if (candidateHashes.length > 0) {
+        myInfoResponsesMap.set(
+          key,
+          Promise.all(
+            candidateHashes.map((hash) => bcrypt.compare(attrAnswer, hash)),
+          ).then((matches) => matches.some(Boolean)),
+        )
       }
     })
   })

@@ -166,6 +166,81 @@ describe('MRF Children MyInfo hash check parity', () => {
     expect(results.get(tamperedKey)).toBe(false)
   })
 
+  it('should verify a child that was not first in the MyInfo data (e.g. a sponsored child appended after a birth record)', async () => {
+    // Prefill keys hashes by the child's index in the MyInfo column, but the
+    // submission only carries the one selected child, at answer index 0.
+    const SPONSORED_NAME = 'PHUA CHU QUEEN'
+    const SPONSORED_DOB_MYINFO = '2021-02-03'
+    const SPONSORED_DOB_DISPLAY = '03/02/2021'
+    const twoChildren: MyInfoChildData = {
+      [MyInfoChildAttributes.ChildName]: [CHILD_NAME, SPONSORED_NAME],
+      // Sponsored children have no birth certificate number.
+      [MyInfoChildAttributes.ChildBirthCertNo]: [CHILD_BC, ''],
+      [MyInfoChildAttributes.ChildDateOfBirth]: [
+        CHILD_DOB_MYINFO,
+        SPONSORED_DOB_MYINFO,
+      ],
+    }
+    const hashPromises = hashFieldValues([childrenFieldForHashing], twoChildren)
+    const hashes = Object.fromEntries(
+      await Promise.all(
+        Object.entries(hashPromises).map(
+          async ([key, promise]) => [key, await promise] as const,
+        ),
+      ),
+    ) as IHashes
+
+    const results = await runComparisons(
+      makeV4Responses({
+        name: SPONSORED_NAME,
+        bc: 'T7654321B', // respondent-filled, never hashed
+        dob: SPONSORED_DOB_DISPLAY,
+      }),
+      hashes,
+    )
+
+    // Name and DOB are verified under the *submitted* position (0), which is
+    // what stampMyInfoVerifiedOnResponses and getMyInfoPrefix key on. The
+    // user-filled birth cert has no stored hash and passes through.
+    expect([...results.keys()].sort()).toEqual(
+      [
+        getMyInfoChildHashKey(
+          FIELD_ID,
+          MyInfoChildAttributes.ChildName,
+          0,
+          SPONSORED_NAME,
+        ),
+        getMyInfoChildHashKey(
+          FIELD_ID,
+          MyInfoChildAttributes.ChildDateOfBirth,
+          0,
+          SPONSORED_NAME,
+        ),
+      ].sort(),
+    )
+    expect([...results.values()].every(Boolean)).toBe(true)
+
+    // Tampering with the out-of-position child is still caught.
+    const tampered = await runComparisons(
+      makeV4Responses({
+        name: SPONSORED_NAME,
+        bc: 'T7654321B',
+        dob: '01/01/2019',
+      }),
+      hashes,
+    )
+    expect(
+      tampered.get(
+        getMyInfoChildHashKey(
+          FIELD_ID,
+          MyInfoChildAttributes.ChildDateOfBirth,
+          0,
+          SPONSORED_NAME,
+        ),
+      ),
+    ).toBe(false)
+  })
+
   it('should skip comparisons when the child name does not match any hashed child (encrypt-mode parity)', async () => {
     // Encrypt mode intentionally lets unmatched children pass through as
     // user-filled: hash keys embed the child name, so a different name finds
