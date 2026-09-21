@@ -453,7 +453,7 @@ describe('multirespondent-submission.utils', () => {
         )
       })
 
-      it('should return error when the submission is not the initial step', () => {
+      it('should return error when the submission is not the initial step and there is no previous response', () => {
         const result = actWithGate({
           workflowStep: 1,
           formAuthType: FormAuthType.MyInfo,
@@ -462,6 +462,53 @@ describe('multirespondent-submission.utils', () => {
 
         expect(result.isErr()).toBe(true)
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+      })
+
+      it('should accept an unchanged carried-forward children response on steps 2+', () => {
+        jest.spyOn(fieldValidation, 'validateFieldV4').mockReturnValue(ok(true))
+
+        const result = validateMrfFieldResponses({
+          formId: mockFormId,
+          visibleFieldIds: mockVisibleFieldIds,
+          formFields: mockFormFields,
+          responses: mockResponses,
+          // Semantically identical previous answer: steps 2+ rebuild the
+          // carried-forward answer from form state, so key order may differ.
+          previousResponses: JSON.parse(
+            JSON.stringify(mockResponses),
+          ) as ParsedClearFormFieldResponsesV4,
+          workflowStep: 1,
+          formAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isOk()).toBe(true)
+      })
+
+      it('should return error for a changed children response on steps 2+', () => {
+        const tampered = JSON.parse(
+          JSON.stringify(mockResponses),
+        ) as ParsedClearFormFieldResponsesV4
+        ;(tampered[childrenFieldId].answer as any).child0.value[
+          MyInfoChildAttributes.ChildName
+        ].value = 'Phua Chu Kang'
+
+        const result = validateMrfFieldResponses({
+          formId: mockFormId,
+          visibleFieldIds: mockVisibleFieldIds,
+          formFields: mockFormFields,
+          responses: tampered,
+          previousResponses: mockResponses,
+          workflowStep: 1,
+          formAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+        expect(result._unsafeUnwrapErr().message).toBe(
+          'Children field type is not supported for this MRF submission',
+        )
       })
 
       it('should return error when the form is not MyInfo-authed', () => {
@@ -977,6 +1024,49 @@ describe('multirespondent-submission.utils', () => {
           answer: 'T1234567X',
           fieldType: BasicField.Children,
         },
+      ])
+    })
+
+    it('should prefix children questions with [Myinfo] when the response is myinfoVerified', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildBirthCertNo,
+          ],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: 'T1234567X',
+                },
+              },
+            },
+          },
+          question: 'Children',
+          provenance: { myinfoVerified: true },
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
+
+      expect(result.map((pair) => pair.question)).toEqual([
+        '[Myinfo] Child 1 Name',
+        '[Myinfo] Child 1 Birth certificate number',
       ])
     })
 

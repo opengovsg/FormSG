@@ -93,6 +93,7 @@ import {
 import {
   adaptV4ResponsesForMyInfoHashCheck,
   MRF_VERSION_V4,
+  stampMyInfoVerifiedOnResponses,
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
 import * as stepToken from './step-token'
@@ -106,7 +107,10 @@ const multirespondentSubmissionBodySchema = Joi.object({
       fieldType: Joi.string().valid(...Object.values(BasicField)),
       answer: Joi.required(),
       question: Joi.any().strip(),
-      provenance: Joi.object().default({}),
+      // Provenance is server-owned: strip every client-supplied key. In
+      // particular myinfoVerified is stamped after the MyInfo hash check and
+      // must never be client-suppliable.
+      provenance: Joi.object({}).default({}).options({ stripUnknown: true }),
       myInfo: Joi.object({ attr: Joi.string().required() }).optional(),
     }),
   ),
@@ -879,6 +883,10 @@ export const setCurrentWorkflowStep = async (
  * Must run before encryptSubmission, which snapshots the responses into the
  * stored encryptedContent. MyInfo prefill only happens on the first step, so
  * updates to an existing submission (mrfSubmission present) skip the check.
+ *
+ * On success, records the verification outcome as response provenance:
+ * answers whose hash keys were verified get provenance.myinfoVerified
+ * stamped before the responses are encrypted for storage.
  */
 export const verifyMyInfoHashes = async (
   req: ProcessedMultirespondentSubmissionHandlerRequest,
@@ -911,7 +919,12 @@ export const verifyMyInfoHashes = async (
         ),
       ),
     )
-    .map(() => next())
+    .map((verifiedKeys) => {
+      // Children fields are MyInfo-prefilled and non-editable, so record
+      // the successful verification on the stored response's provenance.
+      stampMyInfoVerifiedOnResponses(req.body.responses ?? {}, verifiedKeys)
+      return next()
+    })
     .mapErr((error) => {
       logger.error({
         message: 'Error verifying MyInfo hashes',

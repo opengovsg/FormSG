@@ -415,10 +415,10 @@ export const buildOptionalVerifiableField = (
   }) as unknown as FormFieldDto
 
 /**
- * RATIONALE: Children is absent. Storage mode expands one Children field
- * into one entry per child, while the flatten is specified to throw on it.
- * Encoding that as an expected difference would enshrine a state that's
- * been decided cannot exist — exhaustiveness covers Children instead.
+ * RATIONALE: Children is absent from the generic loop because storage mode
+ * only explodes it when hashedFields is present (a MyInfo form), which the
+ * loop does not model. The dedicated `a MyInfo Children field` cases in the
+ * parity spec cover it with hashedFields and provenance set.
  *
  * NOTE: MyInfo variants are absent too. Storage mode prepends `[Myinfo] ` to
  * their question text, and #9975 owns reproducing that.

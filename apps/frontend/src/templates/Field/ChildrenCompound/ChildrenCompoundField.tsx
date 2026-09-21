@@ -26,6 +26,7 @@ import {
   MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildData,
+  MyInfoChildrenScope,
   MyInfoChildVaxxStatus,
 } from 'formsg-shared/types'
 import { formatMyinfoDate } from 'formsg-shared/utils/dates'
@@ -99,14 +100,15 @@ export const ChildrenCompoundField = ({
     }
   }, [schema.childrenSubFields, formContext, schema._id])
 
-  // Initialize with a single child section. Skip when the field is disabled
-  // (e.g. read-only carry-forward on MRF steps 2+): appending would render a
-  // blank row where there is no answer to display and no way to fill it.
+  // Initialize with a single child section, even when disabled: on an MRF,
+  // disabled just means "not editable in this step", and a field owned by a
+  // later step must still render its (disabled, empty) subfields under the
+  // title like every other field type does.
   useEffect(() => {
-    if (!schema.disabled && (!fields || !fields.length)) {
+    if (!fields || !fields.length) {
       append([''], { shouldFocus: false })
     }
-  }, [fields, append, schema.disabled])
+  }, [fields, append])
 
   return (
     <FieldContainer
@@ -235,6 +237,22 @@ const ChildrenBody = ({
     )
   }, [myInfoChildrenBirthRecords, childName])
 
+  // Scope the selected child's record was retrieved under. `scopes` is only
+  // populated once sponsored children are fetched, so today this always
+  // derives 'local'.
+  const getChildScope = useCallback(
+    (name: string): MyInfoChildrenScope => {
+      const idx =
+        myInfoChildrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.indexOf(
+          name,
+        ) ?? -1
+      return (
+        myInfoChildrenBirthRecords?.scopes?.[idx] ?? MyInfoChildrenScope.Local
+      )
+    },
+    [myInfoChildrenBirthRecords],
+  )
+
   const getChildAttr = useCallback(
     (attr: MyInfoChildAttributes): string => {
       if (myInfoChildrenBirthRecords === undefined) {
@@ -302,7 +320,13 @@ const ChildrenBody = ({
                     items={childNameValues}
                     value={value as unknown as string}
                     isDisabled={isSubmitting || schema.disabled}
-                    onChange={onChange}
+                    onChange={(name) => {
+                      onChange(name)
+                      setValue(
+                        `${schema._id}.childTypes.${currChildBodyIdx}`,
+                        getChildScope(name),
+                      )
+                    }}
                   />
                 )}
               />

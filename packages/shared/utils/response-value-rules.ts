@@ -225,9 +225,19 @@ export const computeChildrenAnswerValue = ({
 }: {
   numberOfSubFields?: number
   input?: ChildrenAnswerInput
-}): ChildrenAnswerValueOutput => ({
-  answerArray: input?.child ?? [Array(numberOfSubFields ?? 1).fill('')],
-})
+}): ChildrenAnswerValueOutput => {
+  const width = numberOfSubFields ?? 1
+  return {
+    // Pad each row to the subfield count: disabled subfield inputs never
+    // register values in react-hook-form, leaving undefined holes that the
+    // ChildBirthRecordsResponse schema (string[][]) rejects.
+    answerArray: input?.child
+      ? input.child.map((row) =>
+          Array.from({ length: width }, (_, j) => row[j] ?? ''),
+        )
+      : [Array(width).fill('')],
+  }
+}
 
 /** Postal code moves to the end of the array. */
 export const computeAddressAnswerValue = (

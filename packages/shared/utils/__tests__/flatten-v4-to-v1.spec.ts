@@ -8,6 +8,7 @@ import {
   LogicDto,
   LogicType,
   MyInfoAttribute,
+  MyInfoChildAttributes,
 } from '../../types'
 import { flattenV4ToFormFields } from '../flatten-v4-to-v1'
 import { FieldResponsesV4Input } from '../v4-answer'
@@ -74,21 +75,6 @@ describe('question injection', () => {
 })
 
 describe('exhaustiveness', () => {
-  it('throws on a Children field rather than emitting a blank entry', () => {
-    expect(() =>
-      flattenV4ToFormFields({
-        formLogics: [],
-        v4Responses: {},
-        formFields: [
-          shortTextField({
-            fieldType: BasicField.Children,
-            childrenSubFields: [],
-          }),
-        ],
-      }),
-    ).toThrow('Unsupported field type: children')
-  })
-
   it('throws on an unknown field type rather than emitting an entry', () => {
     expect(() =>
       flattenV4ToFormFields({
@@ -105,6 +91,166 @@ describe('exhaustiveness', () => {
     expect(
       readFileSync(join(__dirname, '..', 'flatten-v4-to-v1.ts'), 'utf8'),
     ).toContain('return throwUnsupportedFieldType(field)')
+  })
+})
+
+describe('Children fields explode like encrypt mode stores them', () => {
+  const CHILDREN_FIELD_ID = 'c'.repeat(24)
+
+  const childrenField = (
+    overrides: Record<string, unknown> = {},
+  ): FormFieldDto =>
+    ({
+      _id: CHILDREN_FIELD_ID,
+      fieldType: BasicField.Children,
+      title: 'Children',
+      childrenSubFields: [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ],
+      ...overrides,
+    }) as unknown as FormFieldDto
+
+  it('explodes an answered Children field into per-attribute entries matching getAnswersForChild', () => {
+    const v4Responses = {
+      [CHILDREN_FIELD_ID]: {
+        fieldType: BasicField.Children,
+        answer: {
+          child0: {
+            value: {
+              // Keyed in reverse of the field subfield order: output must
+              // follow the field definition order, name first.
+              [MyInfoChildAttributes.ChildBirthCertNo]: {
+                value: 'T1234567X',
+              },
+              [MyInfoChildAttributes.ChildName]: {
+                value: 'Phua Chu King',
+              },
+            },
+          },
+        },
+      },
+    } as unknown as FieldResponsesV4Input
+
+    expect(
+      flattenV4ToFormFields({
+        formLogics: [],
+        v4Responses,
+        formFields: [childrenField()],
+      }),
+    ).toEqual([
+      {
+        _id: `childrenbirthrecords.${CHILDREN_FIELD_ID}.childname.0`,
+        fieldType: BasicField.Children,
+        question: 'Child 1 Name',
+        myInfo: { attr: MyInfoChildAttributes.ChildName },
+        answer: 'Phua Chu King',
+      },
+      {
+        _id: `childrenbirthrecords.${CHILDREN_FIELD_ID}.childbirthcertno.0`,
+        fieldType: BasicField.Children,
+        question: 'Child 1 Birth certificate number',
+        myInfo: { attr: MyInfoChildAttributes.ChildBirthCertNo },
+        answer: 'T1234567X',
+      },
+    ])
+  })
+
+  it('emits empty per-attribute entries for an unanswered Children field', () => {
+    expect(
+      flattenV4ToFormFields({
+        formLogics: [],
+        v4Responses: {},
+        formFields: [childrenField()],
+      }).map((entry) => ('answer' in entry ? entry.answer : undefined)),
+    ).toEqual(['', ''])
+  })
+
+  it('prefixes questions with [Myinfo] when the response is myinfoVerified', () => {
+    const v4Responses = {
+      [CHILDREN_FIELD_ID]: {
+        fieldType: BasicField.Children,
+        provenance: { myinfoVerified: true },
+        answer: {
+          child0: {
+            value: {
+              [MyInfoChildAttributes.ChildName]: {
+                value: 'Phua Chu King',
+              },
+            },
+          },
+        },
+      },
+    } as unknown as FieldResponsesV4Input
+
+    expect(
+      flattenV4ToFormFields({
+        formLogics: [],
+        v4Responses,
+        formFields: [childrenField()],
+      }).map((entry) => entry.question),
+    ).toEqual([
+      '[Myinfo] Child 1 Name',
+      '[Myinfo] Child 1 Birth certificate number',
+    ])
+  })
+
+  it('fills a missing subfield answer with an empty string', () => {
+    const v4Responses = {
+      [CHILDREN_FIELD_ID]: {
+        fieldType: BasicField.Children,
+        answer: {
+          child0: {
+            value: {
+              [MyInfoChildAttributes.ChildName]: {
+                value: 'Phua Chu King',
+              },
+            },
+          },
+        },
+      },
+    } as unknown as FieldResponsesV4Input
+
+    expect(
+      flattenV4ToFormFields({
+        formLogics: [],
+        v4Responses,
+        formFields: [childrenField()],
+      }).map((entry) => ('answer' in entry ? entry.answer : undefined)),
+    ).toEqual(['Phua Chu King', ''])
+  })
+
+  it('continues child numbering across Children fields, like ParsedResponsesObject childIdx', () => {
+    const SECOND_FIELD_ID = 'd'.repeat(24)
+    expect(
+      flattenV4ToFormFields({
+        formLogics: [],
+        v4Responses: {},
+        formFields: [
+          childrenField({
+            childrenSubFields: [MyInfoChildAttributes.ChildName],
+          }),
+          childrenField({
+            _id: SECOND_FIELD_ID,
+            childrenSubFields: [MyInfoChildAttributes.ChildName],
+          }),
+        ],
+      }).map((entry) => entry.question),
+    ).toEqual(['Child 1 Name', 'Child 2 Name'])
+  })
+
+  it('emits keys in the exact order encrypt mode stores, with no isVisible or isUserVerified', () => {
+    expect(
+      flattenV4ToFormFields({
+        formLogics: [],
+        v4Responses: {},
+        formFields: [
+          childrenField({
+            childrenSubFields: [MyInfoChildAttributes.ChildName],
+          }),
+        ],
+      }).map((entry) => Object.keys(entry)),
+    ).toEqual([['_id', 'fieldType', 'question', 'myInfo', 'answer']])
   })
 })
 
