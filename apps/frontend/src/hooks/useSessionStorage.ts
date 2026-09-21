@@ -132,19 +132,15 @@ export function useSessionStorage<S>(
   useEffect(() => {
     // oxlint-disable-next-line no-negated-condition
     if (typeof document !== 'undefined') {
-      // oxlint-disable-next-line typescript/ban-ts-comment
-      // @ts-ignore
       document.addEventListener(
         customEventTypeName,
-        listenToCustomEventWithinDocument,
+        listenToCustomEventWithinDocument as EventListener,
       )
 
       return () => {
-        // oxlint-disable-next-line typescript/ban-ts-comment
-        // @ts-ignore
         document.removeEventListener(
           customEventTypeName,
-          listenToCustomEventWithinDocument,
+          listenToCustomEventWithinDocument as EventListener,
         )
       }
     } else {
