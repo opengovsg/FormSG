@@ -1,0 +1,25 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../tooling/oxlint/node.json"],
+  "plugins": [],
+  "globals": {
+    "_": "writable"
+  },
+  "rules": {
+    "no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "jsPlugins": ["eslint-plugin-typesafe"],
+      "rules": {
+        "typesafe/no-throw-sync-func": "error"
+      }
+    }
+  ]
+}
