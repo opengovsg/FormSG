@@ -240,7 +240,7 @@ export const enSG: Workflow = {
       bodyWithSteps:
         "You'll set up your workflow independently. Any steps you've created so far will be kept.",
       bodyWithoutSteps:
-        "You'll set up your workflow yourself. We won't show this guide again.",
+        "You'll set up your workflow yourself. You can toggle this back at anytime.",
       confirm: 'Skip guidance',
       cancel: 'Cancel',
     },
