@@ -82,7 +82,7 @@ const reconstructNonPlumberPayload = (
 /**
  * These tests assert the following resolution table.
  *
- * | Consumer         | webhookFormat    | Wire shape |
+ * | Consumer         | webhookFormat    | webhookContentFormat |
  * |------------------|------------------|------------|
  * | plumber          | any (ignored)    | v4         |
  * | generic / zapier | unset or 'v1'    | v1         |

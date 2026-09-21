@@ -113,8 +113,7 @@ describe('contentFormatToWebhookVersion', () => {
   })
 
   it('maps v1 to the shared virus-scanner submission version', () => {
-    // Against the shared constant, not the literal `2.1`, so the V1 wire
-    // value cannot drift from the one storage mode sends.
+    // Keep the V1 value aligned with storage mode.
     expect(contentFormatToWebhookVersion('v1')).toBe(
       VIRUS_SCANNER_SUBMISSION_VERSION,
     )
