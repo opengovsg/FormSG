@@ -1236,10 +1236,10 @@ const sendMrfInitialWebhookIfEligible = ({
   logMeta: CustomLoggerParams['meta']
   errorMessage?: string
 }): void => {
-  const webhookType = getWebhookType(webhookUrl)
+  const webhookConsumerType = toConsumerType(getWebhookType(webhookUrl))
 
   const shouldSend = shouldSendMrfWebhook({
-    webhookType,
+    webhookConsumerType,
     webhookFormat,
     isMrfWebhooksEnabled:
       growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
@@ -1254,7 +1254,7 @@ const sendMrfInitialWebhookIfEligible = ({
 
   logger.info({
     message: 'Sending initial webhook for multirespondent submission',
-    meta: { ...logMeta, webhookType },
+    meta: { ...logMeta, webhookConsumerType },
   })
 
   const submissionIndex = (submission.submittedSteps?.length ?? 1) - 1
@@ -1281,7 +1281,7 @@ const sendMrfInitialWebhookIfEligible = ({
   )
     .andThen((liveView) => {
       const policy = getWebhookPayloadPolicy({
-        webhookType: toConsumerType(webhookType),
+        webhookType: webhookConsumerType,
         // RATIONALE: Pinned to 'v4' until the V1 producer lands in the next PR, at which point this is
         // replaced with the form's own `webhook.webhookFormat`.
         webhookFormat: 'v4',

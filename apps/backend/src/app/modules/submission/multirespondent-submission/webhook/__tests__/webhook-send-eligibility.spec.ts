@@ -1,7 +1,6 @@
 import { FormWebhook } from 'formsg-shared/types'
 
-import { WebhookType } from 'src/app/modules/webhook/webhook.service'
-
+import { WebhookConsumerType } from '../webhook-payload-policy'
 import {
   shouldSendMrfWebhook,
   shouldWriteV4Snapshot,
@@ -13,7 +12,7 @@ const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/1/x'
 
 describe('shouldSendMrfWebhook', () => {
   it.each<{
-    webhookType: WebhookType
+    webhookConsumerType: WebhookConsumerType
     webhookFormat: FormWebhook['webhookFormat']
     isMrfWebhooksEnabled: boolean
     workflowStepCount: number
@@ -24,21 +23,21 @@ describe('shouldSendMrfWebhook', () => {
     // can represent one step of a multi-step submission. Its own
     // `webhookFormat` is ignored, so a V1 setting must not restrict it.
     {
-      webhookType: 'plumber',
+      webhookConsumerType: 'plumber',
       webhookFormat: undefined,
       isMrfWebhooksEnabled: false,
       workflowStepCount: 0,
       expected: true,
     },
     {
-      webhookType: 'plumber',
+      webhookConsumerType: 'plumber',
       webhookFormat: undefined,
       isMrfWebhooksEnabled: true,
       workflowStepCount: 3,
       expected: true,
     },
     {
-      webhookType: 'plumber',
+      webhookConsumerType: 'plumber',
       webhookFormat: 'v1',
       isMrfWebhooksEnabled: true,
       workflowStepCount: 3,
@@ -47,45 +46,31 @@ describe('shouldSendMrfWebhook', () => {
     // Every external consumer is governed by `enable-mrf-webhooks`, whatever
     // shape it resolves to.
     {
-      webhookType: 'generic',
+      webhookConsumerType: 'generic',
       webhookFormat: undefined,
       isMrfWebhooksEnabled: false,
       workflowStepCount: 0,
       expected: false,
     },
     {
-      webhookType: 'generic',
+      webhookConsumerType: 'generic',
       webhookFormat: 'v4',
       isMrfWebhooksEnabled: false,
       workflowStepCount: 0,
-      expected: false,
-    },
-    {
-      webhookType: 'zapier',
-      webhookFormat: undefined,
-      isMrfWebhooksEnabled: false,
-      workflowStepCount: 1,
       expected: false,
     },
     // An external consumer on the V1 shape carries PIN-02's at-most-one-step
     // predicate. No workflow, an empty workflow and a one-step workflow all
     // deliver. An absent format resolves to V1, so it is restricted too.
     {
-      webhookType: 'generic',
+      webhookConsumerType: 'generic',
       webhookFormat: undefined,
       isMrfWebhooksEnabled: true,
       workflowStepCount: 0,
       expected: true,
     },
     {
-      webhookType: 'generic',
-      webhookFormat: 'v1',
-      isMrfWebhooksEnabled: true,
-      workflowStepCount: 1,
-      expected: true,
-    },
-    {
-      webhookType: 'zapier',
+      webhookConsumerType: 'generic',
       webhookFormat: 'v1',
       isMrfWebhooksEnabled: true,
       workflowStepCount: 1,
@@ -94,24 +79,17 @@ describe('shouldSendMrfWebhook', () => {
     // Two or more steps on the V1 shape delivers nothing, however the flag is
     // set: a storage-shaped payload cannot express a partial submission.
     {
-      webhookType: 'generic',
+      webhookConsumerType: 'generic',
       webhookFormat: 'v1',
       isMrfWebhooksEnabled: true,
       workflowStepCount: 2,
       expected: false,
     },
     {
-      webhookType: 'generic',
+      webhookConsumerType: 'generic',
       webhookFormat: undefined,
       isMrfWebhooksEnabled: true,
       workflowStepCount: 2,
-      expected: false,
-    },
-    {
-      webhookType: 'zapier',
-      webhookFormat: 'v1',
-      isMrfWebhooksEnabled: true,
-      workflowStepCount: 7,
       expected: false,
     },
     // An external consumer whose form asks for V4 is not restricted at all.
@@ -119,37 +97,30 @@ describe('shouldSendMrfWebhook', () => {
     // the same envelope plumber gets, so it can tell one step from a whole
     // submission just as plumber can.
     {
-      webhookType: 'generic',
+      webhookConsumerType: 'generic',
       webhookFormat: 'v4',
       isMrfWebhooksEnabled: true,
       workflowStepCount: 2,
       expected: true,
     },
     {
-      webhookType: 'generic',
+      webhookConsumerType: 'generic',
       webhookFormat: 'v4',
       isMrfWebhooksEnabled: true,
       workflowStepCount: 7,
       expected: true,
     },
     {
-      webhookType: 'zapier',
-      webhookFormat: 'v4',
-      isMrfWebhooksEnabled: true,
-      workflowStepCount: 4,
-      expected: true,
-    },
-    {
-      webhookType: 'generic',
+      webhookConsumerType: 'generic',
       webhookFormat: 'v4',
       isMrfWebhooksEnabled: true,
       workflowStepCount: 1,
       expected: true,
     },
   ])(
-    '$webhookType/$webhookFormat, flag=$isMrfWebhooksEnabled, $workflowStepCount step(s) => $expected',
+    '$webhookConsumerType/$webhookFormat, flag=$isMrfWebhooksEnabled, $workflowStepCount step(s) => $expected',
     ({
-      webhookType,
+      webhookConsumerType,
       webhookFormat,
       isMrfWebhooksEnabled,
       workflowStepCount,
@@ -157,7 +128,7 @@ describe('shouldSendMrfWebhook', () => {
     }) => {
       expect(
         shouldSendMrfWebhook({
-          webhookType,
+          webhookConsumerType,
           webhookFormat,
           isMrfWebhooksEnabled,
           workflowStepCount,

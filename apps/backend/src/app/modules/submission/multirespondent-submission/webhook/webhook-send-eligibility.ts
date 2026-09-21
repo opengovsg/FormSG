@@ -3,23 +3,25 @@ import { FormWebhook } from 'formsg-shared/types'
 import {
   getWebhookType,
   toConsumerType,
-  WebhookType,
 } from '../../../webhook/webhook.service'
 
-import { resolveWebhookContentFormat } from './webhook-payload-policy'
+import {
+  resolveWebhookContentFormat,
+  WebhookConsumerType,
+} from './webhook-payload-policy'
 
 export const shouldSendMrfWebhook = ({
-  webhookType,
+  webhookConsumerType,
   webhookFormat,
   isMrfWebhooksEnabled,
   workflowStepCount,
 }: {
-  webhookType: WebhookType
+  webhookConsumerType: WebhookConsumerType
   webhookFormat: FormWebhook['webhookFormat']
   isMrfWebhooksEnabled: boolean
   workflowStepCount: number
 }): boolean => {
-  if (webhookType === 'plumber') {
+  if (webhookConsumerType === 'plumber') {
     return true
   }
   if (!isMrfWebhooksEnabled) {
@@ -27,7 +29,7 @@ export const shouldSendMrfWebhook = ({
   }
 
   const webhookContentFormat = resolveWebhookContentFormat({
-    webhookType: toConsumerType(webhookType),
+    webhookType: webhookConsumerType,
     webhookFormat,
   })
 
@@ -69,10 +71,10 @@ export const shouldWriteV4Snapshot = ({
   const url = webhook?.url
   if (mrfVersion !== 2 || !url || !webhook?.isRetryEnabled) return false
 
-  const webhookType = getWebhookType(url)
+  const webhookConsumerType = toConsumerType(getWebhookType(url))
   if (
     !shouldSendMrfWebhook({
-      webhookType,
+      webhookConsumerType,
       webhookFormat: webhook.webhookFormat,
       isMrfWebhooksEnabled,
       workflowStepCount,
@@ -86,7 +88,7 @@ export const shouldWriteV4Snapshot = ({
   // any other shape.
   return (
     resolveWebhookContentFormat({
-      webhookType: toConsumerType(webhookType),
+      webhookType: webhookConsumerType,
       webhookFormat: webhook.webhookFormat,
     }) === 'v4'
   )

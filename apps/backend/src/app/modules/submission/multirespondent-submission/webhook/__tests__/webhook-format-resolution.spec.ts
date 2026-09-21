@@ -168,20 +168,23 @@ describe('webhookFormat resolution', () => {
 
       it.each(ROWS)(
         'gates delivery of $name on the flag for every non-plumber consumer',
-        ({ webhookUrl }) => {
-          const urlFamily = getWebhookType(webhookUrl)
+        ({ webhookUrl, webhookFormat }) => {
+          const webhookConsumerType = toConsumerType(getWebhookType(webhookUrl))
           // The flag is the delivery gate, not a term in the resolution:
           // wiring `webhookFormat` is inert while the flag is off, in both
           // directions.
           expect(
             shouldSendMrfWebhook({
-              webhookType: urlFamily,
+              webhookConsumerType,
+              webhookFormat,
               isMrfWebhooksEnabled,
               // A single-step workflow, so PIN-02's predicate is satisfied
               // and the flag is the only remaining term.
               workflowStepCount: 1,
             }),
-          ).toBe(urlFamily === 'plumber' ? true : isMrfWebhooksEnabled)
+          ).toBe(
+            webhookConsumerType === 'plumber' ? true : isMrfWebhooksEnabled,
+          )
         },
       )
 
