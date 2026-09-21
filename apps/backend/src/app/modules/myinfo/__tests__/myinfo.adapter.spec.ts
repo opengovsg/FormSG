@@ -5,6 +5,7 @@ import {
   MyInfoVehicleFull,
 } from '@opengovsg/myinfo-gov-client'
 import {
+  FormResponseMode,
   MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildrenScope,
@@ -17,6 +18,7 @@ import {
   internalAttrToSponsoredChildScope,
   MyInfoData,
 } from '../myinfo.adapter'
+import { shouldFetchSponsoredChildren } from '../myinfo.util'
 
 import { MOCK_UINFIN } from './myinfo.test.constants'
 import {
@@ -727,11 +729,13 @@ describe('myinfo.adapter', () => {
   })
 
   describe('internalAttrListToScopes', () => {
-    it('should request the sponsored scope alongside each birth-record child scope', () => {
-      const scopes = internalAttrListToScopes([
-        MyInfoAttribute.ChildName,
-        MyInfoAttribute.ChildDateOfBirth,
-      ])
+    const WITH_SPONSORED = { includeSponsoredChildren: true }
+
+    it('should request the sponsored scope alongside each birth-record child scope when enabled', () => {
+      const scopes = internalAttrListToScopes(
+        [MyInfoAttribute.ChildName, MyInfoAttribute.ChildDateOfBirth],
+        WITH_SPONSORED,
+      )
 
       expect(scopes).toEqual(
         expect.arrayContaining([
@@ -744,10 +748,43 @@ describe('myinfo.adapter', () => {
       )
     })
 
-    it('should not request a sponsored scope for birth cert number', () => {
+    it('should not request any sponsored scope by default (v1 forms cannot record child provenance)', () => {
       const scopes = internalAttrListToScopes([
+        MyInfoAttribute.ChildName,
+        MyInfoAttribute.ChildDateOfBirth,
         MyInfoAttribute.ChildBirthCertNo,
       ])
+
+      expect(scopes).toEqual(
+        expect.arrayContaining([
+          'childrenbirthrecords.name',
+          'childrenbirthrecords.dob',
+          'childrenbirthrecords.birthcertno',
+          // MockPass-compatibility compound scope added under NODE_ENV=test.
+          ExternalAttr.ChildrenBirthRecords,
+          ExternalAttr.UinFin,
+        ]),
+      )
+      expect(
+        scopes.some((s) => s.startsWith(ExternalAttr.SponsoredChildrenRecords)),
+      ).toBe(false)
+    })
+
+    it('should not request any sponsored scope when explicitly disabled', () => {
+      const scopes = internalAttrListToScopes([MyInfoAttribute.ChildName], {
+        includeSponsoredChildren: false,
+      })
+
+      expect(
+        scopes.some((s) => s.startsWith(ExternalAttr.SponsoredChildrenRecords)),
+      ).toBe(false)
+    })
+
+    it('should not request a sponsored scope for birth cert number', () => {
+      const scopes = internalAttrListToScopes(
+        [MyInfoAttribute.ChildBirthCertNo],
+        WITH_SPONSORED,
+      )
 
       expect(scopes).toContain('childrenbirthrecords.birthcertno')
       expect(
@@ -761,10 +798,10 @@ describe('myinfo.adapter', () => {
     })
 
     it('should not request any sponsored scope when no child attribute is requested', () => {
-      const scopes = internalAttrListToScopes([
-        MyInfoAttribute.Name,
-        MyInfoAttribute.Sex,
-      ])
+      const scopes = internalAttrListToScopes(
+        [MyInfoAttribute.Name, MyInfoAttribute.Sex],
+        WITH_SPONSORED,
+      )
 
       expect(
         scopes.some((s) => s.startsWith(ExternalAttr.SponsoredChildrenRecords)),
@@ -772,12 +809,30 @@ describe('myinfo.adapter', () => {
     })
 
     it('should not emit duplicate scopes', () => {
-      const scopes = internalAttrListToScopes([
-        MyInfoAttribute.ChildName,
-        MyInfoAttribute.ChildName,
-      ])
+      const scopes = internalAttrListToScopes(
+        [MyInfoAttribute.ChildName, MyInfoAttribute.ChildName],
+        WITH_SPONSORED,
+      )
 
       expect(scopes).toEqual(Array.from(new Set(scopes)))
+    })
+  })
+
+  describe('shouldFetchSponsoredChildren', () => {
+    it('should only allow Multirespondent forms, whose v4 responses carry a per-child type', () => {
+      expect(
+        shouldFetchSponsoredChildren({
+          responseMode: FormResponseMode.Multirespondent,
+        }),
+      ).toBe(true)
+      expect(
+        shouldFetchSponsoredChildren({
+          responseMode: FormResponseMode.Encrypt,
+        }),
+      ).toBe(false)
+      expect(
+        shouldFetchSponsoredChildren({ responseMode: FormResponseMode.Email }),
+      ).toBe(false)
     })
   })
 })

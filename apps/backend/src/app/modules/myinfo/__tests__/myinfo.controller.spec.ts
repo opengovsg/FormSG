@@ -58,6 +58,8 @@ describe('MyInfoController', () => {
         formEsrvcId: MOCK_MYINFO_FORM.esrvcId,
         formId: MOCK_MYINFO_FORM._id,
         requestedAttributes: MOCK_MYINFO_FORM.getUniqueMyInfoAttrs(),
+        // Not a Multirespondent form, so sponsored children stay off.
+        includeSponsoredChildren: false,
       })
       expect(mockRes.json).toHaveBeenCalledWith({
         redirectURL: MOCK_REDIRECT_URL,

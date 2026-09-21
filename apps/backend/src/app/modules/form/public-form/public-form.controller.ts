@@ -49,6 +49,7 @@ import {
   createMyInfoLoginCookie,
   extractAuthCode,
   getMyInfoEserviceIdInForm,
+  shouldFetchSponsoredChildren,
 } from '../../myinfo/myinfo.util'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
 import {
@@ -765,6 +766,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
               formId,
               encodedQuery,
               requestedAttributes: form.getUniqueMyInfoAttrs(),
+              includeSponsoredChildren: shouldFetchSponsoredChildren(form),
             }).map(({ sessionId, redirectUrl }) => {
               setMyInfoFapiSessionCookie(res, sessionId)
               return redirectUrl
@@ -777,6 +779,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
                 formEsrvcId: eserviceId,
                 formId,
                 requestedAttributes: form.getUniqueMyInfoAttrs(),
+                includeSponsoredChildren: shouldFetchSponsoredChildren(form),
                 encodedQuery,
               }),
           )

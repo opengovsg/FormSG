@@ -176,23 +176,39 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
   }
 }
 
+export type InternalAttrListToScopesOptions = {
+  /**
+   * Whether Children sub-fields should also request the sponsored-children
+   * scopes. Off by default: only forms whose responses can record which
+   * data item a child came from (see shouldFetchSponsoredChildren) may
+   * fetch sponsored children, otherwise their provenance is lost on
+   * submission.
+   */
+  includeSponsoredChildren?: boolean
+}
+
 /**
  * Converts an array of internal FormSG attributes to an array of scopes
  * to request from MyInfo. Always appends UinFin to the array so that
  * consent is always obtained for getting the user's UIN/FIN.
  * @param attrs List of internal attributes used in FormSG
+ * @param options.includeSponsoredChildren Also request sponsored-children
+ * scopes for every child sub-field that has one
  */
 export const internalAttrListToScopes = (
   attrs: InternalAttr[],
+  { includeSponsoredChildren = false }: InternalAttrListToScopesOptions = {},
 ): MyInfoScope[] => {
   // Always ask for consent for UinFin, even though it is not a form field
   const scopes = attrs.map(internalAttrToScope).concat(ExternalAttr.UinFin)
   // A Children field transparently covers both the respondent's own
   // (birth-record) children and their sponsored children, so every child
   // sub-field with a sponsored counterpart requests that scope too.
-  for (const attr of attrs) {
-    const sponsoredScope = internalAttrToSponsoredChildScope(attr)
-    if (sponsoredScope) scopes.push(sponsoredScope)
+  if (includeSponsoredChildren) {
+    for (const attr of attrs) {
+      const sponsoredScope = internalAttrToSponsoredChildScope(attr)
+      if (sponsoredScope) scopes.push(sponsoredScope)
+    }
   }
   // Only for MockPass compatbility. For production we don't want to
   // ask for the most general Children scope.
@@ -202,10 +218,10 @@ export const internalAttrListToScopes = (
   ) {
     for (const attr of attrs) {
       if (isMyInfoChildrenBirthRecords(attr)) {
-        scopes.push(
-          ExternalAttr.ChildrenBirthRecords,
-          ExternalAttr.SponsoredChildrenRecords,
-        )
+        scopes.push(ExternalAttr.ChildrenBirthRecords)
+        if (includeSponsoredChildren) {
+          scopes.push(ExternalAttr.SponsoredChildrenRecords)
+        }
         break
       }
     }
