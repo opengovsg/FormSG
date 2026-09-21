@@ -61,18 +61,21 @@ export const buildWorkflowStep = (
     inputs.step_name = undefined
   }
 
+  // Step 1 is always "anyone with the link", represented as a static step with
+  // no emails. Legacy forms (pre #7794) may still store step 1 as dynamic with
+  // a `field` that can point at a deleted email field, which the backend
+  // rejects on save — so saving always rewrites step 1 to static, lazily
+  // migrating those forms. Nothing reads step 1's `field` at runtime; step-1
+  // notifications come from `stepOneEmailNotificationFieldId`.
   if (isFirstStep) {
-    return inputs.field
-      ? {
-          ...inputs,
-          workflow_type: WorkflowType.Dynamic,
-          field: inputs.field,
-        }
-      : {
-          ...inputs,
-          workflow_type: WorkflowType.Static,
-          emails: inputs.emails ?? [],
-        }
+    return {
+      _id: inputs._id,
+      workflow_type: WorkflowType.Static,
+      edit: inputs.edit,
+      approval_field: inputs.approval_field,
+      step_name: inputs.step_name,
+      emails: inputs.emails ?? [],
+    }
   }
 
   const workflowStepBase: FormWorkflowStepBase & { _id: string } = {

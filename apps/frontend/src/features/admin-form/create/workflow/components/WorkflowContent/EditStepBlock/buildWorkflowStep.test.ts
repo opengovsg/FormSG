@@ -40,17 +40,20 @@ describe('buildWorkflowStep', () => {
     expect(step).not.toHaveProperty(omittedKey)
   })
 
-  it.each<[string, Partial<EditStepInputs>, WorkflowType]>([
-    ['stay static when no field is chosen', {}, WorkflowType.Static],
+  // Step 1 is always static ("anyone with the link"). A legacy dynamic step 1
+  // may carry a `field` pointing at a deleted email field, which the backend
+  // rejects — saving must rewrite it to static and drop the field.
+  it.each<[string, Partial<EditStepInputs>]>([
+    ['no field is set', {}],
     [
-      'become dynamic when a field is chosen',
-      { field: FIELD_ID },
-      WorkflowType.Dynamic,
+      'a legacy dynamic field is set',
+      { workflow_type: WorkflowType.Dynamic, field: FIELD_ID },
     ],
-  ])('should %s', (_name, overrides, expected) => {
-    expect(
-      buildWorkflowStep(baseInputs(overrides), true)?.workflow_type,
-    ).toEqual(expected)
+  ])('should build the first step as static when %s', (_name, overrides) => {
+    const step = buildWorkflowStep(baseInputs(overrides), true)
+
+    expect(step?.workflow_type).toEqual(WorkflowType.Static)
+    expect(step).not.toHaveProperty('field')
   })
 
   it('should save a step with no respondent type as static with no emails', () => {
