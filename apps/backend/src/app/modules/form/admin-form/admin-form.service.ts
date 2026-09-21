@@ -19,6 +19,7 @@ import {
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
   FormFieldDto,
   FormLogoState,
   FormMetadata,
@@ -96,6 +97,7 @@ import {
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
+import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
   FormInvalidResponseModeError,
@@ -2104,6 +2106,33 @@ const withHasUsedGuidedModeWriteOnce = (
 }
 
 /**
+ * Only updates for generic consumers to the platform default the first time a form is given a webhook
+ * URL.
+ * RATIONALE: Do not set for plumber consumers since they will always be v4.
+ */
+const withGenericConsumerPlatformDefaultWebhookFormat = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateDto,
+): SettingsUpdateDto => {
+  const isGenericWebhookUrl =
+    !!body.webhook?.url &&
+    toConsumerType(getWebhookType(body.webhook.url)) === 'generic'
+  const isWebhookFormatSet = originalForm.webhook?.webhookFormat !== undefined
+
+  if (!isGenericWebhookUrl || isWebhookFormatSet) {
+    return body
+  }
+
+  return {
+    ...body,
+    webhook: {
+      ...body.webhook,
+      webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+    },
+  }
+}
+
+/**
  * Updates form settings.
  * @param originalForm The original form to update settings for
  * @param body the subset of form settings to update
@@ -2187,9 +2216,12 @@ export const updateFormSettings = (
   }
 
   const dotifiedSettingsToUpdate = dotifyObject(
-    withHasUsedGuidedModeWriteOnce(
+    withGenericConsumerPlatformDefaultWebhookFormat(
       originalForm,
-      withExpiredCloseAtCleared(originalForm, body),
+      withHasUsedGuidedModeWriteOnce(
+        originalForm,
+        withExpiredCloseAtCleared(originalForm, body),
+      ),
     ),
   )
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
