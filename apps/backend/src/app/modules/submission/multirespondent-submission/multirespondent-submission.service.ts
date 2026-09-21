@@ -1220,6 +1220,7 @@ const sendMrfInitialWebhookIfEligible = ({
   snapshot,
   webhookUrl,
   webhookFormat,
+  workflowStepCount,
   isRetryEnabled,
   growthbook,
   logMeta,
@@ -1229,6 +1230,7 @@ const sendMrfInitialWebhookIfEligible = ({
   snapshot?: SubmissionSnapshotV4
   webhookUrl: string
   webhookFormat: FormWebhook['webhookFormat']
+  workflowStepCount: number
   isRetryEnabled: boolean
   growthbook?: GrowthBook
   logMeta: CustomLoggerParams['meta']
@@ -1241,7 +1243,7 @@ const sendMrfInitialWebhookIfEligible = ({
     webhookFormat,
     isMrfWebhooksEnabled:
       growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-    workflowStepCount: submission.workflow?.length ?? 0,
+    workflowStepCount,
   })
   if (!shouldSend) {
     return
@@ -1418,6 +1420,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       snapshot,
       webhookUrl,
       webhookFormat: form.webhook?.webhookFormat,
+      workflowStepCount: form.workflow?.length ?? 0,
       isRetryEnabled: !!form.webhook?.isRetryEnabled,
       growthbook,
       logMeta,
@@ -1505,6 +1508,9 @@ export const performMultirespondentPaymentPostSubmissionActions = (
       submission,
       webhookUrl,
       webhookFormat: form.webhook?.webhookFormat,
+      workflowStepCount: checkFormIsMultirespondent(form)
+        .map((mrfForm) => mrfForm.workflow?.length ?? 0)
+        .unwrapOr(0),
       isRetryEnabled: !!form.webhook?.isRetryEnabled,
       growthbook,
       logMeta,
@@ -1785,6 +1791,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       snapshot,
       webhookUrl,
       webhookFormat: snapshottedFormDef.webhook?.webhookFormat,
+      workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
       isRetryEnabled: !!snapshottedFormDef.webhook?.isRetryEnabled,
       growthbook,
       logMeta,
