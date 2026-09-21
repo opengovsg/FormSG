@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.1.0](https://github.com/opengovsg/formsg/compare/sdk-v8.0.2...sdk-v8.1.0) (2026-09-21)
+
+
+### Features
+
+* **mrf-children:** allow Children field on MRF behind flags (2/7) (#10002) ([#10002](https://github.com/opengovsg/formsg/commit/86bab551a84e43a8f9b3122c772ebddef6052dc8))
+* **mrf-children:** include Children answers in admin responses and CSV export (6/7) (#10006) ([#10006](https://github.com/opengovsg/formsg/commit/b5c303abb1b00ffd039dc3e38f35476cb429f549))
+
 ## [8.0.2](https://github.com/opengovsg/formsg/compare/sdk-v8.0.1...sdk-v8.0.2) (2026-08-06)
 
 
