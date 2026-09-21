@@ -2,6 +2,7 @@ import type { FieldResponsesV4, FieldResponseV4 } from '@opengovsg/formsg-sdk'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import {
   BasicField,
+  FormAuthType,
   FormFieldDto,
   FormMetadata,
   FormWorkflowStepDto,
@@ -200,6 +201,9 @@ export const retrieveWorkflowStepEmailAddresses = (
  * @param formId formId, used for logging
  * @param formFields all form fields in the form. Purpose: used to validate responses against the form field properties.
  * @param responses responses to validate
+ * @param workflowStep the workflow step this submission targets (0 = initial submission)
+ * @param formAuthType the form's auth type, from the form definition
+ * @param isMrfChildrenEnabled whether the mrf-children feature flag is on; fail closed when unknown
  * @returns initial responses if all responses are valid, else an error.
  */
 export const validateMrfFieldResponses = ({
@@ -208,12 +212,18 @@ export const validateMrfFieldResponses = ({
   formFields,
   responses,
   previousResponses,
+  workflowStep,
+  formAuthType,
+  isMrfChildrenEnabled,
 }: {
   formId: string
   visibleFieldIds: FieldIdSet
   formFields: FormFieldDto[]
   responses: ParsedClearFormFieldResponsesV4
   previousResponses?: ParsedClearFormFieldResponsesV4
+  workflowStep: number
+  formAuthType: FormAuthType
+  isMrfChildrenEnabled: boolean
 }): Result<
   ParsedClearFormFieldResponsesV4,
   ValidateFieldErrorV4 | ProcessingError
@@ -233,13 +243,24 @@ export const validateMrfFieldResponses = ({
       )
     }
 
-    // Since Myinfo fields are not currently supported for MRF
+    // Children (MyInfo child records) responses are only accepted on the
+    // initial submission of a MyInfo-authed form, and only while the
+    // mrf-children feature flag is on. MyInfo sessions exist only on step 1;
+    // steps 2+ may still carry the step-1 answer forward as a non-editable
+    // response, which is compared against the previous submission upstream
+    // and skipped by checkIsResponseChangedV4 below.
     if (response.fieldType === BasicField.Children) {
-      return err(
-        new ValidateFieldErrorV4(
-          'Children field type is not supported for MRF submisisons',
-        ),
-      )
+      const isChildrenResponseAllowed =
+        isMrfChildrenEnabled &&
+        workflowStep === 0 &&
+        formAuthType === FormAuthType.MyInfo
+      if (!isChildrenResponseAllowed) {
+        return err(
+          new ValidateFieldErrorV4(
+            'Children field type is not supported for this MRF submission',
+          ),
+        )
+      }
     }
 
     const validateFieldV4Result = validateFieldV4({
@@ -290,6 +311,7 @@ export const adaptV4ResponsesForMyInfoHashCheck = (
     // Table fields have no myInfo key in the DTO union, hence the 'in' guard.
     const attr = 'myInfo' in field ? field.myInfo?.attr : undefined
     if (!attr) continue
+
     if (field.fieldType === BasicField.Children) continue
 
     const response = responses[field._id.toString()]

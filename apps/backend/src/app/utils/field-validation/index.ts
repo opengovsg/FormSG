@@ -493,12 +493,17 @@ const isValidationRequiredV4 = ({
       return ok(requiredAndVisible || (!!a.value && a.value.trim() !== ''))
     }
     case BasicField.Children: {
-      const a = response.answer as ChildrenAnswerV4
+      // Optional-chain throughout: malformed bodies can send a null answer,
+      // entries without `value`, or non-string subfield values; treat these
+      // as empty rather than throwing.
+      const a = response.answer as ChildrenAnswerV4 | null
       return ok(
         requiredAndVisible ||
-          Object.values(a).some((child) =>
-            Object.values(child.value).some(
-              (subField) => subField.value.trim() !== '',
+          Object.values(a ?? {}).some((child) =>
+            Object.values(child?.value ?? {}).some(
+              (subField) =>
+                typeof subField?.value === 'string' &&
+                subField.value.trim() !== '',
             ),
           ),
       )

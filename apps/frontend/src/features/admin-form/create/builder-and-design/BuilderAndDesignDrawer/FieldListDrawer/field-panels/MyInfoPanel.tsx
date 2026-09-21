@@ -2,8 +2,10 @@ import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
 import { Box, Text } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { Droppable } from '@hello-pangea/dnd'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   AdminFormDto,
   FormAuthType,
@@ -79,6 +81,15 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   const { data: form, isLoading } = useCreateTabForm()
 
   const { user } = useUser()
+  const isMrfChildrenEnabled = useFeatureIsOn(featureFlags.mrfChildren)
+
+  // Children fields remain admin-beta-gated everywhere; on MRF forms they
+  // additionally require the mrf-children feature flag (default off).
+  const showChildrenSection =
+    user?.betaFlags?.children &&
+    (form?.responseMode === FormResponseMode.Encrypt ||
+      (form?.responseMode === FormResponseMode.Multirespondent &&
+        isMrfChildrenEnabled))
 
   /**
    * If sgID is used, checks if the corresponding
@@ -233,8 +244,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
           </Box>
         )}
       </Droppable>
-      {user?.betaFlags?.children &&
-      form?.responseMode === FormResponseMode.Encrypt ? (
+      {showChildrenSection ? (
         <Droppable isDropDisabled droppableId={CREATE_MYINFO_CHILDREN_DROP_ID}>
           {(provided) => (
             <Box ref={provided.innerRef} {...provided.droppableProps}>
