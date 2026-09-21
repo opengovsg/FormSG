@@ -1,4 +1,10 @@
-import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormFieldDto,
+  LogicConditionState,
+  LogicDto,
+  LogicType,
+} from 'formsg-shared/types'
 
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { ErrorCodes } from 'src/app/modules/core/core.errors'
@@ -22,6 +28,80 @@ const textField = (_id: string, title: string): FormFieldDto =>
 const V1_VERSION = 2.1
 
 describe('buildV1EncryptedContent', () => {
+  it("should resolve visibility from the row's own logic, not treat every field as shown", () => {
+    // The shared flatten reads `formLogics` to decide `isVisible`, and an
+    // unanswered Address field is where that decision reaches the wire: shown,
+    // it emits the six-part empty-address placeholder storage mode sends;
+    // hidden, an empty array. Pass no logic and every field counts as shown,
+    // so a hidden address is delivered as an answered-but-blank column the
+    // admin's own download does not have.
+    const { publicKey, secretKey } = formsgSdk.crypto.generate()
+    const formFields = [
+      {
+        ...textField('gate', 'Do you live in Singapore?'),
+        fieldType: BasicField.YesNo,
+      } as unknown as FormFieldDto,
+      {
+        ...textField('addr', 'Your address'),
+        fieldType: BasicField.Address,
+        required: false,
+      } as unknown as FormFieldDto,
+    ]
+    const formLogics: LogicDto[] = [
+      {
+        _id: 'logic-1',
+        logicType: LogicType.ShowFields,
+        conditions: [
+          { field: 'gate', state: LogicConditionState.Equal, value: 'Yes' },
+        ],
+        show: ['addr'],
+      },
+    ]
+    // The gate says "No", so `addr` is hidden and was never answered.
+    const v4Responses = {
+      gate: { fieldType: BasicField.YesNo, answer: { value: 'No' } },
+    }
+
+    const withLogic = formsgSdk.crypto.decrypt(secretKey, {
+      encryptedContent: buildV1EncryptedContent({
+        v4Responses,
+        formFields,
+        formLogics,
+        formPublicKey: publicKey,
+        myInfoReadOnlyFieldIds: [],
+        logMeta: LOG_META,
+      })._unsafeUnwrap(),
+      version: V1_VERSION,
+    })
+    const withoutLogic = formsgSdk.crypto.decrypt(secretKey, {
+      encryptedContent: buildV1EncryptedContent({
+        v4Responses,
+        formFields,
+        formLogics: [],
+        formPublicKey: publicKey,
+        myInfoReadOnlyFieldIds: [],
+        logMeta: LOG_META,
+      })._unsafeUnwrap(),
+      version: V1_VERSION,
+    })
+
+    const addressOf = (content: typeof withLogic) =>
+      content?.responses.find((response) => response._id === 'addr')
+
+    // Hidden: an empty array, which is what the admin's own CSV shows.
+    expect(addressOf(withLogic)?.answerArray).toEqual([])
+    // Treated as shown: the six-part empty-address placeholder, delivered as
+    // though the respondent had seen the field and left it blank.
+    expect(addressOf(withoutLogic)?.answerArray).toEqual([
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+    ])
+  })
+
   it('should produce content the FORM secret key recovers, through the storage-mode class', () => {
     // Arrange
     const { publicKey, secretKey } = formsgSdk.crypto.generate()
