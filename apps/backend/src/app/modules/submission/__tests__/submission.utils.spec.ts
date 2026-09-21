@@ -17,6 +17,10 @@ import {
 } from '../../../../types'
 import { VerifyJwtError } from '../../spcp/spcp.errors'
 import {
+  SnapshotWriteError,
+  V1ContentProductionError,
+} from '../multirespondent-submission/webhook/submission-snapshot.errors'
+import {
   AttachmentSizeLimitExceededError,
   AttachmentUploadError,
   DownloadCleanFileFailedError,
@@ -156,6 +160,21 @@ describe('submission.utils', () => {
         StatusCodes.BAD_REQUEST,
         'Response for the Yes/No field for this approval step is not found',
         'mrf.expectedResponseNotFound',
+      ],
+      // A storage blip or an unrepresentable field must not reach the
+      // respondent as an unexplained server error: both map to the same real
+      // status and message as any other failure to save.
+      [
+        new SnapshotWriteError(),
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        'Failed to save submission. Please try again later.',
+        'saveFailed',
+      ],
+      [
+        new V1ContentProductionError(),
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        'Failed to save submission. Please try again later.',
+        'saveFailed',
       ],
     ])(
       'should include message key for migrated submission error %#',

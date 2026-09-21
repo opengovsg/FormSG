@@ -1,14 +1,18 @@
 import { FormWebhook } from 'formsg-shared/types'
 
+import { createLoggerWithLabel } from '../../../../config/logger'
 import {
   getWebhookType,
   toConsumerType,
 } from '../../../webhook/webhook.service'
 
+import { SnapshotContentFormat } from './submission-snapshot.schema'
 import {
   resolveWebhookContentFormat,
   WebhookConsumerType,
 } from './webhook-payload-policy'
+
+const logger = createLoggerWithLabel(module)
 
 export const MAX_V1_WORKFLOW_STEP_COUNT = 1
 
@@ -34,14 +38,13 @@ export const shouldSendMrfWebhook = ({
     webhookType: webhookConsumerType,
     webhookFormat,
   })
-  // RATIONALE: v1 payloads can only support forms with <= 1 workflow steps.
-  const isV1WorkflowLimitExceeded =
-    webhookContentFormat === 'v1' &&
-    workflowStepCount > MAX_V1_WORKFLOW_STEP_COUNT
-  return !isV1WorkflowLimitExceeded
+  return (
+    webhookContentFormat !== 'v1' ||
+    workflowStepCount <= MAX_V1_WORKFLOW_STEP_COUNT
+  )
 }
 
-export const shouldWriteV4Snapshot = ({
+export const resolveMrfWebhookContentFormat = ({
   mrfVersion,
   webhook,
   isMrfWebhooksEnabled,
@@ -50,14 +53,15 @@ export const shouldWriteV4Snapshot = ({
   mrfVersion: number
   webhook?: {
     url?: string
-    isRetryEnabled?: boolean
     webhookFormat?: FormWebhook['webhookFormat']
   }
   isMrfWebhooksEnabled: boolean
   workflowStepCount: number
-}): boolean => {
+}): SnapshotContentFormat | undefined => {
   const url = webhook?.url
-  if (mrfVersion !== 2 || !url || !webhook?.isRetryEnabled) return false
+  if (mrfVersion !== 2 || !url) {
+    return undefined
+  }
 
   const webhookConsumerType = toConsumerType(getWebhookType(url))
   if (
@@ -68,13 +72,43 @@ export const shouldWriteV4Snapshot = ({
       workflowStepCount,
     })
   ) {
-    return false
+    return undefined
   }
 
-  return (
-    resolveWebhookContentFormat({
-      webhookType: webhookConsumerType,
-      webhookFormat: webhook.webhookFormat,
-    }) === 'v4'
-  )
+  const webhookContentFormat = resolveWebhookContentFormat({
+    webhookType: webhookConsumerType,
+    webhookFormat: webhook.webhookFormat,
+  })
+  return webhookContentFormat === 'v3' ? undefined : webhookContentFormat
+}
+
+export const shouldWriteMrfSnapshot = ({
+  webhookContentFormat,
+  isRetryEnabled,
+}: {
+  webhookContentFormat: SnapshotContentFormat | undefined
+  isRetryEnabled?: boolean
+}): boolean => webhookContentFormat !== undefined && !!isRetryEnabled
+
+export const holdsV1FirstStepInvariant = ({
+  submissionIndex,
+  logMeta,
+}: {
+  submissionIndex: number
+  logMeta: Record<string, unknown>
+}): boolean => {
+  if (submissionIndex === 0) {
+    return true
+  }
+
+  logger.error({
+    message:
+      'V1 webhook content format resolved for a submission past its first step',
+    meta: {
+      action: 'holdsV1FirstStepInvariant',
+      ...logMeta,
+      submissionIndex,
+    },
+  })
+  return false
 }
