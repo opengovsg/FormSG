@@ -12,9 +12,9 @@ import BrandHortSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
 import BrandHortDarkSvg from '~assets/svgs/brand/brand-hort-dark.svg?react'
 import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
 import BrandMarkDarkSvg from '~assets/svgs/brand/brand-mark-dark.svg?react'
-import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Link from '~components/Link'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 type PublicHeaderLinkProps = {
   label: string

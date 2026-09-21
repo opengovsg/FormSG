@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box, VisuallyHidden } from '@chakra-ui/react'
 
-import { baseEmailValidationFn } from '~utils/fieldValidation'
 import { EmailFieldInput, EmailFieldProps } from '~templates/Field/Email'
 import { EmailFieldSchema } from '~templates/Field/types'
+import { baseEmailValidationFn } from '~utils/fieldValidation'
 
 import { VerifiableFieldContainer } from '../components/VerifiableFieldContainer'
 import { VerifiableFieldSchema } from '../types'

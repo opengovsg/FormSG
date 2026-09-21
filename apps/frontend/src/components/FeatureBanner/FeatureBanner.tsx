@@ -7,9 +7,9 @@ import {
   VStack,
 } from '@chakra-ui/react'
 
-import { BannerVariant } from '~theme/components/Banner'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { useIsMobile } from '~hooks/useIsMobile'
+import { BannerVariant } from '~theme/components/Banner'
 
 import { textStyles } from '../../theme/textStyles'
 

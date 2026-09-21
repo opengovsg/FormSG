@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiMenuAltLeft, BiPlus } from 'react-icons/bi'
+
 import { Flex, FlexProps, Text, useDisclosure } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'

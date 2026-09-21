@@ -9,7 +9,6 @@ import mongoose from 'mongoose'
 import { UpdateFieldData } from 'src/types'
 
 import getVerificationModel from '../verification.model'
-
 import {
   generateFieldParams,
   generatePaymentContactFieldParams,

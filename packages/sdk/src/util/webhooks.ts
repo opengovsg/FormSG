@@ -1,7 +1,6 @@
 import * as url from 'url'
 
 import { WebhookAuthenticateError } from '../errors'
-
 import { HeaderSignature } from './parser'
 import { verify } from './signature'
 

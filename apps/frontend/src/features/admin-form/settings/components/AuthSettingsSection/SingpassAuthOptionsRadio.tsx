@@ -5,6 +5,7 @@ import {
   useCallback,
   useState,
 } from 'react'
+
 import { Box, Flex, Spacer } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from 'formsg-shared/types'
@@ -14,7 +15,6 @@ import { Tag } from '~components/Tag'
 
 import { useMutateFormSettings } from '../../mutations'
 import { isEsrvcidRequired } from '../utils'
-
 import { FORM_SINGPASS_AUTHTYPES } from './constants'
 import { EsrvcIdBox } from './EsrvcIdBox'
 

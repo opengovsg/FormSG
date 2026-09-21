@@ -3,7 +3,6 @@ import { RequestHandler } from 'express'
 import helmet from 'helmet'
 
 import config from '../../config/config'
-
 import { CSP_CORE_DIRECTIVES } from './constants'
 
 const helmetMiddlewares = () => {

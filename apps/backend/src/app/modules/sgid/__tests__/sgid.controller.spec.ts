@@ -18,7 +18,6 @@ import {
   SgidInvalidStateError,
 } from '../sgid.errors'
 import { SgidService as RealSgidService } from '../sgid.service'
-
 import {
   MOCK_AUTH_CODE,
   MOCK_CODE_VERIFIER,

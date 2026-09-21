@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Controller, FieldErrors, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
+
 import {
   Box,
   Button,
@@ -18,15 +19,14 @@ import {
 
 import { MAX_UPLOAD_FILE_SIZE } from 'formsg-shared/constants'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import { NextAndBackButtonGroup } from '~components/Button'
 import Attachment from '~components/Field/Attachment'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { ModalCloseButton } from '~components/Modal'
 import { ProgressIndicator } from '~components/ProgressIndicator/ProgressIndicator'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
-
 import carouselImage1 from './carouselImages/image-carousel-1.png'
 import carouselImage2 from './carouselImages/image-carousel-2.png'
 import carouselImage3 from './carouselImages/image-carousel-3.png'

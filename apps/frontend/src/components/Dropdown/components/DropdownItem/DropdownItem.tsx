@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+
 import { Flex, Icon, ListItem, Stack, Text } from '@chakra-ui/react'
 
 import { useSelectContext } from '~components/Dropdown/SelectContext'
@@ -10,7 +11,6 @@ import {
   itemToIcon,
   itemToLabelString,
 } from '../../utils/itemUtils'
-
 import { DropdownItemTextHighlighter } from './DropdownItemTextHighlighter'
 
 export interface DropdownItemProps {

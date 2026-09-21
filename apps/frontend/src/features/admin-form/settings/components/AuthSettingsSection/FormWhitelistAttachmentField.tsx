@@ -6,6 +6,7 @@ import {
   useForm,
 } from 'react-hook-form'
 import { useParams } from 'react-router'
+
 import { Box, Skeleton } from '@chakra-ui/react'
 
 import { KB } from 'formsg-shared/constants'
@@ -15,12 +16,11 @@ import {
 } from 'formsg-shared/types'
 import { VALID_WHITELIST_FILE_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
-import { parseCsvFile } from '~utils/parseCsvFile'
 import Attachment from '~components/Field/Attachment'
 import { BaseFieldProps, FieldContainer } from '~templates/Field/FieldContainer'
+import { parseCsvFile } from '~utils/parseCsvFile'
 
 import { useMutateFormSettings } from '../../mutations'
-
 import { SecretKeyDownloadWhitelistFileModal } from './SecretKeyDownloadWhitelistFileModal'
 
 interface FormWhitelistAttachmentFieldProps {

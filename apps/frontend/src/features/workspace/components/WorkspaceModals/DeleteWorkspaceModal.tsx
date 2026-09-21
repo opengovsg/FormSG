@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import {
   Modal,
   ModalBody,
@@ -15,8 +16,8 @@ import {
 
 import { Workspace } from 'formsg-shared/types/workspace'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useWorkspaceMutations } from '~features/workspace/mutations'
 

@@ -2,7 +2,6 @@ import { DateSelectedValidation, InvalidDaysOptions } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 
 import { IDateFieldSchema } from '../../../types'
-
 import { MyInfoSchema } from './baseField'
 
 const createDateFieldSchema = () => {

@@ -7,7 +7,7 @@ import {
 } from './errors'
 
 // NOTE: need to use require to avoid module path resolution issues.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+// oxlint-disable-next-line typescript/no-require-imports
 const chromium = require('@sparticuz/chromium')
 
 /**

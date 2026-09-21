@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
+
 import { Flex, Text } from '@chakra-ui/react'
 import { delay } from 'lodash'
 
-import { getSsoAuthUrl } from '~services/AuthService'
 import Button from '~components/Button'
+import { getSsoAuthUrl } from '~services/AuthService'
 
 export const SsoLoginButton = (): JSX.Element | null => {
   const [isRetryDelayWindow, setRetryDelayWindow] = useState(false)

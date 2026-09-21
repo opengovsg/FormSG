@@ -66,7 +66,6 @@ import {
 import { InvalidSubmissionIdError } from '../feedback/feedback.errors'
 import { PaymentNotFoundError } from '../payments/payments.errors'
 import * as PaymentsService from '../payments/payments.service'
-
 import { PRESIGNED_ATTACHMENT_POST_EXPIRY_SECS } from './submission.constants'
 import {
   AttachmentSizeLimitExceededError,

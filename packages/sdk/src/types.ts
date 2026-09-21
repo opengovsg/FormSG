@@ -51,6 +51,7 @@ export type FormFieldsV3 = Record<
   string,
   {
     fieldType: FieldType
+    // oxlint-disable-next-line typescript/no-explicit-any -- downstream code (adapt-v3-to-v4.ts) branches on fieldType to interpret this; narrowing to a real per-fieldType union is a follow-up, not mechanical
     answer: any // too complex to represent here
   }
 >
@@ -88,12 +89,14 @@ export interface DecryptParamsV3 {
 
 export type DecryptedContent = {
   responses: FormField[]
+  // oxlint-disable-next-line typescript/no-explicit-any -- processDecryptedContent.ts expects Record<string, string>; widening to unknown breaks that call site, needs a real shape decision
   verified?: Record<string, any>
 }
 
 export type DecryptedContentV3 = {
   submissionSecretKey: string
   responses: FormFieldsV3
+  // oxlint-disable-next-line typescript/no-explicit-any -- processDecryptedContent.ts expects Record<string, string>; widening to unknown breaks that call site, needs a real shape decision
   verified?: Record<string, any>
 }
 

@@ -7,6 +7,7 @@ import {
   useMemo,
   useState,
 } from 'react'
+
 import { ThemingProps } from '@chakra-ui/react'
 import cuid from 'cuid'
 import {
@@ -20,7 +21,6 @@ import { inRange } from 'lodash'
 import { useKey } from 'rooks'
 
 import { CalendarProps } from '../Calendar'
-
 import { DateRangeValue } from './types'
 import {
   generateClassNameForDate,

@@ -1,13 +1,14 @@
 import { KeyboardEventHandler, useCallback } from 'react'
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, Skeleton, Stack } from '@chakra-ui/react'
 import { isEmpty } from 'lodash'
 
-import { useFormTitleValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import { useFormTitleValidationRules } from '~utils/formValidation'
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'

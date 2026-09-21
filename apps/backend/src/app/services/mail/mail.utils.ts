@@ -10,7 +10,6 @@ import { BounceType, EmailRespondentConfirmationField } from '../../../types'
 import { paymentConfig } from '../../config/features/payment.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
-
 import {
   AutoreplyPdfGenerationError,
   MailGenerationError,

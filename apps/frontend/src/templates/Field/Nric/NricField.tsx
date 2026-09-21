@@ -3,8 +3,8 @@
  */
 import { useFormContext } from 'react-hook-form'
 
-import { useNricValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
+import { useNricValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { NricFieldSchema, SingleAnswerFieldInput } from '../types'

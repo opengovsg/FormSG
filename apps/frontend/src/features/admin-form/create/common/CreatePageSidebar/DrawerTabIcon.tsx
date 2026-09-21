@@ -1,4 +1,5 @@
 import { GoDotFill } from 'react-icons/go'
+
 import { Box, Flex, Icon, Text } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'

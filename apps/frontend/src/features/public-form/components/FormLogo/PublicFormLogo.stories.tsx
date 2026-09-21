@@ -1,4 +1,5 @@
 import { MemoryRouter } from 'react-router-dom'
+
 import { Meta, StoryFn } from '@storybook/react'
 
 import { FormLogoState } from 'formsg-shared/types/form/form_logo'
@@ -12,7 +13,6 @@ import {
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 import { FormSectionsProvider } from '../FormFields/FormSectionsContext'
-
 import { PublicFormLogo } from './PublicFormLogo'
 
 export default {

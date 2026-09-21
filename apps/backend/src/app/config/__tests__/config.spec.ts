@@ -16,7 +16,7 @@ describe('config', () => {
       delete process.env.SUBMISSION_HISTORY_V4_S3_BUCKET
 
       // Act + Assert
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // oxlint-disable-next-line typescript/no-require-imports
       expect(() => require('../config')).toThrow()
     })
 
@@ -26,7 +26,7 @@ describe('config', () => {
         'local-submission-history-v4-bucket'
 
       // Act
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      // oxlint-disable-next-line typescript/no-require-imports
       const config = require('../config')
 
       // Assert

@@ -1,5 +1,6 @@
 import { ChangeEventHandler, ReactNode, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   Checkbox as ChakraCheckbox,
@@ -16,7 +17,6 @@ import { CHECKBOX_THEME_KEY } from '~/theme/components/Checkbox'
 import { FieldColorScheme } from '~/theme/foundations/colours'
 
 import Input, { InputProps } from '../Input'
-
 import { CheckboxOthersContext, useCheckboxOthers } from './useCheckboxOthers'
 
 export interface CheckboxProps extends ChakraCheckboxProps {

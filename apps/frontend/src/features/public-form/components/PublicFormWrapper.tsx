@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
+
 import { Flex, Spacer } from '@chakra-ui/react'
 
 import { FormColorTheme } from 'formsg-shared/types'
 
 import { usePublicFormContext } from '../PublicFormContext'
-
 import SectionSidebar from './SectionSidebar'
 
 export interface BgColorProps {

@@ -7,7 +7,6 @@ import {
   IAdminVerificationSchema,
   UpsertOtpParams,
 } from '../../types'
-
 import { USER_SCHEMA_ID } from './user.server.model'
 
 export const ADMIN_VERIFICATION_SCHEMA_ID = 'AdminVerification'

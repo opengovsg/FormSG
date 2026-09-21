@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+
 import { Box, BoxProps } from '@chakra-ui/react'
 
 import { MotionBox } from '~templates/MotionBox'

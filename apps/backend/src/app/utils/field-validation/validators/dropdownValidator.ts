@@ -14,7 +14,6 @@ import {
 } from '../../../../types/field/utils/validation'
 import { getMyInfoFieldOptions } from '../../../modules/myinfo/myinfo.util'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
-
 import { notEmptySingleAnswerResponse } from './common'
 import { isOneOfOptions } from './options'
 

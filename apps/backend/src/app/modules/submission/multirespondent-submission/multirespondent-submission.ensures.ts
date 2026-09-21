@@ -7,7 +7,6 @@ import { Middleware } from '../../../utils/pipeline-middleware'
 import { FormRespondentNotWhitelistedError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { mapRouteError, sendRouteError } from '../submission.utils'
-
 import {
   ProcessedMultirespondentSubmissionHandlerType,
   SubmitMultirespondentFormHandlerRequest,

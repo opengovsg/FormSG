@@ -1,4 +1,5 @@
 import type { Merge } from 'type-fest'
+
 import { DateString } from '../generic'
 import { SubmissionResponseDto } from '../submission'
 import { FormDto } from './form'

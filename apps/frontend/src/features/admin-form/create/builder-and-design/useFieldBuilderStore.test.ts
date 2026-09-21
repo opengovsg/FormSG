@@ -1,7 +1,7 @@
 import { BasicField } from 'formsg-shared/types'
 
-import { getFieldCreationMeta } from './utils/fieldCreation'
 import { FieldBuilderState, useFieldBuilderStore } from './useFieldBuilderStore'
+import { getFieldCreationMeta } from './utils/fieldCreation'
 
 const emailField = getFieldCreationMeta(BasicField.Email)
 

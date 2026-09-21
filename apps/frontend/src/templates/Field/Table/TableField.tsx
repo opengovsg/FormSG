@@ -3,6 +3,7 @@ import { useFieldArray, useFormContext, useFormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
 import { useTable } from 'react-table'
+
 import {
   Box,
   Table,
@@ -18,20 +19,19 @@ import simplur from 'simplur'
 
 import { FormColorTheme, Language } from 'formsg-shared/types'
 
+import FormErrorMessage from '~components/FormControl/FormErrorMessage'
+import IconButton from '~components/IconButton'
 import { useHasChanged } from '~hooks/useHasChanged'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { getValueInSelectedLanguage } from '~utils/multiLanguage'
-import FormErrorMessage from '~components/FormControl/FormErrorMessage'
-import IconButton from '~components/IconButton'
 
 import { BaseFieldProps } from '../FieldContainer'
 import { TableFieldInputs, TableFieldSchema } from '../types'
-
-import { createTableRow } from './utils/createRow'
 import { AddRowFooter } from './AddRowFooter'
 import { ColumnCell } from './ColumnCell'
 import { ColumnHeader } from './ColumnHeader'
 import { TableFieldContainer } from './TableFieldContainer'
+import { createTableRow } from './utils/createRow'
 
 export interface TableFieldProps extends BaseFieldProps {
   schema: TableFieldSchema

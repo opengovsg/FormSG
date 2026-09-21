@@ -2,13 +2,14 @@ import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import { useLocalStorage } from 'react-use'
+
 import { Stack } from '@chakra-ui/react'
 import { StatusCodes } from 'http-status-codes'
 
+import Spinner from '~components/Spinner'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { DASHBOARD_ROUTE, LOGIN_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
-import Spinner from '~components/Spinner'
 
 export const OneHoldingPage = () => {
   const { t } = useTranslation()

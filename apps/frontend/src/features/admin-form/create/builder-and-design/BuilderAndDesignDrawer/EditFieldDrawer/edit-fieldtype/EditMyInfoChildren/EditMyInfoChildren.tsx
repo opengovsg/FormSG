@@ -1,25 +1,25 @@
 import { Controller } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
+
 import { Box, HStack, Icon, Text, VStack } from '@chakra-ui/react'
 import { extend } from 'lodash'
 
 import { MyInfoChildAttributes } from 'formsg-shared/types'
 
-import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
+import { SINGPASS_FAQ } from '~constants/links'
 
 import { CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS } from '~features/admin-form/create/builder-and-design/constants'
 
+import { ChildrenCompoundFieldMyInfo } from '.'
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
 import { extendWithMyInfo } from '../EditMyInfo/utils'
-
-import { ChildrenCompoundFieldMyInfo } from '.'
 
 const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {
   return (

@@ -68,9 +68,9 @@ export type IPopulatedWebhookSubmission = (
 
 export interface ISubmissionSchema extends SubmissionBase, Document {
   // `any` allows for population and correct typing
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   form: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   paymentId: any
 
   created?: Date
@@ -142,7 +142,7 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
 export interface IEmailSubmissionSchema
   extends EmailModeSubmissionBase, ISubmissionSchema {
   // Allows for population and correct typing
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   form: any
   submissionType: SubmissionType.Email
   getWebhookView(): Promise<null>
@@ -150,9 +150,9 @@ export interface IEmailSubmissionSchema
 export interface IEncryptedSubmissionSchema
   extends StorageModeSubmissionBase, ISubmissionSchema {
   // Allows for population and correct typing
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   form: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   paymentId: any
 
   submissionType: SubmissionType.Encrypt
@@ -161,9 +161,9 @@ export interface IEncryptedSubmissionSchema
 export interface IMultirespondentSubmissionSchema
   extends MultirespondentSubmissionBase, ISubmissionSchema {
   // Allows for population and correct typing
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   form: any
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   paymentId: any
   submissionType: SubmissionType.Multirespondent
   getWebhookView(): Promise<WebhookView>

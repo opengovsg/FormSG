@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import {
   Modal,
   ModalBody,
@@ -12,12 +13,12 @@ import {
 
 import { SmsCountsDto } from 'formsg-shared/types/form'
 
-import { CONTACT_US } from '~constants/links'
-import { useIsMobile } from '~hooks/useIsMobile'
 import Badge from '~components/Badge'
 import Button from '~components/Button'
 import Link from '~components/Link'
 import Spinner from '~components/Spinner'
+import { CONTACT_US } from '~constants/links'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { formatSmsCounts } from './utils'
 

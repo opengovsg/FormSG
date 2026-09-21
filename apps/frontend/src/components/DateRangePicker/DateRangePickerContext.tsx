@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from 'react'
+
 import {
   CSSObject,
   FormControlProps,
@@ -23,8 +24,8 @@ import {
 } from '@chakra-ui/react'
 import { format, isValid, parse } from 'date-fns'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import { DateRangeValue } from '~components/Calendar'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { DateRangePickerProps } from './DateRangePicker'
 

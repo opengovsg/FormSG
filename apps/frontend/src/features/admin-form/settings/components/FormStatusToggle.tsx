@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import { BasicField } from 'formsg-shared/types'
@@ -17,7 +18,6 @@ import { useIncompleteWorkflowStepLabels } from '~features/admin-form/create/wor
 
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
-
 import { EmailModeConvertModal } from './EmailModeConvertModal'
 import { IncompleteWorkflowModal } from './IncompleteWorkflowModal'
 import { SecretKeyActivationModal } from './SecretKeyActivationModal'

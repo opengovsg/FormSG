@@ -7,7 +7,7 @@ import RateLimit, {
 jest.mock('express-rate-limit')
 const MockRateLimit = jest.mocked(RateLimit)
 
-// eslint-disable-next-line import/first
+// oxlint-disable-next-line import/first
 import { limitRate } from 'src/app/utils/limit-rate'
 
 /**

@@ -3,7 +3,6 @@ import { FormAuthType } from 'formsg-shared/types'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { retrieveJsonContent } from '../../../utils/iac'
 import { CpOidcClient, SpOidcClient } from '../spcp.oidc.client'
-
 import { CpOidcServiceClass } from './spcp.oidc.service.cp'
 import { SpOidcServiceClass } from './spcp.oidc.service.sp'
 import { OidcServiceType } from './spcp.oidc.service.types'

@@ -1,4 +1,5 @@
 import { RemoveScroll } from 'react-remove-scroll'
+
 import {
   Modal,
   ModalContent,
@@ -29,7 +30,7 @@ export const CollaboratorModal = ({
   })
   return (
     <Modal size={modalSize} isOpen={isOpen} onClose={onClose}>
-      {/* HACK: Chakra isn't able to cleanly handle nested scroll locks https://github.com/chakra-ui/chakra-ui/issues/7723 
+      {/* HACK: Chakra isn't able to cleanly handle nested scroll locks https://github.com/chakra-ui/chakra-ui/issues/7723
           We'll override chakra's <RemoveScroll /> manually as react-remove-scroll give priority to the latest mounted instance 
       */}
       <RemoveScroll>

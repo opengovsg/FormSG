@@ -1,18 +1,19 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl } from '@chakra-ui/react'
 import { extend, pick } from 'lodash'
 
 import { WorkflowType } from 'formsg-shared/types'
 import { DropdownFieldBase } from 'formsg-shared/types/field'
 
-import { createBaseValidationRules } from '~utils/fieldValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import InlineMessage from '~components/InlineMessage'
 import Input from '~components/Input'
 import Textarea from '~components/Textarea'
 import Toggle from '~components/Toggle'
+import { createBaseValidationRules } from '~utils/fieldValidation'
 
 import { useAdminFormWorkflow } from '../../../../../../create/workflow/hooks/useAdminFormWorkflow'
 import { CreatePageDrawerContentContainer } from '../../../../../common'

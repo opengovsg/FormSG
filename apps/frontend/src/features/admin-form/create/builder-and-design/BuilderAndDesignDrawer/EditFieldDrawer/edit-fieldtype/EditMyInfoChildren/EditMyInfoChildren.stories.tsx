@@ -11,8 +11,8 @@ import { createFormBuilderMocks } from '~/mocks/msw/handlers/admin-form'
 
 import { EditFieldDrawerDecorator, StoryRouter } from '~utils/storybook'
 
-import { EditMyInfoChildren } from './EditMyInfoChildren'
 import { ChildrenCompoundFieldMyInfo } from '.'
+import { EditMyInfoChildren } from './EditMyInfoChildren'
 
 type StoryField = ChildrenCompoundFieldMyInfo & { _id: FormFieldDto['_id'] }
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
@@ -12,7 +13,6 @@ import {
   VerifiableFieldInput,
   VerifiableFieldValues,
 } from '../types'
-
 import {
   MobileField as MobileFieldComponent,
   MobileFieldProps,
@@ -70,7 +70,7 @@ const Template: StoryFn<StoryMobileFieldProps> = ({
       formMethods.trigger()
     }
     // Only want it to run once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [])
 
   return (

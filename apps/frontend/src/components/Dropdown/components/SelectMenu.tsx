@@ -1,11 +1,11 @@
 import { Virtuoso } from 'react-virtuoso'
+
 import { List, ListItem } from '@chakra-ui/react'
 import { FloatingPortal } from '@floating-ui/react'
 
 import { VIRTUAL_LIST_OVERSCAN_HEIGHT } from '../constants'
 import { useSelectContext } from '../SelectContext'
 import { itemToValue } from '../utils/itemUtils'
-
 import { DropdownItem } from './DropdownItem'
 import { useSelectPopover } from './SelectPopover'
 

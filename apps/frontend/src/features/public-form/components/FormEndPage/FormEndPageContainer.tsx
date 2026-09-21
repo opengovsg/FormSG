@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+
 import { Box } from '@chakra-ui/react'
 
 import { FormResponseMode } from 'formsg-shared/types'

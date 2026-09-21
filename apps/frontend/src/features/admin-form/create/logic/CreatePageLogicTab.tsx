@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
+
 import { Box, Container, Flex, Spacer } from '@chakra-ui/react'
 
 import IconButton from '~components/IconButton'
 
+import { useAdminLogicStore } from './adminLogicStore'
 import { EmptyLogic } from './components/EmptyLogic'
 import { LogicContent } from './components/LogicContent'
 import { LogicSkeleton } from './components/LogicSkeleton'
 import { useAdminFormLogic } from './hooks/useAdminFormLogic'
-import { useAdminLogicStore } from './adminLogicStore'
 
 export const CreatePageLogicTab = (): JSX.Element => {
   const { t } = useTranslation()

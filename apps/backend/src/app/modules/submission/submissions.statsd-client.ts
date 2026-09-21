@@ -2,7 +2,6 @@ import { ResponseMetadata } from 'formsg-shared/types'
 import { Tags } from 'hot-shots'
 
 import { statsdClient } from '../../config/datadog-statsd-client'
-
 import { getNormalisedResponseTime } from './submission.utils'
 
 export const submissionsStatsdClient = statsdClient.childClient({

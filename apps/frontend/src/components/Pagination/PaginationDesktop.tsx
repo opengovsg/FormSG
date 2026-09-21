@@ -5,6 +5,7 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight } from 'react-icons/bi'
+
 import {
   Box,
   Button,
@@ -14,8 +15,8 @@ import {
   useMultiStyleConfig,
 } from '@chakra-ui/react'
 
-import { PAGINATION_THEME_KEY } from '~theme/components/Pagination'
 import { usePaginationRange } from '~hooks/usePaginationRange'
+import { PAGINATION_THEME_KEY } from '~theme/components/Pagination'
 
 import { PaginationProps } from './Pagination'
 

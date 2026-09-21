@@ -1,12 +1,13 @@
 import { RegisterOptions } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, FormControlProps, Skeleton } from '@chakra-ui/react'
 
-import { useFormTitleValidationRules } from '~utils/formValidation'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormFieldMessage from '~components/FormControl/FormFieldMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import Input from '~components/Input'
+import { useFormTitleValidationRules } from '~utils/formValidation'
 
 import {
   CreateFormWizardInputProps,

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Skeleton, Wrap } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
@@ -6,7 +7,6 @@ import Badge from '~components/Badge'
 import { useResponseModeBadgeLabel } from '~features/admin-form/common/useResponseModeBadgeLabel'
 
 import { useAdminFormSettings } from '../queries'
-
 import { CategoryHeader } from './CategoryHeader'
 
 export const GeneralTabHeader = (): JSX.Element => {

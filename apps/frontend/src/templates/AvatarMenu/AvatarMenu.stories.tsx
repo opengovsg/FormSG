@@ -1,7 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react'
 
 import Menu from '../../components/Menu'
-
 import { AvatarMenu, AvatarMenuDivider, AvatarMenuProps } from './AvatarMenu'
 
 const DEFAULT_MENU_ITEMS = (

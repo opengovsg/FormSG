@@ -7,6 +7,7 @@ This SDK provides convenient utilities for verifying FormSG webhooks and decrypt
 This package used to live at [`opengovsg/formsg-javascript-sdk`](https://github.com/opengovsg/formsg-javascript-sdk) and is now developed in the main FormSG monorepo under [`packages/sdk`](./). It is still published to npm as [`@opengovsg/formsg-sdk`](https://www.npmjs.com/package/@opengovsg/formsg-sdk); starting with this migration the major version is bumped to `v7` to track the FormSG monorepo.
 
 Not using JavaScript? Check out our sister SDKs:
+
 - [formsg-python-sdk](https://github.com/opengovsg/formsg-python-sdk)
 
 ## Installation
@@ -198,8 +199,6 @@ These fields will be available if the submission is a payment submission, otherw
 | productService | string           | The product or service name of the payment       |
 | dateTime       | string           | The time of which this payment was transacted    |
 | transactionFee | string           | The fees charged for this transaction            |
-
-
 
 ## Verifying Signatures Manually
 

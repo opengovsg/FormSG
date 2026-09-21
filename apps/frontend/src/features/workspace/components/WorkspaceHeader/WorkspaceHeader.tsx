@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
+
 import {
   Box,
   Flex,
@@ -10,14 +11,13 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
-import { useIsDesktop, useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { useIsDesktop, useIsMobile } from '~hooks/useIsMobile'
 
 import { useWorkspaceContext } from '~features/workspace/WorkspaceContext'
 
 import { MobileWorkspaceSearchbar } from '../WorkspaceSearchbar/MobileWorkspaceSearchbar'
 import { WorkspaceSearchbar } from '../WorkspaceSearchbar/WorkspaceSearchbar'
-
 import { WorkspaceEditMenu } from './WorkspaceEditMenu'
 
 export interface WorkspaceHeaderProps {

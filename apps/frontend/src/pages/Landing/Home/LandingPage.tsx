@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
+
 import {
   Accordion,
   Box,
@@ -23,6 +24,8 @@ import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 
 import { BxlGithub } from '~assets/icons/BxlGithub'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
+import Button from '~components/Button'
+import { MarkdownText } from '~components/MarkdownText'
 import {
   FORM_GUIDE,
   GUIDE_DATA_CLASSIFICATION,
@@ -34,8 +37,6 @@ import {
 import { LOGIN_ROUTE } from '~constants/routes'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
-import Button from '~components/Button'
-import { MarkdownText } from '~components/MarkdownText'
 import { LottieAnimation } from '~templates/LottieAnimation'
 
 import { ExternalFormLink } from '../components/ExternalFormLink'
@@ -48,7 +49,6 @@ import { OrderedListIcon } from '../components/OrderedListIcon'
 import { SectionBodyText } from '../components/SectionBodyText'
 import { SectionTitleText } from '../components/SectionTitleText'
 import { StatsItem } from '../components/StatsItem'
-
 import formsHeroAnimation from './assets/images/animation-hero.json'
 import enterEmailAnimation from './assets/images/animation-typing.json'
 import helpCenterImg from './assets/images/help_center.svg'

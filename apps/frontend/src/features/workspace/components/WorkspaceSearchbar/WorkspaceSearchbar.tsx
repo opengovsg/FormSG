@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiFilter, BiSearch } from 'react-icons/bi'
+
 import {
   Divider,
   forwardRef,
@@ -125,7 +126,7 @@ export const WorkspaceSearchbar = forwardRef<WorkspaceSearchbarProps, 'input'>(
       observer.observe(filterRef.current)
 
       return () => {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        // oxlint-disable-next-line react/exhaustive-deps
         filterRef.current && observer.unobserve(filterRef.current)
       }
     }, [])

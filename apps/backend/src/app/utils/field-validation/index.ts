@@ -36,7 +36,6 @@ import {
   ProcessedSingleAnswerResponse,
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
-
 import {
   constructAddressFieldValidator,
   constructAttachmentFieldValidator,

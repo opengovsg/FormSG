@@ -3,7 +3,9 @@
 // BEFORE
 // A: Count number of forms belonging to RP students.
 {
-  let rpStudentUserIds = db.users.find({ email: /.+myrp\.edu\.sg$/i }).map(b => b._id)
+  let rpStudentUserIds = db.users
+    .find({ email: /.+myrp\.edu\.sg$/i })
+    .map((b) => b._id)
   db.forms.find({ admin: { $in: rpStudentUserIds } }).count()
 }
 // Should be 0
@@ -15,8 +17,12 @@
 
 // UPDATE
 {
-  let rpStudentUserIds = db.users.find({ email: /.+myrp\.edu\.sg$/i }).map(b => b._id)
-  let rpStudentFormIds = db.forms.find({ admin: { $in: rpStudentUserIds } }).map(b => b._id)
+  let rpStudentUserIds = db.users
+    .find({ email: /.+myrp\.edu\.sg$/i })
+    .map((b) => b._id)
+  let rpStudentFormIds = db.forms
+    .find({ admin: { $in: rpStudentUserIds } })
+    .map((b) => b._id)
 
   db.forms.updateMany(
     {
@@ -31,7 +37,7 @@
           fileSizeInBytes: 15242,
         },
       },
-    }
+    },
   )
 }
 
@@ -46,6 +52,8 @@
 // Count number of forms belonging to RP students.
 // Should still remain the same as A.
 {
-  let rpStudentUserIds = db.users.find({ email: /.+myrp\.edu\.sg$/i }).map(b => b._id)
+  let rpStudentUserIds = db.users
+    .find({ email: /.+myrp\.edu\.sg$/i })
+    .map((b) => b._id)
   db.forms.find({ admin: { $in: rpStudentUserIds } }).count()
 }

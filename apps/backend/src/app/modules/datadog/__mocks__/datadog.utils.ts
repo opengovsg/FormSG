@@ -2,7 +2,7 @@ import { IPopulatedForm } from 'src/types'
 
 import { ApplicationError } from '../../core/core.errors'
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// oxlint-disable-next-line typescript/no-unused-vars
 export const setFormTags = (_form: IPopulatedForm) => {
   return
 }
@@ -12,12 +12,12 @@ export const setFormTags = (_form: IPopulatedForm) => {
  * controller.
  * @param _error The error to set the tags for
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// oxlint-disable-next-line typescript/no-unused-vars
 export const setErrorCode = (_error: ApplicationError) => {
   return
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// oxlint-disable-next-line typescript/no-unused-vars
 export const submitErrorCountMetric = (_errorCode: number) => {
   return
 }

@@ -19,7 +19,6 @@ import {
 } from '~features/public-form/PublicFormContext'
 
 import { AttachmentFieldSchema } from '../types'
-
 import * as stories from './AttachmentField.stories'
 
 vi.mock('browser-image-compression', () => ({

@@ -1,4 +1,5 @@
 import { BiRightArrowAlt } from 'react-icons/bi'
+
 import { Icon, SimpleGrid, Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 

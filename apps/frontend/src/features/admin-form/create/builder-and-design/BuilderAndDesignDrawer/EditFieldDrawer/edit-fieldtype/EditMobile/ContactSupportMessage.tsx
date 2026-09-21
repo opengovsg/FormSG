@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { IoMdCloseCircle } from 'react-icons/io'
+
 import { Flex, Icon, Text } from '@chakra-ui/react'
 
 import { SUPPORT_FORM_LINK } from 'formsg-shared/constants'

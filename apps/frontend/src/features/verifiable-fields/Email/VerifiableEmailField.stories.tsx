@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+
 import { Text } from '@chakra-ui/react'
 import { Decorator, Meta, StoryFn } from '@storybook/react'
 
@@ -11,12 +12,12 @@ import {
   postVfnTransactionResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewParameters } from '~utils/storybook'
 import Button from '~components/Button'
 import {
   VerifiableFieldInput,
   VerifiableFieldValues,
 } from '~templates/Field/types'
+import { getMobileViewParameters } from '~utils/storybook'
 
 import {
   PublicFormContext,
@@ -112,7 +113,7 @@ const Template: StoryFn<StoryEmailFieldProps> = ({ defaultValue, ...args }) => {
       formMethods.trigger()
     }
     // Only want it to run once.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [])
 
   return (

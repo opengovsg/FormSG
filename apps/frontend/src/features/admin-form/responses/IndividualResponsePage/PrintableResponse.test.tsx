@@ -5,7 +5,6 @@ import { BasicField } from 'formsg-shared/types'
 import { isMaskedInDatadogReplay, render } from '~/test-utils'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
-
 import { PrintableResponse } from './PrintableResponse'
 
 const MOCK_DECRYPTED_ANSWER = 'mock printable answer text'

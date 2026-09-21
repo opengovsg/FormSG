@@ -20,11 +20,6 @@ import {
   useFieldBuilderStore,
 } from '../../useFieldBuilderStore'
 import { BuilderDrawerContainer } from '../common/BuilderDrawerContainer'
-
-import {
-  ChildrenCompoundFieldMyInfo,
-  EditMyInfoChildren,
-} from './edit-fieldtype/EditMyInfoChildren'
 import {
   EditAddress,
   EditAttachment,
@@ -51,6 +46,10 @@ import {
   EditUen,
   EditYesNo,
 } from './edit-fieldtype'
+import {
+  ChildrenCompoundFieldMyInfo,
+  EditMyInfoChildren,
+} from './edit-fieldtype/EditMyInfoChildren'
 
 export const EditFieldDrawer = (): JSX.Element | null => {
   const stateData = useFieldBuilderStore(stateDataSelector)

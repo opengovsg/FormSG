@@ -7,7 +7,6 @@ import {
   ILoginSchema,
   IPopulatedForm,
 } from '../../types'
-
 import { AGENCY_SCHEMA_ID } from './agency.server.model'
 import { FORM_SCHEMA_ID } from './form.server.model'
 import { USER_SCHEMA_ID } from './user.server.model'

@@ -4,9 +4,9 @@ import { useTranslation } from 'react-i18next'
 
 import { FormColorTheme, Language } from 'formsg-shared/types'
 
-import { useDropdownValidationRules } from '~utils/fieldValidation'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
 import { ComboboxItem } from '~components/Dropdown/types'
+import { useDropdownValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DropdownFieldSchema, SingleAnswerFieldInput } from '../types'

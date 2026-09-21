@@ -3,7 +3,6 @@ import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { captchaConfig } from '../../config/features/captcha.config'
 import { createLoggerWithLabel } from '../../config/logger'
-
 import { GOOGLE_RECAPTCHA_URL } from './captcha.constants'
 import {
   CaptchaConnectionError,

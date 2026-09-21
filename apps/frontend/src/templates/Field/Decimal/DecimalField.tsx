@@ -1,7 +1,7 @@
 import { Controller, useFormContext } from 'react-hook-form'
 
-import { useDecimalValidationRules } from '~utils/fieldValidation'
 import NumberInput from '~components/NumberInput'
+import { useDecimalValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { DecimalFieldSchema, SingleAnswerFieldInput } from '../types'

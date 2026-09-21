@@ -2,12 +2,12 @@
   "name": "20230317_whitespace_issue",
   "version": "1.0.0",
   "description": "",
+  "license": "ISC",
+  "author": "",
   "main": "index.js",
   "scripts": {
     "get_data": "source .env.production && node index.js"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "bson": "^5.5.1",
     "lodash": "^4.18.1",

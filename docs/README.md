@@ -10,23 +10,23 @@ description: This guide helps you deploy and maintain FormSG in your own infrast
 
 **Join government teams worldwide who've successfully self-hosted FormSG** to:
 
-* **Maintain complete data sovereignty** within your jurisdiction
-* **Integrate with existing government systems** and identity providers
-* **Meet specific compliance requirements** for your regulatory environment
-* **Reduce vendor lock-in** while keeping operational control
+- **Maintain complete data sovereignty** within your jurisdiction
+- **Integrate with existing government systems** and identity providers
+- **Meet specific compliance requirements** for your regulatory environment
+- **Reduce vendor lock-in** while keeping operational control
 
 Whether you're:
 
-* A government agency evaluating digital form solutions
-* A public sector IT team planning your deployment strategy
-* A developer customizing FormSG for your specific needs
+- A government agency evaluating digital form solutions
+- A public sector IT team planning your deployment strategy
+- A developer customizing FormSG for your specific needs
 
 ...this guide aim to assist your path from evaluation to production.
 
 #### 📖 Documentation Sources
 
-* [**GitBook**](https://ogp-international.gitbook.io/ogp-international-hub/self-hosting/formsg) - Complete, currently developed, self-hosting guide
-* [**FormSG GitHub Repository**](https://github.com/opengovsg/FormSG) - Source code and development resources
+- [**GitBook**](https://ogp-international.gitbook.io/ogp-international-hub/self-hosting/formsg) - Complete, currently developed, self-hosting guide
+- [**FormSG GitHub Repository**](https://github.com/opengovsg/FormSG) - Source code and development resources
 
 {% hint style="info" %}
 **📖 Documentation Note**: While the repository contains a 'docs' folder, always refer to the [GitBook](https://ogp-international.gitbook.io/ogp-international-hub/self-hosting/formsg) for the most current self-hosting guidance. We plan to sync GitBook content to the repository periodically as snapshots, but currently the repository docs are not actively updated.
@@ -48,10 +48,10 @@ This is **not** the end-user manual. For guides on creating, managing, and using
 
 This guide **assumes you (or your team) have a reasonable level of technical aptitude**. Specifically, experience with:
 
-* Basic Linux server administration
-* Docker or container orchestration
-* Managing environment variables and secrets
-* Working with Node.js applications
+- Basic Linux server administration
+- Docker or container orchestration
+- Managing environment variables and secrets
+- Working with Node.js applications
 
 {% hint style="warning" %}
 While we have aimed to make this guide as clear and complete as possible, it is **not an all-encompassing tutorial** for **every possible environment or level of expertise**.

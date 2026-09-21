@@ -11,7 +11,6 @@ import { MOCK_USER } from '~/mocks/msw/handlers/user'
 import { useAdminWorkflowStore } from '../adminWorkflowStore'
 import * as pageStories from '../CreatePageWorkflowTab.stories'
 import { AdminEditWorkflowState } from '../types'
-
 import { SPOTLIGHT_TEST_ID } from './Spotlight'
 
 const { NoWorkflow, NoWorkflowRedesignOn } = composeStories(pageStories)

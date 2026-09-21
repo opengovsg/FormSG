@@ -9,7 +9,6 @@ import {
   DatabaseValidationError,
 } from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
-
 import {
   ForbiddenWorkspaceError,
   WorkspaceNotFoundError,

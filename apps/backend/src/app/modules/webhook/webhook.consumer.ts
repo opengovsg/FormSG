@@ -18,7 +18,6 @@ import {
   SnapshotRetryError,
 } from '../submission/multirespondent-submission/webhook/webhook-retry-view'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
-
 import {
   WebhookNoMoreRetriesError,
   WebhookRetriesNotEnabledError,

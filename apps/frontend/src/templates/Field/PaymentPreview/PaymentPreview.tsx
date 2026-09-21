@@ -24,7 +24,6 @@ import {
 } from '~features/verifiable-fields/Email'
 
 import { useSectionColor } from '../Section/useSectionColor'
-
 import { PRODUCT_ITEM_PLACEHOLDER } from './constants'
 
 type PaymentPreviewProps = {

@@ -2,7 +2,6 @@ import { Router } from 'express'
 
 import * as PublicFormController from '../../../../modules/form/public-form/public-form.controller'
 import * as WogaaController from '../../../../modules/wogaa/wogaa.controller'
-
 import { authAndInjectFeedbackFormUrl } from './public-form.middleware'
 
 export const PublicFormsFormRouter = Router()

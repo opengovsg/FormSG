@@ -10,7 +10,6 @@ import {
 import { useToast } from '~hooks/useToast'
 
 import { useStorePrefillQuery } from './hooks/useStorePrefillQuery'
-import { setExpectedAuthFormId } from './utils/authRedirectStorage'
 import {
   FieldIdToQuarantineKeyType,
   getAttachmentPresignedPostData,
@@ -29,6 +28,7 @@ import {
   updateMultirespondentSubmission,
   uploadAttachmentToQuarantine,
 } from './PublicFormService'
+import { setExpectedAuthFormId } from './utils/authRedirectStorage'
 
 export const usePublicAuthMutations = (
   formId: string,

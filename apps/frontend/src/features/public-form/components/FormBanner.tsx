@@ -1,10 +1,11 @@
 import { useMemo } from 'react'
+
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { FormAuthType } from 'formsg-shared/types'
 
-import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
+import { getBannerProps } from '~utils/getBannerProps'
 
 import { useEnv } from '~features/env/queries'
 

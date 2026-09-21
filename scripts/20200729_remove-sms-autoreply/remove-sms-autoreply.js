@@ -8,11 +8,11 @@ const beforePipelineMobileFields = [
   { $project: { form_fields: 1 } },
   { $unwind: '$form_fields' },
   { $match: { 'form_fields.fieldType': 'mobile' } },
-  { $count: 'numFormFields' }
+  { $count: 'numFormFields' },
 ]
 db.getCollection('forms').aggregate(beforePipelineMobileFields)
 
-// Fields with smsReplyOptions, should be same as number of mobile fields 
+// Fields with smsReplyOptions, should be same as number of mobile fields
 // (or slightly less, some if users on the new client has added mobile fields
 // after running first check and before this check)
 const beforePipelineReplyOptions = [
@@ -24,7 +24,7 @@ const beforePipelineReplyOptions = [
   { $project: { form_fields: 1 } },
   { $unwind: '$form_fields' },
   { $match: { 'form_fields.smsReplyOptions': { $exists: true } } },
-  { $count: 'numFormFields' }
+  { $count: 'numFormFields' },
 ]
 db.getCollection('forms').aggregate(beforePipelineReplyOptions)
 
@@ -33,7 +33,7 @@ db.getCollection('forms').aggregate(beforePipelineReplyOptions)
 db.getCollection('forms').update(
   { 'form_fields.smsReplyOptions': { $exists: true } },
   { $unset: { 'form_fields.$[].smsReplyOptions': '' } },
-  { multi: true }
+  { multi: true },
 )
 
 // After checks
@@ -45,7 +45,7 @@ const afterPipelineMobileFields = [
   { $project: { form_fields: 1 } },
   { $unwind: '$form_fields' },
   { $match: { 'form_fields.fieldType': 'mobile' } },
-  { $count: 'numFormFields' }
+  { $count: 'numFormFields' },
 ]
 db.getCollection('forms').aggregate(afterPipelineMobileFields)
 
@@ -59,6 +59,6 @@ const afterPipelineReplyOptions = [
   { $project: { form_fields: 1 } },
   { $unwind: '$form_fields' },
   { $match: { 'form_fields.smsReplyOptions': { $exists: true } } },
-  { $count: 'numFormFields' }
+  { $count: 'numFormFields' },
 ]
 db.getCollection('forms').aggregate(afterPipelineReplyOptions)

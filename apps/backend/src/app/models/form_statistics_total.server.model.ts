@@ -6,7 +6,6 @@ import {
   IFormStatisticsTotalModel,
   IFormStatisticsTotalSchema,
 } from '../../types'
-
 import { FORM_SCHEMA_ID } from './form.server.model'
 
 const FORM_STATS_TOTAL_SCHEMA_ID = 'FormStatisticsTotal'

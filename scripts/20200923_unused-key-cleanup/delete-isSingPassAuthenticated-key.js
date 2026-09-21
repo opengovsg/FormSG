@@ -9,25 +9,28 @@ db.getCollection('submissions').count()
 
 // Check number of submissions with isSingPassAuthenticated flag
 db.getCollection('submissions')
-  .find({ 'isSingPassAuthenticated': { $exists: true } })
+  .find({ isSingPassAuthenticated: { $exists: true } })
   .count()
 
 // !!!! MAIN UPDATE SCRIPT !!!!
 
-// Delete unused isSingPassAuthenticated key 
+// Delete unused isSingPassAuthenticated key
 // ~ number updated should match number which had key
-db.getCollection('submissions').updateMany({}, {
-  $unset: {
-    'isSingPassAuthenticated': 1,
-  }
-})
+db.getCollection('submissions').updateMany(
+  {},
+  {
+    $unset: {
+      isSingPassAuthenticated: 1,
+    },
+  },
+)
 
 // !!!! END MAIN UPDATE SCRIPT !!!!
 
-// Check number of submissions with isSingPassAuthenticated flag 
+// Check number of submissions with isSingPassAuthenticated flag
 // ~ Should be zero
 db.getCollection('submissions')
-  .find({ 'isSingPassAuthenticated': { $exists: true } })
+  .find({ isSingPassAuthenticated: { $exists: true } })
   .count()
 
 // Check total submissions count

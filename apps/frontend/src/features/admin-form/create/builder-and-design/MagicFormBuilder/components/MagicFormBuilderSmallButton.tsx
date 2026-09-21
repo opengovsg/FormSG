@@ -1,4 +1,5 @@
 import { BiSolidMagicWand } from 'react-icons/bi'
+
 import { Button, Icon, Tooltip } from '@chakra-ui/react'
 
 const MagicFormBuilderSmallButton = ({

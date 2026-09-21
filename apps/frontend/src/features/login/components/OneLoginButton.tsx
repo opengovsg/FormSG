@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Flex, Text } from '@chakra-ui/react'
 import { delay } from 'lodash'
 
-import { API_BASE_URL } from '~services/ApiService'
 import Button from '~components/Button'
+import { API_BASE_URL } from '~services/ApiService'
 
 // The backend starts the Authorization Code + PKCE flow and 302s straight to
 // the one.gov.sg IdP, so this button navigates instead of fetching an auth URL.

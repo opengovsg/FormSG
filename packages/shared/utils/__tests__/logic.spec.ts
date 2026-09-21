@@ -1,14 +1,6 @@
 import { ObjectId } from 'bson'
 
-import {
-  getApplicableIfStates,
-  getLogicUnitPreventingSubmit,
-  getVisibleFieldIds,
-  LogicFieldClientRadioResponseInput,
-  LogicFieldResponse,
-  LogicFieldServerResponse,
-} from '../logic'
-
+import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../../constants'
 import {
   BasicField,
   FormDto,
@@ -21,7 +13,14 @@ import {
   ShortTextFieldBase,
   ShowFieldLogicDto,
 } from '../../types'
-import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from '../../constants'
+import {
+  getApplicableIfStates,
+  getLogicUnitPreventingSubmit,
+  getVisibleFieldIds,
+  LogicFieldClientRadioResponseInput,
+  LogicFieldResponse,
+  LogicFieldServerResponse,
+} from '../logic'
 
 describe('Logic validation', () => {
   /** Mock a field's bare essentials */

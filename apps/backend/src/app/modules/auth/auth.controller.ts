@@ -9,7 +9,6 @@ import MailService from '../../services/mail/mail.service'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
 import * as UserService from '../user/user.service'
-
 import {
   validateCheckUserParams,
   validateLoginSendOtpParams,

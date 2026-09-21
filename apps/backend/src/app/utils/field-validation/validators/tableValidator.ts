@@ -9,6 +9,7 @@ import {
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
 
+import { validateField, validateFieldV4 } from '..'
 import { ParsedClearFormFieldResponseV4 } from '../../../../types/api'
 import {
   ITableFieldSchema,
@@ -23,7 +24,6 @@ import {
   ProcessedTableResponse,
 } from '../../../modules/submission/submission.types'
 import { createAnswerFieldFromColumn } from '../answerField.factory'
-import { validateField, validateFieldV4 } from '..'
 
 const ALLOWED_COLUMN_TYPES = [BasicField.ShortText, BasicField.Dropdown]
 

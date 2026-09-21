@@ -13,6 +13,4 @@ const plaintextEmptyTitles = [
   },
 ]
 
-export {
-  plaintextEmptyTitles,
-}
+export { plaintextEmptyTitles }

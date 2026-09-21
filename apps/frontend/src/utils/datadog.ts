@@ -10,7 +10,7 @@ import { FormResponseMode } from 'formsg-shared/types/form/form'
  * */
 const _datadogRum = window.DD_RUM as RumGlobal | undefined
 
-// eslint-disable-next-line @typescript-eslint/no-empty-function
+// oxlint-disable-next-line typescript/no-empty-function
 const noop = () => {}
 const handler = {
   get: (target: RumGlobal, prop: keyof RumGlobal) => {

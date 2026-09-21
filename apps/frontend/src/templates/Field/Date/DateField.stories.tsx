@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 import { addDays, lightFormat, parse } from 'date-fns'
@@ -11,11 +12,10 @@ import {
   InvalidDaysOptions,
 } from 'formsg-shared/types/field'
 
-import { mockDateDecorator } from '~utils/storybook'
 import Button from '~components/Button'
+import { mockDateDecorator } from '~utils/storybook'
 
 import { DateFieldSchema } from '../types'
-
 import { DateField as DateFieldComponent, DateFieldProps } from './DateField'
 
 const MOCKED_TODAY_DATE_STRING = '13/12/2021'

@@ -23,9 +23,8 @@ import {
   SpOidcClient,
 } from '../../../../../modules/spcp/spcp.oidc.client'
 // Import last so mocks are imported correctly
-// eslint-disable-next-line import/first
+// oxlint-disable-next-line import/first
 import { PublicFormsRouter } from '../public-forms.routes'
-
 import {
   MOCK_ATTACHMENT_RESPONSE,
   MOCK_CHECKBOX_FIELD,
@@ -248,7 +247,7 @@ describe('public-form.submissions.routes', () => {
       it('should return 200 when submission is valid', async () => {
         // Arrange
         // Ignore TS errors as .verify has multiple overloads
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line typescript/ban-ts-comment
         // @ts-ignore
         jest.spyOn(jwt, 'verify').mockReturnValue({ uinFin: MOCK_UINFIN })
         const { form } = await dbHandler.insertEncryptForm({
@@ -383,7 +382,7 @@ describe('public-form.submissions.routes', () => {
         // Arrange
         jest
           .spyOn(jwt, 'verify')
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // oxlint-disable-next-line typescript/ban-ts-comment
           // @ts-ignore
           .mockReturnValueOnce({ someKey: 'someValue' })
         const { form } = await dbHandler.insertEncryptForm({

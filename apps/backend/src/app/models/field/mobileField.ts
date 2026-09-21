@@ -1,7 +1,6 @@
 import { Schema } from 'mongoose'
 
 import { IMobileFieldSchema } from '../../../types'
-
 import { MyInfoSchema } from './baseField'
 
 const createMobileFieldSchema = () => {

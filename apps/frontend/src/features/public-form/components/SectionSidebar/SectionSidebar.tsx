@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   Divider,
@@ -21,7 +22,6 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { useFormSections } from '../FormFields/FormSectionsContext'
 import { PUBLICFORM_INSTRUCTIONS_SECTIONID } from '../FormInstructions/FormInstructionsContainer'
-
 import { SidebarLink } from './SidebarLink'
 
 export const SectionSidebar = (): JSX.Element => {
@@ -44,7 +44,7 @@ export const SectionSidebar = (): JSX.Element => {
     return `${offsetPx}px`
     // Require ignore as miniHeaderRef is an object and dependency comparison
     // will never change.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // oxlint-disable-next-line react/exhaustive-deps
   }, [miniHeaderRef?.current?.clientHeight])
 
   const navigatedSection = useMemo(() => {

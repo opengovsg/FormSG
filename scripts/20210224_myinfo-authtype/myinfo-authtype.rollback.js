@@ -24,17 +24,11 @@
 
 // UPDATE
 {
-  db.forms.updateMany(
-    { authType: 'MyInfo' },
-    { $set: { authType: 'SP' } }
-  )
+  db.forms.updateMany({ authType: 'MyInfo' }, { $set: { authType: 'SP' } })
 }
 
 {
-  db.logins.updateMany(
-    { authType: 'MyInfo' },
-    { $set: { authType: 'SP' } }
-  )
+  db.logins.updateMany({ authType: 'MyInfo' }, { $set: { authType: 'SP' } })
 }
 
 // AFTER

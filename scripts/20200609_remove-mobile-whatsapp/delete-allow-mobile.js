@@ -13,7 +13,10 @@ db.getCollection('users')
   .count()
 
 // Delete allowMobile Flag
-db.getCollection('users').updateMany({}, { $unset: { 'betaFlags.allowMobile': 1 } })
+db.getCollection('users').updateMany(
+  {},
+  { $unset: { 'betaFlags.allowMobile': 1 } },
+)
 
 // Check number of users with allowMobile flag ~ Should be zero
 db.getCollection('users')

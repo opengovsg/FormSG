@@ -22,29 +22,37 @@ db.getCollection('users')
   .find({ 'betaFlags.allowVerifiedEmail': { $exists: true } })
   .count()
 
-
 // !!!! MAIN UPDATE SCRIPT !!!!
 
 // Delete unused allowEncrypt Flag ~ number updated should match number which had flag
-db.getCollection('users').updateMany({}, {
-  $unset: {
-    'betaFlags.allowEncrypt': 1,
-  }
-})
+db.getCollection('users').updateMany(
+  {},
+  {
+    $unset: {
+      'betaFlags.allowEncrypt': 1,
+    },
+  },
+)
 
 // Delete unused allowWebhook Flag ~ number updated should match number which had flag
-db.getCollection('users').updateMany({}, {
-  $unset: {
-    'betaFlags.allowWebhook': 1,
-  }
-})
+db.getCollection('users').updateMany(
+  {},
+  {
+    $unset: {
+      'betaFlags.allowWebhook': 1,
+    },
+  },
+)
 
 // Delete unused allowVerifiedEmail Flag ~ number updated should match number which had flag
-db.getCollection('users').updateMany({}, {
-  $unset: {
-    'betaFlags.allowVerifiedEmail': 1,
-  }
-})
+db.getCollection('users').updateMany(
+  {},
+  {
+    $unset: {
+      'betaFlags.allowVerifiedEmail': 1,
+    },
+  },
+)
 
 // !!!! END MAIN UPDATE SCRIPT !!!!
 

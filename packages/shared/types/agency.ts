@@ -1,5 +1,6 @@
 import type { Opaque } from 'type-fest'
 import { z } from 'zod'
+
 import { DateString } from './generic'
 
 export type AgencyId = Opaque<string, 'AgencyId'>

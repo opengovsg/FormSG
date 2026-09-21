@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
+
 import {
   Modal,
   ModalBody,
@@ -13,9 +14,9 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
+import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 
 const COPY_KEY =
   'features.adminForm.sidebar.workflow.conditionalRouting.modals.closeFormFirstToEdit'

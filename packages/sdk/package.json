@@ -1,9 +1,30 @@
 {
   "name": "@opengovsg/formsg-sdk",
   "version": "8.0.2",
+  "description": "Node.js SDK for integrating with FormSG",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/opengovsg/FormSG.git",
+    "directory": "packages/sdk"
+  },
+  "files": [
+    "dist/",
+    "cjs-entry.cjs"
+  ],
   "main": "./cjs-entry.cjs",
   "module": "./dist/esm/index.js",
   "types": "./dist/cjs/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "dist/types": [
+        "./dist/cjs/types.d.ts"
+      ],
+      "adapters": [
+        "./dist/cjs/adapters.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "import": {
@@ -36,33 +57,12 @@
       }
     }
   },
-  "typesVersions": {
-    "*": {
-      "dist/types": [
-        "./dist/cjs/types.d.ts"
-      ],
-      "adapters": [
-        "./dist/cjs/adapters.d.ts"
-      ]
-    }
-  },
-  "description": "Node.js SDK for integrating with FormSG",
-  "license": "MIT",
-  "files": [
-    "dist/",
-    "cjs-entry.cjs"
-  ],
   "scripts": {
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
-    "test": "jest",
-    "test:coverage": "jest --coverage",
     "lint": "oxlint --quiet --fix src/",
-    "lint-ci": "oxlint --quiet src/"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/opengovsg/FormSG.git",
-    "directory": "packages/sdk"
+    "lint-ci": "oxlint --quiet src/",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@stablelib/base64": "^1.0.1",

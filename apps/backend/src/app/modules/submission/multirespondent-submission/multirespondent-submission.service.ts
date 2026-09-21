@@ -73,7 +73,18 @@ import {
   isAdminEmailPdfEnabled,
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
-
+import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
+import {
+  buildMrfResponseJson,
+  extractEmailAnswersFromResponses,
+  extractRespondentCopyEmailDatas,
+  formatSubmittedStepTimestamp,
+  getEmailFromResponses,
+  getFormDelimiter,
+  getQuestionAnswerPairsForMultipleFields,
+  getResponsesDataFromMrfResponses,
+  retrieveWorkflowStepEmailAddresses,
+} from './multirespondent-submission.utils'
 import { SnapshotWriteError } from './webhook/submission-snapshot.errors'
 import { buildV4Snapshot } from './webhook/submission-snapshot.producer'
 import { SubmissionSnapshotV4 } from './webhook/submission-snapshot.schema'
@@ -87,18 +98,6 @@ import {
   shouldSendMrfWebhook,
   shouldWriteV4Snapshot,
 } from './webhook/webhook-send-eligibility'
-import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
-import {
-  buildMrfResponseJson,
-  extractEmailAnswersFromResponses,
-  extractRespondentCopyEmailDatas,
-  formatSubmittedStepTimestamp,
-  getEmailFromResponses,
-  getFormDelimiter,
-  getQuestionAnswerPairsForMultipleFields,
-  getResponsesDataFromMrfResponses,
-  retrieveWorkflowStepEmailAddresses,
-} from './multirespondent-submission.utils'
 
 const logger = createLoggerWithLabel(module)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)

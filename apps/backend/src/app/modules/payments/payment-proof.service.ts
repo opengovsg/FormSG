@@ -15,14 +15,13 @@ import { DAY_IN_SECONDS } from '../../constants/time'
 import { stripe } from '../../loaders/stripe'
 import { getSignedS3Url, putS3Object } from '../../utils/aws-s3'
 import { generatePdfFromHtml } from '../../utils/convert-html-to-pdf'
-
-import { getPaymentLogMeta } from './payment.service.utils'
 import {
   InvoicePdfGenerationError,
   PaymentProofPresignS3Error,
   PaymentProofUploadS3Error,
 } from './payment-proof.errors'
 import { getPaymentProofS3ObjectPath } from './payment-proof.utils'
+import { getPaymentLogMeta } from './payment.service.utils'
 import { StripeFetchError } from './stripe.errors'
 import { convertToProofOfPaymentFormat } from './stripe.utils'
 

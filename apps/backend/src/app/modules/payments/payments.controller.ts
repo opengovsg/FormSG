@@ -5,7 +5,6 @@ import { createLoggerWithLabel } from '../../config/logger'
 import { MailSendError } from '../../services/mail/mail.errors'
 import { InvalidDomainError } from '../auth/auth.errors'
 import { ControllerHandler } from '../core/core.types'
-
 import { PaymentNotFoundError } from './payments.errors'
 import {
   findLatestSuccessfulPaymentByEmailAndFormId,

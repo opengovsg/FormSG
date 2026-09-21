@@ -10,9 +10,9 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 export interface UnsavedChangesModalProps extends Omit<ModalProps, 'children'> {
   onConfirm: () => void

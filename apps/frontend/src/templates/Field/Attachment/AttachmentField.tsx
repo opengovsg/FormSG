@@ -5,15 +5,16 @@ import {
   useFormContext,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { datadogLogs } from '@datadog/browser-logs'
 
 import { MB } from 'formsg-shared/constants/file'
 import { FormColorTheme } from 'formsg-shared/types'
 import { VALID_EXTENSIONS } from 'formsg-shared/utils/file-validation'
 
+import Attachment from '~components/Field/Attachment'
 import { useAttachmentValidationRules } from '~utils/fieldValidation'
 import fileArrayBuffer from '~utils/fileArrayBuffer'
-import Attachment from '~components/Field/Attachment'
 
 import { PublicFormContext } from '~features/public-form/PublicFormContext'
 

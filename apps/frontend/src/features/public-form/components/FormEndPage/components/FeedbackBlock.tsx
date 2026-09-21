@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { chakra, Flex, FormControl } from '@chakra-ui/react'
 
 import { FormColorTheme } from 'formsg-shared/types/form'

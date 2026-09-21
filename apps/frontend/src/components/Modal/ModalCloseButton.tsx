@@ -1,4 +1,5 @@
 import { BiX } from 'react-icons/bi'
+
 import {
   CloseButtonProps,
   ModalCloseButton as ChakraModalCloseButton,

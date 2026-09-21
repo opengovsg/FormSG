@@ -1,5 +1,6 @@
 import { Controller, RegisterOptions, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   Divider,
@@ -23,7 +24,6 @@ import {
   formatCurrency,
 } from 'formsg-shared/utils/payments'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -31,6 +31,7 @@ import Input from '~components/Input'
 import { ModalCloseButton } from '~components/Modal'
 import MoneyInput from '~components/MoneyInput'
 import Toggle from '~components/Toggle'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 import { useEnv } from '~features/env/queries'

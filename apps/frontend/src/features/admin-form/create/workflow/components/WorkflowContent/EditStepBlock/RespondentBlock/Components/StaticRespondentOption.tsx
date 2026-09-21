@@ -1,4 +1,5 @@
 import { Controller } from 'react-hook-form'
+
 import { FormControl, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -11,7 +12,6 @@ import { TagInput } from '~components/TagInput'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
-
 import { useWorkflowTypeValidation } from './hooks'
 import { NESTED_CONTROL_PR } from './layout'
 import { RespondentOptionProps } from './types'

@@ -16,7 +16,6 @@ import {
   createCorppassParsedResponses,
   createSingpassParsedResponses,
 } from '../spcp/spcp.util'
-
 import {
   ConflictError,
   ProcessingError,

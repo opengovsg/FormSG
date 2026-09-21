@@ -1,4 +1,5 @@
 import { ReactNode, useEffect, useMemo } from 'react'
+
 import {
   GrowthBook,
   GrowthBookProvider as BaseGrowthBookProvider,

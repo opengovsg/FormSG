@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiEnvelope } from 'react-icons/bi'
+
 import { Flex, Icon, Stack, Text } from '@chakra-ui/react'
 
 import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'

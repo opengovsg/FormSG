@@ -70,7 +70,7 @@ export const MoneyInput = forwardRef<MoneyInputProps, 'input'>(
 
     return (
       <Box {...htmlProps} __css={styles.root}>
-        {/* Using base input wrapper instead of `Input` component as the Input 
+        {/* Using base input wrapper instead of `Input` component as the Input
         component strips out some props such as `aria-invalid`, resulting in
         incorrect styling */}
         <InputGroup>

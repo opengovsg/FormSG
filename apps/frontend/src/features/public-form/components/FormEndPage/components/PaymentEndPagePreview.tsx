@@ -6,7 +6,6 @@ import { SubmissionData } from '~features/public-form/PublicFormContext'
 
 import { PaymentsThankYouSvgr } from '../../../../../components/FormEndPage/PaymentsThankYouSvgr'
 import { PaymentEndPageBlock } from '../../../../admin-form/create/end-page/PaymentEndPageBlock'
-
 import { FeedbackBlock, FeedbackFormInput } from './FeedbackBlock'
 
 export interface PaymentEndPagePreviewProps {

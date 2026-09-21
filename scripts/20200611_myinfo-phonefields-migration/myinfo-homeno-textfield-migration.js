@@ -85,7 +85,7 @@ db.getCollection('forms').updateMany(
         'filter.myInfo.attr': 'homeno',
       },
     ],
-  }
+  },
 )
 // !!!! END OF MAIN UPDATE SCRIPT !!!!
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
+
 import {
   Box,
   Divider,
@@ -31,7 +32,6 @@ import {
   useReportedCompletedStep,
 } from '../GuidedCreation'
 import { Spotlight } from '../Spotlight'
-
 import { CompletionEmailBlock } from './CompletionEmailBlock'
 import { NewStepBlock } from './NewStepBlock'
 import { WorkflowBlockFactory } from './WorkflowBlockFactory'

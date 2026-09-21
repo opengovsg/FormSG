@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import {
   Badge,
   ModalBody,
@@ -8,9 +9,9 @@ import {
   Wrap,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 interface CanceledScreenProps {
   onClose: () => void

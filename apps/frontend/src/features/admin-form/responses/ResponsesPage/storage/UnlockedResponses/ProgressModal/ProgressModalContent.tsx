@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import {
   ModalBody,
   ModalFooter,
@@ -7,8 +8,8 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { ProgressModalProps } from './ProgressModal'
 

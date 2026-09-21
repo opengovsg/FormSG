@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+
 import { Box, BoxProps } from '@chakra-ui/react'
 import lottie, { AnimationConfigWithData, SVGRendererConfig } from 'lottie-web'
 

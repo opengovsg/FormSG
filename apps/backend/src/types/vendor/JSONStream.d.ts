@@ -12,9 +12,9 @@ declare module 'JSONStream' {
     recurse: boolean
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   export declare function parse(pattern: any): NodeJS.ReadWriteStream
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   export declare function parse(patterns: any[]): NodeJS.ReadWriteStream
 
   /**
@@ -37,7 +37,7 @@ declare module 'JSONStream' {
    * JSONStream.stringify() will create an array,
    * (with default options open='[\n', sep='\n,\n', close='\n]\n')
    */
-  // eslint-disable-next-line @typescript-eslint/adjacent-overload-signatures
+  // oxlint-disable-next-line typescript/adjacent-overload-signatures
   export declare function stringify(
     open: string,
     sep: string,

@@ -5,7 +5,6 @@ import { IFormModel } from 'src/types'
 
 import { E2eForm } from '../constants'
 import { deleteDocById } from '../utils'
-
 import { createForm } from './createForm'
 import { submitForm } from './submitForm'
 import { verifySubmission } from './verifySubmission'

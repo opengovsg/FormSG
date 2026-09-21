@@ -4,29 +4,26 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [8.0.2](https://github.com/opengovsg/formsg/compare/sdk-v8.0.1...sdk-v8.0.2) (2026-08-06)
 
-
 ### Bug Fixes
 
-* use tsconfigRootDir in SDK eslint config so pre-commit hook works (#9828) ([#9828](https://github.com/opengovsg/formsg/commit/b050e6ac899893b8d7618043e897189a9707f062))
+- use tsconfigRootDir in SDK eslint config so pre-commit hook works (#9828) ([#9828](https://github.com/opengovsg/formsg/commit/b050e6ac899893b8d7618043e897189a9707f062))
 
 ## [8.0.1](https://github.com/opengovsg/formsg/compare/sdk-v8.0.0...sdk-v8.0.1) (2026-07-31)
 
-
 ### Bug Fixes
 
-* **sdk:** improve large attachment decryption and handling (#9802) ([#9802](https://github.com/opengovsg/formsg/commit/a44f1e9cd351d951de61d888d76616b073e40b35))
+- **sdk:** improve large attachment decryption and handling (#9802) ([#9802](https://github.com/opengovsg/formsg/commit/a44f1e9cd351d951de61d888d76616b073e40b35))
 
 ## [8.0.0](https://github.com/opengovsg/formsg/compare/sdk-v7.7.0...sdk-v8.0.0) (2026-07-30)
 
-
 ### ⚠ BREAKING CHANGE
 
-* **mrf:** MRF submissions are sent with version: 4 and
-V4-shaped responses on the wire.
+- **mrf:** MRF submissions are sent with version: 4 and
+  V4-shaped responses on the wire.
 
 Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 
-* feat(frontend): make V4 the FE working format for previous MRF responses
+- feat(frontend): make V4 the FE working format for previous MRF responses
 
 decryptSubmission now serves previous-step responses as V4: V4 blobs
 (mrfVersion 2) pass through untouched and V3 blobs (mrfVersion 1 /
@@ -49,115 +46,102 @@ Also drops the previousResponses prop on FormFields, which was unused.
 
 Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 
-* chore: clean up comments
+- chore: clean up comments
 
-* feat: make joi validation for provenance default to {}
+- feat: make joi validation for provenance default to {}
 
-* feat: Update apps/frontend/src/features/public-form/utils/decryptSubmission.ts
+- feat: Update apps/frontend/src/features/public-form/utils/decryptSubmission.ts
 
 Co-authored-by: Eliot Lim <eliotlim@users.noreply.github.com>
 
 ### Features
 
-* **mrf:** V4 response migration — PR 3/5 FE sends and works in V4 (#9782) ([#9782](https://github.com/opengovsg/formsg/commit/8929c1dce7379d2ab0e847719bb383ec13c41f32))
+- **mrf:** V4 response migration — PR 3/5 FE sends and works in V4 (#9782) ([#9782](https://github.com/opengovsg/formsg/commit/8929c1dce7379d2ab0e847719bb383ec13c41f32))
 
 ## [7.7.0](https://github.com/opengovsg/formsg/compare/sdk-v7.6.0...sdk-v7.7.0) (2026-07-29)
 
-
 ### Features
 
-* **mrf:** step-token write-guard for MRF next-step submissions (S3) (#9758) ([#9758](https://github.com/opengovsg/formsg/commit/9b124b4018b7eac81de53448d327c185b3839702))
+- **mrf:** step-token write-guard for MRF next-step submissions (S3) (#9758) ([#9758](https://github.com/opengovsg/formsg/commit/9b124b4018b7eac81de53448d327c185b3839702))
 
 ## [7.6.0](https://github.com/opengovsg/formsg/compare/sdk-v7.5.0...sdk-v7.6.0) (2026-07-23)
 
-
 ### Features
 
-* reland v4 BE handling (reverts #9775) (#9785) ([#9775](https://github.com/opengovsg/formsg/commit/ed6bbd3fa548ce2d3d2d877bc04b398e9a3765ea))
+- reland v4 BE handling (reverts #9775) (#9785) ([#9775](https://github.com/opengovsg/formsg/commit/ed6bbd3fa548ce2d3d2d877bc04b398e9a3765ea))
 
 ## [7.5.0](https://github.com/opengovsg/formsg/compare/sdk-v7.4.1...sdk-v7.5.0) (2026-07-22)
 
-
 ### Features
 
-* v4 be cherry pick commits (#9776) ([#9776](https://github.com/opengovsg/formsg/commit/fa29b661a6735ec36335b8873bba3865e549f320))
+- v4 be cherry pick commits (#9776) ([#9776](https://github.com/opengovsg/formsg/commit/fa29b661a6735ec36335b8873bba3865e549f320))
 
 ## [7.4.1](https://github.com/opengovsg/formsg/compare/sdk-v7.4.0...sdk-v7.4.1) (2026-07-22)
 
-
 ### Chores
 
-* revert v4 be (#9775) ([#9775](https://github.com/opengovsg/formsg/commit/cdc25de38ec1ac6ed708ecbe612aff30cf5c28ba))
+- revert v4 be (#9775) ([#9775](https://github.com/opengovsg/formsg/commit/cdc25de38ec1ac6ed708ecbe612aff30cf5c28ba))
 
 ## [7.4.0](https://github.com/opengovsg/formsg/compare/sdk-v7.3.2...sdk-v7.4.0) (2026-07-20)
 
-
 ### Features
 
-* **mrf:** V4 response migration — PR 2/5 BE V4-native + V3 wire shim (#9637) ([#9637](https://github.com/opengovsg/formsg/commit/2a47c47e707d5c429257092c9b9ce78f3ff8e118))
+- **mrf:** V4 response migration — PR 2/5 BE V4-native + V3 wire shim (#9637) ([#9637](https://github.com/opengovsg/formsg/commit/2a47c47e707d5c429257092c9b9ce78f3ff8e118))
 
 ## [7.3.2](https://github.com/opengovsg/formsg/compare/sdk-v7.3.1...sdk-v7.3.2) (2026-07-16)
 
-
 ### Chores
 
-* speed up jest runs by removing default local code coverage collection (#9757) ([#9757](https://github.com/opengovsg/formsg/commit/ab6c7015033aa970d633e642d6343c296ec375b2))
+- speed up jest runs by removing default local code coverage collection (#9757) ([#9757](https://github.com/opengovsg/formsg/commit/ab6c7015033aa970d633e642d6343c296ec375b2))
 
 ## [7.3.1](https://github.com/opengovsg/formsg/compare/sdk-v7.3.0...sdk-v7.3.1) (2026-06-10)
 
-
 ### Miscellaneous
 
-* Merge pull request #9577 from opengovsg/feat/v4-encryption-improvements ([#9577](https://github.com/opengovsg/formsg/commit/f79c81e413546eb0408aa4eda2b479bb2904c5d9))
+- Merge pull request #9577 from opengovsg/feat/v4-encryption-improvements ([#9577](https://github.com/opengovsg/formsg/commit/f79c81e413546eb0408aa4eda2b479bb2904c5d9))
 
 ## [7.3.0](https://github.com/opengovsg/formsg/compare/sdk-v7.1.4...sdk-v7.3.0) (2026-06-08)
 
-
 ### Features
 
-* answer object decryption (#9371) ([#9371](https://github.com/opengovsg/formsg/commit/7f630e84c519c50e3a76372941d1f731295f3c28))
-* answer object encryption (#9502) ([#9502](https://github.com/opengovsg/formsg/commit/ebe965c733d8f73114b2f0ea2fdcfeb6c0ba3f1b))
-
+- answer object decryption (#9371) ([#9371](https://github.com/opengovsg/formsg/commit/7f630e84c519c50e3a76372941d1f731295f3c28))
+- answer object encryption (#9502) ([#9502](https://github.com/opengovsg/formsg/commit/ebe965c733d8f73114b2f0ea2fdcfeb6c0ba3f1b))
 
 ### Chores
 
-* **sdk:** bump version to 7.2.0 ([29f230e](https://github.com/opengovsg/formsg/commit/29f230e9b6c2bef26fe2b61129d804666e32c1ec))
+- **sdk:** bump version to 7.2.0 ([29f230e](https://github.com/opengovsg/formsg/commit/29f230e9b6c2bef26fe2b61129d804666e32c1ec))
 
 ## [7.2.0](https://github.com/opengovsg/formsg/compare/sdk-v7.1.4...sdk-v7.2.0) (2026-06-04)
 
-
 ### Features
 
-* answer object decryption (#9371) ([#9371](https://github.com/opengovsg/formsg/commit/7f630e84c519c50e3a76372941d1f731295f3c28))
-* answer object encryption (#9502) ([#9502](https://github.com/opengovsg/formsg/commit/ebe965c733d8f73114b2f0ea2fdcfeb6c0ba3f1b))
+- answer object decryption (#9371) ([#9371](https://github.com/opengovsg/formsg/commit/7f630e84c519c50e3a76372941d1f731295f3c28))
+- answer object encryption (#9502) ([#9502](https://github.com/opengovsg/formsg/commit/ebe965c733d8f73114b2f0ea2fdcfeb6c0ba3f1b))
 
 ## [7.1.4](https://github.com/opengovsg/formsg/compare/sdk-v7.1.3...sdk-v7.1.4) (2026-04-27)
 
-
 ### Bug Fixes
 
-* **sdk:** bump axios 1.15.2 (#9358) ([#9358](https://github.com/opengovsg/formsg/commit/ed2ec2f54ec5d94948818eaaf060534c37af6fae))
+- **sdk:** bump axios 1.15.2 (#9358) ([#9358](https://github.com/opengovsg/formsg/commit/ed2ec2f54ec5d94948818eaaf060534c37af6fae))
 
 ## [7.1.3](https://github.com/opengovsg/formsg/compare/sdk-v7.1.2...sdk-v7.1.3) (2026-04-20)
 
 ## [7.1.2](https://github.com/opengovsg/formsg/compare/sdk-v7.1.1...sdk-v7.1.2) (2026-04-16)
 
-
 ### Miscellaneous
 
-* Merge pull request #9313 from opengovsg/release-al2 ([#9313](https://github.com/opengovsg/formsg/commit/41732190ff796e8d0bb10fbfea09cf6459547971))
-* Merge pull request #9314 from opengovsg/fix/sdk/update-repository-provenance ([#9314](https://github.com/opengovsg/formsg/commit/13b992929b59b2bcbfae00e8a371fcfb4ac0087a))
+- Merge pull request #9313 from opengovsg/release-al2 ([#9313](https://github.com/opengovsg/formsg/commit/41732190ff796e8d0bb10fbfea09cf6459547971))
+- Merge pull request #9314 from opengovsg/fix/sdk/update-repository-provenance ([#9314](https://github.com/opengovsg/formsg/commit/13b992929b59b2bcbfae00e8a371fcfb4ac0087a))
 
 ## [7.1.1](https://github.com/opengovsg/formsg/compare/sdk-v7.1.0...sdk-v7.1.1) (2026-04-16)
 
 ## 7.1.0 (2026-04-16)
 
-
 ### Features
 
-* **sdk:** bump axios 1.15.0 ([fb4d837](https://github.com/opengovsg/formsg/commit/fb4d8372a31ef0f38ebaf9e286efa17ddd9a8b72))
-* **sdk:** enable publishing (#9305) ([#9305](https://github.com/opengovsg/formsg/commit/7b48aa5e1dd65b8e38d6090e7a135fdeb5267e89))
-* **sdk:** migrate sdk monorepo (#9221) ([#9221](https://github.com/opengovsg/formsg/commit/0e7e721429f22737b980adb8ec03bd915b4562ff))
+- **sdk:** bump axios 1.15.0 ([fb4d837](https://github.com/opengovsg/formsg/commit/fb4d8372a31ef0f38ebaf9e286efa17ddd9a8b72))
+- **sdk:** enable publishing (#9305) ([#9305](https://github.com/opengovsg/formsg/commit/7b48aa5e1dd65b8e38d6090e7a135fdeb5267e89))
+- **sdk:** migrate sdk monorepo (#9221) ([#9221](https://github.com/opengovsg/formsg/commit/0e7e721429f22737b980adb8ec03bd915b4562ff))
 
 ### Changelog
 

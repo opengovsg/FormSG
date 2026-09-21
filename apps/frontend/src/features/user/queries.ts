@@ -1,4 +1,5 @@
 import { useQuery } from 'react-query'
+
 import { StatusCodes } from 'http-status-codes'
 
 import { UserDto } from 'formsg-shared/types/user'

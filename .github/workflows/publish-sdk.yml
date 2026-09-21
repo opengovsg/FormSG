@@ -31,8 +31,8 @@ jobs:
     name: Publish @opengovsg/formsg-sdk
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # create GitHub release against the existing sdk-v* tag
-      id-token: write  # required for npm OIDC trusted publisher
+      contents: write # create GitHub release against the existing sdk-v* tag
+      id-token: write # required for npm OIDC trusted publisher
     defaults:
       run:
         shell: bash

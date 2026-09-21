@@ -1,5 +1,6 @@
 import { DropzoneInputProps, DropzoneState } from 'react-dropzone'
 import { useTranslation } from 'react-i18next'
+
 import { chakra, Icon, Text, VisuallyHidden } from '@chakra-ui/react'
 
 import { BxsCloudUpload } from '~assets/icons/BxsCloudUpload'

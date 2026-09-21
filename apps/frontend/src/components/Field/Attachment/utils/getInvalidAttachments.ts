@@ -2,7 +2,6 @@ import JSZip from 'jszip'
 import { flattenDeep, uniq } from 'lodash'
 
 import { AttachmentProps } from '../Attachment'
-
 import { getFileExtension } from './getFileExtension'
 
 /**

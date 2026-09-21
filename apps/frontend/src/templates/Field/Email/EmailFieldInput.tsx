@@ -6,12 +6,13 @@ import {
   useFormState,
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Flex, Text } from '@chakra-ui/react'
 
 import { Language } from 'formsg-shared/types'
 
-import { useEmailValidationRules } from '~utils/fieldValidation'
 import Input, { InputProps } from '~components/Input'
+import { useEmailValidationRules } from '~utils/fieldValidation'
 
 import { EmailFieldSchema, VerifiableFieldInput } from '../types'
 

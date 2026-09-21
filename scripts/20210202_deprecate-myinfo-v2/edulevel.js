@@ -5,11 +5,16 @@
 {
   const ATTR_NAME = 'edulevel'
   const pipeline = [
-    { $match: { form_fields: { $exists: true, $not: { $size: 0 } }, 'form_fields.myInfo.attr': ATTR_NAME } },
+    {
+      $match: {
+        form_fields: { $exists: true, $not: { $size: 0 } },
+        'form_fields.myInfo.attr': ATTR_NAME,
+      },
+    },
     { $project: { form_fields: 1 } },
     { $unwind: '$form_fields' },
     { $match: { 'form_fields.myInfo.attr': ATTR_NAME } },
-    { $count: 'numFields' }
+    { $count: 'numFields' },
   ]
   db.forms.aggregate(pipeline)
 }
@@ -18,8 +23,13 @@
 {
   const ATTR_NAME = 'edulevel'
   const pipeline = [
-    { $match: { form_fields: { $exists: true, $not: { $size: 0 } }, 'form_fields.myInfo.attr': ATTR_NAME } },
-    { $count: 'numForms' }
+    {
+      $match: {
+        form_fields: { $exists: true, $not: { $size: 0 } },
+        'form_fields.myInfo.attr': ATTR_NAME,
+      },
+    },
+    { $count: 'numForms' },
   ]
   db.forms.aggregate(pipeline)
 }
@@ -39,12 +49,18 @@
     "BACHELOR'S OR EQUIVALENT",
     "POSTGRADUATE DIPLOMA / CERTIFICATE (EXCLUDING MASTER'S AND DOCTORATE)",
     "MASTER'S AND DOCTORATE OR EQUIVALENT",
-    'MODULAR CERTIFICATION (NON-AWARD COURSES / NON-FULL QUALIFICATIONS)'
+    'MODULAR CERTIFICATION (NON-AWARD COURSES / NON-FULL QUALIFICATIONS)',
   ]
   db.forms.updateMany(
-    { form_fields: { $exists: true, $not: { $size: 0 } }, 'form_fields.myInfo.attr': ATTR_NAME },
-    { $unset: { 'form_fields.$[field].myInfo': 1 }, $set: { 'form_fields.$[field].fieldOptions': FIELD_OPTIONS } },
-    { arrayFilters: [{ 'field.myInfo.attr': ATTR_NAME }] }
+    {
+      form_fields: { $exists: true, $not: { $size: 0 } },
+      'form_fields.myInfo.attr': ATTR_NAME,
+    },
+    {
+      $unset: { 'form_fields.$[field].myInfo': 1 },
+      $set: { 'form_fields.$[field].fieldOptions': FIELD_OPTIONS },
+    },
+    { arrayFilters: [{ 'field.myInfo.attr': ATTR_NAME }] },
   )
 }
 
@@ -53,11 +69,16 @@
 {
   const ATTR_NAME = 'edulevel'
   const pipeline = [
-    { $match: { form_fields: { $exists: true, $not: { $size: 0 } }, 'form_fields.myInfo.attr': ATTR_NAME } },
+    {
+      $match: {
+        form_fields: { $exists: true, $not: { $size: 0 } },
+        'form_fields.myInfo.attr': ATTR_NAME,
+      },
+    },
     { $project: { form_fields: 1 } },
     { $unwind: '$form_fields' },
     { $match: { 'form_fields.myInfo.attr': ATTR_NAME } },
-    { $count: 'numFields' }
+    { $count: 'numFields' },
   ]
   db.forms.aggregate(pipeline)
 }
@@ -66,8 +87,13 @@
 {
   const ATTR_NAME = 'edulevel'
   const pipeline = [
-    { $match: { form_fields: { $exists: true, $not: { $size: 0 } }, 'form_fields.myInfo.attr': ATTR_NAME } },
-    { $count: 'numForms' }
+    {
+      $match: {
+        form_fields: { $exists: true, $not: { $size: 0 } },
+        'form_fields.myInfo.attr': ATTR_NAME,
+      },
+    },
+    { $count: 'numForms' },
   ]
   db.forms.aggregate(pipeline)
 }

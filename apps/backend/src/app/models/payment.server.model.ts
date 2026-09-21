@@ -2,9 +2,8 @@ import { Payment, PaymentStatus } from 'formsg-shared/types'
 import { Mongoose, Schema } from 'mongoose'
 
 import { IPaymentModel, IPaymentSchema } from '../../types'
-
-import { ProductSchema } from './payments/productSchema'
 import { FORM_SCHEMA_ID, formPaymentsFieldSchema } from './form.server.model'
+import { ProductSchema } from './payments/productSchema'
 import { PENDING_SUBMISSION_SCHEMA_ID } from './pending_submission.server.model'
 import { SUBMISSION_SCHEMA_ID } from './submission.server.model'
 

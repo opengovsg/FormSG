@@ -1,6 +1,7 @@
 import { Controller } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
+
 import {
   Box,
   CheckboxGroup,

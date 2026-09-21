@@ -3,7 +3,6 @@ import { errAsync, ResultAsync } from 'neverthrow'
 
 import { WebhookView } from '../../../../../types'
 import { SnapshotRef } from '../../../webhook/webhook.types'
-
 import {
   SnapshotAccessDeniedError,
   SnapshotDataIntegrityError,

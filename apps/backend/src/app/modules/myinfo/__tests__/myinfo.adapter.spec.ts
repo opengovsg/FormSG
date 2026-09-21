@@ -7,7 +7,6 @@ import { MyInfoAttribute } from 'formsg-shared/types'
 import type { SetRequired } from 'type-fest'
 
 import { MyInfoData } from '../myinfo.adapter'
-
 import { MOCK_UINFIN } from './myinfo.test.constants'
 import {
   MYINFO_BASIC_AVAILABLE,

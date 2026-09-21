@@ -52,7 +52,7 @@ jest.mock('openid-client', () => {
 
 jest.mock('../myinfo.fapi.client', () => ({
   getConfiguration: jest.fn(() =>
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    // oxlint-disable-next-line typescript/no-require-imports
     require('neverthrow').okAsync({ mock: 'configuration' }),
   ),
 }))
@@ -160,7 +160,7 @@ describe('myinfo.fapi.service', () => {
 
       const [, , options] = MockClient.getDPoPHandle.mock.calls[0]
       const payload = { iat: 1_000 } as Record<string, unknown>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // oxlint-disable-next-line typescript/no-explicit-any
       ;(options as any)[client.modifyAssertion]({}, payload)
 
       expect(payload.exp).toBe(1_120)

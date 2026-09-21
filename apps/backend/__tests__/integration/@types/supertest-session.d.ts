@@ -1,6 +1,6 @@
 declare module 'supertest-session' {
-  import supertest, { SuperAgentTest } from 'supertest'
   import { Express } from 'express'
+  import supertest, { SuperAgentTest } from 'supertest'
 
   export interface Session extends supertest.SuperTest<supertest.Test> {
     agent: SuperAgentTest

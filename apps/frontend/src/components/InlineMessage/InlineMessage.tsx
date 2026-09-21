@@ -9,8 +9,8 @@ import {
 import { BxsErrorCircle, BxsInfoCircle } from '~/assets/icons'
 import { InlineMessageVariant } from '~/theme/components/InlineMessage'
 
-import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 export interface InlineMessageProps extends FlexProps {
   variant?: InlineMessageVariant

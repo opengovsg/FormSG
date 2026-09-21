@@ -56,14 +56,14 @@ export const retrieveJsonContent = ({
 
 export const validateIacStringParam = (val: unknown) => {
   if (isIacMigrated && typeof val !== 'string') {
-    // eslint-disable-next-line typesafe/no-throw-sync-func
+    // oxlint-disable-next-line typesafe/no-throw-sync-func
     throw new Error('Value must be a String')
   }
 }
 
 export const validateNonIacStringParam = (val: unknown) => {
   if (!isIacMigrated && typeof val !== 'string') {
-    // eslint-disable-next-line typesafe/no-throw-sync-func
+    // oxlint-disable-next-line typesafe/no-throw-sync-func
     throw new Error('Value must be a String')
   }
 }

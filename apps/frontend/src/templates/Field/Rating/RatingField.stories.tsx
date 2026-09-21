@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { FormProvider, useForm } from 'react-hook-form'
+
 import { Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 import { merge } from 'lodash'
@@ -9,7 +10,6 @@ import { BasicField, RatingShape } from 'formsg-shared/types/field'
 import Button from '~components/Button'
 
 import { RatingFieldSchema } from '../types'
-
 import {
   RatingField as RatingFieldComponent,
   RatingFieldProps,

@@ -87,7 +87,7 @@ describe('receiver.utils', () => {
         version: TEST_RESPONSE_VERSION,
       } as unknown as ParsedMultipartForm<FieldResponse[]>
       addAttachmentToResponses(responses, [attachment])
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // oxlint-disable-next-line typescript/ban-ts-comment
       //@ts-ignore
       expect(responses.responses[0].answer).toBe(attachment.filename)
       expect(

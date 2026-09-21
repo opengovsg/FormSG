@@ -95,7 +95,7 @@ export function useSessionStorage<S>(
 
   // check for changes across windows
   useEffect(() => {
-    // eslint-disable-next-line no-negated-condition
+    // oxlint-disable-next-line no-negated-condition
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', listenToCrossDocumentStorageEvents)
 
@@ -108,7 +108,7 @@ export function useSessionStorage<S>(
     } else {
       console.warn('[useSessionstorageState] window is undefined.')
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      // oxlint-disable-next-line typescript/no-empty-function
       return () => {}
     }
   }, [listenToCrossDocumentStorageEvents])
@@ -130,9 +130,9 @@ export function useSessionStorage<S>(
 
   // check for changes within document
   useEffect(() => {
-    // eslint-disable-next-line no-negated-condition
+    // oxlint-disable-next-line no-negated-condition
     if (typeof document !== 'undefined') {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // oxlint-disable-next-line typescript/ban-ts-comment
       // @ts-ignore
       document.addEventListener(
         customEventTypeName,
@@ -140,7 +140,7 @@ export function useSessionStorage<S>(
       )
 
       return () => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line typescript/ban-ts-comment
         // @ts-ignore
         document.removeEventListener(
           customEventTypeName,
@@ -150,14 +150,14 @@ export function useSessionStorage<S>(
     } else {
       console.warn('[useSessionstorageState] document is undefined.')
 
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      // oxlint-disable-next-line typescript/no-empty-function
       return () => {}
     }
   }, [customEventTypeName, listenToCustomEventWithinDocument])
 
   const broadcastValueWithinDocument = useCallback(
     (newValue: S) => {
-      // eslint-disable-next-line no-negated-condition
+      // oxlint-disable-next-line no-negated-condition
       if (typeof document !== 'undefined') {
         const event: BroadcastCustomEvent<S> = new CustomEvent(
           customEventTypeName,
@@ -185,7 +185,7 @@ export function useSessionStorage<S>(
     sessionStorage.removeItem(key)
   }, [key])
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // oxlint-disable-next-line typescript/ban-ts-comment
   // @ts-ignore
   return [value, set, remove]
 }

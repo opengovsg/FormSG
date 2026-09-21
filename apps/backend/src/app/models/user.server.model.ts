@@ -9,7 +9,6 @@ import {
   IUserSchema,
   PublicUser,
 } from '../../types'
-
 import getAgencyModel, { AGENCY_SCHEMA_ID } from './agency.server.model'
 
 const { MongoError } = mongodb
@@ -25,7 +24,7 @@ const compileUserModel = (db: Mongoose) => {
         type: String,
         // Ensure lowercase email addresses are stored in the database.
         set: (v: string) => v.toLowerCase(),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // oxlint-disable-next-line typescript/ban-ts-comment
         // @ts-ignore
         trim: true,
         unique: true,

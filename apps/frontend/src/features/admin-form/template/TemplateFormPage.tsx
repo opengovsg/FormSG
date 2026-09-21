@@ -1,11 +1,12 @@
 import { useParams } from 'react-router-dom'
+
 import { Flex, useDisclosure } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants/feature-flags'
 
-import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
+import { fillHeightCss } from '~utils/fillHeightCss'
 
 import FloatingToolBar from '~features/public-form/components/FloatingToolBar'
 import FormEndPage from '~features/public-form/components/FormEndPage'
@@ -18,7 +19,6 @@ import FormStartPage from '~features/public-form/components/FormStartPage'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 
 import { PreviewFormBannerContainer } from '../common/components/PreviewFormBanner'
-
 import { TemplateFormProvider } from './TemplateFormProvider'
 import {
   UseTemplateFrame,

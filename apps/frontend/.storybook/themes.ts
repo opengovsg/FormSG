@@ -3,7 +3,6 @@ import 'inter-ui/inter.css'
 import { create } from '@storybook/theming'
 
 import PackageInfo from '../package.json'
-
 import brandImage from './assets/img/logo_form_HORT_FULL.png'
 
 export const StorybookTheme = {

@@ -1,4 +1,5 @@
 import { useQuery } from 'react-query'
+
 import { PaymentIntentResult, Stripe } from '@stripe/stripe-js'
 
 import { ApiError } from '~typings/core'

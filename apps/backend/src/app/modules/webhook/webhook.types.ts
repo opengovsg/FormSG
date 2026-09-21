@@ -2,7 +2,6 @@ import { FormWorkflowDto, WebhookSubmittedStep } from 'formsg-shared/types'
 import * as z from 'zod'
 
 import { IFormSchema, ISubmissionSchema, WebhookView } from '../../../types'
-
 import {
   QUEUE_MESSAGE_LIVE_ROW_VERSION,
   QUEUE_MESSAGE_SNAPSHOT_VERSION,

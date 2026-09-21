@@ -190,7 +190,7 @@ export const constructChildrenValidator: ChildrenValidatorConstructor = (
 // Children are not used in MRF — always pass
 export const constructChildrenValidatorV4 =
   (
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // oxlint-disable-next-line typescript/no-unused-vars
     _childrenField: ChildrenCompoundFieldBase,
   ): ResponseValidator<ParsedClearFormFieldResponseV4> =>
   (response) =>

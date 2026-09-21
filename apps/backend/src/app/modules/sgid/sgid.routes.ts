@@ -1,7 +1,6 @@
 import { Router } from 'express'
 
 import { authCallbackForwardingMiddleware } from '../auth/auth.middlewares'
-
 import { handleLogin } from './sgid.controller'
 import { validateLoginRequest } from './sgid.middlewares'
 

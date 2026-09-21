@@ -3,8 +3,8 @@
  */
 import { useFormContext } from 'react-hook-form'
 
-import { useUenValidationRules } from '~utils/fieldValidation'
 import Input from '~components/Input'
+import { useUenValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { SingleAnswerFieldInput, UenFieldSchema } from '../types'

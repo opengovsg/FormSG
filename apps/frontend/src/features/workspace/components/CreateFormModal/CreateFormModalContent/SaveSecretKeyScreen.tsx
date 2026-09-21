@@ -10,7 +10,6 @@ import { trackClickSecretKeyMailTo } from '~features/analytics/AnalyticsService'
 import { workspaceKeys } from '~features/workspace/queries'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
-
 import {
   SaveSecretKeyContent,
   SaveSecretKeyFormInput,

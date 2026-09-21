@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import validator from 'validator'
 
 const MAX_EMAIL_LENGTH = 30

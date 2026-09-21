@@ -20,25 +20,25 @@ What you can do is **remove it completely,** or replace it with your agency bran
 
 **Frontend Components:**
 
-* [ ] **Government Masthead**: Remove every usage of `<GovtMasthead />` . [Example](https://github.com/opengovsg/FormSG/blob/develop/apps/frontend/src/app/PublicElement.tsx#L37).
-* [ ] **VDP Report Button**: Remove `REPORT_VULNERABILITY` from `apps/frontend/src/constants/links.ts`
-* [ ] **Government Logos**: Remove .gov.sg logos from `apps/frontend/public/static/img/`
-* [ ] **App Metadata**: Update `apps/frontend/src/constants/links.ts`, etc.
+- [ ] **Government Masthead**: Remove every usage of `<GovtMasthead />` . [Example](https://github.com/opengovsg/FormSG/blob/develop/apps/frontend/src/app/PublicElement.tsx#L37).
+- [ ] **VDP Report Button**: Remove `REPORT_VULNERABILITY` from `apps/frontend/src/constants/links.ts`
+- [ ] **Government Logos**: Remove .gov.sg logos from `apps/frontend/public/static/img/`
+- [ ] **App Metadata**: Update `apps/frontend/src/constants/links.ts`, etc.
 
 **Environment Variables:**
 
-* [ ] **APP\_NAME**: Change from "FormSG" to your organization name
-* [ ] **APP\_DESC**: Update description to reflect your organization
-* [ ] **APP\_URL**: Use your organization's domain
-* [ ] **APP\_KEYWORDS**: Remove Singapore-specific keywords
-* [ ] **MAIL\_FROM**: Use your organization's email domain
+- [ ] **APP\_NAME**: Change from "FormSG" to your organization name
+- [ ] **APP\_DESC**: Update description to reflect your organization
+- [ ] **APP\_URL**: Use your organization's domain
+- [ ] **APP\_KEYWORDS**: Remove Singapore-specific keywords
+- [ ] **MAIL\_FROM**: Use your organization's email domain
 
 **Singapore-Specific Services:**
 
-* [ ] **SingPass References**: Remove SingPass authentication configuration
-* [ ] **CorpPass References**: Remove CorpPass authentication configuration
-* [ ] **MyInfo Integration**: Remove MyInfo data prefill configuration
-* [ ] [**Postman**](https://postman-v2.guides.gov.sg/) **SMS**: Replace with your SMS service configuration
+- [ ] **SingPass References**: Remove SingPass authentication configuration
+- [ ] **CorpPass References**: Remove CorpPass authentication configuration
+- [ ] **MyInfo Integration**: Remove MyInfo data prefill configuration
+- [ ] [**Postman**](https://postman-v2.guides.gov.sg/) **SMS**: Replace with your SMS service configuration
 
 **Verification Script:**
 
@@ -64,6 +64,7 @@ grep -r -i "gov\.sg\|singapore" backend/src/ \
 It's basically a grep script that scans the codebase for occurrences of SG keywords. Here's a simple output as an example
 
 {% code fullWidth="false" %}
+
 ```bash
 # Example output
 ...
@@ -72,23 +73,24 @@ It's basically a grep script that scans the codebase for occurrences of SG keywo
    189	apps/frontend/.../EditEmail.stories.tsx:    allowedEmailDomains: ['@open.gov.sg'],
 ...
 ```
+
 {% endcode %}
 
 ### Why This Matters
 
 Using Singapore government branding without authorization could:
 
-* Mislead citizens about your service's legitimacy
-* Violate trademark laws
-* Result in legal action
+- Mislead citizens about your service's legitimacy
+- Violate trademark laws
+- Result in legal action
 
 ### What You MUST Do
 
 If you fork or deploy FormSG:
 
-* **Remove or replace the masthead** in all templates and front-end code
-* Clearly indicate your deployment is _not_ affiliated with the Singapore Government
-* Use your own branding and disclaimers
+- **Remove or replace the masthead** in all templates and front-end code
+- Clearly indicate your deployment is _not_ affiliated with the Singapore Government
+- Use your own branding and disclaimers
 
 ### Open Source License Compliance
 
@@ -108,10 +110,10 @@ FormSG includes many open source dependencies with various licenses:
 
 **Dependency License Review**
 
-* [ ] **Review package.json** - Check all dependency licenses
-* [ ] **Document GPL dependencies** - Note any copyleft requirements
-* [ ] **Commercial license conflicts** - Ensure no conflicts with your use
-* [ ] **Export restrictions** - Check for encryption/export control issues
+- [ ] **Review package.json** - Check all dependency licenses
+- [ ] **Document GPL dependencies** - Note any copyleft requirements
+- [ ] **Commercial license conflicts** - Ensure no conflicts with your use
+- [ ] **Export restrictions** - Check for encryption/export control issues
 
 **License Audit Script:**
 
@@ -125,28 +127,28 @@ npx license-checker --summary --out licenses.txt
 
 FormSG is provided "AS IS" under the [MIT License](https://opensource.org/license/mit). The original developers:
 
-* Provide no warranty or guarantee of fitness for purpose
-* Are not liable for damages from your use of the software
-* Do not provide commercial support or SLA guarantees
+- Provide no warranty or guarantee of fitness for purpose
+- Are not liable for damages from your use of the software
+- Do not provide commercial support or SLA guarantees
 
 #### Your Deployment Responsibility
 
 As the deploying organization, you are responsible for:
 
-* **Security** - Proper configuration and hardening
-* **Compliance** - Meeting all applicable laws and regulations
-* **Support** - Helping your users and maintaining documentation
-* **Operations** - Keeping the system running and updated
+- **Security** - Proper configuration and hardening
+- **Compliance** - Meeting all applicable laws and regulations
+- **Support** - Helping your users and maintaining documentation
+- **Operations** - Keeping the system running and updated
 
 #### Recommended Legal Actions
 
 Before deployment, confirm:
 
-* [ ] All Singapore branding removed (run verification script as a sanity check)
-* [ ] Your privacy policy covers form data collection
-* [ ] You have incident notification procedures
+- [ ] All Singapore branding removed (run verification script as a sanity check)
+- [ ] Your privacy policy covers form data collection
+- [ ] You have incident notification procedures
 
-***
+---
 
 {% hint style="warning" %}
 **⚖️ Legal Principle**: You are responsible for ensuring your FormSG deployment complies with applicable laws, regulations, and organizational policies in your jurisdiction.

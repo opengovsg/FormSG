@@ -47,7 +47,6 @@ import {
   projectSubmittedStepForWebhook,
 } from '../modules/submission/submitted-step-visibility'
 import { createQueryWithDateParam } from '../utils/date'
-
 import { FORM_SCHEMA_ID } from './form.server.model'
 import { PAYMENT_SCHEMA_ID } from './payment.server.model'
 

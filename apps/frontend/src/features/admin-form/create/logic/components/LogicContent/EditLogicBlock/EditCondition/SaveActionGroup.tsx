@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
+
 import { Box, Flex, Stack } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 export interface SaveActionGroupProps {
   handleCancel: () => void

@@ -10,8 +10,8 @@ description: >-
 
 Make sure you have:
 
-* [Docker and docker-compose](https://docs.docker.com/get-docker/)
-* [pnpm](https://pnpm.io/installation) (manages Node.js version automatically via `.npmrc`)
+- [Docker and docker-compose](https://docs.docker.com/get-docker/)
+- [pnpm](https://pnpm.io/installation) (manages Node.js version automatically via `.npmrc`)
 
 #### Get the FormSG Code
 
@@ -69,9 +69,9 @@ pnpm dev
 
 After the Docker image has finished building, the following local applications can be accessed:
 
-* React application can be accessed at [localhost:5173](https://localhost:5173)
-* The backend API server can be accessed at [localhost:5001](https://localhost:5001)
-* The development mail server can be accessed at [localhost:1080](https://localhost:1080)
+- React application can be accessed at [localhost:5173](https://localhost:5173)
+- The backend API server can be accessed at [localhost:5001](https://localhost:5001)
+- The development mail server can be accessed at [localhost:1080](https://localhost:1080)
 
 ### Accessing email locally
 
@@ -111,13 +111,11 @@ Docker-compose looks at various places for environment variables in this order o
 
 The `.env` file you created from `.env.example` will provide the default configuration for local development. For production deployments, you'll need to customize these values according to your infrastructure and security requirements.
 
-For complete documentation of all available environment variables, see the [configuration-reference.md](configuration-reference.md "mention").
-
-
+For complete documentation of all available environment variables, see the [configuration-reference.md](configuration-reference.md 'mention').
 
 ## ⚠️ CRITICAL: Remove Singapore Branding (REQUIRED)
 
-Before going live to production with FormSG, you must remove Singapore Government branding to avoid legal issues. See [legal-and-compliance.md](legal-and-compliance.md "mention")
+Before going live to production with FormSG, you must remove Singapore Government branding to avoid legal issues. See [legal-and-compliance.md](legal-and-compliance.md 'mention')
 
 ## Developer Tools & Resources
 

@@ -1,4 +1,4 @@
-/* eslint-disable import/first */
+/* oxlint-disable import/first */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import getMockLogger from '__tests__/unit/backend/helpers/jest-logger'
 import { ObjectId } from 'bson'
@@ -22,7 +22,6 @@ import {
 
 import { DatabaseError } from '../../core/core.errors'
 import { UserWithContactNumber } from '../../user/user.types'
-
 import {
   makeBounceNotification,
   makeDeliveryNotification,

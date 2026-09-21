@@ -5,7 +5,6 @@ import type * as client from 'openid-client'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { internalAttrListToScopes } from '../myinfo.adapter'
-
 import { MyInfoFapiMissingUinFinError } from './myinfo.fapi.errors'
 
 const logger = createLoggerWithLabel(module)

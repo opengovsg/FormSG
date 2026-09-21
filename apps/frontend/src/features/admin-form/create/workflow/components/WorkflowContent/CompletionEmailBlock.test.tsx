@@ -5,7 +5,6 @@ import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import * as pageStories from '../../CreatePageWorkflowTab.stories'
 import { AdminEditWorkflowState, GuidedWrapUp } from '../../types'
 import { SPOTLIGHT_TEST_ID } from '../Spotlight'
-
 import * as cardStories from './CompletionEmailBlock.stories'
 
 const {

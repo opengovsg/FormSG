@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Box, Text } from '@chakra-ui/react'
 import { isEqual, uniq } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -11,7 +12,6 @@ import { useAdminFormWorkflow } from '~features/admin-form/create/workflow/hooks
 import { useUser } from '~features/user/queries'
 
 import { useMutateFormSettings } from '../mutations'
-
 import { RespondentCopyToggle } from './EmailNotificationsSection/RespondentCopyToggle'
 import {
   MrfEmailRecipientsFieldGroup,

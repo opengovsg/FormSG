@@ -114,7 +114,6 @@ import {
   isFormEncryptMode,
   isFormMultirespondent,
 } from '../form.utils'
-
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   EditFieldError,

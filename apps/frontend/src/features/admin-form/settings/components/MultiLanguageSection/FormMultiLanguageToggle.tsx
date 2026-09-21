@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { BiEditAlt } from 'react-icons/bi'
 import { GoEye, GoEyeClosed } from 'react-icons/go'
 import { useParams, useSearchParams } from 'react-router-dom'
+
 import {
   Box,
   Divider,
@@ -16,13 +17,13 @@ import _ from 'lodash'
 
 import { Language } from 'formsg-shared/types'
 
+import Badge from '~components/Badge'
+import Toggle from '~components/Toggle'
+import Tooltip from '~components/Tooltip'
 import {
   convertUnicodeLocaleToLanguage,
   getDefaultSupportedLanguages,
 } from '~utils/multiLanguage'
-import Badge from '~components/Badge'
-import Toggle from '~components/Toggle'
-import Tooltip from '~components/Tooltip'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'

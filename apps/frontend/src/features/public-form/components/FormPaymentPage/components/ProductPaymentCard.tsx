@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Box, Flex, Text, useDisclosure } from '@chakra-ui/react'
 
 import { FormColorTheme, ProductItem } from 'formsg-shared/types'

@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { BiArrowBack, BiRightArrowAlt } from 'react-icons/bi'
+
 import { Container, Flex, ModalBody, ModalHeader, Text } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
 import { useCreateFormWizard } from '../CreateFormWizardContext'
-
 import { FormTitleInput } from './FormTitleInput'
 
 export const CreateFormStorageModeScreen = (): JSX.Element => {

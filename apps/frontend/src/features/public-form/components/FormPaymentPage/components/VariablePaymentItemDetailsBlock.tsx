@@ -1,4 +1,5 @@
 import { Controller, RegisterOptions, useFormContext } from 'react-hook-form'
+
 import { Box, FormControl, Text } from '@chakra-ui/react'
 
 import { PAYMENT_VARIABLE_INPUT_AMOUNT_FIELD_ID } from 'formsg-shared/constants'
@@ -11,7 +12,6 @@ import { centsToDollarString } from '~features/admin-form/responses/common/utils
 import { useEnv } from '~features/env/queries'
 
 import { usePaymentFieldValidation } from '../../../../../hooks/usePaymentFieldValidation'
-
 import PaymentItemNameDescription from './PaymentItemNameDescription'
 import { VariableItemDetailProps } from './types'
 

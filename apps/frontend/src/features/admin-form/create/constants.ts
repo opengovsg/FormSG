@@ -44,6 +44,7 @@ import {
   BiUserVoice,
 } from 'react-icons/bi'
 import { SlLocationPin } from 'react-icons/sl'
+
 import { As } from '@chakra-ui/react'
 
 import { BasicField, MyInfoAttribute } from 'formsg-shared/types/field'

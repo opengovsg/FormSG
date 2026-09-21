@@ -1,11 +1,12 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { FormControl, FormHelperText } from '@chakra-ui/react'
 
-import { textStyles } from '~theme/textStyles'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import { textStyles } from '~theme/textStyles'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'
@@ -15,7 +16,6 @@ import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useStageFieldAndNavigate } from '../../../hooks/useStageFieldAndNavigate'
-
 import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 import { FieldEmptyState } from './EmptyStates'

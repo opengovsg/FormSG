@@ -6,7 +6,6 @@ import * as SmsErrors from '../../services/postman-sms/postman-sms.errors'
 import { HashingError } from '../../utils/hash'
 import * as CoreErrors from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
-
 import * as UserErrors from './user.errors'
 import { UserWithContactNumber } from './user.types'
 

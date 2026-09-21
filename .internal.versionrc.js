@@ -13,11 +13,11 @@ const getShortHash = (commit) => {
   return ref && typeof ref.issue === 'string' && ref.issue.length > 0
     ? `${ref.prefix || '#'}${ref.issue}` // e.g. "#9190"
     : typeof commit.hash === 'string'
-      ? commit.hash.substring(0, 7)      // fallback to 7‑char commit hash
+      ? commit.hash.substring(0, 7) // fallback to 7‑char commit hash
       : ''
 }
 module.exports = {
-  path: [":!packages/sdk/**"], 
+  path: [':!packages/sdk/**'],
   bumpFiles: packagePaths.map((filename) => ({ filename, type: 'json' })),
   writerOpts: {
     groupBy: 'section',
@@ -45,7 +45,7 @@ module.exports = {
       if (!commit.type) {
         return commit
       }
-      
+
       if (commit.scope === 'deps') {
         commit.section = 'Dependencies'
       }
@@ -82,15 +82,18 @@ module.exports = {
       ]
       const aIndex = order.indexOf(a.title)
       const bIndex = order.indexOf(b.title)
-      return (aIndex === -1 ? order.length : aIndex) - (bIndex === -1 ? order.length : bIndex)
+      return (
+        (aIndex === -1 ? order.length : aIndex) -
+        (bIndex === -1 ? order.length : bIndex)
+      )
     },
     commitsSort: (a, b) => {
-      const aHasScope = Boolean(a.scope);
-      const bHasScope = Boolean(b.scope);
-      if (aHasScope && !bHasScope) return -1;   // scoped first
-      if (!aHasScope && bHasScope) return 1;    // unscoped last
-      return (a.header || '').localeCompare(b.header || ''); // both scoped or unscoped: sort by scope then header
-    }, 
+      const aHasScope = Boolean(a.scope)
+      const bHasScope = Boolean(b.scope)
+      if (aHasScope && !bHasScope) return -1 // scoped first
+      if (!aHasScope && bHasScope) return 1 // unscoped last
+      return (a.header || '').localeCompare(b.header || '') // both scoped or unscoped: sort by scope then header
+    },
   },
   releaseCommitMessageFormat: 'chore: bump version to {{currentTag}}',
-};
+}

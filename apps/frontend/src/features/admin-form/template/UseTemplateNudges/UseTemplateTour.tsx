@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import Joyride from 'react-joyride'
+
 import { useToken } from '@chakra-ui/react'
 
 import { getUseTemplateTourSteps } from './UseTemplateTour.constants'

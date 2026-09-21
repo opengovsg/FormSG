@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+
 import { useDisclosure } from '@chakra-ui/react'
 import {
   DragDropContext,
@@ -12,14 +13,6 @@ import {
   getMyInfoFieldCreationMeta,
 } from '~features/admin-form/create/builder-and-design/utils/fieldCreation'
 
-import MagicFormBuilderAcceptDeny from './MagicFormBuilder/components/MagicFormBuilderAcceptDeny'
-import MagicFormBuilderPromptModal from './MagicFormBuilder/components/MagicFormBuilderPromptModal'
-import { useMagicFormBuilder } from './MagicFormBuilder/useMagicFormBuilder'
-import { useReorderFormField } from './mutations/useReorderFormField'
-import {
-  getPlaceholderStartProps,
-  getPlaceholderUpdateProps,
-} from './utils/dnd'
 import { BuilderAndDesignContent } from './BuilderAndDesignContent'
 import { BuilderAndDesignContext } from './BuilderAndDesignContext'
 import { BuilderAndDesignDrawer } from './BuilderAndDesignDrawer'
@@ -52,12 +45,20 @@ import {
 } from './constants'
 import { DeleteFieldModal } from './DeleteFieldModal'
 import { DeletePaymentModal } from './DeletePaymentModal'
+import MagicFormBuilderAcceptDeny from './MagicFormBuilder/components/MagicFormBuilderAcceptDeny'
+import MagicFormBuilderPromptModal from './MagicFormBuilder/components/MagicFormBuilderPromptModal'
+import { useMagicFormBuilder } from './MagicFormBuilder/useMagicFormBuilder'
+import { useReorderFormField } from './mutations/useReorderFormField'
 import { DndPlaceholderProps } from './types'
 import { useCreateTabForm } from './useCreateTabForm'
 import {
   updateCreateStateSelector,
   useFieldBuilderStore,
 } from './useFieldBuilderStore'
+import {
+  getPlaceholderStartProps,
+  getPlaceholderUpdateProps,
+} from './utils/dnd'
 
 export const BuilderAndDesignTab = (): JSX.Element => {
   const {

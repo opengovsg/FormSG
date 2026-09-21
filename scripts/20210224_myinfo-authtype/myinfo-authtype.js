@@ -9,7 +9,10 @@
 
 // B: Number of forms with MyInfo fields AND SingPass
 {
-  db.forms.count({ authType: 'SP', 'form_fields.myInfo.attr': { $exists: true } })
+  db.forms.count({
+    authType: 'SP',
+    'form_fields.myInfo.attr': { $exists: true },
+  })
 }
 
 // C: Total number of forms with MyInfo fields. May not be the same as above due to
@@ -22,7 +25,7 @@
 {
   db.forms.updateMany(
     { 'form_fields.myInfo.attr': { $exists: true } },
-    { $set: { authType: 'MyInfo' } }
+    { $set: { authType: 'MyInfo' } },
   )
 }
 
@@ -30,7 +33,10 @@
 
 // Number of forms with MyInfo fields AND MyInfo authType. Should be equal to C.
 {
-  db.forms.count({ 'form_fields.myInfo.attr': { $exists: true }, authType: 'MyInfo' })
+  db.forms.count({
+    'form_fields.myInfo.attr': { $exists: true },
+    authType: 'MyInfo',
+  })
 }
 
 // Number of MyInfo forms. Should be equal to C.

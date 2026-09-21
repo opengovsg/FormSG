@@ -15,7 +15,6 @@ import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import { ApiRouter } from '../../routes/api'
 import { LegacyRedirectRouter } from '../../routes/legacy-redirect'
 import { SpOidcJwksRouter } from '../../routes/singpass'
-
 import {
   catchNonExistentStaticRoutesMiddleware,
   errorHandlerMiddlewares,
@@ -85,7 +84,7 @@ const loadExpressApp = async (connection: Connection) => {
   app.set('showStackError', true)
 
   // Set EJS as the template engine
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  // oxlint-disable-next-line typescript/no-require-imports
   app.engine('server.view.html', require('ejs').__express)
 
   // Set views path and view engine

@@ -9,7 +9,6 @@ import defaultExamples from 'libphonenumber-js/examples.mobile.json'
 import { CountryCode, NationalNumber } from 'libphonenumber-js/min'
 
 import { InputProps } from '../Input'
-
 import { IntlPhoneNumberInput } from './IntlPhoneNumberInput'
 import {
   PhoneNumberInputProvider,

@@ -1,4 +1,5 @@
 import { areAttachmentFieldIdsValid } from '../src/util/crypto'
+
 describe('utils', () => {
   describe('areAttachmentFieldIdsValid', () => {
     it('should return true when all the fieldIds are within the filenames', () => {

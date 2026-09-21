@@ -1,5 +1,6 @@
 import { RegisterOptions, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import {
   FormControl,
   Modal,
@@ -14,11 +15,11 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import { useIsMobile } from '~hooks/useIsMobile'
-import { useWorkspaceTitleValidationRules } from '~utils/workspaceValidation'
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Input from '~components/Input'
+import { useIsMobile } from '~hooks/useIsMobile'
+import { useWorkspaceTitleValidationRules } from '~utils/workspaceValidation'
 
 import { useWorkspaceMutations } from '~features/workspace/mutations'
 

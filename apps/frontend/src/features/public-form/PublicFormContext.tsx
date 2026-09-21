@@ -59,7 +59,7 @@ export interface PublicFormContextProps
   /** If form is submitted, submissionData will be defined. */
   submissionData?: SubmissionData
   /** Callback to be invoked when user submits public form. */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   handleSubmitForm: ((formInputs: any) => void) | undefined
   /** Callback to be invoked to logout of authenticated form, if user is logged in.  */
   handleLogout: (() => void) | undefined

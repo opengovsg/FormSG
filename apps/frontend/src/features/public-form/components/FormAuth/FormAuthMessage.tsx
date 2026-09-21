@@ -1,4 +1,5 @@
 import { Trans, useTranslation } from 'react-i18next'
+
 import { Text } from '@chakra-ui/react'
 
 import { FormAuthType } from 'formsg-shared/types/form'

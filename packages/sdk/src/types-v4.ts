@@ -180,6 +180,6 @@ export type DecryptedContentV4 = {
   submissionSecretKey: string
   stepToken?: string
   responses: FieldResponsesV4
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // oxlint-disable-next-line typescript/no-explicit-any
   verified?: Record<string, any>
 }

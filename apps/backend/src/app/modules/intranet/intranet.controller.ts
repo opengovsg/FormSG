@@ -2,7 +2,6 @@ import { StatusCodes } from 'http-status-codes'
 
 import { getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
-
 import { IntranetService } from './intranet.service'
 
 /**

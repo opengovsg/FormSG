@@ -44,7 +44,6 @@ import {
   extractEmailConfirmationData,
   isAdminEmailPdfEnabled,
 } from '../submission.utils'
-
 import { SaveEncryptSubmissionParams } from './encrypt-submission.types'
 
 const logger = createLoggerWithLabel(module)

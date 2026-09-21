@@ -59,7 +59,6 @@ import {
   transformAttachmentMetasToSignedUrls,
 } from '../submission.service'
 import { mapRouteError, sendRouteError } from '../submission.utils'
-
 import { ensureSubmitterIdIsWhitelisted } from './multirespondent-submission.ensures'
 import * as MultirespondentSubmissionMiddleware from './multirespondent-submission.middleware'
 import {

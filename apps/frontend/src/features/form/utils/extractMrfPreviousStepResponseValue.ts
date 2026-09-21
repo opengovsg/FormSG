@@ -15,12 +15,12 @@ import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { CountryRegion } from 'formsg-shared/constants/countryRegion'
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
 
-import bufferToFile from '~utils/bufferToFile'
 import {
   AddressCompoundFieldValues,
   FormFieldValue,
   TableRowFieldValue,
 } from '~templates/Field'
+import bufferToFile from '~utils/bufferToFile'
 
 /**
  * Retrieves the filled value for a field from the previous step response for

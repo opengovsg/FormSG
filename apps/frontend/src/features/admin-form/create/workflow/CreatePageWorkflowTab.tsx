@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useMemo } from 'react'
+
 import { Box, Container } from '@chakra-ui/react'
 
 import { useSidebarWidth } from '../common/CreatePageSidebarContext'
-
+import { useAdminWorkflowStore } from './adminWorkflowStore'
 import { EmptyWorkflow } from './components/EmptyWorkflow'
 import { WelcomeCard } from './components/GuidedCreation'
 import { WorkflowContent } from './components/WorkflowContent'
 import { WorkflowSkeleton } from './components/WorkflowSkeleton'
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
-import { useAdminWorkflowStore } from './adminWorkflowStore'
 
 export const CreatePageWorkflowTab = (): JSX.Element => {
   const {

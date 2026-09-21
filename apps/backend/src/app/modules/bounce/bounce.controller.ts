@@ -6,7 +6,6 @@ import { EmailType } from '../../services/mail/mail.constants'
 import { DatabaseConflictError } from '../core/core.errors'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
-
 import * as BounceService from './bounce.service'
 import { AdminNotificationRecipients } from './bounce.types'
 

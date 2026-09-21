@@ -1,4 +1,5 @@
 import { Opaque } from 'type-fest'
+
 import { FormId } from './form'
 import { UserId } from './user'
 

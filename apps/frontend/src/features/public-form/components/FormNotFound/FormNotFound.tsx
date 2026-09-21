@@ -1,10 +1,9 @@
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
-import { useMdComponents } from '~hooks/useMdComponents'
 import { MarkdownText } from '~components/MarkdownText'
+import { useMdComponents } from '~hooks/useMdComponents'
 
 import { FormFooter } from '../FormFooter'
-
 import { FormNotFoundSvgr } from './FormNotFoundSvgr'
 
 interface FormNotFoundProps {

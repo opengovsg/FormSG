@@ -1,5 +1,6 @@
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import {
   Box,
   FormControl,
@@ -10,13 +11,12 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { textStyles } from '~theme/textStyles'
 import FormLabel from '~components/FormControl/FormLabel'
+import { textStyles } from '~theme/textStyles'
 
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
 import { useIsSpotlightActiveSection } from '../../Spotlight'
-
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 type StepNameProps = {

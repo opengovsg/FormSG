@@ -13,7 +13,7 @@ type ReqMeta = {
  * Should be used solely in `utils/request.ts` as the types are not being used
  * to generate request metas.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// oxlint-disable-next-line typescript/no-explicit-any
 type LooseRequest = Request<any, any, any, any>
 
 export const getRequestIp = <R extends LooseRequest>(req: R): string => {

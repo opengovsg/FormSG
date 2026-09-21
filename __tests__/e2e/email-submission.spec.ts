@@ -1,11 +1,11 @@
-/* eslint-disable playwright/expect-expect -- assertions are in helper */
-import mongoose from 'mongoose'
 import {
   BasicField,
   FormAuthType,
   FormResponseMode,
   MyInfoAttribute,
 } from 'formsg-shared/types'
+/* oxlint-disable playwright/expect-expect -- assertions are in helper */
+import mongoose from 'mongoose'
 
 import { IFormModel } from 'src/types'
 

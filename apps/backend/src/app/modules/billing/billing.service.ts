@@ -11,7 +11,6 @@ import { createLoggerWithLabel } from '../../config/logger'
 import getLoginModel from '../../models/login.server.model'
 import { getMongoErrorMessage } from '../../utils/handle-mongo-error'
 import { DatabaseError } from '../core/core.errors'
-
 import { FormHasNoAuthError } from './billing.errors'
 
 const logger = createLoggerWithLabel(module)

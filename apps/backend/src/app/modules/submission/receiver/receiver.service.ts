@@ -8,7 +8,6 @@ import { err, ok, Result, ResultAsync } from 'neverthrow'
 import { IAttachmentInfo } from '../../../../types'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { fileSizeLimit } from '../submission.utils'
-
 import {
   InitialiseMultipartReceiverError,
   MultipartContentLimitError,

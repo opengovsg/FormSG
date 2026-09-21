@@ -4,7 +4,6 @@ import { DateString } from 'formsg-shared/types'
 import { PublicFormDto } from 'formsg-shared/types/form'
 
 import { PublicFormContext } from '../PublicFormContext'
-
 import { FormExpiryBanner } from './FormExpiryBanner'
 
 const withCloseAt = (closeAt: string | null) => {

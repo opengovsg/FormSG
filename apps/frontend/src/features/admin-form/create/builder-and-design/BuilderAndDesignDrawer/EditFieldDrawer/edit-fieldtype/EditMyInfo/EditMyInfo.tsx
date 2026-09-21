@@ -1,11 +1,12 @@
 import { Trans, useTranslation } from 'react-i18next'
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
+
 import { HStack, Icon, Text, VStack } from '@chakra-ui/react'
 
 import { MyInfoField } from 'formsg-shared/types'
 
-import { SINGPASS_FAQ } from '~constants/links'
 import Link from '~components/Link'
+import { SINGPASS_FAQ } from '~constants/links'
 
 import {
   FieldBuilderState,
@@ -17,7 +18,6 @@ import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
 import { EditFieldProps } from '../common/types'
 import { useEditFieldForm } from '../common/useEditFieldForm'
-
 import { extendWithMyInfo } from './utils'
 
 const VerifiedIcon = ({ isVerified }: { isVerified: boolean }): JSX.Element => {

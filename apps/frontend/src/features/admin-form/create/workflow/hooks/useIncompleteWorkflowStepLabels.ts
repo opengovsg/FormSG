@@ -5,7 +5,6 @@ import { FormFieldDto } from 'formsg-shared/types'
 import { getIncompleteStepNumbers } from 'formsg-shared/utils/workflow-step-completion'
 
 import { getWorkflowStepLabel } from '../utils/getWorkflowStepLabel'
-
 import { useAdminFormWorkflow } from './useAdminFormWorkflow'
 
 export const useIncompleteWorkflowStepLabels = (): string[] => {

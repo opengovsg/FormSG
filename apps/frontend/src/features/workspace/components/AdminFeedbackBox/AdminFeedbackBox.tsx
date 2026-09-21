@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+
 import { Flex, Stack, Text } from '@chakra-ui/react'
 
 import {
@@ -10,13 +11,13 @@ import {
 } from 'formsg-shared/types'
 
 import { BxX } from '~assets/icons'
-import { useIsMobile } from '~hooks/useIsMobile'
-import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
 import { Rating } from '~components/Field/Rating/Rating'
 import BottomHugBox from '~components/Hug/BottomHugBox'
 import IconButton from '~components/IconButton'
 import Textarea from '~components/Textarea'
+import { useIsMobile } from '~hooks/useIsMobile'
+import { useToast } from '~hooks/useToast'
 
 import { useAdminFeedbackMutation } from '~features/workspace/mutations'
 

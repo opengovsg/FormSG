@@ -4,11 +4,11 @@ import { Meta, StoryFn } from '@storybook/react'
 
 import { featureFlags } from 'formsg-shared/constants'
 
-import { CompletionPeekMomentType } from './utils/completionPeekContent'
 import {
   CompletionPeekCard,
   CompletionPeekCardProps,
 } from './CompletionPeekCard'
+import { CompletionPeekMomentType } from './utils/completionPeekContent'
 
 const redesignOn = new GrowthBook({
   features: { [featureFlags.workflowBuilderRedesign]: { defaultValue: true } },

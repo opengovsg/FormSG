@@ -1,7 +1,6 @@
 import { Router } from 'express'
 
 import { handleStripeEventUpdates } from '../../../../modules/payments/stripe.events.controller'
-
 import { BouncesRouter } from './bounces'
 
 export const NotificationsRouter = Router()

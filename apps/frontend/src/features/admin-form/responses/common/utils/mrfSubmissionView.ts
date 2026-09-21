@@ -67,7 +67,7 @@ export const getStatusFromWorkflowStatus = (
     case WorkflowStatus.PENDING:
       return MRF_STATUS.PENDING
     default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // oxlint-disable-next-line typescript/no-unused-vars
       const _: never = workflowStatus
       throw new Error('Invalid WorkflowStatus encountered.')
     }

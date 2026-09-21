@@ -11,527 +11,452 @@ All notable changes to this project will be documented in this file. See [commit
 
 ## [9.27.0](https://github.com/opengovsg/formsg/compare/v9.26.0...v9.27.0) (2026-09-18)
 
-
 ### Features
 
-* **config:** require SUBMISSION_HISTORY_V1_S3_BUCKET at start-up (#10055) ([#10055](https://github.com/opengovsg/formsg/commit/1d8a8e6a59abf80704e960f01d9b7b1989e4f466))
-* **security:** add lock for wiz to inventory our deps for SBOM (#10059) ([#10059](https://github.com/opengovsg/formsg/commit/276ade3a8ed147fadd8d598b6acc90be3dba8c81))
-
+- **config:** require SUBMISSION_HISTORY_V1_S3_BUCKET at start-up (#10055) ([#10055](https://github.com/opengovsg/formsg/commit/1d8a8e6a59abf80704e960f01d9b7b1989e4f466))
+- **security:** add lock for wiz to inventory our deps for SBOM (#10059) ([#10059](https://github.com/opengovsg/formsg/commit/276ade3a8ed147fadd8d598b6acc90be3dba8c81))
 
 ### Refactors
 
-* **webhook:** use shared function for webhook consumer (#10056) ([#10056](https://github.com/opengovsg/formsg/commit/93e13cd2cb952ac907dbff2a1fd2158dc5758d4d))
+- **webhook:** use shared function for webhook consumer (#10056) ([#10056](https://github.com/opengovsg/formsg/commit/93e13cd2cb952ac907dbff2a1fd2158dc5758d4d))
 
 ## [9.26.0](https://github.com/opengovsg/formsg/compare/v9.25.1...v9.26.0) (2026-09-17)
 
-
 ### Features
 
-* **shared:** byte-parity V4->V1 flatten in the shared package (#9984) (#9993) ([#9984](https://github.com/opengovsg/formsg/commit/85470e7a7d99eb69afbe3c3820b0ff73747a79d3))
-* swap admin response v4 -> v1 mapping to shared flatten (#10052) ([#10052](https://github.com/opengovsg/formsg/commit/34af5f2815be0f2129f08db96f60a15d26f9836b))
-
+- **shared:** byte-parity V4->V1 flatten in the shared package (#9984) (#9993) ([#9984](https://github.com/opengovsg/formsg/commit/85470e7a7d99eb69afbe3c3820b0ff73747a79d3))
+- swap admin response v4 -> v1 mapping to shared flatten (#10052) ([#10052](https://github.com/opengovsg/formsg/commit/34af5f2815be0f2129f08db96f60a15d26f9836b))
 
 ### Bug Fixes
 
-* **submission:** distinguish replayed submissions from invalid file keys (#10048) ([#10048](https://github.com/opengovsg/formsg/commit/f3aa1b9c8bb80e8a29501250723bf1897e924e92))
+- **submission:** distinguish replayed submissions from invalid file keys (#10048) ([#10048](https://github.com/opengovsg/formsg/commit/f3aa1b9c8bb80e8a29501250723bf1897e924e92))
 
 ## [9.25.1](https://github.com/opengovsg/formsg/compare/v9.25.0...v9.25.1) (2026-09-17)
 
-
 ### Refactors
 
-* **shared:** hoist the storage-mode response value rules and validateResponses (#9974) (#9989) ([#9974](https://github.com/opengovsg/formsg/commit/6bb62251bd6067a91d9bbe7e7d6eebfdbccd8836))
+- **shared:** hoist the storage-mode response value rules and validateResponses (#9974) (#9989) ([#9974](https://github.com/opengovsg/formsg/commit/6bb62251bd6067a91d9bbe7e7d6eebfdbccd8836))
 
 ## [9.25.0](https://github.com/opengovsg/formsg/compare/v9.24.0...v9.25.0) (2026-09-16)
 
-
 ### Features
 
-* **workflow:** apply FRM-2503's surface conventions to the step cards (#10023) ([#10023](https://github.com/opengovsg/formsg/commit/c14bada9f291e843e45875e6b0f68e5bff09e905))
-
+- **workflow:** apply FRM-2503's surface conventions to the step cards (#10023) ([#10023](https://github.com/opengovsg/formsg/commit/c14bada9f291e843e45875e6b0f68e5bff09e905))
 
 ### Bug Fixes
 
-* **create:** stack the collapse toggle under Help instead of over it (#10022) ([#10022](https://github.com/opengovsg/formsg/commit/83856112fa6f3f0329531430f094e4f46f51d331))
-* **workspace:** mock an empty form list in the Empty dashboard stories (#10024) ([#10024](https://github.com/opengovsg/formsg/commit/22c504d8e57e84b223a6a44feac3eae35c1999ff))
-* **yes-no-field:** clear stuck pressed state on mouseup off the option (#9971) ([#9971](https://github.com/opengovsg/formsg/commit/979c61430b06f83df8ab408e432c821cdca294cf))
+- **create:** stack the collapse toggle under Help instead of over it (#10022) ([#10022](https://github.com/opengovsg/formsg/commit/83856112fa6f3f0329531430f094e4f46f51d331))
+- **workspace:** mock an empty form list in the Empty dashboard stories (#10024) ([#10024](https://github.com/opengovsg/formsg/commit/22c504d8e57e84b223a6a44feac3eae35c1999ff))
+- **yes-no-field:** clear stuck pressed state on mouseup off the option (#9971) ([#9971](https://github.com/opengovsg/formsg/commit/979c61430b06f83df8ab408e432c821cdca294cf))
 
 ## [9.24.0](https://github.com/opengovsg/formsg/compare/v9.23.0...v9.24.0) (2026-09-16)
 
-
 ### Features
 
-* **auth-one:** replace sso.gov.sg login with one.gov.sg (#9902) ([#9902](https://github.com/opengovsg/formsg/commit/b2314a8dd9687a6ad45d7d9433c43eadf6cab066))
+- **auth-one:** replace sso.gov.sg login with one.gov.sg (#9902) ([#9902](https://github.com/opengovsg/formsg/commit/b2314a8dd9687a6ad45d7d9433c43eadf6cab066))
 
 ## [9.23.0](https://github.com/opengovsg/formsg/compare/v9.22.4...v9.23.0) (2026-09-15)
 
-
 ### Features
 
-* **create:** let the sidebar rail be collapsed on mobile (#10009) ([#10009](https://github.com/opengovsg/formsg/commit/815e9c6529b226b81d42c23736e4b2779211b3ec))
-
+- **create:** let the sidebar rail be collapsed on mobile (#10009) ([#10009](https://github.com/opengovsg/formsg/commit/815e9c6529b226b81d42c23736e4b2779211b3ec))
 
 ### Bug Fixes
 
-* **settings:** beta badge placement and closing date copy (#10011) ([#10011](https://github.com/opengovsg/formsg/commit/44a9cec3e36acd2cf8988c528143ec7c21e95690))
-* **toast:** centre the top toast on desktop (#9999) ([#9999](https://github.com/opengovsg/formsg/commit/b629d07bb19c1a9d0e18537a55bce4ccc2b8ff9f))
-* **workflow:** gate workflow deletion on the redesign flag (#10017) ([#10017](https://github.com/opengovsg/formsg/commit/6348a14413f99216110156c45051605e74317311))
-* **workflow:** make the workflow builder usable on a phone (#10008) ([#10008](https://github.com/opengovsg/formsg/commit/32c673a41fbc5846f86794e8192c1bfb3df9b234))
-* **workflow:** render the delete-workflow modal stories (#10021) ([#10021](https://github.com/opengovsg/formsg/commit/e089bffacb0e5dd1164ac4765e8135835ae5799c))
+- **settings:** beta badge placement and closing date copy (#10011) ([#10011](https://github.com/opengovsg/formsg/commit/44a9cec3e36acd2cf8988c528143ec7c21e95690))
+- **toast:** centre the top toast on desktop (#9999) ([#9999](https://github.com/opengovsg/formsg/commit/b629d07bb19c1a9d0e18537a55bce4ccc2b8ff9f))
+- **workflow:** gate workflow deletion on the redesign flag (#10017) ([#10017](https://github.com/opengovsg/formsg/commit/6348a14413f99216110156c45051605e74317311))
+- **workflow:** make the workflow builder usable on a phone (#10008) ([#10008](https://github.com/opengovsg/formsg/commit/32c673a41fbc5846f86794e8192c1bfb3df9b234))
+- **workflow:** render the delete-workflow modal stories (#10021) ([#10021](https://github.com/opengovsg/formsg/commit/e089bffacb0e5dd1164ac4765e8135835ae5799c))
 
 ## [9.22.4](https://github.com/opengovsg/formsg/compare/v9.22.3...v9.22.4) (2026-09-15)
 
-
 ### Dependencies
 
-* **deps:** patch 40+ vulnerable dependencies (2026-09 Dependabot batch) (#10007) ([#10007](https://github.com/opengovsg/formsg/commit/09b5080055642914eb46e556f89c49796e5a7ce2))
+- **deps:** patch 40+ vulnerable dependencies (2026-09 Dependabot batch) (#10007) ([#10007](https://github.com/opengovsg/formsg/commit/09b5080055642914eb46e556f89c49796e5a7ce2))
 
 ## [9.22.3](https://github.com/opengovsg/formsg/compare/v9.22.2...v9.22.3) (2026-09-15)
 
-
 ### Bug Fixes
 
-* **fapi logs:** add myinfo errors into logger.error (#10013) ([#10013](https://github.com/opengovsg/formsg/commit/33609acc9afce219255fbcb5630b82a4daef9a39))
-* correlate errors and logs and handle fapi error fallthrough (#10015) ([#10015](https://github.com/opengovsg/formsg/commit/ed35cced7ee83fa1f50cf3d9181d139a14a9209f))
-
+- **fapi logs:** add myinfo errors into logger.error (#10013) ([#10013](https://github.com/opengovsg/formsg/commit/33609acc9afce219255fbcb5630b82a4daef9a39))
+- correlate errors and logs and handle fapi error fallthrough (#10015) ([#10015](https://github.com/opengovsg/formsg/commit/ed35cced7ee83fa1f50cf3d9181d139a14a9209f))
 
 ### Chores
 
-* **myinfo:** add logging for MyInfo FAPI login and userinfo requests (#10012) ([#10012](https://github.com/opengovsg/formsg/commit/48b0797a46d846c734fd047dc74c99bb16b68268))
+- **myinfo:** add logging for MyInfo FAPI login and userinfo requests (#10012) ([#10012](https://github.com/opengovsg/formsg/commit/48b0797a46d846c734fd047dc74c99bb16b68268))
 
 ## [9.22.2](https://github.com/opengovsg/formsg/compare/v9.22.1...v9.22.2) (2026-09-14)
 
-
 ### Bug Fixes
 
-* **workflow:** copy, approval-toggle color, beta badge, and completion-email card fixes (1/5-5/5) (#9997) ([#9997](https://github.com/opengovsg/formsg/commit/c4921b786006266b1cde243470f4f55280a4ae3a))
+- **workflow:** copy, approval-toggle color, beta badge, and completion-email card fixes (1/5-5/5) (#9997) ([#9997](https://github.com/opengovsg/formsg/commit/c4921b786006266b1cde243470f4f55280a4ae3a))
 
 ## [9.22.1](https://github.com/opengovsg/formsg/compare/v9.22.0...v9.22.1) (2026-09-11)
 
-
 ### Bug Fixes
 
-* **workflow:** evaluate the deletion flag with the admin's email (#9998) ([#9998](https://github.com/opengovsg/formsg/commit/afe68943b8312107cddf055b3faeaef869849a2a))
+- **workflow:** evaluate the deletion flag with the admin's email (#9998) ([#9998](https://github.com/opengovsg/formsg/commit/afe68943b8312107cddf055b3faeaef869849a2a))
 
 ## [9.22.0](https://github.com/opengovsg/formsg/compare/v9.21.0...v9.22.0) (2026-09-11)
 
-
 ### Features
 
-* deploy scheduled form closure lambda (5/8) (#9881) ([#9881](https://github.com/opengovsg/formsg/commit/f9bec35ef8d6a4a490911f4499cd6c56e03f96ef))
-* enforce scheduled form closure (3/8) (#9879) ([#9879](https://github.com/opengovsg/formsg/commit/8bee1e8180dfe51a72b20d195f3172941baca8fc))
-* scheduled form closure admin ui (2/8) (#9878) ([#9878](https://github.com/opengovsg/formsg/commit/8181ab80317f9f96c5cd41e2ce69c444a5bb8ef2))
-* scheduled form closure schema (1/8) (#9877) ([#9877](https://github.com/opengovsg/formsg/commit/60d386600f7d38772b17afe022e923fd7d317bcd))
-* scheduled form closure sweep (4/8) (#9880) ([#9880](https://github.com/opengovsg/formsg/commit/32d25daac8275833958586e46d5d20e3e22d4b83))
-* style the scheduled closure notification email (7/8) (#9906) ([#9906](https://github.com/opengovsg/formsg/commit/4ac134c01ab24e554058965e7b7573f2b2f8e985))
-
+- deploy scheduled form closure lambda (5/8) (#9881) ([#9881](https://github.com/opengovsg/formsg/commit/f9bec35ef8d6a4a490911f4499cd6c56e03f96ef))
+- enforce scheduled form closure (3/8) (#9879) ([#9879](https://github.com/opengovsg/formsg/commit/8bee1e8180dfe51a72b20d195f3172941baca8fc))
+- scheduled form closure admin ui (2/8) (#9878) ([#9878](https://github.com/opengovsg/formsg/commit/8181ab80317f9f96c5cd41e2ce69c444a5bb8ef2))
+- scheduled form closure schema (1/8) (#9877) ([#9877](https://github.com/opengovsg/formsg/commit/60d386600f7d38772b17afe022e923fd7d317bcd))
+- scheduled form closure sweep (4/8) (#9880) ([#9880](https://github.com/opengovsg/formsg/commit/32d25daac8275833958586e46d5d20e3e22d4b83))
+- style the scheduled closure notification email (7/8) (#9906) ([#9906](https://github.com/opengovsg/formsg/commit/4ac134c01ab24e554058965e7b7573f2b2f8e985))
 
 ### Bug Fixes
 
-* 12-hour expiry time input and next-day default (6/8) (#9905) ([#9905](https://github.com/opengovsg/formsg/commit/9a7acdc61daa27b2c85f8824f52e6bf1de1318ae))
-* scheduled form closure v1.1 copy and beta badge (8/8) (#9918) ([#9918](https://github.com/opengovsg/formsg/commit/ea4577f9cd6c3d6ea27d5daa529649999d7a2da7))
+- 12-hour expiry time input and next-day default (6/8) (#9905) ([#9905](https://github.com/opengovsg/formsg/commit/9a7acdc61daa27b2c85f8824f52e6bf1de1318ae))
+- scheduled form closure v1.1 copy and beta badge (8/8) (#9918) ([#9918](https://github.com/opengovsg/formsg/commit/ea4577f9cd6c3d6ea27d5daa529649999d7a2da7))
 
 ## [9.21.0](https://github.com/opengovsg/formsg/compare/v9.20.0...v9.21.0) (2026-09-10)
 
-
 ### Features
 
-* **workflow:** add the delete-workflow modal (2/5) (#9908) ([#9908](https://github.com/opengovsg/formsg/commit/949061c13c1d2a766def030ddaea73a822b72157))
-* **workflow:** delete a workflow, and refuse while the form is open (1/5, backend) (#9907) ([#9907](https://github.com/opengovsg/formsg/commit/81a56381f99f607c5e7b6437dfc66083b1b18aa0))
-* **workflow:** delete workflow design polish (4/5) (#9917) ([#9917](https://github.com/opengovsg/formsg/commit/3dda30beb46d00eb8c131ac41a6d668f9e3043d3))
-* **workflow:** give step 1 and the workflow card a delete button (3/5) (#9909) ([#9909](https://github.com/opengovsg/formsg/commit/b357d7dfb414e31e537da742e0c3fb8a6fd4a42a))
-
+- **workflow:** add the delete-workflow modal (2/5) (#9908) ([#9908](https://github.com/opengovsg/formsg/commit/949061c13c1d2a766def030ddaea73a822b72157))
+- **workflow:** delete a workflow, and refuse while the form is open (1/5, backend) (#9907) ([#9907](https://github.com/opengovsg/formsg/commit/81a56381f99f607c5e7b6437dfc66083b1b18aa0))
+- **workflow:** delete workflow design polish (4/5) (#9917) ([#9917](https://github.com/opengovsg/formsg/commit/3dda30beb46d00eb8c131ac41a6d668f9e3043d3))
+- **workflow:** give step 1 and the workflow card a delete button (3/5) (#9909) ([#9909](https://github.com/opengovsg/formsg/commit/b357d7dfb414e31e537da742e0c3fb8a6fd4a42a))
 
 ### Bug Fixes
 
-* **workflow:** rest delete-modal focus on the dialog, not a button (5/5) (#9933) ([#9933](https://github.com/opengovsg/formsg/commit/fecba687a1170d486d91897c6afa1ba2b2d0354b))
-
+- **workflow:** rest delete-modal focus on the dialog, not a button (5/5) (#9933) ([#9933](https://github.com/opengovsg/formsg/commit/fecba687a1170d486d91897c6afa1ba2b2d0354b))
 
 ### Tests
 
-* **workflow:** give the intro screen tests a localStorage to write to (#9996) ([#9996](https://github.com/opengovsg/formsg/commit/49946f2be600b498361de6e7ec2ea61c5f5eb32f))
+- **workflow:** give the intro screen tests a localStorage to write to (#9996) ([#9996](https://github.com/opengovsg/formsg/commit/49946f2be600b498361de6e7ec2ea61c5f5eb32f))
 
 ## [9.20.0](https://github.com/opengovsg/formsg/compare/v9.19.0...v9.20.0) (2026-09-10)
 
-
 ### Features
 
-* **myinfo:** add MyInfo FAPI 2.0 config and key plumbing (#9924) ([#9924](https://github.com/opengovsg/formsg/commit/89b0fe5cd845b02acddbfbb85dedeb71e0b20294))
-* **myinfo:** expose FAPI 2.0 login route (#9926) ([#9926](https://github.com/opengovsg/formsg/commit/a6f415ffc3df8a5c0194c8dc72fa3128b4b13f4b))
-* **myinfo:** implement MyInfo FAPI 2.0 client and login flow (#9925) ([#9925](https://github.com/opengovsg/formsg/commit/087a42169480aaced2ef1a8cf6f4159a85fd5499))
-* **myinfo:** migrate MyInfo login to FAPI 2.0 flow (#9927) ([#9927](https://github.com/opengovsg/formsg/commit/d46058b1608fda7cddf0f976159b31c55f739772))
-
+- **myinfo:** add MyInfo FAPI 2.0 config and key plumbing (#9924) ([#9924](https://github.com/opengovsg/formsg/commit/89b0fe5cd845b02acddbfbb85dedeb71e0b20294))
+- **myinfo:** expose FAPI 2.0 login route (#9926) ([#9926](https://github.com/opengovsg/formsg/commit/a6f415ffc3df8a5c0194c8dc72fa3128b4b13f4b))
+- **myinfo:** implement MyInfo FAPI 2.0 client and login flow (#9925) ([#9925](https://github.com/opengovsg/formsg/commit/087a42169480aaced2ef1a8cf6f4159a85fd5499))
+- **myinfo:** migrate MyInfo login to FAPI 2.0 flow (#9927) ([#9927](https://github.com/opengovsg/formsg/commit/d46058b1608fda7cddf0f976159b31c55f739772))
 
 ### Bug Fixes
 
-* **myinfo:** close FAPI review gaps (session race, cookie cleanup, logging) (#9995) ([#9995](https://github.com/opengovsg/formsg/commit/bf00795048903ca8c0cea9d442d25d6f15f311b0))
-* **myinfo:** redirect stale form tabs after MyInfo auth and clear stale FAPI cookies (#9986) ([#9986](https://github.com/opengovsg/formsg/commit/0a80ab9513483dcd9c187a29300522648f02f417))
-
+- **myinfo:** close FAPI review gaps (session race, cookie cleanup, logging) (#9995) ([#9995](https://github.com/opengovsg/formsg/commit/bf00795048903ca8c0cea9d442d25d6f15f311b0))
+- **myinfo:** redirect stale form tabs after MyInfo auth and clear stale FAPI cookies (#9986) ([#9986](https://github.com/opengovsg/formsg/commit/0a80ab9513483dcd9c187a29300522648f02f417))
 
 ### Chores
 
-* **myinfo:** bump mockpass to 4.7.1 (#9923) ([#9923](https://github.com/opengovsg/formsg/commit/b59d71780dc63fb7076ba229bb8bc89ec8d87afe))
+- **myinfo:** bump mockpass to 4.7.1 (#9923) ([#9923](https://github.com/opengovsg/formsg/commit/b59d71780dc63fb7076ba229bb8bc89ec8d87afe))
 
 ## [9.19.0](https://github.com/opengovsg/formsg/compare/v9.18.1...v9.19.0) (2026-09-10)
 
-
 ### Features
 
-* **workflow-builder-redesign:** actionable empty states for field pickers (#9911) ([#9911](https://github.com/opengovsg/formsg/commit/d726ab0c145f34371701b5ed0ca9789a37636404))
-* **workflow-builder-redesign:** save half-built steps, gate publishing on a runnable workflow (#9856) ([#9856](https://github.com/opengovsg/formsg/commit/fd580ffdff3d6dcf1a560c07b6df2b3dc03b118c))
-* **workflow-builder-redesign:** stage a field creation across tabs (#9959) ([#9959](https://github.com/opengovsg/formsg/commit/c343990e6d5b56145a742a960567e38255084eb7))
-
+- **workflow-builder-redesign:** actionable empty states for field pickers (#9911) ([#9911](https://github.com/opengovsg/formsg/commit/d726ab0c145f34371701b5ed0ca9789a37636404))
+- **workflow-builder-redesign:** save half-built steps, gate publishing on a runnable workflow (#9856) ([#9856](https://github.com/opengovsg/formsg/commit/fd580ffdff3d6dcf1a560c07b6df2b3dc03b118c))
+- **workflow-builder-redesign:** stage a field creation across tabs (#9959) ([#9959](https://github.com/opengovsg/formsg/commit/c343990e6d5b56145a742a960567e38255084eb7))
 
 ### Bug Fixes
 
-* **workflow:** remember whether an admin builds in guided mode (#9991) ([#9991](https://github.com/opengovsg/formsg/commit/a493df308df6dd957567e2b18c94f0e264a57413))
-
+- **workflow:** remember whether an admin builds in guided mode (#9991) ([#9991](https://github.com/opengovsg/formsg/commit/a493df308df6dd957567e2b18c94f0e264a57413))
 
 ### Refactors
 
-* **mrf:** retire the mrf-step-write-token flag (prefactor) (#9990) ([#9990](https://github.com/opengovsg/formsg/commit/f3238158d3671d50891702278b0fe064a1988e9b))
+- **mrf:** retire the mrf-step-write-token flag (prefactor) (#9990) ([#9990](https://github.com/opengovsg/formsg/commit/f3238158d3671d50891702278b0fe064a1988e9b))
 
 ## [9.18.1](https://github.com/opengovsg/formsg/compare/v9.18.0...v9.18.1) (2026-09-09)
 
-
 ### Bug Fixes
 
-* use _id which is defined for generating hashedSubmitterId (#9985) ([#9985](https://github.com/opengovsg/formsg/commit/a00bbe802d440c4b5b66f9f783445fb3684aa2f9))
+- use _id which is defined for generating hashedSubmitterId (#9985) ([#9985](https://github.com/opengovsg/formsg/commit/a00bbe802d440c4b5b66f9f783445fb3684aa2f9))
 
 ## [9.18.0](https://github.com/opengovsg/formsg/compare/v9.17.1...v9.18.0) (2026-09-09)
 
-
 ### Features
 
-* **workflow:** add the guided setup welcome card (4/7) (#9967) ([#9967](https://github.com/opengovsg/formsg/commit/d07dd53e9f80d5d31ad746406db7dca0d099f761))
-* **workflow:** let an admin turn guided mode off (6/7) (#9969) ([#9969](https://github.com/opengovsg/formsg/commit/45b99c05d98d97e7785fe23b1e5ab1ca30d096b2))
-* **workflow:** report a finished step under its card (2/7) (#9957) ([#9957](https://github.com/opengovsg/formsg/commit/b996edc478205c2625b150a685e20aa1753366ce))
-* **workflow:** reveal a step one decision at a time (1/7) (#9956) ([#9956](https://github.com/opengovsg/formsg/commit/79a51ec936f7a4603eb226b03eac65d81f822e8e))
-* **workflow:** rewrite the workflow tab intro screen (3/7) (#9963) ([#9963](https://github.com/opengovsg/formsg/commit/bd0f6ae3f725e776f78e52f9454ee6e57fc883bf))
-* **workflow:** show the welcome card once per admin (5/7) (#9968) ([#9968](https://github.com/opengovsg/formsg/commit/72db2c9a396457b5a383d2db77091dacdd0a090c))
-
+- **workflow:** add the guided setup welcome card (4/7) (#9967) ([#9967](https://github.com/opengovsg/formsg/commit/d07dd53e9f80d5d31ad746406db7dca0d099f761))
+- **workflow:** let an admin turn guided mode off (6/7) (#9969) ([#9969](https://github.com/opengovsg/formsg/commit/45b99c05d98d97e7785fe23b1e5ab1ca30d096b2))
+- **workflow:** report a finished step under its card (2/7) (#9957) ([#9957](https://github.com/opengovsg/formsg/commit/b996edc478205c2625b150a685e20aa1753366ce))
+- **workflow:** reveal a step one decision at a time (1/7) (#9956) ([#9956](https://github.com/opengovsg/formsg/commit/79a51ec936f7a4603eb226b03eac65d81f822e8e))
+- **workflow:** rewrite the workflow tab intro screen (3/7) (#9963) ([#9963](https://github.com/opengovsg/formsg/commit/bd0f6ae3f725e776f78e52f9454ee6e57fc883bf))
+- **workflow:** show the welcome card once per admin (5/7) (#9968) ([#9968](https://github.com/opengovsg/formsg/commit/72db2c9a396457b5a383d2db77091dacdd0a090c))
 
 ### Bug Fixes
 
-* **workflow:** centre the workflow view against the viewport (7/7) (#9970) ([#9970](https://github.com/opengovsg/formsg/commit/64a0ec1e31c3c182bc194e3452ce836659de8889))
+- **workflow:** centre the workflow view against the viewport (7/7) (#9970) ([#9970](https://github.com/opengovsg/formsg/commit/64a0ec1e31c3c182bc194e3452ce836659de8889))
 
 ## [9.17.1](https://github.com/opengovsg/formsg/compare/v9.17.0...v9.17.1) (2026-09-08)
 
-
 ### Bug Fixes
 
-* **logging:** redact Authorization header from access logs (#9964) ([#9964](https://github.com/opengovsg/formsg/commit/9c65bec89e95a3237a0a7d34587c6c30655b0723))
+- **logging:** redact Authorization header from access logs (#9964) ([#9964](https://github.com/opengovsg/formsg/commit/9c65bec89e95a3237a0a7d34587c6c30655b0723))
 
 ## [9.17.0](https://github.com/opengovsg/formsg/compare/v9.16.0...v9.17.0) (2026-09-07)
 
-
 ### Features
 
-* **workflow-builder-redesign:** person-framed approval control (#9850) ([#9850](https://github.com/opengovsg/formsg/commit/0083007c73ba45075b9f1d06afef6363bd2d6a3d))
-* **workflow:** add the five completion moments' copy (2/3) (#9941) ([#9941](https://github.com/opengovsg/formsg/commit/941280d570bb40b51e26322714647b7ec1d73ef2))
-* **workflow:** add the PeekCard component (1/3) (#9940) ([#9940](https://github.com/opengovsg/formsg/commit/1757be6bcda37601babab128e8ad4a6c77f1d5ad))
-* **workflow:** add the Spotlight wrapper (1/2) (#9945) ([#9945](https://github.com/opengovsg/formsg/commit/b5422b8a2f115c50bcd9e0ca6860988f29627fb4))
-* **workflow:** decide when the spotlight applies (2/2) (#9946) ([#9946](https://github.com/opengovsg/formsg/commit/5bdc82d7b9eba72918938847830a485863d6c912))
-* **workflow:** wire the peek card to its five moments (3/3) (#9942) ([#9942](https://github.com/opengovsg/formsg/commit/b525a4588617684822c2011e02c4fb8dffb64a55))
-
+- **workflow-builder-redesign:** person-framed approval control (#9850) ([#9850](https://github.com/opengovsg/formsg/commit/0083007c73ba45075b9f1d06afef6363bd2d6a3d))
+- **workflow:** add the five completion moments' copy (2/3) (#9941) ([#9941](https://github.com/opengovsg/formsg/commit/941280d570bb40b51e26322714647b7ec1d73ef2))
+- **workflow:** add the PeekCard component (1/3) (#9940) ([#9940](https://github.com/opengovsg/formsg/commit/1757be6bcda37601babab128e8ad4a6c77f1d5ad))
+- **workflow:** add the Spotlight wrapper (1/2) (#9945) ([#9945](https://github.com/opengovsg/formsg/commit/b5422b8a2f115c50bcd9e0ca6860988f29627fb4))
+- **workflow:** decide when the spotlight applies (2/2) (#9946) ([#9946](https://github.com/opengovsg/formsg/commit/5bdc82d7b9eba72918938847830a485863d6c912))
+- **workflow:** wire the peek card to its five moments (3/3) (#9942) ([#9942](https://github.com/opengovsg/formsg/commit/b525a4588617684822c2011e02c4fb8dffb64a55))
 
 ### Bug Fixes
 
-* **theme:** add pointer cursor to Radio option hover (#9953) ([#9953](https://github.com/opengovsg/formsg/commit/366607ae9fed37580a328a01df765cb8418e4d9f))
-
+- **theme:** add pointer cursor to Radio option hover (#9953) ([#9953](https://github.com/opengovsg/formsg/commit/366607ae9fed37580a328a01df765cb8418e4d9f))
 
 ### Tests
 
-* **storybook:** repair the three interaction tests TurboSnap re-enabled (#9952) ([#9952](https://github.com/opengovsg/formsg/commit/9a43c3ee5a0a8c9eef0d42a97b6a75f4d4bdc608))
+- **storybook:** repair the three interaction tests TurboSnap re-enabled (#9952) ([#9952](https://github.com/opengovsg/formsg/commit/9a43c3ee5a0a8c9eef0d42a97b6a75f4d4bdc608))
 
 ## [9.16.0](https://github.com/opengovsg/formsg/compare/v9.15.2...v9.16.0) (2026-09-03)
 
-
 ### Features
 
-* **workflow:** completion email card, editable (3/3) (#9874) ([#9874](https://github.com/opengovsg/formsg/commit/020af39399ae051f6b8da26361dfbf4bca0e51f1))
-* **workflow:** completion email card, read-only (2/3) (#9873) ([#9873](https://github.com/opengovsg/formsg/commit/60fcee9003dda3e194101fbb3aa1d757260cf043))
-* **workspace:** rework form-origin question into two-question flow (FRM-2572) (#9852) ([#9852](https://github.com/opengovsg/formsg/commit/fcf0df93f0da07dc00ca3e87ad3b17d61acf9971))
-* mrf payments admin surfaces (2/4) (#9798) ([#9798](https://github.com/opengovsg/formsg/commit/ec0d1a15ff3959185fe54bd19fec3421c32a3891))
-* mrf payments hardening (4/4) (#9800) ([#9800](https://github.com/opengovsg/formsg/commit/52d3b8058e3906b4aa6941d583f86096de339fe1))
-* mrf payments respondent flow (3/4) (#9799) ([#9799](https://github.com/opengovsg/formsg/commit/bf5db8ebf19fa32b4068fa1522989ca90cf1d3de))
-* mrf payments schema changes (1/4) (#9797) ([#9797](https://github.com/opengovsg/formsg/commit/3ce7aa4a9515abda71ab4906738a6fcb51838d90))
-
+- **workflow:** completion email card, editable (3/3) (#9874) ([#9874](https://github.com/opengovsg/formsg/commit/020af39399ae051f6b8da26361dfbf4bca0e51f1))
+- **workflow:** completion email card, read-only (2/3) (#9873) ([#9873](https://github.com/opengovsg/formsg/commit/60fcee9003dda3e194101fbb3aa1d757260cf043))
+- **workspace:** rework form-origin question into two-question flow (FRM-2572) (#9852) ([#9852](https://github.com/opengovsg/formsg/commit/fcf0df93f0da07dc00ca3e87ad3b17d61acf9971))
+- mrf payments admin surfaces (2/4) (#9798) ([#9798](https://github.com/opengovsg/formsg/commit/ec0d1a15ff3959185fe54bd19fec3421c32a3891))
+- mrf payments hardening (4/4) (#9800) ([#9800](https://github.com/opengovsg/formsg/commit/52d3b8058e3906b4aa6941d583f86096de339fe1))
+- mrf payments respondent flow (3/4) (#9799) ([#9799](https://github.com/opengovsg/formsg/commit/bf5db8ebf19fa32b4068fa1522989ca90cf1d3de))
+- mrf payments schema changes (1/4) (#9797) ([#9797](https://github.com/opengovsg/formsg/commit/3ce7aa4a9515abda71ab4906738a6fcb51838d90))
 
 ### Bug Fixes
 
-* **ci:** correct TurboSnap's untraced globs so tracing works at all (#9950) ([#9950](https://github.com/opengovsg/formsg/commit/d2124b18b5fc5b3949d8c6f6ac0f755a5c29b2b3))
-* add factory mocks to prevent unlimited retries against localhost (#9913) ([#9913](https://github.com/opengovsg/formsg/commit/e18536654ae5fd38edd30a0c632fa9b121206893))
-
+- **ci:** correct TurboSnap's untraced globs so tracing works at all (#9950) ([#9950](https://github.com/opengovsg/formsg/commit/d2124b18b5fc5b3949d8c6f6ac0f755a5c29b2b3))
+- add factory mocks to prevent unlimited retries against localhost (#9913) ([#9913](https://github.com/opengovsg/formsg/commit/e18536654ae5fd38edd30a0c632fa9b121206893))
 
 ### Tests
 
-* **workspace:** assert Q1's own required message in the origin story (#9948) ([#9948](https://github.com/opengovsg/formsg/commit/cb41c600487ff994689ac22f4c472b0ffd18dff1))
-
+- **workspace:** assert Q1's own required message in the origin story (#9948) ([#9948](https://github.com/opengovsg/formsg/commit/cb41c600487ff994689ac22f4c472b0ffd18dff1))
 
 ### Chores
 
-* drop domain docs merged by accident in #9852 (#9949) ([#9852](https://github.com/opengovsg/formsg/commit/360be6173607778a5abec136050e2cb5bd63140c))
-
+- drop domain docs merged by accident in #9852 (#9949) ([#9852](https://github.com/opengovsg/formsg/commit/360be6173607778a5abec136050e2cb5bd63140c))
 
 ### Refactors
 
-* **mrf-email:** extract the MRF completion email field group (1/3) (#9872) ([#9872](https://github.com/opengovsg/formsg/commit/40426be3a34d3c4eed57706eeec676a94277f45c))
+- **mrf-email:** extract the MRF completion email field group (1/3) (#9872) ([#9872](https://github.com/opengovsg/formsg/commit/40426be3a34d3c4eed57706eeec676a94277f45c))
 
 ## [9.15.2](https://github.com/opengovsg/formsg/compare/v9.15.1...v9.15.2) (2026-09-01)
 
-
 ### Bug Fixes
 
-* inject gb attributes earlier the controller chain (#9914) ([#9914](https://github.com/opengovsg/formsg/commit/b3aa46909b9c8140011107c6507112995768bde8))
-
+- inject gb attributes earlier the controller chain (#9914) ([#9914](https://github.com/opengovsg/formsg/commit/b3aa46909b9c8140011107c6507112995768bde8))
 
 ### Chores
 
-* **logging:** redact client assertion and OAuth exchange codes from logs (#9896) ([#9896](https://github.com/opengovsg/formsg/commit/0aab7ae88ff7fab3f6c705411b2930268735a470))
+- **logging:** redact client assertion and OAuth exchange codes from logs (#9896) ([#9896](https://github.com/opengovsg/formsg/commit/0aab7ae88ff7fab3f6c705411b2930268735a470))
 
 ## [9.15.1](https://github.com/opengovsg/formsg/compare/v9.15.0...v9.15.1) (2026-08-31)
 
-
 ### Bug Fixes
 
-* **design-drawer:** stop form title from autosaving before Save design (#9894) ([#9894](https://github.com/opengovsg/formsg/commit/100742d2de5ff3eecbabbc00315e00708a4e4c7f))
-* **responses:** put response metadata back on the type scale (#9904) ([#9904](https://github.com/opengovsg/formsg/commit/c5234339d3cadf82ae9d44bb23e0c34fe6d8719a))
+- **design-drawer:** stop form title from autosaving before Save design (#9894) ([#9894](https://github.com/opengovsg/formsg/commit/100742d2de5ff3eecbabbc00315e00708a4e4c7f))
+- **responses:** put response metadata back on the type scale (#9904) ([#9904](https://github.com/opengovsg/formsg/commit/c5234339d3cadf82ae9d44bb23e0c34fe6d8719a))
 
 ## [9.15.0](https://github.com/opengovsg/formsg/compare/v9.14.0...v9.15.0) (2026-08-27)
 
-
 ### Features
 
-* **spcp:** add PKCE to Singpass/Corppass OIDC login (#9892) ([#9892](https://github.com/opengovsg/formsg/commit/b25dc6bc90375294ade33091ce8d287a1baec6a7))
+- **spcp:** add PKCE to Singpass/Corppass OIDC login (#9892) ([#9892](https://github.com/opengovsg/formsg/commit/b25dc6bc90375294ade33091ce8d287a1baec6a7))
 
 ## [9.14.0](https://github.com/opengovsg/formsg/compare/v9.13.0...v9.14.0) (2026-08-27)
 
-
 ### Features
 
-* **children:** remove Secondary Race and Allow-Multiple from the v1 children field (v2.0) (#9794) ([#9794](https://github.com/opengovsg/formsg/commit/c7e870163512fb96e18f0de32f14297cb9e1c9a6))
+- **children:** remove Secondary Race and Allow-Multiple from the v1 children field (v2.0) (#9794) ([#9794](https://github.com/opengovsg/formsg/commit/c7e870163512fb96e18f0de32f14297cb9e1c9a6))
 
 ## [9.13.0](https://github.com/opengovsg/formsg/compare/v9.12.0...v9.13.0) (2026-08-27)
 
-
 ### Features
 
-* **mrf:** enqueue a snapshot-naming retry where a snapshot exists (#9866) ([#9866](https://github.com/opengovsg/formsg/commit/9429cfca489b31e3b28c21e04734f73c4a77d945))
-* **mrf:** make a step's snapshot readable and its read failures legible (#9863) ([#9863](https://github.com/opengovsg/formsg/commit/f93c9758fb81eaf7da68689e3d7295d3c89aa41d))
-* **mrf:** replay the failed step's snapshot on webhook retry (#9865) ([#9865](https://github.com/opengovsg/formsg/commit/6c3c0e3bf580d2efc6bb3f76cd733602b7718ac2))
-* **webhook:** version the retry queue message to name its step (#9864) ([#9864](https://github.com/opengovsg/formsg/commit/7b6a958b0215076c8982f7cc0ff786b0b2e9f7f4))
-
+- **mrf:** enqueue a snapshot-naming retry where a snapshot exists (#9866) ([#9866](https://github.com/opengovsg/formsg/commit/9429cfca489b31e3b28c21e04734f73c4a77d945))
+- **mrf:** make a step's snapshot readable and its read failures legible (#9863) ([#9863](https://github.com/opengovsg/formsg/commit/f93c9758fb81eaf7da68689e3d7295d3c89aa41d))
+- **mrf:** replay the failed step's snapshot on webhook retry (#9865) ([#9865](https://github.com/opengovsg/formsg/commit/6c3c0e3bf580d2efc6bb3f76cd733602b7718ac2))
+- **webhook:** version the retry queue message to name its step (#9864) ([#9864](https://github.com/opengovsg/formsg/commit/7b6a958b0215076c8982f7cc0ff786b0b2e9f7f4))
 
 ### Refactors
 
-* **mrf:** ready the payload policy and reconstruction for replay (#9862) ([#9862](https://github.com/opengovsg/formsg/commit/ba2b247b776319a9fbca9ce89ac6cfa47fdd4b34))
+- **mrf:** ready the payload policy and reconstruction for replay (#9862) ([#9862](https://github.com/opengovsg/formsg/commit/ba2b247b776319a9fbca9ce89ac6cfa47fdd4b34))
 
 ## [9.12.0](https://github.com/opengovsg/formsg/compare/v9.11.1...v9.12.0) (2026-08-25)
 
-
 ### Features
 
-* **auth-wogad:** accept a PKCE code verifier at /verify (#9888) ([#9888](https://github.com/opengovsg/formsg/commit/99cb6130572e22db48dbcd7fd154cb095ef32ddc))
-* **auth-wogad:** issue an S256 PKCE challenge at /authUrl (#9889) ([#9889](https://github.com/opengovsg/formsg/commit/2c6382021dbff1cc5b5da0969dba322857d08fe1))
-
+- **auth-wogad:** accept a PKCE code verifier at /verify (#9888) ([#9888](https://github.com/opengovsg/formsg/commit/99cb6130572e22db48dbcd7fd154cb095ef32ddc))
+- **auth-wogad:** issue an S256 PKCE challenge at /authUrl (#9889) ([#9889](https://github.com/opengovsg/formsg/commit/2c6382021dbff1cc5b5da0969dba322857d08fe1))
 
 ### Bug Fixes
 
-* **public-form:** thread form colorScheme to issue feedback modal buttons (#9887) ([#9887](https://github.com/opengovsg/formsg/commit/17fbfde6b02d10d06358fbe20889359a8276e598))
-
+- **public-form:** thread form colorScheme to issue feedback modal buttons (#9887) ([#9887](https://github.com/opengovsg/formsg/commit/17fbfde6b02d10d06358fbe20889359a8276e598))
 
 ### Chores
 
-* remove unused commented out import (#9870) ([#9870](https://github.com/opengovsg/formsg/commit/f13af8f375b6e177c7e285f97873ffc8804a0724))
+- remove unused commented out import (#9870) ([#9870](https://github.com/opengovsg/formsg/commit/f13af8f375b6e177c7e285f97873ffc8804a0724))
 
 ## [9.11.1](https://github.com/opengovsg/formsg/compare/v9.11.0...v9.11.1) (2026-08-19)
 
-
 ### Bug Fixes
 
-* **aws-s3:** floor presigned URL expiry to whole seconds (#9861) ([#9861](https://github.com/opengovsg/formsg/commit/064422a4804a42e8d1ccabeb74b2d20cc916bd06))
-* **snapshot-store:** finish aws-sdk v3 migration for the S5 snapshot store (#9868) ([#9868](https://github.com/opengovsg/formsg/commit/fd71a8e46440bffe27a2bccc9454d1c856b7d179))
+- **aws-s3:** floor presigned URL expiry to whole seconds (#9861) ([#9861](https://github.com/opengovsg/formsg/commit/064422a4804a42e8d1ccabeb74b2d20cc916bd06))
+- **snapshot-store:** finish aws-sdk v3 migration for the S5 snapshot store (#9868) ([#9868](https://github.com/opengovsg/formsg/commit/fd71a8e46440bffe27a2bccc9454d1c856b7d179))
 
 ## [9.11.0](https://github.com/opengovsg/formsg/compare/v9.10.1...v9.11.0) (2026-08-18)
 
-
 ### Features
 
-* **i18n/EditFieldDrawer:** extract edit-fieldtype component text (#9832) ([#9832](https://github.com/opengovsg/formsg/commit/6683df9fe1f2bf77fbcbd729685aa44ab9662411))
-* **save-draft:** enable save draft by default on forms created from scratch and remove flag requirements (#9833) ([#9833](https://github.com/opengovsg/formsg/commit/5e24250b3063aee06099062a6392380e517793bf))
-* track time spent on form creation selection screen via DD RUM custom action (#9855) ([#9855](https://github.com/opengovsg/formsg/commit/8cf32410929928ef70293804c03c12acf162a58a))
-
+- **i18n/EditFieldDrawer:** extract edit-fieldtype component text (#9832) ([#9832](https://github.com/opengovsg/formsg/commit/6683df9fe1f2bf77fbcbd729685aa44ab9662411))
+- **save-draft:** enable save draft by default on forms created from scratch and remove flag requirements (#9833) ([#9833](https://github.com/opengovsg/formsg/commit/5e24250b3063aee06099062a6392380e517793bf))
+- track time spent on form creation selection screen via DD RUM custom action (#9855) ([#9855](https://github.com/opengovsg/formsg/commit/8cf32410929928ef70293804c03c12acf162a58a))
 
 ### Chores
 
-* **frontend:** log chunk preload failures to Datadog (#9847) ([#9847](https://github.com/opengovsg/formsg/commit/fb27fabc2bb1b1a41429b2f3201ab9b7b435f793))
+- **frontend:** log chunk preload failures to Datadog (#9847) ([#9847](https://github.com/opengovsg/formsg/commit/fb27fabc2bb1b1a41429b2f3201ab9b7b435f793))
 
 ## [9.10.1](https://github.com/opengovsg/formsg/compare/v9.10.0...v9.10.1) (2026-08-17)
 
-
 ### Bug Fixes
 
-* **tests:** expect messageKey in MRF snapshot-write failure assertions (#9854) ([#9854](https://github.com/opengovsg/formsg/commit/99b07608366419a76efe557062f57a3b5be64929))
-
+- **tests:** expect messageKey in MRF snapshot-write failure assertions (#9854) ([#9854](https://github.com/opengovsg/formsg/commit/99b07608366419a76efe557062f57a3b5be64929))
 
 ### Refactors
 
-* **aws-sdk:** migrate to v3 (#9837) ([#9837](https://github.com/opengovsg/formsg/commit/58cd603b3dee781ca6d103ac41e18dd862d70dbb))
-* **backend:** move messages to i18n keys (#9664) ([#9664](https://github.com/opengovsg/formsg/commit/c5511bcda5f266cda8555570bb3b4bd47944d866))
+- **aws-sdk:** migrate to v3 (#9837) ([#9837](https://github.com/opengovsg/formsg/commit/58cd603b3dee781ca6d103ac41e18dd862d70dbb))
+- **backend:** move messages to i18n keys (#9664) ([#9664](https://github.com/opengovsg/formsg/commit/c5511bcda5f266cda8555570bb3b4bd47944d866))
 
 ## [9.10.0](https://github.com/opengovsg/formsg/compare/v9.9.0...v9.10.0) (2026-08-14)
 
-
 ### Features
 
-* **growthbook:** add adminEmail attribute for formid-json targeting (#9851) ([#9851](https://github.com/opengovsg/formsg/commit/51e670f2bf8ac4ce642978e0433cc132e9fa9094))
-
+- **growthbook:** add adminEmail attribute for formid-json targeting (#9851) ([#9851](https://github.com/opengovsg/formsg/commit/51e670f2bf8ac4ce642978e0433cc132e9fa9094))
 
 ### Bug Fixes
 
-* **workflow,logic:** auto-save on card switch discards edits (#9849) ([#9849](https://github.com/opengovsg/formsg/commit/dea502f7b1d04a2ec3758650cf71df166c5fe893))
+- **workflow,logic:** auto-save on card switch discards edits (#9849) ([#9849](https://github.com/opengovsg/formsg/commit/dea502f7b1d04a2ec3758650cf71df166c5fe893))
 
 ## [9.9.0](https://github.com/opengovsg/formsg/compare/v9.8.0...v9.9.0) (2026-08-13)
 
-
 ### Features
 
-* **mrf:** derive the wire webhook version from the content format (#9820) ([#9820](https://github.com/opengovsg/formsg/commit/5f95cfa180e373bc4a7b12c3318c074650177fb9))
-* **mrf:** freeze a v4 snapshot before commit and send the reconstructed payload (S4) (#9822) ([#9822](https://github.com/opengovsg/formsg/commit/de84e33edd15645b3bd31ace101e901ca5bed626))
-* **mrf:** widen the row content-version gate by consumer class (#9821) ([#9821](https://github.com/opengovsg/formsg/commit/8dc1f680ee53fa4715b6b8e6d9e939a06a50b87f))
+- **mrf:** derive the wire webhook version from the content format (#9820) ([#9820](https://github.com/opengovsg/formsg/commit/5f95cfa180e373bc4a7b12c3318c074650177fb9))
+- **mrf:** freeze a v4 snapshot before commit and send the reconstructed payload (S4) (#9822) ([#9822](https://github.com/opengovsg/formsg/commit/de84e33edd15645b3bd31ace101e901ca5bed626))
+- **mrf:** widen the row content-version gate by consumer class (#9821) ([#9821](https://github.com/opengovsg/formsg/commit/8dc1f680ee53fa4715b6b8e6d9e939a06a50b87f))
 
 ## [9.8.0](https://github.com/opengovsg/formsg/compare/v9.7.2...v9.8.0) (2026-08-13)
 
-
 ### Features
 
-* **logic:** click-to-edit logic cards (2/2) (#9786) ([#9786](https://github.com/opengovsg/formsg/commit/ea7559c23eb0f666e44e757eb21072cb117f2616))
-* **workflow:** click-to-edit step cards (1/2) (#9781) ([#9781](https://github.com/opengovsg/formsg/commit/2c925823f43186b20e60b87a8e67a5c69f68589c))
-
+- **logic:** click-to-edit logic cards (2/2) (#9786) ([#9786](https://github.com/opengovsg/formsg/commit/ea7559c23eb0f666e44e757eb21072cb117f2616))
+- **workflow:** click-to-edit step cards (1/2) (#9781) ([#9781](https://github.com/opengovsg/formsg/commit/2c925823f43186b20e60b87a8e67a5c69f68589c))
 
 ### Bug Fixes
 
-* **workflow,logic:** guard auto-save effect against double submit (#9838) ([#9838](https://github.com/opengovsg/formsg/commit/140d5e1acf44b10b423e803e9383787d59831283))
+- **workflow,logic:** guard auto-save effect against double submit (#9838) ([#9838](https://github.com/opengovsg/formsg/commit/140d5e1acf44b10b423e803e9383787d59831283))
 
 ## [9.7.2](https://github.com/opengovsg/formsg/compare/v9.7.1...v9.7.2) (2026-08-13)
 
-
 ### Bug Fixes
 
-* gate Form ID in admin notification JSON under formid-json feature flag (#9845) ([#9845](https://github.com/opengovsg/formsg/commit/eebbe00e5ce1998cd835d16fa7943010e55c5c62))
+- gate Form ID in admin notification JSON under formid-json feature flag (#9845) ([#9845](https://github.com/opengovsg/formsg/commit/eebbe00e5ce1998cd835d16fa7943010e55c5c62))
 
 ## [9.7.1](https://github.com/opengovsg/formsg/compare/v9.7.0...v9.7.1) (2026-08-12)
 
-
 ### Refactors
 
-* make 8-char alphanumeric OTP permanent, remove otp-entropy-expanded flag (#9841) ([#9841](https://github.com/opengovsg/formsg/commit/a25335782ce49447cdf4182b6a3fb711d1dfe4c5))
+- make 8-char alphanumeric OTP permanent, remove otp-entropy-expanded flag (#9841) ([#9841](https://github.com/opengovsg/formsg/commit/a25335782ce49447cdf4182b6a3fb711d1dfe4c5))
 
 ## [9.7.0](https://github.com/opengovsg/formsg/compare/v9.6.1...v9.7.0) (2026-08-12)
 
-
 ### Features
 
-* include Form ID as first entry of admin notification JSON (#9732) ([#9732](https://github.com/opengovsg/formsg/commit/da03ccbc6dcbe2e7464cfd0214b90d1b70ac1a3b))
+- include Form ID as first entry of admin notification JSON (#9732) ([#9732](https://github.com/opengovsg/formsg/commit/da03ccbc6dcbe2e7464cfd0214b90d1b70ac1a3b))
 
 ## [9.6.1](https://github.com/opengovsg/formsg/compare/v9.6.0...v9.6.1) (2026-08-06)
 
-
 ### Refactors
 
-* **mrf:** remove dead V3 field validators and response builders (#9825) ([#9825](https://github.com/opengovsg/formsg/commit/dc6d49b0250e80934e1293085e3a1afb833d1771))
+- **mrf:** remove dead V3 field validators and response builders (#9825) ([#9825](https://github.com/opengovsg/formsg/commit/dc6d49b0250e80934e1293085e3a1afb833d1771))
 
 ## [9.6.0](https://github.com/opengovsg/formsg/compare/v9.5.0...v9.6.0) (2026-08-06)
 
-
 ### Features
 
-* **mrf:** classify submittedSteps sub-fields per egress boundary (#9817) ([#9817](https://github.com/opengovsg/formsg/commit/5ad22167012d195a7b6e45660e539883a815b55b))
-* **mrf:** send-time payload policy, reconstruction, and gates (M4 + M3) (#9819) ([#9819](https://github.com/opengovsg/formsg/commit/46c0c17522e61bcea9e4781926dfd6ebfc61594d))
-* **mrf:** v4 submission-snapshot storage layer (M6 + M7) (#9818) ([#9818](https://github.com/opengovsg/formsg/commit/7c25fba4ac7ed87c8f4112af1f73f96289f2931d))
+- **mrf:** classify submittedSteps sub-fields per egress boundary (#9817) ([#9817](https://github.com/opengovsg/formsg/commit/5ad22167012d195a7b6e45660e539883a815b55b))
+- **mrf:** send-time payload policy, reconstruction, and gates (M4 + M3) (#9819) ([#9819](https://github.com/opengovsg/formsg/commit/46c0c17522e61bcea9e4781926dfd6ebfc61594d))
+- **mrf:** v4 submission-snapshot storage layer (M6 + M7) (#9818) ([#9818](https://github.com/opengovsg/formsg/commit/7c25fba4ac7ed87c8f4112af1f73f96289f2931d))
 
 ## [9.5.0](https://github.com/opengovsg/formsg/compare/v9.4.0...v9.5.0) (2026-08-06)
 
-
 ### Features
 
-* alphanumeric OTPs behind otp-entropy-expanded feature flag (#9831) ([#9831](https://github.com/opengovsg/formsg/commit/ccfbaeec4942e1cc7d48fbd8d43900067058e5d7))
+- alphanumeric OTPs behind otp-entropy-expanded feature flag (#9831) ([#9831](https://github.com/opengovsg/formsg/commit/ccfbaeec4942e1cc7d48fbd8d43900067058e5d7))
 
 ## [9.4.0](https://github.com/opengovsg/formsg/compare/v9.3.0...v9.4.0) (2026-08-06)
 
-
 ### Features
 
-* **security:** pnpm defaults to harden against supply chain attacks (#9826) ([#9826](https://github.com/opengovsg/formsg/commit/c1b854db5882586ad769e34554d77398a4901307))
-
+- **security:** pnpm defaults to harden against supply chain attacks (#9826) ([#9826](https://github.com/opengovsg/formsg/commit/c1b854db5882586ad769e34554d77398a4901307))
 
 ### Bug Fixes
 
-* prevent MRF checkbox answers without a value from crashing the app (#9830) ([#9830](https://github.com/opengovsg/formsg/commit/9a46176bd764b669f0d41e3cc6faf1a24f468f2c))
+- prevent MRF checkbox answers without a value from crashing the app (#9830) ([#9830](https://github.com/opengovsg/formsg/commit/9a46176bd764b669f0d41e3cc6faf1a24f468f2c))
 
 ## [9.3.0](https://github.com/opengovsg/formsg/compare/v9.2.0...v9.3.0) (2026-08-04)
 
-
 ### Features
 
-* add publish and workflow feedback triggers (#9689) ([#9689](https://github.com/opengovsg/formsg/commit/0842828703d942ac980e059081c3b02eae773d74))
-* replace thumbs up/down with 5-star rating UI (#9692) ([#9692](https://github.com/opengovsg/formsg/commit/0b0b4dc105dfcf08db1e4994dddbb0c2fabcd950))
-
+- add publish and workflow feedback triggers (#9689) ([#9689](https://github.com/opengovsg/formsg/commit/0842828703d942ac980e059081c3b02eae773d74))
+- replace thumbs up/down with 5-star rating UI (#9692) ([#9692](https://github.com/opengovsg/formsg/commit/0b0b4dc105dfcf08db1e4994dddbb0c2fabcd950))
 
 ### Dependencies
 
-* **deps:** bump ip-address from 10.2.0 to 10.3.1 (#9824) ([#9824](https://github.com/opengovsg/formsg/commit/4c6a7863d2a147b764691a6ed33ec171ee701928))
+- **deps:** bump ip-address from 10.2.0 to 10.3.1 (#9824) ([#9824](https://github.com/opengovsg/formsg/commit/4c6a7863d2a147b764691a6ed33ec171ee701928))
 
 ## [9.2.0](https://github.com/opengovsg/formsg/compare/v9.1.0...v9.2.0) (2026-08-03)
 
-
 ### Features
 
-* **i18n:** extract text from MultiLanguageSection components (#9647) ([#9647](https://github.com/opengovsg/formsg/commit/ad08ccc33a75afff093dc637678732602f79aa80))
-
+- **i18n:** extract text from MultiLanguageSection components (#9647) ([#9647](https://github.com/opengovsg/formsg/commit/ad08ccc33a75afff093dc637678732602f79aa80))
 
 ### Bug Fixes
 
-* **admin-form:** show error state when webhook settings fetch fails (#9524) ([#9524](https://github.com/opengovsg/formsg/commit/94977db80f6de483df5892e938ba209cb44d93e6))
-* **login:** show toast for non-401 errors on sgID profile (#9768) ([#9768](https://github.com/opengovsg/formsg/commit/38ee7c439d917afc0aa319eeb247749df06183ff))
-* add title to disabled table text cells  (#9582) ([#9582](https://github.com/opengovsg/formsg/commit/b35824b08af96c781c4570fdde2011576d6cc3d9))
-
+- **admin-form:** show error state when webhook settings fetch fails (#9524) ([#9524](https://github.com/opengovsg/formsg/commit/94977db80f6de483df5892e938ba209cb44d93e6))
+- **login:** show toast for non-401 errors on sgID profile (#9768) ([#9768](https://github.com/opengovsg/formsg/commit/38ee7c439d917afc0aa319eeb247749df06183ff))
+- add title to disabled table text cells (#9582) ([#9582](https://github.com/opengovsg/formsg/commit/b35824b08af96c781c4570fdde2011576d6cc3d9))
 
 ### Chores
 
-* **ci:** shard backend tests across 3 runners (#9796) ([#9796](https://github.com/opengovsg/formsg/commit/ea8ff4f89a10f083ec5892cc32dde93150479f46))
+- **ci:** shard backend tests across 3 runners (#9796) ([#9796](https://github.com/opengovsg/formsg/commit/ea8ff4f89a10f083ec5892cc32dde93150479f46))
 
 ## [9.1.0](https://github.com/opengovsg/formsg/compare/v9.0.1...v9.1.0) (2026-08-03)
 
-
 ### Features
 
-* **workflow-builder-redesign:** copy changes across workflow builder (#9733) ([#9733](https://github.com/opengovsg/formsg/commit/912d8682d03614aa3d5d1a24de96e61449a71f1f))
-
+- **workflow-builder-redesign:** copy changes across workflow builder (#9733) ([#9733](https://github.com/opengovsg/formsg/commit/912d8682d03614aa3d5d1a24de96e61449a71f1f))
 
 ### Refactors
 
-* **paper-forms:** reuse ProgressIndicator for set-up progress (#9793) ([#9793](https://github.com/opengovsg/formsg/commit/94fe9ae5127b55e0572810b29e1ee0e5c047f698))
+- **paper-forms:** reuse ProgressIndicator for set-up progress (#9793) ([#9793](https://github.com/opengovsg/formsg/commit/94fe9ae5127b55e0572810b29e1ee0e5c047f698))
 
 ## [9.0.1](https://github.com/opengovsg/formsg/compare/v9.0.0...v9.0.1) (2026-07-31)
 
-
 ### Bug Fixes
 
-* **sdk:** improve large attachment decryption and handling (#9802) ([#9802](https://github.com/opengovsg/formsg/commit/a44f1e9cd351d951de61d888d76616b073e40b35))
+- **sdk:** improve large attachment decryption and handling (#9802) ([#9802](https://github.com/opengovsg/formsg/commit/a44f1e9cd351d951de61d888d76616b073e40b35))
 
 ## [9.0.0](https://github.com/opengovsg/formsg/compare/v8.9.0...v9.0.0) (2026-07-30)
 
-
 ### ⚠ BREAKING CHANGE
 
-* **mrf:** MRF submissions are sent with version: 4 and
-V4-shaped responses on the wire.
+- **mrf:** MRF submissions are sent with version: 4 and
+  V4-shaped responses on the wire.
 
 Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 
-* feat(frontend): make V4 the FE working format for previous MRF responses
+- feat(frontend): make V4 the FE working format for previous MRF responses
 
 decryptSubmission now serves previous-step responses as V4: V4 blobs
 (mrfVersion 2) pass through untouched and V3 blobs (mrfVersion 1 /
@@ -554,1082 +479,921 @@ Also drops the previousResponses prop on FormFields, which was unused.
 
 Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
 
-* chore: clean up comments
+- chore: clean up comments
 
-* feat: make joi validation for provenance default to {}
+- feat: make joi validation for provenance default to {}
 
-* feat: Update apps/frontend/src/features/public-form/utils/decryptSubmission.ts
+- feat: Update apps/frontend/src/features/public-form/utils/decryptSubmission.ts
 
 Co-authored-by: Eliot Lim <eliotlim@users.noreply.github.com>
 
 ### Features
 
-* **mrf:** V4 response migration — PR 3/5 FE sends and works in V4 (#9782) ([#9782](https://github.com/opengovsg/formsg/commit/8929c1dce7379d2ab0e847719bb383ec13c41f32))
+- **mrf:** V4 response migration — PR 3/5 FE sends and works in V4 (#9782) ([#9782](https://github.com/opengovsg/formsg/commit/8929c1dce7379d2ab0e847719bb383ec13c41f32))
 
 ## [8.9.0](https://github.com/opengovsg/formsg/compare/v8.8.0...v8.9.0) (2026-07-30)
 
-
 ### Features
 
-* zustand store + move feedback modal to builder page (#9688) ([#9688](https://github.com/opengovsg/formsg/commit/16cbfbc0c3a1c4c7e64b5ffab3b53f7959e7bd12))
+- zustand store + move feedback modal to builder page (#9688) ([#9688](https://github.com/opengovsg/formsg/commit/16cbfbc0c3a1c4c7e64b5ffab3b53f7959e7bd12))
 
 ## [8.8.0](https://github.com/opengovsg/formsg/compare/v8.7.0...v8.8.0) (2026-07-29)
 
-
 ### Features
 
-* give admin CSAT its own db key + metric (#9787) ([#9787](https://github.com/opengovsg/formsg/commit/0affd4703008e5421ee635dd5a5ec72ec27a1a26))
+- give admin CSAT its own db key + metric (#9787) ([#9787](https://github.com/opengovsg/formsg/commit/0affd4703008e5421ee635dd5a5ec72ec27a1a26))
 
 ## [8.7.0](https://github.com/opengovsg/formsg/compare/v8.6.2...v8.7.0) (2026-07-29)
 
-
 ### Features
 
-* **mrf:** step-token write-guard for MRF next-step submissions (S3) (#9758) ([#9758](https://github.com/opengovsg/formsg/commit/9b124b4018b7eac81de53448d327c185b3839702))
+- **mrf:** step-token write-guard for MRF next-step submissions (S3) (#9758) ([#9758](https://github.com/opengovsg/formsg/commit/9b124b4018b7eac81de53448d327c185b3839702))
 
 ## [8.6.2](https://github.com/opengovsg/formsg/compare/v8.6.1...v8.6.2) (2026-07-23)
 
-
 ### Bug Fixes
 
-* **spcp:** accept iss param on OIDC login callback (inc-1274) (#9789) ([#9789](https://github.com/opengovsg/formsg/commit/84785ec79af798861b1740200b2ed4132c67c39b))
+- **spcp:** accept iss param on OIDC login callback (inc-1274) (#9789) ([#9789](https://github.com/opengovsg/formsg/commit/84785ec79af798861b1740200b2ed4132c67c39b))
 
 ## [8.6.1](https://github.com/opengovsg/formsg/compare/v8.6.0...v8.6.1) (2026-07-23)
 
-
 ### Bug Fixes
 
-* return 4xx instead of 5xx for MRF V4 field validation errors (#9788) ([#9788](https://github.com/opengovsg/formsg/commit/8c010739445f4598f9dd38e602d24df504a09d6a))
+- return 4xx instead of 5xx for MRF V4 field validation errors (#9788) ([#9788](https://github.com/opengovsg/formsg/commit/8c010739445f4598f9dd38e602d24df504a09d6a))
 
 ## [8.6.0](https://github.com/opengovsg/formsg/compare/v8.5.0...v8.6.0) (2026-07-23)
 
-
 ### Features
 
-* reland v4 BE handling (reverts #9775) (#9785) ([#9775](https://github.com/opengovsg/formsg/commit/ed6bbd3fa548ce2d3d2d877bc04b398e9a3765ea))
+- reland v4 BE handling (reverts #9775) (#9785) ([#9775](https://github.com/opengovsg/formsg/commit/ed6bbd3fa548ce2d3d2d877bc04b398e9a3765ea))
 
 ## [8.5.0](https://github.com/opengovsg/formsg/compare/v8.4.0...v8.5.0) (2026-07-23)
 
-
 ### Features
 
-* extract text from Logic Components (#9737) ([#9737](https://github.com/opengovsg/formsg/commit/a8b128f1c831864524c85628ca842439f1e005ad))
-
+- extract text from Logic Components (#9737) ([#9737](https://github.com/opengovsg/formsg/commit/a8b128f1c831864524c85628ca842439f1e005ad))
 
 ### Bug Fixes
 
-* disable Others input when it isn't the selected option (#9784) ([#9784](https://github.com/opengovsg/formsg/commit/40e2db3929c7250b5afdc33963395d8521e33cae))
-* reject OTP generation when form is not public (#9783) ([#9783](https://github.com/opengovsg/formsg/commit/a3df6f3fbbd70bd301d0884c83d8916acc7907f6))
-* replace string placeholder in form feedback dialog (#9703) ([#9703](https://github.com/opengovsg/formsg/commit/7a0e594665655504a62ef3ce298504926a3281f1))
+- disable Others input when it isn't the selected option (#9784) ([#9784](https://github.com/opengovsg/formsg/commit/40e2db3929c7250b5afdc33963395d8521e33cae))
+- reject OTP generation when form is not public (#9783) ([#9783](https://github.com/opengovsg/formsg/commit/a3df6f3fbbd70bd301d0884c83d8916acc7907f6))
+- replace string placeholder in form feedback dialog (#9703) ([#9703](https://github.com/opengovsg/formsg/commit/7a0e594665655504a62ef3ce298504926a3281f1))
 
 ## [8.4.0](https://github.com/opengovsg/formsg/compare/v8.3.3...v8.4.0) (2026-07-22)
 
-
 ### Features
 
-* v4 be cherry pick commits (#9776) ([#9776](https://github.com/opengovsg/formsg/commit/fa29b661a6735ec36335b8873bba3865e549f320))
+- v4 be cherry pick commits (#9776) ([#9776](https://github.com/opengovsg/formsg/commit/fa29b661a6735ec36335b8873bba3865e549f320))
 
 ## [8.3.3](https://github.com/opengovsg/formsg/compare/v8.3.2...v8.3.3) (2026-07-22)
 
-
 ### Dependencies
 
-* **deps:** clear Dependabot alerts + fix ip SSRF bypass (2026-07) (#9774) ([#9774](https://github.com/opengovsg/formsg/commit/b61988ca37faf7b99147232aafae72c53a1b6df1))
-
+- **deps:** clear Dependabot alerts + fix ip SSRF bypass (2026-07) (#9774) ([#9774](https://github.com/opengovsg/formsg/commit/b61988ca37faf7b99147232aafae72c53a1b6df1))
 
 ### Chores
 
-* revert v4 be (#9775) ([#9775](https://github.com/opengovsg/formsg/commit/cdc25de38ec1ac6ed708ecbe612aff30cf5c28ba))
+- revert v4 be (#9775) ([#9775](https://github.com/opengovsg/formsg/commit/cdc25de38ec1ac6ed708ecbe612aff30cf5c28ba))
 
 ## [8.3.2](https://github.com/opengovsg/formsg/compare/v8.3.1...v8.3.2) (2026-07-20)
 
-
 ### Bug Fixes
 
-* **validation:** apply wildcard email domain matching to V4 validator (#9770) ([#9770](https://github.com/opengovsg/formsg/commit/dc000000c5c5b0471d34c3aac788332aff9b48f0))
+- **validation:** apply wildcard email domain matching to V4 validator (#9770) ([#9770](https://github.com/opengovsg/formsg/commit/dc000000c5c5b0471d34c3aac788332aff9b48f0))
 
 ## [8.3.1](https://github.com/opengovsg/formsg/compare/v8.3.0...v8.3.1) (2026-07-20)
 
-
 ### Bug Fixes
 
-* **mrf:** re-validate only changed fields on MRF submissions (#9769) ([#9769](https://github.com/opengovsg/formsg/commit/f90658c263c43dd04bbffb466cb3930213088824))
+- **mrf:** re-validate only changed fields on MRF submissions (#9769) ([#9769](https://github.com/opengovsg/formsg/commit/f90658c263c43dd04bbffb466cb3930213088824))
 
 ## [8.3.0](https://github.com/opengovsg/formsg/compare/v8.2.0...v8.3.0) (2026-07-20)
 
-
 ### Features
 
-* **mrf:** V4 response migration — PR 2/5 BE V4-native + V3 wire shim (#9637) ([#9637](https://github.com/opengovsg/formsg/commit/2a47c47e707d5c429257092c9b9ce78f3ff8e118))
+- **mrf:** V4 response migration — PR 2/5 BE V4-native + V3 wire shim (#9637) ([#9637](https://github.com/opengovsg/formsg/commit/2a47c47e707d5c429257092c9b9ce78f3ff8e118))
 
 ## [8.2.0](https://github.com/opengovsg/formsg/compare/v8.1.0...v8.2.0) (2026-07-16)
 
-
 ### Features
 
-* **mrf:** V4 response migration — PR 1/5 foundation (types, utils, validators) (#9633) ([#9633](https://github.com/opengovsg/formsg/commit/7a4a4d42271c4ea1c0b29f981c3883935772b32a))
-
+- **mrf:** V4 response migration — PR 1/5 foundation (types, utils, validators) (#9633) ([#9633](https://github.com/opengovsg/formsg/commit/7a4a4d42271c4ea1c0b29f981c3883935772b32a))
 
 ### Bug Fixes
 
-* prevent pollution of v1 and v2 metrics due to different scales (#9763) ([#9763](https://github.com/opengovsg/formsg/commit/23cf1b3b58e5adddd6c33ad865b4e346a46e4836))
-
+- prevent pollution of v1 and v2 metrics due to different scales (#9763) ([#9763](https://github.com/opengovsg/formsg/commit/23cf1b3b58e5adddd6c33ad865b4e346a46e4836))
 
 ### Dependencies
 
-* **deps:** resolve critical/high Dependabot alerts (#9764) ([#9764](https://github.com/opengovsg/formsg/commit/7bf093da4ce719f7310b9c1c143d78bacf4d4a90))
+- **deps:** resolve critical/high Dependabot alerts (#9764) ([#9764](https://github.com/opengovsg/formsg/commit/7bf093da4ce719f7310b9c1c143d78bacf4d4a90))
 
 ## [8.1.0](https://github.com/opengovsg/formsg/compare/v8.0.3...v8.1.0) (2026-07-16)
 
-
 ### Features
 
-* **workflow-builder-redesign:** add workflow-builder-redesign feature flag foundation (#9730) ([#9730](https://github.com/opengovsg/formsg/commit/82f5faf35730e6db58554a026b180e7442346d38))
-* extend admin feedback schema for 1-5 rating + triggers (#9684) ([#9684](https://github.com/opengovsg/formsg/commit/7ac910e958921c29dd7735ebbffc4176591136c7))
-
+- **workflow-builder-redesign:** add workflow-builder-redesign feature flag foundation (#9730) ([#9730](https://github.com/opengovsg/formsg/commit/82f5faf35730e6db58554a026b180e7442346d38))
+- extend admin feedback schema for 1-5 rating + triggers (#9684) ([#9684](https://github.com/opengovsg/formsg/commit/7ac910e958921c29dd7735ebbffc4176591136c7))
 
 ### Chores
 
-* speed up jest runs by removing default local code coverage collection (#9757) ([#9757](https://github.com/opengovsg/formsg/commit/ab6c7015033aa970d633e642d6343c296ec375b2))
+- speed up jest runs by removing default local code coverage collection (#9757) ([#9757](https://github.com/opengovsg/formsg/commit/ab6c7015033aa970d633e642d6343c296ec375b2))
 
 ## [8.0.3](https://github.com/opengovsg/formsg/compare/v8.0.2...v8.0.3) (2026-07-14)
 
-
 ### Chores
 
-* removing unusued & stale gb flags (#9738) ([#9738](https://github.com/opengovsg/formsg/commit/fc4d6aa1cf0a968522f856690e35f4f833ca36f9))
+- removing unusued & stale gb flags (#9738) ([#9738](https://github.com/opengovsg/formsg/commit/fc4d6aa1cf0a968522f856690e35f4f833ca36f9))
 
 ## [8.0.2](https://github.com/opengovsg/formsg/compare/v8.0.1...v8.0.2) (2026-07-14)
 
-
 ### Chores
 
-* remove deprecated auth types from form settings UI (#9604) ([#9604](https://github.com/opengovsg/formsg/commit/bf8e9d57dd9ee7458b05d093adc18c0e5c85c7b8))
+- remove deprecated auth types from form settings UI (#9604) ([#9604](https://github.com/opengovsg/formsg/commit/bf8e9d57dd9ee7458b05d093adc18c0e5c85c7b8))
 
 ## [8.0.1](https://github.com/opengovsg/formsg/compare/v8.0.0...v8.0.1) (2026-07-08)
 
-
 ### Bug Fixes
 
-* **paper forms tracking:** reword origin question and new-process option (#9707) ([#9707](https://github.com/opengovsg/formsg/commit/6362d3b11f6b9c53e675af6eabafefeb824c02d9))
-* **rum-privacy:** mask secret key and decrypted responses in session replays (#9708) ([#9708](https://github.com/opengovsg/formsg/commit/7a2030627e046cba57aea1a863d24bc1d10e6d3e))
+- **paper forms tracking:** reword origin question and new-process option (#9707) ([#9707](https://github.com/opengovsg/formsg/commit/6362d3b11f6b9c53e675af6eabafefeb824c02d9))
+- **rum-privacy:** mask secret key and decrypted responses in session replays (#9708) ([#9708](https://github.com/opengovsg/formsg/commit/7a2030627e046cba57aea1a863d24bc1d10e6d3e))
 
 ## [8.0.0](https://github.com/opengovsg/formsg/compare/v7.38.0...v8.0.0) (2026-07-06)
 
-
 ### ⚠ BREAKING CHANGE
 
-* remove unused charts specific submission retrieval endpoint (#9395)
+- remove unused charts specific submission retrieval endpoint (#9395)
 
 ### Features
 
-* remove unused charts specific submission retrieval endpoint (#9395) ([#9395](https://github.com/opengovsg/formsg/commit/1793abd28489134e38f2588fdb051a975d98db35))
-
+- remove unused charts specific submission retrieval endpoint (#9395) ([#9395](https://github.com/opengovsg/formsg/commit/1793abd28489134e38f2588fdb051a975d98db35))
 
 ### Chores
 
-* fix lint issue in AdminSubmissionsService.ts (#9706) ([#9706](https://github.com/opengovsg/formsg/commit/ac34d660bea5e8ccafcf9a4c701cb54356cf9b10))
+- fix lint issue in AdminSubmissionsService.ts (#9706) ([#9706](https://github.com/opengovsg/formsg/commit/ac34d660bea5e8ccafcf9a4c701cb54356cf9b10))
 
 ## [7.38.0](https://github.com/opengovsg/formsg/compare/v7.37.1...v7.38.0) (2026-07-06)
 
-
 ### Features
 
-* **landing:** redesign landing page for gov evaluators (#9697) ([#9697](https://github.com/opengovsg/formsg/commit/062e62247d4163ee66b22f35f190019462c61bae))
+- **landing:** redesign landing page for gov evaluators (#9697) ([#9697](https://github.com/opengovsg/formsg/commit/062e62247d4163ee66b22f35f190019462c61bae))
 
 ## [7.37.1](https://github.com/opengovsg/formsg/compare/v7.37.0...v7.37.1) (2026-07-06)
 
-
 ### Bug Fixes
 
-* save prefilled values in draft (#9696) ([#9696](https://github.com/opengovsg/formsg/commit/db35bd534b7ead0e6c258af01e602c4bf1d9a444))
+- save prefilled values in draft (#9696) ([#9696](https://github.com/opengovsg/formsg/commit/db35bd534b7ead0e6c258af01e602c4bf1d9a444))
 
 ## [7.37.0](https://github.com/opengovsg/formsg/compare/v7.36.1...v7.37.0) (2026-07-06)
 
-
 ### Features
 
-* add changelog and pre-release checklist to step summary (#9699) ([#9699](https://github.com/opengovsg/formsg/commit/4a3536de0c1d72e5dd39300c2303fb1e8b2c31dd))
-* instrument virus scanner logs with formid (#9704) ([#9704](https://github.com/opengovsg/formsg/commit/de59a7aa60d33b1cc1036e6557f4f6f128645742))
+- add changelog and pre-release checklist to step summary (#9699) ([#9699](https://github.com/opengovsg/formsg/commit/4a3536de0c1d72e5dd39300c2303fb1e8b2c31dd))
+- instrument virus scanner logs with formid (#9704) ([#9704](https://github.com/opengovsg/formsg/commit/de59a7aa60d33b1cc1036e6557f4f6f128645742))
 
 ## [7.36.1](https://github.com/opengovsg/formsg/compare/v7.36.0...v7.36.1) (2026-07-03)
 
 ## [7.36.0](https://github.com/opengovsg/formsg/compare/v7.35.2...v7.36.0) (2026-07-03)
 
-
 ### Features
 
-* edit release notes on recut (#9698) ([#9698](https://github.com/opengovsg/formsg/commit/d92a73d613d017bdb9acc091de0d2e9990e6ef05))
+- edit release notes on recut (#9698) ([#9698](https://github.com/opengovsg/formsg/commit/d92a73d613d017bdb9acc091de0d2e9990e6ef05))
 
 ## [7.35.2](https://github.com/opengovsg/formsg/compare/v7.35.1...v7.35.2) (2026-07-03)
 
-
 ### Bug Fixes
 
-* **builder:** allow text input spaces in builder page fields (#9552) (#9553) ([#9552](https://github.com/opengovsg/formsg/commit/20bb8f1a07bcff8a5a4c76e31b08d9093f40c2fe))
+- **builder:** allow text input spaces in builder page fields (#9552) (#9553) ([#9552](https://github.com/opengovsg/formsg/commit/20bb8f1a07bcff8a5a4c76e31b08d9093f40c2fe))
 
 ## [7.35.1](https://github.com/opengovsg/formsg/compare/v7.35.0...v7.35.1) (2026-07-02)
 
-
 ### Bug Fixes
 
-* localise attachment decryption toast (#9695) ([#9695](https://github.com/opengovsg/formsg/commit/5e0f2f0c52ad7c010e94a35ff6a4564e80db7a6c))
-* support better formatting in desc, messages (#9508) ([#9508](https://github.com/opengovsg/formsg/commit/d2f264dcfe21d814bbcf704ebf35cb993b0c1038))
+- localise attachment decryption toast (#9695) ([#9695](https://github.com/opengovsg/formsg/commit/5e0f2f0c52ad7c010e94a35ff6a4564e80db7a6c))
+- support better formatting in desc, messages (#9508) ([#9508](https://github.com/opengovsg/formsg/commit/d2f264dcfe21d814bbcf704ebf35cb993b0c1038))
 
 ## [7.35.0](https://github.com/opengovsg/formsg/compare/v7.34.4...v7.35.0) (2026-07-01)
 
-
 ### Features
 
-* gate admin feedback behind feature flag (#9683) ([#9683](https://github.com/opengovsg/formsg/commit/ab5541ca38797b8e7db8d4819b982fdd9b1e2994))
+- gate admin feedback behind feature flag (#9683) ([#9683](https://github.com/opengovsg/formsg/commit/ab5541ca38797b8e7db8d4819b982fdd9b1e2994))
 
 ## [7.34.4](https://github.com/opengovsg/formsg/compare/v7.34.3...v7.34.4) (2026-07-01)
 
-
 ### Bug Fixes
 
-* **ci:** don't cancel in-flight deploys + speed up release build/deploy (#9690) ([#9690](https://github.com/opengovsg/formsg/commit/33a449d8735d58a99011ab5be1722a0521e592bb))
-
+- **ci:** don't cancel in-flight deploys + speed up release build/deploy (#9690) ([#9690](https://github.com/opengovsg/formsg/commit/33a449d8735d58a99011ab5be1722a0521e592bb))
 
 ### Dependencies
 
-* **deps:** bump express-request-id and @types/express-request-id (#9417) ([#9417](https://github.com/opengovsg/formsg/commit/2efc878e4fc39542be2a4bf79d79f8062b6d3a77))
+- **deps:** bump express-request-id and @types/express-request-id (#9417) ([#9417](https://github.com/opengovsg/formsg/commit/2efc878e4fc39542be2a4bf79d79f8062b6d3a77))
 
 ## [7.34.3](https://github.com/opengovsg/formsg/compare/v7.34.2...v7.34.3) (2026-06-30)
 
-
 ### Dependencies
 
-* **deps:** bump multer from 2.1.1 to 2.2.0 (#9638) ([#9638](https://github.com/opengovsg/formsg/commit/f2792b9cb53981c73c7d5d6b86c78e94de159fe3))
-* **deps:** bump nodemailer from 8.0.7 to 9.0.1 (#9645) ([#9645](https://github.com/opengovsg/formsg/commit/a26524ed6e34106e6489298fb88769923bc3f792))
-
+- **deps:** bump multer from 2.1.1 to 2.2.0 (#9638) ([#9638](https://github.com/opengovsg/formsg/commit/f2792b9cb53981c73c7d5d6b86c78e94de159fe3))
+- **deps:** bump nodemailer from 8.0.7 to 9.0.1 (#9645) ([#9645](https://github.com/opengovsg/formsg/commit/a26524ed6e34106e6489298fb88769923bc3f792))
 
 ### Dev-Dependencies
 
-* **deps-dev:** bump esbuild from 0.25.9 to 0.28.1 (#9607) ([#9607](https://github.com/opengovsg/formsg/commit/5b49e3ae32d355a92c24ac788c9efc85de779433))
-* **deps-dev:** bump form-data from 4.0.5 to 4.0.6 (#9640) ([#9640](https://github.com/opengovsg/formsg/commit/ba4790e216464b2458a8d34cef6f81ffdfe21b96))
+- **deps-dev:** bump esbuild from 0.25.9 to 0.28.1 (#9607) ([#9607](https://github.com/opengovsg/formsg/commit/5b49e3ae32d355a92c24ac788c9efc85de779433))
+- **deps-dev:** bump form-data from 4.0.5 to 4.0.6 (#9640) ([#9640](https://github.com/opengovsg/formsg/commit/ba4790e216464b2458a8d34cef6f81ffdfe21b96))
 
 ## [7.34.2](https://github.com/opengovsg/formsg/compare/v7.34.1...v7.34.2) (2026-06-30)
 
-
 ### Dependencies
 
-* **deps:** bump multiparty from 4.2.3 to 4.3.0 (#9443) ([#9443](https://github.com/opengovsg/formsg/commit/d84b6f546eeca26b9ba5d9d863f62c0ad27a3418))
-* **deps:** bump react-router from 6.30.3 to 6.30.4 (#9548) ([#9548](https://github.com/opengovsg/formsg/commit/a2e0e3b7defae65e380277510b0a4782aff9ad90))
-* **deps:** bump uuid from 9.0.1 to 14.0.0 (#9478) ([#9478](https://github.com/opengovsg/formsg/commit/e6944580928a24be52b16baacfd31c9fc0bc3c9d))
-
+- **deps:** bump multiparty from 4.2.3 to 4.3.0 (#9443) ([#9443](https://github.com/opengovsg/formsg/commit/d84b6f546eeca26b9ba5d9d863f62c0ad27a3418))
+- **deps:** bump react-router from 6.30.3 to 6.30.4 (#9548) ([#9548](https://github.com/opengovsg/formsg/commit/a2e0e3b7defae65e380277510b0a4782aff9ad90))
+- **deps:** bump uuid from 9.0.1 to 14.0.0 (#9478) ([#9478](https://github.com/opengovsg/formsg/commit/e6944580928a24be52b16baacfd31c9fc0bc3c9d))
 
 ### Dev-Dependencies
 
-* **deps-dev:** bump vitest from 3.2.4 to 3.2.6 (#9567) ([#9567](https://github.com/opengovsg/formsg/commit/c80440a87415ba8a4cf4659d67be21bfa94ad36a))
+- **deps-dev:** bump vitest from 3.2.4 to 3.2.6 (#9567) ([#9567](https://github.com/opengovsg/formsg/commit/c80440a87415ba8a4cf4659d67be21bfa94ad36a))
 
 ## [7.34.1](https://github.com/opengovsg/formsg/compare/v7.34.0...v7.34.1) (2026-06-25)
 
-
 ### Bug Fixes
 
-* **frontend:** prevent Instructions tab crash (React error #31) (#9667) ([#31](https://github.com/opengovsg/formsg/commit/680cb4fe69b39139f8e695ac59b93680e0a65c4f))
+- **frontend:** prevent Instructions tab crash (React error #31) (#9667) ([#31](https://github.com/opengovsg/formsg/commit/680cb4fe69b39139f8e695ac59b93680e0a65c4f))
 
 ## [7.34.0](https://github.com/opengovsg/formsg/compare/v7.33.0...v7.34.0) (2026-06-25)
 
-
 ### Features
 
-* **mrf-cutover:** polish cutover copy, badges, and migration UX (#9621) ([#9621](https://github.com/opengovsg/formsg/commit/b759d75d9c8f4fc45b421dee6e2a4f51650c3b11))
-* progressive disclosure + plain-language copy for email notifications page (#9657) ([#9657](https://github.com/opengovsg/formsg/commit/9904b56e4a8119fa41ad442b4789b7eb4ebde0d4))
-
+- **mrf-cutover:** polish cutover copy, badges, and migration UX (#9621) ([#9621](https://github.com/opengovsg/formsg/commit/b759d75d9c8f4fc45b421dee6e2a4f51650c3b11))
+- progressive disclosure + plain-language copy for email notifications page (#9657) ([#9657](https://github.com/opengovsg/formsg/commit/9904b56e4a8119fa41ad442b4789b7eb4ebde0d4))
 
 ### Bug Fixes
 
-* replace unused malicious file error with guardduty error (#9663) ([#9663](https://github.com/opengovsg/formsg/commit/8c70cfd1eb42c86a87eb57a5b09429ec7a1c5f89))
+- replace unused malicious file error with guardduty error (#9663) ([#9663](https://github.com/opengovsg/formsg/commit/8c70cfd1eb42c86a87eb57a5b09429ec7a1c5f89))
 
 ## [7.33.0](https://github.com/opengovsg/formsg/compare/v7.32.0...v7.33.0) (2026-06-23)
 
-
 ### Features
 
-* **ci:** improve release process (#9518) ([#9518](https://github.com/opengovsg/formsg/commit/e709a5bdb3b54843c3e5a59544ba12825381fbe2))
-
+- **ci:** improve release process (#9518) ([#9518](https://github.com/opengovsg/formsg/commit/e709a5bdb3b54843c3e5a59544ba12825381fbe2))
 
 ### Bug Fixes
 
-* **ci:** add deploy key and fix dependencies (#9661) ([#9661](https://github.com/opengovsg/formsg/commit/37c6633a2307ea97b0e68088c1e15f3b297e3940))
-* **ci:** persist deploy key for tagging and version bump commits (#9662) ([#9662](https://github.com/opengovsg/formsg/commit/7d54dae81fc7441f703cf2c4276847b22f555613))
-
+- **ci:** add deploy key and fix dependencies (#9661) ([#9661](https://github.com/opengovsg/formsg/commit/37c6633a2307ea97b0e68088c1e15f3b297e3940))
+- **ci:** persist deploy key for tagging and version bump commits (#9662) ([#9662](https://github.com/opengovsg/formsg/commit/7d54dae81fc7441f703cf2c4276847b22f555613))
 
 ### Builds
 
-* merge release v7.32.0 back to develop (#9660) ([#9660](https://github.com/opengovsg/formsg/commit/ede60f44342cc684b2abe91bbae9660192bbb264))
+- merge release v7.32.0 back to develop (#9660) ([#9660](https://github.com/opengovsg/formsg/commit/ede60f44342cc684b2abe91bbae9660192bbb264))
 
 ## [7.32.0](https://github.com/opengovsg/formsg/compare/v7.31.0...v7.32.0) (2026-06-23)
 
-
 ### Features
 
-* **frontend:** update restrict email domains placeholder (#9654) ([#9654](https://github.com/opengovsg/formsg/commit/dbb9ef61574b80b06687c753778d9e8e18228282))
-
+- **frontend:** update restrict email domains placeholder (#9654) ([#9654](https://github.com/opengovsg/formsg/commit/dbb9ef61574b80b06687c753778d9e8e18228282))
 
 ### Miscellaneous
 
-* Merge pull request #9656 from opengovsg/copy-change-drag-field-from-left ([#9656](https://github.com/opengovsg/formsg/commit/94011507d0c34e2997bd2a1b39e831986acdcc82))
+- Merge pull request #9656 from opengovsg/copy-change-drag-field-from-left ([#9656](https://github.com/opengovsg/formsg/commit/94011507d0c34e2997bd2a1b39e831986acdcc82))
 
 ## [7.31.0](https://github.com/opengovsg/formsg/compare/v7.29.0...v7.31.0) (2026-06-22)
 
-
 ### Features
 
-* **backend:** wildcard email domains (#9606) ([#9606](https://github.com/opengovsg/formsg/commit/209c0a59b11416ce834353757278fc6911639ef2))
-* **frontend:** add sidebar navigation labels feature flagged (#9591) ([#9591](https://github.com/opengovsg/formsg/commit/172775ba08491abf24ec560c65537f2be5fcb29b))
-* **paper forms tracking:** form-origin frontend selection (part 2) (#9579) ([#9579](https://github.com/opengovsg/formsg/commit/2161cc1c320f8f31e4df61f9202787d5818368f0))
-
+- **backend:** wildcard email domains (#9606) ([#9606](https://github.com/opengovsg/formsg/commit/209c0a59b11416ce834353757278fc6911639ef2))
+- **frontend:** add sidebar navigation labels feature flagged (#9591) ([#9591](https://github.com/opengovsg/formsg/commit/172775ba08491abf24ec560c65537f2be5fcb29b))
+- **paper forms tracking:** form-origin frontend selection (part 2) (#9579) ([#9579](https://github.com/opengovsg/formsg/commit/2161cc1c320f8f31e4df61f9202787d5818368f0))
 
 ### Bug Fixes
 
-* **frontend:** gate useUser on isAuthenticated to prevent 401 spike (#9650) ([#9650](https://github.com/opengovsg/formsg/commit/ffa56e6c453ee0d6935bf76dd2d73a0aa50b08f0))
-
+- **frontend:** gate useUser on isAuthenticated to prevent 401 spike (#9650) ([#9650](https://github.com/opengovsg/formsg/commit/ffa56e6c453ee0d6935bf76dd2d73a0aa50b08f0))
 
 ### Miscellaneous
 
-* Merge pull request #9648 from opengovsg/release_v7.30.0 ([#9648](https://github.com/opengovsg/formsg/commit/64d986b0497a30924e9acadcaca59c717724c78f))
-* Merge remote-tracking branch 'origin/develop' into release-al2 ([893e429](https://github.com/opengovsg/formsg/commit/893e4299423bc06253e1feccc30f8bb397e1a318))
+- Merge pull request #9648 from opengovsg/release_v7.30.0 ([#9648](https://github.com/opengovsg/formsg/commit/64d986b0497a30924e9acadcaca59c717724c78f))
+- Merge remote-tracking branch 'origin/develop' into release-al2 ([893e429](https://github.com/opengovsg/formsg/commit/893e4299423bc06253e1feccc30f8bb397e1a318))
 
 ## [7.30.0](https://github.com/opengovsg/formsg/compare/v7.29.0...v7.30.0) (2026-06-22)
 
-
 ### Features
 
-* **backend:** wildcard email domains (#9606) ([#9606](https://github.com/opengovsg/formsg/commit/209c0a59b11416ce834353757278fc6911639ef2))
-* **frontend:** add sidebar navigation labels feature flagged (#9591) ([#9591](https://github.com/opengovsg/formsg/commit/172775ba08491abf24ec560c65537f2be5fcb29b))
-* **paper forms tracking:** form-origin frontend selection (part 2) (#9579) ([#9579](https://github.com/opengovsg/formsg/commit/2161cc1c320f8f31e4df61f9202787d5818368f0))
+- **backend:** wildcard email domains (#9606) ([#9606](https://github.com/opengovsg/formsg/commit/209c0a59b11416ce834353757278fc6911639ef2))
+- **frontend:** add sidebar navigation labels feature flagged (#9591) ([#9591](https://github.com/opengovsg/formsg/commit/172775ba08491abf24ec560c65537f2be5fcb29b))
+- **paper forms tracking:** form-origin frontend selection (part 2) (#9579) ([#9579](https://github.com/opengovsg/formsg/commit/2161cc1c320f8f31e4df61f9202787d5818368f0))
 
 ## [7.29.0](https://github.com/opengovsg/formsg/compare/v7.28.1...v7.29.0) (2026-06-15)
 
-
 ### Features
 
-* **paper forms tracking:** form-origin model + backend persistence (part 1) (#9576) ([#9576](https://github.com/opengovsg/formsg/commit/0ae1a540624208dc86c77378b3b064dddddeacfe))
-
+- **paper forms tracking:** form-origin model + backend persistence (part 1) (#9576) ([#9576](https://github.com/opengovsg/formsg/commit/0ae1a540624208dc86c77378b3b064dddddeacfe))
 
 ### Bug Fixes
 
-* **copy:** align dashboard dropdown menu's copy with rest of platform (#9608) ([#9608](https://github.com/opengovsg/formsg/commit/5fe504743b8051d5e0b581363bfc765f3f8037b1))
-* add require for form (#9610) ([#9610](https://github.com/opengovsg/formsg/commit/3d51cebf9d74f38d839fa9b7bad3c9be5d6f380d))
+- **copy:** align dashboard dropdown menu's copy with rest of platform (#9608) ([#9608](https://github.com/opengovsg/formsg/commit/5fe504743b8051d5e0b581363bfc765f3f8037b1))
+- add require for form (#9610) ([#9610](https://github.com/opengovsg/formsg/commit/3d51cebf9d74f38d839fa9b7bad3c9be5d6f380d))
 
 ## [7.28.1](https://github.com/opengovsg/formsg/compare/v7.28.0...v7.28.1) (2026-06-12)
 
-
 ### Bug Fixes
 
-* **backend:** improve metadata logging selectivity ([51abcdf](https://github.com/opengovsg/formsg/commit/51abcdfc98e044d12ff73d79b38696b6b89c76df))
+- **backend:** improve metadata logging selectivity ([51abcdf](https://github.com/opengovsg/formsg/commit/51abcdfc98e044d12ff73d79b38696b6b89c76df))
 
 ## [7.28.0](https://github.com/opengovsg/formsg/compare/v7.27.0...v7.28.0) (2026-06-11)
 
-
 ### Features
 
-* add headers to questionAnswerPairs; affecting mrf nextstep, workflow completion, respondent copy emails ([08b9e25](https://github.com/opengovsg/formsg/commit/08b9e252cfae5d3fcce02a4c91c0ff64d7b87e29))
-* add JSON to MRF emails ([18c613a](https://github.com/opengovsg/formsg/commit/18c613a4ddb097b5bcca1b77551fb0d233d0bc93))
-* add verified prefix to questionAnswer ([6c89002](https://github.com/opengovsg/formsg/commit/6c890028d3cac88137c89031fae16538f7c00f26))
-* implement standardised email template for payment form, feature-flagged ([1a0ddf6](https://github.com/opengovsg/formsg/commit/1a0ddf66265ef314d28e4d2343bf18ee62fb793f))
-* include 'Others :' in checkbox & radio others field ([4f23b42](https://github.com/opengovsg/formsg/commit/4f23b42510e40f4cf09416ba42db4f1cd0b4e994))
-* make MRF JSON table delimiters ;, implement foothole to use formSetting to determine delimiter used for the future ([59c474b](https://github.com/opengovsg/formsg/commit/59c474b796c20727c459daf9e43345a348653561))
-* show headers with different styles in email template ([d0c4075](https://github.com/opengovsg/formsg/commit/d0c40758baf1a7f768a718774a7278dfb402ec1a))
-
+- add headers to questionAnswerPairs; affecting mrf nextstep, workflow completion, respondent copy emails ([08b9e25](https://github.com/opengovsg/formsg/commit/08b9e252cfae5d3fcce02a4c91c0ff64d7b87e29))
+- add JSON to MRF emails ([18c613a](https://github.com/opengovsg/formsg/commit/18c613a4ddb097b5bcca1b77551fb0d233d0bc93))
+- add verified prefix to questionAnswer ([6c89002](https://github.com/opengovsg/formsg/commit/6c890028d3cac88137c89031fae16538f7c00f26))
+- implement standardised email template for payment form, feature-flagged ([1a0ddf6](https://github.com/opengovsg/formsg/commit/1a0ddf66265ef314d28e4d2343bf18ee62fb793f))
+- include 'Others :' in checkbox & radio others field ([4f23b42](https://github.com/opengovsg/formsg/commit/4f23b42510e40f4cf09416ba42db4f1cd0b4e994))
+- make MRF JSON table delimiters ;, implement foothole to use formSetting to determine delimiter used for the future ([59c474b](https://github.com/opengovsg/formsg/commit/59c474b796c20727c459daf9e43345a348653561))
+- show headers with different styles in email template ([d0c4075](https://github.com/opengovsg/formsg/commit/d0c40758baf1a7f768a718774a7278dfb402ec1a))
 
 ### Bug Fixes
 
-* add fieldType to storage mode respondent copy so headers take header css property in email template ([7eebf73](https://github.com/opengovsg/formsg/commit/7eebf734f723c2e5f09537b8157c1dbb4c912457))
-* preserve line breaks in standardised email template responses (#9592) ([#9592](https://github.com/opengovsg/formsg/commit/1c1bb6c1ab215eb161eb59bce1c7a3a7b8aed4a5))
-* rename [MyInfo] with [Myinfo] ([c29de94](https://github.com/opengovsg/formsg/commit/c29de94b08ca83d82603fe49b4273126b177294c))
-* tests & linting ([0c5a4f6](https://github.com/opengovsg/formsg/commit/0c5a4f6c4cca0fcf1e80a038d113cae25f72e017))
-
+- add fieldType to storage mode respondent copy so headers take header css property in email template ([7eebf73](https://github.com/opengovsg/formsg/commit/7eebf734f723c2e5f09537b8157c1dbb4c912457))
+- preserve line breaks in standardised email template responses (#9592) ([#9592](https://github.com/opengovsg/formsg/commit/1c1bb6c1ab215eb161eb59bce1c7a3a7b8aed4a5))
+- rename [MyInfo] with [Myinfo] ([c29de94](https://github.com/opengovsg/formsg/commit/c29de94b08ca83d82603fe49b4273126b177294c))
+- tests & linting ([0c5a4f6](https://github.com/opengovsg/formsg/commit/0c5a4f6c4cca0fcf1e80a038d113cae25f72e017))
 
 ### Chores
 
-* move non_response_field_set to shared file to be used by FE and BE ([cecbef1](https://github.com/opengovsg/formsg/commit/cecbef130cbe625e215d8b69c515aa4c24502a42))
-
+- move non_response_field_set to shared file to be used by FE and BE ([cecbef1](https://github.com/opengovsg/formsg/commit/cecbef130cbe625e215d8b69c515aa4c24502a42))
 
 ### Miscellaneous
 
-* Merge pull request #9505 from opengovsg/feat/email-standardisation-phase-3 ([#9505](https://github.com/opengovsg/formsg/commit/ced5773d208035d2ea58c862d06898093a3fc194))
-* resolve JSON DOM tree status in email template ([6621269](https://github.com/opengovsg/formsg/commit/6621269b2e5d62325c11139bbe794d1edcd5e576))
+- Merge pull request #9505 from opengovsg/feat/email-standardisation-phase-3 ([#9505](https://github.com/opengovsg/formsg/commit/ced5773d208035d2ea58c862d06898093a3fc194))
+- resolve JSON DOM tree status in email template ([6621269](https://github.com/opengovsg/formsg/commit/6621269b2e5d62325c11139bbe794d1edcd5e576))
 
 ## [7.27.0](https://github.com/opengovsg/formsg/compare/v7.26.1...v7.27.0) (2026-06-10)
 
-
 ### Features
 
-* short answer prefill progressive disclosure (#9565) ([#9565](https://github.com/opengovsg/formsg/commit/4623122db933dfdf0fc007d43f99e9a4e9c5fd5a))
-
+- short answer prefill progressive disclosure (#9565) ([#9565](https://github.com/opengovsg/formsg/commit/4623122db933dfdf0fc007d43f99e9a4e9c5fd5a))
 
 ### Miscellaneous
 
-* Merge pull request #9577 from opengovsg/feat/v4-encryption-improvements ([#9577](https://github.com/opengovsg/formsg/commit/f79c81e413546eb0408aa4eda2b479bb2904c5d9))
+- Merge pull request #9577 from opengovsg/feat/v4-encryption-improvements ([#9577](https://github.com/opengovsg/formsg/commit/f79c81e413546eb0408aa4eda2b479bb2904c5d9))
 
 ## [7.26.1](https://github.com/opengovsg/formsg/compare/v7.26.0...v7.26.1) (2026-06-09)
 
-
 ### Bug Fixes
 
-* add replyTo and X-Formsg-Submission-ID headers to MRF outcome emails (#9570) ([#9570](https://github.com/opengovsg/formsg/commit/b7e9c320686c326dc9c6518da4b3a97875cdc980))
-
+- add replyTo and X-Formsg-Submission-ID headers to MRF outcome emails (#9570) ([#9570](https://github.com/opengovsg/formsg/commit/b7e9c320686c326dc9c6518da4b3a97875cdc980))
 
 ### Miscellaneous
 
-* Merge pull request #9568 from opengovsg/chore/revert-number-field-buttons-removal ([#9568](https://github.com/opengovsg/formsg/commit/d1698445285a9b0be20d5ecf02d955cbb2500081))
+- Merge pull request #9568 from opengovsg/chore/revert-number-field-buttons-removal ([#9568](https://github.com/opengovsg/formsg/commit/d1698445285a9b0be20d5ecf02d955cbb2500081))
 
 ## [7.26.0](https://github.com/opengovsg/formsg/compare/v7.25.0...v7.26.0) (2026-06-08)
 
-
 ### Features
 
-* **frontend:** link "What's new" to Gitbook guide (#9557) ([#9557](https://github.com/opengovsg/formsg/commit/319707fcc7c56e179a02dd2238edc0eaae98328f))
-
+- **frontend:** link "What's new" to Gitbook guide (#9557) ([#9557](https://github.com/opengovsg/formsg/commit/319707fcc7c56e179a02dd2238edc0eaae98328f))
 
 ### Bug Fixes
 
-* **frontend:** show "(optional)" beside Description for input fields (#9562) ([#9562](https://github.com/opengovsg/formsg/commit/972d81cd0c8d9402bedf93afb48976fe3011e0fb))
+- **frontend:** show "(optional)" beside Description for input fields (#9562) ([#9562](https://github.com/opengovsg/formsg/commit/972d81cd0c8d9402bedf93afb48976fe3011e0fb))
 
 ## [7.25.0](https://github.com/opengovsg/formsg/compare/v7.24.0...v7.25.0) (2026-06-08)
 
-
 ### Features
 
-* **frontend:** remove beta badge from save draft toggle (#9556) ([#9556](https://github.com/opengovsg/formsg/commit/d616a9b816ac3bfcdb44744c0cd906a60984c60b))
-* **mrf-cutover:** default DuplicateFormModal to MRF with storage-mode escape hatch (5/6) (#9466) ([#9466](https://github.com/opengovsg/formsg/commit/0be568327e716eca49248afc43655f9ba845cdaa))
-
+- **frontend:** remove beta badge from save draft toggle (#9556) ([#9556](https://github.com/opengovsg/formsg/commit/d616a9b816ac3bfcdb44744c0cd906a60984c60b))
+- **mrf-cutover:** default DuplicateFormModal to MRF with storage-mode escape hatch (5/6) (#9466) ([#9466](https://github.com/opengovsg/formsg/commit/0be568327e716eca49248afc43655f9ba845cdaa))
 
 ### Chores
 
-* add observability for v4 encryption failures (#9559) ([#9559](https://github.com/opengovsg/formsg/commit/34b23d9c4e722adf40c7875042dba5a710362ebe))
+- add observability for v4 encryption failures (#9559) ([#9559](https://github.com/opengovsg/formsg/commit/34b23d9c4e722adf40c7875042dba5a710362ebe))
 
 ## [7.24.0](https://github.com/opengovsg/formsg/compare/v7.23.0...v7.24.0) (2026-06-04)
 
-
 ### Features
 
-* answer object encryption (#9502) ([#9502](https://github.com/opengovsg/formsg/commit/ebe965c733d8f73114b2f0ea2fdcfeb6c0ba3f1b))
+- answer object encryption (#9502) ([#9502](https://github.com/opengovsg/formsg/commit/ebe965c733d8f73114b2f0ea2fdcfeb6c0ba3f1b))
 
 ## [7.23.0](https://github.com/opengovsg/formsg/compare/v7.22.1...v7.23.0) (2026-06-04)
 
-
 ### Features
 
-* **i18n:** add landing payments and not found error pages (#9522) ([#9522](https://github.com/opengovsg/formsg/commit/17d59ca99bd96c77d045219842a92416e61b5640))
-
+- **i18n:** add landing payments and not found error pages (#9522) ([#9522](https://github.com/opengovsg/formsg/commit/17d59ca99bd96c77d045219842a92416e61b5640))
 
 ### Bug Fixes
 
-* **NumberField:** remove +/- stepper buttons (#9444) (#9448) ([#9444](https://github.com/opengovsg/formsg/commit/0c4c1ff66b3c39f8b532559bc1ba1c3bc884e30d))
-* **table:** add default for dropdown columns (#9526) ([#9526](https://github.com/opengovsg/formsg/commit/ca979eb7d3bc6fbbef6aa75de8aa2a846e6f52af))
-* enable line breaks in thank you page message (#9507) ([#9507](https://github.com/opengovsg/formsg/commit/ffccdd52202fa511ad05e27f08fbb496db0b19af))
-
+- **NumberField:** remove +/- stepper buttons (#9444) (#9448) ([#9444](https://github.com/opengovsg/formsg/commit/0c4c1ff66b3c39f8b532559bc1ba1c3bc884e30d))
+- **table:** add default for dropdown columns (#9526) ([#9526](https://github.com/opengovsg/formsg/commit/ca979eb7d3bc6fbbef6aa75de8aa2a846e6f52af))
+- enable line breaks in thank you page message (#9507) ([#9507](https://github.com/opengovsg/formsg/commit/ffccdd52202fa511ad05e27f08fbb496db0b19af))
 
 ### Chores
 
-* add agent context and scratch to gitignore (#9544) ([#9544](https://github.com/opengovsg/formsg/commit/e386cd06986d89dbf0a7e454f2dcfe5786244c7c))
-
+- add agent context and scratch to gitignore (#9544) ([#9544](https://github.com/opengovsg/formsg/commit/e386cd06986d89dbf0a7e454f2dcfe5786244c7c))
 
 ### Miscellaneous
 
-* Merge pull request #9465 from opengovsg/feat/create-form-modal-cutover ([#9465](https://github.com/opengovsg/formsg/commit/46add49ed851cf3fcaaed323b5ad4a031f57d2c2))
-* Merge pull request #9527 from opengovsg/fix/signature-hover-theme-color ([#9527](https://github.com/opengovsg/formsg/commit/0b64e549b7064e6b318b7b85f9c89aba703a97f6))
-* Merge pull request #9545 from opengovsg/fix/optional-pdf-display ([#9545](https://github.com/opengovsg/formsg/commit/7fedc79f69e3aaf92d4415c30b3a8f18e1f67fc0))
+- Merge pull request #9465 from opengovsg/feat/create-form-modal-cutover ([#9465](https://github.com/opengovsg/formsg/commit/46add49ed851cf3fcaaed323b5ad4a031f57d2c2))
+- Merge pull request #9527 from opengovsg/fix/signature-hover-theme-color ([#9527](https://github.com/opengovsg/formsg/commit/0b64e549b7064e6b318b7b85f9c89aba703a97f6))
+- Merge pull request #9545 from opengovsg/fix/optional-pdf-display ([#9545](https://github.com/opengovsg/formsg/commit/7fedc79f69e3aaf92d4415c30b3a8f18e1f67fc0))
 
 ## [7.22.1](https://github.com/opengovsg/formsg/compare/v7.22.0...v7.22.1) (2026-06-03)
 
-
 ### Bug Fixes
 
-* **backend:** stripe event handling syntax error (#9536) ([#9536](https://github.com/opengovsg/formsg/commit/4446d74c1a7bfcda0b7655a17b65602db4d66148))
-
+- **backend:** stripe event handling syntax error (#9536) ([#9536](https://github.com/opengovsg/formsg/commit/4446d74c1a7bfcda0b7655a17b65602db4d66148))
 
 ### Miscellaneous
 
-* Merge pull request #9532 from opengovsg/fix/backend/handle-non-formsg-stripe-events ([#9532](https://github.com/opengovsg/formsg/commit/a399838ca32d7d227061f2fbf3eb9d92446b917c))
+- Merge pull request #9532 from opengovsg/fix/backend/handle-non-formsg-stripe-events ([#9532](https://github.com/opengovsg/formsg/commit/a399838ca32d7d227061f2fbf3eb9d92446b917c))
 
 ## [7.22.0](https://github.com/opengovsg/formsg/compare/v7.21.2...v7.22.0) (2026-06-03)
 
-
 ### Features
 
-* **mrf-cutover:** foundation — beta flag, feature flag key, escape-hatch copy composer (1/6) (#9462) ([#9462](https://github.com/opengovsg/formsg/commit/7c498f72bcf9f23c5e1a0da4c4832cb31b87232d))
-* **mrf-cutover:** webhook v1 schema infobox on storage-mode settings (3/6) (#9463) ([#9463](https://github.com/opengovsg/formsg/commit/e885b98a44c897071132b28e9f4fa3b7d08c8c63))
-
+- **mrf-cutover:** foundation — beta flag, feature flag key, escape-hatch copy composer (1/6) (#9462) ([#9462](https://github.com/opengovsg/formsg/commit/7c498f72bcf9f23c5e1a0da4c4832cb31b87232d))
+- **mrf-cutover:** webhook v1 schema infobox on storage-mode settings (3/6) (#9463) ([#9463](https://github.com/opengovsg/formsg/commit/e885b98a44c897071132b28e9f4fa3b7d08c8c63))
 
 ### Bug Fixes
 
-* add mt to webhook section (#9530) ([#9530](https://github.com/opengovsg/formsg/commit/3b192a38fb3ba0d367fd3ae2c909a397ddcd8012))
-
+- add mt to webhook section (#9530) ([#9530](https://github.com/opengovsg/formsg/commit/3b192a38fb3ba0d367fd3ae2c909a397ddcd8012))
 
 ### Miscellaneous
 
-* Merge pull request #9468 from opengovsg/refactor/modal-cutover-prep ([#9468](https://github.com/opengovsg/formsg/commit/b4b89a78a081e5a7148c65bb1f123a0d4224ec86))
-
+- Merge pull request #9468 from opengovsg/refactor/modal-cutover-prep ([#9468](https://github.com/opengovsg/formsg/commit/b4b89a78a081e5a7148c65bb1f123a0d4224ec86))
 
 ### Builds
 
-* merge 7.21.2 back to develop (#9521) ([#9521](https://github.com/opengovsg/formsg/commit/2d7a69174f7efd125450e0e851bc2ecb96fe6482))
+- merge 7.21.2 back to develop (#9521) ([#9521](https://github.com/opengovsg/formsg/commit/2d7a69174f7efd125450e0e851bc2ecb96fe6482))
 
 ## [7.21.2](https://github.com/opengovsg/formsg/compare/v7.21.1...v7.21.2) (2026-06-02)
 
-
 ### Miscellaneous
 
-* Merge pull request #9517 from opengovsg/stg-alt2 ([#9517](https://github.com/opengovsg/formsg/commit/72e6634b6a23bd600300fe1ef5c0c958bed1e43b))
+- Merge pull request #9517 from opengovsg/stg-alt2 ([#9517](https://github.com/opengovsg/formsg/commit/72e6634b6a23bd600300fe1ef5c0c958bed1e43b))
 
 ## [7.21.1](https://github.com/opengovsg/formsg/compare/v7.21.0...v7.21.1) (2026-05-28)
 
-
 ### Bug Fixes
 
-* **backend:** reject 0-byte uploads at presigned POST policy (#9483) ([#9483](https://github.com/opengovsg/formsg/commit/bc83515e5f79fb937e9300d8ffb91444991f4284))
-* **backend:** update sso integration behavior (#9459) ([#9459](https://github.com/opengovsg/formsg/commit/b6434431efe9e2be0a4e2d395b308c5d37bd930d))
-* **table:** show full dropdown label in disabled MRF cells (#9501) ([#9501](https://github.com/opengovsg/formsg/commit/d9bdd5b4d63816b028714752ec9b7727fc011295))
+- **backend:** reject 0-byte uploads at presigned POST policy (#9483) ([#9483](https://github.com/opengovsg/formsg/commit/bc83515e5f79fb937e9300d8ffb91444991f4284))
+- **backend:** update sso integration behavior (#9459) ([#9459](https://github.com/opengovsg/formsg/commit/b6434431efe9e2be0a4e2d395b308c5d37bd930d))
+- **table:** show full dropdown label in disabled MRF cells (#9501) ([#9501](https://github.com/opengovsg/formsg/commit/d9bdd5b4d63816b028714752ec9b7727fc011295))
 
 ## [7.21.0](https://github.com/opengovsg/formsg/compare/v7.20.7...v7.21.0) (2026-05-26)
 
-
 ### Features
 
-* **i18n:** extract text for admin form settings (#9422) ([#9422](https://github.com/opengovsg/formsg/commit/cd1fb38e0523cff31fb91bcd2182ac4bae278c0b))
-
+- **i18n:** extract text for admin form settings (#9422) ([#9422](https://github.com/opengovsg/formsg/commit/cd1fb38e0523cff31fb91bcd2182ac4bae278c0b))
 
 ### Refactors
 
-* rename billing to singpass transactions (#9424) ([#9424](https://github.com/opengovsg/formsg/commit/a7f585ff468a8589ce0bdec74d2a98ecfaae1d66))
+- rename billing to singpass transactions (#9424) ([#9424](https://github.com/opengovsg/formsg/commit/a7f585ff468a8589ce0bdec74d2a98ecfaae1d66))
 
 ## [7.20.7](https://github.com/opengovsg/formsg/compare/v7.20.6...v7.20.7) (2026-05-26)
 
-
 ### Bug Fixes
 
-* **frontend:** close 0-byte upload bypass paths in attachment field (#9482) ([#9482](https://github.com/opengovsg/formsg/commit/5a92062b753b95026bb0b99e2ab6eb8e9c38f469))
-* signature canvas for v4 display (#9485) ([#9485](https://github.com/opengovsg/formsg/commit/f0e7c03cc1f93c91e97761c5a65f16a2e7c0d533))
+- **frontend:** close 0-byte upload bypass paths in attachment field (#9482) ([#9482](https://github.com/opengovsg/formsg/commit/5a92062b753b95026bb0b99e2ab6eb8e9c38f469))
+- signature canvas for v4 display (#9485) ([#9485](https://github.com/opengovsg/formsg/commit/f0e7c03cc1f93c91e97761c5a65f16a2e7c0d533))
 
 ## [7.20.6](https://github.com/opengovsg/formsg/compare/v7.20.5...v7.20.6) (2026-05-25)
 
-
 ### Bug Fixes
 
-* mrf v3 webhook retries, payload inconsistencies and incorrect submittedSteps values (#9414) ([#9414](https://github.com/opengovsg/formsg/commit/953b2f3091d909d7fcfa22f606c50150a9bc5816))
-
+- mrf v3 webhook retries, payload inconsistencies and incorrect submittedSteps values (#9414) ([#9414](https://github.com/opengovsg/formsg/commit/953b2f3091d909d7fcfa22f606c50150a9bc5816))
 
 ### Documentation
 
-* Add DPG badge to README (#9477) ([#9477](https://github.com/opengovsg/formsg/commit/f09922de5b78b31c1472b418558ae5ac5e28315e))
-
+- Add DPG badge to README (#9477) ([#9477](https://github.com/opengovsg/formsg/commit/f09922de5b78b31c1472b418558ae5ac5e28315e))
 
 ### Chores
 
-* email subject title update (#9486) ([#9486](https://github.com/opengovsg/formsg/commit/7f14e809aae2a13b395079f25627d7c68e2b1b7f))
+- email subject title update (#9486) ([#9486](https://github.com/opengovsg/formsg/commit/7f14e809aae2a13b395079f25627d7c68e2b1b7f))
 
 ## [7.20.5](https://github.com/opengovsg/formsg/compare/v7.20.4...v7.20.5) (2026-05-21)
 
-
 ### Bug Fixes
 
-* **backend:** otp prefix paste ([c53ab7e](https://github.com/opengovsg/formsg/commit/c53ab7e5551eb3a59a9c940ea48ffd2de76ebda7))
-* **sms:** separate OTP prefix from digits in verification SMS ([3ea5762](https://github.com/opengovsg/formsg/commit/3ea5762f7a409fe7f2b8338c55aaf089e8c2df83))
-
+- **backend:** otp prefix paste ([c53ab7e](https://github.com/opengovsg/formsg/commit/c53ab7e5551eb3a59a9c940ea48ffd2de76ebda7))
+- **sms:** separate OTP prefix from digits in verification SMS ([3ea5762](https://github.com/opengovsg/formsg/commit/3ea5762f7a409fe7f2b8338c55aaf089e8c2df83))
 
 ### Miscellaneous
 
-* Merge pull request #9469 from opengovsg/fix/frontend/react-translate-compatibility ([#9469](https://github.com/opengovsg/formsg/commit/56ca62beae22d3db7e5739bad2be3123d428f2ac))
+- Merge pull request #9469 from opengovsg/fix/frontend/react-translate-compatibility ([#9469](https://github.com/opengovsg/formsg/commit/56ca62beae22d3db7e5739bad2be3123d428f2ac))
 
 ## [7.20.4](https://github.com/opengovsg/formsg/compare/v7.20.3...v7.20.4) (2026-05-21)
 
-
 ### Miscellaneous
 
-* Merge pull request #9458 from opengovsg/fix/v4-response-page-numbering1 ([#9458](https://github.com/opengovsg/formsg/commit/2659e9ccec10839061acf0bb1f82ea991ab84163))
+- Merge pull request #9458 from opengovsg/fix/v4-response-page-numbering1 ([#9458](https://github.com/opengovsg/formsg/commit/2659e9ccec10839061acf0bb1f82ea991ab84163))
 
 ## [7.20.3](https://github.com/opengovsg/formsg/compare/v7.20.2...v7.20.3) (2026-05-19)
 
-
 ### Bug Fixes
 
-* increase myinfo circuit breaker timeout to 30000ms (#9445) ([#9445](https://github.com/opengovsg/formsg/commit/2ae61017a284307fadad4286b889597a205ca0f5))
-* use POSIX compliant syntax in husky hook scripts for shell interoperability (#9432) ([#9432](https://github.com/opengovsg/formsg/commit/903e9811b235435d5dbd472b5249b6eaa5fedab3))
-
+- increase myinfo circuit breaker timeout to 30000ms (#9445) ([#9445](https://github.com/opengovsg/formsg/commit/2ae61017a284307fadad4286b889597a205ca0f5))
+- use POSIX compliant syntax in husky hook scripts for shell interoperability (#9432) ([#9432](https://github.com/opengovsg/formsg/commit/903e9811b235435d5dbd472b5249b6eaa5fedab3))
 
 ### Chores
 
-* add v1 Claude Code agent skills configuration (#9436) ([#9436](https://github.com/opengovsg/formsg/commit/efdb82c7df76873e1ff51a310d8cd9f4b741fb4f))
-
+- add v1 Claude Code agent skills configuration (#9436) ([#9436](https://github.com/opengovsg/formsg/commit/efdb82c7df76873e1ff51a310d8cd9f4b741fb4f))
 
 ### Miscellaneous
 
-* Merge pull request #9435 from opengovsg/chore/add-formid-feature-flag ([#9435](https://github.com/opengovsg/formsg/commit/e3db44535728ab973182a3211b9efaa101081324))
+- Merge pull request #9435 from opengovsg/chore/add-formid-feature-flag ([#9435](https://github.com/opengovsg/formsg/commit/e3db44535728ab973182a3211b9efaa101081324))
 
 ## [7.20.2](https://github.com/opengovsg/formsg/compare/v7.20.1...v7.20.2) (2026-05-16)
 
-
 ### Bug Fixes
 
-* add shouldWrapChildren to button component to fix translation engine issues (#9427) ([#9427](https://github.com/opengovsg/formsg/commit/fd3c6ab93cd894fdb3fbe10296e7ecee45eb1f67))
-
+- add shouldWrapChildren to button component to fix translation engine issues (#9427) ([#9427](https://github.com/opengovsg/formsg/commit/fd3c6ab93cd894fdb3fbe10296e7ecee45eb1f67))
 
 ### Builds
 
-* merge v7.20.1 back to develop (#9429) ([#9429](https://github.com/opengovsg/formsg/commit/8189ee1060da4cd75d364dfd51f6e4001f2338de))
+- merge v7.20.1 back to develop (#9429) ([#9429](https://github.com/opengovsg/formsg/commit/8189ee1060da4cd75d364dfd51f6e4001f2338de))
 
 ## [7.20.1](https://github.com/opengovsg/formsg/compare/v7.20.0...v7.20.1) (2026-05-14)
 
-
 ### Bug Fixes
 
-* **security:** 2026-05-07 bump dependencies (#9394) ([#9394](https://github.com/opengovsg/formsg/commit/f8b6edf7ec14ffe3f6bd9eb4231b7844ff4d403f))
+- **security:** 2026-05-07 bump dependencies (#9394) ([#9394](https://github.com/opengovsg/formsg/commit/f8b6edf7ec14ffe3f6bd9eb4231b7844ff4d403f))
 
 ## [7.20.0](https://github.com/opengovsg/formsg/compare/v7.19.0...v7.20.0) (2026-05-14)
 
-
 ### Features
 
-* answer object decryption (#9371) ([#9371](https://github.com/opengovsg/formsg/commit/7f630e84c519c50e3a76372941d1f731295f3c28))
-
+- answer object decryption (#9371) ([#9371](https://github.com/opengovsg/formsg/commit/7f630e84c519c50e3a76372941d1f731295f3c28))
 
 ### Bug Fixes
 
-* verified content in response page (#9420) ([#9420](https://github.com/opengovsg/formsg/commit/43d66015902da581a362aa4b835d43a6ca23840a))
+- verified content in response page (#9420) ([#9420](https://github.com/opengovsg/formsg/commit/43d66015902da581a362aa4b835d43a6ca23840a))
 
 ## [7.19.0](https://github.com/opengovsg/formsg/compare/v7.18.2...v7.19.0) (2026-05-13)
 
-
 ### Features
 
-* email standardisation phase 2 (#9390) ([#9390](https://github.com/opengovsg/formsg/commit/4f36cb5eb9fc0eda804c27ba116acd97a507ae2f))
+- email standardisation phase 2 (#9390) ([#9390](https://github.com/opengovsg/formsg/commit/4f36cb5eb9fc0eda804c27ba116acd97a507ae2f))
 
 ## [7.18.2](https://github.com/opengovsg/formsg/compare/v7.18.1...v7.18.2) (2026-05-12)
 
-
 ### Bug Fixes
 
-* **backend:** enable s3 virus scanner retry (#9370) ([#9370](https://github.com/opengovsg/formsg/commit/d933ee245a02ce924a9abb384df88dea11ea4eac))
-* signature field draggability interaction (#9398) ([#9398](https://github.com/opengovsg/formsg/commit/9c9cb1017ad37c9dadab02d4b71c2491d08ba7ce))
+- **backend:** enable s3 virus scanner retry (#9370) ([#9370](https://github.com/opengovsg/formsg/commit/d933ee245a02ce924a9abb384df88dea11ea4eac))
+- signature field draggability interaction (#9398) ([#9398](https://github.com/opengovsg/formsg/commit/9c9cb1017ad37c9dadab02d4b71c2491d08ba7ce))
 
 ## [7.18.1](https://github.com/opengovsg/formsg/compare/v7.18.0...v7.18.1) (2026-05-11)
 
-
 ### Chores
 
-* pin pnpm@10.30.3 as packagemanager in package.json (#9399) ([#9399](https://github.com/opengovsg/formsg/commit/3153211505e0c53eb34892f935467f74163fc793))
+- pin pnpm@10.30.3 as packagemanager in package.json (#9399) ([#9399](https://github.com/opengovsg/formsg/commit/3153211505e0c53eb34892f935467f74163fc793))
 
 ## [7.18.0](https://github.com/opengovsg/formsg/compare/v7.17.1...v7.18.0) (2026-05-07)
 
-
 ### Features
 
-* support charts for MRF (#9383) ([#9383](https://github.com/opengovsg/formsg/commit/9f42b104b2111cdcd52f18c190913ad757111085))
+- support charts for MRF (#9383) ([#9383](https://github.com/opengovsg/formsg/commit/9f42b104b2111cdcd52f18c190913ad757111085))
 
 ## [7.17.1](https://github.com/opengovsg/formsg/compare/v7.17.0...v7.17.1) (2026-05-07)
 
-
 ### Bug Fixes
 
-* **duplications:** secret key file has old form name (#9391) ([#9391](https://github.com/opengovsg/formsg/commit/34bf85c878110f39b9b7d6bc7a91e505b96fc3a8))
-* respondent copy custom body line breaks (#9384) ([#9384](https://github.com/opengovsg/formsg/commit/2b82052c337c91517ee05ac8eb7fee559c38a67d))
+- **duplications:** secret key file has old form name (#9391) ([#9391](https://github.com/opengovsg/formsg/commit/34bf85c878110f39b9b7d6bc7a91e505b96fc3a8))
+- respondent copy custom body line breaks (#9384) ([#9384](https://github.com/opengovsg/formsg/commit/2b82052c337c91517ee05ac8eb7fee559c38a67d))
 
 ## [7.17.0](https://github.com/opengovsg/formsg/compare/v7.16.2...v7.17.0) (2026-05-05)
 
-
 ### Features
 
-* **frontend:** enable admin rum (#9374) ([#9374](https://github.com/opengovsg/formsg/commit/6b01afe862fe9674322a45f0f66c6940d418184e))
+- **frontend:** enable admin rum (#9374) ([#9374](https://github.com/opengovsg/formsg/commit/6b01afe862fe9674322a45f0f66c6940d418184e))
 
 ## [7.16.2](https://github.com/opengovsg/formsg/compare/v7.16.1...v7.16.2) (2026-05-05)
 
-
 ### Miscellaneous
 
-* Merge pull request #9385 from opengovsg/fix/issue-email-sending ([#9385](https://github.com/opengovsg/formsg/commit/3562285605f193f1102669786500c2e095d01f51))
+- Merge pull request #9385 from opengovsg/fix/issue-email-sending ([#9385](https://github.com/opengovsg/formsg/commit/3562285605f193f1102669786500c2e095d01f51))
 
 ## [7.16.1](https://github.com/opengovsg/formsg/compare/v7.16.0...v7.16.1) (2026-05-04)
 
-
 ### Miscellaneous
 
-* Merge pull request #9368 from opengovsg/feat/nric-whitelist-mrf ([#9368](https://github.com/opengovsg/formsg/commit/9ac05e2c5a69c62e0eb7292b038ca27931bc40ea))
+- Merge pull request #9368 from opengovsg/feat/nric-whitelist-mrf ([#9368](https://github.com/opengovsg/formsg/commit/9ac05e2c5a69c62e0eb7292b038ca27931bc40ea))
 
 ## [7.16.0](https://github.com/opengovsg/formsg/compare/v7.15.0...v7.16.0) (2026-05-04)
 
-
 ### Features
 
-* extract tract for admin form settings (#9378) ([#9378](https://github.com/opengovsg/formsg/commit/73e11734f300b0cb8301423f780dd567f39c3601))
-
+- extract tract for admin form settings (#9378) ([#9378](https://github.com/opengovsg/formsg/commit/73e11734f300b0cb8301423f780dd567f39c3601))
 
 ### Chores
 
-* **auth:** remove unused auth functions (#9375) ([#9375](https://github.com/opengovsg/formsg/commit/113347faa900e6d0f3cb2f96e54337f56a32f95b))
-* **vscode:** add copilot instructions, deepwiki mcp (#9366) ([#9366](https://github.com/opengovsg/formsg/commit/e6dc6eb2d4342b3dd33f7ddf3a3ae741246cbafd))
+- **auth:** remove unused auth functions (#9375) ([#9375](https://github.com/opengovsg/formsg/commit/113347faa900e6d0f3cb2f96e54337f56a32f95b))
+- **vscode:** add copilot instructions, deepwiki mcp (#9366) ([#9366](https://github.com/opengovsg/formsg/commit/e6dc6eb2d4342b3dd33f7ddf3a3ae741246cbafd))
 
 ## [7.15.0](https://github.com/opengovsg/formsg/compare/v7.14.0...v7.15.0) (2026-04-30)
 
-
 ### Features
 
-* **frontend:** use template nudges (#9335) ([#9335](https://github.com/opengovsg/formsg/commit/76f88df17e9b5fcbe7b7d4c8507922d4f0c3d239))
+- **frontend:** use template nudges (#9335) ([#9335](https://github.com/opengovsg/formsg/commit/76f88df17e9b5fcbe7b7d4c8507922d4f0c3d239))
 
 ## [7.14.0](https://github.com/opengovsg/formsg/compare/v7.13.0...v7.14.0) (2026-04-30)
 
-
 ### Features
 
-* **i18n:** extract builder and field row text in create flow (#9367) ([#9367](https://github.com/opengovsg/formsg/commit/ad300ba7ada9828f189120cc3ad63f78bd324318))
-* **i18n:** extract text public form comps (#9261) ([#9261](https://github.com/opengovsg/formsg/commit/1a7f31cde3943305b3a81670e001aab37b7d22a9))
-* draggable form field (#9357) ([#9357](https://github.com/opengovsg/formsg/commit/e32f816c606f1192eb442b89afd72ef98a12c87a))
-
+- **i18n:** extract builder and field row text in create flow (#9367) ([#9367](https://github.com/opengovsg/formsg/commit/ad300ba7ada9828f189120cc3ad63f78bd324318))
+- **i18n:** extract text public form comps (#9261) ([#9261](https://github.com/opengovsg/formsg/commit/1a7f31cde3943305b3a81670e001aab37b7d22a9))
+- draggable form field (#9357) ([#9357](https://github.com/opengovsg/formsg/commit/e32f816c606f1192eb442b89afd72ef98a12c87a))
 
 ### Documentation
 
-* **readme:** correct deepwiki repo link casing (#9369) ([#9369](https://github.com/opengovsg/formsg/commit/332104003f8ff52998de5d2f8428425645bc1e2a))
+- **readme:** correct deepwiki repo link casing (#9369) ([#9369](https://github.com/opengovsg/formsg/commit/332104003f8ff52998de5d2f8428425645bc1e2a))
 
 ## [7.13.0](https://github.com/opengovsg/formsg/compare/v7.12.3...v7.13.0) (2026-04-28)
 
-
 ### Features
 
-* **i18n:** extract text from BuilderAndDesignDrawer, FieldListDrawer  (#9255) ([#9255](https://github.com/opengovsg/formsg/commit/4aa850cd40fdf67c2ef69a6a21c2c6235670d9e6))
-
+- **i18n:** extract text from BuilderAndDesignDrawer, FieldListDrawer (#9255) ([#9255](https://github.com/opengovsg/formsg/commit/4aa850cd40fdf67c2ef69a6a21c2c6235670d9e6))
 
 ### Miscellaneous
 
-* Merge pull request #9361 from opengovsg/fix/ci/update-codeql-config-prod ([#9361](https://github.com/opengovsg/formsg/commit/fd618b53fbf4530e883bb61e1adf02271133e671))
+- Merge pull request #9361 from opengovsg/fix/ci/update-codeql-config-prod ([#9361](https://github.com/opengovsg/formsg/commit/fd618b53fbf4530e883bb61e1adf02271133e671))
 
 ## [7.12.3](https://github.com/opengovsg/formsg/compare/v7.12.2...v7.12.3) (2026-04-27)
 
-
 ### Bug Fixes
 
-* **sdk:** bump axios 1.15.2 (#9358) ([#9358](https://github.com/opengovsg/formsg/commit/ed2ec2f54ec5d94948818eaaf060534c37af6fae))
-
+- **sdk:** bump axios 1.15.2 (#9358) ([#9358](https://github.com/opengovsg/formsg/commit/ed2ec2f54ec5d94948818eaaf060534c37af6fae))
 
 ### Chores
 
-* update logform typing and bump winston (#9151) ([#9151](https://github.com/opengovsg/formsg/commit/c79d422b5f0a9a94b33a81d3f149069ac633739d))
-
+- update logform typing and bump winston (#9151) ([#9151](https://github.com/opengovsg/formsg/commit/c79d422b5f0a9a94b33a81d3f149069ac633739d))
 
 ### Miscellaneous
 
-* Merge pull request #9152 from opengovsg/feat/bump-sqs-consumer-producer ([#9152](https://github.com/opengovsg/formsg/commit/a1ca41a90a08b24d781733282a06178cff045fec))
+- Merge pull request #9152 from opengovsg/feat/bump-sqs-consumer-producer ([#9152](https://github.com/opengovsg/formsg/commit/a1ca41a90a08b24d781733282a06178cff045fec))
 
 ## [7.12.2](https://github.com/opengovsg/formsg/compare/v7.12.1...v7.12.2) (2026-04-23)
 
-
 ### Bug Fixes
 
-* **ci:** rebuild non-release images (#9337) ([#9337](https://github.com/opengovsg/formsg/commit/565ca2452d3fbeaf954bc9c24b1c43d1c9ee7518))
-
+- **ci:** rebuild non-release images (#9337) ([#9337](https://github.com/opengovsg/formsg/commit/565ca2452d3fbeaf954bc9c24b1c43d1c9ee7518))
 
 ### Chores
 
-* remove redundant isSingleSub check to show toggle (#9336) ([#9336](https://github.com/opengovsg/formsg/commit/681ca477497848f2d32700ca087b9214de763ec0))
+- remove redundant isSingleSub check to show toggle (#9336) ([#9336](https://github.com/opengovsg/formsg/commit/681ca477497848f2d32700ca087b9214de763ec0))
 
 ## [7.12.1](https://github.com/opengovsg/formsg/compare/v7.12.0...v7.12.1) (2026-04-22)
 
-
 ### Bug Fixes
 
-* check for single submitter only if singpass is enabled (WIP)  (#9332) ([#9332](https://github.com/opengovsg/formsg/commit/5ec7b548580cad5f39b3ced30d69cde86dcd297d))
+- check for single submitter only if singpass is enabled (WIP) (#9332) ([#9332](https://github.com/opengovsg/formsg/commit/5ec7b548580cad5f39b3ced30d69cde86dcd297d))
 
 ## [7.12.0](https://github.com/opengovsg/formsg/compare/v7.11.0...v7.12.0) (2026-04-22)
 
-
 ### Features
 
-* **ci:** improve container build process v2 (#9317) ([#9317](https://github.com/opengovsg/formsg/commit/65fd6b72b4c78656f7c6908f1bd057bdb2de1a4f))
-
+- **ci:** improve container build process v2 (#9317) ([#9317](https://github.com/opengovsg/formsg/commit/65fd6b72b4c78656f7c6908f1bd057bdb2de1a4f))
 
 ### Bug Fixes
 
-* **frontend:** use formsgSdkMode in decryption worker (#9329) ([#9329](https://github.com/opengovsg/formsg/commit/f664335e37277fe5c4d28441684ce109a5ae013a))
+- **frontend:** use formsgSdkMode in decryption worker (#9329) ([#9329](https://github.com/opengovsg/formsg/commit/f664335e37277fe5c4d28441684ce109a5ae013a))
 
 ## [7.11.0](https://github.com/opengovsg/formsg/compare/v7.10.0...v7.11.0) (2026-04-22)
 
-
 ### Features
 
-* remove option descriptions from create form modal (#9324) ([#9324](https://github.com/opengovsg/formsg/commit/50ace6b636f98c0be2a9d0c7484feab517099110))
-
+- remove option descriptions from create form modal (#9324) ([#9324](https://github.com/opengovsg/formsg/commit/50ace6b636f98c0be2a9d0c7484feab517099110))
 
 ### Bug Fixes
 
-* **ci:** ignore sdk bump commit ([b622dee](https://github.com/opengovsg/formsg/commit/b622deeb09b43278df31571ceddfee8e72b10238))
-
+- **ci:** ignore sdk bump commit ([b622dee](https://github.com/opengovsg/formsg/commit/b622deeb09b43278df31571ceddfee8e72b10238))
 
 ### Miscellaneous
 
-* Merge pull request #9318 from opengovsg/feat/single-sub-mrf ([#9318](https://github.com/opengovsg/formsg/commit/b1c598270f21d43398988f947ba19911c02b667a))
-* Merge pull request #9322 from opengovsg/fix/ci/ignore-sdk-bump-commit ([#9322](https://github.com/opengovsg/formsg/commit/aeb4b78e6b3c3c2e3325223b99851d51dbe0f9bf))
+- Merge pull request #9318 from opengovsg/feat/single-sub-mrf ([#9318](https://github.com/opengovsg/formsg/commit/b1c598270f21d43398988f947ba19911c02b667a))
+- Merge pull request #9322 from opengovsg/fix/ci/ignore-sdk-bump-commit ([#9322](https://github.com/opengovsg/formsg/commit/aeb4b78e6b3c3c2e3325223b99851d51dbe0f9bf))
 
 ## [7.10.0](https://github.com/opengovsg/formsg/compare/v7.9.2...v7.10.0) (2026-04-20)
 
-
 ### Features
 
-* remove forumsg link from FormSG (#9319) ([#9319](https://github.com/opengovsg/formsg/commit/545a5965061791690f315bc117fa48481581fbb3))
+- remove forumsg link from FormSG (#9319) ([#9319](https://github.com/opengovsg/formsg/commit/545a5965061791690f315bc117fa48481581fbb3))
 
 ## [7.9.2](https://github.com/opengovsg/formsg/compare/v7.9.1...v7.9.2) (2026-04-16)
 
-
 ### Miscellaneous
 
-* Merge pull request #9313 from opengovsg/release-al2 ([#9313](https://github.com/opengovsg/formsg/commit/41732190ff796e8d0bb10fbfea09cf6459547971))
-* Merge pull request #9314 from opengovsg/fix/sdk/update-repository-provenance ([#9314](https://github.com/opengovsg/formsg/commit/13b992929b59b2bcbfae00e8a371fcfb4ac0087a))
+- Merge pull request #9313 from opengovsg/release-al2 ([#9313](https://github.com/opengovsg/formsg/commit/41732190ff796e8d0bb10fbfea09cf6459547971))
+- Merge pull request #9314 from opengovsg/fix/sdk/update-repository-provenance ([#9314](https://github.com/opengovsg/formsg/commit/13b992929b59b2bcbfae00e8a371fcfb4ac0087a))
 
 ## [7.9.1](https://github.com/opengovsg/formsg/compare/v7.9.0...v7.9.1) (2026-04-16)
 
-
 ### Bug Fixes
 
-* **ci, sdk:** npm upgrade and publishing (#9311) ([#9311](https://github.com/opengovsg/formsg/commit/7b77273d4a195a67d422460a140244429f1ab80c))
+- **ci, sdk:** npm upgrade and publishing (#9311) ([#9311](https://github.com/opengovsg/formsg/commit/7b77273d4a195a67d422460a140244429f1ab80c))
 
 ## [7.9.0](https://github.com/opengovsg/formsg/compare/v7.8.0...v7.9.0) (2026-04-16)
 
-
 ### Features
 
-* **sdk:** enable publishing (#9305) ([#9305](https://github.com/opengovsg/formsg/commit/7b48aa5e1dd65b8e38d6090e7a135fdeb5267e89))
+- **sdk:** enable publishing (#9305) ([#9305](https://github.com/opengovsg/formsg/commit/7b48aa5e1dd65b8e38d6090e7a135fdeb5267e89))
 
 ## [7.8.0](https://github.com/opengovsg/formsg/compare/v7.7.0...v7.8.0) (2026-04-16)
 
-
 ### Features
 
-* **frontend:** env-independent containers via runtime env loading (#9285) ([#9285](https://github.com/opengovsg/formsg/commit/1e52d267bca8ac3898f729fd03b68b760bc10822))
-* **sdk:** bump axios 1.15.0 ([fb4d837](https://github.com/opengovsg/formsg/commit/fb4d8372a31ef0f38ebaf9e286efa17ddd9a8b72))
-
+- **frontend:** env-independent containers via runtime env loading (#9285) ([#9285](https://github.com/opengovsg/formsg/commit/1e52d267bca8ac3898f729fd03b68b760bc10822))
+- **sdk:** bump axios 1.15.0 ([fb4d837](https://github.com/opengovsg/formsg/commit/fb4d8372a31ef0f38ebaf9e286efa17ddd9a8b72))
 
 ### Miscellaneous
 
-* Merge pull request #9295 from opengovsg/fix/ci/update-stg-alt2-parameters ([#9295](https://github.com/opengovsg/formsg/commit/0260daac3558dc4f559acc60dbc4d5c2cfe132f7))
-* Merge pull request #9300 from opengovsg/release-al2 ([#9300](https://github.com/opengovsg/formsg/commit/c03f3a4d15dc5a76d84bcbfb0bb47767314b8e36))
-* Merge pull request #9302 from opengovsg/feat/sdk/bump-axios-1.15.0 ([#9302](https://github.com/opengovsg/formsg/commit/8c953573622292fe1e0fc35be712a403cd1aaf9d))
-* Merge pull request #9304 from opengovsg/release-al2 ([#9304](https://github.com/opengovsg/formsg/commit/194a81603da220cd46d8f2e2aef25149c4e07380))
+- Merge pull request #9295 from opengovsg/fix/ci/update-stg-alt2-parameters ([#9295](https://github.com/opengovsg/formsg/commit/0260daac3558dc4f559acc60dbc4d5c2cfe132f7))
+- Merge pull request #9300 from opengovsg/release-al2 ([#9300](https://github.com/opengovsg/formsg/commit/c03f3a4d15dc5a76d84bcbfb0bb47767314b8e36))
+- Merge pull request #9302 from opengovsg/feat/sdk/bump-axios-1.15.0 ([#9302](https://github.com/opengovsg/formsg/commit/8c953573622292fe1e0fc35be712a403cd1aaf9d))
+- Merge pull request #9304 from opengovsg/release-al2 ([#9304](https://github.com/opengovsg/formsg/commit/194a81603da220cd46d8f2e2aef25149c4e07380))
 
 ## [7.7.0](https://github.com/opengovsg/formsg/compare/v7.5.2...v7.7.0) (2026-04-15)
 
-
 ### Features
 
-* email standardisation phase 1 (#9283) ([#9283](https://github.com/opengovsg/formsg/commit/179a82653c5c592a15dfcde8fa3dfdf9f2625343))
-* mrf response limit v1.0 (#9282) ([#9282](https://github.com/opengovsg/formsg/commit/b37781e648d9fd771cb580b2c2546ad8a8c9aa54))
-
+- email standardisation phase 1 (#9283) ([#9283](https://github.com/opengovsg/formsg/commit/179a82653c5c592a15dfcde8fa3dfdf9f2625343))
+- mrf response limit v1.0 (#9282) ([#9282](https://github.com/opengovsg/formsg/commit/b37781e648d9fd771cb580b2c2546ad8a8c9aa54))
 
 ### Bug Fixes
 
-* changes from fix/vertical-stack-email-template ([b9d37c3](https://github.com/opengovsg/formsg/commit/b9d37c3b5f3eaa7e84b3e703acab57acd425da80))
-* remove preview for removed MrfWorkflowEmail template (#9299) ([#9299](https://github.com/opengovsg/formsg/commit/bcc56edfddb5befb04c0b03e2eabc0f13da44353))
-
+- changes from fix/vertical-stack-email-template ([b9d37c3](https://github.com/opengovsg/formsg/commit/b9d37c3b5f3eaa7e84b3e703acab57acd425da80))
+- remove preview for removed MrfWorkflowEmail template (#9299) ([#9299](https://github.com/opengovsg/formsg/commit/bcc56edfddb5befb04c0b03e2eabc0f13da44353))
 
 ### Chores
 
-* bump version to 7.6.0 ([a7b4994](https://github.com/opengovsg/formsg/commit/a7b49941167870d580e10915def160b928921d10))
-* use published mockpass image instead of building from source (#9296) ([#9296](https://github.com/opengovsg/formsg/commit/8821d00aa99d97f2f32f6a89370a3588d0c23c13))
-
+- bump version to 7.6.0 ([a7b4994](https://github.com/opengovsg/formsg/commit/a7b49941167870d580e10915def160b928921d10))
+- use published mockpass image instead of building from source (#9296) ([#9296](https://github.com/opengovsg/formsg/commit/8821d00aa99d97f2f32f6a89370a3588d0c23c13))
 
 ### Miscellaneous
 
-* Merge pull request #9298 from opengovsg/release-al2 ([#9298](https://github.com/opengovsg/formsg/commit/e31db15d48e229b787d889c33242552fa360f754))
+- Merge pull request #9298 from opengovsg/release-al2 ([#9298](https://github.com/opengovsg/formsg/commit/e31db15d48e229b787d889c33242552fa360f754))
 
 ## [7.6.0](https://github.com/opengovsg/formsg/compare/v7.5.2...v7.6.0) (2026-04-15)
 
-
 ### Features
 
-* email standardisation phase 1 (#9283) ([#9283](https://github.com/opengovsg/formsg/commit/179a82653c5c592a15dfcde8fa3dfdf9f2625343))
-* mrf response limit v1.0 (#9282) ([#9282](https://github.com/opengovsg/formsg/commit/b37781e648d9fd771cb580b2c2546ad8a8c9aa54))
-
+- email standardisation phase 1 (#9283) ([#9283](https://github.com/opengovsg/formsg/commit/179a82653c5c592a15dfcde8fa3dfdf9f2625343))
+- mrf response limit v1.0 (#9282) ([#9282](https://github.com/opengovsg/formsg/commit/b37781e648d9fd771cb580b2c2546ad8a8c9aa54))
 
 ### Bug Fixes
 
-* remove preview for removed MrfWorkflowEmail template (#9299) ([#9299](https://github.com/opengovsg/formsg/commit/bcc56edfddb5befb04c0b03e2eabc0f13da44353))
-
+- remove preview for removed MrfWorkflowEmail template (#9299) ([#9299](https://github.com/opengovsg/formsg/commit/bcc56edfddb5befb04c0b03e2eabc0f13da44353))
 
 ### Chores
 
-* use published mockpass image instead of building from source (#9296) ([#9296](https://github.com/opengovsg/formsg/commit/8821d00aa99d97f2f32f6a89370a3588d0c23c13))
-
+- use published mockpass image instead of building from source (#9296) ([#9296](https://github.com/opengovsg/formsg/commit/8821d00aa99d97f2f32f6a89370a3588d0c23c13))
 
 ### Miscellaneous
 
-* Merge pull request #9298 from opengovsg/release-al2 ([#9298](https://github.com/opengovsg/formsg/commit/e31db15d48e229b787d889c33242552fa360f754))
+- Merge pull request #9298 from opengovsg/release-al2 ([#9298](https://github.com/opengovsg/formsg/commit/e31db15d48e229b787d889c33242552fa360f754))
 
 ## [7.5.2](https://github.com/opengovsg/formsg/compare/v7.5.1...v7.5.2) (2026-04-11)
 
-
 ### Bug Fixes
 
-* **readme:** missing or incorrect set up commands in README.md (#9247) ([#9247](https://github.com/opengovsg/formsg/commit/8b5aa06aea0c009ce89707ea279e697222c572be))
-* **security:** bump axios 1.15.0 (#9292) ([#9292](https://github.com/opengovsg/formsg/commit/05c981dd2c85ace6ec3d1d1ec3c29d2969c0ba4c))
-
+- **readme:** missing or incorrect set up commands in README.md (#9247) ([#9247](https://github.com/opengovsg/formsg/commit/8b5aa06aea0c009ce89707ea279e697222c572be))
+- **security:** bump axios 1.15.0 (#9292) ([#9292](https://github.com/opengovsg/formsg/commit/05c981dd2c85ace6ec3d1d1ec3c29d2969c0ba4c))
 
 ### Dependencies
 
-* **deps:** bump lodash from 4.17.21 to 4.18.1 in /scripts/20230317_whitespace_issue (#9275) ([#9275](https://github.com/opengovsg/formsg/commit/2b4646f8dfc97b739e0635393e97d66f767c3d30))
+- **deps:** bump lodash from 4.17.21 to 4.18.1 in /scripts/20230317_whitespace_issue (#9275) ([#9275](https://github.com/opengovsg/formsg/commit/2b4646f8dfc97b739e0635393e97d66f767c3d30))
 
 ## [7.5.1](https://github.com/opengovsg/formsg/compare/v7.5.0...v7.5.1) (2026-04-08)
 
-
 ### Bug Fixes
 
-* replace npx usage (#9287) ([#9287](https://github.com/opengovsg/formsg/commit/f72c8414684c983dbcbb96c00b6652e1b285c1a7))
-
+- replace npx usage (#9287) ([#9287](https://github.com/opengovsg/formsg/commit/f72c8414684c983dbcbb96c00b6652e1b285c1a7))
 
 ### Miscellaneous
 
-* Merge pull request #9286 from opengovsg/chore/revert-9276-container-build-process ([#9286](https://github.com/opengovsg/formsg/commit/1c8c6f493c38e88b6c1676cce8c11354c710412b))
-* Merge pull request #9289 from opengovsg/release-al2 ([#9289](https://github.com/opengovsg/formsg/commit/ee2aa0fbd5e49d877cef90211083710c3bd237df))
+- Merge pull request #9286 from opengovsg/chore/revert-9276-container-build-process ([#9286](https://github.com/opengovsg/formsg/commit/1c8c6f493c38e88b6c1676cce8c11354c710412b))
+- Merge pull request #9289 from opengovsg/release-al2 ([#9289](https://github.com/opengovsg/formsg/commit/ee2aa0fbd5e49d877cef90211083710c3bd237df))
 
 ## [7.5.0](https://github.com/opengovsg/formsg/compare/v7.4.5...v7.5.0) (2026-04-08)
 
-
 ### Features
 
-* prune allow list (#9281) ([#9281](https://github.com/opengovsg/formsg/commit/ef838a8710dcb30f7073a2e74981f22ca2f34d21))
-
+- prune allow list (#9281) ([#9281](https://github.com/opengovsg/formsg/commit/ef838a8710dcb30f7073a2e74981f22ca2f34d21))
 
 ### Miscellaneous
 
-* Merge pull request #9276 from opengovsg/feat/ci/improve-container-build-process ([#9276](https://github.com/opengovsg/formsg/commit/9101de2a0851b961c936573caebe908960a45941))
-* Merge pull request #9280 from opengovsg/feat/pin-deps ([#9280](https://github.com/opengovsg/formsg/commit/7e0e9adeb1e46a98242048a9735d40d764b425ce))
+- Merge pull request #9276 from opengovsg/feat/ci/improve-container-build-process ([#9276](https://github.com/opengovsg/formsg/commit/9101de2a0851b961c936573caebe908960a45941))
+- Merge pull request #9280 from opengovsg/feat/pin-deps ([#9280](https://github.com/opengovsg/formsg/commit/7e0e9adeb1e46a98242048a9735d40d764b425ce))
 
 ## [7.4.5](https://github.com/opengovsg/formsg/compare/v7.4.4...v7.4.5) (2026-04-02)
 
-
 ### Bug Fixes
 
-* **frontend:** keep empty attachment zip archives (#9271) ([#9271](https://github.com/opengovsg/formsg/commit/795f48856f97e1db3f8a46155d2af5065667900d))
-
+- **frontend:** keep empty attachment zip archives (#9271) ([#9271](https://github.com/opengovsg/formsg/commit/795f48856f97e1db3f8a46155d2af5065667900d))
 
 ### Miscellaneous
 
-* Merge pull request #9265 from opengovsg/fix/all/enable-development-host-gateway ([#9265](https://github.com/opengovsg/formsg/commit/f68661092ab545e8c205fab3c6281dae66249b02))
-
+- Merge pull request #9265 from opengovsg/fix/all/enable-development-host-gateway ([#9265](https://github.com/opengovsg/formsg/commit/f68661092ab545e8c205fab3c6281dae66249b02))
 
 ### Builds
 
-* merge 7.4.4 back to develop (#9270) ([#9270](https://github.com/opengovsg/formsg/commit/32f271c183b0acfcea7fba11d021b398ec0f2e35))
+- merge 7.4.4 back to develop (#9270) ([#9270](https://github.com/opengovsg/formsg/commit/32f271c183b0acfcea7fba11d021b398ec0f2e35))
 
 ## [7.4.4](https://github.com/opengovsg/formsg/compare/v7.4.3...v7.4.4) (2026-04-01)
 
-
 ### Bug Fixes
 
-* **frontend:** bulk download attachment behaviour (#9267) ([#9267](https://github.com/opengovsg/formsg/commit/45e97565ad9838693bc321edc67d6de24e43b044))
-
+- **frontend:** bulk download attachment behaviour (#9267) ([#9267](https://github.com/opengovsg/formsg/commit/45e97565ad9838693bc321edc67d6de24e43b044))
 
 ### Chores
 
-* fix incorrect eswantini country name to eswatini (#9268) ([#9268](https://github.com/opengovsg/formsg/commit/0c762d5e57dcc3ce975ddbacc18912d9c02bd55f))
+- fix incorrect eswantini country name to eswatini (#9268) ([#9268](https://github.com/opengovsg/formsg/commit/0c762d5e57dcc3ce975ddbacc18912d9c02bd55f))
 
 ## [7.4.3](https://github.com/opengovsg/formsg/compare/v7.4.2...v7.4.3) (2026-04-01)
 
-
 ### Bug Fixes
 
-* **all:** bump dependencies (#9256) ([#9256](https://github.com/opengovsg/formsg/commit/41eae6db642a7b7a17dd216832008a499fce6781))
-* **backend:** pin node version 22.22.2 (#9263) ([#9263](https://github.com/opengovsg/formsg/commit/b7836306222a1940cc650549af5318fd83402920))
-
+- **all:** bump dependencies (#9256) ([#9256](https://github.com/opengovsg/formsg/commit/41eae6db642a7b7a17dd216832008a499fce6781))
+- **backend:** pin node version 22.22.2 (#9263) ([#9263](https://github.com/opengovsg/formsg/commit/b7836306222a1940cc650549af5318fd83402920))
 
 ### Miscellaneous
 
-* Merge pull request #9250 from opengovsg/docs/readme/deepwiki-official ([#9250](https://github.com/opengovsg/formsg/commit/b7ffae51a96c5ef477691cafa0fca01fd7950bd4))
-* Merge pull request #9257 from opengovsg/release-al2 ([#9257](https://github.com/opengovsg/formsg/commit/4584acc047a4649c22ccb6b1da9b5474adab3b16))
+- Merge pull request #9250 from opengovsg/docs/readme/deepwiki-official ([#9250](https://github.com/opengovsg/formsg/commit/b7ffae51a96c5ef477691cafa0fca01fd7950bd4))
+- Merge pull request #9257 from opengovsg/release-al2 ([#9257](https://github.com/opengovsg/formsg/commit/4584acc047a4649c22ccb6b1da9b5474adab3b16))
 
 ## [7.4.2](https://github.com/opengovsg/formsg/compare/v7.4.1...v7.4.2) (2026-03-31)
 
-
 ### Bug Fixes
 
-* **backend:** improve data flow (#9253) ([#9253](https://github.com/opengovsg/formsg/commit/ec2400fca9364997195d3bec3b32df98838ae9ef))
+- **backend:** improve data flow (#9253) ([#9253](https://github.com/opengovsg/formsg/commit/ec2400fca9364997195d3bec3b32df98838ae9ef))
 
 ## [7.4.1](https://github.com/opengovsg/formsg/compare/v7.4.0...v7.4.1) (2026-03-30)
 
-
 ### Bug Fixes
 
-* **all:** bump node 22.22.2 (#9245) ([#9245](https://github.com/opengovsg/formsg/commit/ccfd397960546d1985112ecfbafa666ef3a18ddd))
-* **backend:** enable frontend assets caching (#9244) ([#9244](https://github.com/opengovsg/formsg/commit/9f17d221c20eae31d00b98dc656953c16e513e1e))
-
+- **all:** bump node 22.22.2 (#9245) ([#9245](https://github.com/opengovsg/formsg/commit/ccfd397960546d1985112ecfbafa666ef3a18ddd))
+- **backend:** enable frontend assets caching (#9244) ([#9244](https://github.com/opengovsg/formsg/commit/9f17d221c20eae31d00b98dc656953c16e513e1e))
 
 ### Miscellaneous
 
-* Merge pull request #9243 from opengovsg/fix/use-template-emails ([#9243](https://github.com/opengovsg/formsg/commit/9e45f297f9a13c118448a91cad2202f501ef5067))
+- Merge pull request #9243 from opengovsg/fix/use-template-emails ([#9243](https://github.com/opengovsg/formsg/commit/9e45f297f9a13c118448a91cad2202f501ef5067))
 
 ## [7.4.0](https://github.com/opengovsg/formsg/compare/v7.3.0...v7.4.0) (2026-03-26)
 
-
 ### Features
 
-* **sdk:** migrate sdk monorepo (#9221) ([#9221](https://github.com/opengovsg/formsg/commit/0e7e721429f22737b980adb8ec03bd915b4562ff))
-
+- **sdk:** migrate sdk monorepo (#9221) ([#9221](https://github.com/opengovsg/formsg/commit/0e7e721429f22737b980adb8ec03bd915b4562ff))
 
 ### Bug Fixes
 
-* **ci:** include sdk build in dockerfile (#9240) ([#9240](https://github.com/opengovsg/formsg/commit/c8fd4ee01c1ccb30bdbe19fa3f5287aa581c37ee))
+- **ci:** include sdk build in dockerfile (#9240) ([#9240](https://github.com/opengovsg/formsg/commit/c8fd4ee01c1ccb30bdbe19fa3f5287aa581c37ee))
 
 ## [7.3.0](https://github.com/opengovsg/formsg/compare/v7.2.0...v7.3.0) (2026-03-26)
 
-
 ### Features
 
-* **backend, shared:** default admin email mrf (#9228) ([#9228](https://github.com/opengovsg/formsg/commit/894a87539fc517808a3bdf5c92fd8357d5074a03))
-
+- **backend, shared:** default admin email mrf (#9228) ([#9228](https://github.com/opengovsg/formsg/commit/894a87539fc517808a3bdf5c92fd8357d5074a03))
 
 ### Bug Fixes
 
-* **frontend:** pdf bulk download progress modal janks (#9216) ([#9216](https://github.com/opengovsg/formsg/commit/e3c3478bb282aa0567cc68847c5aeeeff5f63881))
+- **frontend:** pdf bulk download progress modal janks (#9216) ([#9216](https://github.com/opengovsg/formsg/commit/e3c3478bb282aa0567cc68847c5aeeeff5f63881))
 
 ## [7.2.0](https://github.com/opengovsg/formsg/compare/v7.1.1...v7.2.0) (2026-03-24)
 
-
 ### Features
 
-* **backend:** add forms top up (#9229) ([#9229](https://github.com/opengovsg/formsg/commit/147c59200fe0efa6eab37df8956d22fc8e151380))
+- **backend:** add forms top up (#9229) ([#9229](https://github.com/opengovsg/formsg/commit/147c59200fe0efa6eab37df8956d22fc8e151380))
 
 ## [7.1.1](https://github.com/opengovsg/formsg/compare/v7.1.0...v7.1.1) (2026-03-23)
 
-
 ### Miscellaneous
 
-* Merge pull request #9230 from opengovsg/feat/bump-versions ([#9230](https://github.com/opengovsg/formsg/commit/2c9a1d9f0f45286fa583d1a6970ebe8a4b183cb4))
+- Merge pull request #9230 from opengovsg/feat/bump-versions ([#9230](https://github.com/opengovsg/formsg/commit/2c9a1d9f0f45286fa583d1a6970ebe8a4b183cb4))
 
 ## [7.1.0](https://github.com/opengovsg/formsg/compare/v7.0.0...v7.1.0) (2026-03-19)
 
-
 ### Features
 
-* **frontend:** add savedraft beta badge (#9219) ([#9219](https://github.com/opengovsg/formsg/commit/bc5fb09db89d70815f025f775953aaae622bbcce))
-* **frontend:** vertically stack save draft and submission buttons on mobile (#9223) ([#9223](https://github.com/opengovsg/formsg/commit/85480b7393afc4b616630712b71683df7282eb12))
-
+- **frontend:** add savedraft beta badge (#9219) ([#9219](https://github.com/opengovsg/formsg/commit/bc5fb09db89d70815f025f775953aaae622bbcce))
+- **frontend:** vertically stack save draft and submission buttons on mobile (#9223) ([#9223](https://github.com/opengovsg/formsg/commit/85480b7393afc4b616630712b71683df7282eb12))
 
 ### Bug Fixes
 
-* **frontend:** save draft header hover style (#9218) ([#9218](https://github.com/opengovsg/formsg/commit/e63da574ae2b1bf28d773472ce2bdadd0ccb1ca9))
-
+- **frontend:** save draft header hover style (#9218) ([#9218](https://github.com/opengovsg/formsg/commit/e63da574ae2b1bf28d773472ce2bdadd0ccb1ca9))
 
 ### Chores
 
-* remove eslint cache generation (#9222) ([#9222](https://github.com/opengovsg/formsg/commit/4ed1b924fded6fc72078305bd620de15e4a82768))
-
+- remove eslint cache generation (#9222) ([#9222](https://github.com/opengovsg/formsg/commit/4ed1b924fded6fc72078305bd620de15e4a82768))
 
 ### Miscellaneous
 
-* Merge pull request #9214 from opengovsg/chore/fix-lint-staged ([#9214](https://github.com/opengovsg/formsg/commit/3fa23f0ddd9f35ee90c2862c7d948641d9b630e9))
-* Merge pull request #9220 from opengovsg/fix/signatures-bug ([#9220](https://github.com/opengovsg/formsg/commit/05d7dd66d460a09c076bb8f22e21b4ff99e1e13f))
+- Merge pull request #9214 from opengovsg/chore/fix-lint-staged ([#9214](https://github.com/opengovsg/formsg/commit/3fa23f0ddd9f35ee90c2862c7d948641d9b630e9))
+- Merge pull request #9220 from opengovsg/fix/signatures-bug ([#9220](https://github.com/opengovsg/formsg/commit/05d7dd66d460a09c076bb8f22e21b4ff99e1e13f))
 
 ## [7.0.0](https://github.com/opengovsg/formsg/compare/v6.313.0...v7.0.0) (2026-03-17)
 
-
 ### ⚠ BREAKING CHANGE
 
-* setup monorepo (phase 2) (#9168)
+- setup monorepo (phase 2) (#9168)
 
 ### Features
 
-* setup monorepo (phase 2) (#9168) ([#9168](https://github.com/opengovsg/formsg/commit/6aa8c4664464c99524e32e66b3cb2ff6dfc7a5ba))
+- setup monorepo (phase 2) (#9168) ([#9168](https://github.com/opengovsg/formsg/commit/6aa8c4664464c99524e32e66b3cb2ff6dfc7a5ba))
 
 ### Changelog
 
@@ -1687,7 +1451,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 25 February 2026
 
 - chore: remove singpass mrf flags [`#9135`](https://github.com/opengovsg/FormSG/pull/9135)
-- feat: replace admin email data type with generic email data type  (part 2/3 of standardize email payload hidden fields) [`#9128`](https://github.com/opengovsg/FormSG/pull/9128)
+- feat: replace admin email data type with generic email data type (part 2/3 of standardize email payload hidden fields) [`#9128`](https://github.com/opengovsg/FormSG/pull/9128)
 - feat: remove deprecated autoreply (part 1/3 of standardize email payload hidden fields) [`#9126`](https://github.com/opengovsg/FormSG/pull/9126)
 - build: merge release v6.307.0 back to develop [`#9134`](https://github.com/opengovsg/FormSG/pull/9134)
 - build: release v6.307.0 [`#9133`](https://github.com/opengovsg/FormSG/pull/9133)
@@ -1711,7 +1475,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 24 February 2026
 
-- fix: bug fix for singpass mrf 2+ step email OTPs  [`#9067`](https://github.com/opengovsg/FormSG/pull/9067)
+- fix: bug fix for singpass mrf 2+ step email OTPs [`#9067`](https://github.com/opengovsg/FormSG/pull/9067)
 - fix: use form theme colors for buttons and verification box [`#9082`](https://github.com/opengovsg/FormSG/pull/9082)
 - build: merge v6.305.0 back to develop [`#9120`](https://github.com/opengovsg/FormSG/pull/9120)
 - build: release v6.305.0 [`#9119`](https://github.com/opengovsg/FormSG/pull/9119)
@@ -1911,8 +1675,8 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 30 December 2025
 
-- feat(bulk-local-pdf): minor decrypt into csv refactors (part 5)  [`#8991`](https://github.com/opengovsg/FormSG/pull/8991)
-- fix(bulk-local-pdf): parallel local response decryption with web workers (part 4)  [`#8990`](https://github.com/opengovsg/FormSG/pull/8990)
+- feat(bulk-local-pdf): minor decrypt into csv refactors (part 5) [`#8991`](https://github.com/opengovsg/FormSG/pull/8991)
+- fix(bulk-local-pdf): parallel local response decryption with web workers (part 4) [`#8990`](https://github.com/opengovsg/FormSG/pull/8990)
 - build: merge release v6.288.0 back to develop [`#9016`](https://github.com/opengovsg/FormSG/pull/9016)
 - build: release v6.288.0 [`#9015`](https://github.com/opengovsg/FormSG/pull/9015)
 - chore: bump version to v6.289.0 [`e4669e0`](https://github.com/opengovsg/FormSG/commit/e4669e0ef79ce890d615d474c45f6daa0f5542a2)
@@ -1922,7 +1686,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 23 December 2025
 
 - feat(bulk-local-pdf): abstract out attachment downloads (part 3) [`#8987`](https://github.com/opengovsg/FormSG/pull/8987)
-- fix: masthead alignment  [`#9014`](https://github.com/opengovsg/FormSG/pull/9014)
+- fix: masthead alignment [`#9014`](https://github.com/opengovsg/FormSG/pull/9014)
 - build(deps-dev): bump storybook from 8.6.12 to 8.6.15 in /react-email-preview [`#9006`](https://github.com/opengovsg/FormSG/pull/9006)
 - fix(deps): bump validator from 13.15.23 to 13.15.26 in /shared [`#9004`](https://github.com/opengovsg/FormSG/pull/9004)
 - fix(deps): bump libphonenumber-js from 1.12.31 to 1.12.33 in /shared [`#9007`](https://github.com/opengovsg/FormSG/pull/9007)
@@ -1945,7 +1709,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 22 December 2025
 
-- fix: enhance character counter validation in MagicFormBuilderPromptModal   [`#8965`](https://github.com/opengovsg/FormSG/pull/8965)
+- fix: enhance character counter validation in MagicFormBuilderPromptModal [`#8965`](https://github.com/opengovsg/FormSG/pull/8965)
 - feat(bulk-local-pdf): abstract out decryption function (part 1) [`#8986`](https://github.com/opengovsg/FormSG/pull/8986)
 - build: merge v6.285.0 back to develop [`#9003`](https://github.com/opengovsg/FormSG/pull/9003)
 - build: release v6.285.0 [`#9002`](https://github.com/opengovsg/FormSG/pull/9002)
@@ -2100,7 +1864,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump @types/lodash from 4.17.20 to 4.17.21 in /shared [`#8912`](https://github.com/opengovsg/FormSG/pull/8912)
 - fix(deps): bump validator from 13.15.20 to 13.15.23 in /shared [`#8877`](https://github.com/opengovsg/FormSG/pull/8877)
 - build(deps): bump glob in /react-email-preview [`#8906`](https://github.com/opengovsg/FormSG/pull/8906)
-- build: merge release-al2  v6.272.0 back to develop [`#8911`](https://github.com/opengovsg/FormSG/pull/8911)
+- build: merge release-al2 v6.272.0 back to develop [`#8911`](https://github.com/opengovsg/FormSG/pull/8911)
 - build: release v6.272.0 [`#8909`](https://github.com/opengovsg/FormSG/pull/8909)
 - chore: bump version to v6.273.0 [`3e70091`](https://github.com/opengovsg/FormSG/commit/3e70091e51a9a9d079e4f1c37c3f3dce2527e355)
 
@@ -2139,7 +1903,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 13 November 2025
 
-- build: merge v6.268.1 back to develop  [`#8895`](https://github.com/opengovsg/FormSG/pull/8895)
+- build: merge v6.268.1 back to develop [`#8895`](https://github.com/opengovsg/FormSG/pull/8895)
 - build: release v6.268.1 [`#8891`](https://github.com/opengovsg/FormSG/pull/8891)
 - fix(copy): update Webhooks text to have more clarity entire payload is sent [`#8880`](https://github.com/opengovsg/FormSG/pull/8880)
 - feat: enable save draft instrumentation basic [`#8893`](https://github.com/opengovsg/FormSG/pull/8893)
@@ -2223,7 +1987,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: radio others bug v2 [`#8842`](https://github.com/opengovsg/FormSG/pull/8842)
 - feat: remove betaFlag from signature field in basic field list drawer [`#8846`](https://github.com/opengovsg/FormSG/pull/8846)
 - fix(deps): bump libphonenumber-js from 1.12.23 to 1.12.25 in /shared [`#8841`](https://github.com/opengovsg/FormSG/pull/8841)
-- feat: setup stg-alt2 and clean up old pre-iac scripts  [`#8837`](https://github.com/opengovsg/FormSG/pull/8837)
+- feat: setup stg-alt2 and clean up old pre-iac scripts [`#8837`](https://github.com/opengovsg/FormSG/pull/8837)
 - feat: setup stg on iac [`#8836`](https://github.com/opengovsg/FormSG/pull/8836)
 - feat: update pdf gen deployment to new acc bucket [`#8835`](https://github.com/opengovsg/FormSG/pull/8835)
 - build(deps-dev): bump vite from 5.4.20 to 5.4.21 in /frontend [`#8831`](https://github.com/opengovsg/FormSG/pull/8831)
@@ -2245,7 +2009,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 21 October 2025
 
 - feat: update save draft toast and admin toggle copy [`#8828`](https://github.com/opengovsg/FormSG/pull/8828)
-- build: merge release v6.260.0 to develop  [`#8824`](https://github.com/opengovsg/FormSG/pull/8824)
+- build: merge release v6.260.0 to develop [`#8824`](https://github.com/opengovsg/FormSG/pull/8824)
 - build: release v6.260.0 [`#8823`](https://github.com/opengovsg/FormSG/pull/8823)
 - chore: bump version to v6.261.0 [`faa03ef`](https://github.com/opengovsg/FormSG/commit/faa03ef0a3b90e74daec06be0343e0f22c322ca4)
 
@@ -2262,7 +2026,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 16 October 2025
 
-- fix: myinfo child not reflecting correct vaccination status  [`#8818`](https://github.com/opengovsg/FormSG/pull/8818)
+- fix: myinfo child not reflecting correct vaccination status [`#8818`](https://github.com/opengovsg/FormSG/pull/8818)
 - build: merge release v6.258.0 to develop [`#8817`](https://github.com/opengovsg/FormSG/pull/8817)
 - build: release v6.258.0 [`#8816`](https://github.com/opengovsg/FormSG/pull/8816)
 - chore: bump version to v6.259.0 [`1ee5a2f`](https://github.com/opengovsg/FormSG/commit/1ee5a2f5ebd3542b2ce34855547cc868f08b4154)
@@ -2272,7 +2036,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 15 October 2025
 
 - feat: override workflow duplication with admin email if viewer [`#8814`](https://github.com/opengovsg/FormSG/pull/8814)
-- build: merge release v6.257.0 to develop  [`#8813`](https://github.com/opengovsg/FormSG/pull/8813)
+- build: merge release v6.257.0 to develop [`#8813`](https://github.com/opengovsg/FormSG/pull/8813)
 - build: release v6.257.0 [`#8812`](https://github.com/opengovsg/FormSG/pull/8812)
 - chore: bump version to v6.258.0 [`cc2f692`](https://github.com/opengovsg/FormSG/commit/cc2f692e892eece2c4eeda77db6b115934bc503b)
 
@@ -2398,7 +2162,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 22 September 2025
 
 - feat: signatures v1.3 again [`#8741`](https://github.com/opengovsg/FormSG/pull/8741)
-- build: merge release v6.245.0 to develop  [`#8737`](https://github.com/opengovsg/FormSG/pull/8737)
+- build: merge release v6.245.0 to develop [`#8737`](https://github.com/opengovsg/FormSG/pull/8737)
 - build: release v6.245.0 [`#8736`](https://github.com/opengovsg/FormSG/pull/8736)
 - chore: bump version to v6.246.0 [`6f01599`](https://github.com/opengovsg/FormSG/commit/6f0159936a9a1c3fa6cd05bac64173790e11593d)
 
@@ -2409,7 +2173,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore: pull 244 changelogs [`#8735`](https://github.com/opengovsg/FormSG/pull/8735)
 - chore: add logs to debug savedraft [`#8733`](https://github.com/opengovsg/FormSG/pull/8733)
 - feat: revert to 240 [`#8732`](https://github.com/opengovsg/FormSG/pull/8732)
-- build: merge release v6.244.0 to develop  [`#8731`](https://github.com/opengovsg/FormSG/pull/8731)
+- build: merge release v6.244.0 to develop [`#8731`](https://github.com/opengovsg/FormSG/pull/8731)
 - build: release v6.244.0 [`#8727`](https://github.com/opengovsg/FormSG/pull/8727)
 - fix: update signature defaultValue to standardized format [`#8726`](https://github.com/opengovsg/FormSG/pull/8726)
 - chore: bump version to v6.245.0 [`6ea4f9c`](https://github.com/opengovsg/FormSG/commit/6ea4f9cb2a53a2516cdc8da4f3731a04a12ee9b6)
@@ -2435,7 +2199,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - build: merge release v6.242.0 to develop [`#8719`](https://github.com/opengovsg/FormSG/pull/8719)
 - build: release v6.242.0 [`#8718`](https://github.com/opengovsg/FormSG/pull/8718)
 - Revert "Revert "feat: save draft v1.0 (#8091)"" [`fc54a77`](https://github.com/opengovsg/FormSG/commit/fc54a7731a738fe7af79d457df2fd46917c34368)
-- Revert "Revert "fix: home number fields are added to the draft despite not being modified  (#8704)"" [`5ad421f`](https://github.com/opengovsg/FormSG/commit/5ad421f3f32a4eb3fec935054bc46108afbbbc80)
+- Revert "Revert "fix: home number fields are added to the draft despite not being modified (#8704)"" [`5ad421f`](https://github.com/opengovsg/FormSG/commit/5ad421f3f32a4eb3fec935054bc46108afbbbc80)
 - chore: bump version to v6.243.0 [`8a2343a`](https://github.com/opengovsg/FormSG/commit/8a2343a97473cac9d5bc9b9944b119d575c4bf62)
 
 #### [v6.242.0](https://github.com/opengovsg/FormSG/compare/v6.241.0...v6.242.0)
@@ -2450,14 +2214,14 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump next from 15.3.4 to 15.5.2 [`#8661`](https://github.com/opengovsg/FormSG/pull/8661)
 - build(deps-dev): bump vite from 5.4.19 to 5.4.20 in /frontend [`#8686`](https://github.com/opengovsg/FormSG/pull/8686)
 - Revert "feat: save draft v1.0 (#8091)" [`ef00908`](https://github.com/opengovsg/FormSG/commit/ef00908c4fa711b8022f06a59595d13ec24d2963)
-- Revert "fix: home number fields are added to the draft despite not being modified  (#8704)" [`8ceffce`](https://github.com/opengovsg/FormSG/commit/8ceffce1e0485fa4623cb941dd1042f73bedd5f6)
+- Revert "fix: home number fields are added to the draft despite not being modified (#8704)" [`8ceffce`](https://github.com/opengovsg/FormSG/commit/8ceffce1e0485fa4623cb941dd1042f73bedd5f6)
 - chore: bump version to v6.242.0 [`49cfc58`](https://github.com/opengovsg/FormSG/commit/49cfc582734a9110861ec37aa14932753639e334)
 
 #### [v6.241.0](https://github.com/opengovsg/FormSG/compare/v6.240.0...v6.241.0)
 
 > 16 September 2025
 
-- fix: home number fields are added to the draft despite not being modified  [`#8704`](https://github.com/opengovsg/FormSG/pull/8704)
+- fix: home number fields are added to the draft despite not being modified [`#8704`](https://github.com/opengovsg/FormSG/pull/8704)
 - feat: save draft v1.0 [`#8091`](https://github.com/opengovsg/FormSG/pull/8091)
 - build: merge release v6.240.0 to develop [`#8695`](https://github.com/opengovsg/FormSG/pull/8695)
 - build: release v6.240.0 [`#8693`](https://github.com/opengovsg/FormSG/pull/8693)
@@ -2487,7 +2251,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 10 September 2025
 
-- feat: move pdf gen to lambda  [`#8605`](https://github.com/opengovsg/FormSG/pull/8605)
+- feat: move pdf gen to lambda [`#8605`](https://github.com/opengovsg/FormSG/pull/8605)
 - build: merge release v6.237.0 to develop [`#8684`](https://github.com/opengovsg/FormSG/pull/8684)
 - fix(deps): bump helmet from 7.1.0 to 8.1.0 [`#8284`](https://github.com/opengovsg/FormSG/pull/8284)
 - build: release v6.237.0 [`#8683`](https://github.com/opengovsg/FormSG/pull/8683)
@@ -2626,9 +2390,9 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 18 August 2025
 
-- fix: bug fix status tracker to strip nextStepRecipientEmails  [`#8613`](https://github.com/opengovsg/FormSG/pull/8613)
+- fix: bug fix status tracker to strip nextStepRecipientEmails [`#8613`](https://github.com/opengovsg/FormSG/pull/8613)
 - fix(login): remove unintended negation for myinfo login [`#8612`](https://github.com/opengovsg/FormSG/pull/8612)
-- build: merge release al2 v6.224.1 to develop  [`#8607`](https://github.com/opengovsg/FormSG/pull/8607)
+- build: merge release al2 v6.224.1 to develop [`#8607`](https://github.com/opengovsg/FormSG/pull/8607)
 - fix(deps): bump libphonenumber-js from 1.12.11 to 1.12.12 in /shared [`#8610`](https://github.com/opengovsg/FormSG/pull/8610)
 - build: release v6.224.1 [`#8609`](https://github.com/opengovsg/FormSG/pull/8609)
 - fix(deps): bump libphonenumber-js from 1.12.10 to 1.12.11 in /shared [`#8606`](https://github.com/opengovsg/FormSG/pull/8606)
@@ -2903,7 +2667,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - build: merge release v6.203.0 into develop [`#8442`](https://github.com/opengovsg/FormSG/pull/8442)
 - chore(deps-dev): bump @playwright/test from 1.49.0 to 1.52.0 [`#8432`](https://github.com/opengovsg/FormSG/pull/8432)
 - chore(deps-dev): bump eslint-plugin-prettier from 5.4.0 to 5.4.1 in /shared [`#8440`](https://github.com/opengovsg/FormSG/pull/8440)
-- feat: add error count metric  [`#8425`](https://github.com/opengovsg/FormSG/pull/8425)
+- feat: add error count metric [`#8425`](https://github.com/opengovsg/FormSG/pull/8425)
 - build: release v6.203.0 [`#8409`](https://github.com/opengovsg/FormSG/pull/8409)
 - fix(deps): bump zod from 3.25.30 to 3.25.32 in /shared [`#8433`](https://github.com/opengovsg/FormSG/pull/8433)
 - fix(deps): bump validator from 13.15.0 to 13.15.15 in /shared [`#8434`](https://github.com/opengovsg/FormSG/pull/8434)
@@ -2995,7 +2759,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 29 April 2025
 
 - build: merge release v6.197.0 to develop [`#8346`](https://github.com/opengovsg/FormSG/pull/8346)
-- feat: set up stg-alt3 and introduce code changes enabling dual boot into both non-IaC and IaC env  [`#8329`](https://github.com/opengovsg/FormSG/pull/8329)
+- feat: set up stg-alt3 and introduce code changes enabling dual boot into both non-IaC and IaC env [`#8329`](https://github.com/opengovsg/FormSG/pull/8329)
 - chore(deps-dev): bump @types/spark-md5 from 3.0.2 to 3.0.5 [`#8348`](https://github.com/opengovsg/FormSG/pull/8348)
 - build: release v6.197.0 [`#8343`](https://github.com/opengovsg/FormSG/pull/8343)
 - chore: bump version to v6.198.0 [`66430ec`](https://github.com/opengovsg/FormSG/commit/66430ec7cffef4f2cd5122b234e7f823d44393d6)
@@ -3155,7 +2919,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: eb name [`#8229`](https://github.com/opengovsg/FormSG/pull/8229)
 - fix: update renamed envkey [`#8227`](https://github.com/opengovsg/FormSG/pull/8227)
 - fix: await for all promises [`#8226`](https://github.com/opengovsg/FormSG/pull/8226)
-- feat: virus scanning guardduty  [`#8193`](https://github.com/opengovsg/FormSG/pull/8193)
+- feat: virus scanning guardduty [`#8193`](https://github.com/opengovsg/FormSG/pull/8193)
 - feat: ssm keys iac style [`#8218`](https://github.com/opengovsg/FormSG/pull/8218)
 - chore(otp): replace hardcoded app name [`#8223`](https://github.com/opengovsg/FormSG/pull/8223)
 - fix: updated dockerfile node version and serverless guardduty [`#8217`](https://github.com/opengovsg/FormSG/pull/8217)
@@ -3220,7 +2984,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 11 March 2025
 
 - build: merge release v6.183.0 to develop [`#8177`](https://github.com/opengovsg/FormSG/pull/8177)
-- feat: mrf dashboard send reminders  [`#8134`](https://github.com/opengovsg/FormSG/pull/8134)
+- feat: mrf dashboard send reminders [`#8134`](https://github.com/opengovsg/FormSG/pull/8134)
 - fix(deps): bump axios from 1.7.7 to 1.8.2 [`#8166`](https://github.com/opengovsg/FormSG/pull/8166)
 - fix(deps): bump dompurify and maildev [`#8113`](https://github.com/opengovsg/FormSG/pull/8113)
 - fix(deps): bump uuid from 10.0.0 to 11.1.0 [`#8125`](https://github.com/opengovsg/FormSG/pull/8125)
@@ -3272,7 +3036,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 25 February 2025
 
-- feat: mrf attachment support in confirmation email  [`#8122`](https://github.com/opengovsg/FormSG/pull/8122)
+- feat: mrf attachment support in confirmation email [`#8122`](https://github.com/opengovsg/FormSG/pull/8122)
 - feat: move banner to growthbook [`#8065`](https://github.com/opengovsg/FormSG/pull/8065)
 - fix: return ExpectedResponseNotFoundError as 4xx [`#8126`](https://github.com/opengovsg/FormSG/pull/8126)
 - chore: deps update on /frontend [`#8099`](https://github.com/opengovsg/FormSG/pull/8099)
@@ -3350,7 +3114,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump mongoose from 6.13.5 to 6.13.8 [`#8060`](https://github.com/opengovsg/FormSG/pull/8060)
 - build: merge release v6.176.0 to develop [`#8070`](https://github.com/opengovsg/FormSG/pull/8070)
 - feat: cond routingv1.1 [`#8031`](https://github.com/opengovsg/FormSG/pull/8031)
-- * feat: add retry for clamav init (#8067) [`#8068`](https://github.com/opengovsg/FormSG/pull/8068)
+- - feat: add retry for clamav init (#8067) [`#8068`](https://github.com/opengovsg/FormSG/pull/8068)
 - chore: bump version to v6.177.0 [`fc5ca76`](https://github.com/opengovsg/FormSG/commit/fc5ca7690204b4a92830ecbe5f1a7bc6fce477ac)
 
 #### [v6.176.0](https://github.com/opengovsg/FormSG/compare/v6.175.0...v6.176.0)
@@ -3371,7 +3135,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump libphonenumber-js from 1.11.17 to 1.11.18 in /shared [`#8057`](https://github.com/opengovsg/FormSG/pull/8057)
 - fix: paragraph markdown styling error [`#8051`](https://github.com/opengovsg/FormSG/pull/8051)
 - build: merge release v6.174.0 to develop [`#8050`](https://github.com/opengovsg/FormSG/pull/8050)
-- * fix(deps): bump libphonenumber-js from 1.11.16 to 1.11.17 in /shared (#8021) [`#8039`](https://github.com/opengovsg/FormSG/pull/8039)
+- - fix(deps): bump libphonenumber-js from 1.11.16 to 1.11.17 in /shared (#8021) [`#8039`](https://github.com/opengovsg/FormSG/pull/8039)
 - fix(deps): bump zod from 3.23.8 to 3.24.1 in /shared [`#7996`](https://github.com/opengovsg/FormSG/pull/7996)
 - fix(deps): bump type-fest from 4.30.2 to 4.32.0 in /shared [`#8037`](https://github.com/opengovsg/FormSG/pull/8037)
 - chore: bump version to v6.175.0 [`d31bb97`](https://github.com/opengovsg/FormSG/commit/d31bb9717625d365d6798a51d8235b5acdab706c)
@@ -3395,7 +3159,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 13 January 2025
 
 - fix: remove multer [`#8041`](https://github.com/opengovsg/FormSG/pull/8041)
-- * fix(deps): bump fp-ts from 2.16.8 to 2.16.9 (#8017) [`#8027`](https://github.com/opengovsg/FormSG/pull/8027)
+- - fix(deps): bump fp-ts from 2.16.8 to 2.16.9 (#8017) [`#8027`](https://github.com/opengovsg/FormSG/pull/8027)
 - chore: bump version to v6.173.1 [`70fd33a`](https://github.com/opengovsg/FormSG/commit/70fd33aa01b398f98f2b2dfee6880cd043889cc1)
 
 #### [v6.173.0](https://github.com/opengovsg/FormSG/compare/v6.172.0...v6.173.0)
@@ -3417,7 +3181,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump type-fest from 4.26.1 to 4.30.2 in /shared [`#8009`](https://github.com/opengovsg/FormSG/pull/8009)
 - build(deps): bump next and react-email in /react-email-preview [`#8011`](https://github.com/opengovsg/FormSG/pull/8011)
 - fix(workflow): set approval toggle header size to h4 [`#8010`](https://github.com/opengovsg/FormSG/pull/8010)
-- build: merge release v6.171.0 to develop  [`#8006`](https://github.com/opengovsg/FormSG/pull/8006)
+- build: merge release v6.171.0 to develop [`#8006`](https://github.com/opengovsg/FormSG/pull/8006)
 - build: release v6.171.0 [`#8003`](https://github.com/opengovsg/FormSG/pull/8003)
 - chore: bump version to v6.172.0 [`84600fa`](https://github.com/opengovsg/FormSG/commit/84600faa9303791a3b438928adb5c357e32c5236)
 
@@ -3467,7 +3231,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 - fix: search fields drag and drop mismatch [`#7972`](https://github.com/opengovsg/FormSG/pull/7972)
 - build: merge release v6.167.0 to develop [`#7964`](https://github.com/opengovsg/FormSG/pull/7964)
-- feat: implement field search functionality  [`#7958`](https://github.com/opengovsg/FormSG/pull/7958)
+- feat: implement field search functionality [`#7958`](https://github.com/opengovsg/FormSG/pull/7958)
 - feat(mrf be validation): enable mrf response validation hard block [`#7963`](https://github.com/opengovsg/FormSG/pull/7963)
 - build: release v6.167.0 [`#7962`](https://github.com/opengovsg/FormSG/pull/7962)
 - chore: bump version to v6.168.0 [`49b9755`](https://github.com/opengovsg/FormSG/commit/49b9755b0312c66badef4f2a037c7fe35588a9a9)
@@ -3495,7 +3259,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 26 November 2024
 
-- feat(mrf): conditional routing  [`#7804`](https://github.com/opengovsg/FormSG/pull/7804)
+- feat(mrf): conditional routing [`#7804`](https://github.com/opengovsg/FormSG/pull/7804)
 - fix: trim text input before sending to backend [`#7937`](https://github.com/opengovsg/FormSG/pull/7937)
 - test(story): add chromatic story to ensure thankyou page renders [`#7264`](https://github.com/opengovsg/FormSG/pull/7264)
 - chore: remove unused deps [`#7906`](https://github.com/opengovsg/FormSG/pull/7906)
@@ -3526,7 +3290,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 19 November 2024
 
-- feat(approvals-ga): p1 changes   [`#7918`](https://github.com/opengovsg/FormSG/pull/7918)
+- feat(approvals-ga): p1 changes [`#7918`](https://github.com/opengovsg/FormSG/pull/7918)
 - build: merge release v6.163.0 to develop [`#7916`](https://github.com/opengovsg/FormSG/pull/7916)
 - fix: fixed cursor appearance for inactive logic block [`#7917`](https://github.com/opengovsg/FormSG/pull/7917)
 - build: release v6.163.0 [`#7914`](https://github.com/opengovsg/FormSG/pull/7914)
@@ -3543,7 +3307,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: replace Question with Field Name for relevant fields in FieldBuilder [`#7901`](https://github.com/opengovsg/FormSG/pull/7901)
 - fix(mrf be val): skip validation for unchanged mrf responses [`#7894`](https://github.com/opengovsg/FormSG/pull/7894)
 - feat(mrf-approvals): improve copy for approvals [`#7902`](https://github.com/opengovsg/FormSG/pull/7902)
-- feat: unify email notification for response copy for storage and email modes   [`#7903`](https://github.com/opengovsg/FormSG/pull/7903)
+- feat: unify email notification for response copy for storage and email modes [`#7903`](https://github.com/opengovsg/FormSG/pull/7903)
 - build: merge release v6.162.0 to develop [`#7904`](https://github.com/opengovsg/FormSG/pull/7904)
 - build: release v6.162.0 [`#7897`](https://github.com/opengovsg/FormSG/pull/7897)
 - chore: bump version to v6.163.0 [`7fa5e57`](https://github.com/opengovsg/FormSG/commit/7fa5e57727d21b2e99bab86200493b6e4e585215)
@@ -3581,7 +3345,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 11 November 2024
 
-- fix: add validation for myinfo child name field  [`#7875`](https://github.com/opengovsg/FormSG/pull/7875)
+- fix: add validation for myinfo child name field [`#7875`](https://github.com/opengovsg/FormSG/pull/7875)
 - fix: drawer date picker invalid selection bug [`#7866`](https://github.com/opengovsg/FormSG/pull/7866)
 - fix: add validation rules to controller [`#7874`](https://github.com/opengovsg/FormSG/pull/7874)
 - fix: make children body input components controlled from the start [`#7871`](https://github.com/opengovsg/FormSG/pull/7871)
@@ -3610,7 +3374,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 7 November 2024
 
-- chore(typing): date  [`#7861`](https://github.com/opengovsg/FormSG/pull/7861)
+- chore(typing): date [`#7861`](https://github.com/opengovsg/FormSG/pull/7861)
 - fix(calendar): incorrect date conversion [`#7859`](https://github.com/opengovsg/FormSG/pull/7859)
 - fix: use settimeout instead of debounce [`#7856`](https://github.com/opengovsg/FormSG/pull/7856)
 - fix: add debounce to break infinite call loop (#7848) [`#7849`](https://github.com/opengovsg/FormSG/pull/7849)
@@ -3627,7 +3391,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 5 November 2024
 
-- build: merge release v6.157.0 to develop  [`#7846`](https://github.com/opengovsg/FormSG/pull/7846)
+- build: merge release v6.157.0 to develop [`#7846`](https://github.com/opengovsg/FormSG/pull/7846)
 - fix: change email summary response row to represent table row instead of cell [`#7836`](https://github.com/opengovsg/FormSG/pull/7836)
 - fix(deps): bump jose from 4.15.5 to 5.9.6 [`#7800`](https://github.com/opengovsg/FormSG/pull/7800)
 - fix: set table field required false to cols instead of whole field [`#7839`](https://github.com/opengovsg/FormSG/pull/7839)
@@ -3638,7 +3402,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 4 November 2024
 
-- feat: magic form builder v1 (storage mode text prompt)  [`#7714`](https://github.com/opengovsg/FormSG/pull/7714)
+- feat: magic form builder v1 (storage mode text prompt) [`#7714`](https://github.com/opengovsg/FormSG/pull/7714)
 - build: merge release to develop [`#7830`](https://github.com/opengovsg/FormSG/pull/7830)
 - feat(i18n): restructure admin-form directory, add English translations [`#7815`](https://github.com/opengovsg/FormSG/pull/7815)
 - chore(deps-dev): bump @types/lodash from 4.17.12 to 4.17.13 in /shared [`#7832`](https://github.com/opengovsg/FormSG/pull/7832)
@@ -3673,7 +3437,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore: remove legacy routes [`#7810`](https://github.com/opengovsg/FormSG/pull/7810)
 - feat(singpass): singpass jwks config [`#7809`](https://github.com/opengovsg/FormSG/pull/7809)
 - build: merge release v6.154.0 to develop [`#7808`](https://github.com/opengovsg/FormSG/pull/7808)
-- * chore: fix typo on runner tag (#7799) [`#7806`](https://github.com/opengovsg/FormSG/pull/7806)
+- - chore: fix typo on runner tag (#7799) [`#7806`](https://github.com/opengovsg/FormSG/pull/7806)
 - fix(config): default S3 endpoint with region [`#7807`](https://github.com/opengovsg/FormSG/pull/7807)
 - chore: bump version to v6.155.0 [`a88b028`](https://github.com/opengovsg/FormSG/commit/a88b0283d1717653e1accaf0974b503feece0a8b)
 
@@ -3799,7 +3563,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 27 September 2024
 
 - fix: ses default configset [`#7733`](https://github.com/opengovsg/FormSG/pull/7733)
-- build: release 6.149.1  [`#7729`](https://github.com/opengovsg/FormSG/pull/7729)
+- build: release 6.149.1 [`#7729`](https://github.com/opengovsg/FormSG/pull/7729)
 - feat: explicitly specify configset [`f4c78cb`](https://github.com/opengovsg/FormSG/commit/f4c78cb0d342bb1c6241602910dc711ee6703815)
 - chore: bump version to 6.149.2 [`e865ad8`](https://github.com/opengovsg/FormSG/commit/e865ad89c862f441b4097b10f9a966033a72f1ce)
 
@@ -3816,7 +3580,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 26 September 2024
 
 - build: merge release v6.148.0 to develop [`#7724`](https://github.com/opengovsg/FormSG/pull/7724)
-- feat: approvals for mrf  [`#7636`](https://github.com/opengovsg/FormSG/pull/7636)
+- feat: approvals for mrf [`#7636`](https://github.com/opengovsg/FormSG/pull/7636)
 - fix: coverall allow empty lcov [`#7722`](https://github.com/opengovsg/FormSG/pull/7722)
 - chore: remove p-queue from be [`#7693`](https://github.com/opengovsg/FormSG/pull/7693)
 - chore: add comments clarifying potentially confusing terms [`#7694`](https://github.com/opengovsg/FormSG/pull/7694)
@@ -3882,7 +3646,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps): bump body-parser and express in /frontend [`#7662`](https://github.com/opengovsg/FormSG/pull/7662)
 - fix(deps): bump body-parser and express [`#7661`](https://github.com/opengovsg/FormSG/pull/7661)
 - test: mock date within test [`#7653`](https://github.com/opengovsg/FormSG/pull/7653)
-- fix: check existence of response id in attachment map for body v3  [`#7659`](https://github.com/opengovsg/FormSG/pull/7659)
+- fix: check existence of response id in attachment map for body v3 [`#7659`](https://github.com/opengovsg/FormSG/pull/7659)
 - fix(deps): bump libphonenumber-js from 1.11.7 to 1.11.8 in /shared [`#7660`](https://github.com/opengovsg/FormSG/pull/7660)
 - build: release v6.146.1 [`#7657`](https://github.com/opengovsg/FormSG/pull/7657)
 - chore: fix modal title typo [`#7651`](https://github.com/opengovsg/FormSG/pull/7651)
@@ -3906,7 +3670,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 4 September 2024
 
 - build: merge release to develop [`#7643`](https://github.com/opengovsg/FormSG/pull/7643)
-- feat: email notifications for mrf completed workflows  [`#7597`](https://github.com/opengovsg/FormSG/pull/7597)
+- feat: email notifications for mrf completed workflows [`#7597`](https://github.com/opengovsg/FormSG/pull/7597)
 - build: release v6.145.0 [`#7637`](https://github.com/opengovsg/FormSG/pull/7637)
 - chore: bump version to v6.146.0 [`7cc7d92`](https://github.com/opengovsg/FormSG/commit/7cc7d9235636d7a6b55f32d6e7214ced74078ee2)
 
@@ -3976,7 +3740,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 13 August 2024
 
 - build: merge release v6.140.0 to develop [`#7591`](https://github.com/opengovsg/FormSG/pull/7591)
-- feat: support nric whitelisting  [`#7534`](https://github.com/opengovsg/FormSG/pull/7534)
+- feat: support nric whitelisting [`#7534`](https://github.com/opengovsg/FormSG/pull/7534)
 - fix: add nonce to script-src directive [`#7578`](https://github.com/opengovsg/FormSG/pull/7578)
 - chore(deps-dev): bump @babel/preset-env from 7.22.5 to 7.25.3 [`#7586`](https://github.com/opengovsg/FormSG/pull/7586)
 - chore: remove unused props [`#7585`](https://github.com/opengovsg/FormSG/pull/7585)
@@ -4003,7 +3767,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 6 August 2024
 
 - fix: forbid stripe acc connection with pdf summary enabled [`#7570`](https://github.com/opengovsg/FormSG/pull/7570)
-- fix: failing gh actions due to runner out of disk space  [`#7565`](https://github.com/opengovsg/FormSG/pull/7565)
+- fix: failing gh actions due to runner out of disk space [`#7565`](https://github.com/opengovsg/FormSG/pull/7565)
 - fix: enable pdf attachment for encrypt mode forms [`#7523`](https://github.com/opengovsg/FormSG/pull/7523)
 - build: merge release v6.138.0 to develop [`#7559`](https://github.com/opengovsg/FormSG/pull/7559)
 - chore: remove unused sgid toggle [`#7563`](https://github.com/opengovsg/FormSG/pull/7563)
@@ -4329,7 +4093,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(mrf): attachment equality validation [`#7324`](https://github.com/opengovsg/FormSG/pull/7324)
 - fix(deps): bump validator from 13.11.0 to 13.12.0 in /shared [`#7323`](https://github.com/opengovsg/FormSG/pull/7323)
 - fix(deps): bump zod from 3.23.6 to 3.23.8 in /shared [`#7322`](https://github.com/opengovsg/FormSG/pull/7322)
-- build: merge v6.120.0 into develop  [`#7321`](https://github.com/opengovsg/FormSG/pull/7321)
+- build: merge v6.120.0 into develop [`#7321`](https://github.com/opengovsg/FormSG/pull/7321)
 - build: release v6.120.0 [`#7320`](https://github.com/opengovsg/FormSG/pull/7320)
 - chore: bump version to v6.121.0 [`5defbe6`](https://github.com/opengovsg/FormSG/commit/5defbe6c6a6a8ccbf702478d10bbc52217cab851)
 
@@ -4353,7 +4117,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 6 May 2024
 
-- * fix(deps): bump zod from 3.23.4 to 3.23.5 in /shared (#7301) [`#7309`](https://github.com/opengovsg/FormSG/pull/7309)
+- - fix(deps): bump zod from 3.23.4 to 3.23.5 in /shared (#7301) [`#7309`](https://github.com/opengovsg/FormSG/pull/7309)
 - chore: bump version to 6.119.1 [`01b3ff0`](https://github.com/opengovsg/FormSG/commit/01b3ff07fc1eb4ab14af8543fe3c1e893efe8c73)
 - fix: remove attachment integrity validation [`79408a9`](https://github.com/opengovsg/FormSG/commit/79408a9c845d39b9c4b583e34d2db587a65dc9ff)
 
@@ -4431,7 +4195,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 5 April 2024
 
-- * chore(deps-dev): bump @types/express from 4.17.17 to 4.17.21 (#7233) [`#7241`](https://github.com/opengovsg/FormSG/pull/7241)
+- - chore(deps-dev): bump @types/express from 4.17.17 to 4.17.21 (#7233) [`#7241`](https://github.com/opengovsg/FormSG/pull/7241)
 - fix: add check to block webhooks updates on mrf [`71ab0c5`](https://github.com/opengovsg/FormSG/commit/71ab0c592c15de5fddbffc9970a424af7a31d4ab)
 - chore: bump version to 6.115.1 [`7d127b2`](https://github.com/opengovsg/FormSG/commit/7d127b2e8353a8a282acabe1c309cefb1e750f9c)
 
@@ -4542,7 +4306,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: add wogaa config into .env [`#7125`](https://github.com/opengovsg/FormSG/pull/7125)
 - feat(tracking): wogaa tracking [`#7123`](https://github.com/opengovsg/FormSG/pull/7123)
 - chore(deps-dev): bump json5 from 1.0.1 to 1.0.2 [`#7119`](https://github.com/opengovsg/FormSG/pull/7119)
-- build: merge v6.111.0 back into develop  [`#7118`](https://github.com/opengovsg/FormSG/pull/7118)
+- build: merge v6.111.0 back into develop [`#7118`](https://github.com/opengovsg/FormSG/pull/7118)
 - build: release v6.111.0 [`#7117`](https://github.com/opengovsg/FormSG/pull/7117)
 - chore: bump version to v6.112.0 [`a6438f9`](https://github.com/opengovsg/FormSG/commit/a6438f99d72df0f760fb026a81feb45ef09dabe1)
 
@@ -4578,7 +4342,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat(mrf): dynamic routing [`#7078`](https://github.com/opengovsg/FormSG/pull/7078)
 - chore(deps-dev): bump semver from 5.7.1 to 5.7.2 [`#7090`](https://github.com/opengovsg/FormSG/pull/7090)
 - chore(deps): fix synk vulnerabilities [`#7089`](https://github.com/opengovsg/FormSG/pull/7089)
-- build: merge release v6.109.0 into develop  [`#7085`](https://github.com/opengovsg/FormSG/pull/7085)
+- build: merge release v6.109.0 into develop [`#7085`](https://github.com/opengovsg/FormSG/pull/7085)
 - chore(dev): update README with clearer virus-scanner install instructions [`#7083`](https://github.com/opengovsg/FormSG/pull/7083)
 - build: release v6.109.0 [`#7081`](https://github.com/opengovsg/FormSG/pull/7081)
 - chore: bump version to v6.110.0 [`102cef3`](https://github.com/opengovsg/FormSG/commit/102cef33d7ae37e95c1b9f93f51712156cef1384)
@@ -4624,7 +4388,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 31 January 2024
 
 - build: release v6.105.0 [`#7054`](https://github.com/opengovsg/FormSG/pull/7054)
-- build: merge release v6.104.0 into develop  [`#7051`](https://github.com/opengovsg/FormSG/pull/7051)
+- build: merge release v6.104.0 into develop [`#7051`](https://github.com/opengovsg/FormSG/pull/7051)
 - build: merge release v6.103.0 into develop [`#7041`](https://github.com/opengovsg/FormSG/pull/7041)
 - feat(scripts): save multi-language forms report to tsv files [`#7027`](https://github.com/opengovsg/FormSG/pull/7027)
 - chore: bump version to v6.106.0 [`8768ba2`](https://github.com/opengovsg/FormSG/commit/8768ba293bb4295bd69c48ab3db4ec2f3374dfd4)
@@ -4650,7 +4414,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 24 January 2024
 
-- build: merge release v6.102.0 into develop  [`#7039`](https://github.com/opengovsg/FormSG/pull/7039)
+- build: merge release v6.102.0 into develop [`#7039`](https://github.com/opengovsg/FormSG/pull/7039)
 - fix: add patch to feed default ValidationOptions on table shorttext [`#7029`](https://github.com/opengovsg/FormSG/pull/7029)
 - build: merge release v6.102.0 into develop [`#7028`](https://github.com/opengovsg/FormSG/pull/7028)
 - chore: update architecture docs [`#7033`](https://github.com/opengovsg/FormSG/pull/7033)
@@ -4724,7 +4488,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 - fix(mrf): form duplication with MRF [`#6985`](https://github.com/opengovsg/FormSG/pull/6985)
 - fix: payments thank you page [`#6975`](https://github.com/opengovsg/FormSG/pull/6975)
-- build: merge v6.96.0 into develop  [`#6974`](https://github.com/opengovsg/FormSG/pull/6974)
+- build: merge v6.96.0 into develop [`#6974`](https://github.com/opengovsg/FormSG/pull/6974)
 - build: release v6.96.0 [`#6972`](https://github.com/opengovsg/FormSG/pull/6972)
 - chore: bump version to v6.97.0 [`a59d430`](https://github.com/opengovsg/FormSG/commit/a59d430d4da406447390a4d3fe8e915af63d3473)
 
@@ -4850,7 +4614,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps): bump axios from 1.2.1 to 1.6.0 in /frontend [`#6887`](https://github.com/opengovsg/FormSG/pull/6887)
 - fix(deps): bump axios from 1.2.1 to 1.6.0 [`#6886`](https://github.com/opengovsg/FormSG/pull/6886)
 - fix(deps): bump type-fest from 4.5.0 to 4.7.1 in /shared [`#6883`](https://github.com/opengovsg/FormSG/pull/6883)
-- build: merge release 6.88.0 into develop  [`#6882`](https://github.com/opengovsg/FormSG/pull/6882)
+- build: merge release 6.88.0 into develop [`#6882`](https://github.com/opengovsg/FormSG/pull/6882)
 - build: release v6.88.0 [`#6881`](https://github.com/opengovsg/FormSG/pull/6881)
 - chore: bump version to v6.89.0 [`1665a48`](https://github.com/opengovsg/FormSG/commit/1665a48b0ff133378c7126d3fedf8f1145f67111)
 
@@ -4871,7 +4635,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: encode product name and log error [`#6877`](https://github.com/opengovsg/FormSG/pull/6877)
 - fix: format Announcement Modal [`#6868`](https://github.com/opengovsg/FormSG/pull/6868)
 - fix: add case for SGID MyInfo when field value is missing [`#6874`](https://github.com/opengovsg/FormSG/pull/6874)
-- build: merge release v6.86.0 into develop  [`#6873`](https://github.com/opengovsg/FormSG/pull/6873)
+- build: merge release v6.86.0 into develop [`#6873`](https://github.com/opengovsg/FormSG/pull/6873)
 - build: release v6.86.0 [`#6866`](https://github.com/opengovsg/FormSG/pull/6866)
 - chore: bump version to v6.87.0 [`5054803`](https://github.com/opengovsg/FormSG/commit/50548038804b03f30ce6d23b4d43b7a8cf7d9620)
 
@@ -4939,7 +4703,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(sgid-login): add graceful handling of errors when work email is invalid [`#6819`](https://github.com/opengovsg/FormSG/pull/6819)
 - test: fix error message for InvalidFileKeyError [`#6821`](https://github.com/opengovsg/FormSG/pull/6821)
 - chore: update serverless package.json [`#6820`](https://github.com/opengovsg/FormSG/pull/6820)
-- fix(storybook): build crash, and missing NumberField customVal  [`#6808`](https://github.com/opengovsg/FormSG/pull/6808)
+- fix(storybook): build crash, and missing NumberField customVal [`#6808`](https://github.com/opengovsg/FormSG/pull/6808)
 - chore: increase hot lambda to 10 [`#6815`](https://github.com/opengovsg/FormSG/pull/6815)
 - feat(sgid-myinfo): add even more sgid myinfo fields [`#6807`](https://github.com/opengovsg/FormSG/pull/6807)
 - chore(deps-dev): bump @babel/traverse from 7.22.11 to 7.23.2 in /serverless/virus-scanner [`#6809`](https://github.com/opengovsg/FormSG/pull/6809)
@@ -5070,7 +4834,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - docs(undp): add steps to migrate from mongodb in README [`#6695`](https://github.com/opengovsg/FormSG/pull/6695)
 - fix: update Myinfo occupation list [`#6684`](https://github.com/opengovsg/FormSG/pull/6684)
 - build: merge v6.75.1 into develop [`#6690`](https://github.com/opengovsg/FormSG/pull/6690)
-- * feat: % rollout of new storage submission endpoint (#6665) [`#6688`](https://github.com/opengovsg/FormSG/pull/6688)
+- - feat: % rollout of new storage submission endpoint (#6665) [`#6688`](https://github.com/opengovsg/FormSG/pull/6688)
 - chore: bump version to v6.76.0 [`389d2aa`](https://github.com/opengovsg/FormSG/commit/389d2aa0814798b4b44ff17a373e6c59ca4292dc)
 
 #### [v6.75.1](https://github.com/opengovsg/FormSG/compare/v6.75.0...v6.75.1)
@@ -5087,7 +4851,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: Find latest successful payment query to sort by completed payment date and constraint query to last 30 days [`#6615`](https://github.com/opengovsg/FormSG/pull/6615)
 - feat: payment security account email check [`#6604`](https://github.com/opengovsg/FormSG/pull/6604)
 - feat: % rollout of new storage submission endpoint [`#6665`](https://github.com/opengovsg/FormSG/pull/6665)
-- build: merge v6.74.1 into develop  [`#6683`](https://github.com/opengovsg/FormSG/pull/6683)
+- build: merge v6.74.1 into develop [`#6683`](https://github.com/opengovsg/FormSG/pull/6683)
 - build: release v6.74.1 [`#6682`](https://github.com/opengovsg/FormSG/pull/6682)
 - chore: bump version to v6.75.0 [`6ba6155`](https://github.com/opengovsg/FormSG/commit/6ba61554e3f9c83b27eb1aea8df5ddd241afe852)
 
@@ -5125,7 +4889,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 24 August 2023
 
 - fix: failed ensures should block submission [`#6654`](https://github.com/opengovsg/FormSG/pull/6654)
-- build: merge v6.72.0 into develop  [`#6650`](https://github.com/opengovsg/FormSG/pull/6650)
+- build: merge v6.72.0 into develop [`#6650`](https://github.com/opengovsg/FormSG/pull/6650)
 - fix: address should be lower case [`#6653`](https://github.com/opengovsg/FormSG/pull/6653)
 - build: release v6.72.0 [`#6649`](https://github.com/opengovsg/FormSG/pull/6649)
 - chore: bump version to v6.73.0 [`d190a63`](https://github.com/opengovsg/FormSG/commit/d190a63cace7ccd4e757195f85e5b38101eac14a)
@@ -5160,7 +4924,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: product item button check for payment is not enabled [`#6625`](https://github.com/opengovsg/FormSG/pull/6625)
 - build: merge v6.70.0 into develop [`#6627`](https://github.com/opengovsg/FormSG/pull/6627)
 - feat: add datafix script to convert payment_fields_snapshot from an array to an object [`#6628`](https://github.com/opengovsg/FormSG/pull/6628)
-- * fix(deps): bump libphonenumber-js from 1.10.38 to 1.10.39 in /shared (#6594) [`#6623`](https://github.com/opengovsg/FormSG/pull/6623)
+- - fix(deps): bump libphonenumber-js from 1.10.38 to 1.10.39 in /shared (#6594) [`#6623`](https://github.com/opengovsg/FormSG/pull/6623)
 - fix(deps): bump zod from 3.21.4 to 3.22.1 in /shared [`#6626`](https://github.com/opengovsg/FormSG/pull/6626)
 - chore: bump version to v6.71.0 [`62aa237`](https://github.com/opengovsg/FormSG/commit/62aa237270f247b97ce73249617017f046fb43d4)
 
@@ -5215,7 +4979,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore: lint and update commands in README [`#6567`](https://github.com/opengovsg/FormSG/pull/6567)
 - feat: MyInfo over sgID (frontend) [`#6447`](https://github.com/opengovsg/FormSG/pull/6447)
 - chore: rm redundant type assertion in url validation [`#6566`](https://github.com/opengovsg/FormSG/pull/6566)
-- feat: updated uen validator (ref stdnum) and tests cases  [`#6534`](https://github.com/opengovsg/FormSG/pull/6534)
+- feat: updated uen validator (ref stdnum) and tests cases [`#6534`](https://github.com/opengovsg/FormSG/pull/6534)
 - fix: subtle bugs in MyInfo Child and UI copyedits [`#6562`](https://github.com/opengovsg/FormSG/pull/6562)
 - feat: react router params validator for mongo ids [`#6561`](https://github.com/opengovsg/FormSG/pull/6561)
 - build: merge v6.67.1 into develop [`#6559`](https://github.com/opengovsg/FormSG/pull/6559)
@@ -5306,7 +5070,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 > 4 July 2023
 
-- build: merge v6.63.0 into develop  [`#6508`](https://github.com/opengovsg/FormSG/pull/6508)
+- build: merge v6.63.0 into develop [`#6508`](https://github.com/opengovsg/FormSG/pull/6508)
 - chore(deps-dev): bump @typescript-eslint/parser from 5.60.1 to 5.61.0 in /shared [`#6506`](https://github.com/opengovsg/FormSG/pull/6506)
 - chore(deps-dev): bump @typescript-eslint/eslint-plugin from 5.60.1 to 5.61.0 in /shared [`#6505`](https://github.com/opengovsg/FormSG/pull/6505)
 - feat: payment variable [`#6463`](https://github.com/opengovsg/FormSG/pull/6463)
@@ -5336,7 +5100,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: escape form title in payment invoice's html content [`#6482`](https://github.com/opengovsg/FormSG/pull/6482)
 - feat: admin feedback modal [`#6465`](https://github.com/opengovsg/FormSG/pull/6465)
 - fix: potential html script injection [`#6481`](https://github.com/opengovsg/FormSG/pull/6481)
-- build: merge v6.61.1 into develop  [`#6480`](https://github.com/opengovsg/FormSG/pull/6480)
+- build: merge v6.61.1 into develop [`#6480`](https://github.com/opengovsg/FormSG/pull/6480)
 - chore: delete deprecated angular routes [`#6442`](https://github.com/opengovsg/FormSG/pull/6442)
 - chore: update issue feedback mail html [`#6478`](https://github.com/opengovsg/FormSG/pull/6478)
 - build: merge v6.61.0 into develop [`#6477`](https://github.com/opengovsg/FormSG/pull/6477)
@@ -5364,8 +5128,8 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump libphonenumber-js from 1.10.34 to 1.10.36 in /shared [`#6466`](https://github.com/opengovsg/FormSG/pull/6466)
 - fix: payout webhooks not returning OK [`#6436`](https://github.com/opengovsg/FormSG/pull/6436)
 - fix(deps): bump type-fest from 3.11.1 to 3.12.0 in /shared [`#6464`](https://github.com/opengovsg/FormSG/pull/6464)
-- feat: (BE) create and update admin feedback  [`#6454`](https://github.com/opengovsg/FormSG/pull/6454)
-- build: merge v6.60.0 into develop  [`#6461`](https://github.com/opengovsg/FormSG/pull/6461)
+- feat: (BE) create and update admin feedback [`#6454`](https://github.com/opengovsg/FormSG/pull/6454)
+- build: merge v6.60.0 into develop [`#6461`](https://github.com/opengovsg/FormSG/pull/6461)
 - build: release v6.60.0 [`#6460`](https://github.com/opengovsg/FormSG/pull/6460)
 - test: add payout cases [`d0eb2d4`](https://github.com/opengovsg/FormSG/commit/d0eb2d4f5ec741ffa9faa2742a713c9e2e7100b1)
 - test: add tests for getMetadataPaymentId, cleanup test cases [`a5a06be`](https://github.com/opengovsg/FormSG/commit/a5a06bebe35d2f9c9d819997fa172baeb0c26190)
@@ -5475,7 +5239,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat: add response time to submission [`#6377`](https://github.com/opengovsg/FormSG/pull/6377)
 - feat: update payment settings copy for production launch [`#6381`](https://github.com/opengovsg/FormSG/pull/6381)
 - build: merge v6.53.0 into develop [`#6383`](https://github.com/opengovsg/FormSG/pull/6383)
-- * fix: date-picker bug for negative UTC timezones attempt 3 (#6261) [`#6382`](https://github.com/opengovsg/FormSG/pull/6382)
+- - fix: date-picker bug for negative UTC timezones attempt 3 (#6261) [`#6382`](https://github.com/opengovsg/FormSG/pull/6382)
 - chore: bump version to v6.54.0 [`6cdd323`](https://github.com/opengovsg/FormSG/commit/6cdd3230d9cce0f2e4c09c372c5bfe10c67b6a1b)
 
 #### [v6.53.0](https://github.com/opengovsg/FormSG/compare/v6.52.0...v6.53.0)
@@ -5522,7 +5286,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - build: hotfix 6.50.3 add missing enum value to BounceType [`#6355`](https://github.com/opengovsg/FormSG/pull/6355)
 - build: hotfix v6.50.2 [`#6353`](https://github.com/opengovsg/FormSG/pull/6353)
 - build: release 6.50.0 hotfix [`#6350`](https://github.com/opengovsg/FormSG/pull/6350)
-- * test: add stories for admin and public forms with payments (#6292) [`#6347`](https://github.com/opengovsg/FormSG/pull/6347)
+- - test: add stories for admin and public forms with payments (#6292) [`#6347`](https://github.com/opengovsg/FormSG/pull/6347)
 - fix: env vars to determine payment copy to show [`f4f5998`](https://github.com/opengovsg/FormSG/commit/f4f59984d13054f60ffeb0c770bfabf56500d4a3)
 - fix: Add missing enum value to bounceType [`c78af16`](https://github.com/opengovsg/FormSG/commit/c78af16eee012a0f42ca387587d8b92aa236f7e7)
 - chore: bump hotfix version to 6.50.2 [`4363f0a`](https://github.com/opengovsg/FormSG/commit/4363f0ac4b66131e29645b5050a89d250fa3a086)
@@ -5586,7 +5350,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 - feat: update sms copy to remove link (policy) [`#6289`](https://github.com/opengovsg/FormSG/pull/6289)
 - chore(deps-dev): bump @typescript-eslint/parser from 5.59.2 to 5.59.5 in /shared [`#6287`](https://github.com/opengovsg/FormSG/pull/6287)
-- build: merge release v6.47.0 to develop  [`#6281`](https://github.com/opengovsg/FormSG/pull/6281)
+- build: merge release v6.47.0 to develop [`#6281`](https://github.com/opengovsg/FormSG/pull/6281)
 - fix: add missing env var in docker_compose.yml [`#6284`](https://github.com/opengovsg/FormSG/pull/6284)
 - build: release v6.47.0 [`#6279`](https://github.com/opengovsg/FormSG/pull/6279)
 - chore: bump version to v6.47.0 [`002b8b6`](https://github.com/opengovsg/FormSG/commit/002b8b6b66c6cc199921311a2ea1800644bcc332)
@@ -5606,8 +5370,8 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: switch captcha to download from globally accessible domain [`#6243`](https://github.com/opengovsg/FormSG/pull/6243)
 - fix: check payments channel before updating payments field [`#6258`](https://github.com/opengovsg/FormSG/pull/6258)
 - feat: payment preview banner [`#6230`](https://github.com/opengovsg/FormSG/pull/6230)
-- build: merge release v6.46.0 to develop  [`#6256`](https://github.com/opengovsg/FormSG/pull/6256)
-- * fix: only return previous payment id (#6210) [`#6254`](https://github.com/opengovsg/FormSG/pull/6254)
+- build: merge release v6.46.0 to develop [`#6256`](https://github.com/opengovsg/FormSG/pull/6256)
+- - fix: only return previous payment id (#6210) [`#6254`](https://github.com/opengovsg/FormSG/pull/6254)
 - chore: bump version to v6.46.0 [`be1e65f`](https://github.com/opengovsg/FormSG/commit/be1e65f2923ec97fd6457f2637557af2afc50996)
 - chore: bump version to v6.47.0 [`29b56cc`](https://github.com/opengovsg/FormSG/commit/29b56cc5423160e55a2e041ff57fec9e91f02bdb)
 
@@ -5658,7 +5422,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 - chore(deps-dev): bump @typescript-eslint/parser from 5.59.0 to 5.59.1 in /shared [`#6184`](https://github.com/opengovsg/FormSG/pull/6184)
 - fix: move form title and response id to the end of invoice [`#6180`](https://github.com/opengovsg/FormSG/pull/6180)
-- feat: email check for previous payment  [`#6170`](https://github.com/opengovsg/FormSG/pull/6170)
+- feat: email check for previous payment [`#6170`](https://github.com/opengovsg/FormSG/pull/6170)
 - feat: rename receipt to invoice [`#6179`](https://github.com/opengovsg/FormSG/pull/6179)
 - chore: local dev stripe webhook listener [`#6147`](https://github.com/opengovsg/FormSG/pull/6147)
 - fix: add description to verify payment email field [`#6176`](https://github.com/opengovsg/FormSG/pull/6176)
@@ -5680,7 +5444,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump vm2 from 3.9.16 to 3.9.17 [`#6162`](https://github.com/opengovsg/FormSG/pull/6162)
 - fix: add missing context provider on endpagedrawer and paymentdrawer [`#6160`](https://github.com/opengovsg/FormSG/pull/6160)
 - refactor: scope drawer width change only to affected components [`#6076`](https://github.com/opengovsg/FormSG/pull/6076)
-- build: merge release v6.42.0 to develop  [`#6150`](https://github.com/opengovsg/FormSG/pull/6150)
+- build: merge release v6.42.0 to develop [`#6150`](https://github.com/opengovsg/FormSG/pull/6150)
 - chore: bump version to v6.43.0 [`54a42e6`](https://github.com/opengovsg/FormSG/commit/54a42e6700f6e81101f8bc788460e98eb5a38355)
 - feat: normalize payment contact email on backend [`9f1a2b5`](https://github.com/opengovsg/FormSG/commit/9f1a2b5ae47dc7276701b91f6444e153c9a95bf3)
 
@@ -5787,7 +5551,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump @types/lodash from 4.14.191 to 4.14.192 in /shared [`#5997`](https://github.com/opengovsg/FormSG/pull/5997)
 - chore(deps-dev): bump @typescript-eslint/eslint-plugin from 5.56.0 to 5.57.0 in /shared [`#5996`](https://github.com/opengovsg/FormSG/pull/5996)
 - fix(deps): bump type-fest from 3.7.0 to 3.7.1 in /shared [`#5991`](https://github.com/opengovsg/FormSG/pull/5991)
-- build: merge v6.37.0 into develop  [`#5989`](https://github.com/opengovsg/FormSG/pull/5989)
+- build: merge v6.37.0 into develop [`#5989`](https://github.com/opengovsg/FormSG/pull/5989)
 - build: release v6.37.0 [`#5988`](https://github.com/opengovsg/FormSG/pull/5988)
 
 #### [v6.37.0](https://github.com/opengovsg/FormSG/compare/v6.36.0...v6.37.0)
@@ -5861,7 +5625,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 1 March 2023
 
 - chore: revert "feat: merge payment-mvp branch into develop" [`#5858`](https://github.com/opengovsg/FormSG/pull/5858)
-- build: merge release v6.33.0 into develop  [`#5859`](https://github.com/opengovsg/FormSG/pull/5859)
+- build: merge release v6.33.0 into develop [`#5859`](https://github.com/opengovsg/FormSG/pull/5859)
 - build: release v6.33.0 [`#5853`](https://github.com/opengovsg/FormSG/pull/5853)
 - chore: bump version to v6.34.0 [`4624819`](https://github.com/opengovsg/FormSG/commit/46248191e9b5f69e7400ee9b03dd1decdae43e96)
 
@@ -5875,7 +5639,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump libphonenumber-js from 1.10.20 to 1.10.21 in /shared [`#5841`](https://github.com/opengovsg/FormSG/pull/5841)
 - fix(deps): bump type-fest from 3.6.0 to 3.6.1 in /shared [`#5840`](https://github.com/opengovsg/FormSG/pull/5840)
 - feat: add prefix to OTPs [`#5828`](https://github.com/opengovsg/FormSG/pull/5828)
-- build: merge release v6.32.0 into develop  [`#5833`](https://github.com/opengovsg/FormSG/pull/5833)
+- build: merge release v6.32.0 into develop [`#5833`](https://github.com/opengovsg/FormSG/pull/5833)
 - [Snyk] Security upgrade @aws-sdk/client-cloudwatch-logs from 3.241.0 to 3.276.0 [`#5835`](https://github.com/opengovsg/FormSG/pull/5835)
 - build: release v6.32.0 [`#5832`](https://github.com/opengovsg/FormSG/pull/5832)
 - chore: bump version to v6.33.0 [`6508dc0`](https://github.com/opengovsg/FormSG/commit/6508dc09bb519392afbc426c6b68257c4e83515d)
@@ -5891,7 +5655,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump @typescript-eslint/parser from 5.52.0 to 5.53.0 in /shared [`#5797`](https://github.com/opengovsg/FormSG/pull/5797)
 - fix(deps): bump type-fest from 3.5.7 to 3.6.0 in /shared [`#5794`](https://github.com/opengovsg/FormSG/pull/5794)
 - fix(a11y): change heading label from instruction and section field container to h2 element [`#5786`](https://github.com/opengovsg/FormSG/pull/5786)
-- build: merge release v6.31.0 into develop  [`#5785`](https://github.com/opengovsg/FormSG/pull/5785)
+- build: merge release v6.31.0 into develop [`#5785`](https://github.com/opengovsg/FormSG/pull/5785)
 - fix(a11y/windows): read qn number for all fields [`#5788`](https://github.com/opengovsg/FormSG/pull/5788)
 - fix: save secret key per form with useQuery to prevent need for entering secret key [`#5743`](https://github.com/opengovsg/FormSG/pull/5743)
 - fix(deps): bump node-jose from 2.1.1 to 2.2.0 [`#5790`](https://github.com/opengovsg/FormSG/pull/5790)
@@ -6029,7 +5793,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat: add console.error to instances of arrayBuffer in the frontend [`#5659`](https://github.com/opengovsg/FormSG/pull/5659)
 - fix: remove deprecated GA command set-output [`#5633`](https://github.com/opengovsg/FormSG/pull/5633)
 - chore: swap cookie names for admin ui from `v2-admin-ui` to `v2-admin-ui-Jan-2023` [`#5665`](https://github.com/opengovsg/FormSG/pull/5665)
-- fix: view full public form page when printed  [`#5596`](https://github.com/opengovsg/FormSG/pull/5596)
+- fix: view full public form page when printed [`#5596`](https://github.com/opengovsg/FormSG/pull/5596)
 - fix: add frontend logging for network error [`#5663`](https://github.com/opengovsg/FormSG/pull/5663)
 - fix: revert "chore(deps-dev): bump @types/express from 4.17.14 to 4.17.15" [`#5664`](https://github.com/opengovsg/FormSG/pull/5664)
 - chore(deps-dev): bump typescript from 4.8.4 to 4.9.4 [`#5661`](https://github.com/opengovsg/FormSG/pull/5661)
@@ -6060,7 +5824,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 > 23 December 2022
 
 - build: remove lint steps from production Docker build [`#5623`](https://github.com/opengovsg/FormSG/pull/5623)
-- feat: add form type, user agent and attachment types to public switchback form  [`#5582`](https://github.com/opengovsg/FormSG/pull/5582)
+- feat: add form type, user agent and attachment types to public switchback form [`#5582`](https://github.com/opengovsg/FormSG/pull/5582)
 - ci: add node options to src_e2e test [`#5625`](https://github.com/opengovsg/FormSG/pull/5625)
 - chore(deps-dev): bump @babel/core from 7.20.2 to 7.20.7 [`#5618`](https://github.com/opengovsg/FormSG/pull/5618)
 - fix(deps): bump @sentry/browser from 7.28.0 to 7.28.1 [`#5617`](https://github.com/opengovsg/FormSG/pull/5617)
@@ -6111,7 +5875,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump formsg-javascript-sdk from 0.9.0 to 0.10.0 [`#5578`](https://github.com/opengovsg/FormSG/pull/5578)
 - fix: remove unecessary import [`#5576`](https://github.com/opengovsg/FormSG/pull/5576)
 - feat: upgrade axios to 1.2.1 [`#5568`](https://github.com/opengovsg/FormSG/pull/5568)
-- chore: merge v6.23.0 into develop  [`#5574`](https://github.com/opengovsg/FormSG/pull/5574)
+- chore: merge v6.23.0 into develop [`#5574`](https://github.com/opengovsg/FormSG/pull/5574)
 - chore: bump version to v6.24.0 [`13fa4f6`](https://github.com/opengovsg/FormSG/commit/13fa4f6eb7854ef91e632d8e316d180e57bb759b)
 - Revert "fix(deps): bump sqs-consumer from 5.7.0 to 6.1.0 (#5591)" [`088902d`](https://github.com/opengovsg/FormSG/commit/088902d74fe8fde365859342aaacc7b735a777a3)
 
@@ -6131,7 +5895,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat: push static assets to s3 [`#5595`](https://github.com/opengovsg/FormSG/pull/5595)
 - fix: return 404 for unmatched static assets [`#5579`](https://github.com/opengovsg/FormSG/pull/5579)
 - test: fix selectors for tests [`#5597`](https://github.com/opengovsg/FormSG/pull/5597)
-- * fix: trim email input in frontend and backend [`#5581`](https://github.com/opengovsg/FormSG/pull/5581)
+- - fix: trim email input in frontend and backend [`#5581`](https://github.com/opengovsg/FormSG/pull/5581)
 
 #### [v6.23.1](https://github.com/opengovsg/FormSG/compare/v6.23.0...v6.23.1)
 
@@ -6192,7 +5956,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: render saved title and esrvcId [`#5506`](https://github.com/opengovsg/FormSG/pull/5506)
 - chore(deps-dev): bump @types/lodash from 4.14.190 to 4.14.191 in /shared [`#5509`](https://github.com/opengovsg/FormSG/pull/5509)
 - fix: update feedback modal and switch env functionality [`#5411`](https://github.com/opengovsg/FormSG/pull/5411)
-- fix: extend tags in then show logic blocks to be full width  [`#5507`](https://github.com/opengovsg/FormSG/pull/5507)
+- fix: extend tags in then show logic blocks to be full width [`#5507`](https://github.com/opengovsg/FormSG/pull/5507)
 - build: Release v6.20.0 [`#5496`](https://github.com/opengovsg/FormSG/pull/5496)
 - chore: bump version to v6.21.0 [`3d189cf`](https://github.com/opengovsg/FormSG/commit/3d189cfdc7c105eb31987d31c1b38cb82f402952)
 - chore: fix changelog due to recut in v6.19.0 [`769efee`](https://github.com/opengovsg/FormSG/commit/769efee7d3552d5d675c1b81ed3320a931aafcb8)
@@ -6223,7 +5987,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump @typescript-eslint/parser from 5.44.0 to 5.45.0 in /shared [`#5477`](https://github.com/opengovsg/FormSG/pull/5477)
 - chore(deps-dev): bump csv-parse from 5.3.1 to 5.3.3 [`#5475`](https://github.com/opengovsg/FormSG/pull/5475)
 - fix: extend MyInfo login expiry to match env var [`#5464`](https://github.com/opengovsg/FormSG/pull/5464)
-- chore: merge hotfix release v6.18.4 back to develop  [`#5472`](https://github.com/opengovsg/FormSG/pull/5472)
+- chore: merge hotfix release v6.18.4 back to develop [`#5472`](https://github.com/opengovsg/FormSG/pull/5472)
 - feat: improve admin storage mode response printability [`#5460`](https://github.com/opengovsg/FormSG/pull/5460)
 - chore(deps-dev): bump @babel/preset-env from 7.19.4 to 7.20.2 [`#5463`](https://github.com/opengovsg/FormSG/pull/5463)
 - test: add email submission e2e tests [`#5162`](https://github.com/opengovsg/FormSG/pull/5162)
@@ -6247,7 +6011,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump jose from 4.10.4 to 4.11.0 [`#5418`](https://github.com/opengovsg/FormSG/pull/5418)
 - chore(deps-dev): bump @babel/core from 7.19.6 to 7.20.2 [`#5420`](https://github.com/opengovsg/FormSG/pull/5420)
 - fix(deps): bump express-rate-limit from 6.6.0 to 6.7.0 [`#5412`](https://github.com/opengovsg/FormSG/pull/5412)
-- chore: merge release v6.18.0 into develop  [`#5410`](https://github.com/opengovsg/FormSG/pull/5410)
+- chore: merge release v6.18.0 into develop [`#5410`](https://github.com/opengovsg/FormSG/pull/5410)
 - fix(deps): bump moment-timezone from 0.5.38 to 0.5.39 [`#5413`](https://github.com/opengovsg/FormSG/pull/5413)
 - fix(deps): bump aws-sdk from 2.1251.0 to 2.1255.0 [`#5415`](https://github.com/opengovsg/FormSG/pull/5415)
 - fix(deps): bump loader-utils from 1.4.0 to 1.4.2 [`#5416`](https://github.com/opengovsg/FormSG/pull/5416)
@@ -6332,7 +6096,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore: upgrade to node 18 [`#5344`](https://github.com/opengovsg/FormSG/pull/5344)
 - feat: add logging to capture SNS notification errors [`#5358`](https://github.com/opengovsg/FormSG/pull/5358)
 - fix: add frontend and backend validation for empty field titles [`#5351`](https://github.com/opengovsg/FormSG/pull/5351)
-- chore: merge release v6.16.0 into develop  [`#5347`](https://github.com/opengovsg/FormSG/pull/5347)
+- chore: merge release v6.16.0 into develop [`#5347`](https://github.com/opengovsg/FormSG/pull/5347)
 - fix(deps): bump loader-utils from 1.4.0 to 1.4.1 [`#5350`](https://github.com/opengovsg/FormSG/pull/5350)
 - fix(deps): bump @opengovsg/spcp-auth-client from 1.4.19 to 1.4.20 [`#5354`](https://github.com/opengovsg/FormSG/pull/5354)
 - chore(deps-dev): bump @types/lodash from 4.14.187 to 4.14.188 in /shared [`#5356`](https://github.com/opengovsg/FormSG/pull/5356)
@@ -6350,7 +6114,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat: make feedback compulsory for public respondents [`#5339`](https://github.com/opengovsg/FormSG/pull/5339)
 - feat: allow entire form response to be viewed when printed [`#5341`](https://github.com/opengovsg/FormSG/pull/5341)
 - ref: move meta tag images into static/images folder [`#5338`](https://github.com/opengovsg/FormSG/pull/5338)
-- chore: merge release v6.15.0 into develop  [`#5337`](https://github.com/opengovsg/FormSG/pull/5337)
+- chore: merge release v6.15.0 into develop [`#5337`](https://github.com/opengovsg/FormSG/pull/5337)
 - build: release v6.15.0 [`#5334`](https://github.com/opengovsg/FormSG/pull/5334)
 - chore: bump version to v6.16.0 [`ba14785`](https://github.com/opengovsg/FormSG/commit/ba147857c70de884c24e5db506d2b98582615a33)
 
@@ -6363,7 +6127,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump babel-loader from 8.2.5 to 8.3.0 [`#5332`](https://github.com/opengovsg/FormSG/pull/5332)
 - fix: decimal field validation allows 0 to be the min or max [`#5330`](https://github.com/opengovsg/FormSG/pull/5330)
 - chore(deps-dev): bump @types/lodash from 4.14.186 to 4.14.187 [`#5326`](https://github.com/opengovsg/FormSG/pull/5326)
-- chore: merge release v6.14.0 into develop  [`#5324`](https://github.com/opengovsg/FormSG/pull/5324)
+- chore: merge release v6.14.0 into develop [`#5324`](https://github.com/opengovsg/FormSG/pull/5324)
 - fix(deps): bump @aws-sdk/client-cloudwatch-logs from 3.200.0 to 3.201.0 [`#5327`](https://github.com/opengovsg/FormSG/pull/5327)
 - fix(deps): bump dd-trace from 3.6.0 to 3.7.0 [`#5328`](https://github.com/opengovsg/FormSG/pull/5328)
 - build: release v6.14.0 [`#5323`](https://github.com/opengovsg/FormSG/pull/5323)
@@ -6383,7 +6147,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump @babel/runtime from 7.20.0 to 7.20.1 [`#5306`](https://github.com/opengovsg/FormSG/pull/5306)
 - fix(deps): bump @sentry/browser from 7.15.0 to 7.17.3 [`#5305`](https://github.com/opengovsg/FormSG/pull/5305)
 - ci: use federated role [`#5304`](https://github.com/opengovsg/FormSG/pull/5304)
-- chore: merge release v6.13.0 into develop  [`#5298`](https://github.com/opengovsg/FormSG/pull/5298)
+- chore: merge release v6.13.0 into develop [`#5298`](https://github.com/opengovsg/FormSG/pull/5298)
 - build: release v6.13.0 [`#5297`](https://github.com/opengovsg/FormSG/pull/5297)
 - chore: bump version to v6.14.0 [`598fb42`](https://github.com/opengovsg/FormSG/commit/598fb42dcc7da4d6d887c4cd4e5cf9f99d1c741d)
 
@@ -6411,7 +6175,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump @babel/runtime from 7.19.4 to 7.20.0 [`#5277`](https://github.com/opengovsg/FormSG/pull/5277)
 - fix(deps): bump hot-shots from 9.2.0 to 9.3.0 [`#5274`](https://github.com/opengovsg/FormSG/pull/5274)
 - fix(deps): bump dd-trace from 3.5.0 to 3.6.0 [`#5273`](https://github.com/opengovsg/FormSG/pull/5273)
-- build: merge v6.12.0 into develop  [`#5268`](https://github.com/opengovsg/FormSG/pull/5268)
+- build: merge v6.12.0 into develop [`#5268`](https://github.com/opengovsg/FormSG/pull/5268)
 - build: release v6.12.0 [`#5267`](https://github.com/opengovsg/FormSG/pull/5267)
 - chore: bump version to v6.13.0 [`5162d7e`](https://github.com/opengovsg/FormSG/commit/5162d7ecbf9dc61a21e1b76ac41465ab450807c9)
 - feat: add mode option to editForm [`979e3ea`](https://github.com/opengovsg/FormSG/commit/979e3ea49077f89ae3360d3acf7e34f2bfdc5453)
@@ -6428,7 +6192,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump openid-client from 5.1.10 to 5.2.1 [`#5263`](https://github.com/opengovsg/FormSG/pull/5263)
 - fix: add condition to submit bug report feedback form [`#5258`](https://github.com/opengovsg/FormSG/pull/5258)
 - chore: merge release v6.11.0 into develop (round 2, merge) [`#5259`](https://github.com/opengovsg/FormSG/pull/5259)
-- chore: merge release v6.11.0 into develop  [`#5255`](https://github.com/opengovsg/FormSG/pull/5255)
+- chore: merge release v6.11.0 into develop [`#5255`](https://github.com/opengovsg/FormSG/pull/5255)
 - build: release v6.11.0 [`#5254`](https://github.com/opengovsg/FormSG/pull/5254)
 - chore: bump version to v6.12.0 [`6263ac6`](https://github.com/opengovsg/FormSG/commit/6263ac63a68a32c9855cbd93daa181b5814b6888)
 
@@ -6458,7 +6222,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump jose from 4.10.0 to 4.10.3 [`#5237`](https://github.com/opengovsg/FormSG/pull/5237)
 - chore(deps-dev): bump @babel/core from 7.19.3 to 7.19.6 [`#5236`](https://github.com/opengovsg/FormSG/pull/5236)
 - fix: correctly filter 401 status responses in datadog RUM [`#5232`](https://github.com/opengovsg/FormSG/pull/5232)
-- chore: merge release v6.9.0 into develop  [`#5231`](https://github.com/opengovsg/FormSG/pull/5231)
+- chore: merge release v6.9.0 into develop [`#5231`](https://github.com/opengovsg/FormSG/pull/5231)
 - build: release v6.9.0 [`#5228`](https://github.com/opengovsg/FormSG/pull/5228)
 - chore: bump version to v6.10.0 [`0a24b49`](https://github.com/opengovsg/FormSG/commit/0a24b49f404c82d24f22195a721e738b8d073d45)
 
@@ -6473,9 +6237,9 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump @aws-sdk/client-cloudwatch-logs from 3.190.0 to 3.192.0 [`#5224`](https://github.com/opengovsg/FormSG/pull/5224)
 - feat: add breadcrumbs to admin form navbar [`#5190`](https://github.com/opengovsg/FormSG/pull/5190)
 - build: use new CD pipeline to allow for datadog source maps, add cache control [`#5225`](https://github.com/opengovsg/FormSG/pull/5225)
-- chore: merge release v6.8.1 into develop  [`#5222`](https://github.com/opengovsg/FormSG/pull/5222)
+- chore: merge release v6.8.1 into develop [`#5222`](https://github.com/opengovsg/FormSG/pull/5222)
 - fix: update RUM percentages to 65%, prevent feedback form submission if feedback is empty [`#5220`](https://github.com/opengovsg/FormSG/pull/5220)
-- chore: merge release v6.8.0 into develop  [`#5221`](https://github.com/opengovsg/FormSG/pull/5221)
+- chore: merge release v6.8.0 into develop [`#5221`](https://github.com/opengovsg/FormSG/pull/5221)
 - chore: bump version to v6.9.0 [`8d66b8b`](https://github.com/opengovsg/FormSG/commit/8d66b8bf84d4e11b7f086214add6fba22e64770b)
 
 #### [v6.8.1](https://github.com/opengovsg/FormSG/compare/v6.8.0...v6.8.1)
@@ -6539,7 +6303,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat: prevent benign frontend errors from being sent to datadog RUM [`#5188`](https://github.com/opengovsg/FormSG/pull/5188)
 - chore: merge release 6.6.1 into develop [`#5189`](https://github.com/opengovsg/FormSG/pull/5189)
 - fix: inject RUM session IDs into feedback form [`#5187`](https://github.com/opengovsg/FormSG/pull/5187)
-- chore: merge release 6.6.0 back to develop  [`#5184`](https://github.com/opengovsg/FormSG/pull/5184)
+- chore: merge release 6.6.0 back to develop [`#5184`](https://github.com/opengovsg/FormSG/pull/5184)
 - chore: bump version to v6.7.0 [`9920ff0`](https://github.com/opengovsg/FormSG/commit/9920ff0ef2ff1a0d930d3262c0c4a87bad33dec2)
 
 #### [v6.6.1](https://github.com/opengovsg/FormSG/compare/v6.6.0...v6.6.1)
@@ -6714,7 +6478,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(v2): upgrade chromium to 102.0.5005.182-r0 [`#4988`](https://github.com/opengovsg/FormSG/pull/4988)
 - fix(v2): add padding between form fields [`#4965`](https://github.com/opengovsg/FormSG/pull/4965)
 - feat: add extra aria text to denote the end of the form [`#4977`](https://github.com/opengovsg/FormSG/pull/4977)
-- fix(v2): update react dev proxy port to port 5001, fix invalid dom tag nesting  [`#4976`](https://github.com/opengovsg/FormSG/pull/4976)
+- fix(v2): update react dev proxy port to port 5001, fix invalid dom tag nesting [`#4976`](https://github.com/opengovsg/FormSG/pull/4976)
 - fix(v2): extend empty workspace flexbox to fill screen [`#4964`](https://github.com/opengovsg/FormSG/pull/4964)
 - feat(v2): add single quote to CSV output [`#4950`](https://github.com/opengovsg/FormSG/pull/4950)
 - build: merge release 5.73.0 into v2/develop [`#4967`](https://github.com/opengovsg/FormSG/pull/4967)
@@ -6804,7 +6568,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat(v2): add and use NavigationTabs template components for admin form tab navigation [`#4601`](https://github.com/opengovsg/FormSG/pull/4601)
 - feat(v2): always enable e-service id box in auth settings [`#4576`](https://github.com/opengovsg/FormSG/pull/4576)
 - fix: set addMoreFields derived value so useEffect is stable [`#4669`](https://github.com/opengovsg/FormSG/pull/4669)
-- feat(v2): add better error messages for submission and network errors  [`#4615`](https://github.com/opengovsg/FormSG/pull/4615)
+- feat(v2): add better error messages for submission and network errors [`#4615`](https://github.com/opengovsg/FormSG/pull/4615)
 - fix: do not require eservice id for sgid form [`#4671`](https://github.com/opengovsg/FormSG/pull/4671)
 - fix(v2): bunch of fixes in admin builder styling [`#4605`](https://github.com/opengovsg/FormSG/pull/4605)
 - fix: local mongo replicaset host mismatch [`#4603`](https://github.com/opengovsg/FormSG/pull/4603)
@@ -6819,7 +6583,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat(form-v2): add switch-to-react url for admins [`#4577`](https://github.com/opengovsg/FormSG/pull/4577)
 - fix(form-v2): add loading state for form builder, misc improvements [`#4525`](https://github.com/opengovsg/FormSG/pull/4525)
 - feat(v2): update create storage mode form modal to new design [`#4493`](https://github.com/opengovsg/FormSG/pull/4493)
-- feat: add tag input component  [`#4509`](https://github.com/opengovsg/FormSG/pull/4509)
+- feat: add tag input component [`#4509`](https://github.com/opengovsg/FormSG/pull/4509)
 - fix(form-v2): refactor to avoid repopulating design store when cache is invalidated [`#4554`](https://github.com/opengovsg/FormSG/pull/4554)
 - fix: remove flaky unit test [`#4578`](https://github.com/opengovsg/FormSG/pull/4578)
 - fix(form-v2): add default values to field templates to ensure optional fields can be submitted [`#4546`](https://github.com/opengovsg/FormSG/pull/4546)
@@ -6894,7 +6658,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: update admin logic OTP to not resend immediately and update copy of verified fields to show correct time of 30 minute validity [`#4405`](https://github.com/opengovsg/FormSG/pull/4405)
 - feat(form-v2): replace icon with BiHomeCircle [`#4280`](https://github.com/opengovsg/FormSG/pull/4280)
 - fix(form-v2): form preview should open in new tab [`#4400`](https://github.com/opengovsg/FormSG/pull/4400)
-- copy(form-v2): multiple edits  [`#4318`](https://github.com/opengovsg/FormSG/pull/4318)
+- copy(form-v2): multiple edits [`#4318`](https://github.com/opengovsg/FormSG/pull/4318)
 - fix: update copy for empty logic page [`#4396`](https://github.com/opengovsg/FormSG/pull/4396)
 - fix: copy update for create-form modal [`#4394`](https://github.com/opengovsg/FormSG/pull/4394)
 - fix(form-v2): add correct html titles to feature tour tooltip buttons [`#4388`](https://github.com/opengovsg/FormSG/pull/4388)
@@ -6954,7 +6718,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat: add progress indicator styles [`#4019`](https://github.com/opengovsg/FormSG/pull/4019)
 - fix(v2): prevent everchanging snapshots from triggering chromatic regressions [`#4004`](https://github.com/opengovsg/FormSG/pull/4004)
 - feat: add question numbers to show in form builder tool [`#4020`](https://github.com/opengovsg/FormSG/pull/4020)
-- chore:  merge release v5.62.0 into form-v2/develop [`#4010`](https://github.com/opengovsg/FormSG/pull/4010)
+- chore: merge release v5.62.0 into form-v2/develop [`#4010`](https://github.com/opengovsg/FormSG/pull/4010)
 - feat(v2/storage): add tests for CsvGenerator classes [`#3975`](https://github.com/opengovsg/FormSG/pull/3975)
 - feat: add pagination component and logic [`#3992`](https://github.com/opengovsg/FormSG/pull/3992)
 - feat(v2): login page redesign again, add AppGrid template [`#3978`](https://github.com/opengovsg/FormSG/pull/3978)
@@ -6995,9 +6759,9 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat(v2): add share form feature [`#3828`](https://github.com/opengovsg/FormSG/pull/3828)
 - feat(v2): allow creation of rating fields in admin form builder, fix nested updates [`#3834`](https://github.com/opengovsg/FormSG/pull/3834)
 - feat(v2): prevent submission and show message on public form when logic is triggered [`#3813`](https://github.com/opengovsg/FormSG/pull/3813)
-- feat(v2): allow creation of dropdown fields in admin form builder  [`#3817`](https://github.com/opengovsg/FormSG/pull/3817)
+- feat(v2): allow creation of dropdown fields in admin form builder [`#3817`](https://github.com/opengovsg/FormSG/pull/3817)
 - feat(v2): add react-i18next and associated boilerplate for interface … [`#3823`](https://github.com/opengovsg/FormSG/pull/3823)
-- feat(v2): allow creation of long and short answer fields in admin form builder  [`#3806`](https://github.com/opengovsg/FormSG/pull/3806)
+- feat(v2): allow creation of long and short answer fields in admin form builder [`#3806`](https://github.com/opengovsg/FormSG/pull/3806)
 - feat(v2/collab): allow removal of self from form collaborators [`#3802`](https://github.com/opengovsg/FormSG/pull/3802)
 - feat(v2/collab): render viewer-only collaborator modal [`#3793`](https://github.com/opengovsg/FormSG/pull/3793)
 - feat(v2): allow creation of homeno fields in admin form builder [`#3804`](https://github.com/opengovsg/FormSG/pull/3804)
@@ -7027,7 +6791,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat: render govt masthead component [`#3644`](https://github.com/opengovsg/FormSG/pull/3644)
 - feat(v2): add Settings Webhooks tab [`#3716`](https://github.com/opengovsg/FormSG/pull/3716)
 - feat(v2): builder design review; stories for Empty, AllFields builders [`#3695`](https://github.com/opengovsg/FormSG/pull/3695)
-- feat(v2/epic): implement (partial) public form submission feature  [`#3738`](https://github.com/opengovsg/FormSG/pull/3738)
+- feat(v2/epic): implement (partial) public form submission feature [`#3738`](https://github.com/opengovsg/FormSG/pull/3738)
 - feat(v2/submit): design and squash fixes [`#3739`](https://github.com/opengovsg/FormSG/pull/3739)
 - feat: create country field story [`#3705`](https://github.com/opengovsg/FormSG/pull/3705)
 - refactor(v2/submit-1): pass input types to react-hook-form generics for better validation [`#3736`](https://github.com/opengovsg/FormSG/pull/3736)
@@ -7092,7 +6856,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat(builder/4): add form field creation feature in form builder, extend create field API with positional arg [`#3135`](https://github.com/opengovsg/FormSG/pull/3135)
 - feat(builder/3): allow form fields reordering in form builder [`#3134`](https://github.com/opengovsg/FormSG/pull/3134)
 - feat(builder/2): add checkbox field preview when editing field in form builder [`#3131`](https://github.com/opengovsg/FormSG/pull/3131)
-- feat(builder/1): add initial field preview (only SectionField) when editing field in form builder  [`#3130`](https://github.com/opengovsg/FormSG/pull/3130)
+- feat(builder/1): add initial field preview (only SectionField) when editing field in form builder [`#3130`](https://github.com/opengovsg/FormSG/pull/3130)
 - feat(v2): impl initial create form modal feature, update Tile component [`#3048`](https://github.com/opengovsg/FormSG/pull/3048)
 - feat(v2): [Date1] add DateRangePicker/Input component [`#3199`](https://github.com/opengovsg/FormSG/pull/3199)
 - feat(v2): [Date0] add single date DatePicker component [`#3185`](https://github.com/opengovsg/FormSG/pull/3185)
@@ -7101,7 +6865,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat(v2): add initial public form authentication feature [`#3210`](https://github.com/opengovsg/FormSG/pull/3210)
 - feat(v2): update form mode display in settings to conform to design [`#3209`](https://github.com/opengovsg/FormSG/pull/3209)
 - feat(v2): Set up web workers on React [`#3125`](https://github.com/opengovsg/FormSG/pull/3125)
-- feat(v2): update Tile and Badge styling to better fit design  [`#3179`](https://github.com/opengovsg/FormSG/pull/3179)
+- feat(v2): update Tile and Badge styling to better fit design [`#3179`](https://github.com/opengovsg/FormSG/pull/3179)
 - feat(v2): add WorkspacePage (only layout, no business logic yet) [`#3045`](https://github.com/opengovsg/FormSG/pull/3045)
 - feat(v2): update Menu styling to better fit design [`#3178`](https://github.com/opengovsg/FormSG/pull/3178)
 - chore(v2): update npm packages to their latest versions (except storybook) [`#3168`](https://github.com/opengovsg/FormSG/pull/3168)
@@ -7125,7 +6889,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat(FormSettings/4): add storage mode form activation modal [`#2939`](https://github.com/opengovsg/FormSG/pull/2939)
 - feat(PublicFormPage/3): add FormSections rendering and scroll handling [`#2888`](https://github.com/opengovsg/FormSG/pull/2888)
 - feat(PublicFormPage/2): add FormStartPage component [`#2885`](https://github.com/opengovsg/FormSG/pull/2885)
-- feat(FormSettings/3): add email-form specific email setting input  [`#2891`](https://github.com/opengovsg/FormSG/pull/2891)
+- feat(FormSettings/3): add email-form specific email setting input [`#2891`](https://github.com/opengovsg/FormSG/pull/2891)
 - feat(FormSettings/2): add remaining general settings toggles [`#2890`](https://github.com/opengovsg/FormSG/pull/2890)
 - feat(FormSettings/1): create initial FormSettingsPage [`#2889`](https://github.com/opengovsg/FormSG/pull/2889)
 - feat(FormSettings/0): add admin form route and layout scaffolding [`#2762`](https://github.com/opengovsg/FormSG/pull/2762)
@@ -7273,7 +7037,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump winston from 3.8.1 to 3.8.2 [`#4881`](https://github.com/opengovsg/FormSG/pull/4881)
 - chore(deps-dev): bump @babel/core from 7.18.10 to 7.19.1 [`#4868`](https://github.com/opengovsg/FormSG/pull/4868)
 - chore(deps-dev): bump @babel/preset-env from 7.18.10 to 7.19.1 [`#4871`](https://github.com/opengovsg/FormSG/pull/4871)
-- build: merge release v5.71.0 into develop  [`#4875`](https://github.com/opengovsg/FormSG/pull/4875)
+- build: merge release v5.71.0 into develop [`#4875`](https://github.com/opengovsg/FormSG/pull/4875)
 - build: release v5.71.0 [`#4869`](https://github.com/opengovsg/FormSG/pull/4869)
 - chore: bump version to v5.72.0 [`90471df`](https://github.com/opengovsg/FormSG/commit/90471df62d7b7dec501771f2636cdb8f27a2f0d0)
 
@@ -7401,7 +7165,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump aws-sdk from 2.1184.0 to 2.1186.0 [`#4465`](https://github.com/opengovsg/FormSG/pull/4465)
 - fix(deps): bump dd-trace from 2.12.0 to 2.12.1 [`#4457`](https://github.com/opengovsg/FormSG/pull/4457)
 - fix(deps): bump neverthrow from 4.4.2 to 5.0.0 [`#4416`](https://github.com/opengovsg/FormSG/pull/4416)
-- build: merge release-al2 into develop  [`#4449`](https://github.com/opengovsg/FormSG/pull/4449)
+- build: merge release-al2 into develop [`#4449`](https://github.com/opengovsg/FormSG/pull/4449)
 - build: release 5.66.0 [`#4439`](https://github.com/opengovsg/FormSG/pull/4439)
 - chore: bump version to 5.67.0 [`0bd59a4`](https://github.com/opengovsg/FormSG/commit/0bd59a4abd1c0dd88cd8605830b8f2a735ceaffd)
 
@@ -7561,7 +7325,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump eslint-plugin-prettier in /shared [`#4067`](https://github.com/opengovsg/FormSG/pull/4067)
 - fix(deps): bump type-fest from 2.14.0 to 2.15.1 in /shared [`#4068`](https://github.com/opengovsg/FormSG/pull/4068)
 - fix(deps): bump nocache from 3.0.3 to 3.0.4 [`#4059`](https://github.com/opengovsg/FormSG/pull/4059)
-- feat: enable datadog APM  [`#3908`](https://github.com/opengovsg/FormSG/pull/3908)
+- feat: enable datadog APM [`#3908`](https://github.com/opengovsg/FormSG/pull/3908)
 - fix(deps): bump @opengovsg/sgid-client from 0.0.12 to 1.0.3 [`#3905`](https://github.com/opengovsg/FormSG/pull/3905)
 - chore(deps-dev): bump @babel/core from 7.17.12 to 7.18.5 [`#4052`](https://github.com/opengovsg/FormSG/pull/4052)
 - chore(deps-dev): bump core-js from 3.22.5 to 3.23.3 [`#4053`](https://github.com/opengovsg/FormSG/pull/4053)
@@ -7675,7 +7439,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump zod from 3.14.4 to 3.15.1 in /shared [`#3835`](https://github.com/opengovsg/FormSG/pull/3835)
 - fix(deps): bump libphonenumber-js from 1.9.52 to 1.9.53 in /shared [`#3836`](https://github.com/opengovsg/FormSG/pull/3836)
 - feat: track Twilio metrics to DataDog [`#3824`](https://github.com/opengovsg/FormSG/pull/3824)
-- chore: merge release v5.57.2 back to develop  [`#3833`](https://github.com/opengovsg/FormSG/pull/3833)
+- chore: merge release v5.57.2 back to develop [`#3833`](https://github.com/opengovsg/FormSG/pull/3833)
 - feat: hotfix: validate SNS notification with AWS lib rather than custom implementation [`#3832`](https://github.com/opengovsg/FormSG/pull/3832)
 - chore: merge release v5.57.1 back to develop [`#3831`](https://github.com/opengovsg/FormSG/pull/3831)
 - build: hotfix release v5.57.1 [`#3829`](https://github.com/opengovsg/FormSG/pull/3829)
@@ -7874,7 +7638,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat(BounceController): log SNS topic confirmation notification emails [`#3525`](https://github.com/opengovsg/FormSG/pull/3525)
 - fix(deps): bump dotenv from 10.0.0 to 16.0.0 [`#3377`](https://github.com/opengovsg/FormSG/pull/3377)
 - feat: add `/client/env` API route for sending client env vars as JSON [`#3505`](https://github.com/opengovsg/FormSG/pull/3505)
-- feat: add positional argument to create form field API  [`#3486`](https://github.com/opengovsg/FormSG/pull/3486)
+- feat: add positional argument to create form field API [`#3486`](https://github.com/opengovsg/FormSG/pull/3486)
 - fix(ci/deploy): truncate deploy description correctly [`#3524`](https://github.com/opengovsg/FormSG/pull/3524)
 - fix(deps): bump aws-sdk from 2.1081.0 to 2.1082.0 [`#3523`](https://github.com/opengovsg/FormSG/pull/3523)
 - chore(deps-dev): bump @types/lodash from 4.14.178 to 4.14.179 [`#3522`](https://github.com/opengovsg/FormSG/pull/3522)
@@ -9049,7 +8813,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - refactor(auth.client): (1) extract email validation and send login otp flow to Typescript [`#2084`](https://github.com/opengovsg/FormSG/pull/2084)
 - feat: store only user ID in session [`#1849`](https://github.com/opengovsg/FormSG/pull/1849)
 - fix: return storage mode submission version when when retrieving from server [`#2112`](https://github.com/opengovsg/FormSG/pull/2112)
-- refactor: replace $resource in angularjs form-api.client.factory.js with typescript FormService  [`#1947`](https://github.com/opengovsg/FormSG/pull/1947)
+- refactor: replace $resource in angularjs form-api.client.factory.js with typescript FormService [`#1947`](https://github.com/opengovsg/FormSG/pull/1947)
 - refactor(ts-migration): ndjsonstream and process-decrypted-content [`#2111`](https://github.com/opengovsg/FormSG/pull/2111)
 - chore: remove redundant ValidationOption object properties for short text, long text and number fields [`#2040`](https://github.com/opengovsg/FormSG/pull/2040)
 - chore(deps-dev): bump @types/node from 14.17.2 to 14.17.3 [`#2108`](https://github.com/opengovsg/FormSG/pull/2108)
@@ -9077,7 +8841,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(adminsubmissionsservice): renamed form to submissions to reflect context [`#2098`](https://github.com/opengovsg/FormSG/pull/2098)
 - feat: enable retries for webhooks [`#2093`](https://github.com/opengovsg/FormSG/pull/2093)
 - feat: log form updates [`#2063`](https://github.com/opengovsg/FormSG/pull/2063)
-- chore: remove endPage.buttons key from database  [`#2087`](https://github.com/opengovsg/FormSG/pull/2087)
+- chore: remove endPage.buttons key from database [`#2087`](https://github.com/opengovsg/FormSG/pull/2087)
 - feat: sort responses for csv download according to creation date [`#2028`](https://github.com/opengovsg/FormSG/pull/2028)
 - fix(deps): downgrade typescript to 4.2.4 and pin [`#2097`](https://github.com/opengovsg/FormSG/pull/2097)
 - chore(deps-dev): bump @typescript-eslint/eslint-plugin [`#2095`](https://github.com/opengovsg/FormSG/pull/2095)
@@ -9249,7 +9013,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump core-js from 3.11.3 to 3.12.0 [`#1817`](https://github.com/opengovsg/FormSG/pull/1817)
 - fix(deps): bump aws-sdk from 2.900.0 to 2.901.0 [`#1816`](https://github.com/opengovsg/FormSG/pull/1816)
 - feat(email-submission): separate error logging for db and state checks [`#1813`](https://github.com/opengovsg/FormSG/pull/1813)
-- feat(admin-form): individual form field api  [`#1799`](https://github.com/opengovsg/FormSG/pull/1799)
+- feat(admin-form): individual form field api [`#1799`](https://github.com/opengovsg/FormSG/pull/1799)
 - chore(deps-dev): bump @types/bluebird from 3.5.33 to 3.5.34 [`#1807`](https://github.com/opengovsg/FormSG/pull/1807)
 - chore(deps-dev): bump @types/node from 14.14.43 to 14.14.44 [`#1805`](https://github.com/opengovsg/FormSG/pull/1805)
 - fix(deps): bump aws-sdk from 2.899.0 to 2.900.0 [`#1809`](https://github.com/opengovsg/FormSG/pull/1809)
@@ -9312,8 +9076,8 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump aws-sdk from 2.892.0 to 2.893.0 [`#1745`](https://github.com/opengovsg/FormSG/pull/1745)
 - feat: show highlights only if prefill is provided in url [`#1742`](https://github.com/opengovsg/FormSG/pull/1742)
 - fix: clone field to save before removing myinfo field info [`#1741`](https://github.com/opengovsg/FormSG/pull/1741)
-- fix: convert form field responses to field class  [`#1739`](https://github.com/opengovsg/FormSG/pull/1739)
-- refactor(test): integration and unit tests for redirect  [`#1728`](https://github.com/opengovsg/FormSG/pull/1728)
+- fix: convert form field responses to field class [`#1739`](https://github.com/opengovsg/FormSG/pull/1739)
+- refactor(test): integration and unit tests for redirect [`#1728`](https://github.com/opengovsg/FormSG/pull/1728)
 - feat: prefill mainstream launch [`#1702`](https://github.com/opengovsg/FormSG/pull/1702)
 - fix: update MyInfo field count correctly, show correct error [`#1738`](https://github.com/opengovsg/FormSG/pull/1738)
 - refactor: use shared DateSelectedValidation enum instead of DATE_VALIDATION_OPTIONS object [`#1724`](https://github.com/opengovsg/FormSG/pull/1724)
@@ -9381,7 +9145,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump jest-mock-axios from 4.3.0 to 4.4.0 [`#1667`](https://github.com/opengovsg/FormSG/pull/1667)
 - chore(deps-dev): bump date-fns from 2.21.0 to 2.21.1 [`#1662`](https://github.com/opengovsg/FormSG/pull/1662)
 - chore(deps-dev): bump @types/node from 14.14.37 to 14.14.41 [`#1657`](https://github.com/opengovsg/FormSG/pull/1657)
-- refactor(email-submission/controller): refactored email submission  [`#1594`](https://github.com/opengovsg/FormSG/pull/1594)
+- refactor(email-submission/controller): refactored email submission [`#1594`](https://github.com/opengovsg/FormSG/pull/1594)
 - fix(deps): bump aws-sdk from 2.886.0 to 2.888.0 [`#1656`](https://github.com/opengovsg/FormSG/pull/1656)
 - fix(deps): bump opossum from 6.0.0 to 6.0.1 [`#1658`](https://github.com/opengovsg/FormSG/pull/1658)
 - fix: jest memory leak [`#1659`](https://github.com/opengovsg/FormSG/pull/1659)
@@ -9401,7 +9165,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump date-fns from 2.20.2 to 2.20.3 [`#1637`](https://github.com/opengovsg/FormSG/pull/1637)
 - fix(deps): bump aws-sdk from 2.884.0 to 2.885.0 [`#1636`](https://github.com/opengovsg/FormSG/pull/1636)
 - chore: merge release v5.6.0 back to develop [`#1632`](https://github.com/opengovsg/FormSG/pull/1632)
--  refactor(feedback-api): duplicate adminform feedback endpoints for /api/v3 [`#1589`](https://github.com/opengovsg/FormSG/pull/1589)
+- refactor(feedback-api): duplicate adminform feedback endpoints for /api/v3 [`#1589`](https://github.com/opengovsg/FormSG/pull/1589)
 - refactor(frontend-api): duplicate frontend client endpoints to new /api/v3 router [`#1574`](https://github.com/opengovsg/FormSG/pull/1574)
 - chore: bump version to 5.7.0 [`6f91f00`](https://github.com/opengovsg/FormSG/commit/6f91f0027dbe90289e083d533e90634018798b83)
 - fix: merge conflict from merging with develop [`9f0930e`](https://github.com/opengovsg/FormSG/commit/9f0930e6665a5e635fe6187e031c3c5ea50dfc41)
@@ -9689,7 +9453,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump @types/node from 14.14.31 to 14.14.32 [`#1300`](https://github.com/opengovsg/FormSG/pull/1300)
 - feat: Add submission limits for storage mode form submissions [`#1268`](https://github.com/opengovsg/FormSG/pull/1268)
 - chore(deps-dev): bump ts-jest from 26.5.2 to 26.5.3 [`#1295`](https://github.com/opengovsg/FormSG/pull/1295)
-- chore: change copy & insert secretkeyloss golink  [`#1293`](https://github.com/opengovsg/FormSG/pull/1293)
+- chore: change copy & insert secretkeyloss golink [`#1293`](https://github.com/opengovsg/FormSG/pull/1293)
 - chore(deps-dev): bump testcafe from 1.11.0 to 1.12.0 [`#1294`](https://github.com/opengovsg/FormSG/pull/1294)
 - fix(deps): bump aws-info from 1.1.0 to 1.2.0 [`#1290`](https://github.com/opengovsg/FormSG/pull/1290)
 - chore(deps-dev): bump eslint from 7.20.0 to 7.21.0 [`#1289`](https://github.com/opengovsg/FormSG/pull/1289)
@@ -9786,7 +9550,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: Hotfix v4.32.1 -- split mail by semicolon in addition to comma when validating [`#222`](https://github.com/opengovsg/FormSG/pull/222)
 - feat: Release v4.32.0 [`#201`](https://github.com/opengovsg/FormSG/pull/201)
 - Release v4.31.0 - improve docs, log IP, fix tests [`#152`](https://github.com/opengovsg/FormSG/pull/152)
-- Release 4.30.4  - revert filtering by submission ID [`#137`](https://github.com/opengovsg/FormSG/pull/137)
+- Release 4.30.4 - revert filtering by submission ID [`#137`](https://github.com/opengovsg/FormSG/pull/137)
 - build: Release 4.30.3 - Typescript migrations, filter storage mode responses by submission id [`#123`](https://github.com/opengovsg/FormSG/pull/123)
 - Release 4.30.2 - fix AWS endpoint and /emailnotifications log group [`#78`](https://github.com/opengovsg/FormSG/pull/78)
 - build: Release 4.30.1 - Fix field creation on old clients [`#74`](https://github.com/opengovsg/FormSG/pull/74)
@@ -10167,7 +9931,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: Hotfix v4.32.1 -- split mail by semicolon in addition to comma when validating [`#222`](https://github.com/opengovsg/FormSG/pull/222)
 - feat: Release v4.32.0 [`#201`](https://github.com/opengovsg/FormSG/pull/201)
 - Release v4.31.0 - improve docs, log IP, fix tests [`#152`](https://github.com/opengovsg/FormSG/pull/152)
-- Release 4.30.4  - revert filtering by submission ID [`#137`](https://github.com/opengovsg/FormSG/pull/137)
+- Release 4.30.4 - revert filtering by submission ID [`#137`](https://github.com/opengovsg/FormSG/pull/137)
 - build: Release 4.30.3 - Typescript migrations, filter storage mode responses by submission id [`#123`](https://github.com/opengovsg/FormSG/pull/123)
 - Release 4.30.2 - fix AWS endpoint and /emailnotifications log group [`#78`](https://github.com/opengovsg/FormSG/pull/78)
 - build: Release 4.30.1 - Fix field creation on old clients [`#74`](https://github.com/opengovsg/FormSG/pull/74)
@@ -10246,10 +10010,10 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - chore(deps-dev): bump eslint-plugin-simple-import-sort [`#820`](https://github.com/opengovsg/FormSG/pull/820)
 - ref: migrate create new form api flow to TypeScript [`#806`](https://github.com/opengovsg/FormSG/pull/806)
 - chore(deps-dev): bump @types/jest from 26.0.15 to 26.0.16 [`#812`](https://github.com/opengovsg/FormSG/pull/812)
-- ref: migrate copy template form flow to TypeScript  [`#793`](https://github.com/opengovsg/FormSG/pull/793)
+- ref: migrate copy template form flow to TypeScript [`#793`](https://github.com/opengovsg/FormSG/pull/793)
 - fix(deps): bump validator from 13.1.17 to 13.5.1 [`#811`](https://github.com/opengovsg/FormSG/pull/811)
 - ref: migrate duplicate admin form endpoint to TypeScript [`#789`](https://github.com/opengovsg/FormSG/pull/789)
-- ref: migrate endpoint for getting admin form to TypeScript  [`#807`](https://github.com/opengovsg/FormSG/pull/807)
+- ref: migrate endpoint for getting admin form to TypeScript [`#807`](https://github.com/opengovsg/FormSG/pull/807)
 - chore(deps-dev): bump eslint-config-prettier from 6.15.0 to 7.0.0 [`#810`](https://github.com/opengovsg/FormSG/pull/810)
 - chore: enhance jest test reliability [`#800`](https://github.com/opengovsg/FormSG/pull/800)
 - docs: remove dangling commas from mongo scripts [`#794`](https://github.com/opengovsg/FormSG/pull/794)
@@ -10306,7 +10070,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: Hotfix v4.32.1 -- split mail by semicolon in addition to comma when validating [`#222`](https://github.com/opengovsg/FormSG/pull/222)
 - feat: Release v4.32.0 [`#201`](https://github.com/opengovsg/FormSG/pull/201)
 - Release v4.31.0 - improve docs, log IP, fix tests [`#152`](https://github.com/opengovsg/FormSG/pull/152)
-- Release 4.30.4  - revert filtering by submission ID [`#137`](https://github.com/opengovsg/FormSG/pull/137)
+- Release 4.30.4 - revert filtering by submission ID [`#137`](https://github.com/opengovsg/FormSG/pull/137)
 - build: Release 4.30.3 - Typescript migrations, filter storage mode responses by submission id [`#123`](https://github.com/opengovsg/FormSG/pull/123)
 - Release 4.30.2 - fix AWS endpoint and /emailnotifications log group [`#78`](https://github.com/opengovsg/FormSG/pull/78)
 - build: Release 4.30.1 - Fix field creation on old clients [`#74`](https://github.com/opengovsg/FormSG/pull/74)
@@ -10346,8 +10110,8 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): bump winston-cloudwatch from 2.3.2 to 2.4.0 [`#728`](https://github.com/opengovsg/FormSG/pull/728)
 - refactor: migrate mobile number validator to ts [`#713`](https://github.com/opengovsg/FormSG/pull/713)
 - chore(deps-dev): bump ts-jest from 26.4.1 to 26.4.4 [`#720`](https://github.com/opengovsg/FormSG/pull/720)
-- refactor: migrate rating validator to ts  [`#724`](https://github.com/opengovsg/FormSG/pull/724)
-- refactor: migrate radio button validator to ts  [`#723`](https://github.com/opengovsg/FormSG/pull/723)
+- refactor: migrate rating validator to ts [`#724`](https://github.com/opengovsg/FormSG/pull/724)
+- refactor: migrate radio button validator to ts [`#723`](https://github.com/opengovsg/FormSG/pull/723)
 - feat: migrate get encrypt metadata endpoint controller to TypeScript [`#711`](https://github.com/opengovsg/FormSG/pull/711)
 - fix(AdminFormRoutes): add Joi validation on /submission endpoint [`#712`](https://github.com/opengovsg/FormSG/pull/712)
 - chore(deps-dev): bump prettier from 2.1.2 to 2.2.0 [`#709`](https://github.com/opengovsg/FormSG/pull/709)
@@ -10428,7 +10192,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - ref: migrate fetch form submission counts flow to Typescript [`#592`](https://github.com/opengovsg/FormSG/pull/592)
 - fix: resolve &amp; in url upon redirect, shift prefill to textfield component [`#569`](https://github.com/opengovsg/FormSG/pull/569)
 - feat(monitoring): add memory monitoring to EC2 instances [`#620`](https://github.com/opengovsg/FormSG/pull/620)
-- ref: migrate createPresignedPost endpoint for logos to TypeScript  [`#607`](https://github.com/opengovsg/FormSG/pull/607)
+- ref: migrate createPresignedPost endpoint for logos to TypeScript [`#607`](https://github.com/opengovsg/FormSG/pull/607)
 - fix: package.json & package-lock.json to reduce vulnerabilities [`#637`](https://github.com/opengovsg/FormSG/pull/637)
 - fix(deps): bump @sentry/browser from 5.24.2 to 5.27.3 [`#631`](https://github.com/opengovsg/FormSG/pull/631)
 - fix(deps): bump helmet from 4.1.1 to 4.2.0 [`#624`](https://github.com/opengovsg/FormSG/pull/624)
@@ -10495,7 +10259,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix(deps): upgrade Chromium and puppeteer-core [`#572`](https://github.com/opengovsg/FormSG/pull/572)
 - fix(deps): bump fp-ts from 2.8.3 to 2.8.5 [`#567`](https://github.com/opengovsg/FormSG/pull/567)
 - chore(deps-dev): bump @babel/core from 7.11.6 to 7.12.3 [`#536`](https://github.com/opengovsg/FormSG/pull/536)
-- feat: add examples module to handle /examples endpoints  [`#412`](https://github.com/opengovsg/FormSG/pull/412)
+- feat: add examples module to handle /examples endpoints [`#412`](https://github.com/opengovsg/FormSG/pull/412)
 - fix(deps): bump aws-sdk from 2.770.0 to 2.783.0 [`#561`](https://github.com/opengovsg/FormSG/pull/561)
 - refactor: remove unused verified mobile beta check [`#556`](https://github.com/opengovsg/FormSG/pull/556)
 - refactor: create initial PublicFormController for handling feedback submission [`#525`](https://github.com/opengovsg/FormSG/pull/525)
@@ -10522,7 +10286,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: Hotfix v4.32.1 -- split mail by semicolon in addition to comma when validating [`#222`](https://github.com/opengovsg/FormSG/pull/222)
 - feat: Release v4.32.0 [`#201`](https://github.com/opengovsg/FormSG/pull/201)
 - Release v4.31.0 - improve docs, log IP, fix tests [`#152`](https://github.com/opengovsg/FormSG/pull/152)
-- Release 4.30.4  - revert filtering by submission ID [`#137`](https://github.com/opengovsg/FormSG/pull/137)
+- Release 4.30.4 - revert filtering by submission ID [`#137`](https://github.com/opengovsg/FormSG/pull/137)
 - build: Release 4.30.3 - Typescript migrations, filter storage mode responses by submission id [`#123`](https://github.com/opengovsg/FormSG/pull/123)
 - Release 4.30.2 - fix AWS endpoint and /emailnotifications log group [`#78`](https://github.com/opengovsg/FormSG/pull/78)
 - build: Release 4.30.1 - Fix field creation on old clients [`#74`](https://github.com/opengovsg/FormSG/pull/74)
@@ -10641,7 +10405,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 
 - fix: early return when validating empty email string [`#433`](https://github.com/opengovsg/FormSG/pull/433)
 - fix(deps): bump angular-cookies from 1.8.0 to 1.8.1 [`#419`](https://github.com/opengovsg/FormSG/pull/419)
-- * /billing [`#426`](https://github.com/opengovsg/FormSG/pull/426)
+- - /billing [`#426`](https://github.com/opengovsg/FormSG/pull/426)
 - chore: merge release v4.38.1 into develop [`#430`](https://github.com/opengovsg/FormSG/pull/430)
 - feat: soft-launch rate-limiting of API endpoints [`#389`](https://github.com/opengovsg/FormSG/pull/389)
 - refactor: use res.json or sendStatus for objects or empty body [`#424`](https://github.com/opengovsg/FormSG/pull/424)
@@ -10770,7 +10534,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - refactor: migrate /auth endpoint handling to Typescript, Domain Driven Design [`#215`](https://github.com/opengovsg/FormSG/pull/215)
 - chore(deps-dev): bump stylelint-config-prettier from 8.0.1 to 8.0.2 [`#280`](https://github.com/opengovsg/FormSG/pull/280)
 - fix: upgrade mongoose from 5.9.19 to 5.10.0 [`#289`](https://github.com/opengovsg/FormSG/pull/289)
-- revert: reintroduce convict  [`#287`](https://github.com/opengovsg/FormSG/pull/287)
+- revert: reintroduce convict [`#287`](https://github.com/opengovsg/FormSG/pull/287)
 - revert(convict): "refactor: use convict for configuration (#190)" [`#285`](https://github.com/opengovsg/FormSG/pull/285)
 - chore(deps-dev): bump @typescript-eslint/eslint-plugin and @typescript-eslint/parser [`#246`](https://github.com/opengovsg/FormSG/pull/246)
 - feat: verified sms modal [`#274`](https://github.com/opengovsg/FormSG/pull/274)
@@ -10823,7 +10587,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - fix: fix linting not working on frontend code [`#217`](https://github.com/opengovsg/FormSG/pull/217)
 - fix: pass missing $state param into EditContactNumberModalController [`#216`](https://github.com/opengovsg/FormSG/pull/216)
 - feat: add Emergency Contact feature frontend [`#142`](https://github.com/opengovsg/FormSG/pull/142)
-- refactor:  convert webhook service to Typescript [`#83`](https://github.com/opengovsg/FormSG/pull/83)
+- refactor: convert webhook service to Typescript [`#83`](https://github.com/opengovsg/FormSG/pull/83)
 - chore(deps-dev): bump sinon from 6.3.5 to 9.0.3 [`#207`](https://github.com/opengovsg/FormSG/pull/207)
 - feat: Share form secret keys across browser tabs using BroadcastChannel [`#203`](https://github.com/opengovsg/FormSG/pull/203)
 - chore: merge Release v4.32.0 into develop branch [`#205`](https://github.com/opengovsg/FormSG/pull/205)
@@ -10851,7 +10615,7 @@ Generated by [`auto-changelog`](https://github.com/CookPete/auto-changelog).
 - feat: add core ApplicationError for express app [`#195`](https://github.com/opengovsg/FormSG/pull/195)
 - chore(deps-dev): bump typescript to 4.0.2 [`#196`](https://github.com/opengovsg/FormSG/pull/196)
 - fix(deps): bump font-awesome from 4.6.1 to 4.7.0 [`#186`](https://github.com/opengovsg/FormSG/pull/186)
-- feat: migrate `util/response` to new Submission module (service, utils, etc)  [`#176`](https://github.com/opengovsg/FormSG/pull/176)
+- feat: migrate `util/response` to new Submission module (service, utils, etc) [`#176`](https://github.com/opengovsg/FormSG/pull/176)
 - feat: log form ID in GA event labels [`#154`](https://github.com/opengovsg/FormSG/pull/154)
 - refactor(verification): convert to module and typescriptify [`#172`](https://github.com/opengovsg/FormSG/pull/172)
 - feat: support &`;'" in form title [`#156`](https://github.com/opengovsg/FormSG/pull/156)

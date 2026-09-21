@@ -3,7 +3,6 @@ import { FieldType, FormFieldsV3 } from '../../src/types'
 import { AddressAnswerV4 } from '../../src/types-v4'
 
 describe('adaptV3ToV4', () => {
-
   describe('generic string fields', () => {
     const stringFieldTypes = [
       'section',
@@ -250,13 +249,18 @@ describe('adaptV3ToV4', () => {
 
       const result = adaptV3ToV4(v3)
 
-      const tableAnswer = result.field1.answer as Record<string, { rowNum: number; value: Record<string, string> }>
+      const tableAnswer = result.field1.answer as Record<
+        string,
+        { rowNum: number; value: Record<string, string> }
+      >
       const rows = Object.entries(tableAnswer)
       expect(rows).toHaveLength(2)
 
       // Keys should be UUIDs
       for (const [key] of rows) {
-        expect(key).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+        expect(key).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+        )
       }
 
       // Sort by rowNum to verify values

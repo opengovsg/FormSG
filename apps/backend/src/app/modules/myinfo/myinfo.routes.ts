@@ -1,7 +1,6 @@
 import { Router } from 'express'
 
 import { authCallbackForwardingMiddleware } from '../auth/auth.middlewares'
-
 import { MyInfoFapiRouter } from './fapi/myinfo.fapi.routes'
 import { MYINFO_REDIRECT_PATH } from './myinfo.constants'
 import {

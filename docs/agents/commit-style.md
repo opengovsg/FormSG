@@ -10,7 +10,7 @@ Implementation skills (`tdd` and any successor impl loops) follow this conventio
 - **Scoped to one concern.** If the commit description needs the word "and", it should probably be two commits.
 - **Tests live with the code they cover.** A new behavior + its tests = one commit. A pure test addition for existing behavior = a separate commit.
 - **Refactors are pure.** Renames, moves, extractions that change no behavior travel alone, so a reviewer can skim them and focus elsewhere.
-- **Commit message describes the *why*, not the *what*.** The diff already shows the what. A reader six months from now needs the motivation.
+- **Commit message describes the _why_, not the _what_.** The diff already shows the what. A reader six months from now needs the motivation.
 
 ## Message format
 

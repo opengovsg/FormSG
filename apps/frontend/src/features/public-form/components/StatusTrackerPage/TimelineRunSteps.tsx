@@ -1,4 +1,5 @@
 import { MdCheck, MdClose } from 'react-icons/md'
+
 import {
   BackgroundProps,
   Box,

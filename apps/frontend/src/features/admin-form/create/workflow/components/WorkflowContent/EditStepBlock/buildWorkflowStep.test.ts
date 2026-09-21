@@ -1,7 +1,6 @@
 import { WorkflowType } from 'formsg-shared/types'
 
 import { EditStepInputs } from '../../../types'
-
 import { buildWorkflowStep } from './EditStepBlock'
 
 const FIELD_ID = '6a7de1810000000000000001'

@@ -7,6 +7,7 @@ import {
 } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { BiTrash } from 'react-icons/bi'
+
 import {
   Box,
   Flex,
@@ -21,13 +22,13 @@ import { LOGIC_MAP } from 'formsg-shared/modules/logic'
 import { BasicField } from 'formsg-shared/types/field'
 import { LogicIfValue, LogicType } from 'formsg-shared/types/form'
 
-import { useHasChanged } from '~hooks/useHasChanged'
-import { useWatchDependency } from '~hooks/useWatchDependency'
-import { convertToStringArray } from '~utils/stringFormat'
 import { MultiSelect, SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 import NumberInput from '~components/NumberInput'
+import { useHasChanged } from '~hooks/useHasChanged'
+import { useWatchDependency } from '~hooks/useWatchDependency'
+import { convertToStringArray } from '~utils/stringFormat'
 
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditLogicInputs } from '~features/admin-form/create/logic/types'

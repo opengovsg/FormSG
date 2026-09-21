@@ -6,6 +6,7 @@
  */
 import { ChangeEvent, useCallback, useMemo } from 'react'
 import { BiChevronDown } from 'react-icons/bi'
+
 import {
   chakra,
   Flex,
@@ -23,13 +24,12 @@ import { CountryCode } from 'libphonenumber-js/min'
 import { FCC } from '~typings/react'
 
 import Input from '../Input'
-
+import { BasePhoneNumberInputProps } from './PhoneNumberInput'
+import { usePhoneNumberInput } from './PhoneNumberInputContext'
 import {
   COUNTRY_CODE_TO_NAME,
   getCountrySelectOptions,
 } from './utils/countrySelectUtils'
-import { BasePhoneNumberInputProps } from './PhoneNumberInput'
-import { usePhoneNumberInput } from './PhoneNumberInputContext'
 
 export const IntlPhoneNumberInput = forwardRef<
   BasePhoneNumberInputProps,

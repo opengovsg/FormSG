@@ -1,5 +1,6 @@
 import { CSSProperties, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
+
 import { Box, BoxProps, forwardRef, Icon, Stack, Text } from '@chakra-ui/react'
 import {
   Draggable,
@@ -10,8 +11,8 @@ import {
 import { FormResponseMode } from 'formsg-shared/types'
 import { AllowedMyInfoFieldOption, BasicField } from 'formsg-shared/types/field'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Badge from '~components/Badge'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import {
   BASICFIELD_TO_DRAWER_META,

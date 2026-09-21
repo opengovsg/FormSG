@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
+/* oxlint-disable typescript/ban-ts-comment */
 import { ObjectId } from 'bson'
 import { FormAuthType } from 'formsg-shared/types'
 import mongoose from 'mongoose'
@@ -173,7 +173,7 @@ describe('public-form.service', () => {
         ],
         twitterImage: `${MOCK_METATAGS_PARAMS.imageBaseUrl}/public/modules/core/img/og/logo-vertical-color.png`,
       }
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // oxlint-disable-next-line typescript/ban-ts-comment
       // @ts-ignore
       expect(findByIdSpy).toHaveBeenCalledWith(MOCK_FORM_ID)
       expect(createResult.isOk()).toEqual(true)
@@ -195,7 +195,7 @@ describe('public-form.service', () => {
         await PublicFormService.createMetatags(MOCK_METATAGS_PARAMS)
 
       // Assert
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // oxlint-disable-next-line typescript/ban-ts-comment
       // @ts-ignore
       expect(findByIdSpy).toHaveBeenCalledWith(MOCK_FORM_ID)
       expect(createResult.isErr()).toEqual(true)
@@ -217,7 +217,7 @@ describe('public-form.service', () => {
         await PublicFormService.createMetatags(MOCK_METATAGS_PARAMS)
 
       // Assert
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // oxlint-disable-next-line typescript/ban-ts-comment
       // @ts-ignore
       expect(findByIdSpy).toHaveBeenCalledWith(MOCK_FORM_ID)
       expect(createResult.isErr()).toEqual(true)

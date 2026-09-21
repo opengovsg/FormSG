@@ -1,4 +1,5 @@
 import { Controller, useForm } from 'react-hook-form'
+
 import {
   FormControl,
   FormErrorMessage,
@@ -7,7 +8,6 @@ import {
 import { Meta, StoryFn } from '@storybook/react'
 
 import Button from '../Button'
-
 import { NumberInput, NumberInputProps } from './NumberInput'
 
 export default {

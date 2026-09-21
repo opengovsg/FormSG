@@ -1,5 +1,4 @@
 import { CreateFormFlowStates } from '../CreateFormWizardContext'
-
 import { getCreateFormProgress } from './createFormProgress'
 
 describe('getCreateFormProgress', () => {

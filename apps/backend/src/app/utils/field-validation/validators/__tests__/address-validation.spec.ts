@@ -1,9 +1,9 @@
+import { AddressAnswerV4 } from '@opengovsg/formsg-sdk'
 import {
   generateDefaultField,
   generateDefaultFieldV4,
   generateNewAddressResponse,
 } from '__tests__/unit/backend/helpers/generate-form-data'
-import { AddressAnswerV4 } from '@opengovsg/formsg-sdk'
 import { AddressAttributes, BasicField } from 'formsg-shared/types'
 import { mongo as mongodb } from 'mongoose'
 

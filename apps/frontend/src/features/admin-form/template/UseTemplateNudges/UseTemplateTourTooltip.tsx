@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiBulb } from 'react-icons/bi'
+
 import { Box, BoxProps, CloseButton, Flex, Icon, Text } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'

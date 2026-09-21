@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+
 import { Stack, StackProps, Text } from '@chakra-ui/react'
 
 import { DropdownRole } from '../constants'

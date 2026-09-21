@@ -1,4 +1,5 @@
 import { BiSearch } from 'react-icons/bi'
+
 import { Icon, Input, InputGroup, InputLeftElement } from '@chakra-ui/react'
 
 export const FieldSearchBar = ({

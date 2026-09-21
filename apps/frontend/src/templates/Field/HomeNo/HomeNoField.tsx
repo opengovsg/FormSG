@@ -1,9 +1,10 @@
 import { Controller, useFormContext } from 'react-hook-form'
+
 import { Examples } from 'libphonenumber-js'
 
-import { useHomeNoValidationRules } from '~utils/fieldValidation'
 import PhoneNumberInput from '~components/PhoneNumberInput'
 import landlineExamples from '~components/PhoneNumberInput/resources/examples.landline.json'
+import { useHomeNoValidationRules } from '~utils/fieldValidation'
 
 import { BaseFieldProps, FieldContainer } from '../FieldContainer'
 import { HomeNoFieldSchema, SingleAnswerFieldInput } from '../types'

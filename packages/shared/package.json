@@ -3,14 +3,6 @@
   "version": "9.28.0",
   "private": true,
   "description": "",
-  "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "test": "pnpm exec jest --config jest.config.js",
-    "test:ci": "pnpm exec jest --config jest.config.js --coverage",
-    "lint": "pnpm exec oxlint --quiet --fix .",
-    "lint-ci": "pnpm exec oxlint --quiet ."
-  },
-  "__comment": "To clean up the exports in shared after monorepo migration. Vite uses the default, whereas node (cjs) uses the require.",
   "exports": {
     "./types": {
       "require": "./dist/types/index.js",
@@ -228,6 +220,13 @@
       "default": "./modules/logic/index.ts"
     }
   },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "pnpm exec oxlint --quiet --fix .",
+    "lint-ci": "pnpm exec oxlint --quiet .",
+    "test": "pnpm exec jest --config jest.config.js",
+    "test:ci": "pnpm exec jest --config jest.config.js --coverage"
+  },
   "dependencies": {
     "date-fns": "^3.6.0",
     "json-stringify-safe": "^5.0.1",
@@ -252,5 +251,6 @@
     "mongoose": "^7.8.7",
     "stripe": "^12.5.0",
     "typescript": "^5.4.5"
-  }
+  },
+  "__comment": "To clean up the exports in shared after monorepo migration. Vite uses the default, whereas node (cjs) uses the require."
 }

@@ -1,9 +1,9 @@
 import * as url from 'url'
 
+import { MissingSecretKeyError, WebhookAuthenticateError } from './errors'
 import { parseSignatureHeader } from './util/parser'
 import { sign } from './util/signature'
 import { hasEpochExpired, isSignatureHeaderValid } from './util/webhooks'
-import { MissingSecretKeyError, WebhookAuthenticateError } from './errors'
 
 export default class Webhooks {
   publicKey: string

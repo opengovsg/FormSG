@@ -48,7 +48,6 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from '../spcp/spcp.errors'
-
 import {
   FieldNotFoundInTransactionError,
   MissingHashDataError,

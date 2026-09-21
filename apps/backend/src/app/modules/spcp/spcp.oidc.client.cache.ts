@@ -6,7 +6,6 @@ import { BaseClient, Issuer } from 'openid-client-legacy'
 import { timeout, TimeoutError } from 'promise-timeout'
 
 import { createLoggerWithLabel } from '../../config/logger'
-
 import { JwkError } from './spcp.oidc.client.errors'
 import {
   CryptoKeys,

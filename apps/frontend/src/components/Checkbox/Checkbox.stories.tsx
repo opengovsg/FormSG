@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
+
 import { FormControl, VStack } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 import { isEmpty } from 'lodash'
@@ -9,7 +10,6 @@ import { viewports } from '~utils/storybook'
 import Button from '../Button'
 import FormErrorMessage from '../FormControl/FormErrorMessage'
 import FormLabel from '../FormControl/FormLabel'
-
 import { Checkbox, CheckboxProps } from './Checkbox'
 
 export default {

@@ -7,7 +7,6 @@ import { flow } from 'fp-ts/lib/function'
 import { ParsedClearFormFieldResponseV4 } from '../../../../types/api'
 import { ResponseValidator } from '../../../../types/field/utils/validation'
 import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submission.types'
-
 import { notEmptySingleAnswerResponse } from './common'
 
 type UenValidator = ResponseValidator<ProcessedSingleAnswerResponse>

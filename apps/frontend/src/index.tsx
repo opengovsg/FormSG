@@ -7,8 +7,8 @@ import { createRoot } from 'react-dom/client'
 
 import { App } from './app/App'
 import { registerChunkPreloadErrorListener } from './app/chunkPreloadError'
-import * as dayjs from './utils/dayjs'
 import { env } from './env'
+import * as dayjs from './utils/dayjs'
 
 if (import.meta.env.MODE === 'test') {
   import('./mocks/msw/browser').then(({ worker }) => worker.start())
@@ -18,13 +18,13 @@ registerChunkPreloadErrorListener()
 
 // Init Google Analytics
 declare global {
-  // eslint-disable-next-line no-var
+  // oxlint-disable-next-line no-var
   var dataLayer: unknown[]
 }
 
 window.dataLayer = window.dataLayer || []
 function gtag(...args: unknown[]) {
-  // eslint-disable-next-line prefer-rest-params
+  // oxlint-disable-next-line prefer-rest-params
   dataLayer.push(arguments)
 }
 gtag('js', new Date())

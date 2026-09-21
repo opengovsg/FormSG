@@ -1,5 +1,6 @@
 import { createContext, MutableRefObject, RefObject, useContext } from 'react'
 import { VirtuosoHandle } from 'react-virtuoso'
+
 import { CSSObject, FormControlOptions } from '@chakra-ui/react'
 import { UseComboboxPropGetters, UseComboboxState } from 'downshift'
 

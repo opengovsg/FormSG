@@ -4,7 +4,6 @@ import ipaddr from 'ipaddr.js'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
-
 import { WebhookValidationError } from './webhook.errors'
 
 const logger = createLoggerWithLabel(module)

@@ -437,10 +437,9 @@ describe('webhook.service', () => {
     it('should return true without retrying when webhook fails but retries are not enabled globally', async () => {
       MockAxios.post.mockResolvedValue(MOCK_AXIOS_SUCCESS_RESPONSE)
 
-      const result = await WebhookService
-        .createInitialWebhookSender
+      const result = await WebhookService.createInitialWebhookSender(
         // no producer passed to createInitialWebhookSender, so retries not enabled globally
-        ()(testSubmission, MOCK_WEBHOOK_URL, true)
+      )(testSubmission, MOCK_WEBHOOK_URL, true)
 
       expect(result._unsafeUnwrap()).toBe(true)
       expect(MockWebhookQueueMessage.fromSubmissionId).not.toHaveBeenCalled()
@@ -449,10 +448,9 @@ describe('webhook.service', () => {
     it('should return true without retrying when webhook fails and retries are not enabled for form', async () => {
       MockAxios.post.mockResolvedValue(MOCK_AXIOS_FAILURE_RESPONSE)
 
-      const result = await WebhookService
-        .createInitialWebhookSender
+      const result = await WebhookService.createInitialWebhookSender(
         // no producer passed to createInitialWebhookSender, so retries not enabled globally
-        ()(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ false)
+      )(testSubmission, MOCK_WEBHOOK_URL, /* isRetryEnabled= */ false)
 
       expect(result._unsafeUnwrap()).toBe(true)
       expect(MockWebhookQueueMessage.fromSubmissionId).not.toHaveBeenCalled()

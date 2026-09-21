@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next'
+
 import { Text } from '@chakra-ui/react'
 
-import { composeEscapeHatchCopy } from '~utils/escapeHatchCopy'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
+import { composeEscapeHatchCopy } from '~utils/escapeHatchCopy'
 
 import { useUser } from '~features/user/queries'
 

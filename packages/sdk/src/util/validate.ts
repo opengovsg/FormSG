@@ -1,5 +1,6 @@
 import { FormField, FormFieldsV3 } from '../types'
 
+// oxlint-disable-next-line typescript/no-explicit-any -- type guard accepting arbitrary decrypted JSON; tbd.filter/internal.answer etc need real narrowing to move off any
 function determineIsFormFields(tbd: any): tbd is FormField[] {
   if (!Array.isArray(tbd)) {
     return false
@@ -25,6 +26,7 @@ function determineIsFormFields(tbd: any): tbd is FormField[] {
 }
 
 // TODO(MRF): This is currently very rudimentary, we should look at making this more specific where required.
+// oxlint-disable-next-line typescript/no-explicit-any -- type guard accepting arbitrary decrypted JSON; Object.keys(tbd) requires an object-like type unknown doesn't satisfy
 function determineIsFormFieldsV3(tbd: any): tbd is FormFieldsV3 {
   for (const id of Object.keys(tbd)) {
     const value = tbd[id]

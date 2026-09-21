@@ -106,7 +106,7 @@ export const createMyInfoField = (
         ValidationOptions: { selectedValidation: null, customVal: null },
       }
     default:
-      // eslint-disable-next-line typesafe/no-throw-sync-func
+      // oxlint-disable-next-line typesafe/no-throw-sync-func
       throw new Error(`Unimplemented MyInfo field type: ${fieldType}`)
   }
 }

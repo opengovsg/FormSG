@@ -1,5 +1,4 @@
 import config from '../../config/config'
-
 import type { RetryInterval } from './webhook.types'
 
 /**

@@ -29,14 +29,15 @@ import {
   SubmissionResponseDto,
 } from 'formsg-shared/types/submission'
 
-import { transformAllIsoStringsToDate } from '~utils/date'
 import {
   API_BASE_URL,
   ApiService,
   processFetchResponse,
 } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
+import { transformAllIsoStringsToDate } from '~utils/date'
 
+import { PublicMultirespondentSubmissionDtoWithAttachments } from './types'
 import {
   createClearSubmissionFormData,
   createClearSubmissionWithVirusScanningFormData,
@@ -45,7 +46,6 @@ import {
 } from './utils/createSubmission'
 import { convertEncryptedAttachmentToFileContent } from './utils/decryptSubmission'
 import { filterHiddenInputs } from './utils/filterHiddenInputs'
-import { PublicMultirespondentSubmissionDtoWithAttachments } from './types'
 
 export const PUBLIC_FORMS_ENDPOINT = '/forms'
 

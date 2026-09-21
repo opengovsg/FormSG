@@ -1,7 +1,6 @@
 import { createLoggerWithLabel } from '../../config/logger'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler } from '../core/core.types'
-
 import { IntranetService } from './intranet.service'
 
 const logger = createLoggerWithLabel(module)

@@ -10,6 +10,7 @@ import {
   BiStar,
   BiToggleLeft,
 } from 'react-icons/bi'
+
 import { As, Box, Flex, Grid, GridItem, Icon, Text } from '@chakra-ui/react'
 
 const ListWithIcon = ({

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiFileBlank } from 'react-icons/bi'
+
 import {
   Container,
   Icon,
@@ -20,9 +21,9 @@ import {
 
 import { AdminDashboardFormMetaDto } from 'formsg-shared/types'
 
-import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
+import { useIsMobile } from '~hooks/useIsMobile'
 
 import { useDeleteFormMutation } from '~features/workspace/mutations'
 

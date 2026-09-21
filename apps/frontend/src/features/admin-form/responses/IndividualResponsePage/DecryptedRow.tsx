@@ -1,6 +1,7 @@
 import { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload } from 'react-icons/bi'
+
 import { Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react'
 import { FieldType } from '@opengovsg/formsg-sdk/dist/types'
 
@@ -12,7 +13,6 @@ import FormLabel from '~components/FormControl/FormLabel'
 import Spinner from '~components/Spinner'
 
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
-
 import { useMutateDownloadAttachments } from './mutations'
 import { SignatureCanvas } from './SignatureCanvas'
 

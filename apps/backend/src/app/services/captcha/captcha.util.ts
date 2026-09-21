@@ -2,7 +2,6 @@ import { StatusCodes } from 'http-status-codes'
 
 import { MapRouteError } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
-
 import {
   CaptchaConnectionError,
   MissingCaptchaError,

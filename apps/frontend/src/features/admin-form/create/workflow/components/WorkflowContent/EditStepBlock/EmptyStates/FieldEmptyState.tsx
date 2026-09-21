@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 import { BiLinkExternal } from 'react-icons/bi'
+
 import { Stack, Text } from '@chakra-ui/react'
 
-import { sendDdAction } from '~utils/datadog'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
+import { sendDdAction } from '~utils/datadog'
 
 export type EmptyStatePicker = 'email' | 'dropdown' | 'yesno' | 'fields'
 

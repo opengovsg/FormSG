@@ -1,6 +1,7 @@
-/* eslint-disable testing-library/no-node-access */
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+/* oxlint-disable testing-library/no-node-access */
+/* oxlint-disable typescript/explicit-module-boundary-types */
 import * as React from 'react'
+
 import { ChakraProvider, theme } from '@chakra-ui/react'
 import { render, RenderOptions, Screen } from '@testing-library/react'
 

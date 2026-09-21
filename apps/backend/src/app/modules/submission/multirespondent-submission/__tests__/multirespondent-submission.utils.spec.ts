@@ -1,5 +1,5 @@
-import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
+import { generateDefaultField } from '__tests__/unit/backend/helpers/generate-form-data'
 import { ObjectId } from 'bson'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants/form'
 import {

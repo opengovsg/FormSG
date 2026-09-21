@@ -1,13 +1,14 @@
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useMutation } from 'react-query'
+
 import { Flex, Link, Text, VStack } from '@chakra-ui/react'
 
 import { SGID_VALID_ORG_PAGE } from 'formsg-shared/constants'
 
 import { SingpassFullLogoSvgr } from '~assets/svgrs/singpass/SingpassFullLogoSvgr'
-import { getSgidAuthUrl } from '~services/AuthService'
 import Button from '~components/Button'
+import { getSgidAuthUrl } from '~services/AuthService'
 
 export const SgidLoginButton = (): JSX.Element => {
   const { formState } = useForm()

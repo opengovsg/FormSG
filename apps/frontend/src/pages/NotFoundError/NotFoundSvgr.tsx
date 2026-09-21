@@ -1,4 +1,5 @@
 import { SVGProps } from 'react'
+
 import { chakra } from '@chakra-ui/react'
 
 export const NotFoundSvgr = chakra((props: SVGProps<SVGSVGElement>) => (
