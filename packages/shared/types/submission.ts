@@ -47,18 +47,6 @@ export const SubmissionBase = z.object({
   authType: z.nativeEnum(FormAuthType),
   submitterId: z.string().optional(),
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
-  /**
-   * Ids of the fields whose answers were read-only MyInfo values for this
-   * respondent on this form, resolved at submit time from the respondent's own
-   * MyInfo prefill hashes. Drives the `[Myinfo] ` question prefix.
-   *
-   * `[]` means the resolution ran and matched nothing; **absent means it never
-   * ran** (a row predating the feature, an unflagged form, or a form without
-   * MyInfo auth). Both prefix nothing at read time — the distinction only
-   * exists so a missing prefix can be diagnosed against the log line. There is
-   * deliberately no mongoose default and no backfill: the inputs were
-   * per-respondent prefill state and are unrecoverable for older rows.
-   */
   myInfoReadOnlyFields: z.array(z.string()).optional(),
   submissionType: z.nativeEnum(SubmissionType),
   responseMetadata: ResponseMetadata.optional(),

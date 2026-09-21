@@ -848,51 +848,39 @@ describe('Multirespondent Submission Model', () => {
       })
 
     it('should persist and retrieve the resolved field ids', async () => {
-      // Arrange
       const MOCK_READ_ONLY_FIELD_IDS = [
         new ObjectId().toHexString(),
         new ObjectId().toHexString(),
       ]
 
-      // Act
       const submission = await createRow(MOCK_READ_ONLY_FIELD_IDS)
       const found = await MultirespondentSubmission.findById(submission._id)
 
-      // Assert
       expect(found?.myInfoReadOnlyFields).toEqual(MOCK_READ_ONLY_FIELD_IDS)
     })
 
     it('should persist an empty array as an empty array', async () => {
-      // Arrange + Act: the resolution ran and matched nothing.
       const submission = await createRow([])
       const found = await MultirespondentSubmission.findById(submission._id)
 
-      // Assert
       expect(found?.myInfoReadOnlyFields).toEqual([])
     })
 
     it('should leave the field absent when it was never written', async () => {
-      // Arrange + Act: no mongoose default, so absent stays distinguishable
-      // from `[]` — absent means the resolution never ran.
       const submission = await createRow(undefined)
       const found = await MultirespondentSubmission.findById(
         submission._id,
       ).lean()
 
-      // Assert
       expect(found).not.toHaveProperty('myInfoReadOnlyFields')
     })
 
     it('should never expose myInfoReadOnlyFields in the webhook view', async () => {
-      // Arrange
       const MOCK_READ_ONLY_FIELD_ID = new ObjectId().toHexString()
       const submission = await createRow([MOCK_READ_ONLY_FIELD_ID])
 
-      // Act
       const webhookView = await submission.getWebhookView()
 
-      // Assert: the row field drives the prefix server-side and is never
-      // shipped to a consumer.
       const serialised = JSON.stringify(webhookView)
       expect(serialised).not.toContain('myInfoReadOnlyFields')
     })

@@ -139,12 +139,7 @@ const storageModeReference = (
     asFormDocument(formFields),
     scannedResponses as FieldResponse[],
   )
-  // Surfaces the server's own rejection reason: `_unsafeUnwrap` on its own
-  // would report "Called `_unsafeUnwrap` on an Err" and nothing about why.
   expect(parsed.isErr() ? parsed.error.message : null).toBeNull()
-  // `hashedFields` is the set of field ids whose answers were read-only MyInfo
-  // values for this respondent. `undefined` (no MyInfo auth) makes this step
-  // the identity; a non-empty set is what rewrites the question text.
   const serverResponses = formatMyInfoStorageResponseData(
     parsed._unsafeUnwrap().getAllResponses(),
     hashedFields,
@@ -383,16 +378,6 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
     })
   })
 
-  /**
-   * The `[Myinfo] ` question prefix (#9975). Storage mode rewrites the question
-   * text of a MyInfo field whose attribute was read-only for this respondent,
-   * so the flatten's output has to be run through the shared prefix rule with
-   * the same set of field ids before it can match.
-   *
-   * Asserted with the same plain equality as every other case: no
-   * normalisation and no declared exception, because with the prefix
-   * reproduced the parity is real and an exception would hide it.
-   */
   describe('MyInfo fields', () => {
     describe.each(MYINFO_FIELD_TYPES)('%s', (fieldType) => {
       const formFields = [buildMyInfoField(fieldType)]
@@ -416,14 +401,10 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
     describe('over a form of every MyInfo field type', () => {
       it('all attributes read-only', () => {
         const readOnlyFieldIds = ALL_MYINFO_FIELD_IDS()
-        expectByteParity(
-          buildMyInfoFields(),
-          buildMyInfoInputs(),
-          {
-            hashedFields: new Set(readOnlyFieldIds) as Set<MyInfoKey>,
-            readOnlyFieldIds,
-          },
-        )
+        expectByteParity(buildMyInfoFields(), buildMyInfoInputs(), {
+          hashedFields: new Set(readOnlyFieldIds) as Set<MyInfoKey>,
+          readOnlyFieldIds,
+        })
       })
 
       it('no attribute read-only', () => {
@@ -442,11 +423,6 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
       })
     })
 
-    /**
-     * Guards the gate itself: plain equality between two unprefixed arrays
-     * would pass for the wrong reason, so assert that the reference really does
-     * carry the prefix in the read-only case and really does not otherwise.
-     */
     describe('the gate is not passing vacuously', () => {
       it('the storage-mode reference carries the prefix when read-only', () => {
         const questions = storageModeReference(

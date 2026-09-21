@@ -68,11 +68,6 @@ export type MultirespondentSubmissionDto = {
   workflowStep: number
   hashedSubmitterId?: string
   submitterId?: string
-  /**
-   * Server-derived, like `hashedSubmitterId` and `submitterId` above: set by
-   * `handleNdiResponses` on the create path of a MyInfo MRF form, never
-   * supplied by the client. `undefined` when the resolution never ran.
-   */
   myInfoReadOnlyFields?: string[]
   responses: FieldResponsesV4
   mrfVersion: number

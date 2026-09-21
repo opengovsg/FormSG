@@ -129,10 +129,10 @@ describe('applyMyInfoPrefixToFormFields', () => {
     expect(JSON.stringify(input)).toBe(before)
   })
 
-  it('applies the same rule as the wire sibling, over the same ids', () => {
+  it('applies the same rule to webhook questions and admin titles', () => {
     const readOnly = [MYINFO_ID]
-    const [wire] = applyMyInfoPrefix([myInfoEntry()], readOnly)
+    const [webhookField] = applyMyInfoPrefix([myInfoEntry()], readOnly)
     const [served] = applyMyInfoPrefixToFormFields([myInfoField()], readOnly)
-    expect(wire.question).toBe(served.title)
+    expect(webhookField.question).toBe(served.title)
   })
 })

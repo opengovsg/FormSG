@@ -68,21 +68,7 @@ export const isSubmissionMultirespondentMode = (
   return submission.submissionType === SubmissionType.Multirespondent
 }
 
-/**
- * Creates and returns a MultirespondentSubmissionDto object from submissionData and
- * attachment presigned urls.
- *
- * The MyInfo question prefix is applied to the served `form_fields` titles
- * here rather than being stored on them: MRF derives its question text
- * client-side from the snapshot's titles (`buildFormFieldMetaMap`), so
- * prefixing on the way out puts `[Myinfo] ` on the individual response page
- * with no frontend change, while the stored snapshot — which later workflow
- * steps are rendered and validated against — stays unprefixed. Storing it
- * would show a step-2 respondent `[Myinfo] Name` as their own field label.
- *
- * `myInfoReadOnlyFields` itself is deliberately not part of the DTO: it is the
- * server's input to the prefix, not something a consumer needs.
- */
+/** Creates a multirespondent submission DTO for an admin. */
 export const createMultirespondentSubmissionDto = (
   submissionData: MultirespondentSubmissionData,
   attachmentPresignedUrls: Record<string, string>,
@@ -123,12 +109,6 @@ export const createMultirespondentSubmissionDto = (
  * @param submissionData Multirespondent submission data to strip sensitive information from
  * @param attachmentPresignedUrls Attachment presigned URLs to include in the public multirespondent submission data
  * @returns Public multirespondent submission data with stripped sensitive information
- *
- * `form_fields` is rebuilt from the stored snapshot rather than taken from the
- * admin DTO above, which also drops the admin-only MyInfo question prefix.
- * That is intended, not incidental: this is the DTO a later workflow step's
- * respondent is rendered from, and they must see their own field labels, not
- * `[Myinfo] Name`.
  */
 export const createPublicMultirespondentSubmissionDto = (
   submissionData: MultirespondentSubmissionData,

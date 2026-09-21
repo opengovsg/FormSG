@@ -105,12 +105,9 @@ export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
         },
       ],
     },
-    // `default: undefined` is how mongoose is told to apply NO default: an
-    // array path otherwise auto-defaults to `[]`, which would make every row
-    // look like "the resolution ran and matched nothing". Absent has to stay
-    // distinguishable from `[]`. See `SubmissionBase.myInfoReadOnlyFields`.
     myInfoReadOnlyFields: {
       type: [String],
+      // Mongoose otherwise defaults array paths to [].
       default: undefined,
     },
     submissionType: {

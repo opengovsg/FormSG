@@ -1,6 +1,4 @@
 // Prefixes in response emails, a space is included after the [field] for formatting
-// The MyInfo prefix is shared with the MRF V1 webhook wire and the MRF admin
-// surfaces, so shared owns the literal and this is a re-export of it.
 export { MYINFO_QUESTION_PREFIX as MYINFO_PREFIX } from 'formsg-shared/utils/myinfo-prefix'
 
 export const VERIFIED_PREFIX = '[verified] '

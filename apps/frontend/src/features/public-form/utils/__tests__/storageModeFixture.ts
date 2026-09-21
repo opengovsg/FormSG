@@ -421,10 +421,7 @@ export const buildOptionalVerifiableField = (
  * loop does not model. The dedicated `a MyInfo Children field` cases in the
  * parity spec cover it with hashedFields and provenance set.
  *
- * MyInfo variants are absent from this list too, but not from the fixture: they
- * have their own builders further down, driving their own differential cases,
- * because the prefix is a property of the read-only set rather than of the
- * field type.
+ * MyInfo variants use the dedicated builders below.
  */
 export const DIFFERENTIAL_FIELD_TYPES: BasicField[] = ALL_FIELD_TYPES.filter(
   (fieldType) => fieldType !== BasicField.Children,
@@ -498,18 +495,6 @@ export const buildQuarantineMap = (): {
   },
 ]
 
-/* -------------------------------------------------------------------------- *
- * MyInfo (question-prefix parity) additions — #9975
- *
- * Storage mode rewrites a read-only MyInfo field's question text, prepending
- * `[Myinfo] `, and the differential gate cannot see that until the candidate
- * side reproduces it. These fields are additive for the same reason the
- * differential ones were: the frozen exports above are snapshot inputs.
- *
- * Children is deliberately absent — MRF does not support it and the flatten
- * throws on it.
- * -------------------------------------------------------------------------- */
-
 export const MYINFO_FIELD_TYPES = [
   BasicField.ShortText,
   BasicField.Date,
@@ -543,12 +528,6 @@ const MYINFO_FIELD_OVERRIDES: Record<
   [BasicField.Mobile]: { allowIntlNumbers: false },
 }
 
-/**
- * A MyInfo field is an ordinary field of its type carrying `myInfo.attr`;
- * `isReadOnly` is per-respondent prefill state and never lives on the
- * definition, which is exactly why the read-only set has to come from the hash
- * record rather than from the form.
- */
 export const buildMyInfoField = (fieldType: MyInfoFieldType): FormFieldDto =>
   ({
     ...buildDifferentialField(fieldType),
@@ -568,14 +547,6 @@ export const MYINFO_ANSWER_BY_FIELD_TYPE: Record<MyInfoFieldType, unknown> = {
 export const buildMyInfoFields = (): FormFieldDto[] =>
   MYINFO_FIELD_TYPES.map(buildMyInfoField)
 
-/**
- * The answer a respondent gives for one MyInfo field type.
- *
- * Sex is answered `FEMALE` rather than the generic dropdown answer because
- * `dropdownValidator` validates a MyInfo dropdown against the option list of
- * its attribute, not against the options on the field, so any other value
- * makes the storage-mode reference unbuildable.
- */
 export const buildMyInfoAnsweredInput = (fieldType: MyInfoFieldType): unknown =>
   MYINFO_ANSWER_BY_FIELD_TYPE[fieldType]
 
@@ -587,6 +558,5 @@ export const buildMyInfoInputs = (): FormFieldValues => {
   return inputs as FormFieldValues
 }
 
-/** Every MyInfo field id — the read-only set when nothing is hidden. */
 export const ALL_MYINFO_FIELD_IDS = (): string[] =>
   MYINFO_FIELD_TYPES.map((fieldType) => MYINFO_FIELD_IDS[fieldType])
