@@ -13,7 +13,8 @@
     "postinstall": "pnpm run gen:theme-typings",
     "start": "vite",
     "storybook": "storybook dev -p 6006",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@chakra-ui/anatomy": "^2.2.2",
@@ -163,7 +164,7 @@
     "storybook": "8.6.18",
     "vite": "^8.2.2",
     "vite-plugin-svgr": "^5.2.0",
-    "vitest": "^3.2.6"
+    "vitest": "^5.0.0"
   },
   "browserslist": {
     "production": [
