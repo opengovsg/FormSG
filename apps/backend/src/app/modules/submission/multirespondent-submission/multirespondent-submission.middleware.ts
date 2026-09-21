@@ -709,6 +709,18 @@ export const validateMultirespondentSubmission = async (
                     }
 
                     /**
+                     * Provenance is server-owned and stripped from client
+                     * payloads, so a re-submitted non-editable field would
+                     * otherwise lose it on every workflow step after the one
+                     * that stamped it (e.g. myinfoVerified from the step-1
+                     * MyInfo hash check). Carry it forward from the stored
+                     * copy.
+                     */
+                    if (prevResField.provenance) {
+                      incomingResField.provenance = prevResField.provenance
+                    }
+
+                    /**
                      * Files are verified to have the same md5 hash, so we can safely assume that the files are the same.
                      * We should also ignore attachment names from submissions as handleDuplicatesInAttachments may rename files
                      */
