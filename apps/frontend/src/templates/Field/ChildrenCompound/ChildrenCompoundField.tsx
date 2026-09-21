@@ -237,9 +237,7 @@ const ChildrenBody = ({
     )
   }, [myInfoChildrenBirthRecords, childName])
 
-  // Scope the selected child's record was retrieved under (local birth record
-  // or sponsored child). Falls back to 'local' for data produced before the
-  // sponsored scope was requested.
+  // Scope the selected child's record was retrieved under, defaulting to local.
   const getChildScope = useCallback(
     (name: string): MyInfoChildrenScope => {
       const idx =

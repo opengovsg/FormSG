@@ -464,15 +464,9 @@ const MyInfoChildAttributeSet = new Set(Object.values(MyInfoChildAttributes))
 
 /**
  * Whether a form may fetch sponsored children alongside birth records.
- *
- * Only Multirespondent forms submit v4 responses, which carry a per-child
- * `type` (local or sponsored). Encrypt and Email forms still submit v1
- * responses, whose shape has no slot for that label, so fetching sponsored
- * children for them would produce submissions whose provenance can never be
- * recovered. Keeping v1 local-only preserves the invariant that every v1
- * Children answer is a birth record, which a later v1-to-v4 migration relies
- * on.
- * @param form The form being logged into or prefilled
+ * Only Multirespondent forms submit v4 responses, which record a per-child
+ * `type` (local or sponsored). v1 responses have no such slot, so keeping
+ * them local-only lets a later v1-to-v4 migration assume `local`.
  */
 export const shouldFetchSponsoredChildren = (form: {
   responseMode: FormResponseMode
@@ -522,15 +516,10 @@ export const getMyInfoChildHashKey = (
 }
 
 /**
- * Finds the hashes stored at prefill for one child sub-field, matched by
- * field, sub-field and child name regardless of the child's position in the
- * MyInfo column.
- *
- * Prefill keys a hash by the child's index in the MyInfo data, but a
- * submission only carries the child the respondent selected, so its position
- * in the answer is unrelated to that index (with one child per field it is
- * always 0). Matching on name instead lets any MyInfo child verify, not just
- * the first. Several hashes come back when two children share a name.
+ * Finds the prefill hashes for a child sub-field by field, sub-field and
+ * child name, ignoring the child's index in the MyInfo data. The submitted
+ * child's position is unrelated to that index, so matching by name is what
+ * lets any MyInfo child verify. Returns several hashes if names collide.
  */
 const findMyInfoChildHashes = (
   hashes: IHashes,
@@ -549,13 +538,9 @@ const findMyInfoChildHashes = (
 
 /**
  * This function is responsible for checking the validity of hashes of
- * MyInfo Child fields.
- *
- * Each submitted child is compared against the hashes prefill stored for a
- * MyInfo child of the same name, whatever position that child held in the
- * MyInfo data. The comparison is recorded under the submitted child's own
- * positional key, which is the key downstream consumers (the `[MyInfo]`
- * prefix in storage mode, `provenance.myinfoVerified` in MRF) match on.
+ * MyInfo Child fields. Hashes are looked up by child name, and the result is
+ * recorded under the submitted child's positional key, which downstream
+ * consumers match on.
  *
  * NOTE: if no hash exists for a submitted child, it assumes that it's a
  * manually user inputted child. As such, it will just not indicate in the

@@ -113,9 +113,7 @@ export type MyInfoChildData = Partial<{
 }> & {
   /**
    * MyInfo scope each child record was retrieved under, parallel to the
-   * attribute arrays. Birth-record (local) children come first, followed by
-   * sponsored children. Optional only for data produced before the sponsored
-   * scope was requested.
+   * attribute arrays. Local children come first, then sponsored children.
    */
   scopes?: MyInfoChildrenScope[]
 }
