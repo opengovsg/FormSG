@@ -420,8 +420,6 @@ export const buildOptionalVerifiableField = (
  * only explodes it when hashedFields is present (a MyInfo form), which the
  * loop does not model. The dedicated `a MyInfo Children field` cases in the
  * parity spec cover it with hashedFields and provenance set.
- *
- * MyInfo variants use the dedicated builders below.
  */
 export const DIFFERENTIAL_FIELD_TYPES: BasicField[] = ALL_FIELD_TYPES.filter(
   (fieldType) => fieldType !== BasicField.Children,

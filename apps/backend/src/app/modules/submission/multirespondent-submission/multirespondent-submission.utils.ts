@@ -68,7 +68,6 @@ export const isSubmissionMultirespondentMode = (
   return submission.submissionType === SubmissionType.Multirespondent
 }
 
-/** Creates a multirespondent submission DTO for an admin. */
 export const createMultirespondentSubmissionDto = (
   submissionData: MultirespondentSubmissionData,
   attachmentPresignedUrls: Record<string, string>,
