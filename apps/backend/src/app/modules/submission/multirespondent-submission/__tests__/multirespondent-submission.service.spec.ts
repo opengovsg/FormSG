@@ -3764,6 +3764,18 @@ describe('multirespondent-submission.service', () => {
       },
     ]
 
+    /**
+     * A non-plumber consumer resolves to the `v1` wire shape unless the form
+     * says otherwise, and that shape is the one PIN-02 restricts to a form of
+     * at most one step. These cases predate the resolution and are about the
+     * write condition, the send gate and the step token rather than the
+     * shape, so they name the V4 route explicitly and stay unrestricted. The
+     * `v1` route has its own spec,
+     * `webhook/__tests__/generic-v1-initial-send.spec.ts`.
+     */
+    const genericV4Webhook = (url: string) =>
+      ({ url, isRetryEnabled: true, webhookFormat: 'v4' }) as any
+
     const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
 
     const growthbookWithFlags = ({
@@ -3989,7 +4001,7 @@ describe('multirespondent-submission.service', () => {
       async ({ enableMrfWebhooks, expectWritten }) => {
         const result = await createMultiRespondentFormSubmission({
           form: buildV4Form({
-            webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+            webhook: genericV4Webhook(GENERIC_URL),
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: { action: 'test' },
@@ -4024,7 +4036,7 @@ describe('multirespondent-submission.service', () => {
       const result = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
         snapshottedFormDef: buildSnapshottedFormDef({
-          webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+          webhook: genericV4Webhook(GENERIC_URL),
         }),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -4139,7 +4151,12 @@ describe('multirespondent-submission.service', () => {
         await performMultiRespondentPostSubmissionCreateActions({
           submission,
           submissionId: submission._id.toString(),
-          form: buildV4Form({ webhook: { url, isRetryEnabled: true } as any }),
+          form: buildV4Form({
+            webhook:
+              url === PLUMBER_URL
+                ? ({ url, isRetryEnabled: true } as any)
+                : genericV4Webhook(url),
+          }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
           growthbook: growthbookWithFlags({ enableMrfWebhooks }),
@@ -4168,7 +4185,7 @@ describe('multirespondent-submission.service', () => {
           snapshot: withSnapshot ? buildSnapshot() : undefined,
           submissionId: submission._id.toString(),
           form: buildV4Form({
-            webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+            webhook: genericV4Webhook(GENERIC_URL),
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
@@ -4241,7 +4258,10 @@ describe('multirespondent-submission.service', () => {
             snapshot,
             submissionId: row._id.toString(),
             form: buildV4Form({
-              webhook: { url, isRetryEnabled: true } as any,
+              webhook:
+                url === PLUMBER_URL
+                  ? ({ url, isRetryEnabled: true } as any)
+                  : genericV4Webhook(url),
             }),
             encryptedPayload: buildV4Payload(),
             logMeta: {} as any,
