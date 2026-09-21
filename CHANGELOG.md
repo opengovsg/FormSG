@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.30.0](https://github.com/opengovsg/formsg/compare/v9.29.0...v9.30.0) (2026-09-21)
+
+
+### Features
+
+* **workflow:** block opening a form when approval has no field (#10069) ([#10069](https://github.com/opengovsg/formsg/commit/a3248ba53cc9b72f50c43096978009a8045cb62f))
+* **workflow:** log guided mode workflow mutations (#10078) ([#10078](https://github.com/opengovsg/formsg/commit/37881c48caf250cedce38b040564aebc874f0195))
+* **workflow:** record whether a workflow ever used guided mode (#10072) ([#10072](https://github.com/opengovsg/formsg/commit/48b704ef188bd44d06c25cbe024ea3ea3e387a2e))
+
+
+### Chores
+
+* **workflow:** say guided setup can be toggled back on (#10070) ([#10070](https://github.com/opengovsg/formsg/commit/a4a64e9bdbcc2bf018a6e42c595d8746bc3574d5))
+
 ## [9.29.0](https://github.com/opengovsg/formsg/compare/v9.28.0...v9.29.0) (2026-09-21)
 
 
