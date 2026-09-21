@@ -15,6 +15,7 @@ import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import jwt from 'jsonwebtoken'
+import { get } from 'lodash'
 import moment from 'moment'
 import { err, ok, Result } from 'neverthrow'
 
@@ -25,7 +26,10 @@ import {
   ISubmissionSchema,
   MultirespondentSubmissionData,
 } from '../../../../types'
-import { ParsedClearFormFieldResponsesV4 } from '../../../../types/api'
+import {
+  ParsedClearFormFieldResponsesV4,
+  ParsedClearFormFieldResponseV4,
+} from '../../../../types/api'
 import config from '../../../config/config'
 import { spcpMyInfoConfig } from '../../../config/features/spcp-myinfo.config'
 import { AutoReplyMailData } from '../../../services/mail/mail.types'
@@ -38,6 +42,7 @@ import {
   ProcessingError,
   ValidateFieldErrorV4,
 } from '../submission.errors'
+import { ProcessedFieldResponse } from '../submission.types'
 import { buildMrfMetadata } from '../submission.utils'
 
 import { MrfJwtPayload } from './multirespondent-submission.types'
@@ -250,6 +255,73 @@ export const validateMrfFieldResponses = ({
   }
 
   return ok(responses)
+}
+
+/**
+ * Every MyInfo-prefillable field type allowed on MRF (Children excluded)
+ * carries a V4 answer of shape `{ value: string, ... }`. Extracts the string
+ * value, or undefined for any other shape.
+ */
+const extractV4StringAnswer = (
+  response: ParsedClearFormFieldResponseV4,
+): string | undefined => {
+  const value = get(response.answer, 'value')
+  return typeof value === 'string' ? value : undefined
+}
+
+/**
+ * Adapts parsed V4 clear responses (keyed by field id) into the
+ * ProcessedFieldResponse shape that MyInfoService.checkMyInfoHashes expects,
+ * to verify MyInfo prefill hashes exactly as encrypt mode does.
+ * The MyInfo attribute and fieldType are sourced from the *form definition*,
+ * never from the client payload — a respondent must not be able to skip the
+ * hash check by stripping or mislabelling the myInfo meta on a response.
+ *
+ * @param responses parsed V4 clear responses, keyed by field id
+ * @param formFields the form's field definitions
+ * @returns responses on MyInfo fields, in checkMyInfoHashes-compatible shape
+ */
+export const adaptV4ResponsesForMyInfoHashCheck = (
+  responses: ParsedClearFormFieldResponsesV4,
+  formFields: FormFieldSchema[] | FormFieldDto[],
+): ProcessedFieldResponse[] => {
+  const adapted: ProcessedFieldResponse[] = []
+  for (const field of formFields) {
+    // Table fields have no myInfo key in the DTO union, hence the 'in' guard.
+    const attr = 'myInfo' in field ? field.myInfo?.attr : undefined
+    if (!attr) continue
+    if (field.fieldType === BasicField.Children) continue
+
+    const response = responses[field._id.toString()]
+    if (!response) continue
+
+    const rawValue = extractV4StringAnswer(response)
+    // Fail closed: a malformed answer on a MyInfo field compares as an empty
+    // string, which can never satisfy a stored hash.
+    let answer = rawValue ?? ''
+    if (field.fieldType === BasicField.Date && rawValue) {
+      // V4 dates arrive as 'DD/MM/YYYY'; convert to the 'DD MMM YYYY' wire
+      // format encrypt mode receives, which checkMyInfoHashes' transform
+      // turns back into the 'YYYY-MM-DD' form hashed at prefill.
+      const parsed = moment(rawValue, 'DD/MM/YYYY', true)
+      if (parsed.isValid()) {
+        answer = parsed.format('DD MMM YYYY')
+      }
+    }
+
+    adapted.push({
+      _id: field._id.toString(),
+      question: field.title,
+      fieldType: field.fieldType,
+      answer,
+      myInfo: { attr },
+      // Responses on hidden fields are rejected upstream in
+      // validateMultirespondentSubmission, so any response present here is on
+      // a visible field.
+      isVisible: true,
+    } as ProcessedFieldResponse)
+  }
+  return adapted
 }
 
 /**
