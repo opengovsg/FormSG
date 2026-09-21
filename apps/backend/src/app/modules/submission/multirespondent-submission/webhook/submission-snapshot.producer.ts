@@ -36,17 +36,6 @@ export const buildV4Snapshot = (input: {
   return snapshot
 }
 
-/**
- * PIN-12 of #9972: one snapshot per step, in the delivered shape only. A
- * generic V1 form writes this and never a V4 snapshot, so no wrapped read key
- * is ever stored for a consumer class forbidden from receiving it — which is
- * why this shape has no `encryptedSubmissionSecretKey` field to pass at all,
- * rather than an optional one someone could populate.
- *
- * The content here is already encrypted to the *form* public key, so the
- * consumer opens it with the form secret key it holds and needs no key from
- * the payload.
- */
 export const buildV1Snapshot = (input: {
   formId: string
   submissionId: string

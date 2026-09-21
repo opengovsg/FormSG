@@ -32,11 +32,6 @@ export type SubmissionSnapshot = z.infer<typeof SubmissionSnapshot>
 export type SubmissionSnapshotV4 = z.infer<typeof SnapshotV4>
 export type SubmissionSnapshotV1 = z.infer<typeof SnapshotV1>
 
-/**
- * The shapes a step submission can actually be snapshotted in. Narrower than
- * `WebhookContentFormat`, which also carries the legacy `v3` row format that
- * was never snapshotted.
- */
 export type SnapshotContentFormat = SubmissionSnapshot['contentFormat']
 
 export function parseSnapshot(

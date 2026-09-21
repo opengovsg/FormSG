@@ -6,25 +6,7 @@ import { PaymentWebhookEventObject } from '../../../webhook/webhook.types'
 
 const logger = createLoggerWithLabel(module)
 
-/**
- * PIN-04 of #9972: the V1 payload's `data` key set is exactly storage mode's.
- *
- * Declared positively — as its own interface listing the permitted keys — and
- * deliberately NOT as `Omit<WebhookData, 'workflowContent' |
- * 'encryptedSubmissionSecretKey'>`. A subtractive type fails open: the day
- * somebody adds a new MRF-only key to `WebhookData`, `Omit` goes on excluding
- * only the two names it was given and the new key silently joins the V1 wire.
- * A positive declaration makes that a deliberate edit to this file.
- *
- * The key set is the one `EncryptSubmissionSchema.methods.getWebhookView`
- * builds (`submission.server.model.ts`), which is what a storage-mode
- * consumer's parser — and its strict schema validator — is written against.
- *
- * Omitting workflow metadata is intended twice over: it keeps the key set
- * identical for those validators, and it keeps respondent email addresses,
- * which the row's workflow copy carries unstripped, off the V1 wire entirely
- * rather than relying on a field allow-list to hold them back.
- */
+// Declared positively so new MRF-only WebhookData keys cannot enter V1 implicitly.
 export interface StorageShapedWebhookData {
   formId: WebhookData['formId']
   submissionId: WebhookData['submissionId']
@@ -36,10 +18,6 @@ export interface StorageShapedWebhookData {
   paymentContent?: PaymentWebhookEventObject | object
 }
 
-/**
- * Every key a storage-mode payload may carry, in the order that view builds
- * them. Kept beside the interface so the two are edited together.
- */
 export const STORAGE_SHAPED_PAYLOAD_KEYS: readonly string[] = [
   'formId',
   'submissionId',
@@ -51,13 +29,6 @@ export const STORAGE_SHAPED_PAYLOAD_KEYS: readonly string[] = [
   'paymentContent',
 ]
 
-/**
- * The two keys that may legitimately be absent from a serialised payload:
- * `verifiedContent` is `undefined` on an unauthenticated form, and
- * `JSON.stringify` drops a present-but-undefined key. `paymentContent` is
- * always emitted by both modes today, but a row that somehow lacked it is not
- * a reason to withhold an otherwise correct delivery.
- */
 const OPTIONAL_KEYS = new Set(['verifiedContent', 'paymentContent'])
 
 export class V1PayloadKeySetError extends Error {
@@ -67,23 +38,6 @@ export class V1PayloadKeySetError extends Error {
   }
 }
 
-/**
- * The runtime half of PIN-04, and it is needed because the type only covers
- * half the distance: both forbidden keys are *optional* on `WebhookData`, so a
- * V1 payload stays structurally assignable to it. The interface therefore
- * protects the construction site — an object literal naming `workflowContent`
- * is an excess-property error — and stops protecting the moment the value is
- * handed to the shared send path as a `WebhookView`.
- *
- * So check the bytes. Comparison is against the keys that survive
- * serialisation (`JSON.parse(JSON.stringify(...))`), because the delivered
- * bytes are the JSON: a present-but-`undefined` key is not on the wire, and a
- * raw `Object.keys` comparison would fail an unauthenticated form for a key
- * no consumer ever sees.
- *
- * It fails closed, in production and not only in CI: a payload carrying a key
- * storage mode never sends is not delivered at all.
- */
 export const assertStorageShapedKeySet = (
   data: StorageShapedWebhookData,
   logMeta: Record<string, unknown>,

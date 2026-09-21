@@ -130,8 +130,6 @@ describe('buildV4Snapshot', () => {
   })
 })
 
-// The storage-mode wire payload: a flat V1 FormField array, which is what a
-// storage-mode consumer's parser expects.
 const V1_PLAINTEXT = [
   {
     _id: 'field-1',
@@ -161,12 +159,9 @@ describe('buildV1Snapshot', () => {
   })
 
   it('should freeze content that the FORM secret key alone recovers, with no key stored beside it', () => {
-    // Arrange: a form keypair and the storage-mode encryption class, which is
-    // what an unmodified storage-mode consumer decrypts with.
     const { publicKey, secretKey } = formsgSdk.crypto.generate()
     const encryptedContent = formsgSdk.crypto.encrypt(V1_PLAINTEXT, publicKey)
 
-    // Act
     const snapshot = buildV1Snapshot({
       formId: 'form-1',
       submissionId: 'sub-1',
@@ -176,15 +171,12 @@ describe('buildV1Snapshot', () => {
       createdAt: '2026-07-22T00:00:00.000Z',
     })
 
-    // Assert: recovery, not byte-equality — the nonce is random per encrypt.
     const recovered = formsgSdk.crypto.decrypt(secretKey, {
       encryptedContent: snapshot.encryptedContent,
       version: V1_VERSION,
     })
     expect(recovered?.responses).toEqual(V1_PLAINTEXT)
 
-    // The V1 shape carries no wrapped submission secret key at all: a
-    // consumer class forbidden from receiving one has none stored for it.
     expect(snapshot).not.toHaveProperty('encryptedSubmissionSecretKey')
   })
 

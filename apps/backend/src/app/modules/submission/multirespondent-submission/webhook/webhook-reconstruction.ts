@@ -32,15 +32,6 @@ type ReconstructMrfWebhookDataInput =
   | ReconstructMrfWebhookDataInputWithSnapshot
   | ReconstructMrfWebhookDataInputWithoutSnapshot
 
-/**
- * Reconstructs the native V4 payload, which the live row can also express: a
- * V4 delivery with no snapshot has a byte-correct fallback in `liveData`.
- *
- * The V1 branch is deliberately a different function with a different return
- * type, because that asymmetry is real and load-bearing — see
- * {@link reconstructV1WebhookData}. Resist unifying them; the types exist so
- * that an attempt fails to compile.
- */
 export const reconstructMrfWebhookData = (
   input: ReconstructMrfWebhookDataInput,
 ): Result<WebhookData, SnapshotDataIntegrityError> => {
@@ -119,26 +110,7 @@ export const reconstructMrfWebhookData = (
   return ok(reconstructed)
 }
 
-/**
- * Reconstructs the storage-shaped V1 payload from the frozen snapshot.
- *
- * `snapshot` is a required parameter of a V1-only type, so the forbidden
- * live-row fallback (PIN-01) is not expressible here rather than merely
- * avoided: with no object there is no call to make. The asymmetry with the V4
- * branch above is the point — for V4 the live row IS the wire payload, so a
- * missing snapshot degrades to something byte-correct; for V1 the row holds
- * ciphertext under a submission key the server cannot open, so it is never a
- * valid V1 payload and there is nothing to degrade to.
- *
- * Fields are picked explicitly, never spread from `liveData`. A
- * `{ ...liveData, encryptedContent }` would reintroduce `workflowContent` and
- * `encryptedSubmissionSecretKey` with no compiler error at all, because
- * excess-property checking does not apply to spread results.
- *
- * It takes no policy: a V1 payload's key permissions are not a decision. The
- * content is encrypted to the form public key, so a wrapped per-submission key
- * would be useless to the consumer and a leak to store for it.
- */
+// Pick fields explicitly so optional MRF-only keys cannot enter the V1 payload.
 export const reconstructV1WebhookData = ({
   liveData,
   snapshot,

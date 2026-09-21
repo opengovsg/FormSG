@@ -29,12 +29,6 @@ const V1_VERSION = 2.1
 
 describe('buildV1EncryptedContent', () => {
   it("should resolve visibility from the row's own logic, not treat every field as shown", () => {
-    // The shared flatten reads `formLogics` to decide `isVisible`, and an
-    // unanswered Address field is where that decision reaches the wire: shown,
-    // it emits the six-part empty-address placeholder storage mode sends;
-    // hidden, an empty array. Pass no logic and every field counts as shown,
-    // so a hidden address is delivered as an answered-but-blank column the
-    // admin's own download does not have.
     const { publicKey, secretKey } = formsgSdk.crypto.generate()
     const formFields = [
       {
@@ -57,7 +51,6 @@ describe('buildV1EncryptedContent', () => {
         show: ['addr'],
       },
     ]
-    // The gate says "No", so `addr` is hidden and was never answered.
     const v4Responses = {
       gate: { fieldType: BasicField.YesNo, answer: { value: 'No' } },
     }
@@ -88,10 +81,7 @@ describe('buildV1EncryptedContent', () => {
     const addressOf = (content: typeof withLogic) =>
       content?.responses.find((response) => response._id === 'addr')
 
-    // Hidden: an empty array, which is what the admin's own CSV shows.
     expect(addressOf(withLogic)?.answerArray).toEqual([])
-    // Treated as shown: the six-part empty-address placeholder, delivered as
-    // though the respondent had seen the field and left it blank.
     expect(addressOf(withoutLogic)?.answerArray).toEqual([
       '',
       '',
@@ -103,11 +93,9 @@ describe('buildV1EncryptedContent', () => {
   })
 
   it('should produce content the FORM secret key recovers, through the storage-mode class', () => {
-    // Arrange
     const { publicKey, secretKey } = formsgSdk.crypto.generate()
     const formFields = [textField('field-1', 'Your name')]
 
-    // Act
     const result = buildV1EncryptedContent({
       v4Responses: {
         'field-1': {
@@ -121,8 +109,6 @@ describe('buildV1EncryptedContent', () => {
       logMeta: LOG_META,
     })
 
-    // Assert: decrypting with `crypto` — the class an unmodified storage-mode
-    // consumer uses — recovers the flat V1 array.
     expect(result.isOk()).toBe(true)
     const recovered = formsgSdk.crypto.decrypt(secretKey, {
       encryptedContent: result._unsafeUnwrap(),
@@ -139,11 +125,6 @@ describe('buildV1EncryptedContent', () => {
   })
 
   it('should encrypt with the storage-mode class, not the MRF one', () => {
-    // The right key with the wrong class is the silent failure this guards.
-    // `cryptoV3.encrypt` encrypts the content to a fresh per-submission public
-    // key and only wraps that submission key under the form key, so its
-    // content is NOT openable with the form secret key — which is what an
-    // unmodified storage-mode consumer has and all it has.
     const { publicKey, secretKey } = formsgSdk.crypto.generate()
     const v4Responses = {
       'field-1': {
@@ -161,7 +142,6 @@ describe('buildV1EncryptedContent', () => {
       logMeta: LOG_META,
     })._unsafeUnwrap()
 
-    // Control: the same payload, the same key, the MRF class.
     const wrongClass = formsgSdk.cryptoV3.encrypt(v4Responses, publicKey)
 
     expect(
@@ -203,9 +183,6 @@ describe('buildV1EncryptedContent', () => {
   })
 
   it('should fail loud rather than throw when the flatten cannot represent a field', () => {
-    // Children is out of scope for MRF, but its failure mode is not: an
-    // unrepresentable field type must reject the submission with a real
-    // error, not escape as an exception through the submit chain.
     const { publicKey } = formsgSdk.crypto.generate()
 
     const result = buildV1EncryptedContent({

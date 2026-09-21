@@ -21,7 +21,6 @@ const makeLiveData = (): WebhookData => ({
   created: new Date('2026-07-22T00:00:00.000Z'),
   attachmentDownloadUrls: { 'field-live': 'live-attachment-key' },
   paymentContent: {},
-  // The two keys PIN-04 forbids, both present on the live row.
   encryptedSubmissionSecretKey: 'LIVE_ROW_WRAPPED_KEY',
   workflowContent: {
     workflow: [],
@@ -48,13 +47,11 @@ const makeV1Snapshot = (
 
 describe('reconstructV1WebhookData', () => {
   it('should carry exactly storage mode’s key set, and neither forbidden key', () => {
-    // Act
     const data = reconstructV1WebhookData({
       liveData: makeLiveData(),
       snapshot: makeV1Snapshot({ verifiedContent: 'FROZEN_VERIFIED' }),
     })
 
-    // Assert: the delivered bytes are the JSON, so compare what survives it.
     expect(
       Object.keys(JSON.parse(JSON.stringify(data)) as Record<string, unknown>),
     ).toEqual([...STORAGE_SHAPED_PAYLOAD_KEYS])
@@ -87,8 +84,6 @@ describe('reconstructV1WebhookData', () => {
       snapshot: makeV1Snapshot(),
     })
 
-    // Asserted against the shared constant, never a literal, so the wire value
-    // and the one storage mode sends cannot drift.
     expect(data.version).toBe(VIRUS_SCANNER_SUBMISSION_VERSION)
   })
 
@@ -117,8 +112,6 @@ describe('assertStorageShapedKeySet', () => {
   })
 
   it('should pass an unauthenticated form, whose verifiedContent is undefined', () => {
-    // `JSON.stringify` drops a present-but-undefined key, so a raw
-    // `Object.keys` comparison would fail this for a key no consumer sees.
     const data = reconstructV1WebhookData({
       liveData: makeLiveData(),
       snapshot: makeV1Snapshot(),
@@ -131,8 +124,6 @@ describe('assertStorageShapedKeySet', () => {
   it.each(['workflowContent', 'encryptedSubmissionSecretKey', 'anythingNew'])(
     'should fail closed when %s reaches the payload',
     (key) => {
-      // This is the case the type cannot catch: both forbidden keys are
-      // optional on WebhookData, so a widened value stays assignable.
       const data = {
         ...reconstructV1WebhookData({
           liveData: makeLiveData(),

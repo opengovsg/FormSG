@@ -25,9 +25,6 @@ import {
 
 const logger = createLoggerWithLabel(module)
 
-/**
- * Number of create-if-absent attempts before we stop retrying.
- */
 const MAX_WRITE_ATTEMPTS = 2
 
 type SnapshotKeyParams = {
@@ -37,16 +34,9 @@ type SnapshotKeyParams = {
   token: string
 }
 
-/**
- * The transitional V1 copies live in their own store, separate from the
- * go-forward V4 one, so that the whole of the backward-compatibility data can
- * be decommissioned wholesale at the V1 retirement rather than sifted out of
- * a shared bucket (PIN-24 of #9972's user stories).
- *
- * One mapping, used by both the write and the read, so a V1 object can never
- * be written to one store and looked for in the other.
- */
-const bucketForShape = (contentFormat: SnapshotContentFormat): string =>
+const bucketForContentFormat = (
+  contentFormat: SnapshotContentFormat,
+): string =>
   contentFormat === 'v1'
     ? AwsConfig.submissionHistoryV1S3Bucket
     : AwsConfig.submissionHistoryV4S3Bucket
@@ -59,10 +49,6 @@ export const buildSnapshotKey = ({
 }: SnapshotKeyParams): string =>
   `${formId}/${submissionId}/${submissionIndex}/${token}.json`
 
-/**
- * Returns true if the S3 error signals a create-if-absent precondition failure
- * (the key already exists), i.e. a token collision we should retry.
- */
 const isPreconditionFailed = (error: unknown): error is S3ServiceException =>
   error instanceof S3ServiceException && error.name === 'PreconditionFailed'
 
@@ -91,7 +77,7 @@ export const writeSnapshot = (
     })
 
     const params: PutObjectCommandInput = {
-      Bucket: bucketForShape(snapshot.contentFormat),
+      Bucket: bucketForContentFormat(snapshot.contentFormat),
       Key: key,
       Body: body,
       ContentType: 'application/json',
@@ -169,7 +155,7 @@ export const readSnapshot = ({
   return ResultAsync.fromPromise(
     AwsConfig.s3.send(
       new GetObjectCommand({
-        Bucket: bucketForShape(contentFormat),
+        Bucket: bucketForContentFormat(contentFormat),
         Key: key,
       }),
     ),

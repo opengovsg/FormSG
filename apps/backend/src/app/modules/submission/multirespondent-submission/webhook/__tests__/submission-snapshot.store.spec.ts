@@ -88,10 +88,7 @@ const putRejectsThen = (
 
 type Uuid = ReturnType<typeof crypto.randomUUID>
 
-/**
- * Pins the tokens writeSnapshot generates so the keys under test are
- * deterministic. Attempts beyond the supplied list get a distinct `tok-<n>`.
- */
+/** Returns deterministic snapshot tokens for asserted S3 keys. */
 const mockTokens = (...tokens: string[]) => {
   let i = 0
   return jest.spyOn(crypto, 'randomUUID').mockImplementation(() => {
@@ -354,23 +351,18 @@ describe('readSnapshot', () => {
 
 describe('the store each shape is routed to', () => {
   it('should write a V1 snapshot to the V1 bucket and a V4 snapshot to the V4 bucket', async () => {
-    // Arrange
     const putObject = putResolves()
     ;(AwsConfig.s3.send as jest.Mock) = putObject
     mockTokens('tok-v4', 'tok-v1')
 
-    // Act
     await writeSnapshot(makeSnapshot())
     await writeSnapshot(makeV1Snapshot())
 
-    // Assert: the shape decides the store, so a V1 consumer's objects can
-    // never land among the submission-key-encrypted ones.
     expect(putObject.mock.calls[0][0].input.Bucket).toBe(TEST_BUCKET)
     expect(putObject.mock.calls[1][0].input.Bucket).toBe(TEST_V1_BUCKET)
   })
 
   it('should read back from the bucket matching the recorded shape', async () => {
-    // Arrange
     const getObject = jest
       .fn()
       .mockReturnValue(
@@ -378,14 +370,12 @@ describe('the store each shape is routed to', () => {
       )
     ;(AwsConfig.s3.send as jest.Mock) = getObject
 
-    // Act
     const result = await readSnapshot({
       ...COORDS,
       token: 'tok-1',
       contentFormat: 'v1',
     })
 
-    // Assert
     expect(result.isOk()).toBe(true)
     expect(getObject.mock.calls[0][0].input.Bucket).toBe(TEST_V1_BUCKET)
   })
