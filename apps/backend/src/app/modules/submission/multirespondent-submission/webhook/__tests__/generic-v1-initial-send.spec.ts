@@ -1,11 +1,3 @@
-/**
- * [GATE] The primary seam for #9975: the outbound webhook POST body.
- *
- * The HTTP client is mocked and the real MRF post-submission action is driven,
- * so what is asserted is what a consumer would actually receive. A wrong V1
- * payload still encrypts cleanly and still returns 200 — nothing but the body
- * itself can tell us it is right.
- */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import axios, { AxiosResponse } from 'axios'
 import { ObjectId } from 'bson'
@@ -44,10 +36,6 @@ import { STORAGE_SHAPED_PAYLOAD_KEYS } from '../v1-payload'
 jest.mock('axios')
 const MockAxios = jest.mocked(axios)
 
-// Every module's logger, so the fail-loud path's log line — which is where
-// the alert hangs, the failure being inside a floating promise — is
-// observable. Built inside the factory because `jest.mock` is hoisted above
-// any `const` the module body declares.
 jest.mock('src/app/config/logger', () => {
   const logger = { info: jest.fn(), warn: jest.fn(), error: jest.fn() }
   return {
@@ -119,11 +107,6 @@ const V4_RESPONSES = {
   },
 }
 
-/**
- * What a storage-mode form would put on the wire for the same answers: the
- * trim on the single answer and the verifiable field's present-but-undefined
- * `signature` are the shared value rules, not this ticket's invention.
- */
 const EXPECTED_V1_ARRAY = [
   {
     _id: shortTextId,
@@ -150,15 +133,6 @@ const step = (emails: string[] = []): FormWorkflowStepDto =>
 let formKeypair: { publicKey: string; secretKey: string }
 let formsBuilt = 0
 
-/**
- * A REAL populated form document, not a plain object literal cast to one.
- *
- * This matters more than it looks: on a document, `form_fields` is an array of
- * mongoose subdocuments whose `_id` is an ObjectId, and the V1 response schema
- * requires a string. A literal fixture with hex-string ids makes the producer
- * look correct while every real submission fails, so the fixture has to be the
- * shape production actually holds.
- */
 const buildForm = async ({
   workflow,
   webhook,
@@ -170,8 +144,6 @@ const buildForm = async ({
   formFields?: Record<string, unknown>[]
   authType?: FormAuthType
 }): Promise<IPopulatedMultirespondentForm> => {
-  // A distinct admin per form: the helper creates the owning user too, and a
-  // test that builds two forms would otherwise collide on the email.
   formsBuilt += 1
   const { form } = await dbHandler.insertMultirespondentForm({
     mailName: `admin-${formsBuilt}`,
@@ -219,17 +191,9 @@ const growthbookWith = (enableMrfWebhooks: boolean) =>
 
 const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
 
-/** The keys that survive serialisation — the delivered bytes are the JSON. */
 const serialisedKeysOf = (data: unknown): string[] =>
   Object.keys(JSON.parse(JSON.stringify(data)) as Record<string, unknown>)
 
-/**
- * Runs the real submit path and then the real post-submission action, and
- * returns the body that was POSTed (or undefined if nothing was sent).
- *
- * Both halves matter: the copy is produced and snapshotted at submit, and the
- * send is served from that same in-memory copy.
- */
 const submitAndCapturePostedBody = async ({
   workflow,
   webhook,
@@ -302,9 +266,6 @@ describe('[GATE] generic V1 initial send', () => {
 
   describe('the payload a consumer receives', () => {
     it('should carry exactly the key set a real storage-mode payload carries', async () => {
-      // The oracle is an actual storage-mode submission's own webhook view,
-      // not a hand-maintained list: a list would let the constant and the
-      // payload drift together while both assertions kept passing.
       const storageRow = await EncryptSubmissionModel.create({
         submissionType: SubmissionType.Encrypt,
         form: formId,
@@ -315,21 +276,14 @@ describe('[GATE] generic V1 initial send', () => {
         (await storageRow.getWebhookView())?.data,
       )
 
-      // Act
       const { body } = await submitAndCapturePostedBody({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
       })
 
-      // Assert: the delivered bytes are the JSON, so compare what survives it.
-      // Neither side carries `verifiedContent` here — the storage row is
-      // unauthenticated, and the MRF row's copy is encrypted to a key the
-      // consumer does not hold, so this slice omits it (#9979).
       expect(body).toBeDefined()
       expect(serialisedKeysOf(body)).toEqual(storageKeys)
 
-      // And the constant the production assertion uses agrees with the real
-      // thing, so a drift in either is caught here.
       expect(storageKeys).toEqual(
         STORAGE_SHAPED_PAYLOAD_KEYS.filter((key) => key !== 'verifiedContent'),
       )
@@ -341,9 +295,6 @@ describe('[GATE] generic V1 initial send', () => {
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
       })
 
-      // The consumer's own tooling: the storage-mode class and the form secret
-      // key it already holds. Round-trip recovery, not byte-equality, because
-      // the nonce is random per encrypt.
       const recovered = formsgSdk.crypto.decrypt(formKeypair.secretKey, {
         encryptedContent: body!.encryptedContent,
         version: VIRUS_SCANNER_SUBMISSION_VERSION,
@@ -360,15 +311,10 @@ describe('[GATE] generic V1 initial send', () => {
       expect(body).not.toHaveProperty('encryptedSubmissionSecretKey')
       expect(body).not.toHaveProperty('workflowContent')
       expect(body).not.toHaveProperty('encryptedStepToken')
-      // Workflow metadata carries respondent addresses unstripped; omitting
-      // the key is what keeps them off the wire entirely.
       expect(JSON.stringify(body)).not.toContain('approver@example.gov.sg')
     })
 
     it('should carry the [Myinfo] question prefix for a read-only MyInfo field', async () => {
-      // `question` is the consumer's join key and the CSV column name, so a
-      // bare title where storage mode sent `[Myinfo] Your name` would be a
-      // compatibility break. The set comes from the row, resolved at submit.
       const myInfoForm = await buildForm({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
@@ -413,13 +359,6 @@ describe('[GATE] generic V1 initial send', () => {
     })
 
     it('should omit the row\u2019s verified content, which no form secret key can open', async () => {
-      // The row's `verifiedContent` is encrypted under the SUBMISSION public
-      // key. Copying it onto a V1 payload would not merely be useless: the
-      // SDK throws on a `verifiedContent` it cannot open and returns null for
-      // the whole payload, so the consumer would lose the content as well.
-      //
-      // Producing a form-key copy is #9979's work. Until then the key is
-      // absent, exactly as it is for an unauthenticated storage-mode form.
       const { body } = await submitAndCapturePostedBody({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
@@ -432,7 +371,6 @@ describe('[GATE] generic V1 initial send', () => {
       expect(JSON.stringify(body)).not.toContain(
         'SUBMISSION-KEY-VERIFIED-CONTENT',
       )
-      // And the consumer's own call still recovers the content.
       const recovered = formsgSdk.crypto.decrypt(formKeypair.secretKey, {
         encryptedContent: body!.encryptedContent,
         verifiedContent: body!.verifiedContent,
@@ -442,9 +380,6 @@ describe('[GATE] generic V1 initial send', () => {
     })
 
     it('should omit the row\u2019s attachment keys, which point at submission-key objects', async () => {
-      // Same reasoning as verified content; form-key attachment copies are
-      // #9980. The key itself stays present and empty, as storage mode's is
-      // for a form with no attachments.
       const { body } = await submitAndCapturePostedBody({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
@@ -531,7 +466,6 @@ describe('[GATE] generic V1 initial send', () => {
     })
 
     it('should judge eligibility on the row’s own workflow, not the form as later edited', async () => {
-      // Arrange: a submission made on a single-step form.
       const form = await buildForm({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
@@ -545,8 +479,6 @@ describe('[GATE] generic V1 initial send', () => {
       })
       const { submission, snapshot } = created._unsafeUnwrap()
 
-      // Act: the admin then adds two steps, and the send runs against the
-      // edited form definition.
       await performMultiRespondentPostSubmissionCreateActions({
         submission,
         snapshot,
@@ -561,7 +493,6 @@ describe('[GATE] generic V1 initial send', () => {
       })
       await flushPromises()
 
-      // Assert: the row said one step, so it is delivered.
       expect(MockAxios.post).toHaveBeenCalledTimes(1)
     })
   })
@@ -575,8 +506,6 @@ describe('[GATE] generic V1 initial send', () => {
 
       expect(writtenSnapshots).toHaveLength(1)
       expect(writtenSnapshots[0].contentFormat).toBe('v1')
-      // No wrapped read key is stored for a consumer class forbidden from
-      // receiving one.
       expect(writtenSnapshots[0]).not.toHaveProperty(
         'encryptedSubmissionSecretKey',
       )
@@ -611,12 +540,7 @@ describe('[GATE] generic V1 initial send', () => {
         webhook: { url: GENERIC_URL, isRetryEnabled: false },
       })
 
-      // PIN-16 keeps the retry term for both shapes at this site: the initial
-      // send is served from the in-memory copy, so a snapshot written here
-      // would be an object nothing ever reads.
       expect(writtenSnapshots).toHaveLength(0)
-      // The delivery still happens, though. Persisting the copy and making
-      // one are separate decisions: the copy is what this very request sends.
       expect(body).toBeDefined()
       const recovered = formsgSdk.crypto.decrypt(formKeypair.secretKey, {
         encryptedContent: body!.encryptedContent,
@@ -638,14 +562,6 @@ describe('[GATE] generic V1 initial send', () => {
 
   describe('fail-loud', () => {
     it('should POST nothing when a V1 delivery has no snapshot, never falling back to the live row', async () => {
-      // The row holds ciphertext under a submission key the server cannot
-      // open, so it is never a valid V1 payload. Delivering it would hand the
-      // consumer content its form secret key cannot decrypt.
-      //
-      // `sendMrfInitialWebhookIfEligible` returns void and its ResultAsync is
-      // not awaited, so the failure surfaces as a log line inside a floating
-      // promise rather than a rejected request. That log line is what the
-      // alert hangs off, so it is what this asserts.
       const { body } = await submitAndCapturePostedBody({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
@@ -655,8 +571,6 @@ describe('[GATE] generic V1 initial send', () => {
       expect(body).toBeUndefined()
       expect(MockAxios.post).not.toHaveBeenCalled()
 
-      // Its own error code, so an alert on it cannot be confused with the
-      // snapshot-format error raised in normal operation.
       const loggedCodes = mockLogger.error.mock.calls.map(
         (call) =>
           (call[0] as { error?: ApplicationError }).error?.code as
@@ -697,7 +611,7 @@ describe('[GATE] generic V1 initial send', () => {
   })
 
   describe('the row', () => {
-    it('should stay V4-native whatever the wire shape', async () => {
+    it('should stay V4-native regardless of webhookContentFormat', async () => {
       const form = await buildForm({
         workflow: [step()],
         webhook: { url: GENERIC_URL, isRetryEnabled: true },
@@ -709,8 +623,6 @@ describe('[GATE] generic V1 initial send', () => {
         growthbook: growthbookWith(true),
       })
 
-      // Adding a webhook must not cost the admin answer-object provenance in
-      // their own response view and downloads.
       const saved = await MultirespondentSubmissionModel.findById(
         created._unsafeUnwrap().submission._id,
       )

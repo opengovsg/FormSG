@@ -161,9 +161,6 @@ describe('submission.utils', () => {
         'Response for the Yes/No field for this approval step is not found',
         'mrf.expectedResponseNotFound',
       ],
-      // A storage blip or an unrepresentable field must not reach the
-      // respondent as an unexplained server error: both map to the same real
-      // status and message as any other failure to save.
       [
         new SnapshotWriteError(),
         StatusCodes.INTERNAL_SERVER_ERROR,

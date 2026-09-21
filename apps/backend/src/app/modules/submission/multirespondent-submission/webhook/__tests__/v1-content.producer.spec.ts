@@ -121,8 +121,6 @@ describe('buildV1EncryptedContent', () => {
       formFields,
       formLogics: [],
       formPublicKey: publicKey,
-      // Only the first was read-only for this respondent; the second was
-      // user-provided, so storage mode leaves it bare.
       myInfoReadOnlyFieldIds: ['field-1'],
       logMeta: LOG_META,
     })._unsafeUnwrap()

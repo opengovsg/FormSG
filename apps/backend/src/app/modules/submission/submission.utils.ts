@@ -227,10 +227,6 @@ const errorMapper: MapRouteError = (
           'Could not upload attachments for submission. For assistance, please contact the person who asked you to fill in this form.',
         errorMessageKey: submissionErrorKey('files.uploadFailed'),
       }
-    // A V1 copy can only be made while the plaintext is in hand, so a
-    // submission that cannot have one made is rejected rather than committed
-    // undeliverable. Like a snapshot-write failure, the respondent must see a
-    // real status and message for it, not an unmapped generic 500.
     case SnapshotWriteError:
     case V1ContentProductionError:
     case SubmissionSaveError:

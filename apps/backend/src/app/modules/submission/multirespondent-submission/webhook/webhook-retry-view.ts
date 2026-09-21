@@ -53,12 +53,7 @@ export const resolveSnapshotRetryView = ({
   const meta = { submissionId, snapshotRef }
   const { submissionIndex, contentFormat } = snapshotRef
 
-  // A V1 snapshot IS written now (#9975), so this no longer means "the shape
-  // does not exist" — it means the retry path has not been taught to read it
-  // yet, which is #9977's work. Until then a V1 retry is refused rather than
-  // reconstructed, which is the safe direction: the alternative would be
-  // falling back to the live row, and the row can never express a V1 payload.
-  // The initial send is unaffected; it is served from the in-memory copy.
+  // V1 snapshot replay is implemented in #9977.
   if (contentFormat === 'v1') {
     return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
   }

@@ -127,29 +127,11 @@ const appUrl =
     ? config.app.feAppUrl
     : config.app.appUrl
 
-/**
- * A populated form document holds `form_fields` as mongoose subdocuments,
- * while the row's own snapshot holds plain field definitions. The shared
- * flatten reads plain definitions, and one of the things it reads is `_id`,
- * which the V1 response schema requires to be a string.
- *
- * `toObject()` is NOT enough: it leaves an ObjectId as an ObjectId, so the
- * flatten's `.parse` rejects the entry and the whole submission fails. A JSON
- * round trip is what a `FormFieldDto` actually is — it is the shape the
- * frontend receives — and it stringifies every id at every depth. On a plain
- * object it is a deep clone and nothing else.
- */
+/** Converts mongoose ObjectIds to the string ids expected by shared DTOs. */
 const toPlainFormFields = (
   formFields: IPopulatedMultirespondentForm['form_fields'],
 ): FormFieldDto[] => JSON.parse(JSON.stringify(formFields)) as FormFieldDto[]
 
-/**
- * The same round trip as {@link toPlainFormFields}, for the logic units the
- * flatten reads alongside the fields. A logic unit's `conditions[].field` and
- * `show[]` are ObjectIds on a populated document, and the flatten matches them
- * against the now-stringified field ids — leave them as ObjectIds and every
- * comparison misses, so a conditionally hidden field is emitted as visible.
- */
 const toPlainFormLogics = (
   formLogics: IPopulatedMultirespondentForm['form_logics'],
 ): LogicDto[] => JSON.parse(JSON.stringify(formLogics)) as LogicDto[]
@@ -158,11 +140,6 @@ export type SavedMultirespondentSubmission = {
   submission: IMultirespondentSubmissionSchema & {
     _id: mongoose.Types.ObjectId
   }
-  /**
-   * The snapshot written for this step, in the shape it was written in. Only
-   * one shape is ever written per step (PIN-12), and the initial send is
-   * served from this copy rather than re-read from the store.
-   */
   snapshot?: SubmissionSnapshot
 }
 
@@ -946,7 +923,6 @@ export const createMultiRespondentFormSubmission = ({
         createdAt: submittedStepMeta.submittedAt,
       }
 
-      // V1 cannot include values encrypted with the submission public key.
       const v4OnlyContent = {
         verifiedContent,
         attachmentMetadata: Object.fromEntries(attachmentMetadata ?? new Map()),
@@ -959,8 +935,6 @@ export const createMultiRespondentFormSubmission = ({
           formFields: toPlainFormFields(form.form_fields),
           formLogics: toPlainFormLogics(form.form_logics),
           formPublicKey: form.publicKey,
-          // Resolved at submit time and persisted on the row beside this, so
-          // the wire and the admin's own surfaces prefix the same fields.
           myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
           logMeta,
         })
@@ -1315,12 +1289,6 @@ const sendMrfInitialWebhookIfEligible = ({
   submission: IMultirespondentSubmissionSchema
   snapshot?: SubmissionSnapshot
   webhookUrl: string
-  /**
-   * The form's `webhook.webhookFormat` setting, verbatim. Mandatory with
-   * `undefined` in its type so that a caller has to say what it knows: the
-   * default lives at resolution time, and a forgotten term would silently
-   * resolve a shape.
-   */
   webhookFormat: FormWebhook['webhookFormat']
   workflowStepCount: number
   isRetryEnabled: boolean

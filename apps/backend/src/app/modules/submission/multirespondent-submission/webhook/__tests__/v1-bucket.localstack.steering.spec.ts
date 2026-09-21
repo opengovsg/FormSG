@@ -1,13 +1,4 @@
-/**
- * [STEERING:T3] — DELETE once the V1 content bucket is provisioned in a real
- * environment and verified there (#9754).
- *
- * The store's unit spec mocks the S3 client, so it proves the routing and not
- * that the bucket exists or that an object survives a round trip through it.
- * This does the round trip for real against Localstack, using the same
- * production code path and the same configured bucket name, and skips itself
- * when Localstack is not running — which it is not in CI.
- */
+/** [STEERING:T3] Remove after verifying the provisioned bucket (#9754). */
 import { HeadBucketCommand } from '@aws-sdk/client-s3'
 import { ObjectId } from 'bson'
 
@@ -43,7 +34,6 @@ describe('[STEERING:T3] V1 content bucket smoke test', () => {
   it('should write a V1 snapshot to the V1 bucket and read it back byte-identically', async () => {
     if (!reachable) return
 
-    // Arrange
     const snapshot = buildV1Snapshot({
       formId: new ObjectId().toHexString(),
       submissionId: new ObjectId().toHexString(),
@@ -55,7 +45,6 @@ describe('[STEERING:T3] V1 content bucket smoke test', () => {
       createdAt: new Date().toISOString(),
     })
 
-    // Act
     const written = await writeSnapshot(snapshot)
     expect(written.isOk()).toBe(true)
 
@@ -67,7 +56,6 @@ describe('[STEERING:T3] V1 content bucket smoke test', () => {
       contentFormat: 'v1',
     })
 
-    // Assert
     expect(read.isOk()).toBe(true)
     expect(read._unsafeUnwrap()).toEqual(snapshot)
   })
@@ -75,8 +63,6 @@ describe('[STEERING:T3] V1 content bucket smoke test', () => {
   it('should not find a V1 object in the V4 bucket', async () => {
     if (!reachable) return
 
-    // The two stores are separate so the transitional data can be
-    // decommissioned wholesale; a V1 object must not be in the other one.
     const snapshot = buildV1Snapshot({
       formId: new ObjectId().toHexString(),
       submissionId: new ObjectId().toHexString(),

@@ -100,9 +100,6 @@ export const ApprovalStatus = z.enum([
 
 const SubmittedStepSnapshotTokens = z.object({
   v4: z.string().optional(),
-  // One key per wire shape, and at most one is ever set for a step: the
-  // resolved shape decides both the snapshot's shape and its store, so a step
-  // delivered as V1 can never later be re-delivered as V4.
   v1: z.string().optional(),
 })
 
