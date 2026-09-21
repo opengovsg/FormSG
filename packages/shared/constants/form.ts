@@ -82,6 +82,7 @@ export const MULTIRESPONDENT_FORM_SETTINGS_FIELDS = [
   'stepsToNotify',
   'stepOneEmailNotificationFieldId',
   'hasStatusTracker',
+  'hasUsedGuidedMode',
   'whitelistedSubmitterIds',
 ] as const
 

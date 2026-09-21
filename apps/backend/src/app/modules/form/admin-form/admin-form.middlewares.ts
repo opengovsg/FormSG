@@ -50,6 +50,7 @@ export const updateSettingsValidator = celebrate({
     ),
     hasRespondentCopy: Joi.boolean(),
     hasStatusTracker: Joi.boolean(),
+    hasUsedGuidedMode: Joi.boolean(),
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),

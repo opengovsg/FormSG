@@ -380,6 +380,7 @@ export interface IMultirespondentForm extends IForm {
   stepsToNotify: string[]
   stepOneEmailNotificationFieldId: string
   hasStatusTracker: boolean
+  hasUsedGuidedMode?: boolean
   whitelistedSubmitterIds?: WhitelistedSubmitterIds
   // Nested objects will always be returned from mongoose finds, even if they
   // are not defined in DB. See https://github.com/Automattic/mongoose/issues/5310

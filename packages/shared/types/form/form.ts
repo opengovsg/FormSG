@@ -271,6 +271,7 @@ export interface MultirespondentFormBase extends PaymentFormBase {
   stepsToNotify: FormWorkflowStepDto['_id'][]
   stepOneEmailNotificationFieldId?: string
   hasStatusTracker: boolean
+  hasUsedGuidedMode?: boolean
   whitelistedSubmitterIds?: WhitelistedSubmitterIds | null
 }
 
