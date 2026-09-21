@@ -311,7 +311,7 @@ export const adaptV4ResponsesForMyInfoHashCheck = (
     // Table fields have no myInfo key in the DTO union, hence the 'in' guard.
     const attr = 'myInfo' in field ? field.myInfo?.attr : undefined
     if (!attr) continue
-    // Children hashes use a per-child key scheme; adapted separately.
+
     if (field.fieldType === BasicField.Children) continue
 
     const response = responses[field._id.toString()]
