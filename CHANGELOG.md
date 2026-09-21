@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.29.0](https://github.com/opengovsg/formsg/compare/v9.28.0...v9.29.0) (2026-09-21)
+
+
+### Features
+
+* **mrf-children:** allow Children field on MRF behind flags (2/7) (#10002) ([#10002](https://github.com/opengovsg/formsg/commit/86bab551a84e43a8f9b3122c772ebddef6052dc8))
+* **mrf-children:** include Children answers in admin responses and CSV export (6/7) (#10006) ([#10006](https://github.com/opengovsg/formsg/commit/b5c303abb1b00ffd039dc3e38f35476cb429f549))
+* **mrf-children:** read-only carry-forward for steps 2+ (3/7) (#10003) ([#10003](https://github.com/opengovsg/formsg/commit/429ca8c95cc8c7b0c14880c16f3e55d8999df5a9))
+* **mrf-children:** render Children answers in MRF emails and PDF (5/7) (#10005) ([#10005](https://github.com/opengovsg/formsg/commit/bba4fb300f00d70b3b25eb8caa2d1892d856edaa))
+* **mrf-children:** verify Children answers against MyInfo hashes (4/7) (#10004) ([#10004](https://github.com/opengovsg/formsg/commit/60d8543464cd03fb41c0d0da9af65f0ba6098a09))
+
+
+### Bug Fixes
+
+* **mrf:** verify MyInfo hashes on step-1 MRF submissions (#10001) ([#10001](https://github.com/opengovsg/formsg/commit/d3d1f554945535ab8e3d750a6543fa62c4360bd3))
+* **workflow:** always save step 1 as static to unwedge legacy dynamic first steps (#10051) ([#10051](https://github.com/opengovsg/formsg/commit/ad9434c890deb7e6e78d253804d17ef2ffed85e3))
+
 ## [9.28.0](https://github.com/opengovsg/formsg/compare/v9.27.0...v9.28.0) (2026-09-18)
 
 
