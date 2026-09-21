@@ -14,7 +14,10 @@ import {
   WebhookContentFormat,
 } from '../webhook-payload-policy'
 import { reconstructMrfWebhookData } from '../webhook-reconstruction'
-import { shouldSendMrfWebhook } from '../webhook-send-eligibility'
+import {
+  MAX_V1_WORKFLOW_STEP_COUNT,
+  shouldSendMrfWebhook,
+} from '../webhook-send-eligibility'
 
 const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/abc'
 const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/123/abc'
@@ -168,17 +171,21 @@ describe('webhookFormat resolution', () => {
 
       it.each(ROWS)(
         'gates delivery of $name on the flag for every non-plumber consumer',
-        ({ webhookUrl }) => {
-          const urlFamily = getWebhookType(webhookUrl)
+        ({ webhookUrl, webhookFormat }) => {
+          const webhookConsumerType = toConsumerType(getWebhookType(webhookUrl))
           // The flag is the delivery gate, not a term in the resolution:
           // wiring `webhookFormat` is inert while the flag is off, in both
           // directions.
           expect(
             shouldSendMrfWebhook({
-              webhookType: urlFamily,
+              webhookConsumerType,
+              webhookFormat,
               isMrfWebhooksEnabled,
+              workflowStepCount: MAX_V1_WORKFLOW_STEP_COUNT, // RATIONALE: Set within the acceptable range for V1 since we are evaluating the flag.
             }),
-          ).toBe(urlFamily === 'plumber' ? true : isMrfWebhooksEnabled)
+          ).toBe(
+            webhookConsumerType === 'plumber' ? true : isMrfWebhooksEnabled,
+          )
         },
       )
 

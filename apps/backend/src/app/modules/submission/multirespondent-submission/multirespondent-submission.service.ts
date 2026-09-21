@@ -6,6 +6,7 @@ import {
   FormAuthType,
   FormFieldDto,
   FormResponseMode,
+  FormWebhook,
   FormWorkflowStepDto,
   SubmittedApprovalStep,
   SubmittedNonApprovalStep,
@@ -842,6 +843,7 @@ export const createMultiRespondentFormSubmission = ({
         webhook: form.webhook,
         isMrfWebhooksEnabled:
           growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+        workflowStepCount: form.workflow?.length ?? 0,
       })
 
       const saveSubmission = async () => {
@@ -1217,6 +1219,7 @@ const sendMrfInitialWebhookIfEligible = ({
   submission,
   snapshot,
   webhookUrl,
+  webhookFormat,
   isRetryEnabled,
   growthbook,
   logMeta,
@@ -1225,17 +1228,20 @@ const sendMrfInitialWebhookIfEligible = ({
   submission: IMultirespondentSubmissionSchema
   snapshot?: SubmissionSnapshotV4
   webhookUrl: string
+  webhookFormat: FormWebhook['webhookFormat']
   isRetryEnabled: boolean
   growthbook?: GrowthBook
   logMeta: CustomLoggerParams['meta']
   errorMessage?: string
 }): void => {
-  const webhookType = getWebhookType(webhookUrl)
+  const webhookConsumerType = toConsumerType(getWebhookType(webhookUrl))
 
   const shouldSend = shouldSendMrfWebhook({
-    webhookType,
+    webhookConsumerType,
+    webhookFormat,
     isMrfWebhooksEnabled:
       growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+    workflowStepCount: submission.workflow?.length ?? 0,
   })
   if (!shouldSend) {
     return
@@ -1243,7 +1249,7 @@ const sendMrfInitialWebhookIfEligible = ({
 
   logger.info({
     message: 'Sending initial webhook for multirespondent submission',
-    meta: { ...logMeta, webhookType },
+    meta: { ...logMeta, webhookConsumerType },
   })
 
   const submissionIndex = (submission.submittedSteps?.length ?? 1) - 1
@@ -1270,7 +1276,7 @@ const sendMrfInitialWebhookIfEligible = ({
   )
     .andThen((liveView) => {
       const policy = getWebhookPayloadPolicy({
-        webhookType: toConsumerType(webhookType),
+        webhookType: webhookConsumerType,
         // RATIONALE: Pinned to 'v4' until the V1 producer lands in the next PR, at which point this is
         // replaced with the form's own `webhook.webhookFormat`.
         webhookFormat: 'v4',
@@ -1411,6 +1417,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       submission,
       snapshot,
       webhookUrl,
+      webhookFormat: form.webhook?.webhookFormat,
       isRetryEnabled: !!form.webhook?.isRetryEnabled,
       growthbook,
       logMeta,
@@ -1497,6 +1504,7 @@ export const performMultirespondentPaymentPostSubmissionActions = (
     sendMrfInitialWebhookIfEligible({
       submission,
       webhookUrl,
+      webhookFormat: form.webhook?.webhookFormat,
       isRetryEnabled: !!form.webhook?.isRetryEnabled,
       growthbook,
       logMeta,
@@ -1646,6 +1654,7 @@ export const updateMultiRespondentFormSubmission = ({
         webhook: snapshottedFormDef.webhook,
         isMrfWebhooksEnabled:
           growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+        workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
       })
 
       const snapshot = shouldWriteSnapshot
@@ -1775,6 +1784,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
       submission,
       snapshot,
       webhookUrl,
+      webhookFormat: snapshottedFormDef.webhook?.webhookFormat,
       isRetryEnabled: !!snapshottedFormDef.webhook?.isRetryEnabled,
       growthbook,
       logMeta,
