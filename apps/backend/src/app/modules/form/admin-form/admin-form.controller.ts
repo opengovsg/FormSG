@@ -83,7 +83,7 @@ import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
-import { getSubmissionType } from '../form.utils'
+import { getSubmissionType, isFormMultirespondent } from '../form.utils'
 
 import {
   DeleteFirstWorkflowStepError,
@@ -1593,6 +1593,14 @@ export const handleUpdateWebhookSettings = [
   _handleUpdateWebhookSettings,
 ] as ControllerHandler[]
 
+/**
+ * Reads the durable guided-mode marker off a form. Undefined when the form is
+ * not multirespondent, or when it was never retrieved because the request
+ * failed before the permission check.
+ */
+const guidedModeOf = (form: IPopulatedForm): boolean | undefined =>
+  isFormMultirespondent(form) ? !!form.hasUsedGuidedMode : undefined
+
 export const _handleCreateWorkflowStep: ControllerHandler<
   { formId: string },
   FormWorkflowDto | ErrorDto,
@@ -1601,6 +1609,7 @@ export const _handleCreateWorkflowStep: ControllerHandler<
   const { formId } = req.params
   const workflowStepToCreate = req.body
   const sessionUserId = (req.session as AuthedSessionData).user._id
+  let hasUsedGuidedMode: boolean | undefined
 
   // Step 1: Retrieve currently logged in user.
   return (
@@ -1614,20 +1623,34 @@ export const _handleCreateWorkflowStep: ControllerHandler<
         }),
       )
       // Step 3: User has permissions, proceed to create form field with provided body.
-      .andThen((form) =>
-        AdminFormService.createWorkflowStep(form, workflowStepToCreate),
-      )
-      .map((updatedWorkflow) =>
-        res.status(StatusCodes.OK).json(updatedWorkflow),
-      )
+      .andThen((form) => {
+        hasUsedGuidedMode = guidedModeOf(form)
+        return AdminFormService.createWorkflowStep(form, workflowStepToCreate)
+      })
+      .map((updatedWorkflow) => {
+        if (hasUsedGuidedMode) {
+          logger.info({
+            message: 'Guided mode workflow step created',
+            meta: {
+              action: 'handleCreateWorkflowStep',
+              userId: sessionUserId,
+              formId,
+              hasUsedGuidedMode,
+              stepCount: updatedWorkflow.length,
+            },
+          })
+        }
+        return res.status(StatusCodes.OK).json(updatedWorkflow)
+      })
       .mapErr((error) => {
         logger.error({
-          message: 'Error occurred when creating form field',
+          message: 'Error occurred when creating form workflow step',
           meta: {
-            action: 'handleCreateFormField',
+            action: 'handleCreateWorkflowStep',
             ...createReqMeta(req),
             userId: sessionUserId,
             formId,
+            hasUsedGuidedMode,
             workflowStepToCreate,
           },
           error,
@@ -1654,6 +1677,7 @@ const _handleUpdateWorkflowStep: ControllerHandler<
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const updatedWorkflowStep = req.body
+  let hasUsedGuidedMode: boolean | undefined
 
   // Step 1: Retrieve currently logged in user.
   return UserService.getPopulatedUserById(sessionUserId)
@@ -1665,14 +1689,29 @@ const _handleUpdateWorkflowStep: ControllerHandler<
         level: PermissionLevel.Write,
       }),
     )
-    .andThen((retrievedForm) =>
-      AdminFormService.updateFormWorkflowStep(
+    .andThen((retrievedForm) => {
+      hasUsedGuidedMode = guidedModeOf(retrievedForm)
+      return AdminFormService.updateFormWorkflowStep(
         retrievedForm,
         stepNumber,
         updatedWorkflowStep,
-      ),
-    )
-    .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
+      )
+    })
+    .map((updatedWorkflow) => {
+      if (hasUsedGuidedMode) {
+        logger.info({
+          message: 'Guided mode workflow step updated',
+          meta: {
+            action: 'handleUpdateWorkflowStep',
+            userId: sessionUserId,
+            formId,
+            stepNumber,
+            hasUsedGuidedMode,
+          },
+        })
+      }
+      return res.status(StatusCodes.OK).json(updatedWorkflow)
+    })
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when updating form workflow step',
@@ -1681,6 +1720,7 @@ const _handleUpdateWorkflowStep: ControllerHandler<
           ...createReqMeta(req),
           userId: sessionUserId,
           formId,
+          hasUsedGuidedMode,
           updatedWorkflowStep,
         },
         error,
@@ -1729,6 +1769,7 @@ export const handleDeleteWorkflow: ControllerHandler<
 > = (req, res) => {
   const { formId } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
+  let hasUsedGuidedMode: boolean | undefined
 
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
@@ -1740,10 +1781,24 @@ export const handleDeleteWorkflow: ControllerHandler<
           })
         : errAsync(new WorkflowDeletionDisabledError()),
     )
-    .andThen((retrievedForm) =>
-      AdminFormService.deleteFormWorkflow(retrievedForm),
-    )
-    .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
+    .andThen((retrievedForm) => {
+      hasUsedGuidedMode = guidedModeOf(retrievedForm)
+      return AdminFormService.deleteFormWorkflow(retrievedForm)
+    })
+    .map((updatedWorkflow) => {
+      if (hasUsedGuidedMode) {
+        logger.info({
+          message: 'Guided mode workflow deleted',
+          meta: {
+            action: 'handleDeleteWorkflow',
+            userId: sessionUserId,
+            formId,
+            hasUsedGuidedMode,
+          },
+        })
+      }
+      return res.status(StatusCodes.OK).json(updatedWorkflow)
+    })
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when deleting form workflow',
@@ -1752,6 +1807,7 @@ export const handleDeleteWorkflow: ControllerHandler<
           ...createReqMeta(req),
           userId: sessionUserId,
           formId,
+          hasUsedGuidedMode,
         },
         error,
       })
@@ -1769,6 +1825,7 @@ export const handleDeleteWorkflowStep: ControllerHandler<
 > = (req, res) => {
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
+  let hasUsedGuidedMode: boolean | undefined
 
   return UserService.getPopulatedUserById(sessionUserId)
     .andThen((user) =>
@@ -1781,10 +1838,25 @@ export const handleDeleteWorkflowStep: ControllerHandler<
             level: PermissionLevel.Write,
           }),
     )
-    .andThen((retrievedForm) =>
-      AdminFormService.deleteFormWorkflowStep(retrievedForm, stepNumber),
-    )
-    .map((updatedWorkflow) => res.status(StatusCodes.OK).json(updatedWorkflow))
+    .andThen((retrievedForm) => {
+      hasUsedGuidedMode = guidedModeOf(retrievedForm)
+      return AdminFormService.deleteFormWorkflowStep(retrievedForm, stepNumber)
+    })
+    .map((updatedWorkflow) => {
+      if (hasUsedGuidedMode) {
+        logger.info({
+          message: 'Guided mode workflow step deleted',
+          meta: {
+            action: 'handleDeleteWorkflowStep',
+            userId: sessionUserId,
+            formId,
+            stepNumber,
+            hasUsedGuidedMode,
+          },
+        })
+      }
+      return res.status(StatusCodes.OK).json(updatedWorkflow)
+    })
     .mapErr((error) => {
       logger.error({
         message: 'Error occurred when deleting form workflow step',
@@ -1794,6 +1866,7 @@ export const handleDeleteWorkflowStep: ControllerHandler<
           userId: sessionUserId,
           formId,
           stepNumber,
+          hasUsedGuidedMode,
         },
         error,
       })
