@@ -1,7 +1,12 @@
-import type { FieldResponsesV4, FieldResponseV4 } from '@opengovsg/formsg-sdk'
+import type {
+  ChildrenAnswerV4,
+  FieldResponsesV4,
+  FieldResponseV4,
+} from '@opengovsg/formsg-sdk'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import {
   BasicField,
+  ChildrenCompoundFieldBase,
   FormAuthType,
   FormFieldDto,
   FormMetadata,
@@ -43,7 +48,10 @@ import {
   ProcessingError,
   ValidateFieldErrorV4,
 } from '../submission.errors'
-import { ProcessedFieldResponse } from '../submission.types'
+import {
+  ProcessedChildrenResponse,
+  ProcessedFieldResponse,
+} from '../submission.types'
 import { buildMrfMetadata } from '../submission.utils'
 
 import { MrfJwtPayload } from './multirespondent-submission.types'
@@ -291,12 +299,66 @@ const extractV4StringAnswer = (
 }
 
 /**
+ * Adapts a Children V4 response into the ProcessedChildrenResponse shape that
+ * handleMyInfoChildHashResponse consumes: a positional answerArray (one
+ * subarray per child, values ordered by the *field definition's*
+ * childrenSubFields, name first) plus childSubFieldsArray. The per-child hash
+ * keys derive from (fieldId, subField, childIndex, childName), so values are
+ * compared as-submitted — child DOBs were hashed in the frontend display
+ * format at prefill (hashChildrenFieldValues applies formatMyinfoDate), which
+ * is the same format the V4 answer carries. Missing or malformed subfield
+ * values become '' and can never satisfy a stored hash.
+ */
+const adaptV4ChildrenResponseForMyInfoHashCheck = ({
+  field,
+  response,
+  attr,
+}: {
+  field: FormFieldSchema | FormFieldDto
+  response: ParsedClearFormFieldResponseV4
+  attr: string
+}): ProcessedFieldResponse => {
+  const childrenSubFields =
+    (field as ChildrenCompoundFieldBase).childrenSubFields ?? []
+  const answer = (response.answer ?? {}) as ChildrenAnswerV4
+
+  const answerArray = Object.keys(answer)
+    .sort()
+    .map((childKey) =>
+      childrenSubFields.map((subField) => {
+        const subFieldAnswer: unknown = answer[childKey]?.value?.[subField]
+        const value =
+          typeof subFieldAnswer === 'object' && subFieldAnswer !== null
+            ? (subFieldAnswer as { value: unknown }).value
+            : undefined
+        return typeof value === 'string' ? value : ''
+      }),
+    )
+
+  return {
+    _id: field._id.toString(),
+    question: field.title,
+    fieldType: BasicField.Children,
+    answerArray,
+    childSubFieldsArray: childrenSubFields,
+    myInfo: { attr },
+    // Responses on hidden fields are rejected upstream in
+    // validateMultirespondentSubmission, so any response present here is on
+    // a visible field.
+    isVisible: true,
+  } as ProcessedChildrenResponse
+}
+
+/**
  * Adapts parsed V4 clear responses (keyed by field id) into the
  * ProcessedFieldResponse shape that MyInfoService.checkMyInfoHashes expects,
  * to verify MyInfo prefill hashes exactly as encrypt mode does.
  * The MyInfo attribute and fieldType are sourced from the *form definition*,
  * never from the client payload — a respondent must not be able to skip the
  * hash check by stripping or mislabelling the myInfo meta on a response.
+ *
+ * Children fields adapt to the per-child hash key scheme encrypt mode uses
+ * (handleMyInfoChildHashResponse / getMyInfoChildHashKey).
  *
  * @param responses parsed V4 clear responses, keyed by field id
  * @param formFields the form's field definitions
@@ -311,11 +373,16 @@ export const adaptV4ResponsesForMyInfoHashCheck = (
     // Table fields have no myInfo key in the DTO union, hence the 'in' guard.
     const attr = 'myInfo' in field ? field.myInfo?.attr : undefined
     if (!attr) continue
-    // Children hashes use a per-child key scheme; adapted separately.
-    if (field.fieldType === BasicField.Children) continue
 
     const response = responses[field._id.toString()]
     if (!response) continue
+
+    if (field.fieldType === BasicField.Children) {
+      adapted.push(
+        adaptV4ChildrenResponseForMyInfoHashCheck({ field, response, attr }),
+      )
+      continue
+    }
 
     const rawValue = extractV4StringAnswer(response)
     // Fail closed: a malformed answer on a MyInfo field compares as an empty
