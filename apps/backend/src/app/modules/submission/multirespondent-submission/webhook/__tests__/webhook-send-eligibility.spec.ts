@@ -1,7 +1,7 @@
 import { FormWebhook } from 'formsg-shared/types'
 
-import { WebhookConsumerType } from '../webhook-payload-policy'
 import { SnapshotContentFormat } from '../submission-snapshot.schema'
+import { WebhookConsumerType } from '../webhook-payload-policy'
 import {
   holdsV1FirstStepInvariant,
   resolveMrfWebhookContentFormat,
