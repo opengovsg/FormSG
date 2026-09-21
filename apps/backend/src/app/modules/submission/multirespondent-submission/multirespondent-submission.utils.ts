@@ -46,6 +46,7 @@ import { validateFieldV4 } from '../../../utils/field-validation'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
+import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
 import {
   InvalidWorkflowTypeError,
   ProcessingError,
@@ -653,13 +654,19 @@ const getQuestionAnswerPairsForOneField = ({
 
       // One pair per child attribute, named exactly like getAnswersForChild
       // (used by email/storage modes) so MRF emails match encrypt-mode
-      // emails: "Child <n> <attribute description>".
+      // emails: "Child <n> <attribute description>". Synthesized questions
+      // bypass response.question, so re-apply the [Myinfo] prefix for
+      // hash-verified answers (encrypt mode gates on hashedFields the same
+      // way).
+      const childMyInfoPrefix = response.provenance?.myinfoVerified
+        ? MYINFO_PREFIX
+        : ''
       Object.keys(childrenAnswer)
         .sort()
         .forEach((childKey, childIdx) => {
           for (const subField of subFields) {
             questionAnswerPairs.push({
-              question: `Child ${childIdx + 1} ${
+              question: `${childMyInfoPrefix}Child ${childIdx + 1} ${
                 MYINFO_ATTRIBUTE_MAP[subField].description
               }`,
               answer: childrenAnswer[childKey]?.value?.[subField]?.value ?? '',

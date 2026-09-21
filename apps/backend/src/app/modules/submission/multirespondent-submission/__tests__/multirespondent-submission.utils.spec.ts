@@ -980,6 +980,49 @@ describe('multirespondent-submission.utils', () => {
       ])
     })
 
+    it('should prefix children questions with [Myinfo] when the response is myinfoVerified', () => {
+      const formFields: FormFieldSchema[] = [
+        {
+          _id: '1',
+          title: 'Children',
+          fieldType: BasicField.Children,
+          childrenSubFields: [
+            MyInfoChildAttributes.ChildName,
+            MyInfoChildAttributes.ChildBirthCertNo,
+          ],
+        } as unknown as FormFieldSchema,
+      ]
+      const responses = {
+        '1': {
+          fieldType: BasicField.Children,
+          answer: {
+            child0: {
+              value: {
+                [MyInfoChildAttributes.ChildName]: {
+                  value: 'Phua Chu King',
+                },
+                [MyInfoChildAttributes.ChildBirthCertNo]: {
+                  value: 'T1234567X',
+                },
+              },
+            },
+          },
+          question: 'Children',
+          provenance: { myinfoVerified: true },
+        },
+      } as any
+
+      const result = getQuestionAnswerPairsForMultipleFields({
+        formFields,
+        responses,
+      })
+
+      expect(result.map((pair) => pair.question)).toEqual([
+        '[Myinfo] Child 1 Name',
+        '[Myinfo] Child 1 Birth certificate number',
+      ])
+    })
+
     it('should render a missing children subfield answer as an empty string', () => {
       const formFields: FormFieldSchema[] = [
         {

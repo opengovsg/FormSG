@@ -47,6 +47,10 @@ import { getVisibleFieldIds } from './logic'
 import { validateResponses } from './validate-responses'
 import { fieldResponsesV4ToLogicFieldResponseTransformer } from './v4-logic'
 
+// Must match the backend's MYINFO_PREFIX (email-submission.constants.ts) so
+// exploded children questions line up byte-for-byte with encrypt-mode storage.
+const MYINFO_PREFIX = '[Myinfo] '
+
 export type FlattenedV1Response = FieldResponse & {
   isVisible?: true
   isUserVerified?: true
@@ -296,15 +300,27 @@ const explodeChildrenEntries = (
   response: ChildBirthRecordsResponse,
   field: FormFieldDto & { fieldType: BasicField.Children },
   qnChildIdx: number,
+  v4Response?: FieldResponsesV4Input[string],
 ): FlattenedV1Response[] => {
   const subFields = field.childrenSubFields ?? []
+  // Synthesized questions bypass response.question, so re-apply the [Myinfo]
+  // prefix for hash-verified answers — same gate encrypt mode uses
+  // (getMyInfoPrefix on hashedFields) when it stores children responses.
+  // RATIONALE: provenance is read structurally because FieldResponseV4Input
+  // deliberately does not declare it (an SDK concept the shared package
+  // cannot import).
+  const myInfoPrefix = (
+    v4Response as { provenance?: { myinfoVerified?: boolean } } | undefined
+  )?.provenance?.myinfoVerified
+    ? MYINFO_PREFIX
+    : ''
   return response.answerArray.flatMap((childRow, childIdx) =>
     childRow.map(
       (answer, idx) =>
         ({
           _id: `${MyInfoAttribute.ChildrenBirthRecords}.${field._id}.${subFields[idx]}.${childIdx}`,
           fieldType: BasicField.Children,
-          question: `Child ${qnChildIdx + childIdx + 1} ${
+          question: `${myInfoPrefix}Child ${qnChildIdx + childIdx + 1} ${
             MYINFO_ATTRIBUTE_MAP[subFields[idx]].description
           }`,
           myInfo: { attr: subFields[idx] as unknown as MyInfoAttribute },
@@ -353,7 +369,12 @@ export const flattenV4ToFormFields = ({
     const field = emittingFields[index]
     if (field.fieldType === BasicField.Children) {
       const children = response as ChildBirthRecordsResponse
-      const exploded = explodeChildrenEntries(children, field, childQnIdx)
+      const exploded = explodeChildrenEntries(
+        children,
+        field,
+        childQnIdx,
+        v4Responses[field._id],
+      )
       childQnIdx += children.answerArray.length
       return exploded
     }
