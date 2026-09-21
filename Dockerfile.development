@@ -1,4 +1,4 @@
-FROM node:22.22.2-alpine3.22
+FROM node:22.22.2-alpine3.22@sha256:b77017c37f430e4466ff497058948a2f16e8b59779600d53711eeb7b999b0f4e
 LABEL maintainer=FormSG<form@open.gov.sg>
 
 WORKDIR /opt/formsg
@@ -12,7 +12,7 @@ ENV NODE_ENV=development
 ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # Install pnpm
-RUN npm install -g pnpm@10.30.3
+RUN npm install -g pnpm@12.4.1
 # Build dependencies for node_modules
 RUN apk add --virtual native-deps \
     # Python version must be specified starting in alpine3.12
