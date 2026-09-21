@@ -127,7 +127,6 @@ const appUrl =
     ? config.app.feAppUrl
     : config.app.appUrl
 
-/** Converts mongoose ObjectIds to the string ids expected by shared DTOs. */
 const toPlainFormFields = (
   formFields: IPopulatedMultirespondentForm['form_fields'],
 ): FormFieldDto[] => JSON.parse(JSON.stringify(formFields)) as FormFieldDto[]
