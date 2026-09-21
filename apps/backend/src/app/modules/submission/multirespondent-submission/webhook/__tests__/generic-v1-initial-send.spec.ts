@@ -365,6 +365,53 @@ describe('[GATE] generic V1 initial send', () => {
       expect(JSON.stringify(body)).not.toContain('approver@example.gov.sg')
     })
 
+    it('should carry the [Myinfo] question prefix for a read-only MyInfo field', async () => {
+      // `question` is the consumer's join key and the CSV column name, so a
+      // bare title where storage mode sent `[Myinfo] Your name` would be a
+      // compatibility break. The set comes from the row, resolved at submit.
+      const myInfoForm = await buildForm({
+        workflow: [step()],
+        webhook: { url: GENERIC_URL, isRetryEnabled: true },
+        authType: FormAuthType.MyInfo,
+        formFields: [
+          { ...FORM_FIELDS[0], myInfo: { attr: 'name' } },
+          FORM_FIELDS[1],
+        ],
+      })
+      const growthbook = growthbookWith(true)
+      const payload = buildPayload({
+        myInfoReadOnlyFields: [shortTextId],
+      } as Partial<MultirespondentSubmissionDto>)
+
+      const created = await createMultiRespondentFormSubmission({
+        form: myInfoForm,
+        encryptedPayload: payload,
+        logMeta: { action: 'test' },
+        growthbook,
+      })
+      const { submission, snapshot } = created._unsafeUnwrap()
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        snapshot,
+        submissionId: submission._id.toString(),
+        form: myInfoForm,
+        encryptedPayload: payload,
+        logMeta: {} as never,
+        growthbook,
+      })
+      await flushPromises()
+
+      const body = (MockAxios.post.mock.calls[0][1] as WebhookView).data
+      const recovered = formsgSdk.crypto.decrypt(formKeypair.secretKey, {
+        encryptedContent: body.encryptedContent,
+        version: VIRUS_SCANNER_SUBMISSION_VERSION,
+      })
+      expect(recovered?.responses.map((entry) => entry.question)).toEqual([
+        '[Myinfo] Your name',
+        'Your email',
+      ])
+    })
+
     it('should omit the row\u2019s verified content, which no form secret key can open', async () => {
       // The row's `verifiedContent` is encrypted under the SUBMISSION public
       // key. Copying it onto a V1 payload would not merely be useless: the

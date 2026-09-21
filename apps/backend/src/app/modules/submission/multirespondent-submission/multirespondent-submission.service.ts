@@ -959,6 +959,9 @@ export const createMultiRespondentFormSubmission = ({
           formFields: toPlainFormFields(form.form_fields),
           formLogics: toPlainFormLogics(form.form_logics),
           formPublicKey: form.publicKey,
+          // Resolved at submit time and persisted on the row beside this, so
+          // the wire and the admin's own surfaces prefix the same fields.
+          myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
           logMeta,
         })
         if (v1ContentResult.isErr()) {
@@ -1786,7 +1789,7 @@ export const updateMultiRespondentFormSubmission = ({
         !holdsV1FirstStepInvariant({
           submissionIndex,
           logMeta: { ...logMeta, submissionId },
-          })
+        })
           ? undefined
           : resolvedWebhookContentFormat
 
