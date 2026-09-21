@@ -56,6 +56,10 @@ export const isStepComplete = (
   formFields: FormFieldDto[],
   stepNumber: number,
 ): boolean => {
+  if (step.is_approval_enabled && !step.approval_field) {
+    return false
+  }
+
   if (step.approval_field) {
     if (!step.edit.map(String).includes(String(step.approval_field))) {
       return false

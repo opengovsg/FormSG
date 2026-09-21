@@ -10,6 +10,7 @@ export interface FormWorkflowStepBase {
   workflow_type: WorkflowType
   edit: FormFieldDto['_id'][]
   approval_field?: FormFieldDto['_id']
+  is_approval_enabled?: boolean
   step_name?: string
 }
 

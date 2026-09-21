@@ -177,6 +177,26 @@ describe('isStepComplete', () => {
       0,
       false,
     ],
+    ['enabled but no field chosen', { is_approval_enabled: true }, 1, false],
+    [
+      'enabled but no field chosen, on step 0',
+      { is_approval_enabled: true, emails: [] },
+      0,
+      false,
+    ],
+    [
+      'enabled with a reachable field',
+      { is_approval_enabled: true, approval_field: FIELD_ID },
+      1,
+      true,
+    ],
+    [
+      'enabled with a field that was deleted',
+      { is_approval_enabled: true, approval_field: OTHER_FIELD_ID },
+      1,
+      false,
+    ],
+    ['disabled and no field chosen', { is_approval_enabled: false }, 1, true],
   ])('approval: %s -> %s', (_name, overrides, stepNumber, expected) => {
     expect(isStepComplete(staticStep(overrides), formFields, stepNumber)).toBe(
       expected,

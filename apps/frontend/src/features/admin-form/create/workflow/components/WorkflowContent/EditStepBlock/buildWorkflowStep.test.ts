@@ -56,6 +56,26 @@ describe('buildWorkflowStep', () => {
     expect(step).not.toHaveProperty('field')
   })
 
+  it.each<[string, Partial<EditStepInputs>, boolean, boolean]>([
+    ['on with no field chosen', { is_approval_enabled: true }, false, true],
+    [
+      'on with a field chosen',
+      { is_approval_enabled: true, approval_field: FIELD_ID },
+      false,
+      true,
+    ],
+    ['off', { is_approval_enabled: false }, false, false],
+    ['never touched', {}, false, false],
+    ['on for the first step', { is_approval_enabled: true }, true, true],
+  ])(
+    'should persist the approval toggle when %s',
+    (_name, overrides, isFirstStep, expected) => {
+      const step = buildWorkflowStep(baseInputs(overrides), isFirstStep)
+
+      expect(step).toHaveProperty('is_approval_enabled', expected)
+    },
+  )
+
   it('should save a step with no respondent type as static with no emails', () => {
     const step = buildWorkflowStep(
       baseInputs({ workflow_type: undefined }),

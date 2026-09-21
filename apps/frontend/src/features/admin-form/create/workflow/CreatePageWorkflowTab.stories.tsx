@@ -370,6 +370,28 @@ Step3ApprovalFieldDeleted.parameters = {
   },
 }
 
+export const Step3ApprovalFieldDeletedRedesignOn = Template.bind({})
+Step3ApprovalFieldDeletedRedesignOn.decorators = [withRedesignOn]
+Step3ApprovalFieldDeletedRedesignOn.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        status: FormStatus.Private,
+        workflow: [
+          workflow_step_1,
+          workflow_step_2,
+          workflow_step_3_with_deleted_approval,
+        ],
+      }),
+    },
+  },
+  documentation: {
+    storyDescription:
+      'A step whose approval field has been deleted. The toggle stays on with nothing chosen, which keeps the step unfinished so the form cannot be opened.',
+  },
+}
+
 export const Step2NoEmails = Template.bind({})
 Step2NoEmails.parameters = {
   msw: {

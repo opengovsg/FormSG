@@ -46,6 +46,7 @@ export interface EditLogicBlockProps {
 
 export const FIELDS_TO_EDIT_NAME = 'edit'
 export const APPROVAL_FIELD_NAME = 'approval_field'
+export const APPROVAL_ENABLED_NAME = 'is_approval_enabled'
 
 const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 
@@ -73,6 +74,7 @@ export const buildWorkflowStep = (
       workflow_type: WorkflowType.Static,
       edit: inputs.edit,
       approval_field: inputs.approval_field,
+      is_approval_enabled: !!inputs.is_approval_enabled,
       step_name: inputs.step_name,
       emails: inputs.emails ?? [],
     }
@@ -83,6 +85,7 @@ export const buildWorkflowStep = (
     workflow_type: inputs.workflow_type,
     edit: inputs.edit,
     approval_field: inputs.approval_field,
+    is_approval_enabled: !!inputs.is_approval_enabled,
     step_name: inputs.step_name,
   }
 
@@ -145,7 +148,11 @@ export const EditStepBlock = ({
     useWorkflowSurfaces()
 
   const formMethods = useForm<EditStepInputs>({
-    defaultValues,
+    defaultValues: {
+      ...defaultValues,
+      is_approval_enabled:
+        defaultValues?.is_approval_enabled ?? !!defaultValues?.approval_field,
+    },
   })
   const { user, isLoading: isUserLoading } = useUser()
   const _isLoading = isLoading || isUserLoading

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef } from 'react'
 import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, Text } from '@chakra-ui/react'
@@ -20,7 +20,11 @@ import { EditStepInputs } from '../../../types'
 import { useIsSpotlightActiveSection } from '../../Spotlight'
 import { nextEditFieldsForApproval } from '../utils/nextEditFieldsForApproval'
 
-import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
+import {
+  APPROVAL_ENABLED_NAME,
+  APPROVAL_FIELD_NAME,
+  FIELDS_TO_EDIT_NAME,
+} from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 import { FieldEmptyState } from './EmptyStates'
 
@@ -47,9 +51,10 @@ export const ApprovalsBlock = ({
     watch,
   } = formMethods
   const selectedApprovalField = watch(APPROVAL_FIELD_NAME)
-  const [isApprovalToggleChecked, setIsApprovalToggleChecked] = useState(
-    !!selectedApprovalField,
-  )
+  const isApprovalToggleChecked =
+    watch(APPROVAL_ENABLED_NAME) ?? !!selectedApprovalField
+  const setIsApprovalToggleChecked = (isChecked: boolean) =>
+    setValue(APPROVAL_ENABLED_NAME, isChecked, { shouldDirty: true })
   const {
     yesNoFormFields = [],
     formWorkflow = [],
