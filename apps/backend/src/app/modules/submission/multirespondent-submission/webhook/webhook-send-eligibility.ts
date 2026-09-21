@@ -10,6 +10,8 @@ import {
   WebhookConsumerType,
 } from './webhook-payload-policy'
 
+export const MAX_V1_WORKFLOW_STEP_COUNT = 1
+
 export const shouldSendMrfWebhook = ({
   webhookConsumerType,
   webhookFormat,
@@ -32,27 +34,13 @@ export const shouldSendMrfWebhook = ({
     webhookType: webhookConsumerType,
     webhookFormat,
   })
-
-  return webhookContentFormat === 'v4' || workflowStepCount <= 1
+  // RATIONALE: v1 payloads can only support forms with <= 1 workflow steps.
+  const isV1WorkflowLimitExceeded =
+    webhookContentFormat === 'v1' &&
+    workflowStepCount > MAX_V1_WORKFLOW_STEP_COUNT
+  return !isV1WorkflowLimitExceeded
 }
 
-/**
- * PIN-16: the snapshot-write condition at both submit sites is
- * `enable-mrf-webhooks` on AND a webhook URL present AND retries enabled —
- * and, now, a form that is actually delivered to, in the shape this snapshot
- * holds. A snapshot is only ever read by a retry, so writing one nothing will
- * ever read produces an object that under PIN-10's no-expiry rule accumulates
- * permanently.
- *
- * The V4 in the name is a precondition, not a label. A form that resolves to
- * the V1 wire shape gets no V4 snapshot: the object would be the wrong shape
- * in the wrong store, and the V1 store and producer do not exist yet. Nothing
- * is lost by declining, because for the V4 shape the live row IS the wire
- * payload, so a retry with no snapshot still reconstructs byte-correctly.
- *
- * This becomes `resolveMrfSnapshotShape` when the V1 producer lands: the same
- * question, answered with the shape to write instead of a yes for one shape.
- */
 export const shouldWriteV4Snapshot = ({
   mrfVersion,
   webhook,
@@ -83,9 +71,6 @@ export const shouldWriteV4Snapshot = ({
     return false
   }
 
-  // The shape decides the snapshot, through the one resolver the send path
-  // uses, so a V4 object is never written for a submission that resolves to
-  // any other shape.
   return (
     resolveWebhookContentFormat({
       webhookType: webhookConsumerType,

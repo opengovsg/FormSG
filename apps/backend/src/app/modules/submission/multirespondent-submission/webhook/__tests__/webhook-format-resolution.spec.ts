@@ -14,7 +14,10 @@ import {
   WebhookContentFormat,
 } from '../webhook-payload-policy'
 import { reconstructMrfWebhookData } from '../webhook-reconstruction'
-import { shouldSendMrfWebhook } from '../webhook-send-eligibility'
+import {
+  MAX_V1_WORKFLOW_STEP_COUNT,
+  shouldSendMrfWebhook,
+} from '../webhook-send-eligibility'
 
 const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/abc'
 const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/123/abc'
@@ -178,9 +181,7 @@ describe('webhookFormat resolution', () => {
               webhookConsumerType,
               webhookFormat,
               isMrfWebhooksEnabled,
-              // A single-step workflow, so PIN-02's predicate is satisfied
-              // and the flag is the only remaining term.
-              workflowStepCount: 1,
+              workflowStepCount: MAX_V1_WORKFLOW_STEP_COUNT, // RATIONALE: Set within the acceptable range for V1 since we are evaluating the flag.
             }),
           ).toBe(
             webhookConsumerType === 'plumber' ? true : isMrfWebhooksEnabled,

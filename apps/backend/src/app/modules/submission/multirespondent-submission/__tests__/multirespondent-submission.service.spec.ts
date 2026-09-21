@@ -3760,21 +3760,14 @@ describe('multirespondent-submission.service', () => {
         _id: stepId1,
         workflow_type: WorkflowType.Static,
         emails: ['next@example.com'],
+
         edit: [fieldId],
       },
     ]
 
-    /**
-     * A non-plumber consumer resolves to the `v1` wire shape unless the form
-     * says otherwise, and that shape is the one PIN-02 restricts to a form of
-     * at most one step. These cases predate the resolution and are about the
-     * write condition, the send gate and the step token rather than the
-     * shape, so they name the V4 route explicitly and stay unrestricted. The
-     * `v1` route has its own spec,
-     * `webhook/__tests__/generic-v1-initial-send.spec.ts`.
-     */
-    const genericV4Webhook = (url: string) =>
-      ({ url, isRetryEnabled: true, webhookFormat: 'v4' }) as any
+    const genericV4Webhook = (url: string = GENERIC_URL) => {
+      return { url, isRetryEnabled: true, webhookFormat: 'v4' } as any
+    }
 
     const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
 
@@ -4001,7 +3994,7 @@ describe('multirespondent-submission.service', () => {
       async ({ enableMrfWebhooks, expectWritten }) => {
         const result = await createMultiRespondentFormSubmission({
           form: buildV4Form({
-            webhook: genericV4Webhook(GENERIC_URL),
+            webhook: genericV4Webhook(),
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: { action: 'test' },
@@ -4036,7 +4029,7 @@ describe('multirespondent-submission.service', () => {
       const result = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
         snapshottedFormDef: buildSnapshottedFormDef({
-          webhook: genericV4Webhook(GENERIC_URL),
+          webhook: genericV4Webhook(),
         }),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -4185,7 +4178,7 @@ describe('multirespondent-submission.service', () => {
           snapshot: withSnapshot ? buildSnapshot() : undefined,
           submissionId: submission._id.toString(),
           form: buildV4Form({
-            webhook: genericV4Webhook(GENERIC_URL),
+            webhook: genericV4Webhook(),
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,

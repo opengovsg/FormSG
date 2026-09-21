@@ -18,10 +18,6 @@ describe('shouldSendMrfWebhook', () => {
     workflowStepCount: number
     expected: boolean
   }>([
-    // Plumber is the privileged internal consumer: it is always delivered to,
-    // whatever the workflow's shape, because it always resolves to V4 and V4
-    // can represent one step of a multi-step submission. Its own
-    // `webhookFormat` is ignored, so a V1 setting must not restrict it.
     {
       webhookConsumerType: 'plumber',
       webhookFormat: undefined,
@@ -43,8 +39,6 @@ describe('shouldSendMrfWebhook', () => {
       workflowStepCount: 3,
       expected: true,
     },
-    // Every external consumer is governed by `enable-mrf-webhooks`, whatever
-    // shape it resolves to.
     {
       webhookConsumerType: 'generic',
       webhookFormat: undefined,
@@ -59,9 +53,6 @@ describe('shouldSendMrfWebhook', () => {
       workflowStepCount: 0,
       expected: false,
     },
-    // An external consumer on the V1 shape carries PIN-02's at-most-one-step
-    // predicate. No workflow, an empty workflow and a one-step workflow all
-    // deliver. An absent format resolves to V1, so it is restricted too.
     {
       webhookConsumerType: 'generic',
       webhookFormat: undefined,
@@ -76,8 +67,6 @@ describe('shouldSendMrfWebhook', () => {
       workflowStepCount: 1,
       expected: true,
     },
-    // Two or more steps on the V1 shape delivers nothing, however the flag is
-    // set: a storage-shaped payload cannot express a partial submission.
     {
       webhookConsumerType: 'generic',
       webhookFormat: 'v1',
@@ -92,10 +81,6 @@ describe('shouldSendMrfWebhook', () => {
       workflowStepCount: 2,
       expected: false,
     },
-    // An external consumer whose form asks for V4 is not restricted at all.
-    // The exemption belongs to the shape, not to plumber: this consumer gets
-    // the same envelope plumber gets, so it can tell one step from a whole
-    // submission just as plumber can.
     {
       webhookConsumerType: 'generic',
       webhookFormat: 'v4',
@@ -195,8 +180,6 @@ describe('shouldWriteV4Snapshot', () => {
       expected: false,
     },
     {
-      // An absent format resolves to V1, so there is no V4 object to write
-      // even though the form is delivered to.
       name: 'generic with no format resolves to V1, so writes no V4 snapshot',
       mrfVersion: 2,
       webhook: { url: GENERIC_URL, isRetryEnabled: true },
@@ -241,10 +224,6 @@ describe('shouldWriteV4Snapshot', () => {
       expected: false,
     },
     {
-      // Delivered to, but not in this shape. A V4 object here would be the
-      // wrong shape in the wrong store, and nothing is lost by declining:
-      // for the V4 shape the live row is a byte-correct fallback, and the V1
-      // store does not exist yet.
       name: 'a one-step generic form asking for V1 writes no V4 snapshot',
       mrfVersion: 2,
       webhook: {
