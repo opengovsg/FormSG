@@ -13,6 +13,7 @@ import {
   BasicField,
   ChildrenCompoundFieldBase,
   FormAuthType,
+  FormResponseMode,
   MyInfoAttribute as InternalAttr,
   MyInfoAttribute,
   MyInfoChildAttributes,
@@ -460,6 +461,22 @@ export const isMyInfoRelayState = (obj: unknown): obj is MyInfoRelayState =>
     !hasProp(obj, 'encodedQuery'))
 
 const MyInfoChildAttributeSet = new Set(Object.values(MyInfoChildAttributes))
+
+/**
+ * Whether a form may fetch sponsored children alongside birth records.
+ *
+ * Only Multirespondent forms submit v4 responses, which carry a per-child
+ * `type` (local or sponsored). Encrypt and Email forms still submit v1
+ * responses, whose shape has no slot for that label, so fetching sponsored
+ * children for them would produce submissions whose provenance can never be
+ * recovered. Keeping v1 local-only preserves the invariant that every v1
+ * Children answer is a birth record, which a later v1-to-v4 migration relies
+ * on.
+ * @param form The form being logged into or prefilled
+ */
+export const shouldFetchSponsoredChildren = (form: {
+  responseMode: FormResponseMode
+}): boolean => form.responseMode === FormResponseMode.Multirespondent
 
 export const isMyInfoChildrenBirthRecords = (
   attr: InternalAttr | undefined,

@@ -19,7 +19,11 @@ import {
   MyInfoAuthCodeCookieState,
   MyInfoAuthCodeSuccessPayload,
 } from './myinfo.types'
-import { getMyInfoEserviceIdInForm, mapRedirectURLError } from './myinfo.util'
+import {
+  getMyInfoEserviceIdInForm,
+  mapRedirectURLError,
+  shouldFetchSponsoredChildren,
+} from './myinfo.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -56,6 +60,7 @@ export const respondWithRedirectURL: ControllerHandler<
         formEsrvcId: eserviceId,
         formId,
         requestedAttributes: form.getUniqueMyInfoAttrs(),
+        includeSponsoredChildren: shouldFetchSponsoredChildren(form),
         encodedQuery,
       }),
     )

@@ -67,6 +67,7 @@ import {
   isMyInfoLoginCookie,
   isMyInfoRelayState,
   logIfFieldValueNotInMyinfoList,
+  shouldFetchSponsoredChildren,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
 
@@ -156,18 +157,23 @@ export class MyInfoServiceClass {
    * @param config.formId ID of form to which user should log in
    * @param config.formEsrvcId SingPass e-service ID of form
    * @param config.requestedAttributes MyInfo attributes requested in form
+   * @param config.includeSponsoredChildren Whether to also request sponsored
+   * children scopes, see shouldFetchSponsoredChildren
    */
   createRedirectURL({
     formId,
     formEsrvcId,
     requestedAttributes,
+    includeSponsoredChildren,
     encodedQuery,
   }: IMyInfoRedirectURLArgs): Result<string, never> {
     const redirectURL = this.#myInfoGovClient.createRedirectURL({
       purpose: MYINFO_CONSENT_PAGE_PURPOSE,
       relayState: createRelayState(formId, encodedQuery),
       // Always request consent for NRIC/FIN
-      requestedAttributes: internalAttrListToScopes(requestedAttributes),
+      requestedAttributes: internalAttrListToScopes(requestedAttributes, {
+        includeSponsoredChildren,
+      }),
       singpassEserviceId: formEsrvcId,
     })
     return ok(redirectURL)
@@ -507,7 +513,9 @@ export class MyInfoServiceClass {
           this.#myInfoPersonBreaker
             .fire(
               accessToken,
-              internalAttrListToScopes(requestedAttributes),
+              internalAttrListToScopes(requestedAttributes, {
+                includeSponsoredChildren: shouldFetchSponsoredChildren(form),
+              }),
               eserviceId,
             )
             .then((response) => new MyInfoData(response)),
