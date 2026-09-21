@@ -1,4 +1,4 @@
-import { ok, Result } from 'neverthrow'
+import { err, ok, Result } from 'neverthrow'
 
 import { WebhookData } from 'src/types/submission'
 
@@ -35,6 +35,20 @@ export const reconstructMrfWebhookData = (
 
   if (snapshot === undefined) {
     return ok(liveData)
+  }
+
+  if (policy.contentFormat !== snapshot.contentFormat) {
+    return err(
+      new SnapshotDataIntegrityError(
+        'Resolved content format does not match the stored snapshot',
+        {
+          policyContentFormat: policy.contentFormat,
+          storedContentFormat: snapshot.contentFormat,
+          submissionId: liveData.submissionId,
+          formId: liveData.formId,
+        },
+      ),
+    )
   }
 
   const reconstructed: WebhookData = {
