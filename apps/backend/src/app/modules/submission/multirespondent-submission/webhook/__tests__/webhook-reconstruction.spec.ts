@@ -5,6 +5,7 @@ import { projectSubmittedStepForWebhook } from 'src/app/modules/submission/submi
 import { WorkflowWebhookEventObject } from 'src/app/modules/webhook/webhook.types'
 import { WebhookData } from 'src/types/submission'
 
+import { SnapshotDataIntegrityError } from '../submission-snapshot.errors'
 import { WebhookPayloadPolicy } from '../webhook-payload-policy'
 import { reconstructMrfWebhookData } from '../webhook-reconstruction'
 
@@ -122,6 +123,33 @@ describe('reconstructMrfWebhookData', () => {
       })._unsafeUnwrap()
 
       expect('encryptedSubmissionSecretKey' in output).toBe(false)
+    })
+
+    it('refuses to build a payload when the policy and the snapshot disagree', () => {
+      const result = reconstructMrfWebhookData({
+        liveData: makeLiveData(),
+        snapshot: makeV4Snapshot(),
+        submissionIndex: 1,
+        policy: {
+          contentFormat: 'v1',
+          includeEncryptedSubmissionSecretKey: false,
+        },
+      })
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        SnapshotDataIntegrityError,
+      )
+    })
+
+    it('builds the payload when the policy and the snapshot agree', () => {
+      const result = reconstructMrfWebhookData({
+        liveData: makeLiveData(),
+        snapshot: makeV4Snapshot(),
+        submissionIndex: 1,
+        policy: PLUMBER_LATEST,
+      })
+
+      expect(result.isOk()).toBe(true)
     })
 
     it('freezes encryptedContent and verifiedContent from the snapshot', () => {
