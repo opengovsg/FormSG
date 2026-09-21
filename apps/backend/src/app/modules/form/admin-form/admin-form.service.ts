@@ -27,6 +27,7 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
+  FormWebhook,
   FormWorkflowDto,
   FormWorkflowStepDto,
   LogicDto,
@@ -592,7 +593,10 @@ export const createForm = (
 
   // Copied forms bypass createForm, so they keep inheriting their source's
   // setting; the schema default stays false for forms predating the field.
-  const newFormParams = { ...formParams, isSaveDraftEnabled: true }
+  const newFormParams = pinGenericConsumerWebhookFormat(
+    { ...formParams, isSaveDraftEnabled: true },
+    formParams.webhook?.webhookFormat,
+  )
 
   if (workspaceId)
     return ResultAsync.fromPromise(
@@ -2106,20 +2110,21 @@ const withHasUsedGuidedModeWriteOnce = (
 }
 
 /**
- * Only updates for generic consumers to the platform default the first time a form is given a webhook
- * URL.
+ * Pins a generic consumer's webhook to the platform default the first time a
+ * generic webhook URL is set.
  * RATIONALE: Do not set for plumber consumers since they will always be v4.
  */
-const withGenericConsumerPlatformDefaultWebhookFormat = (
-  originalForm: IPopulatedForm,
-  body: SettingsUpdateDto,
-): SettingsUpdateDto => {
+const pinGenericConsumerWebhookFormat = <
+  T extends { webhook?: Partial<FormWebhook> },
+>(
+  body: T,
+  existingWebhookFormat: FormWebhook['webhookFormat'],
+): T => {
   const isGenericWebhookUrl =
     !!body.webhook?.url &&
     toConsumerType(getWebhookType(body.webhook.url)) === 'generic'
-  const isWebhookFormatSet = originalForm.webhook?.webhookFormat !== undefined
 
-  if (!isGenericWebhookUrl || isWebhookFormatSet) {
+  if (!isGenericWebhookUrl || existingWebhookFormat !== undefined) {
     return body
   }
 
@@ -2131,6 +2136,12 @@ const withGenericConsumerPlatformDefaultWebhookFormat = (
     },
   }
 }
+
+const withGenericConsumerPlatformDefaultWebhookFormat = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateDto,
+): SettingsUpdateDto =>
+  pinGenericConsumerWebhookFormat(body, originalForm.webhook?.webhookFormat)
 
 /**
  * Updates form settings.
