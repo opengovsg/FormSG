@@ -1509,7 +1509,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       snapshot,
       webhookUrl,
       webhookFormat: form.webhook?.webhookFormat,
-      workflowStepCount: form.workflow?.length ?? 0,
+      workflowStepCount: submission.workflow?.length ?? 0,
       isRetryEnabled: !!form.webhook?.isRetryEnabled,
       growthbook,
       logMeta,

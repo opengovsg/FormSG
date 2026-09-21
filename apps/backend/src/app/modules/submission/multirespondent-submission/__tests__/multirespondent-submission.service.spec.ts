@@ -16,6 +16,7 @@ import {
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
+import formsgSdk from 'src/app/config/formsg-sdk'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
 import { WebhookFactory } from 'src/app/modules/webhook/webhook.factory'
 import { webhookStatsdClient } from 'src/app/modules/webhook/webhook.statsd-client'
@@ -3743,6 +3744,7 @@ describe('multirespondent-submission.service', () => {
   })
 
   describe('S4 MRF v4 webhook snapshot integration', () => {
+    const { publicKey: formPublicKey } = formsgSdk.crypto.generate()
     const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/x'
     const GENERIC_URL = 'https://example.com/hook'
     const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/1/x'
@@ -3805,6 +3807,7 @@ describe('multirespondent-submission.service', () => {
         authType: FormAuthType.NIL,
         responseMode: FormResponseMode.Multirespondent,
         title: 'Test form',
+        publicKey: formPublicKey,
         form_fields: [
           { _id: fieldId, fieldType: BasicField.ShortText, title: 'Q1' },
         ],
@@ -3894,10 +3897,12 @@ describe('multirespondent-submission.service', () => {
       token: string | undefined,
       view: WebhookView = buildLiveWebhookView(),
       mrfVersion = 2,
+      workflow: FormWorkflowStepDto[] = twoStepWorkflow,
     ): IMultirespondentSubmissionSchema =>
       ({
         _id: new ObjectId(),
         mrfVersion,
+        workflow,
         submittedSteps: [
           {
             isApproval: false,
@@ -4003,9 +4008,9 @@ describe('multirespondent-submission.service', () => {
       ${'v4, flag off'}                         | ${'v4'}       | ${twoStepWorkflow} | ${false}          | ${false}
       ${'v4, enable-mrf-webhooks on'}           | ${'v4'}       | ${twoStepWorkflow} | ${true}           | ${true}
       ${'v1 by default, 2 steps (not sent)'}    | ${undefined}  | ${twoStepWorkflow} | ${true}           | ${false}
-      ${'v1 by default, 1 step (sent as V1)'}   | ${undefined}  | ${oneStepWorkflow} | ${true}           | ${false}
-      ${'v1 explicit, 1 step (sent as V1)'}     | ${'v1'}       | ${oneStepWorkflow} | ${true}           | ${false}
-      ${'v1 by default, no steps (sent as V1)'} | ${undefined}  | ${[]}              | ${true}           | ${false}
+      ${'v1 by default, 1 step (sent as V1)'}   | ${undefined}  | ${oneStepWorkflow} | ${true}           | ${true}
+      ${'v1 explicit, 1 step (sent as V1)'}     | ${'v1'}       | ${oneStepWorkflow} | ${true}           | ${true}
+      ${'v1 by default, no steps (sent as V1)'} | ${undefined}  | ${[]}              | ${true}           | ${true}
       ${'v4, 1 step'}                           | ${'v4'}       | ${oneStepWorkflow} | ${true}           | ${true}
     `(
       'generic create snapshot write ($label) -> written=$expectWritten',
@@ -4172,10 +4177,20 @@ describe('multirespondent-submission.service', () => {
         expectSent,
       }) => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-        const submission = buildSubmissionWithToken(undefined)
+        const submission = buildSubmissionWithToken(
+          undefined,
+          buildLiveWebhookView(),
+          2,
+          workflow,
+        )
+        const snapshot =
+          url !== PLUMBER_URL && webhookFormat !== 'v4' && workflow.length <= 1
+            ? buildSnapshot({ contentFormat: 'v1' })
+            : undefined
 
         await performMultiRespondentPostSubmissionCreateActions({
           submission,
+          snapshot,
           submissionId: submission._id.toString(),
           form: buildV4Form({
             workflow,
