@@ -164,6 +164,12 @@ export const updateMrfEmailNotifications: UpdateMultiRespondentFormFn<
   return updateFormSettings(formId, newSettings)
 }
 
+export const updateMrfHasUsedGuidedMode: UpdateMultiRespondentFormFn<{
+  hasUsedGuidedMode: boolean
+}> = async (formId, newHasUsedGuidedMode) => {
+  return updateFormSettings(formId, newHasUsedGuidedMode)
+}
+
 export const updateFormAuthType: UpdateFormFn<'authType'> = async (
   formId,
   newAuthType,

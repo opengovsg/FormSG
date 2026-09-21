@@ -2082,6 +2082,28 @@ const withExpiredCloseAtCleared = (
 }
 
 /**
+ * Keeps `hasUsedGuidedMode` write-once. It records that a workflow was built with
+ * guided mode at some point, so it may only ever be set to true, and only when
+ * it is not already set. Every other value is dropped from the update.
+ */
+const withHasUsedGuidedModeWriteOnce = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateDto,
+): SettingsUpdateDto => {
+  const requested = (body as MultirespondentFormSettings).hasUsedGuidedMode
+  if (requested === undefined) return body
+
+  const alreadyRecorded =
+    isFormMultirespondent(originalForm) && !!originalForm.hasUsedGuidedMode
+
+  if (requested === true && !alreadyRecorded) return body
+
+  const next = { ...body } as Partial<MultirespondentFormSettings>
+  delete next.hasUsedGuidedMode
+  return next as SettingsUpdateDto
+}
+
+/**
  * Updates form settings.
  * @param originalForm The original form to update settings for
  * @param body the subset of form settings to update
@@ -2165,7 +2187,10 @@ export const updateFormSettings = (
   }
 
   const dotifiedSettingsToUpdate = dotifyObject(
-    withExpiredCloseAtCleared(originalForm, body),
+    withHasUsedGuidedModeWriteOnce(
+      originalForm,
+      withExpiredCloseAtCleared(originalForm, body),
+    ),
   )
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
 

@@ -2187,6 +2187,69 @@ describe('admin-form.service', () => {
       })
     })
 
+    describe('hasUsedGuidedMode is write-once', () => {
+      const mrfForm = (hasUsedGuidedMode?: boolean) =>
+        jest.mocked({
+          _id: new ObjectId(),
+          status: FormStatus.Private,
+          responseMode: FormResponseMode.Multirespondent,
+          workflow: [],
+          hasUsedGuidedMode,
+        } as unknown as IPopulatedForm)
+
+      it('should record the flag the first time guided mode is switched on', async () => {
+        const form = mrfForm(false)
+
+        await AdminFormService.updateFormSettings(form, {
+          hasUsedGuidedMode: true,
+        } as FormSettings)
+
+        expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { hasUsedGuidedMode: true },
+          expect.anything(),
+        )
+      })
+
+      it.each<[string, boolean | undefined, Partial<FormSettings>]>([
+        ['it is already recorded', true, { hasUsedGuidedMode: true }],
+        ['the update tries to clear it', true, { hasUsedGuidedMode: false }],
+        [
+          'the update tries to clear an unset flag',
+          false,
+          { hasUsedGuidedMode: false },
+        ],
+      ])('should drop the key when %s', async (_name, current, settings) => {
+        const form = mrfForm(current)
+
+        await AdminFormService.updateFormSettings(
+          form,
+          settings as FormSettings,
+        )
+
+        expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          {},
+          expect.anything(),
+        )
+      })
+
+      it('should leave other settings alone while dropping the flag', async () => {
+        const form = mrfForm(true)
+
+        await AdminFormService.updateFormSettings(form, {
+          title: 'a new title',
+          hasUsedGuidedMode: false,
+        } as FormSettings)
+
+        expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
+          form._id,
+          { title: 'a new title' },
+          expect.anything(),
+        )
+      })
+    })
+
     describe('clearing a lapsed closeAt on manual reopen', () => {
       const AN_HOUR_AGO = new Date(Date.now() - 60 * 60 * 1000)
       const IN_AN_HOUR = new Date(Date.now() + 60 * 60 * 1000)

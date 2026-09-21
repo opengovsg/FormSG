@@ -475,6 +475,10 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
     type: Boolean,
     default: false,
   },
+  hasUsedGuidedMode: {
+    type: Boolean,
+    required: false,
+  },
 
   payments_channel: formPaymentsChannelSchema,
 

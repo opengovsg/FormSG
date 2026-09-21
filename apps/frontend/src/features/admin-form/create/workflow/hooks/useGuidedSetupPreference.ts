@@ -12,6 +12,8 @@ import {
   useAdminWorkflowStore,
 } from '../adminWorkflowStore'
 
+import { useRecordHasUsedGuidedMode } from './useRecordHasUsedGuidedMode'
+
 export interface GuidedSetupPreference {
   isGuidedSetup: boolean
   setGuidedSetup: (isGuidedSetup: boolean) => void
@@ -36,13 +38,16 @@ export const useGuidedSetupPreference = (): GuidedSetupPreference => {
     setGuidedSetupInStore(storedPreference)
   }, [storedPreference, isGuidedSetup, setGuidedSetupInStore])
 
+  const recordHasUsedGuidedMode = useRecordHasUsedGuidedMode()
+
   const setGuidedSetup = useCallback(
     (next: boolean) => {
       setStoredPreference(next)
       setGuidedSetupInStore(next)
+      if (next) recordHasUsedGuidedMode()
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [setGuidedSetupInStore, storageKey],
+    [setGuidedSetupInStore, storageKey, recordHasUsedGuidedMode],
   )
 
   return { isGuidedSetup, setGuidedSetup }
