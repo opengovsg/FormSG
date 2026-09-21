@@ -88,7 +88,11 @@ describe('admin-form.settings.routes', () => {
       // Assert
       const expectedResponse = JSON.parse(
         // Should get updated with new settings
-        JSON.stringify(merge(formToUpdate.getSettings(), settingsToUpdate)),
+        JSON.stringify(
+          merge(formToUpdate.getSettings(), settingsToUpdate, {
+            webhook: { webhookFormat: 'v1' },
+          }),
+        ),
       )
       expect(response.status).toEqual(200)
       expect(response.body).toEqual(expectedResponse)

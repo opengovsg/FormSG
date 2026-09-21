@@ -13,6 +13,8 @@ import { verifyValidUnicodeString } from './admin-form.utils'
 const webhookSettingsValidator = Joi.object({
   url: Joi.string().uri().allow(''),
   isRetryEnabled: Joi.boolean(),
+  // NOTE: Defer accepting webhookFormat until v4 is supported and we can toggle between v1 and v4,
+  // it will be set to v1 by the server when the webhook.url is set.
 }).min(1)
 
 /**

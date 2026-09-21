@@ -1796,7 +1796,10 @@ describe('admin-form.service', () => {
       expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
         MOCK_ENCRYPT_FORM._id,
         // Should be dotified
-        { 'webhook.url': 'https://example.com' },
+        {
+          'webhook.url': 'https://example.com',
+          'webhook.webhookFormat': 'v1',
+        },
         { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
@@ -1879,8 +1882,10 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
       expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
         MOCK_MULTIRESPONDENT_FORM._id,
-        // Should be dotified
-        { 'webhook.url': 'https://example.com' },
+        {
+          'webhook.url': 'https://example.com',
+          'webhook.webhookFormat': 'v1',
+        },
         { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)

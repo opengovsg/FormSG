@@ -101,10 +101,23 @@ export type FormSupportedLanguages = {
   selectedLanguage?: Language | null
 }
 
+export type FormWebhookFormat = 'v1' | 'v4'
+
+export const FORMAT_FOR_PLUMBER_WEBHOOKS: FormWebhookFormat = 'v4'
+/**
+ * The platform default content format pinned onto a webhook the first time its URL is set.
+ */
+export const FORMAT_FOR_NEW_GENERIC_WEBHOOKS: FormWebhookFormat = 'v1'
+
 export type FormWebhook = {
   url: string
   isRetryEnabled: boolean
-  webhookFormat?: 'v1' | 'v4'
+  /**
+   * NOTE: Present if and only if `url` has been set at least once to a generic webhook consumer. Absent means no
+   * generic webhook consumer has ever been set for this form, so the form is free to
+   * follow whatever the platform default becomes.
+   */
+  webhookFormat?: FormWebhookFormat
 }
 
 export enum FormResponseMode {
