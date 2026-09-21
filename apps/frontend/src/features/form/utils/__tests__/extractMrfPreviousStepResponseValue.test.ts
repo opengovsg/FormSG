@@ -2,7 +2,11 @@ import type { FieldResponseV4 } from '@opengovsg/formsg-sdk'
 
 import { CLIENT_RADIO_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
 import { CountryRegion } from 'formsg-shared/constants/countryRegion'
-import { BasicField, FormFieldDto } from 'formsg-shared/types'
+import {
+  BasicField,
+  FormFieldDto,
+  MyInfoChildAttributes,
+} from 'formsg-shared/types'
 
 import bufferToFile from '~utils/bufferToFile'
 import { FormFieldValues } from '~templates/Field'
@@ -193,6 +197,80 @@ describe('extractMrfPreviousStepResponseValue', () => {
     expect(result).toEqual({ type: 'draw', value: strokes })
   })
 
+  it('should rebuild children field values in the field subfield order', () => {
+    const childrenField = {
+      _id: 'c'.repeat(24),
+      fieldType: BasicField.Children,
+      childrenSubFields: [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ],
+    } as FormFieldDto
+    const result = extractMrfPreviousStepResponseValue(
+      childrenField,
+      v4Response(BasicField.Children, {
+        child0: {
+          value: {
+            // Deliberately keyed in reverse of the field subfield order.
+            [MyInfoChildAttributes.ChildBirthCertNo]: { value: 'T1234567X' },
+            [MyInfoChildAttributes.ChildName]: { value: 'Phua Chu King' },
+          },
+        },
+      }),
+    )
+
+    expect(result).toEqual({
+      child: [['Phua Chu King', 'T1234567X']],
+      childFields: [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ],
+    })
+  })
+
+  it('should fill missing children subfield answers with empty strings', () => {
+    const childrenField = {
+      _id: 'c'.repeat(24),
+      fieldType: BasicField.Children,
+      childrenSubFields: [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ],
+    } as FormFieldDto
+    const result = extractMrfPreviousStepResponseValue(
+      childrenField,
+      v4Response(BasicField.Children, {
+        child0: {
+          value: {
+            [MyInfoChildAttributes.ChildName]: { value: 'Phua Chu King' },
+          },
+        },
+      }),
+    )
+
+    expect(result).toEqual({
+      child: [['Phua Chu King', '']],
+      childFields: [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ],
+    })
+  })
+
+  it('should return undefined for a children answer with no child entries', () => {
+    const childrenField = {
+      _id: 'c'.repeat(24),
+      fieldType: BasicField.Children,
+      childrenSubFields: [MyInfoChildAttributes.ChildName],
+    } as FormFieldDto
+    const result = extractMrfPreviousStepResponseValue(
+      childrenField,
+      v4Response(BasicField.Children, {}),
+    )
+
+    expect(result).toBeUndefined()
+  })
+
   it('should return undefined if previousFieldResponse is undefined', () => {
     const result = extractMrfPreviousStepResponseValue(
       mockField(BasicField.Radio),
@@ -230,7 +308,12 @@ describe('extractMrfPreviousStepResponseValue', () => {
         address: '6'.repeat(24),
         signature: '7'.repeat(24),
         countryRegion: '8'.repeat(24),
+        children: '9'.repeat(24),
       }
+      const childrenSubFields = [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildBirthCertNo,
+      ]
       const formFields = [
         mockField(BasicField.ShortText, fieldIds.text),
         mockField(BasicField.YesNo, fieldIds.yesNo),
@@ -241,6 +324,11 @@ describe('extractMrfPreviousStepResponseValue', () => {
         mockField(BasicField.Address, fieldIds.address),
         mockField(BasicField.Signature, fieldIds.signature),
         mockField(BasicField.CountryRegion, fieldIds.countryRegion),
+        {
+          _id: fieldIds.children,
+          fieldType: BasicField.Children,
+          childrenSubFields,
+        } as FormFieldDto,
       ]
       const formInputs = {
         [fieldIds.text]: 'hello',
@@ -264,6 +352,10 @@ describe('extractMrfPreviousStepResponseValue', () => {
         },
         [fieldIds.signature]: { type: 'draw', value: [[[1, 2, 0.5]]] },
         [fieldIds.countryRegion]: CountryRegion.Singapore,
+        [fieldIds.children]: {
+          child: [['Phua Chu King', 'T1234567X']],
+          childFields: childrenSubFields,
+        },
       } as unknown as FormFieldValues
 
       const wireResponses = createResponsesV4(formFields, formInputs, [])

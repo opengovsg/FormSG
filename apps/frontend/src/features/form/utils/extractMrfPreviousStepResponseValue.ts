@@ -2,6 +2,7 @@ import type {
   AddressAnswerV4,
   AttachmentAnswerV4,
   CheckboxAnswerV4,
+  ChildrenAnswerV4,
   FieldResponseV4,
   RadioAnswerV4,
   SignatureAnswerV4,
@@ -114,11 +115,27 @@ export const extractMrfPreviousStepResponseValue = (
       const answer = previousFieldResponse.answer as SignatureAnswerV4
       return { type: 'draw', value: answer.value }
     }
-    case BasicField.Children:
+    case BasicField.Children: {
+      // Inverse of createResponsesV4's Children case: rebuild the
+      // { child, childFields } input from the per-attribute V4 answer. The
+      // field definition's childrenSubFields is the ordering source of truth
+      // (subarray index i maps to childFields[i]).
+      const answer = previousFieldResponse.answer as ChildrenAnswerV4
+      const childFields = field.childrenSubFields ?? []
+      const child = Object.keys(answer)
+        .sort()
+        .map((childKey) =>
+          childFields.map(
+            (attr) => answer[childKey]?.value?.[attr]?.value ?? '',
+          ),
+        )
+      if (child.length === 0) return
+      return { child, childFields }
+    }
     case BasicField.Section:
     case BasicField.Image:
     case BasicField.Statement:
-      // Children is unsupported for MRF; the rest carry no input value.
+      // These carry no input value.
       return
     default:
       return previousFieldResponse.answer as FormFieldValue
