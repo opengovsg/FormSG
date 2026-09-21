@@ -34,6 +34,19 @@ export const reconstructMrfWebhookData = (
   const { liveData, snapshot, submissionIndex, policy } = input
 
   if (snapshot === undefined) {
+    // RATIONALE: The live row is always in `v4` shape, and should not be emitted if the policy requires a different format.
+    if (policy.contentFormat !== 'v4') {
+      return err(
+        new SnapshotDataIntegrityError(
+          'No snapshot available to reconstruct a non-v4 payload',
+          {
+            policyContentFormat: policy.contentFormat,
+            submissionId: liveData.submissionId,
+            formId: liveData.formId,
+          },
+        ),
+      )
+    }
     return ok(liveData)
   }
 

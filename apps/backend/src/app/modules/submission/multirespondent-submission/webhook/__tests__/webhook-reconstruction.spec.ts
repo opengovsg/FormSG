@@ -81,6 +81,22 @@ describe('reconstructMrfWebhookData', () => {
       // liveData itself was not mutated.
       expect(JSON.parse(JSON.stringify(liveData))).toEqual(frozen)
     })
+
+    it('refuses to emit the V4 live row when the resolved format is not v4', () => {
+      const result = reconstructMrfWebhookData({
+        liveData: makeLiveData(),
+        snapshot: undefined,
+        submissionIndex: undefined,
+        policy: {
+          contentFormat: 'v1',
+          includeEncryptedSubmissionSecretKey: false,
+        },
+      })
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        SnapshotDataIntegrityError,
+      )
+    })
   })
 
   describe('with submissionIndex (snapshot path)', () => {
