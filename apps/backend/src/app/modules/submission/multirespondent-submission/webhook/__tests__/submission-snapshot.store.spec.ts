@@ -88,7 +88,6 @@ const putRejectsThen = (
 
 type Uuid = ReturnType<typeof crypto.randomUUID>
 
-/** Returns deterministic snapshot tokens for asserted S3 keys. */
 const mockTokens = (...tokens: string[]) => {
   let i = 0
   return jest.spyOn(crypto, 'randomUUID').mockImplementation(() => {
