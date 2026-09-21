@@ -1274,8 +1274,6 @@ const sendMrfInitialWebhookIfEligible = ({
         // RATIONALE: Pinned to 'v4' until the V1 producer lands in the next PR, at which point this is
         // replaced with the form's own `webhook.webhookFormat`.
         webhookFormat: 'v4',
-        submissionIndex,
-        submittedStepsLength: submission.submittedSteps?.length ?? 0,
         logMeta,
       })
       const snapshotDetails = snapshot

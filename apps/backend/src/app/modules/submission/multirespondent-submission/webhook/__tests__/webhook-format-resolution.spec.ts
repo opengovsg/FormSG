@@ -67,8 +67,6 @@ const reconstructNonPlumberPayload = (
   const policy = getWebhookPayloadPolicy({
     webhookType,
     webhookFormat,
-    submissionIndex: 0,
-    submittedStepsLength: 1,
   })
 
   return reconstructMrfWebhookData({
@@ -163,8 +161,6 @@ describe('webhookFormat resolution', () => {
             getWebhookPayloadPolicy({
               webhookType,
               webhookFormat,
-              submissionIndex: 0,
-              submittedStepsLength: 1,
             }).contentFormat,
           ).toBe(expectedContentFormat)
         },
