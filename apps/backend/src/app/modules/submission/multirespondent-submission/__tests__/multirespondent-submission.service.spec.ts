@@ -3760,9 +3760,14 @@ describe('multirespondent-submission.service', () => {
         _id: stepId1,
         workflow_type: WorkflowType.Static,
         emails: ['next@example.com'],
+
         edit: [fieldId],
       },
     ]
+
+    const genericV4Webhook = (url: string = GENERIC_URL) => {
+      return { url, isRetryEnabled: true, webhookFormat: 'v4' } as any
+    }
 
     const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
 
@@ -3989,7 +3994,7 @@ describe('multirespondent-submission.service', () => {
       async ({ enableMrfWebhooks, expectWritten }) => {
         const result = await createMultiRespondentFormSubmission({
           form: buildV4Form({
-            webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+            webhook: genericV4Webhook(),
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: { action: 'test' },
@@ -4024,7 +4029,7 @@ describe('multirespondent-submission.service', () => {
       const result = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
         snapshottedFormDef: buildSnapshottedFormDef({
-          webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+          webhook: genericV4Webhook(),
         }),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -4139,7 +4144,12 @@ describe('multirespondent-submission.service', () => {
         await performMultiRespondentPostSubmissionCreateActions({
           submission,
           submissionId: submission._id.toString(),
-          form: buildV4Form({ webhook: { url, isRetryEnabled: true } as any }),
+          form: buildV4Form({
+            webhook:
+              url === PLUMBER_URL
+                ? ({ url, isRetryEnabled: true } as any)
+                : genericV4Webhook(url),
+          }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
           growthbook: growthbookWithFlags({ enableMrfWebhooks }),
@@ -4168,7 +4178,7 @@ describe('multirespondent-submission.service', () => {
           snapshot: withSnapshot ? buildSnapshot() : undefined,
           submissionId: submission._id.toString(),
           form: buildV4Form({
-            webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+            webhook: genericV4Webhook(),
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
@@ -4241,7 +4251,10 @@ describe('multirespondent-submission.service', () => {
             snapshot,
             submissionId: row._id.toString(),
             form: buildV4Form({
-              webhook: { url, isRetryEnabled: true } as any,
+              webhook:
+                url === PLUMBER_URL
+                  ? ({ url, isRetryEnabled: true } as any)
+                  : genericV4Webhook(url),
             }),
             encryptedPayload: buildV4Payload(),
             logMeta: {} as any,
