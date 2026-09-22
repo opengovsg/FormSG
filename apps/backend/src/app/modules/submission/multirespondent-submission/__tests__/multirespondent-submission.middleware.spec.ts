@@ -1640,6 +1640,74 @@ describe('Multirespondent Submission Middleware', () => {
       expect(mockRes.status).toHaveBeenCalledWith(400)
     })
 
+    it('should carry forward server-owned provenance from the previous response on re-submitted non-editable fields', async () => {
+      // Previous submission is V4-encrypted, with myinfoVerified stamped at
+      // step 1 on the non-editable field.
+      const previousV4Responses = {
+        [EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'original' },
+          question: 'Editable Field',
+          provenance: {},
+        },
+        [NON_EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'locked-value' },
+          question: 'Non-editable Field',
+          provenance: { myinfoVerified: true },
+        },
+      }
+      ;(
+        formsgSdk.cryptoV3.decryptFromSubmissionKey as jest.Mock
+      ).mockReturnValue({
+        responses: previousV4Responses,
+        verified: {},
+        submissionSecretKey: '',
+      })
+      jest.mocked(isFieldResponsesV4).mockReturnValue(true)
+
+      const mockReq = createMockReq({
+        formId: MOCK_FORM_ID,
+        submissionId: MOCK_SUBMISSION_ID,
+      })
+      // Step-2 carry-forward: client re-submits the non-editable field, but
+      // Joi has stripped its provenance.
+      mockReq.body.responses = {
+        [EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'updated' },
+          question: 'Editable Field',
+          provenance: {},
+        },
+        [NON_EDITABLE_FIELD_ID]: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'locked-value' },
+          question: 'Non-editable Field',
+          provenance: {},
+        },
+      }
+      mockReq.body.submissionSecretKey = 'submission-secret-key'
+      mockReq.formsg = {
+        formDef: {
+          _id: MOCK_FORM_ID,
+          form_fields: SNAPSHOT_FORM_FIELDS,
+          form_logics: [],
+          workflow: SNAPSHOT_WORKFLOW,
+        },
+        mrfSubmission: { ...MOCK_MRF_SUBMISSION_V1, mrfVersion: 2 },
+      }
+
+      const mockNext = jest.fn()
+      const mockRes = createMockRes()
+
+      await validateMultirespondentSubmission(mockReq, mockRes as any, mockNext)
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.body.responses[NON_EDITABLE_FIELD_ID].provenance).toEqual({
+        myinfoVerified: true,
+      })
+    })
+
     describe('step-token write-guard', () => {
       const RAW_STEP_TOKEN = stepToken.generate()
 
