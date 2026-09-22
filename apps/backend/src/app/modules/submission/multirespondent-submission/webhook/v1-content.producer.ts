@@ -6,7 +6,7 @@ import { err, ok, Result } from 'neverthrow'
 import formsgSdk from '../../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../../config/logger'
 
-import { V1ContentProductionError } from './submission-snapshot.errors'
+import { V1ContentMappingError } from './submission-snapshot.errors'
 
 const logger = createLoggerWithLabel(module)
 
@@ -22,7 +22,7 @@ export const buildV1EncryptedContent = ({
   formLogics: LogicDto[]
   formPublicKey: string
   logMeta: Record<string, unknown>
-}): Result<string, V1ContentProductionError> => {
+}): Result<string, V1ContentMappingError> => {
   try {
     const v1Fields = flattenV4ToFormFields({
       v4Responses,
@@ -37,6 +37,6 @@ export const buildV1EncryptedContent = ({
       meta: { action: 'buildV1EncryptedContent', ...logMeta },
       error: error as Error,
     })
-    return err(new V1ContentProductionError(undefined, error))
+    return err(new V1ContentMappingError(undefined, error))
   }
 }

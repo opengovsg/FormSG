@@ -9,7 +9,7 @@ import {
 import formsgSdk from 'src/app/config/formsg-sdk'
 import { ErrorCodes } from 'src/app/modules/core/core.errors'
 
-import { V1ContentProductionError } from '../submission-snapshot.errors'
+import { V1ContentMappingError } from '../submission-snapshot.errors'
 import { buildV1EncryptedContent } from '../v1-content.producer'
 
 const LOG_META = { formId: 'form-1', submissionId: 'sub-1' }
@@ -61,7 +61,6 @@ describe('buildV1EncryptedContent', () => {
         formFields,
         formLogics,
         formPublicKey: publicKey,
-        myInfoReadOnlyFieldIds: [],
         logMeta: LOG_META,
       })._unsafeUnwrap(),
       version: V1_VERSION,
@@ -72,7 +71,6 @@ describe('buildV1EncryptedContent', () => {
         formFields,
         formLogics: [],
         formPublicKey: publicKey,
-        myInfoReadOnlyFieldIds: [],
         logMeta: LOG_META,
       })._unsafeUnwrap(),
       version: V1_VERSION,
@@ -205,7 +203,7 @@ describe('buildV1EncryptedContent', () => {
 
     expect(result.isErr()).toBe(true)
     const error = result._unsafeUnwrapErr()
-    expect(error).toBeInstanceOf(V1ContentProductionError)
-    expect(error.code).toBe(ErrorCodes.SUBMISSION_MRF_V1_CONTENT_PRODUCTION)
+    expect(error).toBeInstanceOf(V1ContentMappingError)
+    expect(error.code).toBe(ErrorCodes.SUBMISSION_MRF_V1_CONTENT_MAPPING)
   })
 })
