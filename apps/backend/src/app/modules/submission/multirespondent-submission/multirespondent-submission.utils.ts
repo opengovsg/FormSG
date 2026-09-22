@@ -435,6 +435,9 @@ export const stampMyInfoVerifiedOnResponses = (
   responses: ParsedClearFormFieldResponsesV4,
   verifiedKeys: Set<MyInfoKey>,
 ): void => {
+  // NOTE: MyInfo Children subfields are all assumed to be uneditable, so the
+  // myinfoVerified stamp applies to the root children field rather than to
+  // each individual subfield.
   const verified = Array.from(verifiedKeys)
   for (const [fieldId, response] of Object.entries(responses)) {
     // TODO: implement stamping for all Myinfo fields

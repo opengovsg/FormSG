@@ -933,6 +933,10 @@ export const verifyMyInfoHashes = async (
       ),
     )
     .map((verifiedKeys) => {
+      req.formsg.myInfoReadOnlyFields = resolveMrfMyInfoReadOnlyFields({
+        verifiedKeys,
+        responses: req.body.responses ?? {},
+      })
       // Children fields are MyInfo-prefilled and non-editable, so record
       // the successful verification on the stored response's provenance.
       stampMyInfoVerifiedOnResponses(req.body.responses ?? {}, verifiedKeys)
@@ -1063,6 +1067,7 @@ export const encryptSubmission = async (
     encryptedSubmissionSecretKey,
     encryptedContent,
     submissionSecretKey,
+    myInfoReadOnlyFields: req.formsg.myInfoReadOnlyFields,
     version: req.body.version,
     workflowStep: req.body.workflowStep,
     responses: responses as FieldResponsesV4,
@@ -1136,17 +1141,6 @@ export const handleNdiResponses = async (
 
         if (jwtPayloadResult.isOk()) {
           userName = jwtPayloadResult.value
-
-          req.formsg.encryptedPayload.myInfoReadOnlyFields =
-            await resolveMrfMyInfoReadOnlyFields({
-              uinFin: jwtPayloadResult.value,
-              formId,
-              authType,
-              formFields:
-                req.formsg.snapshottedFormDef?.form_fields ??
-                formDef.form_fields,
-              responses: req.formsg.encryptedPayload.responses,
-            })
         }
         break
       }
