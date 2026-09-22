@@ -328,7 +328,11 @@ describe('[GATE] v4 per-step retry fidelity', () => {
     const retried = await retryPayload({ submission, submissionIndex: 2 })
 
     expect(MockSnapshotStore.readSnapshot).toHaveBeenCalledWith(
-      expect.objectContaining({ submissionIndex: 2, token: 'tok-loop-back' }),
+      expect.objectContaining({
+        submissionIndex: 2,
+        token: 'tok-loop-back',
+        contentFormat: 'v4',
+      }),
     )
     expect(retried.encryptedContent).toBe(STEP_2.encryptedContent)
     // All three step submissions are in scope for the third one, and the first
