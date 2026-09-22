@@ -1,14 +1,6 @@
-import { FormWebhook } from 'formsg-shared/types'
-
 import { createLoggerWithLabel } from '../../../../config/logger'
-import {
-  getWebhookType,
-  toConsumerType,
-} from '../../../webhook/webhook.service'
 
-import { SnapshotContentFormat } from './submission-snapshot.schema'
 import {
-  resolveWebhookContentFormat,
   WebhookConsumerType,
   WebhookContentFormat,
 } from './webhook-payload-policy'
@@ -40,59 +32,26 @@ export const shouldSendMrfWebhook = ({
   )
 }
 
-/**
- * Checks if a MRF webhook is eligible for delivery.
- * @param mrfVersion - The version of the MRF.
- * @param webhook - The webhook object.
- * @param isMrfWebhooksEnabled - Whether MRF webhooks are enabled.
- * @param workflowStepCount - The number of steps in the workflow.
- * @returns The content format of the MRF webhook if eligible, undefined otherwise.
- */
-export const getWebhookContentFormatIfEligible = ({
+export const shouldWriteMrfSnapshot = ({
   mrfVersion,
-  webhook,
-  isMrfWebhooksEnabled,
-  workflowStepCount,
+  shouldSend,
+  isRetryEnabled,
+  contentFormat,
+  submissionIndex,
+  logMeta,
 }: {
   mrfVersion: number
-  webhook?: {
-    url?: string
-    webhookFormat?: FormWebhook['webhookFormat']
-  }
-  isMrfWebhooksEnabled: boolean
-  workflowStepCount: number
-}): SnapshotContentFormat | undefined => {
-  const url = webhook?.url
-  if (mrfVersion !== 2 || !url) {
-    return undefined
-  }
-
-  const webhookConsumerType = toConsumerType(getWebhookType(url))
-  const contentFormat = resolveWebhookContentFormat({
-    webhookType: webhookConsumerType,
-    webhookFormat: webhook.webhookFormat,
-  })
-  if (
-    !shouldSendMrfWebhook({
-      webhookConsumerType,
-      contentFormat,
-      isMrfWebhooksEnabled,
-      workflowStepCount,
-    })
-  ) {
-    return undefined
-  }
-
-  return contentFormat
-}
-
-export const shouldWriteMrfSnapshot = ({
-  webhookContentFormat,
-  isRetryEnabled,
-}: {
-  webhookContentFormat: SnapshotContentFormat | undefined
+  shouldSend: boolean
   isRetryEnabled?: boolean
-}): boolean => webhookContentFormat !== undefined && !!isRetryEnabled
+  contentFormat: WebhookContentFormat
+  submissionIndex: number
+  logMeta: Record<string, unknown>
+}): boolean =>
+  mrfVersion === 2 &&
+  shouldSend &&
+  (contentFormat !== 'v1' ||
+    holdsV1FirstStepInvariant({ submissionIndex, logMeta })) &&
+  isRetryEnabled === true
 
 export const holdsV1FirstStepInvariant = ({
   submissionIndex,

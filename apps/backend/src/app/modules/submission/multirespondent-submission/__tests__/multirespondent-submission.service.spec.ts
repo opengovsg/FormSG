@@ -4089,6 +4089,57 @@ describe('multirespondent-submission.service', () => {
       expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
     })
 
+    it.each<[string, FormWebhook | undefined]>([
+      ['no webhook', undefined],
+      ['empty URL', { url: '', isRetryEnabled: true }],
+    ])('does not prepare a snapshot with %s', async (_label, webhook) => {
+      const result = await createMultiRespondentFormSubmission({
+        form: buildV4Form({ workflow: oneStepWorkflow, webhook }),
+        encryptedPayload: buildV4Payload(),
+        logMeta: { action: 'test' },
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
+      })
+
+      expect(result._unsafeUnwrap().snapshot).toBeUndefined()
+      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+    })
+
+    it('delivers V1 with an in-memory snapshot when retries are disabled', async () => {
+      const form = buildV4Form({
+        workflow: oneStepWorkflow,
+        webhook: {
+          url: GENERIC_URL,
+          webhookFormat: 'v1',
+          isRetryEnabled: false,
+        },
+      })
+      const encryptedPayload = buildV4Payload()
+      const growthbook = growthbookWithFlags({ enableMrfWebhooks: true })
+      const created = await createMultiRespondentFormSubmission({
+        form,
+        encryptedPayload,
+        logMeta: { action: 'test' },
+        growthbook,
+      })
+      const { submission, snapshot } = created._unsafeUnwrap()
+
+      expect(snapshot?.contentFormat).toBe('v1')
+      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        snapshot,
+        submissionId: submission._id.toString(),
+        form,
+        encryptedPayload,
+        logMeta: { action: 'test' },
+        growthbook,
+      })
+      await flushPromises()
+
+      expect(WebhookFactory.sendInitialWebhook).toHaveBeenCalledTimes(1)
+    })
+
     it('aborts the save (fail-loud) when the snapshot write fails', async () => {
       MockSnapshotStore.writeSnapshot.mockReturnValue(
         errAsync(new SnapshotWriteError()),

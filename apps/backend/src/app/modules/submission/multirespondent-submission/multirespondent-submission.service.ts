@@ -101,7 +101,6 @@ import {
   reconstructV1WebhookData,
 } from './webhook/webhook-reconstruction'
 import {
-  getWebhookContentFormatIfEligible,
   holdsV1FirstStepInvariant,
   shouldSendMrfWebhook,
   shouldWriteMrfSnapshot,
@@ -868,16 +867,30 @@ export const createMultiRespondentFormSubmission = ({
         encryptedStepToken,
       }
 
-      const webhookContentFormat = getWebhookContentFormatIfEligible({
-        mrfVersion,
-        webhook: form.webhook,
-        isMrfWebhooksEnabled:
-          growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-        workflowStepCount: form.workflow?.length ?? 0,
+      const webhook = form.webhook
+      const webhookConsumerType = webhook?.url
+        ? toConsumerType(getWebhookType(webhook.url))
+        : 'generic'
+      const webhookContentFormat = resolveWebhookContentFormat({
+        webhookType: webhookConsumerType,
+        webhookFormat: webhook?.webhookFormat,
       })
+      const shouldSend =
+        !!webhook?.url &&
+        shouldSendMrfWebhook({
+          webhookConsumerType,
+          contentFormat: webhookContentFormat,
+          isMrfWebhooksEnabled:
+            growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+          workflowStepCount: form.workflow?.length ?? 0,
+        })
       const shouldWriteSnapshot = shouldWriteMrfSnapshot({
-        webhookContentFormat,
-        isRetryEnabled: form.webhook?.isRetryEnabled,
+        mrfVersion,
+        shouldSend,
+        isRetryEnabled: webhook?.isRetryEnabled,
+        contentFormat: webhookContentFormat,
+        submissionIndex: 0,
+        logMeta,
       })
 
       const saveSubmission = async () => {
@@ -929,7 +942,9 @@ export const createMultiRespondentFormSubmission = ({
       }
 
       let snapshot: SubmissionSnapshot | undefined
-      if (webhookContentFormat === 'v1') {
+      const isV1Snapshot =
+        mrfVersion === 2 && shouldSend && webhookContentFormat === 'v1'
+      if (isV1Snapshot) {
         const v1ContentResult = buildV1EncryptedContent({
           v4Responses: encryptedPayload.responses,
           formFields: toPlainFormFields(form.form_fields),
@@ -1747,26 +1762,30 @@ export const updateMultiRespondentFormSubmission = ({
       submission.stepTokenHash = stepTokenHash
       submission.encryptedStepToken = encryptedStepToken
 
-      const resolvedWebhookContentFormat = getWebhookContentFormatIfEligible({
-        mrfVersion,
-        webhook: snapshottedFormDef.webhook,
-        isMrfWebhooksEnabled:
-          growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-        workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
+      const webhook = snapshottedFormDef.webhook
+      const webhookConsumerType = webhook?.url
+        ? toConsumerType(getWebhookType(webhook.url))
+        : 'generic'
+      const webhookContentFormat = resolveWebhookContentFormat({
+        webhookType: webhookConsumerType,
+        webhookFormat: webhook?.webhookFormat,
       })
-
-      const webhookContentFormat =
-        resolvedWebhookContentFormat === 'v1' &&
-        !holdsV1FirstStepInvariant({
-          submissionIndex,
-          logMeta: { ...logMeta, submissionId },
+      const shouldSend =
+        !!webhook?.url &&
+        shouldSendMrfWebhook({
+          webhookConsumerType,
+          contentFormat: webhookContentFormat,
+          isMrfWebhooksEnabled:
+            growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+          workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
         })
-          ? undefined
-          : resolvedWebhookContentFormat
-
       const shouldWriteSnapshot = shouldWriteMrfSnapshot({
-        webhookContentFormat,
-        isRetryEnabled: snapshottedFormDef.webhook?.isRetryEnabled,
+        mrfVersion,
+        shouldSend,
+        isRetryEnabled: webhook?.isRetryEnabled,
+        contentFormat: webhookContentFormat,
+        submissionIndex,
+        logMeta: { ...logMeta, submissionId },
       })
 
       const snapshot =
