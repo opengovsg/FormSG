@@ -80,8 +80,8 @@ import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
 import {
   SnapshotWriteError,
-  V1ContentProductionError,
-  V1SnapshotUnavailableError,
+  V1ContentMappingError,
+  V1SnapshotRequiredError,
 } from './webhook/submission-snapshot.errors'
 import {
   buildV1Snapshot,
@@ -778,7 +778,7 @@ export const createMultiRespondentFormSubmission = ({
   | AttachmentUploadError
   | SubmissionSaveError
   | SnapshotWriteError
-  | V1ContentProductionError
+  | V1ContentMappingError
 > => {
   logMeta = {
     ...logMeta,
@@ -1357,7 +1357,7 @@ const sendMrfInitialWebhookIfEligible = ({
       if (policy.contentFormat === 'v1') {
         if (snapshot?.contentFormat !== 'v1') {
           return errAsync(
-            new V1SnapshotUnavailableError(undefined, {
+            new V1SnapshotRequiredError(undefined, {
               ...logMeta,
               submissionIndex,
               snapshotContentFormat: snapshot?.contentFormat,
@@ -1366,7 +1366,7 @@ const sendMrfInitialWebhookIfEligible = ({
         }
         if (!holdsV1FirstStepInvariant({ submissionIndex, logMeta })) {
           return errAsync(
-            new V1SnapshotUnavailableError(
+            new V1SnapshotRequiredError(
               'V1 delivery declined: the submission is past its first step',
               { ...logMeta, submissionIndex },
             ),

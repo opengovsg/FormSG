@@ -18,7 +18,7 @@ import {
 import { VerifyJwtError } from '../../spcp/spcp.errors'
 import {
   SnapshotWriteError,
-  V1ContentProductionError,
+  V1ContentMappingError,
 } from '../multirespondent-submission/webhook/submission-snapshot.errors'
 import {
   AttachmentSizeLimitExceededError,
@@ -168,7 +168,7 @@ describe('submission.utils', () => {
         'saveFailed',
       ],
       [
-        new V1ContentProductionError(),
+        new V1ContentMappingError(),
         StatusCodes.INTERNAL_SERVER_ERROR,
         'Failed to save submission. Please try again later.',
         'saveFailed',

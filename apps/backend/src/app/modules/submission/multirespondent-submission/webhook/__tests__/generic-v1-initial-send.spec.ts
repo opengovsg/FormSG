@@ -578,7 +578,7 @@ describe('[GATE] generic V1 initial send', () => {
             | undefined,
       )
       expect(loggedCodes).toContain(
-        ErrorCodes.SUBMISSION_MRF_V1_SNAPSHOT_UNAVAILABLE,
+        ErrorCodes.SUBMISSION_MRF_V1_SNAPSHOT_REQUIRED,
       )
     })
   })

@@ -132,7 +132,7 @@ import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
 import { ResponseFormattedForEmail } from './email-submission/email-submission.types'
 import {
   SnapshotWriteError,
-  V1ContentProductionError,
+  V1ContentMappingError,
 } from './multirespondent-submission/webhook/submission-snapshot.errors'
 import {
   AttachmentSizeLimitExceededError,
@@ -228,7 +228,7 @@ const errorMapper: MapRouteError = (
         errorMessageKey: submissionErrorKey('files.uploadFailed'),
       }
     case SnapshotWriteError:
-    case V1ContentProductionError:
+    case V1ContentMappingError:
     case SubmissionSaveError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

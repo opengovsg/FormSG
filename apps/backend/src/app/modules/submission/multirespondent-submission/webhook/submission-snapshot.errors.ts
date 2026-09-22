@@ -62,16 +62,17 @@ export class SnapshotDataIntegrityError extends ApplicationError {
 }
 
 /**
- * Raised whenever a V1 delivery has no recorded V1 snapshot to reconstruct
- * from. Distinct from `SnapshotFormatNotRecordedError`: a V1 delivery has no
- * fallback — the submission row is never a valid V1 payload.
+ * Raised whenever a V1 delivery has no usable V1 snapshot to reconstruct from
+ * (missing, wrong format, or this delivery is not allowed to use one). Distinct
+ * from `SnapshotFormatNotRecordedError`: a V1 delivery has no fallback — the
+ * encrypted submission row is in V4 and cannot be used to reconstruct a V1 payload.
  */
-export class V1SnapshotNotRecordedError extends ApplicationError {
+export class V1SnapshotRequiredError extends ApplicationError {
   constructor(
-    message = 'No V1 submission snapshot was recorded for this delivery',
+    message = 'No usable V1 snapshot for this delivery',
     meta?: unknown,
   ) {
-    super(message, meta, ErrorCodes.SUBMISSION_MRF_V1_SNAPSHOT_NOT_RECORDED)
+    super(message, meta, ErrorCodes.SUBMISSION_MRF_V1_SNAPSHOT_REQUIRED)
   }
 }
 
