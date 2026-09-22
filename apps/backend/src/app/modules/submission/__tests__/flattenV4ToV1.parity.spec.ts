@@ -5,27 +5,33 @@
  * NOTE: The test compares JSON strings, not object keys since JSON is the
  * data that the server encrypts.
  */
+import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import {
   BasicField,
+  FormAuthType,
   FormFieldDto,
   FormResponseMode,
   MyInfoAttribute,
 } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
 import { applyMyInfoPrefix } from 'formsg-shared/utils/myinfo-prefix'
+import { okAsync } from 'neverthrow'
 
 import {
   FieldResponse,
   FormFieldSchema,
   IFormDocument,
 } from '../../../../types'
+import { ParsedClearFormFieldResponsesV4 } from '../../../../types/api'
 import formsgSdk from '../../../config/formsg-sdk'
+import { MyInfoService } from '../../myinfo/myinfo.service'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import {
   formatMyInfoStorageResponseData,
   omitResponseKeys,
 } from '../encrypt-submission/encrypt-submission.utils'
+import { resolveMrfMyInfoReadOnlyFields } from '../multirespondent-submission/myinfo-read-only-fields'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { isAttachmentResponse } from '../submission.utils'
 
@@ -379,6 +385,89 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
   })
 
   describe('MyInfo fields', () => {
+    describe('prefix eligibility derived from real MyInfo hashes', () => {
+      afterEach(() => jest.restoreAllMocks())
+
+      it.each(['all', 'some', 'none'] as const)(
+        'selects the same fields and produces identical bytes with %s attributes hashed',
+        async (selection) => {
+          const duplicateNameId = new ObjectId().toHexString()
+          const formFields = [
+            ...buildMyInfoFields(),
+            {
+              ...buildMyInfoField(BasicField.ShortText),
+              _id: duplicateNameId,
+            },
+            buildDifferentialField(BasicField.ShortText),
+          ]
+          const inputs = {
+            ...buildMyInfoInputs(),
+            [duplicateNameId]: buildMyInfoAnsweredInput(BasicField.ShortText),
+            [FIELD_IDS[BasicField.ShortText]]: buildDifferentialAnsweredInput(
+              BasicField.ShortText,
+            ),
+          } as FormFieldValues
+          const body = createClearSubmissionWithVirusScanningFormData(
+            { formFields, formInputs: inputs },
+            buildQuarantineMap(),
+          ).get('body') as string
+          const parsed = ParsedResponsesObject.parseResponses(
+            asFormDocument(formFields),
+            JSON.parse(body).responses,
+          )._unsafeUnwrap()
+
+          // Hash the independently specified MyInfo values, including the
+          // date format used by the MyInfo hash verifier.
+          const values = {
+            [MyInfoAttribute.Name]: 'MISS SHARON TAN MEI LENG',
+            [MyInfoAttribute.DateOfBirth]: '1990-09-09',
+            [MyInfoAttribute.Sex]: 'FEMALE',
+            [MyInfoAttribute.MobileNo]: '+6598765432',
+          }
+          const hashes = Object.fromEntries(
+            await Promise.all(
+              Object.entries(values)
+                .filter(
+                  ([attr]) =>
+                    selection === 'all' ||
+                    (selection === 'some' && attr === MyInfoAttribute.Name),
+                )
+                .map(async ([attr, value]) => [
+                  attr,
+                  await bcrypt.hash(value, 4),
+                ]),
+            ),
+          )
+          const storageIds = (
+            await MyInfoService.checkMyInfoHashes(parsed.responses, hashes)
+          )._unsafeUnwrap()
+          jest
+            .spyOn(MyInfoService, 'fetchMyInfoHashes')
+            .mockReturnValue(okAsync(hashes))
+          const mrfIds = await resolveMrfMyInfoReadOnlyFields({
+            uinFin: 'S1234567A',
+            formId: new ObjectId().toHexString(),
+            authType: FormAuthType.MyInfo,
+            formFields,
+            responses: createResponsesV4(
+              formFields,
+              inputs,
+              buildQuarantineMap(),
+            ) as ParsedClearFormFieldResponsesV4,
+          })
+
+          expect(new Set(mrfIds)).toEqual(storageIds)
+          expect(storageIds.size).toBe(
+            selection === 'all' ? 5 : selection === 'some' ? 2 : 0,
+          )
+          expectByteParity(formFields, inputs, {
+            hashedFields: storageIds,
+            readOnlyFieldIds: mrfIds,
+          })
+        },
+      )
+    })
+
     describe.each(MYINFO_FIELD_TYPES)('%s', (fieldType) => {
       const formFields = [buildMyInfoField(fieldType)]
       const inputs = {
