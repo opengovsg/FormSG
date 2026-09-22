@@ -104,6 +104,10 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
       return `${ExternalAttr.ChildrenBirthRecords}.race`
     case InternalAttr.ChildSecondaryRace:
       return `${ExternalAttr.ChildrenBirthRecords}.secondaryrace`
+    // Derived from which data item the record came from, not fetched. Name is
+    // always requested for a children field, so this adds no scope.
+    case InternalAttr.ChildType:
+      return `${ExternalAttr.ChildrenBirthRecords}.name`
   }
 }
 
@@ -172,6 +176,7 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
     case InternalAttr.ChildGender:
     case InternalAttr.ChildRace:
     case InternalAttr.ChildSecondaryRace:
+    case InternalAttr.ChildType:
       return ExternalAttr.ChildrenBirthRecords
   }
 }
@@ -316,6 +321,16 @@ const SPONSORED_CHILD_COLUMNS: Partial<
 }
 
 /**
+ * Sponsored child sub-fields that are derived rather than fetched, so they
+ * carry no scope and are read directly.
+ */
+const SPONSORED_CHILD_DERIVED_COLUMNS: Partial<
+  Record<MyInfoChildAttributes, () => string>
+> = {
+  [MyInfoChildAttributes.ChildType]: () => MyInfoChildrenScope.Sponsored,
+}
+
+/**
  * Sponsored-children scope for a child attribute, or undefined when the
  * attribute has no sponsored counterpart.
  */
@@ -386,6 +401,8 @@ export class MyInfoData implements MyInfoDataTransformer<
         return records.map((c) => c?.race?.desc ?? '')
       case MyInfoChildAttributes.ChildSecondaryRace:
         return records.map((c) => c?.secondaryrace?.desc ?? '')
+      case MyInfoChildAttributes.ChildType:
+        return records.map(() => MyInfoChildrenScope.Local)
       default: {
         const never: never = childAttr
         return never
@@ -404,7 +421,8 @@ export class MyInfoData implements MyInfoDataTransformer<
     const records = (this.#personData.sponsoredchildrenrecords ??
       []) as MyInfoSponsoredChildRecord[]
     const column = SPONSORED_CHILD_COLUMNS[childAttr]
-    return records.map((c) => (column ? column.read(c) : ''))
+    const derived = SPONSORED_CHILD_DERIVED_COLUMNS[childAttr]
+    return records.map((c) => column?.read(c) ?? derived?.() ?? '')
   }
 
   /**

@@ -2,6 +2,7 @@ import keyBy from 'lodash/keyBy'
 import {
   BasicField,
   MyInfoAttribute,
+  MyInfoChildrenScope,
   MyInfoChildVaxxStatus,
   MyInfoField,
   TranslationMapping,
@@ -513,6 +514,18 @@ export const types: MyInfoFieldBlock[] = [
     fieldType: BasicField.Dropdown,
     fieldOptions: myInfoRaces,
     previewValue: 'CHINESE',
+    // TODO: Get title translations
+  },
+  {
+    name: MyInfoAttribute.ChildType,
+    value: "Child's record type",
+    category: 'children',
+    verified: [],
+    source: 'Immigration & Checkpoints Authority',
+    description: 'Record type',
+    fieldType: BasicField.Dropdown,
+    fieldOptions: Object.values(MyInfoChildrenScope),
+    previewValue: MyInfoChildrenScope.Local,
     // TODO: Get title translations
   },
 ]

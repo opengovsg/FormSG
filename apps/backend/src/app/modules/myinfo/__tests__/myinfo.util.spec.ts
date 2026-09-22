@@ -4,6 +4,7 @@ import {
   MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildData,
+  MyInfoChildrenScope,
 } from 'formsg-shared/types'
 
 import { IHashes } from 'src/types'
@@ -149,6 +150,64 @@ describe('myinfo.util', () => {
 
       expect(Object.keys(results)).toHaveLength(2)
       expect(Object.values(results).every(Boolean)).toBe(true)
+    })
+
+    it('should hash and verify the record type like any other MyInfo sub-field', async () => {
+      const subFields = [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildType,
+      ]
+      const field = {
+        ...(childrenField as object),
+        childrenSubFields: subFields,
+      } as unknown as PossiblyPrefilledField
+      const promises = hashFieldValues([field], {
+        [MyInfoChildAttributes.ChildName]: ['LOCAL', 'SPONSORED'],
+        [MyInfoChildAttributes.ChildType]: [
+          MyInfoChildrenScope.Local,
+          MyInfoChildrenScope.Sponsored,
+        ],
+      })
+      const hashes = Object.fromEntries(
+        await Promise.all(
+          Object.entries(promises).map(async ([k, p]) => [k, await p] as const),
+        ),
+      ) as IHashes
+      const response = {
+        ...makeResponse(['SPONSORED', MyInfoChildrenScope.Sponsored]),
+        childSubFieldsArray: subFields,
+      } as ProcessedChildrenResponse
+
+      const results = await resolve(compareHashedValues([response], hashes))
+
+      expect(
+        results[
+          getMyInfoChildHashKey(
+            FIELD_ID,
+            MyInfoChildAttributes.ChildType,
+            0,
+            'SPONSORED',
+          )
+        ],
+      ).toBe(true)
+
+      const tampered = {
+        ...makeResponse(['SPONSORED', MyInfoChildrenScope.Local]),
+        childSubFieldsArray: subFields,
+      } as ProcessedChildrenResponse
+      const tamperedResults = await resolve(
+        compareHashedValues([tampered], hashes),
+      )
+      expect(
+        tamperedResults[
+          getMyInfoChildHashKey(
+            FIELD_ID,
+            MyInfoChildAttributes.ChildType,
+            0,
+            'SPONSORED',
+          )
+        ],
+      ).toBe(false)
     })
 
     it('should compare nothing for a child with no stored hash (user-filled pass-through)', async () => {
