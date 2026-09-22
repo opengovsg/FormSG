@@ -134,6 +134,23 @@ describe('the MyInfo question prefix on the webhook and admin surfaces', () => {
     expect(titles[HIDDEN_FIELD_ID]).toBe('Sex')
   })
 
+  it('still prefixes Name when the snapshot field _id is an ObjectId', () => {
+    const objectId = new ObjectId(NAME_FIELD_ID)
+    const data = submissionData(READ_ONLY_FIELD_IDS)
+    data.form_fields = data.form_fields.map((field) =>
+      String(field._id) === NAME_FIELD_ID
+        ? { ...field, _id: objectId as unknown as string }
+        : field,
+    )
+
+    const dto = createMultirespondentSubmissionDto(data, {})
+    const nameField = dto.form_fields.find(
+      (field) => String(field._id) === NAME_FIELD_ID,
+    )
+
+    expect(nameField?.title).toBe('[Myinfo] Name')
+  })
+
   it('serves the response download the same question text', async () => {
     const chunk = await throughMrfMetadata({
       ...submissionData(READ_ONLY_FIELD_IDS),

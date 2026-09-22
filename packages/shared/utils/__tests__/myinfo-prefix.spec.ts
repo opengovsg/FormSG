@@ -3,7 +3,6 @@ import { FlattenedV1Response } from '../flatten-v4-to-v1'
 import {
   applyMyInfoPrefix,
   applyMyInfoPrefixToFormFields,
-  MYINFO_QUESTION_PREFIX,
   shouldPrefixMyInfoQuestion,
 } from '../myinfo-prefix'
 
@@ -42,32 +41,43 @@ const plainField = (): FormFieldDto =>
     title: 'Favourite colour',
   }) as unknown as FormFieldDto
 
-describe('MYINFO_QUESTION_PREFIX', () => {
-  it('carries the trailing space that is part of the literal', () => {
-    expect(MYINFO_QUESTION_PREFIX).toBe('[Myinfo] ')
-  })
-})
+// Simulate non-primitive IDs without coupling these tests to Mongoose.
+const objectIdShaped = (hex: string) =>
+  ({ toString: () => hex, toHexString: () => hex }) as unknown as string
+
+const stringWrapper = (hex: string) => Object(hex) as string
 
 describe('shouldPrefixMyInfoQuestion', () => {
-  it('is true only when the field has an attr and is in the read-only set', () => {
+  it('returns true for a read-only MyInfo field', () => {
     expect(
       shouldPrefixMyInfoQuestion(myInfoEntry(), new Set([MYINFO_ID])),
     ).toBe(true)
   })
 
-  it('is false for a MyInfo field outside the read-only set', () => {
+  it('returns false for a MyInfo field that is not read-only', () => {
     expect(shouldPrefixMyInfoQuestion(myInfoEntry(), new Set())).toBe(false)
   })
 
-  it('is false for a non-MyInfo field even if its id is in the set', () => {
+  it('returns false for a non-MyInfo field even when its ID is marked read-only', () => {
     expect(shouldPrefixMyInfoQuestion(plainEntry(), new Set([PLAIN_ID]))).toBe(
       false,
     )
   })
+
+  it('matches an ObjectId field ID to its read-only string ID', () => {
+    // findEncryptedSubmissionById does not lean(); nested form_fields keep
+    // ObjectId _ids, while myInfoReadOnlyFields is stored as [String].
+    expect(
+      shouldPrefixMyInfoQuestion(
+        { ...myInfoEntry(), _id: objectIdShaped(MYINFO_ID) },
+        new Set([MYINFO_ID]),
+      ),
+    ).toBe(true)
+  })
 })
 
 describe('applyMyInfoPrefix', () => {
-  it('prefixes only the read-only MyInfo entries', () => {
+  it('adds [Myinfo] to read-only MyInfo questions and leaves other questions unchanged', () => {
     const result = applyMyInfoPrefix(
       [myInfoEntry(), plainEntry()],
       [MYINFO_ID, PLAIN_ID],
@@ -78,33 +88,57 @@ describe('applyMyInfoPrefix', () => {
     ])
   })
 
-  it('prefixes nothing when the read-only set is empty', () => {
+  it('leaves questions unchanged when no fields are read-only', () => {
     const input = [myInfoEntry(), plainEntry()]
     expect(JSON.stringify(applyMyInfoPrefix(input, []))).toBe(
       JSON.stringify(input),
     )
   })
 
-  it('does not mutate its input', () => {
+  it('does not change the original responses when adding a prefix', () => {
     const input = [myInfoEntry()]
     const before = JSON.stringify(input)
     applyMyInfoPrefix(input, [MYINFO_ID])
     expect(JSON.stringify(input)).toBe(before)
   })
 
-  it('preserves key order, which byte parity depends on', () => {
+  it('preserves response property order for webhook serialization', () => {
     const [prefixed] = applyMyInfoPrefix([myInfoEntry()], [MYINFO_ID])
     expect(Object.keys(prefixed)).toEqual(Object.keys(myInfoEntry()))
   })
 
-  it('accepts a Set as well as an array of ids', () => {
+  it('prefixes questions when read-only IDs are supplied as a Set', () => {
     const [prefixed] = applyMyInfoPrefix([myInfoEntry()], new Set([MYINFO_ID]))
+    expect(prefixed.question).toBe('[Myinfo] Name')
+  })
+
+  it('matches a string field ID to an ObjectId in the read-only array', () => {
+    const [prefixed] = applyMyInfoPrefix(
+      [myInfoEntry()],
+      [objectIdShaped(MYINFO_ID)],
+    )
+    expect(prefixed.question).toBe('[Myinfo] Name')
+  })
+
+  it('matches a string field ID to an ObjectId in the read-only Set', () => {
+    const [prefixed] = applyMyInfoPrefix(
+      [myInfoEntry()],
+      new Set([objectIdShaped(MYINFO_ID)]),
+    )
+    expect(prefixed.question).toBe('[Myinfo] Name')
+  })
+
+  it('matches a string field ID to a boxed String in the read-only Set', () => {
+    const [prefixed] = applyMyInfoPrefix(
+      [myInfoEntry()],
+      new Set([stringWrapper(MYINFO_ID)]),
+    )
     expect(prefixed.question).toBe('[Myinfo] Name')
   })
 })
 
 describe('applyMyInfoPrefixToFormFields', () => {
-  it('prefixes the title of only the read-only MyInfo fields', () => {
+  it('adds [Myinfo] to read-only MyInfo titles and leaves other titles unchanged', () => {
     const result = applyMyInfoPrefixToFormFields(
       [myInfoField(), plainField()],
       [MYINFO_ID, PLAIN_ID],
@@ -115,24 +149,25 @@ describe('applyMyInfoPrefixToFormFields', () => {
     ])
   })
 
-  it('prefixes nothing when the read-only set is empty', () => {
+  it('leaves titles unchanged when no fields are read-only', () => {
     const input = [myInfoField(), plainField()]
     expect(JSON.stringify(applyMyInfoPrefixToFormFields(input, []))).toBe(
       JSON.stringify(input),
     )
   })
 
-  it('does not mutate its input', () => {
+  it('does not change the original form fields when adding a prefix', () => {
     const input = [myInfoField()]
     const before = JSON.stringify(input)
     applyMyInfoPrefixToFormFields(input, [MYINFO_ID])
     expect(JSON.stringify(input)).toBe(before)
   })
 
-  it('applies the same rule to webhook questions and admin titles', () => {
-    const readOnly = [MYINFO_ID]
-    const [webhookField] = applyMyInfoPrefix([myInfoEntry()], readOnly)
-    const [served] = applyMyInfoPrefixToFormFields([myInfoField()], readOnly)
-    expect(webhookField.question).toBe(served.title)
+  it('prefixes titles when the read-only Set contains ObjectIds', () => {
+    const [field] = applyMyInfoPrefixToFormFields(
+      [myInfoField()],
+      new Set([objectIdShaped(MYINFO_ID)]),
+    )
+    expect(field.title).toBe('[Myinfo] Name')
   })
 })

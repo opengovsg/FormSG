@@ -12,10 +12,10 @@ type MyInfoPrefixCandidate = {
 export const shouldPrefixMyInfoQuestion = (
   field: MyInfoPrefixCandidate,
   readOnlyFieldIds: ReadonlySet<string>,
-): boolean => !!field.myInfo?.attr && readOnlyFieldIds.has(field._id)
+): boolean => !!field.myInfo?.attr && readOnlyFieldIds.has(String(field._id))
 
 const asSet = (readOnlyFieldIds: Iterable<string>): ReadonlySet<string> =>
-  readOnlyFieldIds instanceof Set ? readOnlyFieldIds : new Set(readOnlyFieldIds)
+  new Set(Array.from(readOnlyFieldIds, String))
 
 export const applyMyInfoPrefix = (
   v1Fields: readonly FlattenedV1Response[],
