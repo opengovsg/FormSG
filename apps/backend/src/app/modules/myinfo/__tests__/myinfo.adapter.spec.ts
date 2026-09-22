@@ -611,8 +611,8 @@ describe('myinfo.adapter', () => {
 
         expect(result).toEqual({
           [MyInfoChildAttributes.ChildName]: ['LOCAL CHILD', 'SPONSORED CHILD'],
-          // Sponsored children have no birth certificate number.
-          [MyInfoChildAttributes.ChildBirthCertNo]: ['T1234567A', ''],
+          // Sponsored children use their NRIC in place of a birth cert number.
+          [MyInfoChildAttributes.ChildBirthCertNo]: ['T1234567A', 'T2345678B'],
           [MyInfoChildAttributes.ChildDateOfBirth]: [
             '2015-01-02',
             '2016-03-04',
@@ -642,7 +642,7 @@ describe('myinfo.adapter', () => {
 
         expect(result).toEqual({
           [MyInfoChildAttributes.ChildName]: ['SPONSORED CHILD'],
-          [MyInfoChildAttributes.ChildBirthCertNo]: [''],
+          [MyInfoChildAttributes.ChildBirthCertNo]: ['T2345678B'],
           scopes: [MyInfoChildrenScope.Sponsored],
         })
       })
@@ -675,11 +675,13 @@ describe('myinfo.adapter', () => {
 
         const result = data.getChildrenBirthRecords([
           MyInfoAttribute.ChildName,
+          MyInfoAttribute.ChildBirthCertNo,
           MyInfoAttribute.ChildGender,
         ])
 
         expect(result).toEqual({
           [MyInfoChildAttributes.ChildName]: ['', ''],
+          [MyInfoChildAttributes.ChildBirthCertNo]: ['', 'T3456789C'],
           [MyInfoChildAttributes.ChildGender]: ['', ''],
           scopes: [
             MyInfoChildrenScope.Sponsored,
@@ -697,7 +699,7 @@ describe('myinfo.adapter', () => {
   })
 
   describe('internalAttrToSponsoredChildScope', () => {
-    it('should map every child sub-field except birth cert number', () => {
+    it('should map every child sub-field, using nric for birth cert number', () => {
       expect(internalAttrToSponsoredChildScope(MyInfoAttribute.ChildName)).toBe(
         'sponsoredchildrenrecords.name',
       )
@@ -718,7 +720,7 @@ describe('myinfo.adapter', () => {
       ).toBe('sponsoredchildrenrecords.secondaryrace')
       expect(
         internalAttrToSponsoredChildScope(MyInfoAttribute.ChildBirthCertNo),
-      ).toBeUndefined()
+      ).toBe('sponsoredchildrenrecords.nric')
     })
 
     it('should return undefined for non-child attributes', () => {
@@ -780,21 +782,15 @@ describe('myinfo.adapter', () => {
       ).toBe(false)
     })
 
-    it('should not request a sponsored scope for birth cert number', () => {
+    it('should request the sponsored nric scope for birth cert number', () => {
       const scopes = internalAttrListToScopes(
         [MyInfoAttribute.ChildBirthCertNo],
         WITH_SPONSORED,
       )
 
       expect(scopes).toContain('childrenbirthrecords.birthcertno')
-      expect(
-        scopes.filter((s) =>
-          s.startsWith(ExternalAttr.SponsoredChildrenRecords),
-        ),
-      ).toEqual(
-        // Only the MockPass-compatibility compound scope added under NODE_ENV=test.
-        [ExternalAttr.SponsoredChildrenRecords],
-      )
+      expect(scopes).toContain('sponsoredchildrenrecords.nric')
+      expect(scopes).not.toContain('sponsoredchildrenrecords.birthcertno')
     })
 
     it('should not request any sponsored scope when no child attribute is requested', () => {
