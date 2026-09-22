@@ -273,9 +273,8 @@ type MyInfoSponsoredChildRecord = MyInfoSponsoredChildFull & {
 
 /**
  * Child sub-fields that sponsored children records carry: the MyInfo key
- * (used for the scope) and how to read it. Birth certificate number has no
- * sponsored counterpart, so it is absent here and left blank for the
- * respondent to fill in.
+ * (used for the scope) and how to read it. Sponsored children have no birth
+ * certificate number, so their NRIC fills that column instead.
  */
 const SPONSORED_CHILD_COLUMNS: Partial<
   Record<
@@ -289,6 +288,10 @@ const SPONSORED_CHILD_COLUMNS: Partial<
   [MyInfoChildAttributes.ChildName]: {
     key: 'name',
     read: (c) => c.name?.value ?? '',
+  },
+  [MyInfoChildAttributes.ChildBirthCertNo]: {
+    key: 'nric',
+    read: (c) => c.nric?.value ?? '',
   },
   [MyInfoChildAttributes.ChildDateOfBirth]: {
     key: 'dob',

@@ -41,7 +41,8 @@ describe('myinfo.fapi.adapter', () => {
       ).split(' ')
 
       expect(scopes).toContain('sponsoredchildrenrecords.name')
-      // Sponsored children carry no birth certificate number.
+      // Sponsored children use nric in place of a birth certificate number.
+      expect(scopes).toContain('sponsoredchildrenrecords.nric')
       expect(scopes).not.toContain('sponsoredchildrenrecords.birthcertno')
     })
 
