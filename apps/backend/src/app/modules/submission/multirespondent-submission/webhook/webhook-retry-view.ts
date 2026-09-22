@@ -53,7 +53,7 @@ export const resolveSnapshotRetryView = ({
   const meta = { submissionId, snapshotRef }
   const { submissionIndex, contentFormat } = snapshotRef
 
-  // V1 snapshot replay is implemented in #9977.
+  // RATIONALE: `v1` snapshot replay will be implemented in #9977.
   if (contentFormat === 'v1') {
     return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
   }
