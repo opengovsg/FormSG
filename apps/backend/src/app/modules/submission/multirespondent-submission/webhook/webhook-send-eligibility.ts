@@ -46,12 +46,15 @@ export const shouldWriteMrfSnapshot = ({
   contentFormat: WebhookContentFormat
   submissionIndex: number
   logMeta: Record<string, unknown>
-}): boolean =>
-  mrfVersion === 2 &&
-  shouldSend &&
-  (contentFormat !== 'v1' ||
-    holdsV1FirstStepInvariant({ submissionIndex, logMeta })) &&
-  isRetryEnabled === true
+}): boolean => {
+  return (
+    mrfVersion === 2 &&
+    shouldSend &&
+    (contentFormat !== 'v1' ||
+      holdsV1FirstStepInvariant({ submissionIndex, logMeta })) &&
+    isRetryEnabled === true
+  )
+}
 
 export const holdsV1FirstStepInvariant = ({
   submissionIndex,
