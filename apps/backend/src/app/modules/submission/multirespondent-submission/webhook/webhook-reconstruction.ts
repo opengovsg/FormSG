@@ -110,7 +110,8 @@ export const reconstructMrfWebhookData = (
   return ok(reconstructed)
 }
 
-// Pick fields explicitly so optional MRF-only keys cannot enter the V1 payload.
+// RATIONALE: Pick fields explicitly so optional v4 only keys
+// cannot enter the V1 payload.
 export const reconstructV1WebhookData = ({
   liveData,
   snapshot,

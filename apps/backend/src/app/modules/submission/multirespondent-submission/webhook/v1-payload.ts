@@ -6,7 +6,8 @@ import { PaymentWebhookEventObject } from '../../../webhook/webhook.types'
 
 const logger = createLoggerWithLabel(module)
 
-// Declared positively so new MRF-only WebhookData keys cannot enter V1 implicitly.
+// RATIONALE: Declared separately so new v4 only WebhookData keys cannot
+// enter V1 payload implicitly.
 export interface StorageShapedWebhookData {
   formId: WebhookData['formId']
   submissionId: WebhookData['submissionId']
@@ -38,6 +39,10 @@ export class V1PayloadKeySetError extends Error {
   }
 }
 
+/**
+ * Runtime gate on the V1 webhook send path. After reconstruct, confirms the
+ * serialised key set matches a storage mode webhook key set.
+ */
 export const assertStorageShapedKeySet = (
   data: StorageShapedWebhookData,
   logMeta: Record<string, unknown>,
