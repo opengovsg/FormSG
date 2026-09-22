@@ -94,14 +94,15 @@ import { assertStorageShapedKeySet } from './webhook/v1-payload'
 import {
   getWebhookPayloadPolicy,
   mrfVersionToContentFormat,
+  resolveWebhookContentFormat,
 } from './webhook/webhook-payload-policy'
 import {
   reconstructMrfWebhookData,
   reconstructV1WebhookData,
 } from './webhook/webhook-reconstruction'
 import {
+  getWebhookContentFormatIfEligible,
   holdsV1FirstStepInvariant,
-  resolveMrfWebhookContentFormat,
   shouldSendMrfWebhook,
   shouldWriteMrfSnapshot,
 } from './webhook/webhook-send-eligibility'
@@ -867,7 +868,7 @@ export const createMultiRespondentFormSubmission = ({
         encryptedStepToken,
       }
 
-      const webhookContentFormat = resolveMrfWebhookContentFormat({
+      const webhookContentFormat = getWebhookContentFormatIfEligible({
         mrfVersion,
         webhook: form.webhook,
         isMrfWebhooksEnabled:
@@ -1299,7 +1300,10 @@ const sendMrfInitialWebhookIfEligible = ({
 
   const shouldSend = shouldSendMrfWebhook({
     webhookConsumerType,
-    webhookFormat,
+    contentFormat: resolveWebhookContentFormat({
+      webhookType: webhookConsumerType,
+      webhookFormat,
+    }),
     isMrfWebhooksEnabled:
       growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
     workflowStepCount,
@@ -1743,7 +1747,7 @@ export const updateMultiRespondentFormSubmission = ({
       submission.stepTokenHash = stepTokenHash
       submission.encryptedStepToken = encryptedStepToken
 
-      const resolvedWebhookContentFormat = resolveMrfWebhookContentFormat({
+      const resolvedWebhookContentFormat = getWebhookContentFormatIfEligible({
         mrfVersion,
         webhook: snapshottedFormDef.webhook,
         isMrfWebhooksEnabled:

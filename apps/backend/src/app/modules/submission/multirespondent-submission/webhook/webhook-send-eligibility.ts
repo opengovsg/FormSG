@@ -10,6 +10,7 @@ import { SnapshotContentFormat } from './submission-snapshot.schema'
 import {
   resolveWebhookContentFormat,
   WebhookConsumerType,
+  WebhookContentFormat,
 } from './webhook-payload-policy'
 
 const logger = createLoggerWithLabel(module)
@@ -18,12 +19,12 @@ export const MAX_V1_WORKFLOW_STEP_COUNT = 1
 
 export const shouldSendMrfWebhook = ({
   webhookConsumerType,
-  webhookFormat,
+  contentFormat,
   isMrfWebhooksEnabled,
   workflowStepCount,
 }: {
   webhookConsumerType: WebhookConsumerType
-  webhookFormat: FormWebhook['webhookFormat']
+  contentFormat: WebhookContentFormat
   isMrfWebhooksEnabled: boolean
   workflowStepCount: number
 }): boolean => {
@@ -34,17 +35,20 @@ export const shouldSendMrfWebhook = ({
     return false
   }
 
-  const webhookContentFormat = resolveWebhookContentFormat({
-    webhookType: webhookConsumerType,
-    webhookFormat,
-  })
   return (
-    webhookContentFormat !== 'v1' ||
-    workflowStepCount <= MAX_V1_WORKFLOW_STEP_COUNT
+    contentFormat !== 'v1' || workflowStepCount <= MAX_V1_WORKFLOW_STEP_COUNT
   )
 }
 
-export const resolveMrfWebhookContentFormat = ({
+/**
+ * Checks if a MRF webhook is eligible for delivery.
+ * @param mrfVersion - The version of the MRF.
+ * @param webhook - The webhook object.
+ * @param isMrfWebhooksEnabled - Whether MRF webhooks are enabled.
+ * @param workflowStepCount - The number of steps in the workflow.
+ * @returns The content format of the MRF webhook if eligible, undefined otherwise.
+ */
+export const getWebhookContentFormatIfEligible = ({
   mrfVersion,
   webhook,
   isMrfWebhooksEnabled,
@@ -64,10 +68,14 @@ export const resolveMrfWebhookContentFormat = ({
   }
 
   const webhookConsumerType = toConsumerType(getWebhookType(url))
+  const contentFormat = resolveWebhookContentFormat({
+    webhookType: webhookConsumerType,
+    webhookFormat: webhook.webhookFormat,
+  })
   if (
     !shouldSendMrfWebhook({
       webhookConsumerType,
-      webhookFormat: webhook.webhookFormat,
+      contentFormat,
       isMrfWebhooksEnabled,
       workflowStepCount,
     })
@@ -75,11 +83,7 @@ export const resolveMrfWebhookContentFormat = ({
     return undefined
   }
 
-  const webhookContentFormat = resolveWebhookContentFormat({
-    webhookType: webhookConsumerType,
-    webhookFormat: webhook.webhookFormat,
-  })
-  return webhookContentFormat === 'v3' ? undefined : webhookContentFormat
+  return contentFormat
 }
 
 export const shouldWriteMrfSnapshot = ({

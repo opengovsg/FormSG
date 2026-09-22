@@ -1,10 +1,13 @@
 import { FormWebhook } from 'formsg-shared/types'
 
 import { SnapshotContentFormat } from '../submission-snapshot.schema'
-import { WebhookConsumerType } from '../webhook-payload-policy'
 import {
+  resolveWebhookContentFormat,
+  WebhookConsumerType,
+} from '../webhook-payload-policy'
+import {
+  getWebhookContentFormatIfEligible,
   holdsV1FirstStepInvariant,
-  resolveMrfWebhookContentFormat,
   shouldSendMrfWebhook,
   shouldWriteMrfSnapshot,
 } from '../webhook-send-eligibility'
@@ -117,7 +120,10 @@ describe('shouldSendMrfWebhook', () => {
       expect(
         shouldSendMrfWebhook({
           webhookConsumerType,
-          webhookFormat,
+          contentFormat: resolveWebhookContentFormat({
+            webhookType: webhookConsumerType,
+            webhookFormat,
+          }),
           isMrfWebhooksEnabled,
           workflowStepCount,
         }),
@@ -126,7 +132,7 @@ describe('shouldSendMrfWebhook', () => {
   )
 })
 
-describe('resolveMrfWebhookContentFormat', () => {
+describe('getEligibleMrfWebhookContentFormat', () => {
   it.each<{
     name: string
     mrfVersion: number
@@ -277,7 +283,7 @@ describe('resolveMrfWebhookContentFormat', () => {
       expected,
     }) => {
       expect(
-        resolveMrfWebhookContentFormat({
+        getWebhookContentFormatIfEligible({
           mrfVersion,
           webhook,
           isMrfWebhooksEnabled,
