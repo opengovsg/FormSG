@@ -4177,31 +4177,38 @@ describe('multirespondent-submission.service', () => {
         expectSent,
       }) => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-        const submission = buildSubmissionWithToken(
-          undefined,
-          buildLiveWebhookView(),
-          2,
+        const form = buildV4Form({
           workflow,
-        )
-        const snapshot =
-          url !== PLUMBER_URL && webhookFormat !== 'v4' && workflow.length <= 1
-            ? buildSnapshot({ contentFormat: 'v1' })
-            : undefined
+          webhook:
+            url === PLUMBER_URL
+              ? ({ url, isRetryEnabled: true, webhookFormat } as any)
+              : genericWebhook({ url, webhookFormat }),
+        })
+        const growthbook = growthbookWithFlags({ enableMrfWebhooks })
+
+        // RATIONALE: The snapshot comes from the real create path rather than a
+        // hand-built fixture, so the test cannot restate the format-resolution
+        // rules it is meant to be exercising.
+        const created = await createMultiRespondentFormSubmission({
+          form,
+          encryptedPayload: buildV4Payload(),
+          logMeta: { action: 'test' },
+          growthbook,
+        })
+        const { submission, snapshot } = created._unsafeUnwrap()
+        // The live row is stubbed so the gate, not the view, decides the send.
+        submission.getWebhookView = jest
+          .fn()
+          .mockResolvedValue(buildLiveWebhookView())
 
         await performMultiRespondentPostSubmissionCreateActions({
           submission,
           snapshot,
           submissionId: submission._id.toString(),
-          form: buildV4Form({
-            workflow,
-            webhook:
-              url === PLUMBER_URL
-                ? ({ url, isRetryEnabled: true, webhookFormat } as any)
-                : genericWebhook({ url, webhookFormat }),
-          }),
+          form,
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
-          growthbook: growthbookWithFlags({ enableMrfWebhooks }),
+          growthbook,
         })
         await flushPromises()
 
