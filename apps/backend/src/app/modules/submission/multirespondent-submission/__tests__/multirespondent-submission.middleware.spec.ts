@@ -479,6 +479,7 @@ describe('Multirespondent Submission Middleware', () => {
     beforeEach(() => {
       jest.clearAllMocks()
       jest.resetAllMocks()
+      jest.mocked(MyInfoService.fetchMyInfoHashes).mockReturnValue(okAsync({}))
     })
 
     describe('submitterId is set', () => {

@@ -1137,18 +1137,16 @@ export const handleNdiResponses = async (
         if (jwtPayloadResult.isOk()) {
           userName = jwtPayloadResult.value
 
-          if (req.growthbook?.isOn(featureFlags.enableMrfWebhooks)) {
-            req.formsg.encryptedPayload.myInfoReadOnlyFields =
-              await resolveMrfMyInfoReadOnlyFields({
-                uinFin: jwtPayloadResult.value,
-                formId,
-                authType,
-                formFields:
-                  req.formsg.snapshottedFormDef?.form_fields ??
-                  formDef.form_fields,
-                responses: req.formsg.encryptedPayload.responses,
-              })
-          }
+          req.formsg.encryptedPayload.myInfoReadOnlyFields =
+            await resolveMrfMyInfoReadOnlyFields({
+              uinFin: jwtPayloadResult.value,
+              formId,
+              authType,
+              formFields:
+                req.formsg.snapshottedFormDef?.form_fields ??
+                formDef.form_fields,
+              responses: req.formsg.encryptedPayload.responses,
+            })
         }
         break
       }
