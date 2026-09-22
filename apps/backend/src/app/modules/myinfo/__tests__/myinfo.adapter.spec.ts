@@ -51,6 +51,7 @@ const ALL_CHILD_ATTRS = [
   MyInfoAttribute.ChildGender,
   MyInfoAttribute.ChildRace,
   MyInfoAttribute.ChildSecondaryRace,
+  MyInfoAttribute.ChildType,
 ]
 
 const META = { source: '1', classification: 'C', lastupdated: '2024-01-01' }
@@ -624,6 +625,27 @@ describe('myinfo.adapter', () => {
           [MyInfoChildAttributes.ChildGender]: ['FEMALE', 'MALE'],
           [MyInfoChildAttributes.ChildRace]: ['CHINESE', 'INDIAN'],
           [MyInfoChildAttributes.ChildSecondaryRace]: ['MALAY', 'CHINESE'],
+          [MyInfoChildAttributes.ChildType]: ['LOCAL', 'SPONSORED'],
+          scopes: [MyInfoChildrenScope.Local, MyInfoChildrenScope.Sponsored],
+        })
+      })
+
+      it('should fill the child type column for every record, including blank ones', () => {
+        const data = new MyInfoData(
+          toPersonResponse({
+            childrenbirthrecords: [BIRTH_RECORD],
+            sponsoredchildrenrecords: [{ source: '3' }],
+          }),
+        )
+
+        const result = data.getChildrenBirthRecords([
+          MyInfoAttribute.ChildName,
+          MyInfoAttribute.ChildType,
+        ])
+
+        expect(result).toEqual({
+          [MyInfoChildAttributes.ChildName]: ['LOCAL CHILD', ''],
+          [MyInfoChildAttributes.ChildType]: ['LOCAL', 'SPONSORED'],
           scopes: [MyInfoChildrenScope.Local, MyInfoChildrenScope.Sponsored],
         })
       })
@@ -728,6 +750,12 @@ describe('myinfo.adapter', () => {
         internalAttrToSponsoredChildScope(MyInfoAttribute.Name),
       ).toBeUndefined()
     })
+
+    it('should return undefined for the derived child type sub-field', () => {
+      expect(
+        internalAttrToSponsoredChildScope(MyInfoAttribute.ChildType),
+      ).toBeUndefined()
+    })
   })
 
   describe('internalAttrListToScopes', () => {
@@ -802,6 +830,20 @@ describe('myinfo.adapter', () => {
       expect(
         scopes.some((s) => s.startsWith(ExternalAttr.SponsoredChildrenRecords)),
       ).toBe(false)
+    })
+
+    it('should request no extra scope for the derived child type sub-field', () => {
+      const scopes = internalAttrListToScopes(
+        [MyInfoAttribute.ChildName, MyInfoAttribute.ChildType],
+        WITH_SPONSORED,
+      )
+
+      expect(scopes.sort()).toEqual(
+        internalAttrListToScopes(
+          [MyInfoAttribute.ChildName],
+          WITH_SPONSORED,
+        ).sort(),
+      )
     })
 
     it('should not emit duplicate scopes', () => {
