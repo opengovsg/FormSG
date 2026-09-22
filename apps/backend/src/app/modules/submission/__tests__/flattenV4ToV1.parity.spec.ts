@@ -9,14 +9,15 @@ import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import {
   BasicField,
-  FormAuthType,
   FormFieldDto,
   FormResponseMode,
   MyInfoAttribute,
 } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
-import { applyMyInfoPrefix } from 'formsg-shared/utils/myinfo-prefix'
-import { okAsync } from 'neverthrow'
+import {
+  applyMyInfoPrefix,
+  MYINFO_QUESTION_PREFIX,
+} from 'formsg-shared/utils/myinfo-prefix'
 
 import {
   FieldResponse,
@@ -438,17 +439,11 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
                 ]),
             ),
           )
-          const storageIds = (
+          const verifiedKeys = (
             await MyInfoService.checkMyInfoHashes(parsed.responses, hashes)
           )._unsafeUnwrap()
-          jest
-            .spyOn(MyInfoService, 'fetchMyInfoHashes')
-            .mockReturnValue(okAsync(hashes))
-          const mrfIds = await resolveMrfMyInfoReadOnlyFields({
-            uinFin: 'S1234567A',
-            formId: new ObjectId().toHexString(),
-            authType: FormAuthType.MyInfo,
-            formFields,
+          const mrfIds = resolveMrfMyInfoReadOnlyFields({
+            verifiedKeys,
             responses: createResponsesV4(
               formFields,
               inputs,
@@ -456,12 +451,28 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
             ) as ParsedClearFormFieldResponsesV4,
           })
 
-          expect(new Set(mrfIds)).toEqual(storageIds)
-          expect(storageIds.size).toBe(
+          // The storage-mode side is read back off the questions that
+          // `formatMyInfoStorageResponseData` actually prefixed, not off the
+          // verified keys both producers start from: a divergence in either
+          // producer's own selection (an unanswered field, a second field on
+          // the same attribute, a children explosion) then fails here.
+          const storagePrefixedIds = new Set(
+            formatMyInfoStorageResponseData(
+              parsed.getAllResponses(),
+              verifiedKeys,
+            )
+              .filter((response) =>
+                response.question.startsWith(MYINFO_QUESTION_PREFIX),
+              )
+              .map((response) => response._id),
+          )
+
+          expect(new Set(mrfIds)).toEqual(storagePrefixedIds)
+          expect(storagePrefixedIds.size).toBe(
             selection === 'all' ? 5 : selection === 'some' ? 2 : 0,
           )
           expectByteParity(formFields, inputs, {
-            hashedFields: storageIds,
+            hashedFields: verifiedKeys,
             readOnlyFieldIds: mrfIds,
           })
         },
