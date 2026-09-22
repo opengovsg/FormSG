@@ -14,28 +14,36 @@ const logger = createLoggerWithLabel(module)
 
 type MyInfoSnapshotField = FormFieldDto | FormFieldSchema
 
-const myInfoAttrOf = (
+const getMyInfoAttribute = (
   field: MyInfoSnapshotField,
-): MyInfoAttribute | undefined =>
-  'myInfo' in field ? field.myInfo?.attr : undefined
+): MyInfoAttribute | undefined => {
+  const supportsMyInfo = 'myInfo' in field
+  if (!supportsMyInfo) return undefined
+
+  return field.myInfo?.attr
+}
 
 const mapMyInfoAttrsToSnapshotFieldIds = ({
-  readOnlyAttrs,
+  readOnlyAttributes,
   formFields,
   responses,
 }: {
-  readOnlyAttrs: ReadonlySet<string>
+  readOnlyAttributes: ReadonlySet<string>
   formFields: readonly MyInfoSnapshotField[]
   responses: ParsedClearFormFieldResponsesV4
 }): string[] =>
   formFields
     .filter((field) => {
-      const attr = myInfoAttrOf(field)
-      return (
-        !!attr &&
-        readOnlyAttrs.has(attr) &&
-        responses[String(field._id)] !== undefined
-      )
+      const myInfoAttribute = getMyInfoAttribute(field)
+      const isMyInfoField = !!myInfoAttribute
+      if (!isMyInfoField) return false
+
+      const isReadOnlyAttribute = readOnlyAttributes.has(myInfoAttribute)
+      if (!isReadOnlyAttribute) return false
+
+      const fieldId = String(field._id)
+      const hasSubmittedResponse = responses[fieldId] !== undefined
+      return hasSubmittedResponse
     })
     .map((field) => String(field._id))
 
@@ -65,17 +73,19 @@ export const resolveMrfMyInfoReadOnlyFields = async ({
     return []
   }
 
-  const readOnlyAttrs = new Set(Object.keys(hashesResult.value))
+  const readOnlyAttributes = new Set(Object.keys(hashesResult.value))
   const readOnlyFieldIds = mapMyInfoAttrsToSnapshotFieldIds({
-    readOnlyAttrs,
+    readOnlyAttributes,
     formFields,
     responses,
   })
 
-  if (readOnlyAttrs.size > 0 && readOnlyFieldIds.length === 0) {
+  const hasReadOnlyAttributes = readOnlyAttributes.size > 0
+  const hasMatchingFields = readOnlyFieldIds.length > 0
+  if (hasReadOnlyAttributes && !hasMatchingFields) {
     logger.info({
       message: 'No snapshot field matched any read-only MyInfo attribute',
-      meta: { ...logMeta, numReadOnlyAttrs: readOnlyAttrs.size },
+      meta: { ...logMeta, numReadOnlyAttrs: readOnlyAttributes.size },
     })
   }
 
