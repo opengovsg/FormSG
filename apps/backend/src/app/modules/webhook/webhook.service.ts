@@ -18,7 +18,10 @@ import getSubmissionModel from '../../models/submission.server.model'
 import { getSignedS3Url } from '../../utils/aws-s3'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../core/core.errors'
-import type { WebhookConsumerType } from '../submission/multirespondent-submission/webhook/webhook-payload-policy'
+import type {
+  WebhookConsumerType,
+  WebhookContentFormat,
+} from '../submission/multirespondent-submission/webhook/webhook-payload-policy'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
 import { WEBHOOK_MAX_CONTENT_LENGTH } from './webhook.constants'
@@ -81,15 +84,30 @@ export const saveWebhookRecord = (
   })
 }
 
+/**
+ * The attachment objects a delivery presigns live in the bucket its own wire
+ * shape writes to: V1 copies are encrypted to the form key and kept apart
+ * from the native objects, which are encrypted to the submission key.
+ * An absent content format is a delivery that never wrote V1 copies —
+ * storage mode, email mode and the legacy MRF routes — so it reads native.
+ */
+const attachmentBucketForContentFormat = (
+  contentFormat?: WebhookContentFormat,
+): string =>
+  contentFormat === 'v1'
+    ? AwsConfig.submissionHistoryV1AttachmentS3Bucket
+    : AwsConfig.attachmentS3Bucket
+
 const createWebhookSubmissionView = (
   submissionWebhookView: WebhookView,
+  contentFormat?: WebhookContentFormat,
 ): Promise<WebhookView> => {
   // Generate S3 signed urls
   const signedUrlPromises: Record<string, Promise<string>> = {}
   for (const key in submissionWebhookView.data.attachmentDownloadUrls) {
     signedUrlPromises[key] = getSignedS3Url(
       {
-        Bucket: AwsConfig.attachmentS3Bucket,
+        Bucket: attachmentBucketForContentFormat(contentFormat),
         Key: submissionWebhookView.data.attachmentDownloadUrls[key],
       },
       60 * 60, // one hour expiry
@@ -105,6 +123,7 @@ const createWebhookSubmissionView = (
 export const sendWebhook = (
   webhookView: WebhookView,
   webhookUrl: string,
+  contentFormat?: WebhookContentFormat,
 ): ResultAsync<
   WebhookResponse,
   | WebhookValidationError
@@ -142,7 +161,7 @@ export const sendWebhook = (
       : new WebhookValidationError()
   }).andThen(() => {
     return ResultAsync.fromPromise(
-      createWebhookSubmissionView(webhookView),
+      createWebhookSubmissionView(webhookView, contentFormat),
       (error) => {
         logger.error({
           message: 'S3 attachment presigned URL generation failed',
@@ -294,32 +313,39 @@ export const createInitialWebhookSender =
           () => new DatabaseError(),
         )
 
+    // RATIONALE: A V1 delivery is only ever made from a V1 snapshot, so the
+    // snapshot reference is the delivery's wire shape and tells the presigned
+    // URL builder which attachment bucket to read.
     return webhookViewToUse.andThen((webhookView) =>
-      sendWebhook(webhookView, webhookUrl).andThen((webhookResponse) => {
-        webhookStatsdClient.increment('sent', 1, 1, {
-          responseCode: `${webhookResponse.response.status || null}`,
-          webhookType: getWebhookType(webhookUrl),
-          isRetryEnabled: `${isRetryEnabled}`,
-        })
+      sendWebhook(webhookView, webhookUrl, snapshotRef?.contentFormat).andThen(
+        (webhookResponse) => {
+          webhookStatsdClient.increment('sent', 1, 1, {
+            responseCode: `${webhookResponse.response.status || null}`,
+            webhookType: getWebhookType(webhookUrl),
+            isRetryEnabled: `${isRetryEnabled}`,
+          })
 
-        // Save record of sending to database
-        return saveWebhookRecord(submission._id, webhookResponse).andThen(
-          () => {
-            // If webhook successful or retries not enabled, no further action
-            if (
-              isSuccessfulResponse(webhookResponse) ||
-              !producer ||
-              !isRetryEnabled
-            ) {
-              return okAsync(true as const)
-            }
-            // Webhook failed and retries enabled, so create initial message and enqueue
-            return WebhookQueueMessage.fromSubmissionId(
-              String(submission._id),
-              snapshotRef,
-            ).asyncAndThen((queueMessage) => producer.sendMessage(queueMessage))
-          },
-        )
-      }),
+          // Save record of sending to database
+          return saveWebhookRecord(submission._id, webhookResponse).andThen(
+            () => {
+              // If webhook successful or retries not enabled, no further action
+              if (
+                isSuccessfulResponse(webhookResponse) ||
+                !producer ||
+                !isRetryEnabled
+              ) {
+                return okAsync(true as const)
+              }
+              // Webhook failed and retries enabled, so create initial message and enqueue
+              return WebhookQueueMessage.fromSubmissionId(
+                String(submission._id),
+                snapshotRef,
+              ).asyncAndThen((queueMessage) =>
+                producer.sendMessage(queueMessage),
+              )
+            },
+          )
+        },
+      ),
     )
   }

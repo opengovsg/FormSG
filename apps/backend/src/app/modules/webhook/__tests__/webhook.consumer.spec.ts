@@ -261,6 +261,9 @@ describe('webhook.consumer', () => {
       expect(MockWebhookService.sendWebhook).toHaveBeenCalledWith(
         MOCK_WEBHOOK_INFO.webhookView,
         MOCK_WEBHOOK_INFO.webhookUrl,
+        // A live-row message names no content format, so the delivery
+        // presigns attachments against the native bucket.
+        undefined,
       )
       expect(MockWebhookService.saveWebhookRecord).toHaveBeenCalledWith(
         VALID_MESSAGE_BODY.submissionId,
@@ -284,6 +287,9 @@ describe('webhook.consumer', () => {
       expect(MockWebhookService.sendWebhook).toHaveBeenCalledWith(
         MOCK_WEBHOOK_INFO.webhookView,
         MOCK_WEBHOOK_INFO.webhookUrl,
+        // A live-row message names no content format, so the delivery
+        // presigns attachments against the native bucket.
+        undefined,
       )
       expect(MockWebhookService.saveWebhookRecord).toHaveBeenCalledWith(
         VALID_MESSAGE_BODY.submissionId,
@@ -313,6 +319,9 @@ describe('webhook.consumer', () => {
       expect(MockWebhookService.sendWebhook).toHaveBeenCalledWith(
         MOCK_WEBHOOK_INFO.webhookView,
         MOCK_WEBHOOK_INFO.webhookUrl,
+        // A live-row message names no content format, so the delivery
+        // presigns attachments against the native bucket.
+        undefined,
       )
       expect(MockWebhookService.saveWebhookRecord).toHaveBeenCalledWith(
         VALID_MESSAGE_BODY.submissionId,
@@ -335,6 +344,9 @@ describe('webhook.consumer', () => {
       expect(MockWebhookService.sendWebhook).toHaveBeenCalledWith(
         MOCK_WEBHOOK_INFO.webhookView,
         MOCK_WEBHOOK_INFO.webhookUrl,
+        // A live-row message names no content format, so the delivery
+        // presigns attachments against the native bucket.
+        undefined,
       )
       expect(MockWebhookService.saveWebhookRecord).toHaveBeenCalledWith(
         VALID_MESSAGE_BODY.submissionId,
@@ -395,6 +407,9 @@ describe('webhook.consumer', () => {
         expect(MockWebhookService.sendWebhook).toHaveBeenCalledWith(
           MOCK_MRF_WEBHOOK_INFO.webhookView,
           MOCK_MRF_WEBHOOK_INFO.webhookUrl,
+          // A live-row message names no content format, so the delivery
+          // presigns attachments against the native bucket.
+          undefined,
         )
       })
 
