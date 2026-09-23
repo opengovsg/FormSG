@@ -376,16 +376,17 @@ export const ResponsesTable = () => {
       .map((formField) => ({
         id: formField._id,
         Header: formField.title,
-        accessor: ({ refNo }: ResponseColumnData) =>
-          formatResponseForCell(
-            responsesBySubmissionId
-              ?.get(refNo)
-              ?.find((response) => response._id === formField._id),
-          ),
-        Cell: ({ value }: { value: string }) => (
-          <Skeleton isLoaded={!isDecrypting} w="100%">
+        accessor: ({ refNo }: ResponseColumnData) => {
+          const responses = responsesBySubmissionId?.get(refNo)
+          if (!responses) return undefined
+          return formatResponseForCell(
+            responses.find((response) => response._id === formField._id),
+          )
+        },
+        Cell: ({ value }: { value?: string }) => (
+          <Skeleton isLoaded={value !== undefined || !isDecrypting} w="100%">
             <Text noOfLines={1} title={value}>
-              {value}
+              {value ?? ''}
             </Text>
           </Skeleton>
         ),

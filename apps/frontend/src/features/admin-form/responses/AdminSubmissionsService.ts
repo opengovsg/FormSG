@@ -196,6 +196,7 @@ export const getAllDecryptedSubmission = async ({
   downloadAttachments,
   isSortByLatest,
   limit,
+  onSubmissionDecrypted,
 }: {
   formId: string
   secretKey: string
@@ -204,6 +205,7 @@ export const getAllDecryptedSubmission = async ({
   downloadAttachments: boolean
   isSortByLatest: boolean
   limit: number
+  onSubmissionDecrypted?: (submission: IdentifiedDecryptedSubmission) => void
 }): Promise<IdentifiedDecryptedSubmission[]> => {
   const numWorkers = window.navigator.hardwareConcurrency ?? 1
   const workerPool: CleanableDecryptionWorkerApi[] = []
@@ -243,10 +245,12 @@ export const getAllDecryptedSubmission = async ({
             if (!result.isParseSuccessful || !result.isDecryptionSuccessful) {
               throw new Error('One or more responses failed to decrypt.')
             }
-            return {
+            const submission = {
               submissionId: result.parsedSubmission._id,
               responses: result.decryptedResponses,
             }
+            onSubmissionDecrypted?.(submission)
+            return submission
           }),
       )
       currentSubmissionIndex++

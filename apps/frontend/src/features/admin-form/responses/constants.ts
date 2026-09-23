@@ -6,3 +6,5 @@ export const MRF_REMINDERS_LABEL = 'Reminders'
 export const MRF_STATUS_TRACKING_LABEL = 'Status tracking link'
 
 export const TABLE_DECRYPTION_LIMIT = 10000
+
+export const TABLE_DECRYPTION_PUBLISH_INTERVAL_MS = 250

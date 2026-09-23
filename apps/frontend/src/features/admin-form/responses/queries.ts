@@ -3,6 +3,7 @@ import {
   useInfiniteQuery,
   UseInfiniteQueryResult,
   useQuery,
+  useQueryClient,
   UseQueryResult,
 } from 'react-query'
 import { useParams } from 'react-router-dom'
@@ -25,7 +26,10 @@ import {
   getAllDecryptedSubmission,
   getFormSubmissionsMetadata,
 } from './AdminSubmissionsService'
-import { TABLE_DECRYPTION_LIMIT } from './constants'
+import {
+  TABLE_DECRYPTION_LIMIT,
+  TABLE_DECRYPTION_PUBLISH_INTERVAL_MS,
+} from './constants'
 
 export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
@@ -161,11 +165,20 @@ export const useDecryptedResponsesBySubmissionId = ({
   if (!formId) throw new Error('No formId provided')
 
   const { secretKey } = useStorageResponsesContext()
+  const queryClient = useQueryClient()
+  const queryKey = adminFormResponsesKeys.decryptedResponses(formId)
 
   return useQuery(
-    adminFormResponsesKeys.decryptedResponses(formId),
+    queryKey,
     async () => {
-      const submissions = await getAllDecryptedSubmission({
+      const decrypted = new Map<string, FormField[]>()
+      let lastPublishedAt = 0
+
+      const publish = () => {
+        queryClient.setQueryData(queryKey, new Map(decrypted))
+      }
+
+      await getAllDecryptedSubmission({
         formId,
         secretKey: secretKey as string,
         startDate: '',
@@ -173,13 +186,18 @@ export const useDecryptedResponsesBySubmissionId = ({
         downloadAttachments: false,
         isSortByLatest: true,
         limit: TABLE_DECRYPTION_LIMIT,
+        onSubmissionDecrypted: ({ submissionId, responses }) => {
+          decrypted.set(submissionId, responses)
+          const now = performance.now()
+          if (now - lastPublishedAt < TABLE_DECRYPTION_PUBLISH_INTERVAL_MS) {
+            return
+          }
+          lastPublishedAt = now
+          publish()
+        },
       })
-      return new Map(
-        submissions.map(({ submissionId, responses }) => [
-          submissionId,
-          responses,
-        ]),
-      )
+
+      return decrypted
     },
     {
       staleTime: Infinity,
