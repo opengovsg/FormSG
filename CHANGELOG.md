@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.30.1](https://github.com/opengovsg/formsg/compare/v9.30.0...v9.30.1) (2026-09-23)
+
+
+### Bug Fixes
+
+* **mrf:** carry forward server-owned provenance on non-editable fields (#10080) ([#10080](https://github.com/opengovsg/formsg/commit/cc0cb7d004c9fd7cd7ca4cb63b6de371355852ca))
+* **myinfo:** update Singpass FAQ link (#10084) ([#10084](https://github.com/opengovsg/formsg/commit/57498563c622cfca278457eb370083ae17723bca))
+
 ## [9.30.0](https://github.com/opengovsg/formsg/compare/v9.29.0...v9.30.0) (2026-09-21)
 
 
