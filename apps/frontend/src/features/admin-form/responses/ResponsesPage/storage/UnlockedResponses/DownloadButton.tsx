@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiDownload } from 'react-icons/bi'
 import { useThrottle } from 'react-use'
 import {
   Box,
@@ -343,6 +344,11 @@ export const DownloadButton = (): JSX.Element => {
                 aria-label={t(
                   'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
                 )}
+                leftIcon={
+                  isDelightfulDashboard ? (
+                    <BiDownload fontSize="1.25rem" />
+                  ) : undefined
+                }
                 rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
               >
                 {t('features.common.download')}
