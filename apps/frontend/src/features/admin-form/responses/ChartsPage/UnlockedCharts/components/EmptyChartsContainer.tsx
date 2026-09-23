@@ -1,6 +1,5 @@
 import { Box, Container, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 
-import { resultsNavBleed } from '../../../components/FormResultsNavbar'
 import { useIsDelightfulDashboard } from '../../../hooks'
 import { ChartsSvgr } from '../assets/svgr/ChartsSvgr'
 
@@ -24,7 +23,6 @@ export const EmptyChartsContainer = ({
       align="center"
       py="4rem"
       px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-      {...resultsNavBleed}
     >
       <Stack spacing="1rem" align="center">
         <Text as="h2" color="primary.500" textStyle="h2" whiteSpace="pre-wrap">

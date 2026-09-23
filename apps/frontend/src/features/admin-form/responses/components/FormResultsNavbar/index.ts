@@ -1,4 +1,4 @@
-export { RESULTS_NAV_WIDTH, resultsNavBleed } from './constants'
+export { RESULTS_NAV_WIDTH } from './constants'
 export { FormResultsNavbar } from './FormResultsNavbar'
 export { LegacyFormResultsNavbar } from './LegacyFormResultsNavbar'
 export type { ResultsTabEntry } from './useResultsTabs'
