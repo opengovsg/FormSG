@@ -41,7 +41,8 @@ export const UnlockedResponses = (): JSX.Element => {
       flexDir="column"
       pr={{ base: '1rem', md: '1.75rem', lg: '2rem' }}
       w="100%"
-      maxW="100%"
+      maxW="69.5rem"
+      mx="auto"
       minW={0}
       overflowX="hidden"
     >

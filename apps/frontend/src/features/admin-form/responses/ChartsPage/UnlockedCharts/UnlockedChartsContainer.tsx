@@ -144,7 +144,13 @@ export const UnlockedChartsContainer = () => {
     : []
 
   return (
-    <Flex flexDir="column" pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}>
+    <Flex
+      flexDir="column"
+      pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      w="100%"
+      maxW="69.5rem"
+      mx="auto"
+    >
       <Flex
         direction={{ base: 'column', sm: 'row' }}
         justifySelf={{ base: 'start', sm: 'end' }}
