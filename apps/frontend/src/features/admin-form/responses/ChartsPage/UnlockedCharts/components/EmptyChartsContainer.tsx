@@ -1,4 +1,4 @@
-import { Box, Container, Divider, Stack, Text } from '@chakra-ui/react'
+import { Box, Divider, Flex, Stack, Text } from '@chakra-ui/react'
 
 import { ChartsSvgr } from '../assets/svgr/ChartsSvgr'
 
@@ -12,7 +12,13 @@ export const EmptyChartsContainer = ({
   subtitle: string
 }): JSX.Element => {
   return (
-    <Container p={0} maxW="42.5rem">
+    <Flex
+      flexDir="column"
+      align="center"
+      py="4rem"
+      px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      ml={{ base: 0, lg: '-17rem' }}
+    >
       <Stack spacing="1rem" align="center">
         <Text as="h2" color="primary.500" textStyle="h2" whiteSpace="pre-wrap">
           {title}
@@ -26,6 +32,6 @@ export const EmptyChartsContainer = ({
         <Divider />
         <ChartsSupportedFieldsInfoBox />
       </Stack>
-    </Container>
+    </Flex>
   )
 }

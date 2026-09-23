@@ -1,6 +1,5 @@
 import { Outlet } from 'react-router-dom'
 
-import { ResponsesTabWrapper } from './common/ResponsesTabWrapper'
 import { UnlockedResponsesProvider } from './storage/UnlockedResponses'
 
 /**
@@ -8,10 +7,8 @@ import { UnlockedResponsesProvider } from './storage/UnlockedResponses'
  */
 export const ResponsesLayout = (): JSX.Element => {
   return (
-    <ResponsesTabWrapper>
-      <UnlockedResponsesProvider>
-        <Outlet />
-      </UnlockedResponsesProvider>
-    </ResponsesTabWrapper>
+    <UnlockedResponsesProvider>
+      <Outlet />
+    </UnlockedResponsesProvider>
   )
 }

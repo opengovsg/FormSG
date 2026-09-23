@@ -47,7 +47,13 @@ export const PaginationMobile = ({
         onClick={handlePageBack}
         icon={<BiChevronLeft />}
       />
-      <Text sx={styles.text} aria-disabled={isDisabled}>
+      <Text
+        sx={styles.text}
+        aria-disabled={isDisabled}
+        whiteSpace="nowrap"
+        minW={0}
+        flexShrink={1}
+      >
         {t('components.pagination.paginationMobile.currentPageCount', {
           currentPage,
           totalPageCount,

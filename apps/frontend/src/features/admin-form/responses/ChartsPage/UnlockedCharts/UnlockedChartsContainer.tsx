@@ -144,7 +144,7 @@ export const UnlockedChartsContainer = () => {
     : []
 
   return (
-    <>
+    <Flex flexDir="column" pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}>
       <Flex
         direction={{ base: 'column', sm: 'row' }}
         justifySelf={{ base: 'start', sm: 'end' }}
@@ -218,6 +218,6 @@ export const UnlockedChartsContainer = () => {
           />
         )}
       </Skeleton>
-    </>
+    </Flex>
   )
 }

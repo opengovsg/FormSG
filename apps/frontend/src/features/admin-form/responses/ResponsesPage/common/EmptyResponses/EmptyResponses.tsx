@@ -9,7 +9,14 @@ import { EmptyResponsesSvgr } from './EmptyResponsesSvgr'
 export function EmptyResponses(): JSX.Element {
   const { t } = useTranslation()
   return (
-    <Flex justify="center" flexDir="column" align="center" px="2rem" py="4rem">
+    <Flex
+      flexDir="column"
+      justify="center"
+      align="center"
+      py="4rem"
+      px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      ml={{ base: 0, lg: '-17rem' }}
+    >
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
         {t('features.adminForm.responses.responsesPage.emptyResponses.title')}
       </Text>

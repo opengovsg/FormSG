@@ -324,7 +324,7 @@ export const DownloadButton = (): JSX.Element => {
           </Text>
         </ProgressModal>
       )}
-      <Box gridArea="export" justifySelf="flex-end">
+      <Box>
         <Menu closeOnSelect={false} placement="bottom-end">
           {({ isOpen, onClose }) => (
             <>
