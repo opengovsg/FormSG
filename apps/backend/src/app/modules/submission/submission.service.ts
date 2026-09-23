@@ -580,11 +580,12 @@ export const getSubmissionMetadataList = (
   responseMode: FormResponseMode,
   formId: string,
   page?: number,
+  pageSize?: number,
 ): ResultAsync<SubmissionMetadataList, ResponseModeError | DatabaseError> =>
   getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
     (modelToUse) =>
       ResultAsync.fromPromise(
-        modelToUse.findAllMetadataByFormId(formId, { page }),
+        modelToUse.findAllMetadataByFormId(formId, { page, pageSize }),
         (error) => {
           logger.error({
             message: 'Failure retrieving metadata page from database',

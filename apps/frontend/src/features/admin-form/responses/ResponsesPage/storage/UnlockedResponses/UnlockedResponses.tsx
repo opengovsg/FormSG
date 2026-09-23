@@ -43,15 +43,18 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
     filteredCount,
     submissionId,
     isAnyFetching,
-    hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage,
     searchResultCount,
+    isTableLoading,
+    renderLimit,
+    showMoreRows,
+    renderedRowCount,
   } = useUnlockedResponses()
 
+  const hasMoreRowsToRender = renderedRowCount >= renderLimit
+
   const sentinelRef = useInfiniteScrollTrigger<HTMLDivElement>({
-    onTrigger: fetchNextPage,
-    enabled: !submissionId && hasNextPage && !isFetchingNextPage,
+    onTrigger: showMoreRows,
+    enabled: !isTableLoading && hasMoreRowsToRender,
   })
 
   const countToUse = useMemo(
@@ -130,7 +133,7 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
         minH="3rem"
         pb={{ base: '1rem', md: '0' }}
       >
-        {isFetchingNextPage ? (
+        {hasMoreRowsToRender ? (
           <Spinner color="primary.500" thickness="2px" />
         ) : null}
       </Flex>
