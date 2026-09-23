@@ -1,4 +1,8 @@
 export { FeedbackPage } from './FeedbackPage'
 export { FormResultsLayout } from './FormResultsLayout'
-export { IndividualResponsePage } from './IndividualResponsePage'
+export {
+  IndividualResponsePage,
+  IndividualResponseRoute,
+  ResponsesIndexRoute,
+} from './IndividualResponsePage'
 export { ResponsesLayout, ResponsesPage } from './ResponsesPage'
