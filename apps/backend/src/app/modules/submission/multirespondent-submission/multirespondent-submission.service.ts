@@ -89,6 +89,7 @@ import {
 } from './webhook/submission-snapshot.producer'
 import { SubmissionSnapshot } from './webhook/submission-snapshot.schema'
 import { writeSnapshot } from './webhook/submission-snapshot.store'
+import { produceV1AttachmentCopies } from './webhook/v1-attachment.producer'
 import {
   buildV1EncryptedContent,
   buildV1VerifiedContent,
@@ -946,50 +947,70 @@ export const createMultiRespondentFormSubmission = ({
         attachmentMetadata: Object.fromEntries(attachmentMetadata ?? new Map()),
       }
 
-      let snapshot: SubmissionSnapshot | undefined
       const isV1Snapshot =
         mrfVersion === 2 && shouldSend && webhookContentFormat === 'v1'
-      if (isV1Snapshot) {
-        const v1ContentResult = buildV1EncryptedContent({
-          v4Responses: encryptedPayload.responses,
-          formFields: toPlainFormFields(form.form_fields),
-          formLogics: toPlainFormLogics(form.form_logics),
-          formPublicKey: form.publicKey,
-          myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
-          logMeta,
-        })
-        if (v1ContentResult.isErr()) {
-          return errAsync(v1ContentResult.error)
+
+      const buildSnapshotForDelivery = (): ResultAsync<
+        SubmissionSnapshot | undefined,
+        V1ContentMappingError | AttachmentUploadError
+      > => {
+        if (isV1Snapshot) {
+          const v1ContentResult = buildV1EncryptedContent({
+            v4Responses: encryptedPayload.responses,
+            formFields: toPlainFormFields(form.form_fields),
+            formLogics: toPlainFormLogics(form.form_logics),
+            formPublicKey: form.publicKey,
+            myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
+            logMeta,
+          })
+          if (v1ContentResult.isErr()) {
+            return errAsync(v1ContentResult.error)
+          }
+          const v1VerifiedContentResult = buildV1VerifiedContent({
+            verifiedContent: verifiedContentPlaintext,
+            formPublicKey: form.publicKey,
+            logMeta: {
+              ...logMeta,
+              formId: snapshotBase.formId,
+              submissionId: snapshotBase.submissionId,
+            },
+          })
+          if (v1VerifiedContentResult.isErr()) {
+            return errAsync(v1VerifiedContentResult.error)
+          }
+          return produceV1AttachmentCopies({
+            formId: String(form._id),
+            responses: encryptedPayload.responses,
+            formPublicKey: form.publicKey,
+            logMeta,
+          }).map((v1AttachmentMetadata) =>
+            buildV1Snapshot({
+              ...snapshotBase,
+              encryptedContent: v1ContentResult.value,
+              verifiedContent: v1VerifiedContentResult.value,
+              attachmentMetadata: Object.fromEntries(v1AttachmentMetadata),
+            }),
+          )
         }
-        const v1VerifiedContentResult = buildV1VerifiedContent({
-          verifiedContent: verifiedContentPlaintext,
-          formPublicKey: form.publicKey,
-          logMeta: {
-            ...logMeta,
-            formId: snapshotBase.formId,
-            submissionId: snapshotBase.submissionId,
-          },
-        })
-        if (v1VerifiedContentResult.isErr()) {
-          return errAsync(v1VerifiedContentResult.error)
+        if (webhookContentFormat === 'v4' && shouldWriteSnapshot) {
+          return okAsync(
+            buildV4Snapshot({
+              ...snapshotBase,
+              ...v4OnlyContent,
+              encryptedContent,
+              encryptedSubmissionSecretKey,
+            }),
+          )
         }
-        snapshot = buildV1Snapshot({
-          ...snapshotBase,
-          encryptedContent: v1ContentResult.value,
-          verifiedContent: v1VerifiedContentResult.value,
-        })
-      } else if (webhookContentFormat === 'v4' && shouldWriteSnapshot) {
-        snapshot = buildV4Snapshot({
-          ...snapshotBase,
-          ...v4OnlyContent,
-          encryptedContent,
-          encryptedSubmissionSecretKey,
-        })
+        return okAsync(undefined)
       }
 
-      const snapshotToWrite = shouldWriteSnapshot ? snapshot : undefined
-      const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
-        snapshotToWrite
+      return buildSnapshotForDelivery().andThen((snapshot) => {
+        const snapshotToWrite = shouldWriteSnapshot ? snapshot : undefined
+        const writeSnapshotIfNeeded: ResultAsync<
+          undefined,
+          SnapshotWriteError
+        > = snapshotToWrite
           ? writeSnapshot(snapshotToWrite).map(({ token }) => {
               submittedStepMeta.snapshotTokens = {
                 [snapshotToWrite.contentFormat]: token,
@@ -998,28 +1019,29 @@ export const createMultiRespondentFormSubmission = ({
             })
           : okAsync(undefined)
 
-      return writeSnapshotIfNeeded.andThen(() =>
-        ResultAsync.fromPromise(
-          saveSubmission().then((submission) => ({
-            submission,
-            responseMetadata,
-            snapshot,
-          })),
-          (error) => {
-            if (
-              error instanceof FormRespondentSingleSubmissionValidationError
-            ) {
-              return error
-            }
-            logger.error({
-              message: 'Multirespondent submission save error',
-              meta: logMeta,
-              error,
-            })
-            return new SubmissionSaveError()
-          },
-        ),
-      )
+        return writeSnapshotIfNeeded.andThen(() =>
+          ResultAsync.fromPromise(
+            saveSubmission().then((submission) => ({
+              submission,
+              responseMetadata,
+              snapshot,
+            })),
+            (error) => {
+              if (
+                error instanceof FormRespondentSingleSubmissionValidationError
+              ) {
+                return error
+              }
+              logger.error({
+                message: 'Multirespondent submission save error',
+                meta: logMeta,
+                error,
+              })
+              return new SubmissionSaveError()
+            },
+          ),
+        )
+      })
     })
     .map(({ submission, responseMetadata, snapshot }) => {
       const submissionId = submission.id
