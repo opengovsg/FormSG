@@ -1266,6 +1266,9 @@ export const handleNdiResponses = async (
     } else {
       req.formsg.encryptedPayload.verifiedContent =
         encryptVerifiedContentResult.value
+      // Keep exactly the collected plaintext used for the row's signed copy.
+      // The V1 snapshot producer encrypts its flat equivalent to the form key.
+      req.formsg.encryptedPayload.verifiedContentPlaintext = ndiResponses
     }
   }
 
