@@ -464,19 +464,18 @@ const MyInfoChildAttributeSet = new Set(Object.values(MyInfoChildAttributes))
 
 /**
  * Whether a form may fetch sponsored children alongside birth records.
- * Requires the myinfo-sponsored-children feature flag, and only Multirespondent
+ * Requires the mrf-children feature flag, and only Multirespondent
  * forms qualify: they submit v4 responses, which record a per-child `type`
  * (local or sponsored). v1 responses have no such slot, so keeping them
  * local-only lets a later v1-to-v4 migration assume `local`.
- * @param isSponsoredChildrenEnabled whether the feature flag is on; callers
+ * @param isMrfChildrenEnabled whether the mrf-children flag is on; callers
  * pass false when the flag state is unknown so the fetch fails closed
  */
 export const shouldFetchSponsoredChildren = (
   form: { responseMode: FormResponseMode },
-  isSponsoredChildrenEnabled: boolean,
+  isMrfChildrenEnabled: boolean,
 ): boolean =>
-  isSponsoredChildrenEnabled &&
-  form.responseMode === FormResponseMode.Multirespondent
+  isMrfChildrenEnabled && form.responseMode === FormResponseMode.Multirespondent
 
 export const isMyInfoChildrenBirthRecords = (
   attr: InternalAttr | undefined,

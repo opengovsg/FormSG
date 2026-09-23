@@ -54,8 +54,8 @@ export const respondWithRedirectURL: ControllerHandler<
   const { formId, encodedQuery } = req.query
   const useFormsgEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
   // Fail closed: without a growthbook instance, only birth records are fetched.
-  const isSponsoredChildrenEnabled =
-    req.growthbook?.isOn(featureFlags.myinfoSponsoredChildren) ?? false
+  const isMrfChildrenEnabled =
+    req.growthbook?.isOn(featureFlags.mrfChildren) ?? false
   return FormService.retrieveFormById(formId)
     .andThen((form) => getMyInfoEserviceIdInForm(form, useFormsgEsrvcId))
     .andThen(([form, eserviceId]) =>
@@ -65,7 +65,7 @@ export const respondWithRedirectURL: ControllerHandler<
         requestedAttributes: form.getUniqueMyInfoAttrs(),
         includeSponsoredChildren: shouldFetchSponsoredChildren(
           form,
-          isSponsoredChildrenEnabled,
+          isMrfChildrenEnabled,
         ),
         encodedQuery,
       }),

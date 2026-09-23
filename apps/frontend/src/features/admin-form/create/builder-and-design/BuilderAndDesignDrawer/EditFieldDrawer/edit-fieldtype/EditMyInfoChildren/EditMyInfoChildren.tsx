@@ -48,16 +48,14 @@ export const EditMyInfoChildren = ({
   const { t } = useTranslation()
   const extendedField = extendWithMyInfo(field)
   const { data: form } = useCreateTabForm()
-  const isSponsoredChildrenEnabled = useFeatureIsOn(
-    featureFlags.myinfoSponsoredChildren,
-  )
+  const isMrfChildrenEnabled = useFeatureIsOn(featureFlags.mrfChildren)
   const subFieldOptions = useMemo(
     () =>
       getCreateMyInfoChildrenSubFieldsOptions({
         responseMode: form?.responseMode,
-        isSponsoredChildrenEnabled,
+        isMrfChildrenEnabled,
       }),
-    [form?.responseMode, isSponsoredChildrenEnabled],
+    [form?.responseMode, isMrfChildrenEnabled],
   )
   const { control, buttonText, handleUpdateField, isLoading, handleCancel } =
     useEditFieldForm<EditMyInfoChildrenInputs, ChildrenCompoundFieldMyInfo>({

@@ -24,11 +24,11 @@ describe('CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS', () => {
 })
 
 describe('getCreateMyInfoChildrenSubFieldsOptions', () => {
-  it('offers child type on a Multirespondent form when sponsored children are enabled', () => {
+  it('offers child type on a Multirespondent form when mrf-children is on', () => {
     expect(
       getCreateMyInfoChildrenSubFieldsOptions({
         responseMode: FormResponseMode.Multirespondent,
-        isSponsoredChildrenEnabled: true,
+        isMrfChildrenEnabled: true,
       }).map((o) => o.value),
     ).toEqual([...WITHOUT_CHILD_TYPE, MyInfoChildAttributes.ChildType])
   })
@@ -37,7 +37,7 @@ describe('getCreateMyInfoChildrenSubFieldsOptions', () => {
     expect(
       getCreateMyInfoChildrenSubFieldsOptions({
         responseMode: FormResponseMode.Multirespondent,
-        isSponsoredChildrenEnabled: false,
+        isMrfChildrenEnabled: false,
       }).map((o) => o.value),
     ).toEqual(WITHOUT_CHILD_TYPE)
   })
@@ -46,7 +46,7 @@ describe('getCreateMyInfoChildrenSubFieldsOptions', () => {
     expect(
       getCreateMyInfoChildrenSubFieldsOptions({
         responseMode: FormResponseMode.Encrypt,
-        isSponsoredChildrenEnabled: true,
+        isMrfChildrenEnabled: true,
       }).map((o) => o.value),
     ).toEqual(WITHOUT_CHILD_TYPE)
   })
@@ -55,7 +55,7 @@ describe('getCreateMyInfoChildrenSubFieldsOptions', () => {
     expect(
       getCreateMyInfoChildrenSubFieldsOptions({
         responseMode: undefined,
-        isSponsoredChildrenEnabled: true,
+        isMrfChildrenEnabled: true,
       }).map((o) => o.value),
     ).toEqual(WITHOUT_CHILD_TYPE)
   })

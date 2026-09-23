@@ -156,19 +156,18 @@ export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
 /**
  * Child sub-field options offered for a given form. Child type distinguishes
  * the respondent's own children from sponsored children, which are only
- * fetched for Multirespondent forms while the myinfo-sponsored-children flag
- * is on, so it is only offered there.
+ * fetched for Multirespondent forms while the mrf-children flag is on, so it
+ * is only offered there.
  */
 export const getCreateMyInfoChildrenSubFieldsOptions = ({
   responseMode,
-  isSponsoredChildrenEnabled,
+  isMrfChildrenEnabled,
 }: {
   responseMode: FormResponseMode | undefined
-  isSponsoredChildrenEnabled: boolean
+  isMrfChildrenEnabled: boolean
 }): typeof CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS => {
   const offersChildType =
-    isSponsoredChildrenEnabled &&
-    responseMode === FormResponseMode.Multirespondent
+    isMrfChildrenEnabled && responseMode === FormResponseMode.Multirespondent
   return offersChildType
     ? CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS
     : CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS.filter(

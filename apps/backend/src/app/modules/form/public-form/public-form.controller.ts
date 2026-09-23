@@ -257,7 +257,7 @@ export const handleGetPublicForm: ControllerHandler<
           const useEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
           const includeSponsoredChildren = shouldFetchSponsoredChildren(
             form,
-            req.growthbook?.isOn(featureFlags.myinfoSponsoredChildren) ?? false,
+            req.growthbook?.isOn(featureFlags.mrfChildren) ?? false,
           )
           const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
             .asyncAndThen((authCode) =>
@@ -765,8 +765,8 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const useMyInfoFapi =
         req.growthbook?.isOn(featureFlags.myinfoFapi) ?? false
       // Fail closed: without a growthbook instance, only birth records are fetched.
-      const isSponsoredChildrenEnabled =
-        req.growthbook?.isOn(featureFlags.myinfoSponsoredChildren) ?? false
+      const isMrfChildrenEnabled =
+        req.growthbook?.isOn(featureFlags.mrfChildren) ?? false
       switch (form.authType) {
         case FormAuthType.MyInfo: {
           if (useMyInfoFapi) {
@@ -780,7 +780,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
               requestedAttributes: form.getUniqueMyInfoAttrs(),
               includeSponsoredChildren: shouldFetchSponsoredChildren(
                 form,
-                isSponsoredChildrenEnabled,
+                isMrfChildrenEnabled,
               ),
             }).map(({ sessionId, redirectUrl }) => {
               setMyInfoFapiSessionCookie(res, sessionId)
@@ -796,7 +796,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
                 requestedAttributes: form.getUniqueMyInfoAttrs(),
                 includeSponsoredChildren: shouldFetchSponsoredChildren(
                   form,
-                  isSponsoredChildrenEnabled,
+                  isMrfChildrenEnabled,
                 ),
                 encodedQuery,
               }),
