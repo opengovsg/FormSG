@@ -19,6 +19,7 @@ import {
   performMultiRespondentPostSubmissionCreateActions,
 } from 'src/app/modules/submission/multirespondent-submission/multirespondent-submission.service'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
+import * as SubmissionService from 'src/app/modules/submission/submission.service'
 import { s3Operations } from 'src/app/utils/aws-s3'
 import { IPopulatedMultirespondentForm } from 'src/types'
 import { MultirespondentSubmissionDto } from 'src/types/api'
@@ -327,6 +328,22 @@ describe('[GATE] V1 attachment form-key copies', () => {
     const [snapshot] = writtenSnapshots
     expect(snapshot.contentFormat).toBe('v1')
     expect(snapshot.attachmentMetadata).toEqual({ [attachmentId]: v1Put.Key })
+  })
+
+  it('should produce the copy without scanning the attachment a second time', async () => {
+    const scan = jest.spyOn(
+      SubmissionService,
+      'triggerGuardDutyScanThenDownloadCleanFileChainV4',
+    )
+
+    await submit(GENERIC_URL)
+
+    // The plaintext reaching the submit path has already been through the
+    // scanner; the V1 copy is made from it, not from a fresh retrieval.
+    expect(scan).not.toHaveBeenCalled()
+    expect(putTo(AwsConfig.submissionHistoryV1AttachmentS3Bucket)).toHaveLength(
+      1,
+    )
   })
 
   it('should leave a plumber V4 delivery on the native attachment bucket', async () => {

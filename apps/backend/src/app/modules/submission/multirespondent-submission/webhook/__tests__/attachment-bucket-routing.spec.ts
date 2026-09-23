@@ -7,6 +7,9 @@ import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.valida
 import { s3Operations } from 'src/app/utils/aws-s3'
 import { WebhookData, WebhookView } from 'src/types/submission'
 
+import { buildV1Snapshot } from '../submission-snapshot.producer'
+import { reconstructV1WebhookData } from '../webhook-reconstruction'
+
 jest.mock('axios')
 const MockAxios = jest.mocked(axios)
 
@@ -115,6 +118,64 @@ describe('[GATE] attachment bucket routing', () => {
     await sendWebhook(viewWith({ version: 2.1 }), WEBHOOK_URL, 'v1')
 
     expect(Object.keys(postedUrls())).toEqual(Object.keys(ATTACHMENT_KEYS))
+  })
+
+  it('should presign a retry against the same V1 objects', async () => {
+    // A retry rebuilds its payload from the snapshot, so the objects it
+    // targets are the keys the snapshot recorded — only the signature moves.
+    let signature = 0
+    jest
+      .spyOn(s3Operations, 'getSignedUrl')
+      .mockImplementation(async ({ Bucket, Key }) => {
+        signature += 1
+        signCalls.push({ Bucket, Key })
+        return `https://s3.example/${Bucket}/${Key}?X-Amz-Signature=sig-${signature}`
+      })
+
+    const snapshot = buildV1Snapshot({
+      formId: new ObjectId().toHexString(),
+      submissionId: new ObjectId().toHexString(),
+      submissionIndex: 0,
+      workflowStep: 0,
+      encryptedContent: 'form-key-encrypted-content',
+      attachmentMetadata: ATTACHMENT_KEYS,
+      createdAt: new Date().toISOString(),
+    })
+    const replay = () =>
+      sendWebhook(
+        {
+          data: reconstructV1WebhookData({
+            liveData: viewWith({ version: 2.1 }).data,
+            snapshot,
+          }),
+        } as WebhookView,
+        WEBHOOK_URL,
+        'v1',
+      )
+
+    await replay()
+    await replay()
+
+    const [first, second] = MockAxios.post.mock.calls.map(
+      (call) => (call[1] as WebhookView).data.attachmentDownloadUrls,
+    )
+    const targetsOf = (urls: Record<string, string>) =>
+      Object.fromEntries(
+        Object.entries(urls).map(([key, url]) => [key, url.split('?')[0]]),
+      )
+
+    expect(targetsOf(first)).toEqual(targetsOf(second))
+    expect(first).not.toEqual(second)
+    expect(signCalls).toEqual([
+      ...Object.values(ATTACHMENT_KEYS).map((Key) => ({
+        Bucket: AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+        Key,
+      })),
+      ...Object.values(ATTACHMENT_KEYS).map((Key) => ({
+        Bucket: AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+        Key,
+      })),
+    ])
   })
 
   it('should route the two buckets apart', () => {
