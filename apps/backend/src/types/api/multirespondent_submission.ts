@@ -63,6 +63,8 @@ export type MultirespondentSubmissionDto = {
   encryptedSubmissionSecretKey: string
   encryptedContent: string
   verifiedContent?: string
+  // Server-produced NDI data, held only for this request's webhook snapshot.
+  verifiedContentPlaintext?: Record<string, string>
   submissionSecretKey: string
   attachments?: SubmissionAttachmentsMap
   version: number

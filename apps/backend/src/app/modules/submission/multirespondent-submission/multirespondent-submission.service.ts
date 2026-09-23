@@ -89,7 +89,10 @@ import {
 } from './webhook/submission-snapshot.producer'
 import { SubmissionSnapshot } from './webhook/submission-snapshot.schema'
 import { writeSnapshot } from './webhook/submission-snapshot.store'
-import { buildV1EncryptedContent } from './webhook/v1-content.producer'
+import {
+  buildV1EncryptedContent,
+  buildV1VerifiedContent,
+} from './webhook/v1-content.producer'
 import { assertStorageShapedKeySet } from './webhook/v1-payload'
 import {
   getWebhookPayloadPolicy,
@@ -956,9 +959,17 @@ export const createMultiRespondentFormSubmission = ({
         if (v1ContentResult.isErr()) {
           return errAsync(v1ContentResult.error)
         }
+        const v1VerifiedContentResult = buildV1VerifiedContent({
+          verifiedContent: encryptedPayload.verifiedContentPlaintext,
+          formPublicKey: form.publicKey,
+        })
+        if (v1VerifiedContentResult.isErr()) {
+          return errAsync(v1VerifiedContentResult.error)
+        }
         snapshot = buildV1Snapshot({
           ...snapshotBase,
           encryptedContent: v1ContentResult.value,
+          verifiedContent: v1VerifiedContentResult.value,
         })
       } else if (webhookContentFormat === 'v4' && shouldWriteSnapshot) {
         snapshot = buildV4Snapshot({
