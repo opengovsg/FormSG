@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Container,
@@ -21,6 +22,7 @@ import {
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { DecryptedSubmission } from '../../AdminSubmissionsService'
+import { useIsDelightfulDashboard } from '../../hooks'
 import { useStorageResponsesContext } from '../../ResponsesPage/storage'
 import { useAllSubmissionData } from '../queries'
 
@@ -93,6 +95,7 @@ export const UnlockedChartsContainer = () => {
   const { t } = useTranslation()
   const { data: form, isLoading: isFormLoading } = useAdminForm()
   const { dateRange, setDateRange } = useStorageResponsesContext()
+  const isDelightfulDashboard = useIsDelightfulDashboard()
   const { data: decryptedContent = [], isLoading: isDecryptionLoading } =
     useAllSubmissionData(dateRange)
 
@@ -143,14 +146,10 @@ export const UnlockedChartsContainer = () => {
         .filter(isNonEmpty)
     : []
 
+  const Wrapper = isDelightfulDashboard ? ChartsPaneWrapper : Fragment
+
   return (
-    <Flex
-      flexDir="column"
-      pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-      w="100%"
-      maxW="69.5rem"
-      mx="auto"
-    >
+    <Wrapper>
       <Flex
         direction={{ base: 'column', sm: 'row' }}
         justifySelf={{ base: 'start', sm: 'end' }}
@@ -224,6 +223,18 @@ export const UnlockedChartsContainer = () => {
           />
         )}
       </Skeleton>
-    </Flex>
+    </Wrapper>
   )
 }
+
+const ChartsPaneWrapper = ({ children }: { children: React.ReactNode }) => (
+  <Flex
+    flexDir="column"
+    pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+    w="100%"
+    maxW="69.5rem"
+    mx="auto"
+  >
+    {children}
+  </Flex>
+)

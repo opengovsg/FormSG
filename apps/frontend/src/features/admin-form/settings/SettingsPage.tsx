@@ -140,8 +140,7 @@ export const SettingsPage = (): JSX.Element => {
         orientation="vertical"
         variant="line"
         py={{ base: '2.5rem', lg: '3.125rem' }}
-        pl={{ base: 0, md: '1.75rem', lg: '2rem' }}
-        pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+        px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
         index={tabIndex === -1 ? 0 : tabIndex}
         onChange={(index) => {
           handleTabChange(index)
@@ -170,7 +169,7 @@ export const SettingsPage = (): JSX.Element => {
           <TabList
             overflowX="initial"
             display="inline-flex"
-            w={{ base: 'auto', lg: '13rem' }}
+            w="max-content"
             mr={{ base: '1.5rem', md: '4rem', lg: '2rem' }}
             mb="calc(0.5rem - 2px)"
           >

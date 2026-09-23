@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Box, Tabs } from '@chakra-ui/react'
+import { Box, Flex, Tabs } from '@chakra-ui/react'
 
 import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
@@ -10,10 +10,13 @@ import {
 
 import {
   FormResultsNavbar,
+  LegacyFormResultsNavbar,
   useResultsTabs,
 } from './components/FormResultsNavbar'
+import { useIsDelightfulDashboard } from './hooks'
 
 export const FormResultsLayout = (): JSX.Element => {
+  const isDelightfulDashboard = useIsDelightfulDashboard()
   const { formId } = useParams()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -39,6 +42,15 @@ export const FormResultsLayout = (): JSX.Element => {
   if (!formId) throw new Error('No formId provided')
 
   const tabIndex = tabs.findIndex((tab) => checkTabActive(tab.path))
+
+  if (!isDelightfulDashboard) {
+    return (
+      <Flex flexDir="column" flex={1} overflow="hidden" pos="relative">
+        <LegacyFormResultsNavbar />
+        <Outlet />
+      </Flex>
+    )
+  }
 
   return (
     <Box overflowX="hidden" overflowY="auto" position="relative" flex={1}>

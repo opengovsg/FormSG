@@ -22,6 +22,8 @@ import Checkbox from '~components/Checkbox'
 import Menu from '~components/Menu'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
+import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
+
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import { CanceledResult, DownloadOptions, DownloadResult } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
@@ -117,6 +119,7 @@ const DownloadSelector = ({
 }
 
 export const DownloadButton = (): JSX.Element => {
+  const isDelightfulDashboard = useIsDelightfulDashboard()
   const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = useMemo(
     () => ({
       isDownloadAttachments: false,
@@ -324,7 +327,11 @@ export const DownloadButton = (): JSX.Element => {
           </Text>
         </ProgressModal>
       )}
-      <Box>
+      <Box
+        {...(isDelightfulDashboard
+          ? {}
+          : { gridArea: 'export', justifySelf: 'flex-end' })}
+      >
         <Menu closeOnSelect={false} placement="bottom-end">
           {({ isOpen, onClose }) => (
             <>

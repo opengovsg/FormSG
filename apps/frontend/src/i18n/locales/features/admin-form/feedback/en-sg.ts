@@ -2,7 +2,7 @@ import { Feedback } from '.'
 
 export const enSG: Feedback = {
   emptyFeedback: {
-    noFeedbackYet: "You don't have any feedback yet.",
+    noFeedbackYet: "You don't have any feedback yet",
     tryUsing: 'Try using',
     toSendOutForms: 'to send out your forms!',
   },
