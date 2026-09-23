@@ -6,10 +6,36 @@ import { err, ok, Result } from 'neverthrow'
 
 import formsgSdk from '../../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../../config/logger'
+import { encryptVerifiedContent } from '../../../verified-content/verified-content.service'
 
 import { V1ContentMappingError } from './submission-snapshot.errors'
 
 const logger = createLoggerWithLabel(module)
+
+export const buildV1VerifiedContent = ({
+  verifiedContent,
+  formPublicKey,
+}: {
+  verifiedContent?: Record<string, string>
+  formPublicKey: string
+}): Result<string | undefined, V1ContentMappingError> => {
+  if (!verifiedContent || Object.keys(verifiedContent).length === 0) {
+    return ok(undefined)
+  }
+
+  // V1 eligibility guarantees a single step. Keep the same flat keys and
+  // signing/encryption path as storage mode, including sgID's unsuffixed key.
+  const flatContent = Object.fromEntries(
+    Object.entries(verifiedContent).map(([key, value]) => [
+      key.replace(/ \(Step 1\)$/, ''),
+      value,
+    ]),
+  )
+  return encryptVerifiedContent({
+    verifiedContent: flatContent,
+    formPublicKey,
+  }).mapErr((error) => new V1ContentMappingError(undefined, error))
+}
 
 export const buildV1EncryptedContent = ({
   v4Responses,
