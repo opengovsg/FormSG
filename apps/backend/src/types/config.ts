@@ -34,6 +34,7 @@ export type AwsConfig = {
   attachmentS3Bucket: string
   submissionHistoryV4S3Bucket: string
   submissionHistoryV1S3Bucket: string
+  submissionHistoryV1AttachmentS3Bucket: string
   paymentProofS3Bucket: string
   region: string
   logoBucketUrl: string
@@ -152,6 +153,7 @@ export interface ICompulsoryVarsSchema {
     attachmentS3Bucket: string
     submissionHistoryV4S3Bucket: string
     submissionHistoryV1S3Bucket: string
+    submissionHistoryV1AttachmentS3Bucket: string
     paymentProofS3Bucket: string
   }
 }
