@@ -11,7 +11,6 @@ import {
 import {
   FormResultsNavbar,
   LegacyFormResultsNavbar,
-  RESULTS_NAV_WIDTH,
   useResultsTabs,
 } from './components/FormResultsNavbar'
 import { useIsDelightfulDashboard } from './hooks'
@@ -65,10 +64,9 @@ export const FormResultsLayout = (): JSX.Element => {
         onChange={handleTabChange}
       >
         <FormResultsNavbar tabs={tabs} />
-        <Box w="100%" maxW="69.5rem" minW={0} mx="auto">
+        <Box w="100%" minW={0}>
           <Outlet />
         </Box>
-        <Box flex="0 0 auto" w={{ base: 0, lg: RESULTS_NAV_WIDTH.lg }} />
       </Tabs>
     </Box>
   )
