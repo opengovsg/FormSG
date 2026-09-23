@@ -11,15 +11,18 @@ import {
 import {
   BadgeProps,
   Flex,
+  Skeleton,
   Table,
   Tbody,
   Td,
+  Text,
   Th,
   Thead,
   Tr,
 } from '@chakra-ui/react'
 
 import {
+  BasicField,
   FormResponseMode,
   SubmissionMetadata,
   WorkflowStatus,
@@ -29,6 +32,7 @@ import { centsToDollars } from 'formsg-shared/utils/payments'
 import Badge from '~components/Badge'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { formatResponseForCell } from '~features/admin-form/responses/common/utils/formatResponseForCell'
 import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
@@ -37,6 +41,7 @@ import {
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
+import { useDecryptedResponsesBySubmissionId } from '~features/admin-form/responses/queries'
 
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
@@ -292,6 +297,26 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
 const PAYMENT_RESPONSE_TABLE_COLUMNS =
   BASE_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
 
+const WORKFLOW_PREFIX_COLUMNS = MRF_RESPONSE_TABLE_COLUMNS
+
+const NO_WORKFLOW_PREFIX_COLUMNS: Column<ResponseColumnData>[] = [
+  BASE_RESPONSE_TABLE_COLUMNS[0],
+  BASE_RESPONSE_TABLE_COLUMNS[1],
+  {
+    Header: MRF_RESPONSE_TIMESTAMP_LABEL,
+    accessor: 'submissionTime',
+    width: 250,
+    minWidth: 250,
+    disableResizing: true,
+  },
+]
+
+const NON_ANSWERABLE_FIELD_TYPES = new Set<BasicField>([
+  BasicField.Section,
+  BasicField.Statement,
+  BasicField.Image,
+])
+
 export const ResponsesTable = () => {
   const { data: form } = useAdminForm()
   const isPaymentsForm =
@@ -300,6 +325,9 @@ export const ResponsesTable = () => {
       : false
   const isMultiRespondentForm =
     form?.responseMode === FormResponseMode.Multirespondent
+  const hasWorkflow =
+    form?.responseMode === FormResponseMode.Multirespondent &&
+    form.workflow.length > 0
 
   const {
     currentPage: currentPage1Indexed,
@@ -310,6 +338,9 @@ export const ResponsesTable = () => {
     isInfiniteScroll,
   } = useUnlockedResponses()
   const isDelightfulDashboard = useIsDelightfulDashboard()
+
+  const { data: responsesBySubmissionId, isFetching: isDecrypting } =
+    useDecryptedResponsesBySubmissionId({ enabled: isDelightfulDashboard })
 
   const navigate = useNavigate()
 
@@ -326,7 +357,7 @@ export const ResponsesTable = () => {
     }
   }, [filteredMetadata, metadata, submissionId])
 
-  const columns = useMemo(() => {
+  const legacyColumns = useMemo(() => {
     if (isMultiRespondentForm) {
       return MRF_RESPONSE_TABLE_COLUMNS
     }
@@ -335,6 +366,50 @@ export const ResponsesTable = () => {
     }
     return BASE_RESPONSE_TABLE_COLUMNS
   }, [isMultiRespondentForm, isPaymentsForm])
+
+  const fieldColumns = useMemo((): Column<ResponseColumnData>[] => {
+    if (!isDelightfulDashboard || !form) return []
+    return form.form_fields
+      .filter(
+        (formField) => !NON_ANSWERABLE_FIELD_TYPES.has(formField.fieldType),
+      )
+      .map((formField) => ({
+        id: formField._id,
+        Header: formField.title,
+        accessor: ({ refNo }: ResponseColumnData) =>
+          formatResponseForCell(
+            responsesBySubmissionId
+              ?.get(refNo)
+              ?.find((response) => response._id === formField._id),
+          ),
+        Cell: ({ value }: { value: string }) => (
+          <Skeleton isLoaded={!isDecrypting} w="100%">
+            <Text noOfLines={1} title={value}>
+              {value}
+            </Text>
+          </Skeleton>
+        ),
+        width: 200,
+        minWidth: 120,
+        maxWidth: 400,
+      }))
+  }, [form, isDecrypting, isDelightfulDashboard, responsesBySubmissionId])
+
+  const columns = useMemo(() => {
+    if (!isDelightfulDashboard) return legacyColumns
+    const prefix = hasWorkflow
+      ? WORKFLOW_PREFIX_COLUMNS
+      : isPaymentsForm
+        ? NO_WORKFLOW_PREFIX_COLUMNS.concat(PAYMENT_COLUMNS)
+        : NO_WORKFLOW_PREFIX_COLUMNS
+    return prefix.concat(fieldColumns)
+  }, [
+    fieldColumns,
+    hasWorkflow,
+    isDelightfulDashboard,
+    isPaymentsForm,
+    legacyColumns,
+  ])
 
   const {
     prepareRow,
