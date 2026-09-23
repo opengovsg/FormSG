@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.30.2](https://github.com/opengovsg/formsg/compare/v9.30.1...v9.30.2) (2026-09-23)
+
+
+### Bug Fixes
+
+* add plumber copy message for webhooks enabled but linked to plumber (#10086) ([#10086](https://github.com/opengovsg/formsg/commit/60d55464ef92478ab2be9d687d16a6e8c8838111))
+
 ## [9.30.1](https://github.com/opengovsg/formsg/compare/v9.30.0...v9.30.1) (2026-09-23)
 
 
