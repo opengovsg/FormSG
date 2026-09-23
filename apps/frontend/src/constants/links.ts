@@ -5,7 +5,7 @@ export const FEATURE_REQUEST = 'https://go.gov.sg/formsg-featurerequest'
 export const REPORT_VULNERABILITY = 'https://go.gov.sg/report-vulnerability'
 export const OSS_README = 'https://go.gov.sg/formsg-thirdparty'
 
-export const SINGPASS_FAQ = 'https://www.singpass.gov.sg/main/html/faq.html'
+export const SINGPASS_FAQ = 'https://ask.gov.sg/singpass'
 
 // FormSG guide links
 export const FORM_GUIDE = 'https://go.gov.sg/formsg-guides'
