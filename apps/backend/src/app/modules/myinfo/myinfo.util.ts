@@ -516,24 +516,38 @@ export const getMyInfoChildHashKey = (
 }
 
 /**
- * Finds the prefill hashes for a child sub-field by field, sub-field and
- * child name, ignoring the child's index in the MyInfo data. The submitted
- * child's position is unrelated to that index, so matching by name is what
- * lets any MyInfo child verify. Returns several hashes if names collide.
+ * Finds the prefill hashes for every MyInfo child sharing the submitted name,
+ * grouped by the child's index in the MyInfo data and keyed by sub-field. The
+ * submitted child's position is unrelated to that index, so matching by name
+ * is what lets any MyInfo child verify. Grouping by record is what stops a
+ * submission from mixing sub-field values across two same-named children.
  */
-const findMyInfoChildHashes = (
+const findMyInfoChildHashesByRecord = (
   hashes: IHashes,
   fieldId: string,
-  childAttr: MyInfoChildAttributes,
   childName: string,
-): string[] => {
-  const prefix = `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.${childAttr}.`
-  return Object.entries(hashes).flatMap(([key, hash]) => {
-    if (!hash || !key.startsWith(prefix)) return []
+): Map<number, Partial<Record<MyInfoChildAttributes, string>>> => {
+  const prefix = `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.`
+  const byRecord = new Map<
+    number,
+    Partial<Record<MyInfoChildAttributes, string>>
+  >()
+  for (const [key, hash] of Object.entries(hashes)) {
+    if (!hash || !key.startsWith(prefix)) continue
+    // Remainder is `<childAttr>.<childIdx>.<childName>`; the name may contain dots.
     const rest = key.slice(prefix.length)
-    const dot = rest.indexOf('.')
-    return dot >= 0 && rest.slice(dot + 1) === childName ? [hash] : []
-  })
+    const firstDot = rest.indexOf('.')
+    const secondDot = rest.indexOf('.', firstDot + 1)
+    if (firstDot < 0 || secondDot < 0) continue
+    if (rest.slice(secondDot + 1) !== childName) continue
+    const childAttr = rest.slice(0, firstDot) as MyInfoChildAttributes
+    const childIdx = Number(rest.slice(firstDot + 1, secondDot))
+    if (!Number.isInteger(childIdx)) continue
+    const record = byRecord.get(childIdx) ?? {}
+    record[childAttr] = hash
+    byRecord.set(childIdx, record)
+  }
+  return byRecord
 }
 
 /**
@@ -541,6 +555,10 @@ const findMyInfoChildHashes = (
  * MyInfo Child fields. Hashes are looked up by child name, and the result is
  * recorded under the submitted child's positional key, which downstream
  * consumers match on.
+ *
+ * When several MyInfo children share the submitted name, every sub-field is
+ * judged against the single record that matches the most sub-fields, so a
+ * submission cannot pass by combining values from two different children.
  *
  * NOTE: if no hash exists for a submitted child, it assumes that it's a
  * manually user inputted child. As such, it will just not indicate in the
@@ -562,30 +580,47 @@ export const handleMyInfoChildHashResponse = (
   childField.answerArray.forEach((childAnswer, childIndex) => {
     // Name should be first field for child answers
     const childName = childAnswer[0]
-    // Validate each answer (child)
-    childAnswer.forEach((attrAnswer, subFieldIndex) => {
+    const candidates = findMyInfoChildHashesByRecord(
+      hashes,
+      field._id,
+      childName,
+    )
+    // Intentional, to allow user-filled fields to pass through.
+    if (candidates.size === 0) return
+
+    // Compare every submitted sub-field against every same-named record, then
+    // keep the record with the most matches (lowest index on a tie).
+    const bestRecord = Promise.all(
+      [...candidates.entries()].map(async ([childIdx, record]) => {
+        const matches = await Promise.all(
+          childAnswer.map((attrAnswer, subFieldIndex) => {
+            const hash = record[subFields[subFieldIndex]]
+            return hash ? bcrypt.compare(attrAnswer, hash) : undefined
+          }),
+        )
+        return { childIdx, matches }
+      }),
+    ).then((evaluated) =>
+      evaluated.reduce((best, current) => {
+        const score = (m: (boolean | undefined)[]) => m.filter(Boolean).length
+        return score(current.matches) > score(best.matches) ? current : best
+      }),
+    )
+
+    childAnswer.forEach((_attrAnswer, subFieldIndex) => {
       const subField = subFields[subFieldIndex]
+      const hasHash = [...candidates.values()].some((r) => r[subField])
+      if (!hasHash) return
       const key = getMyInfoChildHashKey(
         field._id,
         subField,
         childIndex,
         childName,
       )
-      const candidateHashes = findMyInfoChildHashes(
-        hashes,
-        field._id,
-        subField,
-        childName,
+      myInfoResponsesMap.set(
+        key,
+        bestRecord.then(({ matches }) => matches[subFieldIndex] ?? false),
       )
-      // Intentional, to allow user-filled fields to pass through.
-      if (candidateHashes.length > 0) {
-        myInfoResponsesMap.set(
-          key,
-          Promise.all(
-            candidateHashes.map((hash) => bcrypt.compare(attrAnswer, hash)),
-          ).then((matches) => matches.some(Boolean)),
-        )
-      }
     })
   })
   return

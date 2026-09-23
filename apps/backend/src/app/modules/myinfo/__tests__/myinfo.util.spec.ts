@@ -134,6 +134,48 @@ describe('myinfo.util', () => {
       expect(Object.values(results).every(Boolean)).toBe(true)
     })
 
+    it('should reject a submission that mixes sub-field values from two same-named children', async () => {
+      const subFields = [
+        MyInfoChildAttributes.ChildName,
+        MyInfoChildAttributes.ChildDateOfBirth,
+        MyInfoChildAttributes.ChildGender,
+      ]
+      const threeSubFieldsField = {
+        ...(childrenField as object),
+        childrenSubFields: subFields,
+      } as unknown as PossiblyPrefilledField
+      const promises = hashFieldValues([threeSubFieldsField], {
+        [MyInfoChildAttributes.ChildName]: ['SAME NAME', 'SAME NAME'],
+        [MyInfoChildAttributes.ChildDateOfBirth]: ['2015-01-02', '2018-03-04'],
+        [MyInfoChildAttributes.ChildGender]: ['FEMALE', 'MALE'],
+      })
+      const hashes = Object.fromEntries(
+        await Promise.all(
+          Object.entries(promises).map(
+            async ([key, promise]) => [key, await promise] as const,
+          ),
+        ),
+      ) as IHashes
+      // DOB from the second record, gender from the first: no single child
+      // has this combination.
+      const mixed = {
+        ...makeResponse(['SAME NAME', '04/03/2018', 'FEMALE']),
+        childSubFieldsArray: subFields,
+      } as ProcessedChildrenResponse
+
+      const results = await resolve(compareHashedValues([mixed], hashes))
+
+      const keyFor = (attr: MyInfoChildAttributes) =>
+        getMyInfoChildHashKey(FIELD_ID, attr, 0, 'SAME NAME')
+      expect(results[keyFor(MyInfoChildAttributes.ChildName)]).toBe(true)
+      // Whichever record wins the tie, the value taken from the other record
+      // must not verify.
+      expect(
+        results[keyFor(MyInfoChildAttributes.ChildDateOfBirth)] &&
+          results[keyFor(MyInfoChildAttributes.ChildGender)],
+      ).toBe(false)
+    })
+
     it('should match child names that contain dots', async () => {
       const hashes = await hashChildren({
         [MyInfoChildAttributes.ChildName]: ['OTHER', 'A. B. TAN'],
