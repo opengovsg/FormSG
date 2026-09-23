@@ -186,6 +186,9 @@ export const FeedbackPage = (): JSX.Element => {
       flexDir="column"
       pb="1.5rem"
       pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      w="100%"
+      maxW="69.5rem"
+      mx="auto"
     >
       <Flex
         direction={{ base: 'column', sm: 'row' }}

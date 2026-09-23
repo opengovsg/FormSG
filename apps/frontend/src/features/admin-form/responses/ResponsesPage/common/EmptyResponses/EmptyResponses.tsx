@@ -4,6 +4,8 @@ import { Flex, Text } from '@chakra-ui/react'
 import { OGP_POSTMAN } from '~constants/links'
 import Link from '~components/Link'
 
+import { resultsNavBleed } from '../../../components/FormResultsNavbar'
+
 import { EmptyResponsesSvgr } from './EmptyResponsesSvgr'
 
 export function EmptyResponses(): JSX.Element {
@@ -15,6 +17,7 @@ export function EmptyResponses(): JSX.Element {
       align="center"
       py="4rem"
       px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      {...resultsNavBleed}
     >
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
         {t('features.adminForm.responses.responsesPage.emptyResponses.title')}
