@@ -14,6 +14,7 @@ describe('CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS', () => {
       MyInfoChildAttributes.ChildVaxxStatus,
       MyInfoChildAttributes.ChildGender,
       MyInfoChildAttributes.ChildRace,
+      MyInfoChildAttributes.ChildType,
     ])
   })
 })
