@@ -41,7 +41,12 @@ export function ChartsSupportedFieldsInfoBox() {
           'features.adminForm.responses.charts.components.supportedFieldsInfoBox.supportedFields',
         )}
       </Text>
-      <Grid templateColumns="repeat(3,1fr)" mt="1.5rem" gap="1rem 2rem">
+      <Grid
+        templateColumns="repeat(3,1fr)"
+        mt="1.5rem"
+        rowGap="1rem"
+        columnGap={{ base: '0.75rem', md: '2rem' }}
+      >
         <ListWithIcon icon={BiRename}>
           {t(
             'features.adminForm.responses.charts.components.supportedFieldsInfoBox.shortAnswer',
