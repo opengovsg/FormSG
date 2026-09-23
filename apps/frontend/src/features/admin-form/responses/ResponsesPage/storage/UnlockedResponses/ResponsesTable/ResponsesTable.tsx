@@ -311,6 +311,15 @@ const NO_WORKFLOW_PREFIX_COLUMNS: Column<ResponseColumnData>[] = [
   },
 ]
 
+const RESPONSE_NUMBER_COLUMN_ID = 'number'
+
+// react-table derives an id from an explicit id, then a string accessor, then
+// a string Header.
+const getColumnId = (column: Column<ResponseColumnData>): string =>
+  column.id ??
+  (typeof column.accessor === 'string' ? column.accessor : undefined) ??
+  String(column.Header)
+
 const NON_ANSWERABLE_FIELD_TYPES = new Set<BasicField>([
   BasicField.Section,
   BasicField.Statement,
@@ -336,6 +345,8 @@ export const ResponsesTable = () => {
     submissionId,
     onRowClick,
     isInfiniteScroll,
+    setColumnOptions,
+    hiddenColumnIds,
   } = useUnlockedResponses()
   const isDelightfulDashboard = useIsDelightfulDashboard()
 
@@ -367,50 +378,68 @@ export const ResponsesTable = () => {
     return BASE_RESPONSE_TABLE_COLUMNS
   }, [isMultiRespondentForm, isPaymentsForm])
 
-  const fieldColumns = useMemo((): Column<ResponseColumnData>[] => {
+  const answerableFields = useMemo(() => {
     if (!isDelightfulDashboard || !form) return []
-    return form.form_fields
-      .filter(
-        (formField) => !NON_ANSWERABLE_FIELD_TYPES.has(formField.fieldType),
-      )
-      .map((formField) => ({
-        id: formField._id,
-        Header: formField.title,
-        accessor: ({ refNo }: ResponseColumnData) => {
-          const responses = responsesBySubmissionId?.get(refNo)
-          if (!responses) return undefined
-          return formatResponseForCell(
-            responses.find((response) => response._id === formField._id),
-          )
-        },
-        Cell: ({ value }: { value?: string }) => (
-          <Skeleton isLoaded={value !== undefined || !isDecrypting} w="100%">
-            <Text noOfLines={1} title={value}>
-              {value ?? ''}
-            </Text>
-          </Skeleton>
-        ),
-        width: 200,
-        minWidth: 120,
-        maxWidth: 400,
-      }))
-  }, [form, isDecrypting, isDelightfulDashboard, responsesBySubmissionId])
+    return form.form_fields.filter(
+      (formField) => !NON_ANSWERABLE_FIELD_TYPES.has(formField.fieldType),
+    )
+  }, [form, isDelightfulDashboard])
+
+  const prefixColumns = useMemo(() => {
+    if (hasWorkflow) return WORKFLOW_PREFIX_COLUMNS
+    return isPaymentsForm
+      ? NO_WORKFLOW_PREFIX_COLUMNS.concat(PAYMENT_COLUMNS)
+      : NO_WORKFLOW_PREFIX_COLUMNS
+  }, [hasWorkflow, isPaymentsForm])
+
+  const fieldColumns = useMemo((): Column<ResponseColumnData>[] => {
+    return answerableFields.map((formField) => ({
+      id: formField._id,
+      Header: formField.title,
+      accessor: ({ refNo }: ResponseColumnData) => {
+        const responses = responsesBySubmissionId?.get(refNo)
+        if (!responses) return undefined
+        return formatResponseForCell(
+          responses.find((response) => response._id === formField._id),
+        )
+      },
+      Cell: ({ value }: { value?: string }) => (
+        <Skeleton isLoaded={value !== undefined || !isDecrypting} w="100%">
+          <Text noOfLines={1} title={value}>
+            {value ?? ''}
+          </Text>
+        </Skeleton>
+      ),
+      width: 200,
+      minWidth: 120,
+      maxWidth: 400,
+    }))
+  }, [answerableFields, isDecrypting, responsesBySubmissionId])
 
   const columns = useMemo(() => {
     if (!isDelightfulDashboard) return legacyColumns
-    const prefix = hasWorkflow
-      ? WORKFLOW_PREFIX_COLUMNS
-      : isPaymentsForm
-        ? NO_WORKFLOW_PREFIX_COLUMNS.concat(PAYMENT_COLUMNS)
-        : NO_WORKFLOW_PREFIX_COLUMNS
-    return prefix.concat(fieldColumns)
-  }, [
-    fieldColumns,
-    hasWorkflow,
-    isDelightfulDashboard,
-    isPaymentsForm,
-    legacyColumns,
-  ])
+    return prefixColumns.concat(fieldColumns)
+  }, [fieldColumns, isDelightfulDashboard, legacyColumns, prefixColumns])
+
+  const columnOptions = useMemo(() => {
+    if (!isDelightfulDashboard) return []
+    return prefixColumns
+      .map((column) => ({
+        id: getColumnId(column),
+        label: String(column.Header),
+      }))
+      .filter(({ id }) => id !== RESPONSE_NUMBER_COLUMN_ID)
+      .concat(
+        answerableFields.map((formField) => ({
+          id: formField._id,
+          label: formField.title,
+        })),
+      )
+  }, [answerableFields, isDelightfulDashboard, prefixColumns])
+
+  useEffect(() => {
+    setColumnOptions(columnOptions)
+  }, [columnOptions, setColumnOptions])
 
   const {
     prepareRow,
@@ -420,10 +449,14 @@ export const ResponsesTable = () => {
     page,
     rows,
     gotoPage,
+    setHiddenColumns,
   } = useTable<ResponseColumnData>(
     {
       columns,
       data: metadataToUse,
+      // The columns array is rebuilt as answers decrypt; without this the
+      // reset would undo the admin's column choices every few hundred ms.
+      autoResetHiddenColumns: false,
       // Server side pagination.
       manualPagination: true,
       pageCount: currentPage,
@@ -441,6 +474,11 @@ export const ResponsesTable = () => {
     if (isInfiniteScroll) return
     gotoPage(currentPage)
   }, [currentPage, gotoPage, isInfiniteScroll])
+
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setHiddenColumns(hiddenColumnIds)
+  }, [hiddenColumnIds, isDelightfulDashboard, setHiddenColumns])
 
   const visibleRows = isInfiniteScroll ? rows : page
 

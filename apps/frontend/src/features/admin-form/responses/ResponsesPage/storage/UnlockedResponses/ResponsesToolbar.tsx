@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next'
-import { BiColumns, BiFilterAlt, BiGridAlt, BiSortAlt2 } from 'react-icons/bi'
+import { BiFilterAlt, BiGridAlt, BiSortAlt2 } from 'react-icons/bi'
 import { Box, Flex } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
+import { ColumnsMenu } from './ColumnsMenu'
 import { DownloadButton } from './DownloadButton'
 import { SubmissionSearchbar } from './SubmissionSearchbar'
 
@@ -17,7 +18,7 @@ export const ResponsesToolbar = ({
   isAnyFetching: boolean
 }): JSX.Element => {
   const { t } = useTranslation()
-  const { filter, sort, group, columns } = t(
+  const { filter, sort, group } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar',
     { returnObjects: true },
   )
@@ -66,13 +67,7 @@ export const ResponsesToolbar = ({
       </Flex>
 
       <Flex align="center" gap="0.75rem" flexShrink={0}>
-        <Button
-          variant="clear"
-          colorScheme="secondary"
-          leftIcon={<BiColumns fontSize="1.25rem" />}
-        >
-          {columns}
-        </Button>
+        <ColumnsMenu />
         <DownloadButton />
       </Flex>
     </Flex>
