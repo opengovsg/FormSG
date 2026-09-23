@@ -119,7 +119,11 @@ const StackRow = ({
   )
 }
 
-export const IndividualResponsePage = (): JSX.Element => {
+export const IndividualResponsePage = ({
+  inDrawer = false,
+}: {
+  inDrawer?: boolean
+} = {}): JSX.Element => {
   const { t } = useTranslation()
   const isDelightfulDashboard = useIsDelightfulDashboard()
   const { submissionId, formId } = useParams()
@@ -209,6 +213,130 @@ export const IndividualResponsePage = (): JSX.Element => {
   const workflowCurrentStepNumber = data?.mrf?.workflowCurrentStepNumber
   const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
 
+  const body = (
+    <Stack
+      px={{ md: '1.75rem', lg: '2rem' }}
+      spacing={{ base: '1.5rem', md: '2.5rem' }}
+      data-dd-privacy="mask"
+    >
+      <Stack bg="primary.100" p="1.5rem" textStyle="body-1">
+        <StackRow
+          label="Response ID"
+          value={submissionId}
+          isLoading={isLoading}
+          isError={isError}
+        />
+        <StackRow
+          label={isMrf ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
+          value={
+            data?.submissionTime ?? t('features.common.loadingWithEllipsis')
+          }
+          isLoading={isLoading}
+          isError={isError}
+        />
+        {isMrf ? (
+          <>
+            <StackRow
+              label={MRF_WORKFLOW_STATUS_LABEL}
+              value={responseMrfStatus}
+              isLoading={isLoading}
+              isError={isError}
+            />
+            <StackRow
+              label={MRF_PENDING_RESPONSE_AT_LABEL}
+              value={
+                workflowStatus === undefined ||
+                workflowCurrentStepNumber === undefined ||
+                workflowNumTotalSteps === undefined
+                  ? '-'
+                  : getPendingResponseAtString({
+                      workflowStatus,
+                      workflowCurrentStepNumber,
+                      workflowNumTotalSteps,
+                    })
+              }
+              isLoading={isLoading}
+              isError={isError}
+            />
+            <StackRow
+              label={MRF_STATUS_TRACKING_LABEL}
+              value={''}
+              statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
+              isLoading={isLoading}
+              isError={isError}
+            />
+          </>
+        ) : null}
+        {attachmentDownloadUrls.size > 0 && (
+          <Stack
+            spacing={{ base: '0', md: '0.5rem' }}
+            direction={{ base: 'column', md: 'row' }}
+          >
+            <Text
+              as="span"
+              textStyle="subhead-1"
+              py={{ base: '0', md: '0.25rem' }}
+            >
+              {t('features.common.attachments')}:
+            </Text>
+            <Skeleton isLoaded={!isLoading && !isError}>
+              <Button
+                data-dd-action-name="Click on attachment field download button"
+                variant="link"
+                isDisabled={downloadAttachmentsAsZipMutation.isLoading}
+                onClick={handleDownload}
+                rightIcon={
+                  downloadAttachmentsAsZipMutation.isLoading ? (
+                    <Spinner fontSize="1.5rem" />
+                  ) : (
+                    <BiDownload fontSize="1.5rem" />
+                  )
+                }
+              >
+                {t(
+                  'features.adminForm.responses.individualResponse.downloadAttachmentsAsZip',
+                  { attachmentSize: attachmentDownloadUrls.size },
+                )}
+              </Button>
+            </Skeleton>
+          </Stack>
+        )}
+        {form?.responseMode === FormResponseMode.Multirespondent &&
+          user?.betaFlags?.mrfAdminSubmissionKey && (
+            <StackRow
+              label={t(
+                'features.adminForm.responses.individualResponse.responseLinkLabel',
+              )}
+              value={responseLinkWithKey}
+              isLoading={isLoading}
+              isError={isError}
+            />
+          )}
+      </Stack>
+      {isLoading || isError ? (
+        <LoadingDecryption />
+      ) : (
+        <>
+          <Stack spacing="1.5rem" divider={<StackDivider />}>
+            {data?.responses.map((r, idx) => (
+              <DecryptedRow
+                row={r}
+                attachmentDecryptionKey={attachmentDecryptionKey}
+                key={idx}
+              />
+            ))}
+            <Box />
+          </Stack>
+          {data?.payment && (
+            <PaymentSection payment={data.payment} formId={formId} />
+          )}
+        </>
+      )}
+    </Stack>
+  )
+
+  if (inDrawer) return body
+
   return (
     <Flex
       flexDir="column"
@@ -220,126 +348,7 @@ export const IndividualResponsePage = (): JSX.Element => {
       pt={isDelightfulDashboard ? { base: '2.5rem', lg: '3.125rem' } : 0}
     >
       <IndividualResponseNavbar />
-
-      <Stack
-        px={{ md: '1.75rem', lg: '2rem' }}
-        spacing={{ base: '1.5rem', md: '2.5rem' }}
-        data-dd-privacy="mask"
-      >
-        <Stack bg="primary.100" p="1.5rem" textStyle="body-1">
-          <StackRow
-            label="Response ID"
-            value={submissionId}
-            isLoading={isLoading}
-            isError={isError}
-          />
-          <StackRow
-            label={isMrf ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
-            value={
-              data?.submissionTime ?? t('features.common.loadingWithEllipsis')
-            }
-            isLoading={isLoading}
-            isError={isError}
-          />
-          {isMrf ? (
-            <>
-              <StackRow
-                label={MRF_WORKFLOW_STATUS_LABEL}
-                value={responseMrfStatus}
-                isLoading={isLoading}
-                isError={isError}
-              />
-              <StackRow
-                label={MRF_PENDING_RESPONSE_AT_LABEL}
-                value={
-                  workflowStatus === undefined ||
-                  workflowCurrentStepNumber === undefined ||
-                  workflowNumTotalSteps === undefined
-                    ? '-'
-                    : getPendingResponseAtString({
-                        workflowStatus,
-                        workflowCurrentStepNumber,
-                        workflowNumTotalSteps,
-                      })
-                }
-                isLoading={isLoading}
-                isError={isError}
-              />
-              <StackRow
-                label={MRF_STATUS_TRACKING_LABEL}
-                value={''}
-                statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
-                isLoading={isLoading}
-                isError={isError}
-              />
-            </>
-          ) : null}
-          {attachmentDownloadUrls.size > 0 && (
-            <Stack
-              spacing={{ base: '0', md: '0.5rem' }}
-              direction={{ base: 'column', md: 'row' }}
-            >
-              <Text
-                as="span"
-                textStyle="subhead-1"
-                py={{ base: '0', md: '0.25rem' }}
-              >
-                {t('features.common.attachments')}:
-              </Text>
-              <Skeleton isLoaded={!isLoading && !isError}>
-                <Button
-                  data-dd-action-name="Click on attachment field download button"
-                  variant="link"
-                  isDisabled={downloadAttachmentsAsZipMutation.isLoading}
-                  onClick={handleDownload}
-                  rightIcon={
-                    downloadAttachmentsAsZipMutation.isLoading ? (
-                      <Spinner fontSize="1.5rem" />
-                    ) : (
-                      <BiDownload fontSize="1.5rem" />
-                    )
-                  }
-                >
-                  {t(
-                    'features.adminForm.responses.individualResponse.downloadAttachmentsAsZip',
-                    { attachmentSize: attachmentDownloadUrls.size },
-                  )}
-                </Button>
-              </Skeleton>
-            </Stack>
-          )}
-          {form?.responseMode === FormResponseMode.Multirespondent &&
-            user?.betaFlags?.mrfAdminSubmissionKey && (
-              <StackRow
-                label={t(
-                  'features.adminForm.responses.individualResponse.responseLinkLabel',
-                )}
-                value={responseLinkWithKey}
-                isLoading={isLoading}
-                isError={isError}
-              />
-            )}
-        </Stack>
-        {isLoading || isError ? (
-          <LoadingDecryption />
-        ) : (
-          <>
-            <Stack spacing="1.5rem" divider={<StackDivider />}>
-              {data?.responses.map((r, idx) => (
-                <DecryptedRow
-                  row={r}
-                  attachmentDecryptionKey={attachmentDecryptionKey}
-                  key={idx}
-                />
-              ))}
-              <Box />
-            </Stack>
-            {data?.payment && (
-              <PaymentSection payment={data.payment} formId={formId} />
-            )}
-          </>
-        )}
-      </Stack>
+      {body}
     </Flex>
   )
 }
