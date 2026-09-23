@@ -379,6 +379,8 @@ export const ResponsesTable = () => {
       variant="solid"
       colorScheme="secondary"
       {...getTableProps()}
+      minW="fit-content"
+      w="100%"
     >
       <Thead as="div" pos="sticky" top={0}>
         {headerGroups.map((headerGroup) => (
@@ -395,6 +397,9 @@ export const ResponsesTable = () => {
                 pos="relative"
                 {...column.getHeaderProps()}
                 key={column.getHeaderProps().key}
+                minW={0}
+                flexShrink={0}
+                overflow="hidden"
               >
                 <Flex align="center">{column.render('Header')}</Flex>
 
@@ -404,7 +409,7 @@ export const ResponsesTable = () => {
                     justify="center"
                     top={0}
                     right={0}
-                    zIndex={1}
+                    zIndex={2}
                     transitionProperty="background"
                     transitionDuration="normal"
                     pos="absolute"
@@ -444,12 +449,9 @@ export const ResponsesTable = () => {
                 handleRowClick(row.values.refNo, row.values.number)
               }
               cursor="pointer"
-              _hover={{
-                bg: 'primary.100',
-              }}
-              _active={{
-                bg: 'primary.200',
-              }}
+              display="flex"
+              minW="100%"
+              role="group"
             >
               {row.cells.map((cell) => {
                 return (
@@ -459,6 +461,17 @@ export const ResponsesTable = () => {
                     key={cell.getCellProps().key}
                     display="flex"
                     alignItems="center"
+                    minW={0}
+                    flexShrink={0}
+                    overflow="hidden"
+                    transitionProperty="background"
+                    transitionDuration="normal"
+                    _groupHover={{
+                      bg: 'primary.100',
+                    }}
+                    _groupActive={{
+                      bg: 'primary.200',
+                    }}
                   >
                     {cell.render('Cell')}
                   </Td>

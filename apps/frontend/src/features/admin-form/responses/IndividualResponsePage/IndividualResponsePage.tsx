@@ -208,7 +208,11 @@ export const IndividualResponsePage = (): JSX.Element => {
   const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
 
   return (
-    <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>
+    <Flex
+      flexDir="column"
+      marginTop={{ base: '-2.5rem', lg: '-3.125rem' }}
+      pt={{ base: '2.5rem', lg: '3.125rem' }}
+    >
       <IndividualResponseNavbar />
 
       <Stack
