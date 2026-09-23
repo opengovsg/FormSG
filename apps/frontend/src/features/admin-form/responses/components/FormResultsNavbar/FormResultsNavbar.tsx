@@ -18,14 +18,14 @@ export const FormResultsNavbar = ({
     <Flex
       sx={noPrintCss}
       h="max-content"
-      flex="1 1 0"
+      flex="0 0 auto"
       ref={ref}
       onMouseDown={onMouseDown}
       position="sticky"
       zIndex={0}
       top={{ base: '2.5rem', lg: '3.125rem' }}
       borderTopColor="neutral.300"
-      minW={RESULTS_NAV_WIDTH}
+      w={RESULTS_NAV_WIDTH}
       __css={{
         scrollbarWidth: 0,
         '&::-webkit-scrollbar': {

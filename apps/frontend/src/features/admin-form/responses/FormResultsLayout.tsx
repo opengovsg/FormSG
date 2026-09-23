@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Box, Flex, Spacer, Tabs } from '@chakra-ui/react'
+import { Box, Flex, Tabs } from '@chakra-ui/react'
 
 import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
@@ -11,6 +11,7 @@ import {
 import {
   FormResultsNavbar,
   LegacyFormResultsNavbar,
+  RESULTS_NAV_WIDTH,
   useResultsTabs,
 } from './components/FormResultsNavbar'
 import { useIsDelightfulDashboard } from './hooks'
@@ -64,10 +65,10 @@ export const FormResultsLayout = (): JSX.Element => {
         onChange={handleTabChange}
       >
         <FormResultsNavbar tabs={tabs} />
-        <Box w="100%" maxW="69.5rem" minW={0}>
+        <Box w="100%" maxW="69.5rem" minW={0} mx="auto">
           <Outlet />
         </Box>
-        <Spacer flex="1 1 0" minW={0} />
+        <Box flex="0 0 auto" w={{ base: 0, lg: RESULTS_NAV_WIDTH.lg }} />
       </Tabs>
     </Box>
   )
