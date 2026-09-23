@@ -27,6 +27,7 @@ import {
   ISubmissionSchema,
   MultirespondentSubmissionCursorData,
   MultirespondentSubmissionData,
+  StorageModeSubmissionCursorData,
 } from '../../../types'
 import getPaymentModel from '../payment.server.model'
 
@@ -917,6 +918,48 @@ describe('Submission Model', () => {
             nextStepRecipientEmails: ['next@example.com'],
           },
         ])
+      })
+
+      it('should project the payment reference for encrypt submissions and never for multirespondent submissions', async () => {
+        // Arrange
+        // Payment-enabled storage-mode forms are migration-eligible, so a
+        // mode-migrated form can hold encrypt submissions carrying payments.
+        // Payments and workflows never combine on a form, so multirespondent
+        // submissions can never carry one.
+        const mockPaymentId = new ObjectId()
+        const paidEncryptSubmission = await EncryptedSubmission.create({
+          ...MOCK_ENCRYPT_SUBMISSION_PARAMS,
+          paymentId: mockPaymentId,
+        })
+        const unpaidEncryptSubmission = await EncryptedSubmission.create(
+          MOCK_ENCRYPT_SUBMISSION_PARAMS,
+        )
+        const mrfSubmission = await MultirespondentSubmission.create(
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+
+        // Act
+        const cursor =
+          Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId(
+            MOCK_FORM_ID.toHexString(),
+            {},
+          )
+        const docs = []
+        for await (const doc of cursor) docs.push(doc)
+
+        // Assert
+        expect(docs).toHaveLength(3)
+        const docsById = new Map(docs.map((doc) => [String(doc._id), doc]))
+        const paidDoc = docsById.get(
+          String(paidEncryptSubmission._id),
+        ) as StorageModeSubmissionCursorData
+        expect(String(paidDoc.paymentId)).toEqual(String(mockPaymentId))
+        expect(
+          docsById.get(String(unpaidEncryptSubmission._id)),
+        ).not.toHaveProperty('paymentId')
+        expect(docsById.get(String(mrfSubmission._id))).not.toHaveProperty(
+          'paymentId',
+        )
       })
     })
 
