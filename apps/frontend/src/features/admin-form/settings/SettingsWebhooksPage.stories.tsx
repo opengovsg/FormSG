@@ -78,6 +78,23 @@ StorageModeMrfCutoverOn.parameters = {
   },
 }
 
+export const StorageModePlumberConnected = Template.bind({})
+StorageModePlumberConnected.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          responseMode: FormResponseMode.Encrypt,
+          webhook: {
+            url: 'https://plumber.gov.sg/webhooks/abc',
+            isRetryEnabled: false,
+          },
+        },
+      }),
+    },
+  },
+}
+
 export const StorageModeRetryEnabled = Template.bind({})
 StorageModeRetryEnabled.parameters = {
   msw: {
@@ -96,6 +113,23 @@ StorageModeRetryEnabled.parameters = {
 }
 
 export const UnsupportedEmailMode = Template.bind({})
+
+export const PlumberConnectedEmailMode = Template.bind({})
+PlumberConnectedEmailMode.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          responseMode: FormResponseMode.Email,
+          webhook: {
+            url: 'https://plumber.gov.sg/webhooks/abc',
+            isRetryEnabled: false,
+          },
+        },
+      }),
+    },
+  },
+}
 
 export const UnsupportedMultirespondentMode = Template.bind({})
 UnsupportedMultirespondentMode.parameters = {

@@ -19,4 +19,8 @@ export interface Webhooks extends HasTitle {
       loadingText: string
     }
   }
+  plumberConnected: {
+    title: string
+    body: string
+  }
 }

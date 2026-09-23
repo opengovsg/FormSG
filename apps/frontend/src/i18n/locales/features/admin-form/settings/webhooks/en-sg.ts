@@ -17,4 +17,8 @@ export const enSG = {
       loadingText: 'Trying again…',
     },
   },
+  plumberConnected: {
+    title: 'This form is connected to Plumber',
+    body: 'A Plumber webhook is set for this form, so response data is sent to Plumber. Manage the connection in <plumberLink>Plumber</plumberLink>.',
+  },
 }
