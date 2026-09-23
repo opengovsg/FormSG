@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { BiColumns, BiFilterAlt, BiGroup, BiSort } from 'react-icons/bi'
+import { BiColumns, BiFilterAlt, BiGridAlt, BiSortAlt2 } from 'react-icons/bi'
 import { Box, Flex } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -52,14 +52,14 @@ export const ResponsesToolbar = ({
         <Button
           variant="clear"
           colorScheme="secondary"
-          leftIcon={<BiSort fontSize="1.25rem" />}
+          leftIcon={<BiSortAlt2 fontSize="1.25rem" />}
         >
           {sort}
         </Button>
         <Button
           variant="clear"
           colorScheme="secondary"
-          leftIcon={<BiGroup fontSize="1.25rem" />}
+          leftIcon={<BiGridAlt fontSize="1.25rem" />}
         >
           {group}
         </Button>
