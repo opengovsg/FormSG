@@ -17,7 +17,6 @@ export const EmptyChartsContainer = ({
       align="center"
       py="4rem"
       px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-      ml={{ base: 0, lg: '-17rem' }}
     >
       <Stack spacing="1rem" align="center">
         <Text as="h2" color="primary.500" textStyle="h2" whiteSpace="pre-wrap">

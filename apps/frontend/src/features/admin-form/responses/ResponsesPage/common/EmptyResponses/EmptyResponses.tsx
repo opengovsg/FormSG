@@ -15,7 +15,6 @@ export function EmptyResponses(): JSX.Element {
       align="center"
       py="4rem"
       px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-      ml={{ base: 0, lg: '-17rem' }}
     >
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
         {t('features.adminForm.responses.responsesPage.emptyResponses.title')}
