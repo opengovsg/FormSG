@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { Box, Flex, Tabs } from '@chakra-ui/react'
+import { Box, Flex, Spacer, Tabs } from '@chakra-ui/react'
 
 import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
@@ -64,9 +64,10 @@ export const FormResultsLayout = (): JSX.Element => {
         onChange={handleTabChange}
       >
         <FormResultsNavbar tabs={tabs} />
-        <Box w="100%" minW={0}>
+        <Box w="100%" maxW="69.5rem" minW={0}>
           <Outlet />
         </Box>
+        <Spacer flex="1 1 0" minW={0} />
       </Tabs>
     </Box>
   )
