@@ -1,6 +1,7 @@
 import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
 import { okAsync, ResultAsync } from 'neverthrow'
 
+import { ParsedClearFormFieldResponsesV4 } from '../../../../../types/api'
 import { aws as AwsConfig } from '../../../../config/config'
 import { createLoggerWithLabel } from '../../../../config/logger'
 import { AttachmentUploadError } from '../../submission.errors'
@@ -10,7 +11,6 @@ import {
   getEncryptedAttachmentsMapFromAttachmentsMap,
   isAttachmentResponseV4,
 } from '../../submission.utils'
-import { ParsedClearFormFieldResponsesV4 } from '../../../../../types/api'
 
 import { V1ContentMappingError } from './submission-snapshot.errors'
 
