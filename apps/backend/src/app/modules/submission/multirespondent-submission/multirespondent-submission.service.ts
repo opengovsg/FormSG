@@ -962,6 +962,11 @@ export const createMultiRespondentFormSubmission = ({
         const v1VerifiedContentResult = buildV1VerifiedContent({
           verifiedContent: encryptedPayload.verifiedContentPlaintext,
           formPublicKey: form.publicKey,
+          logMeta: {
+            ...logMeta,
+            formId: snapshotBase.formId,
+            submissionId: snapshotBase.submissionId,
+          },
         })
         if (v1VerifiedContentResult.isErr()) {
           return errAsync(v1VerifiedContentResult.error)

@@ -15,9 +15,11 @@ const logger = createLoggerWithLabel(module)
 export const buildV1VerifiedContent = ({
   verifiedContent,
   formPublicKey,
+  logMeta,
 }: {
   verifiedContent?: Record<string, string>
   formPublicKey: string
+  logMeta: Record<string, unknown>
 }): Result<string | undefined, V1ContentMappingError> => {
   if (!verifiedContent || Object.keys(verifiedContent).length === 0) {
     return ok(undefined)
@@ -34,7 +36,15 @@ export const buildV1VerifiedContent = ({
   return encryptVerifiedContent({
     verifiedContent: flatContent,
     formPublicKey,
-  }).mapErr((error) => new V1ContentMappingError(undefined, error))
+  }).mapErr((error) => {
+    logger.error({
+      message:
+        'Failed to produce V1 verified content for a multirespondent submission',
+      meta: { ...logMeta, action: 'buildV1VerifiedContent' },
+      error,
+    })
+    return new V1ContentMappingError(undefined, error)
+  })
 }
 
 export const buildV1EncryptedContent = ({
