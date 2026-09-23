@@ -416,6 +416,8 @@ describe('[GATE] generic V1 initial send', () => {
       ])
     })
 
+    // Shape parity uses injected plaintext; live MRF NDI collection supports only
+    // CP/MyInfo, covered by the middleware-to-POST tests below.
     it.each([
       FormAuthType.CP,
       FormAuthType.SP,
@@ -423,7 +425,7 @@ describe('[GATE] generic V1 initial send', () => {
       FormAuthType.SGID,
       FormAuthType.SGID_MyInfo,
     ] as const)(
-      'should deliver storage-mode verified content for %s',
+      'should match storage-mode verified-content shape for injected %s plaintext',
       async (authType) => {
         const data = { uinFin: '201234567A', userInfo: 'S1234567D' }
         const storagePlaintext = getVerifiedContent({
