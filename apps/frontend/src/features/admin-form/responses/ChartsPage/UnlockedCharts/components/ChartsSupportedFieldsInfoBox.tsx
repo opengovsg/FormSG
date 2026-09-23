@@ -20,8 +20,8 @@ const ListWithIcon = ({
   icon: As
 }) => (
   <GridItem>
-    <Flex align="center">
-      <Icon as={icon} mr="0.5rem" />
+    <Flex align="flex-start">
+      <Icon as={icon} mr="0.5rem" mt="0.25rem" flexShrink={0} />
       <Text>{children}</Text>
     </Flex>
   </GridItem>
