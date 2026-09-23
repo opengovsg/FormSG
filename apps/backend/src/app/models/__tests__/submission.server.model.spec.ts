@@ -920,6 +920,115 @@ describe('Submission Model', () => {
       })
     })
 
+    describe('findAllEncryptedOrMultirespondentMetadataByFormId', () => {
+      it('should return agreeing rows and count across both submission types, excluding email submissions', async () => {
+        // Arrange
+        const encryptSubmission = await EncryptedSubmission.create(
+          MOCK_ENCRYPT_SUBMISSION_PARAMS,
+        )
+        const mrfSubmission = await MultirespondentSubmission.create(
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+        await EmailSubmission.create(MOCK_EMAIL_SUBMISSION_PARAMS)
+
+        // Act
+        const actualResult =
+          await Submission.findAllEncryptedOrMultirespondentMetadataByFormId(
+            MOCK_FORM_ID.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult.count).toEqual(2)
+        expect(actualResult.metadata).toHaveLength(2)
+        expect(actualResult.metadata.map((entry) => entry.number)).toEqual([
+          2, 1,
+        ])
+        const metadataByRefNo = new Map(
+          actualResult.metadata.map((entry) => [String(entry.refNo), entry]),
+        )
+        // The encrypt row carries no mrf metadata, so the dashboard renders
+        // it like a multirespondent submission with no workflow.
+        expect(
+          metadataByRefNo.get(String(encryptSubmission._id))?.mrf,
+        ).toBeUndefined()
+        const mrfEntry = metadataByRefNo.get(String(mrfSubmission._id))
+        expect(mrfEntry?.mrf).toBeDefined()
+        expect(mrfEntry?.mrf?.workflowNumTotalSteps).toEqual(2)
+        expect(mrfEntry?.mrf?.workflowCurrentStepNumber).toEqual(1)
+      })
+
+      it('should return empty page and zero count when the form only has email submissions', async () => {
+        // Arrange
+        await EmailSubmission.create(MOCK_EMAIL_SUBMISSION_PARAMS)
+
+        // Act
+        const actualResult =
+          await Submission.findAllEncryptedOrMultirespondentMetadataByFormId(
+            MOCK_FORM_ID.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult).toEqual({ metadata: [], count: 0 })
+      })
+    })
+
+    describe('findEncryptedOrMultirespondentSingleMetadata', () => {
+      it('should return metadata without mrf for an encrypt submission', async () => {
+        // Arrange
+        const submission = await EncryptedSubmission.create(
+          MOCK_ENCRYPT_SUBMISSION_PARAMS,
+        )
+
+        // Act
+        const actualResult =
+          await Submission.findEncryptedOrMultirespondentSingleMetadata(
+            MOCK_FORM_ID.toHexString(),
+            submission._id.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult).not.toBeNull()
+        expect(String(actualResult?.refNo)).toEqual(String(submission._id))
+        expect(actualResult?.mrf).toBeUndefined()
+      })
+
+      it('should return metadata with mrf for a multirespondent submission', async () => {
+        // Arrange
+        const submission = await MultirespondentSubmission.create(
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+
+        // Act
+        const actualResult =
+          await Submission.findEncryptedOrMultirespondentSingleMetadata(
+            MOCK_FORM_ID.toHexString(),
+            submission._id.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult).not.toBeNull()
+        expect(actualResult?.mrf).toBeDefined()
+        expect(actualResult?.mrf?.workflowNumTotalSteps).toEqual(2)
+      })
+
+      it('should return null for an email submission', async () => {
+        // Arrange
+        const submission = await EmailSubmission.create(
+          MOCK_EMAIL_SUBMISSION_PARAMS,
+        )
+
+        // Act
+        const actualResult =
+          await Submission.findEncryptedOrMultirespondentSingleMetadata(
+            MOCK_FORM_ID.toHexString(),
+            submission._id.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult).toBeNull()
+      })
+    })
+
     describe('findSingleMetadata', () => {
       it('should not return mrf metadata for storage mode form', async () => {
         // Arrange

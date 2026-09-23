@@ -170,6 +170,34 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
     isSortByLatest?: boolean,
     limit?: number,
   ): QueryCursor<SubmissionCursorData, QueryOptions<ISubmissionSchema>>
+
+  /**
+   * Returns metadata for a single admin-viewable submission of a form,
+   * across both Encrypt and Multirespondent submission types. Encrypt
+   * documents produce entries without mrf metadata, so they render like a
+   * multirespondent submission with no workflow.
+   * @param formId the id of the form the submission belongs to
+   * @param submissionId the id of the submission
+   */
+  findEncryptedOrMultirespondentSingleMetadata(
+    formId: string,
+    submissionId: string,
+  ): Promise<SubmissionMetadata | null>
+
+  /**
+   * Returns a page of metadata and the total count of a form's
+   * admin-viewable submissions, spanning both Encrypt and Multirespondent
+   * submission types so page rows and totals agree on mode-migrated forms.
+   * Email submissions are deliberately excluded from both.
+   * @param formId the id of the form to list metadata for
+   */
+  findAllEncryptedOrMultirespondentMetadataByFormId(
+    formId: string,
+    params?: { page?: number; pageSize?: number },
+  ): Promise<{
+    metadata: SubmissionMetadata[]
+    count: number
+  }>
 }
 
 export interface IEmailSubmissionSchema
