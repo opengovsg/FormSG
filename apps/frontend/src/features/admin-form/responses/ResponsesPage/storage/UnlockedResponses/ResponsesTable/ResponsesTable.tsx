@@ -36,6 +36,7 @@ import {
   MRF_RESPONSE_TIMESTAMP_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
+import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
@@ -307,6 +308,7 @@ export const ResponsesTable = () => {
     submissionId,
     onRowClick,
   } = useUnlockedResponses()
+  const isDelightfulDashboard = useIsDelightfulDashboard()
 
   const navigate = useNavigate()
 
@@ -379,8 +381,7 @@ export const ResponsesTable = () => {
       variant="solid"
       colorScheme="secondary"
       {...getTableProps()}
-      minW="fit-content"
-      w="100%"
+      {...(isDelightfulDashboard ? { minW: 'fit-content', w: '100%' } : {})}
     >
       <Thead as="div" pos="sticky" top={0}>
         {headerGroups.map((headerGroup) => (
@@ -397,9 +398,9 @@ export const ResponsesTable = () => {
                 pos="relative"
                 {...column.getHeaderProps()}
                 key={column.getHeaderProps().key}
-                minW={0}
-                flexShrink={0}
-                overflow="hidden"
+                {...(isDelightfulDashboard
+                  ? { minW: 0, flexShrink: 0, overflow: 'hidden' }
+                  : {})}
               >
                 <Flex align="center">{column.render('Header')}</Flex>
 
@@ -409,7 +410,7 @@ export const ResponsesTable = () => {
                     justify="center"
                     top={0}
                     right={0}
-                    zIndex={2}
+                    zIndex={isDelightfulDashboard ? 2 : 1}
                     transitionProperty="background"
                     transitionDuration="normal"
                     pos="absolute"
@@ -449,9 +450,12 @@ export const ResponsesTable = () => {
                 handleRowClick(row.values.refNo, row.values.number)
               }
               cursor="pointer"
-              display="flex"
-              minW="100%"
-              role="group"
+              {...(isDelightfulDashboard
+                ? { display: 'flex', minW: '100%', role: 'group' }
+                : {
+                    _hover: { bg: 'primary.100' },
+                    _active: { bg: 'primary.200' },
+                  })}
             >
               {row.cells.map((cell) => {
                 return (
@@ -461,17 +465,17 @@ export const ResponsesTable = () => {
                     key={cell.getCellProps().key}
                     display="flex"
                     alignItems="center"
-                    minW={0}
-                    flexShrink={0}
-                    overflow="hidden"
-                    transitionProperty="background"
-                    transitionDuration="normal"
-                    _groupHover={{
-                      bg: 'primary.100',
-                    }}
-                    _groupActive={{
-                      bg: 'primary.200',
-                    }}
+                    {...(isDelightfulDashboard
+                      ? {
+                          minW: 0,
+                          flexShrink: 0,
+                          overflow: 'hidden',
+                          transitionProperty: 'background',
+                          transitionDuration: 'normal',
+                          _groupHover: { bg: 'primary.100' },
+                          _groupActive: { bg: 'primary.200' },
+                        }
+                      : {})}
                   >
                     {cell.render('Cell')}
                   </Td>
