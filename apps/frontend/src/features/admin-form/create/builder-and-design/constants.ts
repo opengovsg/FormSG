@@ -9,6 +9,7 @@ import {
   MyInfoChildAttributes,
   ShortTextFieldBase,
 } from 'formsg-shared/types/field'
+import { FormResponseMode } from 'formsg-shared/types/form'
 
 import { MyInfoFieldMeta } from '~features/myinfo/types'
 
@@ -151,6 +152,29 @@ export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
     label: MYINFO_FIELD_TO_DRAWER_META[value].label,
   }
 })
+
+/**
+ * Child sub-field options offered for a given form. Child type distinguishes
+ * the respondent's own children from sponsored children, which are only
+ * fetched for Multirespondent forms while the myinfo-sponsored-children flag
+ * is on, so it is only offered there.
+ */
+export const getCreateMyInfoChildrenSubFieldsOptions = ({
+  responseMode,
+  isSponsoredChildrenEnabled,
+}: {
+  responseMode: FormResponseMode | undefined
+  isSponsoredChildrenEnabled: boolean
+}): typeof CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS => {
+  const offersChildType =
+    isSponsoredChildrenEnabled &&
+    responseMode === FormResponseMode.Multirespondent
+  return offersChildType
+    ? CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS
+    : CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS.filter(
+        (o) => o.value !== MyInfoChildAttributes.ChildType,
+      )
+}
 
 export const BASIC_FIELDS_FREE_TEXT = [
   BasicField.ShortText,

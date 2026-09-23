@@ -859,17 +859,37 @@ describe('myinfo.adapter', () => {
   describe('shouldFetchSponsoredChildren', () => {
     it('should only allow Multirespondent forms, whose v4 responses carry a per-child type', () => {
       expect(
-        shouldFetchSponsoredChildren({
-          responseMode: FormResponseMode.Multirespondent,
-        }),
+        shouldFetchSponsoredChildren(
+          { responseMode: FormResponseMode.Multirespondent },
+          true,
+        ),
       ).toBe(true)
       expect(
-        shouldFetchSponsoredChildren({
-          responseMode: FormResponseMode.Encrypt,
-        }),
+        shouldFetchSponsoredChildren(
+          { responseMode: FormResponseMode.Encrypt },
+          true,
+        ),
       ).toBe(false)
       expect(
-        shouldFetchSponsoredChildren({ responseMode: FormResponseMode.Email }),
+        shouldFetchSponsoredChildren(
+          { responseMode: FormResponseMode.Email },
+          true,
+        ),
+      ).toBe(false)
+    })
+
+    it('should stay off for every response mode while the feature flag is off', () => {
+      expect(
+        shouldFetchSponsoredChildren(
+          { responseMode: FormResponseMode.Multirespondent },
+          false,
+        ),
+      ).toBe(false)
+      expect(
+        shouldFetchSponsoredChildren(
+          { responseMode: FormResponseMode.Encrypt },
+          false,
+        ),
       ).toBe(false)
     })
   })
