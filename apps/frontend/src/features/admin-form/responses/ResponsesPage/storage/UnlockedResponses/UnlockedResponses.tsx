@@ -42,11 +42,11 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
     count,
     filteredCount,
     submissionId,
-    setSubmissionId,
     isAnyFetching,
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
+    searchResultCount,
   } = useUnlockedResponses()
 
   const sentinelRef = useInfiniteScrollTrigger<HTMLDivElement>({
@@ -82,23 +82,19 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
             noOfLines={{ base: 2, md: 1 }}
           >
             <Text as="span" color="primary.500">
-              {countToUse?.toLocaleString()}
+              {(searchResultCount ?? countToUse)?.toLocaleString()}
             </Text>{' '}
             {t(
-              submissionId
+              searchResultCount !== undefined
                 ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
                 : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
-              { count: countToUse ?? 0 },
+              { count: searchResultCount ?? countToUse ?? 0 },
             )}
           </Text>
         </Skeleton>
       </Flex>
 
-      <ResponsesToolbar
-        submissionId={submissionId}
-        setSubmissionId={setSubmissionId}
-        isAnyFetching={isAnyFetching}
-      />
+      <ResponsesToolbar />
 
       <Box
         mb="3rem"
