@@ -11,7 +11,6 @@ import { MyInfoChildAttributes } from 'formsg-shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'
-import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
 import { getCreateMyInfoChildrenSubFieldsOptions } from '~features/admin-form/create/builder-and-design/constants'
