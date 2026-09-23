@@ -45,7 +45,7 @@ export function ChartsSupportedFieldsInfoBox() {
         templateColumns="repeat(3,1fr)"
         mt="1.5rem"
         rowGap="1rem"
-        columnGap={{ base: '0.75rem', md: '2rem' }}
+        columnGap={{ base: '1.25rem', md: '2rem' }}
       >
         <ListWithIcon icon={BiRename}>
           {t(
