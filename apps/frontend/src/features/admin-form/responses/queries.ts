@@ -1,5 +1,10 @@
 import { useMemo } from 'react'
-import { useQuery, UseQueryResult } from 'react-query'
+import {
+  useInfiniteQuery,
+  UseInfiniteQueryResult,
+  useQuery,
+  UseQueryResult,
+} from 'react-query'
 import { useParams } from 'react-router-dom'
 
 import { FormFeedbackMetaDto, FormIssueMetaDto } from 'formsg-shared/types'
@@ -34,6 +39,8 @@ export const adminFormResponsesKeys = {
       ...builtParams,
     ] as const
   },
+  infiniteMetadata: (id: string) =>
+    [...adminFormResponsesKeys.id(id), 'metadata', 'infinite'] as const,
   individual: (id: string, submissionId: string) =>
     [...adminFormResponsesKeys.id(id), 'individual', submissionId] as const,
   secretKey: (id: string) => [...adminFormResponsesKeys.id(id), 'secretKey'],
@@ -76,9 +83,11 @@ export const useFormResponsesCount = (
 export const useFormResponses = ({
   page = 1,
   submissionId,
+  enabled = true,
 }: {
   page?: number
   submissionId?: string
+  enabled?: boolean
 } = {}): UseQueryResult<SubmissionMetadataList> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
@@ -98,7 +107,39 @@ export const useFormResponses = ({
     {
       staleTime: 0,
       keepPreviousData: !submissionId,
-      enabled: !!secretKey && (page > 0 || !!submissionId),
+      enabled: enabled && !!secretKey && (page > 0 || !!submissionId),
+    },
+  )
+}
+
+/**
+ * @precondition Must be wrapped in a Router as `useParam` is used.
+ */
+export const useInfiniteFormResponses = ({
+  enabled = true,
+}: {
+  enabled?: boolean
+} = {}): UseInfiniteQueryResult<SubmissionMetadataList> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const { secretKey } = useStorageResponsesContext()
+
+  return useInfiniteQuery(
+    adminFormResponsesKeys.infiniteMetadata(formId),
+    ({ pageParam = 1 }) =>
+      getFormSubmissionsMetadata(formId, { page: pageParam }),
+    {
+      staleTime: 0,
+      enabled: enabled && !!secretKey,
+      getNextPageParam: (lastPage, allPages) => {
+        const loaded = allPages.reduce(
+          (total, page) => total + page.metadata.length,
+          0,
+        )
+        if (loaded === 0 || loaded >= lastPage.count) return undefined
+        return allPages.length + 1
+      },
     },
   )
 }

@@ -1,6 +1,14 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, Grid, Skeleton, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Flex,
+  Grid,
+  Skeleton,
+  Spinner,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 
 import {
   DateRangePicker,
@@ -12,6 +20,7 @@ import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
+import { useInfiniteScrollTrigger } from './hooks/useInfiniteScrollTrigger'
 import { DownloadButton } from './DownloadButton'
 import { ResponsesTable } from './ResponsesTable'
 import { SubmissionSearchbar } from './SubmissionSearchbar'
@@ -29,15 +38,20 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
   const { t } = useTranslation()
 
   const {
-    currentPage,
-    setCurrentPage,
     count,
     filteredCount,
-    isLoading,
     submissionId,
     setSubmissionId,
     isAnyFetching,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
   } = useUnlockedResponses()
+
+  const sentinelRef = useInfiniteScrollTrigger<HTMLDivElement>({
+    onTrigger: fetchNextPage,
+    enabled: !submissionId && hasNextPage && !isFetchingNextPage,
+  })
 
   const countToUse = useMemo(
     () => (submissionId ? filteredCount : count),
@@ -155,21 +169,18 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
         <ResponsesTable />
       </Box>
 
-      <Box
-        display={isLoading || countToUse === 0 ? 'none' : ''}
+      <Flex
+        ref={sentinelRef}
+        justify="center"
+        align="center"
         w="100%"
-        maxW="100%"
-        flexShrink={0}
-        pt={{ base: '1rem', md: '0' }}
+        minH="3rem"
         pb={{ base: '1rem', md: '0' }}
       >
-        <Pagination
-          totalCount={countToUse ?? 0}
-          currentPage={currentPage ?? 1}
-          pageSize={10}
-          onPageChange={setCurrentPage}
-        />
-      </Box>
+        {isFetchingNextPage ? (
+          <Spinner color="primary.500" thickness="2px" />
+        ) : null}
+      </Flex>
     </Flex>
   )
 }

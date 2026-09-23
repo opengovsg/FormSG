@@ -304,6 +304,7 @@ export const ResponsesTable = () => {
     filteredMetadata,
     submissionId,
     onRowClick,
+    isInfiniteScroll,
   } = useUnlockedResponses()
   const isDelightfulDashboard = useIsDelightfulDashboard()
 
@@ -340,6 +341,7 @@ export const ResponsesTable = () => {
     getTableBodyProps,
     headerGroups,
     page,
+    rows,
     gotoPage,
   } = useTable<ResponseColumnData>(
     {
@@ -359,8 +361,11 @@ export const ResponsesTable = () => {
   )
 
   useEffect(() => {
+    if (isInfiniteScroll) return
     gotoPage(currentPage)
-  }, [currentPage, gotoPage])
+  }, [currentPage, gotoPage, isInfiniteScroll])
+
+  const visibleRows = isInfiniteScroll ? rows : page
 
   const handleRowClick = useCallback(
     (submissionId: string, responseNumber: number) => {
@@ -437,7 +442,7 @@ export const ResponsesTable = () => {
         ))}
       </Thead>
       <Tbody as="div" {...getTableBodyProps()}>
-        {page.map((row) => {
+        {visibleRows.map((row) => {
           prepareRow(row)
           return (
             <Tr
