@@ -23,9 +23,14 @@ export const enSG: Workflow = {
     fieldsToFill: 'Fields to fill',
     clickToEdit: 'Click to edit',
   },
+  staticRespondent: {
+    invalidEmailsRedesign:
+      "Enter valid emails separated by commas, like me@example.com. Invalid emails won't be saved.",
+  },
   dynamicRespondent: {
     title: 'An Email field from the form',
     required: 'Please select a field.',
+    requiredRedesign: 'Select a field.',
     mustBeEmail: 'Field is not an Email field',
     mustBeEmailRedesign: 'Choose an Email field.',
     select: 'Select a field',
@@ -36,6 +41,7 @@ export const enSG: Workflow = {
     addEmailsToOptionsRedesign: 'Assign emails to options',
     validation: {
       noField: 'Please select a field.',
+      noFieldRedesign: 'Select a field.',
       notDropdown: 'Field is not a Dropdown field',
       notDropdownRedesign: 'Choose a Dropdown field.',
     },

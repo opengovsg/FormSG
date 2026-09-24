@@ -1,4 +1,5 @@
 import { Controller } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { FormControl, Text } from '@chakra-ui/react'
 import { get } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
@@ -28,6 +29,7 @@ export const StaticRespondentOption = ({
   } = formMethods
   const staticTagInputErrorMessage = get(errors, 'emails.message')
 
+  const { t } = useTranslation()
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
   const isSavePermissive = useIsWorkflowSavePermissive()
@@ -72,7 +74,9 @@ export const StaticRespondentOption = ({
                     !emails ||
                     emails.every((email) => isEmail(email)) ||
                     (isRedesign
-                      ? "Enter valid emails separated by commas, like me@example.com. Invalid emails won't be saved."
+                      ? t(
+                          'features.adminForm.sidebar.workflow.staticRespondent.invalidEmailsRedesign',
+                        )
                       : 'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved'),
                 },
               }}
