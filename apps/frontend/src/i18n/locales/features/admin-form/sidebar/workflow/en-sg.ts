@@ -26,8 +26,8 @@ export const enSG: Workflow = {
   dynamicRespondent: {
     title: 'An Email field from the form',
     required: 'Please select a field.',
-    mustBeEmail: 'Field is not an email field',
-    mustBeEmailRedesign: 'Choose an email field.',
+    mustBeEmail: 'Field is not an Email field',
+    mustBeEmailRedesign: 'Choose an Email field.',
     select: 'Select a field',
   },
   conditionalRouting: {
@@ -36,8 +36,8 @@ export const enSG: Workflow = {
     addEmailsToOptionsRedesign: 'Assign emails to options',
     validation: {
       noField: 'Please select a field.',
-      notDropdown: 'Field is not an dropdown field',
-      notDropdownRedesign: 'Choose a dropdown field.',
+      notDropdown: 'Field is not a Dropdown field',
+      notDropdownRedesign: 'Choose a Dropdown field.',
     },
     modals: {
       deleteStep: {
