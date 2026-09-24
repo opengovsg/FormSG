@@ -769,11 +769,13 @@ const saveAttachmentsToDbIfExists = ({
 export const createMultiRespondentFormSubmission = ({
   form,
   encryptedPayload,
+  verifiedContentPlaintext,
   logMeta,
   growthbook,
 }: {
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
+  verifiedContentPlaintext?: Record<string, string>
   logMeta: CustomLoggerParams['meta']
   growthbook?: GrowthBook
 }): ResultAsync<
@@ -960,7 +962,7 @@ export const createMultiRespondentFormSubmission = ({
           return errAsync(v1ContentResult.error)
         }
         const v1VerifiedContentResult = buildV1VerifiedContent({
-          verifiedContent: encryptedPayload.verifiedContentPlaintext,
+          verifiedContent: verifiedContentPlaintext,
           formPublicKey: form.publicKey,
           logMeta: {
             ...logMeta,

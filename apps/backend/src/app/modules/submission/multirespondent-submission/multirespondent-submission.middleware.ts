@@ -1266,9 +1266,8 @@ export const handleNdiResponses = async (
     } else {
       req.formsg.encryptedPayload.verifiedContent =
         encryptVerifiedContentResult.value
-      // Keep exactly the collected plaintext used for the row's signed copy.
-      // The V1 snapshot producer encrypts its flat equivalent to the form key.
-      req.formsg.encryptedPayload.verifiedContentPlaintext = ndiResponses
+      // RATIONALE: Required when sending V1 webhooks, where the snapshot producer converts and encrypts with the form public key.
+      req.formsg.verifiedContentPlaintext = ndiResponses
     }
   }
 
