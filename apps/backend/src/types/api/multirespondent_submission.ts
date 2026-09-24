@@ -52,6 +52,7 @@ export type MultirespondentFormLoadedDto = {
 
 export type MultirespondentFormCompleteDto = MultirespondentFormLoadedDto & {
   encryptedPayload: MultirespondentSubmissionDto
+  verifiedContentPlaintext?: Record<string, string>
 }
 
 export type MultirespondentSubmissionDto = {
@@ -63,8 +64,6 @@ export type MultirespondentSubmissionDto = {
   encryptedSubmissionSecretKey: string
   encryptedContent: string
   verifiedContent?: string
-  // Server-produced NDI data, held only for this request's webhook snapshot.
-  verifiedContentPlaintext?: Record<string, string>
   submissionSecretKey: string
   attachments?: SubmissionAttachmentsMap
   version: number
