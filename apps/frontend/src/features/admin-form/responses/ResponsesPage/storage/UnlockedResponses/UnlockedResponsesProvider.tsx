@@ -22,6 +22,8 @@ import { usePageSearchParams } from './hooks/usePageSearchParams'
 
 const PAGE_SIZE = 10
 
+export type ResponseSortDirection = 'asc' | 'desc'
+
 export interface ResponseColumnOption {
   id: string
   label: string
@@ -48,6 +50,12 @@ interface UnlockedResponsesContextProps {
   excludedSearchColumnIds: string[]
   toggleSearchColumn: (columnId: string) => void
   setAllSearchColumns: (isSearchable: boolean) => void
+  sortColumnId?: string
+  sortDirection: ResponseSortDirection
+  setSort: (
+    columnId: string | undefined,
+    direction: ResponseSortDirection,
+  ) => void
   searchResultCount?: number
   setSearchResultCount: (count?: number) => void
   isTableLoading: boolean
@@ -93,6 +101,18 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
         : [...hidden, columnId],
     )
   }, [])
+
+  const [sortColumnId, setSortColumnId] = useState<string>()
+  const [sortDirection, setSortDirection] =
+    useState<ResponseSortDirection>('desc')
+
+  const setSort = useCallback(
+    (columnId: string | undefined, direction: ResponseSortDirection) => {
+      setSortColumnId(columnId)
+      setSortDirection(direction)
+    },
+    [],
+  )
 
   const [renderedRowCount, setRenderedRowCount] = useState(0)
   const [searchText, setSearchText] = useState('')
@@ -347,6 +367,9 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     excludedSearchColumnIds,
     toggleSearchColumn,
     setAllSearchColumns,
+    sortColumnId,
+    sortDirection,
+    setSort,
     searchResultCount,
     setSearchResultCount,
     isTableLoading,
