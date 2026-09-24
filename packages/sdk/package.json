@@ -56,8 +56,8 @@
     "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src/ --quiet --fix",
-    "lint-ci": "eslint src/ --quiet"
+    "lint": "oxlint --quiet --fix src/",
+    "lint-ci": "oxlint --quiet src/"
   },
   "repository": {
     "type": "git",

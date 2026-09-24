@@ -20,7 +20,6 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "downlevelIteration": true,
-    "baseUrl": ".",
     "paths": {
       "~assets/*": [
         "./src/assets/*"
