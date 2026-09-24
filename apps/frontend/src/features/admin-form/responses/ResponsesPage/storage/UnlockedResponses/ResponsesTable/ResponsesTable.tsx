@@ -368,6 +368,7 @@ export const ResponsesTable = () => {
     isTableLoading,
     sortColumnId,
     sortDirection,
+    setVisibleSubmissionIds,
   } = useUnlockedResponses()
   const isDelightfulDashboard = useIsDelightfulDashboard()
 
@@ -555,6 +556,11 @@ export const ResponsesTable = () => {
     if (!isDelightfulDashboard) return
     setSearchResultCount(searchText.trim() ? rows.length : undefined)
   }, [isDelightfulDashboard, rows.length, searchText, setSearchResultCount])
+
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setVisibleSubmissionIds(rows.map((row) => row.original.refNo))
+  }, [isDelightfulDashboard, rows, setVisibleSubmissionIds])
 
   useEffect(() => {
     if (!isDelightfulDashboard) return
