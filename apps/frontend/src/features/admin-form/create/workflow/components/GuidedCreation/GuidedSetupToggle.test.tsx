@@ -9,7 +9,7 @@ import { SPOTLIGHT_TEST_ID } from '../Spotlight'
 const { WithWorkflowRedesignOn, WithWorkflow } = composeStories(pageStories)
 
 const SWITCH = { name: /guided setup/i }
-const CONFIRM = { name: /^skip guidance$/i }
+const CONFIRM = { name: /^skip guided setup$/i }
 const CONFIRM_TITLE = /skip guided setup\?/i
 
 const bandCount = () => screen.queryAllByTestId(SPOTLIGHT_TEST_ID).length

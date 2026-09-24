@@ -22,7 +22,7 @@ vi.mock('~features/user/queries', () => ({
 const { WithWorkflowRedesignOn } = composeStories(pageStories)
 
 const SWITCH = { name: /guided setup/i }
-const CONFIRM = { name: /^skip guidance$/i }
+const CONFIRM = { name: /^skip guided setup$/i }
 
 let store: Record<string, string> = {}
 
