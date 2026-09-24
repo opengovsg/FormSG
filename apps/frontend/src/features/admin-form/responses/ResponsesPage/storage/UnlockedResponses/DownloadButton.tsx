@@ -23,6 +23,7 @@ import Checkbox from '~components/Checkbox'
 import Menu from '~components/Menu'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
+import { CSV_BUFFER_MAX_RESPONSES } from '~features/admin-form/responses/constants'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
@@ -31,6 +32,7 @@ import useDecryptionWorkers from '../useDecryptionWorkers'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
+import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
 const DownloadSelectorCheckbox = ({
   optionText,
@@ -121,6 +123,16 @@ const DownloadSelector = ({
 
 export const DownloadButton = (): JSX.Element => {
   const isDelightfulDashboard = useIsDelightfulDashboard()
+  const { visibleSubmissionIds, isFullyLoaded } = useUnlockedResponses()
+
+  const exportSubmissionIds =
+    isDelightfulDashboard &&
+    isFullyLoaded &&
+    visibleSubmissionIds &&
+    visibleSubmissionIds.length <= CSV_BUFFER_MAX_RESPONSES
+      ? visibleSubmissionIds
+      : undefined
+
   const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = useMemo(
     () => ({
       isDownloadAttachments: false,
@@ -154,8 +166,11 @@ export const DownloadButton = (): JSX.Element => {
     isClosable: true,
   })
 
-  const { downloadParams, dateRangeResponsesCount } =
+  const { downloadParams, dateRangeResponsesCount: totalResponsesInRange } =
     useStorageResponsesContext()
+
+  const dateRangeResponsesCount =
+    exportSubmissionIds?.length ?? totalResponsesInRange
 
   const [_downloadCount, setDownloadCount] = useState(0)
   const [_pdfGenerationCount, setPdfGenerationCount] = useState(0)
@@ -246,11 +261,19 @@ export const DownloadButton = (): JSX.Element => {
     })
     return handleBulkDownloadMutation.mutate({
       ...downloadParams,
+      ...(exportSubmissionIds
+        ? { visibleSubmissionIds: exportSubmissionIds }
+        : {}),
       downloadAttachments: downloadOptions.isDownloadAttachments,
       isDownloadCsv: downloadOptions.isDownloadCsv,
       isDownloadPdf: downloadOptions.isDownloadPdf,
     })
-  }, [downloadParams, handleBulkDownloadMutation, downloadOptions])
+  }, [
+    downloadParams,
+    handleBulkDownloadMutation,
+    downloadOptions,
+    exportSubmissionIds,
+  ])
 
   const resetDownload = useCallback(() => {
     resetDownloadProgress()
