@@ -438,7 +438,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Health Promotion Board',
     description:
-      'The data of the respondent’s children. Only data of children below 21 years old will be available. Vaccination status is verified by HPB. All other data is verified by ICA.',
+      'The birth records of the respondent’s children. Only data of children below 21 years old will be available. Vaccination status is verified by HPB. All other data is verified by ICA.',
     fieldType: BasicField.Children,
     previewValue: 'Child 1',
     // TODO: Get title translations
