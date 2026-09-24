@@ -223,6 +223,7 @@ const submitAndCapturePostedBody = async ({
   enableMrfWebhooks = true,
   dropSnapshot = false,
   payloadOverrides = {},
+  verifiedContentPlaintext,
   processNdi = false,
   ndiAuthType = FormAuthType.CP,
   collectSubmitterId = true,
@@ -232,6 +233,7 @@ const submitAndCapturePostedBody = async ({
   enableMrfWebhooks?: boolean
   dropSnapshot?: boolean
   payloadOverrides?: Partial<MultirespondentSubmissionDto>
+  verifiedContentPlaintext?: Record<string, string>
   processNdi?: boolean
   ndiAuthType?: FormAuthType.CP | FormAuthType.MyInfo
   collectSubmitterId?: boolean
@@ -242,6 +244,11 @@ const submitAndCapturePostedBody = async ({
   const form = await buildForm({ workflow, webhook })
   const growthbook = growthbookWith(enableMrfWebhooks)
   const payload = buildPayload(payloadOverrides)
+  const formsg = {
+    formDef: form,
+    encryptedPayload: payload,
+    verifiedContentPlaintext,
+  }
   if (processNdi) {
     form.authType = ndiAuthType
     form.isSubmitterIdCollectionEnabled = collectSubmitterId
@@ -263,7 +270,7 @@ const submitAndCapturePostedBody = async ({
         cookies: {},
         headers: {},
         get: jest.fn(),
-        formsg: { formDef: form, encryptedPayload: payload },
+        formsg,
       } as unknown as Parameters<typeof handleNdiResponses>[0],
       {} as Parameters<typeof handleNdiResponses>[1],
       next,
@@ -274,6 +281,7 @@ const submitAndCapturePostedBody = async ({
   const created = await createMultiRespondentFormSubmission({
     form,
     encryptedPayload: payload,
+    verifiedContentPlaintext: formsg.verifiedContentPlaintext,
     logMeta: { action: 'test' },
     growthbook,
   })
@@ -439,9 +447,7 @@ describe('[GATE] generic V1 initial send', () => {
         const { body } = await submitAndCapturePostedBody({
           workflow: [step()],
           webhook: { url: GENERIC_URL, isRetryEnabled: true },
-          payloadOverrides: {
-            verifiedContentPlaintext: mrfPlaintext,
-          },
+          verifiedContentPlaintext: mrfPlaintext,
         })
         const reference = formsgSdk.crypto.decrypt(formKeypair.secretKey, {
           encryptedContent: body!.encryptedContent,
@@ -559,7 +565,7 @@ describe('[GATE] generic V1 initial send', () => {
         const { body, writtenSnapshots } = await submitAndCapturePostedBody({
           workflow: [step()],
           webhook: { url: GENERIC_URL, isRetryEnabled: true },
-          payloadOverrides: { verifiedContentPlaintext: plaintext },
+          verifiedContentPlaintext: plaintext,
         })
         expect(JSON.parse(JSON.stringify(body))).not.toHaveProperty(
           'verifiedContent',

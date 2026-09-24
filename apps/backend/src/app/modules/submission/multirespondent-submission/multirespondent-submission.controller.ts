@@ -173,6 +173,7 @@ const submitMultirespondentForm = async (
     await createMultiRespondentFormSubmission({
       form,
       encryptedPayload,
+      verifiedContentPlaintext: req.formsg.verifiedContentPlaintext,
       logMeta,
       growthbook: req.growthbook,
     })
