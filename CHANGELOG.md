@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.32.0](https://github.com/opengovsg/formsg/compare/v9.31.0...v9.32.0) (2026-09-24)
+
+
+### Features
+
+* **myinfo:** add child type sub-field behind a sponsored children flag (#10082) ([#10082](https://github.com/opengovsg/formsg/commit/8b561cb1e91b1495f754ddedf360e79dd5655324))
+* **myinfo:** fetch sponsored children alongside birth records (#10081) ([#10081](https://github.com/opengovsg/formsg/commit/cddcbf0a60b76efe53b211b6614059acf7587f8d))
+
+
+### Bug Fixes
+
+* **myinfo:** align children sub-field labels and rename child type to record type (#10099) ([#10099](https://github.com/opengovsg/formsg/commit/196fb908ff8b699cf8dfbac2a6a5948ea3875b03))
+
 ## [9.31.0](https://github.com/opengovsg/formsg/compare/v9.30.2...v9.31.0) (2026-09-24)
 
 
