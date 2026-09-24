@@ -88,7 +88,7 @@ const PrintableDecryptedRow = ({
     case BasicField.Address: {
       const transformedAddress = handleAddressResponseDisplay(
         row.answerArray as string[],
-      ).join(', ')
+      ).join('; ')
       return (
         <StandardPrintableRow
           question={row.question}
@@ -131,7 +131,7 @@ const PrintableDecryptedRow = ({
       return (
         <StandardPrintableRow
           question={row.question}
-          answer={row.answer || row.answerArray?.join(', ') || ''}
+          answer={row.answer || row.answerArray?.join('; ') || ''}
         />
       )
   }
