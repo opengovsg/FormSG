@@ -390,7 +390,8 @@ const ChildrenBody = ({
             case MyInfoChildAttributes.ChildVaxxStatus:
             case MyInfoChildAttributes.ChildGender:
             case MyInfoChildAttributes.ChildRace:
-            case MyInfoChildAttributes.ChildSecondaryRace: {
+            case MyInfoChildAttributes.ChildSecondaryRace:
+            case MyInfoChildAttributes.ChildType: {
               return (
                 <FormControl
                   key={key}

@@ -79,6 +79,7 @@ export enum MyInfoAttribute {
   ChildGender = 'childgender',
   ChildRace = 'childrace',
   ChildSecondaryRace = 'childsecondaryrace',
+  ChildType = 'childtype',
 }
 
 // We need to write this manually otherwise TS merges the names and keys
@@ -90,6 +91,7 @@ export enum MyInfoChildAttributes {
   ChildGender = 'childgender',
   ChildRace = 'childrace',
   ChildSecondaryRace = 'childsecondaryrace',
+  ChildType = 'childtype',
 }
 
 export type AllowedMyInfoFieldOption = Exclude<
@@ -101,6 +103,7 @@ export type AllowedMyInfoFieldOption = Exclude<
   | MyInfoAttribute.ChildGender
   | MyInfoAttribute.ChildRace
   | MyInfoAttribute.ChildSecondaryRace
+  | MyInfoAttribute.ChildType
 >
 
 export enum MyInfoChildrenScope {

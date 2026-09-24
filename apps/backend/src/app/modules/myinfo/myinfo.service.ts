@@ -67,7 +67,6 @@ import {
   isMyInfoLoginCookie,
   isMyInfoRelayState,
   logIfFieldValueNotInMyinfoList,
-  shouldFetchSponsoredChildren,
 } from './myinfo.util'
 import getMyInfoHashModel from './myinfo_hash.model'
 
@@ -489,6 +488,10 @@ export class MyInfoServiceClass {
    * Gets myInfo data using the provided form and the MyInfo access token
    * @param form the form to validate
    * @param accessToken MyInfo access token
+   * @param useEsrvcID whether to use FormSG's own e-service ID
+   * @param includeSponsoredChildren whether to also request sponsored children
+   * scopes, see shouldFetchSponsoredChildren. Must match what was requested
+   * at login so the person call never asks for an unconsented scope.
    * @returns ok(MyInfoData) if the form has been validated successfully
    * @returns err(FormAuthNoEsrvcIdError) if form has no eserviceId
    * @returns err(AuthTypeMismatchError) if the client was not authenticated using MyInfo
@@ -499,6 +502,7 @@ export class MyInfoServiceClass {
     form: IPopulatedForm,
     accessToken: string,
     useEsrvcID?: boolean,
+    includeSponsoredChildren = false,
   ): ResultAsync<
     MyInfoData,
     | FormAuthNoEsrvcIdError
@@ -514,7 +518,7 @@ export class MyInfoServiceClass {
             .fire(
               accessToken,
               internalAttrListToScopes(requestedAttributes, {
-                includeSponsoredChildren: shouldFetchSponsoredChildren(form),
+                includeSponsoredChildren,
               }),
               eserviceId,
             )

@@ -2,6 +2,7 @@ import keyBy from 'lodash/keyBy'
 import {
   BasicField,
   MyInfoAttribute,
+  MyInfoChildrenScope,
   MyInfoChildVaxxStatus,
   MyInfoField,
   TranslationMapping,
@@ -41,6 +42,14 @@ export type MyInfoFieldBlock = {
   // details of Phua Chu Kang, a famous singaporean sitcom.
   previewValue: string
   titleTranslations?: TranslationMapping[]
+}
+
+/**
+ * Display value of a child's scope, shown in the "Child type" sub-field.
+ */
+export const MYINFO_CHILD_TYPE_LABELS: Record<MyInfoChildrenScope, string> = {
+  [MyInfoChildrenScope.Local]: 'LOCAL',
+  [MyInfoChildrenScope.Sponsored]: 'SPONSORED',
 }
 
 export const types: MyInfoFieldBlock[] = [
@@ -513,6 +522,18 @@ export const types: MyInfoFieldBlock[] = [
     fieldType: BasicField.Dropdown,
     fieldOptions: myInfoRaces,
     previewValue: 'CHINESE',
+    // TODO: Get title translations
+  },
+  {
+    name: MyInfoAttribute.ChildType,
+    value: 'Child type',
+    category: 'children',
+    verified: [],
+    source: 'Immigration & Checkpoints Authority',
+    description: 'Child type',
+    fieldType: BasicField.Dropdown,
+    fieldOptions: Object.values(MYINFO_CHILD_TYPE_LABELS),
+    previewValue: MYINFO_CHILD_TYPE_LABELS[MyInfoChildrenScope.Local],
     // TODO: Get title translations
   },
 ]

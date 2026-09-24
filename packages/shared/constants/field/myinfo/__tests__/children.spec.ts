@@ -14,6 +14,7 @@ describe('children field attributes', () => {
       MyInfoChildAttributes.ChildVaxxStatus,
       MyInfoChildAttributes.ChildGender,
       MyInfoChildAttributes.ChildRace,
+      MyInfoChildAttributes.ChildType,
     ])
   })
 

@@ -255,12 +255,21 @@ export const handleGetPublicForm: ControllerHandler<
             MYINFO_AUTH_CODE_COOKIE_OPTIONS,
           )
           const useEsrvcId = req.growthbook?.isOn(featureFlags.useFormsgEsrvcId)
+          const includeSponsoredChildren = shouldFetchSponsoredChildren(
+            form,
+            req.growthbook?.isOn(featureFlags.mrfChildren) ?? false,
+          )
           const myInfoFieldsResult = await extractAuthCode(authCodeCookie)
             .asyncAndThen((authCode) =>
               MyInfoService.retrieveAccessToken(authCode),
             )
             .andThen((accessToken) =>
-              MyInfoService.getMyInfoDataForForm(form, accessToken, useEsrvcId),
+              MyInfoService.getMyInfoDataForForm(
+                form,
+                accessToken,
+                useEsrvcId,
+                includeSponsoredChildren,
+              ),
             )
 
           if (myInfoFieldsResult.isErr()) {
@@ -755,6 +764,9 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const nonce = useStateNonce ? randomBytes(16).toString('hex') : undefined
       const useMyInfoFapi =
         req.growthbook?.isOn(featureFlags.myinfoFapi) ?? false
+      // Fail closed: without a growthbook instance, only birth records are fetched.
+      const isMrfChildrenEnabled =
+        req.growthbook?.isOn(featureFlags.mrfChildren) ?? false
       switch (form.authType) {
         case FormAuthType.MyInfo: {
           if (useMyInfoFapi) {
@@ -766,7 +778,10 @@ export const _handleFormAuthRedirect: ControllerHandler<
               formId,
               encodedQuery,
               requestedAttributes: form.getUniqueMyInfoAttrs(),
-              includeSponsoredChildren: shouldFetchSponsoredChildren(form),
+              includeSponsoredChildren: shouldFetchSponsoredChildren(
+                form,
+                isMrfChildrenEnabled,
+              ),
             }).map(({ sessionId, redirectUrl }) => {
               setMyInfoFapiSessionCookie(res, sessionId)
               return redirectUrl
@@ -779,7 +794,10 @@ export const _handleFormAuthRedirect: ControllerHandler<
                 formEsrvcId: eserviceId,
                 formId,
                 requestedAttributes: form.getUniqueMyInfoAttrs(),
-                includeSponsoredChildren: shouldFetchSponsoredChildren(form),
+                includeSponsoredChildren: shouldFetchSponsoredChildren(
+                  form,
+                  isMrfChildrenEnabled,
+                ),
                 encodedQuery,
               }),
           )

@@ -464,4 +464,9 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     icon: BiDummyIcon,
     isSubmitted: true,
   },
+  [MyInfoAttribute.ChildType]: {
+    label: 'Child Type',
+    icon: BiDummyIcon,
+    isSubmitted: true,
+  },
 }

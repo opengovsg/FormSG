@@ -1,17 +1,20 @@
+import { useMemo } from 'react'
 import { Controller } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
 import { BiCheck, BiData, BiX } from 'react-icons/bi'
 import { Box, HStack, Icon, Text, VStack } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { extend } from 'lodash'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { MyInfoChildAttributes } from 'formsg-shared/types'
 
 import { SINGPASS_FAQ } from '~constants/links'
 import { MultiSelect } from '~components/Dropdown'
-import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
-import { CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS } from '~features/admin-form/create/builder-and-design/constants'
+import { getCreateMyInfoChildrenSubFieldsOptions } from '~features/admin-form/create/builder-and-design/constants'
+import { useCreateTabForm } from '~features/admin-form/create/builder-and-design/useCreateTabForm'
 
 import { CreatePageDrawerContentContainer } from '../../../../../common'
 import { FormFieldDrawerActions } from '../common/FormFieldDrawerActions'
@@ -44,6 +47,16 @@ export const EditMyInfoChildren = ({
 }: EditMyInfoChildrenProps): JSX.Element => {
   const { t } = useTranslation()
   const extendedField = extendWithMyInfo(field)
+  const { data: form } = useCreateTabForm()
+  const isMrfChildrenEnabled = useFeatureIsOn(featureFlags.mrfChildren)
+  const subFieldOptions = useMemo(
+    () =>
+      getCreateMyInfoChildrenSubFieldsOptions({
+        responseMode: form?.responseMode,
+        isMrfChildrenEnabled,
+      }),
+    [form?.responseMode, isMrfChildrenEnabled],
+  )
   const { control, buttonText, handleUpdateField, isLoading, handleCancel } =
     useEditFieldForm<EditMyInfoChildrenInputs, ChildrenCompoundFieldMyInfo>({
       field,
@@ -114,7 +127,7 @@ export const EditMyInfoChildren = ({
             name="childrenSubFields"
             render={({ field: { value, onChange, ...rest } }) => (
               <MultiSelect
-                items={CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS}
+                items={subFieldOptions}
                 values={
                   (value ?? [MyInfoChildAttributes.ChildName]) as string[]
                 }
