@@ -16,6 +16,7 @@ import {
 import mongoose from 'mongoose'
 import { errAsync, okAsync } from 'neverthrow'
 
+import formsgSdk from 'src/app/config/formsg-sdk'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
 import { WebhookFactory } from 'src/app/modules/webhook/webhook.factory'
 import { webhookStatsdClient } from 'src/app/modules/webhook/webhook.statsd-client'
@@ -3743,6 +3744,7 @@ describe('multirespondent-submission.service', () => {
   })
 
   describe('S4 MRF v4 webhook snapshot integration', () => {
+    const { publicKey: formPublicKey } = formsgSdk.crypto.generate()
     const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/x'
     const GENERIC_URL = 'https://example.com/hook'
     const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/1/x'
@@ -3805,6 +3807,7 @@ describe('multirespondent-submission.service', () => {
         authType: FormAuthType.NIL,
         responseMode: FormResponseMode.Multirespondent,
         title: 'Test form',
+        publicKey: formPublicKey,
         form_fields: [
           { _id: fieldId, fieldType: BasicField.ShortText, title: 'Q1' },
         ],
@@ -3894,10 +3897,12 @@ describe('multirespondent-submission.service', () => {
       token: string | undefined,
       view: WebhookView = buildLiveWebhookView(),
       mrfVersion = 2,
+      workflow: FormWorkflowStepDto[] = twoStepWorkflow,
     ): IMultirespondentSubmissionSchema =>
       ({
         _id: new ObjectId(),
         mrfVersion,
+        workflow,
         submittedSteps: [
           {
             isApproval: false,
@@ -4003,9 +4008,9 @@ describe('multirespondent-submission.service', () => {
       ${'v4, flag off'}                         | ${'v4'}       | ${twoStepWorkflow} | ${false}          | ${false}
       ${'v4, enable-mrf-webhooks on'}           | ${'v4'}       | ${twoStepWorkflow} | ${true}           | ${true}
       ${'v1 by default, 2 steps (not sent)'}    | ${undefined}  | ${twoStepWorkflow} | ${true}           | ${false}
-      ${'v1 by default, 1 step (sent as V1)'}   | ${undefined}  | ${oneStepWorkflow} | ${true}           | ${false}
-      ${'v1 explicit, 1 step (sent as V1)'}     | ${'v1'}       | ${oneStepWorkflow} | ${true}           | ${false}
-      ${'v1 by default, no steps (sent as V1)'} | ${undefined}  | ${[]}              | ${true}           | ${false}
+      ${'v1 by default, 1 step (sent as V1)'}   | ${undefined}  | ${oneStepWorkflow} | ${true}           | ${true}
+      ${'v1 explicit, 1 step (sent as V1)'}     | ${'v1'}       | ${oneStepWorkflow} | ${true}           | ${true}
+      ${'v1 by default, no steps (sent as V1)'} | ${undefined}  | ${[]}              | ${true}           | ${true}
       ${'v4, 1 step'}                           | ${'v4'}       | ${oneStepWorkflow} | ${true}           | ${true}
     `(
       'generic create snapshot write ($label) -> written=$expectWritten',
@@ -4082,6 +4087,57 @@ describe('multirespondent-submission.service', () => {
 
       expect(result.isOk()).toBe(true)
       expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+    })
+
+    it.each<[string, FormWebhook | undefined]>([
+      ['no webhook', undefined],
+      ['empty URL', { url: '', isRetryEnabled: true }],
+    ])('does not prepare a snapshot with %s', async (_label, webhook) => {
+      const result = await createMultiRespondentFormSubmission({
+        form: buildV4Form({ workflow: oneStepWorkflow, webhook }),
+        encryptedPayload: buildV4Payload(),
+        logMeta: { action: 'test' },
+        growthbook: growthbookWithFlags({ enableMrfWebhooks: true }),
+      })
+
+      expect(result._unsafeUnwrap().snapshot).toBeUndefined()
+      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+    })
+
+    it('delivers V1 with an in-memory snapshot when retries are disabled', async () => {
+      const form = buildV4Form({
+        workflow: oneStepWorkflow,
+        webhook: {
+          url: GENERIC_URL,
+          webhookFormat: 'v1',
+          isRetryEnabled: false,
+        },
+      })
+      const encryptedPayload = buildV4Payload()
+      const growthbook = growthbookWithFlags({ enableMrfWebhooks: true })
+      const created = await createMultiRespondentFormSubmission({
+        form,
+        encryptedPayload,
+        logMeta: { action: 'test' },
+        growthbook,
+      })
+      const { submission, snapshot } = created._unsafeUnwrap()
+
+      expect(snapshot?.contentFormat).toBe('v1')
+      expect(MockSnapshotStore.writeSnapshot).not.toHaveBeenCalled()
+
+      await performMultiRespondentPostSubmissionCreateActions({
+        submission,
+        snapshot,
+        submissionId: submission._id.toString(),
+        form,
+        encryptedPayload,
+        logMeta: { action: 'test' },
+        growthbook,
+      })
+      await flushPromises()
+
+      expect(WebhookFactory.sendInitialWebhook).toHaveBeenCalledTimes(1)
     })
 
     it('aborts the save (fail-loud) when the snapshot write fails', async () => {
@@ -4172,21 +4228,38 @@ describe('multirespondent-submission.service', () => {
         expectSent,
       }) => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
-        const submission = buildSubmissionWithToken(undefined)
+        const form = buildV4Form({
+          workflow,
+          webhook:
+            url === PLUMBER_URL
+              ? ({ url, isRetryEnabled: true, webhookFormat } as any)
+              : genericWebhook({ url, webhookFormat }),
+        })
+        const growthbook = growthbookWithFlags({ enableMrfWebhooks })
+
+        // RATIONALE: The snapshot comes from the real create path rather than a
+        // hand-built fixture, so the test cannot restate the format-resolution
+        // rules it is meant to be exercising.
+        const created = await createMultiRespondentFormSubmission({
+          form,
+          encryptedPayload: buildV4Payload(),
+          logMeta: { action: 'test' },
+          growthbook,
+        })
+        const { submission, snapshot } = created._unsafeUnwrap()
+        // The live row is stubbed so the gate, not the view, decides the send.
+        submission.getWebhookView = jest
+          .fn()
+          .mockResolvedValue(buildLiveWebhookView())
 
         await performMultiRespondentPostSubmissionCreateActions({
           submission,
+          snapshot,
           submissionId: submission._id.toString(),
-          form: buildV4Form({
-            workflow,
-            webhook:
-              url === PLUMBER_URL
-                ? ({ url, isRetryEnabled: true, webhookFormat } as any)
-                : genericWebhook({ url, webhookFormat }),
-          }),
+          form,
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
-          growthbook: growthbookWithFlags({ enableMrfWebhooks }),
+          growthbook,
         })
         await flushPromises()
 

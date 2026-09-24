@@ -53,9 +53,7 @@ export const resolveSnapshotRetryView = ({
   const meta = { submissionId, snapshotRef }
   const { submissionIndex, contentFormat } = snapshotRef
 
-  // RATIONALE: Only `v4` exists today, so a message naming `v1`
-  // resolves to not recorded until future backward compatibility to
-  // widens the row schema to carry the v1 copy.
+  // RATIONALE: `v1` snapshot replay will be implemented in #9977.
   if (contentFormat === 'v1') {
     return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
   }

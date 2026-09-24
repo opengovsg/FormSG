@@ -8,6 +8,7 @@ import {
   FormResponseMode,
   FormWebhook,
   FormWorkflowStepDto,
+  LogicDto,
   SubmittedApprovalStep,
   SubmittedNonApprovalStep,
   SubmittedStep,
@@ -53,8 +54,10 @@ import {
 } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { isFormMultirespondent } from '../../form/form.utils'
+import { WebhookPushToQueueError } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
+import { SnapshotRef } from '../../webhook/webhook.types'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
@@ -75,18 +78,32 @@ import {
 } from '../submission.utils'
 import { reportSubmissionResponseTime } from '../submissions.statsd-client'
 
-import { SnapshotWriteError } from './webhook/submission-snapshot.errors'
-import { buildV4Snapshot } from './webhook/submission-snapshot.producer'
-import { SubmissionSnapshotV4 } from './webhook/submission-snapshot.schema'
+import {
+  SnapshotWriteError,
+  V1ContentMappingError,
+  V1SnapshotRequiredError,
+} from './webhook/submission-snapshot.errors'
+import {
+  buildV1Snapshot,
+  buildV4Snapshot,
+} from './webhook/submission-snapshot.producer'
+import { SubmissionSnapshot } from './webhook/submission-snapshot.schema'
 import { writeSnapshot } from './webhook/submission-snapshot.store'
+import { buildV1EncryptedContent } from './webhook/v1-content.producer'
+import { assertStorageShapedKeySet } from './webhook/v1-payload'
 import {
   getWebhookPayloadPolicy,
   mrfVersionToContentFormat,
+  resolveWebhookContentFormat,
 } from './webhook/webhook-payload-policy'
-import { reconstructMrfWebhookData } from './webhook/webhook-reconstruction'
 import {
+  reconstructMrfWebhookData,
+  reconstructV1WebhookData,
+} from './webhook/webhook-reconstruction'
+import {
+  holdsV1FirstStepInvariant,
   shouldSendMrfWebhook,
-  shouldWriteV4Snapshot,
+  shouldWriteMrfSnapshot,
 } from './webhook/webhook-send-eligibility'
 import { MultirespondentSubmissionContent } from './multirespondent-submission.types'
 import {
@@ -110,11 +127,19 @@ const appUrl =
     ? config.app.feAppUrl
     : config.app.appUrl
 
+const toPlainFormFields = (
+  formFields: IPopulatedMultirespondentForm['form_fields'],
+): FormFieldDto[] => JSON.parse(JSON.stringify(formFields)) as FormFieldDto[]
+
+const toPlainFormLogics = (
+  formLogics: IPopulatedMultirespondentForm['form_logics'],
+): LogicDto[] => JSON.parse(JSON.stringify(formLogics)) as LogicDto[]
+
 export type SavedMultirespondentSubmission = {
   submission: IMultirespondentSubmissionSchema & {
     _id: mongoose.Types.ObjectId
   }
-  snapshot?: SubmissionSnapshotV4
+  snapshot?: SubmissionSnapshot
 }
 
 export const checkFormIsMultirespondent = (
@@ -750,7 +775,10 @@ export const createMultiRespondentFormSubmission = ({
   growthbook?: GrowthBook
 }): ResultAsync<
   SavedMultirespondentSubmission,
-  AttachmentUploadError | SubmissionSaveError | SnapshotWriteError
+  | AttachmentUploadError
+  | SubmissionSaveError
+  | SnapshotWriteError
+  | V1ContentMappingError
 > => {
   logMeta = {
     ...logMeta,
@@ -839,12 +867,30 @@ export const createMultiRespondentFormSubmission = ({
         encryptedStepToken,
       }
 
-      const shouldWriteSnapshot = shouldWriteV4Snapshot({
+      const webhook = form.webhook
+      const webhookConsumerType = webhook?.url
+        ? toConsumerType(getWebhookType(webhook.url))
+        : 'generic'
+      const webhookContentFormat = resolveWebhookContentFormat({
+        webhookType: webhookConsumerType,
+        webhookFormat: webhook?.webhookFormat,
+      })
+      const shouldSend =
+        !!webhook?.url &&
+        shouldSendMrfWebhook({
+          webhookConsumerType,
+          contentFormat: webhookContentFormat,
+          isMrfWebhooksEnabled:
+            growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+          workflowStepCount: form.workflow?.length ?? 0,
+        })
+      const shouldWriteSnapshot = shouldWriteMrfSnapshot({
         mrfVersion,
-        webhook: form.webhook,
-        isMrfWebhooksEnabled:
-          growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-        workflowStepCount: form.workflow?.length ?? 0,
+        shouldSend,
+        isRetryEnabled: webhook?.isRetryEnabled,
+        contentFormat: webhookContentFormat,
+        submissionIndex: 0,
+        logMeta,
       })
 
       const saveSubmission = async () => {
@@ -882,26 +928,54 @@ export const createMultiRespondentFormSubmission = ({
         return submission.save()
       }
 
-      const snapshot = shouldWriteSnapshot
-        ? buildV4Snapshot({
-            formId: String(form._id),
-            submissionId: String(submissionObjectId),
-            submissionIndex: 0,
-            workflowStep: 0,
-            encryptedContent,
-            encryptedSubmissionSecretKey,
-            verifiedContent,
-            attachmentMetadata: Object.fromEntries(
-              attachmentMetadata ?? new Map(),
-            ),
-            createdAt: submittedStepMeta.submittedAt,
-          })
-        : undefined
+      const snapshotBase = {
+        formId: String(form._id),
+        submissionId: String(submissionObjectId),
+        submissionIndex: 0,
+        workflowStep: 0,
+        createdAt: submittedStepMeta.submittedAt,
+      }
 
+      const v4OnlyContent = {
+        verifiedContent,
+        attachmentMetadata: Object.fromEntries(attachmentMetadata ?? new Map()),
+      }
+
+      let snapshot: SubmissionSnapshot | undefined
+      const isV1Snapshot =
+        mrfVersion === 2 && shouldSend && webhookContentFormat === 'v1'
+      if (isV1Snapshot) {
+        const v1ContentResult = buildV1EncryptedContent({
+          v4Responses: encryptedPayload.responses,
+          formFields: toPlainFormFields(form.form_fields),
+          formLogics: toPlainFormLogics(form.form_logics),
+          formPublicKey: form.publicKey,
+          myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
+          logMeta,
+        })
+        if (v1ContentResult.isErr()) {
+          return errAsync(v1ContentResult.error)
+        }
+        snapshot = buildV1Snapshot({
+          ...snapshotBase,
+          encryptedContent: v1ContentResult.value,
+        })
+      } else if (webhookContentFormat === 'v4' && shouldWriteSnapshot) {
+        snapshot = buildV4Snapshot({
+          ...snapshotBase,
+          ...v4OnlyContent,
+          encryptedContent,
+          encryptedSubmissionSecretKey,
+        })
+      }
+
+      const snapshotToWrite = shouldWriteSnapshot ? snapshot : undefined
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
-        snapshot
-          ? writeSnapshot(snapshot).map(({ token }) => {
-              submittedStepMeta.snapshotTokens = { v4: token }
+        snapshotToWrite
+          ? writeSnapshot(snapshotToWrite).map(({ token }) => {
+              submittedStepMeta.snapshotTokens = {
+                [snapshotToWrite.contentFormat]: token,
+              }
               return undefined
             })
           : okAsync(undefined)
@@ -1228,7 +1302,7 @@ const sendMrfInitialWebhookIfEligible = ({
   errorMessage = 'Multirespondent submission webhook error',
 }: {
   submission: IMultirespondentSubmissionSchema
-  snapshot?: SubmissionSnapshotV4
+  snapshot?: SubmissionSnapshot
   webhookUrl: string
   webhookFormat: FormWebhook['webhookFormat']
   workflowStepCount: number
@@ -1241,7 +1315,10 @@ const sendMrfInitialWebhookIfEligible = ({
 
   const shouldSend = shouldSendMrfWebhook({
     webhookConsumerType,
-    webhookFormat,
+    contentFormat: resolveWebhookContentFormat({
+      webhookType: webhookConsumerType,
+      webhookFormat,
+    }),
     isMrfWebhooksEnabled:
       growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
     workflowStepCount,
@@ -1280,42 +1357,71 @@ const sendMrfInitialWebhookIfEligible = ({
     .andThen((liveView) => {
       const policy = getWebhookPayloadPolicy({
         webhookType: webhookConsumerType,
-        // RATIONALE: Pinned to 'v4' until the V1 producer lands in the next PR, at which point this is
-        // replaced with the form's own `webhook.webhookFormat`.
-        webhookFormat: 'v4',
+        webhookFormat,
         logMeta,
       })
-      const snapshotDetails = snapshot
-        ? {
-            snapshot,
-            submissionIndex,
-          }
-        : {
-            snapshot: undefined,
-            submissionIndex: undefined,
-          }
+
+      const send = (
+        data: WebhookView['data'],
+        snapshotRef?: SnapshotRef,
+      ): ResultAsync<undefined, WebhookPushToQueueError> =>
+        WebhookFactory.sendInitialWebhook(
+          submission,
+          webhookUrl,
+          isRetryEnabled,
+          { data },
+          snapshotRef,
+        ).map(() => undefined)
+
+      if (policy.contentFormat === 'v1') {
+        if (snapshot?.contentFormat !== 'v1') {
+          return errAsync(
+            new V1SnapshotRequiredError(undefined, {
+              ...logMeta,
+              submissionIndex,
+              snapshotContentFormat: snapshot?.contentFormat,
+            }),
+          )
+        }
+        if (!holdsV1FirstStepInvariant({ submissionIndex, logMeta })) {
+          return errAsync(
+            new V1SnapshotRequiredError(
+              'V1 delivery declined: the submission is past its first step',
+              { ...logMeta, submissionIndex },
+            ),
+          )
+        }
+
+        return assertStorageShapedKeySet(
+          reconstructV1WebhookData({ liveData: liveView.data, snapshot }),
+          logMeta,
+        ).asyncAndThen((data) =>
+          send(data, { submissionIndex, contentFormat: 'v1' }),
+        )
+      }
+
+      const snapshotDetails =
+        snapshot?.contentFormat === 'v4'
+          ? {
+              snapshot,
+              submissionIndex,
+            }
+          : {
+              snapshot: undefined,
+              submissionIndex: undefined,
+            }
       return reconstructMrfWebhookData({
         liveData: liveView.data,
         policy,
         ...snapshotDetails,
-      }).asyncAndThen((data) => {
-        const webhookView: WebhookView = { data }
-
-        const snapshotRef = snapshot
-          ? {
-              submissionIndex,
-              contentFormat: snapshot.contentFormat,
-            }
-          : undefined
-
-        return WebhookFactory.sendInitialWebhook(
-          submission,
-          webhookUrl,
-          isRetryEnabled,
-          webhookView,
-          snapshotRef,
-        ).map(() => undefined)
-      })
+      }).asyncAndThen((data) =>
+        send(
+          data,
+          snapshotDetails.snapshot
+            ? { submissionIndex, contentFormat: 'v4' }
+            : undefined,
+        ),
+      )
     })
     .mapErr((error) => {
       logger.error({
@@ -1337,7 +1443,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
   growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
-  snapshot?: SubmissionSnapshotV4
+  snapshot?: SubmissionSnapshot
   submissionId: string
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
@@ -1421,7 +1527,7 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
       snapshot,
       webhookUrl,
       webhookFormat: form.webhook?.webhookFormat,
-      workflowStepCount: form.workflow?.length ?? 0,
+      workflowStepCount: submission.workflow?.length ?? 0,
       isRetryEnabled: !!form.webhook?.isRetryEnabled,
       growthbook,
       logMeta,
@@ -1656,34 +1762,55 @@ export const updateMultiRespondentFormSubmission = ({
       submission.stepTokenHash = stepTokenHash
       submission.encryptedStepToken = encryptedStepToken
 
-      const shouldWriteSnapshot = shouldWriteV4Snapshot({
+      const webhook = snapshottedFormDef.webhook
+      const webhookConsumerType = webhook?.url
+        ? toConsumerType(getWebhookType(webhook.url))
+        : 'generic'
+      const webhookContentFormat = resolveWebhookContentFormat({
+        webhookType: webhookConsumerType,
+        webhookFormat: webhook?.webhookFormat,
+      })
+      const shouldSend =
+        !!webhook?.url &&
+        shouldSendMrfWebhook({
+          webhookConsumerType,
+          contentFormat: webhookContentFormat,
+          isMrfWebhooksEnabled:
+            growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
+          workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
+        })
+      const shouldWriteSnapshot = shouldWriteMrfSnapshot({
         mrfVersion,
-        webhook: snapshottedFormDef.webhook,
-        isMrfWebhooksEnabled:
-          growthbook?.isOn(featureFlags.enableMrfWebhooks) ?? false,
-        workflowStepCount: snapshottedFormDef.workflow?.length ?? 0,
+        shouldSend,
+        isRetryEnabled: webhook?.isRetryEnabled,
+        contentFormat: webhookContentFormat,
+        submissionIndex,
+        logMeta: { ...logMeta, submissionId },
       })
 
-      const snapshot = shouldWriteSnapshot
-        ? buildV4Snapshot({
-            formId: String(snapshottedFormDef._id),
-            submissionId: String(submission._id),
-            submissionIndex,
-            workflowStep,
-            encryptedContent,
-            encryptedSubmissionSecretKey,
-            verifiedContent,
-            attachmentMetadata: Object.fromEntries(
-              attachmentMetadata ?? new Map(),
-            ),
-            createdAt: submittedStepMeta.submittedAt,
-          })
-        : undefined
+      const snapshot =
+        webhookContentFormat === 'v4' && shouldWriteSnapshot
+          ? buildV4Snapshot({
+              formId: String(snapshottedFormDef._id),
+              submissionId: String(submission._id),
+              submissionIndex,
+              workflowStep,
+              encryptedContent,
+              encryptedSubmissionSecretKey,
+              verifiedContent,
+              attachmentMetadata: Object.fromEntries(
+                attachmentMetadata ?? new Map(),
+              ),
+              createdAt: submittedStepMeta.submittedAt,
+            })
+          : undefined
 
       const writeSnapshotIfNeeded: ResultAsync<undefined, SnapshotWriteError> =
         snapshot
           ? writeSnapshot(snapshot).map(({ token }) => {
-              submittedStepMeta.snapshotTokens = { v4: token }
+              submittedStepMeta.snapshotTokens = {
+                [snapshot.contentFormat]: token,
+              }
               return undefined
             })
           : okAsync(undefined)
@@ -1736,7 +1863,7 @@ export const performMultiRespondentPostSubmissionUpdateActions = ({
   growthbook,
 }: {
   submission: IMultirespondentSubmissionSchema
-  snapshot?: SubmissionSnapshotV4
+  snapshot?: SubmissionSnapshot
   submissionId: string
   snapshottedFormDef: SnapshottedFormDef
   currentStepNumber: number

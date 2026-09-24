@@ -130,7 +130,10 @@ import { MalformedVerifiedContentError } from '../verified-content/verified-cont
 
 import { MYINFO_PREFIX } from './email-submission/email-submission.constants'
 import { ResponseFormattedForEmail } from './email-submission/email-submission.types'
-import { SnapshotWriteError } from './multirespondent-submission/webhook/submission-snapshot.errors'
+import {
+  SnapshotWriteError,
+  V1ContentMappingError,
+} from './multirespondent-submission/webhook/submission-snapshot.errors'
 import {
   AttachmentSizeLimitExceededError,
   AttachmentTooLargeError,
@@ -225,6 +228,7 @@ const errorMapper: MapRouteError = (
         errorMessageKey: submissionErrorKey('files.uploadFailed'),
       }
     case SnapshotWriteError:
+    case V1ContentMappingError:
     case SubmissionSaveError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

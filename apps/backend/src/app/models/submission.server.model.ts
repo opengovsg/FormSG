@@ -566,6 +566,9 @@ const submittedStepSchema = new Schema(
       v4: {
         type: String,
       },
+      v1: {
+        type: String,
+      },
     },
   },
   { _id: false },

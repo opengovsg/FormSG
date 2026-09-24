@@ -1,14 +1,14 @@
 import { FormWebhook } from 'formsg-shared/types'
 
-import { WebhookConsumerType } from '../webhook-payload-policy'
 import {
+  resolveWebhookContentFormat,
+  WebhookConsumerType,
+} from '../webhook-payload-policy'
+import {
+  holdsV1FirstStepInvariant,
   shouldSendMrfWebhook,
-  shouldWriteV4Snapshot,
+  shouldWriteMrfSnapshot,
 } from '../webhook-send-eligibility'
-
-const PLUMBER_URL = 'https://plumber.gov.sg/webhooks/x'
-const GENERIC_URL = 'https://example.com/hook'
-const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/1/x'
 
 describe('shouldSendMrfWebhook', () => {
   it.each<{
@@ -114,7 +114,10 @@ describe('shouldSendMrfWebhook', () => {
       expect(
         shouldSendMrfWebhook({
           webhookConsumerType,
-          webhookFormat,
+          contentFormat: resolveWebhookContentFormat({
+            webhookType: webhookConsumerType,
+            webhookFormat,
+          }),
           isMrfWebhooksEnabled,
           workflowStepCount,
         }),
@@ -123,147 +126,46 @@ describe('shouldSendMrfWebhook', () => {
   )
 })
 
-describe('shouldWriteV4Snapshot', () => {
+describe('shouldWriteMrfSnapshot', () => {
   it.each<{
-    name: string
-    mrfVersion: number
-    webhook?: {
-      url?: string
-      isRetryEnabled?: boolean
-      webhookFormat?: FormWebhook['webhookFormat']
-    }
-    isMrfWebhooksEnabled: boolean
-    workflowStepCount?: number
+    contentFormat: 'v1' | 'v4'
+    submissionIndex: number
     expected: boolean
   }>([
-    {
-      name: 'a V3 row never snapshots',
-      mrfVersion: 1,
-      webhook: { url: PLUMBER_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: true,
-      expected: false,
-    },
-    {
-      name: 'no webhook url',
-      mrfVersion: 2,
-      webhook: undefined,
-      isMrfWebhooksEnabled: true,
-      expected: false,
-    },
-    {
-      name: 'retries disabled',
-      mrfVersion: 2,
-      webhook: { url: PLUMBER_URL, isRetryEnabled: false },
-      isMrfWebhooksEnabled: true,
-      expected: false,
-    },
-    {
-      name: 'plumber needs no flag',
-      mrfVersion: 2,
-      webhook: { url: PLUMBER_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: false,
-      expected: true,
-    },
-    {
-      name: 'plumber snapshots a multi-step form, which V4 can represent',
-      mrfVersion: 2,
-      webhook: { url: PLUMBER_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: false,
-      workflowStepCount: 4,
-      expected: true,
-    },
-    {
-      name: 'generic with the flag off is never delivered, so never snapshots',
-      mrfVersion: 2,
-      webhook: { url: GENERIC_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: false,
-      expected: false,
-    },
-    {
-      name: 'generic with no format resolves to V1, so writes no V4 snapshot',
-      mrfVersion: 2,
-      webhook: { url: GENERIC_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: true,
-      expected: false,
-    },
-    {
-      name: 'zapier with no format resolves to V1, so writes no V4 snapshot',
-      mrfVersion: 2,
-      webhook: { url: ZAPIER_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: true,
-      expected: false,
-    },
-    {
-      name: 'generic asking for V4 with enable-mrf-webhooks snapshots',
-      mrfVersion: 2,
-      webhook: {
-        url: GENERIC_URL,
-        isRetryEnabled: true,
-        webhookFormat: 'v4',
-      },
-      isMrfWebhooksEnabled: true,
-      expected: true,
-    },
-    {
-      name: 'zapier asking for V4 with enable-mrf-webhooks snapshots',
-      mrfVersion: 2,
-      webhook: {
-        url: ZAPIER_URL,
-        isRetryEnabled: true,
-        webhookFormat: 'v4',
-      },
-      isMrfWebhooksEnabled: true,
-      expected: true,
-    },
-    {
-      name: 'a generic multi-step form on the V1 shape is not delivered to at all, so it snapshots nothing',
-      mrfVersion: 2,
-      webhook: { url: GENERIC_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: true,
-      workflowStepCount: 2,
-      expected: false,
-    },
-    {
-      name: 'a one-step generic form asking for V1 writes no V4 snapshot',
-      mrfVersion: 2,
-      webhook: {
-        url: GENERIC_URL,
-        isRetryEnabled: true,
-        webhookFormat: 'v1',
-      },
-      isMrfWebhooksEnabled: true,
-      workflowStepCount: 1,
-      expected: false,
-    },
-    {
-      name: 'a generic multi-step form on the V4 shape is delivered to, so it snapshots',
-      mrfVersion: 2,
-      webhook: {
-        url: GENERIC_URL,
-        isRetryEnabled: true,
-        webhookFormat: 'v4',
-      },
-      isMrfWebhooksEnabled: true,
-      workflowStepCount: 2,
-      expected: true,
-    },
+    { contentFormat: 'v1', submissionIndex: 0, expected: true },
+    { contentFormat: 'v1', submissionIndex: 1, expected: false },
+    { contentFormat: 'v4', submissionIndex: 0, expected: true },
+    { contentFormat: 'v4', submissionIndex: 1, expected: true },
   ])(
-    '$name',
-    ({
-      mrfVersion,
-      webhook,
-      isMrfWebhooksEnabled,
-      workflowStepCount = 0,
-      expected,
-    }) => {
+    '$contentFormat at submission index $submissionIndex -> write=$expected',
+    ({ contentFormat, submissionIndex, expected }) => {
       expect(
-        shouldWriteV4Snapshot({
-          mrfVersion,
-          webhook,
-          isMrfWebhooksEnabled,
-          workflowStepCount,
+        shouldWriteMrfSnapshot({
+          mrfVersion: 2,
+          shouldSend: true,
+          isRetryEnabled: true,
+          contentFormat,
+          submissionIndex,
+          logMeta: {},
         }),
       ).toBe(expected)
+    },
+  )
+})
+
+describe('holdsV1FirstStepInvariant', () => {
+  it('holds on the first step', () => {
+    expect(holdsV1FirstStepInvariant({ submissionIndex: 0, logMeta: {} })).toBe(
+      true,
+    )
+  })
+
+  it.each([1, 2, 5])(
+    'fails loud on submission index %i, which a single-step workflow cannot produce',
+    (submissionIndex) => {
+      expect(holdsV1FirstStepInvariant({ submissionIndex, logMeta: {} })).toBe(
+        false,
+      )
     },
   )
 })

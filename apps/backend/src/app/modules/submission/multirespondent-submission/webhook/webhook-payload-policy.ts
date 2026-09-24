@@ -45,7 +45,7 @@ export const resolveWebhookContentFormat = ({
 }: Pick<
   WebhookPayloadPolicyInput,
   'webhookType' | 'webhookFormat'
->): WebhookContentFormat =>
+>): FormWebhookFormat =>
   webhookType === 'plumber'
     ? FORMAT_FOR_PLUMBER_WEBHOOKS
     : (webhookFormat ?? FORMAT_FOR_NEW_GENERIC_WEBHOOKS)

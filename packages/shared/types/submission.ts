@@ -100,6 +100,7 @@ export const ApprovalStatus = z.enum([
 
 const SubmittedStepSnapshotTokens = z.object({
   v4: z.string().optional(),
+  v1: z.string().optional(),
 })
 
 export type SubmittedStepSnapshotTokens = z.infer<

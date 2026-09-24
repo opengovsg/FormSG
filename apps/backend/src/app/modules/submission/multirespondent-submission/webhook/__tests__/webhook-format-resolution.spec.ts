@@ -11,6 +11,7 @@ import { SubmissionSnapshot } from '../submission-snapshot.schema'
 import {
   contentFormatToWebhookVersion,
   getWebhookPayloadPolicy,
+  resolveWebhookContentFormat,
   WebhookContentFormat,
 } from '../webhook-payload-policy'
 import { reconstructMrfWebhookData } from '../webhook-reconstruction'
@@ -179,7 +180,10 @@ describe('webhookFormat resolution', () => {
           expect(
             shouldSendMrfWebhook({
               webhookConsumerType,
-              webhookFormat,
+              contentFormat: resolveWebhookContentFormat({
+                webhookType: webhookConsumerType,
+                webhookFormat,
+              }),
               isMrfWebhooksEnabled,
               workflowStepCount: MAX_V1_WORKFLOW_STEP_COUNT, // RATIONALE: Set within the acceptable range for V1 since we are evaluating the flag.
             }),
