@@ -61,6 +61,12 @@ export interface ResponsesResponsesPage {
       }
       submissionSearchbarPlaceholder: string
       searchResponsesPlaceholder: string
+      filterMenu: {
+        dateRange: string
+        columns: string
+        checkAll: string
+        uncheckAll: string
+      }
       toolbar: {
         filter: string
         sort: string
