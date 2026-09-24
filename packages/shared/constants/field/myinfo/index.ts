@@ -60,7 +60,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
-      'The registered name of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      'The registered name of the respondent. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.ShortText,
     previewValue: 'PHUA CHU KANG',
     titleTranslations: [
@@ -76,7 +76,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
-      'The sex of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      'The sex of the respondent. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
     fieldOptions: ['FEMALE', 'MALE', 'UNKNOWN'],
     previewValue: 'MALE',
@@ -93,7 +93,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
-      'The registered date of birth of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      'The registered date of birth of the respondent. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Date,
     previewValue: '1965-02-23',
     titleTranslations: [
@@ -109,7 +109,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
-      'The race of the form-filler. This field is verified by ICA for Singaporean/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      'The race of the respondent. This field is verified by ICA for Singaporean/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
     fieldOptions: myInfoRaces,
     previewValue: 'CHINESE',
@@ -126,7 +126,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
-      'The nationality of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      'The nationality of the respondent. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
     fieldOptions: myInfoNationalities,
     previewValue: 'SINGAPORE CITIZEN',
@@ -143,7 +143,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Ministry of Manpower',
     description:
-      'The birth country of the form-filler. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      'The birth country of the respondent. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
     fieldType: BasicField.Dropdown,
     fieldOptions: myInfoCountries,
     previewValue: 'SINGAPORE',
@@ -159,7 +159,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'personal',
     verified: ['SG', 'PR'],
     source: 'Immigration and Checkpoints Authority',
-    description: 'The residential status of the form-filler.',
+    description: 'The residential status of the respondent.',
     fieldType: BasicField.Dropdown,
     fieldOptions: ['ALIEN', 'CITIZEN', 'NOT APPLICABLE', 'PR', 'UNKNOWN'],
     previewValue: 'CITIZEN',
@@ -175,7 +175,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'personal',
     verified: ['SG', 'PR'],
     source: 'Immigration and Checkpoints Authority',
-    description: 'The dialect group of the form-filler.',
+    description: 'The dialect group of the respondent.',
     fieldType: BasicField.Dropdown,
     fieldOptions: myInfoDialects,
     previewValue: 'HOKKIEN',
@@ -192,7 +192,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR'],
     source: 'Housing Development Board / Urban Redevelopment Authority',
     description:
-      'The type of housing that the form-filler lives in. This information is verified by HDB for public housing, and by URA for private housing.',
+      'The type of housing that the respondent lives in. This information is verified by HDB for public housing, and by URA for private housing.',
     fieldType: BasicField.Dropdown,
     fieldOptions: myInfoHousingTypes,
     previewValue: 'DETACHED HOUSE',
@@ -208,7 +208,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'personal',
     verified: ['SG', 'PR'],
     source: 'Housing Development Board',
-    description: 'The type of HDB flat that the form-filler lives in.',
+    description: 'The type of HDB flat that the respondent lives in.',
     fieldType: BasicField.Dropdown,
     fieldOptions: myInfoHdbTypes,
     previewValue: 'EXECUTIVE FLAT (HDB)',
@@ -224,7 +224,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'personal',
     verified: ['SG'],
     source: 'Immigration & Checkpoints Authority',
-    description: 'The passport number of the form-filler.',
+    description: 'The passport number of the respondent.',
     fieldType: BasicField.ShortText,
     previewValue: 'E1234567X',
     titleTranslations: [
@@ -239,7 +239,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'personal',
     verified: ['SG'],
     source: 'Immigration & Checkpoints Authority',
-    description: 'The passport expiry date of the form-filler.',
+    description: 'The passport expiry date of the respondent.',
     fieldType: BasicField.Date,
     previewValue: '2022-02-23',
     titleTranslations: [
@@ -255,7 +255,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: [],
     source: 'Ministry of Social and Family Development',
     description:
-      'The marital status of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
+      'The marital status of the respondent. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Dropdown,
     fieldOptions: ['SINGLE', 'MARRIED', 'WIDOWED', 'DIVORCED'],
     previewValue: 'MARRIED',
@@ -272,7 +272,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: [],
     source: 'Ministry of Social and Family Development',
     description:
-      'The country of marriage of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
+      'The country of marriage of the respondent. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Dropdown,
     fieldOptions: myInfoCountries,
     previewValue: 'SINGAPORE',
@@ -288,7 +288,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'contact',
     verified: ['SG', 'PR'],
     source: 'Immigration & Checkpoints Authority',
-    description: 'The registered address of the form-filler.',
+    description: 'The registered address of the respondent.',
     fieldType: BasicField.ShortText,
     previewValue: '411 CHUA CHU KANG AVE 3, #12-3, SINGAPORE 238823',
     titleTranslations: [
@@ -304,7 +304,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['F'],
     source: 'Ministry of Manpower',
     description:
-      'The occupation of the form-filler. Verified for foreigners with Singpass only.',
+      'The occupation of the respondent. Verified for foreigners with Singpass only.',
     fieldType: BasicField.Dropdown,
     fieldOptions: myInfoOccupations,
     previewValue: 'MANAGING DIRECTOR/CHIEF EXECUTIVE OFFICER',
@@ -321,7 +321,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['F'],
     source: 'Ministry of Manpower',
     description:
-      "The name of the form-filler's employer. Verified for foreigners with Singpass only.",
+      "The name of the respondent's employer. Verified for foreigners with Singpass only.",
     fieldType: BasicField.ShortText,
     previewValue: 'PCK PTE LTD',
     titleTranslations: [
@@ -336,7 +336,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'personal',
     verified: [],
     source: 'User-provided',
-    description: 'The vehicle plate number of the form-filler.',
+    description: 'The vehicle plate number of the respondent.',
     fieldType: BasicField.ShortText,
     previewValue: 'SHA1234X',
     titleTranslations: [
@@ -352,7 +352,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: [],
     source: 'Ministry of Social and Family Development',
     description:
-      'The marriage certificate number of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
+      'The marriage certificate number of the respondent. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.ShortText,
     previewValue: '123456789012345',
     titleTranslations: [
@@ -368,7 +368,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: [],
     source: 'Ministry of Social and Family Development',
     description:
-      'The date of marriage of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
+      'The date of marriage of the respondent. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Date,
     previewValue: '1999-02-02',
     titleTranslations: [
@@ -384,7 +384,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: [],
     source: 'Ministry of Social and Family Development',
     description:
-      'The date of divorce of the form-filler. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
+      'The date of divorce of the respondent. This field is treated as unverified, as data provided by MSF may be outdated in cases of marriages in a foreign country.',
     fieldType: BasicField.Date,
     previewValue: '2007-01-10',
     titleTranslations: [
@@ -411,7 +411,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'employment_education',
     verified: ['F'],
     source: 'Ministry of Manpower',
-    description: 'The workpass expiry date of the form-filler.',
+    description: 'The workpass expiry date of the respondent.',
     fieldType: BasicField.Date,
     previewValue: '2023-01-23',
     // TODO: Get title translations
@@ -422,7 +422,7 @@ export const types: MyInfoFieldBlock[] = [
     category: 'contact',
     verified: [],
     source: 'User-provided',
-    description: 'The mobile telephone number of the form-filler.',
+    description: 'The mobile telephone number of the respondent.',
     fieldType: BasicField.Mobile,
     previewValue: '98765432',
     titleTranslations: [
@@ -438,7 +438,7 @@ export const types: MyInfoFieldBlock[] = [
     verified: ['SG', 'PR', 'F'],
     source: 'Immigration & Checkpoints Authority / Health Promotion Board',
     description:
-      'The data of the form-filler’s children. Only data of children below 21 years old will be available. Vaccination status is verified by HPB. All other data is verified by ICA.',
+      'The data of the respondent’s children. Only data of children below 21 years old will be available. Vaccination status is verified by HPB. All other data is verified by ICA.',
     fieldType: BasicField.Children,
     previewValue: 'Child 1',
     // TODO: Get title translations
