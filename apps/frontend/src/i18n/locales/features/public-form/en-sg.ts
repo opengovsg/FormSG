@@ -122,6 +122,7 @@ export const enSG: PublicForm = {
     header: {
       estTime:
         '{estTime, plural, =1 {# min} other {# mins}} estimated time to complete',
+      closeAt: 'Responses close at {closeAt}',
     },
     submitButton: {
       loadingText: 'Submitting',

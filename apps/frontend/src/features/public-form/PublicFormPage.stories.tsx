@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 import dedent from 'dedent'
 
-import { ErrorCode } from 'formsg-shared/types'
+import { DateString, ErrorCode } from 'formsg-shared/types'
 import { BasicField } from 'formsg-shared/types/field'
 import {
   FormAuthType,
@@ -141,6 +141,22 @@ export default {
 
 const Template: StoryFn = () => <PublicFormPage />
 export const Default = Template.bind({})
+
+/** 2359 SGT on 31 Dec 2026, stored as UTC. Header should read 11:59 PM (SGT). */
+export const WithScheduledClosure = Template.bind({})
+WithScheduledClosure.parameters = {
+  msw: [
+    ...envHandlers,
+    getPublicFormResponse({
+      delay: 0,
+      overrides: {
+        form: {
+          closeAt: '2026-12-31T15:59:00.000Z' as DateString,
+        },
+      },
+    }),
+  ],
+}
 
 export const WithShortInstructions = Template.bind({})
 WithShortInstructions.parameters = {

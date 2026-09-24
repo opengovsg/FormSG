@@ -87,6 +87,7 @@ export interface PublicForm {
   components: {
     header: {
       estTime: string
+      closeAt: string
     }
     submitButton: {
       loadingText: string

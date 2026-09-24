@@ -103,7 +103,11 @@ export const StartPageView = () => {
     agency: form?.admin.agency,
     colorTheme: form?.startPage.colorTheme,
   })
-  const formHeaderProps = useFormHeader({ startPage, hover: hoverStartPage })
+  const formHeaderProps = useFormHeader({
+    startPage,
+    closeAt: form?.closeAt,
+    hover: hoverStartPage,
+  })
 
   const headerRef = useRef<HTMLDivElement | null>(null)
   const instructionsRef = useRef<HTMLDivElement | null>(null)
