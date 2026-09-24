@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.31.0](https://github.com/opengovsg/formsg/compare/v9.30.2...v9.31.0) (2026-09-24)
+
+
+### Features
+
+* **mrf:** add the webhookFormat setting (#9994) ([#9994](https://github.com/opengovsg/formsg/commit/6dff23ef62b65a505fd5e7dddc263682184b21dd))
+* **mrf:** deliver V1 content to a generic single-step MRF form (#9975) (#10018) ([#9975](https://github.com/opengovsg/formsg/commit/d7460ad0a75f06cf4cde52c9e4b197c94adbfbad))
+* **mrf:** gate the V1 webhook on at-most-one workflow step (#9975) (#10073) ([#9975](https://github.com/opengovsg/formsg/commit/72495e1630042b72165b00b23dad919ae60d598b))
+* **mrf:** produce the storage-shaped V1 copy and its payload type (#9975) (#10075) ([#9975](https://github.com/opengovsg/formsg/commit/cb969e81ba1bdb12b84c0aa5c42709481f4a2daa))
+* **mrf:** reproduce storage mode's [Myinfo] question prefix (#9975) (#10074) ([#9975](https://github.com/opengovsg/formsg/commit/0c91b8ff9f3e9872c1c046581954ca59e228cf34))
+
 ## [9.30.2](https://github.com/opengovsg/formsg/compare/v9.30.1...v9.30.2) (2026-09-23)
 
 
