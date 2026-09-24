@@ -8,6 +8,7 @@ import {
   useGlobalFilter,
   usePagination,
   useResizeColumns,
+  useSortBy,
   useTable,
 } from 'react-table'
 import {
@@ -116,6 +117,11 @@ function NotApprovedBadge() {
   )
 }
 
+const byServerOrder = (
+  rowA: Row<ResponseColumnData>,
+  rowB: Row<ResponseColumnData>,
+) => rowB.index - rowA.index
+
 const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
@@ -134,6 +140,7 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: 'Timestamp',
     accessor: 'submissionTime',
+    sortType: byServerOrder,
     width: 250,
     minWidth: 250,
     disableResizing: true,
@@ -266,6 +273,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
     accessor: 'submissionTime',
+    sortType: byServerOrder,
     // TODO(FRM-1933): using submissionTime as we are undecided on showing first submission vs lastSubmittedAt
     // accessor: ({ mrf }) =>
     //   mrf?.lastSubmittedAt
@@ -307,6 +315,7 @@ const NO_WORKFLOW_PREFIX_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
     accessor: 'submissionTime',
+    sortType: byServerOrder,
     width: 250,
     minWidth: 250,
     disableResizing: true,
@@ -357,6 +366,8 @@ export const ResponsesTable = () => {
     renderLimit,
     setRenderedRowCount,
     isTableLoading,
+    sortColumnId,
+    sortDirection,
   } = useUnlockedResponses()
   const isDelightfulDashboard = useIsDelightfulDashboard()
 
@@ -484,6 +495,7 @@ export const ResponsesTable = () => {
     gotoPage,
     setHiddenColumns,
     setGlobalFilter,
+    setSortBy,
     visibleColumns,
   } = useTable<ResponseColumnData>(
     {
@@ -493,6 +505,7 @@ export const ResponsesTable = () => {
       // reset would undo the admin's column choices every few hundred ms.
       autoResetHiddenColumns: false,
       autoResetGlobalFilter: false,
+      autoResetSortBy: false,
       globalFilter,
       // Server side pagination.
       manualPagination: true,
@@ -503,6 +516,7 @@ export const ResponsesTable = () => {
       },
     },
     useGlobalFilter,
+    useSortBy,
     usePagination,
     useResizeColumns,
     useFlexLayout,
@@ -522,6 +536,15 @@ export const ResponsesTable = () => {
     if (!isDelightfulDashboard) return
     setGlobalFilter(searchText)
   }, [isDelightfulDashboard, searchText, setGlobalFilter])
+
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setSortBy(
+      sortColumnId
+        ? [{ id: sortColumnId, desc: sortDirection === 'desc' }]
+        : [],
+    )
+  }, [isDelightfulDashboard, setSortBy, sortColumnId, sortDirection])
 
   const visibleRows = useMemo(
     () => (isInfiniteScroll ? rows.slice(0, renderLimit) : page),
