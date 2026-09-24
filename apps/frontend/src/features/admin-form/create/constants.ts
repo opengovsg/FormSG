@@ -430,12 +430,12 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
   // The following child field's icons will never be used.
   // So they can be any placeholder.
   [MyInfoAttribute.ChildBirthCertNo]: {
-    label: 'Birth Certificate Number',
+    label: 'Birth certificate number',
     icon: BiDummyIcon,
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildDateOfBirth]: {
-    label: 'Date of Birth',
+    label: 'Date of birth',
     icon: BiDummyIcon,
     isSubmitted: true,
   },
@@ -445,7 +445,7 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildVaxxStatus]: {
-    label: 'Vaccination Requirements',
+    label: 'Vaccination status',
     icon: BiDummyIcon,
     isSubmitted: true,
   },
@@ -460,7 +460,7 @@ export const MYINFO_FIELD_TO_DRAWER_META: {
     isSubmitted: true,
   },
   [MyInfoAttribute.ChildSecondaryRace]: {
-    label: 'Secondary Race',
+    label: 'Secondary race',
     icon: BiDummyIcon,
     isSubmitted: true,
   },
