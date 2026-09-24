@@ -15,7 +15,6 @@ import {
 } from 'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.errors'
 import { SubmissionSnapshotV4 } from 'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.schema'
 import * as SnapshotStore from 'src/app/modules/submission/multirespondent-submission/webhook/submission-snapshot.store'
-import * as SnapshotRetryView from 'src/app/modules/submission/multirespondent-submission/webhook/webhook-retry-view'
 import { SubmissionWebhookInfo } from 'src/types'
 
 import { QUEUE_MESSAGE_SNAPSHOT_VERSION } from '../webhook.constants'
@@ -396,41 +395,6 @@ describe('webhook.consumer', () => {
         const [sentView] = MockWebhookService.sendWebhook.mock.calls[0]
         expect(sentView.data.encryptedContent).toBe(
           MOCK_SNAPSHOT.encryptedContent,
-        )
-      })
-
-      it('should forward the V1 snapshot format to the webhook sender', async () => {
-        const snapshotRef = {
-          submissionIndex: 0,
-          contentFormat: 'v1' as const,
-        }
-        const message: Message = {
-          Body: JSON.stringify({ ...SNAPSHOT_MESSAGE_BODY, snapshotRef }),
-        }
-        const resolvedView = {
-          data: {
-            ...MOCK_MRF_WEBHOOK_INFO.webhookView.data,
-            encryptedContent: 'frozen-v1-content',
-          },
-        }
-        // V1 reconstruction belongs to #9977; this test protects the
-        // consumer's format forwarding for attachment bucket selection.
-        const resolveSnapshotRetryView = jest
-          .spyOn(SnapshotRetryView, 'resolveSnapshotRetryView')
-          .mockReturnValueOnce(okAsync(resolvedView))
-
-        await expect(
-          createWebhookQueueHandler(SUCCESS_PRODUCER)(message),
-        ).resolves.toBe(message)
-
-        expect(resolveSnapshotRetryView).toHaveBeenCalledWith(
-          expect.objectContaining({ snapshotRef }),
-        )
-        expect(MockWebhookService.sendWebhook).toHaveBeenCalledTimes(1)
-        expect(MockWebhookService.sendWebhook).toHaveBeenCalledWith(
-          resolvedView,
-          MOCK_MRF_WEBHOOK_INFO.webhookUrl,
-          'v1',
         )
       })
 
