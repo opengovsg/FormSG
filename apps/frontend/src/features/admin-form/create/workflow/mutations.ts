@@ -100,7 +100,7 @@ export const useWorkflowMutations = () => {
         return { ...prev, workflow: updatedWorkflow }
       })
       toast({
-        description: 'Your workflow was successfully deleted.',
+        description: 'The workflow was successfully deleted.',
       })
     },
     onError: handleError,
