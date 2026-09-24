@@ -270,7 +270,12 @@ export type IEncryptSubmissionModel = Model<IEncryptedSubmissionSchema> &
      */
     findAllMetadataByFormId(
       formId: string,
-      params?: { page?: number; pageSize?: number },
+      params?: {
+        page?: number
+        pageSize?: number
+        startDate?: string
+        endDate?: string
+      },
     ): Promise<{
       metadata: SubmissionMetadata[]
       count: number
@@ -329,7 +334,12 @@ export type IMultirespondentSubmissionModel =
        */
       findAllMetadataByFormId(
         formId: string,
-        params?: { page?: number; pageSize?: number },
+        params?: {
+          page?: number
+          pageSize?: number
+          startDate?: string
+          endDate?: string
+        },
       ): Promise<{
         metadata: SubmissionMetadata[]
         count: number

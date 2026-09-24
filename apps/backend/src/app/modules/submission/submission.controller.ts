@@ -74,7 +74,7 @@ export const getMetadata: ControllerHandler<
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId } = req.params
-  const { page, pageSize, submissionId } = req.query
+  const { page, pageSize, submissionId, startDate, endDate } = req.query
 
   const logMeta = {
     action: 'handleGetMetadata',
@@ -119,6 +119,7 @@ export const getMetadata: ControllerHandler<
           formId,
           page,
           pageSize,
+          { startDate, endDate },
         )
       })
       .map((metadataList) => {
@@ -158,6 +159,8 @@ export const handleGetMetadata = [
         .min(1)
         .max(MAX_SUBMISSION_METADATA_PAGE_SIZE)
         .optional(),
+      startDate: Joi.date().raw().optional(),
+      endDate: Joi.date().raw().greater(Joi.ref('startDate')).optional(),
     },
   }),
   getMetadata,

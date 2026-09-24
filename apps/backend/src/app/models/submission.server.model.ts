@@ -408,18 +408,23 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
   {
     page = 1,
     pageSize = 10,
+    startDate,
+    endDate,
   }: {
     page?: number
     pageSize?: number
+    startDate?: string
+    endDate?: string
   } = {},
 ): Promise<{
   metadata: SubmissionMetadata[]
   count: number
 }> {
   const numToSkip = (page - 1) * pageSize
+  const dateQuery = createQueryWithDateParam(startDate, endDate)
   // return documents within the page
   const pageResults: Promise<MetadataAggregateResult[]> = this.aggregate([
-    { $match: { form: new mongoose.Types.ObjectId(formId) } },
+    { $match: { form: new mongoose.Types.ObjectId(formId), ...dateQuery } },
     { $sort: { created: -1 } },
     { $skip: numToSkip },
     { $limit: pageSize },
@@ -447,6 +452,7 @@ EncryptSubmissionSchema.statics.findAllMetadataByFormId = function (
     this.countDocuments({
       form: new mongoose.Types.ObjectId(formId),
       submissionType: SubmissionType.Encrypt,
+      ...dateQuery,
     }).exec() ?? 0
 
   return Promise.all([pageResults, count]).then(([results, count]) => {
@@ -780,19 +786,24 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
   {
     page = 1,
     pageSize = 10,
+    startDate,
+    endDate,
   }: {
     page?: number
     pageSize?: number
+    startDate?: string
+    endDate?: string
   } = {},
 ): Promise<{
   metadata: SubmissionMetadata[]
   count: number
 }> {
   const numToSkip = (page - 1) * pageSize
+  const dateQuery = createQueryWithDateParam(startDate, endDate)
   // return documents within the page
   const pageResults: Promise<MultiRespondentAggregateResult[]> = this.aggregate(
     [
-      { $match: { form: new mongoose.Types.ObjectId(formId) } },
+      { $match: { form: new mongoose.Types.ObjectId(formId), ...dateQuery } },
       { $sort: { created: -1 } },
       { $skip: numToSkip },
       { $limit: pageSize },
@@ -812,6 +823,7 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
     this.countDocuments({
       form: new mongoose.Types.ObjectId(formId),
       submissionType: SubmissionType.Multirespondent,
+      ...dateQuery,
     }).exec() ?? 0
 
   return Promise.all([pageResults, count]).then(([results, count]) => {

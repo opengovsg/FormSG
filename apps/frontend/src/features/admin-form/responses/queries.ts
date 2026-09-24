@@ -46,10 +46,14 @@ export const adminFormResponsesKeys = {
       ...builtParams,
     ] as const
   },
-  allMetadata: (id: string) =>
-    [...adminFormResponsesKeys.id(id), 'metadata', 'all'] as const,
-  decryptedResponses: (id: string) =>
-    [...adminFormResponsesKeys.id(id), 'decrypted-responses'] as const,
+  allMetadata: (id: string, dates: string[]) =>
+    [...adminFormResponsesKeys.id(id), 'metadata', 'all', ...dates] as const,
+  decryptedResponses: (id: string, dates: string[]) =>
+    [
+      ...adminFormResponsesKeys.id(id),
+      'decrypted-responses',
+      ...dates,
+    ] as const,
   infiniteMetadata: (id: string) =>
     [...adminFormResponsesKeys.id(id), 'metadata', 'infinite'] as const,
   individual: (id: string, submissionId: string) =>
@@ -135,14 +139,16 @@ export const useAllFormResponses = ({
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const { secretKey } = useStorageResponsesContext()
+  const { secretKey, dateRange } = useStorageResponsesContext()
+  const [startDate, endDate] = dateRange
 
   return useQuery(
-    adminFormResponsesKeys.allMetadata(formId),
+    adminFormResponsesKeys.allMetadata(formId, dateRange),
     () =>
       getFormSubmissionsMetadata(formId, {
         page: 1,
         pageSize: TABLE_DECRYPTION_LIMIT,
+        ...(startDate && endDate ? { startDate, endDate } : {}),
       }),
     {
       staleTime: 0,
@@ -194,9 +200,10 @@ export const useDecryptedResponsesBySubmissionId = ({
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const { secretKey } = useStorageResponsesContext()
+  const { secretKey, dateRange } = useStorageResponsesContext()
+  const [startDate, endDate] = dateRange
   const queryClient = useQueryClient()
-  const queryKey = adminFormResponsesKeys.decryptedResponses(formId)
+  const queryKey = adminFormResponsesKeys.decryptedResponses(formId, dateRange)
 
   return useQuery(
     queryKey,
@@ -211,8 +218,8 @@ export const useDecryptedResponsesBySubmissionId = ({
       await getAllDecryptedSubmission({
         formId,
         secretKey: secretKey as string,
-        startDate: '',
-        endDate: '',
+        startDate: startDate ?? '',
+        endDate: endDate ?? '',
         downloadAttachments: false,
         isSortByLatest: true,
         limit: TABLE_DECRYPTION_LIMIT,
