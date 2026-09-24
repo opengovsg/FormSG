@@ -234,7 +234,8 @@ export const enSG: Fields = {
     verifiedFor: 'Verified for',
     singaporeans: 'Singaporeans',
     permanentResidents: 'Permanent Residents',
-    foreignersWithSingpass: 'Foreigners with <link>Singpass</link>',
+    foreignersWithSingpass:
+      'Foreigners with <singpassLink>Singpass</singpassLink>',
     fieldDetails: 'Field details',
     children: {
       collectChildData: 'Collect the following child data',
