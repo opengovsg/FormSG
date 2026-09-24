@@ -13,7 +13,7 @@ export const enSG = {
     },
     ariaLabel: 'Toggle form status',
     incompleteWorkflowModal: {
-      title: 'Finish building your workflow before publishing your form.',
+      title: 'Finish building your workflow before opening your form.',
       description: "These steps aren't finished yet:",
       confirm: 'Go to workflow',
       cancel: 'Cancel',

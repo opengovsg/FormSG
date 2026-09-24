@@ -23,11 +23,16 @@ export const enSG: Workflow = {
     fieldsToFill: 'Fields to fill',
     clickToEdit: 'Click to edit',
   },
+  staticRespondent: {
+    invalidEmailsRedesign:
+      "Enter valid emails separated by commas, like me@example.com. Invalid emails won't be saved.",
+  },
   dynamicRespondent: {
     title: 'An Email field from the form',
     required: 'Please select a field.',
-    mustBeEmail: 'Field is not an email field',
-    mustBeEmailRedesign: 'Choose an email field.',
+    requiredRedesign: 'Select a field.',
+    mustBeEmail: 'Field is not an Email field',
+    mustBeEmailRedesign: 'Choose an Email field.',
     select: 'Select a field',
   },
   conditionalRouting: {
@@ -36,8 +41,9 @@ export const enSG: Workflow = {
     addEmailsToOptionsRedesign: 'Assign emails to options',
     validation: {
       noField: 'Please select a field.',
-      notDropdown: 'Field is not an dropdown field',
-      notDropdownRedesign: 'Choose a dropdown field.',
+      noFieldRedesign: 'Select a field.',
+      notDropdown: 'Field is not a Dropdown field',
+      notDropdownRedesign: 'Choose a Dropdown field.',
     },
     modals: {
       deleteStep: {
@@ -51,7 +57,7 @@ export const enSG: Workflow = {
         title: 'Delete entire workflow',
         description: [
           'Responses already started will continue using the current workflow.',
-          'When the form does not have a workflow, anyone with the link will be able to fill in every field.',
+          'If the form does not have a workflow, anyone with the link will be able to fill in every field.',
         ],
         confirm: 'Delete workflow',
         cancel: 'Cancel',
@@ -60,7 +66,7 @@ export const enSG: Workflow = {
         title: 'Deleting the first step removes the entire workflow',
         description: [
           'Responses already started will continue using the current workflow.',
-          'When the form does not have a workflow, anyone with the link will be able to fill in every field.',
+          'If the form does not have a workflow, anyone with the link will be able to fill in every field.',
         ],
         confirm: 'Delete workflow',
         cancel: 'Cancel',
@@ -230,7 +236,7 @@ export const enSG: Workflow = {
   guidedHints: {
     stepName: "Name this step, or keep it as 'Step {stepNumber}'.",
     respondent:
-      'Pick who fills in this step. You can always change this later.',
+      'Select who fills in this step. You can always change this later.',
     approvals:
       'Choose what they do in this step. Most steps just need people to fill in fields.',
   },
@@ -238,10 +244,10 @@ export const enSG: Workflow = {
     modal: {
       title: 'Skip guided setup?',
       bodyWithSteps:
-        "You'll set up your workflow independently. Any steps you've created so far will be kept.",
+        "You'll set up your workflow yourself. Any steps you've created so far will be kept. You can turn guided setup back on at any time.",
       bodyWithoutSteps:
-        "You'll set up your workflow yourself. You can toggle this back at anytime.",
-      confirm: 'Skip guidance',
+        "You'll set up your workflow yourself. You can turn guided setup back on at any time.",
+      confirm: 'Skip guided setup',
       cancel: 'Cancel',
     },
   },
@@ -253,9 +259,9 @@ export const enSG: Workflow = {
     cta: "Let's go",
   },
   intro: {
-    header: 'Workflows split your form into steps',
+    header: 'Start creating a workflow for your form',
     subheader:
-      'Send each step to a different person in sequence. Each person only fills in their own part.',
+      'Split your form into steps and send each one to a different person in sequence. Everyone only fills in their own part.',
     guided: 'Start with guided setup',
     manual: 'Set up manually',
   },

@@ -11,7 +11,7 @@ import {
 
 const { NoWorkflowRedesignOn } = composeStories(pageStories)
 
-const INTRO_HEADER = /workflows split your form into steps/i
+const INTRO_HEADER = /start creating a workflow for your form/i
 
 describe('the intro card illustration on hover', () => {
   const mountIntro = async () => {

@@ -76,7 +76,9 @@ export const DynamicRespondentOption = ({
                 required: isSavePermissive
                   ? false
                   : t(
-                      'features.adminForm.sidebar.workflow.dynamicRespondent.required',
+                      isRedesign
+                        ? 'features.adminForm.sidebar.workflow.dynamicRespondent.requiredRedesign'
+                        : 'features.adminForm.sidebar.workflow.dynamicRespondent.required',
                     ),
                 validate: (selectedValue) => {
                   if (!selectedValue) return true

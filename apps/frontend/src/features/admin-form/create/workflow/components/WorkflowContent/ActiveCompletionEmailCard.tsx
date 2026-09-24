@@ -51,7 +51,8 @@ export const ActiveCompletionEmailCard = ({
   isDisabled,
 }: ActiveCompletionEmailCardProps): JSX.Element => {
   const { t } = useTranslation()
-  const { cardRadius } = useWorkflowSurfaces()
+  const { cardRadius, activeCardBg, activeCardBorderWidth, activeCardShadow } =
+    useWorkflowSurfaces()
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
   const pendingSwitchTo = useAdminWorkflowStore(pendingSwitchToSelector)
   const completeSave = useAdminWorkflowStore(completeSaveSelector)
@@ -216,10 +217,10 @@ export const ActiveCompletionEmailCard = ({
       pos="relative"
       zIndex={1}
       borderRadius={cardRadius}
-      bg="white"
-      border="1px solid"
+      bg={activeCardBg}
+      border={`${activeCardBorderWidth} solid`}
       borderColor="primary.500"
-      boxShadow="0 0 0 1px var(--chakra-colors-primary-500)"
+      boxShadow={activeCardShadow}
       transitionProperty="common"
       transitionDuration="normal"
     >

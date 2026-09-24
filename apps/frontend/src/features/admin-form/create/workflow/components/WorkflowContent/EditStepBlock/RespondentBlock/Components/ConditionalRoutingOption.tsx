@@ -434,7 +434,9 @@ export const ConditionalRoutingOption = ({
                   required: isSavePermissive
                     ? false
                     : t(
-                        'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
+                        isRedesign
+                          ? 'features.adminForm.sidebar.workflow.conditionalRouting.validation.noFieldRedesign'
+                          : 'features.adminForm.sidebar.workflow.conditionalRouting.validation.noField',
                       ),
                   validate: (selectedValue) => {
                     if (!selectedValue) return true

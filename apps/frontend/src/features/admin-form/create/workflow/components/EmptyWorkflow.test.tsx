@@ -16,8 +16,8 @@ import { SPOTLIGHT_TEST_ID } from './Spotlight'
 
 const { NoWorkflow, NoWorkflowRedesignOn } = composeStories(pageStories)
 
-const NEW_HEADER = /workflows split your form into steps/i
-const NEW_SUBHEADER = /send each step to a different person/i
+const NEW_HEADER = /start creating a workflow for your form/i
+const NEW_SUBHEADER = /split your form into steps and send each one/i
 const OLD_HEADER = /create a workflow to collect responses/i
 
 const GUIDED = { name: /start with guided setup/i }
