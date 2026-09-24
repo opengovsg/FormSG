@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   chakra,
   forwardRef,
@@ -5,7 +6,8 @@ import {
   Text,
   VisuallyHidden,
 } from '@chakra-ui/react'
-import { isSameDay } from 'date-fns'
+import { addDays, isSameDay, startOfWeek } from 'date-fns'
+import { DateObj } from 'dayzed'
 
 import { useCalendar } from './CalendarContext'
 import { CalendarHeader } from './CalendarHeader'
@@ -13,15 +15,23 @@ import { useCalendarStyles } from './CalendarStyleProvider'
 import { DayOfMonth } from './DayOfMonth'
 import { DAY_NAMES, generateClassNameForDate, MONTH_NAMES } from './utils'
 
+// Any month spans at most 6 week-rows; padding to this keeps the calendar height stable.
+const MAX_WEEKS_IN_MONTH = 6
+
 export const CalendarPanel = forwardRef<object, 'button'>(
   (_props, initialFocusRef): JSX.Element => {
     const styles = useCalendarStyles()
     const {
       classNameId,
       dateToFocus,
+      selectedDates,
       onMouseLeaveCalendar,
       renderProps: { calendars, getDateProps },
     } = useCalendar()
+
+    // Pinned to the first render so "today" doesn't shift if the picker is
+    // left open past midnight.
+    const today = useMemo(() => new Date(), [])
 
     return (
       <Stack
@@ -90,6 +100,52 @@ export const CalendarPanel = forwardRef<object, 'button'>(
                     </chakra.tr>
                   )
                 })}
+                {/* Skip for range picker — it already shows next month alongside. */}
+                {Array.from(
+                  {
+                    length:
+                      calendars.length === 1
+                        ? MAX_WEEKS_IN_MONTH - calendar.weeks.length
+                        : 0,
+                  },
+                  (_filler, windex) => (
+                    <chakra.tr key={`filler-${windex}`}>
+                      {DAY_NAMES.map((_dayName, index) => {
+                        const date = addDays(
+                          startOfWeek(
+                            new Date(calendar.year, calendar.month, 1),
+                          ),
+                          (calendar.weeks.length + windex) * 7 + index,
+                        )
+                        const dateObj: DateObj = {
+                          date,
+                          selectable: true,
+                          selected:
+                            selectedDates instanceof Date &&
+                            isSameDay(date, selectedDates),
+                          today: isSameDay(date, today),
+                          prevMonth: false,
+                          nextMonth: true,
+                        }
+                        return (
+                          <chakra.td
+                            key={`filler-${calendar.month}${calendar.year}${windex}${index}`}
+                          >
+                            <DayOfMonth
+                              {...getDateProps({ dateObj })}
+                              dateObj={dateObj}
+                              isOutsideCurrMonth
+                              className={generateClassNameForDate(
+                                classNameId,
+                                date,
+                              )}
+                            />
+                          </chakra.td>
+                        )
+                      })}
+                    </chakra.tr>
+                  ),
+                )}
               </chakra.tbody>
             </chakra.table>
             <VisuallyHidden aria-live="polite">
