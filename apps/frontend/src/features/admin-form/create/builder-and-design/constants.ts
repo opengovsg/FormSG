@@ -1,4 +1,7 @@
-import { SELECTABLE_MYINFO_CHILD_ATTRIBUTES } from 'formsg-shared/constants/field/myinfo'
+import {
+  MYINFO_ATTRIBUTE_MAP,
+  SELECTABLE_MYINFO_CHILD_ATTRIBUTES,
+} from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
   ChildrenCompoundFieldBase,
@@ -12,8 +15,6 @@ import {
 import { FormResponseMode } from 'formsg-shared/types/form'
 
 import { MyInfoFieldMeta } from '~features/myinfo/types'
-
-import { MYINFO_FIELD_TO_DRAWER_META } from '../constants'
 
 export const BASIC_FIELDS_ORDERED = [
   BasicField.ShortText,
@@ -140,7 +141,8 @@ export enum FieldListTabIndex {
   Payments,
 }
 
-// Name is always collected, so it is not offered as a choice.
+// Name is always collected, so it is not offered as a choice. Labels reuse the
+// sub-field descriptions shown to respondents so both pages read the same.
 export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
   value: MyInfoChildAttributes
   label: string
@@ -149,12 +151,12 @@ export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
 ).map((value) => {
   return {
     value,
-    label: MYINFO_FIELD_TO_DRAWER_META[value].label,
+    label: MYINFO_ATTRIBUTE_MAP[value].description,
   }
 })
 
 /**
- * Child sub-field options offered for a given form. Child type distinguishes
+ * Child sub-field options offered for a given form. Record type distinguishes
  * the respondent's own children from sponsored children, which are only
  * fetched for Multirespondent forms while the mrf-children flag is on, so it
  * is only offered there.

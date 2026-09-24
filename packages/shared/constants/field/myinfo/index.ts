@@ -45,7 +45,7 @@ export type MyInfoFieldBlock = {
 }
 
 /**
- * Display value of a child's scope, shown in the "Child type" sub-field.
+ * Display value of a child's scope, shown in the "Record type" sub-field.
  */
 export const MYINFO_CHILD_TYPE_LABELS: Record<MyInfoChildrenScope, string> = {
   [MyInfoChildrenScope.Local]: 'LOCAL',
@@ -526,11 +526,11 @@ export const types: MyInfoFieldBlock[] = [
   },
   {
     name: MyInfoAttribute.ChildType,
-    value: 'Child type',
+    value: "Child's record type",
     category: 'children',
     verified: [],
     source: 'Immigration & Checkpoints Authority',
-    description: 'Child type',
+    description: 'Record type',
     fieldType: BasicField.Dropdown,
     fieldOptions: Object.values(MYINFO_CHILD_TYPE_LABELS),
     previewValue: MYINFO_CHILD_TYPE_LABELS[MyInfoChildrenScope.Local],
