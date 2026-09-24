@@ -5,6 +5,7 @@ import {
   MyInfoChildBirthRecordBelow21,
   MyInfoScope,
   MyInfoSource,
+  MyInfoSponsoredChildFull,
 } from '@opengovsg/myinfo-gov-client'
 import {
   MyInfoAttribute as InternalAttr,
@@ -175,6 +176,11 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
   }
 }
 
+export type InternalAttrListToScopesOptions = {
+  /** Also request sponsored-children scopes. See shouldFetchSponsoredChildren. */
+  includeSponsoredChildren?: boolean
+}
+
 /**
  * Converts an array of internal FormSG attributes to an array of scopes
  * to request from MyInfo. Always appends UinFin to the array so that
@@ -183,9 +189,16 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
  */
 export const internalAttrListToScopes = (
   attrs: InternalAttr[],
+  { includeSponsoredChildren = false }: InternalAttrListToScopesOptions = {},
 ): MyInfoScope[] => {
   // Always ask for consent for UinFin, even though it is not a form field
   const scopes = attrs.map(internalAttrToScope).concat(ExternalAttr.UinFin)
+  if (includeSponsoredChildren) {
+    for (const attr of attrs) {
+      const sponsoredScope = internalAttrToSponsoredChildScope(attr)
+      if (sponsoredScope) scopes.push(sponsoredScope)
+    }
+  }
   // Only for MockPass compatbility. For production we don't want to
   // ask for the most general Children scope.
   if (
@@ -195,12 +208,15 @@ export const internalAttrListToScopes = (
     for (const attr of attrs) {
       if (isMyInfoChildrenBirthRecords(attr)) {
         scopes.push(ExternalAttr.ChildrenBirthRecords)
+        if (includeSponsoredChildren) {
+          scopes.push(ExternalAttr.SponsoredChildrenRecords)
+        }
         break
       }
     }
   }
 
-  return scopes
+  return Array.from(new Set(scopes))
 }
 
 /**
@@ -247,6 +263,70 @@ const requirementToVaccinationEnum = (
   return isOneM3DFulfilled
     ? MyInfoChildVaxxStatus.ONEM3D_FULFILLED
     : MyInfoChildVaxxStatus.ONEM3D_NOT_FULFILLED
+}
+
+// The client typings omit `vaccinationrequirements`, which MyInfo does return
+// for sponsored children.
+type MyInfoSponsoredChildRecord = MyInfoSponsoredChildFull & {
+  vaccinationrequirements?: MyInfoChildVaccinationRequirement[]
+}
+
+/**
+ * Child sub-fields that sponsored children records carry: the MyInfo key
+ * (used for the scope) and how to read it. Sponsored children have no birth
+ * certificate number, so their NRIC fills that column instead.
+ */
+const SPONSORED_CHILD_COLUMNS: Partial<
+  Record<
+    MyInfoChildAttributes,
+    {
+      key: keyof MyInfoSponsoredChildRecord
+      read: (record: MyInfoSponsoredChildRecord) => string
+    }
+  >
+> = {
+  [MyInfoChildAttributes.ChildName]: {
+    key: 'name',
+    read: (c) => c.name?.value ?? '',
+  },
+  [MyInfoChildAttributes.ChildBirthCertNo]: {
+    key: 'nric',
+    read: (c) => c.nric?.value ?? '',
+  },
+  [MyInfoChildAttributes.ChildDateOfBirth]: {
+    key: 'dob',
+    read: (c) => c.dob?.value ?? '',
+  },
+  [MyInfoChildAttributes.ChildVaxxStatus]: {
+    key: 'vaccinationrequirements',
+    read: (c) => requirementToVaccinationEnum(c.vaccinationrequirements),
+  },
+  [MyInfoChildAttributes.ChildGender]: {
+    key: 'sex',
+    read: (c) => c.sex?.desc ?? '',
+  },
+  [MyInfoChildAttributes.ChildRace]: {
+    key: 'race',
+    read: (c) => c.race?.desc ?? '',
+  },
+  [MyInfoChildAttributes.ChildSecondaryRace]: {
+    key: 'secondaryrace',
+    read: (c) => c.secondaryrace?.desc ?? '',
+  },
+}
+
+/**
+ * Sponsored-children scope for a child attribute, or undefined when the
+ * attribute has no sponsored counterpart.
+ */
+export const internalAttrToSponsoredChildScope = (
+  attr: InternalAttr,
+): MyInfoScope | undefined => {
+  const column =
+    SPONSORED_CHILD_COLUMNS[attr as unknown as MyInfoChildAttributes]
+  if (!column) return undefined
+  // Cast: the client's scope union lacks `.vaccinationrequirements`.
+  return `${ExternalAttr.SponsoredChildrenRecords}.${column.key}` as unknown as MyInfoScope
 }
 
 const MyInfoChildAttributesSorted = Object.values(MyInfoChildAttributes).sort()
@@ -313,10 +393,31 @@ export class MyInfoData implements MyInfoDataTransformer<
     }
   }
 
+  /**
+   * Accesses a child sub-field from the sponsored children records, one value
+   * per record. Blank when the sub-field has no sponsored counterpart so the
+   * column stays index-aligned.
+   */
+  #accessSponsoredChildrenAttrFromMyInfo(
+    childAttr: MyInfoChildAttributes,
+  ): string[] {
+    const records = (this.#personData.sponsoredchildrenrecords ??
+      []) as MyInfoSponsoredChildRecord[]
+    const column = SPONSORED_CHILD_COLUMNS[childAttr]
+    return records.map((c) => (column ? column.read(c) : ''))
+  }
+
+  /**
+   * Merges birth-record children and sponsored children into one
+   * column-oriented MyInfoChildData, birth records first. `scopes` labels
+   * each index with the data item it came from.
+   */
   getChildrenBirthRecords(
     allMyInfoAttrs: InternalAttr[],
   ): MyInfoChildData | undefined {
-    if (this.#personData?.childrenbirthrecords === undefined) {
+    const birthRecords = this.#personData?.childrenbirthrecords
+    const sponsoredRecords = this.#personData?.sponsoredchildrenrecords
+    if (birthRecords === undefined && sponsoredRecords === undefined) {
       return
     }
     const myInfoAttrsSet = new Set(allMyInfoAttrs)
@@ -325,16 +426,19 @@ export class MyInfoData implements MyInfoDataTransformer<
       MyInfoChildAttributesSorted
         // Filter out records that aren't requested by our scope.
         .filter((attr) => myInfoAttrsSet.has(attr as unknown as InternalAttr))
-        .map((attr) => [attr, this.#accessChildrenAttrFromMyInfo(attr)]),
+        .map((attr) => [
+          attr,
+          this.#accessChildrenAttrFromMyInfo(attr).concat(
+            this.#accessSponsoredChildrenAttrFromMyInfo(attr),
+          ),
+        ]),
     )
     return {
       ...result,
-      // Every record here came from the local childrenbirthrecords data item
-      // (the only children scope FormSG requests). When the sponsored scope is
-      // fetched too, label each record by the data item it came from.
-      scopes: this.#personData.childrenbirthrecords.map(
-        () => MyInfoChildrenScope.Local,
-      ),
+      scopes: [
+        ...(birthRecords ?? []).map(() => MyInfoChildrenScope.Local),
+        ...(sponsoredRecords ?? []).map(() => MyInfoChildrenScope.Sponsored),
+      ],
     }
   }
 

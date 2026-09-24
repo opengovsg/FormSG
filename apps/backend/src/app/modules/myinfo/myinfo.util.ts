@@ -13,6 +13,7 @@ import {
   BasicField,
   ChildrenCompoundFieldBase,
   FormAuthType,
+  FormResponseMode,
   MyInfoAttribute as InternalAttr,
   MyInfoAttribute,
   MyInfoChildAttributes,
@@ -461,6 +462,16 @@ export const isMyInfoRelayState = (obj: unknown): obj is MyInfoRelayState =>
 
 const MyInfoChildAttributeSet = new Set(Object.values(MyInfoChildAttributes))
 
+/**
+ * Whether a form may fetch sponsored children alongside birth records.
+ * Only Multirespondent forms submit v4 responses, which record a per-child
+ * `type` (local or sponsored). v1 responses have no such slot, so keeping
+ * them local-only lets a later v1-to-v4 migration assume `local`.
+ */
+export const shouldFetchSponsoredChildren = (form: {
+  responseMode: FormResponseMode
+}): boolean => form.responseMode === FormResponseMode.Multirespondent
+
 export const isMyInfoChildrenBirthRecords = (
   attr: InternalAttr | undefined,
 ): boolean => {
@@ -505,12 +516,53 @@ export const getMyInfoChildHashKey = (
 }
 
 /**
+ * Finds the prefill hashes for every MyInfo child sharing the submitted name,
+ * grouped by the child's index in the MyInfo data and keyed by sub-field. The
+ * submitted child's position is unrelated to that index, so matching by name
+ * is what lets any MyInfo child verify. Grouping by record is what stops a
+ * submission from mixing sub-field values across two same-named children.
+ */
+const findMyInfoChildHashesByRecord = (
+  hashes: IHashes,
+  fieldId: string,
+  childName: string,
+): Map<number, Partial<Record<MyInfoChildAttributes, string>>> => {
+  const prefix = `${MyInfoAttribute.ChildrenBirthRecords}.${fieldId}.`
+  const byRecord = new Map<
+    number,
+    Partial<Record<MyInfoChildAttributes, string>>
+  >()
+  for (const [key, hash] of Object.entries(hashes)) {
+    if (!hash || !key.startsWith(prefix)) continue
+    // Remainder is `<childAttr>.<childIdx>.<childName>`; the name may contain dots.
+    const rest = key.slice(prefix.length)
+    const firstDot = rest.indexOf('.')
+    const secondDot = rest.indexOf('.', firstDot + 1)
+    if (firstDot < 0 || secondDot < 0) continue
+    if (rest.slice(secondDot + 1) !== childName) continue
+    const childAttr = rest.slice(0, firstDot) as MyInfoChildAttributes
+    const childIdx = Number(rest.slice(firstDot + 1, secondDot))
+    if (!Number.isInteger(childIdx)) continue
+    const record = byRecord.get(childIdx) ?? {}
+    record[childAttr] = hash
+    byRecord.set(childIdx, record)
+  }
+  return byRecord
+}
+
+/**
  * This function is responsible for checking the validity of hashes of
- * MyInfo Child fields.
+ * MyInfo Child fields. Hashes are looked up by child name, and the result is
+ * recorded under the submitted child's positional key, which downstream
+ * consumers match on.
  *
- * NOTE: if the hashes comparison fail, it assumes that it's a manually user
- * inputted child. As such, it will just not indicate in the response
- * that it is MyInfo verified.
+ * When several MyInfo children share the submitted name, every sub-field is
+ * judged against the single record that matches the most sub-fields, so a
+ * submission cannot pass by combining values from two different children.
+ *
+ * NOTE: if no hash exists for a submitted child, it assumes that it's a
+ * manually user inputted child. As such, it will just not indicate in the
+ * response that it is MyInfo verified.
  * @param field the processed response
  * @param hashes a map containing all the attributes mapped to hashes
  * @param myInfoResponsesMap the response to give to the user
@@ -528,19 +580,47 @@ export const handleMyInfoChildHashResponse = (
   childField.answerArray.forEach((childAnswer, childIndex) => {
     // Name should be first field for child answers
     const childName = childAnswer[0]
-    // Validate each answer (child)
-    childAnswer.forEach((attrAnswer, subFieldIndex) => {
+    const candidates = findMyInfoChildHashesByRecord(
+      hashes,
+      field._id,
+      childName,
+    )
+    // Intentional, to allow user-filled fields to pass through.
+    if (candidates.size === 0) return
+
+    // Compare every submitted sub-field against every same-named record, then
+    // keep the record with the most matches (lowest index on a tie).
+    const bestRecord = Promise.all(
+      [...candidates.entries()].map(async ([childIdx, record]) => {
+        const matches = await Promise.all(
+          childAnswer.map((attrAnswer, subFieldIndex) => {
+            const hash = record[subFields[subFieldIndex]]
+            return hash ? bcrypt.compare(attrAnswer, hash) : undefined
+          }),
+        )
+        return { childIdx, matches }
+      }),
+    ).then((evaluated) =>
+      evaluated.reduce((best, current) => {
+        const score = (m: (boolean | undefined)[]) => m.filter(Boolean).length
+        return score(current.matches) > score(best.matches) ? current : best
+      }),
+    )
+
+    childAnswer.forEach((_attrAnswer, subFieldIndex) => {
+      const subField = subFields[subFieldIndex]
+      const hasHash = [...candidates.values()].some((r) => r[subField])
+      if (!hasHash) return
       const key = getMyInfoChildHashKey(
         field._id,
-        subFields[subFieldIndex],
+        subField,
         childIndex,
         childName,
       )
-      const hash = hashes[key]
-      // Intentional, to allow user-filled fields to pass through.
-      if (hash) {
-        myInfoResponsesMap.set(key, bcrypt.compare(attrAnswer, hash))
-      }
+      myInfoResponsesMap.set(
+        key,
+        bestRecord.then(({ matches }) => matches[subFieldIndex] ?? false),
+      )
     })
   })
   return

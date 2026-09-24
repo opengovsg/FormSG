@@ -34,6 +34,30 @@ describe('myinfo.fapi.adapter', () => {
       expect(scopes).toContain('childrenbirthrecords.dob')
     })
 
+    it('should request the sponsored children scopes alongside birth records when enabled', () => {
+      const scopes = requestedAttrsToScopeString(
+        [InternalAttr.ChildName, InternalAttr.ChildBirthCertNo],
+        { includeSponsoredChildren: true },
+      ).split(' ')
+
+      expect(scopes).toContain('sponsoredchildrenrecords.name')
+      // Sponsored children use nric in place of a birth certificate number.
+      expect(scopes).toContain('sponsoredchildrenrecords.nric')
+      expect(scopes).not.toContain('sponsoredchildrenrecords.birthcertno')
+    })
+
+    it('should not request sponsored children scopes by default', () => {
+      const scopes = requestedAttrsToScopeString([
+        InternalAttr.ChildName,
+        InternalAttr.ChildBirthCertNo,
+      ]).split(' ')
+
+      expect(scopes).toContain('childrenbirthrecords.name')
+      expect(scopes.some((s) => s.startsWith('sponsoredchildrenrecords'))).toBe(
+        false,
+      )
+    })
+
     it('should de-duplicate repeated attributes', () => {
       const scopes = requestedAttrsToScopeString([
         InternalAttr.Name,

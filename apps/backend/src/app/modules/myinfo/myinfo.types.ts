@@ -18,6 +18,7 @@ export interface IMyInfoRedirectURLArgs {
   formId: string
   formEsrvcId: string
   requestedAttributes: MyInfoAttribute[]
+  includeSponsoredChildren?: boolean
   encodedQuery?: string
 }
 

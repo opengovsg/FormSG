@@ -95,12 +95,16 @@ export const startLogin = ({
   formId,
   encodedQuery,
   requestedAttributes,
+  includeSponsoredChildren,
 }: {
   formId: string
   encodedQuery?: string
   requestedAttributes: MyInfoAttribute[]
+  includeSponsoredChildren?: boolean
 }): ResultAsync<MyInfoFapiLoginStartResult, MyInfoFapiLoginStartError> => {
-  const scope = requestedAttrsToScopeString(requestedAttributes)
+  const scope = requestedAttrsToScopeString(requestedAttributes, {
+    includeSponsoredChildren,
+  })
   logger.info({
     message: 'Started MyInfo FAPI login',
     meta: { action: 'startLogin', formId },

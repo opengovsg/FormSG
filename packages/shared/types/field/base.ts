@@ -113,9 +113,7 @@ export type MyInfoChildData = Partial<{
 }> & {
   /**
    * MyInfo scope each child record was retrieved under, parallel to the
-   * attribute arrays. Absent today: only the local-children scope is fetched,
-   * so every record is local. Populated per record once the sponsored scope
-   * is retrieved as well.
+   * attribute arrays. Local children come first, then sponsored children.
    */
   scopes?: MyInfoChildrenScope[]
 }

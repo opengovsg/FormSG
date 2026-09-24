@@ -4,7 +4,10 @@ import { err, ok, Result } from 'neverthrow'
 import type * as client from 'openid-client'
 
 import { createLoggerWithLabel } from '../../../config/logger'
-import { internalAttrListToScopes } from '../myinfo.adapter'
+import {
+  internalAttrListToScopes,
+  InternalAttrListToScopesOptions,
+} from '../myinfo.adapter'
 
 import { MyInfoFapiMissingUinFinError } from './myinfo.fapi.errors'
 
@@ -17,10 +20,16 @@ type MyInfoFapiUserInfo = client.UserInfoResponse & {
 /**
  * Builds the space-separated FAPI scope string for a form's requested attributes.
  * @param attrs - The internal attributes.
+ * @param options - See internalAttrListToScopes.
  * @returns The space-separated FAPI scope string.
  */
-export const requestedAttrsToScopeString = (attrs: InternalAttr[]): string =>
-  Array.from(new Set(['openid', ...internalAttrListToScopes(attrs)])).join(' ')
+export const requestedAttrsToScopeString = (
+  attrs: InternalAttr[],
+  options?: InternalAttrListToScopesOptions,
+): string =>
+  Array.from(
+    new Set(['openid', ...internalAttrListToScopes(attrs, options)]),
+  ).join(' ')
 
 /**
  * Maps FAPI userinfo onto v3's IPersonResponse so everything below MyInfoData is shared.

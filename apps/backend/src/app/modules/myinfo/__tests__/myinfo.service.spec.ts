@@ -117,6 +117,31 @@ describe('MyInfoServiceClass', () => {
       })
       expect(result._unsafeUnwrap()).toBe(MOCK_REDIRECT_URL)
     })
+
+    it('should only request sponsored children scopes when includeSponsoredChildren is set', () => {
+      mockCreateRedirectURL.mockReturnValue(MOCK_REDIRECT_URL)
+      const childAttrs = [MyInfoAttribute.ChildName]
+
+      myInfoService.createRedirectURL({
+        formEsrvcId: MOCK_ESRVC_ID,
+        formId: MOCK_FORM_ID,
+        requestedAttributes: childAttrs,
+      })
+      myInfoService.createRedirectURL({
+        formEsrvcId: MOCK_ESRVC_ID,
+        formId: MOCK_FORM_ID,
+        requestedAttributes: childAttrs,
+        includeSponsoredChildren: true,
+      })
+
+      const [withoutFlag, withFlag] = mockCreateRedirectURL.mock.calls.map(
+        ([args]) => args.requestedAttributes as string[],
+      )
+      expect(withoutFlag).toContain('childrenbirthrecords.name')
+      expect(withoutFlag).not.toContain('sponsoredchildrenrecords.name')
+      expect(withFlag).toContain('childrenbirthrecords.name')
+      expect(withFlag).toContain('sponsoredchildrenrecords.name')
+    })
   })
 
   describe('parseMyInfoRelayState', () => {
