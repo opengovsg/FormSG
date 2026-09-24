@@ -1,5 +1,5 @@
 import { SubmittedStepSnapshotTokens } from 'formsg-shared/types'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { WebhookView } from '../../../../../types'
 import { SnapshotRef } from '../../../webhook/webhook.types'
@@ -15,7 +15,10 @@ import {
   getKeyPermissionsPolicy,
   WebhookPayloadPolicy,
 } from './webhook-payload-policy'
-import { reconstructMrfWebhookData } from './webhook-reconstruction'
+import {
+  reconstructMrfWebhookData,
+  reconstructV1WebhookData,
+} from './webhook-reconstruction'
 
 export type SnapshotRetryError =
   | SnapshotDataIntegrityError
@@ -53,10 +56,6 @@ export const resolveSnapshotRetryView = ({
   const meta = { submissionId, snapshotRef }
   const { submissionIndex, contentFormat } = snapshotRef
 
-  // RATIONALE: `v1` snapshot replay will be implemented in #9977.
-  if (contentFormat === 'v1') {
-    return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
-  }
   const recordedTokensForSubmissionIndex =
     submittedStepSnapshotTokens?.[submissionIndex]
   const token = recordedTokensForSubmissionIndex?.[contentFormat]
@@ -78,6 +77,14 @@ export const resolveSnapshotRetryView = ({
           { ...meta, storedContentFormat: snapshot.contentFormat },
         ),
       )
+    }
+
+    // V1 must replay the form-key copy through the initial send's reconstruction.
+    // The native V4 row is never a valid fallback for a missing V1 snapshot.
+    if (snapshot.contentFormat === 'v1') {
+      return okAsync({
+        data: reconstructV1WebhookData({ liveData: liveView.data, snapshot }),
+      })
     }
 
     return reconstructMrfWebhookData({
