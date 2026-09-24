@@ -48,7 +48,6 @@ import { MyInfoService } from '../../myinfo/myinfo.service'
 import {
   createMyInfoLoginCookie,
   extractAuthCode,
-  getMyInfoEserviceIdInForm,
   shouldFetchSponsoredChildren,
 } from '../../myinfo/myinfo.util'
 import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
@@ -744,9 +743,6 @@ export const _handleFormAuthRedirect: ControllerHandler<
   return FormService.retrieveFullFormById(formId)
     .andThen((form) => {
       formAuthType = form.authType
-      const useFormsgEsrvcId = req.growthbook?.isOn(
-        featureFlags.useFormsgEsrvcId,
-      )
       // TODO [CP-PKCE]: Cleanup this flag once PKCE rollout is verified.
       // Add formId to growthbook attributes to allow for targeting in growthbook feature flags.
       void req.growthbook?.setAttributes({
@@ -762,45 +758,27 @@ export const _handleFormAuthRedirect: ControllerHandler<
       const useStateNonce =
         req.growthbook?.isOn(featureFlags.spcpOidcStateNonce) ?? false
       const nonce = useStateNonce ? randomBytes(16).toString('hex') : undefined
-      const useMyInfoFapi =
-        req.growthbook?.isOn(featureFlags.myinfoFapi) ?? false
       // Fail closed: without a growthbook instance, only birth records are fetched.
       const isMrfChildrenEnabled =
         req.growthbook?.isOn(featureFlags.mrfChildren) ?? false
       switch (form.authType) {
         case FormAuthType.MyInfo: {
-          if (useMyInfoFapi) {
-            res.clearCookie(
-              MYINFO_AUTH_CODE_COOKIE_NAME,
-              MYINFO_AUTH_CODE_COOKIE_OPTIONS,
-            )
-            return MyInfoFapiService.startLogin({
-              formId,
-              encodedQuery,
-              requestedAttributes: form.getUniqueMyInfoAttrs(),
-              includeSponsoredChildren: shouldFetchSponsoredChildren(
-                form,
-                isMrfChildrenEnabled,
-              ),
-            }).map(({ sessionId, redirectUrl }) => {
-              setMyInfoFapiSessionCookie(res, sessionId)
-              return redirectUrl
-            })
-          }
-          clearMyInfoFapiSessionCookie(res)
-          return getMyInfoEserviceIdInForm(form, useFormsgEsrvcId).andThen(
-            ([form, eserviceId]) =>
-              MyInfoService.createRedirectURL({
-                formEsrvcId: eserviceId,
-                formId,
-                requestedAttributes: form.getUniqueMyInfoAttrs(),
-                includeSponsoredChildren: shouldFetchSponsoredChildren(
-                  form,
-                  isMrfChildrenEnabled,
-                ),
-                encodedQuery,
-              }),
+          res.clearCookie(
+            MYINFO_AUTH_CODE_COOKIE_NAME,
+            MYINFO_AUTH_CODE_COOKIE_OPTIONS,
           )
+          return MyInfoFapiService.startLogin({
+            formId,
+            encodedQuery,
+            requestedAttributes: form.getUniqueMyInfoAttrs(),
+            includeSponsoredChildren: shouldFetchSponsoredChildren(
+              form,
+              isMrfChildrenEnabled,
+            ),
+          }).map(({ sessionId, redirectUrl }) => {
+            setMyInfoFapiSessionCookie(res, sessionId)
+            return redirectUrl
+          })
         }
         case FormAuthType.SP: {
           return validateSpcpForm(form).asyncAndThen((form) => {
