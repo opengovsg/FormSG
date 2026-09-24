@@ -60,3 +60,32 @@ export class SnapshotDataIntegrityError extends ApplicationError {
     super(message, meta, ErrorCodes.SUBMISSION_MRF_SNAPSHOT_DATA_INTEGRITY)
   }
 }
+
+/**
+ * Raised whenever a V1 delivery has no usable V1 snapshot to reconstruct from
+ * (missing, wrong format, or this delivery is not allowed to use one). Distinct
+ * from `SnapshotFormatNotRecordedError`: a V1 delivery has no fallback — the
+ * encrypted submission row is in V4 and cannot be used to reconstruct a V1 payload.
+ */
+export class V1SnapshotRequiredError extends ApplicationError {
+  constructor(
+    message = 'No usable V1 snapshot for this delivery',
+    meta?: unknown,
+  ) {
+    super(message, meta, ErrorCodes.SUBMISSION_MRF_V1_SNAPSHOT_REQUIRED)
+  }
+}
+
+/**
+ * Raised whenever the V4 responses cannot be mapped into a storage-shaped V1
+ * copy at submit time: an unsupported field type in the flatten, a malformed
+ * response the shared validation rejects, or the subsequent encrypt failing.
+ */
+export class V1ContentMappingError extends ApplicationError {
+  constructor(
+    message = 'Failed to save submission. Please try again later.',
+    meta?: unknown,
+  ) {
+    super(message, meta, ErrorCodes.SUBMISSION_MRF_V1_CONTENT_MAPPING)
+  }
+}

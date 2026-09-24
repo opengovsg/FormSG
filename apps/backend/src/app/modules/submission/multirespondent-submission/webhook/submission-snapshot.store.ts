@@ -19,15 +19,12 @@ import {
 } from './submission-snapshot.errors'
 import {
   parseSnapshot,
+  SnapshotContentFormat,
   SubmissionSnapshot,
-  SubmissionSnapshotV4,
 } from './submission-snapshot.schema'
 
 const logger = createLoggerWithLabel(module)
 
-/**
- * Number of create-if-absent attempts before we stop retrying.
- */
 const MAX_WRITE_ATTEMPTS = 2
 
 type SnapshotKeyParams = {
@@ -37,6 +34,13 @@ type SnapshotKeyParams = {
   token: string
 }
 
+const bucketForContentFormat = (
+  contentFormat: SnapshotContentFormat,
+): string =>
+  contentFormat === 'v1'
+    ? AwsConfig.submissionHistoryV1S3Bucket
+    : AwsConfig.submissionHistoryV4S3Bucket
+
 export const buildSnapshotKey = ({
   formId,
   submissionId,
@@ -45,10 +49,6 @@ export const buildSnapshotKey = ({
 }: SnapshotKeyParams): string =>
   `${formId}/${submissionId}/${submissionIndex}/${token}.json`
 
-/**
- * Returns true if the S3 error signals a create-if-absent precondition failure
- * (the key already exists), i.e. a token collision we should retry.
- */
 const isPreconditionFailed = (error: unknown): error is S3ServiceException =>
   error instanceof S3ServiceException && error.name === 'PreconditionFailed'
 
@@ -60,8 +60,8 @@ const isAccessDenied = (error: unknown): error is S3ServiceException => {
   return error instanceof S3ServiceException && error.name === 'AccessDenied'
 }
 
-export const writeV4Snapshot = (
-  snapshot: SubmissionSnapshotV4,
+export const writeSnapshot = (
+  snapshot: SubmissionSnapshot,
 ): ResultAsync<{ token: string; key: string }, SnapshotWriteError> => {
   const body = JSON.stringify(snapshot)
 
@@ -77,7 +77,7 @@ export const writeV4Snapshot = (
     })
 
     const params: PutObjectCommandInput = {
-      Bucket: AwsConfig.submissionHistoryV4S3Bucket,
+      Bucket: bucketForContentFormat(snapshot.contentFormat),
       Key: key,
       Body: body,
       ContentType: 'application/json',
@@ -97,7 +97,8 @@ export const writeV4Snapshot = (
               message:
                 'Snapshot write exhausted retries on persistent precondition failure',
               meta: {
-                action: 'writeV4Snapshot',
+                action: 'writeSnapshot',
+                contentFormat: snapshot.contentFormat,
                 formId: snapshot.formId,
                 submissionId: snapshot.submissionId,
                 submissionIndex: snapshot.submissionIndex,
@@ -117,7 +118,8 @@ export const writeV4Snapshot = (
         logger.error({
           message: 'Snapshot write failed',
           meta: {
-            action: 'writeV4Snapshot',
+            action: 'writeSnapshot',
+            contentFormat: snapshot.contentFormat,
             formId: snapshot.formId,
             submissionId: snapshot.submissionId,
             submissionIndex: snapshot.submissionIndex,
@@ -131,12 +133,15 @@ export const writeV4Snapshot = (
   return attempt(MAX_WRITE_ATTEMPTS)
 }
 
-export const readV4Snapshot = ({
+export const readSnapshot = ({
   formId,
   submissionId,
   submissionIndex,
   token,
-}: SnapshotKeyParams): ResultAsync<
+  contentFormat,
+}: SnapshotKeyParams & {
+  contentFormat: SnapshotContentFormat
+}): ResultAsync<
   SubmissionSnapshot,
   SnapshotDataIntegrityError | SnapshotReadError | SnapshotAccessDeniedError
 > => {
@@ -150,7 +155,7 @@ export const readV4Snapshot = ({
   return ResultAsync.fromPromise(
     AwsConfig.s3.send(
       new GetObjectCommand({
-        Bucket: AwsConfig.submissionHistoryV4S3Bucket,
+        Bucket: bucketForContentFormat(contentFormat),
         Key: key,
       }),
     ),
@@ -182,14 +187,14 @@ export const readV4Snapshot = ({
       if (isAccessDenied(error)) {
         logger.error({
           message: 'Snapshot read was denied by the store',
-          meta: { action: 'readV4Snapshot', key },
+          meta: { action: 'readSnapshot', contentFormat, key },
           error: error as Error,
         })
         return errAsync(new SnapshotAccessDeniedError(undefined, error))
       }
       logger.error({
         message: 'Snapshot read failed',
-        meta: { action: 'readV4Snapshot', key },
+        meta: { action: 'readSnapshot', contentFormat, key },
         error: error as Error,
       })
       return errAsync(new SnapshotReadError(undefined, error))

@@ -3,7 +3,11 @@ import { err, ok, Result } from 'neverthrow'
 import { WebhookData } from 'src/types/submission'
 
 import { SnapshotDataIntegrityError } from './submission-snapshot.errors'
-import { SubmissionSnapshot } from './submission-snapshot.schema'
+import {
+  SubmissionSnapshotV1,
+  SubmissionSnapshotV4,
+} from './submission-snapshot.schema'
+import { StorageShapedWebhookData } from './v1-payload'
 import {
   contentFormatToWebhookVersion,
   WebhookPayloadPolicy,
@@ -20,7 +24,7 @@ interface ReconstructMrfWebhookDataInputWithoutSnapshot extends ReconstructMrfWe
 }
 
 interface ReconstructMrfWebhookDataInputWithSnapshot extends ReconstructMrfWebhookDataInputBase {
-  snapshot: SubmissionSnapshot
+  snapshot: SubmissionSnapshotV4
   submissionIndex: number
 }
 
@@ -105,3 +109,22 @@ export const reconstructMrfWebhookData = (
 
   return ok(reconstructed)
 }
+
+// RATIONALE: Pick fields explicitly so optional v4 only keys
+// cannot enter the V1 payload.
+export const reconstructV1WebhookData = ({
+  liveData,
+  snapshot,
+}: {
+  liveData: WebhookData
+  snapshot: SubmissionSnapshotV1
+}): StorageShapedWebhookData => ({
+  formId: liveData.formId,
+  submissionId: liveData.submissionId,
+  encryptedContent: snapshot.encryptedContent,
+  verifiedContent: snapshot.verifiedContent,
+  version: contentFormatToWebhookVersion(snapshot.contentFormat),
+  created: liveData.created,
+  attachmentDownloadUrls: snapshot.attachmentMetadata ?? {},
+  paymentContent: liveData.paymentContent,
+})

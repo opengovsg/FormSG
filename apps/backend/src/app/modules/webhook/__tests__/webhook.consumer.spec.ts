@@ -368,13 +368,13 @@ describe('webhook.consumer', () => {
       })
 
       it('should redeliver the frozen step submission, not the live row, for a snapshot message', async () => {
-        MockSnapshotStore.readV4Snapshot.mockReturnValue(okAsync(MOCK_SNAPSHOT))
+        MockSnapshotStore.readSnapshot.mockReturnValue(okAsync(MOCK_SNAPSHOT))
 
         await expect(
           createWebhookQueueHandler(SUCCESS_PRODUCER)(SNAPSHOT_SQS_MESSAGE),
         ).toResolve()
 
-        expect(MockSnapshotStore.readV4Snapshot).toHaveBeenCalledWith(
+        expect(MockSnapshotStore.readSnapshot).toHaveBeenCalledWith(
           expect.objectContaining({
             submissionIndex: 0,
             token: 'tok-step-0',
@@ -391,7 +391,7 @@ describe('webhook.consumer', () => {
           createWebhookQueueHandler(SUCCESS_PRODUCER)(VALID_SQS_MESSAGE),
         ).toResolve()
 
-        expect(MockSnapshotStore.readV4Snapshot).not.toHaveBeenCalled()
+        expect(MockSnapshotStore.readSnapshot).not.toHaveBeenCalled()
         expect(MockWebhookService.sendWebhook).toHaveBeenCalledWith(
           MOCK_MRF_WEBHOOK_INFO.webhookView,
           MOCK_MRF_WEBHOOK_INFO.webhookUrl,
@@ -407,7 +407,7 @@ describe('webhook.consumer', () => {
       ])(
         'should delete the message without attempting the webhook on %s',
         async (_case, storeError) => {
-          MockSnapshotStore.readV4Snapshot.mockReturnValue(errAsync(storeError))
+          MockSnapshotStore.readSnapshot.mockReturnValue(errAsync(storeError))
 
           await expect(
             createWebhookQueueHandler(SUCCESS_PRODUCER)(SNAPSHOT_SQS_MESSAGE),
@@ -424,7 +424,7 @@ describe('webhook.consumer', () => {
       ])(
         'should leave the message for redelivery, with no webhook attempt burned, on %s',
         async (_case, storeError) => {
-          MockSnapshotStore.readV4Snapshot.mockReturnValue(errAsync(storeError))
+          MockSnapshotStore.readSnapshot.mockReturnValue(errAsync(storeError))
 
           await expect(
             createWebhookQueueHandler(SUCCESS_PRODUCER)(SNAPSHOT_SQS_MESSAGE),
@@ -437,7 +437,7 @@ describe('webhook.consumer', () => {
       )
 
       it('should carry the named step submission into the requeued message when the retry fails', async () => {
-        MockSnapshotStore.readV4Snapshot.mockReturnValue(okAsync(MOCK_SNAPSHOT))
+        MockSnapshotStore.readSnapshot.mockReturnValue(okAsync(MOCK_SNAPSHOT))
         MockWebhookService.sendWebhook.mockReturnValue(
           okAsync(MOCK_WEBHOOK_FAILURE_RESPONSE),
         )

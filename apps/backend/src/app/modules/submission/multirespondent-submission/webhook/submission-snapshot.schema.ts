@@ -30,6 +30,9 @@ export const SubmissionSnapshot = z.discriminatedUnion('contentFormat', [
 ])
 export type SubmissionSnapshot = z.infer<typeof SubmissionSnapshot>
 export type SubmissionSnapshotV4 = z.infer<typeof SnapshotV4>
+export type SubmissionSnapshotV1 = z.infer<typeof SnapshotV1>
+
+export type SnapshotContentFormat = SubmissionSnapshot['contentFormat']
 
 export function parseSnapshot(
   rawSnapshot: string,

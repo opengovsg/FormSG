@@ -1,5 +1,8 @@
 import formsgSdk from '../../../../../config/formsg-sdk'
-import { buildV4Snapshot } from '../submission-snapshot.producer'
+import {
+  buildV1Snapshot,
+  buildV4Snapshot,
+} from '../submission-snapshot.producer'
 import { SubmissionSnapshot } from '../submission-snapshot.schema'
 
 // Submission-key payload the middleware hands to cryptoV3.encrypt: a
@@ -124,5 +127,82 @@ describe('buildV4Snapshot', () => {
     })
 
     expect(snapshot.attachmentMetadata).toEqual(attachmentMetadata)
+  })
+})
+
+const V1_PLAINTEXT = [
+  {
+    _id: 'field-1',
+    question: 'Your name',
+    fieldType: 'textfield',
+    answer: 'hello world',
+  },
+]
+const V1_VERSION = 2.1
+
+describe('buildV1Snapshot', () => {
+  it('should build a snapshot that satisfies the SubmissionSnapshot schema', () => {
+    const { publicKey } = formsgSdk.crypto.generate()
+
+    const snapshot = buildV1Snapshot({
+      formId: 'form-1',
+      submissionId: 'sub-1',
+      submissionIndex: 0,
+      workflowStep: 0,
+      encryptedContent: formsgSdk.crypto.encrypt(V1_PLAINTEXT, publicKey),
+      createdAt: '2026-07-22T00:00:00.000Z',
+    })
+
+    expect(() => SubmissionSnapshot.parse(snapshot)).not.toThrow()
+    expect(snapshot._v).toBe(1)
+    expect(snapshot.contentFormat).toBe('v1')
+  })
+
+  it('should freeze content that the FORM secret key alone recovers, with no key stored beside it', () => {
+    const { publicKey, secretKey } = formsgSdk.crypto.generate()
+    const encryptedContent = formsgSdk.crypto.encrypt(V1_PLAINTEXT, publicKey)
+
+    const snapshot = buildV1Snapshot({
+      formId: 'form-1',
+      submissionId: 'sub-1',
+      submissionIndex: 0,
+      workflowStep: 0,
+      encryptedContent,
+      createdAt: '2026-07-22T00:00:00.000Z',
+    })
+
+    const recovered = formsgSdk.crypto.decrypt(secretKey, {
+      encryptedContent: snapshot.encryptedContent,
+      version: V1_VERSION,
+    })
+    expect(recovered?.responses).toEqual(V1_PLAINTEXT)
+
+    expect(snapshot).not.toHaveProperty('encryptedSubmissionSecretKey')
+  })
+
+  it('should omit verifiedContent and attachmentMetadata when absent, and pass them verbatim when present', () => {
+    const { publicKey } = formsgSdk.crypto.generate()
+    const encryptedContent = formsgSdk.crypto.encrypt(V1_PLAINTEXT, publicKey)
+    const coords = {
+      formId: 'form-1',
+      submissionId: 'sub-1',
+      submissionIndex: 0,
+      workflowStep: 0,
+      encryptedContent,
+      createdAt: '2026-07-22T00:00:00.000Z',
+    }
+
+    const bare = buildV1Snapshot(coords)
+    expect(bare.verifiedContent).toBeUndefined()
+    expect(bare.attachmentMetadata).toBeUndefined()
+
+    const full = buildV1Snapshot({
+      ...coords,
+      verifiedContent: 'form-key-verified-blob',
+      attachmentMetadata: { 'field-9': 'attachment-key-abc' },
+    })
+    expect(full.verifiedContent).toBe('form-key-verified-blob')
+    expect(full.attachmentMetadata).toEqual({ 'field-9': 'attachment-key-abc' })
+    expect(() => SubmissionSnapshot.parse(full)).not.toThrow()
   })
 })
