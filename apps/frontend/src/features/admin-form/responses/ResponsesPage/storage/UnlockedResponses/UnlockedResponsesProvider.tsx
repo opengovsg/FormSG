@@ -58,6 +58,9 @@ interface UnlockedResponsesContextProps {
   ) => void
   searchResultCount?: number
   setSearchResultCount: (count?: number) => void
+  visibleSubmissionIds?: string[]
+  setVisibleSubmissionIds: (submissionIds?: string[]) => void
+  isFullyLoaded: boolean
   isTableLoading: boolean
   renderLimit: number
   showMoreRows: () => void
@@ -117,6 +120,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   const [renderedRowCount, setRenderedRowCount] = useState(0)
   const [searchText, setSearchText] = useState('')
   const [searchResultCount, setSearchResultCount] = useState<number>()
+  const [visibleSubmissionIds, setVisibleSubmissionIds] = useState<string[]>()
   const [excludedSearchColumnIds, setExcludedSearchColumnIds] = useState<
     string[]
   >([])
@@ -219,6 +223,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
 
   const metadata = isInfiniteScroll ? allMetadata : pagedMetadata
   const count = isInfiniteScroll ? allData?.count : pagedCount
+  const isFullyLoaded = !!allData && allMetadata.length >= (allData.count ?? 0)
   const isLoading = isInfiniteScroll ? isTableLoading : isPagedLoading
 
   const totalPageCount = useMemo(
@@ -372,6 +377,9 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     setSort,
     searchResultCount,
     setSearchResultCount,
+    visibleSubmissionIds,
+    setVisibleSubmissionIds,
+    isFullyLoaded,
     isTableLoading,
     renderLimit,
     showMoreRows,
