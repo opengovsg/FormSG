@@ -828,4 +828,61 @@ describe('Multirespondent Submission Model', () => {
       expect(serialised).not.toContain(MOCK_ENCRYPTED_STEP_TOKEN)
     })
   })
+
+  describe('myInfoReadOnlyFields', () => {
+    const createRow = (
+      myInfoReadOnlyFields?: string[],
+    ): Promise<IMultirespondentSubmissionSchema> =>
+      MultirespondentSubmission.create({
+        form: new ObjectId().toHexString(),
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: [],
+        submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+        encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        version: 3,
+        workflowStep: 0,
+        ...(myInfoReadOnlyFields === undefined ? {} : { myInfoReadOnlyFields }),
+      })
+
+    it('should persist and retrieve the resolved field ids', async () => {
+      const MOCK_READ_ONLY_FIELD_IDS = [
+        new ObjectId().toHexString(),
+        new ObjectId().toHexString(),
+      ]
+
+      const submission = await createRow(MOCK_READ_ONLY_FIELD_IDS)
+      const found = await MultirespondentSubmission.findById(submission._id)
+
+      expect(found?.myInfoReadOnlyFields).toEqual(MOCK_READ_ONLY_FIELD_IDS)
+    })
+
+    it('should persist an empty array as an empty array', async () => {
+      const submission = await createRow([])
+      const found = await MultirespondentSubmission.findById(submission._id)
+
+      expect(found?.myInfoReadOnlyFields).toEqual([])
+    })
+
+    it('should leave the field absent when it was never written', async () => {
+      const submission = await createRow(undefined)
+      const found = await MultirespondentSubmission.findById(
+        submission._id,
+      ).lean()
+
+      expect(found).not.toHaveProperty('myInfoReadOnlyFields')
+    })
+
+    it('should never expose myInfoReadOnlyFields in the webhook view', async () => {
+      const MOCK_READ_ONLY_FIELD_ID = new ObjectId().toHexString()
+      const submission = await createRow([MOCK_READ_ONLY_FIELD_ID])
+
+      const webhookView = await submission.getWebhookView()
+
+      const serialised = JSON.stringify(webhookView)
+      expect(serialised).not.toContain('myInfoReadOnlyFields')
+    })
+  })
 })

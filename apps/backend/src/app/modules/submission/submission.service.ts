@@ -15,6 +15,7 @@ import {
   SubmissionPaymentDto,
   SubmissionType,
 } from 'formsg-shared/types'
+import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
 import { StatusCodes } from 'http-status-codes'
 import omit from 'lodash/omit'
 import moment from 'moment'
@@ -720,9 +721,22 @@ export const addMrfMetadata = (): Transform => {
       callback,
     ) => {
       if (data.submissionType === SubmissionType.Multirespondent) {
-        const { workflow, workflowStep, submittedSteps, ...rest } = data
+        const {
+          workflow,
+          workflowStep,
+          submittedSteps,
+          myInfoReadOnlyFields,
+          form_fields,
+          ...rest
+        } = data
         const dataWithMrfMeta = {
           ...rest,
+          form_fields:
+            form_fields &&
+            applyMyInfoPrefixToFormFields(
+              form_fields,
+              myInfoReadOnlyFields ?? [],
+            ),
           mrfMeta: buildMrfMetadata({
             workflow,
             workflowStep,

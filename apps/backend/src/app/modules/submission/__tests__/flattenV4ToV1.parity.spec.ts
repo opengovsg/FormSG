@@ -5,6 +5,7 @@
  * NOTE: The test compares JSON strings, not object keys since JSON is the
  * data that the server encrypts.
  */
+import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
 import {
   BasicField,
@@ -13,22 +14,30 @@ import {
   MyInfoAttribute,
 } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
+import {
+  applyMyInfoPrefix,
+  MYINFO_QUESTION_PREFIX,
+} from 'formsg-shared/utils/myinfo-prefix'
 
 import {
   FieldResponse,
   FormFieldSchema,
   IFormDocument,
 } from '../../../../types'
+import { ParsedClearFormFieldResponsesV4 } from '../../../../types/api'
 import formsgSdk from '../../../config/formsg-sdk'
+import { MyInfoService } from '../../myinfo/myinfo.service'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import {
   formatMyInfoStorageResponseData,
   omitResponseKeys,
 } from '../encrypt-submission/encrypt-submission.utils'
+import { resolveMrfMyInfoReadOnlyFields } from '../multirespondent-submission/myinfo-read-only-fields'
 import ParsedResponsesObject from '../ParsedResponsesObject.class'
 import { isAttachmentResponse } from '../submission.utils'
 
 import {
+  ALL_MYINFO_FIELD_IDS,
   ATTACHMENT_FILE_NAME,
   buildAddMoreRowsTableField,
   buildBlankTableInputWithAddedRows,
@@ -36,6 +45,10 @@ import {
   buildDifferentialField,
   buildDifferentialFields,
   buildDifferentialInputs,
+  buildMyInfoAnsweredInput,
+  buildMyInfoField,
+  buildMyInfoFields,
+  buildMyInfoInputs,
   buildOptionalDifferentialField,
   buildOptionalDifferentialFields,
   buildOptionalVerifiableField,
@@ -46,6 +59,8 @@ import {
   CHILDREN_SUB_FIELDS,
   DIFFERENTIAL_FIELD_TYPES,
   FIELD_IDS,
+  MYINFO_FIELD_IDS,
+  MYINFO_FIELD_TYPES,
   VERIFIABLE_FIELD_IDS,
   VERIFIABLE_FIELD_TYPES,
 } from '~features/public-form/utils/__tests__/storageModeFixture'
@@ -131,7 +146,7 @@ const storageModeReference = (
     asFormDocument(formFields),
     scannedResponses as FieldResponse[],
   )
-  expect(parsed.isOk()).toBe(true)
+  expect(parsed.isErr() ? parsed.error.message : null).toBeNull()
   const serverResponses = formatMyInfoStorageResponseData(
     parsed._unsafeUnwrap().getAllResponses(),
     hashedFields,
@@ -175,7 +190,13 @@ const scanV4Attachments = (
 const flattenReference = (
   formFields: FormFieldDto[],
   formInputs: FormFieldValues,
-  myinfoVerifiedIds: string[] = [],
+  {
+    myinfoVerifiedIds = [],
+    readOnlyFieldIds = [],
+  }: {
+    myinfoVerifiedIds?: string[]
+    readOnlyFieldIds?: string[]
+  } = {},
 ): unknown[] => {
   const v4Responses = scanV4Attachments(
     createResponsesV4(formFields, formInputs, buildQuarantineMap()),
@@ -189,12 +210,15 @@ const flattenReference = (
       ).provenance = { myinfoVerified: true }
     }
   }
-  return flattenV4ToFormFields({
-    formLogics: [],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    v4Responses: v4Responses as any,
-    formFields,
-  })
+  return applyMyInfoPrefix(
+    flattenV4ToFormFields({
+      formLogics: [],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      v4Responses: v4Responses as any,
+      formFields,
+    }),
+    readOnlyFieldIds,
+  )
 }
 
 const expectByteParity = (
@@ -203,10 +227,11 @@ const expectByteParity = (
   options: {
     hashedFields?: Set<MyInfoKey>
     myinfoVerifiedIds?: string[]
+    readOnlyFieldIds?: string[]
   } = {},
 ) => {
   const A = storageModeReference(formFields, formInputs, options.hashedFields)
-  const B = flattenReference(formFields, formInputs, options.myinfoVerifiedIds)
+  const B = flattenReference(formFields, formInputs, options)
   expect(JSON.stringify(B)).toBe(JSON.stringify(A))
 }
 
@@ -357,6 +382,170 @@ describe('V4 -> V1 flatten is byte-identical to the storage-mode producer', () =
       expect(JSON.stringify(withoutRows(B))).toBe(
         JSON.stringify(withoutRows(A)),
       )
+    })
+  })
+
+  describe('MyInfo fields', () => {
+    describe('prefix eligibility derived from real MyInfo hashes', () => {
+      afterEach(() => jest.restoreAllMocks())
+
+      it.each(['all', 'some', 'none'] as const)(
+        'selects the same fields and produces identical bytes with %s attributes hashed',
+        async (selection) => {
+          const duplicateNameId = new ObjectId().toHexString()
+          const formFields = [
+            ...buildMyInfoFields(),
+            {
+              ...buildMyInfoField(BasicField.ShortText),
+              _id: duplicateNameId,
+            },
+            buildDifferentialField(BasicField.ShortText),
+          ]
+          const inputs = {
+            ...buildMyInfoInputs(),
+            [duplicateNameId]: buildMyInfoAnsweredInput(BasicField.ShortText),
+            [FIELD_IDS[BasicField.ShortText]]: buildDifferentialAnsweredInput(
+              BasicField.ShortText,
+            ),
+          } as FormFieldValues
+          const body = createClearSubmissionWithVirusScanningFormData(
+            { formFields, formInputs: inputs },
+            buildQuarantineMap(),
+          ).get('body') as string
+          const parsed = ParsedResponsesObject.parseResponses(
+            asFormDocument(formFields),
+            JSON.parse(body).responses,
+          )._unsafeUnwrap()
+
+          // Hash the independently specified MyInfo values, including the
+          // date format used by the MyInfo hash verifier.
+          const values = {
+            [MyInfoAttribute.Name]: 'MISS SHARON TAN MEI LENG',
+            [MyInfoAttribute.DateOfBirth]: '1990-09-09',
+            [MyInfoAttribute.Sex]: 'FEMALE',
+            [MyInfoAttribute.MobileNo]: '+6598765432',
+          }
+          const hashes = Object.fromEntries(
+            await Promise.all(
+              Object.entries(values)
+                .filter(
+                  ([attr]) =>
+                    selection === 'all' ||
+                    (selection === 'some' && attr === MyInfoAttribute.Name),
+                )
+                .map(async ([attr, value]) => [
+                  attr,
+                  await bcrypt.hash(value, 4),
+                ]),
+            ),
+          )
+          const verifiedKeys = (
+            await MyInfoService.checkMyInfoHashes(parsed.responses, hashes)
+          )._unsafeUnwrap()
+          const mrfIds = resolveMrfMyInfoReadOnlyFields({
+            verifiedKeys,
+            responses: createResponsesV4(
+              formFields,
+              inputs,
+              buildQuarantineMap(),
+            ) as ParsedClearFormFieldResponsesV4,
+          })
+
+          // The storage-mode side is read back off the questions that
+          // `formatMyInfoStorageResponseData` actually prefixed, not off the
+          // verified keys both producers start from: a divergence in either
+          // producer's own selection (an unanswered field, a second field on
+          // the same attribute, a children explosion) then fails here.
+          const storagePrefixedIds = new Set(
+            formatMyInfoStorageResponseData(
+              parsed.getAllResponses(),
+              verifiedKeys,
+            )
+              .filter((response) =>
+                response.question.startsWith(MYINFO_QUESTION_PREFIX),
+              )
+              .map((response) => response._id),
+          )
+
+          expect(new Set(mrfIds)).toEqual(storagePrefixedIds)
+          expect(storagePrefixedIds.size).toBe(
+            selection === 'all' ? 5 : selection === 'some' ? 2 : 0,
+          )
+          expectByteParity(formFields, inputs, {
+            hashedFields: verifiedKeys,
+            readOnlyFieldIds: mrfIds,
+          })
+        },
+      )
+    })
+
+    describe.each(MYINFO_FIELD_TYPES)('%s', (fieldType) => {
+      const formFields = [buildMyInfoField(fieldType)]
+      const inputs = {
+        [MYINFO_FIELD_IDS[fieldType]]: buildMyInfoAnsweredInput(fieldType),
+      } as FormFieldValues
+
+      it('read-only for this respondent', () => {
+        const readOnlyFieldIds = [MYINFO_FIELD_IDS[fieldType]]
+        expectByteParity(formFields, inputs, {
+          hashedFields: new Set(readOnlyFieldIds) as Set<MyInfoKey>,
+          readOnlyFieldIds,
+        })
+      })
+
+      it('user-provided for this respondent', () => {
+        expectByteParity(formFields, inputs)
+      })
+    })
+
+    describe('over a form of every MyInfo field type', () => {
+      it('all attributes read-only', () => {
+        const readOnlyFieldIds = ALL_MYINFO_FIELD_IDS()
+        expectByteParity(buildMyInfoFields(), buildMyInfoInputs(), {
+          hashedFields: new Set(readOnlyFieldIds) as Set<MyInfoKey>,
+          readOnlyFieldIds,
+        })
+      })
+
+      it('no attribute read-only', () => {
+        expectByteParity(buildMyInfoFields(), buildMyInfoInputs())
+      })
+
+      it('some attributes read-only', () => {
+        const readOnlyFieldIds = [
+          MYINFO_FIELD_IDS[BasicField.ShortText],
+          MYINFO_FIELD_IDS[BasicField.Date],
+        ]
+        expectByteParity(buildMyInfoFields(), buildMyInfoInputs(), {
+          hashedFields: new Set(readOnlyFieldIds) as Set<MyInfoKey>,
+          readOnlyFieldIds,
+        })
+      })
+    })
+
+    describe('the gate is not passing vacuously', () => {
+      it('the storage-mode reference carries the prefix when read-only', () => {
+        const questions = storageModeReference(
+          buildMyInfoFields(),
+          buildMyInfoInputs(),
+          new Set(ALL_MYINFO_FIELD_IDS()),
+        ).map((entry) => (entry as { question: string }).question)
+        expect(questions).toHaveLength(MYINFO_FIELD_TYPES.length)
+        expect(
+          questions.every((question) => question.startsWith('[Myinfo] ')),
+        ).toBe(true)
+      })
+
+      it('and carries none when nothing was read-only', () => {
+        const questions = storageModeReference(
+          buildMyInfoFields(),
+          buildMyInfoInputs(),
+          undefined,
+        ).map((entry) => (entry as { question: string }).question)
+        expect(
+          questions.some((question) => question.includes('[Myinfo]')),
+        ).toBe(false)
+      })
     })
   })
 

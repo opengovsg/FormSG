@@ -19,6 +19,7 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
+import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
@@ -67,10 +68,6 @@ export const isSubmissionMultirespondentMode = (
   return submission.submissionType === SubmissionType.Multirespondent
 }
 
-/**
- * Creates and returns a MultirespondentSubmissionDto object from submissionData and
- * attachment presigned urls.
- */
 export const createMultirespondentSubmissionDto = (
   submissionData: MultirespondentSubmissionData,
   attachmentPresignedUrls: Record<string, string>,
@@ -82,7 +79,10 @@ export const createMultirespondentSubmissionDto = (
       .tz('Asia/Singapore')
       .format('ddd, D MMM YYYY, hh:mm:ss A'),
 
-    form_fields: submissionData.form_fields,
+    form_fields: applyMyInfoPrefixToFormFields(
+      submissionData.form_fields,
+      submissionData.myInfoReadOnlyFields ?? [],
+    ),
     form_logics: submissionData.form_logics,
     workflow: submissionData.workflow,
 
@@ -435,6 +435,9 @@ export const stampMyInfoVerifiedOnResponses = (
   responses: ParsedClearFormFieldResponsesV4,
   verifiedKeys: Set<MyInfoKey>,
 ): void => {
+  // NOTE: MyInfo Children subfields are all assumed to be uneditable, so the
+  // myinfoVerified stamp applies to the root children field rather than to
+  // each individual subfield.
   const verified = Array.from(verifiedKeys)
   for (const [fieldId, response] of Object.entries(responses)) {
     // TODO: implement stamping for all Myinfo fields

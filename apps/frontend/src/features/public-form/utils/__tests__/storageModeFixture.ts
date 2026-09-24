@@ -3,6 +3,7 @@ import { times } from 'lodash'
 import {
   BasicField,
   FormFieldDto,
+  MyInfoAttribute,
   MyInfoChildAttributes,
 } from 'formsg-shared/types'
 
@@ -419,9 +420,6 @@ export const buildOptionalVerifiableField = (
  * only explodes it when hashedFields is present (a MyInfo form), which the
  * loop does not model. The dedicated `a MyInfo Children field` cases in the
  * parity spec cover it with hashedFields and provenance set.
- *
- * NOTE: MyInfo variants are absent too. Storage mode prepends `[Myinfo] ` to
- * their question text, and #9975 owns reproducing that.
  */
 export const DIFFERENTIAL_FIELD_TYPES: BasicField[] = ALL_FIELD_TYPES.filter(
   (fieldType) => fieldType !== BasicField.Children,
@@ -494,3 +492,69 @@ export const buildQuarantineMap = (): {
     quarantineBucketKey: ATTACHMENT_QUARANTINE_KEY,
   },
 ]
+
+export const MYINFO_FIELD_TYPES = [
+  BasicField.ShortText,
+  BasicField.Date,
+  BasicField.Dropdown,
+  BasicField.Mobile,
+] as const
+
+export type MyInfoFieldType = (typeof MYINFO_FIELD_TYPES)[number]
+
+export const MYINFO_FIELD_IDS: Record<MyInfoFieldType, string> = {
+  [BasicField.ShortText]: fieldId(0x201),
+  [BasicField.Date]: fieldId(0x202),
+  [BasicField.Dropdown]: fieldId(0x203),
+  [BasicField.Mobile]: fieldId(0x204),
+}
+
+export const MYINFO_ATTRS: Record<MyInfoFieldType, MyInfoAttribute> = {
+  [BasicField.ShortText]: MyInfoAttribute.Name,
+  [BasicField.Date]: MyInfoAttribute.DateOfBirth,
+  [BasicField.Dropdown]: MyInfoAttribute.Sex,
+  [BasicField.Mobile]: MyInfoAttribute.MobileNo,
+}
+
+const MYINFO_FIELD_OVERRIDES: Record<
+  MyInfoFieldType,
+  Record<string, unknown>
+> = {
+  [BasicField.ShortText]: {},
+  [BasicField.Date]: {},
+  [BasicField.Dropdown]: { fieldOptions: ['MALE', 'FEMALE'] },
+  [BasicField.Mobile]: { allowIntlNumbers: false },
+}
+
+export const buildMyInfoField = (fieldType: MyInfoFieldType): FormFieldDto =>
+  ({
+    ...buildDifferentialField(fieldType),
+    _id: MYINFO_FIELD_IDS[fieldType],
+    title: `myinfo ${fieldType} question`,
+    myInfo: { attr: MYINFO_ATTRS[fieldType] },
+    ...MYINFO_FIELD_OVERRIDES[fieldType],
+  }) as unknown as FormFieldDto
+
+export const MYINFO_ANSWER_BY_FIELD_TYPE: Record<MyInfoFieldType, unknown> = {
+  [BasicField.ShortText]: '  MISS SHARON TAN MEI LENG  ',
+  [BasicField.Date]: '09/09/1990',
+  [BasicField.Dropdown]: '  FEMALE  ',
+  [BasicField.Mobile]: { value: '+6598765432' },
+}
+
+export const buildMyInfoFields = (): FormFieldDto[] =>
+  MYINFO_FIELD_TYPES.map(buildMyInfoField)
+
+export const buildMyInfoAnsweredInput = (fieldType: MyInfoFieldType): unknown =>
+  MYINFO_ANSWER_BY_FIELD_TYPE[fieldType]
+
+export const buildMyInfoInputs = (): FormFieldValues => {
+  const inputs: Record<string, unknown> = {}
+  for (const fieldType of MYINFO_FIELD_TYPES) {
+    inputs[MYINFO_FIELD_IDS[fieldType]] = MYINFO_ANSWER_BY_FIELD_TYPE[fieldType]
+  }
+  return inputs as FormFieldValues
+}
+
+export const ALL_MYINFO_FIELD_IDS = (): string[] =>
+  MYINFO_FIELD_TYPES.map((fieldType) => MYINFO_FIELD_IDS[fieldType])

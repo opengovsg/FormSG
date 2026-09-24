@@ -479,6 +479,7 @@ describe('Multirespondent Submission Middleware', () => {
     beforeEach(() => {
       jest.clearAllMocks()
       jest.resetAllMocks()
+      jest.mocked(MyInfoService.fetchMyInfoHashes).mockReturnValue(okAsync({}))
     })
 
     describe('submitterId is set', () => {
@@ -968,7 +969,7 @@ describe('Multirespondent Submission Middleware', () => {
       jest.resetAllMocks()
     })
 
-    it('should allow the submission through when MyInfo hashes match', async () => {
+    it('should retain verified field IDs when MyInfo hashes match', async () => {
       // Arrange
       setupMyInfoLoginMocks()
       jest
@@ -991,6 +992,9 @@ describe('Multirespondent Submission Middleware', () => {
         'S1234567A',
         MOCK_FORM_ID,
       )
+      expect(mockReq.formsg.myInfoReadOnlyFields).toEqual([
+        MOCK_MYINFO_FIELD_ID,
+      ])
       // The responses passed to the hash check must be adapted from the V4
       // shape, with the myInfo attribute sourced from the form definition.
       expect(jest.mocked(MyInfoService.checkMyInfoHashes)).toHaveBeenCalledWith(
@@ -1253,6 +1257,34 @@ describe('Multirespondent Submission Middleware', () => {
       expect(jest.mocked(adaptV4ToV3)).not.toHaveBeenCalled()
       expect(mockReq.formsg.encryptedPayload.mrfVersion).toBe(2)
       expect(mockNext).toHaveBeenCalled()
+    })
+
+    it('carries verified field IDs through encryption and NDI handling without fetching hashes again', async () => {
+      const mockReq = createMockEncryptReq(false)
+      mockReq.formsg.formDef.authType = FormAuthType.MyInfo
+      jest
+        .mocked(MyInfoService.fetchMyInfoHashes)
+        .mockReturnValue(okAsync({ name: 'hash' }))
+      jest
+        .mocked(MyInfoService.checkMyInfoHashes)
+        .mockReturnValue(okAsync(new Set(['field1'])))
+      jest
+        .mocked(VerifiedContentService.getVerifiedContent)
+        .mockReturnValue(ok({ uinFin: 'S1234567A' }))
+      jest.mocked(MyInfoUtil.extractMyInfoLoginJwt).mockReturnValue(ok('jwt'))
+      jest
+        .mocked(MyInfoService.verifyLoginJwt)
+        .mockReturnValue(ok({ uinFin: 'S1234567A' }))
+      const mockRes = createMockRes()
+
+      await verifyMyInfoHashes(mockReq, mockRes as any, jest.fn())
+      await encryptSubmission(mockReq, mockRes as any, jest.fn())
+      await handleNdiResponses(mockReq, mockRes as any, jest.fn())
+
+      expect(mockReq.formsg.encryptedPayload.myInfoReadOnlyFields).toEqual([
+        'field1',
+      ])
+      expect(MyInfoService.fetchMyInfoHashes).toHaveBeenCalledTimes(1)
     })
 
     it('should return 500 and not call next() when decryptFromSubmissionKey returns falsy', async () => {

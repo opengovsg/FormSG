@@ -47,6 +47,7 @@ export const SubmissionBase = z.object({
   authType: z.nativeEnum(FormAuthType),
   submitterId: z.string().optional(),
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
+  myInfoReadOnlyFields: z.array(z.string()).optional(),
   submissionType: z.nativeEnum(SubmissionType),
   responseMetadata: ResponseMetadata.optional(),
   webhookResponses: z.array(WebhookResponse).optional(),

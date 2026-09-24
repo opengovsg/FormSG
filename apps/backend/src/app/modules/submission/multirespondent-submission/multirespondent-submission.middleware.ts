@@ -96,6 +96,7 @@ import {
   stampMyInfoVerifiedOnResponses,
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
+import { resolveMrfMyInfoReadOnlyFields } from './myinfo-read-only-fields'
 import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
@@ -932,6 +933,10 @@ export const verifyMyInfoHashes = async (
       ),
     )
     .map((verifiedKeys) => {
+      req.formsg.myInfoReadOnlyFields = resolveMrfMyInfoReadOnlyFields({
+        verifiedKeys,
+        responses: req.body.responses ?? {},
+      })
       // Children fields are MyInfo-prefilled and non-editable, so record
       // the successful verification on the stored response's provenance.
       stampMyInfoVerifiedOnResponses(req.body.responses ?? {}, verifiedKeys)
@@ -1062,6 +1067,7 @@ export const encryptSubmission = async (
     encryptedSubmissionSecretKey,
     encryptedContent,
     submissionSecretKey,
+    myInfoReadOnlyFields: req.formsg.myInfoReadOnlyFields,
     version: req.body.version,
     workflowStep: req.body.workflowStep,
     responses: responses as FieldResponsesV4,

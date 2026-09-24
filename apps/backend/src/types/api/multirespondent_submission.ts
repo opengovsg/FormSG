@@ -46,6 +46,8 @@ export type MultirespondentFormLoadedDto = {
   mrfSubmission?: IMultirespondentSubmissionSchema
   featureFlags: string[]
   respondentEmails?: string[]
+  // Resolved by verifyMyInfoHashes, before the payload is encrypted.
+  myInfoReadOnlyFields?: string[]
 }
 
 export type MultirespondentFormCompleteDto = MultirespondentFormLoadedDto & {
@@ -68,6 +70,7 @@ export type MultirespondentSubmissionDto = {
   workflowStep: number
   hashedSubmitterId?: string
   submitterId?: string
+  myInfoReadOnlyFields?: string[]
   responses: FieldResponsesV4
   mrfVersion: number
   stepToken?: string

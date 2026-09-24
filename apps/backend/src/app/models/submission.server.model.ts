@@ -105,6 +105,11 @@ export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
         },
       ],
     },
+    myInfoReadOnlyFields: {
+      type: [String],
+      // Mongoose otherwise defaults array paths to [].
+      default: undefined,
+    },
     submissionType: {
       type: String,
       enum: Object.values(SubmissionType),
@@ -862,6 +867,7 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     submissionType: 1,
     form_fields: 1,
     form_logics: 1,
+    myInfoReadOnlyFields: 1,
     workflow: 1,
     workflowStep: 1,
     ...buildAdminSubmittedStepsMongoProjection(),
@@ -906,6 +912,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       submissionType: 1,
       form_fields: 1,
       form_logics: 1,
+      myInfoReadOnlyFields: 1,
       workflow: 1,
       submissionPublicKey: 1,
       encryptedSubmissionSecretKey: 1,
