@@ -188,8 +188,6 @@ describe('[GATE] v4 initial-send route parity', () => {
         policy: getWebhookPayloadPolicy({
           webhookType,
           webhookFormat: 'v4',
-          submissionIndex,
-          submittedStepsLength: submission.submittedSteps?.length ?? 0,
         }),
       })._unsafeUnwrap(),
     })

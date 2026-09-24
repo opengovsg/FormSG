@@ -21,8 +21,6 @@ export type WebhookConsumerType = 'plumber' | 'generic'
 export interface WebhookPayloadPolicyInput {
   webhookType: WebhookConsumerType
   webhookFormat: FormWebhook['webhookFormat']
-  submissionIndex: number
-  submittedStepsLength: number
   logMeta?: CustomLoggerParams['meta']
 }
 
@@ -36,27 +34,31 @@ export interface WebhookPayloadPolicy extends KeyPermissionsPolicy {
 export const getKeyPermissionsPolicy = ({
   contentFormat,
 }: {
-  webhookType: WebhookConsumerType
-  submissionIndex: number
-  submittedStepsLength: number
   contentFormat: WebhookContentFormat
-}): Omit<WebhookPayloadPolicy, 'contentFormat'> => {
-  return {
-    includeEncryptedSubmissionSecretKey: contentFormat === 'v4',
-  }
-}
+}): Omit<WebhookPayloadPolicy, 'contentFormat'> => ({
+  includeEncryptedSubmissionSecretKey: contentFormat === 'v4',
+})
+
+export const resolveWebhookContentFormat = ({
+  webhookType,
+  webhookFormat,
+}: Pick<
+  WebhookPayloadPolicyInput,
+  'webhookType' | 'webhookFormat'
+>): WebhookContentFormat =>
+  webhookType === 'plumber'
+    ? FORMAT_FOR_PLUMBER_WEBHOOKS
+    : (webhookFormat ?? FORMAT_FOR_NEW_GENERIC_WEBHOOKS)
 
 export const getWebhookPayloadPolicy = ({
   webhookType,
   webhookFormat,
-  submissionIndex,
-  submittedStepsLength,
   logMeta,
 }: WebhookPayloadPolicyInput): WebhookPayloadPolicy => {
-  const contentFormat: WebhookContentFormat =
-    webhookType === 'plumber'
-      ? FORMAT_FOR_PLUMBER_WEBHOOKS
-      : (webhookFormat ?? FORMAT_FOR_NEW_GENERIC_WEBHOOKS)
+  const contentFormat = resolveWebhookContentFormat({
+    webhookType,
+    webhookFormat,
+  })
 
   if (webhookType === 'generic' && !webhookFormat) {
     logger.warn({
@@ -71,16 +73,9 @@ export const getWebhookPayloadPolicy = ({
     })
   }
 
-  const keyPermissionsPolicy = getKeyPermissionsPolicy({
-    webhookType,
-    submissionIndex,
-    submittedStepsLength,
-    contentFormat,
-  })
-
   return {
     contentFormat,
-    ...keyPermissionsPolicy,
+    ...getKeyPermissionsPolicy({ contentFormat }),
   }
 }
 

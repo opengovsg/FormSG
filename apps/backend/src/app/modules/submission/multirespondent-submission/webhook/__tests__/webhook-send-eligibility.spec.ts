@@ -1,5 +1,6 @@
-import { WebhookType } from 'src/app/modules/webhook/webhook.service'
+import { FormWebhook } from 'formsg-shared/types'
 
+import { WebhookConsumerType } from '../webhook-payload-policy'
 import {
   shouldSendMrfWebhook,
   shouldWriteV4Snapshot,
@@ -11,47 +12,111 @@ const ZAPIER_URL = 'https://hooks.zapier.com/hooks/catch/1/x'
 
 describe('shouldSendMrfWebhook', () => {
   it.each<{
-    webhookType: WebhookType
+    webhookConsumerType: WebhookConsumerType
+    webhookFormat: FormWebhook['webhookFormat']
     isMrfWebhooksEnabled: boolean
+    workflowStepCount: number
     expected: boolean
   }>([
     {
-      webhookType: 'plumber',
+      webhookConsumerType: 'plumber',
+      webhookFormat: undefined,
       isMrfWebhooksEnabled: false,
+      workflowStepCount: 0,
       expected: true,
     },
     {
-      webhookType: 'plumber',
+      webhookConsumerType: 'plumber',
+      webhookFormat: undefined,
       isMrfWebhooksEnabled: true,
+      workflowStepCount: 3,
       expected: true,
     },
     {
-      webhookType: 'generic',
+      webhookConsumerType: 'plumber',
+      webhookFormat: 'v1',
+      isMrfWebhooksEnabled: true,
+      workflowStepCount: 3,
+      expected: true,
+    },
+    {
+      webhookConsumerType: 'generic',
+      webhookFormat: undefined,
       isMrfWebhooksEnabled: false,
+      workflowStepCount: 0,
       expected: false,
     },
     {
-      webhookType: 'generic',
-      isMrfWebhooksEnabled: true,
-      expected: true,
-    },
-    {
-      webhookType: 'zapier',
+      webhookConsumerType: 'generic',
+      webhookFormat: 'v4',
       isMrfWebhooksEnabled: false,
+      workflowStepCount: 0,
       expected: false,
     },
     {
-      webhookType: 'zapier',
+      webhookConsumerType: 'generic',
+      webhookFormat: undefined,
       isMrfWebhooksEnabled: true,
+      workflowStepCount: 0,
+      expected: true,
+    },
+    {
+      webhookConsumerType: 'generic',
+      webhookFormat: 'v1',
+      isMrfWebhooksEnabled: true,
+      workflowStepCount: 1,
+      expected: true,
+    },
+    {
+      webhookConsumerType: 'generic',
+      webhookFormat: 'v1',
+      isMrfWebhooksEnabled: true,
+      workflowStepCount: 2,
+      expected: false,
+    },
+    {
+      webhookConsumerType: 'generic',
+      webhookFormat: undefined,
+      isMrfWebhooksEnabled: true,
+      workflowStepCount: 2,
+      expected: false,
+    },
+    {
+      webhookConsumerType: 'generic',
+      webhookFormat: 'v4',
+      isMrfWebhooksEnabled: true,
+      workflowStepCount: 2,
+      expected: true,
+    },
+    {
+      webhookConsumerType: 'generic',
+      webhookFormat: 'v4',
+      isMrfWebhooksEnabled: true,
+      workflowStepCount: 7,
+      expected: true,
+    },
+    {
+      webhookConsumerType: 'generic',
+      webhookFormat: 'v4',
+      isMrfWebhooksEnabled: true,
+      workflowStepCount: 1,
       expected: true,
     },
   ])(
-    '$webhookType with enable-mrf-webhooks=$isMrfWebhooksEnabled => $expected',
-    ({ webhookType, isMrfWebhooksEnabled, expected }) => {
+    '$webhookConsumerType/$webhookFormat, flag=$isMrfWebhooksEnabled, $workflowStepCount step(s) => $expected',
+    ({
+      webhookConsumerType,
+      webhookFormat,
+      isMrfWebhooksEnabled,
+      workflowStepCount,
+      expected,
+    }) => {
       expect(
         shouldSendMrfWebhook({
-          webhookType,
+          webhookConsumerType,
+          webhookFormat,
           isMrfWebhooksEnabled,
+          workflowStepCount,
         }),
       ).toBe(expected)
     },
@@ -62,8 +127,13 @@ describe('shouldWriteV4Snapshot', () => {
   it.each<{
     name: string
     mrfVersion: number
-    webhook?: { url?: string; isRetryEnabled?: boolean }
+    webhook?: {
+      url?: string
+      isRetryEnabled?: boolean
+      webhookFormat?: FormWebhook['webhookFormat']
+    }
     isMrfWebhooksEnabled: boolean
+    workflowStepCount?: number
     expected: boolean
   }>([
     {
@@ -95,6 +165,14 @@ describe('shouldWriteV4Snapshot', () => {
       expected: true,
     },
     {
+      name: 'plumber snapshots a multi-step form, which V4 can represent',
+      mrfVersion: 2,
+      webhook: { url: PLUMBER_URL, isRetryEnabled: true },
+      isMrfWebhooksEnabled: false,
+      workflowStepCount: 4,
+      expected: true,
+    },
+    {
       name: 'generic with the flag off is never delivered, so never snapshots',
       mrfVersion: 2,
       webhook: { url: GENERIC_URL, isRetryEnabled: true },
@@ -102,33 +180,90 @@ describe('shouldWriteV4Snapshot', () => {
       expected: false,
     },
     {
-      name: 'generic with enable-mrf-webhooks snapshots',
+      name: 'generic with no format resolves to V1, so writes no V4 snapshot',
       mrfVersion: 2,
       webhook: { url: GENERIC_URL, isRetryEnabled: true },
       isMrfWebhooksEnabled: true,
-      expected: true,
-    },
-    {
-      name: 'zapier with the flag off is never delivered, so never snapshots',
-      mrfVersion: 2,
-      webhook: { url: ZAPIER_URL, isRetryEnabled: true },
-      isMrfWebhooksEnabled: false,
       expected: false,
     },
     {
-      name: 'zapier with enable-mrf-webhooks snapshots',
+      name: 'zapier with no format resolves to V1, so writes no V4 snapshot',
       mrfVersion: 2,
       webhook: { url: ZAPIER_URL, isRetryEnabled: true },
       isMrfWebhooksEnabled: true,
+      expected: false,
+    },
+    {
+      name: 'generic asking for V4 with enable-mrf-webhooks snapshots',
+      mrfVersion: 2,
+      webhook: {
+        url: GENERIC_URL,
+        isRetryEnabled: true,
+        webhookFormat: 'v4',
+      },
+      isMrfWebhooksEnabled: true,
       expected: true,
     },
-  ])('$name', ({ mrfVersion, webhook, isMrfWebhooksEnabled, expected }) => {
-    expect(
-      shouldWriteV4Snapshot({
-        mrfVersion,
-        webhook,
-        isMrfWebhooksEnabled,
-      }),
-    ).toBe(expected)
-  })
+    {
+      name: 'zapier asking for V4 with enable-mrf-webhooks snapshots',
+      mrfVersion: 2,
+      webhook: {
+        url: ZAPIER_URL,
+        isRetryEnabled: true,
+        webhookFormat: 'v4',
+      },
+      isMrfWebhooksEnabled: true,
+      expected: true,
+    },
+    {
+      name: 'a generic multi-step form on the V1 shape is not delivered to at all, so it snapshots nothing',
+      mrfVersion: 2,
+      webhook: { url: GENERIC_URL, isRetryEnabled: true },
+      isMrfWebhooksEnabled: true,
+      workflowStepCount: 2,
+      expected: false,
+    },
+    {
+      name: 'a one-step generic form asking for V1 writes no V4 snapshot',
+      mrfVersion: 2,
+      webhook: {
+        url: GENERIC_URL,
+        isRetryEnabled: true,
+        webhookFormat: 'v1',
+      },
+      isMrfWebhooksEnabled: true,
+      workflowStepCount: 1,
+      expected: false,
+    },
+    {
+      name: 'a generic multi-step form on the V4 shape is delivered to, so it snapshots',
+      mrfVersion: 2,
+      webhook: {
+        url: GENERIC_URL,
+        isRetryEnabled: true,
+        webhookFormat: 'v4',
+      },
+      isMrfWebhooksEnabled: true,
+      workflowStepCount: 2,
+      expected: true,
+    },
+  ])(
+    '$name',
+    ({
+      mrfVersion,
+      webhook,
+      isMrfWebhooksEnabled,
+      workflowStepCount = 0,
+      expected,
+    }) => {
+      expect(
+        shouldWriteV4Snapshot({
+          mrfVersion,
+          webhook,
+          isMrfWebhooksEnabled,
+          workflowStepCount,
+        }),
+      ).toBe(expected)
+    },
+  )
 })

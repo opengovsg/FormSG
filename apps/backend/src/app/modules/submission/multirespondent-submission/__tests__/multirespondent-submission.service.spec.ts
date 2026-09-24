@@ -7,6 +7,7 @@ import {
   FormAuthType,
   FormFieldDto,
   FormResponseMode,
+  FormWebhook,
   FormWorkflowStepDto,
   SubmissionType,
   WorkflowStatus,
@@ -3760,9 +3761,26 @@ describe('multirespondent-submission.service', () => {
         _id: stepId1,
         workflow_type: WorkflowType.Static,
         emails: ['next@example.com'],
+
         edit: [fieldId],
       },
     ]
+
+    const oneStepWorkflow: FormWorkflowStepDto[] = [twoStepWorkflow[0]]
+
+    const genericV4Webhook = (url: string = GENERIC_URL) => {
+      return { url, isRetryEnabled: true, webhookFormat: 'v4' } as any
+    }
+
+    const genericWebhook = ({
+      url = GENERIC_URL,
+      webhookFormat,
+    }: {
+      url?: string
+      webhookFormat?: FormWebhook['webhookFormat']
+    }) => {
+      return { url, isRetryEnabled: true, webhookFormat } as any
+    }
 
     const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
 
@@ -3981,15 +3999,21 @@ describe('multirespondent-submission.service', () => {
     })
 
     it.each`
-      label                       | enableMrfWebhooks | expectWritten
-      ${'flag off'}               | ${false}          | ${false}
-      ${'enable-mrf-webhooks on'} | ${true}           | ${true}
+      label                                     | webhookFormat | workflow           | enableMrfWebhooks | expectWritten
+      ${'v4, flag off'}                         | ${'v4'}       | ${twoStepWorkflow} | ${false}          | ${false}
+      ${'v4, enable-mrf-webhooks on'}           | ${'v4'}       | ${twoStepWorkflow} | ${true}           | ${true}
+      ${'v1 by default, 2 steps (not sent)'}    | ${undefined}  | ${twoStepWorkflow} | ${true}           | ${false}
+      ${'v1 by default, 1 step (sent as V1)'}   | ${undefined}  | ${oneStepWorkflow} | ${true}           | ${false}
+      ${'v1 explicit, 1 step (sent as V1)'}     | ${'v1'}       | ${oneStepWorkflow} | ${true}           | ${false}
+      ${'v1 by default, no steps (sent as V1)'} | ${undefined}  | ${[]}              | ${true}           | ${false}
+      ${'v4, 1 step'}                           | ${'v4'}       | ${oneStepWorkflow} | ${true}           | ${true}
     `(
-      'generic V4 create snapshot write ($label) -> written=$expectWritten',
-      async ({ enableMrfWebhooks, expectWritten }) => {
+      'generic create snapshot write ($label) -> written=$expectWritten',
+      async ({ webhookFormat, workflow, enableMrfWebhooks, expectWritten }) => {
         const result = await createMultiRespondentFormSubmission({
           form: buildV4Form({
-            webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+            workflow,
+            webhook: genericWebhook({ webhookFormat }),
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: { action: 'test' },
@@ -4024,7 +4048,7 @@ describe('multirespondent-submission.service', () => {
       const result = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
         snapshottedFormDef: buildSnapshottedFormDef({
-          webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+          webhook: genericV4Webhook(),
         }),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -4123,23 +4147,43 @@ describe('multirespondent-submission.service', () => {
     // ---- Send gate table ----
 
     it.each`
-      label                  | url            | enableMrfWebhooks | expectSent
-      ${'plumber, flag off'} | ${PLUMBER_URL} | ${false}          | ${true}
-      ${'plumber, flag on'}  | ${PLUMBER_URL} | ${true}           | ${true}
-      ${'generic, flag off'} | ${GENERIC_URL} | ${false}          | ${false}
-      ${'generic, flag on'}  | ${GENERIC_URL} | ${true}           | ${true}
-      ${'zapier, flag off'}  | ${ZAPIER_URL}  | ${false}          | ${false}
-      ${'zapier, flag on'}   | ${ZAPIER_URL}  | ${true}           | ${true}
+      label                                | url            | webhookFormat | workflow           | enableMrfWebhooks | expectSent
+      ${'plumber, flag off'}               | ${PLUMBER_URL} | ${undefined}  | ${twoStepWorkflow} | ${false}          | ${true}
+      ${'plumber, flag on'}                | ${PLUMBER_URL} | ${undefined}  | ${twoStepWorkflow} | ${true}           | ${true}
+      ${'generic v4, flag off'}            | ${GENERIC_URL} | ${'v4'}       | ${twoStepWorkflow} | ${false}          | ${false}
+      ${'generic v4, flag on'}             | ${GENERIC_URL} | ${'v4'}       | ${twoStepWorkflow} | ${true}           | ${true}
+      ${'zapier v4, flag off'}             | ${ZAPIER_URL}  | ${'v4'}       | ${twoStepWorkflow} | ${false}          | ${false}
+      ${'zapier v4, flag on'}              | ${ZAPIER_URL}  | ${'v4'}       | ${twoStepWorkflow} | ${true}           | ${true}
+      ${'generic v1 by default, 2 steps'}  | ${GENERIC_URL} | ${undefined}  | ${twoStepWorkflow} | ${true}           | ${false}
+      ${'generic v1 explicit, 2 steps'}    | ${GENERIC_URL} | ${'v1'}       | ${twoStepWorkflow} | ${true}           | ${false}
+      ${'zapier v1 by default, 2 steps'}   | ${ZAPIER_URL}  | ${undefined}  | ${twoStepWorkflow} | ${true}           | ${false}
+      ${'plumber, 2 steps, v1 requested'}  | ${PLUMBER_URL} | ${'v1'}       | ${twoStepWorkflow} | ${true}           | ${true}
+      ${'generic v1 by default, 1 step'}   | ${GENERIC_URL} | ${undefined}  | ${oneStepWorkflow} | ${true}           | ${true}
+      ${'generic v1 explicit, 1 step'}     | ${GENERIC_URL} | ${'v1'}       | ${oneStepWorkflow} | ${true}           | ${true}
+      ${'generic v4, 1 step'}              | ${GENERIC_URL} | ${'v4'}       | ${oneStepWorkflow} | ${true}           | ${true}
+      ${'generic v1 by default, no steps'} | ${GENERIC_URL} | ${undefined}  | ${[]}              | ${true}           | ${true}
     `(
       'send gate: $label -> sent=$expectSent',
-      async ({ url, enableMrfWebhooks, expectSent }) => {
+      async ({
+        url,
+        webhookFormat,
+        workflow,
+        enableMrfWebhooks,
+        expectSent,
+      }) => {
         const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
         const submission = buildSubmissionWithToken(undefined)
 
         await performMultiRespondentPostSubmissionCreateActions({
           submission,
           submissionId: submission._id.toString(),
-          form: buildV4Form({ webhook: { url, isRetryEnabled: true } as any }),
+          form: buildV4Form({
+            workflow,
+            webhook:
+              url === PLUMBER_URL
+                ? ({ url, isRetryEnabled: true, webhookFormat } as any)
+                : genericWebhook({ url, webhookFormat }),
+          }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
           growthbook: growthbookWithFlags({ enableMrfWebhooks }),
@@ -4147,6 +4191,65 @@ describe('multirespondent-submission.service', () => {
         await flushPromises()
 
         expect(sendSpy).toHaveBeenCalledTimes(expectSent ? 1 : 0)
+      },
+    )
+
+    // ---- Delivery across every step of a multi-step form ----
+
+    it.each`
+      label                     | webhookFormat | expectedSends
+      ${'V4'}                   | ${'v4'}       | ${2}
+      ${'V1 (format unset)'}    | ${undefined}  | ${0}
+      ${'V1 (format explicit)'} | ${'v1'}       | ${0}
+    `(
+      'a two-step generic form on the $label shape delivers $expectedSends payload(s) across its 2 steps',
+      async ({ webhookFormat, expectedSends }) => {
+        const sendSpy = jest.mocked(WebhookFactory.sendInitialWebhook)
+        const webhook = genericWebhook({ webhookFormat })
+        const growthbook = growthbookWithFlags({ enableMrfWebhooks: true })
+
+        const created = await createMultiRespondentFormSubmission({
+          form: buildV4Form({ webhook }),
+          encryptedPayload: buildV4Payload(),
+          logMeta: { action: 'test' },
+          growthbook,
+        })
+        const { submission, snapshot } = created._unsafeUnwrap()
+
+        await performMultiRespondentPostSubmissionCreateActions({
+          submission,
+          snapshot,
+          submissionId: submission._id.toString(),
+          form: buildV4Form({ webhook }),
+          encryptedPayload: buildV4Payload(),
+          logMeta: {} as any,
+          growthbook,
+        })
+        await flushPromises()
+
+        const updated = await updateMultiRespondentFormSubmission({
+          submissionId: submission._id.toString(),
+          snapshottedFormDef: buildSnapshottedFormDef({ webhook }),
+          encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+          logMeta: { action: 'test' },
+          growthbook,
+        })
+        const { submission: advanced, snapshot: advancedSnapshot } =
+          updated._unsafeUnwrap()
+
+        await performMultiRespondentPostSubmissionUpdateActions({
+          submission: advanced,
+          snapshot: advancedSnapshot,
+          submissionId: advanced._id.toString(),
+          snapshottedFormDef: buildSnapshottedFormDef({ webhook }),
+          currentStepNumber: 1,
+          encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+          logMeta: {} as any,
+          growthbook,
+        })
+        await flushPromises()
+
+        expect(sendSpy).toHaveBeenCalledTimes(expectedSends)
       },
     )
 
@@ -4168,7 +4271,7 @@ describe('multirespondent-submission.service', () => {
           snapshot: withSnapshot ? buildSnapshot() : undefined,
           submissionId: submission._id.toString(),
           form: buildV4Form({
-            webhook: { url: GENERIC_URL, isRetryEnabled: true } as any,
+            webhook: genericV4Webhook(),
           }),
           encryptedPayload: buildV4Payload(),
           logMeta: {} as any,
@@ -4241,7 +4344,10 @@ describe('multirespondent-submission.service', () => {
             snapshot,
             submissionId: row._id.toString(),
             form: buildV4Form({
-              webhook: { url, isRetryEnabled: true } as any,
+              webhook:
+                url === PLUMBER_URL
+                  ? ({ url, isRetryEnabled: true } as any)
+                  : genericV4Webhook(url),
             }),
             encryptedPayload: buildV4Payload(),
             logMeta: {} as any,
