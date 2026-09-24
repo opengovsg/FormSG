@@ -77,10 +77,16 @@ export const enSG: ResponsesResponsesPage = {
         checkAll: 'Check all',
         uncheckAll: 'Uncheck all',
       },
+      sortMenu: {
+        column: 'Column',
+        direction: 'Direction',
+        none: 'None',
+        ascending: 'Ascending',
+        descending: 'Descending',
+      },
       toolbar: {
         filter: 'Filter',
         sort: 'Sort',
-        group: 'Group',
         columns: 'Columns',
       },
       downloadButton: {
