@@ -156,7 +156,7 @@ export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {
 })
 
 /**
- * Child sub-field options offered for a given form. Child type distinguishes
+ * Child sub-field options offered for a given form. Record type distinguishes
  * the respondent's own children from sponsored children, which are only
  * fetched for Multirespondent forms while the mrf-children flag is on, so it
  * is only offered there.
