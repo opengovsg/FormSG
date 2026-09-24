@@ -18,6 +18,7 @@ import {
   DuplicateFormBodyDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
   FormAuthType,
   FormColorTheme,
   FormEndPage,
@@ -1473,6 +1474,67 @@ describe('admin-form.service', () => {
         session: null,
       })
     })
+
+    it('should pin a generic webhook url to the platform default format on creation', async () => {
+      // Arrange
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Email,
+        emails: 'example@example.com',
+        webhook: { url: 'https://example.com', isRetryEnabled: false },
+      }
+      const expectedForm = {
+        _id: new ObjectId(),
+        ...formParams,
+      } as IFormSchema
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockResolvedValueOnce(expectedForm as never)
+
+      // Act
+      const actualResult = await AdminFormService.createForm(formParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+      expect(createSpy).toHaveBeenCalledWith({
+        ...withCreationDefaults(formParams),
+        webhook: {
+          url: 'https://example.com',
+          isRetryEnabled: false,
+          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+        },
+      })
+    })
+
+    it('should not override an explicitly provided webhookFormat on creation', async () => {
+      // Arrange
+      const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
+        title: 'create form title',
+        admin: new ObjectId().toHexString(),
+        responseMode: FormResponseMode.Email,
+        emails: 'example@example.com',
+        webhook: {
+          url: 'https://example.com',
+          isRetryEnabled: false,
+          webhookFormat: 'v4',
+        },
+      }
+      const expectedForm = {
+        _id: new ObjectId(),
+        ...formParams,
+      } as IFormSchema
+      const createSpy = jest
+        .spyOn(FormModel, 'create')
+        .mockResolvedValueOnce(expectedForm as never)
+
+      // Act
+      const actualResult = await AdminFormService.createForm(formParams)
+
+      // Assert
+      expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
+    })
   })
 
   describe('editFormFields', () => {
@@ -1796,7 +1858,10 @@ describe('admin-form.service', () => {
       expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
         MOCK_ENCRYPT_FORM._id,
         // Should be dotified
-        { 'webhook.url': 'https://example.com' },
+        {
+          'webhook.url': 'https://example.com',
+          'webhook.webhookFormat': 'v1',
+        },
         { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
@@ -1879,8 +1944,10 @@ describe('admin-form.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
       expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
         MOCK_MULTIRESPONDENT_FORM._id,
-        // Should be dotified
-        { 'webhook.url': 'https://example.com' },
+        {
+          'webhook.url': 'https://example.com',
+          'webhook.webhookFormat': 'v1',
+        },
         { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)

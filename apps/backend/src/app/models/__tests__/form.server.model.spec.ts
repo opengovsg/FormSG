@@ -1213,6 +1213,37 @@ describe('Form Model', () => {
       })
     })
 
+    describe('webhook.webhookFormat', () => {
+      const saveWithWebhook = async (webhook: Record<string, unknown>) => {
+        const form = await new MultirespondentForm({
+          ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+          webhook,
+        }).save()
+
+        const reread = await Form.findById(form._id).lean()
+        return (reread as unknown as { webhook?: Record<string, unknown> })
+          .webhook
+      }
+
+      it.each(['v1', 'v4'])('stores %p and reads it back', async (format) => {
+        await expect(
+          saveWithWebhook({ url: '', webhookFormat: format }),
+        ).resolves.toEqual(expect.objectContaining({ webhookFormat: format }))
+      })
+
+      it('rejects a value outside the enum', async () => {
+        await expect(
+          saveWithWebhook({ url: '', webhookFormat: 'v2' }),
+        ).rejects.toThrow(mongoose.Error.ValidationError)
+      })
+
+      it('leaves the term absent when it is not written', async () => {
+        await expect(
+          saveWithWebhook({ url: '', isRetryEnabled: true }),
+        ).resolves.not.toHaveProperty('webhookFormat')
+      })
+    })
+
     describe('Email form schema', () => {
       const EMAIL_FORM_DEFAULTS = merge(
         { responseMode: 'email', isForceConvertToStorageMode: false },

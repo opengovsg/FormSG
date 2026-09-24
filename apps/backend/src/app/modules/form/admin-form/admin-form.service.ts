@@ -19,6 +19,7 @@ import {
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
+  FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
   FormFieldDto,
   FormLogoState,
   FormMetadata,
@@ -26,6 +27,7 @@ import {
   FormResponseMode,
   FormSettings,
   FormStatus,
+  FormWebhook,
   FormWorkflowDto,
   FormWorkflowStepDto,
   LogicDto,
@@ -96,6 +98,7 @@ import {
 } from '../../core/core.errors'
 import { MissingUserError } from '../../user/user.errors'
 import * as UserService from '../../user/user.service'
+import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import {
   FormInvalidResponseModeError,
@@ -590,7 +593,10 @@ export const createForm = (
 
   // Copied forms bypass createForm, so they keep inheriting their source's
   // setting; the schema default stays false for forms predating the field.
-  const newFormParams = { ...formParams, isSaveDraftEnabled: true }
+  const newFormParams = pinGenericConsumerWebhookFormat(
+    { ...formParams, isSaveDraftEnabled: true },
+    formParams.webhook?.webhookFormat,
+  )
 
   if (workspaceId)
     return ResultAsync.fromPromise(
@@ -2104,6 +2110,40 @@ const withHasUsedGuidedModeWriteOnce = (
 }
 
 /**
+ * Pins a generic consumer's webhook to the platform default the first time a
+ * generic webhook URL is set.
+ * RATIONALE: Do not set for plumber consumers since they will always be v4.
+ */
+const pinGenericConsumerWebhookFormat = <
+  T extends { webhook?: Partial<FormWebhook> },
+>(
+  body: T,
+  existingWebhookFormat: FormWebhook['webhookFormat'],
+): T => {
+  const isGenericWebhookUrl =
+    !!body.webhook?.url &&
+    toConsumerType(getWebhookType(body.webhook.url)) === 'generic'
+
+  if (!isGenericWebhookUrl || existingWebhookFormat !== undefined) {
+    return body
+  }
+
+  return {
+    ...body,
+    webhook: {
+      ...body.webhook,
+      webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+    },
+  }
+}
+
+const withGenericConsumerPlatformDefaultWebhookFormat = (
+  originalForm: IPopulatedForm,
+  body: SettingsUpdateDto,
+): SettingsUpdateDto =>
+  pinGenericConsumerWebhookFormat(body, originalForm.webhook?.webhookFormat)
+
+/**
  * Updates form settings.
  * @param originalForm The original form to update settings for
  * @param body the subset of form settings to update
@@ -2187,9 +2227,12 @@ export const updateFormSettings = (
   }
 
   const dotifiedSettingsToUpdate = dotifyObject(
-    withHasUsedGuidedModeWriteOnce(
+    withGenericConsumerPlatformDefaultWebhookFormat(
       originalForm,
-      withExpiredCloseAtCleared(originalForm, body),
+      withHasUsedGuidedModeWriteOnce(
+        originalForm,
+        withExpiredCloseAtCleared(originalForm, body),
+      ),
     ),
   )
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)

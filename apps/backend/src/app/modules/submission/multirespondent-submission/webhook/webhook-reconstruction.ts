@@ -1,4 +1,4 @@
-import { ok, Result } from 'neverthrow'
+import { err, ok, Result } from 'neverthrow'
 
 import { WebhookData } from 'src/types/submission'
 
@@ -34,7 +34,34 @@ export const reconstructMrfWebhookData = (
   const { liveData, snapshot, submissionIndex, policy } = input
 
   if (snapshot === undefined) {
+    // RATIONALE: The live row is always in `v4` shape, and should not be emitted if the policy requires a different format.
+    if (policy.contentFormat !== 'v4') {
+      return err(
+        new SnapshotDataIntegrityError(
+          'No snapshot available to reconstruct a non-v4 payload',
+          {
+            policyContentFormat: policy.contentFormat,
+            submissionId: liveData.submissionId,
+            formId: liveData.formId,
+          },
+        ),
+      )
+    }
     return ok(liveData)
+  }
+
+  if (policy.contentFormat !== snapshot.contentFormat) {
+    return err(
+      new SnapshotDataIntegrityError(
+        'Resolved content format does not match the stored snapshot',
+        {
+          policyContentFormat: policy.contentFormat,
+          storedContentFormat: snapshot.contentFormat,
+          submissionId: liveData.submissionId,
+          formId: liveData.formId,
+        },
+      ),
+    )
   }
 
   const reconstructed: WebhookData = {

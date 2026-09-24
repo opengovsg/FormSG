@@ -1,3 +1,6 @@
+import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
+import { FormWebhook } from 'formsg-shared/types'
+
 import {
   contentFormatToWebhookVersion,
   getKeyPermissionsPolicy,
@@ -12,68 +15,76 @@ const CONSUMER_TYPES: WebhookConsumerType[] = ['plumber', 'generic']
 const CONTENT_FORMATS: WebhookContentFormat[] = ['v1', 'v3', 'v4']
 
 describe('getWebhookPayloadPolicy', () => {
-  it.each<{
-    name: string
-    webhookType: WebhookConsumerType
-    latest: boolean
-    expected: {
-      contentFormat: WebhookContentFormat
-      includeEncryptedSubmissionSecretKey: boolean
-    }
-  }>([
-    {
-      name: 'plumber, latest step',
-      webhookType: 'plumber',
-      latest: true,
+  describe('workflow step does not affect the payload policy', () => {
+    it.each<{
+      name: string
+      webhookType: WebhookConsumerType
+      webhookFormat: FormWebhook['webhookFormat']
+      latest: boolean
       expected: {
-        contentFormat: 'v4',
-        includeEncryptedSubmissionSecretKey: true,
-      },
-    },
-    {
-      name: 'plumber, non-latest step',
-      webhookType: 'plumber',
-      latest: false,
-      expected: {
-        contentFormat: 'v4',
-        includeEncryptedSubmissionSecretKey: true,
-      },
-    },
-    {
-      name: 'generic, latest step',
-      webhookType: 'generic',
-      latest: true,
-      expected: {
-        contentFormat: 'v4',
-        includeEncryptedSubmissionSecretKey: true,
-      },
-    },
-    {
-      name: 'generic, non-latest step',
-      webhookType: 'generic',
-      latest: false,
-      expected: {
-        contentFormat: 'v4',
-        includeEncryptedSubmissionSecretKey: true,
-      },
-    },
-  ])(
-    'returns the correct policy for $name',
-    ({ webhookType, latest, expected }) => {
-      const submittedStepsLength = 3
-      const input: WebhookPayloadPolicyInput = {
-        webhookType,
-        submittedStepsLength,
-        submissionIndex: latest ? submittedStepsLength - 1 : 0,
+        contentFormat: WebhookContentFormat
+        includeEncryptedSubmissionSecretKey: boolean
       }
-      expect(getWebhookPayloadPolicy(input)).toEqual(expected)
-    },
-  )
+    }>([
+      {
+        name: 'plumber, latest step',
+        webhookType: 'plumber',
+        webhookFormat: undefined,
+        latest: true,
+        expected: {
+          contentFormat: 'v4',
+          includeEncryptedSubmissionSecretKey: true,
+        },
+      },
+      {
+        name: 'plumber, non-latest step',
+        webhookType: 'plumber',
+        webhookFormat: undefined,
+        latest: false,
+        expected: {
+          contentFormat: 'v4',
+          includeEncryptedSubmissionSecretKey: true,
+        },
+      },
+      {
+        name: 'generic, latest step',
+        webhookType: 'generic',
+        webhookFormat: undefined,
+        latest: true,
+        expected: {
+          contentFormat: 'v1',
+          includeEncryptedSubmissionSecretKey: false,
+        },
+      },
+      {
+        name: 'generic, non-latest step',
+        webhookType: 'generic',
+        webhookFormat: undefined,
+        latest: false,
+        expected: {
+          contentFormat: 'v1',
+          includeEncryptedSubmissionSecretKey: false,
+        },
+      },
+    ])(
+      'returns the correct policy for $name',
+      ({ webhookType, webhookFormat, latest, expected }) => {
+        const submittedStepsLength = 3
+        const input: WebhookPayloadPolicyInput = {
+          webhookType,
+          webhookFormat,
+          submittedStepsLength,
+          submissionIndex: latest ? submittedStepsLength - 1 : 0,
+        }
+        expect(getWebhookPayloadPolicy(input)).toEqual(expected)
+      },
+    )
+  })
 })
 
 describe('getKeyPermissionsPolicy', () => {
   it.each(CONSUMER_TYPES)(
-    'includes the wrapped submission secret key exactly for V4 (%s)',
+    'includes the wrapped submission secret key only for V4 (%s)',
     (webhookType) => {
       const submittedStepsLength = 3
       for (const contentFormat of CONTENT_FORMATS) {
@@ -101,8 +112,11 @@ describe('contentFormatToWebhookVersion', () => {
     expect(contentFormatToWebhookVersion('v3')).toBe(3)
   })
 
-  it('maps v1 to submission version 2.1', () => {
-    expect(contentFormatToWebhookVersion('v1')).toBe(2.1)
+  it('maps v1 to the shared virus-scanner submission version', () => {
+    // Keep the V1 value aligned with storage mode.
+    expect(contentFormatToWebhookVersion('v1')).toBe(
+      VIRUS_SCANNER_SUBMISSION_VERSION,
+    )
   })
 })
 
