@@ -47,6 +47,7 @@ interface UnlockedResponsesContextProps {
   setSearchText: (searchText: string) => void
   excludedSearchColumnIds: string[]
   toggleSearchColumn: (columnId: string) => void
+  setAllSearchColumns: (isSearchable: boolean) => void
   searchResultCount?: number
   setSearchResultCount: (count?: number) => void
   isTableLoading: boolean
@@ -107,6 +108,14 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
         : [...excluded, columnId],
     )
   }, [])
+
+  const setAllSearchColumns = useCallback(
+    (isSearchable: boolean) =>
+      setExcludedSearchColumnIds(
+        isSearchable ? [] : columnOptions.map(({ id }) => id),
+      ),
+    [columnOptions],
+  )
 
   const {
     page: [currentPage, setCurrentPage],
@@ -337,6 +346,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     setSearchText,
     excludedSearchColumnIds,
     toggleSearchColumn,
+    setAllSearchColumns,
     searchResultCount,
     setSearchResultCount,
     isTableLoading,
