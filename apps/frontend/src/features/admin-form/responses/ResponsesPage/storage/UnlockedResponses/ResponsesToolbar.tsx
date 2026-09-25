@@ -1,24 +1,17 @@
 import { useTranslation } from 'react-i18next'
-import { BiFilterAlt, BiGridAlt, BiSortAlt2 } from 'react-icons/bi'
+import { BiGridAlt, BiSortAlt2 } from 'react-icons/bi'
 import { Box, Flex } from '@chakra-ui/react'
 
 import Button from '~components/Button'
 
 import { ColumnsMenu } from './ColumnsMenu'
 import { DownloadButton } from './DownloadButton'
-import { SubmissionSearchbar } from './SubmissionSearchbar'
+import { FilterMenu } from './FilterMenu'
+import { ResponsesSearchbar } from './ResponsesSearchbar'
 
-export const ResponsesToolbar = ({
-  submissionId,
-  setSubmissionId,
-  isAnyFetching,
-}: {
-  submissionId?: string
-  setSubmissionId: (submissionId: string | null) => void
-  isAnyFetching: boolean
-}): JSX.Element => {
+export const ResponsesToolbar = (): JSX.Element => {
   const { t } = useTranslation()
-  const { filter, sort, group } = t(
+  const { sort, group } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar',
     { returnObjects: true },
   )
@@ -36,20 +29,9 @@ export const ResponsesToolbar = ({
     >
       <Flex align="center" gap="0.75rem" minW={0} flexWrap="wrap">
         <Box w={{ base: '100%', sm: '18rem' }} maxW="100%">
-          <SubmissionSearchbar
-            isExpandable={false}
-            submissionId={submissionId}
-            setSubmissionId={setSubmissionId}
-            isAnyFetching={isAnyFetching}
-          />
+          <ResponsesSearchbar />
         </Box>
-        <Button
-          variant="clear"
-          colorScheme="secondary"
-          leftIcon={<BiFilterAlt fontSize="1.25rem" />}
-        >
-          {filter}
-        </Button>
+        <FilterMenu />
         <Button
           variant="clear"
           colorScheme="secondary"

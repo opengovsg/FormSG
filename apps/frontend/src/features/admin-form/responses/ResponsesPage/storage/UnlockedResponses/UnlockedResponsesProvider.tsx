@@ -40,6 +40,12 @@ interface UnlockedResponsesContextProps {
   setColumnOptions: (columnOptions: ResponseColumnOption[]) => void
   hiddenColumnIds: string[]
   toggleColumnVisibility: (columnId: string) => void
+  searchText: string
+  setSearchText: (searchText: string) => void
+  excludedSearchColumnIds: string[]
+  toggleSearchColumn: (columnId: string) => void
+  searchResultCount?: number
+  setSearchResultCount: (count?: number) => void
   hasNextPage: boolean
   isFetchingNextPage: boolean
   fetchNextPage: () => void
@@ -79,6 +85,20 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       hidden.includes(columnId)
         ? hidden.filter((id) => id !== columnId)
         : [...hidden, columnId],
+    )
+  }, [])
+
+  const [searchText, setSearchText] = useState('')
+  const [searchResultCount, setSearchResultCount] = useState<number>()
+  const [excludedSearchColumnIds, setExcludedSearchColumnIds] = useState<
+    string[]
+  >([])
+
+  const toggleSearchColumn = useCallback((columnId: string) => {
+    setExcludedSearchColumnIds((excluded) =>
+      excluded.includes(columnId)
+        ? excluded.filter((id) => id !== columnId)
+        : [...excluded, columnId],
     )
   }, [])
 
@@ -306,6 +326,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     setColumnOptions,
     hiddenColumnIds,
     toggleColumnVisibility,
+    searchText,
+    setSearchText,
+    excludedSearchColumnIds,
+    toggleSearchColumn,
+    searchResultCount,
+    setSearchResultCount,
     hasNextPage: !!hasNextPage,
     isFetchingNextPage,
     fetchNextPage: onFetchNextPage,

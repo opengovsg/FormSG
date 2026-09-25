@@ -3,7 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   Column,
+  Row,
   useFlexLayout,
+  useGlobalFilter,
   usePagination,
   useResizeColumns,
   useTable,
@@ -347,6 +349,9 @@ export const ResponsesTable = () => {
     isInfiniteScroll,
     setColumnOptions,
     hiddenColumnIds,
+    searchText,
+    excludedSearchColumnIds,
+    setSearchResultCount,
   } = useUnlockedResponses()
   const isDelightfulDashboard = useIsDelightfulDashboard()
 
@@ -421,6 +426,29 @@ export const ResponsesTable = () => {
     return prefixColumns.concat(fieldColumns)
   }, [fieldColumns, isDelightfulDashboard, legacyColumns, prefixColumns])
 
+  const globalFilter = useCallback(
+    (
+      rowsToFilter: Row<ResponseColumnData>[],
+      columnIds: string[],
+      searchValue: string,
+    ) => {
+      const query = searchValue.trim().toLowerCase()
+      if (!query) return rowsToFilter
+      const searchableIds = columnIds.filter(
+        (columnId) => !excludedSearchColumnIds.includes(columnId),
+      )
+      return rowsToFilter.filter((row) =>
+        searchableIds.some((columnId) => {
+          const value = row.values[columnId]
+          return (
+            typeof value === 'string' && value.toLowerCase().includes(query)
+          )
+        }),
+      )
+    },
+    [excludedSearchColumnIds],
+  )
+
   const columnOptions = useMemo(() => {
     if (!isDelightfulDashboard) return []
     return prefixColumns
@@ -450,6 +478,7 @@ export const ResponsesTable = () => {
     rows,
     gotoPage,
     setHiddenColumns,
+    setGlobalFilter,
   } = useTable<ResponseColumnData>(
     {
       columns,
@@ -457,6 +486,8 @@ export const ResponsesTable = () => {
       // The columns array is rebuilt as answers decrypt; without this the
       // reset would undo the admin's column choices every few hundred ms.
       autoResetHiddenColumns: false,
+      autoResetGlobalFilter: false,
+      globalFilter,
       // Server side pagination.
       manualPagination: true,
       pageCount: currentPage,
@@ -465,6 +496,7 @@ export const ResponsesTable = () => {
         pageSize: 10,
       },
     },
+    useGlobalFilter,
     usePagination,
     useResizeColumns,
     useFlexLayout,
@@ -480,7 +512,17 @@ export const ResponsesTable = () => {
     setHiddenColumns(hiddenColumnIds)
   }, [hiddenColumnIds, isDelightfulDashboard, setHiddenColumns])
 
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setGlobalFilter(searchText)
+  }, [isDelightfulDashboard, searchText, setGlobalFilter])
+
   const visibleRows = isInfiniteScroll ? rows : page
+
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setSearchResultCount(searchText.trim() ? rows.length : undefined)
+  }, [isDelightfulDashboard, rows.length, searchText, setSearchResultCount])
 
   const handleRowClick = useCallback(
     (submissionId: string, responseNumber: number) => {
