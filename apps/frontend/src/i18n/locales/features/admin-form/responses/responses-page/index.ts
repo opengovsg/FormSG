@@ -67,10 +67,16 @@ export interface ResponsesResponsesPage {
         checkAll: string
         uncheckAll: string
       }
+      sortMenu: {
+        column: string
+        direction: string
+        none: string
+        ascending: string
+        descending: string
+      }
       toolbar: {
         filter: string
         sort: string
-        group: string
         columns: string
       }
       downloadButton: {
