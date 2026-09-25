@@ -1,100 +1,55 @@
-import { useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useLocation } from 'react-router-dom'
-import { Flex } from '@chakra-ui/react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
+import { Flex, TabList } from '@chakra-ui/react'
 
-import { FormResponseMode } from 'formsg-shared/types'
-
-import {
-  ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
-  RESULTS_CHARTS_SUBROUTE,
-  RESULTS_FEEDBACK_SUBROUTE,
-  RESULTS_RESPONSES_SUBROUTE,
-} from '~constants/routes'
 import { useDraggable } from '~hooks/useDraggable'
 import { noPrintCss } from '~utils/noPrintCss'
-import Badge from '~components/Badge'
-import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
-import { useAdminForm } from '~features/admin-form/common/queries'
+import { RESULTS_NAV_WIDTH } from './constants'
+import { ResultsTab } from './ResultsTab'
+import { ResultsTabEntry } from './useResultsTabs'
 
-export const FormResultsNavbar = (): JSX.Element => {
+export const FormResultsNavbar = ({
+  tabs,
+}: {
+  tabs: ResultsTabEntry[]
+}): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
-
-  const { data: form } = useAdminForm()
-
-  const { pathname } = useLocation()
-
-  const checkTabActive = useCallback(
-    (to: string) => {
-      const match = pathname.match(ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX)
-      return (match?.[2] ?? '/') === `/${to}`
-    },
-    [pathname],
-  )
-
-  const isChartsEnabled = useFeatureValue('charts', false) // disabled by default
-  const isFormEncryptModeOrMultirespondent =
-    form?.responseMode === FormResponseMode.Encrypt ||
-    form?.responseMode === FormResponseMode.Multirespondent
-  const shouldShowCharts = isFormEncryptModeOrMultirespondent && isChartsEnabled
-
-  const { t } = useTranslation()
 
   return (
     <Flex
       sx={noPrintCss}
-      w="100vw"
+      h="max-content"
+      flex="0 0 auto"
+      ref={ref}
+      onMouseDown={onMouseDown}
       position="sticky"
-      top={0}
-      flexDir="column"
-      borderBottom="1px"
-      borderBottomColor="neutral.300"
-      bg="white"
-      zIndex="docked"
-      flex={0}
+      zIndex={0}
+      top={{ base: '2.5rem', lg: '3.125rem' }}
+      borderTopColor="neutral.300"
+      w={RESULTS_NAV_WIDTH}
+      __css={{
+        scrollbarWidth: 0,
+        '&::-webkit-scrollbar': {
+          width: 0,
+          height: 0,
+        },
+      }}
     >
-      <NavigationTabList
-        ref={ref}
-        onMouseDown={onMouseDown}
-        maxW="69.5rem"
-        px="1.25rem"
-        pt="0.625rem"
-        m="auto"
-        w="100vw"
-        borderBottom="none"
-        justifySelf="flex-start"
+      <TabList
+        overflowX="initial"
+        display="inline-flex"
+        w={{ base: 'auto', lg: '13rem' }}
+        mr={{ base: '1.5rem', md: '4rem', lg: '2rem' }}
+        mb="calc(0.5rem - 2px)"
       >
-        <NavigationTab
-          to={RESULTS_RESPONSES_SUBROUTE}
-          isActive={checkTabActive(RESULTS_RESPONSES_SUBROUTE)}
-        >
-          {t('features.common.responses')}
-        </NavigationTab>
-        <NavigationTab
-          to={RESULTS_FEEDBACK_SUBROUTE}
-          isActive={checkTabActive(RESULTS_FEEDBACK_SUBROUTE)}
-        >
-          {t('features.common.feedback')}
-        </NavigationTab>
-        {shouldShowCharts ? (
-          <NavigationTab
-            to={RESULTS_CHARTS_SUBROUTE}
-            isActive={checkTabActive(RESULTS_CHARTS_SUBROUTE)}
-          >
-            {t('features.common.charts')}
-            <Badge
-              colorScheme="primary"
-              variant="subtle"
-              color="secondary.500"
-              ml="0.5rem"
-            >
-              {t('features.common.betaBadgeLabel')}
-            </Badge>
-          </NavigationTab>
-        ) : null}
-      </NavigationTabList>
+        {tabs.map((tab) => (
+          <ResultsTab
+            key={tab.path}
+            label={tab.label}
+            icon={tab.icon}
+            badgeText={tab.badgeText}
+          />
+        ))}
+      </TabList>
     </Flex>
   )
 }

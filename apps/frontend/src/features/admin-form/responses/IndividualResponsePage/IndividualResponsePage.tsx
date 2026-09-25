@@ -36,6 +36,7 @@ import {
   MRF_STATUS_TRACKING_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
+import { useIsDelightfulDashboard } from '../hooks'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
@@ -120,6 +121,7 @@ const StackRow = ({
 
 export const IndividualResponsePage = (): JSX.Element => {
   const { t } = useTranslation()
+  const isDelightfulDashboard = useIsDelightfulDashboard()
   const { submissionId, formId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
   if (!formId) throw new Error('Missing formId')
@@ -208,7 +210,15 @@ export const IndividualResponsePage = (): JSX.Element => {
   const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
 
   return (
-    <Flex flexDir="column" marginTop={{ base: '-1.5rem', md: '-3rem' }}>
+    <Flex
+      flexDir="column"
+      marginTop={
+        isDelightfulDashboard
+          ? { base: '-2.5rem', lg: '-3.125rem' }
+          : { base: '-1.5rem', md: '-3rem' }
+      }
+      pt={isDelightfulDashboard ? { base: '2.5rem', lg: '3.125rem' } : 0}
+    >
       <IndividualResponseNavbar />
 
       <Stack

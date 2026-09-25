@@ -4,11 +4,43 @@ import { Flex, Text } from '@chakra-ui/react'
 import { OGP_POSTMAN } from '~constants/links'
 import Link from '~components/Link'
 
+import { resultsNavBleed } from '../../components/FormResultsNavbar'
+import { useIsDelightfulDashboard } from '../../hooks'
+
 import { EmptyFeedbackSvgr } from './EmptyFeedbackSvgr'
 
 export const EmptyFeedback = (): JSX.Element => {
   const { t } = useTranslation()
+  const isDelightfulDashboard = useIsDelightfulDashboard()
 
+  if (!isDelightfulDashboard) return <LegacyEmptyFeedback />
+
+  return (
+    <Flex
+      flexDir="column"
+      justify="center"
+      align="center"
+      py="4rem"
+      px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      {...resultsNavBleed}
+    >
+      <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
+        {t('features.adminForm.feedback.emptyFeedback.noFeedbackYet')}
+      </Text>
+      <Text textStyle="body-1" color="secondary.500">
+        {t('features.adminForm.feedback.emptyFeedback.tryUsing')}{' '}
+        <Link isExternal href={OGP_POSTMAN}>
+          Postman.gov.sg
+        </Link>{' '}
+        {t('features.adminForm.feedback.emptyFeedback.toSendOutForms')}
+      </Text>
+      <EmptyFeedbackSvgr mt="1.5rem" w="380px" maxW="100%" />
+    </Flex>
+  )
+}
+
+const LegacyEmptyFeedback = (): JSX.Element => {
+  const { t } = useTranslation()
   return (
     <Flex justify="center" flexDir="column" align="center" px="2rem" py="4rem">
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">

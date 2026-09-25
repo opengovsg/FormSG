@@ -29,6 +29,7 @@ import {
 } from '~features/admin-form/common/mutations'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import { useIsDelightfulDashboard } from '../hooks'
 import { useFormFeedback, useFormIssues } from '../queries'
 
 import { useIssueTableColumns } from './issue/IssueTable'
@@ -104,6 +105,7 @@ export const FeedbackPage = (): JSX.Element => {
 
   // Meta for feedback page
   const isMobile = useIsMobile()
+  const isDelightfulDashboard = useIsDelightfulDashboard()
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [currentFeedbackType, setCurrentFeedbackType] = useState<FeedbackType>(
     FeedbackType.Reviews,
@@ -189,28 +191,132 @@ export const FeedbackPage = (): JSX.Element => {
     return <EmptyFeedback />
   }
 
-  return (
-    <Container
-      overflowY="auto"
-      p="1.5rem"
-      maxW="69.5rem"
-      flex={1}
-      display="flex"
-      flexDir="column"
-    >
-      <Grid
-        mb="1rem"
-        minH={{ md: '4rem' }}
-        alignItems="end"
-        color="secondary.500"
-        gridTemplateColumns={{ base: 'auto', md: '1fr auto auto' }}
-        gridGap={{ base: '0.5rem', md: '1.5rem' }}
-        gridTemplateAreas={{
-          base: "'information information' 'feedbackType export'",
-          md: "'information feedbackType export'",
-        }}
+  if (!isDelightfulDashboard) {
+    return (
+      <Container
+        overflowY="auto"
+        p="1.5rem"
+        maxW="69.5rem"
+        flex={1}
+        display="flex"
+        flexDir="column"
       >
-        <Box gridArea="information" pl="0rem">
+        <Grid
+          mb="1rem"
+          minH={{ md: '4rem' }}
+          alignItems="end"
+          color="secondary.500"
+          gridTemplateColumns={{ base: 'auto', md: '1fr auto auto' }}
+          gridGap={{ base: '0.5rem', md: '1.5rem' }}
+          gridTemplateAreas={{
+            base: "'information information' 'feedbackType export'",
+            md: "'information feedbackType export'",
+          }}
+        >
+          <Box gridArea="information" pl="0rem">
+            {currentFeedbackType === FeedbackType.Issues ? (
+              <GetIssueInformationComponent
+                count={issueProps.count}
+                translations={issueProps.translations}
+              />
+            ) : (
+              <GetReviewInformationComponent
+                average={reviewProps.average}
+                count={reviewProps.count}
+                translations={reviewProps.translations}
+              />
+            )}
+          </Box>
+          <ButtonGroup gridArea="feedbackType" isAttached variant="outline">
+            <Button
+              {...getFeedbackTypeButtonProps(
+                currentFeedbackType,
+                FeedbackType.Reviews,
+              )}
+              sx={{ borderRightWidth: '0px' }}
+              onClick={() => setCurrentFeedbackType(FeedbackType.Reviews)}
+            >
+              {translations.reviews}
+            </Button>
+            <Button
+              {...getFeedbackTypeButtonProps(
+                currentFeedbackType,
+                FeedbackType.Issues,
+              )}
+              onClick={() => setCurrentFeedbackType(FeedbackType.Issues)}
+            >
+              {translations.issues}
+            </Button>
+          </ButtonGroup>
+          <Box gridArea="export" justifySelf="flex-end">
+            <FeedbackDownloadButton
+              {...getFeedBackDownloadButtonProps(
+                currentFeedbackType,
+                issueProps,
+                reviewProps,
+              )}
+              handleClick={handleFeedbackDownloadClick}
+              isMobile={isMobile}
+            />
+          </Box>
+        </Grid>
+        <Box mb="3rem" overflow="auto" flex={1}>
+          <FeedbackTable
+            feedbackData={
+              currentFeedbackType === FeedbackType.Issues
+                ? issueProps.data
+                : reviewProps.data
+            }
+            feedbackColumns={
+              currentFeedbackType === FeedbackType.Issues
+                ? issueTableColumns
+                : reviewTableColumns
+            }
+            currentPage={currentPage - 1}
+          />
+        </Box>
+        <Box
+          display={getDisplayTableProp(
+            currentFeedbackType,
+            issueProps,
+            reviewProps,
+          )}
+        >
+          <Pagination
+            totalCount={
+              currentFeedbackType === FeedbackType.Issues
+                ? (issueProps.count ?? 0)
+                : (reviewProps.count ?? 0)
+            }
+            currentPage={currentPage} //1-indexed
+            pageSize={10}
+            onPageChange={setCurrentPage}
+          />
+        </Box>
+      </Container>
+    )
+  }
+
+  return (
+    <Flex
+      flexDir="column"
+      pb="1.5rem"
+      pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      w="100%"
+      maxW="69.5rem"
+      mx="auto"
+    >
+      <Flex
+        direction={{ base: 'column', sm: 'row' }}
+        mb="1rem"
+        alignItems={{ base: 'flex-start', md: 'center' }}
+        justifyContent="space-between"
+        color="secondary.500"
+        gap="1rem"
+        w="100%"
+        maxW="100%"
+      >
+        <Flex direction="column" flex={1} minW={0}>
           {currentFeedbackType === FeedbackType.Issues ? (
             <GetIssueInformationComponent
               count={issueProps.count}
@@ -223,8 +329,8 @@ export const FeedbackPage = (): JSX.Element => {
               translations={reviewProps.translations}
             />
           )}
-        </Box>
-        <ButtonGroup gridArea="feedbackType" isAttached variant="outline">
+        </Flex>
+        <ButtonGroup isAttached variant="outline" flexShrink={0}>
           <Button
             {...getFeedbackTypeButtonProps(
               currentFeedbackType,
@@ -245,7 +351,7 @@ export const FeedbackPage = (): JSX.Element => {
             {translations.issues}
           </Button>
         </ButtonGroup>
-        <Box gridArea="export" justifySelf="flex-end">
+        <Box flexShrink={0}>
           <FeedbackDownloadButton
             {...getFeedBackDownloadButtonProps(
               currentFeedbackType,
@@ -256,7 +362,7 @@ export const FeedbackPage = (): JSX.Element => {
             isMobile={isMobile}
           />
         </Box>
-      </Grid>
+      </Flex>
       <Box mb="3rem" overflow="auto" flex={1}>
         <FeedbackTable
           feedbackData={
@@ -290,7 +396,7 @@ export const FeedbackPage = (): JSX.Element => {
           onPageChange={setCurrentPage}
         />
       </Box>
-    </Container>
+    </Flex>
   )
 }
 
