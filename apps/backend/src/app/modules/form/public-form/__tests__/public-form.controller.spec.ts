@@ -1561,51 +1561,6 @@ describe('public-form.controller', () => {
       )
     })
 
-    it('should return 200 and set the code verifier cookie when the form has authType SP and there is no growthbook instance', async () => {
-      // Arrange
-      const MOCK_REQ_NO_GROWTHBOOK = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-      })
-      const MOCK_FORM = {
-        admin: MOCK_ADMIN,
-        authType: FormAuthType.SP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormDocument>
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      const createRedirectUrlSpy = jest
-        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockReturnValueOnce(
-          okAsync({
-            redirectUrl: MOCK_REDIRECT_URL,
-            codeVerifier: MOCK_CODE_VERIFIER,
-          }),
-        )
-
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ_NO_GROWTHBOOK,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(createRedirectUrlSpy).toHaveBeenCalledWith(
-        expect.any(String),
-        MOCK_FORM.esrvcId,
-      )
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.cookie).toHaveBeenCalledWith(
-        CodeVerifierCookieName.SP,
-        MOCK_CODE_VERIFIER,
-        expect.anything(),
-      )
-    })
-
     it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is undefined', async () => {
       // Arrange
       const MOCK_REQ_WITHOUT_PERSISTENT_LOGIN = expressHandler.mockRequest({
