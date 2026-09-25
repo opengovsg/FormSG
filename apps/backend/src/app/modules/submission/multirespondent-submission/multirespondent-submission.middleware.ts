@@ -1266,6 +1266,8 @@ export const handleNdiResponses = async (
     } else {
       req.formsg.encryptedPayload.verifiedContent =
         encryptVerifiedContentResult.value
+      // RATIONALE: Required when sending V1 webhooks, where the snapshot producer converts and encrypts with the form public key.
+      req.formsg.verifiedContentPlaintext = ndiResponses
     }
   }
 

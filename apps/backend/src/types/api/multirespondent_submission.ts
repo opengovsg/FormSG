@@ -52,6 +52,7 @@ export type MultirespondentFormLoadedDto = {
 
 export type MultirespondentFormCompleteDto = MultirespondentFormLoadedDto & {
   encryptedPayload: MultirespondentSubmissionDto
+  verifiedContentPlaintext?: Record<string, string>
 }
 
 export type MultirespondentSubmissionDto = {
