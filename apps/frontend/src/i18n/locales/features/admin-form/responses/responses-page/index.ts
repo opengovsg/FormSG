@@ -67,6 +67,12 @@ export interface ResponsesResponsesPage {
         checkAll: string
         uncheckAll: string
       }
+      views: {
+        allResponses: string
+        saveAsNewView: string
+        viewName: string
+        viewNamePlaceholder: string
+      }
       sortMenu: {
         column: string
         direction: string
