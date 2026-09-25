@@ -253,6 +253,7 @@ export type StorageModeSubmissionDto = SubmissionDtoBase & {
 
 export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   submissionType: SubmissionType.Multirespondent
+  payment?: SubmissionPaymentDto
   form_fields: FormFieldDto[]
   form_logics: LogicDto[]
   workflow: FormWorkflowDto
@@ -272,7 +273,7 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
 
 export type PublicMultirespondentSubmissionDto = Omit<
   MultirespondentSubmissionDto,
-  'workflow' | 'form_fields' | 'encryptedStepToken'
+  'workflow' | 'form_fields' | 'encryptedStepToken' | 'payment'
 > & {
   form_fields: StrippedFormFieldDto[]
   workflow: StrippedFormWorkflowDto

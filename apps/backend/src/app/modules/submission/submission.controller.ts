@@ -211,43 +211,40 @@ export const handleGetEncryptedResponse: ControllerHandler<
           submissionData.attachmentMetadata,
           urlExpiry,
         ).andThen((presignedUrls) => {
-          switch (submissionData.submissionType) {
-            case SubmissionType.Encrypt: {
-              const paymentDataResult: ResultAsync<
-                SubmissionPaymentDto | undefined,
-                DatabaseError | PaymentNotFoundError
-              > = !submissionData.paymentId
-                ? okAsync(undefined)
-                : getSubmissionPaymentDto(submissionData.paymentId)
+          const paymentDataResult: ResultAsync<
+            SubmissionPaymentDto | undefined,
+            DatabaseError | PaymentNotFoundError
+          > = !submissionData.paymentId
+            ? okAsync(undefined)
+            : getSubmissionPaymentDto(submissionData.paymentId)
 
-              return (
-                paymentDataResult
-                  // Step 6: Retrieve presigned URLs for attachments.
-                  .andThen((paymentData) =>
-                    okAsync(
-                      createStorageModeSubmissionDto(
-                        submissionData,
-                        presignedUrls,
-                        paymentData,
-                      ),
-                    ),
-                  )
-              )
+          return paymentDataResult.andThen((paymentData) => {
+            switch (submissionData.submissionType) {
+              case SubmissionType.Encrypt: {
+                return okAsync(
+                  createStorageModeSubmissionDto(
+                    submissionData,
+                    presignedUrls,
+                    paymentData,
+                  ),
+                )
+              }
+              case SubmissionType.Multirespondent: {
+                return okAsync(
+                  createMultirespondentSubmissionDto(
+                    submissionData,
+                    presignedUrls,
+                    paymentData,
+                  ),
+                )
+              }
+              default: {
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const _: never = submissionData
+                return errAsync(new InvalidSubmissionTypeError())
+              }
             }
-            case SubmissionType.Multirespondent: {
-              return okAsync(
-                createMultirespondentSubmissionDto(
-                  submissionData,
-                  presignedUrls,
-                ),
-              )
-            }
-            default: {
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const _: never = submissionData
-              return errAsync(new InvalidSubmissionTypeError())
-            }
-          }
+          })
         })
       })
       .map((responseData) => {

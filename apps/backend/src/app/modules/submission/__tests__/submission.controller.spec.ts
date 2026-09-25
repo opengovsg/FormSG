@@ -766,6 +766,54 @@ describe('submission.controller', () => {
       ).toHaveBeenCalledWith(MOCK_FORM)
     })
 
+    it('should return 200 with payment details for a multirespondent submission with a payment', async () => {
+      // Arrange
+      const mockSubData: SubmissionData = {
+        _id: 'some id',
+        form_fields: [],
+        form_logics: [],
+        workflow: [],
+        submissionPublicKey: 'some public key',
+        encryptedSubmissionSecretKey: 'some secret key',
+        encryptedContent: 'some encrypted content',
+        attachmentMetadata: {},
+        created: new Date('2020-10-10'),
+        paymentId: 'payment id',
+        version: 1,
+        workflowStep: 0,
+        mrfVersion: 1,
+        submissionType: SubmissionType.Multirespondent,
+      } as unknown as SubmissionData
+      const mockPaymentDetails = {
+        paymentIntentId: 'pi_sample_id',
+      } as SubmissionPaymentDto
+      const mockRes = expressHandler.mockResponse()
+
+      MockSubService.getEncryptedSubmissionData.mockReturnValueOnce(
+        okAsync(mockSubData),
+      )
+      MockSubService.transformAttachmentMetasToSignedUrls.mockReturnValueOnce(
+        okAsync({}),
+      )
+      MockSubService.getSubmissionPaymentDto.mockReturnValueOnce(
+        okAsync(mockPaymentDetails),
+      )
+
+      // Act
+      await handleGetEncryptedResponse(MOCK_REQ, mockRes, jest.fn())
+
+      // Assert
+      expect(MockSubService.getSubmissionPaymentDto).toHaveBeenCalledWith(
+        'payment id',
+      )
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          submissionType: SubmissionType.Multirespondent,
+          payment: mockPaymentDetails,
+        }),
+      )
+    })
+
     it('should return 400 if form is not an encrypt mode or multirespondent form', async () => {
       // Arrange
       const mockRes = expressHandler.mockResponse()

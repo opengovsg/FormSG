@@ -232,6 +232,7 @@ export type MultirespondentSubmissionData = {
   | 'encryptedContent'
   | 'verifiedContent'
   | 'attachmentMetadata'
+  | 'paymentId'
   | 'created'
   | 'version'
   | 'workflowStep'
