@@ -5,13 +5,15 @@ import { jsonParseStringify } from '__tests__/unit/backend/helpers/serialize-dat
 import { ObjectId } from 'bson'
 import { FormAuthType, FormStatus } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
-import { errAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 import supertest, { Session } from 'supertest-session'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { getRedirectTargetSpcpOidc } from 'src/app/modules/spcp/spcp.util'
 
 import * as FormService from '../../../../../modules/form/form.service'
+import { MYINFO_FAPI_SESSION_COOKIE_NAME } from '../../../../../modules/myinfo/fapi/myinfo.fapi.constants'
+import * as MyInfoFapiService from '../../../../../modules/myinfo/fapi/myinfo.fapi.service'
 import { CreateRedirectUrlError } from '../../../../../modules/spcp/spcp.errors'
 import {
   CpOidcClient,
@@ -21,6 +23,10 @@ import { SpOidcServiceClass } from '../../../../../modules/spcp/spcp.oidc.servic
 import { PublicFormsRouter } from '../public-forms.routes'
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
+
+const MOCK_FAPI_SESSION_ID = 'mock-fapi-session-id'
+const MOCK_FAPI_REDIRECT_URL =
+  'https://id.singpass.gov.sg/fapi/auth?request_uri=urn:mock'
 
 const app = setupApp('/forms', PublicFormsRouter)
 describe('public-form.auth.routes', () => {
@@ -106,7 +112,7 @@ describe('public-form.auth.routes', () => {
       })
     })
 
-    it('should return 200 with the redirect URL when the form is valid and has authType MyInfo', async () => {
+    it('should return 200 with the FAPI redirect URL and set the FAPI session cookie when the form is valid and has authType MyInfo', async () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
@@ -115,6 +121,14 @@ describe('public-form.auth.routes', () => {
           esrvcId: new ObjectId().toHexString(),
         },
       })
+      const startLoginSpy = jest
+        .spyOn(MyInfoFapiService, 'startLogin')
+        .mockReturnValueOnce(
+          okAsync({
+            sessionId: MOCK_FAPI_SESSION_ID,
+            redirectUrl: MOCK_FAPI_REDIRECT_URL,
+          }),
+        )
 
       // Act
       const response = await request
@@ -123,12 +137,15 @@ describe('public-form.auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(StatusCodes.OK)
-      expect(response.body).toMatchObject({
-        redirectURL: expect.toIncludeMultiple([
-          String(form._id),
-          form.esrvcId!,
+      expect(response.body).toEqual({ redirectURL: MOCK_FAPI_REDIRECT_URL })
+      expect(startLoginSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ formId: String(form._id) }),
+      )
+      expect(response.headers['set-cookie']).toEqual(
+        expect.arrayContaining([
+          expect.stringContaining(`${MYINFO_FAPI_SESSION_COOKIE_NAME}=`),
         ]),
-      })
+      )
     })
 
     it('should return 400 when the request has an invalid type for isPersistentLogin', async () => {
@@ -180,16 +197,20 @@ describe('public-form.auth.routes', () => {
       expect(response.body).toEqual(expectedResponse)
     })
 
-    it('should return 200 with the redirect URL when the form has no esrvcId', async () => {
+    it('should return 200 with the FAPI redirect URL when the MyInfo form has no esrvcId', async () => {
       // Arrange
-      const FORM_ESRVC_ID = 'MOCKED_FORM_ESRVC_ID'
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
           authType: FormAuthType.MyInfo,
           status: FormStatus.Public,
-          esrvcId: FORM_ESRVC_ID,
         },
       })
+      jest.spyOn(MyInfoFapiService, 'startLogin').mockReturnValueOnce(
+        okAsync({
+          sessionId: MOCK_FAPI_SESSION_ID,
+          redirectUrl: MOCK_FAPI_REDIRECT_URL,
+        }),
+      )
 
       // Act
       const response = await request
@@ -198,12 +219,7 @@ describe('public-form.auth.routes', () => {
 
       // Assert
       expect(response.status).toEqual(StatusCodes.OK)
-      expect(response.body).toMatchObject({
-        redirectURL: expect.toIncludeMultiple([
-          String(form._id),
-          form.esrvcId!,
-        ]),
-      })
+      expect(response.body).toEqual({ redirectURL: MOCK_FAPI_REDIRECT_URL })
     })
 
     it('should return 404 when the form is not in the database', async () => {
