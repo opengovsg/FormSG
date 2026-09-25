@@ -154,9 +154,6 @@ overrides:
   "react-router-dom@>=6.30.2 <6.30.6": "^6.30.6"
   "brace-expansion@<1.1.16": "^1.1.16"
   "brace-expansion@>=2.0.0 <2.1.2": "^2.1.2"
-  # Endor inventory: react-dev-inspector's watcher and react-use's cookie helper.
-  "glob-parent@<5.1.2": "^5.1.2"
-  "js-cookie@<3.0.7": "^3.0.7"
 onlyBuiltDependencies:
   - bcrypt
   - canvas
