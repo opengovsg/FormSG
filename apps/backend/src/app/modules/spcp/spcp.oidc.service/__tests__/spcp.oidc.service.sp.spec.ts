@@ -1,6 +1,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { JWTVerifyResult } from 'jose'
 import { omit } from 'lodash'
+import { generators } from 'openid-client-legacy'
 
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 
@@ -11,6 +12,8 @@ import {
   MOCK_ESRVCID,
   MOCK_JWT,
   MOCK_JWT_PAYLOAD,
+  MOCK_OIDC_CODE_CHALLENGE,
+  MOCK_OIDC_CODE_VERIFIER,
   MOCK_REDIRECT_URL,
   MOCK_SERVICE_PARAMS as MOCK_PARAMS,
   MOCK_SP_JWT_PAYLOAD,
@@ -40,6 +43,8 @@ jest.mock('../../spcp.oidc.client')
 
 jest.mock('axios')
 
+jest.mock('openid-client-legacy')
+
 describe('spcp.oidc.service.sp', () => {
   // 16 random bytes, hex encoded, matching what getRedirectTargetSpcpOidc emits.
   const MOCK_NONCE = 'a'.repeat(32)
@@ -54,6 +59,15 @@ describe('spcp.oidc.service.sp', () => {
   beforeEach(async () => {
     await dbHandler.clearDatabase()
     jest.clearAllMocks()
+  })
+
+  beforeEach(() => {
+    jest
+      .mocked(generators.codeVerifier)
+      .mockReturnValue(MOCK_OIDC_CODE_VERIFIER)
+    jest
+      .mocked(generators.codeChallenge)
+      .mockReturnValue(MOCK_OIDC_CODE_CHALLENGE)
   })
   afterAll(async () => await dbHandler.closeDatabase())
 
@@ -85,7 +99,7 @@ describe('spcp.oidc.service.sp', () => {
   })
 
   describe('createRedirectUrl', () => {
-    it('should call sp oidc client createRedirectUrl with the correct params and return the redirectUrl if it resolves', async () => {
+    it('should call sp oidc client createRedirectUrl with a code challenge and return the redirectUrl and code verifier if it resolves', async () => {
       // Arrange
 
       const spOidcServiceClass = new SpOidcServiceClass(
@@ -102,7 +116,6 @@ describe('spcp.oidc.service.sp', () => {
       const redirectUrl = await spOidcServiceClass.createRedirectUrl(
         MOCK_TARGET,
         MOCK_ESRVCID,
-        false,
       )
 
       // Assert
@@ -110,12 +123,12 @@ describe('spcp.oidc.service.sp', () => {
       expect(mockSpOidcClient.createAuthorisationUrl).toHaveBeenCalledWith(
         MOCK_TARGET,
         MOCK_ESRVCID,
-        undefined,
+        MOCK_OIDC_CODE_CHALLENGE,
       )
 
       expect(redirectUrl._unsafeUnwrap()).toEqual({
         redirectUrl: MOCK_REDIRECT_URL,
-        codeVerifier: undefined,
+        codeVerifier: MOCK_OIDC_CODE_VERIFIER,
       })
     })
 
@@ -136,7 +149,6 @@ describe('spcp.oidc.service.sp', () => {
       const redirectUrl = await spOidcServiceClass.createRedirectUrl(
         MOCK_TARGET,
         MOCK_ESRVCID,
-        false,
       )
 
       // Assert
@@ -144,7 +156,7 @@ describe('spcp.oidc.service.sp', () => {
       expect(mockSpOidcClient.createAuthorisationUrl).toHaveBeenCalledWith(
         MOCK_TARGET,
         MOCK_ESRVCID,
-        undefined,
+        MOCK_OIDC_CODE_CHALLENGE,
       )
 
       expect(redirectUrl._unsafeUnwrapErr()).toBeInstanceOf(
