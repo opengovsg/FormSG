@@ -315,6 +315,8 @@ const NO_WORKFLOW_PREFIX_COLUMNS: Column<ResponseColumnData>[] = [
 
 const RESPONSE_NUMBER_COLUMN_ID = 'number'
 
+const SKELETON_ROW_COUNT = 10
+
 // react-table derives an id from an explicit id, then a string accessor, then
 // a string Header.
 const getColumnId = (column: Column<ResponseColumnData>): string =>
@@ -352,6 +354,9 @@ export const ResponsesTable = () => {
     searchText,
     excludedSearchColumnIds,
     setSearchResultCount,
+    renderLimit,
+    setRenderedRowCount,
+    isTableLoading,
   } = useUnlockedResponses()
   const isDelightfulDashboard = useIsDelightfulDashboard()
 
@@ -479,6 +484,7 @@ export const ResponsesTable = () => {
     gotoPage,
     setHiddenColumns,
     setGlobalFilter,
+    visibleColumns,
   } = useTable<ResponseColumnData>(
     {
       columns,
@@ -517,12 +523,20 @@ export const ResponsesTable = () => {
     setGlobalFilter(searchText)
   }, [isDelightfulDashboard, searchText, setGlobalFilter])
 
-  const visibleRows = isInfiniteScroll ? rows : page
+  const visibleRows = useMemo(
+    () => (isInfiniteScroll ? rows.slice(0, renderLimit) : page),
+    [isInfiniteScroll, page, renderLimit, rows],
+  )
 
   useEffect(() => {
     if (!isDelightfulDashboard) return
     setSearchResultCount(searchText.trim() ? rows.length : undefined)
   }, [isDelightfulDashboard, rows.length, searchText, setSearchResultCount])
+
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setRenderedRowCount(rows.length)
+  }, [isDelightfulDashboard, rows.length, setRenderedRowCount])
 
   const handleRowClick = useCallback(
     (submissionId: string, responseNumber: number) => {
@@ -599,52 +613,74 @@ export const ResponsesTable = () => {
         ))}
       </Thead>
       <Tbody as="div" {...getTableBodyProps()}>
-        {visibleRows.map((row) => {
-          prepareRow(row)
-          return (
-            <Tr
-              as="div"
-              {...row.getRowProps()}
-              key={row.getRowProps().key}
-              px={0}
-              onClick={() =>
-                handleRowClick(row.values.refNo, row.values.number)
-              }
-              cursor="pointer"
-              {...(isDelightfulDashboard
-                ? { display: 'flex', minW: '100%', role: 'group' }
-                : {
-                    _hover: { bg: 'primary.100' },
-                    _active: { bg: 'primary.200' },
-                  })}
-            >
-              {row.cells.map((cell) => {
-                return (
+        {isDelightfulDashboard && isTableLoading
+          ? Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
+              <Tr as="div" key={`skeleton-${index}`} display="flex" minW="100%">
+                {visibleColumns.map((column) => (
                   <Td
                     as="div"
-                    {...cell.getCellProps()}
-                    key={cell.getCellProps().key}
+                    {...column.getHeaderProps()}
+                    key={column.id}
                     display="flex"
                     alignItems="center"
-                    {...(isDelightfulDashboard
-                      ? {
-                          minW: 0,
-                          flexShrink: 0,
-                          overflow: 'hidden',
-                          transitionProperty: 'background',
-                          transitionDuration: 'normal',
-                          _groupHover: { bg: 'primary.100' },
-                          _groupActive: { bg: 'primary.200' },
-                        }
-                      : {})}
+                    minW={0}
+                    flexShrink={0}
+                    overflow="hidden"
                   >
-                    {cell.render('Cell')}
+                    <Skeleton h="1rem" w="100%" />
                   </Td>
-                )
-              })}
-            </Tr>
-          )
-        })}
+                ))}
+              </Tr>
+            ))
+          : null}
+        {isDelightfulDashboard && isTableLoading
+          ? null
+          : visibleRows.map((row) => {
+              prepareRow(row)
+              return (
+                <Tr
+                  as="div"
+                  {...row.getRowProps()}
+                  key={row.getRowProps().key}
+                  px={0}
+                  onClick={() =>
+                    handleRowClick(row.values.refNo, row.values.number)
+                  }
+                  cursor="pointer"
+                  {...(isDelightfulDashboard
+                    ? { display: 'flex', minW: '100%', role: 'group' }
+                    : {
+                        _hover: { bg: 'primary.100' },
+                        _active: { bg: 'primary.200' },
+                      })}
+                >
+                  {row.cells.map((cell) => {
+                    return (
+                      <Td
+                        as="div"
+                        {...cell.getCellProps()}
+                        key={cell.getCellProps().key}
+                        display="flex"
+                        alignItems="center"
+                        {...(isDelightfulDashboard
+                          ? {
+                              minW: 0,
+                              flexShrink: 0,
+                              overflow: 'hidden',
+                              transitionProperty: 'background',
+                              transitionDuration: 'normal',
+                              _groupHover: { bg: 'primary.100' },
+                              _groupActive: { bg: 'primary.200' },
+                            }
+                          : {})}
+                      >
+                        {cell.render('Cell')}
+                      </Td>
+                    )
+                  })}
+                </Tr>
+              )
+            })}
       </Tbody>
     </Table>
   )
