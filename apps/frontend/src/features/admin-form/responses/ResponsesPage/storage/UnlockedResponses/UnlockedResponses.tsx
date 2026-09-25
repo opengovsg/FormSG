@@ -46,6 +46,9 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
     isAnyFetching,
     searchResultCount,
     isTableLoading,
+    savedViews,
+    selectedViewId,
+    applyView,
     renderLimit,
     showMoreRows,
     renderedRowCount,
@@ -98,7 +101,11 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
         </Skeleton>
       </Flex>
 
-      <ResponseViewTabs />
+      <ResponseViewTabs
+        views={savedViews.map(({ _id, name }) => ({ id: _id, name }))}
+        selectedViewId={selectedViewId}
+        onSelectView={applyView}
+      />
 
       <ResponsesToolbar />
 

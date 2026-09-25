@@ -1,5 +1,6 @@
 import { datadogLogs } from '@datadog/browser-logs'
 
+import { FormSavedView, FormSavedViewInput } from 'formsg-shared/types'
 import {
   FormSubmissionMetadataQueryDto,
   SubmissionCountQueryDto,
@@ -27,6 +28,15 @@ import {
   processDecryptedContent,
   processDecryptedContentV4,
 } from './ResponsesPage/storage/utils/processDecryptedContent'
+
+export const createFormSavedView = async (
+  formId: string,
+  savedView: FormSavedViewInput,
+): Promise<FormSavedView[]> =>
+  ApiService.post<FormSavedView[]>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/saved-views`,
+    savedView,
+  ).then(({ data }) => data)
 
 /**
  * Counts the number of submissions for a given form

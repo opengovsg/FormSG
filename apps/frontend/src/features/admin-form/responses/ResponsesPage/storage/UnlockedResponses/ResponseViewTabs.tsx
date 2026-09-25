@@ -57,6 +57,10 @@ export const ResponseViewTabs = ({
             color={isActive ? 'primary.500' : 'secondary.500'}
             textStyle={isActive ? 'subhead-1' : 'body-1'}
             _hover={{ color: 'primary.500', bg: 'neutral.100' }}
+            _focus={{ boxShadow: 'none' }}
+            _focusVisible={{
+              boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+            }}
             onClick={() => onSelectView?.(id)}
           >
             {name}

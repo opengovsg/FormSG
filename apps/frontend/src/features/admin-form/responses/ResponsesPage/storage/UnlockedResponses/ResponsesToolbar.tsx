@@ -7,8 +7,11 @@ import { ColumnsMenu } from './ColumnsMenu'
 import { DownloadButton } from './DownloadButton'
 import { FilterMenu } from './FilterMenu'
 import { ResponsesSearchbar } from './ResponsesSearchbar'
+import { toSavedViewInput } from './savedViews'
 import { SaveViewModal } from './SaveViewModal'
 import { SortMenu } from './SortMenu'
+import { useUnlockedResponses } from './UnlockedResponsesProvider'
+import { useSavedViewMutation } from './useSavedViewMutation'
 
 export const ResponsesToolbar = (): JSX.Element => {
   const { t } = useTranslation()
@@ -17,6 +20,9 @@ export const ResponsesToolbar = (): JSX.Element => {
     { returnObjects: true },
   )
   const saveViewModal = useDisclosure()
+  const { columnOptions, currentViewState, hasActiveFilters, selectedViewId } =
+    useUnlockedResponses()
+  const { mutate: saveView, isLoading: isSavingView } = useSavedViewMutation()
 
   return (
     <Flex
@@ -31,7 +37,7 @@ export const ResponsesToolbar = (): JSX.Element => {
     >
       <Flex align="center" gap="0.75rem" minW={0} flexWrap="wrap">
         <Box w={{ base: '100%', sm: '18rem' }} maxW="100%">
-          <ResponsesSearchbar />
+          <ResponsesSearchbar key={selectedViewId} />
         </Box>
         <FilterMenu />
         <SortMenu />
@@ -42,6 +48,8 @@ export const ResponsesToolbar = (): JSX.Element => {
         <Button
           variant="clear"
           colorScheme="secondary"
+          isDisabled={!hasActiveFilters}
+          isLoading={isSavingView}
           onClick={saveViewModal.onOpen}
         >
           {saveAsNewView}
@@ -52,6 +60,9 @@ export const ResponsesToolbar = (): JSX.Element => {
       <SaveViewModal
         isOpen={saveViewModal.isOpen}
         onClose={saveViewModal.onClose}
+        onSave={(name) =>
+          saveView(toSavedViewInput(name, currentViewState, columnOptions))
+        }
       />
     </Flex>
   )

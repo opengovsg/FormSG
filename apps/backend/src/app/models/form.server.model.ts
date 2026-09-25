@@ -24,6 +24,7 @@ import {
   FormPaymentsField,
   FormPermission,
   FormResponseMode,
+  FormSavedView,
   FormSettings,
   FormStartPage,
   FormStatus,
@@ -38,6 +39,7 @@ import {
   PaymentType,
   PublicMultirespondentFormDto,
   PublicStorageFormDto,
+  SavedViewSortDirection,
   StorageFormSettings,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -260,6 +262,33 @@ const whitelistedSubmitterIdNestedPath = new Schema(
   },
   { _id: false },
 )
+
+const SavedViewSchema = new Schema<FormSavedView>({
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  filter: {
+    startDate: { type: String },
+    endDate: { type: String },
+    searchText: { type: String },
+    searchColumnIds: { type: [String], default: undefined },
+  },
+  sort: {
+    type: {
+      columnId: { type: String, required: true },
+      direction: {
+        type: String,
+        enum: Object.values(SavedViewSortDirection),
+        required: true,
+      },
+    },
+    required: false,
+    default: undefined,
+  },
+  columnIds: { type: [String], default: undefined },
+})
 
 const EncryptedFormSchema = new Schema<IEncryptedFormSchema>({
   publicKey: {
@@ -818,6 +847,11 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       hasIssueNotification: {
         type: Boolean,
         default: true,
+      },
+
+      savedViews: {
+        type: [SavedViewSchema],
+        default: [],
       },
 
       authType: {
