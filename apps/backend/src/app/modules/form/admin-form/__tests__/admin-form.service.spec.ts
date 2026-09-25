@@ -1772,21 +1772,21 @@ describe('admin-form.service', () => {
     } as unknown as IPopulatedMultirespondentForm)
 
     const EMAIL_UPDATE_SPY = jest
-      .spyOn(EmailFormModel, 'findByIdAndUpdate')
+      .spyOn(EmailFormModel, 'findOneAndUpdate')
 
       // @ts-ignore
       .mockReturnValue({
         exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
       })
     const ENCRYPT_UPDATE_SPY = jest
-      .spyOn(EncryptFormModel, 'findByIdAndUpdate')
+      .spyOn(EncryptFormModel, 'findOneAndUpdate')
 
       // @ts-ignore
       .mockReturnValue({
         exec: jest.fn().mockResolvedValue(MOCK_UPDATED_FORM),
       })
     const MULTIRESPONDENT_UPDATE_SPY = jest
-      .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+      .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
 
       // @ts-ignore
       .mockReturnValue({
@@ -1811,7 +1811,7 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
       expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-        MOCK_EMAIL_FORM._id,
+        { _id: MOCK_EMAIL_FORM._id },
         settingsToUpdate,
         { new: true, runValidators: true },
       )
@@ -1833,7 +1833,7 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
       expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
-        MOCK_MULTIRESPONDENT_FORM._id,
+        { _id: MOCK_MULTIRESPONDENT_FORM._id },
         settingsToUpdate,
         { new: true, runValidators: true },
       )
@@ -1856,7 +1856,7 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
       expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
-        MOCK_ENCRYPT_FORM._id,
+        { _id: MOCK_ENCRYPT_FORM._id },
         // Should be dotified
         {
           'webhook.url': 'https://example.com',
@@ -1883,7 +1883,7 @@ describe('admin-form.service', () => {
       expect(MOCK_ENCRYPT_FORM.isSaveDraftEnabled).toBeFalse()
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
       expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
-        MOCK_ENCRYPT_FORM._id,
+        { _id: MOCK_ENCRYPT_FORM._id },
         settingsToUpdate,
         { new: true, runValidators: true },
       )
@@ -1915,7 +1915,7 @@ describe('admin-form.service', () => {
         DatabaseValidationError,
       )
       expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
-        MOCK_ENCRYPT_FORM._id,
+        { _id: MOCK_ENCRYPT_FORM._id },
         settingsToUpdate,
         { new: true, runValidators: true },
       )
@@ -1943,7 +1943,10 @@ describe('admin-form.service', () => {
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
       expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
-        MOCK_MULTIRESPONDENT_FORM._id,
+        {
+          _id: MOCK_MULTIRESPONDENT_FORM._id,
+          'workflow.1': { $exists: false },
+        },
         {
           'webhook.url': 'https://example.com',
           'webhook.webhookFormat': 'v1',
@@ -2180,7 +2183,7 @@ describe('admin-form.service', () => {
       expect(actualResult.isOk()).toBeTrue()
       expect(actualResult._unsafeUnwrap()).toEqual(MOCK_UPDATED_SETTINGS)
       expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
-        storageForm._id,
+        { _id: storageForm._id },
         settingsToUpdate,
         { new: true, runValidators: true },
       )
@@ -2272,7 +2275,7 @@ describe('admin-form.service', () => {
         } as FormSettings)
 
         expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
-          form._id,
+          { _id: form._id },
           { hasUsedGuidedMode: true },
           expect.anything(),
         )
@@ -2295,7 +2298,7 @@ describe('admin-form.service', () => {
         )
 
         expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
-          form._id,
+          { _id: form._id },
           {},
           expect.anything(),
         )
@@ -2310,7 +2313,7 @@ describe('admin-form.service', () => {
         } as FormSettings)
 
         expect(MULTIRESPONDENT_UPDATE_SPY).toHaveBeenCalledWith(
-          form._id,
+          { _id: form._id },
           { title: 'a new title' },
           expect.anything(),
         )
@@ -2337,7 +2340,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          form._id,
+          { _id: form._id },
           { status: FormStatus.Public, closeAt: null },
           expect.anything(),
         )
@@ -2351,7 +2354,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          form._id,
+          { _id: form._id },
           { status: FormStatus.Public },
           expect.anything(),
         )
@@ -2365,7 +2368,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          form._id,
+          { _id: form._id },
           { status: FormStatus.Public },
           expect.anything(),
         )
@@ -2381,7 +2384,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          form._id,
+          { _id: form._id },
           { status: FormStatus.Public, closeAt: rescheduled },
           expect.anything(),
         )
@@ -2395,7 +2398,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          form._id,
+          { _id: form._id },
           { status: FormStatus.Private },
           expect.anything(),
         )
@@ -2409,7 +2412,7 @@ describe('admin-form.service', () => {
         })
 
         expect(EMAIL_UPDATE_SPY).toHaveBeenCalledWith(
-          form._id,
+          { _id: form._id },
           { title: 'a new title' },
           expect.anything(),
         )
@@ -4532,7 +4535,7 @@ describe('admin-form.service', () => {
         } as unknown as IPopulatedForm
 
         jest
-          .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
           // @ts-ignore
           .mockReturnValue({
             exec: jest.fn().mockResolvedValue({
@@ -4674,7 +4677,7 @@ describe('admin-form.service', () => {
 
     it('should delete the step when the number arrives as a string', async () => {
       jest
-        .spyOn(MultirespondentFormModel, 'findByIdAndUpdate')
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
         // @ts-ignore
         .mockReturnValue({
           exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
@@ -4687,7 +4690,7 @@ describe('admin-form.service', () => {
       )
 
       expect(result.isOk()).toBe(true)
-      expect(MultirespondentFormModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      expect(MultirespondentFormModel.findOneAndUpdate).toHaveBeenCalledWith(
         expect.anything(),
         { workflow: [completeFirstStep] },
         expect.anything(),
