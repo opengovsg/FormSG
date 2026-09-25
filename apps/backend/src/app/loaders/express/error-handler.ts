@@ -1,17 +1,50 @@
 import axios from 'axios'
-import { errors, isCelebrateError } from 'celebrate'
+import { CelebrateError, isCelebrateError } from 'celebrate'
 import { ErrorRequestHandler, RequestHandler } from 'express'
 import { HttpError, isHttpError } from 'http-errors'
-import { StatusCodes } from 'http-status-codes'
+import { getReasonPhrase, StatusCodes } from 'http-status-codes'
+import escape from 'lodash/escape'
 import get from 'lodash/get'
 import { types } from 'util'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
+import {
+  buildAdminFormErrorDto,
+  getCelebrateErrorI18n,
+} from '../../modules/form/admin-form/admin-form.i18n'
 import { createReqMeta } from '../../utils/request'
 
 const logger = createLoggerWithLabel(module)
-const celebrateErrorHandler = errors()
+
+const buildCelebrateErrorResponse = (error: CelebrateError) => {
+  const i18nError = [...error.details.values()]
+    .flatMap((validationError) => validationError.details)
+    .map((detail) => {
+      const { messageKey, messageParams } = getCelebrateErrorI18n(detail)
+      return buildAdminFormErrorDto(detail.message, messageKey, messageParams)
+    })
+    .find((detail) => detail.messageKey)
+
+  const validation = Object.fromEntries(
+    [...error.details.entries()].map(([segment, joiError]) => [
+      segment,
+      {
+        source: segment,
+        keys: joiError.details.map((detail) => escape(detail.path.join('.'))),
+        message: joiError.message,
+      },
+    ]),
+  )
+
+  return {
+    statusCode: StatusCodes.BAD_REQUEST,
+    error: getReasonPhrase(StatusCodes.BAD_REQUEST),
+    message: error.message,
+    validation,
+    ...i18nError,
+  }
+}
 
 const isBodyParserError = (
   err: unknown,
@@ -108,7 +141,9 @@ export const genericErrorHandlerMiddleware: ErrorRequestHandler = (
         },
         error: err,
       })
-      return celebrateErrorHandler(err, req, res, next)
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json(buildCelebrateErrorResponse(err))
     }
 
     if (isBodyParserError(err)) {

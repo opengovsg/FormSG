@@ -4,10 +4,22 @@ import {
 } from 'formsg-shared/constants'
 
 import { ApplicationError, ErrorCodes } from '../../core/core.errors'
+import { InvalidPaymentAmountError } from '../../payments/payments.errors'
+
+import { adminFormErrorKey } from './admin-form.i18n'
 
 export class InvalidFileTypeError extends ApplicationError {
-  constructor(message = 'Unsupported file type') {
-    super(message, undefined, ErrorCodes.ADMIN_FORM_INVALID_FILE_TYPE)
+  readonly messageKey?: string
+
+  constructor(message?: string) {
+    super(
+      message ?? 'Unsupported file type',
+      undefined,
+      ErrorCodes.ADMIN_FORM_INVALID_FILE_TYPE,
+    )
+    if (message === undefined) {
+      this.messageKey = adminFormErrorKey('assets.unsupportedFileType')
+    }
   }
 }
 
@@ -18,8 +30,31 @@ export class EditFieldError extends ApplicationError {
 }
 
 export class FieldNotFoundError extends ApplicationError {
-  constructor(message = 'Field to modify not found') {
-    super(message, undefined, ErrorCodes.ADMIN_FORM_FIELD_NOT_FOUND)
+  readonly messageKey?: string
+
+  constructor(message?: string) {
+    super(
+      message ?? 'Field to modify not found',
+      undefined,
+      ErrorCodes.ADMIN_FORM_FIELD_NOT_FOUND,
+    )
+    if (message === undefined) {
+      this.messageKey = adminFormErrorKey('fields.notFound')
+    }
+  }
+}
+
+export class AdminFormInvalidPaymentAmountError extends InvalidPaymentAmountError {
+  readonly messageKey = adminFormErrorKey('payments.invalidAmount')
+}
+
+export class PaymentProductAmountLimitExceededError extends InvalidPaymentAmountError {
+  readonly messageKey = adminFormErrorKey('payments.productAmountLimitExceeded')
+
+  constructor(
+    message = 'Item and Quantity exceeded limit. Either lower your quantity or lower payment amount.',
+  ) {
+    super(message)
   }
 }
 
