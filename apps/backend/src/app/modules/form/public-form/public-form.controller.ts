@@ -743,14 +743,12 @@ export const _handleFormAuthRedirect: ControllerHandler<
   return FormService.retrieveFullFormById(formId)
     .andThen((form) => {
       formAuthType = form.authType
-      // TODO [CP-PKCE]: Cleanup this flag once PKCE rollout is verified.
       // Add formId to growthbook attributes to allow for targeting in growthbook feature flags.
       void req.growthbook?.setAttributes({
         ...req.growthbook.getAttributes(),
         formId,
         adminEmail: form.admin.email,
       })
-      const usePkce = req.growthbook?.isOn(featureFlags.spcpOidcPkce) ?? false
       // TODO [CP-PKCE]: Cleanup this flag once the nonce state format is fully
       // rolled out. Only emit the nonce state format once every instance is
       // able to parse it, otherwise a callback served by an compute instance running
@@ -791,15 +789,13 @@ export const _handleFormAuthRedirect: ControllerHandler<
             )
             const oidcService = getOidcService(FormAuthType.SP)
             return oidcService
-              .createRedirectUrl(target, form.esrvcId, usePkce)
+              .createRedirectUrl(target, form.esrvcId)
               .map(({ redirectUrl, codeVerifier }) => {
-                if (codeVerifier) {
-                  res.cookie(
-                    oidcService.getCodeVerifierCookieName(nonce),
-                    codeVerifier,
-                    oidcService.getCodeVerifierCookieOptions(),
-                  )
-                }
+                res.cookie(
+                  oidcService.getCodeVerifierCookieName(nonce),
+                  codeVerifier,
+                  oidcService.getCodeVerifierCookieOptions(),
+                )
                 return redirectUrl
               })
           })
@@ -817,15 +813,13 @@ export const _handleFormAuthRedirect: ControllerHandler<
             )
             const oidcService = getOidcService(FormAuthType.CP)
             return oidcService
-              .createRedirectUrl(target, form.esrvcId, usePkce)
+              .createRedirectUrl(target, form.esrvcId)
               .map(({ redirectUrl, codeVerifier }) => {
-                if (codeVerifier) {
-                  res.cookie(
-                    oidcService.getCodeVerifierCookieName(nonce),
-                    codeVerifier,
-                    oidcService.getCodeVerifierCookieOptions(),
-                  )
-                }
+                res.cookie(
+                  oidcService.getCodeVerifierCookieName(nonce),
+                  codeVerifier,
+                  oidcService.getCodeVerifierCookieOptions(),
+                )
                 return redirectUrl
               })
           })

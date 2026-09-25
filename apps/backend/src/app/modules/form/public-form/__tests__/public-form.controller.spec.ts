@@ -2,7 +2,6 @@ import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { Request } from 'express'
-import { featureFlags } from 'formsg-shared/constants'
 import { ErrorCode, FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
@@ -1477,7 +1476,7 @@ describe('public-form.controller', () => {
       },
       others: {
         growthbook: {
-          isOn: jest.fn((flag: string) => flag === featureFlags.spcpOidcPkce),
+          isOn: jest.fn(() => false),
           getAttributes: jest.fn(() => ({})),
           setAttributes: jest.fn().mockResolvedValue(undefined),
         },
@@ -1550,7 +1549,6 @@ describe('public-form.controller', () => {
       expect(createRedirectUrlSpy).toHaveBeenCalledWith(
         expect.any(String),
         MOCK_FORM.esrvcId,
-        true,
       )
       expect(mockRes.status).toHaveBeenCalledWith(200)
       expect(mockRes.json).toHaveBeenCalledWith({
@@ -1563,7 +1561,7 @@ describe('public-form.controller', () => {
       )
     })
 
-    it('should return 200 without the code verifier cookie when the form has authType SP and PKCE is disabled', async () => {
+    it('should return 200 and set the code verifier cookie when the form has authType SP and there is no growthbook instance', async () => {
       // Arrange
       const MOCK_REQ_NO_GROWTHBOOK = expressHandler.mockRequest({
         params: {
@@ -1581,7 +1579,12 @@ describe('public-form.controller', () => {
       )
       const createRedirectUrlSpy = jest
         .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockReturnValueOnce(okAsync({ redirectUrl: MOCK_REDIRECT_URL }))
+        .mockReturnValueOnce(
+          okAsync({
+            redirectUrl: MOCK_REDIRECT_URL,
+            codeVerifier: MOCK_CODE_VERIFIER,
+          }),
+        )
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
@@ -1594,10 +1597,13 @@ describe('public-form.controller', () => {
       expect(createRedirectUrlSpy).toHaveBeenCalledWith(
         expect.any(String),
         MOCK_FORM.esrvcId,
-        false,
       )
       expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.cookie).not.toHaveBeenCalled()
+      expect(mockRes.cookie).toHaveBeenCalledWith(
+        CodeVerifierCookieName.SP,
+        MOCK_CODE_VERIFIER,
+        expect.anything(),
+      )
     })
 
     it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is undefined', async () => {
