@@ -6,7 +6,6 @@ import { fillMinHeightCss } from '~utils/fillHeightCss'
 import FloatingToolbar from './components/FloatingToolBar'
 import { FormBanner } from './components/FormBanner'
 import FormEndPage from './components/FormEndPage'
-import { FormExpiryBanner } from './components/FormExpiryBanner'
 import FormFields from './components/FormFields'
 import { FormSectionsProvider } from './components/FormFields/FormSectionsContext'
 import { FormFooter } from './components/FormFooter'
@@ -41,7 +40,6 @@ export const PublicFormPage = (): JSX.Element => {
       <FormSectionsProvider>
         <Flex direction="column" css={fillMinHeightCss}>
           <FormBanner />
-          <FormExpiryBanner />
           <PublicFormLogo />
           <FormStartPage />
           <LanguageControl />
