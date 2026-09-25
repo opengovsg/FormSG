@@ -184,6 +184,10 @@ export const getDecryptedSubmissionById = async ({
 type DecryptedContent = NonNullable<ReturnType<typeof formsgSdk.crypto.decrypt>>
 export type DecryptedSubmission = Pick<DecryptedContent, 'responses'>
 
+export type IdentifiedDecryptedSubmission = DecryptedSubmission & {
+  submissionId: string
+}
+
 export const getAllDecryptedSubmission = async ({
   formId,
   secretKey,
@@ -192,6 +196,7 @@ export const getAllDecryptedSubmission = async ({
   downloadAttachments,
   isSortByLatest,
   limit,
+  onSubmissionDecrypted,
 }: {
   formId: string
   secretKey: string
@@ -200,7 +205,8 @@ export const getAllDecryptedSubmission = async ({
   downloadAttachments: boolean
   isSortByLatest: boolean
   limit: number
-}): Promise<DecryptedSubmission[]> => {
+  onSubmissionDecrypted?: (submission: IdentifiedDecryptedSubmission) => void
+}): Promise<IdentifiedDecryptedSubmission[]> => {
   const numWorkers = window.navigator.hardwareConcurrency ?? 1
   const workerPool: CleanableDecryptionWorkerApi[] = []
   let currentSubmissionIndex = 0
@@ -217,7 +223,7 @@ export const getAllDecryptedSubmission = async ({
     limit,
   })
 
-  const decryptSubmissionPromises: Promise<DecryptedSubmission>[] = []
+  const decryptSubmissionPromises: Promise<IdentifiedDecryptedSubmission>[] = []
 
   const reader = submissionsStream.getReader()
   let read: (result: ReadableStreamReadResult<string>) => void
@@ -239,7 +245,12 @@ export const getAllDecryptedSubmission = async ({
             if (!result.isParseSuccessful || !result.isDecryptionSuccessful) {
               throw new Error('One or more responses failed to decrypt.')
             }
-            return { responses: result.decryptedResponses }
+            const submission = {
+              submissionId: result.parsedSubmission._id,
+              responses: result.decryptedResponses,
+            }
+            onSubmissionDecrypted?.(submission)
+            return submission
           }),
       )
       currentSubmissionIndex++
