@@ -25,6 +25,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     encryptedPreviousSubmission,
     previousSubmission,
     previousAttachments,
+    previewWorkflowStepNumber,
   } = usePublicFormContext()
 
   const { workflowStep } = encryptedPreviousSubmission ?? {}
@@ -71,7 +72,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
             ? form.workflow[
                 // If no submission, then the workflowStep will be undefined.
                 // Require explicit undefined check here since both 0 and undefined are falsy but mean different things here.
-                workflowStep === undefined ? 0 : workflowStep + 1
+                previewWorkflowStepNumber ??
+                  (workflowStep === undefined ? 0 : workflowStep + 1)
               ]
             : undefined
         }
@@ -85,6 +87,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     isAuthRequired,
     previousAttachments,
     workflowStep,
+    previewWorkflowStepNumber,
     handleSubmitForm,
     hasSingleSubmissionValidationError,
     hasRespondentNotWhitelistedError,
