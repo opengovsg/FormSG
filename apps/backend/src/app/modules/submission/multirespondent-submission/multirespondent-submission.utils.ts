@@ -15,6 +15,7 @@ import {
   MultirespondentSubmissionDto,
   MyInfoAttribute,
   PublicMultirespondentSubmissionDto,
+  SubmissionPaymentDto,
   SubmissionType,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -71,10 +72,12 @@ export const isSubmissionMultirespondentMode = (
 export const createMultirespondentSubmissionDto = (
   submissionData: MultirespondentSubmissionData,
   attachmentPresignedUrls: Record<string, string>,
+  payment?: SubmissionPaymentDto,
 ): MultirespondentSubmissionDto => {
   return {
     submissionType: SubmissionType.Multirespondent,
     refNo: submissionData._id,
+    payment,
     submissionTime: moment(submissionData.created)
       .tz('Asia/Singapore')
       .format('ddd, D MMM YYYY, hh:mm:ss A'),
