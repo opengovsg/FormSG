@@ -7,8 +7,7 @@ trustPolicyExclude:
   # only re-resolve due to override changes.
   - "semver@5.7.2"
   - "semver@6.3.1"
-  # 7.x patch has no provenance; npm gitHead matches upstream release 9b8f76f.
-  # https://github.com/Automattic/mongoose/releases/tag/7.8.10
+  # No mongoose 7.x release has provenance, thus exception is needed to satisfy no-downgrade check.
   - "mongoose@7.8.10"
 # The no-downgrade check compares across major versions by publish date, so
 # pre-provenance releases of old major lines (e.g. semver 5/6, final releases
