@@ -77,6 +77,12 @@ export const enSG: ResponsesResponsesPage = {
         checkAll: 'Check all',
         uncheckAll: 'Uncheck all',
       },
+      views: {
+        allResponses: 'All responses',
+        saveAsNewView: 'Save as new view',
+        viewName: 'View name',
+        viewNamePlaceholder: 'e.g. Pending approvals',
+      },
       sortMenu: {
         column: 'Column',
         direction: 'Direction',
