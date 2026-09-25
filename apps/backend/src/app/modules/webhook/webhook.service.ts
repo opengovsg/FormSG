@@ -18,6 +18,7 @@ import getSubmissionModel from '../../models/submission.server.model'
 import { getSignedS3Url } from '../../utils/aws-s3'
 import { transformMongoError } from '../../utils/handle-mongo-error'
 import { DatabaseError, PossibleDatabaseError } from '../core/core.errors'
+import type { SnapshotContentFormat } from '../submission/multirespondent-submission/webhook/submission-snapshot.schema'
 import type { WebhookConsumerType } from '../submission/multirespondent-submission/webhook/webhook-payload-policy'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
@@ -81,15 +82,23 @@ export const saveWebhookRecord = (
   })
 }
 
+const attachmentBucketForContentFormat = (
+  contentFormat?: SnapshotContentFormat,
+): string =>
+  contentFormat === 'v1'
+    ? AwsConfig.submissionHistoryV1AttachmentS3Bucket
+    : AwsConfig.attachmentS3Bucket
+
 const createWebhookSubmissionView = (
   submissionWebhookView: WebhookView,
+  contentFormat?: SnapshotContentFormat,
 ): Promise<WebhookView> => {
   // Generate S3 signed urls
   const signedUrlPromises: Record<string, Promise<string>> = {}
   for (const key in submissionWebhookView.data.attachmentDownloadUrls) {
     signedUrlPromises[key] = getSignedS3Url(
       {
-        Bucket: AwsConfig.attachmentS3Bucket,
+        Bucket: attachmentBucketForContentFormat(contentFormat),
         Key: submissionWebhookView.data.attachmentDownloadUrls[key],
       },
       60 * 60, // one hour expiry
@@ -105,6 +114,7 @@ const createWebhookSubmissionView = (
 export const sendWebhook = (
   webhookView: WebhookView,
   webhookUrl: string,
+  contentFormat?: SnapshotContentFormat,
 ): ResultAsync<
   WebhookResponse,
   | WebhookValidationError
@@ -142,7 +152,7 @@ export const sendWebhook = (
       : new WebhookValidationError()
   }).andThen(() => {
     return ResultAsync.fromPromise(
-      createWebhookSubmissionView(webhookView),
+      createWebhookSubmissionView(webhookView, contentFormat),
       (error) => {
         logger.error({
           message: 'S3 attachment presigned URL generation failed',
@@ -295,31 +305,35 @@ export const createInitialWebhookSender =
         )
 
     return webhookViewToUse.andThen((webhookView) =>
-      sendWebhook(webhookView, webhookUrl).andThen((webhookResponse) => {
-        webhookStatsdClient.increment('sent', 1, 1, {
-          responseCode: `${webhookResponse.response.status || null}`,
-          webhookType: getWebhookType(webhookUrl),
-          isRetryEnabled: `${isRetryEnabled}`,
-        })
+      sendWebhook(webhookView, webhookUrl, snapshotRef?.contentFormat).andThen(
+        (webhookResponse) => {
+          webhookStatsdClient.increment('sent', 1, 1, {
+            responseCode: `${webhookResponse.response.status || null}`,
+            webhookType: getWebhookType(webhookUrl),
+            isRetryEnabled: `${isRetryEnabled}`,
+          })
 
-        // Save record of sending to database
-        return saveWebhookRecord(submission._id, webhookResponse).andThen(
-          () => {
-            // If webhook successful or retries not enabled, no further action
-            if (
-              isSuccessfulResponse(webhookResponse) ||
-              !producer ||
-              !isRetryEnabled
-            ) {
-              return okAsync(true as const)
-            }
-            // Webhook failed and retries enabled, so create initial message and enqueue
-            return WebhookQueueMessage.fromSubmissionId(
-              String(submission._id),
-              snapshotRef,
-            ).asyncAndThen((queueMessage) => producer.sendMessage(queueMessage))
-          },
-        )
-      }),
+          // Save record of sending to database
+          return saveWebhookRecord(submission._id, webhookResponse).andThen(
+            () => {
+              // If webhook successful or retries not enabled, no further action
+              if (
+                isSuccessfulResponse(webhookResponse) ||
+                !producer ||
+                !isRetryEnabled
+              ) {
+                return okAsync(true as const)
+              }
+              // Webhook failed and retries enabled, so create initial message and enqueue
+              return WebhookQueueMessage.fromSubmissionId(
+                String(submission._id),
+                snapshotRef,
+              ).asyncAndThen((queueMessage) =>
+                producer.sendMessage(queueMessage),
+              )
+            },
+          )
+        },
+      ),
     )
   }
