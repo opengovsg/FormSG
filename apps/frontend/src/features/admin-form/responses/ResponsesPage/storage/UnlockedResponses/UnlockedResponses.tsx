@@ -24,6 +24,7 @@ import { useInfiniteScrollTrigger } from './hooks/useInfiniteScrollTrigger'
 import { DownloadButton } from './DownloadButton'
 import { ResponsesTable } from './ResponsesTable'
 import { ResponsesToolbar } from './ResponsesToolbar'
+import { ResponseViewTabs } from './ResponseViewTabs'
 import { SubmissionSearchbar } from './SubmissionSearchbar'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
@@ -96,6 +97,8 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
           </Text>
         </Skeleton>
       </Flex>
+
+      <ResponseViewTabs />
 
       <ResponsesToolbar />
 
