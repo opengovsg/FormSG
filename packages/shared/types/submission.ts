@@ -397,7 +397,7 @@ export type FormSubmissionMetadataQueryDto = RequireAtLeastOne<
     submissionId: string
   },
   'page' | 'submissionId'
-> & { pageSize?: number }
+> & { pageSize?: number; startDate?: string; endDate?: string }
 
 /**
  * Shape of email form submissions
