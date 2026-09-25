@@ -5,9 +5,8 @@ import { Request } from 'express'
 import { featureFlags } from 'formsg-shared/constants'
 import { ErrorCode, FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
-import { errAsync, ok, okAsync } from 'neverthrow'
+import { errAsync, okAsync } from 'neverthrow'
 
-import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import {
   MOCK_ACCESS_TOKEN,
@@ -79,13 +78,11 @@ jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 jest.mock('../../../myinfo/myinfo.service')
 jest.mock('../../../myinfo/fapi/myinfo.fapi.service')
 jest.mock('../../../billing/billing.service')
-jest.mock('src/app/config/features/spcp-myinfo.config')
 
 const { SpcpOidcServiceClass: ActualSpcpOidcServiceClass } = jest.requireActual(
   '../../../spcp/spcp.oidc.service/spcp.oidc.service.base',
 ) as typeof import('../../../spcp/spcp.oidc.service/spcp.oidc.service.base')
 
-const MockSpCpMyInfoConfig = jest.mocked(spcpMyInfoConfig)
 const MockFormService = jest.mocked(FormService)
 const MockPublicFormService = jest.mocked(PublicFormService)
 const MockAuthService = jest.mocked(AuthService)
@@ -1724,156 +1721,8 @@ describe('public-form.controller', () => {
       )
     })
 
-    it('should return 200 with the redirect url when the request is valid and the form has authType MyInfo', async () => {
+    it('should return 200 with the FAPI redirect url, clear the legacy auth code cookie and set the FAPI session cookie when the form has authType MyInfo', async () => {
       // Arrange
-      const FORM_ESRVC_ID = 'MOCKED_FORM_ESRVC_ID'
-      const MOCK_FORM = {
-        admin: MOCK_ADMIN,
-        authType: FormAuthType.MyInfo,
-        esrvcId: FORM_ESRVC_ID,
-        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
-      } as unknown as MyInfoForm<IFormDocument>
-
-      const MOCKED_DEFAULT_ESRVC_ID = 'MOCKED_DEFAULT_ESRVC_ID'
-      MockSpCpMyInfoConfig.spEsrvcId = MOCKED_DEFAULT_ESRVC_ID
-      const createRedirectURLSpy = jest.spyOn(
-        MockMyInfoService,
-        'createRedirectURL',
-      )
-
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      MockMyInfoService.createRedirectURL.mockReturnValueOnce(
-        ok(MOCK_REDIRECT_URL),
-      )
-
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(createRedirectURLSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          formEsrvcId: FORM_ESRVC_ID,
-        }),
-      )
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        redirectURL: MOCK_REDIRECT_URL,
-      })
-    })
-
-    it('should return 200 with the redirect url when the request is valid and the form has authType MyInfo and no esrvcId', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        admin: MOCK_ADMIN,
-        authType: FormAuthType.MyInfo,
-        esrvcId: undefined,
-        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
-      } as unknown as MyInfoForm<IFormDocument>
-
-      const DEFAULT_ESRVC_ID = 'MOCKED_DEFAULT_ESRVC_ID'
-      MockSpCpMyInfoConfig.spEsrvcId = DEFAULT_ESRVC_ID
-      const createRedirectURLSpy = jest.spyOn(
-        MockMyInfoService,
-        'createRedirectURL',
-      )
-
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-
-      createRedirectURLSpy.mockReturnValueOnce(ok(MOCK_REDIRECT_URL))
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(createRedirectURLSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          formEsrvcId: DEFAULT_ESRVC_ID,
-        }),
-      )
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        redirectURL: MOCK_REDIRECT_URL,
-      })
-    })
-
-    it('should clear a stale FAPI session cookie when the form has authType MyInfo and myinfoFapi is off', async () => {
-      // Arrange
-      const MOCK_REQ_FLAG_OFF = expressHandler.mockRequest({
-        params: { formId: new ObjectId().toHexString() },
-        query: { isPersistentLogin: true },
-        others: {
-          growthbook: {
-            isOn: jest.fn(() => false),
-            getAttributes: jest.fn(() => ({})),
-            setAttributes: jest.fn().mockResolvedValue(undefined),
-          },
-        },
-      })
-      const MOCK_FORM = {
-        admin: MOCK_ADMIN,
-        authType: FormAuthType.MyInfo,
-        esrvcId: 'MOCKED_FORM_ESRVC_ID',
-        getUniqueMyInfoAttrs: jest.fn().mockReturnValue([]),
-      } as unknown as MyInfoForm<IFormDocument>
-
-      const createRedirectURLSpy = jest.spyOn(
-        MockMyInfoService,
-        'createRedirectURL',
-      )
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      createRedirectURLSpy.mockReturnValueOnce(ok(MOCK_REDIRECT_URL))
-
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ_FLAG_OFF,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(MockMyInfoFapiService.startLogin).not.toHaveBeenCalled()
-      expect(mockRes.clearCookie).toHaveBeenCalledWith(
-        MYINFO_FAPI_SESSION_COOKIE_NAME,
-        MYINFO_FAPI_SESSION_COOKIE_IDENTITY,
-      )
-      expect(mockRes.json).toHaveBeenCalledWith({
-        redirectURL: MOCK_REDIRECT_URL,
-      })
-    })
-
-    it('should return 200 with the FAPI redirect url, clear the legacy auth code cookie and set the FAPI session cookie when the form has authType MyInfo and myinfoFapi is on', async () => {
-      // Arrange
-      const MOCK_REQ_WITH_FAPI = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: true,
-        },
-        others: {
-          growthbook: {
-            isOn: jest.fn((flag: string) => flag === featureFlags.myinfoFapi),
-            getAttributes: jest.fn(() => ({})),
-            setAttributes: jest.fn().mockResolvedValue(undefined),
-          },
-        },
-      })
       const MOCK_FORM = {
         admin: MOCK_ADMIN,
         authType: FormAuthType.MyInfo,
@@ -1895,7 +1744,7 @@ describe('public-form.controller', () => {
 
       // Act
       await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ_WITH_FAPI,
+        MOCK_REQ,
         mockRes,
         jest.fn(),
       )

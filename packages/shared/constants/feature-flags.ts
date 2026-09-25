@@ -36,7 +36,6 @@ export const featureFlags = {
   workflowBuilderRedesign: 'workflow-builder-redesign' as const,
   formIdJson: 'formid-json' as const,
   mrfPayments: 'mrf-payments' as const,
-  myinfoFapi: 'myinfo-fapi' as const,
   workflowDeletion: 'workflow-deletion' as const,
   scheduledFormClosure: 'scheduled-form-closure' as const,
   mrfChildren: 'mrf-children' as const,
