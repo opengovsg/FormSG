@@ -412,7 +412,7 @@ importers:
         specifier: ^0.9.7
         version: 0.9.7
       mongoose:
-        specifier: 7.8.10
+        specifier: ^7.8.10
         version: 7.8.10
       multer:
         specifier: ^2.3.0
