@@ -87,7 +87,9 @@ export const EditMyInfo = ({ field }: EditMyInfoProps): JSX.Element => {
           <Text>
             <Trans
               i18nKey="features.adminForm.sidebar.fields.myInfoPreview.foreignersWithSingpass"
-              components={{ link: <Link isExternal href={SINGPASS_FAQ} /> }}
+              components={{
+                singpassLink: <Link isExternal href={SINGPASS_FAQ} />,
+              }}
             />
           </Text>
         </HStack>
