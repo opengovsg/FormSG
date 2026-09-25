@@ -25,6 +25,8 @@ import {
   FormMetadata,
   FormPermission,
   FormResponseMode,
+  FormSavedView,
+  FormSavedViewInput,
   FormSettings,
   FormStatus,
   FormWebhook,
@@ -2380,6 +2382,35 @@ export const updateFormMetadata = (
  * @returns ok(created logic dto) on success
  * @returns err(database errors) if db error is thrown during logic update
  */
+export const createFormSavedView = (
+  form: IPopulatedForm,
+  savedView: FormSavedViewInput,
+): ResultAsync<FormSavedView[], DatabaseError | FormNotFoundError> => {
+  return ResultAsync.fromPromise(
+    FormModel.findByIdAndUpdate(
+      form._id,
+      { $push: { savedViews: savedView } },
+      { new: true, runValidators: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when creating saved view',
+        meta: {
+          action: 'createFormSavedView',
+          formId: form._id,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.savedViews ?? [])
+  })
+}
+
 export const createFormLogic = (
   form: IPopulatedForm,
   createLogicBody: LogicDto,

@@ -198,7 +198,38 @@ export type FormBusinessField = {
   gstRegNo?: string
 }
 
+export enum SavedViewSortDirection {
+  Ascending = 'asc',
+  Descending = 'desc',
+}
+
+/**
+ * A named snapshot of the responses table's filter, sort and column choices.
+ *
+ * Column and field references are stored as ids and resolved when the view is
+ * applied, so a view survives its fields being deleted. An omitted list means
+ * "no constraint", which keeps older views showing fields added since.
+ */
+export interface FormSavedView {
+  _id: string
+  name: string
+  filter: {
+    startDate?: DateString
+    endDate?: DateString
+    searchText?: string
+    searchColumnIds?: string[]
+  }
+  sort?: {
+    columnId: string
+    direction: SavedViewSortDirection
+  }
+  columnIds?: string[]
+}
+
+export type FormSavedViewInput = Omit<FormSavedView, '_id'>
+
 export interface FormBase {
+  savedViews?: FormSavedView[]
   title: string
   admin: UserDto['_id']
 

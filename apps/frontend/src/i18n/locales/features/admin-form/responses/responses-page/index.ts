@@ -72,6 +72,9 @@ export interface ResponsesResponsesPage {
         saveAsNewView: string
         viewName: string
         viewNamePlaceholder: string
+        viewNameRequired: string
+        viewNameMinLength: string
+        viewNameMaxLength: string
       }
       sortMenu: {
         column: string

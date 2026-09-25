@@ -7,8 +7,15 @@ import {
   useState,
 } from 'react'
 
-import { SubmissionId, SubmissionMetadata } from 'formsg-shared/types'
+import {
+  DateString,
+  FormSavedView,
+  SavedViewSortDirection,
+  SubmissionId,
+  SubmissionMetadata,
+} from 'formsg-shared/types'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import {
   useAllFormResponses,
@@ -17,12 +24,29 @@ import {
 } from '~features/admin-form/responses/queries'
 
 import { TABLE_ROW_RENDER_CHUNK } from '../../../constants'
+import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { usePageSearchParams } from './hooks/usePageSearchParams'
+import {
+  fromSavedView,
+  hasActiveViewState,
+  ResponsesViewState,
+} from './savedViews'
 
 const PAGE_SIZE = 10
 
-export type ResponseSortDirection = 'asc' | 'desc'
+export const ALL_RESPONSES_VIEW_ID = 'all-responses'
+
+const EMPTY_VIEW_STATE: ResponsesViewState = {
+  dateRange: [] as DateString[],
+  searchText: '',
+  excludedSearchColumnIds: [],
+  hiddenColumnIds: [],
+  sortColumnId: undefined,
+  sortDirection: SavedViewSortDirection.Descending,
+}
+
+export type ResponseSortDirection = SavedViewSortDirection
 
 export interface ResponseColumnOption {
   id: string
@@ -61,6 +85,11 @@ interface UnlockedResponsesContextProps {
   visibleSubmissionIds?: string[]
   setVisibleSubmissionIds: (submissionIds?: string[]) => void
   isFullyLoaded: boolean
+  savedViews: FormSavedView[]
+  selectedViewId: string
+  applyView: (viewId: string) => void
+  hasActiveFilters: boolean
+  currentViewState: ResponsesViewState
   isTableLoading: boolean
   renderLimit: number
   showMoreRows: () => void
@@ -106,8 +135,9 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   }, [])
 
   const [sortColumnId, setSortColumnId] = useState<string>()
-  const [sortDirection, setSortDirection] =
-    useState<ResponseSortDirection>('desc')
+  const [sortDirection, setSortDirection] = useState<ResponseSortDirection>(
+    SavedViewSortDirection.Descending,
+  )
 
   const setSort = useCallback(
     (columnId: string | undefined, direction: ResponseSortDirection) => {
@@ -355,6 +385,47 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     ],
   )
 
+  const { data: form } = useAdminForm()
+  const { dateRange, setDateRange } = useStorageResponsesContext()
+  const savedViews = useMemo(() => form?.savedViews ?? [], [form?.savedViews])
+  const [selectedViewId, setSelectedViewId] = useState(ALL_RESPONSES_VIEW_ID)
+
+  const currentViewState: ResponsesViewState = useMemo(
+    () => ({
+      dateRange,
+      searchText,
+      excludedSearchColumnIds,
+      hiddenColumnIds,
+      sortColumnId,
+      sortDirection,
+    }),
+    [
+      dateRange,
+      excludedSearchColumnIds,
+      hiddenColumnIds,
+      searchText,
+      sortColumnId,
+      sortDirection,
+    ],
+  )
+
+  const hasActiveFilters = hasActiveViewState(currentViewState)
+
+  const applyView = useCallback(
+    (viewId: string) => {
+      setSelectedViewId(viewId)
+      const view = savedViews.find(({ _id }) => _id === viewId)
+      const next = view ? fromSavedView(view, columnOptions) : EMPTY_VIEW_STATE
+      setDateRange(next.dateRange)
+      setSearchText(next.searchText)
+      setExcludedSearchColumnIds(next.excludedSearchColumnIds)
+      setHiddenColumnIds(next.hiddenColumnIds)
+      setSortColumnId(next.sortColumnId)
+      setSortDirection(next.sortDirection)
+    },
+    [columnOptions, savedViews, setDateRange],
+  )
+
   return {
     currentPage,
     setCurrentPage,
@@ -380,6 +451,11 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     visibleSubmissionIds,
     setVisibleSubmissionIds,
     isFullyLoaded,
+    savedViews,
+    selectedViewId,
+    applyView,
+    hasActiveFilters,
+    currentViewState,
     isTableLoading,
     renderLimit,
     showMoreRows,
