@@ -733,7 +733,7 @@ export class MailService {
       const mail: MailOptions = {
         to: emailRecipients,
         from: this.#senderFromString,
-        subject: `Form closed: ${formTitle}`,
+        subject: `Form closed as scheduled - ${formTitle} (${formId})`,
         html: mailHtml,
         headers: {
           [EMAIL_HEADERS.emailType]: EmailType.WarningNotification,
