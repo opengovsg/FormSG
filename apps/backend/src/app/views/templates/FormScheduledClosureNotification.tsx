@@ -16,7 +16,6 @@ export const FormScheduledClosureNotification = ({
   formLink,
   formSettingsLink,
   closedAt,
-  appName,
 }: FormScheduledClosureNotificationHtmlData): JSX.Element => {
   return (
     <EmailLayout>
@@ -35,8 +34,6 @@ export const FormScheduledClosureNotification = ({
         the settings.
       </Text>
       <EmailButton href={formSettingsLink}>Go to form settings</EmailButton>
-      <EmailMargin height={24} />
-      <Text style={secondaryTextStyle}>{appName} team</Text>
       <EmailMargin height={40} />
     </EmailLayout>
   )
