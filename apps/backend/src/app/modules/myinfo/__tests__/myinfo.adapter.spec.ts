@@ -1,10 +1,4 @@
 import {
-  IPerson,
-  IPersonResponse,
-  MyInfoAttribute as ExternalAttr,
-  MyInfoVehicleFull,
-} from '@opengovsg/myinfo-gov-client'
-import {
   FormResponseMode,
   MyInfoAttribute,
   MyInfoChildAttributes,
@@ -18,6 +12,12 @@ import {
   internalAttrToSponsoredChildScope,
   MyInfoData,
 } from '../myinfo.adapter'
+import {
+  IPerson,
+  IPersonResponse,
+  MyInfoAttribute as ExternalAttr,
+  MyInfoVehicleFull,
+} from '../myinfo.person.types'
 import { shouldFetchSponsoredChildren } from '../myinfo.util'
 
 import { MOCK_UINFIN } from './myinfo.test.constants'

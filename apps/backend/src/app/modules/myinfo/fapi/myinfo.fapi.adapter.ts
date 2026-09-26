@@ -1,4 +1,3 @@
-import { IPerson, IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { MyInfoAttribute as InternalAttr } from 'formsg-shared/types'
 import { err, ok, Result } from 'neverthrow'
 import type * as client from 'openid-client'
@@ -8,6 +7,7 @@ import {
   internalAttrListToScopes,
   InternalAttrListToScopesOptions,
 } from '../myinfo.adapter'
+import { IPerson, IPersonResponse } from '../myinfo.person.types'
 
 import { MyInfoFapiMissingUinFinError } from './myinfo.fapi.errors'
 

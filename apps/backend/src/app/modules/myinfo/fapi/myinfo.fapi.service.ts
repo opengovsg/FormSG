@@ -1,4 +1,3 @@
-import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { MyInfoAttribute } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import { errAsync, okAsync, ResultAsync } from 'neverthrow'
@@ -7,6 +6,7 @@ import * as client from 'openid-client'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { DatabaseError } from '../../core/core.errors'
 import { MyInfoData } from '../myinfo.adapter'
+import { IPersonResponse } from '../myinfo.person.types'
 
 import {
   requestedAttrsToScopeString,
