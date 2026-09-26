@@ -32,9 +32,10 @@ export const requestedAttrsToScopeString = (
   ).join(' ')
 
 /**
- * Maps FAPI userinfo onto v3's IPersonResponse so everything below MyInfoData is shared.
- * @param claims - The FAPI userinfo claims.
- * @returns The v3 IPersonResponse.
+ * Maps MyInfo userinfo onto the shared IPersonResponse so MyInfoData and
+ * hashing/prefill stay on one adapter.
+ * @param claims - The userinfo claims.
+ * @returns The IPersonResponse.
  */
 export const userInfoToPersonResponse = (
   claims: client.UserInfoResponse,
