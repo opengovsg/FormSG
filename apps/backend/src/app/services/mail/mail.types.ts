@@ -113,7 +113,6 @@ export type FormScheduledClosureNotificationHtmlData = {
   formSettingsLink: string
   /** Human-readable close instant, pre-formatted in SGT by the caller. */
   closedAt: string
-  appName: string
 }
 
 export type SmsThresholdWarningNotificationHtmlData =

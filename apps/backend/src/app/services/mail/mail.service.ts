@@ -709,7 +709,6 @@ export class MailService {
       formLink: `${this.#appUrl}/${formId}`,
       formSettingsLink: `${this.#appUrl}/admin/form/${formId}/settings`,
       closedAt,
-      appName: this.#appName,
     }
 
     const generatedHtml = fromPromise(
@@ -733,7 +732,7 @@ export class MailService {
       const mail: MailOptions = {
         to: emailRecipients,
         from: this.#senderFromString,
-        subject: `Form closed: ${formTitle}`,
+        subject: `Form closed as scheduled - ${formTitle} (${formId})`,
         html: mailHtml,
         headers: {
           [EMAIL_HEADERS.emailType]: EmailType.WarningNotification,
