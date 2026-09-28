@@ -146,6 +146,60 @@ export type SavedMultirespondentSubmission = {
   snapshot?: SubmissionSnapshot
 }
 
+/**
+ * Builds the first step's V1 snapshot, uploading its V1 attachments to the V1 attachments bucket.
+ * Callers decide whether to store this snapshot to the V1 snapshots bucket.
+ */
+const buildFirstStepV1Snapshot = ({
+  form,
+  encryptedPayload,
+  verifiedContentPlaintext,
+  snapshotBase,
+  logMeta,
+}: {
+  form: IPopulatedMultirespondentForm
+  encryptedPayload: MultirespondentSubmissionDto
+  verifiedContentPlaintext?: Record<string, string>
+  snapshotBase: Pick<
+    SubmissionSnapshot,
+    'formId' | 'submissionId' | 'submissionIndex' | 'workflowStep' | 'createdAt'
+  >
+  logMeta: CustomLoggerParams['meta']
+}) => {
+  const content = buildV1EncryptedContent({
+    v4Responses: encryptedPayload.responses,
+    formFields: toPlainFormFields(form.form_fields),
+    formLogics: toPlainFormLogics(form.form_logics),
+    formPublicKey: form.publicKey,
+    myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
+    logMeta,
+  })
+  if (content.isErr()) return errAsync(content.error)
+  const verified = buildV1VerifiedContent({
+    verifiedContent: verifiedContentPlaintext,
+    formPublicKey: form.publicKey,
+    logMeta: {
+      ...logMeta,
+      formId: snapshotBase.formId,
+      submissionId: snapshotBase.submissionId,
+    },
+  })
+  if (verified.isErr()) return errAsync(verified.error)
+  return encryptAndUploadAttachmentInV1({
+    formId: String(form._id),
+    responses: encryptedPayload.responses,
+    formPublicKey: form.publicKey,
+    logMeta,
+  }).map((attachments) =>
+    buildV1Snapshot({
+      ...snapshotBase,
+      encryptedContent: content.value,
+      verifiedContent: verified.value,
+      attachmentMetadata: Object.fromEntries(attachments),
+    }),
+  )
+}
+
 export const checkFormIsMultirespondent = (
   form: IPopulatedForm,
 ): Result<IPopulatedMultirespondentForm, ResponseModeError> => {
@@ -955,42 +1009,13 @@ export const createMultiRespondentFormSubmission = ({
         V1ContentMappingError | AttachmentUploadError
       > => {
         if (isV1Snapshot) {
-          const v1ContentResult = buildV1EncryptedContent({
-            v4Responses: encryptedPayload.responses,
-            formFields: toPlainFormFields(form.form_fields),
-            formLogics: toPlainFormLogics(form.form_logics),
-            formPublicKey: form.publicKey,
-            myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
+          return buildFirstStepV1Snapshot({
+            form,
+            encryptedPayload,
+            verifiedContentPlaintext,
             logMeta,
+            snapshotBase,
           })
-          if (v1ContentResult.isErr()) {
-            return errAsync(v1ContentResult.error)
-          }
-          const v1VerifiedContentResult = buildV1VerifiedContent({
-            verifiedContent: verifiedContentPlaintext,
-            formPublicKey: form.publicKey,
-            logMeta: {
-              ...logMeta,
-              formId: snapshotBase.formId,
-              submissionId: snapshotBase.submissionId,
-            },
-          })
-          if (v1VerifiedContentResult.isErr()) {
-            return errAsync(v1VerifiedContentResult.error)
-          }
-          return encryptAndUploadAttachmentInV1({
-            formId: String(form._id),
-            responses: encryptedPayload.responses,
-            formPublicKey: form.publicKey,
-            logMeta,
-          }).map((v1AttachmentMetadata) =>
-            buildV1Snapshot({
-              ...snapshotBase,
-              encryptedContent: v1ContentResult.value,
-              verifiedContent: v1VerifiedContentResult.value,
-              attachmentMetadata: Object.fromEntries(v1AttachmentMetadata),
-            }),
-          )
         }
         if (webhookContentFormat === 'v4' && shouldWriteSnapshot) {
           return okAsync(
