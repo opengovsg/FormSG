@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.33.0](https://github.com/opengovsg/formsg/compare/v9.32.1...v9.33.0) (2026-09-28)
+
+
+### Features
+
+* **webhooks:** deliver storage-compatible verified content (#10089) ([#10089](https://github.com/opengovsg/formsg/commit/6ab0862b00790e0d8f9af5e4ff90c98309456a9d))
+
+
+### Bug Fixes
+
+* **myinfo:** field drawer copy — Singpass link, respondent wording, Child records (#10107) ([#10107](https://github.com/opengovsg/formsg/commit/e2c52225f315f175d3ed0e8e469d24f388fd2f8a))
+
+
+### Chores
+
+* **myinfo:** always use FAPI for MyInfo login (#10109) ([#10109](https://github.com/opengovsg/formsg/commit/c526e4733976d6ee343adb95482a99af06d2ed17))
+* **spcp:** always use PKCE for Singpass/Corppass OIDC login (#10110) ([#10110](https://github.com/opengovsg/formsg/commit/05d4f3caadd29e81ae4301f853096f68cec012d2))
+
 ## [9.32.1](https://github.com/opengovsg/formsg/compare/v9.32.0...v9.32.1) (2026-09-25)
 
 
