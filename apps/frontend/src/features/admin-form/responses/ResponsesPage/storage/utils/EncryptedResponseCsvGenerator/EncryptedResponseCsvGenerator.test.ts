@@ -1048,4 +1048,35 @@ describe('the view carried over from the responses table', () => {
 
     expect(generator.records[0 + BOM_LENGTH]).toContain('Secret')
   })
+
+  it('keeps only the records the search matches', () => {
+    const generator = build({ searchText: 'alpha' })
+
+    expect(generator.length()).toBe(1)
+    expect(generator.unprocessed[0].record['sortable'].getAnswer()).toBe(
+      'alpha',
+    )
+  })
+
+  it('matches the search without regard to case', () => {
+    expect(build({ searchText: 'ALPHA' }).length()).toBe(1)
+  })
+
+  it('searches the response id as well as the answers', () => {
+    expect(build({ searchText: 'submission-2' }).length()).toBe(1)
+  })
+
+  it('skips a column the admin excluded from search', () => {
+    expect(
+      build({
+        searchText: 'secret-1',
+        excludedSearchColumnIds: ['hideable'],
+      }).length(),
+    ).toBe(0)
+    expect(build({ searchText: 'secret-1' }).length()).toBe(1)
+  })
+
+  it('keeps every record when the search is blank', () => {
+    expect(build({ searchText: '   ' }).length()).toBe(3)
+  })
 })

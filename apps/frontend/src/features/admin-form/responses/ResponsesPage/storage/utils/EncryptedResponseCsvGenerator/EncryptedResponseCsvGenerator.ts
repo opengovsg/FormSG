@@ -10,6 +10,10 @@ import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { MRF_RESPONSE_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
 
 import { CsvGenerator } from '../../../../common/utils'
+import {
+  matchesSearchQuery,
+  normaliseSearchQuery,
+} from '../../../../common/utils/responseSearch'
 import type { DecryptedSubmissionData } from '../../types'
 import type { Response } from '../csv-response-classes'
 import {
@@ -77,6 +81,12 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     created,
     ...otherSubmissionProperties
   }: DecryptedSubmissionData): void {
+    // Checked before any of the record is built, so a row the search excludes
+    // costs nothing and cannot widen the header set.
+    if (!this._matchesSearch(record, otherSubmissionProperties.submissionId)) {
+      return
+    }
+
     const fieldRecords: Response[] = []
     // First pass, create object with { [fieldId]: question } from
     // decryptedContent to get all the questions.
@@ -237,6 +247,33 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     }
 
     this.hasBeenSorted = true
+  }
+
+  /**
+   * Matched against the stored answers rather than the rendered cells, which is
+   * as close as the export gets to what the table was showing.
+   */
+  private _matchesSearch(
+    record: DecryptedSubmissionData['record'],
+    submissionId: string,
+  ): boolean {
+    const query = normaliseSearchQuery(this.view.searchText ?? '')
+    if (!query) return true
+
+    const excluded = new Set(this.view.excludedSearchColumnIds ?? [])
+    const values: string[] = []
+    if (!excluded.has(EXPORT_RESPONSE_ID_COLUMN_ID)) values.push(submissionId)
+
+    record.forEach((content) => {
+      if (excluded.has(content._id)) return
+      if (content.answerArray) {
+        values.push(...content.answerArray.flat())
+        return
+      }
+      if (content.answer) values.push(content.answer)
+    })
+
+    return matchesSearchQuery(values, query)
   }
 
   /** Ascending. `sort` applies the direction. */

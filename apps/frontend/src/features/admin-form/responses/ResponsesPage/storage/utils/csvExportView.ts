@@ -10,6 +10,8 @@ export const EXPORT_TIMESTAMP_COLUMN_ID = 'submissionTime'
 
 /** What the responses table is showing, carried over to the export. */
 export interface CsvExportView {
+  searchText?: string
+  excludedSearchColumnIds?: string[]
   sortColumnId?: string
   sortDirection?: SavedViewSortDirection
   hiddenColumnIds?: string[]
