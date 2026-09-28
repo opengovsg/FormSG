@@ -19,6 +19,11 @@ import { usePageSearchParams } from './hooks/usePageSearchParams'
 
 const PAGE_SIZE = 10
 
+export interface ResponseColumnOption {
+  id: string
+  label: string
+}
+
 interface UnlockedResponsesContextProps {
   currentPage?: number
   setCurrentPage: (page: number) => void
@@ -31,6 +36,10 @@ interface UnlockedResponsesContextProps {
   isLoading: boolean
   isAnyFetching: boolean
   isInfiniteScroll: boolean
+  columnOptions: ResponseColumnOption[]
+  setColumnOptions: (columnOptions: ResponseColumnOption[]) => void
+  hiddenColumnIds: string[]
+  toggleColumnVisibility: (columnId: string) => void
   hasNextPage: boolean
   isFetchingNextPage: boolean
   fetchNextPage: () => void
@@ -61,6 +70,17 @@ export const useUnlockedResponses = (): UnlockedResponsesContextProps => {
 
 const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   const isInfiniteScroll = useIsDelightfulDashboard()
+
+  const [columnOptions, setColumnOptions] = useState<ResponseColumnOption[]>([])
+  const [hiddenColumnIds, setHiddenColumnIds] = useState<string[]>([])
+
+  const toggleColumnVisibility = useCallback((columnId: string) => {
+    setHiddenColumnIds((hidden) =>
+      hidden.includes(columnId)
+        ? hidden.filter((id) => id !== columnId)
+        : [...hidden, columnId],
+    )
+  }, [])
 
   const {
     page: [currentPage, setCurrentPage],
@@ -282,6 +302,10 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     isLoading,
     isAnyFetching,
     isInfiniteScroll,
+    columnOptions,
+    setColumnOptions,
+    hiddenColumnIds,
+    toggleColumnVisibility,
     hasNextPage: !!hasNextPage,
     isFetchingNextPage,
     fetchNextPage: onFetchNextPage,
