@@ -3,6 +3,7 @@ import { Container, Flex } from '@chakra-ui/react'
 
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
 
+import { resultsNavBleed } from '../../components/FormResultsNavbar'
 import { SecretKeyVerification } from '../../components/SecretKeyVerification'
 import { useIsDelightfulDashboard } from '../../hooks'
 import { EmptyResponses } from '../common/EmptyResponses'
@@ -42,6 +43,7 @@ export const StorageResponsesTab = (): JSX.Element => {
       flexDir="column"
       align="center"
       px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      {...resultsNavBleed}
     >
       <Container p={0} maxW="42.5rem">
         <SecretKeyVerification

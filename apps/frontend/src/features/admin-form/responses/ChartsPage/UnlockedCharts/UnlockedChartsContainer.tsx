@@ -228,13 +228,7 @@ export const UnlockedChartsContainer = () => {
 }
 
 const ChartsPaneWrapper = ({ children }: { children: React.ReactNode }) => (
-  <Flex
-    flexDir="column"
-    pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
-    w="100%"
-    maxW="69.5rem"
-    mx="auto"
-  >
+  <Flex flexDir="column" pr={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}>
     {children}
   </Flex>
 )

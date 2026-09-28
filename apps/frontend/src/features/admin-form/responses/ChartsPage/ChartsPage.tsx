@@ -11,6 +11,7 @@ import { useToast } from '~hooks/useToast'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import { resultsNavBleed } from '../components/FormResultsNavbar'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import { useIsDelightfulDashboard } from '../hooks'
 import { ResponsesPageSkeleton } from '../ResponsesPage/ResponsesPageSkeleton'
@@ -125,6 +126,7 @@ export const ChartsPage = (): JSX.Element => {
       align="center"
       pb="4rem"
       px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+      {...resultsNavBleed}
     >
       <Container p={0} maxW="42.5rem">
         <SecretKeyVerification

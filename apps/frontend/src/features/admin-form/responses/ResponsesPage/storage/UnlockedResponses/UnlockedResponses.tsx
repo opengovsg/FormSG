@@ -51,8 +51,7 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
       flexDir="column"
       pr={{ base: '1rem', md: '1.75rem', lg: '2rem' }}
       w="100%"
-      maxW="69.5rem"
-      mx="auto"
+      maxW="100%"
       minW={0}
       overflowX="hidden"
     >
