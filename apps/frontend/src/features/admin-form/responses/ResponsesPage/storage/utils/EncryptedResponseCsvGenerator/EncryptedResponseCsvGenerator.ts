@@ -13,6 +13,13 @@ import { CsvGenerator } from '../../../../common/utils'
 import type { DecryptedSubmissionData } from '../../types'
 import type { Response } from '../csv-response-classes'
 import {
+  compareAnswers,
+  CsvExportView,
+  directionFactor,
+  EXPORT_RESPONSE_ID_COLUMN_ID,
+  isTimestampColumnId,
+} from '../csvExportView'
+import {
   getAddressDecryptedResponseInstances,
   getDecryptedResponseInstance,
 } from '../getDecryptedResponseInstance'
@@ -34,13 +41,17 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   fieldIdToNumCols: Record<string, number>
   unprocessed: UnprocessedRecord[]
   isMrf: boolean
+  view: CsvExportView
 
   constructor(
     expectedNumberOfRecords: number,
     numOfMetaDataRows: number,
     isMrf: boolean,
+    view: CsvExportView = {},
   ) {
     super(expectedNumberOfRecords, numOfMetaDataRows)
+
+    this.view = view
 
     this.hasBeenProcessed = false
     this.hasBeenSorted = false
@@ -112,11 +123,13 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     // Create a header row in CSV using the fieldIdToQuestion map.
     // NOTE: de-structuring is necessary to avoid mutating the array referenced by the `headers` array below.
     // See: https://github.com/opengovsg/FormSG/pull/7965#discussion_r1883954194.
+    const visibleFieldIds = this._visibleFieldIds()
     const headers = this.isMrf ? [...MRF_CSV_HEADERS] : [...BASE_CSV_HEADERS]
-    this.fieldIdToQuestion.forEach((value, fieldId) => {
+    visibleFieldIds.forEach((fieldId) => {
+      const question = this.fieldIdToQuestion.get(fieldId)?.question ?? ''
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
         // TODO: (Code quality) Refactor to avoid mutating the `headers` array.
-        headers.push(value.question)
+        headers.push(question)
       }
     })
     this.setHeader(headers)
@@ -150,7 +163,7 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       //   }
       // }
 
-      this.fieldIdToQuestion.forEach((_question, fieldId) => {
+      visibleFieldIds.forEach((fieldId) => {
         const numCols = this.fieldIdToNumCols[fieldId]
         for (let colIndex = 0; colIndex < numCols; colIndex++) {
           row.push(this._extractAnswer(up.record, fieldId, colIndex))
@@ -205,12 +218,51 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   }
 
   /**
-   * Sorts unprocessed records from oldest to newest
+   * Orders records by the column the table was sorted on, and from oldest to
+   * newest when it was not sorted at all.
    */
   sort(): void {
     if (this.hasBeenSorted) return
-    this.unprocessed.sort((a, b) => this._dateComparator(a.created, b.created))
+
+    const { sortColumnId, sortDirection } = this.view
+    if (sortColumnId) {
+      const factor = directionFactor(sortDirection)
+      this.unprocessed.sort(
+        (a, b) => factor * this._compareByColumn(a, b, sortColumnId),
+      )
+    } else {
+      this.unprocessed.sort((a, b) =>
+        this._dateComparator(a.created, b.created),
+      )
+    }
+
     this.hasBeenSorted = true
+  }
+
+  /** Ascending. `sort` applies the direction. */
+  private _compareByColumn(
+    a: UnprocessedRecord,
+    b: UnprocessedRecord,
+    columnId: string,
+  ): number {
+    if (isTimestampColumnId(columnId)) {
+      return this._dateComparator(a.created, b.created)
+    }
+    if (columnId === EXPORT_RESPONSE_ID_COLUMN_ID) {
+      return compareAnswers(a.submissionId, b.submissionId)
+    }
+    return compareAnswers(
+      this._extractAnswer(a.record, columnId, 0),
+      this._extractAnswer(b.record, columnId, 0),
+    )
+  }
+
+  /** Field ids to emit, in header order, with the hidden ones dropped. */
+  private _visibleFieldIds(): string[] {
+    const hidden = new Set(this.view.hiddenColumnIds ?? [])
+    return Array.from(this.fieldIdToQuestion.keys()).filter(
+      (fieldId) => !hidden.has(fieldId),
+    )
   }
 
   /**

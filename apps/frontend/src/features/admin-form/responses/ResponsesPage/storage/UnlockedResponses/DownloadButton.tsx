@@ -29,6 +29,7 @@ import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import { CanceledResult, DownloadOptions, DownloadResult } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
+import { CsvExportView } from '../utils/csvExportView'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
@@ -123,7 +124,19 @@ const DownloadSelector = ({
 
 export const DownloadButton = (): JSX.Element => {
   const isDelightfulDashboard = useIsDelightfulDashboard()
-  const { visibleSubmissionIds, isFullyLoaded } = useUnlockedResponses()
+  const {
+    visibleSubmissionIds,
+    isFullyLoaded,
+    sortColumnId,
+    sortDirection,
+    hiddenColumnIds,
+  } = useUnlockedResponses()
+
+  // The generator holds every record until download, so it can order and
+  // project them however the table is showing them, at any response count.
+  const csvView: CsvExportView | undefined = isDelightfulDashboard
+    ? { sortColumnId, sortDirection, hiddenColumnIds }
+    : undefined
 
   const exportSubmissionIds =
     isDelightfulDashboard &&
@@ -264,6 +277,7 @@ export const DownloadButton = (): JSX.Element => {
       ...(exportSubmissionIds
         ? { visibleSubmissionIds: exportSubmissionIds }
         : {}),
+      ...(csvView ? { csvView } : {}),
       downloadAttachments: downloadOptions.isDownloadAttachments,
       isDownloadCsv: downloadOptions.isDownloadCsv,
       isDownloadPdf: downloadOptions.isDownloadPdf,
@@ -273,6 +287,7 @@ export const DownloadButton = (): JSX.Element => {
     handleBulkDownloadMutation,
     downloadOptions,
     exportSubmissionIds,
+    csvView,
   ])
 
   const resetDownload = useCallback(() => {

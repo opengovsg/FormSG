@@ -3,6 +3,7 @@ import { stringify } from 'csv-string'
 import { formatInTimeZone } from 'date-fns-tz'
 import { SetOptional } from 'type-fest'
 
+import { SavedViewSortDirection } from 'formsg-shared/types'
 import { WorkflowStatus } from 'formsg-shared/types/submission'
 import { answerKey } from 'formsg-shared/utils/address'
 
@@ -13,6 +14,7 @@ import {
   DisplayedResponseWithoutAnswer,
   Response,
 } from '../csv-response-classes'
+import { EXPORT_TIMESTAMP_COLUMN_ID } from '../csvExportView'
 import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'
 
 import { EncryptedResponseCsvGenerator } from './EncryptedResponseCsvGenerator'
@@ -946,5 +948,104 @@ describe('EncryptedResponseCsvGenerator', () => {
         ])
       })
     })
+  })
+})
+
+describe('the view carried over from the responses table', () => {
+  const ANSWERS = ['Delta', 'alpha', 'Charlie']
+  const DATES = [
+    '2019-11-05T13:12:14',
+    '2019-12-05T13:12:14',
+    '2019-10-05T13:12:14',
+  ]
+
+  const build = (
+    view?: ConstructorParameters<typeof EncryptedResponseCsvGenerator>[3],
+  ) => {
+    const generator = new EncryptedResponseCsvGenerator(3, 0, false, view)
+    ANSWERS.forEach((answer, index) => {
+      generator.addRecord({
+        record: [
+          {
+            _id: 'sortable',
+            question: 'Name',
+            fieldType: 'textfield',
+            answer,
+          },
+          {
+            _id: 'hideable',
+            question: 'Secret',
+            fieldType: 'textfield',
+            answer: `secret-${index}`,
+          },
+        ],
+        created: DATES[index],
+        submissionId: `submission-${index}`,
+      } as DecryptedSubmissionData)
+    })
+    return generator
+  }
+
+  const answersInOrder = (
+    generator: EncryptedResponseCsvGenerator,
+  ): string[] => {
+    generator.sort()
+    return generator.unprocessed.map((up) => up.record['sortable'].getAnswer())
+  }
+
+  it('orders oldest to newest when the table was not sorted', () => {
+    expect(answersInOrder(build())).toEqual(['Charlie', 'Delta', 'alpha'])
+  })
+
+  it('orders by the sorted column, ignoring case', () => {
+    expect(
+      answersInOrder(
+        build({
+          sortColumnId: 'sortable',
+          sortDirection: SavedViewSortDirection.Ascending,
+        }),
+      ),
+    ).toEqual(['alpha', 'Charlie', 'Delta'])
+  })
+
+  it('reverses on a descending sort', () => {
+    expect(
+      answersInOrder(
+        build({
+          sortColumnId: 'sortable',
+          sortDirection: SavedViewSortDirection.Descending,
+        }),
+      ),
+    ).toEqual(['Delta', 'Charlie', 'alpha'])
+  })
+
+  it('orders by date when the sorted column is the timestamp', () => {
+    expect(
+      answersInOrder(
+        build({
+          sortColumnId: EXPORT_TIMESTAMP_COLUMN_ID,
+          sortDirection: SavedViewSortDirection.Descending,
+        }),
+      ),
+    ).toEqual(['alpha', 'Delta', 'Charlie'])
+  })
+
+  it('drops a hidden column from the header and from every row', () => {
+    const generator = build({ hiddenColumnIds: ['hideable'] })
+    generator.process()
+
+    const header = generator.records[0 + BOM_LENGTH]
+    expect(header).toContain('Name')
+    expect(header).not.toContain('Secret')
+    generator.records.slice(1 + BOM_LENGTH).forEach((row) => {
+      expect(row).not.toContain('secret-')
+    })
+  })
+
+  it('keeps every column when none are hidden', () => {
+    const generator = build()
+    generator.process()
+
+    expect(generator.records[0 + BOM_LENGTH]).toContain('Secret')
   })
 })
