@@ -65,7 +65,7 @@ const cases = urlCases.flatMap((consumer) =>
   })),
 )
 const conflictMessage =
-  'Non-Plumber webhooks cannot be used with workflows containing two or more steps.'
+  'Forms with two or more workflow steps can only use Plumber webhooks. Use a Plumber webhook or reduce the workflow to one step.'
 
 describe('webhook and workflow compatibility', () => {
   beforeAll(async () => await dbHandler.connect())
