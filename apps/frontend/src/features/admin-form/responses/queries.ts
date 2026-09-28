@@ -3,9 +3,11 @@ import {
   useInfiniteQuery,
   UseInfiniteQueryResult,
   useQuery,
+  useQueryClient,
   UseQueryResult,
 } from 'react-query'
 import { useParams } from 'react-router-dom'
+import { FormField } from '@opengovsg/formsg-sdk/dist/types'
 
 import { FormFeedbackMetaDto, FormIssueMetaDto } from 'formsg-shared/types'
 import {
@@ -21,8 +23,13 @@ import { getFormFeedback } from './FeedbackPage/review/ReviewService'
 import { useStorageResponsesContext } from './ResponsesPage/storage/StorageResponsesContext'
 import {
   countFormSubmissions,
+  getAllDecryptedSubmission,
   getFormSubmissionsMetadata,
 } from './AdminSubmissionsService'
+import {
+  TABLE_DECRYPTION_LIMIT,
+  TABLE_DECRYPTION_PUBLISH_INTERVAL_MS,
+} from './constants'
 
 export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
@@ -39,6 +46,8 @@ export const adminFormResponsesKeys = {
       ...builtParams,
     ] as const
   },
+  decryptedResponses: (id: string) =>
+    [...adminFormResponsesKeys.id(id), 'decrypted-responses'] as const,
   infiniteMetadata: (id: string) =>
     [...adminFormResponsesKeys.id(id), 'metadata', 'infinite'] as const,
   individual: (id: string, submissionId: string) =>
@@ -140,6 +149,59 @@ export const useInfiniteFormResponses = ({
         if (loaded === 0 || loaded >= lastPage.count) return undefined
         return allPages.length + 1
       },
+    },
+  )
+}
+
+/**
+ * @precondition Must be wrapped in a Router as `useParam` is used.
+ */
+export const useDecryptedResponsesBySubmissionId = ({
+  enabled = true,
+}: {
+  enabled?: boolean
+} = {}): UseQueryResult<Map<string, FormField[]>> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const { secretKey } = useStorageResponsesContext()
+  const queryClient = useQueryClient()
+  const queryKey = adminFormResponsesKeys.decryptedResponses(formId)
+
+  return useQuery(
+    queryKey,
+    async () => {
+      const decrypted = new Map<string, FormField[]>()
+      let lastPublishedAt = 0
+
+      const publish = () => {
+        queryClient.setQueryData(queryKey, new Map(decrypted))
+      }
+
+      await getAllDecryptedSubmission({
+        formId,
+        secretKey: secretKey as string,
+        startDate: '',
+        endDate: '',
+        downloadAttachments: false,
+        isSortByLatest: true,
+        limit: TABLE_DECRYPTION_LIMIT,
+        onSubmissionDecrypted: ({ submissionId, responses }) => {
+          decrypted.set(submissionId, responses)
+          const now = performance.now()
+          if (now - lastPublishedAt < TABLE_DECRYPTION_PUBLISH_INTERVAL_MS) {
+            return
+          }
+          lastPublishedAt = now
+          publish()
+        },
+      })
+
+      return decrypted
+    },
+    {
+      staleTime: Infinity,
+      enabled: enabled && !!secretKey,
     },
   )
 }
