@@ -1613,6 +1613,17 @@ const hasWebhookWorkflowConflict = (
   stepCount: number,
 ): boolean => stepCount >= 2 && isNonPlumberWebhook(url)
 
+// RATIONALE: The webhook url may have been updated since the webhook workflow conflict was done.
+// Thus, we only update the workflow if the previously checked webhook URL is not changed.
+const getCheckedWebhookUrlFilterIfMultistepWorkflow = (
+  form: IPopulatedForm,
+  stepCount: number,
+) => {
+  const isMultistepWorkflow = stepCount >= 2
+  const checkedUrl = form.webhook?.url ?? null
+  return isMultistepWorkflow ? { 'webhook.url': checkedUrl } : {}
+}
+
 const checkResultingWorkflowIsAllowed = (
   form: IPopulatedForm,
   workflow: FormWorkflowDto,
@@ -1759,10 +1770,10 @@ export const createWorkflowStep = (
       {
         _id: originalMrfForm._id,
         'payments_field.enabled': { $ne: true },
-        // The URL classified above must still be current when saving.
-        ...(updatedWorkflow.length >= 2
-          ? { 'webhook.url': originalForm.webhook?.url ?? null }
-          : {}),
+        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
+          originalForm,
+          updatedWorkflow.length,
+        ),
       },
       { workflow: updatedWorkflow },
       {
@@ -1922,9 +1933,10 @@ export const updateFormWorkflowStep = (
     MultirespondentFormModel.findOneAndUpdate(
       {
         _id: originalMrfForm._id,
-        ...(updatedWorkflow.length >= 2
-          ? { 'webhook.url': originalForm.webhook?.url ?? null }
-          : {}),
+        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
+          originalForm,
+          updatedWorkflow.length,
+        ),
       },
       { workflow: updatedWorkflow },
       {
@@ -2075,9 +2087,10 @@ export const deleteFormWorkflowStep = (
     MultirespondentFormModel.findOneAndUpdate(
       {
         _id: originalMrfForm._id,
-        ...(updatedWorkflow.length >= 2
-          ? { 'webhook.url': originalForm.webhook?.url ?? null }
-          : {}),
+        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
+          originalForm,
+          updatedWorkflow.length,
+        ),
       },
       { workflow: updatedWorkflow },
       {
@@ -2289,17 +2302,21 @@ export const updateFormSettings = (
   )
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
 
-  // Recheck the step count in the write: a workflow request may have added
-  // another step since originalForm was loaded.
+  // RATIONALE: The workflow steps may have been updated since the webhook workflow conflict check was done.
+  // Thus, we only update the workflow if the second step is not present for non-plumber webhooks.
   const requiresSingleStep =
     isFormMultirespondent(originalForm) &&
     isNonPlumberWebhook(body.webhook?.url)
+
+  const noSecondStepFilterIfRequiresSingleStep = requiresSingleStep
+    ? { 'workflow.1': { $exists: false } }
+    : {}
 
   return ResultAsync.fromPromise(
     ModelToUse.findOneAndUpdate(
       {
         _id: originalForm._id,
-        ...(requiresSingleStep ? { 'workflow.1': { $exists: false } } : {}),
+        ...noSecondStepFilterIfRequiresSingleStep,
       },
       dotifiedSettingsToUpdate,
       { new: true, runValidators: true },
