@@ -758,6 +758,14 @@ MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
         },
       },
       { $limit: 1 },
+      {
+        $lookup: {
+          from: 'payments',
+          localField: 'paymentId',
+          foreignField: '_id',
+          as: 'payments',
+        },
+      },
     ],
   ).exec()
 
@@ -767,6 +775,7 @@ MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
     }
 
     const result = results[0]
+    const paymentMeta = result.payments?.[0]
     const mrfMeta = {
       workflowStep: result.workflowStep,
       workflow: result.workflow,
@@ -776,6 +785,7 @@ MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
     const metadata = buildSubmissionMetadata({
       result,
       currentNumber: 1,
+      paymentMeta,
       mrfMeta,
     })
 
@@ -805,12 +815,24 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
       { $skip: numToSkip },
       { $limit: pageSize },
       {
+        $lookup: {
+          from: 'payments',
+          localField: 'paymentId',
+          foreignField: '_id',
+          as: 'payments',
+        },
+      },
+      {
         $project: {
           _id: 1,
           created: 1,
           workflowStep: 1,
           workflow: 1,
           submittedSteps: 1,
+          'payments.payout': 1,
+          'payments.completedPayment': 1,
+          'payments.amount': 1,
+          'payments.email': 1,
         },
       },
     ],
@@ -878,6 +900,7 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     encryptedContent: 1,
     verifiedContent: 1,
     attachmentMetadata: 1,
+    paymentId: 1,
     created: 1,
     version: 1,
     mrfVersion: 1,
@@ -922,6 +945,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       encryptedContent: 1,
       verifiedContent: 1,
       attachmentMetadata: 1,
+      paymentId: 1,
       created: 1,
       version: 1,
       workflowStep: 1,

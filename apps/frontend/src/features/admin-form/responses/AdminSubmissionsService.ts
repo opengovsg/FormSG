@@ -167,10 +167,7 @@ export const getDecryptedSubmissionById = async ({
     refNo: encryptedSubmission.refNo,
     submissionTime: encryptedSubmission.submissionTime,
     submissionSecretKey,
-    payment:
-      encryptedSubmission.submissionType === SubmissionType.Encrypt
-        ? encryptedSubmission.payment
-        : undefined,
+    payment: encryptedSubmission.payment,
     mrf:
       encryptedSubmission.submissionType === SubmissionType.Multirespondent
         ? encryptedSubmission.mrfMeta

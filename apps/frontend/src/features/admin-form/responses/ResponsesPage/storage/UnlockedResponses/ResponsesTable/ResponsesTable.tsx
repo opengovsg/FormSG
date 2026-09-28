@@ -40,7 +40,7 @@ import {
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { SendReminderButton } from './SendReminderButton'
-import { getNetAmount } from './utils'
+import { getIsPaymentsForm, getNetAmount } from './utils'
 
 type ResponseColumnData = SubmissionMetadata
 
@@ -293,10 +293,7 @@ const PAYMENT_RESPONSE_TABLE_COLUMNS =
 
 export const ResponsesTable = () => {
   const { data: form } = useAdminForm()
-  const isPaymentsForm =
-    form?.responseMode === FormResponseMode.Encrypt
-      ? form.payments_field.enabled
-      : false
+  const isPaymentsForm = getIsPaymentsForm(form)
   const isMultiRespondentForm =
     form?.responseMode === FormResponseMode.Multirespondent
 
@@ -325,7 +322,9 @@ export const ResponsesTable = () => {
 
   const columns = useMemo(() => {
     if (isMultiRespondentForm) {
-      return MRF_RESPONSE_TABLE_COLUMNS
+      return isPaymentsForm
+        ? MRF_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
+        : MRF_RESPONSE_TABLE_COLUMNS
     }
     if (isPaymentsForm) {
       return PAYMENT_RESPONSE_TABLE_COLUMNS

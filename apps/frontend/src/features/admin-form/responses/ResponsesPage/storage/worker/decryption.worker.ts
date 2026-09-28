@@ -361,9 +361,7 @@ async function getMaterializedCsvRecord(
     CsvRecordStatus.Unknown,
     formId,
     hostOrigin,
-    parsedSubmission.submissionType === SubmissionType.Encrypt
-      ? parsedSubmission.payment
-      : undefined,
+    parsedSubmission.payment,
     parsedSubmission.submissionType === SubmissionType.Multirespondent
       ? {
           workflowStatus: parsedSubmission.mrfMeta.workflowStatus,
