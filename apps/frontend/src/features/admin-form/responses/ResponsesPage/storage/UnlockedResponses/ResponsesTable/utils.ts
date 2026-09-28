@@ -1,5 +1,19 @@
-import { SubmissionMetadata } from 'formsg-shared/types'
+import {
+  AdminFormDto,
+  FormResponseMode,
+  SubmissionMetadata,
+} from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
+
+export const getIsPaymentsForm = (form: AdminFormDto | undefined): boolean => {
+  if (
+    form?.responseMode === FormResponseMode.Encrypt ||
+    form?.responseMode === FormResponseMode.Multirespondent
+  ) {
+    return form.payments_field.enabled
+  }
+  return false
+}
 
 export const getNetAmount = (payments: SubmissionMetadata['payments']) => {
   if (!payments) {

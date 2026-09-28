@@ -1,7 +1,67 @@
-import { SubmissionMetadata } from 'formsg-shared/types'
+import {
+  AdminFormDto,
+  FormResponseMode,
+  SubmissionMetadata,
+} from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
-import { getNetAmount } from '../utils'
+import { getIsPaymentsForm, getNetAmount } from '../utils'
+
+describe('getIsPaymentsForm', () => {
+  it('should return false when form is undefined', () => {
+    // Act
+    const result = getIsPaymentsForm(undefined)
+    // Assert
+    expect(result).toBe(false)
+  })
+
+  it('should return false for a non-payments-capable form', () => {
+    // Arrange
+    const form = {
+      responseMode: FormResponseMode.Email,
+    } as AdminFormDto
+    // Act
+    const result = getIsPaymentsForm(form)
+    // Assert
+    expect(result).toBe(false)
+  })
+
+  it('should return payments_field.enabled for an Encrypt form', () => {
+    // Arrange
+    const form = {
+      responseMode: FormResponseMode.Encrypt,
+      payments_field: { enabled: true },
+    } as AdminFormDto
+    // Act
+    const result = getIsPaymentsForm(form)
+    // Assert
+    expect(result).toBe(true)
+  })
+
+  it('should return payments_field.enabled for a Multirespondent form', () => {
+    // Arrange
+    const form = {
+      responseMode: FormResponseMode.Multirespondent,
+      payments_field: { enabled: true },
+    } as AdminFormDto
+    // Act
+    const result = getIsPaymentsForm(form)
+    // Assert
+    expect(result).toBe(true)
+  })
+
+  it('should return false when a Multirespondent form has payments disabled', () => {
+    // Arrange
+    const form = {
+      responseMode: FormResponseMode.Multirespondent,
+      payments_field: { enabled: false },
+    } as AdminFormDto
+    // Act
+    const result = getIsPaymentsForm(form)
+    // Assert
+    expect(result).toBe(false)
+  })
+})
 
 describe('getNetAmount', () => {
   it('should return empty string when no payments are provided', () => {
