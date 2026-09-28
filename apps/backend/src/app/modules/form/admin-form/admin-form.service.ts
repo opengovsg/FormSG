@@ -2411,6 +2411,36 @@ export const createFormSavedView = (
   })
 }
 
+export const deleteFormSavedView = (
+  form: IPopulatedForm,
+  savedViewId: string,
+): ResultAsync<FormSavedView[], DatabaseError | FormNotFoundError> => {
+  return ResultAsync.fromPromise(
+    FormModel.findByIdAndUpdate(
+      form._id,
+      { $pull: { savedViews: { _id: savedViewId } } },
+      { new: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when deleting saved view',
+        meta: {
+          action: 'deleteFormSavedView',
+          formId: form._id,
+          savedViewId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new FormNotFoundError())
+    }
+    return okAsync(updatedForm.savedViews ?? [])
+  })
+}
+
 export const createFormLogic = (
   form: IPopulatedForm,
   createLogicBody: LogicDto,
