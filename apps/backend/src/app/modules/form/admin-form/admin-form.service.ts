@@ -122,6 +122,7 @@ import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   EditFieldError,
   FieldNotFoundError,
+  FormChangedWhileEditingError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
 } from './admin-form.errors'
@@ -1600,10 +1601,38 @@ const incompleteStepsError = (
   return new MalformedParametersError(`Please complete ${described} ${action}.`)
 }
 
+const webhookWorkflowConflict = () =>
+  new MalformedParametersError(
+    'Forms with two or more workflow steps can only use Plumber webhooks. Use a Plumber webhook or reduce the workflow to one step.',
+  )
+
+const isNonPlumberWebhook = (url: string | undefined): boolean =>
+  !!url && toConsumerType(getWebhookType(url)) === 'generic'
+
+const hasWebhookWorkflowConflict = (
+  url: string | undefined,
+  stepCount: number,
+): boolean => stepCount >= 2 && isNonPlumberWebhook(url)
+
+// RATIONALE: The webhook url may have been updated since the webhook workflow conflict was done.
+// Thus, we only update the workflow if the previously checked webhook URL is not changed.
+const getCheckedWebhookUrlFilterIfMultistepWorkflow = (
+  form: IPopulatedForm,
+  stepCount: number,
+) => {
+  const isMultistepWorkflow = stepCount >= 2
+  const checkedUrl = form.webhook?.url || { $in: ['', null] }
+  return isMultistepWorkflow ? { 'webhook.url': checkedUrl } : {}
+}
+
 const checkResultingWorkflowIsAllowed = (
   form: IPopulatedForm,
   workflow: FormWorkflowDto,
 ): Result<true, MalformedParametersError> => {
+  if (hasWebhookWorkflowConflict(form.webhook?.url, workflow.length)) {
+    return err(webhookWorkflowConflict())
+  }
+
   if (!mustWorkflowBeComplete({ formStatus: form.status })) {
     return ok(true)
   }
@@ -1619,7 +1648,7 @@ export const createWorkflowStep = (
   newWorkflowStep: FormWorkflowStepDto,
 ): ResultAsync<
   FormWorkflowDto,
-  DatabaseError | FormNotFoundError | MalformedParametersError
+  DatabaseError | MalformedParametersError | FormChangedWhileEditingError
 > => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1739,7 +1768,14 @@ export const createWorkflowStep = (
 
   return ResultAsync.fromPromise(
     MultirespondentFormModel.findOneAndUpdate(
-      { _id: originalMrfForm._id, 'payments_field.enabled': { $ne: true } },
+      {
+        _id: originalMrfForm._id,
+        'payments_field.enabled': { $ne: true },
+        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
+          originalForm,
+          updatedWorkflow.length,
+        ),
+      },
       { workflow: updatedWorkflow },
       {
         new: true,
@@ -1761,13 +1797,7 @@ export const createWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      // The form exists (it was fetched to enter this function), so a miss
-      // here means the payments precondition failed.
-      return errAsync(
-        new MalformedParametersError(
-          'Remove the payment field before adding workflow steps',
-        ),
-      )
+      return errAsync(new FormChangedWhileEditingError())
     }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
@@ -1777,7 +1807,10 @@ export const updateFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
   updatedWorkflowStep: FormWorkflowStepDto,
-): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+): ResultAsync<
+  FormWorkflowDto,
+  DatabaseError | FormChangedWhileEditingError
+> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new FormInvalidResponseModeError(
@@ -1893,8 +1926,14 @@ export const updateFormWorkflowStep = (
   ) as IMultirespondentFormModel
 
   return ResultAsync.fromPromise(
-    MultirespondentFormModel.findByIdAndUpdate(
-      originalMrfForm._id,
+    MultirespondentFormModel.findOneAndUpdate(
+      {
+        _id: originalMrfForm._id,
+        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
+          originalForm,
+          updatedWorkflow.length,
+        ),
+      },
       { workflow: updatedWorkflow },
       {
         new: true,
@@ -1917,7 +1956,7 @@ export const updateFormWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      return errAsync(new FormChangedWhileEditingError())
     }
 
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
@@ -2002,7 +2041,10 @@ export const deleteFormWorkflow = (
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
-): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+): ResultAsync<
+  FormWorkflowDto,
+  DatabaseError | FormChangedWhileEditingError
+> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new FormInvalidResponseModeError(
@@ -2037,8 +2079,14 @@ export const deleteFormWorkflowStep = (
   ) as IMultirespondentFormModel
 
   return ResultAsync.fromPromise(
-    MultirespondentFormModel.findByIdAndUpdate(
-      originalMrfForm._id,
+    MultirespondentFormModel.findOneAndUpdate(
+      {
+        _id: originalMrfForm._id,
+        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
+          originalForm,
+          updatedWorkflow.length,
+        ),
+      },
       { workflow: updatedWorkflow },
       {
         new: true,
@@ -2060,7 +2108,7 @@ export const deleteFormWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      return errAsync(new FormChangedWhileEditingError())
     }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
@@ -2157,7 +2205,7 @@ export const updateFormSettings = (
 ): ResultAsync<
   FormSettings,
   | MalformedParametersError
-  | FormNotFoundError
+  | FormChangedWhileEditingError
   | DatabaseError
   | DatabaseValidationError
   | DatabaseConflictError
@@ -2211,6 +2259,14 @@ export const updateFormSettings = (
   }
 
   if (isFormMultirespondent(originalForm)) {
+    if (
+      hasWebhookWorkflowConflict(
+        body.webhook?.url,
+        originalForm.workflow?.length ?? 0,
+      )
+    ) {
+      return errAsync(webhookWorkflowConflict())
+    }
     const mrfBody = body as MultirespondentFormSettings
     if (
       originalForm.payments_field?.enabled &&
@@ -2237,11 +2293,25 @@ export const updateFormSettings = (
   )
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
 
+  // RATIONALE: The workflow steps may have been updated since the webhook workflow conflict check was done.
+  // Thus, we only update the workflow if the second step is not present for non-plumber webhooks.
+  const requiresSingleStep =
+    isFormMultirespondent(originalForm) &&
+    isNonPlumberWebhook(body.webhook?.url)
+
+  const noSecondStepFilterIfRequiresSingleStep = requiresSingleStep
+    ? { 'workflow.1': { $exists: false } }
+    : {}
+
   return ResultAsync.fromPromise(
-    ModelToUse.findByIdAndUpdate(originalForm._id, dotifiedSettingsToUpdate, {
-      new: true,
-      runValidators: true,
-    }).exec(),
+    ModelToUse.findOneAndUpdate(
+      {
+        _id: originalForm._id,
+        ...noSecondStepFilterIfRequiresSingleStep,
+      },
+      dotifiedSettingsToUpdate,
+      { new: true, runValidators: true },
+    ).exec(),
     (error) => {
       logger.error({
         message: 'Error encountered while updating form settings',
@@ -2257,7 +2327,7 @@ export const updateFormSettings = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      return errAsync(new FormChangedWhileEditingError())
     }
     return okAsync(updatedForm.getSettings())
   })

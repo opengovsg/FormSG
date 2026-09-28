@@ -115,3 +115,13 @@ export class DeleteFirstWorkflowStepError extends ApplicationError {
     super(message, undefined, ErrorCodes.ADMIN_FORM_DELETE_FIRST_WORKFLOW_STEP)
   }
 }
+
+export class FormChangedWhileEditingError extends ApplicationError {
+  constructor() {
+    super(
+      'This form changed while you were editing. Refresh and try again.',
+      undefined,
+      ErrorCodes.ADMIN_FORM_CHANGED_WHILE_EDITING,
+    )
+  }
+}
