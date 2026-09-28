@@ -1,12 +1,3 @@
-import {
-  IPerson,
-  IPersonResponse,
-  MyInfoAttribute as ExternalAttr,
-  MyInfoChildBirthRecordBelow21,
-  MyInfoScope,
-  MyInfoSource,
-  MyInfoSponsoredChildFull,
-} from '@opengovsg/myinfo-gov-client'
 import { MYINFO_CHILD_TYPE_LABELS } from 'formsg-shared/constants/field/myinfo'
 import {
   MyInfoAttribute as InternalAttr,
@@ -28,6 +19,15 @@ import {
   formatVehicleNumbers,
   formatWorkpassStatus,
 } from './myinfo.format'
+import {
+  IPerson,
+  IPersonResponse,
+  MyInfoAttribute as ExternalAttr,
+  MyInfoChildBirthRecordBelow21,
+  MyInfoScope,
+  MyInfoSource,
+  MyInfoSponsoredChildFull,
+} from './myinfo.person.types'
 import { isMyInfoChildrenBirthRecords } from './myinfo.util'
 
 const logger = createLoggerWithLabel(module)

@@ -1,3 +1,5 @@
+import { createLoggerWithLabel } from '../../config/logger'
+
 import {
   MyInfoAddress,
   MyInfoAddressType,
@@ -8,9 +10,7 @@ import {
   MyInfoSource,
   MyInfoValueField,
   MyInfoVehicle,
-} from '@opengovsg/myinfo-gov-client'
-
-import { createLoggerWithLabel } from '../../config/logger'
+} from './myinfo.person.types'
 
 const logger = createLoggerWithLabel(module)
 

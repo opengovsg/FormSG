@@ -229,9 +229,6 @@ importers:
       '@opengovsg/formsg-sdk':
         specifier: workspace:*
         version: link:../../packages/sdk
-      '@opengovsg/myinfo-gov-client':
-        specifier: ^4.1.2
-        version: 4.1.2
       '@opengovsg/sgid-client':
         specifier: ^2.2.0
         version: 2.2.0
@@ -3924,9 +3921,6 @@ packages:
     resolution: {integrity: sha512-x/paZTZUMuiLL64oWIV10FX84wQTEUfxOSR7cL6J9WMM3Wwg9DZ+LVJd80r4qFVI/4VgFROzZqe5mjyD2Yipyw==}
     engines: {node: '>=8.0.0'}
     hasBin: true
-
-  '@opengovsg/myinfo-gov-client@4.1.2':
-    resolution: {integrity: sha512-G1rgU2VuiQfWnWpAYdSUvsW9r1CrGWZdATUa8Y2/96GbWMC+rfP/h9e+gaj8ZIoBqpHEQ/uPUoADsqGDQPY2tw==}
 
   '@opengovsg/sgid-client@2.2.0':
     resolution: {integrity: sha512-xx/duuvncxp3vLzz+A0CW5kD/+zq19M23H7ueCh1ySPcB1fixUqsYKJAukk2En6FTI62jUizeJVjXOsd7rhl+A==}
@@ -18083,16 +18077,6 @@ snapshots:
       node-jose: 2.2.0
       uuid: 11.1.1
     transitivePeerDependencies:
-      - supports-color
-
-  '@opengovsg/myinfo-gov-client@4.1.2':
-    dependencies:
-      axios: 1.18.1(debug@4.4.1)
-      jsonwebtoken: 9.0.2
-      node-jose: 2.2.0
-      qs: 6.16.0
-    transitivePeerDependencies:
-      - debug
       - supports-color
 
   '@opengovsg/sgid-client@2.2.0':

@@ -1,5 +1,4 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
-import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { Request } from 'express'
 import { ErrorCode, FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
@@ -8,6 +7,7 @@ import { errAsync, okAsync } from 'neverthrow'
 
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
+import { IPersonResponse } from 'src/app/modules/myinfo/myinfo.person.types'
 import { MOCK_LOGIN_DOC } from 'src/app/modules/spcp/__tests__/spcp.test.constants'
 import { JwtPayload, SpcpForm } from 'src/app/modules/spcp/spcp.types'
 import {

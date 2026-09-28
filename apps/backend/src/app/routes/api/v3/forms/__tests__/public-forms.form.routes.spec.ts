@@ -1,6 +1,5 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { IPersonResponse } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { createHmac } from 'crypto'
 import { FormAuthType, FormStatus } from 'formsg-shared/types'
@@ -13,6 +12,7 @@ import { MOCK_MYINFO_JWT } from 'src/app/modules/myinfo/__tests__/myinfo.test.co
 import { MYINFO_FAPI_SESSION_COOKIE_NAME } from 'src/app/modules/myinfo/fapi/myinfo.fapi.constants'
 import * as MyInfoFapiService from 'src/app/modules/myinfo/fapi/myinfo.fapi.service'
 import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
+import { IPersonResponse } from 'src/app/modules/myinfo/myinfo.person.types'
 
 import * as AuthService from '../../../../../modules/auth/auth.service'
 import {

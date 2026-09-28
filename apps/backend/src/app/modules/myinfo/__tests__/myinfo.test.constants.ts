@@ -1,13 +1,13 @@
-import {
-  IPerson,
-  MyInfoAddressType,
-  MyInfoSource,
-} from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import { merge, zipWith } from 'lodash'
 
 import { ISpcpMyInfo } from 'src/app/config/features/spcp-myinfo.config'
 
+import {
+  IPerson,
+  MyInfoAddressType,
+  MyInfoSource,
+} from '../myinfo.person.types'
 import { IMyInfoServiceConfig, MyInfoLoginCookiePayload } from '../myinfo.types'
 
 export const MOCK_MYINFO_DATA = {
