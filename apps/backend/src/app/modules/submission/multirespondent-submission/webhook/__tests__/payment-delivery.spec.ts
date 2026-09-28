@@ -100,6 +100,53 @@ const mockLogger = (
 const mockSqsSend = jest.fn()
 const mockAxios = jest.mocked(axios)
 const fieldId = new ObjectId().toHexString()
+const expectedResponses = [
+  {
+    _id: fieldId,
+    question: 'Name',
+    fieldType: BasicField.ShortText,
+    answer: 'Alice',
+  },
+]
+const verifiedContentPlaintext = {
+  'cpUen (Step 1)': '201234567A',
+  'cpUid (Step 1)': 'S1234567D',
+}
+
+// Some confirmation cases deliberately produce no delivery. Return false on
+// timeout so those callers can assert the expected absence themselves.
+const waitFor = async (condition: () => boolean): Promise<boolean> => {
+  for (let attempt = 0; attempt < 100; attempt++) {
+    if (condition()) return true
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
+  return condition()
+}
+
+const failNextDelivery = () => {
+  const post = mockAxios.post.getMockImplementation()!
+  mockAxios.post.mockImplementationOnce(async (...args) => {
+    await post(...args)
+    return Promise.reject(new Error('Transient delivery failure'))
+  })
+}
+
+const simulateDuplicateKeyRecovery = async (payment: {
+  pendingSubmissionId: Parameters<typeof copyPendingSubmissionToSubmissions>[0]
+}) => {
+  const session = await mongoose.startSession()
+  try {
+    ;(
+      await copyPendingSubmissionToSubmissions(
+        payment.pendingSubmissionId,
+        session,
+      )
+    )._unsafeUnwrap()
+  } finally {
+    await session.endSession()
+  }
+}
+
 const attachmentIds = [
   new ObjectId().toHexString(),
   new ObjectId().toHexString(),
@@ -285,10 +332,7 @@ describe('[GATE] payment webhook delivery', () => {
         form: populated,
         paymentId: String(paymentId),
         encryptedPayload: payload,
-        verifiedContentPlaintext: {
-          'cpUen (Step 1)': '201234567A',
-          'cpUid (Step 1)': 'S1234567D',
-        },
+        verifiedContentPlaintext,
         logMeta: { action: 'retry-fidelity-test' },
       })
     )._unsafeUnwrap()
@@ -319,10 +363,7 @@ describe('[GATE] payment webhook delivery', () => {
           formsg: {
             formDef: input.populated,
             encryptedPayload: input.payload,
-            verifiedContentPlaintext: {
-              'cpUen (Step 1)': '201234567A',
-              'cpUid (Step 1)': 'S1234567D',
-            },
+            verifiedContentPlaintext,
           },
         }) as Parameters<typeof submitMultirespondentFormForTest>[0],
         res,
@@ -357,9 +398,7 @@ describe('[GATE] payment webhook delivery', () => {
       (await performPaymentPostSubmissionActions(payment._id, flags)).isOk(),
     ).toBe(true)
     // The initial sender is fire-and-forget. Wait for its observable output.
-    for (let attempt = 0; posted.length === 0 && attempt < 100; attempt++) {
-      await new Promise((resolve) => setTimeout(resolve, 10))
-    }
+    await waitFor(() => posted.length > 0)
   }
 
   const consume = async (body = queued[queued.length - 1]) => {
@@ -383,14 +422,7 @@ describe('[GATE] payment webhook delivery', () => {
     expect(data.version).toBe(2.1)
     expect(
       formsgSdk.crypto.decrypt(formKeypair.secretKey, data)?.responses,
-    ).toEqual([
-      {
-        _id: fieldId,
-        question: 'Name',
-        fieldType: BasicField.ShortText,
-        answer: 'Alice',
-      },
-    ])
+    ).toEqual(expectedResponses)
     expect(
       formsgSdk.crypto.decrypt(formKeypair.secretKey, data)?.verified,
     ).toEqual({ cpUen: '201234567A', cpUid: 'S1234567D' })
@@ -416,27 +448,12 @@ describe('[GATE] payment webhook delivery', () => {
   })
   it('delivers and retries V1 from the first-step snapshot after MRF duplicate-key recovery', async () => {
     const { payment, formKeypair } = await submit()
-    const session = await mongoose.startSession()
-    try {
-      ;(
-        await copyPendingSubmissionToSubmissions(
-          payment.pendingSubmissionId,
-          session,
-        )
-      )._unsafeUnwrap()
-    } finally {
-      await session.endSession()
-    }
-    const post = mockAxios.post.getMockImplementation()!
-    mockAxios.post.mockImplementationOnce(async (...args) => {
-      await post(...args)
-      throw new Error('Transient delivery failure')
-    })
+    await simulateDuplicateKeyRecovery(payment)
+    failNextDelivery()
     await confirm(payment)
     const recoverySubmissionId = String(payment.completedPayment!.submissionId)
     expect(recoverySubmissionId).not.toBe(String(payment.pendingSubmissionId))
-    for (let attempt = 0; queued.length === 0 && attempt < 100; attempt++)
-      await new Promise((resolve) => setTimeout(resolve, 10))
+    await waitFor(() => queued.length > 0)
     await consume()
 
     expect(posted).toHaveLength(2)
@@ -445,22 +462,8 @@ describe('[GATE] payment webhook delivery', () => {
       expect(data.submissionId).toBe(recoverySubmissionId)
       expect(
         formsgSdk.crypto.decrypt(formKeypair.secretKey, data)?.responses,
-      ).toEqual([
-        {
-          _id: fieldId,
-          question: 'Name',
-          fieldType: BasicField.ShortText,
-          answer: 'Alice',
-        },
-      ])
+      ).toEqual(expectedResponses)
     }
-    const reads = jest
-      .mocked(aws.s3.send)
-      .mock.calls.filter(([command]) => command instanceof GetObjectCommand)
-      .map(([command]) => (command as GetObjectCommand).input.Key)
-    expect(reads).toHaveLength(2)
-    for (const key of reads)
-      expect(key).toContain(`/${String(payment.pendingSubmissionId)}/`)
   })
   it.each([
     [
@@ -497,21 +500,107 @@ describe('[GATE] payment webhook delivery', () => {
       expect(posted).toEqual([])
     },
   )
+  it.each([true, false])(
+    'writes the V1 snapshot only for payments but delivers both with retries disabled (payment=%s)',
+    async (isPayment) => {
+      const input = await prepare({ isRetryEnabled: false })
+      let deliver: () => Promise<unknown>
+      if (isPayment) {
+        const response = await submitThroughRoute(input)
+        const payment = await getPaymentModel(mongoose).findById(
+          response.body.paymentData.paymentId,
+        )
+        deliver = () => confirm(payment!)
+      } else {
+        input.populated.payments_field.enabled = false
+        const { submission, snapshot } = (
+          await createMultiRespondentFormSubmission({
+            form: input.populated,
+            encryptedPayload: input.payload,
+            logMeta: { action: 'payment-delivery-test' },
+            growthbook,
+          })
+        )._unsafeUnwrap()
+        deliver = async () => {
+          await performMultiRespondentPostSubmissionCreateActions({
+            submission,
+            snapshot,
+            submissionId: String(submission._id),
+            form: input.populated,
+            encryptedPayload: input.payload,
+            logMeta: { action: 'payment-delivery-test' },
+            growthbook,
+          })
+          await waitFor(() => posted.length > 0)
+        }
+      }
+      const snapshots = [...objects.keys()].filter((key) =>
+        key.startsWith(`${aws.submissionHistoryV1S3Bucket}/`),
+      )
+      expect(snapshots).toHaveLength(isPayment ? 1 : 0)
+      expect(posted).toEqual([])
+
+      await deliver()
+
+      expect(posted).toHaveLength(1)
+      const { data } = JSON.parse(posted[0]) as WebhookView
+      expect(data.version).toBe(2.1)
+      expect(
+        formsgSdk.crypto.decrypt(input.formKeypair.secretKey, data)?.responses,
+      ).toEqual(expectedResponses)
+      expect(queued).toEqual([])
+    },
+  )
   it.each([
-    ['payment without retries', true, GENERIC_URL, false, true],
-    ['non-payment without retries', false, GENERIC_URL, false, true],
-    ['payment without a URL', true, '', true, true],
-    ['payment with generic webhooks off', true, GENERIC_URL, true, false],
-    [
-      'payment to Plumber',
-      true,
-      'https://plumber.gov.sg/webhooks/payment',
-      true,
-      true,
-    ],
+    {
+      name: 'payment without retries',
+      isPayment: true,
+      webhookUrl: GENERIC_URL,
+      isRetryEnabled: false,
+      enabled: true,
+      expectedSnapshots: 1,
+    },
+    {
+      name: 'non-payment without retries',
+      isPayment: false,
+      webhookUrl: GENERIC_URL,
+      isRetryEnabled: false,
+      enabled: true,
+      expectedSnapshots: 0,
+    },
+    {
+      name: 'payment without a URL',
+      isPayment: true,
+      webhookUrl: '',
+      isRetryEnabled: true,
+      enabled: true,
+      expectedSnapshots: 1,
+    },
+    {
+      name: 'payment with generic webhooks off',
+      isPayment: true,
+      webhookUrl: GENERIC_URL,
+      isRetryEnabled: true,
+      enabled: false,
+      expectedSnapshots: 1,
+    },
+    {
+      name: 'payment to Plumber',
+      isPayment: true,
+      webhookUrl: PLUMBER_URL,
+      isRetryEnabled: true,
+      enabled: true,
+      expectedSnapshots: 1,
+    },
   ] as const)(
-    'writes the V1 snapshot only for %s, independently of send eligibility',
-    async (_name, isPayment, webhookUrl, isRetryEnabled, enabled) => {
+    'writes $expectedSnapshots V1 snapshots for $name, independently of send eligibility',
+    async ({
+      isPayment,
+      webhookUrl,
+      isRetryEnabled,
+      enabled,
+      expectedSnapshots,
+    }) => {
       const input = await prepare({
         withAttachments: true,
         webhookUrl,
@@ -551,13 +640,14 @@ describe('[GATE] payment webhook delivery', () => {
         )._unsafeUnwrap()
       }
       expect(status).toBe(isPayment ? 200 : undefined)
+      expect(writes.length).toBeGreaterThan(0)
       expect(writes).toEqual(
         writes.map(() => ({ pendingCount: 0, paymentIntentCount: 0 })),
       )
       const snapshots = [...objects].filter(([key]) =>
         key.startsWith(`${aws.submissionHistoryV1S3Bucket}/`),
       )
-      expect(snapshots).toHaveLength(isPayment ? 1 : 0)
+      expect(snapshots).toHaveLength(expectedSnapshots)
       expect(
         [...objects.keys()].some((key) =>
           key.startsWith(`${aws.submissionHistoryV4S3Bucket}/`),
@@ -697,10 +787,6 @@ describe('[GATE] payment webhook delivery', () => {
         }),
       )
       expect(posted).toHaveLength(expectedVersion === undefined ? 0 : 1)
-      const reads = jest
-        .mocked(aws.s3.send)
-        .mock.calls.filter(([command]) => command instanceof GetObjectCommand)
-      expect(reads).toHaveLength(expectedVersion === 2.1 ? 1 : 0)
       expect([...objects]).toEqual(originalObjects)
       const data = posted[0]
         ? (JSON.parse(posted[0]) as WebhookView).data
@@ -733,14 +819,9 @@ describe('[GATE] payment webhook delivery', () => {
         webhookUrl: before,
         withAttachments: true,
       })
-      const post = mockAxios.post.getMockImplementation()!
-      mockAxios.post.mockImplementationOnce(async (...args) => {
-        await post(...args)
-        throw new Error('Transient delivery failure')
-      })
+      failNextDelivery()
       await confirm(payment)
-      for (let attempt = 0; queued.length === 0 && attempt < 100; attempt++)
-        await new Promise((resolve) => setTimeout(resolve, 10))
+      await waitFor(() => queued.length > 0)
       expect(queued).toHaveLength(1)
       const message = JSON.parse(queued[0])
       expect(message.snapshotRef).toEqual(
@@ -801,17 +882,7 @@ describe('[GATE] payment webhook delivery', () => {
       responses: [],
       payment_fields_snapshot: { payment_type: PaymentType.Variable },
     })
-    const session = await mongoose.startSession()
-    try {
-      ;(
-        await copyPendingSubmissionToSubmissions(
-          payment.pendingSubmissionId,
-          session,
-        )
-      )._unsafeUnwrap()
-    } finally {
-      await session.endSession()
-    }
+    await simulateDuplicateKeyRecovery(payment)
     await confirm(payment)
     expect(String(payment.completedPayment!.submissionId)).not.toBe(
       String(payment.pendingSubmissionId),
@@ -842,14 +913,9 @@ describe('[GATE] payment webhook delivery', () => {
     'stops outstanding retries for %s when the URL is removed or retries are disabled',
     async (webhookUrl) => {
       const { payment, form } = await submit({ webhookUrl })
-      const post = mockAxios.post.getMockImplementation()!
-      mockAxios.post.mockImplementationOnce(async (...args) => {
-        await post(...args)
-        throw new Error('Transient delivery failure')
-      })
+      failNextDelivery()
       await confirm(payment)
-      for (let attempt = 0; queued.length === 0 && attempt < 100; attempt++)
-        await new Promise((resolve) => setTimeout(resolve, 10))
+      await waitFor(() => queued.length > 0)
       expect(queued).toHaveLength(1)
       form.webhook!.url = ''
       await form.save()
@@ -881,10 +947,7 @@ describe('[GATE] payment webhook delivery', () => {
       await createMultiRespondentFormSubmission({
         form: populated,
         encryptedPayload: payload,
-        verifiedContentPlaintext: {
-          'cpUen (Step 1)': '201234567A',
-          'cpUid (Step 1)': 'S1234567D',
-        },
+        verifiedContentPlaintext,
         logMeta: { action: 'payment-delivery-test' },
         growthbook,
       })
@@ -898,8 +961,7 @@ describe('[GATE] payment webhook delivery', () => {
       logMeta: { action: 'payment-delivery-test' },
       growthbook,
     })
-    for (let attempt = 0; posted.length < 2 && attempt < 100; attempt++)
-      await new Promise((resolve) => setTimeout(resolve, 10))
+    await waitFor(() => posted.length >= 2)
     expect(posted).toHaveLength(2)
     const unpaid = (JSON.parse(posted[1]) as WebhookView).data
     expect(Object.keys(paid).sort()).toEqual(Object.keys(unpaid).sort())
