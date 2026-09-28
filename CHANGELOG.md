@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.33.3](https://github.com/opengovsg/formsg/compare/v9.33.2...v9.33.3) (2026-09-28)
+
+
+### Bug Fixes
+
+* **webhooks:** reject non-Plumber URLs on multi-step MRF (#10112) ([#10112](https://github.com/opengovsg/formsg/commit/816158ea0ed1bbebe236b307379a9d80a0afdb7c))
+
 ## [9.33.2](https://github.com/opengovsg/formsg/compare/v9.33.1...v9.33.2) (2026-09-28)
 
 
