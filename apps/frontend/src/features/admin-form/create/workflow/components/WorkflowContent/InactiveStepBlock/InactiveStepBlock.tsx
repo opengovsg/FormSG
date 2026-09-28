@@ -37,6 +37,7 @@ import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
 
 const MISSING_FIELD_MESSAGE = 'This field is missing'
+const NO_EMAILS_MESSAGE = 'No emails added'
 
 interface InactiveStepBlockProps {
   stepNumber: number
@@ -57,7 +58,7 @@ const SubsequentStepRespondentBadges = ({
       if (step.emails.length === 0) {
         return (
           <FieldLogicBadge
-            defaults={{ variant: 'error', message: MISSING_FIELD_MESSAGE }}
+            defaults={{ variant: 'error', message: NO_EMAILS_MESSAGE }}
           />
         )
       }

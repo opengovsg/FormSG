@@ -8,7 +8,7 @@ import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 const { WithWorkflowRedesignOn } = composeStories(pageStories)
 
 const STEP_NAME_HINT = /name this step, or keep it as/i
-const RESPONDENT_HINT = /pick who fills in this step/i
+const RESPONDENT_HINT = /select who fills in this step/i
 const APPROVALS_HINT = /choose what they do in this step/i
 const CONTINUE = { name: /^continue$/i }
 const STEP_NAME_LABEL = /step name/i

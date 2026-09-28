@@ -13,8 +13,8 @@ export const enSG = {
         'Select who to notify when the workflow is complete',
       respondents: {
         step1: {
-          label: 'An email address collected from an email field',
-          placeholder: 'Select an email field from your form',
+          label: 'An email address collected from an Email field',
+          placeholder: 'Select an Email field from your form.',
         },
         others: {
           label: 'Any email addresses you choose',

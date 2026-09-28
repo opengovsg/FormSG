@@ -72,7 +72,7 @@ export const StepNameBlock = ({
             <FormLabel isRequired style={textStyles.h4} textStyle={'subhead-1'}>
               {t('features.adminForm.sidebar.workflow.stepName.label')}
             </FormLabel>
-            {isActiveSection && stepNumber > 0 ? (
+            {isActiveSection ? (
               <Text textStyle="body-2" color="secondary.400" mb="0.5rem">
                 {t('features.adminForm.sidebar.workflow.guidedHints.stepName', {
                   stepNumber: stepNumber + 1,

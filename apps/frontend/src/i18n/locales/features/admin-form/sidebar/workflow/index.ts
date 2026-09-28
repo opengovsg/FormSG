@@ -26,9 +26,13 @@ export interface Workflow {
     fieldsToFill: string
     clickToEdit: string
   }
+  staticRespondent: {
+    invalidEmailsRedesign: string
+  }
   dynamicRespondent: {
     title: string
     required: string
+    requiredRedesign: string
     mustBeEmail: string
     mustBeEmailRedesign: string
     select: string
@@ -39,6 +43,7 @@ export interface Workflow {
     addEmailsToOptionsRedesign: string
     validation: {
       noField: string
+      noFieldRedesign: string
       notDropdown: string
       notDropdownRedesign: string
     }

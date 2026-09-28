@@ -25,8 +25,8 @@ const NestedTemplate: StoryFn = (args) => (
 export const NoEmailField = NestedTemplate.bind({})
 NoEmailField.args = {
   picker: 'email',
-  message: 'Your form has no email field yet.',
-  actionLabel: 'Add an email field',
+  message: 'Your form has no Email field yet.',
+  actionLabel: 'Add an Email field',
   onAction: () => undefined,
 }
 
@@ -37,8 +37,8 @@ MobileNoEmailField.parameters = getMobileViewParameters()
 export const NoDropdownField = NestedTemplate.bind({})
 NoDropdownField.args = {
   picker: 'dropdown',
-  message: 'Your form has no dropdown field yet.',
-  actionLabel: 'Add a dropdown field',
+  message: 'Your form has no Dropdown field yet.',
+  actionLabel: 'Add a Dropdown field',
   onAction: () => undefined,
 }
 

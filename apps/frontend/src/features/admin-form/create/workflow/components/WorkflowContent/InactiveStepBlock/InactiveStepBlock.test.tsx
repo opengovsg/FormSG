@@ -6,7 +6,7 @@ import * as pageStories from '../../../CreatePageWorkflowTab.stories'
 
 const { Step2NoEmails, WithWorkflow } = composeStories(pageStories)
 
-const MISSING_FIELD = /this field is missing/i
+const NO_EMAILS = /no emails added/i
 
 describe('inactive step respondent badges', () => {
   beforeAll(() => {
@@ -26,7 +26,7 @@ describe('inactive step respondent badges', () => {
     })
 
     expect(
-      await screen.findByText(MISSING_FIELD, {}, { timeout: 10000 }),
+      await screen.findByText(NO_EMAILS, {}, { timeout: 10000 }),
     ).toBeInTheDocument()
   })
 
@@ -38,6 +38,6 @@ describe('inactive step respondent badges', () => {
     expect(
       await screen.findByText('test_1@tech.gov.sg', {}, { timeout: 10000 }),
     ).toBeInTheDocument()
-    expect(screen.queryByText(MISSING_FIELD)).not.toBeInTheDocument()
+    expect(screen.queryByText(NO_EMAILS)).not.toBeInTheDocument()
   })
 })
