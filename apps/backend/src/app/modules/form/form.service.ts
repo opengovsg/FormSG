@@ -708,7 +708,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.Decimal: {
-      const sampleValue = faker.number.float({ precision: 0.1 }).toString()
+      const sampleValue = faker.number.float({ multipleOf: 0.1 }).toString()
       return {
         id: field._id,
         question: field.title,
@@ -728,7 +728,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.Mobile: {
-      const sampleValue = faker.phone.number('+659#######')
+      const sampleValue = faker.helpers.replaceSymbols('+659#######')
       return {
         id: field._id,
         question: field.title,
@@ -738,7 +738,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.HomeNo: {
-      const sampleValue = faker.phone.number('+656#######')
+      const sampleValue = faker.helpers.replaceSymbols('+656#######')
       return {
         id: field._id,
         question: field.title,
