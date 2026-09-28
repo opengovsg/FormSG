@@ -44,6 +44,11 @@ import {
   hasWorkflowSteps,
 } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
+  matchesSearchQuery,
+  normaliseSearchQuery,
+  searchableColumnIds,
+} from '~features/admin-form/responses/common/utils/responseSearch'
+import {
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_REMINDERS_LABEL,
   MRF_RESPONSE_TIMESTAMP_LABEL,
@@ -458,18 +463,17 @@ export const ResponsesTable = () => {
       columnIds: string[],
       searchValue: string,
     ) => {
-      const query = searchValue.trim().toLowerCase()
+      const query = normaliseSearchQuery(searchValue)
       if (!query) return rowsToFilter
-      const searchableIds = columnIds.filter(
-        (columnId) => !excludedSearchColumnIds.includes(columnId),
+      const searchableIds = searchableColumnIds(
+        columnIds,
+        excludedSearchColumnIds,
       )
       return rowsToFilter.filter((row) =>
-        searchableIds.some((columnId) => {
-          const value = row.values[columnId]
-          return (
-            typeof value === 'string' && value.toLowerCase().includes(query)
-          )
-        }),
+        matchesSearchQuery(
+          searchableIds.map((columnId) => row.values[columnId]),
+          query,
+        ),
       )
     },
     [excludedSearchColumnIds],

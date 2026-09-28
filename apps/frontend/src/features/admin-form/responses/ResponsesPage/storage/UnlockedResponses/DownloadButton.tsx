@@ -127,16 +127,12 @@ export const DownloadButton = (): JSX.Element => {
   const {
     visibleSubmissionIds,
     isFullyLoaded,
+    searchText,
+    excludedSearchColumnIds,
     sortColumnId,
     sortDirection,
     hiddenColumnIds,
   } = useUnlockedResponses()
-
-  // The generator holds every record until download, so it can order and
-  // project them however the table is showing them, at any response count.
-  const csvView: CsvExportView | undefined = isDelightfulDashboard
-    ? { sortColumnId, sortDirection, hiddenColumnIds }
-    : undefined
 
   const exportSubmissionIds =
     isDelightfulDashboard &&
@@ -145,6 +141,21 @@ export const DownloadButton = (): JSX.Element => {
     visibleSubmissionIds.length <= CSV_BUFFER_MAX_RESPONSES
       ? visibleSubmissionIds
       : undefined
+
+  // The generator holds every record until download, so it can order and
+  // project them however the table is showing them, at any response count.
+  //
+  // The id list is what the table itself matched, against rendered cells rather
+  // than stored answers, so it decides the rows whenever it is there and the
+  // generator's own search stands in only past the count it can be built for.
+  const csvView: CsvExportView | undefined = isDelightfulDashboard
+    ? {
+        ...(exportSubmissionIds ? {} : { searchText, excludedSearchColumnIds }),
+        sortColumnId,
+        sortDirection,
+        hiddenColumnIds,
+      }
+    : undefined
 
   const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = useMemo(
     () => ({
