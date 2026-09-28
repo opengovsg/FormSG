@@ -16,28 +16,24 @@ export const FormScheduledClosureNotification = ({
   formLink,
   formSettingsLink,
   closedAt,
-  appName,
 }: FormScheduledClosureNotificationHtmlData): JSX.Element => {
   return (
-    <EmailLayout emailTitle="Form closed">
+    <EmailLayout>
       <Text style={secondaryTextStyle}>Dear form admin(s),</Text>
       <Text style={secondaryTextStyle}>
         Your form <b>{formTitle}</b> (
         <Link href={formLink} style={linkStyle}>
           {formLink}
         </Link>
-        ) has been closed to new responses. It reached the closing date set by
-        you or your collaborators: <b>{closedAt}</b>. Responses submitted after
-        this time were not accepted, even if the form still appeared open for a
-        short while.
+        ) has been closed after the response deadline set at <b>{closedAt}</b>.
+        Responses submitted after this time were not accepted, even if the form
+        still appeared open for a short while.
       </Text>
       <Text style={{ ...secondaryTextStyle, marginBottom: '24px' }}>
-        If you need to keep collecting responses, you can reopen the form and
-        set a new closing date in its settings.
+        If you need to continue collecting responses, you can reopen the form in
+        the settings.
       </Text>
       <EmailButton href={formSettingsLink}>Go to form settings</EmailButton>
-      <EmailMargin height={24} />
-      <Text style={secondaryTextStyle}>{appName} team</Text>
       <EmailMargin height={40} />
     </EmailLayout>
   )
