@@ -53,6 +53,7 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
     isTableLoading,
     savedViews,
     selectedViewId,
+    isShowingRecentOnly,
     applyView,
     renderLimit,
     showMoreRows,
@@ -118,6 +119,13 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
               { count: searchResultCount ?? countToUse ?? 0 },
             )}
           </Text>
+          {isShowingRecentOnly ? (
+            <Text textStyle="body-2" color="secondary.400">
+              {t(
+                'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.recentOnly',
+              )}
+            </Text>
+          ) : null}
         </Skeleton>
       </Flex>
 

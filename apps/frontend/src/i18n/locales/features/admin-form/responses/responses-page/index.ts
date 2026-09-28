@@ -108,6 +108,7 @@ export interface ResponsesResponsesPage {
       unlockedResponses: {
         resultsFound: string
         responsesToDate: string
+        recentOnly: string
       }
     }
     storageResponsesTab: {
