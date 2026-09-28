@@ -1,5 +1,7 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from 'react'
 
+import { logProgress } from '~features/admin-form/responses/progressLog'
+
 const DEFAULT_OVERSCAN = 2
 
 export interface ColumnWindow {
@@ -123,14 +125,23 @@ export const useColumnVirtualizer = <T extends HTMLElement>({
       overscan,
     })
 
-    setColumnWindow((current) =>
-      current.startIndex === next.startIndex &&
-      current.endIndex === next.endIndex &&
-      current.paddingLeft === next.paddingLeft &&
-      current.paddingRight === next.paddingRight
-        ? current
-        : next,
-    )
+    setColumnWindow((current) => {
+      if (
+        current.startIndex === next.startIndex &&
+        current.endIndex === next.endIndex &&
+        current.paddingLeft === next.paddingLeft &&
+        current.paddingRight === next.paddingRight
+      ) {
+        return current
+      }
+      logProgress('column window', {
+        rendering: `${next.startIndex}..${next.endIndex}`,
+        of: columnWidths.length,
+        scrollLeft: Math.round(scrollParent?.scrollLeft ?? 0),
+        foundScroller: !!scrollParent,
+      })
+      return next
+    })
   }, [columnWidths, overscan])
 
   // Scrolling fires faster than it can paint, and measuring reads layout.

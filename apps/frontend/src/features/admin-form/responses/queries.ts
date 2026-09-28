@@ -28,6 +28,10 @@ import {
   getFormSubmissionsMetadata,
 } from './AdminSubmissionsService'
 import { TABLE_DECRYPTION_PUBLISH_INTERVAL_MS } from './constants'
+import { logProgress, perSecond, secondsSince } from './progressLog'
+
+/** The publish tick is 250ms, so this logs about once a second. */
+const PROGRESS_LOG_EVERY_N_PUBLISHES = 4
 
 export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
@@ -142,12 +146,23 @@ export const useAllFormResponses = ({
 
   return useQuery(
     adminFormResponsesKeys.allMetadata(formId, dateRange),
-    () =>
-      getFormSubmissionsMetadata(formId, {
+    async () => {
+      const startedAt = performance.now()
+      logProgress('metadata fetch start', { pageSize: TABLE_RESPONSE_LIMIT })
+
+      const result = await getFormSubmissionsMetadata(formId, {
         page: 1,
         pageSize: TABLE_RESPONSE_LIMIT,
         ...(startDate && endDate ? { startDate, endDate } : {}),
-      }),
+      })
+
+      logProgress('metadata fetch done', {
+        rows: result.metadata.length,
+        totalOnForm: result.count,
+        seconds: secondsSince(startedAt),
+      })
+      return result
+    },
     {
       staleTime: 0,
       enabled: enabled && !!secretKey,
@@ -208,6 +223,10 @@ export const useDecryptedResponsesBySubmissionId = ({
     async () => {
       const decrypted = new Map<string, FormField[]>()
       let lastPublishedAt = 0
+      let publishCount = 0
+      const startedAt = performance.now()
+
+      logProgress('decrypt start', { limit: TABLE_RESPONSE_LIMIT })
 
       const publish = () => {
         queryClient.setQueryData(queryKey, new Map(decrypted))
@@ -229,7 +248,22 @@ export const useDecryptedResponsesBySubmissionId = ({
           }
           lastPublishedAt = now
           publish()
+
+          publishCount += 1
+          if (publishCount % PROGRESS_LOG_EVERY_N_PUBLISHES === 0) {
+            logProgress('decrypting', {
+              done: decrypted.size,
+              of: TABLE_RESPONSE_LIMIT,
+              perSecond: perSecond(decrypted.size, startedAt),
+              seconds: secondsSince(startedAt),
+            })
+          }
         },
+      })
+
+      logProgress('decrypt done', {
+        done: decrypted.size,
+        seconds: secondsSince(startedAt),
       })
 
       return decrypted
