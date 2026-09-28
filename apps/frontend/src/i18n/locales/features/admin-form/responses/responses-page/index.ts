@@ -75,6 +75,9 @@ export interface ResponsesResponsesPage {
         viewNameRequired: string
         viewNameMinLength: string
         viewNameMaxLength: string
+        deleteView: string
+        deleteViewTitle: string
+        deleteViewDescription: string
       }
       sortMenu: {
         column: string

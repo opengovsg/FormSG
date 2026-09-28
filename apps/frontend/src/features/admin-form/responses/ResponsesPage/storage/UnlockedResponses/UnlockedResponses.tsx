@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Box,
@@ -21,12 +21,17 @@ import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { useInfiniteScrollTrigger } from './hooks/useInfiniteScrollTrigger'
+import { DeleteViewModal } from './DeleteViewModal'
 import { DownloadButton } from './DownloadButton'
 import { ResponsesTable } from './ResponsesTable'
 import { ResponsesToolbar } from './ResponsesToolbar'
 import { ResponseViewTabs } from './ResponseViewTabs'
 import { SubmissionSearchbar } from './SubmissionSearchbar'
-import { useUnlockedResponses } from './UnlockedResponsesProvider'
+import {
+  ALL_RESPONSES_VIEW_ID,
+  useUnlockedResponses,
+} from './UnlockedResponsesProvider'
+import { useDeleteSavedViewMutation } from './useSavedViewMutation'
 
 export const UnlockedResponses = (): JSX.Element => {
   const isDelightfulDashboard = useIsDelightfulDashboard()
@@ -53,6 +58,21 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
     showMoreRows,
     renderedRowCount,
   } = useUnlockedResponses()
+
+  const [viewPendingDelete, setViewPendingDelete] = useState<string>()
+  const deleteSavedViewMutation = useDeleteSavedViewMutation()
+
+  const handleDeleteView = useCallback(() => {
+    if (!viewPendingDelete) return
+    deleteSavedViewMutation.mutate(viewPendingDelete, {
+      onSuccess: () => {
+        // The applied view is gone, so the table falls back to every response.
+        if (viewPendingDelete === selectedViewId)
+          applyView(ALL_RESPONSES_VIEW_ID)
+        setViewPendingDelete(undefined)
+      },
+    })
+  }, [applyView, deleteSavedViewMutation, selectedViewId, viewPendingDelete])
 
   const hasMoreRowsToRender = renderedRowCount >= renderLimit
 
@@ -105,6 +125,17 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
         views={savedViews.map(({ _id, name }) => ({ id: _id, name }))}
         selectedViewId={selectedViewId}
         onSelectView={applyView}
+        onDeleteView={setViewPendingDelete}
+      />
+
+      <DeleteViewModal
+        isOpen={!!viewPendingDelete}
+        onClose={() => setViewPendingDelete(undefined)}
+        onDelete={handleDeleteView}
+        isLoading={deleteSavedViewMutation.isLoading}
+        viewName={
+          savedViews.find(({ _id }) => _id === viewPendingDelete)?.name ?? ''
+        }
       />
 
       <ResponsesToolbar />
