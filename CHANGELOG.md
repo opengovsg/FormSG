@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.33.2](https://github.com/opengovsg/formsg/compare/v9.33.1...v9.33.2) (2026-09-28)
+
+
+### Chores
+
+* **myinfo:** copy MyInfo person types and drop myinfo-gov-client (#10116) ([#10116](https://github.com/opengovsg/formsg/commit/e715fdc00cb8a2186112f0b0842d13d1f2af4337))
+* **myinfo:** deprecate MyInfo v3 and run FAPI v5 only (#10027) ([#10027](https://github.com/opengovsg/formsg/commit/3138c412e586ea83f892a48745f7f856aac155cb))
+
 ## [9.33.1](https://github.com/opengovsg/formsg/compare/v9.33.0...v9.33.1) (2026-09-28)
 
 
