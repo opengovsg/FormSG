@@ -323,6 +323,25 @@ describe('webhook and workflow compatibility', () => {
     },
   )
 
+  it('allows adding a second step when the form has no stored webhook', async () => {
+    const { form, user } = await dbHandler.insertMultirespondentForm({
+      formOptions: { status: FormStatus.Private, workflow: [persistedStep()] },
+    })
+    // Mongoose hydrates the missing url as its '' default.
+    await FormModel.collection.updateOne(
+      { _id: form._id },
+      { $unset: { webhook: 1 } },
+    )
+    const session = await createAuthedSession(user.email, supertest(app))
+
+    const response = await session
+      .post(`/admin/forms/${form._id}/workflow`)
+      .send(step())
+
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveLength(2)
+  })
+
   it('allows the rejected webhook save after reducing the workflow to one step', async () => {
     const { form, user } = await dbHandler.insertMultirespondentForm({
       formOptions: {

@@ -1621,7 +1621,7 @@ const getCheckedWebhookUrlFilterIfMultistepWorkflow = (
   stepCount: number,
 ) => {
   const isMultistepWorkflow = stepCount >= 2
-  const checkedUrl = form.webhook?.url ?? null
+  const checkedUrl = form.webhook?.url || { $in: ['', null] }
   return isMultistepWorkflow ? { 'webhook.url': checkedUrl } : {}
 }
 
