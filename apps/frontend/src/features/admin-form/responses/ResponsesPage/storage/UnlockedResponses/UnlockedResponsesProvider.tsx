@@ -27,6 +27,7 @@ import { TABLE_ROW_RENDER_CHUNK } from '../../../constants'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { usePageSearchParams } from './hooks/usePageSearchParams'
+import { exceedsTableLimit } from './responseLimit'
 import {
   fromSavedView,
   hasActiveViewState,
@@ -85,6 +86,7 @@ interface UnlockedResponsesContextProps {
   visibleSubmissionIds?: string[]
   setVisibleSubmissionIds: (submissionIds?: string[]) => void
   isFullyLoaded: boolean
+  isShowingRecentOnly: boolean
   savedViews: FormSavedView[]
   selectedViewId: string
   applyView: (viewId: string) => void
@@ -254,6 +256,9 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   const metadata = isInfiniteScroll ? allMetadata : pagedMetadata
   const count = isInfiniteScroll ? allData?.count : pagedCount
   const isFullyLoaded = !!allData && allMetadata.length >= (allData.count ?? 0)
+
+  const isShowingRecentOnly =
+    isInfiniteScroll && exceedsTableLimit(allData?.count)
   const isLoading = isInfiniteScroll ? isTableLoading : isPagedLoading
 
   const totalPageCount = useMemo(
@@ -451,6 +456,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     visibleSubmissionIds,
     setVisibleSubmissionIds,
     isFullyLoaded,
+    isShowingRecentOnly,
     savedViews,
     selectedViewId,
     applyView,

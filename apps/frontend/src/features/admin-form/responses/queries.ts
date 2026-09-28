@@ -21,15 +21,13 @@ import { adminFormKeys } from '../common/queries'
 import { getFormIssues } from './FeedbackPage/issue/IssueService'
 import { getFormFeedback } from './FeedbackPage/review/ReviewService'
 import { useStorageResponsesContext } from './ResponsesPage/storage/StorageResponsesContext'
+import { TABLE_RESPONSE_LIMIT } from './ResponsesPage/storage/UnlockedResponses/responseLimit'
 import {
   countFormSubmissions,
   getAllDecryptedSubmission,
   getFormSubmissionsMetadata,
 } from './AdminSubmissionsService'
-import {
-  TABLE_DECRYPTION_LIMIT,
-  TABLE_DECRYPTION_PUBLISH_INTERVAL_MS,
-} from './constants'
+import { TABLE_DECRYPTION_PUBLISH_INTERVAL_MS } from './constants'
 
 export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
@@ -128,7 +126,7 @@ export const useFormResponses = ({
 }
 
 /**
- * Fetches the most recent TABLE_DECRYPTION_LIMIT submissions in one request.
+ * Fetches the most recent TABLE_RESPONSE_LIMIT submissions in one request.
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
 export const useAllFormResponses = ({
@@ -147,7 +145,7 @@ export const useAllFormResponses = ({
     () =>
       getFormSubmissionsMetadata(formId, {
         page: 1,
-        pageSize: TABLE_DECRYPTION_LIMIT,
+        pageSize: TABLE_RESPONSE_LIMIT,
         ...(startDate && endDate ? { startDate, endDate } : {}),
       }),
     {
@@ -222,7 +220,7 @@ export const useDecryptedResponsesBySubmissionId = ({
         endDate: endDate ?? '',
         downloadAttachments: false,
         isSortByLatest: true,
-        limit: TABLE_DECRYPTION_LIMIT,
+        limit: TABLE_RESPONSE_LIMIT,
         onSubmissionDecrypted: ({ submissionId, responses }) => {
           decrypted.set(submissionId, responses)
           const now = performance.now()
