@@ -55,7 +55,7 @@ const urlCases = [
     url: 'https://plumber.gov.sg/webhooks/abc',
     restricted: false,
   },
-  { name: 'none', url: '', restricted: false },
+  { name: 'no', url: '', restricted: false },
 ]
 const cases = urlCases.flatMap((consumer) =>
   [0, 1, 2, 3].map((count) => ({
@@ -115,8 +115,17 @@ describe('webhook and workflow compatibility', () => {
     },
   )
 
-  it.each(cases)(
-    'workflow: $name webhook with $count resulting steps',
+  it.each(
+    cases.map((testCase) => ({
+      ...testCase,
+      expectedOutcome: testCase.rejected ? 'rejects' : 'allows',
+      operation:
+        testCase.count === 0
+          ? 'deleting the only workflow step'
+          : 'adding a workflow step',
+    })),
+  )(
+    '$expectedOutcome $operation with $name webhook ($count resulting steps)',
     async ({ url, count, rejected }) => {
       const { form, user } = await dbHandler.insertMultirespondentForm({
         formOptions: {
@@ -149,8 +158,15 @@ describe('webhook and workflow compatibility', () => {
       expect(stored?.webhook?.url).toBe(url)
     },
   )
-  it.each(cases.filter(({ count }) => count > 0))(
-    'editing a step: $name webhook with $count steps',
+  it.each(
+    cases
+      .filter(({ count }) => count > 0)
+      .map((testCase) => ({
+        ...testCase,
+        expectedOutcome: testCase.rejected ? 'rejects' : 'allows',
+      })),
+  )(
+    '$expectedOutcome editing a step in a $count-step workflow with $name webhook',
     async ({ url, count, rejected }) => {
       const { form, user } = await dbHandler.insertMultirespondentForm({
         formOptions: {
