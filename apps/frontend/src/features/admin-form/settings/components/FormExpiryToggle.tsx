@@ -49,6 +49,9 @@ const FormExpiryBlock = ({
 
   const closeAtDate = useMemo(() => new Date(initialCloseAt), [initialCloseAt])
 
+  // Held locally rather than derived from the saved closeAt, so a rejected edit
+  // stays on screen and the next edit computes against the date on screen.
+  const [dayOfClose, setDayOfClose] = useState(closeAtDate)
   const [timeOfDay, setTimeOfDay] = useState(() => format(closeAtDate, 'HH:mm'))
 
   const save = useCallback(
@@ -74,7 +77,15 @@ const FormExpiryBlock = ({
       // Clearing the date is the toggle's job, not the picker's.
       if (!nextDate) return
 
-      if (!isValid(nextDate) || isPastDay(nextDate)) {
+      if (!isValid(nextDate)) {
+        return setError(
+          t('features.adminForm.settings.general.expiry.dateInThePast'),
+        )
+      }
+
+      setDayOfClose(nextDate)
+
+      if (isPastDay(nextDate)) {
         return setError(
           t('features.adminForm.settings.general.expiry.dateInThePast'),
         )
@@ -106,9 +117,9 @@ const FormExpiryBlock = ({
 
       setError(undefined)
       setTimeOfDay(nextTimeOfDay)
-      return save(closeAtDate, nextTimeOfDay)
+      return save(dayOfClose, nextTimeOfDay)
     },
-    [closeAtDate, save, t],
+    [dayOfClose, save, t],
   )
 
   return (
@@ -124,11 +135,9 @@ const FormExpiryBlock = ({
       <Stack direction={{ base: 'column', md: 'row' }} spacing="1rem">
         <Box maxW="16rem" flex={1}>
           <DatePicker
-            value={closeAtDate}
+            value={dayOfClose}
             onChange={handleDateChange}
             isDateUnavailable={isPastDay}
-            // Both inputs derive from the last saved closeAt, so an edit made
-            // mid-save would compute from a stale base.
             isDisabled={mutateFormCloseAt.isLoading}
           />
         </Box>
