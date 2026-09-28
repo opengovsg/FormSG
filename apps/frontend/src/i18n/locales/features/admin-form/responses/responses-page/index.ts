@@ -60,6 +60,13 @@ export interface ResponsesResponsesPage {
         }
       }
       submissionSearchbarPlaceholder: string
+      searchResponsesPlaceholder: string
+      toolbar: {
+        filter: string
+        sort: string
+        group: string
+        columns: string
+      }
       downloadButton: {
         label: string
         navigateAwayPrompt: {

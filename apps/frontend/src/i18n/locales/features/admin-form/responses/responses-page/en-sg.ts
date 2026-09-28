@@ -70,6 +70,13 @@ export const enSG: ResponsesResponsesPage = {
         },
       },
       submissionSearchbarPlaceholder: 'Search by response ID',
+      searchResponsesPlaceholder: 'Search responses...',
+      toolbar: {
+        filter: 'Filter',
+        sort: 'Sort',
+        group: 'Group',
+        columns: 'Columns',
+      },
       downloadButton: {
         label: 'Download options',
         navigateAwayPrompt: {

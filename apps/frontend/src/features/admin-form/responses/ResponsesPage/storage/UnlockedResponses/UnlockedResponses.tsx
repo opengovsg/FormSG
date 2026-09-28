@@ -23,6 +23,7 @@ import { useStorageResponsesContext } from '../StorageResponsesContext'
 import { useInfiniteScrollTrigger } from './hooks/useInfiniteScrollTrigger'
 import { DownloadButton } from './DownloadButton'
 import { ResponsesTable } from './ResponsesTable'
+import { ResponsesToolbar } from './ResponsesToolbar'
 import { SubmissionSearchbar } from './SubmissionSearchbar'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
@@ -58,8 +59,6 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
     [submissionId, filteredCount, count],
   )
 
-  const { dateRange, setDateRange } = useStorageResponsesContext()
-
   return (
     <Flex
       flexDir="column"
@@ -67,81 +66,39 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
       w="100%"
       maxW="100%"
       minW={0}
-      overflowX="hidden"
     >
       <Flex
-        direction={{ base: 'column', sm: 'row' }}
+        direction="column"
         mb="1rem"
-        alignItems={{ base: 'flex-start', md: 'center' }}
-        justifyContent="space-between"
         color="secondary.500"
-        gap="1rem"
         w="100%"
         maxW="100%"
-        flexWrap="wrap"
         flexShrink={0}
       >
-        <Flex
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          w={{ base: '100%', sm: 'auto' }}
-          flex={{ base: '0 0 auto', sm: '1' }}
-          minW={0}
-        >
-          <Flex direction="column" flex={1} minW={0}>
-            <Skeleton
-              isLoaded={!isAnyFetching}
-              w={{ base: '100%', md: 'auto' }}
-            >
-              <Text
-                textStyle="h4"
-                mb={{ base: '0.25rem', md: '0.5rem' }}
-                noOfLines={{ base: 2, md: 1 }}
-              >
-                <Text as="span" color="primary.500">
-                  {countToUse?.toLocaleString()}
-                </Text>{' '}
-                {t(
-                  submissionId
-                    ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
-                    : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
-                  { count: countToUse ?? 0 },
-                )}
-              </Text>
-            </Skeleton>
-          </Flex>
-
-          <Flex minW="fit-content" flexShrink={0} ml={{ base: '1rem', sm: 0 }}>
-            <SubmissionSearchbar
-              submissionId={submissionId}
-              setSubmissionId={setSubmissionId}
-              isAnyFetching={isAnyFetching}
-            />
-          </Flex>
-        </Flex>
-
-        <Stack
-          direction={{ base: 'column', sm: 'row' }}
-          align={{ base: 'stretch', sm: 'flex-end' }}
-          spacing="0.5rem"
-          w={{ base: '100%', sm: 'auto' }}
-          flexShrink={0}
-          maxW="100%"
-        >
-          <DateRangePicker
-            value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
-            onChange={(nextDateRange) =>
-              setDateRange(
-                dateRangePickerHelper.datePickerValueToDateString(
-                  nextDateRange,
-                ),
-              )
-            }
-          />
-          <DownloadButton />
-        </Stack>
+        <Skeleton isLoaded={!isAnyFetching} w={{ base: '100%', md: 'auto' }}>
+          <Text
+            textStyle="h4"
+            mb={{ base: '0.25rem', md: '0.5rem' }}
+            noOfLines={{ base: 2, md: 1 }}
+          >
+            <Text as="span" color="primary.500">
+              {countToUse?.toLocaleString()}
+            </Text>{' '}
+            {t(
+              submissionId
+                ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
+                : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
+              { count: countToUse ?? 0 },
+            )}
+          </Text>
+        </Skeleton>
       </Flex>
+
+      <ResponsesToolbar
+        submissionId={submissionId}
+        setSubmissionId={setSubmissionId}
+        isAnyFetching={isAnyFetching}
+      />
 
       <Box
         mb="3rem"
