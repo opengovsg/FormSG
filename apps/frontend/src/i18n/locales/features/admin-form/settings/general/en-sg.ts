@@ -37,18 +37,18 @@ export const enSG = {
       'Submission limit must be greater than current submission count ({currentResponseCount})',
   },
   expiry: {
-    label: 'Set a form closing date',
+    label: 'Set a response deadline',
     input: {
-      label: 'Closing date and time',
-      timeLabel: 'Closing time',
+      label: 'Deadline date and time',
+      timeLabel: 'Deadline time',
       description:
-        'Your form will automatically close at the set date and time (SGT). Responses after will not be accepted.',
+        'Your form will stop accepting responses at the set date and time (SGT) and close shortly after.',
     },
     toast: {
-      success: 'Your form will now automatically close on {closeAt}.',
-      successRemoved: 'The closing date on your form is removed.',
+      success: 'Your form will stop accepting responses at {closeAt}.',
+      successRemoved: 'The response deadline on your form is removed.',
     },
-    dateInThePast: 'Closing date must be in the future',
+    dateInThePast: 'Deadline must be in the future',
     invalidTime: 'Please enter a valid time',
   },
   customisation: {

@@ -1,6 +1,7 @@
 import { MemoryRouter } from 'react-router-dom'
 import { Meta, StoryFn } from '@storybook/react'
 
+import { DateString } from 'formsg-shared/types'
 import { FormColorTheme } from 'formsg-shared/types/form/form'
 import { FormLogoState } from 'formsg-shared/types/form/form_logo'
 
@@ -54,6 +55,40 @@ NoEstimatedTime.parameters = {
       overrides: {
         form: {
           title: 'storybook no estimated time',
+          startPage: {
+            estTimeTaken: 0,
+          },
+        },
+      },
+      delay: 0,
+    }),
+  ],
+}
+
+/** 2359 SGT on 31 Dec 2026, stored as UTC. Should read as 11:59 PM (SGT). */
+export const WithDeadline = Template.bind({})
+WithDeadline.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          title: 'storybook with deadline',
+          closeAt: '2026-12-31T15:59:00.000Z' as DateString,
+        },
+      },
+      delay: 0,
+    }),
+  ],
+}
+
+export const WithDeadlineNoEstimatedTime = Template.bind({})
+WithDeadlineNoEstimatedTime.parameters = {
+  msw: [
+    getPublicFormResponse({
+      overrides: {
+        form: {
+          title: 'storybook with deadline, no estimated time',
+          closeAt: '2026-12-31T15:59:00.000Z' as DateString,
           startPage: {
             estTimeTaken: 0,
           },

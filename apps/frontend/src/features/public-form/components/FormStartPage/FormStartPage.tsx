@@ -30,6 +30,7 @@ export const FormStartPage = ({
 
   const formHeaderProps = useFormHeader({
     startPage: form?.startPage,
+    closeAt: form?.closeAt,
   })
 
   return (

@@ -5,9 +5,6 @@ import { Table } from './table'
 export * from './en-sg'
 
 export interface PublicForm {
-  expiry: {
-    banner: string
-  }
   backendErrors: {
     verification: {
       sessionExpired: string
@@ -87,6 +84,7 @@ export interface PublicForm {
   components: {
     header: {
       estTime: string
+      closeAt: string
     }
     submitButton: {
       loadingText: string

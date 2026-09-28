@@ -135,6 +135,7 @@ export const MiniHeader = ({
 interface FormHeaderProps {
   title?: string
   estTimeString: string
+  closeAtString?: string
   titleBg: string
   titleColor: string
   colorScheme?: ThemeColorScheme
@@ -151,6 +152,7 @@ interface FormHeaderProps {
 export const FormHeader = ({
   title,
   estTimeString,
+  closeAtString,
   titleBg,
   titleColor,
   colorScheme,
@@ -238,6 +240,25 @@ export const FormHeader = ({
               </Text>
             </Flex>
           )}
+          {closeAtString &&
+            (estTimeString ? (
+              // Sits under the estimated time, indented past its icon.
+              <Text textStyle="body-2" mt="0.5rem" ml="2rem">
+                {closeAtString}
+              </Text>
+            ) : (
+              <Flex align="flex-start" justify="center" mt="0.875rem">
+                <Icon
+                  as={BxsTimeFive}
+                  fontSize="1.5rem"
+                  mr="0.5rem"
+                  aria-hidden
+                />
+                <Text textStyle="body-2" mt="0.125rem">
+                  {closeAtString}
+                </Text>
+              </Flex>
+            ))}
           {loggedInId ? (
             <Button
               mt="2.25rem"
