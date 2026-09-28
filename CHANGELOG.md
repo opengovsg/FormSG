@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.33.1](https://github.com/opengovsg/formsg/compare/v9.33.0...v9.33.1) (2026-09-28)
+
+
+### Bug Fixes
+
+* **mail:** align scheduled-closure email with other admin emails (#10115) ([#10115](https://github.com/opengovsg/formsg/commit/72a9d0c93307281af154513dd37fdce27babc100))
+* **scheduled-closure:** reword around response deadline and show it in form header (#10105) ([#10105](https://github.com/opengovsg/formsg/commit/249708b6c031f2881f8708c18ea50bbb9129fc4b))
+* **settings:** save the deadline date the admin can see (#10119) ([#10119](https://github.com/opengovsg/formsg/commit/4d98be5096db78412b1159ccd2d9ee1261f88544))
+* **submission:** return payment data for multirespondent individual responses, csv and dashboard columns (#10113) ([#10113](https://github.com/opengovsg/formsg/commit/29fc9b47eefd4a4bb0d4526166ce500b6445d395))
+* **workflow:** copy and consistency fixes for the builder redesign (#10106) ([#10106](https://github.com/opengovsg/formsg/commit/d3fb480a823aa635653abe955adf343eab8c3e78))
+
 ## [9.33.0](https://github.com/opengovsg/formsg/compare/v9.32.1...v9.33.0) (2026-09-28)
 
 
