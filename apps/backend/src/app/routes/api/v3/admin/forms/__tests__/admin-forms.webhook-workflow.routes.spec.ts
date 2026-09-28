@@ -66,6 +66,8 @@ const cases = urlCases.flatMap((consumer) =>
 )
 const conflictMessage =
   'Forms with two or more workflow steps can only use Plumber webhooks. Use a Plumber webhook or reduce the workflow to one step.'
+const staleFormMessage =
+  'This form changed while you were editing. Refresh and try again.'
 
 describe('webhook and workflow compatibility', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -217,7 +219,7 @@ describe('webhook and workflow compatibility', () => {
       { webhook: { url: genericUrl } },
     )
     expect(result.isErr()).toBe(true)
-    expect(result._unsafeUnwrapErr().message).toBe(conflictMessage)
+    expect(result._unsafeUnwrapErr().message).toBe(staleFormMessage)
     const stored = await FormModel.findById(form._id).lean()
     expect(stored?.webhook?.url).not.toBe(genericUrl)
   })
@@ -240,7 +242,7 @@ describe('webhook and workflow compatibility', () => {
       { ...step(), _id: new mongoose.Types.ObjectId().toHexString() },
     )
     expect(result.isErr()).toBe(true)
-    expect(result._unsafeUnwrapErr().message).toBe(conflictMessage)
+    expect(result._unsafeUnwrapErr().message).toBe(staleFormMessage)
     const stored = await FormModel.findById(form._id).lean()
     expect(stored).toHaveProperty('workflow', expect.any(Array))
     expect(
@@ -286,7 +288,7 @@ describe('webhook and workflow compatibility', () => {
               1,
             )
       expect(result.isErr()).toBe(true)
-      expect(result._unsafeUnwrapErr().message).toBe(conflictMessage)
+      expect(result._unsafeUnwrapErr().message).toBe(staleFormMessage)
       const stored = await FormModel.findById(form._id).lean()
       expect(
         (stored as unknown as { workflow: unknown[] }).workflow,

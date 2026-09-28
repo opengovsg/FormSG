@@ -94,6 +94,7 @@ import {
 import {
   EditFieldError,
   FieldNotFoundError,
+  FormChangedWhileEditingError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
 } from '../admin-form.errors'
@@ -4416,35 +4417,41 @@ describe('admin-form.service', () => {
         )
       })
 
-      it('should reject when payments were enabled concurrently (filter misses)', async () => {
-        // Arrange
-        const mockForm = {
-          _id: new ObjectId().toHexString(),
-          responseMode: FormResponseMode.Multirespondent,
-          form_fields: [],
-          workflow: [],
-          payments_field: { enabled: false },
-        } as unknown as IPopulatedForm
+      it.each([0, 1])(
+        'should return a refresh message when the write filter misses with %i existing steps',
+        async (existingStepCount) => {
+          // Arrange
+          const mockForm = {
+            _id: new ObjectId().toHexString(),
+            responseMode: FormResponseMode.Multirespondent,
+            form_fields: [],
+            workflow: Array.from({ length: existingStepCount }, () => NEW_STEP),
+            payments_field: { enabled: false },
+          } as unknown as IPopulatedForm
 
-        jest
-          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
-          // @ts-ignore
-          .mockReturnValue({
-            exec: jest.fn().mockResolvedValue(null),
-          })
+          jest
+            .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+            // @ts-ignore
+            .mockReturnValue({
+              exec: jest.fn().mockResolvedValue(null),
+            })
 
-        // Act
-        const result = await AdminFormService.createWorkflowStep(
-          mockForm,
-          NEW_STEP as any,
-        )
+          // Act
+          const result = await AdminFormService.createWorkflowStep(
+            mockForm,
+            NEW_STEP as any,
+          )
 
-        // Assert
-        expect(result.isErr()).toBe(true)
-        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
-          MalformedParametersError,
-        )
-      })
+          // Assert
+          expect(result.isErr()).toBe(true)
+          expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+            FormChangedWhileEditingError,
+          )
+          expect(result._unsafeUnwrapErr().message).toBe(
+            'This form changed while you were editing. Refresh and try again.',
+          )
+        },
+      )
     })
   })
 
@@ -4563,6 +4570,38 @@ describe('admin-form.service', () => {
       })
     })
   })
+
+  it.each(['update', 'delete'] as const)(
+    'returns a refresh error when a one-step workflow %s finds no form',
+    async (operation) => {
+      const step = {
+        _id: new ObjectId().toHexString(),
+        workflow_type: WorkflowType.Static,
+        emails: ['step1@example.com'],
+        edit: [],
+      }
+      const form = {
+        _id: new ObjectId(),
+        responseMode: FormResponseMode.Multirespondent,
+        status: FormStatus.Private,
+        form_fields: [],
+        workflow: [step],
+      } as unknown as IPopulatedForm
+      jest
+        .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+        // @ts-ignore
+        .mockReturnValue({ exec: jest.fn().mockResolvedValue(null) })
+
+      const result =
+        operation === 'update'
+          ? await AdminFormService.updateFormWorkflowStep(form, 0, step as any)
+          : await AdminFormService.deleteFormWorkflowStep(form, 0)
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        FormChangedWhileEditingError,
+      )
+    },
+  )
 
   describe('workflow completeness', () => {
     const FIELD_ID = new ObjectId().toHexString()

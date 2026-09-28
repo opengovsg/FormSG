@@ -50,6 +50,7 @@ import {
   DeleteFirstWorkflowStepError,
   EditFieldError,
   FieldNotFoundError,
+  FormChangedWhileEditingError,
   GoGovAlreadyExistError,
   GoGovBadGatewayError,
   GoGovError,
@@ -112,6 +113,7 @@ export const mapRouteError = (
     // Conflict rather than forbidden: the admin is allowed to do this, just not
     // while the form is open. Closing it makes the same request succeed.
     case FormOpenToResponsesError:
+    case FormChangedWhileEditingError:
       return {
         statusCode: StatusCodes.CONFLICT,
         errorMessage: error.message,

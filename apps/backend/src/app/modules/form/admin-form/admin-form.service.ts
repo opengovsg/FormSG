@@ -122,6 +122,7 @@ import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
   EditFieldError,
   FieldNotFoundError,
+  FormChangedWhileEditingError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
 } from './admin-form.errors'
@@ -1647,7 +1648,7 @@ export const createWorkflowStep = (
   newWorkflowStep: FormWorkflowStepDto,
 ): ResultAsync<
   FormWorkflowDto,
-  DatabaseError | FormNotFoundError | MalformedParametersError
+  DatabaseError | MalformedParametersError | FormChangedWhileEditingError
 > => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1796,15 +1797,7 @@ export const createWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      if (updatedWorkflow.length >= 2) {
-        return errAsync(webhookWorkflowConflict())
-      }
-      // A one-step write has only the payments precondition.
-      return errAsync(
-        new MalformedParametersError(
-          'Remove the payment field before adding workflow steps',
-        ),
-      )
+      return errAsync(new FormChangedWhileEditingError())
     }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
@@ -1814,7 +1807,10 @@ export const updateFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
   updatedWorkflowStep: FormWorkflowStepDto,
-): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+): ResultAsync<
+  FormWorkflowDto,
+  DatabaseError | FormChangedWhileEditingError
+> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new FormInvalidResponseModeError(
@@ -1960,11 +1956,7 @@ export const updateFormWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(
-        updatedWorkflow.length >= 2
-          ? webhookWorkflowConflict()
-          : new FormNotFoundError(),
-      )
+      return errAsync(new FormChangedWhileEditingError())
     }
 
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
@@ -2049,7 +2041,10 @@ export const deleteFormWorkflow = (
 export const deleteFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
-): ResultAsync<FormWorkflowDto, DatabaseError | FormNotFoundError> => {
+): ResultAsync<
+  FormWorkflowDto,
+  DatabaseError | FormChangedWhileEditingError
+> => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
       new FormInvalidResponseModeError(
@@ -2113,11 +2108,7 @@ export const deleteFormWorkflowStep = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(
-        updatedWorkflow.length >= 2
-          ? webhookWorkflowConflict()
-          : new FormNotFoundError(),
-      )
+      return errAsync(new FormChangedWhileEditingError())
     }
     return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
   })
@@ -2214,7 +2205,7 @@ export const updateFormSettings = (
 ): ResultAsync<
   FormSettings,
   | MalformedParametersError
-  | FormNotFoundError
+  | FormChangedWhileEditingError
   | DatabaseError
   | DatabaseValidationError
   | DatabaseConflictError
@@ -2336,11 +2327,7 @@ export const updateFormSettings = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(
-        requiresSingleStep
-          ? webhookWorkflowConflict()
-          : new FormNotFoundError(),
-      )
+      return errAsync(new FormChangedWhileEditingError())
     }
     return okAsync(updatedForm.getSettings())
   })
