@@ -13,6 +13,7 @@ import {
 } from 'react-table'
 import {
   BadgeProps,
+  Box,
   Flex,
   Skeleton,
   Table,
@@ -57,6 +58,7 @@ import {
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { useDecryptedResponsesBySubmissionId } from '~features/admin-form/responses/queries'
 
+import { useColumnVirtualizer } from '../hooks/useColumnVirtualizer'
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { SendReminderButton } from './SendReminderButton'
@@ -337,6 +339,15 @@ const RESPONSE_NUMBER_COLUMN_ID = 'number'
 
 const SKELETON_ROW_COUNT = 10
 
+// Columns held either side of the viewport, so a drag has a buffer to eat
+// before it reaches the spacer.
+const COLUMN_OVERSCAN = 6
+
+const FIELD_COLUMN_WIDTH = 200
+/** Matches the px on a Td, so the drawn cells sit where real ones would. */
+const CELL_PADDING_PX = 16
+const SKELETON_CELL_HEIGHT = '1rem'
+
 // react-table derives an id from an explicit id, then a string accessor, then
 // a string Header.
 const getColumnId = (column: Column<ResponseColumnData>): string =>
@@ -446,7 +457,7 @@ export const ResponsesTable = () => {
           </Text>
         </Skeleton>
       ),
-      width: 200,
+      width: FIELD_COLUMN_WIDTH,
       minWidth: 120,
       maxWidth: 400,
     }))
@@ -560,6 +571,57 @@ export const ResponsesTable = () => {
     )
   }, [isDelightfulDashboard, setSortBy, sortColumnId, sortDirection])
 
+  const columnWidths = useMemo(
+    () =>
+      visibleColumns.map(
+        (column) => column.totalWidth || Number(column.width) || 0,
+      ),
+    [visibleColumns],
+  )
+
+  // Without real widths every column measures as outside the viewport, so the
+  // safe reading of an unmeasured table is to render all of it.
+  const isColumnVirtualized =
+    isDelightfulDashboard &&
+    columnWidths.reduce((total, width) => total + width, 0) > 0
+
+  const { tableRef, columnWindow } = useColumnVirtualizer<HTMLDivElement>({
+    columnWidths,
+    enabled: isColumnVirtualized,
+    overscan: COLUMN_OVERSCAN,
+  })
+
+  const hasColumnWindow =
+    isColumnVirtualized && columnWindow.endIndex > columnWindow.startIndex
+
+  const sliceToWindow = useCallback(
+    <TItem,>(items: TItem[]): TItem[] =>
+      hasColumnWindow
+        ? items.slice(columnWindow.startIndex, columnWindow.endIndex)
+        : items,
+    [columnWindow.endIndex, columnWindow.startIndex, hasColumnWindow],
+  )
+
+  // Scrolling outruns the window by a frame, so the spacer is what the admin
+  // sees at the edge of a fast drag, and it should read as cells not yet here.
+  // Drawn as a repeating background rather than one element per hidden column,
+  // which would cost exactly what the window is there to avoid. Anchored to the
+  // edge the real columns are on, so the pattern lines up with them.
+  const columnSpacer = (width: number, anchor: 'left' | 'right') =>
+    hasColumnWindow && width > 0 ? (
+      <Box
+        flexShrink={0}
+        w={`${width}px`}
+        backgroundRepeat="no-repeat"
+        backgroundPosition={`${anchor} center`}
+        backgroundSize={`100% ${SKELETON_CELL_HEIGHT}`}
+        backgroundImage={`repeating-linear-gradient(to ${anchor}, transparent 0 ${CELL_PADDING_PX}px, var(--chakra-colors-neutral-300) ${CELL_PADDING_PX}px ${FIELD_COLUMN_WIDTH - CELL_PADDING_PX}px, transparent ${FIELD_COLUMN_WIDTH - CELL_PADDING_PX}px ${FIELD_COLUMN_WIDTH}px)`}
+      />
+    ) : null
+
+  const leftSpacer = columnSpacer(columnWindow.paddingLeft, 'right')
+  const rightSpacer = columnSpacer(columnWindow.paddingRight, 'left')
+
   const visibleRows = useMemo(
     () => (isInfiniteScroll ? rows.slice(0, renderLimit) : page),
     [isInfiniteScroll, page, renderLimit, rows],
@@ -595,6 +657,7 @@ export const ResponsesTable = () => {
   return (
     <Table
       as="div"
+      ref={tableRef}
       variant="solid"
       colorScheme="secondary"
       {...getTableProps()}
@@ -658,7 +721,8 @@ export const ResponsesTable = () => {
         {isDelightfulDashboard && isTableLoading
           ? Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
               <Tr as="div" key={`skeleton-${index}`} display="flex" minW="100%">
-                {visibleColumns.map((column) => (
+                {leftSpacer}
+                {sliceToWindow(visibleColumns).map((column) => (
                   <Td
                     as="div"
                     {...column.getHeaderProps()}
@@ -672,6 +736,7 @@ export const ResponsesTable = () => {
                     <Skeleton h="1rem" w="100%" />
                   </Td>
                 ))}
+                {rightSpacer}
               </Tr>
             ))
           : null}
@@ -696,7 +761,8 @@ export const ResponsesTable = () => {
                         _active: { bg: 'primary.200' },
                       })}
                 >
-                  {row.cells.map((cell) => {
+                  {leftSpacer}
+                  {sliceToWindow(row.cells).map((cell) => {
                     return (
                       <Td
                         as="div"
@@ -720,6 +786,7 @@ export const ResponsesTable = () => {
                       </Td>
                     )
                   })}
+                  {rightSpacer}
                 </Tr>
               )
             })}
