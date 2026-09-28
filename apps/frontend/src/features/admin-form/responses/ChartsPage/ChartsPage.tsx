@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router-dom'
-import { Box, Container, Divider, Stack } from '@chakra-ui/react'
+import { Box, Container, Divider, Flex, Stack } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
@@ -12,6 +12,7 @@ import { useToast } from '~hooks/useToast'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
+import { useIsDelightfulDashboard } from '../hooks'
 import { ResponsesPageSkeleton } from '../ResponsesPage/ResponsesPageSkeleton'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
@@ -31,6 +32,7 @@ export const ChartsPage = (): JSX.Element => {
     CHARTS_FALLBACK_MAX_RESPONSE_COUNT,
   )
   const toast = useToast({ status: 'danger' })
+  const isDelightfulDashboard = useIsDelightfulDashboard()
 
   if (isLoading) return <ResponsesPageSkeleton />
 
@@ -88,21 +90,53 @@ export const ChartsPage = (): JSX.Element => {
     )
   }
 
+  if (!isDelightfulDashboard) {
+    return secretKey ? (
+      <UnlockedCharts />
+    ) : (
+      <>
+        <SecretKeyVerification
+          hideResponseCount
+          heroSvg={<ChartsSvgr />}
+          ctaText={t(
+            'features.adminForm.responses.charts.chartsPage.secretKeyVerification.ctaText',
+          )}
+          label={t(
+            'features.adminForm.responses.charts.chartsPage.secretKeyVerification.label',
+          )}
+        />
+        <Container p={0} maxW="42.5rem">
+          <Box mt="2rem" mb="0.5rem">
+            <Divider />
+          </Box>
+          <Stack>
+            <ChartsSupportedFieldsInfoBox />
+          </Stack>
+        </Container>
+      </>
+    )
+  }
+
   return secretKey ? (
     <UnlockedCharts />
   ) : (
-    <>
-      <SecretKeyVerification
-        hideResponseCount
-        heroSvg={<ChartsSvgr />}
-        ctaText={t(
-          'features.adminForm.responses.charts.chartsPage.secretKeyVerification.ctaText',
-        )}
-        label={t(
-          'features.adminForm.responses.charts.chartsPage.secretKeyVerification.label',
-        )}
-      />
+    <Flex
+      flexDir="column"
+      align="center"
+      pb="4rem"
+      px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
+    >
       <Container p={0} maxW="42.5rem">
+        <SecretKeyVerification
+          hideResponseCount
+          heroSvg={<ChartsSvgr />}
+          ctaText={t(
+            'features.adminForm.responses.charts.chartsPage.secretKeyVerification.ctaText',
+          )}
+          label={t(
+            'features.adminForm.responses.charts.chartsPage.secretKeyVerification.label',
+          )}
+        />
         <Box mt="2rem" mb="0.5rem">
           <Divider />
         </Box>
@@ -110,6 +144,6 @@ export const ChartsPage = (): JSX.Element => {
           <ChartsSupportedFieldsInfoBox />
         </Stack>
       </Container>
-    </>
+    </Flex>
   )
 }
