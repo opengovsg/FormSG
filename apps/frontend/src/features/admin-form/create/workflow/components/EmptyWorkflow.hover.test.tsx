@@ -1,6 +1,8 @@
 import { composeStories } from '@storybook/react'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
+import { getUser } from '~/mocks/msw/handlers/user'
+
 import * as pageStories from '../CreatePageWorkflowTab.stories'
 
 import { INTRO_ILLUSTRATION_TEST_ID } from './EmptyWorkflow'
@@ -9,7 +11,15 @@ import {
   ILLUSTRATION_STEPS_LAYER_TEST_ID,
 } from './FormToWorkflowIllustration'
 
-const { NoWorkflowRedesignOn } = composeStories(pageStories)
+const { NoWorkflowRedesignOn } = composeStories(pageStories, {
+  parameters: {
+    msw: {
+      handlers: {
+        user: [getUser({ delay: 0 })],
+      },
+    },
+  },
+})
 
 const INTRO_HEADER = /start creating a workflow for your form/i
 
