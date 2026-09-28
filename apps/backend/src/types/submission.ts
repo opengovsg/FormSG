@@ -193,6 +193,7 @@ export type MultirespondentSubmissionCursorData = Pick<
   | 'encryptedSubmissionSecretKey'
   | 'encryptedContent'
   | 'verifiedContent'
+  | 'paymentId'
   | 'created'
   | 'id'
   | 'version'

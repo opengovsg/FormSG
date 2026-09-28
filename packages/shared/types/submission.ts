@@ -312,6 +312,7 @@ export const MultirespondentSubmissionStreamDto =
     mrfVersion: true,
   }).extend({
     attachmentMetadata: z.record(z.string()),
+    payment: z.optional(SubmissionPaymentDto),
     _id: SubmissionId,
     created: DateString,
     mrfMeta: z.object({

@@ -11,6 +11,7 @@ import { pick, times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
+import getPaymentModel from 'src/app/models/payment.server.model'
 import getSubmissionModel, {
   getEmailSubmissionModel,
   getMultirespondentSubmissionModel,
@@ -20,6 +21,7 @@ import { IMultirespondentSubmissionSchema } from 'src/types'
 const Submission = getSubmissionModel(mongoose)
 const EmailSubmission = getEmailSubmissionModel(mongoose)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
+const PaymentSubmission = getPaymentModel(mongoose)
 
 describe('Multirespondent Submission Model', () => {
   beforeAll(async () => await dbHandler.connect())
@@ -457,6 +459,51 @@ describe('Multirespondent Submission Model', () => {
         }
         // Cursor stream should contain only that single submission.
         expect(retrievedSubmissions).toEqual([expectedSubmission])
+      })
+
+      it('should include paymentId of submissions with a completed payment', async () => {
+        // Arrange
+        const validFormId = new ObjectId().toHexString()
+        const submission = await MultirespondentSubmission.create({
+          form: validFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: [],
+          submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+          encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+          encryptedContent: MOCK_ENCRYPTED_CONTENT,
+          version: 1,
+          workflowStep: 0,
+        })
+        const payment = await PaymentSubmission.create({
+          amount: 100,
+          paymentStatus: 'successful',
+          submission: submission._id,
+          gstEnabled: false,
+          paymentIntentId: 'MOCK_PAYMENT_INTENT_ID',
+          email: 'MOCK_EMAIL',
+          targetAccountId: 'targetAccountId',
+          formId: validFormId,
+          pendingSubmissionId: submission._id,
+          status: 'succeeded',
+        })
+        submission.paymentId = payment._id
+        await submission.save()
+
+        // Act
+        const actualCursor =
+          MultirespondentSubmission.getSubmissionCursorByFormId(validFormId, {})
+
+        // Assert
+        const retrievedSubmissions: any[] = []
+        for await (const retrieved of actualCursor) {
+          retrievedSubmissions.push(retrieved)
+        }
+        expect(retrievedSubmissions).toHaveLength(1)
+        expect(String(retrievedSubmissions[0].paymentId)).toEqual(
+          String(payment._id),
+        )
       })
 
       it('should return cursor even if no submissions are found', async () => {

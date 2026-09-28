@@ -829,7 +829,9 @@ export const addPaymentDataStream = (): Transform => {
   return new Transform({
     objectMode: true,
     transform: async (
-      data: StorageModeSubmissionCursorData,
+      data:
+        | StorageModeSubmissionCursorData
+        | MultirespondentSubmissionCursorData,
       _encoding,
       callback,
     ) => {
