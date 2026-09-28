@@ -5,36 +5,40 @@ import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import {
   BasicField,
   FormAuthType,
+  FormResponseMode,
+  FormStatus,
   FormWorkflowStepDto,
   WorkflowType,
 } from 'formsg-shared/types'
 import mongoose from 'mongoose'
-import { okAsync } from 'neverthrow'
+import { createRequest, createResponse } from 'node-mocks-http'
 
 import { aws as AwsConfig } from 'src/app/config/config'
 import formsgSdk from 'src/app/config/formsg-sdk'
 import getFormModel from 'src/app/models/form.server.model'
+import { submitMultirespondentFormForTest } from 'src/app/modules/submission/multirespondent-submission/multirespondent-submission.controller'
 import {
   createMultiRespondentFormSubmission,
+  getMultirespondentSubmission,
   performMultiRespondentPostSubmissionCreateActions,
 } from 'src/app/modules/submission/multirespondent-submission/multirespondent-submission.service'
+import { AttachmentUploadError } from 'src/app/modules/submission/submission.errors'
+import { getSubmissionMetadataList } from 'src/app/modules/submission/submission.service'
 import * as WebhookValidationModule from 'src/app/modules/webhook/webhook.validation'
-import { s3Operations } from 'src/app/utils/aws-s3'
 import { IPopulatedMultirespondentForm } from 'src/types'
 import { MultirespondentSubmissionDto } from 'src/types/api'
 import { WebhookData, WebhookView } from 'src/types/submission'
 
-import { SubmissionSnapshot } from '../submission-snapshot.schema'
-import * as SnapshotStoreModule from '../submission-snapshot.store'
+import { V1ContentMappingError } from '../submission-snapshot.errors'
+import { readSnapshot } from '../submission-snapshot.store'
+
+import { FakeS3 } from './helpers/fake-s3'
 
 jest.mock('axios')
 const MockAxios = jest.mocked(axios)
 
 jest.mock('src/app/modules/webhook/webhook.validation')
 const MockWebhookValidation = jest.mocked(WebhookValidationModule)
-
-jest.mock('../submission-snapshot.store')
-const MockSnapshotStore = jest.mocked(SnapshotStoreModule)
 
 const MOCK_AXIOS_RESPONSE = {
   data: { result: 'ok' },
@@ -53,6 +57,11 @@ const attachmentId = new ObjectId().toHexString()
 const ATTACHMENT_PLAINTEXT = Buffer.from(
   'the quick brown fox jumps over the lazy dog',
 )
+const DEFAULT_ATTACHMENTS = [
+  { id: attachmentId, content: ATTACHMENT_PLAINTEXT },
+]
+type TestAttachment = (typeof DEFAULT_ATTACHMENTS)[number]
+
 const ATTACHMENT_FILENAME = 'evidence.txt'
 
 const FORM_FIELDS = [
@@ -88,6 +97,7 @@ let formsBuilt = 0
 
 const buildForm = async (
   webhook: Record<string, unknown>,
+  attachments: TestAttachment[] = DEFAULT_ATTACHMENTS,
 ): Promise<IPopulatedMultirespondentForm> => {
   formsBuilt += 1
   const { form } = await dbHandler.insertMultirespondentForm({
@@ -95,10 +105,18 @@ const buildForm = async (
     formOptions: {
       title: 'Converged storage-mode form',
       authType: FormAuthType.NIL,
+      status: FormStatus.Public,
+      hasCaptcha: false,
+      submissionLimit: null,
       publicKey: formKeypair.publicKey,
-      form_fields: FORM_FIELDS,
+      form_fields: [
+        FORM_FIELDS[0],
+        ...attachments.map(({ id }) => ({ ...FORM_FIELDS[1], _id: id })),
+      ],
       form_logics: [],
-      workflow: [step()],
+      workflow: [
+        { ...step(), edit: [shortTextId, ...attachments.map(({ id }) => id)] },
+      ],
       webhook,
     } as never,
   })
@@ -109,22 +127,9 @@ const buildForm = async (
   return populated as unknown as IPopulatedMultirespondentForm
 }
 
-/**
- * The native attachment objects a submission always writes: encrypted to the
- * submission key, which a V1 consumer cannot open.
- */
-const buildNativeEncryptedAttachments = async (
-  submissionPublicKey: string,
-) => ({
-  [attachmentId]: {
-    encryptedFile: await formsgSdk.cryptoV3.encryptFile(
-      new Uint8Array(ATTACHMENT_PLAINTEXT),
-      submissionPublicKey,
-    ),
-  },
-})
-
-const buildPayload = async (): Promise<MultirespondentSubmissionDto> => {
+const buildPayload = async (
+  attachments: TestAttachment[] = DEFAULT_ATTACHMENTS,
+): Promise<MultirespondentSubmissionDto> => {
   const submissionKeypair = formsgSdk.crypto.generate()
   return {
     submissionPublicKey: submissionKeypair.publicKey,
@@ -134,24 +139,45 @@ const buildPayload = async (): Promise<MultirespondentSubmissionDto> => {
     submissionSecretKey: submissionKeypair.secretKey,
     version: 4,
     workflowStep: 0,
-    attachments: await buildNativeEncryptedAttachments(
-      submissionKeypair.publicKey,
+    attachments: Object.fromEntries(
+      await Promise.all(
+        attachments.map(async ({ id, content }) => {
+          const encryptedFile = await formsgSdk.cryptoV3.encryptFile(
+            new Uint8Array(content),
+            submissionKeypair.publicKey,
+          )
+          return [
+            id,
+            {
+              encryptedFile: {
+                ...encryptedFile,
+                binary: Buffer.from(encryptedFile.binary).toString('base64'),
+              },
+            },
+          ]
+        }),
+      ),
     ),
     responses: {
       [shortTextId]: {
         fieldType: BasicField.ShortText,
         answer: { value: 'Tan Ah Kow' },
       },
-      [attachmentId]: {
-        fieldType: BasicField.Attachment,
-        answer: {
-          value: ATTACHMENT_FILENAME,
-          filename: ATTACHMENT_FILENAME,
-          content: ATTACHMENT_PLAINTEXT,
-          hasBeenScanned: true,
-          md5Hash: 'mock-md5',
-        },
-      },
+      ...Object.fromEntries(
+        attachments.map(({ id, content }) => [
+          id,
+          {
+            fieldType: BasicField.Attachment,
+            answer: {
+              value: ATTACHMENT_FILENAME,
+              filename: ATTACHMENT_FILENAME,
+              content,
+              hasBeenScanned: true,
+              md5Hash: 'mock-md5',
+            },
+          },
+        ]),
+      ),
     },
     mrfVersion: 2,
   } as unknown as MultirespondentSubmissionDto
@@ -168,11 +194,25 @@ const growthbookWith = (enableMrfWebhooks: boolean) =>
 
 const flushPromises = () => new Promise((resolve) => setImmediate(resolve))
 
-type PutCall = { Bucket?: string; Key?: string; Body?: unknown }
+const SECOND_ATTACHMENT = {
+  id: new ObjectId().toHexString(),
+  content: Buffer.from([0, 255, 128, 1]),
+}
+const TWO_ATTACHMENTS = [...DEFAULT_ATTACHMENTS, SECOND_ATTACHMENT]
+
+// Decode exactly the envelope an existing storage-mode consumer reads.
+const decryptAttachment = async (object: Buffer, secretKey: string) => {
+  const { encryptedFile } = JSON.parse(object.toString())
+  const bytes = await formsgSdk.crypto.decryptFile(secretKey, {
+    ...encryptedFile,
+    binary: new Uint8Array(Buffer.from(encryptedFile.binary, 'base64')),
+  })
+  if (!bytes) throw new Error('Consumer could not decrypt the attachment')
+  return Buffer.from(bytes)
+}
 
 describe('[GATE] V1 attachment form-key copies', () => {
-  let putCalls: PutCall[]
-  let signCalls: { Bucket?: string; Key?: string }[]
+  let storage: FakeS3
 
   beforeAll(async () => {
     await dbHandler.connect()
@@ -187,158 +227,351 @@ describe('[GATE] V1 attachment form-key copies', () => {
   afterAll(async () => await dbHandler.closeDatabase())
 
   beforeEach(() => {
-    putCalls = []
-    signCalls = []
+    storage = new FakeS3()
+    storage.install()
     MockWebhookValidation.validateWebhookUrl.mockResolvedValue(undefined)
     MockAxios.post.mockResolvedValue(MOCK_AXIOS_RESPONSE)
-    MockSnapshotStore.writeSnapshot.mockReturnValue(
-      okAsync({ token: 'tok-v1', key: 'key-v1' }),
-    )
-    jest.spyOn(s3Operations, 'putObject').mockImplementation(async (params) => {
-      putCalls.push({
-        Bucket: params.Bucket,
-        Key: params.Key,
-        Body: params.Body,
-      })
-      return {} as never
-    })
-    jest
-      .spyOn(s3Operations, 'getSignedUrl')
-      .mockImplementation(async ({ Bucket, Key }) => {
-        signCalls.push({ Bucket, Key })
-        return `https://s3.example/${Bucket}/${Key}?X-Amz-Signature=sig`
-      })
   })
 
-  const submit = async (
-    webhookUrl: string,
-  ): Promise<{
-    body?: WebhookData
-    writtenSnapshots: SubmissionSnapshot[]
-  }> => {
-    const form = await buildForm({ url: webhookUrl, isRetryEnabled: true })
-    const growthbook = growthbookWith(true)
-    const payload = await buildPayload()
+  const prepareSubmission = async ({
+    attachments = DEFAULT_ATTACHMENTS,
+    isRetryEnabled = true,
+    webhookUrl = GENERIC_URL,
+  } = {}) => ({
+    form: await buildForm({ url: webhookUrl, isRetryEnabled }, attachments),
+    encryptedPayload: await buildPayload(attachments),
+    logMeta: { action: 'test' },
+    growthbook: growthbookWith(true),
+  })
 
-    const created = await createMultiRespondentFormSubmission({
-      form,
-      encryptedPayload: payload,
-      logMeta: { action: 'test' },
-      growthbook,
+  const submitThroughController = async (
+    args: Awaited<ReturnType<typeof prepareSubmission>>,
+  ) => {
+    const request = createRequest({
+      method: 'POST',
+      params: { formId: String(args.form._id) },
+      headers: { 'cf-connecting-ip': '127.0.0.1' },
+      formsg: {
+        formDef: args.form,
+        encryptedPayload: args.encryptedPayload,
+      },
+      growthbook: args.growthbook,
     })
-    expect(created.isOk()).toBe(true)
-    const { submission, snapshot } = created._unsafeUnwrap()
+    const response = createResponse()
+    await submitMultirespondentFormForTest(
+      request as unknown as Parameters<
+        typeof submitMultirespondentFormForTest
+      >[0],
+      response,
+    )
+    await flushPromises()
+    return { status: response.statusCode, body: response._getJSONData() }
+  }
 
+  const receivedWebhook = (): WebhookData => {
+    const post = MockAxios.post.mock.calls[0]
+    expect(post).toBeDefined()
+    return (post![1] as WebhookView).data
+  }
+
+  const submit = async (
+    options: Parameters<typeof prepareSubmission>[0] = {},
+  ) => {
+    const args = await prepareSubmission(options)
+    const result = await createMultiRespondentFormSubmission(args)
+    const { submission, snapshot } = result._unsafeUnwrap()
     await performMultiRespondentPostSubmissionCreateActions({
+      ...args,
       submission,
       snapshot,
-      submissionId: submission._id.toString(),
-      form,
-      encryptedPayload: payload,
-      logMeta: {} as never,
-      growthbook,
+      submissionId: String(submission._id),
     })
     await flushPromises()
-
     return {
-      body:
-        MockAxios.post.mock.calls.length > 0
-          ? (MockAxios.post.mock.calls[0][1] as WebhookView).data
-          : undefined,
-      writtenSnapshots: MockSnapshotStore.writeSnapshot.mock.calls.map(
-        (call) => call[0],
-      ),
+      body: receivedWebhook(),
+      submissionId: String(submission._id),
+      submissionSecretKey: args.encryptedPayload.submissionSecretKey!,
     }
   }
 
-  const putTo = (bucket: string) =>
-    putCalls.filter((call) => call.Bucket === bucket)
+  const downloadAndDecryptAttachments = async (
+    body: WebhookData,
+    secretKey = formKeypair.secretKey,
+    bucket = AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+  ) =>
+    Object.fromEntries(
+      await Promise.all(
+        Object.entries(body.attachmentDownloadUrls).map(
+          async ([fieldId, url]) => [
+            fieldId,
+            await decryptAttachment(storage.download(url, bucket), secretKey),
+          ],
+        ),
+      ),
+    )
 
-  it('should deliver a presigned URL per attachment, resolving against the V1 attachment bucket', async () => {
-    const { body } = await submit(GENERIC_URL)
+  const retrieveSubmission = async (id: string) =>
+    (await getMultirespondentSubmission(id))._unsafeUnwrap()
 
-    const v1Puts = putTo(AwsConfig.submissionHistoryV1AttachmentS3Bucket)
-    expect(v1Puts).toHaveLength(1)
-    expect(signCalls).toEqual([
-      {
-        Bucket: AwsConfig.submissionHistoryV1AttachmentS3Bucket,
-        Key: v1Puts[0].Key,
-      },
-    ])
-    expect(body!.attachmentDownloadUrls).toEqual({
-      [attachmentId]: `https://s3.example/${AwsConfig.submissionHistoryV1AttachmentS3Bucket}/${v1Puts[0].Key}?X-Amz-Signature=sig`,
+  const retrieveSnapshot = async (submissionId: string) => {
+    const submission = await retrieveSubmission(submissionId)
+    const token = submission.submittedSteps?.[0]?.snapshotTokens?.v1
+    if (!token) throw new Error('Submission has no V1 submission snapshot')
+    return (
+      await readSnapshot({
+        formId: String(submission.form),
+        submissionId,
+        submissionIndex: 0,
+        token,
+        contentFormat: 'v1',
+      })
+    )._unsafeUnwrap()
+  }
+
+  const getSubmissionAndSnapshotCounts = async (formId: string) => {
+    const listing = (
+      await getSubmissionMetadataList(FormResponseMode.Multirespondent, formId)
+    )._unsafeUnwrap()
+    return {
+      savedSubmissions: listing.count,
+      storedSnapshots: storage.objectsIn(AwsConfig.submissionHistoryV1S3Bucket)
+        .length,
+    }
+  }
+
+  it('lets a storage-mode consumer download and decrypt the V1 attachment using its form secret key', async () => {
+    const { body } = await submit()
+    expect(await downloadAndDecryptAttachments(body)).toEqual({
+      [attachmentId]: ATTACHMENT_PLAINTEXT,
     })
   })
 
-  it('should store a copy the FORM secret key opens, through the storage-mode class', async () => {
-    const storageClass = jest.spyOn(formsgSdk.crypto, 'encryptFile')
-    const submissionClass = jest.spyOn(formsgSdk.cryptoV3, 'encryptFile')
+  it('keeps every attachment associated with its field in the V1 delivery', async () => {
+    const { body } = await submit({ attachments: TWO_ATTACHMENTS })
+    // Downloading both URLs requires both files to have been PUT into the V1 bucket.
+    expect(await downloadAndDecryptAttachments(body)).toEqual({
+      [attachmentId]: ATTACHMENT_PLAINTEXT,
+      [SECOND_ATTACHMENT.id]: Buffer.from([0, 255, 128, 1]),
+    })
+  })
 
-    await submit(GENERIC_URL)
-
-    // The class, not only the key: the right key through the wrong class
-    // produces an envelope an unmodified consumer cannot read, and nothing
-    // server-side would notice.
-    expect(storageClass).toHaveBeenCalledWith(
-      expect.anything(),
-      formKeypair.publicKey,
-    )
-    expect(submissionClass).not.toHaveBeenCalledWith(
-      expect.anything(),
-      formKeypair.publicKey,
-    )
-
-    const [v1Put] = putTo(AwsConfig.submissionHistoryV1AttachmentS3Bucket)
-    const stored = JSON.parse(String(v1Put.Body)) as {
-      encryptedFile: {
-        submissionPublicKey: string
-        nonce: string
-        binary: string
-      }
-    }
-
-    // A consumer reads the object exactly as it reads a storage-mode
-    // attachment: base64-decode the binary, then decrypt with the form key.
-    const recovered = await formsgSdk.crypto.decryptFile(
-      formKeypair.secretKey,
-      {
-        ...stored.encryptedFile,
-        binary: new Uint8Array(
-          Buffer.from(stored.encryptedFile.binary, 'base64'),
+  it('preserves the native attachments for callers retrieving the submission', async () => {
+    const { submissionId, submissionSecretKey } = await submit({
+      attachments: TWO_ATTACHMENTS,
+    })
+    const submission = await retrieveSubmission(submissionId)
+    const nativeView = await submission.getWebhookView()
+    const files = Object.fromEntries(
+      await Promise.all(
+        Object.entries(nativeView.data.attachmentDownloadUrls).map(
+          async ([id, key]) => [
+            id,
+            await decryptAttachment(
+              storage.read(AwsConfig.attachmentS3Bucket, key),
+              submissionSecretKey,
+            ),
+          ],
         ),
-      },
+      ),
     )
-    expect(recovered).not.toBeNull()
-    expect(Buffer.from(recovered!)).toEqual(ATTACHMENT_PLAINTEXT)
+    expect(files).toEqual({
+      [attachmentId]: ATTACHMENT_PLAINTEXT,
+      [SECOND_ATTACHMENT.id]: Buffer.from([0, 255, 128, 1]),
+    })
   })
 
-  it('should keep the native object out of the V1 consumer’s reach', async () => {
-    await submit(GENERIC_URL)
-
-    const nativePuts = putTo(AwsConfig.attachmentS3Bucket)
-    expect(nativePuts).toHaveLength(1)
-    expect(signCalls.map((call) => call.Key)).not.toContain(nativePuts[0].Key)
-  })
-
-  it('should record the V1 copies’ keys on the V1 snapshot', async () => {
-    const { writtenSnapshots } = await submit(GENERIC_URL)
-
-    const [v1Put] = putTo(AwsConfig.submissionHistoryV1AttachmentS3Bucket)
-    const [snapshot] = writtenSnapshots
-    expect(snapshot.contentFormat).toBe('v1')
-    expect(snapshot.attachmentMetadata).toEqual({ [attachmentId]: v1Put.Key })
-  })
-
-  it('should leave a plumber V4 delivery on the native attachment bucket', async () => {
-    const { body } = await submit(PLUMBER_URL)
-
-    expect(putTo(AwsConfig.submissionHistoryV1AttachmentS3Bucket)).toHaveLength(
-      0,
+  it('persists a V1 submission snapshot that references the same V1 attachments delivered initially', async () => {
+    const { body, submissionId } = await submit({
+      attachments: TWO_ATTACHMENTS,
+    })
+    const snapshot = await retrieveSnapshot(submissionId)
+    const recordedTargets = Object.fromEntries(
+      Object.entries(snapshot.attachmentMetadata ?? {}).map(([id, key]) => [
+        id,
+        { bucket: AwsConfig.submissionHistoryV1AttachmentS3Bucket, key },
+      ]),
     )
-    const [nativePut] = putTo(AwsConfig.attachmentS3Bucket)
-    expect(signCalls).toEqual([
-      { Bucket: AwsConfig.attachmentS3Bucket, Key: nativePut.Key },
-    ])
-    expect(Object.keys(body!.attachmentDownloadUrls)).toEqual([attachmentId])
+    const deliveredTargets = Object.fromEntries(
+      Object.entries(body.attachmentDownloadUrls).map(([id, url]) => [
+        id,
+        storage.targetOf(url),
+      ]),
+    )
+    expect(recordedTargets).toEqual(deliveredTargets)
+  })
+
+  it('lets a Plumber consumer download native attachments using the submission secret key', async () => {
+    const { body, submissionSecretKey } = await submit({
+      webhookUrl: PLUMBER_URL,
+    })
+    expect(
+      await downloadAndDecryptAttachments(
+        body,
+        submissionSecretKey,
+        AwsConfig.attachmentS3Bucket,
+      ),
+    ).toEqual({ [attachmentId]: ATTACHMENT_PLAINTEXT })
+  })
+
+  it('does not create unused V1 copies for a Plumber delivery', async () => {
+    await submit({ webhookUrl: PLUMBER_URL })
+    expect(
+      storage.objectsIn(AwsConfig.submissionHistoryV1AttachmentS3Bucket),
+    ).toEqual([])
+  })
+
+  it('still lets the consumer download all attachments when retries are disabled', async () => {
+    const { body } = await submit({
+      attachments: TWO_ATTACHMENTS,
+      isRetryEnabled: false,
+    })
+    expect(await downloadAndDecryptAttachments(body)).toEqual({
+      [attachmentId]: ATTACHMENT_PLAINTEXT,
+      [SECOND_ATTACHMENT.id]: Buffer.from([0, 255, 128, 1]),
+    })
+  })
+
+  it('does not retain a V1 submission snapshot when retries are disabled', async () => {
+    const { submissionId } = await submit({ isRetryEnabled: false })
+    const submission = await retrieveSubmission(submissionId)
+    expect({
+      snapshotToken: submission.submittedSteps?.[0]?.snapshotTokens?.v1,
+      snapshots: storage.objectsIn(AwsConfig.submissionHistoryV1S3Bucket),
+    }).toEqual({ snapshotToken: undefined, snapshots: [] })
+  })
+
+  it('delivers an empty attachment download URL map when the form has no attachments', async () => {
+    const { body } = await submit({ attachments: [] })
+    expect(body.attachmentDownloadUrls).toEqual({})
+  })
+
+  it('does not store attachment objects when the form has no attachments', async () => {
+    await submit({ attachments: [] })
+    expect({
+      v1: storage.objectsIn(AwsConfig.submissionHistoryV1AttachmentS3Bucket),
+      native: storage.objectsIn(AwsConfig.attachmentS3Bucket),
+    }).toEqual({ v1: [], native: [] })
+  })
+
+  it('does not save the submission or snapshot when attachment encryption fails', async () => {
+    const args = await prepareSubmission()
+    // Fault injection at the SDK boundary; successful encryption uses the real SDK.
+    jest
+      .spyOn(formsgSdk.crypto, 'encryptFile')
+      .mockRejectedValueOnce(new Error('encryption failed'))
+    const result = await createMultiRespondentFormSubmission(args)
+    expect({
+      error: result._unsafeUnwrapErr(),
+      ...(await getSubmissionAndSnapshotCounts(String(args.form._id))),
+    }).toEqual({
+      error: expect.any(V1ContentMappingError),
+      savedSubmissions: 0,
+      storedSnapshots: 0,
+    })
+  })
+
+  it('does not save the submission or snapshot when an attachment upload fails', async () => {
+    const args = await prepareSubmission({ attachments: TWO_ATTACHMENTS })
+    storage.failAfterOneV1Upload()
+    const result = await createMultiRespondentFormSubmission(args)
+    expect({
+      error: result._unsafeUnwrapErr(),
+      uploadedAttachments: storage.objectsIn(
+        AwsConfig.submissionHistoryV1AttachmentS3Bucket,
+      ).length,
+      ...(await getSubmissionAndSnapshotCounts(String(args.form._id))),
+    }).toEqual({
+      error: expect.any(AttachmentUploadError),
+      uploadedAttachments: 1,
+      savedSubmissions: 0,
+      storedSnapshots: 0,
+    })
+  })
+
+  it('saves the submission and snapshot only after every attachment has finished uploading', async () => {
+    const args = await prepareSubmission({ attachments: TWO_ATTACHMENTS })
+    const upload = storage.pauseAfterOneV1Upload()
+    const creation = createMultiRespondentFormSubmission(args)
+    try {
+      await Promise.race([
+        upload.started,
+        creation.then(() => {
+          throw new Error(
+            'Submission creation finished before the V1 upload was released',
+          )
+        }),
+      ])
+      expect(
+        await getSubmissionAndSnapshotCounts(String(args.form._id)),
+      ).toEqual({
+        savedSubmissions: 0,
+        storedSnapshots: 0,
+      })
+    } finally {
+      upload.release()
+    }
+    const { submission } = (await creation)._unsafeUnwrap()
+    const retrieved = await retrieveSubmission(String(submission._id))
+    const snapshot = await retrieveSnapshot(String(submission._id))
+    expect({
+      submissionId: String(retrieved._id),
+      attachments: Object.keys(snapshot.attachmentMetadata ?? {}),
+    }).toEqual({
+      submissionId: String(submission._id),
+      attachments: [attachmentId, SECOND_ATTACHMENT.id],
+    })
+  })
+
+  describe('controller attachment delivery', () => {
+    it('accepts a submission and sends its decryptable attachments to the webhook consumer', async () => {
+      const args = await prepareSubmission({ attachments: TWO_ATTACHMENTS })
+      const response = await submitThroughController(args)
+
+      expect(response.status).toBe(200)
+      expect(response.body).toMatchObject({
+        message: 'Form submission successful.',
+      })
+      expect(await downloadAndDecryptAttachments(receivedWebhook())).toEqual({
+        [attachmentId]: ATTACHMENT_PLAINTEXT,
+        [SECOND_ATTACHMENT.id]: Buffer.from([0, 255, 128, 1]),
+      })
+    })
+
+    it('returns an error without sending a webhook when attachment encryption fails', async () => {
+      const args = await prepareSubmission()
+      jest
+        .spyOn(formsgSdk.crypto, 'encryptFile')
+        .mockRejectedValueOnce(new Error('encryption failed'))
+
+      const response = await submitThroughController(args)
+
+      expect({
+        status: response.status,
+        messageKey: response.body.messageKey,
+        webhookAttempts: MockAxios.post.mock.calls.length,
+      }).toEqual({
+        status: 500,
+        messageKey: 'features.publicForm.backendErrors.submission.saveFailed',
+        webhookAttempts: 0,
+      })
+    })
+
+    it('returns an error without sending a webhook when an attachment upload fails', async () => {
+      const args = await prepareSubmission({ attachments: TWO_ATTACHMENTS })
+      storage.failAfterOneV1Upload()
+
+      const response = await submitThroughController(args)
+
+      expect({
+        status: response.status,
+        messageKey: response.body.messageKey,
+        webhookAttempts: MockAxios.post.mock.calls.length,
+      }).toEqual({
+        status: 400,
+        messageKey:
+          'features.publicForm.backendErrors.submission.files.uploadFailed',
+        webhookAttempts: 0,
+      })
+    })
   })
 })
