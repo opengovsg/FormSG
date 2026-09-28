@@ -440,9 +440,7 @@ export const ResponsesTable = () => {
       accessor: ({ refNo }: ResponseColumnData) => {
         const responses = responsesBySubmissionId?.get(refNo)
         if (!responses) return undefined
-        return formatResponseForCell(
-          responses.find((response) => response._id === formField._id),
-        )
+        return formatResponseForCell(responses.get(formField._id))
       },
       Cell: ({ value }: { value?: string }) => (
         <Skeleton isLoaded={value !== undefined || !isDecrypting} w="100%">

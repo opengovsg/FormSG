@@ -33,6 +33,16 @@ import { logProgress, perSecond, secondsSince } from './progressLog'
 /** The publish tick is 250ms, so this logs about once a second. */
 const PROGRESS_LOG_EVERY_N_PUBLISHES = 4
 
+/**
+ * A submission's answers, by field id. A form with two hundred fields renders
+ * two hundred cells a row, and each one wants a single answer, so the shape it
+ * is stored in decides whether that is a lookup or a scan.
+ */
+export type DecryptedResponsesBySubmissionId = Map<
+  string,
+  Map<string, FormField>
+>
+
 export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
   id: (id: string) => [...adminFormResponsesKeys.base, id] as const,
@@ -209,7 +219,7 @@ export const useDecryptedResponsesBySubmissionId = ({
   enabled = true,
 }: {
   enabled?: boolean
-} = {}): UseQueryResult<Map<string, FormField[]>> => {
+} = {}): UseQueryResult<DecryptedResponsesBySubmissionId> => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -221,7 +231,7 @@ export const useDecryptedResponsesBySubmissionId = ({
   return useQuery(
     queryKey,
     async () => {
-      const decrypted = new Map<string, FormField[]>()
+      const decrypted: DecryptedResponsesBySubmissionId = new Map()
       let lastPublishedAt = 0
       let publishCount = 0
       const startedAt = performance.now()
@@ -241,7 +251,12 @@ export const useDecryptedResponsesBySubmissionId = ({
         isSortByLatest: true,
         limit: TABLE_RESPONSE_LIMIT,
         onSubmissionDecrypted: ({ submissionId, responses }) => {
-          decrypted.set(submissionId, responses)
+          // Indexed as it arrives, so a cell reads its answer by field id
+          // rather than scanning every response on the submission.
+          decrypted.set(
+            submissionId,
+            new Map(responses.map((response) => [response._id, response])),
+          )
           const now = performance.now()
           if (now - lastPublishedAt < TABLE_DECRYPTION_PUBLISH_INTERVAL_MS) {
             return
