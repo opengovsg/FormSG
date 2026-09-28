@@ -53,7 +53,6 @@ import {
   PrivateFormError,
 } from '../../form/form.errors'
 import {
-  MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoInvalidLoginCookieError,
@@ -370,7 +369,6 @@ export const mapRouteError: MapRouteError = (error) => {
     case VerifyJwtError:
     case InvalidJwtError:
     case MyInfoMissingLoginCookieError:
-    case MyInfoCookieStateError:
     case MyInfoInvalidLoginCookieError:
       return {
         statusCode: StatusCodes.UNAUTHORIZED,

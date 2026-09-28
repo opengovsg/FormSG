@@ -51,18 +51,6 @@ jest.mock('nodemailer', () => ({
   }),
 }))
 
-jest.mock('@opengovsg/myinfo-gov-client', () => ({
-  MyInfoGovClient: jest.fn().mockReturnValue({
-    extractUinFin: jest.fn(),
-  }),
-  MyInfoMode: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoMode,
-  MyInfoSource: jest.requireActual('@opengovsg/myinfo-gov-client').MyInfoSource,
-  MyInfoAddressType: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .MyInfoAddressType,
-  MyInfoAttribute: jest.requireActual('@opengovsg/myinfo-gov-client')
-    .MyInfoAttribute,
-}))
-
 const app = setupApp('/forms', PublicFormsRouter)
 
 describe('public-form.submissions.routes', () => {
@@ -79,7 +67,7 @@ describe('public-form.submissions.routes', () => {
     jest.restoreAllMocks()
   })
 
-  afterAll(async () => await dbHandler.closeDatabase)
+  afterAll(async () => await dbHandler.closeDatabase())
 
   describe('SP, CP and MyInfo authentication', () => {
     describe('SingPass', () => {
@@ -348,7 +336,6 @@ describe('public-form.submissions.routes', () => {
 
       it('should return 401 when submission has invalid cookie', async () => {
         // Arrange
-        // Mock MyInfoGovClient to return error when decoding JWT
         jest.spyOn(jwt, 'verify').mockImplementationOnce(() => {
           throw new Error()
         })

@@ -34,7 +34,6 @@ import {
   PrivateFormError,
 } from '../form/form.errors'
 import {
-  MyInfoCookieStateError,
   MyInfoInvalidLoginCookieError,
   MyInfoMissingLoginCookieError,
 } from '../myinfo/myinfo.errors'
@@ -229,7 +228,6 @@ export const mapRouteError: MapRouteError = (
     case SgidMissingJwtError:
     case MyInfoMissingLoginCookieError:
     case MyInfoInvalidLoginCookieError:
-    case MyInfoCookieStateError:
     case MrfJwtValidationError:
       return {
         errorMessage: coreErrorMsg,

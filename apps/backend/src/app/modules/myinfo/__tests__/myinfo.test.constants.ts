@@ -1,15 +1,12 @@
 import {
   IPerson,
   MyInfoAddressType,
-  MyInfoMode,
   MyInfoSource,
 } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
-import { FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
-import { merge, omit, zipWith } from 'lodash'
+import { merge, zipWith } from 'lodash'
 
 import { ISpcpMyInfo } from 'src/app/config/features/spcp-myinfo.config'
-import { Environment, IFormSchema } from 'src/types'
 
 import { IMyInfoServiceConfig, MyInfoLoginCookiePayload } from '../myinfo.types'
 
@@ -113,54 +110,17 @@ export const MOCK_RESPONSES = zipWith(
 )
 
 export const MOCK_COOKIE_AGE = 2000
-export const MOCK_KEY_PATH =
-  './node_modules/@opengovsg/mockpass/static/certs/key.pem'
-export const MOCK_CERT_PATH =
-  './node_modules/@opengovsg/mockpass/static/certs/server.crt'
-export const MOCK_ESRVC_ID = 'mockEsrvcId'
 export const MOCK_UINFIN = 'S1234567A'
-export const MOCK_REQUESTED_ATTRS = [MyInfoAttribute.Name]
 export const MOCK_FORM_ID = new ObjectId().toHexString()
-export const MOCK_NODE_ENV = Environment.Test
-export const MOCK_APP_URL = 'mockAppUrl'
 export const MOCK_ACCESS_TOKEN = 'mockAccessToken'
-export const MOCK_REDIRECT_URL = 'mockRedirectURL'
-export const MOCK_AUTH_CODE = 'mockAuthCode'
 export const MOCK_MYINFO_JWT_SECRET = 'mockMyInfoJwtSecret'
 export const MOCK_MYINFO_JWT = 'mockMyInfoJwt'
 
 export const MOCK_SERVICE_PARAMS: IMyInfoServiceConfig = {
-  appUrl: 'http://localhost:5000',
-  nodeEnv: MOCK_NODE_ENV,
   spcpMyInfoConfig: {
     spCookieMaxAge: MOCK_COOKIE_AGE,
-    spCookieMaxAgePreserved: MOCK_COOKIE_AGE,
-    spEsrvcId: MOCK_ESRVC_ID,
-    myInfoKeyPath: MOCK_KEY_PATH,
-    myInfoCertPath: MOCK_CERT_PATH,
-    myInfoClientId: 'mockClientId',
-    myInfoClientSecret: 'mockClientSecret',
-    myInfoClientMode: MyInfoMode.Dev,
   } as ISpcpMyInfo,
 }
-
-export const MOCK_MYINFO_FORM = {
-  _id: MOCK_FORM_ID,
-  esrvcId: MOCK_ESRVC_ID,
-  authType: FormAuthType.MyInfo,
-  admin: {
-    _id: new ObjectId().toHexString(),
-    agency: new ObjectId().toHexString(),
-  },
-  getUniqueMyInfoAttrs: () => MOCK_REQUESTED_ATTRS,
-  getPublicView: function () {
-    return omit(this as IFormSchema, 'admin')
-  },
-  toJSON: function () {
-    return this
-  },
-  form_fields: [],
-} as unknown as IFormSchema
 
 export const MOCK_MYINFO_LOGIN_COOKIE: MyInfoLoginCookiePayload = {
   uinFin: MOCK_UINFIN,

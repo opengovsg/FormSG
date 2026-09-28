@@ -442,9 +442,6 @@ importers:
       openid-client-legacy:
         specifier: npm:openid-client@^5.7.1
         version: openid-client@5.7.1
-      opossum:
-        specifier: ^8.1.4
-        version: 8.1.4
       perfect-freehand:
         specifier: ^1.2.2
         version: 1.2.2
@@ -608,9 +605,6 @@ importers:
       '@types/nodemailer':
         specifier: ^6.4.16
         version: 6.4.16
-      '@types/opossum':
-        specifier: ^8.1.7
-        version: 8.1.7
       '@types/promise-retry':
         specifier: ^1.1.6
         version: 1.1.6
@@ -5424,9 +5418,6 @@ packages:
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
-
-  '@types/opossum@8.1.7':
-    resolution: {integrity: sha512-nIihJLNA412EioGg7mHTwDY7nfmSb4TpnSMSsftZYQ+vvKf1GYz3WSWnKrxGyFaeWpoTD5FTnZabkhR8ql50Iw==}
 
   '@types/pako@2.0.4':
     resolution: {integrity: sha512-VWDCbrLeVXJM9fihYodcLiIv0ku+AlOa/TQ1SvYOaBuyrSKgEcro95LJyIsJ4vSo6BXIxOKxiJAat04CmST9Fw==}
@@ -11226,10 +11217,6 @@ packages:
   opentracing@0.14.7:
     resolution: {integrity: sha512-vz9iS7MJ5+Bp1URw8Khvdyw1H/hGvzHWlKQ7eRrQojSCDL1/SrWfrY9QebLw97n2deyRtzHRC3MkQfVNUCo91Q==}
     engines: {node: '>=0.10'}
-
-  opossum@8.1.4:
-    resolution: {integrity: sha512-ktDDCD2MKX7yx8ZLtt57JrUE0IyYJthmTyXtaF4dEdPYHvX0kkWRiKkQkhEjtZnTNN5y1ErMriKNqOLqgpYXtQ==}
-    engines: {node: ^22 || ^21 || ^20 || ^18 || ^16}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -19868,10 +19855,6 @@ snapshots:
 
   '@types/normalize-package-data@2.4.4': {}
 
-  '@types/opossum@8.1.7':
-    dependencies:
-      '@types/node': 18.19.130
-
   '@types/pako@2.0.4': {}
 
   '@types/papaparse@5.3.14':
@@ -27462,8 +27445,6 @@ snapshots:
       oauth4webapi: 3.6.0
 
   opentracing@0.14.7: {}
-
-  opossum@8.1.4: {}
 
   optionator@0.9.4:
     dependencies:

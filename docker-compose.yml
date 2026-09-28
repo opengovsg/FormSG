@@ -74,16 +74,9 @@ services:
       - CP_OIDC_RP_JWKS_SECRET_PATH=__tests__/setup/certs/test_cp_rp_secret_jwks.json
       - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
-      - SINGPASS_ESRVC_ID=spEsrvcId #Needed for MyInfo
       - MYINFO_BANNER_CONTENT
-      - MYINFO_CLIENT_CONFIG=dev
-      # Use mockpass key pairs and endpoints
-      - MYINFO_FORMSG_KEY_PATH=node_modules/@opengovsg/mockpass/static/certs/key.pem
-      - MYINFO_CERT_PATH=node_modules/@opengovsg/mockpass/static/certs/spcp.crt
-      - MYINFO_CLIENT_ID=mockClientId
-      - MYINFO_CLIENT_SECRET=mockClientSecret
       - MYINFO_JWT_SECRET=mockJwtSecret
-      # MyInfo FAPI 2.0
+      # Use mockpass key pairs and endpoints
       - MYINFO_FAPI_ISSUER=http://localhost:5156/singpass/v3/fapi
       - MYINFO_FAPI_CLIENT_ID=mockFapiClientId
       - MYINFO_FAPI_RP_JWKS_PUBLIC_PATH=__tests__/setup/certs/test_myinfo_fapi_rp_public_jwks.json

@@ -97,7 +97,6 @@ import {
 import { isFormEncryptModeOrMultirespondent } from '../form/form.utils'
 import { MYINFO_LOGIN_COOKIE_NAME } from '../myinfo/myinfo.constants'
 import {
-  MyInfoCookieStateError,
   MyInfoHashDidNotMatchError,
   MyInfoHashingError,
   MyInfoInvalidLoginCookieError,
@@ -263,7 +262,6 @@ const errorMapper: MapRouteError = (
     case VerifyJwtError:
     case InvalidJwtError:
     case MyInfoMissingLoginCookieError:
-    case MyInfoCookieStateError:
     case MyInfoInvalidLoginCookieError:
     case MalformedVerifiedContentError:
       return {

@@ -1,4 +1,3 @@
-import { MyInfoMode } from '@opengovsg/myinfo-gov-client'
 import { ObjectId } from 'bson'
 import fs from 'fs'
 import _ from 'lodash'
@@ -21,12 +20,6 @@ export const MOCK_SERVICE_PARAMS: ISpcpMyInfo = {
   spCookieMaxAgePreserved: 2,
   spcpCookieDomain: 'spcpCookieDomain',
   cpCookieMaxAge: 3,
-  spEsrvcId: 'spEsrvcId', // Needed for MyInfo
-  myInfoClientMode: MyInfoMode.Dev,
-  myInfoKeyPath: 'myInfoKeyPath',
-  myInfoCertPath: 'myInfoCertPath',
-  myInfoClientId: 'myInfoClientId',
-  myInfoClientSecret: 'myInfoClientSecret',
   spOidcNdiDiscoveryEndpoint: 'spOidcNdiDiscoveryEndpoint',
   spOidcNdiJwksEndpoint: 'spOidcNdiJwksEndpoint',
   spOidcRpClientId: 'spOidcRpClientId',

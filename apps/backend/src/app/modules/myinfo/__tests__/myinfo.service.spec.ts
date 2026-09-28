@@ -1,12 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { MyInfoGovClient } from '@opengovsg/myinfo-gov-client'
 import bcrypt from 'bcrypt'
 import { ObjectId } from 'bson'
-import { MyInfoAttribute } from 'formsg-shared/types'
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
-import { v4 as uuidv4 } from 'uuid'
 
 import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
 import { MyInfoServiceClass } from 'src/app/modules/myinfo/myinfo.service'
@@ -16,46 +13,30 @@ import {
   IFieldSchema,
   IHashes,
   IMyInfoHashSchema,
-  IPopulatedForm,
   PossiblyPrefilledField,
 } from 'src/types'
 
 import { DatabaseError } from '../../core/core.errors'
 import { MyInfoData } from '../myinfo.adapter'
-import { MYINFO_CONSENT_PAGE_PURPOSE } from '../myinfo.constants'
-import {
-  MyInfoCircuitBreakerError,
-  MyInfoFetchError,
-  MyInfoInvalidLoginCookieError,
-  MyInfoParseRelayStateError,
-} from '../myinfo.errors'
-import { MyInfoRelayState } from '../myinfo.types'
+import { MyInfoInvalidLoginCookieError } from '../myinfo.errors'
 
 import {
   MOCK_ACCESS_TOKEN,
-  MOCK_AUTH_CODE,
   MOCK_COOKIE_AGE,
-  MOCK_ESRVC_ID,
   MOCK_FORM_FIELDS,
   MOCK_FORM_ID,
   MOCK_HASHED_FIELD_IDS,
   MOCK_HASHES,
   MOCK_MYINFO_DATA,
-  MOCK_MYINFO_FORM,
   MOCK_MYINFO_JWT_SECRET,
   MOCK_MYINFO_LOGIN_COOKIE,
   MOCK_POPULATED_FORM_FIELDS,
-  MOCK_REDIRECT_URL,
-  MOCK_REQUESTED_ATTRS,
   MOCK_RESPONSES,
   MOCK_SERVICE_PARAMS,
   MOCK_UINFIN,
 } from './myinfo.test.constants'
 
 const MyInfoHash = getMyInfoHashModel(mongoose)
-
-jest.mock('@opengovsg/myinfo-gov-client')
-const MockMyInfoGovClient = jest.mocked(MyInfoGovClient)
 
 jest.mock('bcrypt')
 const MockBcrypt = jest.mocked(bcrypt)
@@ -70,23 +51,10 @@ describe('MyInfoServiceClass', () => {
   let myInfoService: MyInfoServiceClass = new MyInfoServiceClass(
     MOCK_SERVICE_PARAMS,
   )
-  const mockGetPerson = jest.fn()
-  const mockCreateRedirectURL = jest.fn()
-  const mockGetAccessToken = jest.fn()
-  const mockExtractUinFin = jest.fn()
 
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
     jest.clearAllMocks()
-    MockMyInfoGovClient.mockImplementation(
-      () =>
-        ({
-          getPerson: mockGetPerson,
-          createRedirectURL: mockCreateRedirectURL,
-          getAccessToken: mockGetAccessToken,
-          extractUinFin: mockExtractUinFin,
-        }) as unknown as MyInfoGovClient,
-    )
     myInfoService = new MyInfoServiceClass(MOCK_SERVICE_PARAMS)
     MockSpcpConfig.myInfoJwtSecret = MOCK_MYINFO_JWT_SECRET
   })
@@ -96,126 +64,6 @@ describe('MyInfoServiceClass', () => {
   describe('class constructor', () => {
     it('should instantiate without errors', () => {
       expect(myInfoService).toBeTruthy()
-    })
-  })
-
-  describe('createRedirectURL', () => {
-    it('should call MyInfoGovClient.createRedirectURL with the correct arguments', () => {
-      mockCreateRedirectURL.mockReturnValueOnce(MOCK_REDIRECT_URL)
-
-      const result = myInfoService.createRedirectURL({
-        formEsrvcId: MOCK_ESRVC_ID,
-        formId: MOCK_FORM_ID,
-        requestedAttributes: MOCK_REQUESTED_ATTRS,
-      })
-
-      expect(mockCreateRedirectURL).toHaveBeenCalledWith({
-        purpose: MYINFO_CONSENT_PAGE_PURPOSE,
-        relayState: expect.stringContaining(MOCK_FORM_ID),
-        requestedAttributes: expect.arrayContaining(MOCK_REQUESTED_ATTRS),
-        singpassEserviceId: MOCK_ESRVC_ID,
-      })
-      expect(result._unsafeUnwrap()).toBe(MOCK_REDIRECT_URL)
-    })
-
-    it('should only request sponsored children scopes when includeSponsoredChildren is set', () => {
-      mockCreateRedirectURL.mockReturnValue(MOCK_REDIRECT_URL)
-      const childAttrs = [MyInfoAttribute.ChildName]
-
-      myInfoService.createRedirectURL({
-        formEsrvcId: MOCK_ESRVC_ID,
-        formId: MOCK_FORM_ID,
-        requestedAttributes: childAttrs,
-      })
-      myInfoService.createRedirectURL({
-        formEsrvcId: MOCK_ESRVC_ID,
-        formId: MOCK_FORM_ID,
-        requestedAttributes: childAttrs,
-        includeSponsoredChildren: true,
-      })
-
-      const [withoutFlag, withFlag] = mockCreateRedirectURL.mock.calls.map(
-        ([args]) => args.requestedAttributes as string[],
-      )
-      expect(withoutFlag).toContain('childrenbirthrecords.name')
-      expect(withoutFlag).not.toContain('sponsoredchildrenrecords.name')
-      expect(withFlag).toContain('childrenbirthrecords.name')
-      expect(withFlag).toContain('sponsoredchildrenrecords.name')
-    })
-  })
-
-  describe('parseMyInfoRelayState', () => {
-    it('should parse valid relay states correctly', () => {
-      const validState: MyInfoRelayState = {
-        uuid: uuidv4(),
-        formId: MOCK_FORM_ID,
-      }
-
-      const result = myInfoService
-        .parseMyInfoRelayState(JSON.stringify(validState))
-        ._unsafeUnwrap()
-
-      expect(result.uuid).toBe(validState.uuid)
-      expect(result.formId).toBe(validState.formId)
-    })
-
-    it('should return MyInfoParseRelayStateError when relay state cannot be parsed', () => {
-      const invalidJson = 'abc'
-
-      const result = myInfoService.parseMyInfoRelayState(invalidJson)
-
-      expect(result._unsafeUnwrapErr()).toEqual(
-        new MyInfoParseRelayStateError(),
-      )
-    })
-
-    it('should return MyInfoParseRelayStateError when relay state has incorrect shape', () => {
-      const stateMissingFormId = {
-        uuid: uuidv4(),
-      }
-
-      const result = myInfoService.parseMyInfoRelayState(
-        JSON.stringify(stateMissingFormId),
-      )
-
-      expect(result._unsafeUnwrapErr()).toEqual(
-        new MyInfoParseRelayStateError(),
-      )
-    })
-  })
-
-  describe('retrieveAccessToken', () => {
-    beforeEach(() => {
-      myInfoService = new MyInfoServiceClass(MOCK_SERVICE_PARAMS)
-    })
-
-    it('should call MyInfoGovClient.getAccessToken with the correct parameters', async () => {
-      mockGetAccessToken.mockResolvedValueOnce(MOCK_ACCESS_TOKEN)
-
-      const result = await myInfoService.retrieveAccessToken(MOCK_AUTH_CODE)
-
-      expect(mockGetAccessToken).toHaveBeenCalledWith(MOCK_AUTH_CODE)
-      expect(result._unsafeUnwrap()).toEqual(MOCK_ACCESS_TOKEN)
-    })
-
-    it('should throw MyInfoFetchError when getAccessToken fails once', async () => {
-      mockGetAccessToken.mockRejectedValueOnce(new Error())
-      const result = await myInfoService.retrieveAccessToken(MOCK_AUTH_CODE)
-
-      expect(mockGetAccessToken).toHaveBeenCalledWith(MOCK_AUTH_CODE)
-      expect(result._unsafeUnwrapErr()).toEqual(new MyInfoFetchError())
-    })
-
-    it('should throw MyInfoCircuitBreakerError when getAccessToken fails 5 times', async () => {
-      mockGetAccessToken.mockRejectedValue(new Error())
-      for (let i = 0; i < 5; i++) {
-        await myInfoService.retrieveAccessToken(MOCK_AUTH_CODE)
-      }
-      const result = await myInfoService.retrieveAccessToken(MOCK_AUTH_CODE)
-
-      // Last function call doesn't count as breaker is open, so expect 5 calls
-      expect(mockGetAccessToken).toHaveBeenCalledTimes(5)
-      expect(result._unsafeUnwrapErr()).toEqual(new MyInfoCircuitBreakerError())
     })
   })
 
@@ -417,96 +265,6 @@ describe('MyInfoServiceClass', () => {
       expect(result._unsafeUnwrapErr()).toEqual(
         new MyInfoInvalidLoginCookieError(),
       )
-    })
-  })
-
-  describe('getMyInfoDataForForm', () => {
-    // NOTE: Mocks the underlying circuit breaker implementation to avoid network calls
-    beforeEach(() => {
-      myInfoService = new MyInfoServiceClass(MOCK_SERVICE_PARAMS)
-    })
-
-    it('should return myInfo data when the provided form and cookie is valid', async () => {
-      // Arrange
-      const mockReturnedParams = {
-        uinFin: MOCK_UINFIN,
-        data: MOCK_MYINFO_DATA,
-      }
-
-      mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
-
-      // Act
-      const result = await myInfoService.getMyInfoDataForForm(
-        MOCK_MYINFO_FORM as IPopulatedForm,
-        MOCK_ACCESS_TOKEN,
-      )
-
-      // Assert
-      expect(result._unsafeUnwrap()).toEqual(new MyInfoData(mockReturnedParams))
-    })
-
-    it('should call MyInfoGovClient.getPerson with the correct parameters', async () => {
-      // Arrange
-      const mockReturnedParams = {
-        uinFin: MOCK_UINFIN,
-        data: MOCK_MYINFO_DATA,
-      }
-      mockGetPerson.mockResolvedValueOnce(mockReturnedParams)
-
-      // Act
-      const result = await myInfoService.getMyInfoDataForForm(
-        MOCK_MYINFO_FORM as IPopulatedForm,
-        MOCK_ACCESS_TOKEN,
-      )
-
-      // Assert
-      expect(mockGetPerson).toHaveBeenCalledWith(
-        MOCK_ACCESS_TOKEN,
-        MOCK_REQUESTED_ATTRS.concat('uinfin' as MyInfoAttribute),
-        MOCK_ESRVC_ID,
-      )
-      expect(result._unsafeUnwrap()).toEqual(new MyInfoData(mockReturnedParams))
-    })
-
-    it('should throw MyInfoFetchError when getPerson fails once', async () => {
-      // Arrange
-      mockGetPerson.mockRejectedValueOnce(new Error())
-
-      // Act
-      const result = await myInfoService.getMyInfoDataForForm(
-        MOCK_MYINFO_FORM as IPopulatedForm,
-        MOCK_ACCESS_TOKEN,
-      )
-
-      // Assert
-      expect(mockGetPerson).toHaveBeenCalledWith(
-        MOCK_ACCESS_TOKEN,
-        MOCK_REQUESTED_ATTRS.concat('uinfin' as MyInfoAttribute),
-        MOCK_ESRVC_ID,
-      )
-      expect(result._unsafeUnwrapErr()).toEqual(new MyInfoFetchError())
-    })
-
-    it('should throw MyInfoCircuitBreakerError when getPerson fails 5 times', async () => {
-      // Arrange
-      mockGetPerson.mockRejectedValue(new Error())
-      for (let i = 0; i < 5; i++) {
-        await myInfoService.getMyInfoDataForForm(
-          MOCK_MYINFO_FORM as IPopulatedForm,
-          MOCK_ACCESS_TOKEN,
-        )
-      }
-
-      // Act
-      const result = await myInfoService.getMyInfoDataForForm(
-        MOCK_MYINFO_FORM as IPopulatedForm,
-        MOCK_ACCESS_TOKEN,
-      )
-
-      // Assert
-      // Last function call doesn't count as breaker is open, so expect 5 calls
-      expect(mockGetPerson).toHaveBeenCalledTimes(5)
-      expect(result._unsafeUnwrapErr()).toEqual(new MyInfoCircuitBreakerError())
     })
   })
 })
