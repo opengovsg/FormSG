@@ -1,6 +1,9 @@
-import { WorkflowStatus } from 'formsg-shared/types'
+import { FormResponseMode, WorkflowStatus } from 'formsg-shared/types'
 
-import { getPendingResponseAtString } from './mrfSubmissionView'
+import {
+  getPendingResponseAtString,
+  hasWorkflowSteps,
+} from './mrfSubmissionView'
 
 const noneString = '-'
 
@@ -57,5 +60,36 @@ describe('getPendingResponseAtString', () => {
       workflowNumTotalSteps: 2,
     })
     expect(result).toBe('Step 2 of 2')
+  })
+})
+
+describe('hasWorkflowSteps', () => {
+  const form = (partial: object) =>
+    partial as Parameters<typeof hasWorkflowSteps>[0]
+
+  it('is true only for a multi-respondent form with steps', () => {
+    expect(
+      hasWorkflowSteps(
+        form({
+          responseMode: FormResponseMode.Multirespondent,
+          workflow: [{}],
+        }),
+      ),
+    ).toBe(true)
+  })
+
+  it('is false for a multi-respondent form with no steps', () => {
+    expect(
+      hasWorkflowSteps(
+        form({ responseMode: FormResponseMode.Multirespondent, workflow: [] }),
+      ),
+    ).toBe(false)
+  })
+
+  it('is false for a storage form and for no form at all', () => {
+    expect(
+      hasWorkflowSteps(form({ responseMode: FormResponseMode.Encrypt })),
+    ).toBe(false)
+    expect(hasWorkflowSteps(undefined)).toBe(false)
   })
 })
