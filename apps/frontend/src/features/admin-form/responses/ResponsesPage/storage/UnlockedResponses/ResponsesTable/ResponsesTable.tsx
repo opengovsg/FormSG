@@ -35,8 +35,14 @@ import { centsToDollars } from 'formsg-shared/utils/payments'
 import Badge from '~components/Badge'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { formatResponseForCell } from '~features/admin-form/responses/common/utils/formatResponseForCell'
-import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+import {
+  formatResponseForCell,
+  isDescribedFieldType,
+} from '~features/admin-form/responses/common/utils/formatResponseForCell'
+import {
+  getPendingResponseAtString,
+  hasWorkflowSteps,
+} from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_REMINDERS_LABEL,
@@ -344,9 +350,7 @@ export const ResponsesTable = () => {
   const isPaymentsForm = getIsPaymentsForm(form)
   const isMultiRespondentForm =
     form?.responseMode === FormResponseMode.Multirespondent
-  const hasWorkflow =
-    form?.responseMode === FormResponseMode.Multirespondent &&
-    form.workflow.length > 0
+  const hasWorkflow = hasWorkflowSteps(form)
 
   const {
     currentPage: currentPage1Indexed,
@@ -426,7 +430,13 @@ export const ResponsesTable = () => {
       },
       Cell: ({ value }: { value?: string }) => (
         <Skeleton isLoaded={value !== undefined || !isDecrypting} w="100%">
-          <Text noOfLines={1} title={value}>
+          <Text
+            noOfLines={1}
+            title={value}
+            fontStyle={
+              isDescribedFieldType(formField.fieldType) ? 'italic' : undefined
+            }
+          >
             {value ?? ''}
           </Text>
         </Skeleton>
