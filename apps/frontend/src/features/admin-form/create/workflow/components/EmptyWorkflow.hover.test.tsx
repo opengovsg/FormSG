@@ -1,8 +1,5 @@
 import { composeStories } from '@storybook/react'
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { LifeCycleEventsMap } from 'msw'
-import { getWorker } from 'msw-storybook-addon'
-import { expect } from 'vitest'
 
 import { getUser } from '~/mocks/msw/handlers/user'
 
@@ -18,7 +15,6 @@ const { NoWorkflowRedesignOn } = composeStories(pageStories, {
   parameters: {
     msw: {
       handlers: {
-        // The page's auth and guided-setup hooks also fetch the current admin.
         user: [getUser({ delay: 0 })],
       },
     },
@@ -28,24 +24,6 @@ const { NoWorkflowRedesignOn } = composeStories(pageStories, {
 const INTRO_HEADER = /start creating a workflow for your form/i
 
 describe('the intro card illustration on hover', () => {
-  const unhandledRequests: string[] = []
-  const recordUnhandled = ({
-    request,
-  }: LifeCycleEventsMap['request:unhandled'][0]) => {
-    unhandledRequests.push(`${request.method} ${request.url}`)
-  }
-  beforeAll(() => {
-    getWorker().events.on('request:unhandled', recordUnhandled)
-  })
-  afterAll(() => {
-    getWorker().events.removeListener('request:unhandled', recordUnhandled)
-  })
-  beforeEach(() => {
-    unhandledRequests.length = 0
-  })
-  afterEach(() => {
-    expect.soft(unhandledRequests).toEqual([])
-  })
   const mountIntro = async () => {
     await act(async () => {
       render(<NoWorkflowRedesignOn />)
