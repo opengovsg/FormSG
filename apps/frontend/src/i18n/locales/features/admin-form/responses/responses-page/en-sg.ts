@@ -89,6 +89,7 @@ export const enSG: ResponsesResponsesPage = {
         deleteViewTitle: 'Delete {VIEW_NAME}?',
         deleteViewDescription:
           'This view will be removed for everyone with access to the form. The responses themselves are not deleted.',
+        deleteViewSuccess: 'Your view has been successfully deleted.',
       },
       sortMenu: {
         column: 'Column',

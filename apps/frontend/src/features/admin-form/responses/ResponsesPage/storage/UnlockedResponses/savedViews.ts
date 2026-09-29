@@ -1,3 +1,5 @@
+import { isEqual } from 'lodash'
+
 import {
   DateString,
   FormSavedView,
@@ -98,4 +100,18 @@ export const fromSavedView = (
     sortColumnId,
     sortDirection: view.sort?.direction ?? SavedViewSortDirection.Descending,
   }
+}
+
+export const matchesSavedView = (
+  state: ResponsesViewState,
+  savedViews: FormSavedView[],
+  columnOptions: ResponseColumnOption[],
+): boolean => {
+  const current = toSavedViewInput('', state, columnOptions)
+  return savedViews.some((view) =>
+    isEqual(
+      toSavedViewInput('', fromSavedView(view, columnOptions), columnOptions),
+      current,
+    ),
+  )
 }
