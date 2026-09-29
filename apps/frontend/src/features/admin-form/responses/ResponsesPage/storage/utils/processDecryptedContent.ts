@@ -8,64 +8,42 @@ import {
 import { BasicField, FormFieldDto, LogicDto } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
 import {
-  SgidFieldTitle,
-  SPCPFieldTitle,
+  getVerifiedFieldTitle,
+  parseVerifiedKey,
   VerifiedKeys,
 } from 'formsg-shared/utils/verified-content'
 
+const VERIFIED_FIELD_TYPES: Record<
+  VerifiedKeys,
+  VerifiedFormField['fieldType']
+> = {
+  [VerifiedKeys.SpUinFin]: BasicField.Nric,
+  [VerifiedKeys.CpUen]: BasicField.ShortText,
+  [VerifiedKeys.CpUid]: BasicField.Nric,
+  [VerifiedKeys.SgidUinFin]: BasicField.Nric,
+}
+
 /**
  * Returns a verifiedFormField matching the given verifiedKey containing the given value.
- * @param verifiedKey the field type to match
+ * The title doubles as the synthetic _id; MRF steps after Step 1 keep their
+ * ` (Step N)` suffix so each respondent's identity stays distinct.
+ * @param verifiedKey the verifiedContent key, optionally with MRF step suffix
  * @param value the value to insert into the response to be returned
- * @returns the desired response object if type is valid. Else returns null.
+ * @returns the desired response object if key is valid. Else returns null.
  */
 const getVerifiedFieldFromResponse = (
-  singpassAuthType: VerifiedKeys | string,
+  verifiedKey: string,
   value: string,
 ): VerifiedFormField | null => {
-  // Extract verifiedKey and optional step number (for MRF cases) from singpassAuthType
-  const verifiedKeyMatch = singpassAuthType.match(
-    /^(uinFin|cpUen|cpUid|sgidUinFin)(?: \(Step (\d+)\))?$/,
-  )
-  if (!verifiedKeyMatch) return null
+  const parsed = parseVerifiedKey(verifiedKey)
+  if (!parsed) return null
 
-  const [, verifiedKey] = verifiedKeyMatch
-
-  switch (verifiedKey as VerifiedKeys) {
-    case VerifiedKeys.SpUinFin:
-      return {
-        question: SPCPFieldTitle.SpNric,
-        fieldType: BasicField.Nric,
-        answer: value,
-        _id: SPCPFieldTitle.SpNric,
-      }
-
-    case VerifiedKeys.CpUen:
-      return {
-        question: SPCPFieldTitle.CpUen,
-        fieldType: BasicField.ShortText,
-        answer: value,
-        _id: SPCPFieldTitle.CpUen,
-      }
-
-    case VerifiedKeys.CpUid:
-      return {
-        question: SPCPFieldTitle.CpUid,
-        fieldType: BasicField.Nric,
-        answer: value,
-        _id: SPCPFieldTitle.CpUid,
-      }
-
-    case VerifiedKeys.SgidUinFin:
-      return {
-        question: SgidFieldTitle.SgidNric,
-        fieldType: 'nric',
-        answer: value,
-        _id: SgidFieldTitle.SgidNric,
-      }
-
-    default:
-      return null
+  const title = getVerifiedFieldTitle(parsed)
+  return {
+    question: title,
+    fieldType: VERIFIED_FIELD_TYPES[parsed.baseKey],
+    answer: value,
+    _id: title,
   }
 }
 
@@ -81,9 +59,6 @@ const convertToResponseArray = (
   verifiedObj: Record<string, string>,
 ): VerifiedFormField[] => {
   return Object.keys(verifiedObj)
-    .filter((key) =>
-      Object.values(VerifiedKeys).some((baseKey) => key.startsWith(baseKey)),
-    )
     .map((key) => getVerifiedFieldFromResponse(key, verifiedObj[key]))
     .filter((field): field is VerifiedFormField => !!field)
 }
