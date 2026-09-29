@@ -22,8 +22,8 @@ import { LANDING_V5_COLORS } from './theme/tokens'
  * The header and footer sit outside `LandingV5Root` on purpose. They are shared
  * product chrome, and the brief was to keep the standard footer rather than
  * port the prototype's colophon. The header is the compact variant so it sits
- * as low as the prototype's nav, and the footer takes the paper background so
- * the page does not end on a white band.
+ * as low as the prototype's nav, and both take the paper background so the
+ * page neither starts on a blue band nor ends on a white one.
  */
 export const LandingV5Page = (): JSX.Element => {
   /* The nudge belongs to the proof section but is triggered by the hero, when
@@ -34,7 +34,10 @@ export const LandingV5Page = (): JSX.Element => {
 
   return (
     <>
-      <AppPublicHeader compact />
+      <AppPublicHeader
+        compact
+        containerProps={{ bg: LANDING_V5_COLORS.paper }}
+      />
       <LandingV5Root>
         <HeroSection onReachEnd={bob} />
         <ProofSection bobRef={bobRef} isAtTop={isAtTop} />
