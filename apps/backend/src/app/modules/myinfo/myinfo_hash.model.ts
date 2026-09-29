@@ -47,11 +47,6 @@ MyInfoHashSchema.index({
   form: 1,
   uinFin: 1,
 })
-MyInfoHashSchema.index({
-  form: 1,
-  uinFin: 1,
-  authSessionId: 1,
-})
 MyInfoHashSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
 MyInfoHashSchema.statics.updateHashes = async function (
