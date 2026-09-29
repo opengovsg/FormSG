@@ -7,7 +7,7 @@ import { ColumnsMenu } from './ColumnsMenu'
 import { DownloadButton } from './DownloadButton'
 import { FilterMenu } from './FilterMenu'
 import { ResponsesSearchbar } from './ResponsesSearchbar'
-import { toSavedViewInput } from './savedViews'
+import { matchesSavedView, toSavedViewInput } from './savedViews'
 import { SaveViewModal } from './SaveViewModal'
 import { SortMenu } from './SortMenu'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
@@ -20,8 +20,18 @@ export const ResponsesToolbar = (): JSX.Element => {
     { returnObjects: true },
   )
   const saveViewModal = useDisclosure()
-  const { columnOptions, currentViewState, hasActiveFilters, selectedViewId } =
-    useUnlockedResponses()
+  const {
+    columnOptions,
+    currentViewState,
+    hasActiveFilters,
+    savedViews,
+    selectedViewId,
+  } = useUnlockedResponses()
+  const isViewSaved = matchesSavedView(
+    currentViewState,
+    savedViews,
+    columnOptions,
+  )
   const { mutate: saveView, isLoading: isSavingView } = useSavedViewMutation()
 
   return (
@@ -48,7 +58,7 @@ export const ResponsesToolbar = (): JSX.Element => {
         <Button
           variant="clear"
           colorScheme="secondary"
-          isDisabled={!hasActiveFilters}
+          isDisabled={!hasActiveFilters || isViewSaved}
           isLoading={isSavingView}
           onClick={saveViewModal.onOpen}
         >
