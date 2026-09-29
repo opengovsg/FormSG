@@ -1,5 +1,7 @@
 import './landing-v5.css'
 
+import { Box } from '@chakra-ui/react'
+
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
 
@@ -23,7 +25,9 @@ import { LANDING_V5_COLORS } from './theme/tokens'
  * product chrome, and the brief was to keep the standard footer rather than
  * port the prototype's colophon. The header is the compact variant so it sits
  * as low as the prototype's nav, and both take the paper background so the
- * page neither starts on a blue band nor ends on a white one.
+ * page neither starts on a blue band nor ends on a white one. The outer
+ * `landing-v5-page` box exists only to carry the paper grain across all three,
+ * so the chrome reads as the same sheet as the body.
  */
 export const LandingV5Page = (): JSX.Element => {
   /* The nudge belongs to the proof section but is triggered by the hero, when
@@ -33,7 +37,7 @@ export const LandingV5Page = (): JSX.Element => {
   const isAtTop = useIsAtTop()
 
   return (
-    <>
+    <Box className="landing-v5-page" position="relative">
       <AppPublicHeader
         compact
         containerProps={{ bg: LANDING_V5_COLORS.paper }}
@@ -48,6 +52,6 @@ export const LandingV5Page = (): JSX.Element => {
         <CloseSection />
       </LandingV5Root>
       <AppFooter containerProps={{ bg: LANDING_V5_COLORS.paper }} />
-    </>
+    </Box>
   )
 }

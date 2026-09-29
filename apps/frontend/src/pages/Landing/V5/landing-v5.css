@@ -70,9 +70,9 @@
 
 /* Fine paper grain over the page.
    The prototype fixes this to the viewport via `body::after`. Here it is
-   absolute within the landing root instead, so it grains the page without
-   also laying a film over the shared header and footer. */
-.landing-v5::after {
+   absolute within `.landing-v5-page`, the box that wraps the shared header,
+   the body and the shared footer, so all three read as one sheet of paper. */
+.landing-v5-page::after {
   content: '';
   position: absolute;
   inset: 0;
