@@ -2,6 +2,7 @@ import { datadogLogs } from '@datadog/browser-logs'
 import axios, { AxiosError } from 'axios'
 import { StatusCodes } from 'http-status-codes'
 
+import { X_FORMSG_CLIENT_VERSION } from 'formsg-shared/constants'
 import { ErrorDto } from 'formsg-shared/types'
 import { ErrorCode } from 'formsg-shared/types/errorCodes'
 
@@ -131,10 +132,30 @@ export const transformAxiosError = (error: Error): ApiError => {
   return error
 }
 
+/**
+ * Returns the header identifying this frontend build, for requests to our own
+ * origin only. Cross-origin requests (e.g. S3 presigned URLs) get no header,
+ * as a custom header triggers a CORS preflight the bucket may reject.
+ *
+ * @param url the url the request will be sent to
+ * @returns the client version header if same-origin, else an empty object
+ */
+export const getClientVersionHeader = (url: string): Record<string, string> => {
+  const version = import.meta.env.VITE_APP_VERSION
+  const isSameOrigin =
+    new URL(url, window.location.origin).origin === window.location.origin
+  return version && isSameOrigin ? { [X_FORMSG_CLIENT_VERSION]: version } : {}
+}
+
 // Create own axios instance with defaults.
 export const ApiService = axios.create({
   withCredentials: true,
   baseURL: API_BASE_URL,
+})
+
+ApiService.interceptors.request.use((config) => {
+  config.headers.set(getClientVersionHeader(ApiService.getUri(config)))
+  return config
 })
 
 ApiService.interceptors.response.use(

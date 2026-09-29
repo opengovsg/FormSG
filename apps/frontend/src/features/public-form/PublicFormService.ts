@@ -33,6 +33,7 @@ import { transformAllIsoStringsToDate } from '~utils/date'
 import {
   API_BASE_URL,
   ApiService,
+  getClientVersionHeader,
   processFetchResponse,
 } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
@@ -269,16 +270,15 @@ export const submitStorageModeFormWithFetch = async ({
     captchaType,
   }).toString()
 
-  const response = await fetch(
-    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage?${queryString}`,
-    {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Accept: 'application/json',
-      },
+  const url = `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/storage?${queryString}`
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      Accept: 'application/json',
+      ...getClientVersionHeader(url),
     },
-  )
+  })
 
   return processFetchResponse(response)
 }
@@ -361,16 +361,15 @@ export const submitEmailModeFormWithFetch = async ({
     captchaType,
   }).toString()
 
-  const response = await fetch(
-    `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`,
-    {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Accept: 'application/json',
-      },
+  const url = `${API_BASE_URL}${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/email?${queryString}`
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      Accept: 'application/json',
+      ...getClientVersionHeader(url),
     },
-  )
+  })
 
   return processFetchResponse(response)
 }

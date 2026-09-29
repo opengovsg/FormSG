@@ -4,7 +4,12 @@ import winston from 'winston'
 
 import config from '../../config/config'
 import { customFormat } from '../../config/logger'
-import { getRequestIp, getTrace, maskOAuthCode } from '../../utils/request'
+import {
+  getClientVersion,
+  getRequestIp,
+  getTrace,
+  maskOAuthCode,
+} from '../../utils/request'
 
 const LOGGER_LABEL = 'network'
 
@@ -14,6 +19,7 @@ type LogMeta = {
   contentLength?: string
   transactionId?: string
   trace?: string
+  clientVersion?: string
   reactMigration?: {
     // TODO (#5826): Toggle to use fetch for submissions instead of axios. Remove once network error is resolved
     useFetchForSubmissions?: boolean
@@ -57,6 +63,7 @@ const loggingMiddleware = () => {
 
       const contentLength = res.get('content-length')
       const transactionId = req.params.transactionId
+      const clientVersion = getClientVersion(req)
 
       if (contentLength) {
         meta.contentLength = contentLength
@@ -64,6 +71,10 @@ const loggingMiddleware = () => {
 
       if (transactionId) {
         meta.transactionId = transactionId
+      }
+
+      if (clientVersion) {
+        meta.clientVersion = clientVersion
       }
 
       // Temporary: cookies are blacklisted, but we to track the state of the rollout for this particular request
