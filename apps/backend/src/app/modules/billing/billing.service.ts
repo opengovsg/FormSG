@@ -6,6 +6,7 @@ import {
   FormBillingStatistic,
   ILoginSchema,
   IPopulatedForm,
+  LoginAuthOverride,
 } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
 import getLoginModel from '../../models/login.server.model'
@@ -51,24 +52,31 @@ export const getSpLoginStats = (
 /**
  * Adds a login record for a form with authentication to the database.
  * @param form Form populated with admin and agency data
+ * @param authOverride the provider actually used, for a later MRF step login.
+ * Used as a whole: omitted fields do not fall back to the form's settings.
  * @return The Login document saved to the database
  */
 export const recordLoginByForm = (
   form: IPopulatedForm,
+  authOverride?: LoginAuthOverride,
 ): ResultAsync<ILoginSchema, FormHasNoAuthError | DatabaseError> => {
   const logMeta = {
     action: 'recordLoginByForm',
     formId: form._id,
   }
-  if (form.authType === FormAuthType.NIL) {
+  const authType = authOverride ? authOverride.authType : form.authType
+  if (authType === FormAuthType.NIL) {
     return errAsync(new FormHasNoAuthError())
   }
-  return ResultAsync.fromPromise(LoginModel.addLoginFromForm(form), (error) => {
-    logger.error({
-      message: 'Error adding login to database',
-      meta: logMeta,
-      error,
-    })
-    return new DatabaseError(getMongoErrorMessage(error))
-  })
+  return ResultAsync.fromPromise(
+    LoginModel.addLoginFromForm(form, authOverride),
+    (error) => {
+      logger.error({
+        message: 'Error adding login to database',
+        meta: logMeta,
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  )
 }

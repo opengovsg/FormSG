@@ -24,11 +24,17 @@ export interface ILoginSchema extends ILogin, Document {
   created?: Date
 }
 
+// Provider used by a later MRF step login, in place of the form-level settings
+export type LoginAuthOverride = Pick<LoginBase, 'authType' | 'esrvcId'>
+
 export interface ILoginModel extends Model<ILoginSchema> {
   aggregateLoginStats: (
     esrvcId: string,
     gte: Date,
     lte: Date,
   ) => Promise<FormBillingStatistic[]>
-  addLoginFromForm: (form: IPopulatedForm) => Promise<ILoginSchema>
+  addLoginFromForm: (
+    form: IPopulatedForm,
+    authOverride?: LoginAuthOverride,
+  ) => Promise<ILoginSchema>
 }

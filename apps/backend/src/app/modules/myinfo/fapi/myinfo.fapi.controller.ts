@@ -8,6 +8,7 @@ import { Environment } from '../../../../types'
 import config from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { ControllerHandler } from '../../core/core.types'
+import { getMrfContinuationDestination } from '../../submission/multirespondent-submission/step-auth'
 
 import {
   MYINFO_FAPI_SESSION_COOKIE_IDENTITY,
@@ -223,14 +224,25 @@ const recordFailure = async (
 
 /**
  * Form path to redirect to after the callback, rebuilt from the stored
- * encodedQuery (or just the base URL if none).
+ * encodedQuery (or just the base URL if none). A later MRF step login returns
+ * to that submission's edit page.
  */
 const redirectDestination = ({
   formId,
   encodedQuery,
+  mrfContext,
 }: MyInfoFapiRedirectTarget): string => {
   const origin =
     process.env.NODE_ENV === Environment.Dev ? config.app.feAppUrl : ''
+  if (mrfContext) {
+    return `${origin}${getMrfContinuationDestination({
+      formId,
+      submissionId: mrfContext.submissionId,
+      query: encodedQuery
+        ? Buffer.from(encodedQuery, 'base64').toString('utf8')
+        : undefined,
+    })}`
+  }
   const base = `${origin}/${formId}`
   if (!encodedQuery) {
     return base

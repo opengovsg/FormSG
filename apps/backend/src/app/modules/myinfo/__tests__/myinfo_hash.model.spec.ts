@@ -191,5 +191,74 @@ describe('MyInfo Hash Model', () => {
         expect(actual).toEqual(DEFAULT_SAVED_PARAMS.fields)
       })
     })
+
+    describe('auth session scoping', () => {
+      const formId = DEFAULT_INPUT_PARAMS.form.toHexString()
+      const { uinFin } = DEFAULT_INPUT_PARAMS
+
+      it('should keep a step login session hashes apart from the form-level hashes', async () => {
+        await MyInfoHash.updateHashes(
+          uinFin,
+          formId,
+          { name: 'step-1-hash' },
+          DEFAULT_COOKIE_MAX_AGE,
+        )
+
+        await MyInfoHash.updateHashes(
+          uinFin,
+          formId,
+          { name: 'step-2-hash' },
+          DEFAULT_COOKIE_MAX_AGE,
+          'session-a',
+        )
+
+        await expect(MyInfoHash.countDocuments()).resolves.toEqual(2)
+        await expect(MyInfoHash.findHashes(uinFin, formId)).resolves.toEqual({
+          name: 'step-1-hash',
+        })
+        await expect(
+          MyInfoHash.findHashes(uinFin, formId, 'session-a'),
+        ).resolves.toEqual({ name: 'step-2-hash' })
+      })
+
+      it('should keep repeat logins by the same person apart', async () => {
+        await MyInfoHash.updateHashes(
+          uinFin,
+          formId,
+          { name: 'first-login' },
+          DEFAULT_COOKIE_MAX_AGE,
+          'session-a',
+        )
+        await MyInfoHash.updateHashes(
+          uinFin,
+          formId,
+          { name: 'second-login' },
+          DEFAULT_COOKIE_MAX_AGE,
+          'session-b',
+        )
+
+        await expect(
+          MyInfoHash.findHashes(uinFin, formId, 'session-a'),
+        ).resolves.toEqual({ name: 'first-login' })
+        await expect(
+          MyInfoHash.findHashes(uinFin, formId, 'session-b'),
+        ).resolves.toEqual({ name: 'second-login' })
+      })
+
+      it('should not read step login hashes without that session', async () => {
+        await MyInfoHash.updateHashes(
+          uinFin,
+          formId,
+          { name: 'step-2-hash' },
+          DEFAULT_COOKIE_MAX_AGE,
+          'session-a',
+        )
+
+        await expect(MyInfoHash.findHashes(uinFin, formId)).resolves.toBeNull()
+        await expect(
+          MyInfoHash.findHashes(uinFin, formId, 'session-b'),
+        ).resolves.toBeNull()
+      })
+    })
   })
 })

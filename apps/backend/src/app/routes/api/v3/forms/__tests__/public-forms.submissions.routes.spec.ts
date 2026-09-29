@@ -1,18 +1,25 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { FormAuthType, FormStatus } from 'formsg-shared/types'
+import { ObjectId } from 'bson'
+import { FormAuthType, FormStatus, SubmissionType } from 'formsg-shared/types'
 import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
 import { okAsync } from 'neverthrow'
 import session, { Session } from 'supertest-session'
 
+import getLoginModel from 'src/app/models/login.server.model'
+import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
 import * as FeatureFlagsService from 'src/app/modules/feature-flags/feature-flags.service'
+import * as MyInfoFapiService from 'src/app/modules/myinfo/fapi/myinfo.fapi.service'
+import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
+import * as stepToken from 'src/app/modules/submission/multirespondent-submission/step-token'
 import { s3Operations } from 'src/app/utils/aws-s3'
 import { FormFieldSchema } from 'src/types'
 
 import {
   MOCK_COOKIE_AGE,
+  MOCK_MYINFO_DATA,
   MOCK_MYINFO_JWT,
   MOCK_UINFIN,
 } from '../../../../../modules/myinfo/__tests__/myinfo.test.constants'
@@ -40,6 +47,8 @@ import {
 } from './public-forms.routes.spec.constants'
 
 const MyInfoHashModel = getMyInfoHashModel(mongoose)
+const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
+const LoginModel = getLoginModel(mongoose)
 
 const MockCpOidcClient = jest.mocked(CpOidcClient)
 
@@ -1482,6 +1491,269 @@ describe('public-form.submissions.routes', () => {
           })
         })
       })
+    })
+  })
+
+  describe('MRF step login (POST .../submissions/:submissionId/auth/*)', () => {
+    // Mounted at the real prefix so the path-scoped step cookie round-trips.
+    const stepApp = setupApp('/api/v3/forms', PublicFormsRouter)
+    const STEP_TOKEN = stepToken.generate()
+    const STEP_1_FIELD = {
+      _id: new ObjectId().toHexString(),
+      fieldType: 'textfield',
+      title: 'Request',
+    }
+    const NAME_FIELD = {
+      _id: new ObjectId().toHexString(),
+      fieldType: 'textfield',
+      title: 'Name',
+      myInfo: { attr: 'name' },
+    }
+    const MYINFO_STEP_AUTH = {
+      auth_type: FormAuthType.MyInfo,
+      is_submitter_id_collection_enabled: true,
+    }
+
+    const insertStepSubmission = async (
+      step2Auth: unknown = MYINFO_STEP_AUTH,
+      overrides: Record<string, unknown> = {},
+    ) => {
+      // The live form has no login at all; only the submission copy does.
+      const { form } = await dbHandler.insertMultirespondentForm({
+        formOptions: { status: FormStatus.Public, esrvcId: 'live-esrvc-id' },
+      })
+      const submission = await MultirespondentSubmission.create({
+        form: form._id,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [STEP_1_FIELD, NAME_FIELD],
+        form_logics: [],
+        workflow: [
+          { workflow_type: 'static', emails: [], edit: [STEP_1_FIELD._id] },
+          {
+            workflow_type: 'static',
+            emails: [],
+            edit: [NAME_FIELD._id],
+            ...(step2Auth ? { auth: step2Auth } : {}),
+          },
+        ],
+        submissionPublicKey: 'mockSubmissionPublicKey',
+        encryptedSubmissionSecretKey: 'mockEncryptedSubmissionSecretKey',
+        encryptedContent: 'mockEncryptedContent',
+        version: 3,
+        workflowStep: 0,
+        stepTokenHash: stepToken.hash(STEP_TOKEN),
+        esrvcId: 'snapshot-esrvc-id',
+        ...overrides,
+      })
+      const formId = String(form._id)
+      const submissionId = String(submission._id)
+      return {
+        form,
+        formId,
+        submissionId,
+        authUrl: `/api/v3/forms/${formId}/submissions/${submissionId}/auth`,
+        context: {
+          formId,
+          submissionId,
+          workflowStep: 1,
+          stepTokenHash: stepToken.hash(STEP_TOKEN),
+        },
+      }
+    }
+
+    let stepRequest: Session
+    beforeEach(() => {
+      stepRequest = session(stepApp)
+    })
+
+    it('should report no login for a step saved without login', async () => {
+      const { authUrl } = await insertStepSubmission(null)
+
+      const response = await stepRequest
+        .post(`${authUrl}/session`)
+        .send({ stepToken: STEP_TOKEN })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        workflowStep: 1,
+        authType: FormAuthType.NIL,
+        isSubmitterIdCollectionEnabled: false,
+        isWhitelistEnabled: false,
+      })
+    })
+
+    it('should return 403 for an invalid step token', async () => {
+      const { authUrl } = await insertStepSubmission()
+
+      const response = await stepRequest
+        .post(`${authUrl}/session`)
+        .send({ stepToken: stepToken.generate() })
+
+      expect(response.status).toBe(403)
+    })
+
+    it('should return 409 once the workflow has moved past every step', async () => {
+      const { authUrl } = await insertStepSubmission(MYINFO_STEP_AUTH, {
+        workflowStep: 1,
+      })
+
+      const response = await stepRequest
+        .post(`${authUrl}/session`)
+        .send({ stepToken: STEP_TOKEN })
+
+      expect(response.status).toBe(409)
+    })
+
+    it('should not start a login for a step without one', async () => {
+      const { authUrl } = await insertStepSubmission(null)
+
+      const response = await stepRequest
+        .post(`${authUrl}/redirect`)
+        .send({ stepToken: STEP_TOKEN })
+
+      expect(response.status).toBe(400)
+    })
+
+    it('should not treat a legacy form-level login as a step login', async () => {
+      const { authUrl } = await insertStepSubmission({
+        auth_type: FormAuthType.CP,
+        is_submitter_id_collection_enabled: true,
+      })
+
+      const response = await stepRequest
+        .post(`${authUrl}/session`)
+        .set('Cookie', ['jwtCp=mockJwt', `${MYINFO_LOGIN_COOKIE_NAME}=mockJwt`])
+        .send({ stepToken: STEP_TOKEN })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        workflowStep: 1,
+        authType: FormAuthType.CP,
+        isSubmitterIdCollectionEnabled: true,
+        isWhitelistEnabled: false,
+      })
+    })
+
+    it('should start Corppass with the submission e-service ID and a step binding', async () => {
+      const { authUrl, formId } = await insertStepSubmission({
+        auth_type: FormAuthType.CP,
+        is_submitter_id_collection_enabled: true,
+      })
+      mockCpClient.createAuthorisationUrl.mockResolvedValueOnce(
+        'https://corppass.example/authorize',
+      )
+
+      const response = await stepRequest
+        .post(`${authUrl}/redirect`)
+        .send({ stepToken: STEP_TOKEN, encodedQuery: 'cXVlcnlJZD1hYmM=' })
+
+      expect(response.status).toBe(200)
+      expect(response.body).toEqual({
+        redirectURL: 'https://corppass.example/authorize',
+      })
+      const [state, esrvcId] = mockCpClient.createAuthorisationUrl.mock.calls[0]
+      expect(esrvcId).toBe('snapshot-esrvc-id')
+      const nonce = state.split('-')[2]
+      expect(state).toBe(`/${formId}-false-${nonce}-cXVlcnlJZD1hYmM=`)
+      expect(String(response.headers['set-cookie'])).toContain(
+        `cpStepBinding_${nonce}=`,
+      )
+    })
+
+    it('should complete a MyInfo login for the step only', async () => {
+      const { authUrl, formId, context } = await insertStepSubmission()
+      const mrfContext = { ...context, authType: FormAuthType.MyInfo }
+      const startLoginSpy = jest
+        .spyOn(MyInfoFapiService, 'startLogin')
+        .mockReturnValue(
+          okAsync({
+            sessionId: 'fapi-session-id',
+            redirectUrl: 'https://singpass.example/authorize',
+          }),
+        )
+      const loadPersonSpy = jest
+        .spyOn(MyInfoFapiService, 'loadPersonForSession')
+        .mockReturnValue(
+          okAsync(
+            new MyInfoData({ uinFin: MOCK_UINFIN, data: MOCK_MYINFO_DATA }),
+          ),
+        )
+
+      // Act: start the login, then load the step once back from Singpass
+      const redirectResponse = await stepRequest
+        .post(`${authUrl}/redirect`)
+        .send({ stepToken: STEP_TOKEN })
+      const sessionResponse = await stepRequest
+        .post(`${authUrl}/session`)
+        .send({ stepToken: STEP_TOKEN })
+
+      // Assert
+      expect(redirectResponse.status).toBe(200)
+      expect(startLoginSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ requestedAttributes: ['name'], mrfContext }),
+      )
+      expect(loadPersonSpy).toHaveBeenCalledWith({
+        sessionId: 'fapi-session-id',
+        formId,
+        mrfContext,
+      })
+      expect(sessionResponse.status).toBe(200)
+      expect(sessionResponse.body).toMatchObject({
+        workflowStep: 1,
+        authType: FormAuthType.MyInfo,
+        spcpSession: { userName: MOCK_UINFIN },
+        prefilledFields: [
+          { _id: NAME_FIELD._id, fieldValue: 'TAN XIAO HUI', disabled: true },
+        ],
+      })
+      expect(sessionResponse.body.prefilledFields).toHaveLength(1)
+      // Hashes belong to this login session, not the form-level login.
+      await expect(
+        MyInfoHashModel.findHashes(MOCK_UINFIN, formId, 'fapi-session-id'),
+      ).resolves.toHaveProperty('name')
+      await expect(
+        MyInfoHashModel.findHashes(MOCK_UINFIN, formId),
+      ).resolves.toBeNull()
+      await expect(
+        LoginModel.find({ form: formId }).lean(),
+      ).resolves.toMatchObject([{ authType: FormAuthType.MyInfo }])
+    })
+
+    it('should keep the step session without refetching or rebilling, until logout', async () => {
+      const { authUrl, formId } = await insertStepSubmission()
+      jest
+        .spyOn(MyInfoFapiService, 'startLogin')
+        .mockReturnValue(
+          okAsync({ sessionId: 'fapi-session-id', redirectUrl: 'https://sp' }),
+        )
+      const loadPersonSpy = jest
+        .spyOn(MyInfoFapiService, 'loadPersonForSession')
+        .mockReturnValue(
+          okAsync(
+            new MyInfoData({ uinFin: MOCK_UINFIN, data: MOCK_MYINFO_DATA }),
+          ),
+        )
+      await stepRequest
+        .post(`${authUrl}/redirect`)
+        .send({ stepToken: STEP_TOKEN })
+      await stepRequest
+        .post(`${authUrl}/session`)
+        .send({ stepToken: STEP_TOKEN })
+
+      const reloaded = await stepRequest
+        .post(`${authUrl}/session`)
+        .send({ stepToken: STEP_TOKEN })
+      const logout = await stepRequest.post(`${authUrl}/logout`).send({})
+      const afterLogout = await stepRequest
+        .post(`${authUrl}/session`)
+        .send({ stepToken: STEP_TOKEN })
+
+      expect(reloaded.body.spcpSession).toMatchObject({ userName: MOCK_UINFIN })
+      expect(reloaded.body.prefilledFields).toBeUndefined()
+      expect(loadPersonSpy).toHaveBeenCalledTimes(1)
+      await expect(LoginModel.countDocuments({ form: formId })).resolves.toBe(1)
+      expect(logout.status).toBe(200)
+      expect(afterLogout.body.spcpSession).toBeUndefined()
     })
   })
 })

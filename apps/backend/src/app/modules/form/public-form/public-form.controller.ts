@@ -19,7 +19,10 @@ import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
 import { err, ok, okAsync, Result } from 'neverthrow'
 
-import { IPopulatedMultirespondentForm } from '../../../../types'
+import {
+  IPopulatedForm,
+  IPopulatedMultirespondentForm,
+} from '../../../../types'
 import { isTest } from '../../../config/config'
 import { createLoggerWithLabel } from '../../../config/logger'
 import { isMongoError } from '../../../utils/handle-mongo-error'
@@ -67,6 +70,10 @@ import {
   getRedirectTargetSpcpOidc,
   validateSpcpForm,
 } from '../../spcp/spcp.util'
+import {
+  getMrfStepFields,
+  getMyInfoAttrsForFields,
+} from '../../submission/multirespondent-submission/step-auth'
 import { generateHashedSubmitterId } from '../../submission/submission.utils'
 import {
   AuthTypeMismatchError,
@@ -75,11 +82,25 @@ import {
   PrivateFormError,
 } from '../form.errors'
 import * as FormService from '../form.service'
+import { getRawWorkflow } from '../workflow-login.utils'
 
 import * as PublicFormService from './public-form.service'
 import { mapFormAuthError, mapRouteError } from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
+
+// An MRF Step 1 login only requests and prefills Step 1's fields.
+const getFirstStepMyInfoFields = <F extends { _id?: unknown }>(
+  form: IPopulatedForm,
+  fields: F[],
+): F[] =>
+  form.responseMode === FormResponseMode.Multirespondent
+    ? getMrfStepFields(
+        fields,
+        getRawWorkflow(form as IPopulatedMultirespondentForm),
+        0,
+      )
+    : fields
 
 /**
  * Handler for GET /:formId/publicform endpoint
@@ -90,7 +111,9 @@ const logger = createLoggerWithLabel(module)
  */
 export const handleGetPublicForm: ControllerHandler<
   { formId: string },
-  PublicFormViewDto | ErrorDto | PrivateFormErrorDto
+  PublicFormViewDto | ErrorDto | PrivateFormErrorDto,
+  unknown,
+  { isMrfContinuation?: string }
 > = async (req, res) => {
   const { formId } = req.params
   const logMeta = {
@@ -152,6 +175,15 @@ export const handleGetPublicForm: ControllerHandler<
   )
 
   if (authType === FormAuthType.NIL) {
+    return res.json({ form: publicForm, isIntranetUser })
+  }
+
+  // A continuation's login belongs to its pending step (see the MRF
+  // /auth/session endpoint), so Step 1's login is neither shown nor consumed.
+  if (
+    req.query.isMrfContinuation === 'true' &&
+    form.responseMode === FormResponseMode.Multirespondent
+  ) {
     return res.json({ form: publicForm, isIntranetUser })
   }
 
@@ -473,11 +505,13 @@ export const handleGetPublicForm: ControllerHandler<
         })
       }
       await BillingService.recordLoginByForm(form)
+      const allFormFields = form.toJSON().form_fields ?? []
+      const stepFields = getFirstStepMyInfoFields(form, allFormFields)
       const prefilledFieldsResult =
         await MyInfoService.prefillAndSaveMyInfoFields(
           form._id,
           myInfoFields,
-          form.toJSON().form_fields,
+          stepFields,
         )
 
       if (prefilledFieldsResult.isErr()) {
@@ -494,7 +528,12 @@ export const handleGetPublicForm: ControllerHandler<
         })
       }
 
-      const prefilledFields = prefilledFieldsResult.value
+      const prefilledById = new Map(
+        prefilledFieldsResult.value.map((field) => [String(field._id), field]),
+      )
+      const prefilledFields = allFormFields.map(
+        (field) => prefilledById.get(String(field._id)) ?? field,
+      )
 
       return res
         .cookie(
@@ -511,7 +550,7 @@ export const handleGetPublicForm: ControllerHandler<
           isIntranetUser,
           myInfoChildrenBirthRecords: (
             myInfoFields as MyInfoData
-          ).getChildrenBirthRecords(form.getUniqueMyInfoAttrs()),
+          ).getChildrenBirthRecords(getMyInfoAttrsForFields(stepFields)),
         })
     }
     case FormAuthType.SGID:
@@ -717,7 +756,9 @@ export const _handleFormAuthRedirect: ControllerHandler<
           return MyInfoFapiService.startLogin({
             formId,
             encodedQuery,
-            requestedAttributes: form.getUniqueMyInfoAttrs(),
+            requestedAttributes: getMyInfoAttrsForFields(
+              getFirstStepMyInfoFields(form, form.form_fields ?? []),
+            ),
             includeSponsoredChildren: shouldFetchSponsoredChildren(
               form,
               isMrfChildrenEnabled,
