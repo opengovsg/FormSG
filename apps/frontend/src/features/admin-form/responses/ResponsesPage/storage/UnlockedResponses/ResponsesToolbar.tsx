@@ -1,12 +1,23 @@
-import { Box, Flex } from '@chakra-ui/react'
+import { useTranslation } from 'react-i18next'
+import { Box, Flex, useDisclosure } from '@chakra-ui/react'
+
+import Button from '~components/Button'
 
 import { ColumnsMenu } from './ColumnsMenu'
 import { DownloadButton } from './DownloadButton'
 import { FilterMenu } from './FilterMenu'
 import { ResponsesSearchbar } from './ResponsesSearchbar'
+import { SaveViewModal } from './SaveViewModal'
 import { SortMenu } from './SortMenu'
 
 export const ResponsesToolbar = (): JSX.Element => {
+  const { t } = useTranslation()
+  const { saveAsNewView } = t(
+    'features.adminForm.responses.responsesPage.storage.unlockedResponses.views',
+    { returnObjects: true },
+  )
+  const saveViewModal = useDisclosure()
+
   return (
     <Flex
       direction={{ base: 'column', lg: 'row' }}
@@ -28,8 +39,20 @@ export const ResponsesToolbar = (): JSX.Element => {
       </Flex>
 
       <Flex align="center" gap="0.75rem" flexShrink={0}>
+        <Button
+          variant="clear"
+          colorScheme="secondary"
+          onClick={saveViewModal.onOpen}
+        >
+          {saveAsNewView}
+        </Button>
         <DownloadButton />
       </Flex>
+
+      <SaveViewModal
+        isOpen={saveViewModal.isOpen}
+        onClose={saveViewModal.onClose}
+      />
     </Flex>
   )
 }
