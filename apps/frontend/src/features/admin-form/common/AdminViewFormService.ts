@@ -14,6 +14,7 @@ import { transformAllIsoStringsToDate } from '~utils/date'
 import {
   API_BASE_URL,
   ApiService,
+  getClientVersionHeader,
   processFetchResponse,
 } from '~services/ApiService'
 
@@ -207,16 +208,15 @@ export const submitEmailModeFormPreviewWithFetch = async ({
     formInputs: filteredInputs,
   })
 
-  const response = await fetch(
-    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`,
-    {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Accept: 'application/json',
-      },
+  const url = `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/email`
+  const response = await fetch(url, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      Accept: 'application/json',
+      ...getClientVersionHeader(url),
     },
-  )
+  })
   return processFetchResponse(response)
 }
 
@@ -231,17 +231,16 @@ export const submitStorageModeFormPreviewWithFetch = async ({
 }): Promise<SubmissionResponseDto> => {
   const emptyFormData = {}
 
-  const response = await fetch(
-    `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/storage`,
-    {
-      method: 'POST',
-      body: JSON.stringify(emptyFormData),
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
+  const url = `${API_BASE_URL}${ADMIN_FORM_ENDPOINT}/${formId}/preview/submissions/storage`
+  const response = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(emptyFormData),
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...getClientVersionHeader(url),
     },
-  )
+  })
   return processFetchResponse(response)
 }
 
