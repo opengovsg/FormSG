@@ -419,11 +419,20 @@ describe('step-auth', () => {
       return { name, token: token as string, options }
     }
 
-    it('should expire after five minutes', () => {
+    it('should keep the cookie past the token expiry so an expired login is detectable', () => {
       const { name, options } = mintBinding()
 
       expect(name).toBe(`cpStepBinding_${NONCE}`)
-      expect(options).toMatchObject({ maxAge: 5 * 60 * 1000, sameSite: 'lax' })
+      expect(options).toMatchObject({ sameSite: 'lax' })
+      if (
+        !options ||
+        typeof options !== 'object' ||
+        !('maxAge' in options) ||
+        typeof options.maxAge !== 'number'
+      ) {
+        throw new Error('Expected the cookie to set a numeric maxAge')
+      }
+      expect(options.maxAge).toBeGreaterThan(5 * 60 * 1000)
     })
 
     it('should verify against the nonce in the callback state', () => {

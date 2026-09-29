@@ -27,7 +27,6 @@ import {
   FormWhitelistSettingNotFoundError,
 } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
-import { getRawWorkflow } from '../../form/workflow-login.utils'
 import { getMyInfoAttr } from '../../myinfo/myinfo.util'
 import {
   InvalidJwtError,
@@ -158,53 +157,16 @@ export const isSameMrfStepAuthContext = (
   a.authType === b.authType &&
   (a.stepTokenHash ?? '') === (b.stepTokenHash ?? '')
 
-const resolveFirstStep = (
-  form: IPopulatedMultirespondentForm,
-): Result<ResolvedMrfStepAuth, FormWhitelistSettingNotFoundError> => {
-  const formFields = form.form_fields.map(
-    (field) => field.toObject() as FormFieldDto,
-  )
-  const stepFields = getMrfStepFields(formFields, getRawWorkflow(form), 0)
-  if (form.authType === FormAuthType.NIL) {
-    return ok({ workflowStep: 0, stepFields })
-  }
-  const { isWhitelistEnabled, encryptedWhitelistedSubmitterIds } =
-    form.getWhitelistedSubmitterIds()
-  if (isWhitelistEnabled && !encryptedWhitelistedSubmitterIds) {
-    return err(new FormWhitelistSettingNotFoundError())
-  }
-  return ok({
-    workflowStep: 0,
-    stepFields,
-    login: {
-      authType: form.authType,
-      isSubmitterIdCollectionEnabled: !!form.isSubmitterIdCollectionEnabled,
-      whitelist: isWhitelistEnabled
-        ? {
-            isWhitelistEnabled: true,
-            whitelistId: String(encryptedWhitelistedSubmitterIds),
-          }
-        : { isWhitelistEnabled: false },
-      esrvcId: form.esrvcId,
-    },
-  })
-}
-
 /**
  * Resolves who may fill in the pending step of an MRF submission, from the
  * submission's own copy of the workflow and e-service ID; the live form's
- * login settings never apply to a later step. Without a submission, resolves
- * Step 1 from the form.
+ * login settings never apply to a later step.
  */
 export const resolveMrfStepAuth = (
   form: IPopulatedMultirespondentForm,
-  submission?: IMultirespondentSubmissionSchema,
+  submission: IMultirespondentSubmissionSchema,
   credential: MrfStepCredential = {},
 ): Result<ResolvedMrfStepAuth, ResolveMrfStepAuthError> => {
-  if (!submission) {
-    return resolveFirstStep(form)
-  }
-
   const formId = String(form._id)
   const submissionId = String(submission._id)
   if (String(submission.form?._id ?? submission.form) !== formId) {
@@ -500,7 +462,9 @@ export const setCpStepBindingCookie = (
   })
   res.cookie(getCpStepBindingCookieName(nonce), token, {
     ...getOidcService(FormAuthType.CP).getCodeVerifierCookieOptions(),
-    maxAge: CP_STEP_BINDING_MAX_AGE_MS,
+    // Outlives the JWT, or the browser drops the cookie at the same moment
+    // the token expires and the callback can't tell expired from missing.
+    maxAge: CP_STEP_BINDING_MAX_AGE_MS * 2,
   })
 }
 

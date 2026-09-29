@@ -1,5 +1,6 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { Request } from 'express'
+import { FormAuthType } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
 
@@ -156,6 +157,41 @@ describe('loginToMyInfoFapi', () => {
     )
 
     expect(res.redirect).toHaveBeenCalledWith(`/${MOCK_FORM_ID}?a=1&b=2`)
+  })
+
+  it('should return a later step login to its submission, carrying only a safe query ID', async () => {
+    const submissionId = '6a0f4b8f8f8f8f8f8f8f8f8f'
+    MockSession.loadForCallback.mockResolvedValueOnce({
+      phase: 'pending',
+      target: {
+        formId: MOCK_FORM_ID,
+        encodedQuery: Buffer.from('queryId=abc-123&a=1&key=secret').toString(
+          'base64',
+        ),
+        mrfContext: {
+          formId: MOCK_FORM_ID,
+          submissionId,
+          workflowStep: 1,
+          authType: FormAuthType.MyInfo,
+        },
+      },
+      exchange: MOCK_EXCHANGE,
+    })
+    MockMyInfoFapiService.exchangeCallback.mockReturnValueOnce(
+      okAsync({ accessToken: 'mock-access-token', sub: 'mock-sub' }),
+    )
+    MockSession.markExchanged.mockResolvedValueOnce('claimed')
+    const res = expressHandler.mockResponse()
+
+    await loginToMyInfoFapi(
+      mockCallback(SUCCESS_QUERY, MOCK_SESSION_ID),
+      res,
+      jest.fn(),
+    )
+
+    expect(res.redirect).toHaveBeenCalledWith(
+      `/${MOCK_FORM_ID}/edit/${submissionId}?queryId=abc-123`,
+    )
   })
 
   it('should redirect without exchanging when the session is already exchanged', async () => {

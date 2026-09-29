@@ -154,6 +154,17 @@ describe('login.server.model', () => {
         ).rejects.toThrow('Form does not contain authType or e-service ID')
       })
 
+      it('should record a form-level MyInfo login without an e-service ID', async () => {
+        const saved = await LoginModel.addLoginFromForm({
+          ...omit(fullForm, 'esrvcId'),
+          authType: FormAuthType.MyInfo,
+        } as unknown as IPopulatedForm)
+
+        const found = await LoginModel.findById(saved._id)
+        expect(found!.authType).toBe(FormAuthType.MyInfo)
+        expect(found!.esrvcId).toBeUndefined()
+      })
+
       describe('with a later MRF step provider', () => {
         // Step 1 has no login; the live form's settings must not leak in.
         const noLoginForm = {

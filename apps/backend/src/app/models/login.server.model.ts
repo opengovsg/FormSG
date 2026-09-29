@@ -58,9 +58,9 @@ LoginSchema.statics.addLoginFromForm = function (
   authOverride?: LoginAuthOverride,
 ): Promise<ILoginSchema> {
   // A later MRF step's provider replaces the form-level login settings whole.
-  // Only a MyInfo (FAPI) step login has no e-service ID.
+  // MyInfo (FAPI) logins have no e-service ID, at any step.
   const { authType, esrvcId } = authOverride ?? form
-  const isEsrvcIdOptional = !!authOverride && authType === FormAuthType.MyInfo
+  const isEsrvcIdOptional = authType === FormAuthType.MyInfo
   if (!authType || (!esrvcId && !isEsrvcIdOptional)) {
     return Promise.reject(
       new Error('Form does not contain authType or e-service ID'),

@@ -1,7 +1,12 @@
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { FormAuthType, FormStatus, SubmissionType } from 'formsg-shared/types'
+import {
+  ErrorCode,
+  FormAuthType,
+  FormStatus,
+  SubmissionType,
+} from 'formsg-shared/types'
 import jwt from 'jsonwebtoken'
 import { omit } from 'lodash'
 import mongoose from 'mongoose'
@@ -11,6 +16,7 @@ import session, { Session } from 'supertest-session'
 import getLoginModel from 'src/app/models/login.server.model'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
 import * as FeatureFlagsService from 'src/app/modules/feature-flags/feature-flags.service'
+import * as FormService from 'src/app/modules/form/form.service'
 import * as MyInfoFapiService from 'src/app/modules/myinfo/fapi/myinfo.fapi.service'
 import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
 import * as stepToken from 'src/app/modules/submission/multirespondent-submission/step-token'
@@ -1754,6 +1760,96 @@ describe('public-form.submissions.routes', () => {
       await expect(LoginModel.countDocuments({ form: formId })).resolves.toBe(1)
       expect(logout.status).toBe(200)
       expect(afterLogout.body.spcpSession).toBeUndefined()
+    })
+
+    it('should not start a login when the step token is wrong or missing', async () => {
+      const { authUrl } = await insertStepSubmission()
+      const startLoginSpy = jest.spyOn(MyInfoFapiService, 'startLogin')
+
+      const wrong = await stepRequest
+        .post(`${authUrl}/redirect`)
+        .send({ stepToken: stepToken.generate() })
+      const missing = await stepRequest.post(`${authUrl}/redirect`).send({})
+
+      expect(wrong.status).toBe(403)
+      expect(missing.status).toBe(403)
+      expect(startLoginSpy).not.toHaveBeenCalled()
+    })
+
+    describe('with an eligible-respondent list on the step', () => {
+      const LISTED_STEP_AUTH = {
+        ...MYINFO_STEP_AUTH,
+        whitelisted_submitter_ids: {
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: new ObjectId().toHexString(),
+        },
+      }
+      const mockFapiLogin = () => {
+        jest.spyOn(MyInfoFapiService, 'startLogin').mockReturnValue(
+          okAsync({
+            sessionId: 'fapi-session-id',
+            redirectUrl: 'https://sp',
+          }),
+        )
+        jest
+          .spyOn(MyInfoFapiService, 'loadPersonForSession')
+          .mockReturnValue(
+            okAsync(
+              new MyInfoData({ uinFin: MOCK_UINFIN, data: MOCK_MYINFO_DATA }),
+            ),
+          )
+      }
+
+      it('should refuse a respondent who is not listed, without a session or saved hashes', async () => {
+        const { authUrl, formId } = await insertStepSubmission(LISTED_STEP_AUTH)
+        mockFapiLogin()
+        const whitelistSpy = jest
+          .spyOn(FormService, 'checkIsSubmitterNotWhitelisted')
+          .mockReturnValue(okAsync(true))
+        await stepRequest
+          .post(`${authUrl}/redirect`)
+          .send({ stepToken: STEP_TOKEN })
+
+        const response = await stepRequest
+          .post(`${authUrl}/session`)
+          .send({ stepToken: STEP_TOKEN })
+        const retried = await stepRequest
+          .post(`${authUrl}/session`)
+          .send({ stepToken: STEP_TOKEN })
+
+        expect(whitelistSpy).toHaveBeenCalledWith(
+          expect.objectContaining({ submitterId: MOCK_UINFIN }),
+        )
+        expect(response.status).toBe(200)
+        expect(response.body.errorCodes).toEqual([
+          ErrorCode.respondentNotWhitelisted,
+        ])
+        expect(response.body.spcpSession).toBeUndefined()
+        expect(retried.body.spcpSession).toBeUndefined()
+        await expect(
+          MyInfoHashModel.findHashes(MOCK_UINFIN, formId, 'fapi-session-id'),
+        ).resolves.toBeNull()
+      })
+
+      it('should let a listed respondent in', async () => {
+        const { authUrl } = await insertStepSubmission(LISTED_STEP_AUTH)
+        mockFapiLogin()
+        jest
+          .spyOn(FormService, 'checkIsSubmitterNotWhitelisted')
+          .mockReturnValue(okAsync(false))
+        await stepRequest
+          .post(`${authUrl}/redirect`)
+          .send({ stepToken: STEP_TOKEN })
+
+        const response = await stepRequest
+          .post(`${authUrl}/session`)
+          .send({ stepToken: STEP_TOKEN })
+
+        expect(response.body.errorCodes).toBeUndefined()
+        expect(response.body.spcpSession).toMatchObject({
+          userName: MOCK_UINFIN,
+        })
+      })
     })
   })
 })
