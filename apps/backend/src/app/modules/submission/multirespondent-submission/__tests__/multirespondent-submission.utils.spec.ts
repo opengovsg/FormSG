@@ -395,8 +395,8 @@ describe('multirespondent-submission.utils', () => {
 
     // Defaults for tests that are not exercising the Children gate.
     const CHILDREN_GATE_CLOSED = {
-      workflowStep: 0,
-      formAuthType: FormAuthType.NIL,
+      stepEditableFieldIds: new Set<string>(),
+      stepAuthType: FormAuthType.NIL,
       isMrfChildrenEnabled: false,
     }
 
@@ -427,8 +427,8 @@ describe('multirespondent-submission.utils', () => {
       } as unknown as ParsedClearFormFieldResponsesV4
 
       const actWithGate = (gate: {
-        workflowStep: number
-        formAuthType: FormAuthType
+        stepEditableFieldIds: ReadonlySet<string>
+        stepAuthType: FormAuthType
         isMrfChildrenEnabled: boolean
       }) =>
         validateMrfFieldResponses({
@@ -441,8 +441,8 @@ describe('multirespondent-submission.utils', () => {
 
       it('should return error when the mrf-children flag is off', () => {
         const result = actWithGate({
-          workflowStep: 0,
-          formAuthType: FormAuthType.MyInfo,
+          stepEditableFieldIds: new Set([childrenFieldId]),
+          stepAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: false,
         })
 
@@ -453,10 +453,33 @@ describe('multirespondent-submission.utils', () => {
         )
       })
 
-      it('should return error when the submission is not the initial step and there is no previous response', () => {
+      it('should return error when the field belongs to another step and there is no previous response', () => {
         const result = actWithGate({
-          workflowStep: 1,
-          formAuthType: FormAuthType.MyInfo,
+          stepEditableFieldIds: new Set(),
+          stepAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isErr()).toBe(true)
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
+      })
+
+      it('should accept a children response filled in by a later MyInfo step that owns the field', () => {
+        jest.spyOn(fieldValidation, 'validateFieldV4').mockReturnValue(ok(true))
+
+        const result = actWithGate({
+          stepEditableFieldIds: new Set([childrenFieldId]),
+          stepAuthType: FormAuthType.MyInfo,
+          isMrfChildrenEnabled: true,
+        })
+
+        expect(result.isOk()).toBe(true)
+      })
+
+      it('should return error for a children response filled in by a later Corppass step', () => {
+        const result = actWithGate({
+          stepEditableFieldIds: new Set([childrenFieldId]),
+          stepAuthType: FormAuthType.CP,
           isMrfChildrenEnabled: true,
         })
 
@@ -477,8 +500,9 @@ describe('multirespondent-submission.utils', () => {
           previousResponses: JSON.parse(
             JSON.stringify(mockResponses),
           ) as ParsedClearFormFieldResponsesV4,
-          workflowStep: 1,
-          formAuthType: FormAuthType.MyInfo,
+          stepEditableFieldIds: new Set(),
+          // Accepted whatever the current step's provider
+          stepAuthType: FormAuthType.CP,
           isMrfChildrenEnabled: true,
         })
 
@@ -499,8 +523,8 @@ describe('multirespondent-submission.utils', () => {
           formFields: mockFormFields,
           responses: tampered,
           previousResponses: mockResponses,
-          workflowStep: 1,
-          formAuthType: FormAuthType.MyInfo,
+          stepEditableFieldIds: new Set(),
+          stepAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: true,
         })
 
@@ -511,10 +535,10 @@ describe('multirespondent-submission.utils', () => {
         )
       })
 
-      it('should return error when the form is not MyInfo-authed', () => {
+      it('should return error when the step has no MyInfo login', () => {
         const result = actWithGate({
-          workflowStep: 0,
-          formAuthType: FormAuthType.SP,
+          stepEditableFieldIds: new Set([childrenFieldId]),
+          stepAuthType: FormAuthType.SP,
           isMrfChildrenEnabled: true,
         })
 
@@ -522,14 +546,14 @@ describe('multirespondent-submission.utils', () => {
         expect(result._unsafeUnwrapErr()).toBeInstanceOf(ValidateFieldErrorV4)
       })
 
-      it('should accept a children response when flag is on, step is initial and form is MyInfo-authed', () => {
+      it('should accept a children response when flag is on and the step owning it has MyInfo login', () => {
         const validateFieldV4Mock = jest
           .spyOn(fieldValidation, 'validateFieldV4')
           .mockReturnValue(ok(true))
 
         const result = actWithGate({
-          workflowStep: 0,
-          formAuthType: FormAuthType.MyInfo,
+          stepEditableFieldIds: new Set([childrenFieldId]),
+          stepAuthType: FormAuthType.MyInfo,
           isMrfChildrenEnabled: true,
         })
 

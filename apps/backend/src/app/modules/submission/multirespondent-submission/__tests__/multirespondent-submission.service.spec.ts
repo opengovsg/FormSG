@@ -31,12 +31,12 @@ import {
 } from 'src/types'
 import { MultirespondentSubmissionDto, SnapshottedFormDef } from 'src/types/api'
 
-import { DatabaseConflictError } from '../../../core/core.errors'
 import { FormRespondentSingleSubmissionValidationError } from '../../../form/form.errors'
 import * as FormService from '../../../form/form.service'
 import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSubmissionStaleError,
   SubmissionSaveError,
 } from '../../submission.errors'
 import { mapRouteError } from '../../submission.utils'
@@ -87,6 +87,12 @@ const MOCK_SUBMISSION_ATTACHMENTS = [
     fieldId: new ObjectId().toHexString(),
   },
 ]
+
+// Step state an update was checked against, as the controller passes it
+const expectedPreviousOf = (row: {
+  workflowStep: number
+  stepTokenHash?: string
+}) => ({ workflowStep: row.workflowStep, stepTokenHash: row.stepTokenHash })
 
 describe('multirespondent-submission.service', () => {
   beforeAll(async () => {
@@ -3531,6 +3537,7 @@ describe('multirespondent-submission.service', () => {
       // Flag OFF advance: middleware omits both token fields from the payload.
       const result = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
+        expectedPrevious: expectedPreviousOf(row),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildPayload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -3567,6 +3574,7 @@ describe('multirespondent-submission.service', () => {
       const nextRaw = stepToken.generate()
       const result = await updateMultiRespondentFormSubmission({
         submissionId: legacy._id.toString(),
+        expectedPrevious: expectedPreviousOf(legacy),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildPayload({
           workflowStep: 1,
@@ -3615,6 +3623,7 @@ describe('multirespondent-submission.service', () => {
       const nextRaw = stepToken.generate()
       const result = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
+        expectedPrevious: expectedPreviousOf(row),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildPayload({
           workflowStep: 1,
@@ -3659,6 +3668,7 @@ describe('multirespondent-submission.service', () => {
 
       const result = await updateMultiRespondentFormSubmission({
         submissionId: legacy._id.toString(),
+        expectedPrevious: expectedPreviousOf(legacy),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildPayload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -3703,6 +3713,7 @@ describe('multirespondent-submission.service', () => {
 
       const result = await updateMultiRespondentFormSubmission({
         submissionId: doc._id.toString(),
+        expectedPrevious: expectedPreviousOf(doc),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildPayload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -3710,11 +3721,160 @@ describe('multirespondent-submission.service', () => {
 
       expect(result.isErr()).toBe(true)
       const error = result._unsafeUnwrapErr()
-      expect(error).toBeInstanceOf(DatabaseConflictError)
+      expect(error).toBeInstanceOf(MrfSubmissionStaleError)
       // Non-retryable 409, not a 5xx default.
       expect(mapRouteError(error).statusCode).toBe(409)
 
       saveSpy.mockRestore()
+    })
+
+    describe('atomic step advance', () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const createRowAtStep0 = (
+        overrides: Record<string, unknown> = {},
+      ): Promise<IMultirespondentSubmissionSchema> =>
+        Model.create({
+          form: mockFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: twoStepWorkflow,
+          submissionPublicKey: 'pk',
+          encryptedSubmissionSecretKey: 'esk',
+          encryptedContent: 'ec',
+          version: 2,
+          workflowStep: 0,
+          submittedSteps: [
+            { isApproval: false, submittedAt: new Date().toISOString() },
+          ],
+          stepTokenHash: stepToken.hash(stepToken.generate()),
+          ...overrides,
+        })
+      const advance = (
+        row: IMultirespondentSubmissionSchema,
+        overrides: Partial<MultirespondentSubmissionDto> = {},
+      ) => {
+        const nextRaw = stepToken.generate()
+        return updateMultiRespondentFormSubmission({
+          submissionId: row._id.toString(),
+          expectedPrevious: expectedPreviousOf(row),
+          snapshottedFormDef: buildSnapshottedFormDef(),
+          encryptedPayload: buildPayload({
+            workflowStep: 1,
+            stepToken: nextRaw,
+            stepTokenHash: stepToken.hash(nextRaw),
+            ...overrides,
+          }),
+          logMeta: { action: 'test' },
+        })
+      }
+
+      it('commits exactly one of two concurrent advances from the same step', async () => {
+        const row = await createRowAtStep0()
+
+        const results = await Promise.all([advance(row), advance(row)])
+
+        const winners = results.filter((result) => result.isOk())
+        const losers = results.filter((result) => result.isErr())
+        expect(winners).toHaveLength(1)
+        expect(losers).toHaveLength(1)
+        const error = losers[0]._unsafeUnwrapErr()
+        expect(error).toBeInstanceOf(MrfSubmissionStaleError)
+        expect(mapRouteError(error)).toEqual({
+          statusCode: 409,
+          errorMessage:
+            'This response has already been updated. Reload to continue.',
+        })
+        const saved = await Model.findById(row._id)
+        expect(saved?.workflowStep).toBe(1)
+        expect(saved?.submittedSteps).toHaveLength(2)
+        expect(saved?.stepTokenHash).toBe(
+          winners[0]._unsafeUnwrap().submission.stepTokenHash,
+        )
+      })
+
+      it('does not save when another request advances the row between reload and save', async () => {
+        const row = await createRowAtStep0()
+        const competingHash = stepToken.hash(stepToken.generate())
+        const originalSave = Model.prototype.save
+        // Let a competing writer commit after this request's late reload.
+        const saveSpy = jest
+          .spyOn(Model.prototype, 'save')
+          .mockImplementationOnce(async function (
+            this: IMultirespondentSubmissionSchema,
+            ...args: unknown[]
+          ) {
+            await Model.updateOne(
+              { _id: row._id },
+              { $set: { workflowStep: 1, stepTokenHash: competingHash } },
+            )
+            return originalSave.apply(this, args as [])
+          })
+
+        const result = await advance(row)
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          MrfSubmissionStaleError,
+        )
+        const saved = await Model.findById(row._id)
+        expect(saved?.stepTokenHash).toBe(competingHash)
+        expect(saved?.submittedSteps).toHaveLength(1)
+        saveSpy.mockRestore()
+      })
+
+      it('rejects an advance checked against an older step token', async () => {
+        const row = await createRowAtStep0()
+
+        const result = await updateMultiRespondentFormSubmission({
+          submissionId: row._id.toString(),
+          expectedPrevious: {
+            workflowStep: 0,
+            stepTokenHash: stepToken.hash(stepToken.generate()),
+          },
+          snapshottedFormDef: buildSnapshottedFormDef(),
+          encryptedPayload: buildPayload({ workflowStep: 1 }),
+          logMeta: { action: 'test' },
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+          MrfSubmissionStaleError,
+        )
+        const saved = await Model.findById(row._id)
+        expect(saved?.workflowStep).toBe(0)
+        expect(saved?.stepTokenHash).toBe(row.stepTokenHash)
+      })
+
+      it('advances a legacy row without a step token only while it has none', async () => {
+        const row = await createRowAtStep0({ stepTokenHash: undefined })
+
+        const results = await Promise.all([advance(row), advance(row)])
+
+        expect(results.filter((result) => result.isOk())).toHaveLength(1)
+        const saved = await Model.findById(row._id)
+        expect(saved?.submittedSteps).toHaveLength(2)
+      })
+
+      it("persists this step's accumulated myInfoReadOnlyFields", async () => {
+        const row = await createRowAtStep0({ myInfoReadOnlyFields: ['step1'] })
+
+        const result = await advance(row, {
+          myInfoReadOnlyFields: ['step1', 'step2'],
+        })
+
+        expect(result.isOk()).toBe(true)
+        const saved = await Model.findById(row._id)
+        expect(saved?.myInfoReadOnlyFields).toEqual(['step1', 'step2'])
+      })
+
+      it('keeps the stored myInfoReadOnlyFields when this step verified none', async () => {
+        const row = await createRowAtStep0({ myInfoReadOnlyFields: ['step1'] })
+
+        const result = await advance(row)
+
+        expect(result.isOk()).toBe(true)
+        const saved = await Model.findById(row._id)
+        expect(saved?.myInfoReadOnlyFields).toEqual(['step1'])
+      })
     })
 
     it('threads the raw step token into the next respondent magic link on create', async () => {
@@ -3976,6 +4136,7 @@ describe('multirespondent-submission.service', () => {
 
       const result = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
+        expectedPrevious: expectedPreviousOf(row),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -4052,6 +4213,7 @@ describe('multirespondent-submission.service', () => {
 
       const result = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
+        expectedPrevious: expectedPreviousOf(row),
         snapshottedFormDef: buildSnapshottedFormDef({
           webhook: genericV4Webhook(),
         }),
@@ -4184,6 +4346,7 @@ describe('multirespondent-submission.service', () => {
 
       const result = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
+        expectedPrevious: expectedPreviousOf(row),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -4302,6 +4465,7 @@ describe('multirespondent-submission.service', () => {
 
         const updated = await updateMultiRespondentFormSubmission({
           submissionId: submission._id.toString(),
+          expectedPrevious: expectedPreviousOf(submission),
           snapshottedFormDef: buildSnapshottedFormDef({ webhook }),
           encryptedPayload: buildV4Payload({ workflowStep: 1 }),
           logMeta: { action: 'test' },
@@ -4578,6 +4742,7 @@ describe('multirespondent-submission.service', () => {
 
       const updated = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
+        expectedPrevious: expectedPreviousOf(row),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -4675,6 +4840,7 @@ describe('multirespondent-submission.service', () => {
 
       const result = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
+        expectedPrevious: expectedPreviousOf(row),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -4737,6 +4903,7 @@ describe('multirespondent-submission.service', () => {
 
       const result = await updateMultiRespondentFormSubmission({
         submissionId: doc._id.toString(),
+        expectedPrevious: expectedPreviousOf(doc),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -4744,7 +4911,7 @@ describe('multirespondent-submission.service', () => {
 
       expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
       expect(result.isErr()).toBe(true)
-      expect(result._unsafeUnwrapErr()).toBeInstanceOf(DatabaseConflictError)
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MrfSubmissionStaleError)
       expect(mapRouteError(result._unsafeUnwrapErr()).statusCode).toBe(409)
       saveSpy.mockRestore()
     })
@@ -4777,6 +4944,7 @@ describe('multirespondent-submission.service', () => {
 
       const failed = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
+        expectedPrevious: expectedPreviousOf(row),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },
@@ -4800,6 +4968,7 @@ describe('multirespondent-submission.service', () => {
       )
       const resubmit = await updateMultiRespondentFormSubmission({
         submissionId: row._id.toString(),
+        expectedPrevious: expectedPreviousOf(row),
         snapshottedFormDef: buildSnapshottedFormDef(),
         encryptedPayload: buildV4Payload({ workflowStep: 1 }),
         logMeta: { action: 'test' },

@@ -282,6 +282,64 @@ describe('step-auth', () => {
         )
       },
     )
+
+    describe('with the continuation cookie instead of the step token', () => {
+      const mintCpCookie = (context: MrfStepAuthContext = CONTEXT) => {
+        const res = expressHandler.mockResponse()
+        setMrfStepAuthCookie(res, {
+          ...context,
+          userName: 'UEN',
+          userInfo: 'UID',
+        })
+        const [name, token] = jest.mocked(res.cookie).mock.calls[0] as [
+          string,
+          string,
+        ]
+        return { [name]: token }
+      }
+
+      it("should return the step's verified login", () => {
+        const result = resolveMrfStepAuth(MOCK_FORM, makeSubmission(), {
+          stepAuthCookies: mintCpCookie(),
+        })
+
+        expect(result._unsafeUnwrap().session).toMatchObject({
+          ...CONTEXT,
+          userName: 'UEN',
+          userInfo: 'UID',
+        })
+      })
+
+      it('should reject a login step without the cookie', () => {
+        const result = resolveMrfStepAuth(MOCK_FORM, makeSubmission(), {
+          stepAuthCookies: {},
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(MissingJwtError)
+      })
+
+      it('should reject a cookie issued before the step token changed', () => {
+        const result = resolveMrfStepAuth(MOCK_FORM, makeSubmission(), {
+          stepAuthCookies: mintCpCookie({
+            ...CONTEXT,
+            stepTokenHash: stepToken.hash(stepToken.generate()),
+          }),
+        })
+
+        expect(result._unsafeUnwrapErr()).toBeInstanceOf(InvalidJwtError)
+      })
+
+      it('should pass a step without login, leaving proof to the caller', () => {
+        const result = resolveMrfStepAuth(MOCK_FORM, makeSubmission({}, null), {
+          stepAuthCookies: {},
+        })
+
+        expect(result._unsafeUnwrap()).toEqual({
+          workflowStep: 1,
+          stepFields: [STEP_2_FIELD],
+        })
+      })
+    })
   })
 
   describe('continuation cookie', () => {
