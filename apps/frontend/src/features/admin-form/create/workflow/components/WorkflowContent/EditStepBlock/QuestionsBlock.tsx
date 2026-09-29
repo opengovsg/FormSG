@@ -69,32 +69,43 @@ export const QuestionsBlock = ({
     stepIndex >= 0 &&
     isMyInfoAuthType(resolveStepAuth(form, formWorkflow, stepIndex).authType)
   const savedFieldIds = formWorkflow[stepIndex]?.edit ?? []
-  // 1-based step number of each other step that already fills a field.
+  // Step index of each other step that already fills a field; new steps come last.
   const otherStepByFieldId = new Map(
     formWorkflow.flatMap((step, i) =>
       step._id === stepId
         ? []
-        : step.edit.map((id): [string, number] => [id, i + 1]),
+        : step.edit.map((id): [string, number] => [id, i]),
     ),
   )
   const myInfoFields = fillableFields.filter((f) => 'myInfo' in f)
-  const myInfoInOtherSteps = myInfoFields.filter((f) =>
-    otherStepByFieldId.has(f._id),
-  )
 
   const items = fillableFields
     // Fields this step already saved stay listed so they can be removed.
     .filter(
       (f) =>
-        !('myInfo' in f) ||
-        savedFieldIds.includes(f._id) ||
-        (isSingpassStep && !otherStepByFieldId.has(f._id)),
+        !('myInfo' in f) || savedFieldIds.includes(f._id) || isSingpassStep,
     )
-    .map((f) => ({
-      value: f._id,
-      label: getLogicFieldLabel(idToFieldMap[f._id]),
-      icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
-    }))
+    .map((f) => {
+      const ownerIndex =
+        'myInfo' in f && !savedFieldIds.includes(f._id)
+          ? otherStepByFieldId.get(f._id)
+          : undefined
+      return {
+        value: f._id,
+        label: getLogicFieldLabel(idToFieldMap[f._id]),
+        icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
+        ...(ownerIndex === undefined
+          ? {}
+          : {
+              disabled: true,
+              description: t(
+                stepIndex < 0 || ownerIndex < stepIndex
+                  ? 'features.adminForm.sidebar.workflow.questions.myInfoUsedInPreviousSteps'
+                  : 'features.adminForm.sidebar.workflow.questions.myInfoUsedInLaterStep',
+              ),
+            }),
+      }
+    })
 
   const hasOnlyMyInfoFields = items.length === 0 && fillableFields.length > 0
 
@@ -178,20 +189,6 @@ export const QuestionsBlock = ({
           <FormHelperText>
             {t(
               'features.adminForm.sidebar.workflow.questions.myInfoNeedsSingpass',
-            )}
-          </FormHelperText>
-        ) : null}
-        {isSingpassStep && myInfoInOtherSteps.length > 0 ? (
-          <FormHelperText>
-            {t(
-              'features.adminForm.sidebar.workflow.questions.myInfoInOtherSteps',
-              {
-                fields: myInfoInOtherSteps
-                  .map(
-                    (f) => `${f.title} (Step ${otherStepByFieldId.get(f._id)})`,
-                  )
-                  .join(', '),
-              },
             )}
           </FormHelperText>
         ) : null}

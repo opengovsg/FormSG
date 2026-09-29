@@ -180,7 +180,8 @@ export const enSG: Workflow = {
       'The approval field is added here automatically.',
     myInfoNeedsSingpass:
       "MyInfo fields can only be filled in a Singpass step. Change this step's login in Settings.",
-    myInfoInOtherSteps: 'Already filled in another step: {fields}',
+    myInfoUsedInPreviousSteps: 'Already used in previous steps',
+    myInfoUsedInLaterStep: 'Already used in a later step',
   },
   emptyStates: {
     noEmailField: 'Your form has no Email field yet.',

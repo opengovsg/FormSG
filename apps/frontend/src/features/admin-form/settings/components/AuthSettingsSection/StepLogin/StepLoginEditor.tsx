@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiUndo } from 'react-icons/bi'
 import {
   Box,
   Flex,
@@ -191,7 +192,7 @@ export const StepLoginEditor = ({
         <Radio.RadioGroup value={draft.authType} onChange={handleLoginChange}>
           {STEP_LOGIN_OPTIONS.map((authType) => (
             <Radio key={authType} value={authType} isDisabled={isSaving}>
-              <Flex align="center" gap="1rem">
+              <Flex align="center" gap="0.5rem" wrap="wrap">
                 {getTypeLabel(authType)}
                 {authType === FormAuthType.MyInfo ? (
                   <Tag size="sm" variant="subtle">
@@ -206,24 +207,30 @@ export const StepLoginEditor = ({
 
       {removedMyInfoTitles.length > 0 ? (
         <InlineMessage variant="warning">
-          <Flex
-            flex={1}
-            gap="1rem"
-            align="center"
-            justify="space-between"
-            wrap="wrap"
-          >
-            <Text textStyle="body-2">
-              {t(`${EDITOR_KEY}.myInfoRemoved`, {
-                fields: removedMyInfoTitles.join(', '),
-              })}
-            </Text>
+          <Stack flex={1} minW={0} spacing="0.75rem">
+            <Text textStyle="body-2">{t(`${EDITOR_KEY}.myInfoRemoved`)}</Text>
+            <Flex gap="0.5rem" wrap="wrap">
+              {removedMyInfoTitles.map((title, i) => (
+                <Tag key={`${title}-${i}`} size="sm" variant="subtle">
+                  {title}
+                </Tag>
+              ))}
+            </Flex>
             {undoDraft ? (
-              <Button variant="link" onClick={handleUndo} isDisabled={isSaving}>
-                {t(`${EDITOR_KEY}.undo`)}
-              </Button>
+              <Box>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  colorScheme="secondary"
+                  leftIcon={<BiUndo fontSize="1.25rem" />}
+                  onClick={handleUndo}
+                  isDisabled={isSaving}
+                >
+                  {t(`${EDITOR_KEY}.undo`)}
+                </Button>
+              </Box>
             ) : null}
-          </Flex>
+          </Stack>
         </InlineMessage>
       ) : null}
 

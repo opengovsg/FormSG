@@ -68,7 +68,7 @@ export const StepLoginRow = ({
       p="1.5rem"
     >
       <Flex justify="space-between" align="flex-start" gap="1rem">
-        <Stack spacing="0.5rem" minW={0}>
+        <Stack spacing="0.5rem" flex={1} minW={0}>
           <Text textStyle="subhead-1" color="secondary.700">
             {step?.step_name
               ? t(`${STEP_LOGIN_COPY_KEY}.namedStepTitle`, {
@@ -89,6 +89,7 @@ export const StepLoginRow = ({
         </Stack>
         {isEditing ? null : (
           <Button
+            flexShrink={0}
             variant="outline"
             onClick={onEdit}
             isDisabled={!canEdit}

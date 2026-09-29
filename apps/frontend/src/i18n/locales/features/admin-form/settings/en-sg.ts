@@ -58,7 +58,7 @@ export const enSG = {
       esrvcIdRequired: 'Enter the Corppass e-service ID to use Corppass.',
       esrvcIdWhitespace: 'e-service ID must not contain whitespace',
       myInfoRemoved:
-        'These fields were removed from this step, not deleted from the form: {fields}',
+        'These fields were removed from this step, not deleted from the form.',
       undo: 'Undo',
       noStepsMyInfo:
         '{fields} are Myinfo fields, so Step 1 needs Singpass. Keep Singpass, or delete them from the form first.',

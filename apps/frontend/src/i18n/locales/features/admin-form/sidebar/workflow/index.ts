@@ -155,7 +155,8 @@ export interface Workflow {
     placeholderRedesign: string
     autoAddHelperTextRedesign: string
     myInfoNeedsSingpass: string
-    myInfoInOtherSteps: string
+    myInfoUsedInPreviousSteps: string
+    myInfoUsedInLaterStep: string
   }
   emptyStates: {
     noEmailField: string
