@@ -314,6 +314,7 @@ const _createPaymentSubmission = async ({
     await createMultiRespondentFormPendingSubmission({
       form,
       encryptedPayload,
+      verifiedContentPlaintext: req.formsg.verifiedContentPlaintext,
       paymentId,
       logMeta,
     })
