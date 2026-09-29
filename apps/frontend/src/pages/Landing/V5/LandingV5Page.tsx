@@ -13,6 +13,7 @@ import { HeroSection } from './sections/HeroSection'
 import { ProofSection } from './sections/ProofSection'
 import { SecuritySection } from './sections/SecuritySection'
 import { TestimonialSection } from './sections/TestimonialSection'
+import { LANDING_V5_COLORS } from './theme/tokens'
 
 /**
  * V5 landing page — the "sheet that scrolls sideways" exploration, built for
@@ -20,8 +21,9 @@ import { TestimonialSection } from './sections/TestimonialSection'
  *
  * The header and footer sit outside `LandingV5Root` on purpose. They are shared
  * product chrome, and the brief was to keep the standard footer rather than
- * port the prototype's colophon, so they should keep the product theme. Only
- * the page body gets the paper palette.
+ * port the prototype's colophon. The header is the compact variant so it sits
+ * as low as the prototype's nav, and the footer takes the paper background so
+ * the page does not end on a white band.
  */
 export const LandingV5Page = (): JSX.Element => {
   /* The nudge belongs to the proof section but is triggered by the hero, when
@@ -32,7 +34,7 @@ export const LandingV5Page = (): JSX.Element => {
 
   return (
     <>
-      <AppPublicHeader />
+      <AppPublicHeader compact />
       <LandingV5Root>
         <HeroSection onReachEnd={bob} />
         <ProofSection bobRef={bobRef} isAtTop={isAtTop} />
@@ -42,7 +44,7 @@ export const LandingV5Page = (): JSX.Element => {
         <TestimonialSection />
         <CloseSection />
       </LandingV5Root>
-      <AppFooter />
+      <AppFooter containerProps={{ bg: LANDING_V5_COLORS.paper }} />
     </>
   )
 }
