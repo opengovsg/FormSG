@@ -70,6 +70,7 @@ export interface ResponsesResponsesPage {
       views: {
         allResponses: string
         saveAsNewView: string
+        saveView: string
         viewName: string
         viewNamePlaceholder: string
         viewNameRequired: string

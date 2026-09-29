@@ -80,6 +80,7 @@ export const enSG: ResponsesResponsesPage = {
       views: {
         allResponses: 'All responses',
         saveAsNewView: 'Save as new view',
+        saveView: 'Save view',
         viewName: 'View name',
         viewNamePlaceholder: 'e.g. Pending approvals',
         viewNameRequired: 'View name is required',

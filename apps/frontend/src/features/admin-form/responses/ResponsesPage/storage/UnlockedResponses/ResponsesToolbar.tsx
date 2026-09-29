@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { BiSave } from 'react-icons/bi'
 import { Box, Flex, useDisclosure } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -15,7 +16,7 @@ import { useSavedViewMutation } from './useSavedViewMutation'
 
 export const ResponsesToolbar = (): JSX.Element => {
   const { t } = useTranslation()
-  const { saveAsNewView } = t(
+  const { saveView: saveViewLabel } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.views',
     { returnObjects: true },
   )
@@ -61,8 +62,9 @@ export const ResponsesToolbar = (): JSX.Element => {
           isDisabled={!hasActiveFilters || isViewSaved}
           isLoading={isSavingView}
           onClick={saveViewModal.onOpen}
+          leftIcon={<BiSave fontSize="1.25rem" />}
         >
-          {saveAsNewView}
+          {saveViewLabel}
         </Button>
         <DownloadButton />
       </Flex>
