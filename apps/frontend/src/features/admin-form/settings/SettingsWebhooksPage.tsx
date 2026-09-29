@@ -2,7 +2,10 @@ import { useTranslation } from 'react-i18next'
 import { Skeleton } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
-import { featureFlags } from 'formsg-shared/constants'
+import {
+  featureFlags,
+  PLUMBER_WEBHOOK_URL_REGEX,
+} from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form'
 
 import { CategoryHeader } from './components/CategoryHeader'
@@ -34,10 +37,9 @@ export const SettingsWebhooksPage = (): JSX.Element => {
       (settings?.responseMode === FormResponseMode.Multirespondent &&
         enableMrfWebhooks))
 
-  const isPlumberConnected =
-    /^https:\/\/(?:(?:staging|uat)\.)?plumber\.gov\.sg\/webhooks\//.test(
-      settings?.webhook.url ?? '',
-    )
+  const isPlumberConnected = PLUMBER_WEBHOOK_URL_REGEX.test(
+    settings?.webhook.url ?? '',
+  )
   // NOTE: only show this page when the enableWebhooks flag is off.
   if (isPlumberConnected && !enableWebhooks) {
     return (
