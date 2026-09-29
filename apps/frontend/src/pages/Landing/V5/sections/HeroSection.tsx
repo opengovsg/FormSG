@@ -251,6 +251,7 @@ export const HeroSection = ({
               onClick={() => goTo(activeIndex - 1)}
               isDisabled={!canScrollPrev}
               minW="2.125rem"
+              minH="2.125rem"
               w="2.125rem"
               h="2.125rem"
               borderRadius="50%"
@@ -268,6 +269,7 @@ export const HeroSection = ({
               onClick={() => goTo(activeIndex + 1)}
               isDisabled={!canScrollNext}
               minW="2.125rem"
+              minH="2.125rem"
               w="2.125rem"
               h="2.125rem"
               borderRadius="50%"
