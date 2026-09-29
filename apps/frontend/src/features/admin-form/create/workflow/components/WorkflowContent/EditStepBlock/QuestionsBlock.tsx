@@ -30,12 +30,15 @@ interface QuestionsBlockProps {
   isLoading: boolean
   formMethods: UseFormReturn<EditStepInputs>
   isFirstStep: boolean
+  // 0-based; a new step is numbered after the last saved one.
+  stepNumber: number
 }
 
 export const QuestionsBlock = ({
   isLoading,
   formMethods,
   isFirstStep,
+  stepNumber,
 }: QuestionsBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const isRedesign = useIsWorkflowBuilderRedesign()
@@ -57,7 +60,6 @@ export const QuestionsBlock = ({
   const selectedApprovalField = watch(APPROVAL_FIELD_NAME)
 
   // MyInfo fields need a Singpass step, and each belongs to one step only.
-  const stepId = watch('_id')
   const stepAuthType = form
     ? getEditedStepAuthType(form, isFirstStep, {
         auth: watch('auth'),
@@ -67,11 +69,11 @@ export const QuestionsBlock = ({
     : FormAuthType.NIL
   const canHaveMyInfoFields =
     isMyInfoAuthType(stepAuthType) || (!isStepLoginEnabled && isFirstStep)
-  const myInfoOwnerStep = new Map<string, number>()
+  const myInfoOwnerStepIndex = new Map<string, number>()
   formWorkflow.forEach((s, i) => {
-    if (s._id === stepId) return
+    if (i === stepNumber) return
     s.edit.forEach((id) => {
-      if (!myInfoOwnerStep.has(id)) myInfoOwnerStep.set(id, i + 1)
+      if (!myInfoOwnerStepIndex.has(id)) myInfoOwnerStepIndex.set(id, i)
     })
   })
 
@@ -82,17 +84,19 @@ export const QuestionsBlock = ({
   const items = fillableFields
     .filter((f) => !('myInfo' in f) || canHaveMyInfoFields)
     .map((f) => {
-      const ownerStep = 'myInfo' in f ? myInfoOwnerStep.get(f._id) : undefined
+      const ownerIndex =
+        'myInfo' in f ? myInfoOwnerStepIndex.get(f._id) : undefined
       return {
         value: f._id,
         label: getLogicFieldLabel(idToFieldMap[f._id]),
         icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
-        ...(ownerStep !== undefined
+        ...(ownerIndex !== undefined
           ? {
               disabled: true,
               description: t(
-                'features.adminForm.sidebar.workflow.stepLogin.editor.myInfoInOtherStep',
-                { stepNumber: ownerStep },
+                ownerIndex < stepNumber
+                  ? 'features.adminForm.sidebar.workflow.stepLogin.editor.myInfoUsedInPreviousStep'
+                  : 'features.adminForm.sidebar.workflow.stepLogin.editor.myInfoUsedInLaterStep',
               ),
             }
           : {}),
@@ -103,10 +107,10 @@ export const QuestionsBlock = ({
     !canHaveMyInfoFields &&
     fillableFields.some((f) => 'myInfo' in f)
 
-  const hasOnlyMyInfoFields =
-    items.every((item) => item.disabled) && fillableFields.length > 0
+  // Fields used in other steps stay listed as disabled options, so only an empty list needs the empty state.
+  const hasOnlyMyInfoFields = items.length === 0 && fillableFields.length > 0
 
-  const showEmptyState = isRedesign && items.every((item) => item.disabled)
+  const showEmptyState = isRedesign && items.length === 0
 
   return (
     <EditStepBlockContainer>
@@ -142,7 +146,9 @@ export const QuestionsBlock = ({
                   picker="fields"
                   message={t(
                     hasOnlyMyInfoFields
-                      ? 'features.adminForm.sidebar.workflow.emptyStates.noFieldsMyInfoOnly'
+                      ? isStepLoginEnabled
+                        ? 'features.adminForm.sidebar.workflow.stepLogin.editor.myInfoNeedsSingpassStep'
+                        : 'features.adminForm.sidebar.workflow.emptyStates.noFieldsMyInfoOnly'
                       : 'features.adminForm.sidebar.workflow.emptyStates.noFields',
                   )}
                   actionLabel={t(
@@ -182,7 +188,7 @@ export const QuestionsBlock = ({
             )}
           </FormHelperText>
         ) : null}
-        {hasHiddenMyInfoFields ? (
+        {hasHiddenMyInfoFields && !showEmptyState ? (
           <FormHelperText>
             {t(
               'features.adminForm.sidebar.workflow.stepLogin.editor.myInfoNeedsSingpassStep',

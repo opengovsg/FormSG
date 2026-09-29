@@ -128,7 +128,12 @@ export const MrfLoginOverview = ({
       <Stack spacing="1rem">
         <Text textStyle="subhead-1">{t(`${COPY_KEY}.tableTitle`)}</Text>
         <Box overflowX="auto">
-          <Table variant="simple" size="sm">
+          {/* Top-align so each row's cells line up with the step title, not the middle of its two lines. */}
+          <Table
+            variant="simple"
+            size="sm"
+            sx={{ td: { verticalAlign: 'top' } }}
+          >
             <Thead>
               <Tr>
                 <Th>{t(`${COPY_KEY}.columns.step`)}</Th>

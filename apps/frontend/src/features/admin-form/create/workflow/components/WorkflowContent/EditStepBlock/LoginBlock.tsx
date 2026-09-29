@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import { FieldPath, FieldPathValue, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { BiUndo } from 'react-icons/bi'
 import {
   Box,
   Flex,
   FormControl,
+  ListItem,
   Stack,
   Text,
+  UnorderedList,
   useDisclosure,
 } from '@chakra-ui/react'
 
@@ -49,6 +52,9 @@ import { FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
 
 const COPY_KEY = 'features.adminForm.sidebar.workflow.stepLogin'
+
+// Radio padding + control + label margin, so sub-settings line up with the option's label.
+const RADIO_LABEL_INDENT = '2.75rem'
 
 // Staged values before leaving Singpass, restored by Undo.
 interface RemovedMyInfoFields {
@@ -265,10 +271,10 @@ export const LoginBlock = ({
     setRemovedMyInfo(null)
   }
 
-  const removedMyInfoTitles = removedMyInfo
-    ? form.form_fields
-        .filter((field) => removedMyInfo.fieldIds.includes(field._id))
-        .map((field) => field.title)
+  const removedMyInfoFields = removedMyInfo
+    ? form.form_fields.filter((field) =>
+        removedMyInfo.fieldIds.includes(field._id),
+      )
     : []
 
   const handleCollectIdChange = () => {
@@ -358,102 +364,119 @@ export const LoginBlock = ({
             {getTypeLabel(FormAuthType.CP)}
           </Radio>
         </Radio.RadioGroup>
+
+        {/* Directly under the Corppass option; once set, the e-service ID is shared. */}
+        {authType === FormAuthType.CP ? (
+          <Box pl={RADIO_LABEL_INDENT} pt="0.25rem" pb="0.5rem">
+            {form.esrvcId ? (
+              <Stack spacing="0.25rem">
+                <ChangeEsrvcIdModal
+                  isOpen={isEsrvcIdModalOpen}
+                  onClose={onEsrvcIdModalClose}
+                  value={editedEsrvcId ?? form.esrvcId}
+                  otherCorppassSteps={otherCorppassSteps}
+                  onConfirm={handleEsrvcIdChange}
+                />
+                <Text textStyle="subhead-2" color="secondary.700">
+                  {t(`${COPY_KEY}.editor.esrvcIdLabel`)}
+                </Text>
+                <Flex
+                  columnGap="1rem"
+                  rowGap="0.25rem"
+                  align="center"
+                  wrap="wrap"
+                >
+                  <Text
+                    textStyle="body-1"
+                    color="secondary.700"
+                    overflowWrap="anywhere"
+                  >
+                    {editedEsrvcId ?? form.esrvcId}
+                  </Text>
+                  <Button
+                    variant="link"
+                    isDisabled={isDisabled}
+                    onClick={onEsrvcIdModalOpen}
+                  >
+                    {t(`${COPY_KEY}.editor.esrvcIdChange`)}
+                  </Button>
+                </Flex>
+                <Text textStyle="body-2" color="secondary.400">
+                  {otherCorppassSteps.length > 0
+                    ? t(`${COPY_KEY}.editor.esrvcIdSharedWith`, {
+                        steps: otherCorppassStepNames,
+                      })
+                    : t(`${COPY_KEY}.editor.esrvcIdSharedByEvery`)}
+                  {editedEsrvcId !== undefined
+                    ? ` ${t(`${COPY_KEY}.editor.esrvcIdSavesWithStep`)}`
+                    : ''}
+                </Text>
+              </Stack>
+            ) : (
+              <FormControl isReadOnly={isLoading} isDisabled={isFormPublic}>
+                <FormLabel
+                  isRequired
+                  description={t(`${COPY_KEY}.editor.esrvcIdDescription`)}
+                >
+                  {t(`${COPY_KEY}.editor.esrvcIdLabel`)}
+                </FormLabel>
+                <Box maxW="20rem">
+                  <Input
+                    value={editedEsrvcId ?? ''}
+                    onChange={(e) => handleEsrvcIdChange(e.target.value)}
+                    placeholder={t(`${COPY_KEY}.editor.esrvcIdPlaceholder`)}
+                  />
+                </Box>
+                <Box mt="0.5rem">
+                  <EsrvcHelperText authType={FormAuthType.CP} />
+                </Box>
+              </FormControl>
+            )}
+          </Box>
+        ) : null}
         <FormErrorMessage>{loginError}</FormErrorMessage>
       </FormControl>
 
-      {removedMyInfoTitles.length > 0 ? (
-        <InlineMessage variant="warning" mt="1rem" alignItems="center">
-          <Flex
-            flex={1}
-            gap="1rem"
-            align="center"
-            justify="space-between"
-            wrap="wrap"
-          >
-            <Text textStyle="body-2">
-              {t(
-                `${COPY_KEY}.editor.${
-                  removedMyInfoTitles.length === 1
-                    ? 'myInfoRemovedOne'
-                    : 'myInfoRemovedMany'
-                }`,
-                { fields: removedMyInfoTitles.join(', ') },
-              )}
-            </Text>
-            <Button variant="link" onClick={handleUndoRemovedMyInfo}>
+      {removedMyInfoFields.length > 0 ? (
+        <InlineMessage variant="warning">
+          <Stack spacing="0.75rem" flex={1} minW={0}>
+            <Box>
+              <Text textStyle="subhead-1">
+                {t(
+                  `${COPY_KEY}.editor.${
+                    removedMyInfoFields.length === 1
+                      ? 'myInfoRemovedOne'
+                      : 'myInfoRemovedMany'
+                  }`,
+                )}
+              </Text>
+              <Text textStyle="body-2">
+                {t(`${COPY_KEY}.editor.myInfoRemovedReason`)}
+              </Text>
+            </Box>
+            <UnorderedList spacing="0.25rem" ml="1.25rem" textStyle="body-2">
+              {removedMyInfoFields.map((field) => (
+                <ListItem key={field._id} overflowWrap="anywhere">
+                  {field.title}
+                </ListItem>
+              ))}
+            </UnorderedList>
+            <Button
+              size="sm"
+              variant="outline"
+              colorScheme="secondary"
+              alignSelf="flex-start"
+              leftIcon={<BiUndo fontSize="1.25rem" />}
+              onClick={handleUndoRemovedMyInfo}
+            >
               {t(`${COPY_KEY}.editor.undo`)}
             </Button>
-          </Flex>
+          </Stack>
         </InlineMessage>
       ) : null}
 
-      {authType === FormAuthType.CP && form.esrvcId ? (
-        <Stack ml="2.75rem" mt="1rem" spacing="0.25rem">
-          <ChangeEsrvcIdModal
-            isOpen={isEsrvcIdModalOpen}
-            onClose={onEsrvcIdModalClose}
-            value={editedEsrvcId ?? form.esrvcId}
-            otherCorppassSteps={otherCorppassSteps}
-            onConfirm={handleEsrvcIdChange}
-          />
-          <Text textStyle="subhead-2" color="secondary.700">
-            {t(`${COPY_KEY}.editor.esrvcIdLabel`)}
-          </Text>
-          <Flex gap="1rem" align="center" wrap="wrap">
-            <Text textStyle="body-1" color="secondary.700">
-              {editedEsrvcId ?? form.esrvcId}
-            </Text>
-            <Button
-              variant="link"
-              isDisabled={isDisabled}
-              onClick={onEsrvcIdModalOpen}
-            >
-              {t(`${COPY_KEY}.editor.esrvcIdChange`)}
-            </Button>
-          </Flex>
-          <Text textStyle="body-2" color="secondary.400">
-            {otherCorppassSteps.length > 0
-              ? t(`${COPY_KEY}.editor.esrvcIdSharedWith`, {
-                  steps: otherCorppassStepNames,
-                })
-              : t(`${COPY_KEY}.editor.esrvcIdSharedByEvery`)}
-            {editedEsrvcId !== undefined
-              ? ` ${t(`${COPY_KEY}.editor.esrvcIdSavesWithStep`)}`
-              : ''}
-          </Text>
-        </Stack>
-      ) : null}
-
-      {/* An empty e-service ID is entered in place; once set, it's shared. */}
-      {authType === FormAuthType.CP && !form.esrvcId ? (
-        <FormControl
-          isReadOnly={isLoading}
-          isDisabled={isFormPublic}
-          ml="2.75rem"
-          mt="1rem"
-          w="auto"
-        >
-          <FormLabel
-            isRequired
-            description={t(`${COPY_KEY}.editor.esrvcIdDescription`)}
-          >
-            {t(`${COPY_KEY}.editor.esrvcIdLabel`)}
-          </FormLabel>
-          <Box maxW="20rem">
-            <Input
-              value={editedEsrvcId ?? ''}
-              onChange={(e) => handleEsrvcIdChange(e.target.value)}
-              placeholder={t(`${COPY_KEY}.editor.esrvcIdPlaceholder`)}
-            />
-          </Box>
-          <Box mt="0.5rem">
-            <EsrvcHelperText authType={FormAuthType.CP} />
-          </Box>
-        </FormControl>
-      ) : null}
-
       {authType !== FormAuthType.NIL ? (
-        <Stack spacing="2rem" pt="2rem">
+        <Stack spacing="2rem" pt="1.25rem">
           <Toggle
             isLoading={isLoading}
             isDisabled={isFormPublic}
@@ -500,7 +523,7 @@ export const LoginBlock = ({
         </Stack>
       ) : null}
 
-      <Text textStyle="body-2" color="secondary.400" pt="1rem">
+      <Text textStyle="body-2" color="secondary.400" pt="0.25rem">
         {t(`${COPY_KEY}.newSubmissionsOnly`)}
       </Text>
     </EditStepBlockContainer>

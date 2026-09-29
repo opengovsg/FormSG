@@ -51,6 +51,7 @@ interface StepLoginText {
     esrvcIdPlaceholder: string
     myInfoRemovedOne: string
     myInfoRemovedMany: string
+    myInfoRemovedReason: string
     undo: string
     esrvcIdChange: string
     esrvcIdSharedWith: string
@@ -59,7 +60,8 @@ interface StepLoginText {
     closeFormToEdit: string
     legacyProvider: string
     keepSingpassStep: string
-    myInfoInOtherStep: string
+    myInfoUsedInPreviousStep: string
+    myInfoUsedInLaterStep: string
     myInfoNeedsSingpassStep: string
   }
   esrvcIdModal: {

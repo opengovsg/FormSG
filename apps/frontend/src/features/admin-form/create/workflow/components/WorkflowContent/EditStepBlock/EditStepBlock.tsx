@@ -222,6 +222,7 @@ export const EditStepBlock = ({
       formMethods={formMethods}
       isLoading={_isLoading}
       isFirstStep={isFirstStep}
+      stepNumber={stepNumber}
     />
   )
   const approvalsSection = isFirstStep ? null : (

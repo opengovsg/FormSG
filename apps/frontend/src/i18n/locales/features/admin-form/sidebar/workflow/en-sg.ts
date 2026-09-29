@@ -356,9 +356,11 @@ export const enSG: Workflow = {
         'Shared by every Corppass step on this form, and needed before you open it.',
       esrvcIdPlaceholder: 'Enter Corppass e-service ID',
       myInfoRemovedOne:
-        "{fields} was removed from this step because it's a Myinfo field, which needs Singpass. These fields were removed from this step, not deleted from the form.",
+        'This field was removed from this step, not deleted from the form.',
       myInfoRemovedMany:
-        "{fields} were removed from this step because they're Myinfo fields, which need Singpass. These fields were removed from this step, not deleted from the form.",
+        'These fields were removed from this step, not deleted from the form.',
+      myInfoRemovedReason:
+        'Myinfo fields need a step that logs in with Singpass.',
       undo: 'Undo',
       esrvcIdChange: 'Change',
       esrvcIdSharedWith:
@@ -371,7 +373,8 @@ export const enSG: Workflow = {
         'Step 1 uses {provider}, which is no longer offered. It stays as it is until you choose a login below.',
       keepSingpassStep:
         'Keep a Singpass step or remove the remaining MyInfo fields from the form.',
-      myInfoInOtherStep: 'Myinfo field already in Step {stepNumber}',
+      myInfoUsedInPreviousStep: 'Already used in previous steps',
+      myInfoUsedInLaterStep: 'Already used in a later step',
       myInfoNeedsSingpassStep:
         'Myinfo fields can only be added to a step that logs in with Singpass.',
     },
