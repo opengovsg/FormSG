@@ -82,6 +82,9 @@ export const enSG: ResponsesResponsesPage = {
         saveAsNewView: 'Save as new view',
         viewName: 'View name',
         viewNamePlaceholder: 'e.g. Pending approvals',
+        viewNameRequired: 'View name is required',
+        viewNameMinLength: 'View name must be at least {MIN_LENGTH} characters',
+        viewNameMaxLength: 'View name must be at most {MAX_LENGTH} characters',
       },
       sortMenu: {
         column: 'Column',

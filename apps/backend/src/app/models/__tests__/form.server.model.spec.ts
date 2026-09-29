@@ -109,6 +109,7 @@ const FORM_DEFAULTS = {
   form_fields: [],
   form_logics: [],
   permissionList: [],
+  savedViews: [],
   supportedLanguages: [],
   webhook: {
     url: '',

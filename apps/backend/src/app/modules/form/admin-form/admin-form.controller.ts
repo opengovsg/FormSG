@@ -31,6 +31,8 @@ import {
   FormLogoState,
   FormOrigin,
   FormResponseMode,
+  FormSavedView,
+  FormSavedViewInput,
   FormSettings,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
@@ -45,6 +47,7 @@ import {
   PreviewFormViewDto,
   PrivateFormErrorDto,
   PublicFormDto,
+  SavedViewSortDirection,
   SettingsUpdateDto,
   SmsCountsDto,
   StartPageUpdateDto,
@@ -2579,6 +2582,70 @@ const joiLogicBody = {
     },
   ),
 }
+
+const joiSavedViewBody = {
+  name: Joi.string().trim().min(4).max(200).required(),
+  filter: Joi.object({
+    startDate: Joi.string().optional(),
+    endDate: Joi.string().optional(),
+    searchText: Joi.string().allow('').optional(),
+    searchColumnIds: Joi.array().items(Joi.string()).optional(),
+  }).required(),
+  sort: Joi.object({
+    columnId: Joi.string().required(),
+    direction: Joi.string()
+      .valid(...Object.values(SavedViewSortDirection))
+      .required(),
+  }).optional(),
+  columnIds: Joi.array().items(Joi.string()).optional(),
+}
+
+export const _handleCreateSavedView: ControllerHandler<
+  { formId: string },
+  FormSavedView[] | ErrorDto,
+  FormSavedViewInput
+> = (req, res) => {
+  const { formId } = req.params
+  const savedViewBody = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.createFormSavedView(retrievedForm, savedViewBody),
+    )
+    .map((savedViews) => res.status(StatusCodes.OK).json(savedViews))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when creating saved view',
+        meta: {
+          action: 'handleCreateSavedView',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for POST /forms/:formId/saved-views
+ */
+export const handleCreateSavedView = [
+  celebrate({
+    [Segments.BODY]: joiSavedViewBody,
+  }),
+  _handleCreateSavedView,
+] as ControllerHandler[]
 
 /**
  * Handler for POST /forms/:formId/logic
