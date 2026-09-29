@@ -192,6 +192,8 @@ export const enSG: Workflow = {
     noYesNoFieldAction: 'Add a Yes/No field',
     noFields: 'Your form has no fields yet.',
     noFieldsMyInfoOnly:
+      'Your form only has MyInfo fields, which can only be used in the first step.',
+    noFieldsMyInfoOnlySingpassSteps:
       'Your form only has MyInfo fields, which can only be used in Singpass steps.',
     noFieldsAction: 'Add fields',
   },

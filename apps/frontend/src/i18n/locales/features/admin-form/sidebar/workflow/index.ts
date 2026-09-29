@@ -167,6 +167,7 @@ export interface Workflow {
     noYesNoFieldAction: string
     noFields: string
     noFieldsMyInfoOnly: string
+    noFieldsMyInfoOnlySingpassSteps: string
     noFieldsAction: string
   }
   stepLogin: {

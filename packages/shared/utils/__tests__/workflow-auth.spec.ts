@@ -6,7 +6,6 @@ import {
   isMyInfoAuthType,
   resolveAllStepAuths,
   resolveStepAuth,
-  toStepLoginAuthType,
 } from '../workflow-auth'
 
 const step = (auth?: FormWorkflowStep['auth']): FormWorkflowStep => ({
@@ -104,14 +103,6 @@ describe('workflow-auth', () => {
       expect(resolveStepAuth(SINGPASS_FORM, MIXED_WORKFLOW, 1).authType).toBe(
         FormAuthType.NIL,
       )
-    })
-  })
-
-  describe('toStepLoginAuthType', () => {
-    it('maps retired Singpass providers to MyInfo for the editor', () => {
-      expect(toStepLoginAuthType(FormAuthType.SP)).toBe(FormAuthType.MyInfo)
-      expect(toStepLoginAuthType(FormAuthType.SGID)).toBe(FormAuthType.MyInfo)
-      expect(toStepLoginAuthType(FormAuthType.CP)).toBe(FormAuthType.CP)
     })
   })
 

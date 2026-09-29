@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from 'react-query'
 import {
   AdminFormDto,
   AdminMultirespondentFormDto,
+  BasicField,
   FormAuthType,
   FormSettings,
   FormWorkflowDto,
@@ -43,7 +44,7 @@ type SaveStepLoginResult =
   | { workflow: FormWorkflowDto }
 
 // Sends a step's whole login change, list included, as one request.
-const saveStepLogin = async ({
+export const saveStepLogin = async ({
   form,
   stepIndex,
   saved,
@@ -80,10 +81,31 @@ const saveStepLogin = async ({
     stepIndex,
     draft.authType,
   )
+  // The builder drops references to deleted fields before it saves, and so
+  // must a login-only save, or the backend rejects it over something that
+  // has nothing to do with login.
+  const yesNoFieldIds = form.form_fields
+    .filter((field) => field.fieldType === BasicField.YesNo)
+    .map((field) => String(field._id))
+  const emailFieldIds = form.form_fields
+    .filter((field) => field.fieldType === BasicField.Email)
+    .map((field) => String(field._id))
+  const approvalField =
+    current.approval_field && yesNoFieldIds.includes(current.approval_field)
+      ? current.approval_field
+      : undefined
+  const respondentField =
+    'field' in current && current.field && emailFieldIds.includes(current.field)
+      ? current.field
+      : undefined
   const step = buildWorkflowStep(
     {
       ...current,
       edit: current.edit.filter((id) => !removedFieldIds.includes(id)),
+      approval_field: approvalField,
+      // Steps saved before the toggle existed have approval_field alone.
+      is_approval_enabled: current.is_approval_enabled ?? !!approvalField,
+      ...('field' in current ? { field: respondentField } : {}),
     } as EditStepInputs,
     stepIndex === 0,
   )

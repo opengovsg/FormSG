@@ -19,6 +19,7 @@ import { EditStepInputs } from '~features/admin-form/create/workflow/types'
 import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useIsMrfSingpassAllSteps } from '../../../hooks/useIsMrfSingpassAllSteps'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useStageFieldAndNavigate } from '../../../hooks/useStageFieldAndNavigate'
 
@@ -46,6 +47,7 @@ export const QuestionsBlock = ({
     formWorkflow = [],
   } = useAdminFormWorkflow()
   const { data: form } = useAdminForm()
+  const isStepLoginEnabled = useIsMrfSingpassAllSteps()
   const {
     formState: { errors },
     control,
@@ -108,6 +110,8 @@ export const QuestionsBlock = ({
     })
 
   const hasOnlyMyInfoFields = items.length === 0 && fillableFields.length > 0
+  // Step 1's login is always editable in Settings; later steps only with the flag.
+  const canChangeStepLogin = isStepLoginEnabled || isFirstStep
 
   const showEmptyState = isRedesign && items.length === 0
 
@@ -144,9 +148,12 @@ export const QuestionsBlock = ({
                 <FieldEmptyState
                   picker="fields"
                   message={t(
-                    hasOnlyMyInfoFields
-                      ? 'features.adminForm.sidebar.workflow.emptyStates.noFieldsMyInfoOnly'
-                      : 'features.adminForm.sidebar.workflow.emptyStates.noFields',
+                    // Without the flag, later steps cannot get a Singpass login.
+                    !hasOnlyMyInfoFields
+                      ? 'features.adminForm.sidebar.workflow.emptyStates.noFields'
+                      : canChangeStepLogin
+                        ? 'features.adminForm.sidebar.workflow.emptyStates.noFieldsMyInfoOnlySingpassSteps'
+                        : 'features.adminForm.sidebar.workflow.emptyStates.noFieldsMyInfoOnly',
                   )}
                   actionLabel={t(
                     'features.adminForm.sidebar.workflow.emptyStates.noFieldsAction',
@@ -185,7 +192,7 @@ export const QuestionsBlock = ({
             )}
           </FormHelperText>
         ) : null}
-        {myInfoFields.length > 0 && !isSingpassStep ? (
+        {myInfoFields.length > 0 && !isSingpassStep && canChangeStepLogin ? (
           <FormHelperText>
             {t(
               'features.adminForm.sidebar.workflow.questions.myInfoNeedsSingpass',

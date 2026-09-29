@@ -131,9 +131,9 @@ export const StepLoginEditor = ({
         authType !== FormAuthType.NIL && draft.isSubmitterIdCollectionEnabled,
       isSingleSubmission:
         authType !== FormAuthType.NIL && draft.isSingleSubmission,
-      // A provider change drops the saved list, so start the list afresh.
-      whitelist:
-        authType === saved.authType ? draft.whitelist : { kind: 'saved' },
+      // A list staged under another provider must not carry over, including
+      // when the admin switches back to the saved one.
+      whitelist: { kind: 'saved' },
     })
   }
 

@@ -2,7 +2,6 @@ import {
   FormAuthType,
   FormWorkflowStepAuth,
   PublicWorkflowStepAuth,
-  StepLoginAuthType,
   WhitelistedSubmitterIds,
 } from '../types/form'
 
@@ -33,20 +32,6 @@ const NO_LOGIN: ResolvedStepAuth = {
   isSubmitterIdCollectionEnabled: false,
   isSingleSubmission: false,
   isWhitelistEnabled: false,
-}
-
-// Narrows a provider to the three logins an admin can pick; retired Singpass types map to MyInfo.
-export const toStepLoginAuthType = (
-  authType: FormAuthType,
-): StepLoginAuthType => {
-  switch (authType) {
-    case FormAuthType.NIL:
-    case FormAuthType.CP:
-    case FormAuthType.MyInfo:
-      return authType
-    default:
-      return FormAuthType.MyInfo
-  }
 }
 
 // Whether a provider can prefill MyInfo fields.

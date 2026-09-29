@@ -64,12 +64,17 @@ export const StepLoginSummary = ({
       </Text>
       <Flex gap="1rem" align="center" wrap="wrap">
         <Text>{summary}</Text>
-        <Link
-          as={ReactLink}
-          to={`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}`}
-        >
-          {t('features.adminForm.sidebar.workflow.stepLogin.changeInSettings')}
-        </Link>
+        {/* Later steps are read-only in Settings until the flag is on. */}
+        {isStepLoginEnabled || stepNumber === 0 ? (
+          <Link
+            as={ReactLink}
+            to={`${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_SETTINGS_SINGPASS_SUBROUTE}`}
+          >
+            {t(
+              'features.adminForm.sidebar.workflow.stepLogin.changeInSettings',
+            )}
+          </Link>
+        ) : null}
       </Flex>
     </EditStepBlockContainer>
   )
