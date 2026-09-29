@@ -47,6 +47,21 @@ describe('matchesSavedView', () => {
     ).toBe(false)
   })
 
+  it('reads a view stored without a filter', () => {
+    const view: FormSavedView = {
+      _id: 'view-2',
+      name: 'Columns',
+      columnIds: ['b'],
+    }
+    expect(
+      matchesSavedView(
+        { ...STATE, searchText: '', sortColumnId: undefined },
+        [view],
+        COLUMN_OPTIONS,
+      ),
+    ).toBe(true)
+  })
+
   it('matches nothing when there are no saved views', () => {
     expect(matchesSavedView(STATE, [], COLUMN_OPTIONS)).toBe(false)
   })

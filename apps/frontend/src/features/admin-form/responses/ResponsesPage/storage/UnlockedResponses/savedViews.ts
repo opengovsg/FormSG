@@ -78,7 +78,8 @@ export const fromSavedView = (
   const known = (ids?: string[]) =>
     ids ? ids.filter((id) => allIds.includes(id)) : undefined
 
-  const searchColumnIds = known(view.filter.searchColumnIds)
+  const filter = view.filter ?? {}
+  const searchColumnIds = known(filter.searchColumnIds)
   const columnIds = known(view.columnIds)
   const sortColumnId =
     view.sort && allIds.includes(view.sort.columnId)
@@ -87,10 +88,10 @@ export const fromSavedView = (
 
   return {
     dateRange:
-      view.filter.startDate && view.filter.endDate
-        ? [view.filter.startDate, view.filter.endDate]
+      filter.startDate && filter.endDate
+        ? [filter.startDate, filter.endDate]
         : [],
-    searchText: view.filter.searchText ?? '',
+    searchText: filter.searchText ?? '',
     excludedSearchColumnIds: searchColumnIds
       ? allIds.filter((id) => !searchColumnIds.includes(id))
       : [],
