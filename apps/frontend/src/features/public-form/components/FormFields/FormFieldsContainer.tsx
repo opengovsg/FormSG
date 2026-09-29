@@ -43,12 +43,8 @@ export const FormFieldsContainer = (): JSX.Element | null => {
       )
     }
 
-    if (
-      isAuthRequired &&
-      form.authType !== FormAuthType.NIL &&
-      (form.responseMode !== FormResponseMode.Multirespondent ||
-        !previousSubmission)
-    ) {
+    // For a later MRF step, form.authType is that step's login.
+    if (isAuthRequired && form.authType !== FormAuthType.NIL) {
       return (
         <FormAuth
           authType={form.authType}
