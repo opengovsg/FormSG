@@ -387,8 +387,8 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       'v4' as const,
     ],
     [
-      'the retry asks for v1, a format that is never snapshotted',
-      { v1: 'tok-v1' } as SubmittedStepSnapshotTokens,
+      'the retry asks for v1 but the step has no v1 snapshot token',
+      {} as SubmittedStepSnapshotTokens,
       'v1' as const,
     ],
   ])(
