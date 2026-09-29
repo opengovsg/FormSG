@@ -178,6 +178,9 @@ export const enSG: Workflow = {
     placeholderRedesign: 'Select fields from your form',
     autoAddHelperTextRedesign:
       'The approval field is added here automatically.',
+    myInfoNeedsSingpass:
+      "MyInfo fields can only be filled in a Singpass step. Change this step's login in Settings.",
+    myInfoInOtherSteps: 'Already filled in another step: {fields}',
   },
   emptyStates: {
     noEmailField: 'Your form has no Email field yet.',
@@ -188,8 +191,12 @@ export const enSG: Workflow = {
     noYesNoFieldAction: 'Add a Yes/No field',
     noFields: 'Your form has no fields yet.',
     noFieldsMyInfoOnly:
-      'Your form only has MyInfo fields, which can only be used in the first step.',
+      'Your form only has MyInfo fields, which can only be used in Singpass steps.',
     noFieldsAction: 'Add fields',
+  },
+  stepLogin: {
+    title: 'Login',
+    changeInSettings: 'Change in Settings',
   },
   approvals: {
     title: 'Approvals',

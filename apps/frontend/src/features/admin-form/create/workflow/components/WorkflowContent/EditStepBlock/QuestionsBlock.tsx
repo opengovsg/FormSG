@@ -2,11 +2,17 @@ import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, FormHelperText } from '@chakra-ui/react'
 
+import {
+  isMyInfoAuthType,
+  resolveStepAuth,
+} from 'formsg-shared/utils/workflow-auth'
+
 import { textStyles } from '~theme/textStyles'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
@@ -34,7 +40,12 @@ export const QuestionsBlock = ({
   const { t } = useTranslation()
   const isRedesign = useIsWorkflowBuilderRedesign()
   const stageFieldAndNavigate = useStageFieldAndNavigate()
-  const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
+  const {
+    formFields = [],
+    idToFieldMap,
+    formWorkflow = [],
+  } = useAdminFormWorkflow()
+  const { data: form } = useAdminForm()
   const {
     formState: { errors },
     control,
@@ -48,9 +59,37 @@ export const QuestionsBlock = ({
     (f) => !NON_RESPONSE_FIELD_SET.has(f.fieldType),
   )
 
+  // MyInfo fields need the step's saved login to be Singpass, and belong to one step only.
+  const stepId = watch('_id')
+  const stepIndex = isFirstStep
+    ? 0
+    : formWorkflow.findIndex((step) => step._id === stepId)
+  const isSingpassStep =
+    !!form &&
+    stepIndex >= 0 &&
+    isMyInfoAuthType(resolveStepAuth(form, formWorkflow, stepIndex).authType)
+  const savedFieldIds = formWorkflow[stepIndex]?.edit ?? []
+  // 1-based step number of each other step that already fills a field.
+  const otherStepByFieldId = new Map(
+    formWorkflow.flatMap((step, i) =>
+      step._id === stepId
+        ? []
+        : step.edit.map((id): [string, number] => [id, i + 1]),
+    ),
+  )
+  const myInfoFields = fillableFields.filter((f) => 'myInfo' in f)
+  const myInfoInOtherSteps = myInfoFields.filter((f) =>
+    otherStepByFieldId.has(f._id),
+  )
+
   const items = fillableFields
-    // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
-    .filter((f) => !('myInfo' in f) || isFirstStep)
+    // Fields this step already saved stay listed so they can be removed.
+    .filter(
+      (f) =>
+        !('myInfo' in f) ||
+        savedFieldIds.includes(f._id) ||
+        (isSingpassStep && !otherStepByFieldId.has(f._id)),
+    )
     .map((f) => ({
       value: f._id,
       label: getLogicFieldLabel(idToFieldMap[f._id]),
@@ -132,6 +171,27 @@ export const QuestionsBlock = ({
           <FormHelperText>
             {t(
               'features.adminForm.sidebar.workflow.questions.autoAddHelperTextRedesign',
+            )}
+          </FormHelperText>
+        ) : null}
+        {myInfoFields.length > 0 && !isSingpassStep ? (
+          <FormHelperText>
+            {t(
+              'features.adminForm.sidebar.workflow.questions.myInfoNeedsSingpass',
+            )}
+          </FormHelperText>
+        ) : null}
+        {isSingpassStep && myInfoInOtherSteps.length > 0 ? (
+          <FormHelperText>
+            {t(
+              'features.adminForm.sidebar.workflow.questions.myInfoInOtherSteps',
+              {
+                fields: myInfoInOtherSteps
+                  .map(
+                    (f) => `${f.title} (Step ${otherStepByFieldId.get(f._id)})`,
+                  )
+                  .join(', '),
+              },
             )}
           </FormHelperText>
         ) : null}

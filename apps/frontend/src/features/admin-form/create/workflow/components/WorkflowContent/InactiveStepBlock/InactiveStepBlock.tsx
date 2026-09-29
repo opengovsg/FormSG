@@ -32,6 +32,7 @@ import { useIsWorkflowEditBlocked } from '../../../hooks/useIsWorkflowEditBlocke
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { CloseFormToEditModal } from '../../CloseFormToEditModal'
 import { StepLabel } from '../StepLabel'
+import { StepLoginSummary } from '../StepLoginSummary'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
@@ -278,6 +279,8 @@ export const InactiveStepBlock = ({
               </Flex>
             )}
           </Stack>
+
+          <StepLoginSummary stepNumber={stepNumber} />
 
           {isRedesign ? (
             <>

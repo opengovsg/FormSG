@@ -12,8 +12,10 @@ import {
 import InlineMessage from '~components/InlineMessage'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useIsMrfSingpassAllSteps } from '~features/admin-form/create/workflow/hooks/useIsMrfSingpassAllSteps'
 import { isMyInfo } from '~features/myinfo/utils'
 
+import { MrfStepLoginSettings } from './StepLogin/MrfStepLoginSettings'
 import { AuthSettingsDescriptionText } from './AuthSettingsDescriptionText'
 import { AuthSettingsDisabledExplanationText } from './AuthSettingsDisabledExplanationText'
 import { AuthSettingsSingpassSection } from './AuthSettingsSingpassSection'
@@ -35,6 +37,15 @@ export const AuthSettingsSection = ({
   )
 
   const isFormPublic = settings.status === FormStatus.Public
+
+  // MRF forms edit login per step once the flag is on, or show saved later-step logins read-only.
+  const isStepLoginEnabled = useIsMrfSingpassAllSteps()
+  if (
+    form?.responseMode === FormResponseMode.Multirespondent &&
+    (isStepLoginEnabled || form.workflow.some((step) => !!step.auth))
+  ) {
+    return <MrfStepLoginSettings form={form} />
+  }
 
   return (
     <Box>

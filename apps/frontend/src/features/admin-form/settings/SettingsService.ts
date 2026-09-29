@@ -193,6 +193,21 @@ export const updateIsSingleSubmission: UpdateFormFn<
   })
 }
 
+// Saves Step 1 login of an MRF form with no workflow, list included, in one request.
+export const updateFormLoginSettings = async (
+  formId: string,
+  loginSettings: Pick<
+    SettingsUpdateDto,
+    | 'authType'
+    | 'isSubmitterIdCollectionEnabled'
+    | 'isSingleSubmission'
+    | 'esrvcId'
+    | 'whitelistCsvString'
+  >,
+) => {
+  return updateFormSettings(formId, loginSettings)
+}
+
 export const updateFormEsrvcId: UpdateFormFn<'esrvcId'> = async (
   formId,
   newEsrvcId,

@@ -26,6 +26,7 @@ import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
 import { SpotlightGroup } from '../../Spotlight'
+import { StepLoginSummary } from '../StepLoginSummary'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'
@@ -214,6 +215,10 @@ export const EditStepBlock = ({
       formMethods={formMethods}
       isLoading={_isLoading}
     />,
+    // Login is set in Settings; a new step has none until it's saved.
+    ...(isCreatingState
+      ? []
+      : [<StepLoginSummary key="login" stepNumber={stepNumber} isEditor />]),
     ...(isRedesign
       ? [approvalsSection, questionsSection]
       : [questionsSection, approvalsSection]

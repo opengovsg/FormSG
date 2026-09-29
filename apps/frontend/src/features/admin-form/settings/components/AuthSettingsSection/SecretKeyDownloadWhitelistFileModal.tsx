@@ -12,7 +12,10 @@ import {
 import { useToast } from '~hooks/useToast'
 import { downloadFile } from '~components/Field/Attachment/utils/downloadFile'
 
-import { fetchAdminFormEncryptedWhitelistedSubmitterIds } from '../../queries'
+import {
+  fetchAdminFormEncryptedWhitelistedSubmitterIds,
+  fetchAdminFormStepEncryptedWhitelistedSubmitterIds,
+} from '../../queries'
 import { SecretKeyFormModal } from '../SecretKeyFormModal'
 
 export interface SecretKeyDownloadWhitelistFileModalProps extends Pick<
@@ -22,6 +25,8 @@ export interface SecretKeyDownloadWhitelistFileModalProps extends Pick<
   publicKey: string
   formId: string
   downloadFileName: string
+  // Zero-based later step whose list to download; omitted means Step 1's form-level list.
+  stepNumber?: number
 }
 
 export const SecretKeyDownloadWhitelistFileModal = ({
@@ -30,6 +35,7 @@ export const SecretKeyDownloadWhitelistFileModal = ({
   publicKey,
   downloadFileName,
   formId,
+  stepNumber,
 }: SecretKeyDownloadWhitelistFileModalProps) => {
   const { t } = useTranslation()
   const { modalTitle, submitButton } = t(
@@ -73,7 +79,15 @@ export const SecretKeyDownloadWhitelistFileModal = ({
   const handleWhitelistCsvDownload = useCallback(
     ({ secretKey }: { secretKey: string }) => {
       setIsDecrypting(true)
-      fetchAdminFormEncryptedWhitelistedSubmitterIds(formId, queryClient)
+      const encryptedWhitelist =
+        stepNumber === undefined
+          ? fetchAdminFormEncryptedWhitelistedSubmitterIds(formId, queryClient)
+          : fetchAdminFormStepEncryptedWhitelistedSubmitterIds(
+              formId,
+              stepNumber,
+              queryClient,
+            )
+      encryptedWhitelist
         .then((data) => {
           const { encryptedWhitelistedSubmitterIds } = data
           if (
@@ -127,6 +141,7 @@ export const SecretKeyDownloadWhitelistFileModal = ({
     },
     [
       formId,
+      stepNumber,
       queryClient,
       decryptSubmitterIds,
       downloadFileName,

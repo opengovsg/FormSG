@@ -104,9 +104,85 @@ export interface SettingsMutationsStrings {
   gstUpdated: string
 }
 
+export interface SettingsStepLoginStrings {
+  title: string
+  newSubmissionsOnly: string
+  closeFormToEdit: string
+  laterStepsReadOnly: string
+  stepTitle: string
+  namedStepTitle: string
+  anyoneWithLink: string
+  emailField: string
+  dropdownOptions: string
+  deletedField: string
+  edit: string
+  editAriaLabel: string
+  types: {
+    nil: string
+    myInfo: string
+    cp: string
+    sp: string
+    sgid: string
+    sgidMyInfo: string
+  }
+  badges: {
+    collectsNric: string
+    collectsUen: string
+    onlyListedNrics: string
+    onlyListedUens: string
+    oneResponseEach: string
+  }
+  editor: {
+    loginLabel: string
+    free: string
+    legacyProvider: string
+    collectNric: string
+    collectUen: string
+    singleSubmission: string
+    singleSubmissionPayments: string
+    esrvcIdLabel: string
+    esrvcIdDescription: string
+    esrvcIdPlaceholder: string
+    esrvcIdRequired: string
+    esrvcIdWhitespace: string
+    myInfoRemoved: string
+    undo: string
+    noStepsMyInfo: string
+    lastSingpassStep: string
+    save: string
+    cancel: string
+    saved: string
+  }
+  whitelist: {
+    nricTitle: string
+    uenTitle: string
+    nricDescription: string
+    uenDescription: string
+    replacesOnSave: string
+    removesOnSave: string
+    droppedWithProvider: string
+  }
+  esrvcId: {
+    title: string
+    notSet: string
+    usedBy: string
+    unused: string
+    change: string
+    set: string
+    modal: {
+      title: string
+      description: string
+      descriptionShared: string
+      cancel: string
+      confirm: string
+    }
+  }
+}
+
 export interface Settings {
   general: General
   singpass: HasTitle
+  stepLogin: SettingsStepLoginStrings
   tabs: SettingsTabsStrings
   secretKeyModal: SecretKeyModalStrings
   secretKeyVerification: SecretKeyVerificationStrings

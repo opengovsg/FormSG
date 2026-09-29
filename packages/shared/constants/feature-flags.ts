@@ -37,6 +37,7 @@ export const featureFlags = {
   workflowDeletion: 'workflow-deletion' as const,
   scheduledFormClosure: 'scheduled-form-closure' as const,
   mrfChildren: 'mrf-children' as const,
+  mrfSingpassAllSteps: 'mrf-singpass-all-steps' as const,
   delightfulDashboard: 'delightful-dashboard' as const,
 }
 

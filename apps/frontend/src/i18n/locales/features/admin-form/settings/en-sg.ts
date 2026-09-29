@@ -9,6 +9,94 @@ export const enSG = {
   singpass: {
     title: 'Singpass',
   },
+  stepLogin: {
+    title: 'Login for each step',
+    newSubmissionsOnly:
+      'Login and eligible-respondent changes apply to new submissions only. In-progress submissions keep their original settings.',
+    closeFormToEdit:
+      'To change Singpass settings, close your form to new responses.',
+    laterStepsReadOnly:
+      'Login for Steps 2 onwards is shown here but cannot be changed yet.',
+    stepTitle: 'Step {stepNumber}',
+    namedStepTitle: 'Step {stepNumber} — {stepName}',
+    anyoneWithLink: 'Anyone with your form link',
+    emailField: 'Email field: {title}',
+    dropdownOptions: 'Emails assigned to options in {title}',
+    deletedField: 'a deleted field',
+    edit: 'Edit',
+    editAriaLabel: 'Edit login for Step {stepNumber}',
+    types: {
+      nil: 'No login',
+      myInfo: 'Singpass',
+      cp: 'Corppass',
+      sp: 'Singpass (legacy)',
+      sgid: 'Singpass app-only (sgID)',
+      sgidMyInfo: 'Singpass app-only with Myinfo (sgID)',
+    },
+    badges: {
+      collectsNric: 'Collects NRIC/FIN',
+      collectsUen: 'Collects UEN',
+      onlyListedNrics: 'Eligible NRIC/FINs only',
+      onlyListedUens: 'Eligible UENs only',
+      oneResponseEach: 'One response per NRIC/FIN/UEN',
+    },
+    editor: {
+      loginLabel: 'How do they log in?',
+      free: 'Free',
+      legacyProvider:
+        'This step uses {provider}. Choose a login to replace it, or cancel to keep it.',
+      collectNric: 'Collect NRIC/FIN with responses to this step',
+      collectUen:
+        'Collect UEN and Corppass user ID with responses to this step',
+      singleSubmission: 'Limit each unique NRIC/FIN/UEN to one response',
+      singleSubmissionPayments:
+        'One response per NRIC/FIN/UEN is unavailable while payments are enabled.',
+      esrvcIdLabel: 'Corppass e-service ID',
+      esrvcIdDescription:
+        'Shared by every Corppass step on this form. Saves with this step.',
+      esrvcIdPlaceholder: 'Enter Corppass e-service ID',
+      esrvcIdRequired: 'Enter the Corppass e-service ID to use Corppass.',
+      esrvcIdWhitespace: 'e-service ID must not contain whitespace',
+      myInfoRemoved:
+        'These fields were removed from this step, not deleted from the form: {fields}',
+      undo: 'Undo',
+      noStepsMyInfo:
+        '{fields} are Myinfo fields, so Step 1 needs Singpass. Keep Singpass, or delete them from the form first.',
+      lastSingpassStep:
+        'Keep a Singpass step or remove the remaining MyInfo fields from the form.',
+      save: 'Save',
+      cancel: 'Cancel',
+      saved: 'Step {stepNumber} login was updated.',
+    },
+    whitelist: {
+      nricTitle: 'Restrict Step {stepNumber} to eligible NRIC/FINs only',
+      uenTitle: 'Restrict Step {stepNumber} to eligible UENs only',
+      nricDescription:
+        'Only NRIC/FINs in this list can fill in this step. The CSV file should list them in a single column with the "Respondent" header. [Download a sample .csv file](https://go.gov.sg/formsg-whitelist-respondents-sample-csv)',
+      uenDescription:
+        'Only UENs in this list can fill in this step. The CSV file should list them in a single column with the "Respondent" header. [Download a sample .csv file](https://go.gov.sg/formsg-whitelist-respondents-sample-csv)',
+      replacesOnSave: 'The new list replaces the saved one when you save.',
+      removesOnSave: 'The saved list is removed when you save.',
+      droppedWithProvider:
+        'The saved list is for the previous login and is removed when you save.',
+    },
+    esrvcId: {
+      title: 'Corppass e-service ID',
+      notSet: 'Not set',
+      usedBy: 'Used by {steps}.',
+      unused: 'No step uses Corppass yet.',
+      change: 'Change',
+      set: 'Set',
+      modal: {
+        title: 'Change Corppass e-service ID',
+        description: 'Every Corppass step on this form uses this e-service ID.',
+        descriptionShared:
+          'This also changes it for {steps}, because every Corppass step on this form uses the same e-service ID.',
+        cancel: 'Cancel',
+        confirm: 'Save',
+      },
+    },
+  },
   tabs: {
     newBadge: 'New',
     multiLanguage: 'Multi-language',

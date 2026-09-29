@@ -12,6 +12,10 @@ import {
   FormResponseMode,
   MyInfoAttribute,
 } from 'formsg-shared/types'
+import {
+  formUsesAuthType,
+  isMyInfoAuthType,
+} from 'formsg-shared/utils/workflow-auth'
 
 import { GUIDE_MYINFO_BUILDER_FIELD } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
@@ -39,6 +43,12 @@ import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
 import { filterFieldsBySearchValue } from './utils'
+
+// MRF forms can use MyInfo when any step logs in with Singpass; other forms need form-level MyInfo.
+const hasMyInfoLogin = (form: AdminFormDto): boolean =>
+  form.responseMode === FormResponseMode.Multirespondent
+    ? formUsesAuthType(form, form.workflow, isMyInfoAuthType)
+    : isMyInfoAuthType(form.authType)
 
 const SGID_SUPPORTED_V1 = [
   MyInfoAttribute.Name,
@@ -114,8 +124,7 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
     () =>
       form
         ? form.form_fields.filter(isMyInfo).length >= 30 ||
-          (form.authType !== FormAuthType.MyInfo &&
-            form.authType !== FormAuthType.SGID_MyInfo)
+          !hasMyInfoLogin(form)
         : true,
     [form],
   )
@@ -271,20 +280,14 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   )
 }
 
-type MyInfoTextProps = Pick<AdminFormDto, 'authType' | 'form_fields'>
-
-const MyInfoText = ({
-  authType,
-  form_fields,
-}: MyInfoTextProps): JSX.Element => {
+const MyInfoText = ({ form }: { form: AdminFormDto }): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.myInfoPanel',
   })
-  const isMyInfoDisabled =
-    authType !== FormAuthType.MyInfo && authType !== FormAuthType.SGID_MyInfo
+  const isMyInfoDisabled = !hasMyInfoLogin(form)
   const numMyInfoFields = useMemo(
-    () => form_fields.filter((ff) => isMyInfo(ff)).length,
-    [form_fields],
+    () => form.form_fields.filter((ff) => isMyInfo(ff)).length,
+    [form.form_fields],
   )
 
   if (isMyInfoDisabled) {
@@ -320,7 +323,7 @@ const MyInfoMessage = (): JSX.Element | null => {
   return form ? (
     <Box px="1.5rem" pt="2rem" pb="1.5rem">
       <InlineMessage variant={hasExceededLimit ? 'error' : 'info'}>
-        <MyInfoText {...form} />
+        <MyInfoText form={form} />
       </InlineMessage>
     </Box>
   ) : null

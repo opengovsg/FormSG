@@ -154,6 +154,8 @@ export interface Workflow {
     placeholder: string
     placeholderRedesign: string
     autoAddHelperTextRedesign: string
+    myInfoNeedsSingpass: string
+    myInfoInOtherSteps: string
   }
   emptyStates: {
     noEmailField: string
@@ -165,6 +167,10 @@ export interface Workflow {
     noFields: string
     noFieldsMyInfoOnly: string
     noFieldsAction: string
+  }
+  stepLogin: {
+    title: string
+    changeInSettings: string
   }
   approvals: {
     title: string

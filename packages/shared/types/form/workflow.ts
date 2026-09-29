@@ -10,6 +10,9 @@ export enum WorkflowType {
 
 export type WorkflowStepAuthType = FormAuthType.MyInfo | FormAuthType.CP
 
+// Logins an admin can pick for a step. SP, SGID and SGID_MyInfo are retired.
+export type StepLoginAuthType = FormAuthType.NIL | WorkflowStepAuthType
+
 // Login for steps after the first. Step 1 uses the form-level auth settings.
 export interface FormWorkflowStepAuth {
   auth_type: WorkflowStepAuthType

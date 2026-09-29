@@ -1,4 +1,5 @@
 import { FormWorkflowDto, WorkflowStepWriteDto } from 'formsg-shared/types/form'
+import { EncryptedStringsMessageContent } from 'formsg-shared/utils/crypto'
 
 import { ApiService } from '~services/ApiService'
 
@@ -41,4 +42,16 @@ export const updateWorkflowStep = (
     `${ADMIN_FORM_ENDPOINT}/${formId}/workflow/${stepNumber}`,
     updateStepBody,
   ).then(({ data }) => data)
+}
+
+// A later step's encrypted eligible-respondent list; decrypted with the form secret key.
+export const getWorkflowStepEncryptedWhitelist = (
+  formId: string,
+  stepNumber: number,
+) => {
+  return ApiService.get<{
+    encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
+  }>(`${ADMIN_FORM_ENDPOINT}/${formId}/workflow/${stepNumber}/whitelist`, {
+    responseType: 'json',
+  }).then(({ data }) => data)
 }

@@ -6,6 +6,7 @@ import { FormSettings } from 'formsg-shared/types/form/form'
 import { EncryptedStringsMessageContent } from 'formsg-shared/utils/crypto'
 
 import { adminFormKeys } from '../common/queries'
+import { getWorkflowStepEncryptedWhitelist } from '../create/workflow/FormWorkflowService'
 
 import {
   getFormEncryptedWhitelistedSubmitterIds,
@@ -22,6 +23,8 @@ export const adminFormSettingsKeys = {
     [...adminFormSettingsKeys.id(id), 'payment_field'] as const,
   whitelist: (id: string) =>
     [...adminFormSettingsKeys.id(id), 'whitelist'] as const,
+  stepWhitelist: (id: string, stepNumber: number) =>
+    [...adminFormSettingsKeys.whitelist(id), 'step', stepNumber] as const,
 }
 
 /**
@@ -55,6 +58,20 @@ export const fetchAdminFormEncryptedWhitelistedSubmitterIds = (
     { staleTime: 0 },
   )
 }
+
+export const fetchAdminFormStepEncryptedWhitelistedSubmitterIds = (
+  formId: string,
+  stepNumber: number,
+  queryClient: QueryClient,
+): Promise<{
+  encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null
+}> =>
+  queryClient.fetchQuery(
+    adminFormSettingsKeys.stepWhitelist(formId, stepNumber),
+    () => getWorkflowStepEncryptedWhitelist(formId, stepNumber),
+    // Disable caching by setting stale time to 0.
+    { staleTime: 0 },
+  )
 
 export const useAdminFormPayments = () => {
   const { formId } = useParams()
