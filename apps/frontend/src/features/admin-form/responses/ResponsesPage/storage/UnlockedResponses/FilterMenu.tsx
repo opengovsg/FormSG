@@ -10,8 +10,6 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
-import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import {
@@ -22,6 +20,7 @@ import Menu from '~components/Menu'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
+import { toolbarMenuButtonProps } from './toolbarButtonProps'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
 const SectionLabel = ({ children }: { children: string }) => (
@@ -30,7 +29,11 @@ const SectionLabel = ({ children }: { children: string }) => (
   </Text>
 )
 
-export const FilterMenu = (): JSX.Element => {
+export const FilterMenu = ({
+  isIconOnly,
+}: {
+  isIconOnly?: boolean
+}): JSX.Element => {
   const { t } = useTranslation()
   const {
     dateRange: dateRangeLabel,
@@ -72,17 +75,18 @@ export const FilterMenu = (): JSX.Element => {
       {({ isOpen }) => (
         <>
           <MenuButton
-            as={Button}
             variant="clear"
             colorScheme="secondary"
             isActive={isOpen}
-            leftIcon={<BiFilterAlt fontSize="1.25rem" />}
-            rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
-          >
-            {t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.filter',
-            )}
-          </MenuButton>
+            {...toolbarMenuButtonProps({
+              icon: <BiFilterAlt fontSize="1.25rem" />,
+              label: t(
+                'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.filter',
+              ),
+              isOpen,
+              isIconOnly,
+            })}
+          />
           <MenuList maxH="28rem" overflowY="auto" minW="20rem">
             <SectionLabel>{dateRangeLabel}</SectionLabel>
             <Box px="1rem" py="0.75rem">

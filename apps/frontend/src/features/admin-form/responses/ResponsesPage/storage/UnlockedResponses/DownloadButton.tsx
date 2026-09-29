@@ -20,6 +20,7 @@ import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useToast } from '~hooks/useToast'
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
+import IconButton from '~components/IconButton'
 import Menu from '~components/Menu'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
@@ -122,7 +123,11 @@ const DownloadSelector = ({
   )
 }
 
-export const DownloadButton = (): JSX.Element => {
+export const DownloadButton = ({
+  isIconOnly,
+}: {
+  isIconOnly?: boolean
+}): JSX.Element => {
   const isDelightfulDashboard = useIsDelightfulDashboard()
   const {
     visibleSubmissionIds,
@@ -385,23 +390,36 @@ export const DownloadButton = (): JSX.Element => {
         <Menu closeOnSelect={false} placement="bottom-end">
           {({ isOpen, onClose }) => (
             <>
-              <MenuButton
-                as={Button}
-                isDisabled={!downloadParams}
-                isLoading={handleBulkDownloadMutation.isLoading}
-                isActive={isOpen}
-                aria-label={t(
-                  'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
-                )}
-                leftIcon={
-                  isDelightfulDashboard ? (
-                    <BiDownload fontSize="1.25rem" />
-                  ) : undefined
-                }
-                rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
-              >
-                {t('features.common.download')}
-              </MenuButton>
+              {isIconOnly ? (
+                <MenuButton
+                  as={IconButton}
+                  isDisabled={!downloadParams}
+                  isLoading={handleBulkDownloadMutation.isLoading}
+                  isActive={isOpen}
+                  aria-label={t(
+                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
+                  )}
+                  icon={<BiDownload fontSize="1.25rem" />}
+                />
+              ) : (
+                <MenuButton
+                  as={Button}
+                  isDisabled={!downloadParams}
+                  isLoading={handleBulkDownloadMutation.isLoading}
+                  isActive={isOpen}
+                  aria-label={t(
+                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
+                  )}
+                  leftIcon={
+                    isDelightfulDashboard ? (
+                      <BiDownload fontSize="1.25rem" />
+                    ) : undefined
+                  }
+                  rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
+                >
+                  {t('features.common.download')}
+                </MenuButton>
+              )}
               <MenuList>
                 <DownloadSelector
                   onClickNext={() => {

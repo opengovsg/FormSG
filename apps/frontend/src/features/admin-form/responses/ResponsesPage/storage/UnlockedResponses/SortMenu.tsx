@@ -3,11 +3,9 @@ import { useTranslation } from 'react-i18next'
 import { BiSortAlt2 } from 'react-icons/bi'
 import { Box, MenuButton, MenuList, Select, Text } from '@chakra-ui/react'
 
-import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
-import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
-import Button from '~components/Button'
 import Menu from '~components/Menu'
 
+import { toolbarMenuButtonProps } from './toolbarButtonProps'
 import {
   ResponseSortDirection,
   useUnlockedResponses,
@@ -19,7 +17,11 @@ const SectionLabel = ({ children }: { children: string }) => (
   </Text>
 )
 
-export const SortMenu = (): JSX.Element => {
+export const SortMenu = ({
+  isIconOnly,
+}: {
+  isIconOnly?: boolean
+}): JSX.Element => {
   const { t } = useTranslation()
   const { column, direction, none, ascending, descending } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.sortMenu',
@@ -50,17 +52,18 @@ export const SortMenu = (): JSX.Element => {
       {({ isOpen }) => (
         <>
           <MenuButton
-            as={Button}
             variant="clear"
             colorScheme="secondary"
             isActive={isOpen}
-            leftIcon={<BiSortAlt2 fontSize="1.25rem" />}
-            rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
-          >
-            {t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.sort',
-            )}
-          </MenuButton>
+            {...toolbarMenuButtonProps({
+              icon: <BiSortAlt2 fontSize="1.25rem" />,
+              label: t(
+                'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.sort',
+              ),
+              isOpen,
+              isIconOnly,
+            })}
+          />
           <MenuList minW="18rem">
             <SectionLabel>{column}</SectionLabel>
             <Box px="1rem" py="0.75rem">
