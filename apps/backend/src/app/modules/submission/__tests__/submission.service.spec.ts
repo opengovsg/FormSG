@@ -2249,6 +2249,7 @@ describe('submission.service', () => {
           submissionType: SubmissionType.Multirespondent,
           formId: 'mockFormId',
           submissionId: 'mockSubmissionId',
+          workflow: [{ edit: [] }, { edit: [] }],
           mrfMeta: buildMrfMetadata({
             workflow: mockData.workflow,
             workflowStep: mockData.workflowStep,

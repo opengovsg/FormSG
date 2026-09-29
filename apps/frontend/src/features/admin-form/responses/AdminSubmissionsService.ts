@@ -165,6 +165,7 @@ export const getDecryptedSubmissionById = async ({
         encryptedSubmission.form_logics,
         decryptedV4.responses,
         decryptedV4.verified,
+        encryptedSubmission.workflow,
       )
       submissionSecretKey = decryptedV4.submissionSecretKey
       mrfVersion = encryptedSubmission.mrfVersion

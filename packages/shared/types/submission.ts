@@ -317,6 +317,7 @@ export const MultirespondentSubmissionStreamDto =
     payment: z.optional(SubmissionPaymentDto),
     _id: SubmissionId,
     created: DateString,
+    workflow: z.array(z.object({ edit: z.array(z.string()) })),
     mrfMeta: z.object({
       workflowCurrentStepNumber: z.number(),
       workflowNumTotalSteps: z.number(),

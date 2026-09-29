@@ -167,6 +167,10 @@
       "require": "./dist/utils/payments.js",
       "default": "./utils/payments.ts"
     },
+    "./utils/place-verified-by-step": {
+      "require": "./dist/utils/place-verified-by-step.js",
+      "default": "./utils/place-verified-by-step.ts"
+    },
     "./utils/phone-num-validation": {
       "require": "./dist/utils/phone-num-validation.js",
       "default": "./utils/phone-num-validation.ts"

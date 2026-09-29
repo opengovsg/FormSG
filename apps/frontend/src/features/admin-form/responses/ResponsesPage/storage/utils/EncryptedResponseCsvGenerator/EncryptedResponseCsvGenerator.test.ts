@@ -409,6 +409,46 @@ describe('EncryptedResponseCsvGenerator', () => {
           expectedSubmissionRow,
         ])
       })
+
+      it('should order columns by the newest response and keep older-only columns after the column they followed', () => {
+        // Arrange
+        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0, true)
+        const mrfMeta = {
+          workflowStatus: WorkflowStatus.COMPLETED,
+          workflowCurrentStepNumber: 2,
+          workflowNumTotalSteps: 2,
+          lastSubmittedAt: undefined,
+          hasNextStepRecipientEmails: false,
+        }
+        // The older response was saved before column 4 was placed after 1.
+        mrfGenerator.addRecord({
+          record: [generateRecord(1), generateRecord(2), generateRecord(5)],
+          created: mockCreatedEarly,
+          submissionId: 'older',
+          mrfMeta,
+        })
+        mrfGenerator.addRecord({
+          record: [generateRecord(1), generateRecord(4), generateRecord(2)],
+          created: mockCreatedLater,
+          submissionId: 'newer',
+          mrfMeta,
+        })
+
+        // Act
+        mrfGenerator.process()
+
+        // Assert
+        expect(mrfGenerator.records[1]).toEqual(
+          stringify([
+            'Response ID',
+            MRF_RESPONSE_TIMESTAMP_LABEL,
+            'mockQuestion1',
+            'mockQuestion4',
+            'mockQuestion2',
+            'mockQuestion5',
+          ]),
+        )
+      })
     })
 
     describe('mode-migrated form submissions', () => {

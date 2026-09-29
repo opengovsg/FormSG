@@ -171,4 +171,30 @@ describe('processDecryptedContentV4', () => {
       SPCPFieldTitle.SpNric,
     ])
   })
+
+  it('places a later step identity after the fields its step introduced', () => {
+    const secondId = '000000000000000000000002'
+    const formFields = [
+      ...FORM_FIELDS,
+      {
+        _id: secondId,
+        fieldType: BasicField.ShortText,
+        title: 'Your favourite colour',
+      },
+    ] as unknown as FormFieldDto[]
+
+    const result = processDecryptedContentV4(
+      formFields,
+      [],
+      RESPONSES,
+      { 'uinFin (Step 2)': 'S7654321B' },
+      [{ edit: [secondId] }, { edit: [FIELD_ID] }],
+    )
+
+    expect(result.map((field) => field._id)).toEqual([
+      FIELD_ID,
+      `${SPCPFieldTitle.SpNric} (Step 2)`,
+      secondId,
+    ])
+  })
 })

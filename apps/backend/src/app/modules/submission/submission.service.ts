@@ -795,6 +795,8 @@ export const addMrfMetadata = (): Transform => {
               form_fields,
               myInfoReadOnlyFields ?? [],
             ),
+          // Only each step's field IDs, so recipient emails stay out of the stream.
+          workflow: workflow.map((step) => ({ edit: step.edit })),
           mrfMeta: buildMrfMetadata({
             workflow,
             workflowStep,

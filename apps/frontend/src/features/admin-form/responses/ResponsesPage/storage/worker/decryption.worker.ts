@@ -171,6 +171,7 @@ async function decryptSubmissionData(
           submissionData.form_logics,
           decryptedV4.responses,
           decryptedV4.verified,
+          submissionData.workflow,
         )
       } catch (err) {
         const error = err as Error
