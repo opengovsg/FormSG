@@ -126,6 +126,15 @@ export const landingV5Theme = extendTheme(
       heading: 'var(--lv5-sans)',
       body: 'var(--lv5-sans)',
     },
+    components: {
+      /* Buttons are product chrome, not page typography: they keep the app
+         font so the CTAs match the header's Log in exactly. */
+      Button: {
+        baseStyle: {
+          fontFamily: theme.fonts.body,
+        },
+      },
+    },
     styles: {
       global: {
         [`.${LANDING_V5_ROOT_CLASS}`]: {
