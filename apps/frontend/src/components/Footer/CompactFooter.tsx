@@ -1,5 +1,4 @@
-import { useMemo } from 'react'
-import { chakra, Divider, Flex, Link, Stack, Wrap } from '@chakra-ui/react'
+import { Divider, Flex, Link, Stack, Wrap } from '@chakra-ui/react'
 
 import { useBrandAssets } from '~features/brand/useBrandAssets'
 
@@ -19,11 +18,8 @@ export const CompactFooter = ({
   containerProps,
 }: CompactedFooterProps): JSX.Element => {
   const { hortColour, hortLightMono } = useBrandAssets()
-  const BrandHortLogo = useMemo(() => chakra(hortColour.Svg), [hortColour.Svg])
-  const BrandHortLightMonoLogo = useMemo(
-    () => chakra(hortLightMono.Svg),
-    [hortLightMono.Svg],
-  )
+  const BrandHortLogo = hortColour.Svg
+  const BrandHortLightMonoLogo = hortLightMono.Svg
 
   return (
     <CompactFooter.Container {...containerProps}>

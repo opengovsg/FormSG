@@ -1,3 +1,5 @@
+import { chakra } from '@chakra-ui/react'
+
 import hortColourUrl from '~assets/svgs/brand/brand-hort-colour.svg'
 import HortColourSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
 import hortDarkUrl from '~assets/svgs/brand/brand-hort-dark.svg'
@@ -19,8 +21,12 @@ import MarkColourSvgV2 from '~assets/svgs/brand/v2/brand-mark-colour.svg?react'
 import markDarkUrlV2 from '~assets/svgs/brand/v2/brand-mark-dark.svg'
 import MarkDarkSvgV2 from '~assets/svgs/brand/v2/brand-mark-dark.svg?react'
 
+type BrandSvgComponent = React.FunctionComponent<
+  React.ComponentProps<'svg'> & { title?: string }
+>
+
 export interface BrandAsset {
-  Svg: React.FunctionComponent<React.ComponentProps<'svg'> & { title?: string }>
+  Svg: ReturnType<typeof chakra<BrandSvgComponent>>
   url: string
 }
 
@@ -32,20 +38,26 @@ export interface BrandAssets {
   hortLightMono: BrandAsset
 }
 
+/** Wraps a raw svgr component with chakra() once, at module scope. */
+const asset = (Svg: BrandSvgComponent, url: string): BrandAsset => ({
+  Svg: chakra(Svg),
+  url,
+})
+
 const OLD_BRAND_ASSETS: BrandAssets = {
-  markColour: { Svg: MarkColourSvg, url: markColourUrl },
-  hortColour: { Svg: HortColourSvg, url: hortColourUrl },
-  markDark: { Svg: MarkDarkSvg, url: markDarkUrl },
-  hortDark: { Svg: HortDarkSvg, url: hortDarkUrl },
-  hortLightMono: { Svg: HortLightMonoSvg, url: hortLightMonoUrl },
+  markColour: asset(MarkColourSvg, markColourUrl),
+  hortColour: asset(HortColourSvg, hortColourUrl),
+  markDark: asset(MarkDarkSvg, markDarkUrl),
+  hortDark: asset(HortDarkSvg, hortDarkUrl),
+  hortLightMono: asset(HortLightMonoSvg, hortLightMonoUrl),
 }
 
 const V2_BRAND_ASSETS: BrandAssets = {
-  markColour: { Svg: MarkColourSvgV2, url: markColourUrlV2 },
-  hortColour: { Svg: HortColourSvgV2, url: hortColourUrlV2 },
-  markDark: { Svg: MarkDarkSvgV2, url: markDarkUrlV2 },
-  hortDark: { Svg: HortDarkSvgV2, url: hortDarkUrlV2 },
-  hortLightMono: { Svg: HortLightMonoSvgV2, url: hortLightMonoUrlV2 },
+  markColour: asset(MarkColourSvgV2, markColourUrlV2),
+  hortColour: asset(HortColourSvgV2, hortColourUrlV2),
+  markDark: asset(MarkDarkSvgV2, markDarkUrlV2),
+  hortDark: asset(HortDarkSvgV2, hortDarkUrlV2),
+  hortLightMono: asset(HortLightMonoSvgV2, hortLightMonoUrlV2),
 }
 
 /**

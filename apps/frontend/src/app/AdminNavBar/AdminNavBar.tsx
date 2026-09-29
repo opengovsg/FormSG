@@ -6,7 +6,6 @@ import { Link as ReactLink } from 'react-router-dom'
 import {
   As,
   Box,
-  chakra,
   Flex,
   FlexProps,
   HStack,
@@ -91,7 +90,7 @@ export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { user, removeQuery } = useUser()
   const toast = useToast({ status: 'success', isClosable: true })
   const { markColour } = useBrandAssets()
-  const BrandSmallLogo = useMemo(() => chakra(markColour.Svg), [markColour.Svg])
+  const BrandSmallLogo = markColour.Svg
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,

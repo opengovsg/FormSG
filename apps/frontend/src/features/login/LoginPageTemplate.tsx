@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
-import { Box, chakra, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
+import { Box, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
 import { AppFooter } from '~/app/AppFooter'
@@ -92,15 +92,7 @@ export const LoginPageTemplate: FCC = ({ children }) => {
   const { t } = useTranslation()
 
   const { hortColour } = useBrandAssets()
-  const BrandLogo = useMemo(
-    () =>
-      chakra(hortColour.Svg, {
-        baseStyle: {
-          h: { base: '1.5rem', lg: '2rem' },
-        },
-      }),
-    [hortColour.Svg],
-  )
+  const BrandLogo = hortColour.Svg
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
@@ -153,7 +145,10 @@ export const LoginPageTemplate: FCC = ({ children }) => {
                   to={LANDING_ROUTE}
                   mb={{ base: '0.75rem', lg: '1.5rem' }}
                 >
-                  <BrandLogo title="FormSG logo" />
+                  <BrandLogo
+                    h={{ base: '1.5rem', lg: '2rem' }}
+                    title="FormSG logo"
+                  />
                 </Link>
                 <Text textStyle="h4" color="secondary.500">
                   {t('features.login.LoginPage.slogan')}

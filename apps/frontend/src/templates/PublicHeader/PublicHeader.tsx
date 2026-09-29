@@ -1,7 +1,5 @@
-import { useMemo } from 'react'
 import {
   As,
-  chakra,
   Flex,
   FlexProps,
   HStack,
@@ -83,10 +81,8 @@ export const PublicHeader = ({
   containerProps,
 }: PublicHeaderProps): JSX.Element => {
   const { hortColour, hortDark, markColour, markDark } = useBrandAssets()
-  const HortSvg = bg ? hortDark.Svg : hortColour.Svg
-  const MarkSvg = bg ? markDark.Svg : markColour.Svg
-  const BrandHortLogo = useMemo(() => chakra(HortSvg), [HortSvg])
-  const BrandSmallLogo = useMemo(() => chakra(MarkSvg), [MarkSvg])
+  const BrandHortLogo = bg ? hortDark.Svg : hortColour.Svg
+  const BrandSmallLogo = bg ? markDark.Svg : markColour.Svg
 
   const logoToRender = useBreakpointValue({
     base: <BrandSmallLogo w="2.5rem" />,
