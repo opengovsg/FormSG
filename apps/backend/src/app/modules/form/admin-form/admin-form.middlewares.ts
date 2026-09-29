@@ -1,4 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import { RequestHandler } from 'express'
 import { KB } from 'formsg-shared/constants/file'
 import {
   FormAuthType,
@@ -8,6 +9,9 @@ import {
   WebhookSettingsUpdateDto,
   WorkflowType,
 } from 'formsg-shared/types'
+
+import { rateLimitConfig } from '../../../config/config'
+import { limitRate } from '../../../utils/limit-rate'
 
 import { verifyValidUnicodeString } from './admin-form.utils'
 
@@ -23,6 +27,21 @@ export const whitelistCsvStringValidator = Joi.string()
     'string.pattern.base': 'Your csv has one or more invalid characters.',
     'string.max': `You have exceeded the file size limit, please upload a file below ${WHITELIST_LIMIT_IN_KB} kB.`,
   })
+
+const whitelistUploadLimiter = limitRate({
+  max: rateLimitConfig.uploadFormWhitelist,
+})
+
+/**
+ * Applies the eligible-respondent upload rate limit to saves that carry a
+ * list, for routes that also serve saves without one. Each upload is parsed,
+ * validated and encrypted, then stored as a new immutable whitelist.
+ */
+export const limitWhitelistUploadRate: RequestHandler = (req, res, next) =>
+  typeof req.body?.whitelistCsvString === 'string' &&
+  req.body.whitelistCsvString.length > 0
+    ? whitelistUploadLimiter(req, res, next)
+    : next()
 
 // Request-only login keys for workflow step saves. Clients never send list references.
 const workflowStepLoginKeys = {

@@ -131,10 +131,17 @@ export const mapRouteError = (
     case DatabaseValidationError:
     case MissingUserError:
     case InvalidCollaboratorError:
-    case InvalidWhitelistSettingError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,
+      }
+    case InvalidWhitelistSettingError:
+      return {
+        statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
+        errorMessage:
+          error instanceof InvalidWhitelistSettingError
+            ? error.userMessage
+            : error.message,
       }
     case TransferOwnershipError:
       return {

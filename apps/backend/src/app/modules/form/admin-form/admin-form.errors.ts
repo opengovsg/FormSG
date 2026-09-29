@@ -136,7 +136,16 @@ export class SavedViewLimitError extends ApplicationError {
 }
 
 export class InvalidWhitelistSettingError extends ApplicationError {
-  constructor(message: string) {
-    super(message, undefined, ErrorCodes.ADMIN_FORM_INVALID_WHITELIST_SETTING)
+  // Shown to the admin. May quote a submitter ID from their list, so it stays
+  // out of `message`, which is what gets logged.
+  readonly userMessage: string
+
+  constructor(userMessage: string) {
+    super(
+      'Invalid eligible-respondent list',
+      undefined,
+      ErrorCodes.ADMIN_FORM_INVALID_WHITELIST_SETTING,
+    )
+    this.userMessage = userMessage
   }
 }
