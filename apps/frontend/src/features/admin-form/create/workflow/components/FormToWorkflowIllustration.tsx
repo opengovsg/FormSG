@@ -7,9 +7,9 @@ import {
   usePrefersReducedMotion,
 } from '@chakra-ui/react'
 
-import formSgLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
-
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
+
+import { useBrandAssets } from '~features/brand/useBrandAssets'
 
 const ILLUSTRATED_FORM_TITLE = 'My form'
 
@@ -40,65 +40,69 @@ const SkeletonField = ({ labelWidth }: { labelWidth: string }) => (
   </Stack>
 )
 
-const FormCard = (): JSX.Element => (
-  <Stack spacing={0} w="100%">
-    <Flex
-      justify="center"
-      align="center"
-      py="1rem"
-      bg="white"
-      borderTopRadius="8px"
-      borderX="1px solid"
-      borderTop="1px solid"
-      borderColor="neutral.300"
-    >
-      <Image src={formSgLogo} alt="FormSG" w="2.5rem" h="2.5rem" />
-    </Flex>
+const FormCard = (): JSX.Element => {
+  const { markColour } = useBrandAssets()
 
-    <Flex
-      bg="primary.500"
-      justify="center"
-      align="center"
-      py="1.5rem"
-      px="1.5rem"
-      borderX="1px solid"
-      borderColor="primary.500"
-    >
-      <Text textStyle="subhead-1" color="white" noOfLines={1}>
-        {ILLUSTRATED_FORM_TITLE}
-      </Text>
-    </Flex>
+  return (
+    <Stack spacing={0} w="100%">
+      <Flex
+        justify="center"
+        align="center"
+        py="1rem"
+        bg="white"
+        borderTopRadius="8px"
+        borderX="1px solid"
+        borderTop="1px solid"
+        borderColor="neutral.300"
+      >
+        <Image src={markColour.url} alt="FormSG" w="2.5rem" h="2.5rem" />
+      </Flex>
 
-    <Box
-      bg="primary.100"
-      px="1.25rem"
-      py="1.25rem"
-      borderX="1px solid"
-      borderBottom="1px solid"
-      borderColor="neutral.300"
-      borderBottomRadius="8px"
-      position="relative"
-    >
-      <Box bg="white" borderRadius="4px" px="1.25rem" py="1.25rem">
-        <Stack spacing="1.25rem">
-          <SkeletonField labelWidth="25%" />
-          <SkeletonField labelWidth="40%" />
-          <SkeletonField labelWidth="20%" />
-        </Stack>
-      </Box>
+      <Flex
+        bg="primary.500"
+        justify="center"
+        align="center"
+        py="1.5rem"
+        px="1.5rem"
+        borderX="1px solid"
+        borderColor="primary.500"
+      >
+        <Text textStyle="subhead-1" color="white" noOfLines={1}>
+          {ILLUSTRATED_FORM_TITLE}
+        </Text>
+      </Flex>
 
       <Box
-        position="absolute"
-        bottom={0}
-        left={0}
-        right={0}
-        h="3rem"
-        bgGradient="linear(to-b, transparent, primary.100)"
+        bg="primary.100"
+        px="1.25rem"
+        py="1.25rem"
+        borderX="1px solid"
+        borderBottom="1px solid"
+        borderColor="neutral.300"
         borderBottomRadius="8px"
-      />
-    </Box>
-  </Stack>
-)
+        position="relative"
+      >
+        <Box bg="white" borderRadius="4px" px="1.25rem" py="1.25rem">
+          <Stack spacing="1.25rem">
+            <SkeletonField labelWidth="25%" />
+            <SkeletonField labelWidth="40%" />
+            <SkeletonField labelWidth="20%" />
+          </Stack>
+        </Box>
+
+        <Box
+          position="absolute"
+          bottom={0}
+          left={0}
+          right={0}
+          h="3rem"
+          bgGradient="linear(to-b, transparent, primary.100)"
+          borderBottomRadius="8px"
+        />
+      </Box>
+    </Stack>
+  )
+}
 
 const StepCard = ({
   stepNumber,

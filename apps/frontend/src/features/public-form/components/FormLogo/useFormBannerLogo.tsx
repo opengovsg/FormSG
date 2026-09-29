@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { AgencyBase, FormColorTheme } from 'formsg-shared/types'
 import { FormLogo, FormLogoState } from 'formsg-shared/types/form/form_logo'
 
-import defaultFormLogo from '../../../../assets/svgs/brand/brand-hort-colour.svg'
+import { useBrandAssets } from '~features/brand/useBrandAssets'
 
 interface UseFormBannerLogoInputs {
   colorTheme: FormColorTheme | undefined
@@ -20,6 +20,9 @@ export const useFormBannerLogo = ({
   agency,
   showDefaultLogoIfNoLogo,
 }: UseFormBannerLogoInputs) => {
+  const { hortColour } = useBrandAssets()
+  const defaultFormLogo = hortColour.url
+
   const logoImgSrc = useMemo(() => {
     if (!logo) return
 
@@ -31,7 +34,13 @@ export const useFormBannerLogo = ({
       case FormLogoState.Custom:
         return logoBucketUrl ? `${logoBucketUrl}/${logo.fileId}` : undefined
     }
-  }, [agency?.logo, logo, logoBucketUrl, showDefaultLogoIfNoLogo])
+  }, [
+    agency?.logo,
+    defaultFormLogo,
+    logo,
+    logoBucketUrl,
+    showDefaultLogoIfNoLogo,
+  ])
 
   const logoImgAlt = useMemo(() => {
     if (!logo) return

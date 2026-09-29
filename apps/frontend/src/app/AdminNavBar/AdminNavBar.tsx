@@ -17,7 +17,6 @@ import { delay } from 'lodash'
 
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
 import { BxsRocket } from '~assets/icons/BxsRocket'
-import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
 import {
   FEATURE_REQUEST,
   FORM_GUIDE,
@@ -36,14 +35,13 @@ import IconButton from '~components/IconButton'
 import Link from '~components/Link'
 import { AvatarMenu, AvatarMenuDivider } from '~templates/AvatarMenu/AvatarMenu'
 
+import { useBrandAssets } from '~features/brand/useBrandAssets'
 import { EmergencyContactModal } from '~features/user/emergency-contact/EmergencyContactModal'
 import { useUser } from '~features/user/queries'
 import { TransferOwnershipModal } from '~features/user/transfer-ownership/TransferOwnershipModal'
 import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import Menu from '../../components/Menu'
-
-const BrandSmallLogo = chakra(BrandMarkSvg)
 
 type AdminNavBarLinkProps = {
   label: string
@@ -92,6 +90,8 @@ export interface AdminNavBarProps {
 export const AdminNavBar = ({ isMenuOpen }: AdminNavBarProps): JSX.Element => {
   const { user, removeQuery } = useUser()
   const toast = useToast({ status: 'success', isClosable: true })
+  const { markColour } = useBrandAssets()
+  const BrandSmallLogo = useMemo(() => chakra(markColour.Svg), [markColour.Svg])
 
   const ROLLOUT_ANNOUNCEMENT_KEY = useMemo(
     () => ROLLOUT_ANNOUNCEMENT_KEY_PREFIX + user?._id,

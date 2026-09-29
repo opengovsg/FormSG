@@ -20,7 +20,7 @@ import markDarkUrlV2 from '~assets/svgs/brand/v2/brand-mark-dark.svg'
 import MarkDarkSvgV2 from '~assets/svgs/brand/v2/brand-mark-dark.svg?react'
 
 export interface BrandAsset {
-  Svg: React.FunctionComponent<React.SVGProps<SVGSVGElement>>
+  Svg: React.FunctionComponent<React.ComponentProps<'svg'> & { title?: string }>
   url: string
 }
 

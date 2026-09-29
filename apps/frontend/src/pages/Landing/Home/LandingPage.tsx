@@ -19,7 +19,6 @@ import dedent from 'dedent'
 
 import { AppFooter } from '~/app/AppFooter'
 import { AppPublicHeader } from '~/app/AppPublicHeader'
-import FormBrandLogo from '~/assets/svgs/brand/brand-mark-colour.svg'
 
 import { BxlGithub } from '~assets/icons/BxlGithub'
 import { BxsHelpCircle } from '~assets/icons/BxsHelpCircle'
@@ -37,6 +36,8 @@ import { useMdComponents } from '~hooks/useMdComponents'
 import Button from '~components/Button'
 import { MarkdownText } from '~components/MarkdownText'
 import { LottieAnimation } from '~templates/LottieAnimation'
+
+import { useBrandAssets } from '~features/brand/useBrandAssets'
 
 import { ExternalFormLink } from '../components/ExternalFormLink'
 import { FeatureGridItem } from '../components/FeatureGridItem'
@@ -83,6 +84,7 @@ export const LandingPage = (): JSX.Element => {
     },
   })
   const { t } = useTranslation()
+  const { markColour } = useBrandAssets()
 
   return (
     <>
@@ -512,7 +514,7 @@ export const LandingPage = (): JSX.Element => {
         </FeatureLink>
       </FeatureSection>
       <LandingSection bg="secondary.700" align="center">
-        <Image src={FormBrandLogo} aria-hidden h="3.5rem" />
+        <Image src={markColour.url} aria-hidden h="3.5rem" />
         <Text
           textAlign="center"
           textStyle={{ base: 'display-2-mobile', md: 'display-2' }}

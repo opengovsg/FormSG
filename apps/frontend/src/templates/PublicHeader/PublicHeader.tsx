@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   As,
   chakra,
@@ -8,13 +9,11 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
-import BrandHortSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
-import BrandHortDarkSvg from '~assets/svgs/brand/brand-hort-dark.svg?react'
-import BrandMarkSvg from '~assets/svgs/brand/brand-mark-colour.svg?react'
-import BrandMarkDarkSvg from '~assets/svgs/brand/brand-mark-dark.svg?react'
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
 import Link from '~components/Link'
+
+import { useBrandAssets } from '~features/brand/useBrandAssets'
 
 type PublicHeaderLinkProps = {
   label: string
@@ -83,8 +82,11 @@ export const PublicHeader = ({
   bg,
   containerProps,
 }: PublicHeaderProps): JSX.Element => {
-  const BrandHortLogo = bg ? chakra(BrandHortDarkSvg) : chakra(BrandHortSvg)
-  const BrandSmallLogo = bg ? chakra(BrandMarkDarkSvg) : chakra(BrandMarkSvg)
+  const { hortColour, hortDark, markColour, markDark } = useBrandAssets()
+  const HortSvg = bg ? hortDark.Svg : hortColour.Svg
+  const MarkSvg = bg ? markDark.Svg : markColour.Svg
+  const BrandHortLogo = useMemo(() => chakra(HortSvg), [HortSvg])
+  const BrandSmallLogo = useMemo(() => chakra(MarkSvg), [MarkSvg])
 
   const logoToRender = useBreakpointValue({
     base: <BrandSmallLogo w="2.5rem" />,

@@ -1,12 +1,9 @@
+import { useMemo } from 'react'
 import { chakra, Divider, Flex, Link, Stack, Wrap } from '@chakra-ui/react'
 
-import BrandHortSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
-import BrandHortLightMonoSvg from '~assets/svgs/brand/brand-hort-lightmono.svg?react'
+import { useBrandAssets } from '~features/brand/useBrandAssets'
 
 import { FooterContainerProps, FooterVariantProps } from './common/types'
-
-const BrandHortLogo = chakra(BrandHortSvg)
-const BrandHortLightMonoLogo = chakra(BrandHortLightMonoSvg)
 
 interface CompactedFooterProps extends FooterVariantProps {
   compactMonochromeLogos?: boolean
@@ -21,6 +18,13 @@ export const CompactFooter = ({
   appLink,
   containerProps,
 }: CompactedFooterProps): JSX.Element => {
+  const { hortColour, hortLightMono } = useBrandAssets()
+  const BrandHortLogo = useMemo(() => chakra(hortColour.Svg), [hortColour.Svg])
+  const BrandHortLightMonoLogo = useMemo(
+    () => chakra(hortLightMono.Svg),
+    [hortLightMono.Svg],
+  )
+
   return (
     <CompactFooter.Container {...containerProps}>
       <Stack direction="row" h="2.25rem" align="center" spacing="2rem">

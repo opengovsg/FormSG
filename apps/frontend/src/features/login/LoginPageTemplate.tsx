@@ -8,13 +8,13 @@ import { AppFooter } from '~/app/AppFooter'
 
 import { FCC } from '~typings/react'
 
-import BrandLogoSvg from '~assets/svgs/brand/brand-hort-colour.svg?react'
 import { LANDING_ROUTE } from '~constants/routes'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
 import Link from '~components/Link'
 import { AppGrid } from '~templates/AppGrid'
 
+import { useBrandAssets } from '~features/brand/useBrandAssets'
 import { useEnv } from '~features/env/queries'
 
 import { LoginImageSvgr } from './components/LoginImageSvgr'
@@ -22,12 +22,6 @@ import { LoginImageSvgr } from './components/LoginImageSvgr'
 export type LoginOtpData = {
   email: string
 }
-
-export const BrandLogo = chakra(BrandLogoSvg, {
-  baseStyle: {
-    h: { base: '1.5rem', lg: '2rem' },
-  },
-})
 
 // Component for the split blue/white background.
 export const BackgroundBox: FCC = ({ children }) => (
@@ -96,6 +90,17 @@ export const LoginPageTemplate: FCC = ({ children }) => {
   const isLoginBannerGB = useFeatureValue('is-login-banner', '')
 
   const { t } = useTranslation()
+
+  const { hortColour } = useBrandAssets()
+  const BrandLogo = useMemo(
+    () =>
+      chakra(hortColour.Svg, {
+        baseStyle: {
+          h: { base: '1.5rem', lg: '2rem' },
+        },
+      }),
+    [hortColour.Svg],
+  )
 
   const bannerContent = useMemo(
     // Use || instead of ?? so that we fall through even if previous banners are empty string.
