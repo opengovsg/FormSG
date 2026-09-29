@@ -29,6 +29,7 @@ import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import { CanceledResult, DownloadOptions, DownloadResult } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
+import { CsvExportView } from '../utils/csvExportView'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
@@ -123,7 +124,15 @@ const DownloadSelector = ({
 
 export const DownloadButton = (): JSX.Element => {
   const isDelightfulDashboard = useIsDelightfulDashboard()
-  const { visibleSubmissionIds, isFullyLoaded } = useUnlockedResponses()
+  const {
+    visibleSubmissionIds,
+    isFullyLoaded,
+    searchText,
+    excludedSearchColumnIds,
+    sortColumnId,
+    sortDirection,
+    hiddenColumnIds,
+  } = useUnlockedResponses()
 
   const exportSubmissionIds =
     isDelightfulDashboard &&
@@ -132,6 +141,21 @@ export const DownloadButton = (): JSX.Element => {
     visibleSubmissionIds.length <= CSV_BUFFER_MAX_RESPONSES
       ? visibleSubmissionIds
       : undefined
+
+  // The generator holds every record until download, so it can order and
+  // project them however the table is showing them, at any response count.
+  //
+  // The id list is what the table itself matched, against rendered cells rather
+  // than stored answers, so it decides the rows whenever it is there and the
+  // generator's own search stands in only past the count it can be built for.
+  const csvView: CsvExportView | undefined = isDelightfulDashboard
+    ? {
+        ...(exportSubmissionIds ? {} : { searchText, excludedSearchColumnIds }),
+        sortColumnId,
+        sortDirection,
+        hiddenColumnIds,
+      }
+    : undefined
 
   const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = useMemo(
     () => ({
@@ -264,6 +288,7 @@ export const DownloadButton = (): JSX.Element => {
       ...(exportSubmissionIds
         ? { visibleSubmissionIds: exportSubmissionIds }
         : {}),
+      ...(csvView ? { csvView } : {}),
       downloadAttachments: downloadOptions.isDownloadAttachments,
       isDownloadCsv: downloadOptions.isDownloadCsv,
       isDownloadPdf: downloadOptions.isDownloadPdf,
@@ -273,6 +298,7 @@ export const DownloadButton = (): JSX.Element => {
     handleBulkDownloadMutation,
     downloadOptions,
     exportSubmissionIds,
+    csvView,
   ])
 
   const resetDownload = useCallback(() => {

@@ -27,6 +27,7 @@ import {
 } from '../../common/utils/decryptionWorker'
 import { generateResponsePdfBlob } from '../../IndividualResponsePage/utils/generateResponsePdf'
 
+import { CsvExportView } from './utils/csvExportView'
 import { downloadResponseAttachment } from './utils/downloadCsv'
 import { EncryptedResponseCsvGenerator } from './utils/EncryptedResponseCsvGenerator'
 import {
@@ -59,6 +60,7 @@ export type DownloadEncryptedParams = EncryptedResponsesStreamParams & {
   isDownloadCsv: boolean
   isDownloadPdf: boolean
   visibleSubmissionIds?: string[]
+  csvView?: CsvExportView
 }
 interface UseDecryptionWorkersProps {
   onDecryptionProgress: React.Dispatch<React.SetStateAction<number>>
@@ -104,6 +106,7 @@ const useDecryptionWorkers = ({
       startDate,
       isMrf,
       visibleSubmissionIds,
+      csvView,
     }: DownloadEncryptedParams) => {
       if (!adminForm || !responsesCount) {
         return Promise.resolve({
@@ -171,6 +174,7 @@ const useDecryptionWorkers = ({
             expectedResponsesCount,
             NUM_OF_METADATA_ROWS,
             isMrf,
+            csvView,
           )
         : undefined
 
