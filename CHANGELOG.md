@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.35.1](https://github.com/opengovsg/formsg/compare/v9.35.0...v9.35.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* **webhooks:** support Plumber staging and UAT environments (#10133) ([#10133](https://github.com/opengovsg/formsg/commit/5de58696881c2788ba5a00e29f46a71fcf2e1fbb))
+
 ## [9.35.0](https://github.com/opengovsg/formsg/compare/v9.34.0...v9.35.0) (2026-09-29)
 
 
