@@ -59,6 +59,16 @@ export function useSessionStorage<S>(
 ): UseSessionstorateStateReturnValue<S> {
   const [value, setValue] = useState(() => initialize(key, initialState))
 
+  // A value read from storage needs no write-back. Writing it on mount would
+  // bring back an entry another hook instance removed in the meantime.
+  const valueReadFromStorage = useRef<{ value: S } | null | undefined>(
+    undefined,
+  )
+  if (valueReadFromStorage.current === undefined) {
+    valueReadFromStorage.current =
+      getValueFromSessionStorage(key) === null ? null : { value }
+  }
+
   const isUpdateFromCrossDocumentListener = useRef(false)
   const isUpdateFromWithinDocumentListener = useRef(false)
   const customEventTypeName = useMemo(() => {
@@ -71,7 +81,14 @@ export function useSessionStorage<S>(
      * to keep track of whether setValue is from another
      * storage event
      */
-    if (!isUpdateFromCrossDocumentListener.current && value !== undefined) {
+    const isUnchangedSinceRead =
+      !!valueReadFromStorage.current &&
+      valueReadFromStorage.current.value === value
+    if (
+      !isUpdateFromCrossDocumentListener.current &&
+      value !== undefined &&
+      !isUnchangedSinceRead
+    ) {
       saveValueToSessionStorage(key, value)
     }
   }, [key, value])
