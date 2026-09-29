@@ -3,6 +3,8 @@ import { type HasTitle } from '..'
 export * from './en-sg'
 
 export interface Webhooks extends HasTitle {
+  workflowUnsupported: string
+  remove: string
   input: {
     label: string
     description: string

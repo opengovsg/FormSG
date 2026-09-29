@@ -3,10 +3,15 @@ import { Meta, StoryFn } from '@storybook/react'
 import { http, HttpResponse } from 'msw'
 
 import { featureFlags } from 'formsg-shared/constants'
-import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
+import {
+  FormResponseMode,
+  FormSettings,
+  WorkflowType,
+} from 'formsg-shared/types/form'
 
 import {
   getAdminFormSettings,
+  getAdminFormView,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
@@ -178,4 +183,84 @@ Tablet.parameters = {
     defaultViewport: 'tablet',
   },
   chromatic: { viewports: [viewports.md] },
+}
+
+const mrfWebhooksGrowthBook = new GrowthBook({
+  features: { [featureFlags.enableMrfWebhooks]: { defaultValue: true } },
+})
+
+const webhookWorkflowParameters = (stepCount: number, url = '') => ({
+  msw: {
+    handlers: {
+      default: [
+        ...buildMswRoutes({
+          overrides: {
+            responseMode: FormResponseMode.Multirespondent,
+            webhook: { url, isRetryEnabled: false },
+          },
+        }),
+        getAdminFormView({
+          overrides: {
+            responseMode: FormResponseMode.Multirespondent,
+            workflow: Array.from({ length: stepCount }, (_, i) => ({
+              _id: `step-${i}`,
+              workflow_type: WorkflowType.Static,
+              emails: [],
+              edit: [],
+            })),
+          },
+        }),
+      ],
+    },
+  },
+})
+
+const withMrfWebhooks = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={mrfWebhooksGrowthBook}>
+    <Story />
+  </GrowthBookProvider>
+)
+
+export const MultiStepWorkflow = Template.bind({})
+MultiStepWorkflow.decorators = [withMrfWebhooks]
+MultiStepWorkflow.parameters = webhookWorkflowParameters(2)
+
+export const SingleStepWorkflow = Template.bind({})
+SingleStepWorkflow.decorators = [withMrfWebhooks]
+SingleStepWorkflow.parameters = webhookWorkflowParameters(1)
+
+export const MultiStepPlumber = Template.bind({})
+MultiStepPlumber.decorators = [withMrfWebhooks]
+MultiStepPlumber.parameters = webhookWorkflowParameters(
+  2,
+  'https://plumber.gov.sg/webhooks/abc',
+)
+
+export const SingleStepGenericWebhook = Template.bind({})
+SingleStepGenericWebhook.decorators = [withMrfWebhooks]
+SingleStepGenericWebhook.parameters = webhookWorkflowParameters(
+  1,
+  'https://example.com/webhook',
+)
+
+export const RecoverableAdminFormError = Template.bind({})
+RecoverableAdminFormError.decorators = [withMrfWebhooks]
+RecoverableAdminFormError.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        http.get(
+          '/api/v3/admin/forms/:formId',
+          () =>
+            HttpResponse.json(
+              { message: 'Internal Server Error' },
+              { status: 500 },
+            ),
+          { once: true },
+        ),
+        ...webhookWorkflowParameters(1, 'https://example.com/webhook').msw
+          .handlers.default,
+      ],
+    },
+  },
 }

@@ -1,6 +1,7 @@
 import { KeyboardEventHandler, useCallback, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { BiX } from 'react-icons/bi'
 import {
   FormControl,
   InputGroup,
@@ -12,13 +13,55 @@ import validator from 'validator'
 
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
+import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 import Spinner from '~components/Spinner'
+import Tooltip from '~components/Tooltip'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
 
-export const WebhookUrlInput = (): JSX.Element => {
+const ClearWebhookRightButton = ({
+  isLoading,
+  onClick,
+}: {
+  isLoading: boolean
+  onClick: () => void
+}) => {
+  const { t } = useTranslation()
+  const removeLabel = t('features.adminForm.settings.webhooks.remove')
+
+  return (
+    <InputRightElement>
+      <Tooltip label={removeLabel} placement="top">
+        <IconButton
+          type="button"
+          variant="inputAttached"
+          aria-label={removeLabel}
+          icon={<BiX />}
+          bg="white"
+          borderLeftRadius={0}
+          borderLeftColor="neutral.400"
+          _hover={{ bg: 'white' }}
+          ml={0}
+          minW="2.75rem"
+          h="2.75rem"
+          isLoading={isLoading}
+          isDisabled={isLoading}
+          onClick={onClick}
+        />
+      </Tooltip>
+    </InputRightElement>
+  )
+}
+
+export const WebhookUrlInput = ({
+  isDisabled = false,
+  canRemove = false,
+}: {
+  isDisabled?: boolean
+  canRemove?: boolean
+}): JSX.Element => {
   const { t } = useTranslation()
   const { data: settings, isLoading } = useAdminFormSettings()
   const { mutateFormWebhookUrl } = useMutateFormSettings()
@@ -32,7 +75,7 @@ export const WebhookUrlInput = (): JSX.Element => {
   })
 
   const handleUpdateWebhook = useCallback(() => {
-    if (isLoading) return
+    if (isLoading || isDisabled) return
     const nextWebhookUrl = getValues('url')
     if (settings?.webhook.url === nextWebhookUrl) return
     return mutateFormWebhookUrl.mutate(nextWebhookUrl, {
@@ -40,6 +83,7 @@ export const WebhookUrlInput = (): JSX.Element => {
     })
   }, [
     getValues,
+    isDisabled,
     isLoading,
     mutateFormWebhookUrl,
     resetField,
@@ -83,6 +127,8 @@ export const WebhookUrlInput = (): JSX.Element => {
     [isValid],
   )
 
+  const showRemove = canRemove && !!settings?.webhook.url
+
   return (
     <FormControl
       isReadOnly={mutateFormWebhookUrl.isLoading}
@@ -97,17 +143,26 @@ export const WebhookUrlInput = (): JSX.Element => {
       </FormLabel>
       <Skeleton isLoaded={!isLoading}>
         <InputGroup>
-          {mutateFormWebhookUrl.isLoading ? (
-            <InputRightElement pointerEvents="none">
-              <Spinner />
-            </InputRightElement>
-          ) : null}
           <Input
-            placeholder="https://your-webhook.com/url"
+            isDisabled={isDisabled}
+            hasInputRightElement={showRemove || mutateFormWebhookUrl.isLoading}
+            placeholder={
+              isDisabled ? undefined : 'https://your-webhook.com/url'
+            }
             onKeyDown={handleWebhookUrlEnterKeyDown}
             {...urlRegister}
             ref={mergedRefs}
           />
+          {showRemove ? (
+            <ClearWebhookRightButton
+              isLoading={mutateFormWebhookUrl.isLoading}
+              onClick={() => mutateFormWebhookUrl.mutate('')}
+            />
+          ) : mutateFormWebhookUrl.isLoading ? (
+            <InputRightElement pointerEvents="none">
+              <Spinner />
+            </InputRightElement>
+          ) : null}
         </InputGroup>
       </Skeleton>
       <FormErrorMessage>{errors.url?.message}</FormErrorMessage>
