@@ -148,6 +148,7 @@ export const createWebhookQueueHandler =
       logMeta = {
         ...logMeta,
         formId: webhookInfo.webhookView.data.formId,
+        pendingSubmissionId: webhookInfo.pendingSubmissionId,
       }
       // Webhook URL was deleted or retries disabled
       if (!webhookUrl || !isRetryEnabled)
@@ -243,6 +244,7 @@ const resolveWebhookView = (
   return resolveSnapshotRetryView({
     liveView: webhookInfo.webhookView,
     submissionId: webhookMessage.submissionId,
+    pendingSubmissionId: webhookInfo.pendingSubmissionId,
     snapshotRef,
     submittedStepSnapshotTokens: webhookInfo.submittedStepSnapshotTokens,
   })

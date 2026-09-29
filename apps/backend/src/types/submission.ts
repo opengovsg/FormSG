@@ -48,6 +48,7 @@ export type SubmissionWebhookInfo = {
   isRetryEnabled: boolean
   webhookView: WebhookView
   submittedStepSnapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
+  pendingSubmissionId?: string
 }
 
 export type FindFormsWithSubsAboveResult = {

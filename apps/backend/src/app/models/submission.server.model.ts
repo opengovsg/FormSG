@@ -189,12 +189,22 @@ SubmissionSchema.statics.retrieveWebhookInfoById = async function (
     []
   ).map((step) => step.snapshotTokens)
 
+  // RATIONALE: For payments submissions, first-step snapshots are keyed under the pending submission id.
+  // This might differ from _id after duplicate-key recovery at payment confirmation.
+  const pendingSubmissionId =
+    populatedSubmission.submissionType === SubmissionType.Multirespondent
+      ? populatedSubmission.paymentId?.pendingSubmissionId
+      : undefined
+
   return {
     webhookUrl: populatedSubmission.form.webhook?.url ?? '',
     isRetryEnabled: !!populatedSubmission.form.webhook?.isRetryEnabled,
     webhookView,
     ...(submittedStepSnapshotTokens.length > 0
       ? { submittedStepSnapshotTokens }
+      : {}),
+    ...(pendingSubmissionId
+      ? { pendingSubmissionId: String(pendingSubmissionId) }
       : {}),
   }
 }
