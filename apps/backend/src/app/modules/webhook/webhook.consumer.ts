@@ -14,8 +14,8 @@ import {
   SnapshotFormatNotRecordedError,
 } from '../submission/multirespondent-submission/webhook/submission-snapshot.errors'
 import {
-  resolveSnapshotRetryView,
-  SnapshotRetryError,
+  resolveSnapshotWebhookView,
+  SnapshotViewError,
 } from '../submission/multirespondent-submission/webhook/webhook-retry-view'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
@@ -235,13 +235,13 @@ export const createWebhookQueueHandler =
 const resolveWebhookView = (
   webhookMessage: WebhookQueueMessage,
   webhookInfo: SubmissionWebhookInfo,
-): ResultAsync<WebhookView, SnapshotRetryError> => {
+): ResultAsync<WebhookView, SnapshotViewError> => {
   const snapshotRef = webhookMessage.snapshotRef
   if (snapshotRef === undefined) {
     return okAsync(webhookInfo.webhookView)
   }
 
-  return resolveSnapshotRetryView({
+  return resolveSnapshotWebhookView({
     liveView: webhookInfo.webhookView,
     submissionId: webhookMessage.submissionId,
     pendingSubmissionId: webhookInfo.pendingSubmissionId,
