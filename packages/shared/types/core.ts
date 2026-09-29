@@ -31,6 +31,8 @@ export interface PrivateFormErrorDto extends ErrorDto {
 
 // List of env vars expected from the server that client uses
 export type ClientEnvVars = {
+  /** Version of the currently deployed backend. Absent on older backends. */
+  appVersion?: string
   isGeneralMaintenance: string
   isLoginBanner: string
   siteBannerContent: string

@@ -1,5 +1,7 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { ClientEnvVars, FrontendRuntimeEnv } from 'formsg-shared/types/core'
+import { readFileSync } from 'fs'
+import path from 'path'
 
 import config from '../../config/config'
 import { captchaConfig } from '../../config/features/captcha.config'
@@ -11,6 +13,18 @@ import {
 import { paymentConfig } from '../../config/features/payment.config'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { turnstileConfig } from '../../config/features/turnstile.config'
+
+const readAppVersion = (): string => {
+  try {
+    const { version } = JSON.parse(
+      readFileSync(path.resolve('package.json'), { encoding: 'utf8' }),
+    ) as { version?: string }
+    return version ?? ''
+  } catch {
+    return ''
+  }
+}
+export const appVersion = readAppVersion()
 
 export const getFrontendRuntimeEnv = (
   growthbook?: GrowthBook,
@@ -54,6 +68,7 @@ export const getEnvScriptHtml = ({
 
 export const getClientEnvVars = (): ClientEnvVars => {
   return {
+    appVersion,
     isGeneralMaintenance: config.isGeneralMaintenance,
     isLoginBanner: config.isLoginBanner,
     siteBannerContent: config.siteBannerContent,
