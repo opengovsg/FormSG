@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { keyBy } from 'lodash'
 
+import { PLUMBER_WEBHOOK_URL_REGEX } from 'formsg-shared/constants'
 import {
   BasicField,
   DropdownFieldBase,
@@ -79,6 +80,8 @@ export const useAdminFormWorkflow = () => {
     isPaymentEnabled:
       form?.responseMode === FormResponseMode.Multirespondent &&
       !!form.payments_field?.enabled,
+    isGenericWebhookEnabled:
+      !!form?.webhook.url && !PLUMBER_WEBHOOK_URL_REGEX.test(form.webhook.url),
     idToFieldMap,
     emailFormFields,
     yesNoFormFields,

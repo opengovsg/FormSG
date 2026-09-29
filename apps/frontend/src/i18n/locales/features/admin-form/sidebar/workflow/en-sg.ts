@@ -271,6 +271,8 @@ export const enSG: Workflow = {
     cancel: 'Cancel',
     done: 'Done',
   },
+  webhookEnabledNoMoreSteps:
+    'Remove your webhook URL in <webhookSettingsLink>webhook settings</webhookSettingsLink> to add more steps.',
   paymentEnabledNoSteps:
     'Remove the payment field to add workflow steps. A form cannot have both a payment field and a workflow.',
   completionEmail: {
