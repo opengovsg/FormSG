@@ -213,7 +213,7 @@ export enum SavedViewSortDirection {
 export interface FormSavedView {
   _id: string
   name: string
-  filter: {
+  filter?: {
     startDate?: DateString
     endDate?: DateString
     searchText?: string
