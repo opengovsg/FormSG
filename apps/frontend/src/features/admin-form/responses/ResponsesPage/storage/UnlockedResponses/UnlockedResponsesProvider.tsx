@@ -230,7 +230,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     isFetching: isNextFetching,
   } = useFormResponses({ page: pages.next, enabled: paginationEnabled })
 
-  const { data: allData, isFetching: isFetchingAll } = useAllFormResponses({
+  const { data: allData, isLoading: isLoadingAll } = useAllFormResponses({
     enabled: isInfiniteScroll && !submissionId,
   })
 
@@ -240,7 +240,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
 
   const allMetadata = useMemo(() => allData?.metadata ?? [], [allData])
 
-  const isTableLoading = isFetchingAll || isDecryptingAll
+  const isTableLoading = isLoadingAll || isDecryptingAll
 
   const [renderLimit, setRenderLimit] = useState(TABLE_ROW_RENDER_CHUNK)
 
