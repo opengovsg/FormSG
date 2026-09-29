@@ -1,8 +1,10 @@
 import {
+  FormAuthType,
   FormFieldDto,
   FormWorkflowStep,
   FormWorkflowStepDynamic,
   FormWorkflowStepStatic,
+  WorkflowStepLoginInput,
   WorkflowType,
 } from 'formsg-shared/types'
 
@@ -29,6 +31,13 @@ export interface StepDraft {
   inputs: Partial<EditStepInputs>
 }
 
+// Step 1's form-level login as edited; sent as first_step_login.
+export interface FirstStepLoginDraft {
+  authType: FormAuthType
+  isSubmitterIdCollectionEnabled: boolean
+  isSingleSubmission: boolean
+}
+
 export type EditStepInputs = FormWorkflowStep & {
   _id: string
   workflow_type: WorkflowType
@@ -37,4 +46,9 @@ export type EditStepInputs = FormWorkflowStep & {
   approval_field?: FormFieldDto['_id']
   conditional_field?: FormFieldDto['_id']
   step_name: FormWorkflowStepStatic['step_name']
+  // Staged login edits, sent with the step save. Undefined keeps the saved value.
+  login_auth?: WorkflowStepLoginInput | null
+  first_step_login?: FirstStepLoginDraft
+  esrvc_id?: string
+  whitelistCsvString?: string | null
 }

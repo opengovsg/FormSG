@@ -12,6 +12,7 @@ import {
   FormResponseMode,
   MyInfoAttribute,
 } from 'formsg-shared/types'
+import { formUsesMyInfo } from 'formsg-shared/utils/workflow-auth'
 
 import { GUIDE_MYINFO_BUILDER_FIELD } from '~constants/links'
 import { ADMINFORM_SETTINGS_SINGPASS_SUBROUTE } from '~constants/routes'
@@ -35,6 +36,8 @@ import { isMyInfo } from '~features/myinfo/utils'
 import { useUser } from '~features/user/queries'
 
 import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabForm'
+import { useCreatePageSidebar } from '../../../../common/CreatePageSidebarContext'
+import { useIsMrfSingpassAllSteps } from '../../../../workflow/hooks/useIsMrfSingpassAllSteps'
 import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
@@ -108,14 +111,13 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   )
 
   // myInfo should be disabled if
-  // 1. form auth type is not myInfo
+  // 1. no step uses Singpass
   // 2. # of myInfo fields >= 30
   const isMyInfoDisabled = useMemo(
     () =>
       form
         ? form.form_fields.filter(isMyInfo).length >= 30 ||
-          (form.authType !== FormAuthType.MyInfo &&
-            form.authType !== FormAuthType.SGID_MyInfo)
+          !formUsesSingpass(form)
         : true,
     [form],
   )
@@ -271,21 +273,63 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   )
 }
 
-type MyInfoTextProps = Pick<AdminFormDto, 'authType' | 'form_fields'>
+/** Whether MRF forms set login per step, in the Workflow tab. */
+const useIsStepLoginForm = (form: AdminFormDto | undefined): boolean => {
+  const isStepLoginEnabled = useIsMrfSingpassAllSteps()
+  return (
+    isStepLoginEnabled &&
+    form?.responseMode === FormResponseMode.Multirespondent
+  )
+}
 
-const MyInfoText = ({
-  authType,
-  form_fields,
-}: MyInfoTextProps): JSX.Element => {
+/** Whether any step (legacy step 1 providers included) can prefill MyInfo fields. */
+const formUsesSingpass = (form: AdminFormDto | undefined): boolean => {
+  if (!form) return false
+  if (form.responseMode === FormResponseMode.Multirespondent) {
+    return formUsesMyInfo(form, form.workflow)
+  }
+  return (
+    form.authType === FormAuthType.MyInfo ||
+    form.authType === FormAuthType.SGID_MyInfo
+  )
+}
+
+const WorkflowTabLink = ({ children }: { children: string }): JSX.Element => {
+  const { handleWorkflowClick } = useCreatePageSidebar()
+  return (
+    <Link as="button" onClick={() => handleWorkflowClick(false)}>
+      {children}
+    </Link>
+  )
+}
+
+const MyInfoText = ({ form }: { form: AdminFormDto }): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.sidebar.fields.myInfoPanel',
   })
-  const isMyInfoDisabled =
-    authType !== FormAuthType.MyInfo && authType !== FormAuthType.SGID_MyInfo
+  const isStepLoginForm = useIsStepLoginForm(form)
+  const isMyInfoDisabled = !formUsesSingpass(form)
   const numMyInfoFields = useMemo(
-    () => form_fields.filter((ff) => isMyInfo(ff)).length,
-    [form_fields],
+    () => form.form_fields.filter((ff) => isMyInfo(ff)).length,
+    [form.form_fields],
   )
+  // MyInfo fields not yet in any step aren't filled in by anyone.
+  const numUnassignedMyInfoFields = useMemo(() => {
+    if (!('workflow' in form) || form.workflow.length === 0) return 0
+    const assignedIds = new Set(form.workflow.flatMap((step) => step.edit))
+    return form.form_fields.filter(
+      (ff) => isMyInfo(ff) && !assignedIds.has(ff._id),
+    ).length
+  }, [form])
+
+  if (isMyInfoDisabled && isStepLoginForm) {
+    return (
+      <Text>
+        {t('stepLoginDisabledBefore')}{' '}
+        <WorkflowTabLink>{t('stepLoginDisabledWorkflowTab')}</WorkflowTabLink>.
+      </Text>
+    )
+  }
 
   if (isMyInfoDisabled) {
     return (
@@ -305,6 +349,16 @@ const MyInfoText = ({
       <Link isExternal href={GUIDE_MYINFO_BUILDER_FIELD}>
         {t('learnMore')}
       </Link>
+      {isStepLoginForm && numUnassignedMyInfoFields > 0 ? (
+        <>
+          {' '}
+          {t('unassignedMyInfoFieldsBefore', {
+            numFields: numUnassignedMyInfoFields,
+          })}{' '}
+          <WorkflowTabLink>{t('stepLoginDisabledWorkflowTab')}</WorkflowTabLink>
+          .
+        </>
+      ) : null}
     </Text>
   )
 }
@@ -320,7 +374,7 @@ const MyInfoMessage = (): JSX.Element | null => {
   return form ? (
     <Box px="1.5rem" pt="2rem" pb="1.5rem">
       <InlineMessage variant={hasExceededLimit ? 'error' : 'info'}>
-        <MyInfoText {...form} />
+        <MyInfoText form={form} />
       </InlineMessage>
     </Box>
   ) : null

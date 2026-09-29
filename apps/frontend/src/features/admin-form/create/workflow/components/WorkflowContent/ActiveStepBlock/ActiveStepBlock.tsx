@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 
-import { FormWorkflowStep, FormWorkflowStepDto } from 'formsg-shared/types'
+import { FormWorkflowStepDto, WorkflowStepWriteDto } from 'formsg-shared/types'
 
 import { datadogRum } from '~utils/datadog'
 
@@ -20,7 +20,7 @@ export interface ActiveStepBlockProps {
   handleOpenDeleteModal: () => void
 }
 
-const handleTracking = (step: FormWorkflowStep, stepNumber: number) => {
+const handleTracking = (step: WorkflowStepWriteDto, stepNumber: number) => {
   if (stepNumber === 0) {
     const hasFieldsSelected = step.edit.length > 0
     if (hasFieldsSelected) {
@@ -56,7 +56,7 @@ export const ActiveStepBlock = ({
       : undefined
 
   const handleSubmit = useCallback(
-    (step: FormWorkflowStep) => {
+    (step: WorkflowStepWriteDto) => {
       handleTracking(step, stepNumber)
       updateStepMutation.mutate(
         {

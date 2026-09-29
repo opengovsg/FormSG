@@ -11,6 +11,7 @@ import {
 import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
+import { adminFormSettingsKeys } from '~features/admin-form/settings/queries'
 import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedbackContainer/adminFeedbackStore'
 
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
@@ -44,11 +45,25 @@ export const useWorkflowMutations = () => {
     [toast],
   )
 
+  // Step saves may write form-level login fields, which the form and Settings queries hold.
+  const refetchFormLevelLogin = useCallback(
+    (body: WorkflowStepWriteDto, stepNumber: number) => {
+      const isFormLevelChanged =
+        body.first_step_login !== undefined ||
+        body.esrvc_id !== undefined ||
+        (stepNumber === 0 && body.whitelistCsvString !== undefined)
+      if (!isFormLevelChanged) return
+      void queryClient.invalidateQueries(adminFormKey)
+      void queryClient.invalidateQueries(adminFormSettingsKeys.id(formId))
+    },
+    [adminFormKey, formId, queryClient],
+  )
+
   const createStepMutation = useMutation(
     (createStepBody: WorkflowStepWriteDto) =>
       createWorkflowStep(formId, createStepBody),
     {
-      onSuccess: (updatedWorkflow) => {
+      onSuccess: (updatedWorkflow, createStepBody) => {
         toast.closeAll()
         queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
           if (!prev) throw new Error('Query should have been set')
@@ -57,6 +72,7 @@ export const useWorkflowMutations = () => {
           }
           return { ...prev, workflow: updatedWorkflow }
         })
+        refetchFormLevelLogin(createStepBody, updatedWorkflow.length - 1)
         toast({
           description: 'The step was successfully created.',
         })
@@ -115,7 +131,7 @@ export const useWorkflowMutations = () => {
       updateStepBody: WorkflowStepWriteDto
     }) => updateWorkflowStep(formId, stepNumber, updateStepBody),
     {
-      onSuccess: (updatedWorkflow) => {
+      onSuccess: (updatedWorkflow, { stepNumber, updateStepBody }) => {
         toast.closeAll()
         queryClient.setQueryData<AdminFormDto>(adminFormKey, (prev) => {
           if (!prev) throw new Error('Query should have been set')
@@ -124,6 +140,7 @@ export const useWorkflowMutations = () => {
           }
           return { ...prev, workflow: updatedWorkflow }
         })
+        refetchFormLevelLogin(updateStepBody, stepNumber)
         toast({
           description: 'The step was successfully updated.',
         })

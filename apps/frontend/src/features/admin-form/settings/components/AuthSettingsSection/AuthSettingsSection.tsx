@@ -12,12 +12,14 @@ import {
 import InlineMessage from '~components/InlineMessage'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { useIsMrfSingpassAllSteps } from '~features/admin-form/create/workflow/hooks/useIsMrfSingpassAllSteps'
 import { isMyInfo } from '~features/myinfo/utils'
 
 import { AuthSettingsDescriptionText } from './AuthSettingsDescriptionText'
 import { AuthSettingsDisabledExplanationText } from './AuthSettingsDisabledExplanationText'
 import { AuthSettingsSingpassSection } from './AuthSettingsSingpassSection'
 import { FormSingpassAuthToggle } from './FormSingpassAuthToggle'
+import { MrfLoginOverview } from './MrfLoginOverview'
 
 interface AuthSettingsSectionProps {
   settings: FormSettings
@@ -35,6 +37,18 @@ export const AuthSettingsSection = ({
   )
 
   const isFormPublic = settings.status === FormStatus.Public
+
+  // MRF forms set login per step in the Workflow tab; this page summarises it.
+  const isStepLoginEnabled = useIsMrfSingpassAllSteps()
+  const mrfForm =
+    form?.responseMode === FormResponseMode.Multirespondent ? form : undefined
+  if (isStepLoginEnabled && mrfForm) {
+    return <MrfLoginOverview form={mrfForm} />
+  }
+  // Saved later-step logins stay visible while editing them is switched off.
+  const hasLaterStepLogin = !!mrfForm?.workflow
+    .slice(1)
+    .some((step) => step.auth)
 
   return (
     <Box>
@@ -54,6 +68,11 @@ export const AuthSettingsSection = ({
           isFormPublic={isFormPublic}
           containsMyInfoFields={containsMyInfoFields}
         />
+      ) : null}
+      {mrfForm && hasLaterStepLogin ? (
+        <Box mt="2.5rem">
+          <MrfLoginOverview form={mrfForm} isReadOnly />
+        </Box>
       ) : null}
     </Box>
   )

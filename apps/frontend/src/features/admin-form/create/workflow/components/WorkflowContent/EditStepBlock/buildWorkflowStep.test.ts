@@ -1,4 +1,4 @@
-import { WorkflowType } from 'formsg-shared/types'
+import { FormAuthType, WorkflowType } from 'formsg-shared/types'
 
 import { EditStepInputs } from '../../../types'
 
@@ -84,5 +84,118 @@ describe('buildWorkflowStep', () => {
 
     expect(step?.workflow_type).toEqual(WorkflowType.Static)
     expect(step).toHaveProperty('emails', [])
+  })
+
+  it('should omit an unchanged saved login so the server keeps it and its list', () => {
+    const step = buildWorkflowStep(
+      baseInputs({
+        auth: {
+          auth_type: FormAuthType.CP,
+          is_submitter_id_collection_enabled: true,
+          whitelisted_submitter_ids: { isWhitelistEnabled: true },
+        },
+      }),
+      false,
+    )
+
+    expect(step).not.toHaveProperty('auth')
+    expect(step).not.toHaveProperty('whitelistCsvString')
+  })
+
+  it('should send a staged later-step login without any list reference', () => {
+    const step = buildWorkflowStep(
+      baseInputs({
+        auth: {
+          auth_type: FormAuthType.CP,
+          is_submitter_id_collection_enabled: true,
+          whitelisted_submitter_ids: { isWhitelistEnabled: true },
+        },
+        login_auth: {
+          auth_type: FormAuthType.MyInfo,
+          is_submitter_id_collection_enabled: false,
+        },
+      }),
+      false,
+    )
+
+    expect(step?.auth).toEqual({
+      auth_type: FormAuthType.MyInfo,
+      is_submitter_id_collection_enabled: false,
+    })
+  })
+
+  it('should send null to remove a later step login', () => {
+    const step = buildWorkflowStep(baseInputs({ login_auth: null }), false)
+
+    expect(step).toHaveProperty('auth', null)
+  })
+
+  it('should never send auth for step 1, whose login is form-level', () => {
+    const step = buildWorkflowStep(
+      baseInputs({
+        login_auth: {
+          auth_type: FormAuthType.MyInfo,
+          is_submitter_id_collection_enabled: false,
+        },
+      }),
+      true,
+    )
+
+    expect(step).not.toHaveProperty('auth')
+  })
+
+  it('should send step 1 login changes as form-level input', () => {
+    const firstStepLogin = {
+      authType: FormAuthType.MyInfo,
+      isSubmitterIdCollectionEnabled: true,
+      isSingleSubmission: false,
+    }
+    const step = buildWorkflowStep(
+      baseInputs({ first_step_login: firstStepLogin }),
+      true,
+    )
+
+    expect(step?.first_step_login).toEqual(firstStepLogin)
+    expect(step).not.toHaveProperty('esrvc_id')
+  })
+
+  it('should never send step 1 login from a later step', () => {
+    const step = buildWorkflowStep(
+      baseInputs({
+        first_step_login: {
+          authType: FormAuthType.CP,
+          isSubmitterIdCollectionEnabled: false,
+          isSingleSubmission: false,
+        },
+      }),
+      false,
+    )
+
+    expect(step).not.toHaveProperty('first_step_login')
+  })
+
+  it.each([true, false])(
+    'should send a changed e-service ID and staged list in the same save (first step: %s)',
+    (isFirstStep) => {
+      const step = buildWorkflowStep(
+        baseInputs({
+          esrvc_id: 'NEW-ESRVC-ID',
+          whitelistCsvString: 'S1234567D',
+        }),
+        isFirstStep,
+      )
+
+      expect(step).toHaveProperty('esrvc_id', 'NEW-ESRVC-ID')
+      expect(step).toHaveProperty('whitelistCsvString', 'S1234567D')
+    },
+  )
+
+  it('should send null to remove a saved list', () => {
+    const step = buildWorkflowStep(
+      baseInputs({ whitelistCsvString: null }),
+      false,
+    )
+
+    expect(step).toHaveProperty('whitelistCsvString', null)
   })
 })

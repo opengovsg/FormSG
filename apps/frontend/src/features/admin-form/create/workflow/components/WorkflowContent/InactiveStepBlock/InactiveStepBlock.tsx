@@ -13,7 +13,11 @@ import {
 import { Dictionary } from 'lodash'
 
 import { BasicField, FormField } from 'formsg-shared/types'
-import { FormWorkflowStepDto, WorkflowType } from 'formsg-shared/types/form'
+import {
+  FormAuthType,
+  FormWorkflowStepDto,
+  WorkflowType,
+} from 'formsg-shared/types/form'
 import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
 
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
@@ -27,11 +31,14 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
+import { useIsMrfSingpassAllSteps } from '../../../hooks/useIsMrfSingpassAllSteps'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowEditBlocked } from '../../../hooks/useIsWorkflowEditBlocked'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { CloseFormToEditModal } from '../../CloseFormToEditModal'
 import { StepLabel } from '../StepLabel'
+import { StepLoginSummary } from '../StepLogin/StepLoginSummary'
+import { useResolvedStepAuths } from '../StepLogin/useResolvedStepAuths'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { InactiveApprovalsBlock } from './InactiveApprovalsBlock'
@@ -219,6 +226,17 @@ export const InactiveStepBlock = ({
       </Stack>
     </Stack>
   )
+  const isStepLoginEnabled = useIsMrfSingpassAllSteps()
+  const resolvedAuth = useResolvedStepAuths()?.[stepNumber]
+  // With the flag off, only a saved later-step login is shown (step 1's is in Settings).
+  const showLogin =
+    isStepLoginEnabled ||
+    (!isFirstStep && resolvedAuth?.authType !== FormAuthType.NIL)
+  const loginSection =
+    showLogin && resolvedAuth ? (
+      <StepLoginSummary resolved={resolvedAuth} />
+    ) : null
+
   const hideEmptyApprovals = isRedesign && !step.approval_field
   const approvalsSection =
     isFirstStep || hideEmptyApprovals ? null : (
@@ -278,6 +296,8 @@ export const InactiveStepBlock = ({
               </Flex>
             )}
           </Stack>
+
+          {loginSection}
 
           {isRedesign ? (
             <>

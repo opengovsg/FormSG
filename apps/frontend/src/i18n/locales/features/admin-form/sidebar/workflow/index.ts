@@ -11,6 +11,74 @@ interface CsvColumnText {
   notice: string
 }
 
+interface StepLoginText {
+  title: string
+  types: {
+    nil: string
+    myInfo: string
+    cp: string
+    sp: string
+    sgid: string
+    sgidMyInfo: string
+  }
+  free: string
+  newSubmissionsOnly: string
+  badges: {
+    collectsNric: string
+    collectsUen: string
+    onlyListedNrics: string
+    onlyListedUens: string
+    oneResponseEach: string
+  }
+  whitelist: {
+    nricTitle: string
+    uenTitle: string
+    nricDescription: string
+    uenDescription: string
+    savesWithStep: string
+    removedWithStep: string
+    empty: string
+  }
+  editor: {
+    collectNric: string
+    collectUen: string
+    collectNricDescription: string
+    collectUenDescription: string
+    singleSubmission: string
+    singleSubmissionDescription: string
+    esrvcIdLabel: string
+    esrvcIdDescription: string
+    esrvcIdPlaceholder: string
+    myInfoRemovedOne: string
+    myInfoRemovedMany: string
+    undo: string
+    esrvcIdChange: string
+    esrvcIdSharedWith: string
+    esrvcIdSharedByEvery: string
+    esrvcIdSavesWithStep: string
+    closeFormToEdit: string
+    legacyProvider: string
+    keepSingpassStep: string
+    myInfoInOtherStep: string
+    myInfoNeedsSingpassStep: string
+  }
+  esrvcIdModal: {
+    title: string
+    description: string
+    descriptionShared: string
+    stepName: string
+    cancel: string
+    confirm: string
+  }
+  noSteps: {
+    heading: string
+    fieldsToFill: string
+    myInfoNeedsSingpassOne: string
+    myInfoNeedsSingpassMany: string
+    saved: string
+  }
+}
+
 export interface Workflow {
   aria: {
     deleteWorkflow: string
@@ -250,4 +318,5 @@ export interface Workflow {
       finish: string
     }
   }
+  stepLogin: StepLoginText
 }

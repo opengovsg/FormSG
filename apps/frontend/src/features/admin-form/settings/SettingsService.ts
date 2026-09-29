@@ -238,6 +238,21 @@ export const updateGstEnabledFlag = async (
   })
 }
 
+/** Saves step 1's login and eligible-respondent list in one PATCH, for MRF forms with no steps. */
+export const updateFormLoginSettings = async (
+  formId: string,
+  loginSettings: Pick<
+    SettingsUpdateDto,
+    | 'authType'
+    | 'isSubmitterIdCollectionEnabled'
+    | 'isSingleSubmission'
+    | 'esrvcId'
+    | 'whitelistCsvString'
+  >,
+) => {
+  return updateFormSettings(formId, loginSettings)
+}
+
 /**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update

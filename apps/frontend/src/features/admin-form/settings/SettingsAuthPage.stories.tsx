@@ -1,11 +1,16 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { PaymentChannel } from 'formsg-shared/types'
 import {
+  AdminFormDto,
   FormAuthType,
   FormResponseMode,
   FormSettings,
   FormStatus,
+  FormWorkflowStepDto,
+  WorkflowType,
 } from 'formsg-shared/types/form'
 
 import {
@@ -335,6 +340,94 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
     },
   },
 }
+
+// Login on every step (mrf-singpass-all-steps): Settings › Singpass for MRF
+// forms is a read-only summary with Edit links into the Workflow tab.
+const stepLoginOn = new GrowthBook({
+  features: { [featureFlags.mrfSingpassAllSteps]: { defaultValue: true } },
+})
+
+const withStepLoginOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={stepLoginOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
+const STEP_LOGIN_WORKFLOW: FormWorkflowStepDto[] = [
+  {
+    _id: '6a1000000000000000000001',
+    workflow_type: WorkflowType.Static,
+    emails: [],
+    edit: [],
+  },
+  {
+    _id: '6a1000000000000000000002',
+    workflow_type: WorkflowType.Static,
+    emails: ['applicant@example.com'],
+    edit: [],
+    step_name: 'Applicant',
+    auth: {
+      auth_type: FormAuthType.MyInfo,
+      is_submitter_id_collection_enabled: true,
+    },
+  },
+  {
+    _id: '6a1000000000000000000003',
+    workflow_type: WorkflowType.Static,
+    emails: ['hr@company.sg'],
+    edit: [],
+    auth: {
+      auth_type: FormAuthType.CP,
+      is_submitter_id_collection_enabled: true,
+      whitelisted_submitter_ids: { isWhitelistEnabled: true },
+    },
+  },
+]
+
+const buildMrfMswRoutes = (overrides: Partial<AdminFormDto>) => [
+  ...createFormBuilderMocks({
+    responseMode: FormResponseMode.Multirespondent,
+    ...overrides,
+  } as Partial<AdminFormDto>),
+  getAdminFormSettings({
+    overrides: overrides as Partial<FormSettings>,
+    mode: FormResponseMode.Multirespondent,
+  }),
+]
+
+export const MrfStepLoginOverview = Template.bind({})
+MrfStepLoginOverview.decorators = [withStepLoginOn]
+MrfStepLoginOverview.parameters = {
+  msw: {
+    handlers: {
+      default: buildMrfMswRoutes({
+        status: FormStatus.Private,
+        authType: FormAuthType.NIL,
+        esrvcId: 'FORMSG-CP-DEMO',
+        workflow: STEP_LOGIN_WORKFLOW,
+      } as Partial<AdminFormDto>),
+    },
+  },
+}
+
+export const MrfStepLoginOverviewNoSteps = Template.bind({})
+MrfStepLoginOverviewNoSteps.decorators = [withStepLoginOn]
+MrfStepLoginOverviewNoSteps.parameters = {
+  msw: {
+    handlers: {
+      default: buildMrfMswRoutes({
+        status: FormStatus.Private,
+        authType: FormAuthType.MyInfo,
+        isSubmitterIdCollectionEnabled: true,
+        isSingleSubmission: true,
+        workflow: [],
+      } as Partial<AdminFormDto>),
+    },
+  },
+}
+
+export const MrfStepLoginFlagOff = Template.bind({})
+MrfStepLoginFlagOff.parameters = MrfStepLoginOverview.parameters
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {

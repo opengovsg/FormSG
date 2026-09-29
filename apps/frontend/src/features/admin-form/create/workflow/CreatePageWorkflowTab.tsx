@@ -8,7 +8,9 @@ import { WelcomeCard } from './components/GuidedCreation'
 import { WorkflowContent } from './components/WorkflowContent'
 import { WorkflowSkeleton } from './components/WorkflowSkeleton'
 import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
+import { useIsMrfSingpassAllSteps } from './hooks/useIsMrfSingpassAllSteps'
 import { useAdminWorkflowStore } from './adminWorkflowStore'
+import { AdminEditWorkflowState } from './types'
 
 export const CreatePageWorkflowTab = (): JSX.Element => {
   const {
@@ -33,9 +35,18 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
   const { isLoading, formWorkflow } = useAdminFormWorkflow({ staleTime: 0 })
   const sidebarWidth = useSidebarWidth()
 
+  // A no-steps form edits Step 1's login on the intro screen, so keep it up.
+  const isStepLoginEnabled = useIsMrfSingpassAllSteps()
+  const isEditingNoStepsLogin =
+    isStepLoginEnabled &&
+    createOrEditData?.state === AdminEditWorkflowState.EditingStep &&
+    createOrEditData.stepNumber === 0
   const isEmptyWorkflow = useMemo(
-    () => formWorkflow?.length === 0 && !createOrEditData && !stepDraft,
-    [createOrEditData, formWorkflow?.length, stepDraft],
+    () =>
+      formWorkflow?.length === 0 &&
+      (!createOrEditData || isEditingNoStepsLogin) &&
+      !stepDraft,
+    [createOrEditData, formWorkflow?.length, isEditingNoStepsLogin, stepDraft],
   )
 
   useEffect(() => reset, [reset])

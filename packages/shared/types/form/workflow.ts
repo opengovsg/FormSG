@@ -8,6 +8,12 @@ export enum WorkflowType {
   Conditional = 'conditional',
 }
 
+// Logins the step editor offers. Step 1 may still hold a legacy provider until changed.
+export type StepLoginAuthType =
+  | FormAuthType.NIL
+  | FormAuthType.MyInfo
+  | FormAuthType.CP
+
 export type WorkflowStepAuthType = FormAuthType.MyInfo | FormAuthType.CP
 
 // Login for steps after the first. Step 1 uses the form-level auth settings.

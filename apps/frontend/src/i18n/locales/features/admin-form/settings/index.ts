@@ -104,9 +104,36 @@ export interface SettingsMutationsStrings {
   gstUpdated: string
 }
 
+interface SingpassStepLoginStrings {
+  summaryBefore: string
+  workflowTab: string
+  summaryAfter: string
+  tableTitle: string
+  columns: {
+    step: string
+    login: string
+    checks: string
+  }
+  stepTitle: string
+  namedStepTitle: string
+  anyoneWithLink: string
+  emailField: string
+  dropdownOptions: string
+  deletedField: string
+  noChecks: string
+  edit: string
+  editAriaLabel: string
+  esrvcIdTitle: string
+  esrvcIdNotSet: string
+  esrvcIdShared: string
+  esrvcIdChange: string
+  closeFormToEdit: string
+}
+
 export interface Settings {
   general: General
   singpass: HasTitle
+  singpassStepLogin: SingpassStepLoginStrings
   tabs: SettingsTabsStrings
   secretKeyModal: SecretKeyModalStrings
   secretKeyVerification: SecretKeyVerificationStrings

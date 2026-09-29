@@ -16,8 +16,10 @@ import {
 import { useAdminFormWorkflow } from '../hooks/useAdminFormWorkflow'
 import { useGuidedSetupPreference } from '../hooks/useGuidedSetupPreference'
 import { useGuidedSetupTaught } from '../hooks/useGuidedSetupTaught'
+import { useIsMrfSingpassAllSteps } from '../hooks/useIsMrfSingpassAllSteps'
 import { useIsWorkflowBuilderRedesign } from '../hooks/useIsWorkflowBuilderRedesign'
 
+import { NoStepsLoginCard } from './WorkflowContent/NoStepsLoginCard'
 import {
   FormToWorkflowIllustration,
   ILLUSTRATION_MAX_W,
@@ -34,6 +36,7 @@ export const EmptyWorkflow = (): JSX.Element => {
   const { setGuidedSetup } = useGuidedSetupPreference()
   const showWelcomeCard = useAdminWorkflowStore(showWelcomeCardSelector)
   const isRedesign = useIsWorkflowBuilderRedesign()
+  const isStepLoginEnabled = useIsMrfSingpassAllSteps()
   const [isIllustrationHovered, setIsIllustrationHovered] = useState(false)
 
   const startSetup = (isGuidedSetup: boolean) => () => {
@@ -88,15 +91,19 @@ export const EmptyWorkflow = (): JSX.Element => {
             </Button>
           </Stack>
         </Tooltip>
-        <Box
-          data-testid={INTRO_ILLUSTRATION_TEST_ID}
-          w="100%"
-          maxW={ILLUSTRATION_MAX_W}
-          onMouseEnter={() => setIsIllustrationHovered(true)}
-          onMouseLeave={() => setIsIllustrationHovered(false)}
-        >
-          <FormToWorkflowIllustration showWorkflow={isIllustrationHovered} />
-        </Box>
+        {isStepLoginEnabled ? (
+          <NoStepsLoginSection />
+        ) : (
+          <Box
+            data-testid={INTRO_ILLUSTRATION_TEST_ID}
+            w="100%"
+            maxW={ILLUSTRATION_MAX_W}
+            onMouseEnter={() => setIsIllustrationHovered(true)}
+            onMouseLeave={() => setIsIllustrationHovered(false)}
+          >
+            <FormToWorkflowIllustration showWorkflow={isIllustrationHovered} />
+          </Box>
+        )}
       </Flex>
     )
   }
@@ -133,7 +140,24 @@ export const EmptyWorkflow = (): JSX.Element => {
           Create workflow
         </Button>
       </Tooltip>
-      <WorkflowSvgr maxW="292px" />
+      {isStepLoginEnabled ? (
+        <NoStepsLoginSection />
+      ) : (
+        <WorkflowSvgr maxW="292px" />
+      )}
     </Flex>
+  )
+}
+
+/** A form with no steps still has Step 1, and its login is set here. */
+const NoStepsLoginSection = (): JSX.Element => {
+  const { t } = useTranslation()
+  return (
+    <Stack w="100%" spacing="0.75rem" textAlign="start">
+      <Text textStyle="subhead-1">
+        {t('features.adminForm.sidebar.workflow.stepLogin.noSteps.heading')}
+      </Text>
+      <NoStepsLoginCard />
+    </Stack>
   )
 }

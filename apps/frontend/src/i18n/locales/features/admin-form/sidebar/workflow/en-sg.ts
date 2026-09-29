@@ -310,4 +310,90 @@ export const enSG: Workflow = {
       finish: 'Done',
     },
   },
+  stepLogin: {
+    title: 'How do they log in?',
+    types: {
+      nil: 'No login',
+      myInfo: 'Singpass',
+      cp: 'Corppass',
+      sp: 'Singpass (legacy)',
+      sgid: 'Singpass app only (sgID)',
+      sgidMyInfo: 'Singpass app with Myinfo (sgID)',
+    },
+    free: 'Free',
+    newSubmissionsOnly:
+      'Login and eligible-respondent changes apply to new submissions only. In-progress submissions keep their original settings.',
+    badges: {
+      collectsNric: 'Collects NRIC/FIN',
+      collectsUen: 'Collects UEN',
+      onlyListedNrics: 'Only listed NRIC/FINs',
+      onlyListedUens: 'Only listed UENs',
+      oneResponseEach: 'One response each',
+    },
+    whitelist: {
+      nricTitle: 'Restrict Step {stepNumber} to eligible NRIC/FINs only',
+      uenTitle: 'Restrict Step {stepNumber} to eligible UENs only',
+      nricDescription:
+        'Only NRIC/FINs in this list can fill in this step. The CSV file should list them in a single column with the "Respondent" header. [Download a sample .csv file](https://go.gov.sg/formsg-whitelist-respondents-sample-csv)',
+      uenDescription:
+        'Only UENs in this list can fill in this step. The CSV file should list them in a single column with the "Respondent" header. [Download a sample .csv file](https://go.gov.sg/formsg-whitelist-respondents-sample-csv)',
+      savesWithStep: 'This list is saved when you save the step.',
+      removedWithStep: 'The saved list is removed when you save the step.',
+      empty: 'Your csv is empty.',
+    },
+    editor: {
+      collectNric: 'Collect NRIC/FIN in this step',
+      collectUen: 'Collect UEN and Corppass user ID in this step',
+      collectNricDescription:
+        'Shown in responses as SingPass Validated NRIC (Step {stepNumber}).',
+      collectUenDescription:
+        'Shown in responses as CorpPass Validated UEN (Step {stepNumber}) and UID (Step {stepNumber}).',
+      singleSubmission: 'Limit each unique NRIC/FIN/UEN to one response',
+      singleSubmissionDescription:
+        'Stops the same NRIC/FIN/UEN from submitting this form more than once.',
+      esrvcIdLabel: 'Corppass e-service ID',
+      esrvcIdDescription:
+        'Shared by every Corppass step on this form, and needed before you open it.',
+      esrvcIdPlaceholder: 'Enter Corppass e-service ID',
+      myInfoRemovedOne:
+        "{fields} was removed from this step because it's a Myinfo field, which needs Singpass. These fields were removed from this step, not deleted from the form.",
+      myInfoRemovedMany:
+        "{fields} were removed from this step because they're Myinfo fields, which need Singpass. These fields were removed from this step, not deleted from the form.",
+      undo: 'Undo',
+      esrvcIdChange: 'Change',
+      esrvcIdSharedWith:
+        'Shared with {steps}. Changing it changes it for every Corppass step.',
+      esrvcIdSharedByEvery: 'Shared by every Corppass step on this form.',
+      esrvcIdSavesWithStep: 'Saves with this step.',
+      closeFormToEdit:
+        'To change login settings, close your form to new responses.',
+      legacyProvider:
+        'Step 1 uses {provider}, which is no longer offered. It stays as it is until you choose a login below.',
+      keepSingpassStep:
+        'Keep a Singpass step or remove the remaining MyInfo fields from the form.',
+      myInfoInOtherStep: 'Myinfo field already in Step {stepNumber}',
+      myInfoNeedsSingpassStep:
+        'Myinfo fields can only be added to a step that logs in with Singpass.',
+    },
+    esrvcIdModal: {
+      title: 'Change Corppass e-service ID',
+      description:
+        'Every Corppass step on this form uses this e-service ID. It saves when you save this step.',
+      descriptionShared:
+        'This also changes it for {steps}, because every Corppass step on this form uses the same e-service ID. It saves when you save this step.',
+      stepName: 'Step {stepNumber}',
+      cancel: 'Cancel',
+      confirm: 'Change',
+    },
+    noSteps: {
+      heading: 'Until you add steps, everyone fills in Step 1.',
+      fieldsToFill:
+        'Every field. Add a step to choose which fields Step 1 fills.',
+      myInfoNeedsSingpassOne:
+        '{fields} is a MyInfo field, so Step 1 needs Singpass. Keep Singpass, or delete {fields} from the form first.',
+      myInfoNeedsSingpassMany:
+        '{fields} are MyInfo fields, so Step 1 needs Singpass. Keep Singpass, or delete them from the form first.',
+      saved: 'Step 1 was successfully updated.',
+    },
+  },
 }

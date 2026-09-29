@@ -4,7 +4,7 @@ import { BiPlus } from 'react-icons/bi'
 import { Link as RouterLink, useParams } from 'react-router-dom'
 import { Stack, Text, useDisclosure } from '@chakra-ui/react'
 
-import { FormWorkflowStep } from 'formsg-shared/types'
+import { WorkflowStepWriteDto } from 'formsg-shared/types'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
@@ -111,7 +111,7 @@ export const NewStepBlock = () => {
   }
 
   const handleSubmit = useCallback(
-    (step: FormWorkflowStep) =>
+    (step: WorkflowStepWriteDto) =>
       createStepMutation.mutate(step, {
         onSuccess: () => {
           setCompletedStep(newStepNumber)

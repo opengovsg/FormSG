@@ -6,8 +6,10 @@ import { expect, userEvent, waitFor, within } from '@storybook/test'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
+  FormAuthType,
   FormFieldDto,
   FormResponseMode,
+  FormWorkflowStepDto,
   MyInfoAttribute,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -748,4 +750,123 @@ export const EmptyStateApprovalField = {
       ]),
     },
   },
+}
+
+// Login on every step (mrf-singpass-all-steps). Example form: step 1 no
+// login, step 2 Singpass with a MyInfo field, step 3 Corppass with a UEN list.
+const stepLoginOn = new GrowthBook({
+  features: {
+    [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
+    [featureFlags.mrfSingpassAllSteps]: { defaultValue: true },
+  },
+})
+
+const withStepLoginOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={stepLoginOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
+const STEP_LOGIN_WORKFLOW: FormWorkflowStepDto[] = [
+  {
+    _id: '6a1000000000000000000001',
+    workflow_type: WorkflowType.Static,
+    emails: [],
+    edit: [form_field_3._id, form_field_5._id],
+  },
+  {
+    _id: '6a1000000000000000000002',
+    workflow_type: WorkflowType.Dynamic,
+    field: form_field_3._id,
+    edit: [myinfo_field._id],
+    auth: {
+      auth_type: FormAuthType.MyInfo,
+      is_submitter_id_collection_enabled: true,
+    },
+  },
+  {
+    _id: '6a1000000000000000000003',
+    workflow_type: WorkflowType.Static,
+    emails: ['hr@company.sg'],
+    edit: [form_field_1._id],
+    auth: {
+      auth_type: FormAuthType.CP,
+      is_submitter_id_collection_enabled: true,
+      whitelisted_submitter_ids: { isWhitelistEnabled: true },
+    },
+  },
+]
+
+const stepLoginFormView = (
+  overrides: Record<string, unknown> = {},
+  workflow: FormWorkflowStepDto[] = STEP_LOGIN_WORKFLOW,
+) => [
+  getAdminFormView({
+    mode: FormResponseMode.Multirespondent,
+    overrides: {
+      form_fields: [form_field_1, form_field_3, form_field_5, myinfo_field],
+      workflow,
+      authType: FormAuthType.NIL,
+      esrvcId: 'FORMSG-CP-DEMO',
+      publicKey: 'mock-public-key',
+      ...overrides,
+    },
+  }),
+]
+
+export const StepLoginStep1NoLogin = {
+  args: { stepNumber: 0, defaultValues: STEP_LOGIN_WORKFLOW[0] },
+  decorators: [withStepLoginOn],
+  parameters: { msw: { handlers: stepLoginFormView() } },
+}
+
+export const StepLoginStep1Singpass = {
+  args: { stepNumber: 0, defaultValues: STEP_LOGIN_WORKFLOW[0] },
+  decorators: [withStepLoginOn],
+  parameters: {
+    msw: {
+      handlers: stepLoginFormView({
+        authType: FormAuthType.MyInfo,
+        isSubmitterIdCollectionEnabled: true,
+        isSingleSubmission: true,
+        whitelistedSubmitterIds: { isWhitelistEnabled: true },
+      }),
+    },
+  },
+}
+
+export const StepLoginStep2Singpass = {
+  args: { stepNumber: 1, defaultValues: STEP_LOGIN_WORKFLOW[1] },
+  decorators: [withStepLoginOn],
+  parameters: { msw: { handlers: stepLoginFormView() } },
+}
+
+export const StepLoginStep3CorppassWithWhitelist = {
+  args: { stepNumber: 2, defaultValues: STEP_LOGIN_WORKFLOW[2] },
+  decorators: [withStepLoginOn],
+  parameters: { msw: { handlers: stepLoginFormView() } },
+}
+
+// Leaving Singpass takes the step's MyInfo fields off it, with no error.
+export const StepLoginLeavingSingpassDropsMyInfoFields = {
+  args: { stepNumber: 1, defaultValues: STEP_LOGIN_WORKFLOW[1] },
+  decorators: [withStepLoginOn],
+  parameters: { msw: { handlers: stepLoginFormView() } },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const canvas = within(canvasElement)
+    await canvas.findByText(/Name/, undefined, { timeout: 5000 })
+    const noLogin = await canvas.findByRole(
+      'radio',
+      { name: 'No login' },
+      { timeout: 5000 },
+    )
+    await userEvent.click(noLogin)
+    await waitFor(() => expect(canvas.queryByText(/Name/)).toBeNull())
+  },
+}
+
+export const StepLoginFlagOffUnchanged = {
+  args: { stepNumber: 1, defaultValues: STEP_LOGIN_WORKFLOW[1] },
+  decorators: [withRedesignOn],
+  parameters: { msw: { handlers: stepLoginFormView() } },
 }

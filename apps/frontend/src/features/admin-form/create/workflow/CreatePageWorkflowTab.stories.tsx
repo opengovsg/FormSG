@@ -1,5 +1,6 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
+import { userEvent, within } from '@storybook/test'
 
 import { featureFlags } from 'formsg-shared/constants'
 import {
@@ -9,6 +10,7 @@ import {
 } from 'formsg-shared/types/field'
 import {
   AdminFormDto,
+  FormAuthType,
   FormResponseMode,
   FormStatus,
   FormWorkflowStepDto,
@@ -575,6 +577,77 @@ NewStepOnPrivateFormRedesignOn.parameters = {
   documentation: {
     storyDescription:
       'The shared mock form is public, which makes every step save strictly. A closed form saves permissively, so an unfinished step can be kept and flagged on its card instead.',
+  },
+}
+
+// Login on every step (mrf-singpass-all-steps).
+const stepLoginOn = new GrowthBook({
+  features: {
+    [featureFlags.workflowBuilderRedesign]: { defaultValue: true },
+    [featureFlags.mrfSingpassAllSteps]: { defaultValue: true },
+  },
+})
+
+const withStepLoginOn = (Story: StoryFn) => (
+  <GrowthBookProvider growthbook={stepLoginOn}>
+    <Story />
+  </GrowthBookProvider>
+)
+
+const NO_STEPS_SINGPASS_FORM: Partial<AdminFormDto> = {
+  ...FORM_WITH_WORKFLOW,
+  status: FormStatus.Private,
+  workflow: [],
+  authType: FormAuthType.MyInfo,
+  isSubmitterIdCollectionEnabled: true,
+  isSingleSubmission: true,
+  publicKey: 'mock-public-key',
+} as Partial<AdminFormDto>
+
+export const StepLoginNoSteps = Template.bind({})
+StepLoginNoSteps.decorators = [withStepLoginOn]
+StepLoginNoSteps.parameters = {
+  msw: { handlers: { default: buildMswRoutes(NO_STEPS_SINGPASS_FORM) } },
+  documentation: {
+    storyDescription:
+      'A form with no steps still has Step 1: anyone with the link, filling every field. Its login is set on this card, like a migrated Storage form.',
+  },
+}
+
+export const StepLoginNoStepsEditing = Template.bind({})
+StepLoginNoStepsEditing.decorators = [withStepLoginOn]
+StepLoginNoStepsEditing.parameters = StepLoginNoSteps.parameters
+StepLoginNoStepsEditing.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await userEvent.click(
+    await canvas.findByText('Until you add steps, everyone fills in Step 1.'),
+  )
+  await userEvent.click(
+    await canvas.findByRole('button', { name: /Anyone with your form link/ }),
+  )
+}
+
+export const StepLoginWithWorkflow = Template.bind({})
+StepLoginWithWorkflow.decorators = [withStepLoginOn]
+StepLoginWithWorkflow.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        ...FORM_WITH_WORKFLOW,
+        esrvcId: 'FORMSG-CP-DEMO',
+        workflow: [
+          workflow_step_1,
+          {
+            ...workflow_step_2,
+            auth: {
+              auth_type: FormAuthType.CP,
+              is_submitter_id_collection_enabled: true,
+              whitelisted_submitter_ids: { isWhitelistEnabled: true },
+            },
+          },
+        ],
+      }),
+    },
   },
 }
 

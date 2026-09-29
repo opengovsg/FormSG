@@ -253,6 +253,11 @@ export const enSG: Fields = {
     singpassDisabledBefore: 'Enable Singpass in the',
     singpassDisabledSettings: 'Settings',
     singpassDisabledAfter: 'tab to access these fields.',
+    stepLoginDisabledBefore:
+      'To use these fields, set a step’s login to Singpass in the',
+    stepLoginDisabledWorkflowTab: 'Workflow tab',
+    unassignedMyInfoFieldsBefore:
+      '{numFields} Myinfo field(s) are not in any step yet. Add them to a Singpass step in the',
     myInfoFieldsLimit:
       'Only 30 Myinfo fields are allowed ({numMyInfoFields}/30).',
     learnMore: 'Learn more',

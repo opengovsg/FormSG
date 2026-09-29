@@ -241,6 +241,9 @@ export interface Fields {
     singpassDisabledBefore: string
     singpassDisabledSettings: string
     singpassDisabledAfter: string
+    stepLoginDisabledBefore: string
+    stepLoginDisabledWorkflowTab: string
+    unassignedMyInfoFieldsBefore: string
     myInfoFieldsLimit: string
     learnMore: string
   }

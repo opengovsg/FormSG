@@ -9,6 +9,32 @@ export const enSG = {
   singpass: {
     title: 'Singpass',
   },
+  singpassStepLogin: {
+    summaryBefore: 'Login is set for each step in the',
+    workflowTab: 'Workflow tab',
+    summaryAfter: '. This page is a summary.',
+    tableTitle: 'Login for each step',
+    columns: {
+      step: 'Step',
+      login: 'Login',
+      checks: 'Checks',
+    },
+    stepTitle: 'Step {stepNumber}',
+    namedStepTitle: '{stepNumber}. {stepName}',
+    anyoneWithLink: 'Anyone with your form link',
+    emailField: 'Email field: {title}',
+    dropdownOptions: 'Emails assigned to options in {title}',
+    deletedField: 'a deleted field',
+    noChecks: 'None',
+    edit: 'Edit',
+    editAriaLabel: 'Edit login for Step {stepNumber}',
+    esrvcIdTitle: 'Corppass e-service ID',
+    esrvcIdNotSet: 'Not set. Needed before you open the form.',
+    esrvcIdShared: 'Shared by every Corppass step.',
+    esrvcIdChange: 'Change it in Step {stepNumber}',
+    closeFormToEdit:
+      'To change login settings, close your form to new responses.',
+  },
   tabs: {
     newBadge: 'New',
     multiLanguage: 'Multi-language',

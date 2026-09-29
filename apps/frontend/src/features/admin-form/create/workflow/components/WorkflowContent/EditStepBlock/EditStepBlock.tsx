@@ -3,8 +3,10 @@ import { useForm } from 'react-hook-form'
 import { Box, Stack } from '@chakra-ui/react'
 
 import {
-  FormWorkflowStep,
+  FormAuthType,
   FormWorkflowStepBase,
+  WorkflowStepFormLevelInput,
+  WorkflowStepWriteDto,
   WorkflowType,
 } from 'formsg-shared/types'
 
@@ -21,22 +23,27 @@ import {
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useGuidedStepReveal } from '../../../hooks/useGuidedStepReveal'
+import { useIsMrfSingpassAllSteps } from '../../../hooks/useIsMrfSingpassAllSteps'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useWorkflowSurfaces } from '../../../hooks/useWorkflowSurfaces'
 import { EditStepInputs } from '../../../types'
 import { getGuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
 import { SpotlightGroup } from '../../Spotlight'
+import { StepLoginSummary } from '../StepLogin/StepLoginSummary'
+import { useResolvedStepAuths } from '../StepLogin/useResolvedStepAuths'
 import { isFirstStepByStepNumber } from '../utils/isFirstStepByStepNumber'
 
 import { ApprovalsBlock } from './ApprovalsBlock'
+import { EditStepBlockContainer } from './EditStepBlockContainer'
 import { GuidedActionGroup } from './GuidedActionGroup'
+import { LoginBlock } from './LoginBlock'
 import { QuestionsBlock } from './QuestionsBlock'
 import { RespondentBlock } from './RespondentBlock'
 import { StepNameBlock } from './StepNameBlock'
 
 export interface EditLogicBlockProps {
   defaultValues?: Partial<EditStepInputs>
-  onSubmit: (inputs: FormWorkflowStep) => void
+  onSubmit: (inputs: WorkflowStepWriteDto) => void
 
   stepNumber: number
   submitButtonLabel: string
@@ -53,13 +60,24 @@ const SECTION_REVEAL_SCROLL_DELAY_MS = 100
 export const buildWorkflowStep = (
   rawInputs: EditStepInputs,
   isFirstStep: boolean,
-): (FormWorkflowStep & { _id: string }) | undefined => {
+): (WorkflowStepWriteDto & { _id: string }) | undefined => {
   const inputs = { ...rawInputs }
   if (inputs.approval_field === '') {
     inputs.approval_field = undefined
   }
   if (inputs.step_name === '') {
     inputs.step_name = undefined
+  }
+  // Staged login edits only; omitted keys keep their saved values server-side.
+  const loginInput: WorkflowStepFormLevelInput &
+    Pick<WorkflowStepWriteDto, 'whitelistCsvString'> = {
+    ...(isFirstStep && inputs.first_step_login
+      ? { first_step_login: inputs.first_step_login }
+      : {}),
+    ...(inputs.esrvc_id !== undefined ? { esrvc_id: inputs.esrvc_id } : {}),
+    ...(inputs.whitelistCsvString !== undefined
+      ? { whitelistCsvString: inputs.whitelistCsvString }
+      : {}),
   }
 
   // Step 1 is always "anyone with the link", represented as a static step with
@@ -77,16 +95,29 @@ export const buildWorkflowStep = (
       is_approval_enabled: !!inputs.is_approval_enabled,
       step_name: inputs.step_name,
       emails: inputs.emails ?? [],
+      ...loginInput,
     }
   }
 
-  const workflowStepBase: FormWorkflowStepBase & { _id: string } = {
+  const workflowStepBase: Omit<FormWorkflowStepBase, 'auth'> &
+    Pick<WorkflowStepWriteDto, 'auth'> & { _id: string } = {
     _id: inputs._id,
     workflow_type: inputs.workflow_type,
     edit: inputs.edit,
     approval_field: inputs.approval_field,
     is_approval_enabled: !!inputs.is_approval_enabled,
     step_name: inputs.step_name,
+    // Omitted keeps the saved login, null removes it; the saved list reference is never sent.
+    ...(inputs.login_auth !== undefined
+      ? {
+          auth: inputs.login_auth && {
+            auth_type: inputs.login_auth.auth_type,
+            is_submitter_id_collection_enabled:
+              inputs.login_auth.is_submitter_id_collection_enabled,
+          },
+        }
+      : {}),
+    ...loginInput,
   }
 
   const workflowType: WorkflowType | undefined = inputs.workflow_type
@@ -111,7 +142,7 @@ export const buildWorkflowStep = (
         ...workflowStepBase,
         workflow_type: WorkflowType.Dynamic,
         ...(inputs.field ? { field: inputs.field } : {}),
-      } as FormWorkflowStep & { _id: string }
+      } as WorkflowStepWriteDto & { _id: string }
     }
     case WorkflowType.Conditional: {
       return {
@@ -120,7 +151,7 @@ export const buildWorkflowStep = (
         ...(inputs.conditional_field
           ? { conditional_field: inputs.conditional_field }
           : {}),
-      } as FormWorkflowStep & { _id: string }
+      } as WorkflowStepWriteDto & { _id: string }
     }
     default: {
       const exhaustiveCheck: never = workflowType
@@ -201,6 +232,24 @@ export const EditStepBlock = ({
     />
   )
 
+  // With the flag off, a saved later-step login is shown read-only and kept on save.
+  const isStepLoginEnabled = useIsMrfSingpassAllSteps()
+  const savedStepAuth = useResolvedStepAuths()?.[stepNumber]
+  const loginSection = isStepLoginEnabled ? (
+    <LoginBlock
+      key="login"
+      formMethods={formMethods}
+      stepNumber={stepNumber}
+      isLoading={_isLoading}
+    />
+  ) : !isFirstStep &&
+    savedStepAuth?.authType !== FormAuthType.NIL &&
+    savedStepAuth ? (
+    <EditStepBlockContainer key="login">
+      <StepLoginSummary resolved={savedStepAuth} />
+    </EditStepBlockContainer>
+  ) : null
+
   const sections: JSX.Element[] = [
     <StepNameBlock
       key="name"
@@ -215,8 +264,8 @@ export const EditStepBlock = ({
       isLoading={_isLoading}
     />,
     ...(isRedesign
-      ? [approvalsSection, questionsSection]
-      : [questionsSection, approvalsSection]
+      ? [loginSection, approvalsSection, questionsSection]
+      : [loginSection, questionsSection, approvalsSection]
     ).filter((section): section is JSX.Element => section !== null),
   ]
 
