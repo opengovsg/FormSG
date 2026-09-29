@@ -1,5 +1,6 @@
 import axios from 'axios'
 import Bluebird from 'bluebird'
+import { PLUMBER_WEBHOOK_URL_REGEX } from 'formsg-shared/constants'
 import { WebhookResponse } from 'formsg-shared/types'
 import { get } from 'lodash'
 import mongoose from 'mongoose'
@@ -248,10 +249,9 @@ export type WebhookType = 'zapier' | 'plumber' | 'generic'
 
 export const getWebhookType = (webhookUrl: string): WebhookType => {
   const isZapier = /^https:\/\/hooks\.zapier\.com\//
-  const isPlumber = /^https:\/\/plumber\.gov\.sg\/webhooks\//
   const webhookType = isZapier.test(webhookUrl)
     ? 'zapier'
-    : isPlumber.test(webhookUrl)
+    : PLUMBER_WEBHOOK_URL_REGEX.test(webhookUrl)
       ? 'plumber'
       : 'generic'
   return webhookType
