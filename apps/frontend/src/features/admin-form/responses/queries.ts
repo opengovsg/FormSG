@@ -46,6 +46,8 @@ export const adminFormResponsesKeys = {
       ...builtParams,
     ] as const
   },
+  allMetadata: (id: string) =>
+    [...adminFormResponsesKeys.id(id), 'metadata', 'all'] as const,
   decryptedResponses: (id: string) =>
     [...adminFormResponsesKeys.id(id), 'decrypted-responses'] as const,
   infiniteMetadata: (id: string) =>
@@ -117,6 +119,34 @@ export const useFormResponses = ({
       staleTime: 0,
       keepPreviousData: !submissionId,
       enabled: enabled && !!secretKey && (page > 0 || !!submissionId),
+    },
+  )
+}
+
+/**
+ * Fetches the most recent TABLE_DECRYPTION_LIMIT submissions in one request.
+ * @precondition Must be wrapped in a Router as `useParam` is used.
+ */
+export const useAllFormResponses = ({
+  enabled = true,
+}: {
+  enabled?: boolean
+} = {}): UseQueryResult<SubmissionMetadataList> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const { secretKey } = useStorageResponsesContext()
+
+  return useQuery(
+    adminFormResponsesKeys.allMetadata(formId),
+    () =>
+      getFormSubmissionsMetadata(formId, {
+        page: 1,
+        pageSize: TABLE_DECRYPTION_LIMIT,
+      }),
+    {
+      staleTime: 0,
+      enabled: enabled && !!secretKey,
     },
   )
 }

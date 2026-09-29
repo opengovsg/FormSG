@@ -11,9 +11,12 @@ import { SubmissionId, SubmissionMetadata } from 'formsg-shared/types'
 
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import {
+  useAllFormResponses,
+  useDecryptedResponsesBySubmissionId,
   useFormResponses,
-  useInfiniteFormResponses,
 } from '~features/admin-form/responses/queries'
+
+import { TABLE_ROW_RENDER_CHUNK } from '../../../constants'
 
 import { usePageSearchParams } from './hooks/usePageSearchParams'
 
@@ -46,9 +49,11 @@ interface UnlockedResponsesContextProps {
   toggleSearchColumn: (columnId: string) => void
   searchResultCount?: number
   setSearchResultCount: (count?: number) => void
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
-  fetchNextPage: () => void
+  isTableLoading: boolean
+  renderLimit: number
+  showMoreRows: () => void
+  renderedRowCount: number
+  setRenderedRowCount: (count: number) => void
   getNextSubmissionId: (currentSubmissionId: string) => SubmissionId | undefined
   getPreviousSubmissionId: (
     currentSubmissionId: string,
@@ -88,6 +93,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     )
   }, [])
 
+  const [renderedRowCount, setRenderedRowCount] = useState(0)
   const [searchText, setSearchText] = useState('')
   const [searchResultCount, setSearchResultCount] = useState<number>()
   const [excludedSearchColumnIds, setExcludedSearchColumnIds] = useState<
@@ -159,24 +165,32 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     isFetching: isNextFetching,
   } = useFormResponses({ page: pages.next, enabled: paginationEnabled })
 
-  const {
-    data: infiniteData,
-    isLoading: isInfiniteLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-  } = useInfiniteFormResponses({
+  const { data: allData, isFetching: isFetchingAll } = useAllFormResponses({
     enabled: isInfiniteScroll && !submissionId,
   })
 
-  const infiniteMetadata = useMemo(
-    () => infiniteData?.pages.flatMap((page) => page.metadata) ?? [],
-    [infiniteData],
+  const { isFetching: isDecryptingAll } = useDecryptedResponsesBySubmissionId({
+    enabled: isInfiniteScroll,
+  })
+
+  const allMetadata = useMemo(() => allData?.metadata ?? [], [allData])
+
+  const isTableLoading = isFetchingAll || isDecryptingAll
+
+  const [renderLimit, setRenderLimit] = useState(TABLE_ROW_RENDER_CHUNK)
+
+  useEffect(() => {
+    setRenderLimit(TABLE_ROW_RENDER_CHUNK)
+  }, [allMetadata])
+
+  const showMoreRows = useCallback(
+    () => setRenderLimit((limit) => limit + TABLE_ROW_RENDER_CHUNK),
+    [],
   )
 
-  const metadata = isInfiniteScroll ? infiniteMetadata : pagedMetadata
-  const count = isInfiniteScroll ? infiniteData?.pages[0]?.count : pagedCount
-  const isLoading = isInfiniteScroll ? isInfiniteLoading : isPagedLoading
+  const metadata = isInfiniteScroll ? allMetadata : pagedMetadata
+  const count = isInfiniteScroll ? allData?.count : pagedCount
+  const isLoading = isInfiniteScroll ? isTableLoading : isPagedLoading
 
   const totalPageCount = useMemo(
     () => (count ? Math.ceil(count / PAGE_SIZE) : 0),
@@ -187,12 +201,9 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     () =>
       isLoading ||
       isFilterFetching ||
-      (isInfiniteScroll
-        ? isFetchingNextPage
-        : isPrevFetching || isNextFetching),
+      (isInfiniteScroll ? false : isPrevFetching || isNextFetching),
     [
       isFilterFetching,
-      isFetchingNextPage,
       isInfiniteScroll,
       isLoading,
       isNextFetching,
@@ -310,10 +321,6 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     ],
   )
 
-  const onFetchNextPage = useCallback(() => {
-    fetchNextPage()
-  }, [fetchNextPage])
-
   return {
     currentPage,
     setCurrentPage,
@@ -332,9 +339,11 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     toggleSearchColumn,
     searchResultCount,
     setSearchResultCount,
-    hasNextPage: !!hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage: onFetchNextPage,
+    isTableLoading,
+    renderLimit,
+    showMoreRows,
+    renderedRowCount,
+    setRenderedRowCount,
     getNextSubmissionId,
     getPreviousSubmissionId,
     onNavNextSubmissionId,
