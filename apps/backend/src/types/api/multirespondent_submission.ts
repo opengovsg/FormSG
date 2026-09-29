@@ -37,7 +37,6 @@ export type SnapshottedFormDef = Pick<
   _id: string
   form_fields: FormFieldDto[]
   form_logics: FormLogic[]
-  esrvcId?: string
 }
 
 export type MultirespondentFormLoadedDto = {

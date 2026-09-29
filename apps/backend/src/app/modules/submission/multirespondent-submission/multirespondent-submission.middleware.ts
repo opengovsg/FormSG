@@ -187,7 +187,6 @@ const getSnapshottedFormDef = (
   form_fields: mrfSubmission.form_fields,
   form_logics: mrfSubmission.form_logics,
   workflow: mrfSubmission.workflow,
-  esrvcId: mrfSubmission.esrvcId,
   webhook: currentFormDef.webhook,
   admin: currentFormDef.admin,
   emails: currentFormDef.emails,
