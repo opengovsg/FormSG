@@ -158,7 +158,11 @@ export const createWebhookQueueHandler =
       // Attempt webhook
       return resolveWebhookView(webhookMessage, webhookInfo)
         .andThen((webhookView) =>
-          WebhookService.sendWebhook(webhookView, webhookUrl),
+          WebhookService.sendWebhook(
+            webhookView,
+            webhookUrl,
+            webhookMessage.snapshotRef?.contentFormat,
+          ),
         )
         .andThen((webhookResponse) => {
           // Save webhook response to database, but carry on even if it fails
