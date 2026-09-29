@@ -347,6 +347,7 @@ const FIELD_COLUMN_WIDTH = 200
 /** Matches the px on a Td, so the drawn cells sit where real ones would. */
 const CELL_PADDING_PX = 16
 const SKELETON_CELL_HEIGHT = '1rem'
+const ROW_HEIGHT = '2.75rem'
 
 // react-table derives an id from an explicit id, then a string accessor, then
 // a string Header.
@@ -729,11 +730,13 @@ export const ResponsesTable = () => {
                     key={column.id}
                     display="flex"
                     alignItems="center"
+                    h={ROW_HEIGHT}
+                    py={0}
                     minW={0}
                     flexShrink={0}
                     overflow="hidden"
                   >
-                    <Skeleton h="1rem" w="100%" />
+                    <Skeleton h={SKELETON_CELL_HEIGHT} w="100%" />
                   </Td>
                 ))}
                 {rightSpacer}
@@ -772,6 +775,8 @@ export const ResponsesTable = () => {
                         alignItems="center"
                         {...(isDelightfulDashboard
                           ? {
+                              h: ROW_HEIGHT,
+                              py: 0,
                               minW: 0,
                               flexShrink: 0,
                               overflow: 'hidden',
