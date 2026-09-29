@@ -9,7 +9,6 @@ import * as stories from './SettingsWebhooksPage.stories'
 
 const {
   Error: ErrorStory,
-  PlumberConnectedEmailMode,
   StorageModePlumberConnected,
   UnsupportedEmailMode,
 } = composeStories(stories)
@@ -43,19 +42,9 @@ describe('SettingsWebhooksPage', () => {
     expect(screen.queryByText(PLUMBER_CONNECTED_MSG)).not.toBeInTheDocument()
   })
 
-  it('shows the Plumber message when a Plumber webhook is set on a form that cannot configure webhooks here', async () => {
-    await act(async () => {
-      render(<PlumberConnectedEmailMode />)
-    })
-
-    await screen.findByText(PLUMBER_CONNECTED_MSG)
-    expect(screen.getByRole('link', { name: /plumber/i })).toBeInTheDocument()
-    expect(screen.queryByText(UNSUPPORTED_MSG)).not.toBeInTheDocument()
-  })
-
-  it.each(['staging', 'uat'])(
+  it.each(['plumber.gov.sg', 'staging.plumber.gov.sg', 'uat.plumber.gov.sg'])(
     'shows the Plumber message for the %s webhook',
-    async (environment) => {
+    async (hostname) => {
       const PlumberEnvironment = composeStory(
         {
           ...stories.PlumberConnectedEmailMode,
@@ -67,7 +56,7 @@ describe('SettingsWebhooksPage', () => {
                     overrides: {
                       responseMode: FormResponseMode.Email,
                       webhook: {
-                        url: `https://${environment}.plumber.gov.sg/webhooks/abc`,
+                        url: `https://${hostname}/webhooks/abc`,
                         isRetryEnabled: false,
                       },
                     },
@@ -84,6 +73,7 @@ describe('SettingsWebhooksPage', () => {
       })
 
       await screen.findByText(PLUMBER_CONNECTED_MSG)
+      expect(screen.getByRole('link', { name: /plumber/i })).toBeInTheDocument()
       expect(screen.queryByText(UNSUPPORTED_MSG)).not.toBeInTheDocument()
     },
   )
