@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.37.0](https://github.com/opengovsg/formsg/compare/v9.36.0...v9.37.0) (2026-09-29)
+
+
+### Features
+
+* **logging:** log the frontend client version on backend requests (#10136) ([#10136](https://github.com/opengovsg/formsg/commit/69b28b6a58d284fb14c9f98511dd7670cdf5e7b5))
+
+
+### Bug Fixes
+
+* **workspace:** make the legacy-form escape hatch a generic fallback (#10138) ([#10138](https://github.com/opengovsg/formsg/commit/12a875644b5e36c31390467b36d09bf5dc4bd78b))
+
+
+### Dependencies
+
+* **deps:** resolve three high-severity Endor findings in frontend deps (#10135) ([#10135](https://github.com/opengovsg/formsg/commit/b41f1b028472e9ada86fbe5f3d65f46aeeacf754))
+
 ## [9.36.0](https://github.com/opengovsg/formsg/compare/v9.35.1...v9.36.0) (2026-09-29)
 
 
