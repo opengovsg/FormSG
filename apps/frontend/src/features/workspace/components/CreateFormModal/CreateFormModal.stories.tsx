@@ -17,7 +17,7 @@ import { UserId } from 'formsg-shared/types'
 import { PublicFormViewDto } from 'formsg-shared/types/form'
 import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
-import { getUser, MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
+import { userHandlers } from '~/mocks/msw/handlers/user'
 
 import { ApiError } from '~typings/core'
 
@@ -111,66 +111,6 @@ MrfCutoverAndPaperTrackingOn.decorators = [
     </GrowthBookProvider>
   ),
 ]
-
-export const MrfCutoverOnChildrenBeta = Template.bind({})
-MrfCutoverOnChildrenBeta.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={mrfCutoverOn}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
-MrfCutoverOnChildrenBeta.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: { ...MOCK_USER, betaFlags: { children: true } },
-    }),
-  ],
-}
-
-export const MrfCutoverOnWebhookV1Beta = Template.bind({})
-MrfCutoverOnWebhookV1Beta.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={mrfCutoverOn}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
-MrfCutoverOnWebhookV1Beta.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        betaFlags: { createStorageModeForV1Webhook: true },
-      },
-    }),
-  ],
-}
-
-export const MrfCutoverOnAllExceptions = Template.bind({})
-MrfCutoverOnAllExceptions.decorators = [
-  (Story) => (
-    <GrowthBookProvider growthbook={mrfCutoverOn}>
-      <Story />
-    </GrowthBookProvider>
-  ),
-]
-MrfCutoverOnAllExceptions.parameters = {
-  msw: [
-    getUser({
-      delay: 0,
-      mockUser: {
-        ...MOCK_USER,
-        betaFlags: {
-          children: true,
-          createStorageModeForV1Webhook: true,
-        },
-      },
-    }),
-  ],
-}
 
 export const StorageModeAckScreen = () => {
   const secretKey = 'mock-secret-key'
