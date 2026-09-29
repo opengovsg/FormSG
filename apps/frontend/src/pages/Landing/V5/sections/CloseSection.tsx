@@ -6,9 +6,9 @@ import { FORM_GUIDE } from '~constants/links'
 import { LOGIN_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 
-import { Reveal } from '../components/Reveal'
+import { useBrandAssets } from '~features/brand/useBrandAssets'
 
-const LOGO_MARK = '/static/images/landing-v5/formsg-logo-mark.svg'
+import { Reveal } from '../components/Reveal'
 
 /**
  * The closing call to action.
@@ -23,6 +23,7 @@ const LOGO_MARK = '/static/images/landing-v5/formsg-logo-mark.svg'
  */
 export const CloseSection = (): JSX.Element => {
   const { t } = useTranslation()
+  const { markColour } = useBrandAssets()
 
   return (
     <Box
@@ -36,7 +37,7 @@ export const CloseSection = (): JSX.Element => {
           beneath says what to do. */}
       <Box
         as="img"
-        src={LOGO_MARK}
+        src={markColour.url}
         alt=""
         aria-hidden
         w="4.625rem"
