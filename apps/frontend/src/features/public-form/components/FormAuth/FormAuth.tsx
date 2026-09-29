@@ -52,7 +52,7 @@ export const FormAuth = ({
   hasRespondentNotWhitelistedError,
 }: FormAuthProps): JSX.Element => {
   const { t } = useTranslation()
-  const { formId, form } = usePublicFormContext()
+  const { formId, form, mrfStepAuthTarget } = usePublicFormContext()
 
   const buttonColorScheme = useMemo(() => {
     if (!form) return
@@ -60,7 +60,11 @@ export const FormAuth = ({
   }, [form])
 
   const isMobile = useIsMobile()
-  const { handleLoginMutation } = usePublicAuthMutations(formId, authType)
+  const { handleLoginMutation } = usePublicAuthMutations(
+    formId,
+    authType,
+    mrfStepAuthTarget,
+  )
   const displayedAuthTypeText = getDispayedAuthTypeText(authType, t)
 
   return (

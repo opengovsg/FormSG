@@ -83,16 +83,28 @@ import {
 
 import { PrefillMap } from './components/FormFields/FormFields'
 import { FormNotFound } from './components/FormNotFound'
+import {
+  REDIRECTED_QUERY_KEY,
+  useFetchPrefillQuery,
+} from './hooks/useFetchPrefillQuery'
 import { decryptAttachment, decryptSubmission } from './utils/decryptSubmission'
 import { postIFrameMessage } from './utils/iframeMessaging'
 import { getDraftToSave, getRestoreDraftFormValues } from './utils/saveDraft'
-import { usePublicAuthMutations, usePublicFormMutations } from './mutations'
+import {
+  MrfStepAuthTarget,
+  usePublicAuthMutations,
+  usePublicFormMutations,
+} from './mutations'
 import {
   DraftSubmission,
   PublicFormContext,
   SubmissionData,
 } from './PublicFormContext'
-import { useEncryptedSubmission, usePublicFormView } from './queries'
+import {
+  useEncryptedSubmission,
+  useMrfStepAuthSession,
+  usePublicFormView,
+} from './queries'
 import { axiosDebugFlow } from './utils'
 
 interface PublicFormProviderProps {
@@ -425,6 +437,7 @@ export const PublicFormProvider = ({
     formId,
     // Stop querying once submissionData is present.
     /* enabled= */ !submissionData,
+    /* isMrfContinuation= */ !!previousSubmissionId,
   )
 
   const {
@@ -438,6 +451,55 @@ export const PublicFormProvider = ({
     /* enabled= */ !submissionData,
   )
 
+  const [searchParams] = useSearchParams()
+
+  // Restores the key and token stashed before a login redirect.
+  const isRestoringPrefillQuery = useFetchPrefillQuery()
+  const wasRestoringPrefillQueryRef = useRef(false)
+  if (isRestoringPrefillQuery) wasRestoringPrefillQueryRef.current = true
+  const isAwaitingPrefillQuery =
+    wasRestoringPrefillQueryRef.current &&
+    searchParams.has(REDIRECTED_QUERY_KEY)
+
+  // MRF key
+  let submissionSecretKey = ''
+  try {
+    submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
+  } catch (e) {
+    console.log(e)
+  }
+
+  let stepToken = ''
+  try {
+    stepToken = decodeURIComponent(searchParams.get('token') ?? '')
+  } catch (e) {
+    console.log(e)
+  }
+
+  const isMrfContinuation =
+    !!previousSubmissionId &&
+    latestFormData?.form.responseMode === FormResponseMode.Multirespondent
+
+  const { data: mrfStepAuth, error: mrfStepAuthError } = useMrfStepAuthSession({
+    formId,
+    submissionId: previousSubmissionId,
+    stepToken: stepToken || undefined,
+    enabled: isMrfContinuation && !isAwaitingPrefillQuery && !submissionData,
+  })
+  const isMrfStepAuthPending =
+    isMrfContinuation && !submissionData && !mrfStepAuth && !mrfStepAuthError
+
+  const mrfStepAuthTarget: MrfStepAuthTarget | undefined = useMemo(
+    () =>
+      isMrfContinuation && previousSubmissionId
+        ? {
+            submissionId: previousSubmissionId,
+            stepToken: stepToken || undefined,
+          }
+        : undefined,
+    [isMrfContinuation, previousSubmissionId, stepToken],
+  )
+
   /**
    * Form data to render this public form submission.
    *
@@ -447,21 +509,54 @@ export const PublicFormProvider = ({
    * - storage mode and 1st step of MRF, which uses the latest form definition.
    * - MRF >= 2nd step, which uses the snapshotted form definition from the current submission to maintain consistency.
    *
+   * MRF >= 2nd step also takes its login from the pending step instead of Step 1.
+   *
    * @returns Form data with latest form definition if Storage mode or 1st step of MRF, otherwise snapshotted form definition for >= 2nd step of MRF.
    */
   const data = useMemo(() => {
-    return latestFormData && encryptedPreviousSubmission
-      ? {
-          ...latestFormData,
-          form: {
-            ...latestFormData.form,
-            form_fields: encryptedPreviousSubmission.form_fields,
-            form_logics: encryptedPreviousSubmission.form_logics,
-            workflow: encryptedPreviousSubmission.workflow,
-          },
-        }
-      : latestFormData
-  }, [latestFormData, encryptedPreviousSubmission])
+    if (!latestFormData || !encryptedPreviousSubmission) return latestFormData
+    const snapshotData = {
+      ...latestFormData,
+      form: {
+        ...latestFormData.form,
+        form_fields: encryptedPreviousSubmission.form_fields,
+        form_logics: encryptedPreviousSubmission.form_logics,
+        workflow: encryptedPreviousSubmission.workflow,
+      },
+    }
+    if (latestFormData.form.responseMode !== FormResponseMode.Multirespondent) {
+      return snapshotData
+    }
+
+    // If the session can't be read, submission still enforces the step's login.
+    const stepAuth = mrfStepAuthError ? undefined : mrfStepAuth
+    const prefilledFields = new Map(
+      (stepAuth?.prefilledFields ?? []).map((field) => [field._id, field]),
+    )
+    // A MyInfo prefill is read once, so a reload logs in again as on Step 1.
+    const isLoggedIn =
+      stepAuth?.authType !== FormAuthType.MyInfo || !!stepAuth.prefilledFields
+    return {
+      ...snapshotData,
+      form: {
+        ...snapshotData.form,
+        form_fields: snapshotData.form.form_fields.map(
+          (field) => prefilledFields.get(field._id) ?? field,
+        ),
+        authType: stepAuth?.authType ?? FormAuthType.NIL,
+        isSubmitterIdCollectionEnabled:
+          !!stepAuth?.isSubmitterIdCollectionEnabled,
+      },
+      spcpSession: isLoggedIn ? stepAuth?.spcpSession : undefined,
+      myInfoChildrenBirthRecords: stepAuth?.myInfoChildrenBirthRecords,
+      errorCodes: stepAuth?.errorCodes,
+    }
+  }, [
+    latestFormData,
+    encryptedPreviousSubmission,
+    mrfStepAuth,
+    mrfStepAuthError,
+  ])
 
   const [numVisibleFields, setNumVisibleFields] = useState(0)
 
@@ -507,7 +602,7 @@ export const PublicFormProvider = ({
   const { isNotFormId, toast, vfnToastIdRef, expiryInMs, ...commonFormValues } =
     useCommonFormProvider(formId)
 
-  const isLoading = isFormLoading || isSubmissionLoading
+  const isLoading = isFormLoading || isSubmissionLoading || isMrfStepAuthPending
   const error = publicFormError || encryptedSubmissionError
 
   const [previousSubmission, setPreviousSubmission] =
@@ -518,23 +613,6 @@ export const PublicFormProvider = ({
   const [previousAttachments, setPreviousAttachments] = useState<
     Record<string, Uint8Array<ArrayBuffer>>
   >({})
-
-  const [searchParams] = useSearchParams()
-
-  // MRF key
-  let submissionSecretKey = ''
-  try {
-    submissionSecretKey = decodeURIComponent(searchParams.get('key') ?? '')
-  } catch (e) {
-    console.log(e)
-  }
-
-  let stepToken = ''
-  try {
-    stepToken = decodeURIComponent(searchParams.get('token') ?? '')
-  } catch (e) {
-    console.log(e)
-  }
 
   useEffect(() => {
     // Function to decrypt attachments retrieved from S3 using the submission secret key
@@ -586,7 +664,8 @@ export const PublicFormProvider = ({
     previousSubmissionId &&
     encryptedPreviousSubmission &&
     !previousSubmission &&
-    !isSubmissionSecretKeyInvalid
+    !isSubmissionSecretKeyInvalid &&
+    !isAwaitingPrefillQuery
   ) {
     // During test, we want to bypass the secret key validation
     const isValid =
@@ -950,7 +1029,11 @@ export const PublicFormProvider = ({
     })
   }
 
-  const { handleLogoutMutation } = usePublicAuthMutations(formId)
+  const { handleLogoutMutation } = usePublicAuthMutations(
+    formId,
+    undefined,
+    mrfStepAuthTarget,
+  )
 
   const handleLogout = useCallback(() => {
     if (!data?.form || data.form.authType === FormAuthType.NIL) return
@@ -1406,6 +1489,7 @@ export const PublicFormProvider = ({
         handleLogout,
         formId,
         previousSubmissionId,
+        mrfStepAuthTarget,
         error,
         submissionData,
         isAuthRequired,
