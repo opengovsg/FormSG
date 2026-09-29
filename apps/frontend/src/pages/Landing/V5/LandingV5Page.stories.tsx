@@ -2,7 +2,7 @@ import { Meta, StoryFn } from '@storybook/react'
 
 import { getLandingStats } from '~/mocks/msw/handlers/landing'
 
-import { LANDING_V5_ROUTE } from '~constants/routes'
+import { LANDING_ROUTE } from '~constants/routes'
 import {
   getMobileViewParameters,
   getTabletViewParameters,
@@ -16,8 +16,8 @@ export default {
   component: LandingV5Page,
   decorators: [
     StoryRouter({
-      initialEntries: [LANDING_V5_ROUTE],
-      path: LANDING_V5_ROUTE,
+      initialEntries: [LANDING_ROUTE],
+      path: LANDING_ROUTE,
     }),
   ],
   parameters: {

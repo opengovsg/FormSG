@@ -7,8 +7,10 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 import { Box } from '@chakra-ui/react'
-import { useGrowthBook } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
 import loadable from '@loadable/component'
+
+import { featureFlags } from 'formsg-shared/constants'
 
 import {
   ADMINFORM_PREVIEW_ROUTE,
@@ -21,7 +23,6 @@ import {
   EDIT_SUBMISSION_PAGE_SUBROUTE,
   LANDING_PAYMENTS_ROUTE,
   LANDING_ROUTE,
-  LANDING_V5_ROUTE,
   LOGIN_CALLBACK_FORWARDING_ROUTE,
   LOGIN_CALLBACK_ROUTE,
   LOGIN_ROUTE,
@@ -92,6 +93,12 @@ const WithSuspense = ({ children }: { children: React.ReactNode }) => (
   </Suspense>
 )
 
+/** `/` renders the V5 landing page once brand-refresh is on, else the old one. */
+const LandingRouteElement = (): JSX.Element => {
+  const isBrandRefreshOn = useFeatureIsOn(featureFlags.brandRefresh)
+  return isBrandRefreshOn ? <LandingV5Page /> : <LandingPage />
+}
+
 export const AppRouter = (): JSX.Element => {
   const growthbook = useGrowthBook()
   useEffect(() => {
@@ -106,15 +113,11 @@ export const AppRouter = (): JSX.Element => {
       <Route path="/">
         <Route
           path={LANDING_ROUTE}
-          element={<HashRouterElement element={<LandingPage />} />}
+          element={<HashRouterElement element={<LandingRouteElement />} />}
         />
         <Route
           path={LANDING_PAYMENTS_ROUTE}
           element={<HashRouterElement element={<LandingPaymentsPage />} />}
-        />
-        <Route
-          path={LANDING_V5_ROUTE}
-          element={<PublicElement element={<LandingV5Page />} />}
         />
         <Route
           path={DASHBOARD_ROUTE}
