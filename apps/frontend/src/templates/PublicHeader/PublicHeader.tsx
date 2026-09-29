@@ -31,6 +31,8 @@ export interface PublicHeaderProps {
   ctaElement?: React.ReactNode
   /** Background colour to use for the header, if specified. */
   bg?: string
+  /** Overrides for the outer container, e.g. a tighter vertical padding. */
+  containerProps?: FlexProps
 }
 
 const PublicHeaderLink = ({
@@ -79,6 +81,7 @@ export const PublicHeader = ({
   publicHeaderLinks,
   ctaElement: ctaButton,
   bg,
+  containerProps,
 }: PublicHeaderProps): JSX.Element => {
   const BrandHortLogo = bg ? chakra(BrandHortDarkSvg) : chakra(BrandHortSvg)
   const BrandSmallLogo = bg ? chakra(BrandMarkDarkSvg) : chakra(BrandMarkSvg)
@@ -89,7 +92,7 @@ export const PublicHeader = ({
   })
 
   return (
-    <PublicHeader.Container bg={bg}>
+    <PublicHeader.Container bg={bg} {...containerProps}>
       <Link title="Form Logo" href="https://form.gov.sg/">
         {logoToRender}
       </Link>

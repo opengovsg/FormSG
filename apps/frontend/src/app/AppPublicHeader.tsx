@@ -7,7 +7,19 @@ import { LOGIN_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import { PublicHeader } from '~templates/PublicHeader'
 
-export const AppPublicHeader = ({ bg }: { bg?: string }): JSX.Element => {
+interface AppPublicHeaderProps {
+  bg?: string
+  /**
+   * Slim nav, 14px of vertical padding instead of the default 72px on desktop.
+   * The V5 landing page uses it; the prototype's nav was 44px tall.
+   */
+  compact?: boolean
+}
+
+export const AppPublicHeader = ({
+  bg,
+  compact,
+}: AppPublicHeaderProps): JSX.Element => {
   const { t } = useTranslation()
 
   const publicHeaderLinks = [
@@ -34,6 +46,9 @@ export const AppPublicHeader = ({ bg }: { bg?: string }): JSX.Element => {
         </Button>
       }
       bg={bg}
+      containerProps={
+        compact ? { py: { base: '0.625rem', md: '0.875rem' } } : undefined
+      }
     />
   )
 }
