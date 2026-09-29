@@ -1,5 +1,8 @@
 import crypto from 'crypto'
+import { FormAuthType } from 'formsg-shared/types'
 import { Document, Model, Mongoose, Schema } from 'mongoose'
+
+import type { MrfStepAuthContext } from '../../submission/multirespondent-submission/step-auth.types'
 
 import { MYINFO_FAPI_SESSION_MAX_AGE_MS } from './myinfo.fapi.constants'
 import {
@@ -22,6 +25,7 @@ export interface IMyInfoFapiSessionSchema extends Document<string> {
   _id: string
   phase: MyInfoFapiSessionPhase
   formId: string
+  mrfContext?: MrfStepAuthContext
   encodedQuery?: string
   state: string
   nonce: string
@@ -100,6 +104,20 @@ export interface IMyInfoFapiSessionModel extends Model<IMyInfoFapiSessionSchema>
 const requiredString = { type: String, required: true }
 const optionalString = { type: String }
 
+const MrfContextSchema = new Schema<MrfStepAuthContext>(
+  {
+    formId: requiredString,
+    submissionId: requiredString,
+    workflowStep: { type: Number, required: true },
+    stepTokenHash: optionalString,
+    authType: {
+      ...requiredString,
+      enum: [FormAuthType.MyInfo, FormAuthType.CP],
+    },
+  },
+  { _id: false },
+)
+
 const MyInfoFapiSessionSchema = new Schema<
   IMyInfoFapiSessionSchema,
   IMyInfoFapiSessionModel
@@ -109,6 +127,7 @@ const MyInfoFapiSessionSchema = new Schema<
     _id: { type: String, default: () => crypto.randomUUID() },
     phase: { ...requiredString, enum: ['pending', 'exchanged', 'failed'] },
     formId: requiredString,
+    mrfContext: { type: MrfContextSchema, required: false },
     encodedQuery: optionalString,
     state: requiredString,
     nonce: requiredString,

@@ -13,8 +13,8 @@ export type LoginBase = {
   form: FormDto['_id']
   agency: AgencyDto['_id']
   authType: FormDto['authType']
-  // A login must be for a form that has an esrvcId.
-  esrvcId: NonNullable<FormDto['esrvcId']>
+  // MyInfo (FAPI) logins have no e-service ID
+  esrvcId?: NonNullable<FormDto['esrvcId']>
 }
 
 export type FormBillingStatistic = {

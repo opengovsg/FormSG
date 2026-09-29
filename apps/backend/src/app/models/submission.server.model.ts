@@ -898,6 +898,10 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: String,
     trim: true,
   },
+  esrvcId: {
+    type: String,
+    trim: true,
+  },
   paymentId: {
     type: Schema.Types.ObjectId,
     // Defer loading of the ref due to circular dependency on schema IDs.

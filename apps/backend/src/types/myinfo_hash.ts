@@ -14,6 +14,7 @@ interface IMyInfoHash {
   form: IFormSchema['_id']
   fields: IHashes
   expireAt: Date
+  authSessionId?: string
   created: Date
 }
 

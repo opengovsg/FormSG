@@ -29,6 +29,11 @@ const MyInfoHashSchema = new Schema<IMyInfoHashSchema, IMyInfoHashModel>(
       type: Date,
       required: true,
     },
+    // Scopes hashes to a later MRF step's login session
+    authSessionId: {
+      type: String,
+      required: false,
+    },
   },
   {
     timestamps: {
@@ -41,6 +46,11 @@ const MyInfoHashSchema = new Schema<IMyInfoHashSchema, IMyInfoHashModel>(
 MyInfoHashSchema.index({
   form: 1,
   uinFin: 1,
+})
+MyInfoHashSchema.index({
+  form: 1,
+  uinFin: 1,
+  authSessionId: 1,
 })
 MyInfoHashSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 

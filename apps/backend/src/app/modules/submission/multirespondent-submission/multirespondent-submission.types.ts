@@ -86,6 +86,7 @@ export type MultirespondentSubmissionContent = {
   form_fields: IPopulatedMultirespondentForm['form_fields']
   form_logics: IPopulatedMultirespondentForm['form_logics']
   workflow: IPopulatedMultirespondentForm['workflow']
+  esrvcId?: IPopulatedMultirespondentForm['esrvcId']
   submissionPublicKey: string
   encryptedSubmissionSecretKey: string
   encryptedContent: string
