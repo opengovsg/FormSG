@@ -28,6 +28,7 @@ import { useUser } from '~features/user/queries'
 import {
   getPendingResponseAtString,
   getStatusFromWorkflowStatus,
+  hasWorkflowSteps,
 } from '../common/utils/mrfSubmissionView'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import {
@@ -132,7 +133,7 @@ export const IndividualResponsePage = ({
 
   const { data: form } = useAdminForm()
 
-  const isMrf = form?.responseMode === FormResponseMode.Multirespondent
+  const hasWorkflow = hasWorkflowSteps(form)
 
   const { user } = useUser()
   const { secretKey } = useStorageResponsesContext()
@@ -227,14 +228,14 @@ export const IndividualResponsePage = ({
           isError={isError}
         />
         <StackRow
-          label={isMrf ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
+          label={hasWorkflow ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
           value={
             data?.submissionTime ?? t('features.common.loadingWithEllipsis')
           }
           isLoading={isLoading}
           isError={isError}
         />
-        {isMrf ? (
+        {hasWorkflow ? (
           <>
             <StackRow
               label={MRF_WORKFLOW_STATUS_LABEL}

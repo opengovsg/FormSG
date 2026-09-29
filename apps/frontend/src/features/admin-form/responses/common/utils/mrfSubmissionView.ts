@@ -1,8 +1,18 @@
 import {
+  AdminFormDto,
+  FormResponseMode,
   StrippedFormWorkflowDto,
   SubmittedStep,
   WorkflowStatus,
 } from 'formsg-shared/types'
+
+/**
+ * A multi-respondent form with no steps has nothing to route, so none of the
+ * workflow readings mean anything for it.
+ */
+export const hasWorkflowSteps = (form?: AdminFormDto): boolean =>
+  form?.responseMode === FormResponseMode.Multirespondent &&
+  form.workflow.length > 0
 
 export enum MRF_STATUS {
   COMPLETED = 'Completed',
