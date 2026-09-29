@@ -58,11 +58,6 @@ export interface CreateFormModal {
     description: string
   }
   escapeHatch: {
-    reasons: {
-      payments: string
-      children: string
-      webhooksV1: string
-    }
     prefix: string
     linkText: string
     suffix: string

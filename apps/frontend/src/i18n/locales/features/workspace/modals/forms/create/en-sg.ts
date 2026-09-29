@@ -67,12 +67,7 @@ export const enSG: CreateFormModal = {
       "This is the legacy version. Use it only if the latest version of FormSG is missing a feature you need, or you're running into issues with it.",
   },
   escapeHatch: {
-    reasons: {
-      payments: 'payments',
-      children: 'Myinfo Children fields',
-      webhooksV1: 'webhooks v1',
-    },
-    prefix: 'Need {reasons}? Use the ',
+    prefix: "If something's missing or not working, use the ",
     linkText: 'legacy version of FormSG',
     suffix: '.',
   },
