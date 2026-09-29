@@ -134,3 +134,9 @@ export class SavedViewLimitError extends ApplicationError {
     super(message, undefined, ErrorCodes.ADMIN_FORM_SAVED_VIEW_LIMIT)
   }
 }
+
+export class InvalidWhitelistSettingError extends ApplicationError {
+  constructor(message: string) {
+    super(message, undefined, ErrorCodes.ADMIN_FORM_INVALID_WHITELIST_SETTING)
+  }
+}

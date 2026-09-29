@@ -30,6 +30,7 @@ import {
   FormStatus,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  FormWorkflowStepDto,
   Language,
   LogicConditionState,
   LogicDto,
@@ -47,7 +48,7 @@ import { reorder } from 'formsg-shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from 'formsg-shared/utils/logic'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
-import { compact, omit, pick, uniq } from 'lodash'
+import { cloneDeep, compact, omit, pick, uniq } from 'lodash'
 import mongoose, {
   ClientSession,
   Mongoose,
@@ -82,7 +83,15 @@ import {
 } from '../../types'
 import { IPopulatedUser, IUserSchema } from '../../types/user'
 import { OverrideProps } from '../modules/form/admin-form/admin-form.types'
-import { getFormFieldById, transformEmails } from '../modules/form/form.utils'
+import {
+  getFormFieldById,
+  isFormMultirespondent,
+  transformEmails,
+} from '../modules/form/form.utils'
+import {
+  hasMyInfoCapableLogin,
+  requiresEsrvcIdToPublish,
+} from '../modules/form/workflow-login.utils'
 import { getMyInfoAttr } from '../modules/myinfo/myinfo.util'
 import { validateWebhookUrl } from '../modules/webhook/webhook.validation'
 
@@ -557,11 +566,23 @@ MultirespondentFormSchema.methods.getWhitelistedSubmitterIds = function () {
 MultirespondentFormSchema.methods.getDuplicateParams = function (
   overrideProps: OverrideProps,
 ) {
-  const newForm = pick(this, [
-    ...FORM_SCHEMA_COMMON_DUPLICATE_PARAMS,
-    'workflow',
-  ]) as PickDuplicateForm
-  return { ...newForm, ...overrideProps }
+  const newForm = pick(
+    this,
+    FORM_SCHEMA_COMMON_DUPLICATE_PARAMS,
+  ) as PickDuplicateForm
+  // Copy steps so callers can't mutate the source; eligible-respondent lists are not copied.
+  const workflow = (this.workflow ?? []).map((step: FormWorkflowStepDto) => {
+    const copy: FormWorkflowStepDto = cloneDeep(
+      'toObject' in step && typeof step.toObject === 'function'
+        ? step.toObject()
+        : step,
+    )
+    if (copy.auth) {
+      copy.auth = omit(copy.auth, 'whitelisted_submitter_ids')
+    }
+    return copy
+  })
+  return { ...newForm, workflow, ...overrideProps }
 }
 
 const MultirespondentFormWorkflowPath = MultirespondentFormSchema.path(
@@ -649,11 +670,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
               (acc, field) => acc + (field.myInfo ? 1 : 0),
               0,
             )
+            // Multirespondent forms may log in with MyInfo on a later step instead.
+            const hasMyInfoLogin = isFormMultirespondent(this)
+              ? hasMyInfoCapableLogin(this)
+              : this.authType === FormAuthType.MyInfo ||
+                this.authType === FormAuthType.SGID_MyInfo
             return (
               myInfoFieldCount === 0 ||
-              ((this.authType === FormAuthType.MyInfo ||
-                this.authType === FormAuthType.SGID_MyInfo) &&
-                myInfoFieldCount <= 30)
+              (hasMyInfoLogin && myInfoFieldCount <= 30)
             )
           },
           message:
@@ -894,10 +918,14 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         enum: Object.values(FormStatus),
         default: FormStatus.Private,
         set: function (this: IFormSchema, v: FormStatus) {
+          // Multirespondent forms need an e-service ID only for SP/CP login on any step.
+          const needsEsrvcId = isFormMultirespondent(this)
+            ? requiresEsrvcIdToPublish(this)
+            : this.authType !== FormAuthType.NIL
           if (
             this.status === FormStatus.Private &&
             v === FormStatus.Public &&
-            this.authType !== FormAuthType.NIL &&
+            needsEsrvcId &&
             !this.esrvcId
           ) {
             return FormStatus.Private

@@ -1,7 +1,9 @@
 import { Router } from 'express'
 
+import { rateLimitConfig } from '../../../../../config/config'
 import * as AdminFeedbackController from '../../../../../modules/admin-feedback/admin-feedback.controller'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
+import { limitRate } from '../../../../../utils/limit-rate'
 
 export const AdminFormsFormRouter = Router()
 
@@ -250,6 +252,16 @@ AdminFormsFormRouter.route(
 )
   .put(AdminFormController.handleUpdateWorkflowStep)
   .delete(AdminFormController.handleDeleteWorkflowStep)
+
+/**
+ * Download a workflow step's encrypted eligible-respondent list. Step 1 uses the form-level list.
+ * @security session
+ */
+AdminFormsFormRouter.get(
+  '/:formId([a-fA-F0-9]{24})/workflow/:stepNumber(\\d+)/whitelist',
+  limitRate({ max: rateLimitConfig.downloadFormWhitelist }),
+  AdminFormController.handleGetWorkflowStepWhitelistSetting,
+)
 
 AdminFormsFormRouter.put(
   '/:formId([a-fA-F0-9]{24})/end-page',

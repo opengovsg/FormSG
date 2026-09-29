@@ -48,7 +48,21 @@ const WorkflowStepAuthSchema = new Schema(
       required: false,
     },
   },
-  { _id: false },
+  {
+    _id: false,
+    // JSON hides the list reference (nested getters don't run in toJSON); toObject stays raw.
+    toJSON: {
+      transform: (_doc, ret) => {
+        if (ret.whitelisted_submitter_ids) {
+          ret.whitelisted_submitter_ids = {
+            isWhitelistEnabled:
+              !!ret.whitelisted_submitter_ids.isWhitelistEnabled,
+          }
+        }
+        return ret
+      },
+    },
+  },
 )
 
 const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(

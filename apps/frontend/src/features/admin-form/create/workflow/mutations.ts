@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 import {
   AdminFormDto,
   FormResponseMode,
-  FormWorkflowStep,
+  WorkflowStepWriteDto,
 } from 'formsg-shared/types/form'
 
 import { useToast } from '~hooks/useToast'
@@ -45,7 +45,7 @@ export const useWorkflowMutations = () => {
   )
 
   const createStepMutation = useMutation(
-    (createStepBody: FormWorkflowStep) =>
+    (createStepBody: WorkflowStepWriteDto) =>
       createWorkflowStep(formId, createStepBody),
     {
       onSuccess: (updatedWorkflow) => {
@@ -112,7 +112,7 @@ export const useWorkflowMutations = () => {
       updateStepBody,
     }: {
       stepNumber: number
-      updateStepBody: FormWorkflowStep
+      updateStepBody: WorkflowStepWriteDto
     }) => updateWorkflowStep(formId, stepNumber, updateStepBody),
     {
       onSuccess: (updatedWorkflow) => {

@@ -1,4 +1,5 @@
 import { celebrate, Joi, Segments } from 'celebrate'
+import { KB } from 'formsg-shared/constants/file'
 import {
   FormAuthType,
   FormStatus,
@@ -9,6 +10,36 @@ import {
 } from 'formsg-shared/types'
 
 import { verifyValidUnicodeString } from './admin-form.utils'
+
+const WHITELIST_LIMIT_IN_KB = 250
+
+// Eligible-respondent CSV; null removes the list.
+export const whitelistCsvStringValidator = Joi.string()
+  .allow(null)
+  .max(WHITELIST_LIMIT_IN_KB * KB)
+  .pattern(/^[a-zA-Z0-9,\r\n]+$/)
+  .messages({
+    'string.empty': 'Your csv is empty.',
+    'string.pattern.base': 'Your csv has one or more invalid characters.',
+    'string.max': `You have exceeded the file size limit, please upload a file below ${WHITELIST_LIMIT_IN_KB} kB.`,
+  })
+
+// Request-only login keys for workflow step saves. Clients never send list references.
+const workflowStepLoginKeys = {
+  auth: Joi.object({
+    auth_type: Joi.string()
+      .valid(FormAuthType.MyInfo, FormAuthType.CP)
+      .required(),
+    is_submitter_id_collection_enabled: Joi.boolean().required(),
+  }).allow(null),
+  first_step_login: Joi.object({
+    authType: Joi.string().valid(...Object.values(FormAuthType)),
+    isSubmitterIdCollectionEnabled: Joi.boolean(),
+    isSingleSubmission: Joi.boolean(),
+  }),
+  esrvc_id: Joi.string().allow(''),
+  whitelistCsvString: whitelistCsvStringValidator,
+}
 
 const webhookSettingsValidator = Joi.object({
   url: Joi.string().uri().allow(''),
@@ -53,6 +84,7 @@ export const updateSettingsValidator = celebrate({
     hasRespondentCopy: Joi.boolean(),
     hasStatusTracker: Joi.boolean(),
     hasUsedGuidedMode: Joi.boolean(),
+    whitelistCsvString: whitelistCsvStringValidator,
   })
     .min(1)
     .custom((value, helpers) => verifyValidUnicodeString(value, helpers)),
@@ -100,6 +132,7 @@ export const createWorkflowStepValidator = celebrate({
       otherwise: Joi.forbidden(),
     }),
     step_name: Joi.string().optional(),
+    ...workflowStepLoginKeys,
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),
@@ -130,6 +163,7 @@ export const updateWorkflowStepValidator = celebrate({
       otherwise: Joi.forbidden(),
     }),
     step_name: Joi.string().optional(),
+    ...workflowStepLoginKeys,
   }),
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string().required(),

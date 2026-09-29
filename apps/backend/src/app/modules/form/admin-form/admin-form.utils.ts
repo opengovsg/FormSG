@@ -59,6 +59,7 @@ import {
   GoGovValidationError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
+  InvalidWhitelistSettingError,
   ModelResponseFailureError,
   ModelResponseInvalidSchemaFormatError,
   ModelResponseInvalidSyntaxError,
@@ -130,6 +131,7 @@ export const mapRouteError = (
     case DatabaseValidationError:
     case MissingUserError:
     case InvalidCollaboratorError:
+    case InvalidWhitelistSettingError:
       return {
         statusCode: StatusCodes.UNPROCESSABLE_ENTITY,
         errorMessage: error.message,

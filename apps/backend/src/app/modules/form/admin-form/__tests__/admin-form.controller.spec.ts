@@ -5214,12 +5214,6 @@ describe('admin-form.controller', () => {
       .spyOn(CryptoUtil, 'encryptStringsMessage')
       .mockReturnValue(MOCK_ENCRYPTED_WHITELISTED_SUBMITTER_IDS)
 
-    beforeEach(() => {
-      MockAdminFormService.checkIsWhitelistSettingValid.mockReturnValue({
-        isValid: true,
-      })
-    })
-
     it('should return 403 if user does not have write permissions for the form', async () => {
       // Arrange
       const MOCK_VALID_UPDATE_WHITELIST_REQ = assignIn(

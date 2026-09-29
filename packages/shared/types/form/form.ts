@@ -435,7 +435,10 @@ export type FormWebhookResponseModeSettings = Pick<
   FormSettings,
   'webhook' | 'responseMode'
 >
-export type SettingsUpdateDto = PartialDeep<FormSettings>
+export type SettingsUpdateDto = PartialDeep<FormSettings> & {
+  // Request-only Step 1 eligible-respondent list for multirespondent forms; never persisted.
+  whitelistCsvString?: string | null
+}
 
 export type WebhookSettingsUpdateDto = Pick<FormSettings, 'webhook'> & {
   userEmail: string

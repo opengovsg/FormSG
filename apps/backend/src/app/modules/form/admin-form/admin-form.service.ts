@@ -3,9 +3,6 @@ import {
   CONDITIONAL_ROUTING_DUPLICATE_OPTIONS_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
-  FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
-  FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
-  FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
   MAX_SAVED_VIEWS,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
@@ -21,6 +18,7 @@ import {
   FieldCreateDto,
   FieldUpdateDto,
   FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+  FormAuthType,
   FormFieldDto,
   FormLogoState,
   FormMetadata,
@@ -32,6 +30,7 @@ import {
   FormStatus,
   FormWebhook,
   FormWorkflowDto,
+  FormWorkflowStepAuth,
   FormWorkflowStepDto,
   LogicDto,
   MultirespondentFormSettings,
@@ -39,6 +38,9 @@ import {
   SettingsUpdateDto,
   StartPageUpdateDto,
   StorageFormSettings,
+  WhitelistedSubmitterIdsWithReferenceOid,
+  WorkflowStepFormLevelInput,
+  WorkflowStepWriteDto,
   WorkflowType,
 } from 'formsg-shared/types'
 import {
@@ -46,15 +48,10 @@ import {
   EncryptedStringsMessageContentWithMyPrivateKey,
 } from 'formsg-shared/utils/crypto'
 import {
-  isMFinSeriesValid,
-  isNricValid,
-} from 'formsg-shared/utils/nric-validation'
-import { isUenValid } from 'formsg-shared/utils/uen-validation'
-import {
   getIncompleteStepNumbers,
   mustWorkflowBeComplete,
 } from 'formsg-shared/utils/workflow-step-completion'
-import { assignIn, last, omit, pick } from 'lodash'
+import { assignIn, get, last, omit, pick } from 'lodash'
 import mongoose, { ClientSession } from 'mongoose'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import type { Except, Merge } from 'type-fest'
@@ -120,6 +117,12 @@ import {
   isFormEncryptMode,
   isFormMultirespondent,
 } from '../form.utils'
+import {
+  getRawWorkflow,
+  MISSING_ESRVC_ID_ERROR_MESSAGE,
+  requiresEsrvcIdToPublish,
+  validateMrfLoginConfiguration,
+} from '../workflow-login.utils'
 
 import { PRESIGNED_POST_EXPIRY_SECS } from './admin-form.constants'
 import {
@@ -128,6 +131,7 @@ import {
   FormChangedWhileEditingError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
+  InvalidWhitelistSettingError,
   SavedViewLimitError,
 } from './admin-form.errors'
 import {
@@ -135,6 +139,7 @@ import {
   insertTableShortTextColumnDefaultValidationOptions,
   processDuplicateOverrideProps,
 } from './admin-form.utils'
+import { encryptWhitelistCsvString } from './admin-form.whitelist'
 
 const logger = createLoggerWithLabel(module)
 const FormModel = getFormModel(mongoose)
@@ -1388,77 +1393,24 @@ export const updateFormCollaborators = (
   )
 }
 
-export const checkIsWhitelistSettingValid = (
-  whitelistedSubmitterIds: string[] | null,
-): { isValid: boolean; invalidReason?: string } => {
-  if (!whitelistedSubmitterIds || whitelistedSubmitterIds.length <= 0) {
-    return {
-      isValid: true,
-    }
-  }
-
-  // check for empty rows/entries
-  const emptyRowIndex = whitelistedSubmitterIds.findIndex(
-    (entry: string) => entry === '',
-  )
-  if (emptyRowIndex !== -1) {
-    return {
-      isValid: false,
-      invalidReason: FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
-    }
-  }
-
-  // check for invalid NRIC/FIN/UEN format
-  const invalidEntries = whitelistedSubmitterIds.filter((entry: string) => {
-    return !(
-      isNricValid(entry) ||
-      isMFinSeriesValid(entry) ||
-      isUenValid(entry)
-    )
-  })
-  // check for invalid entries
-  if (invalidEntries.length > 0) {
-    return {
-      isValid: false,
-      invalidReason:
-        FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE(
-          invalidEntries[0],
-        ),
-    }
-  }
-
-  // check for duplicates
-  if (
-    new Set(whitelistedSubmitterIds).size !== whitelistedSubmitterIds.length
-  ) {
-    return {
-      isValid: false,
-      invalidReason: FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
-    }
-  }
-
-  return {
-    isValid: true,
-  }
-}
-
 /**
- * Fetches the whitelist setting document without myPrivateKey for the client to use for decryption.
+ * Fetches an eligible-respondent list without myPrivateKey for the client to decrypt.
  */
-export const getFormWhitelistSetting = (
-  form: IPopulatedForm,
+const getWhitelistSetting = (
+  formId: IPopulatedForm['_id'],
+  {
+    isWhitelistEnabled,
+    encryptedWhitelistedSubmitterIds,
+  }: Partial<WhitelistedSubmitterIdsWithReferenceOid>,
 ): ResultAsync<
   EncryptedStringsMessageContent | null,
   FormWhitelistSettingNotFoundError | PossibleDatabaseError
 > => {
-  const { isWhitelistEnabled, encryptedWhitelistedSubmitterIds } =
-    form.getWhitelistedSubmitterIds()
-
   if (!isWhitelistEnabled) {
     return okAsync(null)
   }
 
-  if (isWhitelistEnabled && !encryptedWhitelistedSubmitterIds) {
+  if (!encryptedWhitelistedSubmitterIds) {
     return errAsync(new FormWhitelistSettingNotFoundError())
   }
 
@@ -1473,8 +1425,8 @@ export const getFormWhitelistSetting = (
       logger.error({
         message: 'Error encountered while retrieving form whitelist setting',
         meta: {
-          action: 'getFormWhitelistSetting',
-          formId: form._id,
+          action: 'getWhitelistSetting',
+          formId,
         },
         error,
       })
@@ -1488,10 +1440,138 @@ export const getFormWhitelistSetting = (
   })
 }
 
+/**
+ * Fetches the whitelist setting document without myPrivateKey for the client to use for decryption.
+ */
+export const getFormWhitelistSetting = (
+  form: IPopulatedForm,
+): ResultAsync<
+  EncryptedStringsMessageContent | null,
+  FormWhitelistSettingNotFoundError | PossibleDatabaseError
+> => getWhitelistSetting(form._id, form.getWhitelistedSubmitterIds())
+
+/**
+ * Fetches a workflow step's eligible-respondent list. Step 1 uses the form-level list.
+ */
+export const getWorkflowStepWhitelistSetting = (
+  form: IPopulatedForm,
+  stepNumber: number,
+): ResultAsync<
+  EncryptedStringsMessageContent | null,
+  | FormInvalidResponseModeError
+  | MalformedParametersError
+  | FormWhitelistSettingNotFoundError
+  | PossibleDatabaseError
+> => {
+  if (!isFormMultirespondent(form)) {
+    return errAsync(
+      new FormInvalidResponseModeError(
+        'Workflow steps are only supported for multirespondent forms',
+      ),
+    )
+  }
+  const workflow = getRawWorkflow(form)
+  if (!Number.isInteger(stepNumber) || !workflow[stepNumber]) {
+    return errAsync(new MalformedParametersError('Invalid step number'))
+  }
+  if (stepNumber === 0) {
+    return getFormWhitelistSetting(form)
+  }
+  const whitelist: Partial<WhitelistedSubmitterIdsWithReferenceOid> =
+    workflow[stepNumber].auth?.whitelisted_submitter_ids ?? {}
+  return getWhitelistSetting(form._id, whitelist)
+}
+
+// Reads a step's raw list, including the reference hidden from JSON output.
+const getStepWhitelist = (
+  auth: FormWorkflowStepAuth | undefined,
+): WhitelistedSubmitterIdsWithReferenceOid | undefined => {
+  const whitelist: Partial<WhitelistedSubmitterIdsWithReferenceOid> | null =
+    auth?.whitelisted_submitter_ids ?? null
+  return whitelist?.isWhitelistEnabled &&
+    whitelist.encryptedWhitelistedSubmitterIds
+    ? {
+        isWhitelistEnabled: true,
+        encryptedWhitelistedSubmitterIds:
+          whitelist.encryptedWhitelistedSubmitterIds,
+      }
+    : undefined
+}
+
+/**
+ * Persists a form update. When a list is given, creates it as a new immutable version
+ * and runs the update in the same transaction; nothing is kept unless both succeed.
+ * Resolves to null when the conditional update matched no form.
+ */
+const updateFormWithWhitelistVersion = <T>({
+  form,
+  whitelistContent,
+  update,
+  action,
+}: {
+  form: IPopulatedForm
+  whitelistContent?: EncryptedStringsMessageContentWithMyPrivateKey
+  update: (
+    whitelistId: mongoose.Types.ObjectId | undefined,
+    session?: ClientSession,
+  ) => Promise<T | null>
+  action: string
+}): ResultAsync<T | null, PossibleDatabaseError> => {
+  const run = async (): Promise<T | null> => {
+    if (!whitelistContent) {
+      return update(undefined)
+    }
+    const session = await FormWhitelistedSubmitterIdsModel.startSession()
+    session.startTransaction()
+    try {
+      const [whitelist] = await FormWhitelistedSubmitterIdsModel.create(
+        [{ formId: form._id, ...whitelistContent }],
+        { session },
+      )
+      const result = await update(whitelist._id, session)
+      if (!result) {
+        await session.abortTransaction()
+        return null
+      }
+      await session.commitTransaction()
+      return result
+    } catch (error) {
+      if (session.inTransaction()) await session.abortTransaction()
+      return Promise.reject(error)
+    } finally {
+      await session.endSession()
+    }
+  }
+
+  return ResultAsync.fromPromise(run(), (error) => {
+    logger.error({
+      message: 'Error encountered while updating form',
+      meta: {
+        action,
+        formId: form._id,
+        // Body is not logged as it may contain eligible-respondent lists.
+      },
+      error,
+    })
+    return transformMongoError(error)
+  })
+}
+
+const loginChangeWhilePublicError = () =>
+  new FormOpenToResponsesError(
+    'Close your form to new responses before changing its login settings',
+  )
+
 export const updateFormWhitelistSetting = (
   originalForm: IPopulatedForm,
   encryptedWhitelistedSubmitterIdsContent: EncryptedStringsMessageContentWithMyPrivateKey | null,
-) => {
+): ResultAsync<
+  FormSettings,
+  | MalformedParametersError
+  | FormOpenToResponsesError
+  | FormNotFoundError
+  | PossibleDatabaseError
+> => {
   if (
     originalForm.responseMode !== FormResponseMode.Encrypt &&
     originalForm.responseMode !== FormResponseMode.Multirespondent
@@ -1503,84 +1583,39 @@ export const updateFormWhitelistSetting = (
     )
   }
 
-  const FormModelToUse = getFormModelByResponseMode(originalForm.responseMode)
-
-  const updateFormWhitelistSettingPromise = async () => {
-    const session = await FormModelToUse.startSession()
-    session.startTransaction()
-
-    if (encryptedWhitelistedSubmitterIdsContent) {
-      // create whitelisted submitter id collection document and update reference to it
-      const createdWhitelistedSubmitterIdsDocument =
-        await FormWhitelistedSubmitterIdsModel.create({
-          formId: originalForm._id,
-          ...encryptedWhitelistedSubmitterIdsContent,
-        })
-      const updatedForm = await FormModelToUse.findByIdAndUpdate(
-        originalForm._id,
-        {
-          whitelistedSubmitterIds: {
-            isWhitelistEnabled: true,
-            encryptedWhitelistedSubmitterIds:
-              createdWhitelistedSubmitterIdsDocument._id,
-          },
-        },
-        {
-          new: true,
-          runValidators: true,
-        },
-      ).exec()
-
-      if (!updateForm) {
-        await session.abortTransaction()
-        return
-      }
-
-      await session.commitTransaction()
-      await session.endSession()
-
-      return updatedForm
-    } else {
-      // delete whitelisted submitter id collection document and update reference to null
-      await FormWhitelistedSubmitterIdsModel.deleteMany({
-        formId: originalForm._id,
-      })
-      const updatedForm = await FormModelToUse.findByIdAndUpdate(
-        originalForm._id,
-        {
-          whitelistedSubmitterIds: {
-            isWhitelistEnabled: false,
-            encryptedWhitelistedSubmitterIds: undefined,
-          },
-        },
-        { new: true, runValidators: true },
-      ).exec()
-
-      if (!updatedForm) {
-        await session.abortTransaction()
-        return
-      }
-      await session.commitTransaction()
-      await session.endSession()
-      return updatedForm
+  if (isFormMultirespondent(originalForm)) {
+    if (originalForm.status === FormStatus.Public) {
+      return errAsync(loginChangeWhilePublicError())
+    }
+    if (
+      encryptedWhitelistedSubmitterIdsContent &&
+      originalForm.authType === FormAuthType.NIL
+    ) {
+      return errAsync(new MalformedParametersError(NO_LOGIN_WHITELIST_MESSAGE))
     }
   }
 
-  return ResultAsync.fromPromise(
-    updateFormWhitelistSettingPromise(),
-    (error) => {
-      logger.error({
-        message: 'Error encountered while updating form whitelist setting',
-        meta: {
-          action: 'updateFormWhitelistSetting',
-          formId: originalForm._id,
-          // Body is not logged in case sensitive data such as emails are stored.
+  const FormModelToUse = getFormModelByResponseMode(originalForm.responseMode)
+
+  // Earlier list versions are kept: in-progress submissions may still reference them.
+  return updateFormWithWhitelistVersion({
+    form: originalForm,
+    whitelistContent: encryptedWhitelistedSubmitterIdsContent ?? undefined,
+    action: 'updateFormWhitelistSetting',
+    update: (whitelistId, session) =>
+      FormModelToUse.findByIdAndUpdate(
+        originalForm._id,
+        {
+          whitelistedSubmitterIds: whitelistId
+            ? {
+                isWhitelistEnabled: true,
+                encryptedWhitelistedSubmitterIds: whitelistId,
+              }
+            : { isWhitelistEnabled: false },
         },
-        error,
-      })
-      return transformMongoError(error)
-    },
-  ).andThen((updatedForm) => {
+        { new: true, runValidators: true, session },
+      ).exec(),
+  }).andThen((updatedForm) => {
     if (!updatedForm) {
       return errAsync(new FormNotFoundError())
     }
@@ -1647,12 +1682,353 @@ const checkResultingWorkflowIsAllowed = (
     : err(incompleteStepsError(incompleteStepNumbers, 'before saving'))
 }
 
+const NO_LOGIN_WHITELIST_MESSAGE =
+  'Choose a login before adding eligible respondents.'
+const NO_LOGIN_COLLECTION_MESSAGE =
+  'Choose a login before collecting NRIC/FIN/UEN.'
+
+// Every persisted step field, so a stale save cannot silently replace another admin's change.
+const WORKFLOW_STEP_MATCH_PATHS = [
+  '_id',
+  'workflow_type',
+  'edit',
+  'emails',
+  'field',
+  'conditional_field',
+  'approval_field',
+  'is_approval_enabled',
+  'step_name',
+  'auth.auth_type',
+  'auth.is_submitter_id_collection_enabled',
+  'auth.whitelisted_submitter_ids.isWhitelistEnabled',
+  'auth.whitelisted_submitter_ids.encryptedWhitelistedSubmitterIds',
+] as const
+
+const buildWorkflowMatchFilter = (workflow: FormWorkflowStepDto[]) => ({
+  // Each step's _id must match below, so this pins the length (and tolerates a missing array).
+  [`workflow.${workflow.length}`]: { $exists: false },
+  ...Object.fromEntries(
+    workflow.flatMap((step, index) =>
+      WORKFLOW_STEP_MATCH_PATHS.map((path) => {
+        const value: unknown = get(step, path)
+        // `workflow.1.x: null` would also match through elements lacking a field "1",
+        // so absent, null and empty values use operators that only resolve the index path.
+        const match =
+          value === undefined
+            ? { $exists: false }
+            : value === null
+              ? { $type: 'null' }
+              : Array.isArray(value) && value.length === 0
+                ? { $size: 0 }
+                : value
+        return [`workflow.${index}.${path}`, match]
+      }),
+    ),
+  ),
+})
+
+type StepLoginInput = WorkflowStepFormLevelInput &
+  Pick<WorkflowStepWriteDto, 'auth' | 'whitelistCsvString'>
+
+type StepLoginWrite = {
+  // Resulting auth for a later step; a new list is attached at persist time.
+  auth?: FormWorkflowStepAuth
+  formLevelUpdate: Record<string, unknown>
+  // Original values of changed form-level fields, for the conditional update.
+  formLevelFilter: Record<string, unknown>
+  whitelistContent?: EncryptedStringsMessageContentWithMyPrivateKey
+  isLoginChanged: boolean
+  authType: FormAuthType
+  esrvcId?: string
+}
+
+const isSameStepAuth = (
+  a: FormWorkflowStepAuth | undefined,
+  b: FormWorkflowStepAuth | undefined,
+): boolean =>
+  a?.auth_type === b?.auth_type &&
+  a?.is_submitter_id_collection_enabled ===
+    b?.is_submitter_id_collection_enabled &&
+  String(getStepWhitelist(a)?.encryptedWhitelistedSubmitterIds) ===
+    String(getStepWhitelist(b)?.encryptedWhitelistedSubmitterIds)
+
+/**
+ * Resolves a workflow step save's login changes (plan write contract).
+ * Step 1 login is form-level; later steps own their auth. Lists are never taken from the client.
+ */
+const resolveStepLoginWrite = (
+  form: IPopulatedMultirespondentForm,
+  stepIndex: number,
+  input: StepLoginInput,
+  originalAuth: FormWorkflowStepAuth | undefined,
+  // Legacy settings saves pick SP/CP before entering the e-service ID; publishing checks it.
+  requireProviderEsrvcId = true,
+): Result<
+  StepLoginWrite,
+  MalformedParametersError | InvalidWhitelistSettingError
+> => {
+  const {
+    auth: authInput,
+    first_step_login: firstStepLogin,
+    esrvc_id: esrvcIdInput,
+    whitelistCsvString,
+  } = input
+  const formLevelUpdate: Record<string, unknown> = {}
+  const formLevelFilter: Record<string, unknown> = {}
+  const setFormLevel = (key: string, value: unknown, original: unknown) => {
+    if (value === undefined || value === original) return
+    formLevelUpdate[key] = value
+    formLevelFilter[key] = original ?? null
+  }
+
+  if ((esrvcIdInput || undefined) !== (form.esrvcId || undefined)) {
+    setFormLevel('esrvcId', esrvcIdInput, form.esrvcId)
+  }
+  const esrvcId = esrvcIdInput ?? form.esrvcId
+
+  let whitelistContent:
+    | EncryptedStringsMessageContentWithMyPrivateKey
+    | undefined
+  if (whitelistCsvString) {
+    const encrypted = encryptWhitelistCsvString(
+      whitelistCsvString,
+      form.publicKey,
+    )
+    if (encrypted.isErr()) return err(encrypted.error)
+    whitelistContent = encrypted.value
+  }
+
+  if (stepIndex === 0) {
+    if (authInput !== undefined) {
+      return err(
+        new MalformedParametersError(
+          'Set Step 1 login with first_step_login, not auth.',
+        ),
+      )
+    }
+    const authType = firstStepLogin?.authType ?? form.authType
+    const isProviderChanged = authType !== form.authType
+    const isNoLogin = authType === FormAuthType.NIL
+    if (isNoLogin && firstStepLogin?.isSubmitterIdCollectionEnabled) {
+      return err(new MalformedParametersError(NO_LOGIN_COLLECTION_MESSAGE))
+    }
+    if (isNoLogin && whitelistContent) {
+      return err(new MalformedParametersError(NO_LOGIN_WHITELIST_MESSAGE))
+    }
+    if (
+      requireProviderEsrvcId &&
+      isProviderChanged &&
+      requiresEsrvcIdToPublish({ authType }) &&
+      !esrvcId?.trim()
+    ) {
+      return err(new MalformedParametersError(MISSING_ESRVC_ID_ERROR_MESSAGE))
+    }
+    setFormLevel('authType', authType, form.authType)
+    setFormLevel(
+      'isSubmitterIdCollectionEnabled',
+      isNoLogin && isProviderChanged
+        ? false
+        : firstStepLogin?.isSubmitterIdCollectionEnabled,
+      form.isSubmitterIdCollectionEnabled,
+    )
+    setFormLevel(
+      'isSingleSubmission',
+      firstStepLogin?.isSingleSubmission,
+      form.isSingleSubmission,
+    )
+
+    // A provider change drops the old provider's list unless a new one is given.
+    const isListAffected =
+      !!whitelistContent || whitelistCsvString === null || isProviderChanged
+    const originalList = isListAffected
+      ? form.getWhitelistedSubmitterIds()
+      : undefined
+    const isListCleared =
+      !whitelistContent && isListAffected && !!originalList?.isWhitelistEnabled
+    if (whitelistContent || isListCleared) {
+      formLevelFilter[
+        'whitelistedSubmitterIds.encryptedWhitelistedSubmitterIds'
+      ] = originalList?.encryptedWhitelistedSubmitterIds ?? null
+    }
+    if (isListCleared) {
+      formLevelUpdate.whitelistedSubmitterIds = { isWhitelistEnabled: false }
+    }
+
+    return ok({
+      formLevelUpdate,
+      formLevelFilter,
+      whitelistContent,
+      isLoginChanged:
+        Object.keys(formLevelUpdate).length > 0 || !!whitelistContent,
+      authType,
+      esrvcId,
+    })
+  }
+
+  if (firstStepLogin !== undefined) {
+    return err(
+      new MalformedParametersError(
+        'first_step_login can only be set on Step 1.',
+      ),
+    )
+  }
+
+  let auth: FormWorkflowStepAuth | undefined
+  if (authInput === undefined) {
+    auth = originalAuth
+  } else if (authInput) {
+    const isSameProvider = originalAuth?.auth_type === authInput.auth_type
+    auth = {
+      auth_type: authInput.auth_type,
+      is_submitter_id_collection_enabled:
+        authInput.is_submitter_id_collection_enabled,
+      ...(isSameProvider && originalAuth?.whitelisted_submitter_ids
+        ? { whitelisted_submitter_ids: originalAuth.whitelisted_submitter_ids }
+        : {}),
+    }
+  }
+  if (whitelistContent && !auth) {
+    return err(new MalformedParametersError(NO_LOGIN_WHITELIST_MESSAGE))
+  }
+  if (whitelistCsvString === null && auth) {
+    auth = omit(auth, 'whitelisted_submitter_ids')
+  }
+
+  return ok({
+    auth,
+    formLevelUpdate,
+    formLevelFilter,
+    whitelistContent,
+    isLoginChanged:
+      Object.keys(formLevelUpdate).length > 0 ||
+      !!whitelistContent ||
+      !isSameStepAuth(originalAuth, auth),
+    authType: form.authType,
+    esrvcId,
+  })
+}
+
+// Attaches a newly created list version to its step or to the form (Step 1).
+const withNewWhitelist = (
+  login: StepLoginWrite,
+  stepIndex: number,
+  whitelistId: mongoose.Types.ObjectId | undefined,
+): {
+  auth?: FormWorkflowStepAuth
+  formLevelUpdate: Record<string, unknown>
+} => {
+  if (!whitelistId) {
+    return { auth: login.auth, formLevelUpdate: login.formLevelUpdate }
+  }
+  const whitelist = {
+    isWhitelistEnabled: true,
+    encryptedWhitelistedSubmitterIds: whitelistId,
+  }
+  return stepIndex === 0
+    ? {
+        auth: login.auth,
+        formLevelUpdate: {
+          ...login.formLevelUpdate,
+          whitelistedSubmitterIds: whitelist,
+        },
+      }
+    : {
+        auth: login.auth && {
+          ...login.auth,
+          whitelisted_submitter_ids: whitelist,
+        },
+        formLevelUpdate: login.formLevelUpdate,
+      }
+}
+
+const validateResultingLogin = (
+  form: IPopulatedMultirespondentForm,
+  originalWorkflow: FormWorkflowStepDto[],
+  resulting: {
+    authType: FormAuthType
+    esrvcId?: string
+    workflow: FormWorkflowStepDto[]
+  },
+) =>
+  validateMrfLoginConfiguration({
+    formFields: form.form_fields,
+    resulting,
+    original: { authType: form.authType, workflow: originalWorkflow },
+    esrvcId: resulting.esrvcId,
+  })
+
+/**
+ * Saves a resulting workflow and its login changes atomically. The update only matches while
+ * the saved workflow and changed login values are unchanged since this request read them.
+ */
+const persistWorkflowStepWrite = ({
+  form,
+  stepIndex,
+  login,
+  originalWorkflow,
+  buildWorkflow,
+  extraFilter = {},
+  action,
+}: {
+  form: IPopulatedMultirespondentForm
+  stepIndex: number
+  login: StepLoginWrite
+  originalWorkflow: FormWorkflowStepDto[]
+  buildWorkflow: (stepAuth?: FormWorkflowStepAuth) => FormWorkflowStepDto[]
+  extraFilter?: Record<string, unknown>
+  action: string
+}): ResultAsync<
+  FormWorkflowDto,
+  PossibleDatabaseError | FormChangedWhileEditingError
+> => {
+  const MultirespondentFormModel = getFormModelByResponseMode(
+    form.responseMode,
+  ) as IMultirespondentFormModel
+  const workflowLength = buildWorkflow(login.auth).length
+
+  return updateFormWithWhitelistVersion({
+    form,
+    whitelistContent: login.whitelistContent,
+    action,
+    update: (whitelistId, session) => {
+      const { auth, formLevelUpdate } = withNewWhitelist(
+        login,
+        stepIndex,
+        whitelistId,
+      )
+      return MultirespondentFormModel.findOneAndUpdate(
+        {
+          _id: form._id,
+          ...extraFilter,
+          ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
+            form,
+            workflowLength,
+          ),
+          ...buildWorkflowMatchFilter(originalWorkflow),
+          ...login.formLevelFilter,
+          ...(login.isLoginChanged ? { status: form.status } : {}),
+        },
+        { workflow: buildWorkflow(auth), ...formLevelUpdate },
+        { new: true, runValidators: true, session },
+      ).exec()
+    },
+  }).andThen((updatedForm) =>
+    updatedForm
+      ? okAsync(updatedForm.workflow)
+      : errAsync(new FormChangedWhileEditingError()),
+  )
+}
+
 export const createWorkflowStep = (
   originalForm: IPopulatedForm,
-  newWorkflowStep: FormWorkflowStepDto,
+  newWorkflowStep: WorkflowStepWriteDto,
 ): ResultAsync<
   FormWorkflowDto,
-  DatabaseError | MalformedParametersError | FormChangedWhileEditingError
+  | PossibleDatabaseError
+  | MalformedParametersError
+  | InvalidWhitelistSettingError
+  | FormOpenToResponsesError
+  | FormChangedWhileEditingError
 > => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1695,24 +2071,6 @@ export const createWorkflowStep = (
         'First step of workflow cannot be an approval step',
       ),
     )
-  }
-
-  // TODO(MRF-MYINFO): Remove this restriction once Myinfo fields are
-  // supported in workflow steps >= 2. Currently, only step 1 (the first
-  // respondent) can include Myinfo fields to prevent approvers from
-  // overriding verified data.
-  if (!isFirstStep) {
-    const editFieldIds = new Set((newWorkflowStep.edit ?? []).map(String))
-    const myInfoFieldInEdit = originalForm.form_fields.find(
-      (field) => field.myInfo?.attr && editFieldIds.has(field._id.toString()),
-    )
-    if (myInfoFieldInEdit) {
-      return errAsync(
-        new MalformedParametersError(
-          'Myinfo fields can only be edited in the first step of the workflow',
-        ),
-      )
-    }
   }
 
   const selectedApprovalField = newWorkflowStep.approval_field
@@ -1758,62 +2116,68 @@ export const createWorkflowStep = (
   }
 
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
-  const originalWorkflow = originalMrfForm.workflow ?? []
+  const originalWorkflow = getRawWorkflow(originalMrfForm)
+  const stepIndex = originalWorkflow.length
 
-  // Create new workflow step
-  const updatedWorkflow = originalWorkflow.concat(newWorkflowStep)
+  const {
+    auth,
+    first_step_login,
+    esrvc_id,
+    whitelistCsvString,
+    ...stepFields
+  } = newWorkflowStep
+  const loginResult = resolveStepLoginWrite(
+    originalMrfForm,
+    stepIndex,
+    { auth, first_step_login, esrvc_id, whitelistCsvString },
+    undefined,
+  )
+  if (loginResult.isErr()) return errAsync(loginResult.error)
+  const login = loginResult.value
+  if (login.isLoginChanged && originalForm.status === FormStatus.Public) {
+    return errAsync(loginChangeWhilePublicError())
+  }
+
+  // Rebuilt from validated fields; the request-only login keys were removed above.
+  const buildStep = (stepAuth?: FormWorkflowStepAuth) =>
+    ({
+      ...stepFields,
+      ...(stepAuth ? { auth: stepAuth } : {}),
+    }) as FormWorkflowStepDto
+  const updatedWorkflow = originalWorkflow.concat(buildStep(login.auth))
+
+  const loginCheck = validateResultingLogin(originalMrfForm, originalWorkflow, {
+    authType: login.authType,
+    esrvcId: login.esrvcId,
+    workflow: updatedWorkflow,
+  })
+  if (loginCheck.isErr()) return errAsync(loginCheck.error)
 
   const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
   if (check.isErr()) return errAsync(check.error)
 
-  const MultirespondentFormModel = getFormModelByResponseMode(
-    originalForm.responseMode,
-  ) as IMultirespondentFormModel
-
-  return ResultAsync.fromPromise(
-    MultirespondentFormModel.findOneAndUpdate(
-      {
-        _id: originalMrfForm._id,
-        'payments_field.enabled': { $ne: true },
-        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
-          originalForm,
-          updatedWorkflow.length,
-        ),
-      },
-      { workflow: updatedWorkflow },
-      {
-        new: true,
-        runValidators: true,
-      },
-    ).exec(),
-    (error) => {
-      logger.error({
-        message:
-          'Error encountered while creating new form workflow step in database',
-        meta: {
-          action: 'createWorkflowStep',
-          formId: originalMrfForm._id,
-          newWorkflowStep,
-        },
-        error,
-      })
-      return transformMongoError(error)
-    },
-  ).andThen((updatedForm) => {
-    if (!updatedForm) {
-      return errAsync(new FormChangedWhileEditingError())
-    }
-    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  return persistWorkflowStepWrite({
+    form: originalMrfForm,
+    stepIndex,
+    login,
+    originalWorkflow,
+    extraFilter: { 'payments_field.enabled': { $ne: true } },
+    buildWorkflow: (stepAuth) => originalWorkflow.concat(buildStep(stepAuth)),
+    action: 'createWorkflowStep',
   })
 }
 
 export const updateFormWorkflowStep = (
   originalForm: IPopulatedForm,
   stepNumber: number,
-  updatedWorkflowStep: FormWorkflowStepDto,
+  updatedWorkflowStep: WorkflowStepWriteDto,
 ): ResultAsync<
   FormWorkflowDto,
-  DatabaseError | FormChangedWhileEditingError
+  | PossibleDatabaseError
+  | MalformedParametersError
+  | InvalidWhitelistSettingError
+  | FormOpenToResponsesError
+  | FormChangedWhileEditingError
 > => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -1847,24 +2211,6 @@ export const updateFormWorkflowStep = (
         'First step of workflow cannot be an approval step',
       ),
     )
-  }
-
-  // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
-  // supported in workflow steps >= 2. Currently, only step 1 (the first
-  // respondent) can include MyInfo fields to prevent approvers from
-  // overriding verified data.
-  if (!isFirstStep) {
-    const editFieldIds = new Set((updatedWorkflowStep.edit ?? []).map(String))
-    const myInfoFieldInEdit = originalForm.form_fields.find(
-      (field) => field.myInfo?.attr && editFieldIds.has(field._id.toString()),
-    )
-    if (myInfoFieldInEdit) {
-      return errAsync(
-        new MalformedParametersError(
-          'MyInfo fields cannot be edited in non-first steps of the workflow',
-        ),
-      )
-    }
   }
 
   const selectedApprovalField = updatedWorkflowStep.approval_field
@@ -1910,7 +2256,7 @@ export const updateFormWorkflowStep = (
   }
 
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
-  const originalWorkflow = originalMrfForm.workflow ?? []
+  const originalWorkflow = getRawWorkflow(originalMrfForm)
 
   const isStepNumberValid =
     stepNumber >= 0 && stepNumber < originalWorkflow.length
@@ -1918,52 +2264,61 @@ export const updateFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
-  const updatedWorkflow = originalMrfForm.workflow.map((step, index) =>
-    index === stepNumber ? updatedWorkflowStep : step,
+  // A step moved or removed since the client loaded it; don't write over a different step.
+  const originalStep = originalWorkflow[stepNumber]
+  if (String(originalStep._id) !== String(updatedWorkflowStep._id)) {
+    return errAsync(new FormChangedWhileEditingError())
+  }
+
+  const {
+    auth,
+    first_step_login,
+    esrvc_id,
+    whitelistCsvString,
+    ...stepFields
+  } = updatedWorkflowStep
+  const loginResult = resolveStepLoginWrite(
+    originalMrfForm,
+    stepNumber,
+    { auth, first_step_login, esrvc_id, whitelistCsvString },
+    originalStep.auth,
   )
+  if (loginResult.isErr()) return errAsync(loginResult.error)
+  const login = loginResult.value
+  if (login.isLoginChanged && originalForm.status === FormStatus.Public) {
+    return errAsync(loginChangeWhilePublicError())
+  }
+
+  // Rebuilt from validated fields; the request-only login keys were removed above.
+  const buildWorkflow = (stepAuth?: FormWorkflowStepAuth) =>
+    originalWorkflow.map((step, index) =>
+      index === stepNumber
+        ? ({
+            ...stepFields,
+            _id: originalStep._id,
+            ...(stepAuth ? { auth: stepAuth } : {}),
+          } as FormWorkflowStepDto)
+        : step,
+    )
+  const updatedWorkflow = buildWorkflow(login.auth)
+
+  const loginCheck = validateResultingLogin(originalMrfForm, originalWorkflow, {
+    authType: login.authType,
+    esrvcId: login.esrvcId,
+    workflow: updatedWorkflow,
+  })
+  if (loginCheck.isErr()) return errAsync(loginCheck.error)
 
   const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
   if (check.isErr()) return errAsync(check.error)
 
-  const MultirespondentFormModel = getFormModelByResponseMode(
-    originalForm.responseMode,
-  ) as IMultirespondentFormModel
-
-  return ResultAsync.fromPromise(
-    MultirespondentFormModel.findOneAndUpdate(
-      {
-        _id: originalMrfForm._id,
-        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
-          originalForm,
-          updatedWorkflow.length,
-        ),
-      },
-      { workflow: updatedWorkflow },
-      {
-        new: true,
-        runValidators: true,
-      },
-    ).exec(),
-    (error) => {
-      logger.error({
-        message:
-          'Error encountered while updating form workflow step in database',
-        meta: {
-          action: 'updateFormWorkflowStep',
-          formId: originalMrfForm._id,
-          stepNumber,
-          updatedWorkflowStep,
-        },
-        error,
-      })
-      return transformMongoError(error)
-    },
-  ).andThen((updatedForm) => {
-    if (!updatedForm) {
-      return errAsync(new FormChangedWhileEditingError())
-    }
-
-    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+  return persistWorkflowStepWrite({
+    form: originalMrfForm,
+    stepIndex: stepNumber,
+    login,
+    originalWorkflow,
+    buildWorkflow,
+    action: 'updateFormWorkflowStep',
   })
 }
 
@@ -1994,6 +2349,7 @@ export const deleteFormWorkflow = (
   | FormNotFoundError
   | FormInvalidResponseModeError
   | FormOpenToResponsesError
+  | MalformedParametersError
 > => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -2012,6 +2368,18 @@ export const deleteFormWorkflow = (
   }
 
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
+
+  // With no workflow, Step 1's form-level login governs every field.
+  const loginCheck = validateResultingLogin(
+    originalMrfForm,
+    getRawWorkflow(originalMrfForm),
+    {
+      authType: originalMrfForm.authType,
+      esrvcId: originalMrfForm.esrvcId,
+      workflow: [],
+    },
+  )
+  if (loginCheck.isErr()) return errAsync(loginCheck.error)
 
   const MultirespondentFormModel = getFormModelByResponseMode(
     originalForm.responseMode,
@@ -2047,7 +2415,10 @@ export const deleteFormWorkflowStep = (
   stepNumber: number,
 ): ResultAsync<
   FormWorkflowDto,
-  DatabaseError | FormChangedWhileEditingError
+  | PossibleDatabaseError
+  | MalformedParametersError
+  | FormOpenToResponsesError
+  | FormChangedWhileEditingError
 > => {
   if (originalForm.responseMode !== FormResponseMode.Multirespondent) {
     return errAsync(
@@ -2058,7 +2429,7 @@ export const deleteFormWorkflowStep = (
   }
 
   const originalMrfForm = originalForm as IPopulatedMultirespondentForm
-  const originalWorkflow = originalMrfForm.workflow ?? []
+  const originalWorkflow = getRawWorkflow(originalMrfForm)
 
   // Express hands this over as a string; the route has no Joi cast. A strict
   // equality check against 0 does not survive that, so compare the coercion.
@@ -2071,50 +2442,40 @@ export const deleteFormWorkflowStep = (
     return errAsync(new MalformedParametersError('Invalid step number'))
   }
 
+  if (
+    originalWorkflow[targetStepNumber].auth &&
+    originalForm.status === FormStatus.Public
+  ) {
+    return errAsync(loginChangeWhilePublicError())
+  }
+
   const updatedWorkflow = originalWorkflow.filter(
     (_step, index) => index !== targetStepNumber,
   )
 
+  const loginCheck = validateResultingLogin(originalMrfForm, originalWorkflow, {
+    authType: originalMrfForm.authType,
+    esrvcId: originalMrfForm.esrvcId,
+    workflow: updatedWorkflow,
+  })
+  if (loginCheck.isErr()) return errAsync(loginCheck.error)
+
   const check = checkResultingWorkflowIsAllowed(originalForm, updatedWorkflow)
   if (check.isErr()) return errAsync(check.error)
 
-  const MultirespondentFormModel = getFormModelByResponseMode(
-    originalForm.responseMode,
-  ) as IMultirespondentFormModel
-
-  return ResultAsync.fromPromise(
-    MultirespondentFormModel.findOneAndUpdate(
-      {
-        _id: originalMrfForm._id,
-        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
-          originalForm,
-          updatedWorkflow.length,
-        ),
-      },
-      { workflow: updatedWorkflow },
-      {
-        new: true,
-        runValidators: true,
-      },
-    ).exec(),
-    (error) => {
-      logger.error({
-        message:
-          'Error encountered while deleting form workflow step in database',
-        meta: {
-          action: 'deleteFormWorkflowStep',
-          formId: originalMrfForm._id,
-          stepNumber,
-        },
-        error,
-      })
-      return transformMongoError(error)
+  // Removed steps' lists are kept: in-progress submissions may still reference them.
+  return persistWorkflowStepWrite({
+    form: originalMrfForm,
+    stepIndex: targetStepNumber,
+    login: {
+      formLevelUpdate: {},
+      formLevelFilter: {},
+      isLoginChanged: false,
+      authType: originalMrfForm.authType,
     },
-  ).andThen((updatedForm) => {
-    if (!updatedForm) {
-      return errAsync(new FormChangedWhileEditingError())
-    }
-    return okAsync((updatedForm as IMultirespondentFormSchema).workflow)
+    originalWorkflow,
+    buildWorkflow: () => updatedWorkflow,
+    action: 'deleteFormWorkflowStep',
   })
 }
 
@@ -2205,16 +2566,20 @@ const withGenericConsumerPlatformDefaultWebhookFormat = (
  */
 export const updateFormSettings = (
   originalForm: IPopulatedForm,
-  body: SettingsUpdateDto,
+  requestBody: SettingsUpdateDto,
 ): ResultAsync<
   FormSettings,
   | MalformedParametersError
+  | InvalidWhitelistSettingError
+  | FormOpenToResponsesError
   | FormChangedWhileEditingError
   | DatabaseError
   | DatabaseValidationError
   | DatabaseConflictError
   | DatabasePayloadSizeError
 > => {
+  // whitelistCsvString is request-only: it becomes a list version, never a form field.
+  const { whitelistCsvString, ...body } = requestBody
   if (isFormEmailMode(originalForm)) {
     if (
       originalForm.isForceConvertToStorageMode &&
@@ -2262,6 +2627,8 @@ export const updateFormSettings = (
     }
   }
 
+  let login: StepLoginWrite | undefined
+  let loginWorkflowFilter = {}
   if (isFormMultirespondent(originalForm)) {
     if (
       hasWebhookWorkflowConflict(
@@ -2284,6 +2651,57 @@ export const updateFormSettings = (
         ),
       )
     }
+
+    const isPublishing =
+      body.status === FormStatus.Public &&
+      originalForm.status !== FormStatus.Public
+    const isLoginInput =
+      body.authType !== undefined ||
+      body.isSubmitterIdCollectionEnabled !== undefined ||
+      body.esrvcId !== undefined ||
+      whitelistCsvString !== undefined
+    if (isLoginInput || isPublishing) {
+      const loginResult = resolveStepLoginWrite(
+        originalForm,
+        0,
+        {
+          first_step_login: {
+            authType: body.authType,
+            isSubmitterIdCollectionEnabled: body.isSubmitterIdCollectionEnabled,
+          },
+          esrvc_id: body.esrvcId,
+          whitelistCsvString,
+        },
+        undefined,
+        false,
+      )
+      if (loginResult.isErr()) return errAsync(loginResult.error)
+      login = loginResult.value
+      if (login.isLoginChanged && originalForm.status === FormStatus.Public) {
+        return errAsync(loginChangeWhilePublicError())
+      }
+      const workflow = getRawWorkflow(originalForm)
+      const loginCheck = validateMrfLoginConfiguration({
+        formFields: originalForm.form_fields,
+        resulting: { authType: login.authType, workflow },
+        original: { authType: originalForm.authType, workflow },
+        esrvcId: login.esrvcId,
+        isPublishing,
+      })
+      if (loginCheck.isErr()) return errAsync(loginCheck.error)
+      // The login checks above depend on the saved workflow.
+      loginWorkflowFilter = {
+        ...buildWorkflowMatchFilter(workflow),
+        ...login.formLevelFilter,
+        ...(login.isLoginChanged ? { status: originalForm.status } : {}),
+      }
+    }
+  } else if (whitelistCsvString !== undefined) {
+    return errAsync(
+      new MalformedParametersError(
+        'Update eligible respondents for this form with the whitelist setting',
+      ),
+    )
   }
 
   const dotifiedSettingsToUpdate = dotifyObject(
@@ -2307,29 +2725,25 @@ export const updateFormSettings = (
     ? { 'workflow.1': { $exists: false } }
     : {}
 
-  return ResultAsync.fromPromise(
-    ModelToUse.findOneAndUpdate(
-      {
-        _id: originalForm._id,
-        ...noSecondStepFilterIfRequiresSingleStep,
-      },
-      dotifiedSettingsToUpdate,
-      { new: true, runValidators: true },
-    ).exec(),
-    (error) => {
-      logger.error({
-        message: 'Error encountered while updating form settings',
-        meta: {
-          action: 'updateFormSettings',
-          formId: originalForm._id,
-          // Body is not logged in case sensitive data such as emails are stored.
+  return updateFormWithWhitelistVersion({
+    form: originalForm,
+    whitelistContent: login?.whitelistContent,
+    action: 'updateFormSettings',
+    update: (whitelistId, session) => {
+      const loginUpdate = login
+        ? withNewWhitelist(login, 0, whitelistId).formLevelUpdate
+        : {}
+      return ModelToUse.findOneAndUpdate(
+        {
+          _id: originalForm._id,
+          ...noSecondStepFilterIfRequiresSingleStep,
+          ...loginWorkflowFilter,
         },
-        error,
-      })
-
-      return transformMongoError(error)
+        { ...dotifiedSettingsToUpdate, ...loginUpdate },
+        { new: true, runValidators: true, session },
+      ).exec()
     },
-  ).andThen((updatedForm) => {
+  }).andThen((updatedForm) => {
     if (!updatedForm) {
       return errAsync(new FormChangedWhileEditingError())
     }

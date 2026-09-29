@@ -9,7 +9,6 @@ import {
   FORM_ORIGIN_OTHER_DETAIL_MAX_LENGTH,
 } from 'formsg-shared/constants'
 import {
-  KB,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
 } from 'formsg-shared/constants/file'
@@ -37,7 +36,6 @@ import {
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
   FormWorkflowDto,
-  FormWorkflowStepDto,
   Language,
   LogicConditionState,
   LogicDto,
@@ -53,14 +51,13 @@ import {
   StartPageUpdateDto,
   SubmissionCountQueryDto,
   WebhookSettingsUpdateDto,
+  WorkflowStepWriteDto,
 } from 'formsg-shared/types'
-import {
-  EncryptedStringsMessageContent,
-  encryptStringsMessage,
-} from 'formsg-shared/utils/crypto'
+import { EncryptedStringsMessageContent } from 'formsg-shared/utils/crypto'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { omit } from 'lodash'
+import { errAsync, ok, ResultAsync } from 'neverthrow'
 
 import { IFormDocument, IPopulatedForm } from '../../../../types'
 import { EncryptSubmissionDto, FormUpdateParams } from '../../../../types/api'
@@ -100,6 +97,7 @@ import {
   updateSettingsValidator,
   updateWebhookSettingsValidator,
   updateWorkflowStepValidator,
+  whitelistCsvStringValidator,
 } from './admin-form.middlewares'
 import * as AdminFormService from './admin-form.service'
 import { PermissionLevel } from './admin-form.types'
@@ -108,6 +106,7 @@ import {
   mapRouteError,
   verifyValidUnicodeString,
 } from './admin-form.utils'
+import { encryptWhitelistCsvString } from './admin-form.whitelist'
 
 // NOTE: Refer to this for documentation: https://github.com/sideway/joi-date/blob/master/API.md
 const Joi = BaseJoi.extend(JoiDate) as typeof BaseJoi
@@ -1606,7 +1605,7 @@ const guidedModeOf = (form: IPopulatedForm): boolean | undefined =>
 export const _handleCreateWorkflowStep: ControllerHandler<
   { formId: string },
   FormWorkflowDto | ErrorDto,
-  FormWorkflowStepDto
+  WorkflowStepWriteDto
 > = (req, res) => {
   const { formId } = req.params
   const workflowStepToCreate = req.body
@@ -1653,7 +1652,11 @@ export const _handleCreateWorkflowStep: ControllerHandler<
             userId: sessionUserId,
             formId,
             hasUsedGuidedMode,
-            workflowStepToCreate,
+            // The eligible-respondent list is never logged.
+            workflowStepToCreate: omit(
+              workflowStepToCreate,
+              'whitelistCsvString',
+            ),
           },
           error,
         })
@@ -1674,7 +1677,7 @@ const _handleUpdateWorkflowStep: ControllerHandler<
     stepNumber: number
   },
   FormWorkflowDto | ErrorDto,
-  FormWorkflowStepDto
+  WorkflowStepWriteDto
 > = (req, res) => {
   const { formId, stepNumber } = req.params
   const sessionUserId = (req.session as AuthedSessionData).user._id
@@ -1723,7 +1726,7 @@ const _handleUpdateWorkflowStep: ControllerHandler<
           userId: sessionUserId,
           formId,
           hasUsedGuidedMode,
-          updatedWorkflowStep,
+          updatedWorkflowStep: omit(updatedWorkflowStep, 'whitelistCsvString'),
         },
         error,
       })
@@ -1736,6 +1739,52 @@ export const handleUpdateWorkflowStep = [
   updateWorkflowStepValidator,
   _handleUpdateWorkflowStep,
 ] as ControllerHandler[]
+
+/**
+ * Handler for GET /admin/forms/:formId/workflow/:stepNumber/whitelist.
+ * Returns a step's encrypted eligible-respondent list for the admin to decrypt.
+ */
+export const handleGetWorkflowStepWhitelistSetting: ControllerHandler<
+  { formId: string; stepNumber: string },
+  | { encryptedWhitelistedSubmitterIds: EncryptedStringsMessageContent | null }
+  | ErrorDto
+> = (req, res) => {
+  const { formId, stepNumber } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Read,
+      }),
+    )
+    .andThen((form) =>
+      AdminFormService.getWorkflowStepWhitelistSetting(
+        form,
+        Number(stepNumber),
+      ),
+    )
+    .map((encryptedWhitelistedSubmitterIds) =>
+      res.status(StatusCodes.OK).json({ encryptedWhitelistedSubmitterIds }),
+    )
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when retrieving workflow step whitelist',
+        meta: {
+          action: 'handleGetWorkflowStepWhitelistSetting',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          stepNumber,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
 
 const isWorkflowDeletionEnabledFor = (
   growthbook: GrowthBook | undefined,
@@ -1877,8 +1926,6 @@ export const handleDeleteWorkflowStep: ControllerHandler<
     })
 }
 
-const LIMIT_IN_KB = 250
-const STRING_MAX_LENGTH = LIMIT_IN_KB * KB
 const _handleUpdateWhitelistSettingValidator = celebrate({
   [Segments.PARAMS]: Joi.object({
     formId: Joi.string()
@@ -1887,24 +1934,9 @@ const _handleUpdateWhitelistSettingValidator = celebrate({
       .message('Your form ID is invalid.'),
   }),
   [Segments.BODY]: Joi.object({
-    whitelistCsvString: Joi.string()
-      .allow(null) // for removal of whitelist
-      .max(STRING_MAX_LENGTH)
-      .pattern(/^[a-zA-Z0-9,\r\n]+$/)
-      .messages({
-        'string.empty': 'Your csv is empty.',
-        'string.pattern.base': 'Your csv has one or more invalid characters.',
-        'string.max': `You have exceeded the file size limit, please upload a file below ${LIMIT_IN_KB} kB.`,
-      }),
+    whitelistCsvString: whitelistCsvStringValidator,
   }),
 })
-
-const _parseWhitelistCsvString = (whitelistCsvString: string | null) => {
-  if (!whitelistCsvString) {
-    return null
-  }
-  return whitelistCsvString.split(',').map((entry: string) => entry.trim())
-}
 
 const _handleUpdateWhitelistSetting: ControllerHandler<
   { formId: string },
@@ -1945,47 +1977,25 @@ const _handleUpdateWhitelistSetting: ControllerHandler<
 
   const form = formResult.value
 
+  // Step 2: Validate and encrypt the list with the form's public key; null removes it.
   const { whitelistCsvString } = req.body
-  const whitelistedSubmitterIds = _parseWhitelistCsvString(whitelistCsvString)
-
-  const upperCaseWhitelistedSubmitterIds =
-    whitelistedSubmitterIds && whitelistedSubmitterIds.length > 0
-      ? whitelistedSubmitterIds.map((id) => id.toUpperCase())
-      : null
-
-  // Step 2: perform validation on submitted whitelist setting
-  const isWhitelistSettingValid = AdminFormService.checkIsWhitelistSettingValid(
-    upperCaseWhitelistedSubmitterIds,
-  )
-  if (!isWhitelistSettingValid.isValid) {
+  const encryptedResult = whitelistCsvString
+    ? encryptWhitelistCsvString(whitelistCsvString, form.publicKey)
+    : ok(null)
+  if (encryptedResult.isErr()) {
     logger.error({
       message: 'Invalid whitelist setting',
       meta: logMeta,
+      error: encryptedResult.error,
     })
-    return res.status(StatusCodes.UNPROCESSABLE_ENTITY).json({
-      message: isWhitelistSettingValid.invalidReason,
-    })
+    const { errorMessage, statusCode } = mapRouteError(encryptedResult.error)
+    return res.status(statusCode).json({ message: errorMessage })
   }
 
-  // Step 3: Encrypt whitelist settings
-  if (!form.publicKey) {
-    logger.error({
-      message: 'Form does not have a public key',
-      meta: logMeta,
-    })
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      message: 'Form does not have a public key',
-    })
-  }
-  const formPublicKey = form.publicKey
-  const encryptedWhitelistSubmitterIdsContent = upperCaseWhitelistedSubmitterIds
-    ? encryptStringsMessage(upperCaseWhitelistedSubmitterIds, formPublicKey)
-    : null
-
-  // Step 4: Update form with encrypted whitelist settings
+  // Step 3: Update form with encrypted whitelist settings
   return AdminFormService.updateFormWhitelistSetting(
     form,
-    encryptedWhitelistSubmitterIdsContent,
+    encryptedResult.value,
   )
     .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
     .mapErr((error) => {
