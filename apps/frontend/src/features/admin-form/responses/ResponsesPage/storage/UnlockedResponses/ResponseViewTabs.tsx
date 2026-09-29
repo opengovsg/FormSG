@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next'
+import { BiX } from 'react-icons/bi'
 import { Flex } from '@chakra-ui/react'
 
 import Button from '~components/Button'
+import IconButton from '~components/IconButton'
 
 export interface SavedResponseView {
   id: string
@@ -14,18 +16,23 @@ export const ResponseViewTabs = ({
   views = [],
   selectedViewId = ALL_RESPONSES_TAB_ID,
   onSelectView,
+  onDeleteView,
 }: {
   views?: SavedResponseView[]
   selectedViewId?: string
   onSelectView?: (viewId: string) => void
+  onDeleteView?: (viewId: string) => void
 }): JSX.Element => {
   const { t } = useTranslation()
-  const { allResponses } = t(
+  const { allResponses, deleteView } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.views',
     { returnObjects: true },
   )
 
-  const tabs = [{ id: ALL_RESPONSES_TAB_ID, name: allResponses }, ...views]
+  const tabs = [
+    { id: ALL_RESPONSES_TAB_ID, name: allResponses, isSavedView: false },
+    ...views.map((view) => ({ ...view, isSavedView: true })),
+  ]
 
   return (
     <Flex
@@ -41,30 +48,53 @@ export const ResponseViewTabs = ({
         '&::-webkit-scrollbar': { width: 0, height: 0 },
       }}
     >
-      {tabs.map(({ id, name }) => {
+      {tabs.map(({ id, name, isSavedView }) => {
         const isActive = id === selectedViewId
         return (
-          <Button
+          <Flex
             key={id}
-            variant="clear"
-            colorScheme="secondary"
-            aria-current={isActive || undefined}
+            align="center"
             flexShrink={0}
-            borderRadius={0}
-            px="1rem"
             borderBottom="2px solid"
             borderBottomColor={isActive ? 'primary.500' : 'transparent'}
-            color={isActive ? 'primary.500' : 'secondary.500'}
-            textStyle={isActive ? 'subhead-1' : 'body-1'}
-            _hover={{ color: 'primary.500', bg: 'neutral.100' }}
-            _focus={{ boxShadow: 'none' }}
-            _focusVisible={{
-              boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
-            }}
-            onClick={() => onSelectView?.(id)}
+            _hover={{ bg: 'neutral.100' }}
           >
-            {name}
-          </Button>
+            <Button
+              variant="clear"
+              colorScheme="secondary"
+              aria-current={isActive || undefined}
+              borderRadius={0}
+              pl="1rem"
+              pr={isSavedView ? '0.5rem' : '1rem'}
+              color={isActive ? 'primary.500' : 'secondary.500'}
+              textStyle={isActive ? 'subhead-1' : 'body-1'}
+              _hover={{ color: 'primary.500', bg: 'transparent' }}
+              _focus={{ boxShadow: 'none' }}
+              _focusVisible={{
+                boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+              }}
+              onClick={() => onSelectView?.(id)}
+            >
+              {name}
+            </Button>
+            {isSavedView ? (
+              <IconButton
+                variant="clear"
+                colorScheme="secondary"
+                size="xs"
+                mr="0.5rem"
+                icon={<BiX />}
+                aria-label={deleteView.replace('{VIEW_NAME}', name)}
+                color="secondary.300"
+                _hover={{ color: 'primary.500', bg: 'transparent' }}
+                _focus={{ boxShadow: 'none' }}
+                _focusVisible={{
+                  boxShadow: '0 0 0 2px var(--chakra-colors-primary-500)',
+                }}
+                onClick={() => onDeleteView?.(id)}
+              />
+            ) : null}
+          </Flex>
         )
       })}
     </Flex>

@@ -85,6 +85,10 @@ export const enSG: ResponsesResponsesPage = {
         viewNameRequired: 'View name is required',
         viewNameMinLength: 'View name must be at least {MIN_LENGTH} characters',
         viewNameMaxLength: 'View name must be at most {MAX_LENGTH} characters',
+        deleteView: 'Delete view {VIEW_NAME}',
+        deleteViewTitle: 'Delete {VIEW_NAME}?',
+        deleteViewDescription:
+          'This view will be removed for everyone with access to the form. The responses themselves are not deleted.',
       },
       sortMenu: {
         column: 'Column',

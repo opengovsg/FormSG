@@ -38,6 +38,14 @@ export const createFormSavedView = async (
     savedView,
   ).then(({ data }) => data)
 
+export const deleteFormSavedView = async (
+  formId: string,
+  savedViewId: string,
+): Promise<FormSavedView[]> =>
+  ApiService.delete<FormSavedView[]>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/saved-views/${savedViewId}`,
+  ).then(({ data }) => data)
+
 /**
  * Counts the number of submissions for a given form
  * @param urlParameters Mapping of the url parameters to values
