@@ -4,6 +4,7 @@ import { BiFilterAlt } from 'react-icons/bi'
 import {
   Box,
   ButtonGroup,
+  Divider,
   MenuButton,
   MenuList,
   Stack,
@@ -87,48 +88,52 @@ export const FilterMenu = ({
               isIconOnly,
             })}
           />
-          <MenuList maxH="28rem" overflowY="auto" minW="20rem">
-            <SectionLabel>{dateRangeLabel}</SectionLabel>
-            <Box px="1rem" py="0.75rem">
-              <DateRangePicker
-                value={dateRangePickerHelper.dateStringToDatePickerValue(
-                  draftDateRange,
-                )}
-                onChange={(nextDateRange) =>
-                  setDraftDateRange(
-                    dateRangePickerHelper.datePickerValueToDateString(
-                      nextDateRange,
-                    ),
-                  )
-                }
-              />
-            </Box>
+          <MenuList
+            display="flex"
+            flexDirection="column"
+            maxH="28rem"
+            minW="20rem"
+            pb={0}
+          >
+            <Box flex={1} minH={0} overflowY="auto">
+              <SectionLabel>{dateRangeLabel}</SectionLabel>
+              <Box px="1rem" py="0.75rem">
+                <DateRangePicker
+                  value={dateRangePickerHelper.dateStringToDatePickerValue(
+                    draftDateRange,
+                  )}
+                  onChange={(nextDateRange) =>
+                    setDraftDateRange(
+                      dateRangePickerHelper.datePickerValueToDateString(
+                        nextDateRange,
+                      ),
+                    )
+                  }
+                />
+              </Box>
 
-            <SectionLabel>{columns}</SectionLabel>
-            <Stack spacing={0}>
-              {columnOptions.map(({ id, label }) => (
-                <Checkbox
-                  key={id}
-                  px="1rem"
-                  py="0.5rem"
-                  isChecked={!excludedSearchColumnIds.includes(id)}
-                  onChange={() => toggleSearchColumn(id)}
-                >
-                  {label}
-                </Checkbox>
-              ))}
-            </Stack>
+              <SectionLabel>{columns}</SectionLabel>
+              <Stack spacing={0}>
+                {columnOptions.map(({ id, label }) => (
+                  <Checkbox
+                    key={id}
+                    px="1rem"
+                    py="0.5rem"
+                    isChecked={!excludedSearchColumnIds.includes(id)}
+                    onChange={() => toggleSearchColumn(id)}
+                  >
+                    {label}
+                  </Checkbox>
+                ))}
+              </Stack>
+            </Box>
+            <Divider />
             <ButtonGroup px="1rem" py="0.75rem" spacing="0.5rem">
-              <Button
-                variant="clear"
-                size="sm"
-                onClick={() => setAllSearchColumns(true)}
-              >
+              <Button variant="clear" onClick={() => setAllSearchColumns(true)}>
                 {checkAll}
               </Button>
               <Button
                 variant="clear"
-                size="sm"
                 onClick={() => setAllSearchColumns(false)}
               >
                 {uncheckAll}
