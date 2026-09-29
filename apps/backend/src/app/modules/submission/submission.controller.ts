@@ -7,6 +7,7 @@ import {
   ErrorDto,
   FormResponseMode,
   FormSubmissionMetadataQueryDto,
+  MAX_SUBMISSION_METADATA_PAGE_SIZE,
   SubmissionDto,
   SubmissionMetadataList,
   SubmissionPaymentDto,
@@ -73,7 +74,7 @@ export const getMetadata: ControllerHandler<
 > = async (req, res) => {
   const sessionUserId = (req.session as AuthedSessionData).user._id
   const { formId } = req.params
-  const { page, submissionId } = req.query
+  const { page, pageSize, submissionId, startDate, endDate } = req.query
 
   const logMeta = {
     action: 'handleGetMetadata',
@@ -113,7 +114,13 @@ export const getMetadata: ControllerHandler<
           })
         }
         // Step 4b: Retrieve all submissions of given form id.
-        return getSubmissionMetadataList(form.responseMode, formId, page)
+        return getSubmissionMetadataList(
+          form.responseMode,
+          formId,
+          page,
+          pageSize,
+          { startDate, endDate },
+        )
       })
       .map((metadataList) => {
         logger.info({
@@ -148,6 +155,12 @@ export const handleGetMetadata = [
         not: Joi.exist(),
         then: Joi.required(),
       }),
+      pageSize: Joi.number()
+        .min(1)
+        .max(MAX_SUBMISSION_METADATA_PAGE_SIZE)
+        .optional(),
+      startDate: Joi.date().raw().optional(),
+      endDate: Joi.date().raw().greater(Joi.ref('startDate')).optional(),
     },
   }),
   getMetadata,

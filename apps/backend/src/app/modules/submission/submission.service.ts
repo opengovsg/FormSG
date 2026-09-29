@@ -379,6 +379,7 @@ type AttachmentReducerData = {
  *
  * @param formId the id of the form to upload attachments for
  * @param attachmentData Attachment blob data from the client (including the attachment)
+ * @param bucket the bucket to upload to, defaulting to the default attachmentS3Bucket.
  *
  * @returns ok(AttachmentMetadata) A map of field id to the s3 key of the uploaded attachment
  * @returns err(AttachmentUploadError) if the upload has failed
@@ -386,6 +387,7 @@ type AttachmentReducerData = {
 export const uploadAttachments = (
   formId: string,
   attachmentData: Record<string, unknown>,
+  bucket: string = AwsConfig.attachmentS3Bucket,
 ): ResultAsync<AttachmentMetadata, AttachmentUploadError> => {
   const { attachmentMetadata, attachmentUploadPromises } = Object.keys(
     attachmentData,
@@ -404,7 +406,7 @@ export const uploadAttachments = (
       accumulator.attachmentMetadata.set(fieldId, uploadKey)
       accumulator.attachmentUploadPromises.push(
         putS3Object({
-          Bucket: AwsConfig.attachmentS3Bucket,
+          Bucket: bucket,
           Key: uploadKey,
           Body: Buffer.from(individualAttachment),
         }),
@@ -581,11 +583,17 @@ export const getSubmissionMetadataList = (
   responseMode: FormResponseMode,
   formId: string,
   page?: number,
+  pageSize?: number,
+  dateRange: { startDate?: string; endDate?: string } = {},
 ): ResultAsync<SubmissionMetadataList, ResponseModeError | DatabaseError> =>
   getEncryptedSubmissionModelByResponseMode(responseMode).asyncAndThen(
     (modelToUse) =>
       ResultAsync.fromPromise(
-        modelToUse.findAllMetadataByFormId(formId, { page }),
+        modelToUse.findAllMetadataByFormId(formId, {
+          page,
+          pageSize,
+          ...dateRange,
+        }),
         (error) => {
           logger.error({
             message: 'Failure retrieving metadata page from database',

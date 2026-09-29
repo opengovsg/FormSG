@@ -2,6 +2,72 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.36.0](https://github.com/opengovsg/formsg/compare/v9.35.1...v9.36.0) (2026-09-29)
+
+
+### Features
+
+* **webhooks:** deliver payment MRF V1 on confirmation (#10120) ([#10120](https://github.com/opengovsg/formsg/commit/dc703f390a5f6613fa1e6213967801b170dd2040))
+
+## [9.35.1](https://github.com/opengovsg/formsg/compare/v9.35.0...v9.35.1) (2026-09-29)
+
+
+### Bug Fixes
+
+* **webhooks:** support Plumber staging and UAT environments (#10133) ([#10133](https://github.com/opengovsg/formsg/commit/5de58696881c2788ba5a00e29f46a71fcf2e1fbb))
+
+## [9.35.0](https://github.com/opengovsg/formsg/compare/v9.34.0...v9.35.0) (2026-09-29)
+
+
+### Features
+
+* **results:** add the saved views shell above the responses toolbar (#10114) ([#10114](https://github.com/opengovsg/formsg/commit/c1a009834f356c6896dcf5407ae837f8a1453d2d))
+* **results:** apply the table's view to the CSV export (#10126) ([#10126](https://github.com/opengovsg/formsg/commit/a01cd5a623990508d3ee69b60c939149d38a03fe))
+* **results:** delete a saved view from its tab (#10121) ([#10121](https://github.com/opengovsg/formsg/commit/c98660e777bdc4600605b48363047069c5850ba1))
+* **results:** export only the responses in the current view (#10104) ([#10104](https://github.com/opengovsg/formsg/commit/cff3c2b09d802659b73e2d134dafc184c8541e3d))
+* **results:** filter responses by date range from the Filter menu (#10102) ([#10102](https://github.com/opengovsg/formsg/commit/f80c451b59ee6de6c62ae6b43c35befd1ee71b35))
+* **results:** load every response up front and render a window of them (#10098) ([#10098](https://github.com/opengovsg/formsg/commit/22eb3bfe718fc6bf2839fc1397c9342dd6459fb9))
+* **results:** persist saved views on the form (#10122) ([#10122](https://github.com/opengovsg/formsg/commit/0fc65753e667d622b7cc3eda8f27f0587517bb30))
+* **results:** say when only the most recent responses are shown (#10123) ([#10123](https://github.com/opengovsg/formsg/commit/246fdf67d670d9b186ee6f3944348dc8d9f6204d))
+* **results:** sort the responses table from a Sort dropdown (#10103) ([#10103](https://github.com/opengovsg/formsg/commit/74e2ab2d8625164fbf09ab80eb84fd4b66c45fbf))
+* **results:** virtualize the responses table columns (#10127) ([#10127](https://github.com/opengovsg/formsg/commit/f431f099b9baeb291353a85c8e715171e09db536))
+
+
+### Bug Fixes
+
+* **results:** hide empty workflow rows and describe payload cells (#10124) ([#10124](https://github.com/opengovsg/formsg/commit/0cf2850c8ca711923546847cca6fa32bbbe14162))
+* **results:** view feedback and fixed-height table rows (#10132) ([#10132](https://github.com/opengovsg/formsg/commit/d5a855f52632d5f45fe7a2892b3d5f46d32ca1b3))
+
+
+### Dependencies
+
+* **deps:** drop @faker-js/faker to close high-severity advisory (#10129) ([#10129](https://github.com/opengovsg/formsg/commit/a3a9847c459730217b53195156af4faf62495b18))
+
+## [9.34.0](https://github.com/opengovsg/formsg/compare/v9.33.3...v9.34.0) (2026-09-29)
+
+
+### Features
+
+* **dashboards:** move results navigation to a vertical side rail (#10085) ([#10085](https://github.com/opengovsg/formsg/commit/ea3f01b12bd66bd25ed912e94df41c213d248b5d))
+* **mrf:** deliver form-key attachment copies on the V1 webhook (#10090) ([#10090](https://github.com/opengovsg/formsg/commit/397c79c3488582859459e8451fddbcdf03514e6f))
+* **results:** give the responses table its own toolbar row (#10095) ([#10095](https://github.com/opengovsg/formsg/commit/e66a57e2928141511c3de13c9c97ada4d292ef44))
+* **results:** hide and show columns from the toolbar (#10096) ([#10096](https://github.com/opengovsg/formsg/commit/386a7df25d6ea1bdb201373c0b769cb67d893f79))
+* **results:** infinite scroll on the responses table (#10091) ([#10091](https://github.com/opengovsg/formsg/commit/13398f1e4d6c0b56cf21552a62c781542149b21d))
+* **results:** open a response in a side drawer (#10094) ([#10094](https://github.com/opengovsg/formsg/commit/eb5e8c6c623a184ebd7217f3240f1d558a053572))
+* **results:** search the responses table across chosen columns (#10097) ([#10097](https://github.com/opengovsg/formsg/commit/642dd43a3336215774d1a4f1bc40c0101b7253da))
+* **results:** show every form field as a column on the responses table (#10092) ([#10092](https://github.com/opengovsg/formsg/commit/fe7c392241464abe462bc6bffa1d0e3576a91a6c))
+
+
+### Bug Fixes
+
+* **results:** mobile layout pass on the side rail and charts grid (#10087) ([#10087](https://github.com/opengovsg/formsg/commit/2f909487e074ab859029210f88f0065504854dfc))
+* **webhooks:** replay V1 retries from frozen snapshots (#10100) ([#10100](https://github.com/opengovsg/formsg/commit/e30958a1e40a2d6e5b9ca110ce575966c88ef467))
+
+
+### Tests
+
+* prevent workflow hover tests from opening real sockets (#10130) ([#10130](https://github.com/opengovsg/formsg/commit/e6690727f60033ad2f3130e6b96a62fd97dc99cd))
+
 ## [9.33.3](https://github.com/opengovsg/formsg/compare/v9.33.2...v9.33.3) (2026-09-28)
 
 

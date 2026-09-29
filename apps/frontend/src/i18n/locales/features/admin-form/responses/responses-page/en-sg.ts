@@ -70,6 +70,39 @@ export const enSG: ResponsesResponsesPage = {
         },
       },
       submissionSearchbarPlaceholder: 'Search by response ID',
+      searchResponsesPlaceholder: 'Search responses...',
+      filterMenu: {
+        dateRange: 'Date range',
+        columns: 'Columns',
+        checkAll: 'Check all',
+        uncheckAll: 'Uncheck all',
+      },
+      views: {
+        allResponses: 'All responses',
+        saveAsNewView: 'Save as new view',
+        viewName: 'View name',
+        viewNamePlaceholder: 'e.g. Pending approvals',
+        viewNameRequired: 'View name is required',
+        viewNameMinLength: 'View name must be at least {MIN_LENGTH} characters',
+        viewNameMaxLength: 'View name must be at most {MAX_LENGTH} characters',
+        deleteView: 'Delete view {VIEW_NAME}',
+        deleteViewTitle: 'Delete {VIEW_NAME}?',
+        deleteViewDescription:
+          'This view will be removed for everyone with access to the form. The responses themselves are not deleted.',
+        deleteViewSuccess: 'Your view has been successfully deleted.',
+      },
+      sortMenu: {
+        column: 'Column',
+        direction: 'Direction',
+        none: 'None',
+        ascending: 'Ascending',
+        descending: 'Descending',
+      },
+      toolbar: {
+        filter: 'Filter',
+        sort: 'Sort',
+        columns: 'Columns',
+      },
       downloadButton: {
         label: 'Download options',
         navigateAwayPrompt: {
@@ -90,6 +123,7 @@ export const enSG: ResponsesResponsesPage = {
         resultsFound: '{count, plural, =1 {result} other {results}} found',
         responsesToDate:
           '{count, plural, =1 {response} other {responses}} to date',
+        recentOnly: 'Only showing the most recent 10k responses',
       },
     },
     storageResponsesTab: {

@@ -391,13 +391,15 @@ export type SubmissionCountQueryDto =
     }
   | undefined
 
+export const MAX_SUBMISSION_METADATA_PAGE_SIZE = 10000
+
 export type FormSubmissionMetadataQueryDto = RequireAtLeastOne<
   {
     page: number
     submissionId: string
   },
   'page' | 'submissionId'
->
+> & { pageSize?: number; startDate?: string; endDate?: string }
 
 /**
  * Shape of email form submissions

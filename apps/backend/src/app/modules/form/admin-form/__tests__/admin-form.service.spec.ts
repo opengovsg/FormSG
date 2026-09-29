@@ -24,6 +24,7 @@ import {
   FormEndPage,
   FormLogoState,
   FormResponseMode,
+  FormSavedView,
   FormSettings,
   FormStartPage,
   FormStatus,
@@ -2609,6 +2610,59 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
+    })
+  })
+
+  describe('deleteFormSavedView', () => {
+    const savedViewId = new ObjectId().toHexString()
+    const mockForm = { _id: new ObjectId() } as unknown as IPopulatedForm
+    const remainingView = {
+      _id: new ObjectId().toHexString(),
+      name: 'Last quarter',
+      filter: {},
+    } as FormSavedView
+
+    it('should pull only the named view and return the ones left', async () => {
+      // Arrange
+      const UPDATE_SPY = jest
+        .spyOn(FormModel, 'findByIdAndUpdate')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ savedViews: [remainingView] }),
+        })
+
+      // Act
+      const actual = await AdminFormService.deleteFormSavedView(
+        mockForm,
+        savedViewId,
+      )
+
+      // Assert
+      expect(UPDATE_SPY).toHaveBeenCalledWith(
+        mockForm._id,
+        { $pull: { savedViews: { _id: savedViewId } } },
+        { new: true },
+      )
+      expect(actual._unsafeUnwrap()).toEqual([remainingView])
+    })
+
+    it('should return FormNotFoundError when the form is gone', async () => {
+      // Arrange
+      jest
+        .spyOn(FormModel, 'findByIdAndUpdate')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockReturnValue({ exec: jest.fn().mockResolvedValue(null) })
+
+      // Act
+      const actual = await AdminFormService.deleteFormSavedView(
+        mockForm,
+        savedViewId,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(FormNotFoundError)
     })
   })
 

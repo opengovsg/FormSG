@@ -1,11 +1,14 @@
-import { composeStories } from '@storybook/react'
+import { composeStories, composeStory } from '@storybook/react'
 import { act, render, screen } from '@testing-library/react'
+
+import { FormResponseMode } from 'formsg-shared/types/form'
+
+import { getAdminFormSettings } from '~/mocks/msw/handlers/admin-form'
 
 import * as stories from './SettingsWebhooksPage.stories'
 
 const {
   Error: ErrorStory,
-  PlumberConnectedEmailMode,
   StorageModePlumberConnected,
   UnsupportedEmailMode,
 } = composeStories(stories)
@@ -39,15 +42,41 @@ describe('SettingsWebhooksPage', () => {
     expect(screen.queryByText(PLUMBER_CONNECTED_MSG)).not.toBeInTheDocument()
   })
 
-  it('shows the Plumber message when a Plumber webhook is set on a form that cannot configure webhooks here', async () => {
-    await act(async () => {
-      render(<PlumberConnectedEmailMode />)
-    })
+  it.each(['plumber.gov.sg', 'staging.plumber.gov.sg', 'uat.plumber.gov.sg'])(
+    'shows the Plumber message for the %s webhook',
+    async (hostname) => {
+      const PlumberEnvironment = composeStory(
+        {
+          ...stories.PlumberConnectedEmailMode,
+          parameters: {
+            msw: {
+              handlers: {
+                default: [
+                  getAdminFormSettings({
+                    overrides: {
+                      responseMode: FormResponseMode.Email,
+                      webhook: {
+                        url: `https://${hostname}/webhooks/abc`,
+                        isRetryEnabled: false,
+                      },
+                    },
+                  }),
+                ],
+              },
+            },
+          },
+        },
+        stories.default,
+      )
+      await act(async () => {
+        render(<PlumberEnvironment />)
+      })
 
-    await screen.findByText(PLUMBER_CONNECTED_MSG)
-    expect(screen.getByRole('link', { name: /plumber/i })).toBeInTheDocument()
-    expect(screen.queryByText(UNSUPPORTED_MSG)).not.toBeInTheDocument()
-  })
+      await screen.findByText(PLUMBER_CONNECTED_MSG)
+      expect(screen.getByRole('link', { name: /plumber/i })).toBeInTheDocument()
+      expect(screen.queryByText(UNSUPPORTED_MSG)).not.toBeInTheDocument()
+    },
+  )
 
   it('keeps the webhook editor when a storage-mode form has a Plumber webhook', async () => {
     await act(async () => {

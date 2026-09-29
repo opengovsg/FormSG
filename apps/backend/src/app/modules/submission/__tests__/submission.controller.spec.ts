@@ -209,6 +209,11 @@ describe('submission.controller', () => {
         FormResponseMode.Encrypt,
         MOCK_FORM_ID,
         mockReq.query.page,
+        mockReq.query.pageSize,
+        {
+          startDate: mockReq.query.startDate,
+          endDate: mockReq.query.endDate,
+        },
       )
       expect(MockSubService.getSubmissionMetadata).not.toHaveBeenCalled()
     })
@@ -456,6 +461,11 @@ describe('submission.controller', () => {
         FormResponseMode.Encrypt,
         MOCK_FORM_ID,
         mockReq.query.page,
+        mockReq.query.pageSize,
+        {
+          startDate: mockReq.query.startDate,
+          endDate: mockReq.query.endDate,
+        },
       )
     })
   })

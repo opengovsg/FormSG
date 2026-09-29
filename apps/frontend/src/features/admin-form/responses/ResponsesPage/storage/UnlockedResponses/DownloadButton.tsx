@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { BiDownload } from 'react-icons/bi'
 import { useThrottle } from 'react-use'
 import {
   Box,
@@ -22,14 +23,17 @@ import Checkbox from '~components/Checkbox'
 import Menu from '~components/Menu'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
+import { CSV_BUFFER_MAX_RESPONSES } from '~features/admin-form/responses/constants'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 import { CanceledResult, DownloadOptions, DownloadResult } from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
+import { CsvExportView } from '../utils/csvExportView'
 
 import { DownloadWithAttachmentModal } from './DownloadWithAttachmentModal'
 import { ProgressModal } from './ProgressModal'
+import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
 const DownloadSelectorCheckbox = ({
   optionText,
@@ -120,6 +124,39 @@ const DownloadSelector = ({
 
 export const DownloadButton = (): JSX.Element => {
   const isDelightfulDashboard = useIsDelightfulDashboard()
+  const {
+    visibleSubmissionIds,
+    isFullyLoaded,
+    searchText,
+    excludedSearchColumnIds,
+    sortColumnId,
+    sortDirection,
+    hiddenColumnIds,
+  } = useUnlockedResponses()
+
+  const exportSubmissionIds =
+    isDelightfulDashboard &&
+    isFullyLoaded &&
+    visibleSubmissionIds &&
+    visibleSubmissionIds.length <= CSV_BUFFER_MAX_RESPONSES
+      ? visibleSubmissionIds
+      : undefined
+
+  // The generator holds every record until download, so it can order and
+  // project them however the table is showing them, at any response count.
+  //
+  // The id list is what the table itself matched, against rendered cells rather
+  // than stored answers, so it decides the rows whenever it is there and the
+  // generator's own search stands in only past the count it can be built for.
+  const csvView: CsvExportView | undefined = isDelightfulDashboard
+    ? {
+        ...(exportSubmissionIds ? {} : { searchText, excludedSearchColumnIds }),
+        sortColumnId,
+        sortDirection,
+        hiddenColumnIds,
+      }
+    : undefined
+
   const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = useMemo(
     () => ({
       isDownloadAttachments: false,
@@ -153,8 +190,11 @@ export const DownloadButton = (): JSX.Element => {
     isClosable: true,
   })
 
-  const { downloadParams, dateRangeResponsesCount } =
+  const { downloadParams, dateRangeResponsesCount: totalResponsesInRange } =
     useStorageResponsesContext()
+
+  const dateRangeResponsesCount =
+    exportSubmissionIds?.length ?? totalResponsesInRange
 
   const [_downloadCount, setDownloadCount] = useState(0)
   const [_pdfGenerationCount, setPdfGenerationCount] = useState(0)
@@ -245,11 +285,21 @@ export const DownloadButton = (): JSX.Element => {
     })
     return handleBulkDownloadMutation.mutate({
       ...downloadParams,
+      ...(exportSubmissionIds
+        ? { visibleSubmissionIds: exportSubmissionIds }
+        : {}),
+      ...(csvView ? { csvView } : {}),
       downloadAttachments: downloadOptions.isDownloadAttachments,
       isDownloadCsv: downloadOptions.isDownloadCsv,
       isDownloadPdf: downloadOptions.isDownloadPdf,
     })
-  }, [downloadParams, handleBulkDownloadMutation, downloadOptions])
+  }, [
+    downloadParams,
+    handleBulkDownloadMutation,
+    downloadOptions,
+    exportSubmissionIds,
+    csvView,
+  ])
 
   const resetDownload = useCallback(() => {
     resetDownloadProgress()
@@ -343,6 +393,11 @@ export const DownloadButton = (): JSX.Element => {
                 aria-label={t(
                   'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
                 )}
+                leftIcon={
+                  isDelightfulDashboard ? (
+                    <BiDownload fontSize="1.25rem" />
+                  ) : undefined
+                }
                 rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
               >
                 {t('features.common.download')}

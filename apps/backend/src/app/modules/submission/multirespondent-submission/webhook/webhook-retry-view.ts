@@ -1,5 +1,5 @@
 import { SubmittedStepSnapshotTokens } from 'formsg-shared/types'
-import { errAsync, ResultAsync } from 'neverthrow'
+import { errAsync, okAsync, ResultAsync } from 'neverthrow'
 
 import { WebhookView } from '../../../../../types'
 import { SnapshotRef } from '../../../webhook/webhook.types'
@@ -15,9 +15,12 @@ import {
   getKeyPermissionsPolicy,
   WebhookPayloadPolicy,
 } from './webhook-payload-policy'
-import { reconstructMrfWebhookData } from './webhook-reconstruction'
+import {
+  reconstructMrfWebhookData,
+  reconstructV1WebhookData,
+} from './webhook-reconstruction'
 
-export type SnapshotRetryError =
+export type SnapshotViewError =
   | SnapshotDataIntegrityError
   | SnapshotReadError
   | SnapshotAccessDeniedError
@@ -36,27 +39,40 @@ export const getRecordedPayloadPolicy = ({
 }
 
 /**
- * Rebuilds the webhook payload a retry must deliver from the provided
- * snapshot reference.
+ * Rebuilds the webhook payload for initial delivery or retries from the
+ * provided snapshot reference.
+ * First-step payment snapshots belong to the pending submission; later steps
+ * belong to the completed submission.
  */
-export const resolveSnapshotRetryView = ({
+export const resolveSnapshotWebhookView = ({
   liveView,
   submissionId,
+  pendingSubmissionId,
   snapshotRef,
   submittedStepSnapshotTokens,
 }: {
   liveView: WebhookView
   submissionId: string
+  pendingSubmissionId?: string
   snapshotRef: SnapshotRef
   submittedStepSnapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
-}): ResultAsync<WebhookView, SnapshotRetryError> => {
-  const meta = { submissionId, snapshotRef }
+}): ResultAsync<WebhookView, SnapshotViewError> => {
+  // RATIONALE: Only payments has a pendingSubmissionId which its snapshot is keyed by
+  // and payments currently only support 1 step workflows.
+  // Thus, if pendingSubmissionId is present, use it to lookup the snapshot.
+  // Otherwise, it is a non-payment submission and we use the submissionId.
+  const isPaymentsFirstStep =
+    snapshotRef.submissionIndex === 0 && pendingSubmissionId !== undefined
+  const snapshotSubmissionId = isPaymentsFirstStep
+    ? pendingSubmissionId
+    : submissionId
+  const meta = {
+    submissionId,
+    pendingSubmissionId,
+    snapshotRef,
+  }
   const { submissionIndex, contentFormat } = snapshotRef
 
-  // RATIONALE: `v1` snapshot replay will be implemented in #9977.
-  if (contentFormat === 'v1') {
-    return errAsync(new SnapshotFormatNotRecordedError(undefined, meta))
-  }
   const recordedTokensForSubmissionIndex =
     submittedStepSnapshotTokens?.[submissionIndex]
   const token = recordedTokensForSubmissionIndex?.[contentFormat]
@@ -66,7 +82,7 @@ export const resolveSnapshotRetryView = ({
 
   return readSnapshot({
     formId: liveView.data.formId,
-    submissionId,
+    submissionId: snapshotSubmissionId,
     submissionIndex,
     token,
     contentFormat,
@@ -78,6 +94,12 @@ export const resolveSnapshotRetryView = ({
           { ...meta, storedContentFormat: snapshot.contentFormat },
         ),
       )
+    }
+
+    if (snapshot.contentFormat === 'v1') {
+      return okAsync({
+        data: reconstructV1WebhookData({ liveData: liveView.data, snapshot }),
+      })
     }
 
     return reconstructMrfWebhookData({

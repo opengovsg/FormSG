@@ -55,6 +55,11 @@ const urlCases = [
     url: 'https://plumber.gov.sg/webhooks/abc',
     restricted: false,
   },
+  ...['staging', 'uat'].map((environment) => ({
+    name: `Plumber ${environment}`,
+    url: `https://${environment}.plumber.gov.sg/webhooks/abc`,
+    restricted: false,
+  })),
   { name: 'no', url: '', restricted: false },
 ]
 const cases = urlCases.flatMap((consumer) =>

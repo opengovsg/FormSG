@@ -7,17 +7,52 @@ import {
   useState,
 } from 'react'
 
-import { SubmissionId, SubmissionMetadata } from 'formsg-shared/types'
+import {
+  DateString,
+  FormSavedView,
+  SavedViewSortDirection,
+  SubmissionId,
+  SubmissionMetadata,
+} from 'formsg-shared/types'
 
+import { useAdminForm } from '~features/admin-form/common/queries'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import {
+  useAllFormResponses,
+  useDecryptedResponsesBySubmissionId,
   useFormResponses,
-  useInfiniteFormResponses,
 } from '~features/admin-form/responses/queries'
 
+import { TABLE_ROW_RENDER_CHUNK } from '../../../constants'
+import { useStorageResponsesContext } from '../StorageResponsesContext'
+
 import { usePageSearchParams } from './hooks/usePageSearchParams'
+import { exceedsTableLimit } from './responseLimit'
+import {
+  fromSavedView,
+  hasActiveViewState,
+  ResponsesViewState,
+} from './savedViews'
 
 const PAGE_SIZE = 10
+
+export const ALL_RESPONSES_VIEW_ID = 'all-responses'
+
+const EMPTY_VIEW_STATE: ResponsesViewState = {
+  dateRange: [] as DateString[],
+  searchText: '',
+  excludedSearchColumnIds: [],
+  hiddenColumnIds: [],
+  sortColumnId: undefined,
+  sortDirection: SavedViewSortDirection.Descending,
+}
+
+export type ResponseSortDirection = SavedViewSortDirection
+
+export interface ResponseColumnOption {
+  id: string
+  label: string
+}
 
 interface UnlockedResponsesContextProps {
   currentPage?: number
@@ -31,9 +66,37 @@ interface UnlockedResponsesContextProps {
   isLoading: boolean
   isAnyFetching: boolean
   isInfiniteScroll: boolean
-  hasNextPage: boolean
-  isFetchingNextPage: boolean
-  fetchNextPage: () => void
+  columnOptions: ResponseColumnOption[]
+  setColumnOptions: (columnOptions: ResponseColumnOption[]) => void
+  hiddenColumnIds: string[]
+  toggleColumnVisibility: (columnId: string) => void
+  searchText: string
+  setSearchText: (searchText: string) => void
+  excludedSearchColumnIds: string[]
+  toggleSearchColumn: (columnId: string) => void
+  setAllSearchColumns: (isSearchable: boolean) => void
+  sortColumnId?: string
+  sortDirection: ResponseSortDirection
+  setSort: (
+    columnId: string | undefined,
+    direction: ResponseSortDirection,
+  ) => void
+  searchResultCount?: number
+  setSearchResultCount: (count?: number) => void
+  visibleSubmissionIds?: string[]
+  setVisibleSubmissionIds: (submissionIds?: string[]) => void
+  isFullyLoaded: boolean
+  isShowingRecentOnly: boolean
+  savedViews: FormSavedView[]
+  selectedViewId: string
+  applyView: (viewId: string) => void
+  hasActiveFilters: boolean
+  currentViewState: ResponsesViewState
+  isTableLoading: boolean
+  renderLimit: number
+  showMoreRows: () => void
+  renderedRowCount: number
+  setRenderedRowCount: (count: number) => void
   getNextSubmissionId: (currentSubmissionId: string) => SubmissionId | undefined
   getPreviousSubmissionId: (
     currentSubmissionId: string,
@@ -61,6 +124,54 @@ export const useUnlockedResponses = (): UnlockedResponsesContextProps => {
 
 const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   const isInfiniteScroll = useIsDelightfulDashboard()
+
+  const [columnOptions, setColumnOptions] = useState<ResponseColumnOption[]>([])
+  const [hiddenColumnIds, setHiddenColumnIds] = useState<string[]>([])
+
+  const toggleColumnVisibility = useCallback((columnId: string) => {
+    setHiddenColumnIds((hidden) =>
+      hidden.includes(columnId)
+        ? hidden.filter((id) => id !== columnId)
+        : [...hidden, columnId],
+    )
+  }, [])
+
+  const [sortColumnId, setSortColumnId] = useState<string>()
+  const [sortDirection, setSortDirection] = useState<ResponseSortDirection>(
+    SavedViewSortDirection.Descending,
+  )
+
+  const setSort = useCallback(
+    (columnId: string | undefined, direction: ResponseSortDirection) => {
+      setSortColumnId(columnId)
+      setSortDirection(direction)
+    },
+    [],
+  )
+
+  const [renderedRowCount, setRenderedRowCount] = useState(0)
+  const [searchText, setSearchText] = useState('')
+  const [searchResultCount, setSearchResultCount] = useState<number>()
+  const [visibleSubmissionIds, setVisibleSubmissionIds] = useState<string[]>()
+  const [excludedSearchColumnIds, setExcludedSearchColumnIds] = useState<
+    string[]
+  >([])
+
+  const toggleSearchColumn = useCallback((columnId: string) => {
+    setExcludedSearchColumnIds((excluded) =>
+      excluded.includes(columnId)
+        ? excluded.filter((id) => id !== columnId)
+        : [...excluded, columnId],
+    )
+  }, [])
+
+  const setAllSearchColumns = useCallback(
+    (isSearchable: boolean) =>
+      setExcludedSearchColumnIds(
+        isSearchable ? [] : columnOptions.map(({ id }) => id),
+      ),
+    [columnOptions],
+  )
 
   const {
     page: [currentPage, setCurrentPage],
@@ -119,24 +230,36 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     isFetching: isNextFetching,
   } = useFormResponses({ page: pages.next, enabled: paginationEnabled })
 
-  const {
-    data: infiniteData,
-    isLoading: isInfiniteLoading,
-    isFetchingNextPage,
-    hasNextPage,
-    fetchNextPage,
-  } = useInfiniteFormResponses({
+  const { data: allData, isFetching: isFetchingAll } = useAllFormResponses({
     enabled: isInfiniteScroll && !submissionId,
   })
 
-  const infiniteMetadata = useMemo(
-    () => infiniteData?.pages.flatMap((page) => page.metadata) ?? [],
-    [infiniteData],
+  const { isFetching: isDecryptingAll } = useDecryptedResponsesBySubmissionId({
+    enabled: isInfiniteScroll,
+  })
+
+  const allMetadata = useMemo(() => allData?.metadata ?? [], [allData])
+
+  const isTableLoading = isFetchingAll || isDecryptingAll
+
+  const [renderLimit, setRenderLimit] = useState(TABLE_ROW_RENDER_CHUNK)
+
+  useEffect(() => {
+    setRenderLimit(TABLE_ROW_RENDER_CHUNK)
+  }, [allMetadata])
+
+  const showMoreRows = useCallback(
+    () => setRenderLimit((limit) => limit + TABLE_ROW_RENDER_CHUNK),
+    [],
   )
 
-  const metadata = isInfiniteScroll ? infiniteMetadata : pagedMetadata
-  const count = isInfiniteScroll ? infiniteData?.pages[0]?.count : pagedCount
-  const isLoading = isInfiniteScroll ? isInfiniteLoading : isPagedLoading
+  const metadata = isInfiniteScroll ? allMetadata : pagedMetadata
+  const count = isInfiniteScroll ? allData?.count : pagedCount
+  const isFullyLoaded = !!allData && allMetadata.length >= (allData.count ?? 0)
+
+  const isShowingRecentOnly =
+    isInfiniteScroll && exceedsTableLimit(allData?.count)
+  const isLoading = isInfiniteScroll ? isTableLoading : isPagedLoading
 
   const totalPageCount = useMemo(
     () => (count ? Math.ceil(count / PAGE_SIZE) : 0),
@@ -147,12 +270,9 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     () =>
       isLoading ||
       isFilterFetching ||
-      (isInfiniteScroll
-        ? isFetchingNextPage
-        : isPrevFetching || isNextFetching),
+      (isInfiniteScroll ? false : isPrevFetching || isNextFetching),
     [
       isFilterFetching,
-      isFetchingNextPage,
       isInfiniteScroll,
       isLoading,
       isNextFetching,
@@ -270,9 +390,46 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     ],
   )
 
-  const onFetchNextPage = useCallback(() => {
-    fetchNextPage()
-  }, [fetchNextPage])
+  const { data: form } = useAdminForm()
+  const { dateRange, setDateRange } = useStorageResponsesContext()
+  const savedViews = useMemo(() => form?.savedViews ?? [], [form?.savedViews])
+  const [selectedViewId, setSelectedViewId] = useState(ALL_RESPONSES_VIEW_ID)
+
+  const currentViewState: ResponsesViewState = useMemo(
+    () => ({
+      dateRange,
+      searchText,
+      excludedSearchColumnIds,
+      hiddenColumnIds,
+      sortColumnId,
+      sortDirection,
+    }),
+    [
+      dateRange,
+      excludedSearchColumnIds,
+      hiddenColumnIds,
+      searchText,
+      sortColumnId,
+      sortDirection,
+    ],
+  )
+
+  const hasActiveFilters = hasActiveViewState(currentViewState)
+
+  const applyView = useCallback(
+    (viewId: string) => {
+      setSelectedViewId(viewId)
+      const view = savedViews.find(({ _id }) => _id === viewId)
+      const next = view ? fromSavedView(view, columnOptions) : EMPTY_VIEW_STATE
+      setDateRange(next.dateRange)
+      setSearchText(next.searchText)
+      setExcludedSearchColumnIds(next.excludedSearchColumnIds)
+      setHiddenColumnIds(next.hiddenColumnIds)
+      setSortColumnId(next.sortColumnId)
+      setSortDirection(next.sortDirection)
+    },
+    [columnOptions, savedViews, setDateRange],
+  )
 
   return {
     currentPage,
@@ -282,9 +439,34 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     isLoading,
     isAnyFetching,
     isInfiniteScroll,
-    hasNextPage: !!hasNextPage,
-    isFetchingNextPage,
-    fetchNextPage: onFetchNextPage,
+    columnOptions,
+    setColumnOptions,
+    hiddenColumnIds,
+    toggleColumnVisibility,
+    searchText,
+    setSearchText,
+    excludedSearchColumnIds,
+    toggleSearchColumn,
+    setAllSearchColumns,
+    sortColumnId,
+    sortDirection,
+    setSort,
+    searchResultCount,
+    setSearchResultCount,
+    visibleSubmissionIds,
+    setVisibleSubmissionIds,
+    isFullyLoaded,
+    isShowingRecentOnly,
+    savedViews,
+    selectedViewId,
+    applyView,
+    hasActiveFilters,
+    currentViewState,
+    isTableLoading,
+    renderLimit,
+    showMoreRows,
+    renderedRowCount,
+    setRenderedRowCount,
     getNextSubmissionId,
     getPreviousSubmissionId,
     onNavNextSubmissionId,

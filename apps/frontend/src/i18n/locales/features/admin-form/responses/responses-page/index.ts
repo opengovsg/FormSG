@@ -60,6 +60,38 @@ export interface ResponsesResponsesPage {
         }
       }
       submissionSearchbarPlaceholder: string
+      searchResponsesPlaceholder: string
+      filterMenu: {
+        dateRange: string
+        columns: string
+        checkAll: string
+        uncheckAll: string
+      }
+      views: {
+        allResponses: string
+        saveAsNewView: string
+        viewName: string
+        viewNamePlaceholder: string
+        viewNameRequired: string
+        viewNameMinLength: string
+        viewNameMaxLength: string
+        deleteView: string
+        deleteViewTitle: string
+        deleteViewDescription: string
+        deleteViewSuccess: string
+      }
+      sortMenu: {
+        column: string
+        direction: string
+        none: string
+        ascending: string
+        descending: string
+      }
+      toolbar: {
+        filter: string
+        sort: string
+        columns: string
+      }
       downloadButton: {
         label: string
         navigateAwayPrompt: {
@@ -77,6 +109,7 @@ export interface ResponsesResponsesPage {
       unlockedResponses: {
         resultsFound: string
         responsesToDate: string
+        recentOnly: string
       }
     }
     storageResponsesTab: {

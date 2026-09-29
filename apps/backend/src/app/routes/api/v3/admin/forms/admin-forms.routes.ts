@@ -14,6 +14,7 @@ import { AdminFormsLogicRouter } from './admin-forms.logic.routes'
 import { AdminFormsPaymentsRouter } from './admin-forms.payments.routes'
 import { AdminFormsPresignRouter } from './admin-forms.presign.routes'
 import { AdminFormsPreviewRouter } from './admin-forms.preview.routes'
+import { AdminFormsSavedViewsRouter } from './admin-forms.saved-views.routes'
 import { AdminFormsSettingsRouter } from './admin-forms.settings.routes'
 import { AdminFormsSubmissionsRouter } from './admin-forms.submissions.routes'
 
@@ -32,6 +33,7 @@ AdminFormsRouter.use(AdminFormsSubmissionsRouter)
 AdminFormsRouter.use(AdminFormsPreviewRouter)
 AdminFormsRouter.use(AdminFormsPresignRouter)
 AdminFormsRouter.use(AdminFormsLogicRouter)
+AdminFormsRouter.use(AdminFormsSavedViewsRouter)
 AdminFormsRouter.use(AdminFormsPaymentsRouter)
 AdminFormsRouter.use(AdminFormsGoGovRouter)
 AdminFormsRouter.use(AdminFormsIssueRouter)

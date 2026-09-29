@@ -36,7 +36,7 @@ import { SubmissionSnapshotV4 } from '../submission-snapshot.schema'
 import * as SnapshotStore from '../submission-snapshot.store'
 import { getWebhookPayloadPolicy } from '../webhook-payload-policy'
 import { reconstructMrfWebhookData } from '../webhook-reconstruction'
-import { resolveSnapshotRetryView } from '../webhook-retry-view'
+import { resolveSnapshotWebhookView } from '../webhook-retry-view'
 
 jest.mock('axios')
 const MockAxios = jest.mocked(axios)
@@ -228,7 +228,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
     contentFormat?: 'v1' | 'v4'
   }): Promise<WebhookData> => {
     const liveView = await submission.getWebhookView()
-    const view = await resolveSnapshotRetryView({
+    const view = await resolveSnapshotWebhookView({
       liveView,
       submissionId: String(submission._id),
       snapshotRef: { submissionIndex, contentFormat },
@@ -364,7 +364,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       ) as WebhookData,
     }
 
-    const result = await resolveSnapshotRetryView({
+    const result = await resolveSnapshotWebhookView({
       liveView: v1LiveView,
       submissionId: String(submission._id),
       snapshotRef: { submissionIndex: 0, contentFormat: 'v4' },
@@ -387,8 +387,8 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       'v4' as const,
     ],
     [
-      'the retry asks for v1, a format that is never snapshotted',
-      { v1: 'tok-v1' } as SubmittedStepSnapshotTokens,
+      'the retry asks for v1 but the step has no v1 snapshot token',
+      {} as SubmittedStepSnapshotTokens,
       'v1' as const,
     ],
   ])(
@@ -401,7 +401,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       })
 
       const liveView = await submission.getWebhookView()
-      const result = await resolveSnapshotRetryView({
+      const result = await resolveSnapshotWebhookView({
         liveView,
         submissionId: String(submission._id),
         snapshotRef: { submissionIndex: 0, contentFormat },
@@ -435,7 +435,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
     )
 
     const liveView = await submission.getWebhookView()
-    const result = await resolveSnapshotRetryView({
+    const result = await resolveSnapshotWebhookView({
       liveView,
       submissionId: String(submission._id),
       snapshotRef: { submissionIndex: 0, contentFormat: 'v4' },
@@ -462,7 +462,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
       MockSnapshotStore.readSnapshot.mockReturnValue(errAsync(storeError))
 
       const liveView = await submission.getWebhookView()
-      const result = await resolveSnapshotRetryView({
+      const result = await resolveSnapshotWebhookView({
         liveView,
         submissionId: String(submission._id),
         snapshotRef: { submissionIndex: 0, contentFormat: 'v4' },

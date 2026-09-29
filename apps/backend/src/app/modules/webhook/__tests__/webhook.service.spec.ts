@@ -508,12 +508,28 @@ describe('webhook.service', () => {
   })
 
   describe('toConsumerType', () => {
-    it('classifies a plumber URL as plumber', () => {
-      expect(
-        WebhookService.toConsumerType(
-          WebhookService.getWebhookType('https://plumber.gov.sg/webhooks/abc'),
-        ),
-      ).toBe('plumber')
+    it.each(['plumber.gov.sg', 'staging.plumber.gov.sg', 'uat.plumber.gov.sg'])(
+      'classifies %s as plumber',
+      (hostname) => {
+        expect(
+          WebhookService.toConsumerType(
+            WebhookService.getWebhookType(`https://${hostname}/webhooks/abc`),
+          ),
+        ).toBe('plumber')
+      },
+    )
+
+    it.each([
+      'https://dev.plumber.gov.sg/webhooks/abc',
+      'https://nested.staging.plumber.gov.sg/webhooks/abc',
+      'https://staging.plumber.gov.sg.evil.com/webhooks/abc',
+      'https://staging.plumber.gov.sg@evil.com/webhooks/abc',
+      'https://evil.com/staging.plumber.gov.sg/webhooks/abc',
+      'http://staging.plumber.gov.sg/webhooks/abc',
+      'https://uat.plumber.gov.sg/other/abc',
+      'https://uat.plumber.gov.sg/webhooks-evil/abc',
+    ])('classifies an unsupported Plumber-like URL as generic: %s', (url) => {
+      expect(WebhookService.getWebhookType(url)).toBe('generic')
     })
 
     it('classifies a zapier URL as generic', () => {

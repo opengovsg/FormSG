@@ -3,13 +3,17 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   Column,
+  Row,
   useFlexLayout,
+  useGlobalFilter,
   usePagination,
   useResizeColumns,
+  useSortBy,
   useTable,
 } from 'react-table'
 import {
   BadgeProps,
+  Box,
   Flex,
   Skeleton,
   Table,
@@ -32,8 +36,19 @@ import { centsToDollars } from 'formsg-shared/utils/payments'
 import Badge from '~components/Badge'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
-import { formatResponseForCell } from '~features/admin-form/responses/common/utils/formatResponseForCell'
-import { getPendingResponseAtString } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+import {
+  formatResponseForCell,
+  isDescribedFieldType,
+} from '~features/admin-form/responses/common/utils/formatResponseForCell'
+import {
+  getPendingResponseAtString,
+  hasWorkflowSteps,
+} from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+import {
+  matchesSearchQuery,
+  normaliseSearchQuery,
+  searchableColumnIds,
+} from '~features/admin-form/responses/common/utils/responseSearch'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_REMINDERS_LABEL,
@@ -43,6 +58,7 @@ import {
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { useDecryptedResponsesBySubmissionId } from '~features/admin-form/responses/queries'
 
+import { useColumnVirtualizer } from '../hooks/useColumnVirtualizer'
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { SendReminderButton } from './SendReminderButton'
@@ -114,6 +130,11 @@ function NotApprovedBadge() {
   )
 }
 
+const byServerOrder = (
+  rowA: Row<ResponseColumnData>,
+  rowB: Row<ResponseColumnData>,
+) => rowB.index - rowA.index
+
 const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: '#',
@@ -132,6 +153,7 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: 'Timestamp',
     accessor: 'submissionTime',
+    sortType: byServerOrder,
     width: 250,
     minWidth: 250,
     disableResizing: true,
@@ -264,6 +286,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
     accessor: 'submissionTime',
+    sortType: byServerOrder,
     // TODO(FRM-1933): using submissionTime as we are undecided on showing first submission vs lastSubmittedAt
     // accessor: ({ mrf }) =>
     //   mrf?.lastSubmittedAt
@@ -305,11 +328,33 @@ const NO_WORKFLOW_PREFIX_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
     accessor: 'submissionTime',
+    sortType: byServerOrder,
     width: 250,
     minWidth: 250,
     disableResizing: true,
   },
 ]
+
+const RESPONSE_NUMBER_COLUMN_ID = 'number'
+
+const SKELETON_ROW_COUNT = 10
+
+// Columns held either side of the viewport, so a drag has a buffer to eat
+// before it reaches the spacer.
+const COLUMN_OVERSCAN = 6
+
+const FIELD_COLUMN_WIDTH = 200
+/** Matches the px on a Td, so the drawn cells sit where real ones would. */
+const CELL_PADDING_PX = 16
+const SKELETON_CELL_HEIGHT = '1rem'
+const ROW_HEIGHT = '2.75rem'
+
+// react-table derives an id from an explicit id, then a string accessor, then
+// a string Header.
+const getColumnId = (column: Column<ResponseColumnData>): string =>
+  column.id ??
+  (typeof column.accessor === 'string' ? column.accessor : undefined) ??
+  String(column.Header)
 
 const NON_ANSWERABLE_FIELD_TYPES = new Set<BasicField>([
   BasicField.Section,
@@ -322,9 +367,7 @@ export const ResponsesTable = () => {
   const isPaymentsForm = getIsPaymentsForm(form)
   const isMultiRespondentForm =
     form?.responseMode === FormResponseMode.Multirespondent
-  const hasWorkflow =
-    form?.responseMode === FormResponseMode.Multirespondent &&
-    form.workflow.length > 0
+  const hasWorkflow = hasWorkflowSteps(form)
 
   const {
     currentPage: currentPage1Indexed,
@@ -333,6 +376,17 @@ export const ResponsesTable = () => {
     submissionId,
     onRowClick,
     isInfiniteScroll,
+    setColumnOptions,
+    hiddenColumnIds,
+    searchText,
+    excludedSearchColumnIds,
+    setSearchResultCount,
+    renderLimit,
+    setRenderedRowCount,
+    isTableLoading,
+    sortColumnId,
+    sortDirection,
+    setVisibleSubmissionIds,
   } = useUnlockedResponses()
   const isDelightfulDashboard = useIsDelightfulDashboard()
 
@@ -366,50 +420,96 @@ export const ResponsesTable = () => {
     return BASE_RESPONSE_TABLE_COLUMNS
   }, [isMultiRespondentForm, isPaymentsForm])
 
-  const fieldColumns = useMemo((): Column<ResponseColumnData>[] => {
+  const answerableFields = useMemo(() => {
     if (!isDelightfulDashboard || !form) return []
-    return form.form_fields
-      .filter(
-        (formField) => !NON_ANSWERABLE_FIELD_TYPES.has(formField.fieldType),
-      )
-      .map((formField) => ({
-        id: formField._id,
-        Header: formField.title,
-        accessor: ({ refNo }: ResponseColumnData) => {
-          const responses = responsesBySubmissionId?.get(refNo)
-          if (!responses) return undefined
-          return formatResponseForCell(
-            responses.find((response) => response._id === formField._id),
-          )
-        },
-        Cell: ({ value }: { value?: string }) => (
-          <Skeleton isLoaded={value !== undefined || !isDecrypting} w="100%">
-            <Text noOfLines={1} title={value}>
-              {value ?? ''}
-            </Text>
-          </Skeleton>
-        ),
-        width: 200,
-        minWidth: 120,
-        maxWidth: 400,
-      }))
-  }, [form, isDecrypting, isDelightfulDashboard, responsesBySubmissionId])
+    return form.form_fields.filter(
+      (formField) => !NON_ANSWERABLE_FIELD_TYPES.has(formField.fieldType),
+    )
+  }, [form, isDelightfulDashboard])
+
+  const prefixColumns = useMemo(() => {
+    if (hasWorkflow) return WORKFLOW_PREFIX_COLUMNS
+    return isPaymentsForm
+      ? NO_WORKFLOW_PREFIX_COLUMNS.concat(PAYMENT_COLUMNS)
+      : NO_WORKFLOW_PREFIX_COLUMNS
+  }, [hasWorkflow, isPaymentsForm])
+
+  const fieldColumns = useMemo((): Column<ResponseColumnData>[] => {
+    return answerableFields.map((formField) => ({
+      id: formField._id,
+      Header: formField.title,
+      accessor: ({ refNo }: ResponseColumnData) => {
+        const responses = responsesBySubmissionId?.get(refNo)
+        if (!responses) return undefined
+        return formatResponseForCell(
+          responses.find((response) => response._id === formField._id),
+        )
+      },
+      Cell: ({ value }: { value?: string }) => (
+        <Skeleton isLoaded={value !== undefined || !isDecrypting} w="100%">
+          <Text
+            noOfLines={1}
+            title={value}
+            fontStyle={
+              isDescribedFieldType(formField.fieldType) ? 'italic' : undefined
+            }
+          >
+            {value ?? ''}
+          </Text>
+        </Skeleton>
+      ),
+      width: FIELD_COLUMN_WIDTH,
+      minWidth: 120,
+      maxWidth: 400,
+    }))
+  }, [answerableFields, isDecrypting, responsesBySubmissionId])
 
   const columns = useMemo(() => {
     if (!isDelightfulDashboard) return legacyColumns
-    const prefix = hasWorkflow
-      ? WORKFLOW_PREFIX_COLUMNS
-      : isPaymentsForm
-        ? NO_WORKFLOW_PREFIX_COLUMNS.concat(PAYMENT_COLUMNS)
-        : NO_WORKFLOW_PREFIX_COLUMNS
-    return prefix.concat(fieldColumns)
-  }, [
-    fieldColumns,
-    hasWorkflow,
-    isDelightfulDashboard,
-    isPaymentsForm,
-    legacyColumns,
-  ])
+    return prefixColumns.concat(fieldColumns)
+  }, [fieldColumns, isDelightfulDashboard, legacyColumns, prefixColumns])
+
+  const globalFilter = useCallback(
+    (
+      rowsToFilter: Row<ResponseColumnData>[],
+      columnIds: string[],
+      searchValue: string,
+    ) => {
+      const query = normaliseSearchQuery(searchValue)
+      if (!query) return rowsToFilter
+      const searchableIds = searchableColumnIds(
+        columnIds,
+        excludedSearchColumnIds,
+      )
+      return rowsToFilter.filter((row) =>
+        matchesSearchQuery(
+          searchableIds.map((columnId) => row.values[columnId]),
+          query,
+        ),
+      )
+    },
+    [excludedSearchColumnIds],
+  )
+
+  const columnOptions = useMemo(() => {
+    if (!isDelightfulDashboard) return []
+    return prefixColumns
+      .map((column) => ({
+        id: getColumnId(column),
+        label: String(column.Header),
+      }))
+      .filter(({ id }) => id !== RESPONSE_NUMBER_COLUMN_ID)
+      .concat(
+        answerableFields.map((formField) => ({
+          id: formField._id,
+          label: formField.title,
+        })),
+      )
+  }, [answerableFields, isDelightfulDashboard, prefixColumns])
+
+  useEffect(() => {
+    setColumnOptions(columnOptions)
+  }, [columnOptions, setColumnOptions])
 
   const {
     prepareRow,
@@ -419,10 +519,20 @@ export const ResponsesTable = () => {
     page,
     rows,
     gotoPage,
+    setHiddenColumns,
+    setGlobalFilter,
+    setSortBy,
+    visibleColumns,
   } = useTable<ResponseColumnData>(
     {
       columns,
       data: metadataToUse,
+      // The columns array is rebuilt as answers decrypt; without this the
+      // reset would undo the admin's column choices every few hundred ms.
+      autoResetHiddenColumns: false,
+      autoResetGlobalFilter: false,
+      autoResetSortBy: false,
+      globalFilter,
       // Server side pagination.
       manualPagination: true,
       pageCount: currentPage,
@@ -431,6 +541,8 @@ export const ResponsesTable = () => {
         pageSize: 10,
       },
     },
+    useGlobalFilter,
+    useSortBy,
     usePagination,
     useResizeColumns,
     useFlexLayout,
@@ -441,7 +553,95 @@ export const ResponsesTable = () => {
     gotoPage(currentPage)
   }, [currentPage, gotoPage, isInfiniteScroll])
 
-  const visibleRows = isInfiniteScroll ? rows : page
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setHiddenColumns(hiddenColumnIds)
+  }, [hiddenColumnIds, isDelightfulDashboard, setHiddenColumns])
+
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setGlobalFilter(searchText)
+  }, [isDelightfulDashboard, searchText, setGlobalFilter])
+
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setSortBy(
+      sortColumnId
+        ? [{ id: sortColumnId, desc: sortDirection === 'desc' }]
+        : [],
+    )
+  }, [isDelightfulDashboard, setSortBy, sortColumnId, sortDirection])
+
+  const columnWidths = useMemo(
+    () =>
+      visibleColumns.map(
+        (column) => column.totalWidth || Number(column.width) || 0,
+      ),
+    [visibleColumns],
+  )
+
+  // Without real widths every column measures as outside the viewport, so the
+  // safe reading of an unmeasured table is to render all of it.
+  const isColumnVirtualized =
+    isDelightfulDashboard &&
+    columnWidths.reduce((total, width) => total + width, 0) > 0
+
+  const { tableRef, columnWindow } = useColumnVirtualizer<HTMLDivElement>({
+    columnWidths,
+    enabled: isColumnVirtualized,
+    overscan: COLUMN_OVERSCAN,
+  })
+
+  const hasColumnWindow =
+    isColumnVirtualized && columnWindow.endIndex > columnWindow.startIndex
+
+  const sliceToWindow = useCallback(
+    <TItem,>(items: TItem[]): TItem[] =>
+      hasColumnWindow
+        ? items.slice(columnWindow.startIndex, columnWindow.endIndex)
+        : items,
+    [columnWindow.endIndex, columnWindow.startIndex, hasColumnWindow],
+  )
+
+  // Scrolling outruns the window by a frame, so the spacer is what the admin
+  // sees at the edge of a fast drag, and it should read as cells not yet here.
+  // Drawn as a repeating background rather than one element per hidden column,
+  // which would cost exactly what the window is there to avoid. Anchored to the
+  // edge the real columns are on, so the pattern lines up with them.
+  const columnSpacer = (width: number, anchor: 'left' | 'right') =>
+    hasColumnWindow && width > 0 ? (
+      <Box
+        flexShrink={0}
+        w={`${width}px`}
+        backgroundRepeat="no-repeat"
+        backgroundPosition={`${anchor} center`}
+        backgroundSize={`100% ${SKELETON_CELL_HEIGHT}`}
+        backgroundImage={`repeating-linear-gradient(to ${anchor}, transparent 0 ${CELL_PADDING_PX}px, var(--chakra-colors-neutral-300) ${CELL_PADDING_PX}px ${FIELD_COLUMN_WIDTH - CELL_PADDING_PX}px, transparent ${FIELD_COLUMN_WIDTH - CELL_PADDING_PX}px ${FIELD_COLUMN_WIDTH}px)`}
+      />
+    ) : null
+
+  const leftSpacer = columnSpacer(columnWindow.paddingLeft, 'right')
+  const rightSpacer = columnSpacer(columnWindow.paddingRight, 'left')
+
+  const visibleRows = useMemo(
+    () => (isInfiniteScroll ? rows.slice(0, renderLimit) : page),
+    [isInfiniteScroll, page, renderLimit, rows],
+  )
+
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setSearchResultCount(searchText.trim() ? rows.length : undefined)
+  }, [isDelightfulDashboard, rows.length, searchText, setSearchResultCount])
+
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setVisibleSubmissionIds(rows.map((row) => row.original.refNo))
+  }, [isDelightfulDashboard, rows, setVisibleSubmissionIds])
+
+  useEffect(() => {
+    if (!isDelightfulDashboard) return
+    setRenderedRowCount(rows.length)
+  }, [isDelightfulDashboard, rows.length, setRenderedRowCount])
 
   const handleRowClick = useCallback(
     (submissionId: string, responseNumber: number) => {
@@ -458,6 +658,7 @@ export const ResponsesTable = () => {
   return (
     <Table
       as="div"
+      ref={tableRef}
       variant="solid"
       colorScheme="secondary"
       {...getTableProps()}
@@ -518,52 +719,82 @@ export const ResponsesTable = () => {
         ))}
       </Thead>
       <Tbody as="div" {...getTableBodyProps()}>
-        {visibleRows.map((row) => {
-          prepareRow(row)
-          return (
-            <Tr
-              as="div"
-              {...row.getRowProps()}
-              key={row.getRowProps().key}
-              px={0}
-              onClick={() =>
-                handleRowClick(row.values.refNo, row.values.number)
-              }
-              cursor="pointer"
-              {...(isDelightfulDashboard
-                ? { display: 'flex', minW: '100%', role: 'group' }
-                : {
-                    _hover: { bg: 'primary.100' },
-                    _active: { bg: 'primary.200' },
-                  })}
-            >
-              {row.cells.map((cell) => {
-                return (
+        {isDelightfulDashboard && isTableLoading
+          ? Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
+              <Tr as="div" key={`skeleton-${index}`} display="flex" minW="100%">
+                {leftSpacer}
+                {sliceToWindow(visibleColumns).map((column) => (
                   <Td
                     as="div"
-                    {...cell.getCellProps()}
-                    key={cell.getCellProps().key}
+                    {...column.getHeaderProps()}
+                    key={column.id}
                     display="flex"
                     alignItems="center"
-                    {...(isDelightfulDashboard
-                      ? {
-                          minW: 0,
-                          flexShrink: 0,
-                          overflow: 'hidden',
-                          transitionProperty: 'background',
-                          transitionDuration: 'normal',
-                          _groupHover: { bg: 'primary.100' },
-                          _groupActive: { bg: 'primary.200' },
-                        }
-                      : {})}
+                    h={ROW_HEIGHT}
+                    py={0}
+                    minW={0}
+                    flexShrink={0}
+                    overflow="hidden"
                   >
-                    {cell.render('Cell')}
+                    <Skeleton h={SKELETON_CELL_HEIGHT} w="100%" />
                   </Td>
-                )
-              })}
-            </Tr>
-          )
-        })}
+                ))}
+                {rightSpacer}
+              </Tr>
+            ))
+          : null}
+        {isDelightfulDashboard && isTableLoading
+          ? null
+          : visibleRows.map((row) => {
+              prepareRow(row)
+              return (
+                <Tr
+                  as="div"
+                  {...row.getRowProps()}
+                  key={row.getRowProps().key}
+                  px={0}
+                  onClick={() =>
+                    handleRowClick(row.values.refNo, row.values.number)
+                  }
+                  cursor="pointer"
+                  {...(isDelightfulDashboard
+                    ? { display: 'flex', minW: '100%', role: 'group' }
+                    : {
+                        _hover: { bg: 'primary.100' },
+                        _active: { bg: 'primary.200' },
+                      })}
+                >
+                  {leftSpacer}
+                  {sliceToWindow(row.cells).map((cell) => {
+                    return (
+                      <Td
+                        as="div"
+                        {...cell.getCellProps()}
+                        key={cell.getCellProps().key}
+                        display="flex"
+                        alignItems="center"
+                        {...(isDelightfulDashboard
+                          ? {
+                              h: ROW_HEIGHT,
+                              py: 0,
+                              minW: 0,
+                              flexShrink: 0,
+                              overflow: 'hidden',
+                              transitionProperty: 'background',
+                              transitionDuration: 'normal',
+                              _groupHover: { bg: 'primary.100' },
+                              _groupActive: { bg: 'primary.200' },
+                            }
+                          : {})}
+                      >
+                        {cell.render('Cell')}
+                      </Td>
+                    )
+                  })}
+                  {rightSpacer}
+                </Tr>
+              )
+            })}
       </Tbody>
     </Table>
   )

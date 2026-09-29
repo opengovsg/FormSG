@@ -14,8 +14,8 @@ import {
   SnapshotFormatNotRecordedError,
 } from '../submission/multirespondent-submission/webhook/submission-snapshot.errors'
 import {
-  resolveSnapshotRetryView,
-  SnapshotRetryError,
+  resolveSnapshotWebhookView,
+  SnapshotViewError,
 } from '../submission/multirespondent-submission/webhook/webhook-retry-view'
 import { SubmissionNotFoundError } from '../submission/submission.errors'
 
@@ -148,6 +148,7 @@ export const createWebhookQueueHandler =
       logMeta = {
         ...logMeta,
         formId: webhookInfo.webhookView.data.formId,
+        pendingSubmissionId: webhookInfo.pendingSubmissionId,
       }
       // Webhook URL was deleted or retries disabled
       if (!webhookUrl || !isRetryEnabled)
@@ -158,7 +159,11 @@ export const createWebhookQueueHandler =
       // Attempt webhook
       return resolveWebhookView(webhookMessage, webhookInfo)
         .andThen((webhookView) =>
-          WebhookService.sendWebhook(webhookView, webhookUrl),
+          WebhookService.sendWebhook(
+            webhookView,
+            webhookUrl,
+            webhookMessage.snapshotRef?.contentFormat,
+          ),
         )
         .andThen((webhookResponse) => {
           // Save webhook response to database, but carry on even if it fails
@@ -230,15 +235,16 @@ export const createWebhookQueueHandler =
 const resolveWebhookView = (
   webhookMessage: WebhookQueueMessage,
   webhookInfo: SubmissionWebhookInfo,
-): ResultAsync<WebhookView, SnapshotRetryError> => {
+): ResultAsync<WebhookView, SnapshotViewError> => {
   const snapshotRef = webhookMessage.snapshotRef
   if (snapshotRef === undefined) {
     return okAsync(webhookInfo.webhookView)
   }
 
-  return resolveSnapshotRetryView({
+  return resolveSnapshotWebhookView({
     liveView: webhookInfo.webhookView,
     submissionId: webhookMessage.submissionId,
+    pendingSubmissionId: webhookInfo.pendingSubmissionId,
     snapshotRef,
     submittedStepSnapshotTokens: webhookInfo.submittedStepSnapshotTokens,
   })

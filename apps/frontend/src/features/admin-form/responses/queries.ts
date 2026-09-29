@@ -21,15 +21,17 @@ import { adminFormKeys } from '../common/queries'
 import { getFormIssues } from './FeedbackPage/issue/IssueService'
 import { getFormFeedback } from './FeedbackPage/review/ReviewService'
 import { useStorageResponsesContext } from './ResponsesPage/storage/StorageResponsesContext'
+import { TABLE_RESPONSE_LIMIT } from './ResponsesPage/storage/UnlockedResponses/responseLimit'
 import {
   countFormSubmissions,
   getAllDecryptedSubmission,
   getFormSubmissionsMetadata,
 } from './AdminSubmissionsService'
-import {
-  TABLE_DECRYPTION_LIMIT,
-  TABLE_DECRYPTION_PUBLISH_INTERVAL_MS,
-} from './constants'
+import { TABLE_DECRYPTION_PUBLISH_INTERVAL_MS } from './constants'
+import { logProgress, perSecond, secondsSince } from './progressLog'
+
+/** The publish tick is 250ms, so this logs about once a second. */
+const PROGRESS_LOG_EVERY_N_PUBLISHES = 4
 
 export const adminFormResponsesKeys = {
   base: [...adminFormKeys.base, 'responses'] as const,
@@ -46,8 +48,14 @@ export const adminFormResponsesKeys = {
       ...builtParams,
     ] as const
   },
-  decryptedResponses: (id: string) =>
-    [...adminFormResponsesKeys.id(id), 'decrypted-responses'] as const,
+  allMetadata: (id: string, dates: string[]) =>
+    [...adminFormResponsesKeys.id(id), 'metadata', 'all', ...dates] as const,
+  decryptedResponses: (id: string, dates: string[]) =>
+    [
+      ...adminFormResponsesKeys.id(id),
+      'decrypted-responses',
+      ...dates,
+    ] as const,
   infiniteMetadata: (id: string) =>
     [...adminFormResponsesKeys.id(id), 'metadata', 'infinite'] as const,
   individual: (id: string, submissionId: string) =>
@@ -122,6 +130,47 @@ export const useFormResponses = ({
 }
 
 /**
+ * Fetches the most recent TABLE_RESPONSE_LIMIT submissions in one request.
+ * @precondition Must be wrapped in a Router as `useParam` is used.
+ */
+export const useAllFormResponses = ({
+  enabled = true,
+}: {
+  enabled?: boolean
+} = {}): UseQueryResult<SubmissionMetadataList> => {
+  const { formId } = useParams()
+  if (!formId) throw new Error('No formId provided')
+
+  const { secretKey, dateRange } = useStorageResponsesContext()
+  const [startDate, endDate] = dateRange
+
+  return useQuery(
+    adminFormResponsesKeys.allMetadata(formId, dateRange),
+    async () => {
+      const startedAt = performance.now()
+      logProgress('metadata fetch start', { pageSize: TABLE_RESPONSE_LIMIT })
+
+      const result = await getFormSubmissionsMetadata(formId, {
+        page: 1,
+        pageSize: TABLE_RESPONSE_LIMIT,
+        ...(startDate && endDate ? { startDate, endDate } : {}),
+      })
+
+      logProgress('metadata fetch done', {
+        rows: result.metadata.length,
+        totalOnForm: result.count,
+        seconds: secondsSince(startedAt),
+      })
+      return result
+    },
+    {
+      staleTime: 0,
+      enabled: enabled && !!secretKey,
+    },
+  )
+}
+
+/**
  * @precondition Must be wrapped in a Router as `useParam` is used.
  */
 export const useInfiniteFormResponses = ({
@@ -164,15 +213,20 @@ export const useDecryptedResponsesBySubmissionId = ({
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
-  const { secretKey } = useStorageResponsesContext()
+  const { secretKey, dateRange } = useStorageResponsesContext()
+  const [startDate, endDate] = dateRange
   const queryClient = useQueryClient()
-  const queryKey = adminFormResponsesKeys.decryptedResponses(formId)
+  const queryKey = adminFormResponsesKeys.decryptedResponses(formId, dateRange)
 
   return useQuery(
     queryKey,
     async () => {
       const decrypted = new Map<string, FormField[]>()
       let lastPublishedAt = 0
+      let publishCount = 0
+      const startedAt = performance.now()
+
+      logProgress('decrypt start', { limit: TABLE_RESPONSE_LIMIT })
 
       const publish = () => {
         queryClient.setQueryData(queryKey, new Map(decrypted))
@@ -181,11 +235,11 @@ export const useDecryptedResponsesBySubmissionId = ({
       await getAllDecryptedSubmission({
         formId,
         secretKey: secretKey as string,
-        startDate: '',
-        endDate: '',
+        startDate: startDate ?? '',
+        endDate: endDate ?? '',
         downloadAttachments: false,
         isSortByLatest: true,
-        limit: TABLE_DECRYPTION_LIMIT,
+        limit: TABLE_RESPONSE_LIMIT,
         onSubmissionDecrypted: ({ submissionId, responses }) => {
           decrypted.set(submissionId, responses)
           const now = performance.now()
@@ -194,7 +248,22 @@ export const useDecryptedResponsesBySubmissionId = ({
           }
           lastPublishedAt = now
           publish()
+
+          publishCount += 1
+          if (publishCount % PROGRESS_LOG_EVERY_N_PUBLISHES === 0) {
+            logProgress('decrypting', {
+              done: decrypted.size,
+              of: TABLE_RESPONSE_LIMIT,
+              perSecond: perSecond(decrypted.size, startedAt),
+              seconds: secondsSince(startedAt),
+            })
+          }
         },
+      })
+
+      logProgress('decrypt done', {
+        done: decrypted.size,
+        seconds: secondsSince(startedAt),
       })
 
       return decrypted

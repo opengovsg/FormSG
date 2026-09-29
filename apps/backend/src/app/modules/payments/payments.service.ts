@@ -273,6 +273,7 @@ export const performPaymentPostSubmissionActions = (
               return (
                 performMultirespondentPaymentPostSubmissionActions(
                   submission,
+                  String(payment.pendingSubmissionId),
                   growthbook,
                 )
                   .map(() => submission)
