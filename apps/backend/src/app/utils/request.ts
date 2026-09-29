@@ -1,8 +1,10 @@
 import { Request } from 'express'
+import { X_FORMSG_CLIENT_VERSION } from 'formsg-shared/constants'
 
 type ReqMeta = {
   ip: ReturnType<typeof getRequestIp>
   trace: ReturnType<typeof getTrace>
+  clientVersion: ReturnType<typeof getClientVersion>
   url: string
   urlWithQueryParams: string
   headers: Request['headers']
@@ -33,6 +35,12 @@ export const getTrace = <R extends LooseRequest>(
   req: R,
 ): string | undefined => {
   return req.get('cf-ray') ?? req.id // trace using cloudflare cf-ray header, with x-request-id header as backup
+}
+
+export const getClientVersion = <R extends LooseRequest>(
+  req: R,
+): string | undefined => {
+  return req.get(X_FORMSG_CLIENT_VERSION)
 }
 
 // Masks the last 24 characters of a secret with asterisks, keeping a prefix
@@ -96,6 +104,7 @@ export const createReqMeta = <R extends LooseRequest>(req: R): ReqMeta => {
   return {
     ip: getRequestIp(req),
     trace: getTrace(req), // trace using cloudflare cf-ray header, with x-request-id header as backup
+    clientVersion: getClientVersion(req),
     url: req.baseUrl + req.path,
     urlWithQueryParams: req.originalUrl,
     headers: maskRefererHeaders(req.headers),

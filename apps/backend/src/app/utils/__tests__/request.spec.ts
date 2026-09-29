@@ -1,4 +1,5 @@
 import { ObjectId } from 'bson'
+import { X_FORMSG_CLIENT_VERSION } from 'formsg-shared/constants'
 import { createRequest } from 'node-mocks-http'
 
 import { createReqMeta } from 'src/app/utils/request'
@@ -47,6 +48,22 @@ describe('request', () => {
           }),
         }),
       )
+    })
+  })
+
+  describe('createReqMeta', () => {
+    it('should include the client version sent by the frontend', () => {
+      // Arrange
+      const req = createRequest({
+        url: '/mockEndpoint',
+        headers: { [X_FORMSG_CLIENT_VERSION]: '9.35.0' },
+      })
+
+      // Act
+      const reqMeta = createReqMeta(req)
+
+      // Assert
+      expect(reqMeta.clientVersion).toBe('9.35.0')
     })
   })
 })
