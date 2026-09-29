@@ -34,9 +34,10 @@ export const SettingsWebhooksPage = (): JSX.Element => {
       (settings?.responseMode === FormResponseMode.Multirespondent &&
         enableMrfWebhooks))
 
-  const isPlumberConnected = /^https:\/\/plumber\.gov\.sg\/webhooks\//.test(
-    settings?.webhook.url ?? '',
-  )
+  const isPlumberConnected =
+    /^https:\/\/(?:(?:staging|uat)\.)?plumber\.gov\.sg\/webhooks\//.test(
+      settings?.webhook.url ?? '',
+    )
   // NOTE: only show this page when the enableWebhooks flag is off.
   if (isPlumberConnected && !enableWebhooks) {
     return (

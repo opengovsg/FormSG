@@ -1,5 +1,9 @@
-import { composeStories } from '@storybook/react'
+import { composeStories, composeStory } from '@storybook/react'
 import { act, render, screen } from '@testing-library/react'
+
+import { FormResponseMode } from 'formsg-shared/types/form'
+
+import { getAdminFormSettings } from '~/mocks/msw/handlers/admin-form'
 
 import * as stories from './SettingsWebhooksPage.stories'
 
@@ -48,6 +52,41 @@ describe('SettingsWebhooksPage', () => {
     expect(screen.getByRole('link', { name: /plumber/i })).toBeInTheDocument()
     expect(screen.queryByText(UNSUPPORTED_MSG)).not.toBeInTheDocument()
   })
+
+  it.each(['staging', 'uat'])(
+    'shows the Plumber message for the %s webhook',
+    async (environment) => {
+      const PlumberEnvironment = composeStory(
+        {
+          ...stories.PlumberConnectedEmailMode,
+          parameters: {
+            msw: {
+              handlers: {
+                default: [
+                  getAdminFormSettings({
+                    overrides: {
+                      responseMode: FormResponseMode.Email,
+                      webhook: {
+                        url: `https://${environment}.plumber.gov.sg/webhooks/abc`,
+                        isRetryEnabled: false,
+                      },
+                    },
+                  }),
+                ],
+              },
+            },
+          },
+        },
+        stories.default,
+      )
+      await act(async () => {
+        render(<PlumberEnvironment />)
+      })
+
+      await screen.findByText(PLUMBER_CONNECTED_MSG)
+      expect(screen.queryByText(UNSUPPORTED_MSG)).not.toBeInTheDocument()
+    },
+  )
 
   it('keeps the webhook editor when a storage-mode form has a Plumber webhook', async () => {
     await act(async () => {
