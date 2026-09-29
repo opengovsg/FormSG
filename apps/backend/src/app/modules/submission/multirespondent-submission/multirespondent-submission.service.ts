@@ -105,6 +105,10 @@ import {
   reconstructV1WebhookData,
 } from './webhook/webhook-reconstruction'
 import {
+  resolveSnapshotWebhookView,
+  SnapshotViewError,
+} from './webhook/webhook-retry-view'
+import {
   holdsV1FirstStepInvariant,
   shouldSendMrfWebhook,
   shouldWriteMrfSnapshot,
@@ -144,6 +148,60 @@ export type SavedMultirespondentSubmission = {
     _id: mongoose.Types.ObjectId
   }
   snapshot?: SubmissionSnapshot
+}
+
+/**
+ * Builds the first step's V1 snapshot, uploading its V1 attachments to the V1 attachments bucket.
+ * Callers decide whether to store this snapshot to the V1 snapshots bucket.
+ */
+const buildFirstStepV1Snapshot = ({
+  form,
+  encryptedPayload,
+  verifiedContentPlaintext,
+  snapshotBase,
+  logMeta,
+}: {
+  form: IPopulatedMultirespondentForm
+  encryptedPayload: MultirespondentSubmissionDto
+  verifiedContentPlaintext?: Record<string, string>
+  snapshotBase: Pick<
+    SubmissionSnapshot,
+    'formId' | 'submissionId' | 'submissionIndex' | 'workflowStep' | 'createdAt'
+  >
+  logMeta: CustomLoggerParams['meta']
+}) => {
+  const content = buildV1EncryptedContent({
+    v4Responses: encryptedPayload.responses,
+    formFields: toPlainFormFields(form.form_fields),
+    formLogics: toPlainFormLogics(form.form_logics),
+    formPublicKey: form.publicKey,
+    myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
+    logMeta,
+  })
+  if (content.isErr()) return errAsync(content.error)
+  const verified = buildV1VerifiedContent({
+    verifiedContent: verifiedContentPlaintext,
+    formPublicKey: form.publicKey,
+    logMeta: {
+      ...logMeta,
+      formId: snapshotBase.formId,
+      submissionId: snapshotBase.submissionId,
+    },
+  })
+  if (verified.isErr()) return errAsync(verified.error)
+  return encryptAndUploadAttachmentInV1({
+    formId: String(form._id),
+    responses: encryptedPayload.responses,
+    formPublicKey: form.publicKey,
+    logMeta,
+  }).map((attachments) =>
+    buildV1Snapshot({
+      ...snapshotBase,
+      encryptedContent: content.value,
+      verifiedContent: verified.value,
+      attachmentMetadata: Object.fromEntries(attachments),
+    }),
+  )
 }
 
 export const checkFormIsMultirespondent = (
@@ -955,42 +1013,13 @@ export const createMultiRespondentFormSubmission = ({
         V1ContentMappingError | AttachmentUploadError
       > => {
         if (isV1Snapshot) {
-          const v1ContentResult = buildV1EncryptedContent({
-            v4Responses: encryptedPayload.responses,
-            formFields: toPlainFormFields(form.form_fields),
-            formLogics: toPlainFormLogics(form.form_logics),
-            formPublicKey: form.publicKey,
-            myInfoReadOnlyFieldIds: encryptedPayload.myInfoReadOnlyFields ?? [],
+          return buildFirstStepV1Snapshot({
+            form,
+            encryptedPayload,
+            verifiedContentPlaintext,
             logMeta,
+            snapshotBase,
           })
-          if (v1ContentResult.isErr()) {
-            return errAsync(v1ContentResult.error)
-          }
-          const v1VerifiedContentResult = buildV1VerifiedContent({
-            verifiedContent: verifiedContentPlaintext,
-            formPublicKey: form.publicKey,
-            logMeta: {
-              ...logMeta,
-              formId: snapshotBase.formId,
-              submissionId: snapshotBase.submissionId,
-            },
-          })
-          if (v1VerifiedContentResult.isErr()) {
-            return errAsync(v1VerifiedContentResult.error)
-          }
-          return encryptAndUploadAttachmentInV1({
-            formId: String(form._id),
-            responses: encryptedPayload.responses,
-            formPublicKey: form.publicKey,
-            logMeta,
-          }).map((v1AttachmentMetadata) =>
-            buildV1Snapshot({
-              ...snapshotBase,
-              encryptedContent: v1ContentResult.value,
-              verifiedContent: v1VerifiedContentResult.value,
-              attachmentMetadata: Object.fromEntries(v1AttachmentMetadata),
-            }),
-          )
         }
         if (webhookContentFormat === 'v4' && shouldWriteSnapshot) {
           return okAsync(
@@ -1072,16 +1101,21 @@ export const createMultiRespondentFormSubmission = ({
 export const createMultiRespondentFormPendingSubmission = ({
   form,
   encryptedPayload,
+  verifiedContentPlaintext,
   paymentId,
   logMeta,
 }: {
   form: IPopulatedMultirespondentForm
   encryptedPayload: MultirespondentSubmissionDto
+  verifiedContentPlaintext?: Record<string, string>
   paymentId: string
   logMeta: CustomLoggerParams['meta']
 }): ResultAsync<
   IMultirespondentSubmissionSchema & { _id: mongoose.Types.ObjectId },
-  AttachmentUploadError | SubmissionSaveError
+  | AttachmentUploadError
+  | SubmissionSaveError
+  | SnapshotWriteError
+  | V1ContentMappingError
 > => {
   logMeta = {
     ...logMeta,
@@ -1115,6 +1149,7 @@ export const createMultiRespondentFormPendingSubmission = ({
       form: form._id,
       authType: form.authType,
       myInfoFields: form.getUniqueMyInfoAttrs(),
+      myInfoReadOnlyFields: encryptedPayload.myInfoReadOnlyFields,
       form_fields: form.form_fields,
       form_logics: form.form_logics,
       workflow: form.workflow,
@@ -1136,32 +1171,51 @@ export const createMultiRespondentFormPendingSubmission = ({
       submissionContent,
     )
 
-    return ResultAsync.fromPromise(pendingSubmission.save(), (error) => {
-      logger.error({
-        message: 'Multirespondent pending submission save error',
-        meta: logMeta,
-        error,
-      })
-      return new SubmissionSaveError()
-    }).map((pendingSubmission) => {
-      logger.info({
-        message: 'Saved pending submission to MongoDB',
-        meta: {
-          ...logMeta,
-          pendingSubmissionId: pendingSubmission.id,
-          responseMetadata,
-        },
-      })
-
-      if (responseMetadata) {
-        reportSubmissionResponseTime(responseMetadata, {
-          mode: 'multirespodent',
-          payment: 'true',
-        })
-      }
-
-      return pendingSubmission
+    return buildFirstStepV1Snapshot({
+      form,
+      encryptedPayload,
+      verifiedContentPlaintext,
+      logMeta,
+      snapshotBase: {
+        formId: String(form._id),
+        submissionId: String(pendingSubmission._id),
+        submissionIndex: 0,
+        workflowStep: 0,
+        createdAt: submittedStepMeta.submittedAt,
+      },
     })
+      .andThen(writeSnapshot)
+      .andThen(({ token }) => {
+        pendingSubmission.submittedSteps = [
+          { ...submittedStepMeta, snapshotTokens: { v1: token } },
+        ]
+        return ResultAsync.fromPromise(pendingSubmission.save(), (error) => {
+          logger.error({
+            message: 'Multirespondent pending submission save error',
+            meta: logMeta,
+            error,
+          })
+          return new SubmissionSaveError()
+        }).map((pendingSubmission) => {
+          logger.info({
+            message: 'Saved pending submission to MongoDB',
+            meta: {
+              ...logMeta,
+              pendingSubmissionId: pendingSubmission.id,
+              responseMetadata,
+            },
+          })
+
+          if (responseMetadata) {
+            reportSubmissionResponseTime(responseMetadata, {
+              mode: 'multirespodent',
+              payment: 'true',
+            })
+          }
+
+          return pendingSubmission
+        })
+      })
   })
 }
 
@@ -1330,9 +1384,52 @@ const generatePdfAttachmentIfRequired = ({
   return pdfResult
 }
 
+const resolveInitialV1View = ({
+  submission,
+  liveView,
+  snapshot,
+  snapshotRef,
+  pendingSubmissionId,
+  logMeta,
+}: {
+  submission: IMultirespondentSubmissionSchema
+  liveView: WebhookView
+  snapshot?: SubmissionSnapshot
+  snapshotRef: SnapshotRef
+  pendingSubmissionId?: string
+  logMeta: CustomLoggerParams['meta']
+}): ResultAsync<WebhookView, SnapshotViewError | V1SnapshotRequiredError> => {
+  // Payment confirmation runs after the submit request has ended. Read the
+  // required V1 snapshot using the token carried over from pending.
+  if (submission.paymentId) {
+    return resolveSnapshotWebhookView({
+      liveView,
+      submissionId: String(submission._id),
+      pendingSubmissionId,
+      snapshotRef,
+      submittedStepSnapshotTokens: submission.submittedSteps?.map(
+        (step) => step.snapshotTokens,
+      ),
+    })
+  }
+  if (snapshot?.contentFormat === 'v1') {
+    return okAsync({
+      data: reconstructV1WebhookData({ liveData: liveView.data, snapshot }),
+    })
+  }
+  return errAsync(
+    new V1SnapshotRequiredError(undefined, {
+      ...logMeta,
+      submissionIndex: snapshotRef.submissionIndex,
+      snapshotContentFormat: snapshot?.contentFormat,
+    }),
+  )
+}
+
 const sendMrfInitialWebhookIfEligible = ({
   submission,
   snapshot,
+  pendingSubmissionId,
   webhookUrl,
   webhookFormat,
   workflowStepCount,
@@ -1343,6 +1440,8 @@ const sendMrfInitialWebhookIfEligible = ({
 }: {
   submission: IMultirespondentSubmissionSchema
   snapshot?: SubmissionSnapshot
+  /** Id the first step's snapshot is stored under for payment submissions. */
+  pendingSubmissionId?: string
   webhookUrl: string
   webhookFormat: FormWebhook['webhookFormat']
   workflowStepCount: number
@@ -1414,15 +1513,6 @@ const sendMrfInitialWebhookIfEligible = ({
         ).map(() => undefined)
 
       if (policy.contentFormat === 'v1') {
-        if (snapshot?.contentFormat !== 'v1') {
-          return errAsync(
-            new V1SnapshotRequiredError(undefined, {
-              ...logMeta,
-              submissionIndex,
-              snapshotContentFormat: snapshot?.contentFormat,
-            }),
-          )
-        }
         if (!holdsV1FirstStepInvariant({ submissionIndex, logMeta })) {
           return errAsync(
             new V1SnapshotRequiredError(
@@ -1431,13 +1521,20 @@ const sendMrfInitialWebhookIfEligible = ({
             ),
           )
         }
-
-        return assertStorageShapedKeySet(
-          reconstructV1WebhookData({ liveData: liveView.data, snapshot }),
+        const snapshotRef: SnapshotRef = {
+          submissionIndex,
+          contentFormat: 'v1',
+        }
+        return resolveInitialV1View({
+          submission,
+          liveView,
+          snapshot,
+          snapshotRef,
+          pendingSubmissionId,
           logMeta,
-        ).asyncAndThen((data) =>
-          send(data, { submissionIndex, contentFormat: 'v1' }),
-        )
+        })
+          .andThen(({ data }) => assertStorageShapedKeySet(data, logMeta))
+          .andThen((data) => send(data, snapshotRef))
       }
 
       const snapshotDetails =
@@ -1631,11 +1728,13 @@ export const performMultiRespondentPostSubmissionCreateActions = ({
  */
 export const performMultirespondentPaymentPostSubmissionActions = (
   submission: IMultirespondentSubmissionSchema,
+  pendingSubmissionId: string,
   growthbook?: GrowthBook,
 ): ResultAsync<true, FormNotFoundError | PossibleDatabaseError> => {
   const logMeta = {
     action: 'performMultirespondentPaymentPostSubmissionActions',
     submissionId: submission.id,
+    pendingSubmissionId,
     formId: String(submission.form),
   }
 
@@ -1653,11 +1752,10 @@ export const performMultirespondentPaymentPostSubmissionActions = (
 
     sendMrfInitialWebhookIfEligible({
       submission,
+      pendingSubmissionId,
       webhookUrl,
       webhookFormat: form.webhook?.webhookFormat,
-      workflowStepCount: checkFormIsMultirespondent(form)
-        .map((mrfForm) => mrfForm.workflow?.length ?? 0)
-        .unwrapOr(0),
+      workflowStepCount: submission.workflow?.length ?? 0,
       isRetryEnabled: !!form.webhook?.isRetryEnabled,
       growthbook,
       logMeta,

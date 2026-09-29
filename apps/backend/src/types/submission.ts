@@ -48,6 +48,7 @@ export type SubmissionWebhookInfo = {
   isRetryEnabled: boolean
   webhookView: WebhookView
   submittedStepSnapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
+  pendingSubmissionId?: string
 }
 
 export type FindFormsWithSubsAboveResult = {
@@ -55,16 +56,22 @@ export type FindFormsWithSubsAboveResult = {
   count: number
 }
 
-export type IPopulatedWebhookSubmission = (
-  | IEncryptedSubmissionSchema
-  | IMultirespondentSubmissionSchema
-) & {
+type WithWebhookPopulation<T extends ISubmissionSchema> = Omit<
+  T,
+  'paymentId'
+> & {
   form: {
     _id: IFormSchema['_id']
     webhook: IFormSchema['webhook']
   }
-  paymentId: IPaymentSchema
+  // `undefined` for non-payment submissions,
+  // null if the payment doc for the given `paymentId` cannot be found.
+  paymentId?: IPaymentSchema | null
 }
+
+export type IPopulatedWebhookSubmission =
+  | WithWebhookPopulation<IEncryptedSubmissionSchema>
+  | WithWebhookPopulation<IMultirespondentSubmissionSchema>
 
 export interface ISubmissionSchema extends SubmissionBase, Document {
   // `any` allows for population and correct typing

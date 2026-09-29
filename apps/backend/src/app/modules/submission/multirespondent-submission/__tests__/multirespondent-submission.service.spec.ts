@@ -4861,6 +4861,7 @@ describe('multirespondent-submission.service', () => {
       const actualResult =
         await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
           mockSubmission,
+          mockSubmissionId,
         )
 
       // Assert
@@ -4881,6 +4882,7 @@ describe('multirespondent-submission.service', () => {
       const actualResult =
         await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
           mockSubmission,
+          mockSubmissionId,
           growthbookWithFlags({ enableMrfWebhooks: false }),
         )
 
@@ -4907,6 +4909,7 @@ describe('multirespondent-submission.service', () => {
       const actualResult =
         await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
           mockSubmission,
+          mockSubmissionId,
           mockGrowthbook,
         )
 
@@ -4938,6 +4941,7 @@ describe('multirespondent-submission.service', () => {
       const actualResult =
         await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
           mockSubmission,
+          mockSubmissionId,
         )
 
       // Assert
@@ -4960,6 +4964,7 @@ describe('multirespondent-submission.service', () => {
       const actualResult =
         await MultirespondentSubmissionService.performMultirespondentPaymentPostSubmissionActions(
           mockSubmission,
+          mockSubmissionId,
         )
 
       // Assert

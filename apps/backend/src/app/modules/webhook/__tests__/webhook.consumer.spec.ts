@@ -451,6 +451,36 @@ describe('webhook.consumer', () => {
         },
       )
 
+      it('should read a later-step snapshot under the submission id after duplicate-key recovery', async () => {
+        const submissionIndex = 1
+        const pendingSubmissionId = new ObjectId().toHexString()
+        jest
+          .spyOn(SubmissionModel, 'retrieveWebhookInfoById')
+          .mockResolvedValue({
+            ...MOCK_MRF_WEBHOOK_INFO,
+            pendingSubmissionId,
+          })
+        MockSnapshotStore.readSnapshot.mockReturnValue(
+          okAsync({ ...MOCK_SNAPSHOT, submissionIndex }),
+        )
+
+        await expect(
+          createWebhookQueueHandler(SUCCESS_PRODUCER)({
+            Body: JSON.stringify({
+              ...SNAPSHOT_MESSAGE_BODY,
+              snapshotRef: { submissionIndex, contentFormat: 'v4' },
+            }),
+          }),
+        ).toResolve()
+
+        expect(MockSnapshotStore.readSnapshot).toHaveBeenCalledWith(
+          expect.objectContaining({
+            submissionIndex,
+            submissionId: SNAPSHOT_MESSAGE_BODY.submissionId,
+          }),
+        )
+      })
+
       it('should carry the named step submission into the requeued message when the retry fails', async () => {
         MockSnapshotStore.readSnapshot.mockReturnValue(okAsync(MOCK_SNAPSHOT))
         MockWebhookService.sendWebhook.mockReturnValue(

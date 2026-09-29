@@ -20,7 +20,7 @@ import {
   reconstructV1WebhookData,
 } from './webhook-reconstruction'
 
-export type SnapshotRetryError =
+export type SnapshotViewError =
   | SnapshotDataIntegrityError
   | SnapshotReadError
   | SnapshotAccessDeniedError
@@ -39,21 +39,38 @@ export const getRecordedPayloadPolicy = ({
 }
 
 /**
- * Rebuilds the webhook payload a retry must deliver from the provided
- * snapshot reference.
+ * Rebuilds the webhook payload for initial delivery or retries from the
+ * provided snapshot reference.
+ * First-step payment snapshots belong to the pending submission; later steps
+ * belong to the completed submission.
  */
-export const resolveSnapshotRetryView = ({
+export const resolveSnapshotWebhookView = ({
   liveView,
   submissionId,
+  pendingSubmissionId,
   snapshotRef,
   submittedStepSnapshotTokens,
 }: {
   liveView: WebhookView
   submissionId: string
+  pendingSubmissionId?: string
   snapshotRef: SnapshotRef
   submittedStepSnapshotTokens?: (SubmittedStepSnapshotTokens | undefined)[]
-}): ResultAsync<WebhookView, SnapshotRetryError> => {
-  const meta = { submissionId, snapshotRef }
+}): ResultAsync<WebhookView, SnapshotViewError> => {
+  // RATIONALE: Only payments has a pendingSubmissionId which its snapshot is keyed by
+  // and payments currently only support 1 step workflows.
+  // Thus, if pendingSubmissionId is present, use it to lookup the snapshot.
+  // Otherwise, it is a non-payment submission and we use the submissionId.
+  const isPaymentsFirstStep =
+    snapshotRef.submissionIndex === 0 && pendingSubmissionId !== undefined
+  const snapshotSubmissionId = isPaymentsFirstStep
+    ? pendingSubmissionId
+    : submissionId
+  const meta = {
+    submissionId,
+    pendingSubmissionId,
+    snapshotRef,
+  }
   const { submissionIndex, contentFormat } = snapshotRef
 
   const recordedTokensForSubmissionIndex =
@@ -65,7 +82,7 @@ export const resolveSnapshotRetryView = ({
 
   return readSnapshot({
     formId: liveView.data.formId,
-    submissionId,
+    submissionId: snapshotSubmissionId,
     submissionIndex,
     token,
     contentFormat,
