@@ -244,7 +244,7 @@ const validateOther = (number: string): boolean => {
   }
 
   const currentYear = parseInt(
-    new Date().getFullYear().toString().substring(-2),
+    new Date().getFullYear().toString().slice(-2),
   )
   const uenYear = parseInt(number.slice(1, 3))
   if (number.slice(0, 1) === 'T' && uenYear > currentYear) {
