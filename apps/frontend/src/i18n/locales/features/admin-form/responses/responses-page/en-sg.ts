@@ -71,6 +71,12 @@ export const enSG: ResponsesResponsesPage = {
       },
       submissionSearchbarPlaceholder: 'Search by response ID',
       searchResponsesPlaceholder: 'Search responses...',
+      filterMenu: {
+        dateRange: 'Date range',
+        columns: 'Columns',
+        checkAll: 'Check all',
+        uncheckAll: 'Uncheck all',
+      },
       toolbar: {
         filter: 'Filter',
         sort: 'Sort',
