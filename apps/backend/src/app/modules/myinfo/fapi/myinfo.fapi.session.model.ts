@@ -39,6 +39,8 @@ export interface IMyInfoFapiSessionSchema extends Document<string> {
 export type MyInfoFapiRedirectTarget = {
   formId: string
   encodedQuery?: string
+  // Present when the login is for a later MRF step
+  mrfContext?: MrfStepAuthContext
 }
 
 export type MyInfoFapiPendingSession = MyInfoFapiRedirectTarget & {
@@ -85,6 +87,7 @@ export type MyInfoFapiConsumeOutcome =
   | { status: 'exchanged'; session: MyInfoFapiExchangedSession }
   | { status: 'failed' }
   | { status: 'incomplete' }
+  // The session exists but belongs to another form or MRF step
   | { status: 'formMismatch' }
 
 export interface IMyInfoFapiSessionModel extends Model<IMyInfoFapiSessionSchema> {
@@ -98,8 +101,31 @@ export interface IMyInfoFapiSessionModel extends Model<IMyInfoFapiSessionSchema>
   consume(args: {
     sessionId: string
     formId: string
+    mrfContext?: MrfStepAuthContext
   }): Promise<MyInfoFapiConsumeOutcome>
+  isBoundToSubmission(args: {
+    sessionId: string
+    formId: string
+    submissionId: string
+  }): Promise<boolean>
 }
+
+/**
+ * Filter matching a session only for its exact login context. A session
+ * without mrfContext only matches a legacy (form-level) login.
+ */
+const contextFilter = (mrfContext?: MrfStepAuthContext) =>
+  mrfContext
+    ? {
+        'mrfContext.formId': mrfContext.formId,
+        'mrfContext.submissionId': mrfContext.submissionId,
+        'mrfContext.workflowStep': mrfContext.workflowStep,
+        'mrfContext.authType': mrfContext.authType,
+        'mrfContext.stepTokenHash': mrfContext.stepTokenHash ?? {
+          $exists: false,
+        },
+      }
+    : { mrfContext: { $exists: false } }
 
 const requiredString = { type: String, required: true }
 const optionalString = { type: String }
@@ -148,6 +174,7 @@ MyInfoFapiSessionSchema.statics.createPending = async function (
   const created = await this.create({
     phase: 'pending',
     formId: session.formId,
+    ...(session.mrfContext ? { mrfContext: session.mrfContext } : {}),
     encodedQuery: session.encodedQuery,
     state: session.state,
     nonce: session.nonce,
@@ -171,9 +198,11 @@ MyInfoFapiSessionSchema.statics.loadForCallback = async function (
     return null
   }
 
-  const target = {
+  const { mrfContext } = session.toObject()
+  const target: MyInfoFapiRedirectTarget = {
     formId: session.formId,
     encodedQuery: session.encodedQuery,
+    ...(mrfContext ? { mrfContext } : {}),
   }
   if (session.phase === 'exchanged') {
     return { phase: 'exchanged', target }
@@ -240,24 +269,24 @@ MyInfoFapiSessionSchema.statics.markFailed = async function (
 }
 
 /**
- * Only for the form that started the session. Deletes on `exchanged`
- * (single-use tokens); leaves `failed` in place since the winner may still
- * claim it.
+ * Only for the form and login context that started the session. Deletes on
+ * `exchanged` (single-use tokens); leaves `failed` in place since the winner
+ * may still claim it. A mismatched session is left untouched.
  */
 MyInfoFapiSessionSchema.statics.consume = async function ({
   sessionId,
   formId,
+  mrfContext,
 }: {
   sessionId: string
   formId: string
+  mrfContext?: MrfStepAuthContext
 }): Promise<MyInfoFapiConsumeOutcome> {
-  const session = await this.findOne({ _id: sessionId, formId })
+  const filter = { _id: sessionId, formId, ...contextFilter(mrfContext) }
+  const session = await this.findOne(filter)
   if (!session) {
-    const belongsToAnotherForm = await this.exists({
-      _id: sessionId,
-      formId: { $ne: formId },
-    })
-    if (belongsToAnotherForm) {
+    const belongsElsewhere = await this.exists({ _id: sessionId })
+    if (belongsElsewhere) {
       return { status: 'formMismatch' }
     }
     return { status: 'incomplete' }
@@ -270,7 +299,7 @@ MyInfoFapiSessionSchema.statics.consume = async function ({
   }
 
   const exchanged = await this.findOneAndDelete(
-    { _id: sessionId, formId, phase: 'exchanged' },
+    { ...filter, phase: 'exchanged' },
     { includeResultMetadata: false },
   )
   if (!exchanged || !exchanged.accessTokenEnc || !exchanged.sub) {
@@ -285,6 +314,24 @@ MyInfoFapiSessionSchema.statics.consume = async function ({
       dpopPrivateJwk: await decryptJwk(exchanged.dpopPrivateJwkEnc),
     },
   }
+}
+
+MyInfoFapiSessionSchema.statics.isBoundToSubmission = async function ({
+  sessionId,
+  formId,
+  submissionId,
+}: {
+  sessionId: string
+  formId: string
+  submissionId: string
+}): Promise<boolean> {
+  const bound = await this.exists({
+    _id: sessionId,
+    formId,
+    'mrfContext.formId': formId,
+    'mrfContext.submissionId': submissionId,
+  })
+  return !!bound
 }
 
 const getMyInfoFapiSessionModel = (db: Mongoose): IMyInfoFapiSessionModel => {

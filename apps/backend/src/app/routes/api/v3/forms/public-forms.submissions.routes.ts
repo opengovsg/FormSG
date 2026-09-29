@@ -79,6 +79,51 @@ PublicFormsSubmissionsRouter.route(
   )
 
 /**
+ * Starts the login for the pending step of an MRF submission.
+ * @route POST /forms/:formId/submissions/:submissionId/auth/redirect
+ * @param body.stepToken the pending step's bearer token, if the submission has one
+ * @param body.encodedQuery base64 prefill query ID to restore after login
+ * @returns 200 with the provider redirect URL
+ * @returns 400 when the step has no login or an invalid login setup
+ * @returns 403 when the step token is invalid
+ * @returns 409 when the submission is completed or rejected
+ */
+PublicFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/auth/redirect',
+).post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  MultirespondentSubmissionController.handleMrfStepAuthRedirect,
+)
+
+/**
+ * Returns the pending step's login policy and the respondent's session for it,
+ * completing a MyInfo login started for this step.
+ * @route POST /forms/:formId/submissions/:submissionId/auth/session
+ * @param body.stepToken the pending step's bearer token, if the submission has one
+ * @returns 200 with MrfStepAuthSessionDto
+ * @returns 403 when the step token is invalid
+ * @returns 409 when the submission is completed or rejected
+ */
+PublicFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/auth/session',
+).post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  MultirespondentSubmissionController.handleMrfStepAuthSession,
+)
+
+/**
+ * Logs out of the pending step of this MRF submission only.
+ * @route POST /forms/:formId/submissions/:submissionId/auth/logout
+ * @returns 200 with success message
+ */
+PublicFormsSubmissionsRouter.route(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/auth/logout',
+).post(
+  limitRate({ max: rateLimitConfig.submissions }),
+  MultirespondentSubmissionController.handleMrfStepAuthLogout,
+)
+
+/**
  * Get S3 presigned post data for attachments in a submission.
  * @route POST /forms/:formId/submissions/get-s3-presigned-post-data
  * @param response.body.required - contains field ids and sizes of attachments

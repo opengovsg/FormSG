@@ -492,17 +492,40 @@ export const checkHasRespondentNotWhitelistedFailure = (
   if (isWhitelistEnabled && !whitelistId) {
     return errAsync(new FormWhitelistSettingNotFoundError())
   }
+  return checkIsSubmitterNotWhitelisted({
+    formId: String(form._id),
+    formPublicKey: form.publicKey,
+    whitelistId: String(whitelistId),
+    submitterId,
+  })
+}
+
+/**
+ * Checks membership of an eligible-respondent list given explicitly, e.g. the
+ * list saved in an MRF submission's workflow copy for a later step.
+ * A missing list record fails rather than allowing everyone through.
+ * @returns ok(true) if the submitter is not on the list
+ */
+export const checkIsSubmitterNotWhitelisted = ({
+  formId,
+  formPublicKey,
+  whitelistId,
+  submitterId,
+}: {
+  formId: string
+  formPublicKey?: string
+  whitelistId: string
+  submitterId?: string
+}): ResultAsync<boolean, ApplicationError> => {
   if (!submitterId) {
     return errAsync(new MissingSubmitterIdError())
   }
-
-  const formPublicKey = form.publicKey
   if (!formPublicKey) {
     logger.error({
       message: 'Encrypt mode form does not have a public key',
       meta: {
         action: 'checkHasRespondentNotWhitelistedFailure',
-        formId: form._id,
+        formId,
       },
     })
     return errAsync(
@@ -512,7 +535,11 @@ export const checkHasRespondentNotWhitelistedFailure = (
   return ResultAsync.fromPromise(
     FormWhitelistSubmitterIdsModel.findEncryptionPropertiesById(
       whitelistId,
-    ).then(({ myPublicKey, myPrivateKey, nonce }) => {
+    ).then((encryptionProperties) => {
+      if (!encryptionProperties) {
+        return Promise.reject(new FormWhitelistSettingNotFoundError())
+      }
+      const { myPublicKey, myPrivateKey, nonce } = encryptionProperties
       const myKeyPair = {
         publicKey: myPublicKey,
         privateKey: myPrivateKey,
@@ -538,13 +565,15 @@ export const checkHasRespondentNotWhitelistedFailure = (
         message: 'Error while checking if submitterId is whitelisted',
         meta: {
           action: 'checkHasRespondentNotWhitelistedFailure',
-          formId: form._id,
+          formId,
           err,
         },
       })
-      return new ApplicationError(
-        'Error while checking if submitterId is whitelisted',
-      )
+      return err instanceof FormWhitelistSettingNotFoundError
+        ? err
+        : new ApplicationError(
+            'Error while checking if submitterId is whitelisted',
+          )
     },
   )
 }

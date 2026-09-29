@@ -86,7 +86,9 @@ import {
 } from '../core/core.errors'
 import { ErrorResponseData } from '../core/core.types'
 import {
+  AuthTypeMismatchError,
   ForbiddenFormError,
+  FormAuthNoEsrvcIdError,
   FormDeletedError,
   FormNotFoundError,
   FormRespondentNotWhitelistedError,
@@ -95,6 +97,10 @@ import {
   PrivateFormError,
 } from '../form/form.errors'
 import { isFormEncryptModeOrMultirespondent } from '../form/form.utils'
+import {
+  MyInfoFapiAuthRequestError,
+  MyInfoFapiConfigError,
+} from '../myinfo/fapi/myinfo.fapi.errors'
 import { MYINFO_LOGIN_COOKIE_NAME } from '../myinfo/myinfo.constants'
 import {
   MyInfoHashDidNotMatchError,
@@ -155,6 +161,7 @@ import {
   MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSubmissionStaleError,
   MrfWorkflowOverflowError,
   ParseVirusScannerLambdaPayloadError,
   ProcessingError,
@@ -234,6 +241,20 @@ const errorMapper: MapRouteError = (
         errorMessage: error.message,
         errorMessageKey: submissionErrorKey('saveFailed'),
       }
+    case MrfSubmissionStaleError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage: error.message,
+      }
+    case FormAuthNoEsrvcIdError:
+    case AuthTypeMismatchError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'This form step does not have a valid login configuration. Please contact the form admin that gave you this link.',
+      }
+    case MyInfoFapiAuthRequestError:
+    case MyInfoFapiConfigError:
     case CreateRedirectUrlError:
       return {
         statusCode: StatusCodes.INTERNAL_SERVER_ERROR,

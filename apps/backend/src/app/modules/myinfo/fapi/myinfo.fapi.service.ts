@@ -5,6 +5,7 @@ import * as client from 'openid-client'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import { DatabaseError } from '../../core/core.errors'
+import type { MrfStepAuthContext } from '../../submission/multirespondent-submission/step-auth.types'
 import { MyInfoData } from '../myinfo.adapter'
 import { IPersonResponse } from '../myinfo.person.types'
 
@@ -96,11 +97,14 @@ export const startLogin = ({
   encodedQuery,
   requestedAttributes,
   includeSponsoredChildren,
+  mrfContext,
 }: {
   formId: string
   encodedQuery?: string
   requestedAttributes: MyInfoAttribute[]
   includeSponsoredChildren?: boolean
+  // Binds the login to a later MRF step
+  mrfContext?: MrfStepAuthContext
 }): ResultAsync<MyInfoFapiLoginStartResult, MyInfoFapiLoginStartError> => {
   const scope = requestedAttrsToScopeString(requestedAttributes, {
     includeSponsoredChildren,
@@ -159,6 +163,7 @@ export const startLogin = ({
     ResultAsync.fromPromise(
       MyInfoFapiSession.createPending({
         formId,
+        mrfContext,
         encodedQuery,
         state,
         nonce,
@@ -278,12 +283,15 @@ export const fetchPerson = ({
 export const loadPersonForSession = ({
   sessionId,
   formId,
+  mrfContext,
 }: {
   sessionId: string
   formId: string
+  // Absent for a form-level login, which never consumes a bound session
+  mrfContext?: MrfStepAuthContext
 }): ResultAsync<MyInfoData, MyInfoLoadPersonForSessionError> => {
   return ResultAsync.fromPromise(
-    MyInfoFapiSession.consume({ sessionId, formId }),
+    MyInfoFapiSession.consume({ sessionId, formId, mrfContext }),
     (error) => {
       logger.error({
         message: 'Failed to consume MyInfo FAPI session',
@@ -308,6 +316,28 @@ export const loadPersonForSession = ({
     .andThen(fetchPerson)
     .map((personResponse) => new MyInfoData(personResponse))
 }
+
+/**
+ * Whether a pending or exchanged session was started for the given MRF
+ * submission, so that logging out of one submission never discards another
+ * tab's login.
+ */
+export const isSessionBoundToSubmission = (args: {
+  sessionId: string
+  formId: string
+  submissionId: string
+}): ResultAsync<boolean, DatabaseError> =>
+  ResultAsync.fromPromise(
+    MyInfoFapiSession.isBoundToSubmission(args),
+    (error) => {
+      logger.error({
+        message: 'Failed to look up MyInfo FAPI session',
+        meta: { action: 'isSessionBoundToSubmission', formId: args.formId },
+        error,
+      })
+      return new DatabaseError('Failed to look up MyInfo FAPI session')
+    },
+  )
 
 const withConfig = <T, E>(
   run: (config: client.Configuration) => Promise<T>,

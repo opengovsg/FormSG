@@ -6,6 +6,7 @@ import {
   ILoginModel,
   ILoginSchema,
   IPopulatedForm,
+  LoginAuthOverride,
 } from '../../types'
 
 import { AGENCY_SCHEMA_ID } from './agency.server.model'
@@ -54,8 +55,13 @@ const LoginSchema = new Schema<ILoginSchema, ILoginModel>(
 
 LoginSchema.statics.addLoginFromForm = function (
   form: IPopulatedForm,
+  authOverride?: LoginAuthOverride,
 ): Promise<ILoginSchema> {
-  if (!form.authType || !form.esrvcId) {
+  // A later MRF step's provider replaces the form-level login settings whole.
+  // Only a MyInfo (FAPI) step login has no e-service ID.
+  const { authType, esrvcId } = authOverride ?? form
+  const isEsrvcIdOptional = !!authOverride && authType === FormAuthType.MyInfo
+  if (!authType || (!esrvcId && !isEsrvcIdOptional)) {
     return Promise.reject(
       new Error('Form does not contain authType or e-service ID'),
     )
@@ -64,8 +70,8 @@ LoginSchema.statics.addLoginFromForm = function (
     form: form._id,
     admin: form.admin._id,
     agency: form.admin.agency._id,
-    authType: form.authType,
-    esrvcId: form.esrvcId,
+    authType,
+    esrvcId,
   })
 }
 

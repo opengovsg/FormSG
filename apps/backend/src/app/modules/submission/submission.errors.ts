@@ -360,3 +360,15 @@ export class StepTokenVerificationError extends ApplicationError {
     super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_TOKEN_INVALID)
   }
 }
+
+/**
+ * The MRF submission has moved past the step being acted on: it was advanced,
+ * completed or rejected.
+ */
+export class MrfSubmissionStaleError extends ApplicationError {
+  constructor(
+    message = 'This response has already been updated. Reload to continue.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STALE)
+  }
+}

@@ -153,6 +153,43 @@ describe('login.server.model', () => {
           LoginModel.addLoginFromForm(omit(fullForm, 'authType')),
         ).rejects.toThrow('Form does not contain authType or e-service ID')
       })
+
+      describe('with a later MRF step provider', () => {
+        // Step 1 has no login; the live form's settings must not leak in.
+        const noLoginForm = {
+          ...fullForm,
+          authType: FormAuthType.NIL,
+          esrvcId: 'live-esrvc-id',
+        } as unknown as IPopulatedForm
+
+        it('should record the step provider and its saved e-service ID', async () => {
+          const saved = await LoginModel.addLoginFromForm(noLoginForm, {
+            authType: FormAuthType.CP,
+            esrvcId: 'snapshot-esrvc-id',
+          })
+
+          expect(saved.authType).toBe(FormAuthType.CP)
+          expect(saved.esrvcId).toBe('snapshot-esrvc-id')
+        })
+
+        it('should record a MyInfo step login without an e-service ID', async () => {
+          const saved = await LoginModel.addLoginFromForm(noLoginForm, {
+            authType: FormAuthType.MyInfo,
+          })
+
+          const found = await LoginModel.findById(saved._id)
+          expect(found!.authType).toBe(FormAuthType.MyInfo)
+          expect(found!.esrvcId).toBeUndefined()
+        })
+
+        it('should not fall back to the form e-service ID for a Corppass step', async () => {
+          await expect(
+            LoginModel.addLoginFromForm(noLoginForm, {
+              authType: FormAuthType.CP,
+            }),
+          ).rejects.toThrow('Form does not contain authType or e-service ID')
+        })
+      })
     })
 
     describe('aggregateLoginStats', () => {

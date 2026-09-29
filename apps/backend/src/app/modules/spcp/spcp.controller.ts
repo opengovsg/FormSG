@@ -1,3 +1,4 @@
+import { Response } from 'express'
 import { FormAuthType } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 
@@ -6,10 +7,169 @@ import { createLoggerWithLabel } from '../../config/logger'
 import * as BillingService from '../billing/billing.service'
 import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
+import {
+  checkFormIsMultirespondent,
+  getMultirespondentSubmission,
+} from '../submission/multirespondent-submission/multirespondent-submission.service'
+import {
+  clearCpStepBindingCookie,
+  CpStepBindingExpiredError,
+  getCpStepBindingCookieName,
+  getMrfContinuationDestination,
+  resolveMrfStepAuth,
+  setMrfStepAuthCookie,
+  verifyCpStepBinding,
+} from '../submission/multirespondent-submission/step-auth'
 
 import { getOidcService } from './spcp.oidc.service'
 
 const logger = createLoggerWithLabel(module)
+
+/**
+ * Completes a Corppass login started for a later MRF step. The signed binding,
+ * not the form's login settings, decides which submission and step the login
+ * is for; only that step's continuation cookie is set, never the global jwtCp.
+ */
+const handleCpStepLogin = async ({
+  res,
+  code,
+  codeVerifier,
+  bindingToken,
+  nonce,
+  formId,
+  query,
+  logMeta,
+}: {
+  res: Response
+  code: string
+  codeVerifier?: string
+  bindingToken: string
+  nonce: string
+  formId: string
+  query?: string
+  logMeta: { action: string } & Record<string, unknown>
+}) => {
+  const bindingResult = verifyCpStepBinding(bindingToken, nonce)
+  if (bindingResult.isErr()) {
+    const { error } = bindingResult
+    if (
+      error instanceof CpStepBindingExpiredError &&
+      error.context.formId === formId
+    ) {
+      logger.warn({
+        message: 'Corppass step login binding expired',
+        meta: logMeta,
+      })
+      res.cookie('isLoginError', true)
+      return res.redirect(
+        getMrfContinuationDestination({
+          formId,
+          submissionId: error.context.submissionId,
+          query,
+        }),
+      )
+    }
+    logger.error({
+      message: 'Invalid Corppass step login binding',
+      meta: logMeta,
+      error,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
+
+  const binding = bindingResult.value
+  if (binding.formId !== formId || binding.authType !== FormAuthType.CP) {
+    logger.error({
+      message: 'Corppass step login binding does not match state',
+      meta: logMeta,
+    })
+    return res.sendStatus(StatusCodes.BAD_REQUEST)
+  }
+  const stepMeta = {
+    ...logMeta,
+    submissionId: binding.submissionId,
+    workflowStep: binding.workflowStep,
+  }
+  const destination = getMrfContinuationDestination({
+    formId,
+    submissionId: binding.submissionId,
+    query,
+  })
+  const oidcService = getOidcService(FormAuthType.CP)
+
+  const attributesResult = await oidcService.exchangeAuthCodeAndRetrieveData(
+    code,
+    codeVerifier,
+  )
+  if (attributesResult.isErr()) {
+    logger.error({
+      message: 'Failed to exchange auth code for Corppass step login',
+      meta: stepMeta,
+      error: attributesResult.error,
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(destination)
+  }
+
+  // The step must still be the one the login was started for.
+  const stepResult = await FormService.retrieveFullFormById(formId)
+    .andThen(checkFormIsMultirespondent)
+    .andThen((form) =>
+      getMultirespondentSubmission(binding.submissionId).andThen((submission) =>
+        resolveMrfStepAuth(form, submission, { binding }).map((resolved) => ({
+          form,
+          resolved,
+        })),
+      ),
+    )
+  if (stepResult.isErr()) {
+    logger.error({
+      message: 'Corppass step login no longer matches the submission',
+      meta: stepMeta,
+      error: stepResult.error,
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(destination)
+  }
+  const { form, resolved } = stepResult.value
+  const { context, login } = resolved
+  const jwtPayloadResult = oidcService.createJWTPayload(
+    attributesResult.value,
+    false,
+  )
+  if (
+    !context ||
+    !login ||
+    jwtPayloadResult.isErr() ||
+    !('userInfo' in jwtPayloadResult.value)
+  ) {
+    logger.error({
+      message: 'Corppass step login is missing identity attributes',
+      meta: stepMeta,
+    })
+    res.cookie('isLoginError', true)
+    return res.redirect(destination)
+  }
+  const { userName, userInfo } = jwtPayloadResult.value
+
+  return BillingService.recordLoginByForm(form, {
+    authType: FormAuthType.CP,
+    esrvcId: login.esrvcId,
+  })
+    .map(() => {
+      setMrfStepAuthCookie(res, { ...context, userName, userInfo })
+      return res.redirect(destination)
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error while adding Corppass step login to database',
+        meta: stepMeta,
+        error,
+      })
+      res.cookie('isLoginError', true)
+      return res.redirect(destination)
+    })
+}
 
 /**
  * Higher-order function which returns an Express handler to handle Singpass
@@ -53,6 +213,25 @@ export const handleSpcpOidcLogin: (
     oidcService.getCodeVerifierCookieName(nonce),
     oidcService.getCodeVerifierCookieOptions(),
   )
+
+  // A Corppass login for a later MRF step carries a nonce-scoped binding.
+  const bindingToken: unknown =
+    authType === FormAuthType.CP && nonce
+      ? req.cookies?.[getCpStepBindingCookieName(nonce)]
+      : undefined
+  if (nonce && typeof bindingToken === 'string' && bindingToken) {
+    clearCpStepBindingCookie(res, nonce)
+    return handleCpStepLogin({
+      res,
+      code,
+      codeVerifier,
+      bindingToken,
+      nonce,
+      formId,
+      query: destination.split('?')[1],
+      logMeta,
+    })
+  }
 
   const result = await oidcService.exchangeAuthCodeAndRetrieveData(
     code,

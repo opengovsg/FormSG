@@ -1,10 +1,21 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import { ObjectId } from 'bson'
 import { FormAuthType } from 'formsg-shared/types'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import config from 'src/app/config/config'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
+import * as MrfService from 'src/app/modules/submission/multirespondent-submission/multirespondent-submission.service'
+import {
+  setCpStepBindingCookie,
+  verifyMrfStepAuthCookie,
+} from 'src/app/modules/submission/multirespondent-submission/step-auth'
+import {
+  IMultirespondentSubmissionSchema,
+  IPopulatedForm,
+  IPopulatedMultirespondentForm,
+} from 'src/types'
 
 import * as BillingService from '../../billing/billing.service'
 import { DatabaseError } from '../../core/core.errors'
@@ -30,6 +41,7 @@ import {
   MOCK_DESTINATION,
   MOCK_JWT,
   MOCK_LOGIN_DOC,
+  MOCK_NRIC,
   MOCK_OIDC_STATE,
   MOCK_REMEMBER_ME,
   MOCK_SP_FORM,
@@ -37,6 +49,7 @@ import {
   MOCK_SP_OIDC_EXTRACTED_NDI_PAYLOAD,
   MOCK_SP_OIDC_JWT_PAYLOAD,
   MOCK_TARGET,
+  MOCK_UEN,
 } from './spcp.test.constants'
 
 jest.mock('../spcp.oidc.client')
@@ -53,6 +66,10 @@ jest.mock('../../billing/billing.service')
 const MockBillingService = jest.mocked(BillingService)
 jest.mock('src/app/modules/form/form.service')
 const MockFormService = jest.mocked(FormService)
+jest.mock(
+  'src/app/modules/submission/multirespondent-submission/multirespondent-submission.service',
+)
+const MockMrfService = jest.mocked(MrfService)
 jest.mock('src/app/config/config')
 const MockConfig = jest.mocked(config)
 MockConfig.isDevOrTest = false
@@ -770,6 +787,185 @@ describe('spcp.controller', () => {
           MOCK_CP_FORM,
         )
         expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
+      })
+
+      describe('login for a later MRF step', () => {
+        const NONCE = 'c'.repeat(32)
+        const SUBMISSION_ID = new ObjectId().toHexString()
+        const STEP_TOKEN_HASH = 'step-token-hash'
+        const CONTEXT = {
+          formId: MOCK_TARGET,
+          submissionId: SUBMISSION_ID,
+          workflowStep: 1,
+          stepTokenHash: STEP_TOKEN_HASH,
+          authType: FormAuthType.CP as const,
+        }
+        const EDIT_DESTINATION = `/${MOCK_TARGET}/edit/${SUBMISSION_ID}?queryId=abc`
+        // Step 1 has no login; only the submission copy protects step 2.
+        const MRF_FORM = {
+          ...MOCK_CP_FORM,
+          _id: MOCK_TARGET,
+          authType: FormAuthType.NIL,
+          esrvcId: 'live-esrvc-id',
+          responseMode: 'multirespondent',
+        }
+        const makeSubmission = (overrides = {}) => ({
+          _id: SUBMISSION_ID,
+          form: MOCK_TARGET,
+          workflowStep: 0,
+          stepTokenHash: STEP_TOKEN_HASH,
+          esrvcId: 'snapshot-esrvc-id',
+          form_fields: [],
+          submittedSteps: [],
+          workflow: [
+            { edit: [] },
+            {
+              edit: [],
+              auth: {
+                auth_type: FormAuthType.CP,
+                is_submitter_id_collection_enabled: true,
+              },
+            },
+          ],
+          ...overrides,
+        })
+        const mintBinding = (context = CONTEXT) => {
+          const res = expressHandler.mockResponse()
+          setCpStepBindingCookie(res, context, NONCE)
+          return jest.mocked(res.cookie).mock.calls[0][1] as string
+        }
+        const makeRequest = (binding: string) =>
+          expressHandler.mockRequest({
+            query: { state: 'state', code: MOCK_CP_OIDC_AUTHORISATION_CODE },
+            cookies: {
+              [`${CodeVerifierCookieName.CP}_${NONCE}`]: MOCK_CP_CODE_VERIFIER,
+              [`cpStepBinding_${NONCE}`]: binding,
+              // A legacy Corppass session never unlocks the step.
+              [JwtName.CP]: 'legacy-jwt',
+            },
+          })
+        const stepCookieName = `mrfStepAuth_${MOCK_TARGET}_${SUBMISSION_ID}`
+        const findStepCookie = (res: typeof MOCK_RESPONSE) =>
+          jest
+            .mocked(res.cookie)
+            .mock.calls.find(([name]) => name === stepCookieName)
+
+        beforeEach(() => {
+          mockCpOidcServiceClass.parseState.mockReturnValue(
+            ok({
+              formId: MOCK_TARGET,
+              destination: `/${MOCK_TARGET}?queryId=abc`,
+              rememberMe: false,
+              cookieDuration: MOCK_COOKIE_AGE,
+              nonce: NONCE,
+            }),
+          )
+          mockCpOidcServiceClass.extractCodeVerifier.mockImplementation(
+            (cookies, nonce) =>
+              cookies[`${CodeVerifierCookieName.CP}_${nonce}`],
+          )
+          mockCpOidcServiceClass.getCookieDuration.mockReturnValue(
+            MOCK_COOKIE_AGE,
+          )
+          MockFormService.retrieveFullFormById.mockReturnValue(
+            okAsync(MRF_FORM as unknown as IPopulatedForm),
+          )
+          MockMrfService.checkFormIsMultirespondent.mockImplementation((form) =>
+            ok(form as IPopulatedMultirespondentForm),
+          )
+          MockMrfService.getMultirespondentSubmission.mockReturnValue(
+            okAsync(
+              makeSubmission() as unknown as IMultirespondentSubmissionSchema,
+            ),
+          )
+        })
+
+        it("should set only that step's session and return to the submission", async () => {
+          const res = expressHandler.mockResponse()
+
+          await loginHandler(makeRequest(mintBinding()), res, jest.fn())
+
+          expect(
+            mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+          ).toHaveBeenCalledWith(
+            MOCK_CP_OIDC_AUTHORISATION_CODE,
+            MOCK_CP_CODE_VERIFIER,
+          )
+          expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
+            MRF_FORM,
+            { authType: FormAuthType.CP, esrvcId: 'snapshot-esrvc-id' },
+          )
+          const stepCookie = findStepCookie(res)
+          expect((stepCookie as unknown[] | undefined)?.[2]).toMatchObject({
+            path: `/api/v3/forms/${MOCK_TARGET}`,
+            httpOnly: true,
+          })
+          expect(
+            verifyMrfStepAuthCookie(
+              { [stepCookieName]: stepCookie?.[1] as string },
+              CONTEXT,
+            )._unsafeUnwrap(),
+          ).toMatchObject({ userName: MOCK_UEN, userInfo: MOCK_NRIC })
+          expect(res.cookie).not.toHaveBeenCalledWith(
+            JwtName.CP,
+            expect.anything(),
+            expect.anything(),
+          )
+          expect(mockCpOidcServiceClass.createJWT).not.toHaveBeenCalled()
+          expect(res.clearCookie).toHaveBeenCalledWith(
+            `cpStepBinding_${NONCE}`,
+            expect.anything(),
+          )
+          expect(res.redirect).toHaveBeenCalledWith(EDIT_DESTINATION)
+        })
+
+        it('should reject a tampered binding before exchanging the code', async () => {
+          const res = expressHandler.mockResponse()
+          const [header, , signature] = mintBinding().split('.')
+          const forgedPayload = Buffer.from(
+            JSON.stringify({ ...CONTEXT, submissionId: 'other', nonce: NONCE }),
+          ).toString('base64url')
+
+          await loginHandler(
+            makeRequest(`${header}.${forgedPayload}.${signature}`),
+            res,
+            jest.fn(),
+          )
+
+          expect(res.sendStatus).toHaveBeenCalledWith(400)
+          expect(
+            mockCpOidcServiceClass.exchangeAuthCodeAndRetrieveData,
+          ).not.toHaveBeenCalled()
+          expect(res.redirect).not.toHaveBeenCalled()
+          expect(res.clearCookie).toHaveBeenCalledWith(
+            `cpStepBinding_${NONCE}`,
+            expect.anything(),
+          )
+        })
+
+        it.each([
+          ['has advanced', { workflowStep: 1 }],
+          ['has a new step token', { stepTokenHash: 'new-step-token-hash' }],
+        ])(
+          'should not log in when the submission %s since login started',
+          async (_, change) => {
+            MockMrfService.getMultirespondentSubmission.mockReturnValue(
+              okAsync(
+                makeSubmission(
+                  change,
+                ) as unknown as IMultirespondentSubmissionSchema,
+              ),
+            )
+            const res = expressHandler.mockResponse()
+
+            await loginHandler(makeRequest(mintBinding()), res, jest.fn())
+
+            expect(findStepCookie(res)).toBeUndefined()
+            expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
+            expect(res.cookie).toHaveBeenCalledWith('isLoginError', true)
+            expect(res.redirect).toHaveBeenCalledWith(EDIT_DESTINATION)
+          },
+        )
       })
     })
   })

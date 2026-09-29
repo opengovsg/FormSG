@@ -23,7 +23,7 @@ describe('billing.service', () => {
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockResolvedValueOnce(mockLogin)
       const result = await BillingService.recordLoginByForm(mockForm)
-      expect(addLoginSpy).toHaveBeenCalledWith(mockForm)
+      expect(addLoginSpy).toHaveBeenCalledWith(mockForm, undefined)
       expect(result._unsafeUnwrap()).toEqual(mockLogin)
     })
 
@@ -40,6 +40,28 @@ describe('billing.service', () => {
       expect(result._unsafeUnwrapErr()).toEqual(new FormHasNoAuthError())
     })
 
+    it('should record a later MRF step login on a form whose first step has no login', async () => {
+      const mockForm = {
+        authType: FormAuthType.NIL,
+      } as unknown as IPopulatedForm
+      const authOverride = {
+        authType: FormAuthType.CP,
+        esrvcId: 'snapshot-esrvc-id',
+      }
+      const mockLogin = { esrvcId: 'snapshot-esrvc-id' } as ILoginSchema
+      const addLoginSpy = jest
+        .spyOn(LoginModel, 'addLoginFromForm')
+        .mockResolvedValueOnce(mockLogin)
+
+      const result = await BillingService.recordLoginByForm(
+        mockForm,
+        authOverride,
+      )
+
+      expect(addLoginSpy).toHaveBeenCalledWith(mockForm, authOverride)
+      expect(result._unsafeUnwrap()).toEqual(mockLogin)
+    })
+
     it('should return DatabaseError when adding login fails', async () => {
       const mockForm = {
         authType: FormAuthType.SP,
@@ -48,7 +70,7 @@ describe('billing.service', () => {
         .spyOn(LoginModel, 'addLoginFromForm')
         .mockRejectedValueOnce('')
       const result = await BillingService.recordLoginByForm(mockForm)
-      expect(addLoginSpy).toHaveBeenCalledWith(mockForm)
+      expect(addLoginSpy).toHaveBeenCalledWith(mockForm, undefined)
       expect(result._unsafeUnwrapErr()).toEqual(
         new DatabaseError(getMongoErrorMessage('')),
       )

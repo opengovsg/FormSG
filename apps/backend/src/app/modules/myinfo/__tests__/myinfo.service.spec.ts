@@ -107,6 +107,8 @@ describe('MyInfoServiceClass', () => {
         MOCK_FORM_ID,
         expectedHashes,
         MOCK_COOKIE_AGE,
+        // Form-level prefill has no step login session
+        undefined,
       )
       expect(result._unsafeUnwrap()).toEqual(mockReturnValue)
     })
@@ -152,7 +154,11 @@ describe('MyInfoServiceClass', () => {
         MOCK_FORM_ID,
       )
 
-      expect(mockFindHashes).toHaveBeenCalledWith(MOCK_UINFIN, MOCK_FORM_ID)
+      expect(mockFindHashes).toHaveBeenCalledWith(
+        MOCK_UINFIN,
+        MOCK_FORM_ID,
+        undefined,
+      )
       expect(result._unsafeUnwrap()).toEqual(mockReturnValue)
     })
 
@@ -166,7 +172,11 @@ describe('MyInfoServiceClass', () => {
         MOCK_FORM_ID,
       )
 
-      expect(mockFindHashes).toHaveBeenCalledWith(MOCK_UINFIN, MOCK_FORM_ID)
+      expect(mockFindHashes).toHaveBeenCalledWith(
+        MOCK_UINFIN,
+        MOCK_FORM_ID,
+        undefined,
+      )
       expect(result._unsafeUnwrapErr()).toEqual(
         new Error('Requested hashes not found in database'),
       )
@@ -182,7 +192,11 @@ describe('MyInfoServiceClass', () => {
         MOCK_FORM_ID,
       )
 
-      expect(mockFindHashes).toHaveBeenCalledWith(MOCK_UINFIN, MOCK_FORM_ID)
+      expect(mockFindHashes).toHaveBeenCalledWith(
+        MOCK_UINFIN,
+        MOCK_FORM_ID,
+        undefined,
+      )
       expect(result._unsafeUnwrapErr()).toEqual(
         new Error('Error while fetching MyInfo hashes from database'),
       )

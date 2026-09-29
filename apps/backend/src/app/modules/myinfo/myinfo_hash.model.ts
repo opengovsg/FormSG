@@ -49,11 +49,14 @@ MyInfoHashSchema.index({
 })
 MyInfoHashSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 })
 
+// Hashes from a later MRF step's login carry its session ID; legacy form-level
+// hashes have none, so neither scope can read or overwrite the other.
 MyInfoHashSchema.statics.updateHashes = async function (
   uinFin: string,
   formId: string,
   readOnlyHashes: IHashes,
   spCookieMaxAge: number,
+  authSessionId?: string,
 ): Promise<IMyInfoHashSchema | null> {
   const hashedUinFin = crypto
     .createHmac('sha256', sessionSecret)
@@ -63,6 +66,7 @@ MyInfoHashSchema.statics.updateHashes = async function (
     {
       uinFin: hashedUinFin,
       form: formId,
+      authSessionId: authSessionId ?? { $exists: false },
     },
     {
       $set: {
@@ -77,6 +81,7 @@ MyInfoHashSchema.statics.updateHashes = async function (
 MyInfoHashSchema.statics.findHashes = async function (
   uinFin: string,
   formId: string,
+  authSessionId?: string,
 ): Promise<IHashes | null> {
   const hashedUinFin = crypto
     .createHmac('sha256', sessionSecret)
@@ -85,6 +90,7 @@ MyInfoHashSchema.statics.findHashes = async function (
   const hashInfo = await this.findOne({
     uinFin: hashedUinFin,
     form: formId,
+    authSessionId: authSessionId ?? { $exists: false },
   })
   return hashInfo ? hashInfo.fields : null
 }

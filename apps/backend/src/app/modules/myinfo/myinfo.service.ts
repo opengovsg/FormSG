@@ -69,12 +69,14 @@ export class MyInfoServiceClass {
    * @param formId
    * @param myInfoData
    * @param currFormFields
+   * @param authSessionId scopes the hashes to a later MRF step's login session
    * @returns currFormFields with the MyInfo fields prefilled with data from myInfoData
    */
   prefillAndSaveMyInfoFields(
     formId: string,
     myInfoData: MyInfoData | SGIDMyInfoData,
     currFormFields: FlattenMaps<IFieldSchema[]>,
+    authSessionId?: string,
   ): ResultAsync<PossiblyPrefilledField[], MyInfoHashingError | DatabaseError> {
     const allChildAttrs: InternalAttr[] = []
     const prefilledFields = currFormFields.map((field) => {
@@ -121,6 +123,7 @@ export class MyInfoServiceClass {
       myInfoData instanceof MyInfoData
         ? myInfoData.getChildrenBirthRecords(allChildAttrs)
         : undefined,
+      authSessionId,
     ).map(() => prefilledFields)
   }
 
@@ -137,6 +140,7 @@ export class MyInfoServiceClass {
     formId: string,
     prefilledFormFields: PossiblyPrefilledField[],
     childrenBirthRecords?: MyInfoChildData,
+    authSessionId?: string,
   ): ResultAsync<IMyInfoHashSchema | null, MyInfoHashingError | DatabaseError> {
     const readOnlyHashPromises = hashFieldValues(
       prefilledFormFields,
@@ -162,6 +166,7 @@ export class MyInfoServiceClass {
           formId,
           readOnlyHashes,
           this.#spCookieMaxAge,
+          authSessionId,
         ),
         (error) => {
           const message = 'Failed to save MyInfo hashes to database'
@@ -183,15 +188,17 @@ export class MyInfoServiceClass {
    * Fetches the saved hashes for a given MyInfo form and user.
    * @param uinFin NRIC
    * @param formId ID of form being checked
+   * @param authSessionId the later MRF step login session the hashes belong to, if any
    * @returns an object mapping MyInfo attributes to their respective saved hashes
    * @throws error if there was an error while querying the database or the requested hashes were not found
    */
   fetchMyInfoHashes(
     uinFin: string,
     formId: string,
+    authSessionId?: string,
   ): ResultAsync<IHashes, DatabaseError | MyInfoMissingHashError> {
     return ResultAsync.fromPromise(
-      MyInfoHash.findHashes(uinFin, formId),
+      MyInfoHash.findHashes(uinFin, formId, authSessionId),
       (error) => {
         const message = 'Error while fetching MyInfo hashes from database'
         logger.error({
