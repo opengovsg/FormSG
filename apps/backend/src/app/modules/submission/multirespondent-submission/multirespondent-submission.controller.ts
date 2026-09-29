@@ -502,9 +502,14 @@ const updateMultirespondentSubmission = async (
     formId,
   }
 
-  const { formDef: currentForm, snapshottedFormDef } = req.formsg
+  const {
+    formDef: currentForm,
+    snapshottedFormDef,
+    mrfSubmission,
+    stepAuth,
+  } = req.formsg
 
-  if (!snapshottedFormDef) {
+  if (!snapshottedFormDef || !mrfSubmission) {
     return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
   }
 
@@ -542,6 +547,11 @@ const updateMultirespondentSubmission = async (
       submissionId,
       snapshottedFormDef,
       encryptedPayload,
+      // Only advances from the step this request was checked against
+      expectedPrevious: {
+        workflowStep: mrfSubmission.workflowStep,
+        stepTokenHash: mrfSubmission.stepTokenHash,
+      },
       logMeta,
       growthbook: req.growthbook,
     })
@@ -567,6 +577,11 @@ const updateMultirespondentSubmission = async (
 
   const { submission, snapshot } =
     updateMultiRespondentFormSubmissionResult.value
+
+  // The step is done, so its login can't be reused.
+  if (stepAuth?.context) {
+    clearMrfStepAuthCookie(res, stepAuth.context)
+  }
 
   // Send success back to client
   res.json({
@@ -615,6 +630,7 @@ export const handleUpdateMultirespondentSubmission = [
   ReceiverMiddleware.receiveMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.validateUpdateMultirespondentSubmissionParams,
   MultirespondentSubmissionMiddleware.createFormsgAndRetrieveForm,
+  MultirespondentSubmissionMiddleware.verifyMrfStepAuth,
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.verifyMyInfoHashes,

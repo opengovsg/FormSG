@@ -20,7 +20,9 @@ import { HashingError } from 'src/app/utils/hash'
 import * as OtpUtils from 'src/app/utils/otp'
 import {
   IFormSchema,
+  IMultirespondentSubmissionSchema,
   IPopulatedForm,
+  IPopulatedMultirespondentForm,
   IVerificationFieldSchema,
   IVerificationSchema,
 } from 'src/types'
@@ -55,8 +57,10 @@ import {
 import { InvalidJwtError, MissingJwtError } from '../../spcp/spcp.errors'
 import { CpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import { SpOidcServiceClass } from '../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
+import * as MrfService from '../../submission/multirespondent-submission/multirespondent-submission.service'
 import { MrfJwtPayload } from '../../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../../submission/multirespondent-submission/multirespondent-submission.utils'
+import { setMrfStepAuthCookie } from '../../submission/multirespondent-submission/step-auth'
 import * as SubmissionService from '../../submission/submission.service'
 import * as VerificationController from '../verification.controller'
 import {
@@ -2124,6 +2128,139 @@ describe('Verification controller', () => {
         cookies: {
           [MOCK_COOKIE_NAME]: MOCK_MRF_JWT,
         },
+      })
+
+      const MOCK_STEP_TOKEN_HASH = 'pending-step-token-hash'
+      const buildPendingSubmission = (step2Auth?: unknown) =>
+        ({
+          _id: MOCK_PREVIOUS_SUBMISSION_ID,
+          form: MOCK_FORM._id,
+          workflowStep: 0,
+          stepTokenHash: MOCK_STEP_TOKEN_HASH,
+          form_fields: [],
+          workflow: [
+            { edit: [] },
+            { edit: [], ...(step2Auth ? { auth: step2Auth } : {}) },
+          ],
+          submittedSteps: [],
+        }) as unknown as IMultirespondentSubmissionSchema
+      const MYINFO_STEP_AUTH = {
+        auth_type: FormAuthType.MyInfo,
+        is_submitter_id_collection_enabled: true,
+        whitelisted_submitter_ids: {
+          isWhitelistEnabled: true,
+          encryptedWhitelistedSubmitterIds: new ObjectId(),
+        },
+      }
+      const mintStepCookie = () => {
+        const res = expressHandler.mockResponse()
+        setMrfStepAuthCookie(res, {
+          formId: String(MOCK_FORM._id),
+          submissionId: MOCK_PREVIOUS_SUBMISSION_ID,
+          workflowStep: 1,
+          authType: FormAuthType.MyInfo,
+          stepTokenHash: MOCK_STEP_TOKEN_HASH,
+          userName: 'S7654321B',
+          myInfoAuthSessionId: 'step-2-fapi-session',
+        })
+        const [name, token] = jest.mocked(res.cookie).mock.calls[0] as [
+          string,
+          string,
+        ]
+        return { [name]: token }
+      }
+      const buildMrfReq = (cookies: Record<string, string>) =>
+        expressHandler.mockRequest({
+          body: {
+            answer: MOCK_ANSWER,
+            previousSubmissionId: MOCK_PREVIOUS_SUBMISSION_ID,
+          },
+          params: {
+            formId: MOCK_FORM_ID,
+            transactionId: MOCK_TRANSACTION_ID,
+            fieldId: MOCK_FIELD_ID,
+            otpPrefix: MOCK_OTP_PREFIX,
+          },
+          cookies: { [MOCK_COOKIE_NAME]: MOCK_MRF_JWT, ...cookies },
+        })
+
+      beforeEach(() => {
+        jest
+          .spyOn(MrfService, 'checkFormIsMultirespondent')
+          .mockImplementation((form) =>
+            ok(form as IPopulatedMultirespondentForm),
+          )
+        jest
+          .spyOn(MrfService, 'getMultirespondentSubmission')
+          .mockReturnValue(okAsync(buildPendingSubmission()))
+      })
+
+      describe('when the pending step has login', () => {
+        beforeEach(() => {
+          MockSubmissionService.getSubmissionMetadata.mockReturnValue(
+            okAsync({
+              mrf: { workflowCurrentStepNumber: MOCK_WORKFLOW_STEP },
+            } as never),
+          )
+          jest
+            .spyOn(MrfService, 'getMultirespondentSubmission')
+            .mockReturnValue(okAsync(buildPendingSubmission(MYINFO_STEP_AUTH)))
+          MockFormService.checkIsSubmitterNotWhitelisted.mockReturnValue(
+            okAsync(false),
+          )
+        })
+
+        it.each([
+          ['no login', {}],
+          [
+            "only Step 1's global login cookies",
+            { jwtCp: 'global-cp', MyInfoCookie: 'global-myinfo' },
+          ],
+        ])(
+          'should not issue an OTP with %s',
+          async (_, cookies: Record<string, string>) => {
+            await VerificationController._handleGenerateOtp(
+              buildMrfReq(cookies),
+              mockRes,
+              jest.fn(),
+            )
+
+            expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+            expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+          },
+        )
+
+        it("should issue an OTP after this step's login to an eligible respondent", async () => {
+          await VerificationController._handleGenerateOtp(
+            buildMrfReq(mintStepCookie()),
+            mockRes,
+            jest.fn(),
+          )
+
+          expect(MockVerificationService.sendNewOtp).toHaveBeenCalledWith(
+            EXPECTED_PARAMS_FOR_SENDING_FORM_OTP,
+          )
+          expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CREATED)
+        })
+
+        it('should not issue an OTP to an ineligible respondent', async () => {
+          MockFormService.checkIsSubmitterNotWhitelisted.mockReturnValue(
+            okAsync(true),
+          )
+
+          await VerificationController._handleGenerateOtp(
+            buildMrfReq(mintStepCookie()),
+            mockRes,
+            jest.fn(),
+          )
+
+          expect(MockVerificationService.sendNewOtp).not.toHaveBeenCalled()
+          expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+        })
+      })
+
+      afterEach(() => {
+        jest.restoreAllMocks()
       })
 
       it('should return 201 when MRF JWT is valid and all checks pass', async () => {

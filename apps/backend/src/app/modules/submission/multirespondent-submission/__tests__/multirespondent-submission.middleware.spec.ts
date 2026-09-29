@@ -4,6 +4,7 @@ import {
   isFieldResponsesV4,
 } from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
+import type { Response } from 'express'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
@@ -30,6 +31,7 @@ import * as VerifiedContentService from 'src/app/modules/verified-content/verifi
 import * as LogicAdaptor from 'src/app/utils/logic-adaptor'
 
 import * as FeatureFlagService from '../../../feature-flags/feature-flags.service'
+import { FormWhitelistSettingNotFoundError } from '../../../form/form.errors'
 import * as FormService from '../../../form/form.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
 import { generateHashedSubmitterId } from '../../submission.utils'
@@ -40,6 +42,7 @@ import {
   validateMultirespondentRemindBody,
   validateMultirespondentSubmission,
   validatePaymentSubmission,
+  verifyMrfStepAuth,
   verifyMyInfoHashes,
 } from '../multirespondent-submission.middleware'
 import {
@@ -47,6 +50,7 @@ import {
   getMultirespondentSubmission,
 } from '../multirespondent-submission.service'
 import * as MrfUtils from '../multirespondent-submission.utils'
+import { getMrfStepAuthCookieName, setMrfStepAuthCookie } from '../step-auth'
 import * as stepToken from '../step-token'
 
 jest.mock('../../../feature-flags/feature-flags.service')
@@ -154,6 +158,8 @@ describe('Multirespondent Submission Middleware', () => {
     json: jest.fn().mockReturnThis(),
     send: jest.fn().mockReturnThis(),
   })
+  // Mock responses only implement what the middlewares call.
+  const toMiddlewareRes = (res: object) => res as unknown as Response
 
   describe('createFormsgAndRetrieveForm', () => {
     const MOCK_FORM_ID = new ObjectId().toHexString()
@@ -916,6 +922,163 @@ describe('Multirespondent Submission Middleware', () => {
         'SingPass Validated NRIC',
       )
     })
+
+    describe('later step with login', () => {
+      const { getVerifiedContent: actualGetVerifiedContent } =
+        jest.requireActual<typeof VerifiedContentService>(
+          'src/app/modules/verified-content/verified-content.service',
+        )
+      const STEP_1_VERIFIED = { 'uinFin (Step 1)': 'S1234567A' }
+
+      const createStep2Req = ({
+        authType,
+        isSubmitterIdCollectionEnabled = true,
+        session,
+      }: {
+        authType: FormAuthType.MyInfo | FormAuthType.CP
+        isSubmitterIdCollectionEnabled?: boolean
+        session?: Record<string, string>
+      }) => {
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: MOCK_SUBMISSION_ID,
+        })
+        mockReq.body.workflowStep = 1
+        mockReq.body.submissionSecretKey = 'prev-submission-secret'
+        mockReq.formsg = {
+          // The live form collects nothing; later steps use their own copy.
+          formDef: { ...MOCK_FORM, isSubmitterIdCollectionEnabled: false },
+          mrfSubmission: {
+            ...MOCK_MRF_SUBMISSION,
+            verifiedContent: 'verified-content',
+          },
+          stepAuth: {
+            workflowStep: 1,
+            stepFields: [],
+            login: {
+              authType,
+              isSubmitterIdCollectionEnabled,
+              whitelist: { isWhitelistEnabled: false },
+            },
+            session,
+          },
+          encryptedPayload: { submissionPublicKey: 'mockSubmissionPublicKey' },
+        }
+        return mockReq
+      }
+
+      beforeEach(() => {
+        jest
+          .mocked(VerifiedContentService.getVerifiedContent)
+          .mockImplementation(actualGetVerifiedContent)
+        jest
+          .mocked(VerifiedContentService.encryptVerifiedContent)
+          .mockReturnValue(ok('encrypted-verified-content'))
+        ;(
+          formsgSdk.cryptoV3.decryptFromSubmissionKey as jest.Mock
+        ).mockReturnValue({ verified: STEP_1_VERIFIED, responses: {} })
+      })
+
+      it("should add this step's Singpass identity beside Step 1's", async () => {
+        const mockNext = jest.fn()
+        const mockReq = createStep2Req({
+          authType: FormAuthType.MyInfo,
+          session: { userName: 'S7654321B', myInfoAuthSessionId: 'fapi' },
+        })
+
+        await handleNdiResponses(
+          mockReq,
+          toMiddlewareRes(createMockRes()),
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        // Never Step 1's global login cookie
+        expect(MyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
+        expect(
+          VerifiedContentService.encryptVerifiedContent,
+        ).toHaveBeenCalledWith({
+          verifiedContent: {
+            'uinFin (Step 1)': 'S1234567A',
+            'uinFin (Step 2)': 'S7654321B',
+          },
+          formPublicKey: 'mockSubmissionPublicKey',
+        })
+        // Only Step 1 records the submitter (one response per identity)
+        expect(mockReq.formsg.encryptedPayload).not.toHaveProperty(
+          'submitterId',
+        )
+        expect(mockReq.formsg.encryptedPayload).not.toHaveProperty(
+          'hashedSubmitterId',
+        )
+      })
+
+      it("should add this step's Corppass entity and user", async () => {
+        const mockNext = jest.fn()
+        const mockReq = createStep2Req({
+          authType: FormAuthType.CP,
+          session: { userName: '200000177W', userInfo: 'CP-UID' },
+        })
+
+        await handleNdiResponses(
+          mockReq,
+          toMiddlewareRes(createMockRes()),
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(
+          VerifiedContentService.encryptVerifiedContent,
+        ).toHaveBeenCalledWith({
+          verifiedContent: {
+            'uinFin (Step 1)': 'S1234567A',
+            'cpUen (Step 2)': '200000177W',
+            'cpUid (Step 2)': 'CP-UID',
+          },
+          formPublicKey: 'mockSubmissionPublicKey',
+        })
+      })
+
+      it("should keep earlier identities when this step doesn't collect its own", async () => {
+        const mockNext = jest.fn()
+        const mockReq = createStep2Req({
+          authType: FormAuthType.MyInfo,
+          isSubmitterIdCollectionEnabled: false,
+          session: { userName: 'S7654321B', myInfoAuthSessionId: 'fapi' },
+        })
+
+        await handleNdiResponses(
+          mockReq,
+          toMiddlewareRes(createMockRes()),
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(
+          VerifiedContentService.encryptVerifiedContent,
+        ).toHaveBeenCalledWith({
+          verifiedContent: STEP_1_VERIFIED,
+          formPublicKey: 'mockSubmissionPublicKey',
+        })
+      })
+
+      it('should reject a login step without its verified login', async () => {
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await handleNdiResponses(
+          createStep2Req({ authType: FormAuthType.MyInfo }),
+          toMiddlewareRes(mockRes),
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+        expect(
+          VerifiedContentService.encryptVerifiedContent,
+        ).not.toHaveBeenCalled()
+      })
+    })
   })
 
   describe('verifyMyInfoHashes', () => {
@@ -1143,16 +1306,16 @@ describe('Multirespondent Submission Middleware', () => {
       ).not.toHaveBeenCalled()
     })
 
-    it('should skip the hash check for updates to an existing submission (steps >= 2)', async () => {
-      // Arrange: an existing submission means the incoming submission is for
-      // step >= 2; MyInfo prefill only happens on the first step.
+    it('should skip the hash check for a later step without MyInfo login', async () => {
+      // Arrange: the live form is MyInfo, but the pending step has no login.
       const mockNext = jest.fn()
       const mockReq = createMyInfoMockReq()
       mockReq.formsg.mrfSubmission = { workflowStep: 0 }
+      mockReq.formsg.stepAuth = { workflowStep: 1, stepFields: [] }
       const mockRes = createMockRes()
 
       // Act
-      await verifyMyInfoHashes(mockReq, mockRes as any, mockNext)
+      await verifyMyInfoHashes(mockReq, toMiddlewareRes(mockRes), mockNext)
 
       // Assert
       expect(mockNext).toHaveBeenCalled()
@@ -1162,6 +1325,414 @@ describe('Multirespondent Submission Middleware', () => {
       expect(
         jest.mocked(MyInfoService.checkMyInfoHashes),
       ).not.toHaveBeenCalled()
+    })
+
+    it('should fail closed for a later step whose login was not resolved', async () => {
+      const mockNext = jest.fn()
+      const mockReq = createMyInfoMockReq()
+      mockReq.formsg.mrfSubmission = { workflowStep: 0 }
+      const mockRes = createMockRes()
+
+      await verifyMyInfoHashes(mockReq, toMiddlewareRes(mockRes), mockNext)
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.BAD_REQUEST)
+    })
+
+    describe('later MyInfo step', () => {
+      const STEP_1_NAME_ID = new ObjectId().toHexString()
+      const STEP_2_NAME_ID = new ObjectId().toHexString()
+      const nameField = (_id: string) => ({
+        _id,
+        fieldType: BasicField.ShortText,
+        title: 'Name',
+        myInfo: { attr: 'name' },
+      })
+      const SESSION = {
+        userName: 'S7654321B',
+        myInfoAuthSessionId: 'step-2-fapi-session',
+      }
+
+      const createStep2Req = () => {
+        const mockReq = createMockReq({
+          formId: MOCK_FORM_ID,
+          submissionId: new ObjectId().toHexString(),
+        })
+        mockReq.body.responses = {
+          // Step 1's answer, carried forward and verified back then
+          [STEP_1_NAME_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'First Person' },
+            question: 'Name',
+            provenance: { myinfoVerified: true },
+          },
+          [STEP_2_NAME_ID]: {
+            fieldType: BasicField.ShortText,
+            answer: { value: 'Second Person' },
+            question: 'Name',
+            provenance: {},
+          },
+        }
+        mockReq.formsg = {
+          // The live form's login never applies to a later step.
+          formDef: { ...MOCK_MYINFO_FORM_DEF, authType: FormAuthType.NIL },
+          mrfSubmission: {
+            workflowStep: 0,
+            myInfoReadOnlyFields: [STEP_1_NAME_ID],
+          },
+          stepAuth: {
+            workflowStep: 1,
+            stepFields: [nameField(STEP_2_NAME_ID)],
+            login: {
+              authType: FormAuthType.MyInfo,
+              isSubmitterIdCollectionEnabled: true,
+              whitelist: { isWhitelistEnabled: false },
+            },
+            session: SESSION,
+          },
+        }
+        return mockReq
+      }
+
+      it("should check only this step's fields against its login's hashes", async () => {
+        jest
+          .mocked(MyInfoService.fetchMyInfoHashes)
+          .mockReturnValue(okAsync({ name: 'step-2-hash' }))
+        jest
+          .mocked(MyInfoService.checkMyInfoHashes)
+          .mockReturnValue(okAsync(new Set([STEP_2_NAME_ID])))
+        const mockNext = jest.fn()
+        const mockReq = createStep2Req()
+
+        await verifyMyInfoHashes(
+          mockReq,
+          toMiddlewareRes(createMockRes()),
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(MyInfoUtil.extractMyInfoLoginJwt).not.toHaveBeenCalled()
+        expect(MyInfoService.fetchMyInfoHashes).toHaveBeenCalledWith(
+          SESSION.userName,
+          MOCK_FORM_ID,
+          SESSION.myInfoAuthSessionId,
+        )
+        expect(MyInfoService.checkMyInfoHashes).toHaveBeenCalledWith(
+          [
+            expect.objectContaining({
+              _id: STEP_2_NAME_ID,
+              answer: 'Second Person',
+            }),
+          ],
+          { name: 'step-2-hash' },
+        )
+        // Earlier read-only fields are kept alongside this step's.
+        expect(mockReq.formsg.myInfoReadOnlyFields).toEqual([
+          STEP_1_NAME_ID,
+          STEP_2_NAME_ID,
+        ])
+        expect(mockReq.body.responses[STEP_1_NAME_ID]).toEqual(
+          expect.objectContaining({
+            answer: { value: 'First Person' },
+            provenance: { myinfoVerified: true },
+          }),
+        )
+      })
+
+      it("should reject a tampered answer on this step's MyInfo field", async () => {
+        jest
+          .mocked(MyInfoService.fetchMyInfoHashes)
+          .mockReturnValue(okAsync({ name: 'step-2-hash' }))
+        jest
+          .mocked(MyInfoService.checkMyInfoHashes)
+          .mockReturnValue(errAsync(new MyInfoHashDidNotMatchError()))
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+
+        await verifyMyInfoHashes(
+          createStep2Req(),
+          toMiddlewareRes(mockRes),
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+      })
+
+      it('should not need saved hashes for a login-only step', async () => {
+        const mockNext = jest.fn()
+        const mockReq = createStep2Req()
+        mockReq.formsg.stepAuth.stepFields = [
+          {
+            _id: STEP_2_NAME_ID,
+            fieldType: BasicField.ShortText,
+            title: 'Name',
+          },
+        ]
+
+        await verifyMyInfoHashes(
+          mockReq,
+          toMiddlewareRes(createMockRes()),
+          mockNext,
+        )
+
+        expect(mockNext).toHaveBeenCalled()
+        expect(MyInfoService.fetchMyInfoHashes).not.toHaveBeenCalled()
+        // Nothing verified, so the stored list is left as is.
+        expect(mockReq.formsg.myInfoReadOnlyFields).toBeUndefined()
+        expect(mockReq.body.responses[STEP_2_NAME_ID].provenance).toEqual({})
+      })
+
+      it('should reject a MyInfo step without its verified login', async () => {
+        const mockNext = jest.fn()
+        const mockRes = createMockRes()
+        const mockReq = createStep2Req()
+        delete mockReq.formsg.stepAuth.session
+
+        await verifyMyInfoHashes(mockReq, toMiddlewareRes(mockRes), mockNext)
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+        expect(MyInfoService.fetchMyInfoHashes).not.toHaveBeenCalled()
+      })
+    })
+  })
+
+  describe('verifyMrfStepAuth', () => {
+    const FORM_ID = new ObjectId().toHexString()
+    const SUBMISSION_ID = new ObjectId().toHexString()
+    const STEP_TOKEN = stepToken.generate()
+    const STEP_TOKEN_HASH = stepToken.hash(STEP_TOKEN)
+    const WHITELIST_ID = new ObjectId()
+    const STEP_2_FIELD_ID = new ObjectId().toHexString()
+    const MYINFO_STEP_AUTH = {
+      auth_type: FormAuthType.MyInfo,
+      is_submitter_id_collection_enabled: true,
+      whitelisted_submitter_ids: {
+        isWhitelistEnabled: true,
+        encryptedWhitelistedSubmitterIds: WHITELIST_ID,
+      },
+    }
+    const SESSION = {
+      formId: FORM_ID,
+      submissionId: SUBMISSION_ID,
+      workflowStep: 1,
+      authType: FormAuthType.MyInfo as const,
+      stepTokenHash: STEP_TOKEN_HASH,
+      userName: 'S7654321B',
+      myInfoAuthSessionId: 'step-2-fapi-session',
+    }
+
+    const mintCookie = (session = SESSION) => {
+      const res = { cookie: jest.fn() }
+      setMrfStepAuthCookie(toMiddlewareRes(res), session)
+      const [name, token] = res.cookie.mock.calls[0] as [string, string]
+      return { [name]: token }
+    }
+
+    const createStepAuthReq = ({
+      step2Auth = MYINFO_STEP_AUTH,
+      cookies = {},
+      presentedToken = STEP_TOKEN,
+    }: {
+      step2Auth?: unknown
+      cookies?: Record<string, string>
+      presentedToken?: string
+    } = {}) => {
+      const mockReq = createMockReq({
+        formId: FORM_ID,
+        submissionId: SUBMISSION_ID,
+      })
+      mockReq.body.stepToken = presentedToken
+      mockReq.cookies = cookies
+      mockReq.formsg = {
+        // The live form has no login; the submission's copy decides.
+        formDef: { _id: FORM_ID, authType: FormAuthType.NIL, publicKey: 'pk' },
+        mrfSubmission: {
+          _id: SUBMISSION_ID,
+          form: new ObjectId(FORM_ID),
+          workflowStep: 0,
+          stepTokenHash: STEP_TOKEN_HASH,
+          form_fields: [{ _id: STEP_2_FIELD_ID, title: 'Name' }],
+          workflow: [
+            { edit: [] },
+            {
+              edit: [STEP_2_FIELD_ID],
+              ...(step2Auth ? { auth: step2Auth } : {}),
+            },
+          ],
+          submittedSteps: [],
+        },
+      }
+      return mockReq
+    }
+    const createStepAuthRes = () => ({
+      ...createMockRes(),
+      clearCookie: jest.fn(),
+    })
+
+    beforeEach(() => {
+      jest.resetAllMocks()
+      jest.mocked(OidcService.getOidcService).mockReturnValue({
+        getCookieSettings: () => ({}),
+        // Only the cookie settings are read when clearing
+      } as never)
+      jest
+        .mocked(FormService.checkIsSubmitterNotWhitelisted)
+        .mockReturnValue(okAsync(false))
+    })
+
+    it('should continue without a login for a step that has none', async () => {
+      const mockNext = jest.fn()
+      const mockReq = createStepAuthReq({ step2Auth: null })
+
+      await verifyMrfStepAuth(
+        mockReq,
+        toMiddlewareRes(createStepAuthRes()),
+        mockNext,
+      )
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.formsg.stepAuth).toEqual({
+        workflowStep: 1,
+        stepFields: [{ _id: STEP_2_FIELD_ID, title: 'Name' }],
+      })
+    })
+
+    it("should accept this step's login when the respondent is eligible", async () => {
+      const mockNext = jest.fn()
+      const mockReq = createStepAuthReq({ cookies: mintCookie() })
+
+      await verifyMrfStepAuth(
+        mockReq,
+        toMiddlewareRes(createStepAuthRes()),
+        mockNext,
+      )
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.formsg.stepAuth.session).toMatchObject({
+        userName: SESSION.userName,
+        myInfoAuthSessionId: SESSION.myInfoAuthSessionId,
+      })
+      // Eligibility is checked against the list saved on the submission.
+      expect(FormService.checkIsSubmitterNotWhitelisted).toHaveBeenCalledWith({
+        formId: FORM_ID,
+        formPublicKey: 'pk',
+        whitelistId: String(WHITELIST_ID),
+        submitterId: SESSION.userName,
+      })
+    })
+
+    it.each([
+      ['no login', {}],
+      [
+        "only Step 1's global login cookies",
+        { MyInfoCookie: 'global-myinfo', jwtCp: 'global-cp' },
+      ],
+    ])(
+      'should reject a protected step with %s before processing',
+      async (_, cookies: Record<string, string>) => {
+        const mockNext = jest.fn()
+        const mockRes = createStepAuthRes()
+
+        await verifyMrfStepAuth(
+          createStepAuthReq({ cookies }),
+          toMiddlewareRes(mockRes),
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({ spcpSubmissionFailure: true }),
+        )
+      },
+    )
+
+    it.each([
+      ['another step', { workflowStep: 2 }],
+      ['an older step token', { stepTokenHash: 'older-token-hash' }],
+      ['another submission', { submissionId: new ObjectId().toHexString() }],
+    ])(
+      'should reject and clear a login for %s',
+      async (_, change: Partial<typeof SESSION>) => {
+        const mockNext = jest.fn()
+        const mockRes = createStepAuthRes()
+        const session = { ...SESSION, ...change }
+        const cookies = mintCookie(session)
+        // Presented under this submission's cookie name
+        const [token] = Object.values(cookies)
+
+        await verifyMrfStepAuth(
+          createStepAuthReq({
+            cookies: { [getMrfStepAuthCookieName(SESSION)]: token },
+          }),
+          toMiddlewareRes(mockRes),
+          mockNext,
+        )
+
+        expect(mockNext).not.toHaveBeenCalled()
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+        expect(mockRes.clearCookie).toHaveBeenCalledWith(
+          getMrfStepAuthCookieName(SESSION),
+          expect.objectContaining({ path: `/api/v3/forms/${FORM_ID}` }),
+        )
+      },
+    )
+
+    it('should reject an ineligible respondent', async () => {
+      jest
+        .mocked(FormService.checkIsSubmitterNotWhitelisted)
+        .mockReturnValue(okAsync(true))
+      const mockNext = jest.fn()
+      const mockRes = createStepAuthRes()
+
+      await verifyMrfStepAuth(
+        createStepAuthReq({ cookies: mintCookie() }),
+        toMiddlewareRes(mockRes),
+        mockNext,
+      )
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      expect(mockRes.clearCookie).toHaveBeenCalled()
+    })
+
+    it('should fail closed when the eligible-respondent list cannot be read', async () => {
+      jest
+        .mocked(FormService.checkIsSubmitterNotWhitelisted)
+        .mockReturnValue(errAsync(new FormWhitelistSettingNotFoundError()))
+      const mockNext = jest.fn()
+      const mockRes = createStepAuthRes()
+
+      await verifyMrfStepAuth(
+        createStepAuthReq({ cookies: mintCookie() }),
+        toMiddlewareRes(mockRes),
+        mockNext,
+      )
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(
+        StatusCodes.INTERNAL_SERVER_ERROR,
+      )
+    })
+
+    it('should reject a wrong step token before checking the login', async () => {
+      const mockNext = jest.fn()
+      const mockRes = createStepAuthRes()
+
+      await verifyMrfStepAuth(
+        createStepAuthReq({
+          cookies: mintCookie(),
+          presentedToken: stepToken.generate(),
+        }),
+        toMiddlewareRes(mockRes),
+        mockNext,
+      )
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+      expect(FormService.checkIsSubmitterNotWhitelisted).not.toHaveBeenCalled()
     })
   })
 

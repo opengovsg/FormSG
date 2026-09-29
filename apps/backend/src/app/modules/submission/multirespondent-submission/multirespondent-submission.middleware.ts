@@ -19,6 +19,7 @@ import {
   SubmissionType,
 } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
+import { uniq } from 'lodash'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
 import {
@@ -46,18 +47,19 @@ import {
 } from '../../../utils/logic-adaptor'
 import { createReqMeta } from '../../../utils/request'
 import { isFieldResponseV4Equal } from '../../../utils/response-v4'
-import { DatabaseError } from '../../core/core.errors'
+import { ApplicationError, DatabaseError } from '../../core/core.errors'
 import * as FeatureFlagService from '../../feature-flags/feature-flags.service'
 import { JoiPaymentProduct } from '../../form/admin-form/admin-form.payments.constants'
 import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
+import { FormRespondentNotWhitelistedError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import { MyInfoService } from '../../myinfo/myinfo.service'
 import { extractMyInfoLoginJwt } from '../../myinfo/myinfo.util'
 import * as PaymentsService from '../../payments/payments.service'
+import { MissingJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import { createNdiResponsesV4FromRecord } from '../../spcp/spcp.util'
 import * as VerifiedContentService from '../../verified-content/verified-content.service'
-import { VerifiedContentV3 } from '../../verified-content/verified-content.types'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
 import {
@@ -67,6 +69,7 @@ import {
   ProcessingError,
   StepTokenVerificationError,
   SubmissionEncryptionVerificationError,
+  SubmissionFailedError,
   SubmissionNotFoundError,
 } from '../submission.errors'
 import * as SubmissionService from '../submission.service'
@@ -97,6 +100,13 @@ import {
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
 import { resolveMrfMyInfoReadOnlyFields } from './myinfo-read-only-fields'
+import {
+  checkMrfStepEligibility,
+  clearMrfStepAuthCookie,
+  type ResolvedMrfStepLogin,
+  resolveMrfStepAuth,
+  verifyMrfStepAuthCookie,
+} from './step-auth'
 import * as stepToken from './step-token'
 
 const logger = createLoggerWithLabel(module)
@@ -307,6 +317,85 @@ export const createFormsgAndRetrieveForm = (
             })
         })
     })
+}
+
+/**
+ * Authenticates the respondent for the pending step of an existing
+ * submission, before any response is processed. Login settings come from the
+ * submission's own copy of the workflow, never from the live form.
+ */
+export const verifyMrfStepAuth = async (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formDef, mrfSubmission } = req.formsg
+  const logMeta = {
+    action: 'verifyMrfStepAuth',
+    formId: String(formDef._id),
+    submissionId: mrfSubmission ? String(mrfSubmission._id) : undefined,
+    ...createReqMeta(req),
+  }
+  if (!mrfSubmission) {
+    return sendRouteError(res, mapRouteError(new SubmissionNotFoundError()))
+  }
+
+  const resolvedResult = resolveMrfStepAuth(formDef, mrfSubmission, {
+    stepToken: req.body.stepToken,
+  })
+  if (resolvedResult.isErr()) {
+    logger.warn({
+      message: 'Failed to resolve MRF step login',
+      meta: logMeta,
+      error: resolvedResult.error,
+    })
+    return sendRouteError(res, mapRouteError(resolvedResult.error))
+  }
+  const resolved = resolvedResult.value
+  const { context, login } = resolved
+  if (!context || !login) {
+    req.formsg.stepAuth = resolved
+    return next()
+  }
+
+  const sessionResult = verifyMrfStepAuthCookie(req.cookies ?? {}, context)
+  if (sessionResult.isErr()) {
+    logger.warn({
+      message: 'MRF step respondent is not logged in for this step',
+      meta: logMeta,
+      error: sessionResult.error,
+    })
+    if (!(sessionResult.error instanceof MissingJwtError)) {
+      clearMrfStepAuthCookie(res, context)
+    }
+    return sendRouteError(res, mapRouteError(sessionResult.error), {
+      spcpSubmissionFailure: true,
+    })
+  }
+  const session = sessionResult.value
+
+  const eligibleResult = await checkMrfStepEligibility(
+    formDef,
+    login,
+    session.userName,
+  )
+  if (eligibleResult.isErr()) {
+    logger.error({
+      message: 'Error validating if MRF step respondent is whitelisted',
+      meta: logMeta,
+      error: eligibleResult.error,
+    })
+    return sendRouteError(res, mapRouteError(eligibleResult.error))
+  }
+  if (!eligibleResult.value) {
+    const error = new FormRespondentNotWhitelistedError()
+    logger.warn({ message: error.message, meta: logMeta, error })
+    clearMrfStepAuthCookie(res, context)
+    return sendRouteError(res, mapRouteError(error))
+  }
+
+  req.formsg.stepAuth = { ...resolved, session }
+  return next()
 }
 
 type IdTaggedParsedClearAttachmentResponseV4 =
@@ -747,8 +836,12 @@ export const validateMultirespondentSubmission = async (
                   formFields: form_fields,
                   responses: req.body.responses,
                   previousResponses,
-                  workflowStep,
-                  formAuthType: req.formsg.formDef.authType,
+                  stepEditableFieldIds: new Set(editableFieldIds),
+                  // A later step's provider comes from verifyMrfStepAuth;
+                  // without it, only carried-forward answers pass.
+                  stepAuthType: previousSubmission
+                    ? (req.formsg.stepAuth?.login?.authType ?? FormAuthType.NIL)
+                    : req.formsg.formDef.authType,
                   // Fail closed: without a growthbook instance, Children
                   // responses are rejected.
                   isMrfChildrenEnabled:
@@ -894,8 +987,9 @@ export const setCurrentWorkflowStep = async (
  * answers client-side.
  *
  * Must run before encryptSubmission, which snapshots the responses into the
- * stored encryptedContent. MyInfo prefill only happens on the first step, so
- * updates to an existing submission (mrfSubmission present) skip the check.
+ * stored encryptedContent. Step 1 checks against the form's MyInfo login. A
+ * later MyInfo step checks only its own fields, against the hashes saved for
+ * its login; earlier answers are restored by validateMultirespondentSubmission.
  *
  * On success, records the verification outcome as response provenance:
  * answers whose hash keys were verified get provenance.myinfoVerified
@@ -907,16 +1001,73 @@ export const verifyMyInfoHashes = async (
   next: NextFunction,
 ) => {
   const { formId } = req.params
-  const { formDef, mrfSubmission } = req.formsg
-
-  if (formDef.authType !== FormAuthType.MyInfo || mrfSubmission) {
-    return next()
-  }
+  const { formDef, mrfSubmission, stepAuth } = req.formsg
 
   const logMeta = {
     action: 'verifyMyInfoHashes',
     formId,
     ...createReqMeta(req),
+  }
+  const sendHashError = (error: ApplicationError) => {
+    logger.error({
+      message: 'Error verifying MyInfo hashes',
+      meta: logMeta,
+      error,
+    })
+    return sendRouteError(res, mapRouteError(error), {
+      spcpSubmissionFailure: true,
+    })
+  }
+  const responses = req.body.responses ?? {}
+
+  if (mrfSubmission) {
+    // Fail closed: set by verifyMrfStepAuth for every existing submission.
+    if (!stepAuth) {
+      return sendRouteError(res, mapRouteError(new SubmissionFailedError()))
+    }
+    if (stepAuth.login?.authType !== FormAuthType.MyInfo) {
+      return next()
+    }
+    const { session, stepFields } = stepAuth
+    if (!session) {
+      return sendHashError(new MissingJwtError())
+    }
+    const stepFieldIds = new Set(stepFields.map((field) => String(field._id)))
+    const stepResponses = Object.fromEntries(
+      Object.entries(responses).filter(([id]) => stepFieldIds.has(id)),
+    )
+    const stepMyInfoResponses = adaptV4ResponsesForMyInfoHashCheck(
+      stepResponses,
+      stepFields,
+    )
+    // A login-only step has nothing prefilled, so no hashes were saved.
+    if (stepMyInfoResponses.length === 0) {
+      return next()
+    }
+    return MyInfoService.fetchMyInfoHashes(
+      session.userName,
+      formId,
+      session.myInfoAuthSessionId,
+    )
+      .andThen((hashes) =>
+        MyInfoService.checkMyInfoHashes(stepMyInfoResponses, hashes),
+      )
+      .map((verifiedKeys) => {
+        req.formsg.myInfoReadOnlyFields = uniq([
+          ...(mrfSubmission.myInfoReadOnlyFields ?? []),
+          ...resolveMrfMyInfoReadOnlyFields({
+            verifiedKeys,
+            responses: stepResponses,
+          }),
+        ])
+        stampMyInfoVerifiedOnResponses(stepResponses, verifiedKeys)
+        return next()
+      })
+      .mapErr(sendHashError)
+  }
+
+  if (formDef.authType !== FormAuthType.MyInfo) {
+    return next()
   }
 
   return extractMyInfoLoginJwt(req.cookies, formDef.authType)
@@ -924,10 +1075,7 @@ export const verifyMyInfoHashes = async (
     .asyncAndThen(({ uinFin }) =>
       MyInfoService.fetchMyInfoHashes(uinFin, formId).andThen((hashes) =>
         MyInfoService.checkMyInfoHashes(
-          adaptV4ResponsesForMyInfoHashCheck(
-            req.body.responses ?? {},
-            formDef.form_fields,
-          ),
+          adaptV4ResponsesForMyInfoHashCheck(responses, formDef.form_fields),
           hashes,
         ),
       ),
@@ -935,23 +1083,14 @@ export const verifyMyInfoHashes = async (
     .map((verifiedKeys) => {
       req.formsg.myInfoReadOnlyFields = resolveMrfMyInfoReadOnlyFields({
         verifiedKeys,
-        responses: req.body.responses ?? {},
+        responses,
       })
       // Children fields are MyInfo-prefilled and non-editable, so record
       // the successful verification on the stored response's provenance.
-      stampMyInfoVerifiedOnResponses(req.body.responses ?? {}, verifiedKeys)
+      stampMyInfoVerifiedOnResponses(responses, verifiedKeys)
       return next()
     })
-    .mapErr((error) => {
-      logger.error({
-        message: 'Error verifying MyInfo hashes',
-        meta: logMeta,
-        error,
-      })
-      return sendRouteError(res, mapRouteError(error), {
-        spcpSubmissionFailure: true,
-      })
-    })
+    .mapErr(sendHashError)
 }
 
 /**
@@ -1089,16 +1228,15 @@ export const handleNdiResponses = async (
   res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
   next: NextFunction,
 ) => {
-  const formDef = req.formsg.formDef
+  const { formDef, mrfSubmission, stepAuth } = req.formsg
   const { formId } = req.params
-  const { authType } = formDef
   const { submissionPublicKey } = req.formsg.encryptedPayload
-  const stepNumber: number = req.body.workflowStep
-    ? req.body.workflowStep + 1
-    : 1
+  // Zero-indexed step being submitted; set from the stored submission by
+  // setCurrentWorkflowStep for later steps.
+  const workflowStep: number = req.body.workflowStep ?? 0
+  const stepNumber = workflowStep + 1
   let responses = req.formsg.encryptedPayload.responses // to add NDI data to responses (used for email payload downstream)
 
-  let verifiedContent: VerifiedContentV3 | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let ndiResponses: Record<string, any> = {}
 
@@ -1108,14 +1246,45 @@ export const handleNdiResponses = async (
     formId,
   }
 
-  const isSingpassAuthType =
-    authType === FormAuthType.CP || authType === FormAuthType.MyInfo
+  // 1. Identity of this step's respondent
+  let stepLogin:
+    | (Pick<
+        ResolvedMrfStepLogin,
+        'authType' | 'isSubmitterIdCollectionEnabled'
+      > & { userName?: string; userInfo?: string })
+    | undefined
 
-  // 1. Handle Ndi data for current step
-  if (
-    isSingpassAuthType &&
-    stepNumber === 1 // TODO: update to handle when subsequent steps are Singpass-enabled
+  if (workflowStep > 0) {
+    // Later steps use the login verified by verifyMrfStepAuth, with the
+    // settings saved on the submission. Never Step 1's cookies.
+    const session = stepAuth?.session
+    const isLoginStep =
+      !!stepAuth?.login || !!mrfSubmission?.workflow?.[workflowStep]?.auth
+    if (isLoginStep && (!stepAuth?.login || !session)) {
+      const error = new MissingJwtError()
+      logger.error({
+        message: 'MRF step login missing when handling NDI responses',
+        meta: logMeta,
+        error,
+      })
+      return sendRouteError(res, mapRouteError(error), {
+        spcpSubmissionFailure: true,
+      })
+    }
+    if (stepAuth?.login && session) {
+      stepLogin = {
+        authType: stepAuth.login.authType,
+        isSubmitterIdCollectionEnabled:
+          stepAuth.login.isSubmitterIdCollectionEnabled,
+        userName: session.userName,
+        userInfo: session.userInfo,
+      }
+    }
+  } else if (
+    formDef.authType === FormAuthType.CP ||
+    formDef.authType === FormAuthType.MyInfo
   ) {
+    const { authType } = formDef
     let userName
     let userInfo
     let jwtPayloadResult
@@ -1144,14 +1313,9 @@ export const handleNdiResponses = async (
         }
         break
       }
-      default:
-        logger.error({
-          message: `AuthType: ${authType} unsupported for handling NdiResponses (supported: [MyInfo, CP])`,
-          meta: logMeta,
-        })
     }
 
-    if (jwtPayloadResult?.isErr()) {
+    if (jwtPayloadResult.isErr()) {
       logger.error({
         message: `Failed to verify ${authType} JWT with auth client`,
         meta: logMeta,
@@ -1160,53 +1324,60 @@ export const handleNdiResponses = async (
       return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
         spcpSubmissionFailure: true,
       })
-    } else {
-      const verifiedContentResult = VerifiedContentService.getVerifiedContent({
-        type: authType,
-        data: {
-          uinFin: userName,
-          userInfo,
-          stepNumber: stepNumber,
-        },
+    }
+
+    // Only Step 1 records the submitter, for one response per identity (C0).
+    const submitterId = userName?.toUpperCase()
+    if (!submitterId) {
+      const missingSubmitterIdError = new MissingSubmitterIdError()
+      return sendRouteError(res, mapRouteError(missingSubmitterIdError))
+    }
+    req.formsg.encryptedPayload.hashedSubmitterId = generateHashedSubmitterId(
+      submitterId,
+      formId,
+    )
+    req.formsg.encryptedPayload.submitterId = submitterId
+    stepLogin = {
+      authType,
+      isSubmitterIdCollectionEnabled: !!formDef.isSubmitterIdCollectionEnabled,
+      userName,
+      userInfo,
+    }
+  }
+
+  if (stepLogin) {
+    const verifiedContentResult = VerifiedContentService.getVerifiedContent({
+      type: stepLogin.authType,
+      data: {
+        uinFin: stepLogin.userName,
+        userInfo: stepLogin.userInfo,
+        stepNumber,
+      },
+    })
+
+    if (verifiedContentResult.isErr()) {
+      const { error } = verifiedContentResult
+      logger.error({
+        message: 'Unable to get verified content',
+        meta: logMeta,
+        error,
       })
 
-      if (verifiedContentResult.isErr()) {
-        const { error } = verifiedContentResult
-        logger.error({
-          message: 'Unable to get verified content',
-          meta: logMeta,
-          error,
-        })
+      return sendRouteError(res, {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: 'Invalid data was found. Please submit again.',
+        errorMessageKey:
+          'features.publicForm.backendErrors.submission.validation.invalidData',
+      })
+    }
 
-        return sendRouteError(res, {
-          statusCode: StatusCodes.BAD_REQUEST,
-          errorMessage: 'Invalid data was found. Please submit again.',
-          errorMessageKey:
-            'features.publicForm.backendErrors.submission.validation.invalidData',
-        })
-      }
-
-      const submitterId = userName?.toUpperCase()
-      if (!submitterId) {
-        const missingSubmitterIdError = new MissingSubmitterIdError()
-        return sendRouteError(res, mapRouteError(missingSubmitterIdError))
-      }
-      const hashedSubmitterId = generateHashedSubmitterId(submitterId, formId)
-      req.formsg.encryptedPayload.hashedSubmitterId = hashedSubmitterId
-      req.formsg.encryptedPayload.submitterId = submitterId
-      verifiedContent = verifiedContentResult.value
+    // This step's toggle only decides whether this step's identity is kept.
+    if (stepLogin.isSubmitterIdCollectionEnabled) {
+      ndiResponses = { ...verifiedContentResult.value }
     }
   }
 
-  if (formDef.isSubmitterIdCollectionEnabled) {
-    ndiResponses = {
-      ...verifiedContent,
-    }
-  }
-
-  // 2. Handle Ndi data for previous steps
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mrfSubmission = req.formsg.mrfSubmission
+  // 2. Handle Ndi data for previous steps, kept whatever this step's settings
   const prevSubmissionSecretKey = req.body.submissionSecretKey
 
   if (mrfSubmission?.verifiedContent && prevSubmissionSecretKey) {

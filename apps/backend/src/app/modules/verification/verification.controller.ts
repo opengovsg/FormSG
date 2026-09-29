@@ -11,20 +11,30 @@ import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import { errAsync, okAsync, Result } from 'neverthrow'
 
+import { IPopulatedForm } from '../../../types'
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { generateOtpWithHash } from '../../utils/otp'
 import { createReqMeta, getRequestIp } from '../../utils/request'
 import { ControllerHandler, ErrorResponseData } from '../core/core.types'
 import { setFormTags } from '../datadog/datadog.utils'
+import { FormRespondentNotWhitelistedError } from '../form/form.errors'
 import * as FormService from '../form/form.service'
 import { MyInfoService } from '../myinfo/myinfo.service'
 import * as MyInfoUtil from '../myinfo/myinfo.util'
 import { SGID_COOKIE_NAME } from '../sgid/sgid.constants'
 import { SgidService } from '../sgid/sgid.service'
 import { getOidcService } from '../spcp/spcp.oidc.service'
+import {
+  checkFormIsMultirespondent,
+  getMultirespondentSubmission,
+} from '../submission/multirespondent-submission/multirespondent-submission.service'
 import { MrfJwtPayload } from '../submission/multirespondent-submission/multirespondent-submission.types'
 import { getMrfCookieName } from '../submission/multirespondent-submission/multirespondent-submission.utils'
+import {
+  checkMrfStepEligibility,
+  resolveMrfStepAuth,
+} from '../submission/multirespondent-submission/step-auth'
 import * as SubmissionService from '../submission/submission.service'
 
 import { MrfJwtValidationError } from './verification.errors'
@@ -86,6 +96,43 @@ export const handleCreateVerificationTransaction: ControllerHandler<
 }
 
 /**
+ * An OTP for a later MRF step with login needs that step's login and
+ * eligibility, as its submission does. The request has no step token, so the
+ * step's continuation cookie stands in for it.
+ */
+const ensureMrfPendingStepLogin = ({
+  form,
+  submissionId,
+  cookies,
+}: {
+  form: IPopulatedForm
+  submissionId: string
+  cookies: Record<string, string | undefined>
+}) =>
+  checkFormIsMultirespondent(form)
+    .asyncAndThen((mrfForm) =>
+      getMultirespondentSubmission(submissionId).andThen((submission) =>
+        resolveMrfStepAuth(mrfForm, submission, {
+          stepAuthCookies: cookies,
+        }).asyncAndThen(({ login, session }) => {
+          if (!login || !session) {
+            return okAsync(undefined)
+          }
+          return checkMrfStepEligibility(
+            mrfForm,
+            login,
+            session.userName,
+          ).andThen((isEligible) =>
+            isEligible
+              ? okAsync(undefined)
+              : errAsync(new FormRespondentNotWhitelistedError()),
+          )
+        }),
+      ),
+    )
+    .map(() => form)
+
+/**
  * NOTE: This is exported solely for testing
  * Generates an otp when a user requests to verify a field.
  * The current answer is signed, and the signature is also saved in the transaction, with the field id as the key.
@@ -132,9 +179,8 @@ export const _handleGenerateOtp: ControllerHandler<
       .andThen((form) => FormService.isFormPublic(form).map(() => form))
       // Step 3: Verify SPCP/MyInfo, if form requires it
       .andThen((form) => {
-        // If previousSubmissionId exists, this means it is coming from a 2+ step MRF workflow
-        // verify MRF JWT and skip SPCP/MyInfo since Singpass is currently only enabled for MRF first step
-        // TODO: revisit this logic when Singpass is enabled for all MRF steps (fix is to run validation check if step is Singpass-enabled)
+        // If previousSubmissionId exists, this means it is coming from a 2+ step MRF workflow:
+        // verify the MRF JWT, then the pending step's own login (if any) instead of the form's.
         if (previousSubmissionId) {
           const mrfCookie =
             req.cookies[getMrfCookieName({ formId, previousSubmissionId })]
@@ -192,10 +238,16 @@ export const _handleGenerateOtp: ControllerHandler<
                       new MrfJwtValidationError('MRF JWT validation failed'),
                     )
                   }
-
-                  // MRF JWT is valid, skip SPCP/MyInfo verification
+                  // MRF JWT is valid; the step's login is checked next
                   return okAsync(form)
                 })
+                .andThen(() =>
+                  ensureMrfPendingStepLogin({
+                    form,
+                    submissionId: previousSubmissionId,
+                    cookies: req.cookies ?? {},
+                  }),
+                )
                 .mapErr((error) => {
                   logger.error({
                     message: 'Failed to verify MRF JWT',

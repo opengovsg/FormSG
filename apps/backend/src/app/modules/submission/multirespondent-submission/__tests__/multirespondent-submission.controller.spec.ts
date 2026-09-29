@@ -44,6 +44,7 @@ import {
   InvalidWorkflowTypeError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfSubmissionStaleError,
   SubmissionNotFoundError,
   SubmissionSaveError,
 } from '../../submission.errors'
@@ -54,6 +55,7 @@ import {
   updateMultirespondentSubmissionForTest,
 } from '../multirespondent-submission.controller'
 import * as MultiRespondentSubmissionService from '../multirespondent-submission.service'
+import { UpdateMultirespondentSubmissionHandlerRequest } from '../multirespondent-submission.types'
 import * as MultirespondentSubmissionUtils from '../multirespondent-submission.utils'
 import { SnapshotWriteError } from '../webhook/submission-snapshot.errors'
 
@@ -700,6 +702,13 @@ describe('multirespondent-submision.controller', () => {
   })
 
   describe('updateMultirespondentSubmission', () => {
+    // The stored step the request was checked against
+    const MOCK_PENDING_SUBMISSION = {
+      _id: mockSubmissionId,
+      workflowStep: 0,
+      stepTokenHash: 'prev-step-token-hash',
+    }
+
     it('returns 400 bad request if snapshottedFormDef is not provided when updating mrf submission', async () => {
       // Arrange
       const mockReq = expressHandler.mockRequest({
@@ -750,6 +759,7 @@ describe('multirespondent-submision.controller', () => {
       })
       const mockSubmitMrfReq = merge(mockReq, {
         formsg: {
+          mrfSubmission: MOCK_PENDING_SUBMISSION,
           formDef: {
             _id: mockFormId,
             authType: FormAuthType.NIL,
@@ -801,6 +811,10 @@ describe('multirespondent-submision.controller', () => {
         submissionId: mockSubmissionId,
         encryptedPayload: mockSubmitMrfReq.formsg.encryptedPayload,
         snapshottedFormDef: mockSubmitMrfReq.formsg.snapshottedFormDef,
+        expectedPrevious: {
+          workflowStep: 0,
+          stepTokenHash: 'prev-step-token-hash',
+        },
       })
 
       // Assert post save actions are invoked with correct args
@@ -839,6 +853,7 @@ describe('multirespondent-submision.controller', () => {
       })
       const mockSubmitMrfReq = merge(mockReq, {
         formsg: {
+          mrfSubmission: MOCK_PENDING_SUBMISSION,
           formDef: {
             _id: mockFormId,
             authType: FormAuthType.NIL,
@@ -903,6 +918,7 @@ describe('multirespondent-submision.controller', () => {
       })
       const mockSubmitMrfReq = merge(mockReq, {
         formsg: {
+          mrfSubmission: MOCK_PENDING_SUBMISSION,
           formDef: {
             _id: mockFormId,
             authType: FormAuthType.NIL,
@@ -967,6 +983,7 @@ describe('multirespondent-submision.controller', () => {
       })
       const mockSubmitMrfReq = merge(mockReq, {
         formsg: {
+          mrfSubmission: MOCK_PENDING_SUBMISSION,
           formDef: {
             _id: mockFormId,
             authType: FormAuthType.NIL,
@@ -1024,6 +1041,7 @@ describe('multirespondent-submision.controller', () => {
       })
       const mockSubmitMrfReq = merge(mockReq, {
         formsg: {
+          mrfSubmission: MOCK_PENDING_SUBMISSION,
           formDef: {
             _id: mockFormId,
             authType: FormAuthType.NIL,
@@ -1086,6 +1104,7 @@ describe('multirespondent-submision.controller', () => {
       })
       const mockSubmitMrfReq = merge(mockReq, {
         formsg: {
+          mrfSubmission: MOCK_PENDING_SUBMISSION,
           formDef: {
             _id: mockFormId,
             authType: FormAuthType.NIL,
@@ -1128,6 +1147,82 @@ describe('multirespondent-submision.controller', () => {
       })
     })
 
+    describe('protected and concurrently updated steps', () => {
+      const STEP_CONTEXT = {
+        formId: mockFormId,
+        submissionId: mockSubmissionId,
+        workflowStep: 1,
+        authType: FormAuthType.MyInfo,
+        stepTokenHash: 'prev-step-token-hash',
+      }
+      const createProtectedStepReq = () =>
+        merge(
+          expressHandler.mockRequest({
+            params: { formId: mockFormId, submissionId: mockSubmissionId },
+            body: {} as Record<string, never>,
+          }),
+          {
+            formsg: {
+              formDef: { _id: mockFormId, authType: FormAuthType.NIL },
+              mrfSubmission: MOCK_PENDING_SUBMISSION,
+              stepAuth: {
+                workflowStep: 1,
+                stepFields: [],
+                context: STEP_CONTEXT,
+              },
+              snapshottedFormDef: {
+                _id: mockFormId,
+                form_fields: [],
+                form_logics: [],
+                workflow: [],
+                emails: [],
+                title: 'Mock snapshotted form def',
+              },
+              encryptedPayload: { responses: {}, workflowStep: 1 },
+            },
+          },
+        ) as unknown as UpdateMultirespondentSubmissionHandlerRequest
+
+      it('returns 409 without post-submission effects when another request advanced the step first', async () => {
+        MockMultiRespondentSubmissionService.updateMultiRespondentFormSubmission =
+          jest.fn().mockReturnValue(errAsync(new MrfSubmissionStaleError()))
+        const mockRes = expressHandler.mockResponse()
+
+        await updateMultirespondentSubmissionForTest(
+          createProtectedStepReq(),
+          mockRes,
+        )
+
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.CONFLICT)
+        expect(mockRes.json).toHaveBeenCalledWith({
+          message:
+            'This response has already been updated. Reload to continue.',
+        })
+        expect(
+          MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionUpdateActions,
+        ).not.toHaveBeenCalled()
+        // The loser may retry on a reload, so its login is kept.
+        expect(mockRes.clearCookie).not.toHaveBeenCalled()
+      })
+
+      it("clears the step's login once the step is saved", async () => {
+        const mockRes = expressHandler.mockResponse()
+
+        await updateMultirespondentSubmissionForTest(
+          createProtectedStepReq(),
+          mockRes,
+        )
+
+        expect(mockRes.clearCookie).toHaveBeenCalledWith(
+          `mrfStepAuth_${mockFormId}_${mockSubmissionId}`,
+          expect.objectContaining({ path: `/api/v3/forms/${mockFormId}` }),
+        )
+        expect(
+          MockMultiRespondentSubmissionService.performMultiRespondentPostSubmissionUpdateActions,
+        ).toHaveBeenCalledOnce()
+      })
+    })
+
     it('returns 200 ok when mail send error occurs', async () => {
       // Arrange
       const mailSendError = new MailSendError()
@@ -1143,6 +1238,7 @@ describe('multirespondent-submision.controller', () => {
       })
       const mockSubmitMrfReq = merge(mockReq, {
         formsg: {
+          mrfSubmission: MOCK_PENDING_SUBMISSION,
           formDef: {
             _id: mockFormId,
             authType: FormAuthType.NIL,
@@ -1197,6 +1293,7 @@ describe('multirespondent-submision.controller', () => {
       })
       const mockSubmitMrfReq = merge(mockReq, {
         formsg: {
+          mrfSubmission: MOCK_PENDING_SUBMISSION,
           formDef: {
             _id: mockFormId,
             authType: FormAuthType.NIL,

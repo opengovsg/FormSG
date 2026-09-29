@@ -220,8 +220,8 @@ export const retrieveWorkflowStepEmailAddresses = (
  * @param formId formId, used for logging
  * @param formFields all form fields in the form. Purpose: used to validate responses against the form field properties.
  * @param responses responses to validate
- * @param workflowStep the workflow step this submission targets (0 = initial submission)
- * @param formAuthType the form's auth type, from the form definition
+ * @param stepEditableFieldIds fields this step may fill in
+ * @param stepAuthType login provider of this step (Step 1: the form's)
  * @param isMrfChildrenEnabled whether the mrf-children feature flag is on; fail closed when unknown
  * @returns initial responses if all responses are valid, else an error.
  */
@@ -231,8 +231,8 @@ export const validateMrfFieldResponses = ({
   formFields,
   responses,
   previousResponses,
-  workflowStep,
-  formAuthType,
+  stepEditableFieldIds,
+  stepAuthType,
   isMrfChildrenEnabled,
 }: {
   formId: string
@@ -240,8 +240,8 @@ export const validateMrfFieldResponses = ({
   formFields: FormFieldDto[]
   responses: ParsedClearFormFieldResponsesV4
   previousResponses?: ParsedClearFormFieldResponsesV4
-  workflowStep: number
-  formAuthType: FormAuthType
+  stepEditableFieldIds: ReadonlySet<string>
+  stepAuthType: FormAuthType
   isMrfChildrenEnabled: boolean
 }): Result<
   ParsedClearFormFieldResponsesV4,
@@ -262,21 +262,18 @@ export const validateMrfFieldResponses = ({
       )
     }
 
-    // Children (MyInfo child records) responses are only accepted on the
-    // initial submission of a MyInfo-authed form, and only while the
-    // mrf-children feature flag is on. MyInfo sessions exist only on step 1;
-    // steps 2+ carry the step-1 answer forward as a non-editable response,
-    // which is accepted only when identical to the previous submission —
-    // a tampered carried-forward answer is still rejected here.
+    // Children (MyInfo child records) responses are only accepted while the
+    // mrf-children feature flag is on, and either filled in by this step
+    // after a MyInfo login, or carried forward unchanged from an earlier step
+    // (a tampered carried-forward answer is still rejected here).
     if (response.fieldType === BasicField.Children) {
+      const prevResponse = previousResponses?.[responseId]
       const isChildrenResponseAllowed =
         isMrfChildrenEnabled &&
-        formAuthType === FormAuthType.MyInfo &&
-        (workflowStep === 0 ||
-          !checkIsResponseChangedV4({
-            response,
-            prevResponse: previousResponses?.[responseId],
-          }))
+        ((stepAuthType === FormAuthType.MyInfo &&
+          stepEditableFieldIds.has(responseId)) ||
+          (!!prevResponse &&
+            !checkIsResponseChangedV4({ response, prevResponse })))
       if (!isChildrenResponseAllowed) {
         return err(
           new ValidateFieldErrorV4(

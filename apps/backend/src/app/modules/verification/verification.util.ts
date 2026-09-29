@@ -31,6 +31,7 @@ import {
 import {
   FormDeletedError,
   FormNotFoundError,
+  FormRespondentNotWhitelistedError,
   PrivateFormError,
 } from '../form/form.errors'
 import {
@@ -47,6 +48,10 @@ import {
   MissingJwtError,
   VerifyJwtError,
 } from '../spcp/spcp.errors'
+import {
+  MrfSubmissionStaleError,
+  SubmissionNotFoundError,
+} from '../submission/submission.errors'
 
 import {
   FieldNotFoundInTransactionError,
@@ -255,9 +260,20 @@ export const mapRouteError: MapRouteError = (
     case FieldNotFoundInTransactionError:
     case TransactionNotFoundError:
     case FormNotFoundError:
+    case SubmissionNotFoundError:
       return {
         errorMessage: coreErrorMsg,
         statusCode: StatusCodes.NOT_FOUND,
+      }
+    case FormRespondentNotWhitelistedError:
+      return {
+        errorMessage: error.message,
+        statusCode: StatusCodes.FORBIDDEN,
+      }
+    case MrfSubmissionStaleError:
+      return {
+        errorMessage: error.message,
+        statusCode: StatusCodes.CONFLICT,
       }
     case PrivateFormError:
       return {

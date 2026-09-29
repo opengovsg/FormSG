@@ -75,6 +75,8 @@ export type ResolvedMrfStepAuth = {
   login?: ResolvedMrfStepLogin
   // Present for a later step with login; binds provider sessions to it
   context?: MrfStepAuthContext
+  // Verified login, once checked against the continuation cookie
+  session?: VerifiedMrfStepAuth
 }
 
 // How the caller proves it may act on the pending step
@@ -82,6 +84,10 @@ export type MrfStepCredential =
   | { stepToken?: string }
   // Context signed at login start, checked against the current step instead
   | { binding: MrfStepAuthContext }
+  // For routes without the step token (eg OTP). A login step's cookie is only
+  // issued after its token was checked, so it stands in for the token. Steps
+  // without login pass; the caller must prove access some other way.
+  | { stepAuthCookies: Record<string, string | undefined> }
 
 export type ResolveMrfStepAuthError =
   | SubmissionNotFoundError
@@ -90,6 +96,9 @@ export type ResolveMrfStepAuthError =
   | AuthTypeMismatchError
   | FormAuthNoEsrvcIdError
   | FormWhitelistSettingNotFoundError
+  | MissingJwtError
+  | VerifyJwtError
+  | InvalidJwtError
 
 export type MrfStepAuthCookiePayload = MrfStepAuthContext & {
   // NRIC/FIN for MyInfo, UEN for CP
@@ -173,9 +182,10 @@ export const resolveMrfStepAuth = (
     return err(new SubmissionNotFoundError())
   }
 
-  // A binding was signed with the token hash; it is compared further down.
+  // A binding or cookie was signed with the token hash; compared further down.
   if (
     !('binding' in credential) &&
+    !('stepAuthCookies' in credential) &&
     submission.stepTokenHash &&
     (!credential.stepToken ||
       !stepToken.verify(credential.stepToken, submission.stepTokenHash))
@@ -242,7 +252,7 @@ export const resolveMrfStepAuth = (
     return err(new StepTokenVerificationError())
   }
 
-  return ok({
+  const resolved: ResolvedMrfStepAuth = {
     workflowStep,
     stepFields,
     context,
@@ -259,7 +269,13 @@ export const resolveMrfStepAuth = (
         : { isWhitelistEnabled: false },
       esrvcId,
     },
-  })
+  }
+  if ('stepAuthCookies' in credential) {
+    return verifyMrfStepAuthCookie(credential.stepAuthCookies, context).map(
+      (session) => ({ ...resolved, session }),
+    )
+  }
+  return ok(resolved)
 }
 
 /**
