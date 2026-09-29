@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker'
 import {
   BasicField,
   FormAuthType,
@@ -656,6 +655,40 @@ export const checkIsIntranetFormAccess = (
   return isIntranetUser
 }
 
+const SAMPLE_LOREM_WORDS = [
+  'lorem',
+  'ipsum',
+  'dolor',
+  'sit',
+  'amet',
+  'consectetur',
+  'adipiscing',
+  'elit',
+  'sed',
+  'eiusmod',
+  'tempor',
+  'incididunt',
+]
+
+const sampleInt = (min: number, max: number) =>
+  Math.floor(Math.random() * (max - min + 1)) + min
+
+const sampleArrayElement = <T>(items: readonly T[]): T =>
+  items[sampleInt(0, items.length - 1)]
+
+const sampleArrayElements = <T>(items: readonly T[]): T[] => {
+  const shuffled = [...items].sort(() => Math.random() - 0.5)
+  return shuffled.slice(0, sampleInt(1, items.length))
+}
+
+const sampleWords = (count: number) =>
+  Array.from({ length: count }, () =>
+    sampleArrayElement(SAMPLE_LOREM_WORDS),
+  ).join(' ')
+
+const sampleReplaceSymbols = (pattern: string) =>
+  pattern.replace(/#/g, () => sampleInt(0, 9).toString())
+
 export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
   // Prefill dropdown MyInfo field options for faking
   const { fieldType } = field
@@ -665,7 +698,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
 
   switch (fieldType) {
     case BasicField.LongText: {
-      const sampleValue = faker.lorem.text()
+      const sampleValue = sampleWords(20)
       return {
         id: field._id,
         question: field.title,
@@ -675,7 +708,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.ShortText: {
-      const sampleValue = faker.lorem.words()
+      const sampleValue = sampleWords(3)
       return {
         id: field._id,
         question: field.title,
@@ -689,7 +722,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       const sampleValue =
         field.fieldOptions.length === 0
           ? ''
-          : faker.helpers.arrayElement(field.fieldOptions)
+          : sampleArrayElement(field.fieldOptions)
       return {
         id: field._id,
         question: field.title,
@@ -698,7 +731,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       }
     }
     case BasicField.Email: {
-      const sampleValue = faker.internet.email()
+      const sampleValue = sampleReplaceSymbols('sample####@example.com')
       return {
         id: field._id,
         question: field.title,
@@ -708,7 +741,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.Decimal: {
-      const sampleValue = faker.number.float({ precision: 0.1 }).toString()
+      const sampleValue = (sampleInt(0, 10) / 10).toString()
       return {
         id: field._id,
         question: field.title,
@@ -718,7 +751,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.Number: {
-      const sampleValue = faker.number.int(100).toString()
+      const sampleValue = sampleInt(0, 100).toString()
       return {
         id: field._id,
         question: field.title,
@@ -728,7 +761,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.Mobile: {
-      const sampleValue = faker.phone.number('+659#######')
+      const sampleValue = sampleReplaceSymbols('+659#######')
       return {
         id: field._id,
         question: field.title,
@@ -738,7 +771,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.HomeNo: {
-      const sampleValue = faker.phone.number('+656#######')
+      const sampleValue = sampleReplaceSymbols('+656#######')
       return {
         id: field._id,
         question: field.title,
@@ -748,7 +781,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.YesNo: {
-      const sampleValue = faker.helpers.arrayElement(['Yes', 'No'])
+      const sampleValue = sampleArrayElement(['Yes', 'No'])
       return {
         id: field._id,
         question: field.title,
@@ -758,9 +791,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
     }
 
     case BasicField.Rating: {
-      const sampleValue = faker.number
-        .int({ min: 1, max: field.ratingOptions.steps })
-        .toString()
+      const sampleValue = sampleInt(1, field.ratingOptions.steps).toString()
       return {
         id: field._id,
         question: field.title,
@@ -800,7 +831,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       const sampleValue =
         field.fieldOptions.length === 0
           ? []
-          : faker.helpers.arrayElements(field.fieldOptions)
+          : sampleArrayElements(field.fieldOptions)
       return {
         id: field._id,
         question: field.title,
@@ -809,13 +840,11 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       }
     }
     case BasicField.Date: {
-      const sampleValue = faker.date
-        .anytime()
-        .toLocaleDateString(Language.ENGLISH, {
-          day: '2-digit',
-          month: 'short',
-          year: 'numeric',
-        })
+      const sampleValue = new Date().toLocaleDateString(Language.ENGLISH, {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      })
       return {
         id: field._id,
         question: field.title,
@@ -828,7 +857,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       return {
         id: field._id,
         question: field.title,
-        answer: faker.helpers.replaceSymbols('S9######A'),
+        answer: sampleReplaceSymbols('S9######A'),
         fieldType: field.fieldType,
       }
     }
@@ -836,7 +865,7 @@ export const createSingleSampleSubmissionAnswer = (field: FormFieldDto) => {
       return {
         id: field._id,
         question: field.title,
-        answer: faker.helpers.replaceSymbols('#########A'),
+        answer: sampleReplaceSymbols('#########A'),
         fieldType: field.fieldType,
       }
     }
