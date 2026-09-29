@@ -58,12 +58,45 @@ export type FormWorkflowStep =
   | FormWorkflowStepDynamic
   | FormWorkflowStepConditional
 
+// Public projections carry only the enabled state of an eligible-respondent list.
+type WithPublicAuth<T> = Omit<T, 'auth'> & { auth?: PublicWorkflowStepAuth }
+
 export type StrippedFormWorkflowStep =
-  | FormWorkflowStepStaticNoEmails
-  | FormWorkflowStepDynamic
-  | FormWorkflowStepConditional
+  | WithPublicAuth<FormWorkflowStepStaticNoEmails>
+  | WithPublicAuth<FormWorkflowStepDynamic>
+  | WithPublicAuth<FormWorkflowStepConditional>
 
 export type FormWorkflow = Array<FormWorkflowStep>
+
+// Request-only login input. The list is sent as whitelistCsvString, never as a reference.
+export type WorkflowStepLoginInput = Pick<
+  FormWorkflowStepAuth,
+  'auth_type' | 'is_submitter_id_collection_enabled'
+>
+
+// Step 1 login lives on the form. Omitted values keep their saved values.
+export interface WorkflowStepFormLevelInput {
+  first_step_login?: {
+    authType?: FormAuthType
+    isSubmitterIdCollectionEnabled?: boolean
+    isSingleSubmission?: boolean
+  }
+  esrvc_id?: string
+}
+
+type WithWriteAuth<T> = Omit<T, 'auth'> & {
+  auth?: WorkflowStepLoginInput | null
+}
+
+// PUT: omitted auth keeps the saved login, null removes it. POST: omitted means no login.
+export type WorkflowStepWriteDto = (
+  | WithWriteAuth<FormWorkflowStepStatic>
+  | WithWriteAuth<FormWorkflowStepDynamic>
+  | WithWriteAuth<FormWorkflowStepConditional>
+) & { _id?: string } & WorkflowStepFormLevelInput & {
+    // Omitted keeps the saved list, null clears it, a string replaces it.
+    whitelistCsvString?: string | null
+  }
 
 // Additional props to be added for DTOs
 

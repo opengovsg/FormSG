@@ -23,7 +23,10 @@ import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
 import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
-import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
+import {
+  stripWorkflowAuthPrivateData,
+  stripWorkflowEmails,
+} from 'formsg-shared/utils/strip-workflow-emails'
 import jwt from 'jsonwebtoken'
 import { get } from 'lodash'
 import moment from 'moment'
@@ -87,7 +90,7 @@ export const createMultirespondentSubmissionDto = (
       submissionData.myInfoReadOnlyFields ?? [],
     ),
     form_logics: submissionData.form_logics,
-    workflow: submissionData.workflow,
+    workflow: stripWorkflowAuthPrivateData(submissionData.workflow),
 
     submissionPublicKey: submissionData.submissionPublicKey,
     encryptedContent: submissionData.encryptedContent,

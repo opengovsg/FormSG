@@ -6,6 +6,7 @@ import {
   WebhookResponse,
   WorkflowStatus,
 } from 'formsg-shared/types'
+import { stripWorkflowAuthPrivateData } from 'formsg-shared/utils/strip-workflow-emails'
 import moment from 'moment-timezone'
 import mongoose, {
   Cursor as QueryCursor,
@@ -35,6 +36,7 @@ import {
   WebhookData,
   WebhookView,
 } from '../../types'
+import { getRawWorkflow } from '../modules/form/workflow-login.utils'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
 import { MultirespondentSubmissionContent } from '../modules/submission/multirespondent-submission/multirespondent-submission.types'
 import {
@@ -697,7 +699,8 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     attachmentDownloadUrls: attachmentRecords,
     paymentContent,
     workflowContent: {
-      workflow: this.workflow,
+      // A freshly created submission may still hold step subdocuments.
+      workflow: stripWorkflowAuthPrivateData(getRawWorkflow(this)),
       workflowStep: this.workflowStep,
       submittedSteps: (this.submittedSteps ?? []).map(
         projectSubmittedStepForWebhook,

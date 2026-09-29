@@ -125,3 +125,9 @@ export class FormChangedWhileEditingError extends ApplicationError {
     )
   }
 }
+
+export class InvalidWhitelistSettingError extends ApplicationError {
+  constructor(message: string) {
+    super(message, undefined, ErrorCodes.ADMIN_FORM_INVALID_WHITELIST_SETTING)
+  }
+}
