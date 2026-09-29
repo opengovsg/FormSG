@@ -73,15 +73,3 @@ export const getVerifiedFieldTitle = ({
     ? `${title} (Step ${stepNumber})`
     : title
 }
-
-/**
- * Maps verifiedContent keys to their output titles. Used during decryption/population of outputs.
- * (e.g. 'uinFin (Step 1)' -> 'SingPass Validated NRIC',
- * 'uinFin (Step 2)' -> 'SingPass Validated NRIC (Step 2)')
- * @param key verifiedContent key, optionally with step suffix
- * @returns the mapped title, or the key itself if unrecognised
- */
-export function mapVerifiedKeyToSPCPTitle(key: string): string {
-  const parsed = parseVerifiedKey(key)
-  return parsed ? getVerifiedFieldTitle(parsed) : key
-}

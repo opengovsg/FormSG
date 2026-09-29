@@ -36,9 +36,20 @@ export const placeVerifiedFieldsByStep = <T extends { _id: string }>({
     })
   })
 
+  // A Children field is exploded into rows whose ids embed the field's id
+  // (`<attr>.<fieldId>.<subField>.<index>`), so they belong to its step too.
+  const getOwnerStep = (rowId: string): number | undefined => {
+    const owned = ownerStepByFieldId.get(rowId)
+    if (owned !== undefined) return owned
+    const parentId = rowId
+      .split('.')
+      .find((segment) => ownerStepByFieldId.has(segment))
+    return parentId === undefined ? undefined : ownerStepByFieldId.get(parentId)
+  }
+
   const lastFieldIndexByStep = new Map<number, number>()
   fields.forEach((field, index) => {
-    const owner = ownerStepByFieldId.get(field._id)
+    const owner = getOwnerStep(field._id)
     if (owner !== undefined) lastFieldIndexByStep.set(owner, index)
   })
 
@@ -59,7 +70,8 @@ export const placeVerifiedFieldsByStep = <T extends { _id: string }>({
       step >= workflow.length
         ? lastIndex
         : (lastFieldIndexByStep.get(step) ??
-            (step > 0 ? anchorByStep.get(step - 1) : undefined) ??
+            // An ownerless Step 1 reads before every later step's block.
+            (step > 0 ? anchorByStep.get(step - 1) : -1) ??
             lastIndex),
     )
   }

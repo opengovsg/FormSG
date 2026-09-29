@@ -109,4 +109,45 @@ describe('placeVerifiedFieldsByStep', () => {
 
     expect(ids(result).slice(-1)).toEqual(['nric4'])
   })
+
+  it('places an identity before every field when Step 1 introduced none', () => {
+    const result = placeVerifiedFieldsByStep({
+      fields: FIELDS,
+      verified: [
+        { stepNumber: 1, field: field('nric1') },
+        { stepNumber: 2, field: field('nric2') },
+      ],
+      workflow: [{ edit: [] }, { edit: ['name', 'address'] }],
+    })
+
+    expect(ids(result)).toEqual([
+      'nric1',
+      'name',
+      'address',
+      'nric2',
+      'income',
+      'employer',
+      'remarks',
+    ])
+  })
+
+  it('keeps an identity after the exploded rows of a Children field its step introduced', () => {
+    const childRows = [
+      'childrenbirthrecords.kids.name.0',
+      'childrenbirthrecords.kids.name.1',
+    ].map(field)
+    const result = placeVerifiedFieldsByStep({
+      fields: [field('name'), ...childRows, field('remarks')],
+      verified: [{ stepNumber: 2, field: field('nric2') }],
+      workflow: [{ edit: ['name'] }, { edit: ['kids'] }, { edit: ['remarks'] }],
+    })
+
+    expect(ids(result)).toEqual([
+      'name',
+      'childrenbirthrecords.kids.name.0',
+      'childrenbirthrecords.kids.name.1',
+      'nric2',
+      'remarks',
+    ])
+  })
 })
