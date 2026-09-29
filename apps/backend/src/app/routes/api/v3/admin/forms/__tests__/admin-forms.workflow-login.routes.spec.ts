@@ -16,6 +16,7 @@ import supertest, { Session } from 'supertest-session'
 import getFormModel from 'src/app/models/form.server.model'
 import getFormWhitelistSubmitterIdsModel from 'src/app/models/form_whitelist.server.model'
 import * as AdminFormService from 'src/app/modules/form/admin-form/admin-form.service'
+import { encryptWhitelistCsvString } from 'src/app/modules/form/admin-form/admin-form.whitelist'
 import { IMultirespondentForm, IPopulatedForm } from 'src/types'
 
 import { AdminFormsRouter } from '../admin-forms.routes'
@@ -61,6 +62,7 @@ type StoredStep = {
 }
 type StoredForm = {
   esrvcId?: string
+  isSingleSubmission?: boolean
   workflow: StoredStep[]
   whitelistedSubmitterIds?: unknown
 }
@@ -248,6 +250,24 @@ describe('workflow step login saves', () => {
     expect(await WhitelistModel.countDocuments()).toBe(0)
   })
 
+  it('tells the admin which entry is invalid without putting it in the loggable error message', async () => {
+    const invalidEntry = 'S7101844A'
+
+    const response = await putStep(1, {
+      auth: cpLogin,
+      esrvc_id: 'example-service',
+      whitelistCsvString: invalidEntry,
+    })
+    const error = encryptWhitelistCsvString(
+      invalidEntry,
+      'unused-public-key',
+    )._unsafeUnwrapErr()
+
+    expect(response.status).toBe(422)
+    expect(response.body.message).toContain(invalidEntry)
+    expect(error.message).not.toContain(invalidEntry)
+  })
+
   it('rejects login changes on step 1 through step auth and while the form is open', async () => {
     const onFirstStep = await putStep(0, { auth: cpLogin })
     expect(onFirstStep.status).toBe(400)
@@ -259,6 +279,25 @@ describe('workflow step login saves', () => {
     })
     expect(whileOpen.status).toBe(409)
     expect((await rawStep(1)).auth).toBeUndefined()
+  })
+
+  it('turns on single submission for a form stored without that field', async () => {
+    // Older documents never had the field; Mongoose still hydrates it as false.
+    await FormModel.collection.updateOne(
+      { _id: new mongoose.Types.ObjectId(formId) },
+      { $unset: { isSingleSubmission: '' } },
+    )
+
+    const response = await putStep(0, {
+      first_step_login: {
+        authType: FormAuthType.SP,
+        isSingleSubmission: true,
+      },
+      esrvc_id: 'example-service',
+    })
+
+    expect(response.status).toBe(200)
+    expect(await rawForm()).toMatchObject({ isSingleSubmission: true })
   })
 
   it('rejects a stale save and rolls back its list version', async () => {

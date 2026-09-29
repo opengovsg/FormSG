@@ -1568,6 +1568,7 @@ export const updateFormWhitelistSetting = (
   | MalformedParametersError
   | FormOpenToResponsesError
   | FormNotFoundError
+  | FormChangedWhileEditingError
   | PossibleDatabaseError
 > => {
   if (
@@ -1601,8 +1602,14 @@ export const updateFormWhitelistSetting = (
     whitelistContent: encryptedWhitelistedSubmitterIdsContent ?? undefined,
     action: 'updateFormWhitelistSetting',
     update: (whitelistId, session) =>
-      FormModelToUse.findByIdAndUpdate(
-        originalForm._id,
+      FormModelToUse.findOneAndUpdate(
+        {
+          _id: originalForm._id,
+          // The Public check above only saw a snapshot; pin it for the write.
+          ...(isFormMultirespondent(originalForm)
+            ? { status: originalForm.status }
+            : {}),
+        },
         {
           whitelistedSubmitterIds: whitelistId
             ? {
@@ -1615,7 +1622,11 @@ export const updateFormWhitelistSetting = (
       ).exec(),
   }).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      return errAsync(
+        isFormMultirespondent(originalForm)
+          ? new FormChangedWhileEditingError()
+          : new FormNotFoundError(),
+      )
     }
     return okAsync(updatedForm.getSettings())
   })
@@ -1776,7 +1787,10 @@ const resolveStepLoginWrite = (
   const setFormLevel = (key: string, value: unknown, original: unknown) => {
     if (value === undefined || value === original) return
     formLevelUpdate[key] = value
-    formLevelFilter[key] = original ?? null
+    // A boolean with a schema default hydrates as false when the field is
+    // absent from older documents, which an equality filter would not match.
+    formLevelFilter[key] =
+      original === false ? { $ne: true } : (original ?? null)
   }
 
   if ((esrvcIdInput || undefined) !== (form.esrvcId || undefined)) {
@@ -2462,13 +2476,15 @@ export const deleteFormWorkflowStep = (
   if (check.isErr()) return errAsync(check.error)
 
   // Removed steps' lists are kept: in-progress submissions may still reference them.
+  // Removing a login step pins the form status, so a publish that lands between
+  // the check above and this write is not overtaken.
   return persistWorkflowStepWrite({
     form: originalMrfForm,
     stepIndex: targetStepNumber,
     login: {
       formLevelUpdate: {},
       formLevelFilter: {},
-      isLoginChanged: false,
+      isLoginChanged: !!originalWorkflow[targetStepNumber].auth,
       authType: originalMrfForm.authType,
     },
     originalWorkflow,
