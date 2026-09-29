@@ -8,6 +8,10 @@ import {
 import { BasicField, FormFieldDto, LogicDto } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
 import {
+  placeVerifiedFieldsByStep,
+  StepFieldList,
+} from 'formsg-shared/utils/place-verified-by-step'
+import {
   getVerifiedFieldTitle,
   parseVerifiedKey,
   VerifiedKeys,
@@ -105,18 +109,32 @@ export const buildFormFieldMetaMap = (
  * augmentDecryptedResponses pipeline.
  *
  * NOTE: Verified content (SPCP/sgID) is appended after the form fields, the
- * same way the storage-mode path does it.
+ * same way the storage-mode path does it. When a step after Step 1 collected an
+ * identity, each identity follows its own step's fields instead.
  */
 export const processDecryptedContentV4 = (
   formFields: FormFieldDto[],
   formLogics: LogicDto[],
   responses: FieldResponsesV4,
   verified?: Record<string, string>,
+  workflow: StepFieldList[] = [],
 ): VerifiedFormField[] => {
   const v1Fields = flattenV4ToFormFields({
     v4Responses: responses,
     formFields,
     formLogics,
   }) as unknown as VerifiedFormField[]
-  return verified ? v1Fields.concat(convertToResponseArray(verified)) : v1Fields
+  if (!verified) return v1Fields
+
+  const verifiedEntries = Object.keys(verified).flatMap((key) => {
+    const field = getVerifiedFieldFromResponse(key, verified[key])
+    return field
+      ? [{ stepNumber: parseVerifiedKey(key)?.stepNumber, field }]
+      : []
+  })
+  return placeVerifiedFieldsByStep({
+    fields: v1Fields,
+    verified: verifiedEntries,
+    workflow,
+  })
 }

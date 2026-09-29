@@ -46,6 +46,8 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   unprocessed: UnprocessedRecord[]
   isMrf: boolean
   view: CsvExportView
+  /** Field order of the newest MRF response, which decides column order. */
+  newestLayout?: { created: string; ids: string[] }
 
   constructor(
     expectedNumberOfRecords: number,
@@ -113,6 +115,18 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
       fieldRecords.push(fieldRecord)
       // return fieldRecord
     })
+
+    if (
+      this.isMrf &&
+      (!this.newestLayout || created > this.newestLayout.created)
+    ) {
+      this.newestLayout = {
+        created,
+        ids: fieldRecords
+          .filter((fieldRecord) => !fieldRecord.isHeader)
+          .map((fieldRecord) => fieldRecord.id),
+      }
+    }
 
     // Rearrange record to be an object identified by field ID.
     this.unprocessed.push({
@@ -294,12 +308,35 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     )
   }
 
-  /** Field ids to emit, in header order, with the hidden ones dropped. */
+  /**
+   * Field ids to emit, in header order, with the hidden ones dropped. MRF
+   * follows the newest response's layout, so a workflow edit does not leave old
+   * responses deciding where a column sits.
+   */
   private _visibleFieldIds(): string[] {
     const hidden = new Set(this.view.hiddenColumnIds ?? [])
-    return Array.from(this.fieldIdToQuestion.keys()).filter(
-      (fieldId) => !hidden.has(fieldId),
+    return this._orderedFieldIds().filter((fieldId) => !hidden.has(fieldId))
+  }
+
+  /** Newest response's order first; other ids stay after the id they followed. */
+  private _orderedFieldIds(): string[] {
+    const firstSeenIds = Array.from(this.fieldIdToQuestion.keys())
+    if (!this.isMrf || !this.newestLayout) return firstSeenIds
+
+    const ordered = this.newestLayout.ids.filter((id) =>
+      this.fieldIdToQuestion.has(id),
     )
+    const inNewest = new Set(ordered)
+    let previousId: string | undefined
+    firstSeenIds.forEach((id) => {
+      if (!inNewest.has(id)) {
+        const insertAt =
+          previousId === undefined ? 0 : ordered.indexOf(previousId) + 1
+        ordered.splice(insertAt, 0, id)
+      }
+      previousId = id
+    })
+    return ordered
   }
 
   /**
