@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.36.0](https://github.com/opengovsg/formsg/compare/v9.35.1...v9.36.0) (2026-09-29)
+
+
+### Features
+
+* **webhooks:** deliver payment MRF V1 on confirmation (#10120) ([#10120](https://github.com/opengovsg/formsg/commit/dc703f390a5f6613fa1e6213967801b170dd2040))
+
 ## [9.35.1](https://github.com/opengovsg/formsg/compare/v9.35.0...v9.35.1) (2026-09-29)
 
 
