@@ -153,6 +153,9 @@ overrides:
   "react-router-dom@>=6.30.2 <6.30.6": "^6.30.6"
   "brace-expansion@<1.1.16": "^1.1.16"
   "brace-expansion@>=2.0.0 <2.1.2": "^2.1.2"
+  # --- Security fixes for Endor findings via Atrium (2026-09-29) ---
+  "glob-parent@<5.1.2": "^5.1.2" # GHSA-ww39-953v-wcq6 (ReDoS), via react-dev-inspector
+  "js-cookie@<3.0.6": "^3.0.6" # GHSA-qjx8-664m-686j (cookie-attribute injection), via react-use
 onlyBuiltDependencies:
   - bcrypt
   - canvas

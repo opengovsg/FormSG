@@ -33,7 +33,7 @@ export const pdfBinaryToImageDataUrls = async (
     context.textRendering = 'optimizeLegibility'
 
     await page.render({
-      canvasContext: context,
+      canvas,
       viewport: viewport,
     }).promise
 
