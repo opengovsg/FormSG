@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { Link as ReactLink } from 'react-router-dom'
-import { Box, Button, Flex, Link, Text } from '@chakra-ui/react'
+import { Box, Flex, Link, Text } from '@chakra-ui/react'
 
 import { FORM_GUIDE } from '~constants/links'
 import { LOGIN_ROUTE } from '~constants/routes'
+import Button from '~components/Button'
 
 import { Reveal } from '../components/Reveal'
 
@@ -59,7 +60,13 @@ export const CloseSection = (): JSX.Element => {
       </Reveal>
       <Reveal>
         <Flex gap="0.75rem" justify="center" mt="2.125rem">
-          <Button as={ReactLink} to={LOGIN_ROUTE} variant="landingPill">
+          <Button
+            as={ReactLink}
+            to={LOGIN_ROUTE}
+            variant="solid"
+            colorScheme="primary"
+            basecolorintensity={500}
+          >
             {t('features.landingV5.close.cta')}
           </Button>
         </Flex>

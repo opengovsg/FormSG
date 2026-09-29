@@ -1,6 +1,5 @@
 import '../landing-v5.css'
 
-import { Button } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
 import { getLandingStats } from '~/mocks/msw/handlers/landing'
@@ -9,6 +8,7 @@ import {
   getMobileViewParameters,
   getTabletViewParameters,
 } from '~utils/storybook'
+import Button from '~components/Button'
 
 import { LandingV5Root } from '../components/LandingV5Root'
 import { useProofBob } from '../hooks/useProofBob'
@@ -72,7 +72,13 @@ export const Nudge: StoryFn = () => {
 
   return (
     <LandingV5Root>
-      <Button variant="landingPill" m="1.5rem" onClick={bob}>
+      <Button
+        variant="solid"
+        colorScheme="primary"
+        basecolorintensity={500}
+        m="1.5rem"
+        onClick={bob}
+      >
         Trigger the nudge
       </Button>
       <ProofSection bobRef={ref} />

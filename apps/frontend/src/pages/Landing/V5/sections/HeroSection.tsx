@@ -1,9 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { BiChevronLeft, BiChevronRight } from 'react-icons/bi'
 import { Link as ReactLink } from 'react-router-dom'
-import { Box, Button, Flex, Icon, IconButton, Text } from '@chakra-ui/react'
+import { Box, Flex, Icon, IconButton, Text } from '@chakra-ui/react'
 
 import { LOGIN_ROUTE } from '~constants/routes'
+import Button from '~components/Button'
 
 import { HeroStampWord } from '../components/HeroStampWord'
 import { useHeroCarousel } from '../hooks/useHeroCarousel'
@@ -123,7 +124,13 @@ export const HeroSection = ({
                 <Flex gap="0.75rem" mt="1.875rem">
                   {/* A real destination, not the prototype's `#`: the same
                       place the current landing page's CTAs go. */}
-                  <Button as={ReactLink} to={LOGIN_ROUTE} variant="landingPill">
+                  <Button
+                    as={ReactLink}
+                    to={LOGIN_ROUTE}
+                    variant="solid"
+                    colorScheme="primary"
+                    basecolorintensity={500}
+                  >
                     {t('features.landingV5.hero.cta')}
                   </Button>
                 </Flex>

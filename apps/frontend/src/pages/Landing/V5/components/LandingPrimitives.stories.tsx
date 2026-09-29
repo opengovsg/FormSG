@@ -1,12 +1,13 @@
 import '../landing-v5.css'
 
-import { Box, Button, Stack, Text } from '@chakra-ui/react'
+import { Box, Stack, Text } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react'
 
 import {
   getMobileViewParameters,
   getTabletViewParameters,
 } from '~utils/storybook'
+import Button from '~components/Button'
 
 import { Blade } from './BladeMaskDefs'
 import { LandingV5Root } from './LandingV5Root'
@@ -43,7 +44,9 @@ const Template: StoryFn = () => (
 
       <Box>
         <MonoEyebrow mb="0.75rem">Pill button</MonoEyebrow>
-        <Button variant="landingPill">Start building your form</Button>
+        <Button variant="solid" colorScheme="primary" basecolorintensity={500}>
+          Start building your form
+        </Button>
       </Box>
 
       <Box>

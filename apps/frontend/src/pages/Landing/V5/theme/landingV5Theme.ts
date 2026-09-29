@@ -98,33 +98,6 @@ const landingTextStyles = {
 }
 
 /**
- * The brand-blue pill CTA.
- *
- * Note the two overrides that are not optional: the shared Button `baseStyle`
- * sets `border: '1px solid'` with no colour (so it would paint a white hairline
- * over the blue) and `borderRadius: '0.25rem'`, and it spreads the `subhead-1`
- * text style, which carries its own font size and weight.
- */
-const variantLandingPill = {
-  border: 'none',
-  borderRadius: '22px',
-  px: '26px',
-  py: '13px',
-  fontSize: '0.9375rem',
-  fontWeight: 500,
-  bg: 'landing.blue',
-  color: 'white',
-  boxShadow: '0 2px 8px rgba(38,58,112,0.22)',
-  transition: 'background 0.2s, color 0.2s',
-  _hover: {
-    bg: 'landing.blueDeep',
-  },
-  _active: {
-    bg: 'landing.blueDeep',
-  },
-}
-
-/**
  * Additive sub-theme, applied by a nested `ChakraProvider` around the page body
  * only. Passing the app's `theme` as the last argument is what makes it
  * additive: `extendTheme` uses its final argument as the base when that
@@ -152,13 +125,6 @@ export const landingV5Theme = extendTheme(
     fonts: {
       heading: 'var(--lv5-sans)',
       body: 'var(--lv5-sans)',
-    },
-    components: {
-      Button: {
-        variants: {
-          landingPill: variantLandingPill,
-        },
-      },
     },
     styles: {
       global: {
