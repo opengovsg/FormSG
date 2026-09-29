@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { BiSave } from 'react-icons/bi'
-import { Box, Flex, useDisclosure } from '@chakra-ui/react'
+import { Box, Flex, useBreakpointValue, useDisclosure } from '@chakra-ui/react'
 
 import Button from '~components/Button'
+import IconButton from '~components/IconButton'
 
 import { ColumnsMenu } from './ColumnsMenu'
 import { DownloadButton } from './DownloadButton'
@@ -21,6 +22,8 @@ export const ResponsesToolbar = (): JSX.Element => {
     { returnObjects: true },
   )
   const saveViewModal = useDisclosure()
+  const isIconOnly =
+    useBreakpointValue({ base: true, xl: false }, { ssr: false }) ?? true
   const {
     columnOptions,
     currentViewState,
@@ -35,38 +38,52 @@ export const ResponsesToolbar = (): JSX.Element => {
   )
   const { mutate: saveView, isLoading: isSavingView } = useSavedViewMutation()
 
+  const saveViewButtonProps = {
+    variant: 'clear',
+    colorScheme: 'secondary',
+    isDisabled: !hasActiveFilters || isViewSaved,
+    isLoading: isSavingView,
+    onClick: saveViewModal.onOpen,
+  } as const
+
   return (
     <Flex
       direction={{ base: 'column', lg: 'row' }}
       align={{ base: 'stretch', lg: 'center' }}
-      justify="space-between"
       gap="0.75rem"
       w="100%"
       maxW="100%"
       mb="1rem"
       flexShrink={0}
     >
-      <Flex align="center" gap="0.75rem" minW={0} flexWrap="wrap">
-        <Box w={{ base: '100%', sm: '18rem' }} maxW="100%">
-          <ResponsesSearchbar key={selectedViewId} />
-        </Box>
-        <FilterMenu />
-        <SortMenu />
-        <ColumnsMenu />
-      </Flex>
+      <Box w={{ base: '100%', lg: '18rem' }} flexShrink={0}>
+        <ResponsesSearchbar key={selectedViewId} />
+      </Box>
 
-      <Flex align="center" gap="0.75rem" flexShrink={0}>
-        <Button
-          variant="clear"
-          colorScheme="secondary"
-          isDisabled={!hasActiveFilters || isViewSaved}
-          isLoading={isSavingView}
-          onClick={saveViewModal.onOpen}
-          leftIcon={<BiSave fontSize="1.25rem" />}
-        >
-          {saveViewLabel}
-        </Button>
-        <DownloadButton />
+      <Flex align="center" justify="space-between" gap="0.75rem" flex={1}>
+        <Flex align="center" gap="0.75rem">
+          <FilterMenu isIconOnly={isIconOnly} />
+          <SortMenu isIconOnly={isIconOnly} />
+          <ColumnsMenu isIconOnly={isIconOnly} />
+        </Flex>
+
+        <Flex align="center" gap="0.75rem">
+          {isIconOnly ? (
+            <IconButton
+              {...saveViewButtonProps}
+              icon={<BiSave />}
+              aria-label={saveViewLabel}
+            />
+          ) : (
+            <Button
+              {...saveViewButtonProps}
+              leftIcon={<BiSave fontSize="1.25rem" />}
+            >
+              {saveViewLabel}
+            </Button>
+          )}
+          <DownloadButton isIconOnly={isIconOnly} />
+        </Flex>
       </Flex>
 
       <SaveViewModal
