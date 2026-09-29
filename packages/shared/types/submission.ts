@@ -191,6 +191,8 @@ export const MultirespondentSubmissionBase = SubmissionBase.extend({
   form_fields: z.custom<FormFieldDto[]>(),
   form_logics: z.custom<LogicDto[]>(),
   workflow: z.custom<FormWorkflowDto>(),
+  // Corppass e-service ID used by later workflow steps
+  esrvcId: z.string().optional(),
 
   submissionType: z.literal(SubmissionType.Multirespondent),
   submissionPublicKey: z.string(),

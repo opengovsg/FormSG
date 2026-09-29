@@ -36,9 +36,12 @@ const LoginSchema = new Schema<ILoginSchema, ILoginModel>(
       enum: Object.values(FormAuthType),
       required: true,
     },
+    // MyInfo (FAPI) logins have no e-service ID
     esrvcId: {
       type: String,
-      required: true,
+      required: function (this: ILoginSchema) {
+        return this.authType !== FormAuthType.MyInfo
+      },
     },
   },
   {
