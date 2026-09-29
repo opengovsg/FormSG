@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.35.0](https://github.com/opengovsg/formsg/compare/v9.34.0...v9.35.0) (2026-09-29)
+
+
+### Features
+
+* **results:** add the saved views shell above the responses toolbar (#10114) ([#10114](https://github.com/opengovsg/formsg/commit/c1a009834f356c6896dcf5407ae837f8a1453d2d))
+* **results:** apply the table's view to the CSV export (#10126) ([#10126](https://github.com/opengovsg/formsg/commit/a01cd5a623990508d3ee69b60c939149d38a03fe))
+* **results:** delete a saved view from its tab (#10121) ([#10121](https://github.com/opengovsg/formsg/commit/c98660e777bdc4600605b48363047069c5850ba1))
+* **results:** export only the responses in the current view (#10104) ([#10104](https://github.com/opengovsg/formsg/commit/cff3c2b09d802659b73e2d134dafc184c8541e3d))
+* **results:** filter responses by date range from the Filter menu (#10102) ([#10102](https://github.com/opengovsg/formsg/commit/f80c451b59ee6de6c62ae6b43c35befd1ee71b35))
+* **results:** load every response up front and render a window of them (#10098) ([#10098](https://github.com/opengovsg/formsg/commit/22eb3bfe718fc6bf2839fc1397c9342dd6459fb9))
+* **results:** persist saved views on the form (#10122) ([#10122](https://github.com/opengovsg/formsg/commit/0fc65753e667d622b7cc3eda8f27f0587517bb30))
+* **results:** say when only the most recent responses are shown (#10123) ([#10123](https://github.com/opengovsg/formsg/commit/246fdf67d670d9b186ee6f3944348dc8d9f6204d))
+* **results:** sort the responses table from a Sort dropdown (#10103) ([#10103](https://github.com/opengovsg/formsg/commit/74e2ab2d8625164fbf09ab80eb84fd4b66c45fbf))
+* **results:** virtualize the responses table columns (#10127) ([#10127](https://github.com/opengovsg/formsg/commit/f431f099b9baeb291353a85c8e715171e09db536))
+
+
+### Bug Fixes
+
+* **results:** hide empty workflow rows and describe payload cells (#10124) ([#10124](https://github.com/opengovsg/formsg/commit/0cf2850c8ca711923546847cca6fa32bbbe14162))
+* **results:** view feedback and fixed-height table rows (#10132) ([#10132](https://github.com/opengovsg/formsg/commit/d5a855f52632d5f45fe7a2892b3d5f46d32ca1b3))
+
+
+### Dependencies
+
+* **deps:** drop @faker-js/faker to close high-severity advisory (#10129) ([#10129](https://github.com/opengovsg/formsg/commit/a3a9847c459730217b53195156af4faf62495b18))
+
 ## [9.34.0](https://github.com/opengovsg/formsg/compare/v9.33.3...v9.34.0) (2026-09-29)
 
 
