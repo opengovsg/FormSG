@@ -9,6 +9,7 @@ import {
 } from '../spcp.oidc.util'
 import {
   createNdiResponsesV3FromRecord,
+  createNdiResponsesV4FromRecord,
   getRedirectTargetSpcpOidc,
 } from '../spcp.util'
 
@@ -262,6 +263,85 @@ describe('SpOidcUtil', () => {
         'CorpPass Validated UID': {
           fieldType: BasicField.Nric,
           answer: 'S1234567A',
+        },
+      })
+    })
+
+    it('should keep later MRF steps distinct from Step 1', () => {
+      const ndiResponses = {
+        uinFin: 'S1234567A',
+        [`uinFin (Step 2)`]: 'S7654321B',
+        [`cpUen (Step 3)`]: 'UEN12345',
+        [`cpUid (Step 3)`]: 'S1111111C',
+      }
+
+      const result = createNdiResponsesV3FromRecord(ndiResponses)
+
+      expect(result).toEqual({
+        'SingPass Validated NRIC': {
+          fieldType: BasicField.Nric,
+          answer: 'S1234567A',
+        },
+        'SingPass Validated NRIC (Step 2)': {
+          fieldType: BasicField.Nric,
+          answer: 'S7654321B',
+        },
+        'CorpPass Validated UEN (Step 3)': {
+          fieldType: BasicField.ShortText,
+          answer: 'UEN12345',
+        },
+        'CorpPass Validated UID (Step 3)': {
+          fieldType: BasicField.Nric,
+          answer: 'S1111111C',
+        },
+      })
+    })
+
+    it('should ignore sgID and unrecognised keys', () => {
+      const result = createNdiResponsesV3FromRecord({
+        sgidUinFin: 'S1234567A',
+        uinFinExtra: 'S1234567A',
+      })
+
+      expect(result).toEqual({})
+    })
+  })
+
+  describe('createNdiResponsesV4FromRecord', () => {
+    it('should keep Step 1 titles and suffix later steps in key and question', () => {
+      const ndiResponses = {
+        [`uinFin (Step 1)`]: 'S1234567A',
+        [`uinFin (Step 2)`]: 'S7654321B',
+        [`cpUen (Step 3)`]: 'UEN12345',
+        [`cpUid (Step 3)`]: 'S1111111C',
+      }
+
+      const result = createNdiResponsesV4FromRecord(ndiResponses)
+
+      expect(result).toEqual({
+        'SingPass Validated NRIC': {
+          fieldType: BasicField.Nric,
+          answer: { value: 'S1234567A' },
+          question: 'SingPass Validated NRIC',
+          provenance: {},
+        },
+        'SingPass Validated NRIC (Step 2)': {
+          fieldType: BasicField.Nric,
+          answer: { value: 'S7654321B' },
+          question: 'SingPass Validated NRIC (Step 2)',
+          provenance: {},
+        },
+        'CorpPass Validated UEN (Step 3)': {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'UEN12345' },
+          question: 'CorpPass Validated UEN (Step 3)',
+          provenance: {},
+        },
+        'CorpPass Validated UID (Step 3)': {
+          fieldType: BasicField.Nric,
+          answer: { value: 'S1111111C' },
+          question: 'CorpPass Validated UID (Step 3)',
+          provenance: {},
         },
       })
     })

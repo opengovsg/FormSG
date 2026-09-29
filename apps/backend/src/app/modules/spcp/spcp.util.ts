@@ -1,8 +1,14 @@
 import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
-import { BasicField, FieldResponsesV3, FormAuthType } from 'formsg-shared/types'
+import {
+  BasicField,
+  FieldResponsesV3,
+  FormAuthType,
+  NdiResponseV3,
+} from 'formsg-shared/types'
 import { hasProp } from 'formsg-shared/utils/has-prop'
 import {
-  mapVerifiedKeyToSPCPTitle,
+  getVerifiedFieldTitle,
+  parseVerifiedKey,
   VerifiedKeys,
 } from 'formsg-shared/utils/verified-content'
 import { err, ok, Result } from 'neverthrow'
@@ -114,31 +120,44 @@ export const createCorppassParsedResponses = (
   ]
 }
 
+// sgID keys are not NDI responses and are skipped.
+const NDI_FIELD_TYPES: Partial<
+  Record<VerifiedKeys, NdiResponseV3['fieldType']>
+> = {
+  [VerifiedKeys.SpUinFin]: BasicField.Nric,
+  [VerifiedKeys.CpUen]: BasicField.ShortText,
+  [VerifiedKeys.CpUid]: BasicField.Nric,
+}
+
+/**
+ * Iterates NDI verified entries with their output title and field type.
+ * Titles keep ` (Step N)` for N > 1 so different steps do not overwrite each other.
+ */
+const forEachNdiEntry = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ndiResponses: Record<string, any>,
+  callback: (
+    title: string,
+    fieldType: NdiResponseV3['fieldType'],
+    value: string,
+  ) => void,
+): void => {
+  Object.entries(ndiResponses).forEach(([key, value]) => {
+    const parsed = parseVerifiedKey(key)
+    const fieldType = parsed && NDI_FIELD_TYPES[parsed.baseKey]
+    if (!parsed || !fieldType) return
+    callback(getVerifiedFieldTitle(parsed), fieldType, value as string)
+  })
+}
+
 export const createNdiResponsesV3FromRecord = (
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ndiResponses: Record<string, any>,
 ): FieldResponsesV3 => {
   const responses: FieldResponsesV3 = {}
 
-  Object.entries(ndiResponses).forEach(([key, value]) => {
-    const title = mapVerifiedKeyToSPCPTitle(key)
-
-    if (key.startsWith(VerifiedKeys.SpUinFin)) {
-      responses[title] = {
-        fieldType: BasicField.Nric,
-        answer: value as string,
-      }
-    } else if (key.startsWith(VerifiedKeys.CpUen)) {
-      responses[title] = {
-        fieldType: BasicField.ShortText,
-        answer: value as string,
-      }
-    } else if (key.startsWith(VerifiedKeys.CpUid)) {
-      responses[title] = {
-        fieldType: BasicField.Nric,
-        answer: value as string,
-      }
-    }
+  forEachNdiEntry(ndiResponses, (title, fieldType, value) => {
+    responses[title] = { fieldType, answer: value }
   })
 
   return responses
@@ -151,30 +170,12 @@ export const createNdiResponsesV4FromRecord = (
   const responses: FieldResponsesV4 = {}
   const provenance = {}
 
-  Object.entries(ndiResponses).forEach(([key, value]) => {
-    const title = mapVerifiedKeyToSPCPTitle(key)
-
-    if (key.startsWith(VerifiedKeys.SpUinFin)) {
-      responses[title] = {
-        fieldType: BasicField.Nric,
-        answer: { value: value as string },
-        question: title,
-        provenance,
-      }
-    } else if (key.startsWith(VerifiedKeys.CpUen)) {
-      responses[title] = {
-        fieldType: BasicField.ShortText,
-        answer: { value: value as string },
-        question: title,
-        provenance,
-      }
-    } else if (key.startsWith(VerifiedKeys.CpUid)) {
-      responses[title] = {
-        fieldType: BasicField.Nric,
-        answer: { value: value as string },
-        question: title,
-        provenance,
-      }
+  forEachNdiEntry(ndiResponses, (title, fieldType, value) => {
+    responses[title] = {
+      fieldType,
+      answer: { value },
+      question: title,
+      provenance,
     }
   })
 

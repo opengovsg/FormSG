@@ -71,6 +71,60 @@ describe('processDecryptedContentV4', () => {
     })
   })
 
+  it('keeps the legacy title and _id for unsuffixed verified keys', () => {
+    const result = processDecryptedContentV4(FORM_FIELDS, [], RESPONSES, {
+      uinFin: 'S1234567A',
+    })
+
+    expect(result[1]).toMatchObject({
+      _id: SPCPFieldTitle.SpNric,
+      question: SPCPFieldTitle.SpNric,
+    })
+  })
+
+  it('keeps each MRF step identity distinct after Step 1', () => {
+    const result = processDecryptedContentV4(FORM_FIELDS, [], RESPONSES, {
+      'uinFin (Step 1)': 'S1234567A',
+      'uinFin (Step 2)': 'S7654321B',
+      'cpUen (Step 3)': 'T09LL0001B',
+      'cpUid (Step 3)': 'S1111111C',
+    })
+
+    expect(
+      result.slice(1).map(({ _id, question, fieldType, answer }) => ({
+        _id,
+        question,
+        fieldType,
+        answer,
+      })),
+    ).toEqual([
+      {
+        _id: 'SingPass Validated NRIC',
+        question: 'SingPass Validated NRIC',
+        fieldType: BasicField.Nric,
+        answer: 'S1234567A',
+      },
+      {
+        _id: 'SingPass Validated NRIC (Step 2)',
+        question: 'SingPass Validated NRIC (Step 2)',
+        fieldType: BasicField.Nric,
+        answer: 'S7654321B',
+      },
+      {
+        _id: 'CorpPass Validated UEN (Step 3)',
+        question: 'CorpPass Validated UEN (Step 3)',
+        fieldType: BasicField.ShortText,
+        answer: 'T09LL0001B',
+      },
+      {
+        _id: 'CorpPass Validated UID (Step 3)',
+        question: 'CorpPass Validated UID (Step 3)',
+        fieldType: BasicField.Nric,
+        answer: 'S1111111C',
+      },
+    ])
+  })
+
   it('appends the sgID verified NRIC after the form fields', () => {
     const result = processDecryptedContentV4(FORM_FIELDS, [], RESPONSES, {
       sgidUinFin: 'S1234567A',
