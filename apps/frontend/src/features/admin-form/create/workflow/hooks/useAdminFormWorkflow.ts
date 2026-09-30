@@ -16,8 +16,8 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 import { augmentFieldWithQuestionNo } from '~features/form/utils'
 import { augmentWithMyInfo } from '~features/myinfo/utils'
 
-export const useAdminFormWorkflow = () => {
-  const { data: form, isLoading } = useAdminForm()
+export const useAdminFormWorkflow = (options?: { staleTime?: number }) => {
+  const { data: form, isLoading } = useAdminForm(options)
 
   // Memoised on form_fields. Without this the array identity changes on every
   // render, so the four useMemos below never hit and every consumer redoes a

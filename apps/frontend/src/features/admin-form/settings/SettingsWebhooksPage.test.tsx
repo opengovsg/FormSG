@@ -3,9 +3,12 @@ import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http } from 'msw'
 
-import { FormResponseMode } from 'formsg-shared/types/form'
+import { FormResponseMode, WorkflowType } from 'formsg-shared/types/form'
 
-import { getAdminFormSettings } from '~/mocks/msw/handlers/admin-form'
+import {
+  getAdminFormSettings,
+  getAdminFormView,
+} from '~/mocks/msw/handlers/admin-form'
 
 import * as stories from './SettingsWebhooksPage.stories'
 
@@ -96,6 +99,60 @@ describe('SettingsWebhooksPage', () => {
 })
 
 describe('webhook workflow guard', () => {
+  it('refreshes the workflow restriction when returning from another browser tab', async () => {
+    const step = {
+      _id: 'step-0',
+      workflow_type: WorkflowType.Static as const,
+      emails: [],
+      edit: [],
+    }
+    const workflow = [step]
+    const UpdatedWorkflow = composeStory(
+      {
+        ...stories.SingleStepGenericWebhook,
+        parameters: {
+          msw: {
+            handlers: {
+              default: [
+                getAdminFormView({
+                  overrides: {
+                    responseMode: FormResponseMode.Multirespondent,
+                    workflow,
+                  },
+                }),
+                ...stories.SingleStepGenericWebhook.parameters!.msw.handlers
+                  .default,
+              ],
+            },
+          },
+        },
+      },
+      stories.default,
+    )
+    await act(async () => {
+      render(<UpdatedWorkflow />)
+    })
+    expect(await screen.findByRole('textbox')).toBeEnabled()
+
+    // Another tab saves a second step while this tab retains its cached form.
+    workflow.push({ ...step, _id: 'step-1' })
+    act(() => {
+      window.dispatchEvent(new Event('focus'))
+    })
+
+    await screen.findByText(/reduce your workflow to one step/i)
+    expect(screen.getByRole('textbox')).toBeDisabled()
+
+    workflow.pop()
+    act(() => {
+      window.dispatchEvent(new Event('focus'))
+    })
+    await waitFor(() => expect(screen.getByRole('textbox')).toBeEnabled())
+    expect(
+      screen.queryByText(/reduce your workflow to one step/i),
+    ).not.toBeInTheDocument()
+  })
+
   it('disables the URL and explains the restriction for two-step workflows', async () => {
     await act(async () => {
       render(<MultiStepWorkflow />)
