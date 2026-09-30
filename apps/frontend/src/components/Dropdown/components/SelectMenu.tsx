@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 import { List, ListItem } from '@chakra-ui/react'
 import { FloatingPortal } from '@floating-ui/react'
@@ -48,7 +49,11 @@ const RenderIfOpen = ({
   return children
 }
 
-export const SelectMenu = (): JSX.Element => {
+export const SelectMenu = ({
+  usePortal = true,
+}: {
+  usePortal?: boolean
+}): JSX.Element => {
   const {
     getMenuProps,
     isOpen,
@@ -64,10 +69,13 @@ export const SelectMenu = (): JSX.Element => {
   const listSx = {
     ...styles.list,
     ...(fullWidth ? { maxH: '100%' } : {}),
+    ...(!usePortal ? { zIndex: 'dropdown' } : {}),
   }
 
+  const MenuContainer = usePortal ? FloatingPortal : Fragment
+
   return (
-    <FloatingPortal>
+    <MenuContainer>
       <List
         {...getMenuProps(
           { ref: floatingRef },
@@ -104,6 +112,6 @@ export const SelectMenu = (): JSX.Element => {
           )}
         </RenderIfOpen>
       </List>
-    </FloatingPortal>
+    </MenuContainer>
   )
 }

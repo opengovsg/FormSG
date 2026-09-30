@@ -126,7 +126,7 @@ export function validateDraft(
   if ((action === 'sendBack' || action === 'stop') && !draft.reason?.trim())
     errors.reason =
       action === 'sendBack'
-        ? 'Enter what needs correcting.'
+        ? 'Enter a reason for sending back.'
         : 'Enter a reason for stopping this workflow.'
   if (
     action === 'reassign' &&
@@ -146,7 +146,7 @@ export function validateDraft(
     )
       errors.recipientEmail =
         target.number === 1
-          ? 'Enter a valid correction recipient email.'
+          ? 'Enter a valid Step 1 email address.'
           : 'This step has no valid configured recipients.'
   }
   return errors
@@ -352,6 +352,45 @@ export function createPrototypeResponses(): PrototypeResponse[] {
         value: 'Add recycling bins near the meeting rooms.',
       },
       { id: '6a0000000000000000000203', label: 'Location', value: 'Level 4' },
+      {
+        id: '6a0000000000000000000204',
+        label: 'Department',
+        value: 'Corporate services',
+      },
+      {
+        id: '6a0000000000000000000205',
+        label: 'Contact email',
+        value: 'submitter@example.org',
+      },
+      {
+        id: '6a0000000000000000000206',
+        label: 'Who will benefit from this suggestion?',
+        value:
+          'Staff working on Level 4 and colleagues visiting the shared meeting rooms.',
+      },
+      {
+        id: '6a0000000000000000000207',
+        label: 'Reason for the suggestion',
+        value:
+          'The team uses these spaces every day. We would like to make the office more comfortable and convenient, especially during busy periods when several teams are using the shared facilities.',
+      },
+      {
+        id: '6a0000000000000000000208',
+        label: 'Expected outcome',
+        value:
+          'A better experience for staff using the office, with less time spent working around issues in the shared spaces.',
+      },
+      {
+        id: '6a0000000000000000000209',
+        label: 'Preferred completion date',
+        value: '30 November 2026',
+      },
+      {
+        id: '6a0000000000000000000210',
+        label: 'Additional details',
+        value:
+          'Please check the proposed change with the workplace team before proceeding. If work needs to happen during office hours, let the affected teams know in advance. I am happy to help clarify the request or discuss a suitable alternative.',
+      },
     ],
     history: [],
   }

@@ -9,15 +9,18 @@ import {
   SingleSelectProviderProps,
 } from './SingleSelectProvider'
 
-export type SingleSelectProps = Omit<SingleSelectProviderProps, 'children'>
+export type SingleSelectProps = Omit<SingleSelectProviderProps, 'children'> & {
+  /** Render the menu inline when the select is inside a modal. */
+  usePortal?: boolean
+}
 
 export const SingleSelect = forwardRef<HTMLInputElement, SingleSelectProps>(
-  (props, ref): JSX.Element => {
+  ({ usePortal = true, ...props }, ref): JSX.Element => {
     return (
       <SingleSelectProvider {...props}>
         <SelectPopoverProvider>
           <SelectCombobox ref={ref} />
-          <SelectMenu />
+          <SelectMenu usePortal={usePortal} />
         </SelectPopoverProvider>
       </SingleSelectProvider>
     )

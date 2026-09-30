@@ -103,7 +103,7 @@ describe('workflow prototype state', () => {
       ok: false,
       errors: {
         targetStepId: 'Choose an earlier step.',
-        reason: 'Enter what needs correcting.',
+        reason: 'Enter a reason for sending back.',
       },
     })
     expect(JSON.stringify(original)).toBe(before)

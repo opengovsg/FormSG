@@ -76,26 +76,31 @@ const StackRow = ({
   isLoading,
   isError,
   statusTrackerUrl,
+  hideLabel = false,
 }: {
   label: string
   value: string
   isLoading: boolean
   isError: boolean
   statusTrackerUrl?: string
+  hideLabel?: boolean
 }) => {
   return (
     <Stack
-      spacing={{ base: '0', md: '0.5rem' }}
-      direction={{ base: 'column', md: 'row' }}
+      spacing={isWorkflowPrototype ? '0.25rem' : { base: '0', md: '0.5rem' }}
+      direction={isWorkflowPrototype ? 'column' : { base: 'column', md: 'row' }}
     >
-      <Text
-        as="span"
-        textStyle="subhead-1"
-        whiteSpace="nowrap"
-        data-dd-privacy="allow"
-      >
-        {label}:
-      </Text>
+      {!hideLabel && (
+        <Text
+          as="span"
+          textStyle="subhead-1"
+          whiteSpace="nowrap"
+          data-dd-privacy="allow"
+        >
+          {label}
+          {isWorkflowPrototype ? '' : ':'}
+        </Text>
+      )}
       <Skeleton isLoaded={!isLoading && !isError}>
         {statusTrackerUrl ? (
           <>
@@ -218,19 +223,32 @@ export const IndividualResponsePage = ({
   const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
 
   const overview = (
-    <Stack bg="primary.100" p="1.5rem" textStyle="body-1">
-      <StackRow
-        label="Response ID"
-        value={submissionId}
-        isLoading={isLoading}
-        isError={isError}
-      />
-      <StackRow
-        label={hasWorkflow ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
-        value={data?.submissionTime ?? t('features.common.loadingWithEllipsis')}
-        isLoading={isLoading}
-        isError={isError}
-      />
+    <Stack
+      bg={isWorkflowPrototype ? undefined : 'primary.100'}
+      p={isWorkflowPrototype ? 0 : '1.5rem'}
+      spacing={isWorkflowPrototype ? '1rem' : undefined}
+      textStyle="body-1"
+    >
+      <Box
+        display={isWorkflowPrototype ? 'grid' : 'contents'}
+        gridTemplateColumns={{ base: '1fr', md: '1fr 1fr' }}
+        gap="1.5rem"
+      >
+        <StackRow
+          label="Response ID"
+          value={submissionId}
+          isLoading={isLoading}
+          isError={isError}
+        />
+        <StackRow
+          label={hasWorkflow ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
+          value={
+            data?.submissionTime ?? t('features.common.loadingWithEllipsis')
+          }
+          isLoading={isLoading}
+          isError={isError}
+        />
+      </Box>
       {hasWorkflow && !isWorkflowPrototype ? (
         <>
           <StackRow
@@ -265,16 +283,17 @@ export const IndividualResponsePage = ({
         </>
       ) : null}
       {hasWorkflow && isWorkflowPrototype && (
-        <>
+        <Stack spacing="0.25rem">
           <WorkflowStatusOverview responseId={submissionId} />
           <StackRow
+            hideLabel
             label={MRF_STATUS_TRACKING_LABEL}
             value=""
             statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
             isLoading={isLoading}
             isError={isError}
           />
-        </>
+        </Stack>
       )}
       {attachmentDownloadUrls.size > 0 && (
         <Stack

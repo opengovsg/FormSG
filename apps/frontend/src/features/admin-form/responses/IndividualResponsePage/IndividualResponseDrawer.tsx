@@ -36,7 +36,15 @@ export const IndividualResponseDrawer = (): JSX.Element => {
       <DrawerOverlay />
       <DrawerContent>
         <DrawerCloseButton />
-        <DrawerHeader borderBottomWidth="1px" borderBottomColor="neutral.300">
+        <DrawerHeader
+          borderBottomWidth="1px"
+          borderBottomColor="neutral.300"
+          px={
+            prototypeStore
+              ? { base: '1rem', md: '1.75rem', lg: '2rem' }
+              : undefined
+          }
+        >
           <HStack spacing="1rem" pr="2rem" flexWrap="wrap">
             <Text>{t('features.common.responses')}</Text>
             {prototypeStore && (

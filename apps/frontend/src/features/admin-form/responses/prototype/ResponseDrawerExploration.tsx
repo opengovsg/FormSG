@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useRef, useState } from 'react'
+import { Fragment, ReactNode, useEffect, useRef, useState } from 'react'
 import { IconType } from 'react-icons'
 import {
   BiBell,
@@ -200,14 +200,14 @@ const Activity = ({
           <Stack
             bg="secondary.100"
             p="1rem"
-            borderRadius="0.25rem"
+            borderRadius="8px"
             spacing="0.75rem"
           >
             {!!event.reason && (
               <Box>
                 <Text textStyle="subhead-2" mb="0.25rem">
                   {event.action === 'sendBack'
-                    ? 'What needs correcting'
+                    ? 'Reason for sending back'
                     : 'Reason'}
                 </Text>
                 <Text
@@ -220,7 +220,7 @@ const Activity = ({
               </Box>
             )}
             {event.reason && hasPeople && (
-              <Box borderTopWidth="1px" borderColor="neutral.300" />
+              <Box borderTopWidth="1px" borderColor="neutral.300" mx="-1rem" />
             )}
             {!!recipientLabel && !!event.recipients.length && (
               <Box>
@@ -257,6 +257,8 @@ export const ResponseDrawerExploration = ({
   const store = usePrototypeStore()
   const response = store.responses.find((item) => item.id === responseId)
   const [tab, setTab] = useState(0)
+  const [actionsPinned, setActionsPinned] = useState(false)
+  const stickyMarkerRef = useRef<HTMLDivElement>(null)
   const [modal, setModal] = useState<{
     action: InterventionAction
     revision: number
@@ -280,6 +282,25 @@ export const ResponseDrawerExploration = ({
     setDraft({})
     setErrors({})
   }, [store.resetVersion, responseId])
+  useEffect(() => {
+    const marker = stickyMarkerRef.current
+    if (!marker) return
+    let root = marker.parentElement
+    while (root && !/(auto|scroll)/.test(getComputedStyle(root).overflowY)) {
+      root = root.parentElement
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setActionsPinned(
+          !entry.isIntersecting &&
+            entry.boundingClientRect.top < (entry.rootBounds?.top ?? 0),
+        )
+      },
+      { root, rootMargin: '-12px 0px 0px 0px', threshold: 0 },
+    )
+    observer.observe(marker)
+    return () => observer.disconnect()
+  }, [response?.id])
   if (!response)
     return (
       <>
@@ -389,12 +410,28 @@ export const ResponseDrawerExploration = ({
   const notifications = modal
     ? getNotificationPlan(response, modal.action, draft)
     : null
-  const notificationRecipients = notifications
-    ? [...new Set(Object.values(notifications).flat())]
-    : []
+  const notifiedGroups = new Map<string, string[]>()
+  for (const email of notifications?.updates ?? []) {
+    const step = response.steps.find((item) =>
+      item.id === response.currentStepId
+        ? response.currentRecipients.includes(email)
+        : item.configuredRecipients.includes(email) ||
+          response.history.some(
+            (event) =>
+              event.action === 'stepCompleted' &&
+              event.step.id === item.id &&
+              event.recipients.includes(email),
+          ),
+    )
+    const label = step
+      ? `Step ${step.number}`
+      : email === response.submitterEmail
+        ? 'Original submitter'
+        : 'Other recipients'
+    notifiedGroups.set(label, [...(notifiedGroups.get(label) ?? []), email])
+  }
   return (
     <Stack spacing="1.5rem">
-      {overview}
       <Tabs
         index={tab}
         onChange={setTab}
@@ -403,13 +440,31 @@ export const ResponseDrawerExploration = ({
         lazyBehavior="keepMounted"
       >
         <Box
-          position={{ base: 'static', md: 'sticky' }}
-          top="-1.5rem"
-          zIndex={1}
-          bg="white"
-          pt="0.5rem"
+          bg="primary.100"
+          p="1.5rem"
+          border="1px solid"
+          borderColor="neutral.300"
+          borderBottomWidth={0}
+          borderTopRadius="8px"
         >
-          <Stack direction="row" spacing="0.5rem" flexWrap="wrap" pb="1rem">
+          {overview}
+        </Box>
+        <Box ref={stickyMarkerRef} h="1px" mb="-1px" aria-hidden />
+        <Box
+          position="sticky"
+          top="-0.75rem"
+          zIndex={1}
+          bg="primary.100"
+          px="1.5rem"
+          py={actionsPinned ? '1rem' : '1.5rem'}
+          border="1px solid"
+          borderColor="neutral.300"
+          borderRadius={actionsPinned ? '8px' : '0 0 8px 8px'}
+          boxShadow={actionsPinned ? '0 4px 8px rgba(0, 0, 0, 0.08)' : 'none'}
+          transitionProperty="border-radius, box-shadow"
+          transitionDuration="normal"
+        >
+          <Stack direction="row" spacing="0.5rem" flexWrap="wrap">
             {actions.map(({ action, label, title, icon: ActionIcon }) => (
               <Tooltip key={action} label={title}>
                 <Button
@@ -424,11 +479,11 @@ export const ResponseDrawerExploration = ({
               </Tooltip>
             ))}
           </Stack>
-          <TabList>
-            <Tab>Responses</Tab>
-            <Tab>Activity</Tab>
-          </TabList>
         </Box>
+        <TabList mt="1.5rem">
+          <Tab>Responses</Tab>
+          <Tab>Activity</Tab>
+        </TabList>
         <TabPanels pt="1.5rem">
           <TabPanel>{children}</TabPanel>
           <TabPanel>
@@ -457,38 +512,54 @@ export const ResponseDrawerExploration = ({
               {modal?.action === 'sendBack' && (
                 <>
                   <Text>
-                    Return this response for corrections. The full earlier step
-                    will receive it, and subsequent steps will run again after
-                    corrections.
+                    The form will include the answers already submitted, so the
+                    recipient can update them without starting again.
                   </Text>
                   <FormControl isRequired isInvalid={!!errors.targetStepId}>
                     <FormLabel>Send back to step</FormLabel>
-                    <SingleSelect
-                      name="targetStepId"
-                      ref={(element) => {
-                        fields.current.targetStepId = element
-                      }}
-                      value={draft.targetStepId ?? ''}
-                      items={targets.map((step) => ({
-                        value: step.id,
-                        label: `Step ${step.number} · ${step.name}`,
-                      }))}
-                      isClearable={false}
-                      onChange={(value) => {
-                        const step = response.steps.find(
-                          (item) => item.id === value,
-                        )
-                        update({
-                          targetStepId: value,
-                          recipientSource: step?.identifierEmail
-                            ? 'identifier'
-                            : 'manual',
-                          recipientEmail: '',
-                        })
-                      }}
-                    />
+                    {targets.length === 1 ? (
+                      <Text>
+                        Step {targets[0].number} · {targets[0].name}
+                      </Text>
+                    ) : (
+                      <SingleSelect
+                        usePortal={false}
+                        name="targetStepId"
+                        ref={(element) => {
+                          fields.current.targetStepId = element
+                        }}
+                        value={draft.targetStepId ?? ''}
+                        items={targets.map((step) => ({
+                          value: step.id,
+                          label: `Step ${step.number} · ${step.name}`,
+                        }))}
+                        isClearable={false}
+                        onChange={(value) => {
+                          const step = response.steps.find(
+                            (item) => item.id === value,
+                          )
+                          update({
+                            targetStepId: value,
+                            recipientSource: step?.identifierEmail
+                              ? 'identifier'
+                              : 'manual',
+                            recipientEmail: '',
+                          })
+                        }}
+                      />
+                    )}
                     <FormErrorMessage>{errors.targetStepId}</FormErrorMessage>
                   </FormControl>
+                  {!!notifications?.actionRequired.length && (
+                    <Box>
+                      <Text textStyle="subhead-1" mb="0.25rem">
+                        Sent back to
+                      </Text>
+                      <RecipientTags
+                        recipients={notifications.actionRequired}
+                      />
+                    </Box>
+                  )}
                   {target?.number === 1 && (
                     <>
                       {target.identifierEmail && (
@@ -502,7 +573,7 @@ export const ResponseDrawerExploration = ({
                             })
                           }
                         >
-                          Send to a different correction email
+                          Send to a different email address
                         </Checkbox>
                       )}
                       {draft.recipientSource === 'manual' ? (
@@ -513,15 +584,9 @@ export const ResponseDrawerExploration = ({
                           inputRef={(element) => {
                             fields.current.recipientEmail = element
                           }}
-                          label="Correction recipient email"
+                          label="Step 1 email address"
                         />
-                      ) : (
-                        <Text>Goes to {target.identifierEmail}</Text>
-                      )}
-                      <Text textStyle="body-2">
-                        The original submitter identity and answers are
-                        retained.
-                      </Text>
+                      ) : null}
                     </>
                   )}
                 </>
@@ -548,7 +613,6 @@ export const ResponseDrawerExploration = ({
                   <Text>
                     Send a reminder to everyone currently assigned to this step.
                   </Text>
-                  <Recipients recipients={response.currentRecipients} />
                 </>
               )}
               {modal?.action === 'stop' && (
@@ -567,6 +631,17 @@ export const ResponseDrawerExploration = ({
                   </Checkbox>
                 </>
               )}
+              {modal?.action !== 'sendBack' &&
+                !!notifications?.actionRequired.length && (
+                  <Box>
+                    <Text textStyle="subhead-1" mb="0.25rem">
+                      {modal?.action === 'remind'
+                        ? 'Reminder sent to'
+                        : 'Reassigned to'}
+                    </Text>
+                    <Recipients recipients={notifications.actionRequired} />
+                  </Box>
+                )}
               {modal && modal.action !== 'remind' && (
                 <FormControl
                   isRequired={modal.action !== 'reassign'}
@@ -574,7 +649,7 @@ export const ResponseDrawerExploration = ({
                 >
                   <FormLabel>
                     {modal.action === 'sendBack'
-                      ? 'What needs correcting'
+                      ? 'Reason for sending back'
                       : 'Reason'}
                   </FormLabel>
                   <Textarea
@@ -587,38 +662,39 @@ export const ResponseDrawerExploration = ({
                   <FormErrorMessage>{errors.reason}</FormErrorMessage>
                 </FormControl>
               )}
-              {!!notificationRecipients.length && (
-                <Box bg="primary.100" p="1rem">
-                  <Text textStyle="subhead-2" mb="0.5rem">
-                    Who is notified
+              {!!notifications?.updates.length && (
+                <Box>
+                  <Text textStyle="subhead-1" mb="0.25rem">
+                    {modal?.action === 'stop' ? 'Notified' : 'Also notified'}
                   </Text>
-                  {notifications &&
-                    (
-                      [
-                        ['Action required', notifications.actionRequired],
-                        ['Current task withdrawn', notifications.displaced],
-                        [
-                          'Review again after corrections',
-                          notifications.reviewAgain,
-                        ],
-                        [
-                          'Update only',
-                          notifications.updates.filter(
-                            (email) =>
-                              !notifications.displaced.includes(email) &&
-                              !notifications.reviewAgain.includes(email),
-                          ),
-                        ],
-                      ] as [string, string[]][]
-                    ).map(
-                      ([label, recipients]) =>
-                        recipients.length > 0 && (
-                          <Box key={label} mb="0.75rem">
-                            <Text textStyle="subhead-2">{label}</Text>
-                            <Recipients recipients={recipients} />
+                  <Stack
+                    bg="secondary.100"
+                    p="1rem"
+                    borderRadius="8px"
+                    spacing="0.75rem"
+                  >
+                    {[...notifiedGroups]
+                      .sort(([a], [b]) =>
+                        a.localeCompare(b, undefined, { numeric: true }),
+                      )
+                      .map(([label, emails], index) => (
+                        <Fragment key={label}>
+                          {index > 0 && (
+                            <Box
+                              borderTopWidth="1px"
+                              borderColor="neutral.300"
+                              mx="-1rem"
+                            />
+                          )}
+                          <Box>
+                            <Text textStyle="subhead-2" mb="0.5rem">
+                              {label}
+                            </Text>
+                            <Recipients recipients={emails} />
                           </Box>
-                        ),
-                    )}
+                        </Fragment>
+                      ))}
+                  </Stack>
                 </Box>
               )}
             </Stack>

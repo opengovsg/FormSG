@@ -37,3 +37,36 @@ describe('SingleSelect — disabled scrollable selected label', () => {
     expect(screen.queryByTitle(LONG_LABEL)).not.toBeInTheDocument()
   })
 })
+
+describe('SingleSelect menu placement', () => {
+  it('keeps the menu inside its container when used in a modal', () => {
+    const { container } = render(
+      <SingleSelect
+        name="modal-select"
+        value="Short option"
+        onChange={() => undefined}
+        items={ITEMS}
+        usePortal={false}
+      />,
+    )
+
+    expect(container).toContainElement(
+      screen.getByRole('listbox', { hidden: true }),
+    )
+  })
+
+  it('retains the default portal behaviour for existing callers', () => {
+    const { container } = render(
+      <SingleSelect
+        name="default-select"
+        value="Short option"
+        onChange={() => undefined}
+        items={ITEMS}
+      />,
+    )
+
+    expect(container).not.toContainElement(
+      screen.getByRole('listbox', { hidden: true }),
+    )
+  })
+})

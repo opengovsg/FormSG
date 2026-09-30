@@ -12,12 +12,9 @@ export const WorkflowStatusOverview = ({
   const response = responses.find((item) => item.id === responseId)
   const step = response ? getOverviewStep(response) : undefined
   return (
-    <Stack
-      spacing={{ base: 0, md: '0.5rem' }}
-      direction={{ base: 'column', md: 'row' }}
-    >
+    <Stack spacing="0.25rem" direction="column">
       <Text as="span" textStyle="subhead-1" whiteSpace="nowrap">
-        Workflow status:
+        Workflow status
       </Text>
       <Skeleton isLoaded={!!response}>
         {response && (
