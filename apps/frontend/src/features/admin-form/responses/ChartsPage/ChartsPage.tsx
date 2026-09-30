@@ -13,7 +13,6 @@ import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { resultsNavBleed } from '../components/FormResultsNavbar'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
-import { useIsDelightfulDashboard } from '../hooks'
 import { ResponsesPageSkeleton } from '../ResponsesPage/ResponsesPageSkeleton'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
@@ -33,7 +32,6 @@ export const ChartsPage = (): JSX.Element => {
     CHARTS_FALLBACK_MAX_RESPONSE_COUNT,
   )
   const toast = useToast({ status: 'danger' })
-  const isDelightfulDashboard = useIsDelightfulDashboard()
 
   if (isLoading) return <ResponsesPageSkeleton />
 
@@ -88,33 +86,6 @@ export const ChartsPage = (): JSX.Element => {
           'features.adminForm.responses.charts.emptyChartContainer.tooManyResponses.subtitle',
         )}
       />
-    )
-  }
-
-  if (!isDelightfulDashboard) {
-    return secretKey ? (
-      <UnlockedCharts />
-    ) : (
-      <>
-        <SecretKeyVerification
-          hideResponseCount
-          heroSvg={<ChartsSvgr />}
-          ctaText={t(
-            'features.adminForm.responses.charts.chartsPage.secretKeyVerification.ctaText',
-          )}
-          label={t(
-            'features.adminForm.responses.charts.chartsPage.secretKeyVerification.label',
-          )}
-        />
-        <Container p={0} maxW="42.5rem">
-          <Box mt="2rem" mb="0.5rem">
-            <Divider />
-          </Box>
-          <Stack>
-            <ChartsSupportedFieldsInfoBox />
-          </Stack>
-        </Container>
-      </>
     )
   }
 
