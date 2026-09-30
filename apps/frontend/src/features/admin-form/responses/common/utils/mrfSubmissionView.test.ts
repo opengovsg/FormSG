@@ -3,6 +3,7 @@ import { FormResponseMode, WorkflowStatus } from 'formsg-shared/types'
 import {
   getPendingResponseAtString,
   hasWorkflowSteps,
+  hasWorkflowSubmission,
 } from './mrfSubmissionView'
 
 const noneString = '-'
@@ -91,5 +92,30 @@ describe('hasWorkflowSteps', () => {
       hasWorkflowSteps(form({ responseMode: FormResponseMode.Encrypt })),
     ).toBe(false)
     expect(hasWorkflowSteps(undefined)).toBe(false)
+  })
+})
+
+describe('hasWorkflowSubmission', () => {
+  const withSteps = (workflowNumTotalSteps: number) => ({
+    mrf: {
+      workflowCurrentStepNumber: 1,
+      workflowNumTotalSteps,
+      workflowStatus: undefined,
+      lastSubmittedAt: undefined,
+      hasNextStepRecipientEmails: false,
+    },
+  })
+
+  it('is true once any submission was made under a workflow', () => {
+    expect(hasWorkflowSubmission([withSteps(0), withSteps(2)])).toBe(true)
+  })
+
+  it('is false when every submission predates the workflow', () => {
+    expect(hasWorkflowSubmission([withSteps(0), withSteps(0)])).toBe(false)
+  })
+
+  it('is false with no submissions, or none carrying workflow metadata', () => {
+    expect(hasWorkflowSubmission([])).toBe(false)
+    expect(hasWorkflowSubmission([{ mrf: undefined }])).toBe(false)
   })
 })
