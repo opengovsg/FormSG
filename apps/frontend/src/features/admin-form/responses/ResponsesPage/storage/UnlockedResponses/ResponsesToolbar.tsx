@@ -45,7 +45,7 @@ export const ResponsesToolbar = (): JSX.Element => {
   const saveViewButtonProps = {
     variant: 'clear',
     colorScheme: 'secondary',
-    isDisabled: !hasActiveFilters || isViewSaved || isAtViewLimit,
+    isDisabled: isViewSaved || isAtViewLimit,
     isLoading: isSavingView,
     onClick: saveViewModal.onOpen,
   } as const
@@ -72,29 +72,31 @@ export const ResponsesToolbar = (): JSX.Element => {
         </Flex>
 
         <Flex align="center" gap="0.75rem">
-          <Tooltip
-            label={viewLimitReached.replace(
-              '{MAX_VIEWS}',
-              String(MAX_SAVED_VIEWS),
-            )}
-            isDisabled={!isAtViewLimit}
-            shouldWrapChildren
-          >
-            {isIconOnly ? (
-              <IconButton
-                {...saveViewButtonProps}
-                icon={<BiSave />}
-                aria-label={saveViewLabel}
-              />
-            ) : (
-              <Button
-                {...saveViewButtonProps}
-                leftIcon={<BiSave fontSize="1.25rem" />}
-              >
-                {saveViewLabel}
-              </Button>
-            )}
-          </Tooltip>
+          {hasActiveFilters && (
+            <Tooltip
+              label={viewLimitReached.replace(
+                '{MAX_VIEWS}',
+                String(MAX_SAVED_VIEWS),
+              )}
+              isDisabled={!isAtViewLimit}
+              shouldWrapChildren
+            >
+              {isIconOnly ? (
+                <IconButton
+                  {...saveViewButtonProps}
+                  icon={<BiSave />}
+                  aria-label={saveViewLabel}
+                />
+              ) : (
+                <Button
+                  {...saveViewButtonProps}
+                  leftIcon={<BiSave fontSize="1.25rem" />}
+                >
+                  {saveViewLabel}
+                </Button>
+              )}
+            </Tooltip>
+          )}
           <DownloadButton isIconOnly={isIconOnly} />
         </Flex>
       </Flex>
