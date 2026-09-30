@@ -125,7 +125,9 @@ export const enSG: ResponsesResponsesPage = {
         resultsFound: '{count, plural, =1 {result} other {results}} found',
         responsesToDate:
           '{count, plural, =1 {response} other {responses}} to date',
-        recentOnly: 'Only showing the most recent 10k responses',
+        recentOnly: 'Only showing the most recent {limit} responses',
+        recentOnlyWithView:
+          'Only applying filters and sorting to the most recent {limit} responses',
       },
     },
     storageResponsesTab: {
