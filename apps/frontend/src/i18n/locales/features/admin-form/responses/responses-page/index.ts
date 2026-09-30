@@ -112,6 +112,7 @@ export interface ResponsesResponsesPage {
         resultsFound: string
         responsesToDate: string
         recentOnly: string
+        recentOnlyWithView: string
       }
     }
     storageResponsesTab: {

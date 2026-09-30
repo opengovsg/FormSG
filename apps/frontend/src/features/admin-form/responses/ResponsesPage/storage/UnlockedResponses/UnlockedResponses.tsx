@@ -23,6 +23,7 @@ import { useStorageResponsesContext } from '../StorageResponsesContext'
 import { useInfiniteScrollTrigger } from './hooks/useInfiniteScrollTrigger'
 import { DeleteViewModal } from './DeleteViewModal'
 import { DownloadButton } from './DownloadButton'
+import { TABLE_RESPONSE_LIMIT } from './responseLimit'
 import { ResponsesTable } from './ResponsesTable'
 import { ResponsesToolbar } from './ResponsesToolbar'
 import { ResponseViewTabs } from './ResponseViewTabs'
@@ -54,6 +55,7 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
     savedViews,
     selectedViewId,
     isShowingRecentOnly,
+    hasActiveFilters,
     applyView,
     renderLimit,
     showMoreRows,
@@ -122,7 +124,10 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
           {isShowingRecentOnly ? (
             <Text textStyle="body-2" color="secondary.400">
               {t(
-                'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.recentOnly',
+                hasActiveFilters
+                  ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.recentOnlyWithView'
+                  : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.recentOnly',
+                { limit: TABLE_RESPONSE_LIMIT.toLocaleString() },
               )}
             </Text>
           ) : null}
