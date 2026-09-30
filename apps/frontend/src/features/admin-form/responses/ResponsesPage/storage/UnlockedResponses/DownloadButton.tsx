@@ -28,7 +28,12 @@ import { CSV_BUFFER_MAX_RESPONSES } from '~features/admin-form/responses/constan
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
-import { CanceledResult, DownloadOptions, DownloadResult } from '../types'
+import {
+  CanceledResult,
+  DownloadOptions,
+  DownloadResult,
+  isCsvOnlyDownload,
+} from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 import { CsvExportView } from '../utils/csvExportView'
 
@@ -57,11 +62,13 @@ const DownloadSelector = ({
   onDownload,
   downloadOptions,
   setDownloadOptions,
+  isCsvConfirmed,
 }: {
   onClickNext: () => void
   downloadOptions: DownloadOptions
   onDownload: () => void
   setDownloadOptions: (downloadOptions: DownloadOptions) => void
+  isCsvConfirmed: boolean
 }) => {
   const { t } = useTranslation('translation', {
     keyPrefix:
@@ -70,8 +77,7 @@ const DownloadSelector = ({
 
   const { isDownloadCsv, isDownloadAttachments, isDownloadPdf } =
     downloadOptions
-  const onlyDownloadCsv =
-    isDownloadCsv && !isDownloadAttachments && !isDownloadPdf
+  const onlyDownloadCsv = !isCsvConfirmed && isCsvOnlyDownload(downloadOptions)
   const isDownloadOptionSelected =
     isDownloadCsv || isDownloadAttachments || isDownloadPdf
 
@@ -360,6 +366,7 @@ export const DownloadButton = ({
           isDownloading={handleBulkDownloadMutation.isLoading}
           downloadMetadata={downloadMetadata}
           downloadOptions={downloadOptions}
+          isCsvFollowingTable={isDelightfulDashboard}
         />
       )}
       {dateRangeResponsesCount !== undefined && (
@@ -432,6 +439,7 @@ export const DownloadButton = ({
                   }}
                   downloadOptions={downloadOptions}
                   setDownloadOptions={setDownloadOptions}
+                  isCsvConfirmed={isDelightfulDashboard}
                 />
               </MenuList>
             </>

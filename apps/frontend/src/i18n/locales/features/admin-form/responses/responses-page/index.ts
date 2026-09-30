@@ -19,6 +19,8 @@ export interface ResponsesResponsesPage {
         }
         confirmationScreen: {
           downloadTitle: string
+          csvTitle: string
+          csvAppliesTableView: string
           responsesText: string
           pdfsText: string
           attachmentsText: string

@@ -26,6 +26,9 @@ export const enSG: ResponsesResponsesPage = {
           attachmentsDescription:
             'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
           downloadTitle: 'Download {downloadItems}',
+          csvTitle: 'Download CSV',
+          csvAppliesTableView:
+            'The CSV includes the filters, sorting and columns applied to the table.',
           responsesText: 'responses',
           pdfsText: 'PDFs',
           attachmentsText: 'attachments',
