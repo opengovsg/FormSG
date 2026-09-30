@@ -4,6 +4,7 @@ import { BiDownload, BiLinkExternal } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import {
   Box,
+  Icon,
   Link,
   Skeleton,
   Stack,
@@ -90,27 +91,28 @@ const StackRow = ({
       >
         {label}:
       </Text>
-      <Skeleton isLoaded={!isLoading && !isError}>
+      {/* minW 0 lets the flex item shrink so long URLs wrap instead of overflowing the drawer. */}
+      <Skeleton isLoaded={!isLoading && !isError} minW={0}>
         {statusTrackerUrl ? (
-          <>
-            <Stack direction={'row'}>
-              <Link
-                target="_blank"
-                href={statusTrackerUrl}
-                display="inline-flex"
-                wordBreak="break-word"
-                gap="0.25rem"
-                data-dd-action-name="Click on status tracker link"
-              >
-                {statusTrackerUrl}{' '}
-                <Box fontSize="1.25rem" display="flex" alignItems="center">
-                  <BiLinkExternal />
-                </Box>
-              </Link>
-            </Stack>
-          </>
+          // Inline so the icon trails the last character of a wrapped URL.
+          <Link
+            target="_blank"
+            href={statusTrackerUrl}
+            overflowWrap="anywhere"
+            data-dd-action-name="Click on status tracker link"
+          >
+            {statusTrackerUrl}
+            <Icon
+              as={BiLinkExternal}
+              fontSize="1.25rem"
+              verticalAlign="text-bottom"
+              ml="0.25rem"
+            />
+          </Link>
         ) : (
-          value
+          <Text as="span" overflowWrap="anywhere">
+            {value}
+          </Text>
         )}
       </Skeleton>
     </Stack>
@@ -208,7 +210,7 @@ export const IndividualResponsePage = (): JSX.Element => {
 
   return (
     <Stack
-      px={{ md: '1.75rem', lg: '2rem' }}
+      px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
       spacing={{ base: '1.5rem', md: '2.5rem' }}
       data-dd-privacy="mask"
     >
