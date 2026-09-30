@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiSortAlt2 } from 'react-icons/bi'
 import { Box, MenuButton, MenuList, Select, Text } from '@chakra-ui/react'
@@ -30,25 +29,8 @@ export const SortMenu = ({
   const { columnOptions, sortColumnId, sortDirection, setSort } =
     useUnlockedResponses()
 
-  const [draftColumnId, setDraftColumnId] = useState(sortColumnId ?? '')
-  const [draftDirection, setDraftDirection] =
-    useState<ResponseSortDirection>(sortDirection)
-
-  useEffect(() => setDraftColumnId(sortColumnId ?? ''), [sortColumnId])
-  useEffect(() => setDraftDirection(sortDirection), [sortDirection])
-
-  const commitSort = useCallback(() => {
-    if (
-      draftColumnId === (sortColumnId ?? '') &&
-      draftDirection === sortDirection
-    ) {
-      return
-    }
-    setSort(draftColumnId || undefined, draftDirection)
-  }, [draftColumnId, draftDirection, setSort, sortColumnId, sortDirection])
-
   return (
-    <Menu closeOnSelect={false} placement="bottom-start" onClose={commitSort}>
+    <Menu closeOnSelect={false} placement="bottom-start">
       {({ isOpen }) => (
         <>
           <MenuButton
@@ -68,8 +50,10 @@ export const SortMenu = ({
             <SectionLabel>{column}</SectionLabel>
             <Box px="1rem" py="0.75rem">
               <Select
-                value={draftColumnId}
-                onChange={(event) => setDraftColumnId(event.target.value)}
+                value={sortColumnId ?? ''}
+                onChange={(event) =>
+                  setSort(event.target.value || undefined, sortDirection)
+                }
               >
                 <option value="">{none}</option>
                 {columnOptions.map(({ id, label }) => (
@@ -83,10 +67,13 @@ export const SortMenu = ({
             <SectionLabel>{direction}</SectionLabel>
             <Box px="1rem" py="0.75rem">
               <Select
-                value={draftDirection}
-                isDisabled={!draftColumnId}
+                value={sortDirection}
+                isDisabled={!sortColumnId}
                 onChange={(event) =>
-                  setDraftDirection(event.target.value as ResponseSortDirection)
+                  setSort(
+                    sortColumnId,
+                    event.target.value as ResponseSortDirection,
+                  )
                 }
               >
                 <option value="asc">{ascending}</option>
