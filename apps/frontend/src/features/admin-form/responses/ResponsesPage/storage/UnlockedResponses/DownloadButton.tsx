@@ -391,11 +391,7 @@ export const DownloadButton = ({
           </Text>
         </ProgressModal>
       )}
-      <Box
-        {...(isDelightfulDashboard
-          ? {}
-          : { gridArea: 'export', justifySelf: 'flex-end' })}
-      >
+      <Box>
         <Menu closeOnSelect={false} placement="bottom-end">
           {({ isOpen, onClose }) => (
             <>
