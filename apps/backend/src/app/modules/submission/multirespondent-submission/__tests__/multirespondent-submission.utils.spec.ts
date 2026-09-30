@@ -1801,6 +1801,77 @@ describe('multirespondent-submission.utils', () => {
       timestamp: '1 Jan 2025',
     }
 
+    describe('placing verified identities by step', () => {
+      const formFields = [
+        { _id: 'a', title: 'Step 1 question', fieldType: BasicField.ShortText },
+        { _id: 'b', title: 'Home address', fieldType: BasicField.Address },
+      ] as unknown as FormFieldSchema[]
+      const responses = {
+        a: {
+          fieldType: BasicField.ShortText,
+          answer: { value: 'Alice' },
+          question: 'Step 1 question',
+          provenance: {},
+        },
+        b: {
+          fieldType: BasicField.Address,
+          answer: {
+            blockNumber: { value: '1' },
+            streetName: { value: 'Road' },
+          },
+          question: 'Home address',
+          provenance: {},
+        },
+        'SingPass Validated NRIC': {
+          fieldType: BasicField.Nric,
+          answer: { value: 'S1' },
+          question: 'SingPass Validated NRIC',
+          provenance: {},
+        },
+        'SingPass Validated NRIC (Step 2)': {
+          fieldType: BasicField.Nric,
+          answer: { value: 'S2' },
+          question: 'SingPass Validated NRIC (Step 2)',
+          provenance: {},
+        },
+      } as unknown as FieldResponsesV4
+      const questions = (json: string) =>
+        (JSON.parse(json) as { question: string }[]).map((e) => e.question)
+
+      it('places each step identity after that step’s entries', () => {
+        const json = buildMrfResponseJson({
+          ...BASE_ARGS,
+          formFields,
+          responses,
+          workflow: [{ edit: ['a'] }, { edit: ['b'] }],
+        })
+
+        expect(questions(json)).toEqual([
+          'Form ID',
+          'Response ID',
+          'Timestamp',
+          'Step 1 question',
+          'SingPass Validated NRIC',
+          'Home address - blockNumber',
+          'Home address - streetName',
+          'SingPass Validated NRIC (Step 2)',
+        ])
+      })
+
+      it('keeps identities at the end without a workflow', () => {
+        const json = buildMrfResponseJson({
+          ...BASE_ARGS,
+          formFields,
+          responses,
+        })
+
+        expect(questions(json).slice(-2)).toEqual([
+          'SingPass Validated NRIC',
+          'SingPass Validated NRIC (Step 2)',
+        ])
+      })
+    })
+
     it('should emit one entry per child attribute for children responses', () => {
       const formFields = [
         {

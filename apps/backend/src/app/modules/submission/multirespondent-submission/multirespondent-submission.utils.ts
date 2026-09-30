@@ -810,6 +810,8 @@ const NON_RESPONSE_FIELD_TYPES = new Set<string>([
  *     (e.g. "Home Address - blockNumber") so each sub-field is individually
  *     addressable downstream.
  *
+ * Verified identities follow the same step placement as the email body.
+ *
  * Note: the `delimiter` param is accepted for caller compatibility but is
  * currently unused post-V4 migration. See follow-up to restore admin
  * `metadata.delimiter` customisation if needed.
@@ -820,6 +822,7 @@ export const buildMrfResponseJson = ({
   formId,
   responseId,
   timestamp,
+  workflow = [],
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
@@ -827,6 +830,8 @@ export const buildMrfResponseJson = ({
   responseId: string
   timestamp: string
   delimiter?: string
+  // MRF steps' field IDs, to place each step's verified identity
+  workflow?: StepFieldList[]
 }): string => {
   const entries: { question: string; answer: string }[] = [
     ...(formId !== undefined ? [{ question: 'Form ID', answer: formId }] : []),
@@ -838,20 +843,24 @@ export const buildMrfResponseJson = ({
     return JSON.stringify(entries)
   }
 
+  // Placed per field, so a field's entries (eg address sub-fields) stay together.
+  const fieldBlocks: { _id: string; entries: typeof entries }[] = []
   for (const field of formFields) {
     if (NON_RESPONSE_FIELD_TYPES.has(field.fieldType)) continue
 
     const response = responses[field._id.toString()]
+    const block = { _id: field._id.toString(), entries: [] as typeof entries }
+    fieldBlocks.push(block)
 
     if (!response) {
-      entries.push({ question: field.title, answer: '' })
+      block.entries.push({ question: field.title, answer: '' })
       continue
     }
 
     if (response.fieldType === BasicField.Address) {
       const addressAnswer = response.answer as Record<string, { value: string }>
       for (const subField of Object.keys(addressAnswer)) {
-        entries.push({
+        block.entries.push({
           question: `${field.title} - ${subField}`,
           answer: addressAnswer[subField]?.value ?? '',
         })
@@ -870,18 +879,32 @@ export const buildMrfResponseJson = ({
       includeVerifiedPrefix: false,
     })
     for (const p of pairs) {
-      entries.push({ question: p.question, answer: p.answer })
+      block.entries.push({ question: p.question, answer: p.answer })
     }
   }
 
-  for (const key of Object.keys(responses)) {
-    if (!startsWithSPCPFieldTitle(key)) continue
-    const ndi = responses[key]
-    entries.push({
-      question: key,
-      answer: (ndi.answer as { value: string }).value,
-    })
-  }
+  const identityBlocks = Object.keys(responses)
+    .filter(startsWithSPCPFieldTitle)
+    .map((key) => ({
+      stepNumber: parseVerifiedFieldTitle(key)?.stepNumber,
+      field: {
+        _id: key,
+        entries: [
+          {
+            question: key,
+            answer: (responses[key].answer as { value: string }).value,
+          },
+        ],
+      },
+    }))
+
+  entries.push(
+    ...placeVerifiedFieldsByStep({
+      fields: fieldBlocks,
+      verified: identityBlocks,
+      workflow,
+    }).flatMap((block) => block.entries),
+  )
 
   return JSON.stringify(entries)
 }
