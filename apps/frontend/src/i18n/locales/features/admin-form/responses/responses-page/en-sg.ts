@@ -117,7 +117,7 @@ export const enSG: ResponsesResponsesPage = {
           confirmButtonText: 'Yes, leave this page',
         },
         progressModalContent:
-          '{dateRangeResponsesCount} responses are being processed. Navigating away from this page will stop the download.',
+          'All responses are being processed. Navigating away from this page will stop the download.',
         menuItem: {
           csv: 'Spreadsheet of responses (.csv)',
           attachments: 'Respondent-uploaded attachments',

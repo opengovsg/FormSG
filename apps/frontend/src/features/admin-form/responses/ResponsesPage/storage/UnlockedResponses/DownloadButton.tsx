@@ -144,7 +144,6 @@ export const DownloadButton = ({
     sortDirection,
     hiddenColumnIds,
     isShowingRecentOnly,
-    searchResultCount,
   } = useUnlockedResponses()
 
   const exportSubmissionIds =
@@ -209,14 +208,10 @@ export const DownloadButton = ({
   const dateRangeResponsesCount =
     exportSubmissionIds?.length ?? totalResponsesInRange
 
-  const minimumResponsesCount =
+  const isResponsesCountHidden =
     isDelightfulDashboard &&
     isShowingRecentOnly &&
-    !exportSubmissionIds &&
-    searchText.trim() &&
     isCsvOnlyDownload(downloadOptions)
-      ? searchResultCount
-      : undefined
 
   const [_downloadCount, setDownloadCount] = useState(0)
   const [_pdfGenerationCount, setPdfGenerationCount] = useState(0)
@@ -378,7 +373,7 @@ export const DownloadButton = ({
           downloadMetadata={downloadMetadata}
           downloadOptions={downloadOptions}
           isCsvFollowingTable={isDelightfulDashboard}
-          minimumResponsesCount={minimumResponsesCount}
+          isResponsesCountHidden={isResponsesCountHidden}
         />
       )}
       {dateRangeResponsesCount !== undefined && (
@@ -392,11 +387,6 @@ export const DownloadButton = ({
           <Text mb="1rem">
             {t(
               'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.progressModalContent',
-              {
-                dateRangeResponsesCount: (
-                  <b>{dateRangeResponsesCount.toLocaleString()}</b>
-                ),
-              },
             )}
           </Text>
         </ProgressModal>

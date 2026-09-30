@@ -36,7 +36,7 @@ export interface DownloadWithAttachmentModalProps extends Pick<
   downloadMetadata?: DownloadResult | CanceledResult
   downloadOptions: DownloadOptions
   isCsvFollowingTable?: boolean
-  minimumResponsesCount?: number
+  isResponsesCountHidden?: boolean
 }
 
 /** Exported for testing. */
@@ -62,7 +62,7 @@ export const DownloadWithAttachmentModal = ({
   downloadMetadata,
   downloadOptions,
   isCsvFollowingTable,
-  minimumResponsesCount,
+  isResponsesCountHidden,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
   const [startedOptions, setStartedOptions] = useState(downloadOptions)
@@ -112,7 +112,7 @@ export const DownloadWithAttachmentModal = ({
             <ConfirmationScreen
               downloadOptions={downloadOptions}
               isCsvFollowingTable={isCsvFollowingTable}
-              minimumResponsesCount={minimumResponsesCount}
+              isResponsesCountHidden={isResponsesCountHidden}
               isDownloading={isDownloading}
               responsesCount={responsesCount}
               onCancel={onClose}
@@ -128,11 +128,6 @@ export const DownloadWithAttachmentModal = ({
                 {isCsvOnly
                   ? t(
                       'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.progressModalContent',
-                      {
-                        dateRangeResponsesCount: (
-                          <b>{responsesCount.toLocaleString()}</b>
-                        ),
-                      },
                     )
                   : t(
                       'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.modal.progressMessage',
