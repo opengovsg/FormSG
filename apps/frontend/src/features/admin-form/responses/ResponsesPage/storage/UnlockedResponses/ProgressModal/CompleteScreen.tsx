@@ -79,7 +79,12 @@ export const CompleteScreen = ({
               'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.downloadComplete',
             )}
           </Text>
-          <Badge w="fit-content" colorScheme="success">
+          <Badge
+            w="fit-content"
+            colorScheme="primary"
+            variant="subtle"
+            color="secondary.500"
+          >
             {t('features.common.betaBadgeLabel')}
           </Badge>
         </Wrap>
