@@ -44,6 +44,7 @@ import {
 import {
   getPendingResponseAtString,
   hasWorkflowSteps,
+  hasWorkflowSubmission,
 } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   matchesSearchQuery,
@@ -379,7 +380,6 @@ export const ResponsesTable = () => {
   const isPaymentsForm = getIsPaymentsForm(form)
   const isMultiRespondentForm =
     form?.responseMode === FormResponseMode.Multirespondent
-  const hasWorkflow = hasWorkflowSteps(form)
 
   const {
     currentPage: currentPage1Indexed,
@@ -410,6 +410,11 @@ export const ResponsesTable = () => {
   const currentPage = useMemo(
     () => (currentPage1Indexed ?? 1) - 1,
     [currentPage1Indexed],
+  )
+
+  const hasWorkflow = useMemo(
+    () => hasWorkflowSteps(form) && hasWorkflowSubmission(metadata),
+    [form, metadata],
   )
 
   const metadataToUse = useMemo(() => {
