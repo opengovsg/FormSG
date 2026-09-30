@@ -87,7 +87,12 @@ export const ConfirmationScreen = ({
       <ModalHeader color="secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
           <Text>{getTitle()}</Text>
-          <Badge w="fit-content" colorScheme="success">
+          <Badge
+            w="fit-content"
+            colorScheme="primary"
+            variant="subtle"
+            color="secondary.500"
+          >
             {t('features.common.betaBadgeLabel')}
           </Badge>
         </Wrap>
