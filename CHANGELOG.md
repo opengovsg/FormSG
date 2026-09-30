@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.39.0](https://github.com/opengovsg/formsg/compare/v9.38.1...v9.39.0) (2026-09-30)
+
+
+### Features
+
+* **results:** cap a form at 5 saved views (#10155) ([#10155](https://github.com/opengovsg/formsg/commit/c964c35da04932aaf44d4b6e7da13a15fcd4985b))
+* **results:** collapse the responses toolbar on narrow screens (#10139) ([#10139](https://github.com/opengovsg/formsg/commit/4efb65e025b7434f11d7f20c8cdde9d3cc1fabb3))
+* **results:** confirm CSV downloads in a Download CSV modal (#10163) ([#10163](https://github.com/opengovsg/formsg/commit/401d24f61e7894623d78390952fab49709c4e530))
+* **results:** let admins switch between the V1 and V2 results dashboards (#10165) ([#10165](https://github.com/opengovsg/formsg/commit/b0b5fdb272480403e3a9cd6e4435efa31a1f3721))
+* **results:** replace Sort's native selects with FormSG dropdowns (#10159) ([#10159](https://github.com/opengovsg/formsg/commit/a4f592ee9861818ad717469de0503dd0b77d5ac3))
+* **results:** show workflow columns only once a submission used the workflow (#10166) ([#10166](https://github.com/opengovsg/formsg/commit/5569056ea7b2b04ca72d89ed48b4338455041ee1))
+* **results:** title the response drawer with its number and PDF button (#10152) ([#10152](https://github.com/opengovsg/formsg/commit/933f96efd98e50168cb5c893124441adad346ea8))
+
+
+### Bug Fixes
+
+* **results:** apply the date range and sort instantly, without closing their menus (#10156) ([#10156](https://github.com/opengovsg/formsg/commit/a37191e95b6b5223eb2283b498b08e66cdab6230))
+* **results:** cap a saved view's name at 50 characters (#10154) ([#10154](https://github.com/opengovsg/formsg/commit/7c1b0537772c8ce065c5168575683e97abe76c47))
+* **results:** colour the attachment download's Beta badge like Settings' (#10162) ([#10162](https://github.com/opengovsg/formsg/commit/6216dbd1169a21d168ecd8ad13771dec70f85e14))
+* **results:** describe a signature cell as "Signature captured." (#10153) ([#10153](https://github.com/opengovsg/formsg/commit/5084a4d7cbdb78926104c16983881a39d8a37c06))
+* **results:** keep the rows on screen while the metadata refetches (#10137) ([#10137](https://github.com/opengovsg/formsg/commit/279db152bf68736bfc6f0bcb1646728036c395be))
+* **results:** pin Check all and Uncheck all to the Filter menu's foot (#10151) ([#10151](https://github.com/opengovsg/formsg/commit/1ac47571ff3d2de30b0b8d712ee237f0b4305e3d))
+* **results:** show Save view only once something is applied (#10160) ([#10160](https://github.com/opengovsg/formsg/commit/261ab47d2a0273b1685e589ea49cb730ec874893))
+* **results:** spell out the 10,000 response limit, and say when a view is capped (#10161) ([#10161](https://github.com/opengovsg/formsg/commit/71e55bd824fa8a5b87b558af1343cc9d48ff543b))
+
+
+### Performance
+
+* **results:** keep column resizing smooth with many rows loaded (#10158) ([#10158](https://github.com/opengovsg/formsg/commit/d655868682a7d9da08e46bd79362eff8c19fd129))
+
 ## [9.38.1](https://github.com/opengovsg/formsg/compare/v9.38.0...v9.38.1) (2026-09-30)
 
 
