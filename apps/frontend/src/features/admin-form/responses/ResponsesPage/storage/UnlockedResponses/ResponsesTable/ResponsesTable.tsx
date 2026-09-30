@@ -745,7 +745,15 @@ export const ResponsesTable = () => {
                 }
                 cursor="pointer"
                 {...(isDelightfulDashboard
-                  ? { display: 'flex', minW: '100%', role: 'group' }
+                  ? {
+                      display: 'flex',
+                      minW: '100%',
+                      role: 'group',
+                      sx: {
+                        contentVisibility: 'auto',
+                        containIntrinsicHeight: ROW_HEIGHT,
+                      },
+                    }
                   : {
                       _hover: { bg: 'primary.100' },
                       _active: { bg: 'primary.200' },
