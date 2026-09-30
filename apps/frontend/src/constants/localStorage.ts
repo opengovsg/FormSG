@@ -39,3 +39,5 @@ export const ADMIN_FEEDBACK_HISTORY_PREFIX = 'last-seen-admin-feedback-'
  * choice, so it outlives the workflow store's per-visit state.
  */
 export const GUIDED_WORKFLOW_MODE_KEY_PREFIX = 'prefers-guided-workflow-'
+
+export const RESULTS_DASHBOARD_VERSION_KEY = 'results-dashboard-version'
