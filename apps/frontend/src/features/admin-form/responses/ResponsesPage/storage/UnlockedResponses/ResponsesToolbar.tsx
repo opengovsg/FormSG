@@ -2,8 +2,11 @@ import { useTranslation } from 'react-i18next'
 import { BiSave } from 'react-icons/bi'
 import { Box, Flex, useBreakpointValue, useDisclosure } from '@chakra-ui/react'
 
+import { MAX_SAVED_VIEWS } from 'formsg-shared/constants'
+
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
+import Tooltip from '~components/Tooltip'
 
 import { ColumnsMenu } from './ColumnsMenu'
 import { DownloadButton } from './DownloadButton'
@@ -17,7 +20,7 @@ import { useSavedViewMutation } from './useSavedViewMutation'
 
 export const ResponsesToolbar = (): JSX.Element => {
   const { t } = useTranslation()
-  const { saveView: saveViewLabel } = t(
+  const { saveView: saveViewLabel, viewLimitReached } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.views',
     { returnObjects: true },
   )
@@ -36,12 +39,13 @@ export const ResponsesToolbar = (): JSX.Element => {
     savedViews,
     columnOptions,
   )
+  const isAtViewLimit = savedViews.length >= MAX_SAVED_VIEWS
   const { mutate: saveView, isLoading: isSavingView } = useSavedViewMutation()
 
   const saveViewButtonProps = {
     variant: 'clear',
     colorScheme: 'secondary',
-    isDisabled: !hasActiveFilters || isViewSaved,
+    isDisabled: !hasActiveFilters || isViewSaved || isAtViewLimit,
     isLoading: isSavingView,
     onClick: saveViewModal.onOpen,
   } as const
@@ -68,20 +72,29 @@ export const ResponsesToolbar = (): JSX.Element => {
         </Flex>
 
         <Flex align="center" gap="0.75rem">
-          {isIconOnly ? (
-            <IconButton
-              {...saveViewButtonProps}
-              icon={<BiSave />}
-              aria-label={saveViewLabel}
-            />
-          ) : (
-            <Button
-              {...saveViewButtonProps}
-              leftIcon={<BiSave fontSize="1.25rem" />}
-            >
-              {saveViewLabel}
-            </Button>
-          )}
+          <Tooltip
+            label={viewLimitReached.replace(
+              '{MAX_VIEWS}',
+              String(MAX_SAVED_VIEWS),
+            )}
+            isDisabled={!isAtViewLimit}
+            shouldWrapChildren
+          >
+            {isIconOnly ? (
+              <IconButton
+                {...saveViewButtonProps}
+                icon={<BiSave />}
+                aria-label={saveViewLabel}
+              />
+            ) : (
+              <Button
+                {...saveViewButtonProps}
+                leftIcon={<BiSave fontSize="1.25rem" />}
+              >
+                {saveViewLabel}
+              </Button>
+            )}
+          </Tooltip>
           <DownloadButton isIconOnly={isIconOnly} />
         </Flex>
       </Flex>

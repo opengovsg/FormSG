@@ -81,6 +81,7 @@ export const enSG: ResponsesResponsesPage = {
         allResponses: 'All responses',
         saveAsNewView: 'Save as new view',
         saveView: 'Save view',
+        viewLimitReached: 'You can only save up to {MAX_VIEWS} views.',
         viewName: 'View name',
         viewNamePlaceholder: 'e.g. Pending approvals',
         viewNameRequired: 'View name is required',

@@ -71,6 +71,7 @@ export interface ResponsesResponsesPage {
         allResponses: string
         saveAsNewView: string
         saveView: string
+        viewLimitReached: string
         viewName: string
         viewNamePlaceholder: string
         viewNameRequired: string
