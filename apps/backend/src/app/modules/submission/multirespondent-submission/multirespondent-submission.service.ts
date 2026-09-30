@@ -653,6 +653,7 @@ const sendMrfOutcomeEmails = ({
           responseId: submissionId,
           timestamp: latestSubmissionTimestamp,
           delimiter: getFormDelimiter(form.metadata),
+          workflow: form.workflow,
         })
 
         const emailAttachments = []
