@@ -53,11 +53,11 @@ export const CompleteScreen = ({
     if (isWithAttachments) {
       return simplur`**${successCount.toLocaleString()}** ${[
         successCount,
-      ]}response[|s] and attachment[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
+      ]}response[|s] and attachment[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details.`
     }
     return simplur`**${successCount.toLocaleString()}** ${[
       successCount,
-    ]}response[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
+    ]}response[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details.`
   }, [downloadMetadata, isWithAttachments])
 
   const attachmentErrorMessage = useMemo(() => {

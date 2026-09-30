@@ -41,7 +41,7 @@ interface ConfirmationScreenProps {
   responsesCount: number
   downloadOptions: DownloadOptions
   isCsvFollowingTable?: boolean
-  minimumResponsesCount?: number
+  isResponsesCountHidden?: boolean
 }
 
 export const ConfirmationScreen = ({
@@ -51,7 +51,7 @@ export const ConfirmationScreen = ({
   onDownload,
   responsesCount,
   isCsvFollowingTable,
-  minimumResponsesCount,
+  isResponsesCountHidden,
 }: ConfirmationScreenProps): JSX.Element => {
   const isCsvOnly = isCsvOnlyDownload(downloadOptions)
   const isMobile = useIsMobile()
@@ -126,19 +126,19 @@ export const ConfirmationScreen = ({
               />
             </Text>
           ) : undefined}
-          <Text>
-            <b>{confirmationScreenTranslation('numberOfResponses')}:</b>{' '}
-            {minimumResponsesCount !== undefined
-              ? `≥${minimumResponsesCount.toLocaleString()}`
-              : responsesCount.toLocaleString()}
-            {isCsvOnly ? null : (
-              <>
-                <br />
-                <b>{confirmationScreenTranslation('estimatedTime')}:</b>{' '}
-                {confirmationScreenTranslation('estimatedTimeReference')}
-              </>
-            )}
-          </Text>
+          {isResponsesCountHidden ? null : (
+            <Text>
+              <b>{confirmationScreenTranslation('numberOfResponses')}:</b>{' '}
+              {responsesCount.toLocaleString()}
+              {isCsvOnly ? null : (
+                <>
+                  <br />
+                  <b>{confirmationScreenTranslation('estimatedTime')}:</b>{' '}
+                  {confirmationScreenTranslation('estimatedTimeReference')}
+                </>
+              )}
+            </Text>
+          )}
           <Text>
             {confirmationScreenTranslation('filterResponsesCountHelperText')}
           </Text>
