@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { CSSProperties, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -523,6 +523,7 @@ export const ResponsesTable = () => {
     setGlobalFilter,
     setSortBy,
     visibleColumns,
+    state: { columnResizing },
   } = useTable<ResponseColumnData>(
     {
       columns,
@@ -572,12 +573,12 @@ export const ResponsesTable = () => {
     )
   }, [isDelightfulDashboard, setSortBy, sortColumnId, sortDirection])
 
+  const columnWidthsKey = visibleColumns
+    .map((column) => column.totalWidth || Number(column.width) || 0)
+    .join(',')
   const columnWidths = useMemo(
-    () =>
-      visibleColumns.map(
-        (column) => column.totalWidth || Number(column.width) || 0,
-      ),
-    [visibleColumns],
+    () => (columnWidthsKey ? columnWidthsKey.split(',').map(Number) : []),
+    [columnWidthsKey],
   )
 
   // Without real widths every column measures as outside the viewport, so the
@@ -643,6 +644,35 @@ export const ResponsesTable = () => {
     setRenderedRowCount(rows.length)
   }, [isDelightfulDashboard, rows.length, setRenderedRowCount])
 
+  const columnWidthVars = Object.fromEntries(
+    visibleColumns.flatMap((column, index) => [
+      [`--col-${index}-width`, `${column.totalWidth}px`],
+      [
+        `--col-${index}-grow`,
+        String((column as { totalFlexWidth?: number }).totalFlexWidth ?? 0),
+      ],
+    ]),
+  ) as CSSProperties
+
+  const columnIndexById = useMemo(
+    () => new Map(visibleColumns.map((column, index) => [column.id, index])),
+    [visibleColumns],
+  )
+
+  const withLiveWidth = useCallback(
+    (columnId: string, style?: CSSProperties): CSSProperties | undefined => {
+      if (!isDelightfulDashboard) return style
+      const index = columnIndexById.get(columnId)
+      if (index === undefined) return style
+      return {
+        ...style,
+        width: `var(--col-${index}-width)`,
+        flex: `var(--col-${index}-grow) 0 auto`,
+      }
+    },
+    [columnIndexById, isDelightfulDashboard],
+  )
+
   const handleRowClick = useCallback(
     (submissionId: string, responseNumber: number) => {
       onRowClick()
@@ -655,6 +685,102 @@ export const ResponsesTable = () => {
     [navigate, onRowClick],
   )
 
+  const frozenBodyRef = useRef<JSX.Element | null>(null)
+  const isResizingColumn = !!columnResizing.isResizingColumn
+  const renderTableBody = () => (
+    <Tbody as="div" {...getTableBodyProps()}>
+      {isDelightfulDashboard && isTableLoading
+        ? Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
+            <Tr as="div" key={`skeleton-${index}`} display="flex" minW="100%">
+              {leftSpacer}
+              {sliceToWindow(visibleColumns).map((column) => (
+                <Td
+                  as="div"
+                  {...column.getHeaderProps()}
+                  style={withLiveWidth(
+                    column.id,
+                    column.getHeaderProps().style,
+                  )}
+                  key={column.id}
+                  display="flex"
+                  alignItems="center"
+                  h={ROW_HEIGHT}
+                  py={0}
+                  minW={0}
+                  flexShrink={0}
+                  overflow="hidden"
+                >
+                  <Skeleton h={SKELETON_CELL_HEIGHT} w="100%" />
+                </Td>
+              ))}
+              {rightSpacer}
+            </Tr>
+          ))
+        : null}
+      {isDelightfulDashboard && isTableLoading
+        ? null
+        : visibleRows.map((row) => {
+            prepareRow(row)
+            return (
+              <Tr
+                as="div"
+                {...row.getRowProps()}
+                key={row.getRowProps().key}
+                px={0}
+                onClick={() =>
+                  handleRowClick(row.values.refNo, row.values.number)
+                }
+                cursor="pointer"
+                {...(isDelightfulDashboard
+                  ? { display: 'flex', minW: '100%', role: 'group' }
+                  : {
+                      _hover: { bg: 'primary.100' },
+                      _active: { bg: 'primary.200' },
+                    })}
+              >
+                {leftSpacer}
+                {sliceToWindow(row.cells).map((cell) => {
+                  return (
+                    <Td
+                      as="div"
+                      {...cell.getCellProps()}
+                      style={withLiveWidth(
+                        cell.column.id,
+                        cell.getCellProps().style,
+                      )}
+                      key={cell.getCellProps().key}
+                      display="flex"
+                      alignItems="center"
+                      {...(isDelightfulDashboard
+                        ? {
+                            h: ROW_HEIGHT,
+                            py: 0,
+                            minW: 0,
+                            flexShrink: 0,
+                            overflow: 'hidden',
+                            transitionProperty: 'background',
+                            transitionDuration: 'normal',
+                            _groupHover: { bg: 'primary.100' },
+                            _groupActive: { bg: 'primary.200' },
+                          }
+                        : {})}
+                    >
+                      {cell.render('Cell')}
+                    </Td>
+                  )
+                })}
+                {rightSpacer}
+              </Tr>
+            )
+          })}
+    </Tbody>
+  )
+  const tableBody =
+    isDelightfulDashboard && isResizingColumn && frozenBodyRef.current
+      ? frozenBodyRef.current
+      : renderTableBody()
+  frozenBodyRef.current = tableBody
+
   return (
     <Table
       as="div"
@@ -662,7 +788,13 @@ export const ResponsesTable = () => {
       variant="solid"
       colorScheme="secondary"
       {...getTableProps()}
-      {...(isDelightfulDashboard ? { minW: 'fit-content', w: '100%' } : {})}
+      {...(isDelightfulDashboard
+        ? {
+            minW: 'fit-content',
+            w: '100%',
+            style: { ...getTableProps().style, ...columnWidthVars },
+          }
+        : {})}
     >
       <Thead as="div" pos="sticky" top={0}>
         {headerGroups.map((headerGroup) => (
@@ -718,84 +850,7 @@ export const ResponsesTable = () => {
           </Tr>
         ))}
       </Thead>
-      <Tbody as="div" {...getTableBodyProps()}>
-        {isDelightfulDashboard && isTableLoading
-          ? Array.from({ length: SKELETON_ROW_COUNT }, (_, index) => (
-              <Tr as="div" key={`skeleton-${index}`} display="flex" minW="100%">
-                {leftSpacer}
-                {sliceToWindow(visibleColumns).map((column) => (
-                  <Td
-                    as="div"
-                    {...column.getHeaderProps()}
-                    key={column.id}
-                    display="flex"
-                    alignItems="center"
-                    h={ROW_HEIGHT}
-                    py={0}
-                    minW={0}
-                    flexShrink={0}
-                    overflow="hidden"
-                  >
-                    <Skeleton h={SKELETON_CELL_HEIGHT} w="100%" />
-                  </Td>
-                ))}
-                {rightSpacer}
-              </Tr>
-            ))
-          : null}
-        {isDelightfulDashboard && isTableLoading
-          ? null
-          : visibleRows.map((row) => {
-              prepareRow(row)
-              return (
-                <Tr
-                  as="div"
-                  {...row.getRowProps()}
-                  key={row.getRowProps().key}
-                  px={0}
-                  onClick={() =>
-                    handleRowClick(row.values.refNo, row.values.number)
-                  }
-                  cursor="pointer"
-                  {...(isDelightfulDashboard
-                    ? { display: 'flex', minW: '100%', role: 'group' }
-                    : {
-                        _hover: { bg: 'primary.100' },
-                        _active: { bg: 'primary.200' },
-                      })}
-                >
-                  {leftSpacer}
-                  {sliceToWindow(row.cells).map((cell) => {
-                    return (
-                      <Td
-                        as="div"
-                        {...cell.getCellProps()}
-                        key={cell.getCellProps().key}
-                        display="flex"
-                        alignItems="center"
-                        {...(isDelightfulDashboard
-                          ? {
-                              h: ROW_HEIGHT,
-                              py: 0,
-                              minW: 0,
-                              flexShrink: 0,
-                              overflow: 'hidden',
-                              transitionProperty: 'background',
-                              transitionDuration: 'normal',
-                              _groupHover: { bg: 'primary.100' },
-                              _groupActive: { bg: 'primary.200' },
-                            }
-                          : {})}
-                      >
-                        {cell.render('Cell')}
-                      </Td>
-                    )
-                  })}
-                  {rightSpacer}
-                </Tr>
-              )
-            })}
-      </Tbody>
+      {tableBody}
     </Table>
   )
 }
