@@ -60,7 +60,7 @@ describe('formatResponseForCell', () => {
           answerArray: ['draw;data:image/png;base64,iVBOR'],
         }),
       ),
-    ).toBe('User added a signature.')
+    ).toBe('Signature captured.')
   })
 
   it('leaves an unsigned signature blank, whatever shape the empty answer takes', () => {
