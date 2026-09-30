@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.1.1](https://github.com/opengovsg/formsg/compare/sdk-v8.1.0...sdk-v8.1.1) (2026-09-30)
+
+
+### Dependencies
+
+* **deps:** bump axios to 1.20.0 for CVE-2026-101898 (#10143) ([#10143](https://github.com/opengovsg/formsg/commit/bc39acd96c9cca7e5301b586f5b188d29bd9e1c0))
+
 ## [8.1.0](https://github.com/opengovsg/formsg/compare/sdk-v8.0.2...sdk-v8.1.0) (2026-09-21)
 
 
