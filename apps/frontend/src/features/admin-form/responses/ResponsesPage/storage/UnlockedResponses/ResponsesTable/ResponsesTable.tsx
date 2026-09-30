@@ -60,6 +60,7 @@ import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { useDecryptedResponsesBySubmissionId } from '~features/admin-form/responses/queries'
 
 import { useColumnVirtualizer } from '../hooks/useColumnVirtualizer'
+import { RESPONSE_NUMBER_COLUMN_ID } from '../savedViews'
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { SendReminderButton } from './SendReminderButton'
@@ -347,8 +348,6 @@ const NO_WORKFLOW_PREFIX_COLUMNS: Column<ResponseColumnData>[] = [
     maxWidth: 400,
   },
 ]
-
-const RESPONSE_NUMBER_COLUMN_ID = 'number'
 
 const SKELETON_ROW_COUNT = 10
 

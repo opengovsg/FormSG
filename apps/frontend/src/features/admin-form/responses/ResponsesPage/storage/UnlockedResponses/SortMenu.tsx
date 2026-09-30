@@ -6,6 +6,7 @@ import { SingleSelect } from '~components/Dropdown'
 import Menu from '~components/Menu'
 
 import { useToolbarMenuDisclosure } from './hooks/useToolbarMenuDisclosure'
+import { normaliseSort, RESPONSE_NUMBER_COLUMN_ID } from './savedViews'
 import { toolbarMenuButtonProps } from './toolbarButtonProps'
 import {
   ResponseSortDirection,
@@ -24,7 +25,7 @@ export const SortMenu = ({
   isIconOnly?: boolean
 }): JSX.Element => {
   const { t } = useTranslation()
-  const { column, direction, none, ascending, descending } = t(
+  const { column, direction, responseNumber, ascending, descending } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.sortMenu',
     { returnObjects: true },
   )
@@ -32,6 +33,14 @@ export const SortMenu = ({
     useUnlockedResponses()
   const { isOpen, onOpen, onClose, buttonRef, listRef } =
     useToolbarMenuDisclosure()
+
+  const applySort = (
+    columnId: string | undefined,
+    nextDirection: ResponseSortDirection,
+  ) => {
+    const next = normaliseSort(columnId, nextDirection)
+    setSort(next.sortColumnId, next.sortDirection)
+  }
 
   return (
     <Menu
@@ -61,15 +70,16 @@ export const SortMenu = ({
         <Box px="1rem" py="0.75rem">
           <SingleSelect
             name="sortColumn"
-            items={columnOptions.map(({ id, label }) => ({
-              value: id,
-              label,
-            }))}
-            value={sortColumnId ?? ''}
-            placeholder={none}
-            onChange={(columnId) =>
-              setSort(columnId || undefined, sortDirection)
-            }
+            items={[
+              { value: RESPONSE_NUMBER_COLUMN_ID, label: responseNumber },
+              ...columnOptions.map(({ id, label }) => ({
+                value: id,
+                label,
+              })),
+            ]}
+            value={sortColumnId ?? RESPONSE_NUMBER_COLUMN_ID}
+            isClearable={false}
+            onChange={(columnId) => applySort(columnId, sortDirection)}
           />
         </Box>
 
@@ -82,11 +92,13 @@ export const SortMenu = ({
               { value: 'desc', label: descending },
             ]}
             value={sortDirection}
-            isDisabled={!sortColumnId}
             isClearable={false}
             isSearchable={false}
             onChange={(nextDirection) =>
-              setSort(sortColumnId, nextDirection as ResponseSortDirection)
+              applySort(
+                sortColumnId ?? RESPONSE_NUMBER_COLUMN_ID,
+                nextDirection as ResponseSortDirection,
+              )
             }
           />
         </Box>

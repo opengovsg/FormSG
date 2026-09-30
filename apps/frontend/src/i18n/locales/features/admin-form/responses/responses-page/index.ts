@@ -85,7 +85,7 @@ export interface ResponsesResponsesPage {
       sortMenu: {
         column: string
         direction: string
-        none: string
+        responseNumber: string
         ascending: string
         descending: string
       }

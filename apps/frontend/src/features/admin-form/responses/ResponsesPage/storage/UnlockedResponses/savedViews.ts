@@ -9,6 +9,8 @@ import {
 
 import { ResponseColumnOption } from './UnlockedResponsesProvider'
 
+export const RESPONSE_NUMBER_COLUMN_ID = 'number'
+
 export interface ResponsesViewState {
   dateRange: DateString[]
   searchText: string
@@ -17,6 +19,18 @@ export interface ResponsesViewState {
   sortColumnId?: string
   sortDirection: SavedViewSortDirection
 }
+
+export const normaliseSort = (
+  columnId: string | undefined,
+  direction: SavedViewSortDirection,
+): Pick<ResponsesViewState, 'sortColumnId' | 'sortDirection'> => ({
+  sortColumnId:
+    columnId === RESPONSE_NUMBER_COLUMN_ID &&
+    direction === SavedViewSortDirection.Descending
+      ? undefined
+      : columnId,
+  sortDirection: direction,
+})
 
 export const hasActiveViewState = ({
   dateRange,
@@ -82,7 +96,9 @@ export const fromSavedView = (
   const searchColumnIds = known(filter.searchColumnIds)
   const columnIds = known(view.columnIds)
   const sortColumnId =
-    view.sort && allIds.includes(view.sort.columnId)
+    view.sort &&
+    (allIds.includes(view.sort.columnId) ||
+      view.sort.columnId === RESPONSE_NUMBER_COLUMN_ID)
       ? view.sort.columnId
       : undefined
 
