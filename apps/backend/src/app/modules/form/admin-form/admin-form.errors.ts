@@ -1,6 +1,7 @@
 import {
   GO_ALREADY_EXIST_ERROR_MESSAGE,
   GO_VALIDATION_ERROR_MESSAGE,
+  MAX_SAVED_VIEWS,
 } from 'formsg-shared/constants'
 
 import { ApplicationError, ErrorCodes } from '../../core/core.errors'
@@ -123,5 +124,13 @@ export class FormChangedWhileEditingError extends ApplicationError {
       undefined,
       ErrorCodes.ADMIN_FORM_CHANGED_WHILE_EDITING,
     )
+  }
+}
+
+export class SavedViewLimitError extends ApplicationError {
+  constructor(
+    message = `A form can have at most ${MAX_SAVED_VIEWS} saved views`,
+  ) {
+    super(message, undefined, ErrorCodes.ADMIN_FORM_SAVED_VIEW_LIMIT)
   }
 }
