@@ -1,9 +1,8 @@
 import { useTranslation } from 'react-i18next'
-import { Box, Container, Skeleton, Stack, Text } from '@chakra-ui/react'
+import { Box, Skeleton, Stack, Text } from '@chakra-ui/react'
 
 import SecretKeyVerificationInput from '~components/SecretKeyVerificationInput'
 
-import { useIsDelightfulDashboard } from '../../hooks'
 import { useStorageResponsesContext } from '../../ResponsesPage/storage'
 
 export const SecretKeyVerification = ({
@@ -21,14 +20,9 @@ export const SecretKeyVerification = ({
     useStorageResponsesContext()
 
   const { t } = useTranslation()
-  const isDelightfulDashboard = useIsDelightfulDashboard()
-
-  const Wrapper = isDelightfulDashboard
-    ? SecretKeyWrapper
-    : LegacySecretKeyWrapper
 
   return (
-    <Wrapper>
+    <Box pt={{ base: '1.5rem', md: '2rem' }}>
       <Stack spacing="2rem">
         {heroSvg}
         {!hideResponseCount ? (
@@ -57,20 +51,6 @@ export const SecretKeyVerification = ({
           buttonText={ctaText}
         />
       </Stack>
-    </Wrapper>
+    </Box>
   )
 }
-
-const SecretKeyWrapper = ({ children }: { children: React.ReactNode }) => (
-  <Box pt={{ base: '1.5rem', md: '2rem' }}>{children}</Box>
-)
-
-const LegacySecretKeyWrapper = ({
-  children,
-}: {
-  children: React.ReactNode
-}) => (
-  <Container p={0} maxW="42.5rem">
-    {children}
-  </Container>
-)
