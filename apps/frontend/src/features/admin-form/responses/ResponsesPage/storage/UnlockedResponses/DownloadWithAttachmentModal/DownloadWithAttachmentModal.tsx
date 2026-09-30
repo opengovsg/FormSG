@@ -36,6 +36,7 @@ export interface DownloadWithAttachmentModalProps extends Pick<
   downloadMetadata?: DownloadResult | CanceledResult
   downloadOptions: DownloadOptions
   isCsvFollowingTable?: boolean
+  minimumResponsesCount?: number
 }
 
 /** Exported for testing. */
@@ -61,6 +62,7 @@ export const DownloadWithAttachmentModal = ({
   downloadMetadata,
   downloadOptions,
   isCsvFollowingTable,
+  minimumResponsesCount,
   initialState = INITIAL_STEP_STATE,
 }: DownloadWithAttachmentModalProps): JSX.Element => {
   const [startedOptions, setStartedOptions] = useState(downloadOptions)
@@ -110,6 +112,7 @@ export const DownloadWithAttachmentModal = ({
             <ConfirmationScreen
               downloadOptions={downloadOptions}
               isCsvFollowingTable={isCsvFollowingTable}
+              minimumResponsesCount={minimumResponsesCount}
               isDownloading={isDownloading}
               responsesCount={responsesCount}
               onCancel={onClose}

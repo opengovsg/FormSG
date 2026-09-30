@@ -41,6 +41,7 @@ interface ConfirmationScreenProps {
   responsesCount: number
   downloadOptions: DownloadOptions
   isCsvFollowingTable?: boolean
+  minimumResponsesCount?: number
 }
 
 export const ConfirmationScreen = ({
@@ -50,6 +51,7 @@ export const ConfirmationScreen = ({
   onDownload,
   responsesCount,
   isCsvFollowingTable,
+  minimumResponsesCount,
 }: ConfirmationScreenProps): JSX.Element => {
   const isCsvOnly = isCsvOnlyDownload(downloadOptions)
   const isMobile = useIsMobile()
@@ -126,7 +128,9 @@ export const ConfirmationScreen = ({
           ) : undefined}
           <Text>
             <b>{confirmationScreenTranslation('numberOfResponses')}:</b>{' '}
-            {responsesCount.toLocaleString()}
+            {minimumResponsesCount !== undefined
+              ? `≥${minimumResponsesCount.toLocaleString()}`
+              : responsesCount.toLocaleString()}
             {isCsvOnly ? null : (
               <>
                 <br />
