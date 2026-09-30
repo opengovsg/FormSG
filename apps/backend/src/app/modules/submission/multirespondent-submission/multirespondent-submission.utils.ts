@@ -21,12 +21,17 @@ import {
 } from 'formsg-shared/types'
 import { handleAddressResponseDisplay } from 'formsg-shared/utils/address'
 import { applyMyInfoPrefixToFormFields } from 'formsg-shared/utils/myinfo-prefix'
+import {
+  placeVerifiedFieldsByStep,
+  StepFieldList,
+} from 'formsg-shared/utils/place-verified-by-step'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import {
   stripWorkflowAuthPrivateData,
   stripWorkflowEmails,
 } from 'formsg-shared/utils/strip-workflow-emails'
+import { parseVerifiedFieldTitle } from 'formsg-shared/utils/verified-content'
 import jwt from 'jsonwebtoken'
 import { get } from 'lodash'
 import moment from 'moment'
@@ -719,6 +724,8 @@ const getQuestionAnswerPairsForOneField = ({
  * Given multiple form fields and their responses, extracts question-answer pairs.
  * @param formFields - List of form fields schemas
  * @param responses - Corresponding list of responses to the given form fields
+ * @param workflow - MRF steps' field IDs; with a login after Step 1, each
+ * step's verified identity follows that step's fields instead of the end
  * @returns An array of QuestionAnswer pairs representing the extracted question-answer pairs for the all the given form fields.
  */
 export const getQuestionAnswerPairsForMultipleFields = ({
@@ -726,45 +733,60 @@ export const getQuestionAnswerPairsForMultipleFields = ({
   responses,
   includeSignatureDataPngDataUri = false,
   includeVerifiedPrefix = true,
+  workflow = [],
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
   includeSignatureDataPngDataUri?: boolean
   includeVerifiedPrefix?: boolean
+  workflow?: StepFieldList[]
 }): QuestionAnswerPair[] => {
-  const questionAnswerPairs: QuestionAnswerPair[] = []
   if (!formFields || !responses) {
     return []
   }
+  // Placed per field, so a field's rows (eg table rows) stay together.
+  const fieldBlocks: { _id: string; pairs: QuestionAnswerPair[] }[] = []
   for (const currentFormField of formFields) {
     const questionTitle = currentFormField.title
     const response = responses[currentFormField._id]
 
     if (!response || !questionTitle) continue
-    const questionAnswerPairsForCurrentFormField =
-      getQuestionAnswerPairsForOneField({
+    fieldBlocks.push({
+      _id: String(currentFormField._id),
+      pairs: getQuestionAnswerPairsForOneField({
         formField: currentFormField,
         response,
         includeSignatureDataPngDataUri,
         includeVerifiedPrefix,
-      })
-
-    questionAnswerPairs.push(...questionAnswerPairsForCurrentFormField)
+      }),
+    })
   }
 
-  // Add Ndi responses if they exist (keyed by SPCP field title in both V3 and V4)
-  for (const key in responses) {
-    if (startsWithSPCPFieldTitle(key)) {
+  // Ndi responses are keyed by their output title, eg 'SingPass Validated NRIC (Step 2)'
+  const identityBlocks = Object.keys(responses)
+    .filter(startsWithSPCPFieldTitle)
+    .map((key) => {
       const ndiResponse = responses[key]
-      const answerValue = (ndiResponse.answer as { value: string }).value
-      questionAnswerPairs.push({
-        question: key,
-        answer: answerValue,
-        fieldType: ndiResponse.fieldType as unknown as BasicField,
-      })
-    }
-  }
-  return questionAnswerPairs
+      return {
+        stepNumber: parseVerifiedFieldTitle(key)?.stepNumber,
+        field: {
+          _id: key,
+          pairs: [
+            {
+              question: key,
+              answer: (ndiResponse.answer as { value: string }).value,
+              fieldType: ndiResponse.fieldType as unknown as BasicField,
+            },
+          ],
+        },
+      }
+    })
+
+  return placeVerifiedFieldsByStep({
+    fields: fieldBlocks,
+    verified: identityBlocks,
+    workflow,
+  }).flatMap((block) => block.pairs)
 }
 
 export const getFormDelimiter = (metadata?: FormMetadata): string =>
@@ -868,14 +890,17 @@ export const buildMrfResponseJson = ({
  * Prepares responses data from MRF responses to PDF html format
  * @param formFields - The form fields schema
  * @param responses - The mrf responses to the form fields
+ * @param workflow - MRF steps' field IDs, to place each step's verified identity
  * @returns list of EmailRespondentConfirmationField used for email & pdf generation
  */
 export const getResponsesDataFromMrfResponses = ({
   formFields,
   responses,
+  workflow,
 }: {
   formFields: FormFieldSchema[] | FormFieldDto[]
   responses: FieldResponsesV4
+  workflow?: StepFieldList[]
 }): EmailRespondentConfirmationField[] => {
   if (!formFields || !responses) return []
 
@@ -883,6 +908,7 @@ export const getResponsesDataFromMrfResponses = ({
     formFields,
     responses,
     includeSignatureDataPngDataUri: true,
+    workflow,
   })
 
   return questionAnswerPairs.map((questionAnswerPair) => {

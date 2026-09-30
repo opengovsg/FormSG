@@ -307,6 +307,7 @@ const sendNextStepEmail = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
+    workflow: form.workflow,
   })
 
   return (
@@ -638,6 +639,7 @@ const sendMrfOutcomeEmails = ({
         const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
           formFields: form.form_fields,
           responses,
+          workflow: form.workflow,
         })
 
         // TODO (formid-json): remove when Form ID in response JSON is GA
@@ -727,7 +729,7 @@ const sendMrfRespondentCopyEmails = ({
 }: {
   form: Pick<
     IPopulatedMultirespondentForm | SnapshottedFormDef,
-    '_id' | 'title' | 'admin' | 'hasStatusTracker'
+    '_id' | 'title' | 'admin' | 'hasStatusTracker' | 'workflow'
   > & {
     form_fields: FormFieldSchema[] | FormFieldDto[]
   }
@@ -768,6 +770,7 @@ const sendMrfRespondentCopyEmails = ({
   const formQuestionAnswers = getQuestionAnswerPairsForMultipleFields({
     formFields: form.form_fields,
     responses,
+    workflow: form.workflow,
   })
 
   return pdfResult
@@ -1352,6 +1355,7 @@ const generatePdfAttachmentIfRequired = ({
   const responsesData = getResponsesDataFromMrfResponses({
     formFields: form.form_fields,
     responses,
+    workflow: form.workflow,
   })
 
   const autoReplyData = {
