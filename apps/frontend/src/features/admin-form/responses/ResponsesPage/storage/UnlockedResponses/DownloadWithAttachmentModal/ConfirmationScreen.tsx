@@ -19,7 +19,7 @@ import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
 import { ModalCloseButton } from '~components/Modal'
 
-import { DownloadOptions } from '../../types'
+import { DownloadOptions, isCsvOnlyDownload } from '../../types'
 
 const InlineTextListItem = ({
   children,
@@ -40,6 +40,7 @@ interface ConfirmationScreenProps {
   isDownloading: boolean
   responsesCount: number
   downloadOptions: DownloadOptions
+  isCsvFollowingTable?: boolean
 }
 
 export const ConfirmationScreen = ({
@@ -48,7 +49,9 @@ export const ConfirmationScreen = ({
   isDownloading,
   onDownload,
   responsesCount,
+  isCsvFollowingTable,
 }: ConfirmationScreenProps): JSX.Element => {
+  const isCsvOnly = isCsvOnlyDownload(downloadOptions)
   const isMobile = useIsMobile()
   const { t: confirmationScreenTranslation } = useTranslation('translation', {
     keyPrefix:
@@ -57,6 +60,7 @@ export const ConfirmationScreen = ({
   const { t } = useTranslation()
 
   const getTitle = () => {
+    if (isCsvOnly) return confirmationScreenTranslation('csvTitle')
     const { isDownloadCsv, isDownloadAttachments, isDownloadPdf } =
       downloadOptions
     const titleParts = []
@@ -87,18 +91,23 @@ export const ConfirmationScreen = ({
       <ModalHeader color="secondary.700" pr="4.5rem">
         <Wrap shouldWrapChildren direction="row" align="center">
           <Text>{getTitle()}</Text>
-          <Badge
-            w="fit-content"
-            colorScheme="primary"
-            variant="subtle"
-            color="secondary.500"
-          >
-            {t('features.common.betaBadgeLabel')}
-          </Badge>
+          {isCsvOnly ? null : (
+            <Badge
+              w="fit-content"
+              colorScheme="primary"
+              variant="subtle"
+              color="secondary.500"
+            >
+              {t('features.common.betaBadgeLabel')}
+            </Badge>
+          )}
         </Wrap>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">
         <Stack spacing="1rem">
+          {downloadOptions.isDownloadCsv && isCsvFollowingTable ? (
+            <Text>{confirmationScreenTranslation('csvAppliesTableView')}</Text>
+          ) : undefined}
           {downloadOptions.isDownloadAttachments ? (
             <Text>
               <Trans
@@ -118,9 +127,13 @@ export const ConfirmationScreen = ({
           <Text>
             <b>{confirmationScreenTranslation('numberOfResponses')}:</b>{' '}
             {responsesCount.toLocaleString()}
-            <br />
-            <b>{confirmationScreenTranslation('estimatedTime')}:</b>{' '}
-            {confirmationScreenTranslation('estimatedTimeReference')}
+            {isCsvOnly ? null : (
+              <>
+                <br />
+                <b>{confirmationScreenTranslation('estimatedTime')}:</b>{' '}
+                {confirmationScreenTranslation('estimatedTimeReference')}
+              </>
+            )}
           </Text>
           <Text>
             {confirmationScreenTranslation('filterResponsesCountHelperText')}
