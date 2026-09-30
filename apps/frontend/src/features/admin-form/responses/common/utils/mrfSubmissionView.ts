@@ -2,6 +2,7 @@ import {
   AdminFormDto,
   FormResponseMode,
   StrippedFormWorkflowDto,
+  SubmissionMetadata,
   SubmittedStep,
   WorkflowStatus,
 } from 'formsg-shared/types'
@@ -13,6 +14,10 @@ import {
 export const hasWorkflowSteps = (form?: AdminFormDto): boolean =>
   form?.responseMode === FormResponseMode.Multirespondent &&
   form.workflow.length > 0
+
+export const hasWorkflowSubmission = (
+  metadata: Pick<SubmissionMetadata, 'mrf'>[],
+): boolean => metadata.some(({ mrf }) => (mrf?.workflowNumTotalSteps ?? 0) > 0)
 
 export enum MRF_STATUS {
   COMPLETED = 'Completed',
