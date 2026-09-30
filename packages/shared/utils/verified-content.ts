@@ -73,3 +73,22 @@ export const getVerifiedFieldTitle = ({
     ? `${title} (Step ${stepNumber})`
     : title
 }
+
+const VERIFIED_TITLE_REGEX = new RegExp(
+  `^(${Array.from(new Set(Object.values(VerifiedKeyToFieldTitleMap))).join('|')})(?: \\(Step (\\d+)\\))?$`,
+)
+
+/**
+ * Parses an output title from getVerifiedFieldTitle, e.g.
+ * 'CorpPass Validated UEN (Step 2)', for outputs keyed by title (emails, PDFs).
+ * @returns the step number, absent for the plain Step 1 title, or null if the
+ * title is not a verified field title
+ */
+export const parseVerifiedFieldTitle = (
+  title: string,
+): { stepNumber?: number } | null => {
+  const match = title.match(VERIFIED_TITLE_REGEX)
+  if (!match) return null
+  const [, , step] = match
+  return step !== undefined ? { stepNumber: Number(step) } : {}
+}

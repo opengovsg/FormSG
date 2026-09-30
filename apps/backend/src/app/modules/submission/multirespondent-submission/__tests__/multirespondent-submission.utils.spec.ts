@@ -1390,6 +1390,135 @@ describe('multirespondent-submission.utils', () => {
         },
       ])
     })
+
+    describe('placing verified identities by step', () => {
+      const stepFormFields = [
+        { _id: 'a', title: 'Step 1 question', fieldType: BasicField.ShortText },
+        { _id: 'b', title: 'Step 2 question', fieldType: BasicField.ShortText },
+        { _id: 'c', title: 'Step 3 question', fieldType: BasicField.ShortText },
+      ] as unknown as FormFieldSchema[]
+      const workflow = [{ edit: ['a'] }, { edit: ['b'] }, { edit: ['c'] }]
+      const text = (question: string) => ({
+        fieldType: BasicField.ShortText,
+        answer: { value: `${question} answer` },
+        question,
+        provenance: {},
+      })
+      const nric = (question: string, value: string) => ({
+        fieldType: BasicField.Nric,
+        answer: { value },
+        question,
+        provenance: {},
+      })
+      const questions = (pairs: { question: string }[]) =>
+        pairs.map((pair) => pair.question)
+
+      it('places each step identity after that step’s fields', () => {
+        const responses = {
+          a: text('Step 1 question'),
+          b: text('Step 2 question'),
+          c: text('Step 3 question'),
+          'SingPass Validated NRIC': nric('SingPass Validated NRIC', 'S1'),
+          'SingPass Validated NRIC (Step 2)': nric(
+            'SingPass Validated NRIC (Step 2)',
+            'S2',
+          ),
+        } as any
+
+        const result = getQuestionAnswerPairsForMultipleFields({
+          formFields: stepFormFields,
+          responses,
+          workflow,
+        })
+
+        expect(questions(result)).toEqual([
+          'Step 1 question',
+          'SingPass Validated NRIC',
+          'Step 2 question',
+          'SingPass Validated NRIC (Step 2)',
+          'Step 3 question',
+        ])
+      })
+
+      it('keeps identities at the end when only Step 1 has a login', () => {
+        const responses = {
+          a: text('Step 1 question'),
+          b: text('Step 2 question'),
+          'SingPass Validated NRIC': nric('SingPass Validated NRIC', 'S1'),
+        } as any
+
+        const result = getQuestionAnswerPairsForMultipleFields({
+          formFields: stepFormFields,
+          responses,
+          workflow,
+        })
+
+        expect(questions(result)).toEqual([
+          'Step 1 question',
+          'Step 2 question',
+          'SingPass Validated NRIC',
+        ])
+      })
+
+      it('keeps identities at the end without a workflow', () => {
+        const responses = {
+          a: text('Step 1 question'),
+          b: text('Step 2 question'),
+          'CorpPass Validated UEN (Step 2)': nric(
+            'CorpPass Validated UEN (Step 2)',
+            'T01',
+          ),
+        } as any
+
+        const result = getQuestionAnswerPairsForMultipleFields({
+          formFields: stepFormFields,
+          responses,
+        })
+
+        expect(questions(result)).toEqual([
+          'Step 1 question',
+          'Step 2 question',
+          'CorpPass Validated UEN (Step 2)',
+        ])
+      })
+
+      it('keeps a table field’s rows together before the step identity', () => {
+        const formFields = [
+          stepFormFields[0],
+          {
+            _id: 'b',
+            title: 'Step 2 table',
+            fieldType: BasicField.Table,
+            columns: [{ _id: 'col', title: 'Name' }],
+          },
+        ] as unknown as FormFieldSchema[]
+        const responses = {
+          a: text('Step 1 question'),
+          b: {
+            fieldType: BasicField.Table,
+            answer: {
+              row1: { rowNum: 0, value: { col: 'Alice' } },
+              row2: { rowNum: 1, value: { col: 'Bob' } },
+            },
+            question: 'Step 2 table',
+            provenance: {},
+          },
+          'SingPass Validated NRIC (Step 2)': nric(
+            'SingPass Validated NRIC (Step 2)',
+            'S2',
+          ),
+        } as any
+
+        const result = getQuestionAnswerPairsForMultipleFields({
+          formFields,
+          responses,
+          workflow,
+        })
+
+        expect(result).toHaveLength(4)
+        expect(result[3].question).toBe('SingPass Validated NRIC (Step 2)')
+      })
+    })
   })
 
   describe('retrieveWorkflowStepEmailAddresses', () => {
