@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.39.1](https://github.com/opengovsg/formsg/compare/v9.39.0...v9.39.1) (2026-09-30)
+
+
+### Bug Fixes
+
+* **results:** make V2 results tabs clickable, and tidy the count skeleton and feedback copy (#10167) ([#10167](https://github.com/opengovsg/formsg/commit/a5e465cf7d3cbd596f96f226d60da5feb63ac95c))
+* refresh webhook and workflow conflict warnings across tabs (#10164) ([#10164](https://github.com/opengovsg/formsg/commit/b84223a07f9e3f278b16f87fa942ab68ffe47aae))
+
 ## [9.39.0](https://github.com/opengovsg/formsg/compare/v9.38.1...v9.39.0) (2026-09-30)
 
 
