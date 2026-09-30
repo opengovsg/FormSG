@@ -21,6 +21,7 @@ import {
   getAdminFormSettings,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
+import { getUser } from '~/mocks/msw/handlers/user'
 
 import { StoryRouter, viewports } from '~utils/storybook'
 
@@ -581,3 +582,45 @@ export const Loading = Template.bind({})
 Loading.parameters = {
   msw: { handlers: { default: buildMswRoutes({}, 'infinite') } },
 }
+
+const webhookWorkflowParameters = (
+  url: string,
+  workflow = [workflow_step_1],
+) => ({
+  msw: {
+    handlers: {
+      default: [
+        getUser(),
+        getAdminFormSettings({
+          overrides: { responseMode: FormResponseMode.Multirespondent },
+        }),
+        ...buildMswRoutes({
+          ...FORM_WITH_WORKFLOW,
+          workflow,
+          webhook: { url, isRetryEnabled: false },
+        }),
+      ],
+    },
+  },
+})
+
+export const SingleStepGenericWebhook = Template.bind({})
+SingleStepGenericWebhook.parameters = webhookWorkflowParameters(
+  'https://example.com/webhook',
+)
+
+export const SingleStepPlumberWebhook = Template.bind({})
+SingleStepPlumberWebhook.parameters = webhookWorkflowParameters(
+  'https://plumber.gov.sg/webhooks/abc',
+)
+
+export const SingleStepGenericWebhookRedesign = Template.bind({})
+SingleStepGenericWebhookRedesign.decorators = [withRedesignOn]
+SingleStepGenericWebhookRedesign.parameters =
+  SingleStepGenericWebhook.parameters
+
+export const NoWorkflowGenericWebhook = Template.bind({})
+NoWorkflowGenericWebhook.parameters = webhookWorkflowParameters(
+  'https://example.com/webhook',
+  [],
+)

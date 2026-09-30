@@ -1,11 +1,15 @@
 import { useCallback } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
-import { useDisclosure } from '@chakra-ui/react'
+import { Link as RouterLink, useParams } from 'react-router-dom'
+import { Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import { FormWorkflowStep } from 'formsg-shared/types'
 
+import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
+import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 import Tooltip from '~components/Tooltip'
 
 import {
@@ -26,9 +30,38 @@ import { AdminEditWorkflowState } from '../../../types'
 import { CloseFormToEditModal } from '../../CloseFormToEditModal'
 import { EditStepBlock } from '../EditStepBlock'
 
+const WebhookBlockedStep = () => {
+  const { t } = useTranslation()
+  const { formId } = useParams()
+
+  return (
+    <Stack spacing="1.5rem">
+      <InlineMessage variant="info">
+        <Text>
+          <Trans
+            i18nKey="features.adminForm.sidebar.workflow.webhookEnabledNoMoreSteps"
+            components={{
+              webhookSettingsLink: (
+                <Link
+                  as={RouterLink}
+                  to={`${ADMINFORM_ROUTE}/${formId}/settings/webhooks`}
+                />
+              ),
+            }}
+          />
+        </Text>
+      </InlineMessage>
+      <Button variant="outline" leftIcon={<BiPlus />} isDisabled>
+        {t('features.adminForm.sidebar.workflow.approvals.addStep')}
+      </Button>
+    </Stack>
+  )
+}
+
 export const NewStepBlock = () => {
   const { t } = useTranslation()
-  const { formWorkflow, isPaymentEnabled } = useAdminFormWorkflow()
+  const { formWorkflow, isPaymentEnabled, isGenericWebhookEnabled } =
+    useAdminFormWorkflow()
   const { createStepMutation } = useWorkflowMutations()
   const {
     isCreatingState,
@@ -63,6 +96,8 @@ export const NewStepBlock = () => {
 
   const newStepNumber = formWorkflow?.length ?? 0
 
+  const isWebhookBlocked = isGenericWebhookEnabled && newStepNumber >= 1
+
   const handleAddStep = () => {
     if (isEditBlocked) {
       onBlockedModalOpen()
@@ -94,6 +129,8 @@ export const NewStepBlock = () => {
   )
 
   if (!formWorkflow) return null
+
+  if (isWebhookBlocked) return <WebhookBlockedStep />
 
   return isCreatingState ? (
     <EditStepBlock

@@ -1,5 +1,8 @@
 export const enSG = {
   title: 'Webhooks',
+  workflowUnsupported:
+    'Forms with two or more steps only support Plumber webhooks, which must be connected through [Plumber]({plumberUrl}). Reduce your workflow to one step to enter a webhook URL here.',
+  remove: 'Remove webhook',
   input: {
     label: 'Endpoint URL',
     description:
