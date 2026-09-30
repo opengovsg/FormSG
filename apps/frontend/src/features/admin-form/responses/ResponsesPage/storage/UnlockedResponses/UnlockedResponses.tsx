@@ -105,7 +105,11 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
         maxW="100%"
         flexShrink={0}
       >
-        <Skeleton isLoaded={!isAnyFetching} w={{ base: '100%', md: 'auto' }}>
+        <Skeleton
+          isLoaded={!isAnyFetching}
+          w={isAnyFetching ? '15rem' : { base: '100%', md: 'auto' }}
+          maxW="100%"
+        >
           <Text
             textStyle="h4"
             mb={{ base: '0.25rem', md: '0.5rem' }}
