@@ -5,8 +5,8 @@ import './polyfills'
 import * as React from 'react'
 import { createRoot } from 'react-dom/client'
 
-import { App } from './app/App'
 import { registerChunkPreloadErrorListener } from './app/chunkPreloadError'
+import { isWorkflowPrototype } from './features/admin-form/responses/prototype/config'
 import * as dayjs from './utils/dayjs'
 import { env } from './env'
 
@@ -45,4 +45,13 @@ dayjs.init()
 //     <App />,
 //   </React.StrictMode>,
 // )
-createRoot(document.getElementById('root')!).render(<App />)
+async function startApp() {
+  if (isWorkflowPrototype) {
+    const { startPrototype } =
+      await import('./features/admin-form/responses/prototype/bootstrap')
+    await startPrototype()
+  }
+  const { App } = await import('./app/App')
+  createRoot(document.getElementById('root')!).render(<App />)
+}
+void startApp()

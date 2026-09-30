@@ -8,6 +8,9 @@ import { useToast } from '~hooks/useToast'
 import { useAdminForm } from '~features/admin-form/common/queries'
 
 import { getDecryptedSubmissionById } from '../AdminSubmissionsService'
+import { individualFor, localQuery } from '../prototype/adapters'
+import { isWorkflowPrototype } from '../prototype/config'
+import { useOptionalPrototypeStore } from '../prototype/context'
 import { adminFormResponsesKeys } from '../queries'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
@@ -31,13 +34,14 @@ export const useGetIndividualDecryptedSubmission = ({
   formId: string
   submissionId: string
 }) => {
+  const prototype = useOptionalPrototypeStore()
   const toast = useToast({
     status: 'danger',
   })
   const { secretKey } = useStorageResponsesContext()
   const { data: { responseMode } = {} } = useAdminForm()
 
-  return useQuery(
+  const query = useQuery(
     adminFormResponsesKeys.individual(formId, submissionId),
     () => getDecryptedSubmissionById({ formId, submissionId, secretKey }),
     {
@@ -47,7 +51,7 @@ export const useGetIndividualDecryptedSubmission = ({
             0
           : // Otherwise, response Will never update once fetched.
             Infinity,
-      enabled: !!secretKey,
+      enabled: !isWorkflowPrototype && !!secretKey,
       onError: (e) => {
         toast({
           description: String(e),
@@ -55,4 +59,6 @@ export const useGetIndividualDecryptedSubmission = ({
       },
     },
   )
+  const response = prototype?.responses.find((r) => r.id === submissionId)
+  return response ? localQuery(query, individualFor(response)) : query
 }

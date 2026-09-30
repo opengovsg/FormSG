@@ -17,6 +17,9 @@ import {
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 
+// React Table resets when the data reference changes. Keep missing data stable.
+const EMPTY_FEEDBACK: ProcessedFeedbackMeta[] = []
+
 export const FeedbackTable = ({
   feedbackData,
   feedbackColumns,
@@ -36,7 +39,7 @@ export const FeedbackTable = ({
   } = useTable(
     {
       columns: feedbackColumns,
-      data: feedbackData ?? [],
+      data: feedbackData ?? EMPTY_FEEDBACK,
       initialState: {
         pageIndex: currentPage,
         pageSize: 10,

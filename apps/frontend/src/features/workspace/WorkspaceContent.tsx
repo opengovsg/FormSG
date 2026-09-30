@@ -5,6 +5,7 @@ import { ROLLOUT_ANNOUNCEMENT_KEY_PREFIX } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import InlineMessage from '~components/InlineMessage'
 
+import { isWorkflowPrototype } from '~features/admin-form/responses/prototype/config'
 import { RolloutAnnouncementModal } from '~features/rollout-announcement/RolloutAnnouncementModal'
 import { useUser } from '~features/user/queries'
 
@@ -51,7 +52,7 @@ export const WorkspaceContent = (): JSX.Element => {
       />
       <RolloutAnnouncementModal
         onClose={() => setHasSeenAnnouncement(true)}
-        isOpen={isAnnouncementModalOpen}
+        isOpen={!isWorkflowPrototype && isAnnouncementModalOpen}
       />
       {totalFormsCount === 0 && isDefaultWorkspace ? (
         <EmptyDefaultWorkspace

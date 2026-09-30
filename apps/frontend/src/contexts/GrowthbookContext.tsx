@@ -10,6 +10,7 @@ import { createGrowthbookInstance } from '~/growthbook'
 
 import { useAuth } from '~contexts/AuthContext'
 
+import { isWorkflowPrototype } from '~features/admin-form/responses/prototype/config'
 import { useEnv } from '~features/env/queries'
 import { useUser } from '~features/user/queries'
 
@@ -43,9 +44,11 @@ export const GrowthBookProvider = ({ children }: { children: ReactNode }) => {
 
   const growthbook = useMemo(
     () =>
-      growthbookClientKey
-        ? createGrowthbookInstance(growthbookClientKey)
-        : undefined,
+      isWorkflowPrototype
+        ? new GrowthBook()
+        : growthbookClientKey
+          ? createGrowthbookInstance(growthbookClientKey)
+          : undefined,
     [growthbookClientKey],
   )
 

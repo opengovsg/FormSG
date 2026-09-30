@@ -239,7 +239,30 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_WORKFLOW_STATUS_LABEL,
-    accessor: ({ mrf }) => {
+    accessor: (row) => {
+      const { mrf } = row
+      if (
+        (row as typeof row & { prototypeStatus?: string }).prototypeStatus ===
+        'stopped'
+      )
+        return (
+          <StatusBadge
+            textColor="secondary.700"
+            backgroundColor="secondary.100"
+            statusText="Stopped"
+          />
+        )
+      if (
+        (row as typeof row & { prototypeStatus?: string }).prototypeStatus ===
+        'rejected'
+      )
+        return (
+          <StatusBadge
+            textColor="danger.700"
+            backgroundColor="danger.100"
+            statusText="Rejected"
+          />
+        )
       if (!mrf?.workflowStatus) {
         return ''
       }
@@ -262,7 +285,13 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_PENDING_RESPONSE_AT_LABEL,
-    accessor: ({ mrf }) => {
+    accessor: (row) => {
+      const { mrf } = row
+      if (
+        (row as typeof row & { prototypeStatus?: string }).prototypeStatus ===
+        'stopped'
+      )
+        return '-'
       const workflowStatus = mrf?.workflowStatus
       const workflowCurrentStepNumber = mrf?.workflowCurrentStepNumber
       const workflowNumTotalSteps = mrf?.workflowNumTotalSteps

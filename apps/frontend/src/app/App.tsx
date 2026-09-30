@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { Inspector, InspectParams } from 'react-dev-inspector'
 import { HelmetProvider } from 'react-helmet-async'
 import { QueryClient, QueryClientProvider } from 'react-query'
@@ -10,6 +11,8 @@ import { AuthProvider } from '~contexts/AuthContext'
 import { GrowthBookProvider } from '~contexts/GrowthbookContext'
 import { HttpError } from '~services/ApiService'
 
+import { isWorkflowPrototype } from '~features/admin-form/responses/prototype/config'
+import { PrototypeProvider } from '~features/admin-form/responses/prototype/PrototypeProvider'
 import { TurnstileChallengeProvider } from '~features/turnstile/TurnstileChallengeProvider'
 
 import { AppHelmet } from './AppHelmet'
@@ -32,16 +35,21 @@ const queryClient = new QueryClient({
 })
 
 // Init Datadog browser logs
-datadogLogs.init({
-  clientToken: import.meta.env.VITE_APP_DD_RUM_CLIENT_TOKEN || '',
-  env: window.__ENV__?.ddRumEnv ?? import.meta.env.VITE_APP_DD_RUM_ENV,
-  site: 'datadoghq.com',
-  service: 'formsg-react',
-  // Specify a version number to identify the deployed version of your application in Datadog
-  version: import.meta.env.VITE_APP_VERSION,
-  forwardErrorsToLogs: true,
-  sampleRate: 100,
-})
+if (!isWorkflowPrototype)
+  datadogLogs.init({
+    clientToken: import.meta.env.VITE_APP_DD_RUM_CLIENT_TOKEN || '',
+    env: window.__ENV__?.ddRumEnv ?? import.meta.env.VITE_APP_DD_RUM_ENV,
+    site: 'datadoghq.com',
+    service: 'formsg-react',
+    // Specify a version number to identify the deployed version of your application in Datadog
+    version: import.meta.env.VITE_APP_VERSION,
+    forwardErrorsToLogs: true,
+    sampleRate: 100,
+  })
+
+const ChallengeProvider = isWorkflowPrototype
+  ? Fragment
+  : TurnstileChallengeProvider
 
 export const App = (): JSX.Element => {
   const isDev = import.meta.env.MODE === 'development'
@@ -71,13 +79,19 @@ export const App = (): JSX.Element => {
           <ReactQueryDevtools initialIsOpen={false} />
           <AppHelmet />
           <ChakraProvider theme={theme} resetCSS>
-            <TurnstileChallengeProvider>
+            <ChallengeProvider>
               <AuthProvider>
                 <GrowthBookProvider>
-                  <AppRouter />
+                  {isWorkflowPrototype ? (
+                    <PrototypeProvider>
+                      <AppRouter />
+                    </PrototypeProvider>
+                  ) : (
+                    <AppRouter />
+                  )}
                 </GrowthBookProvider>
               </AuthProvider>
-            </TurnstileChallengeProvider>
+            </ChallengeProvider>
           </ChakraProvider>
         </QueryClientProvider>
       </HelmetProvider>

@@ -42,6 +42,7 @@
     "dev:backend": "pnpm --filter formsg-backend dev",
     "dev:virus-scanner-guardduty": "pnpm --prefix services/virus-scanner-guardduty run dev",
     "dev:pdf-gen": "pnpm --prefix services/pdf-gen-sparticuz run dev",
+    "prototype": "pnpm --filter formsg-frontend start --mode prototype --port 4181 --strictPort --host 127.0.0.1",
     "dev:frontend": "pnpm --filter formsg-frontend start",
     "lint": "pnpm lint:backend && pnpm lint:shared && pnpm lint:frontend",
     "lint:shared": "pnpm --filter formsg-shared lint",

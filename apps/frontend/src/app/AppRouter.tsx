@@ -51,6 +51,7 @@ import {
   ResponsesPage,
 } from '~features/admin-form/responses'
 import { ChartsPage } from '~features/admin-form/responses/ChartsPage/ChartsPage'
+import { isWorkflowPrototype } from '~features/admin-form/responses/prototype/config'
 import { SettingsPage } from '~features/admin-form/settings/SettingsPage'
 import { RbiProxyForwardingPage } from '~features/compatibility/RbiProxyForwardingPage'
 import { SelectProfilePage } from '~features/login'
@@ -93,7 +94,7 @@ const WithSuspense = ({ children }: { children: React.ReactNode }) => (
 export const AppRouter = (): JSX.Element => {
   const growthbook = useGrowthBook()
   useEffect(() => {
-    if (growthbook) {
+    if (growthbook && !isWorkflowPrototype) {
       // Load features from the GrowthBook API
       growthbook.loadFeatures()
     }

@@ -4,6 +4,7 @@ import { BroadcastChannel } from 'broadcast-channel'
 
 import { useHasChanged } from '~hooks/useHasChanged'
 
+import { isWorkflowPrototype } from '../../prototype/config'
 import { adminFormResponsesKeys } from '../../queries'
 
 const SECRETKEY_BROADCAST_KEY = 'formsg_private_key_sharing'
@@ -22,7 +23,7 @@ type SecretKeyBroadcastMessage =
 export const useSecretKey = (formId: string) => {
   const { data: secretKey } = useQuery({
     queryKey: adminFormResponsesKeys.secretKey(formId),
-    initialData: '',
+    initialData: isWorkflowPrototype ? 'prototype-no-key-required' : '',
   })
 
   const queryClient = useQueryClient()
@@ -45,6 +46,7 @@ export const useSecretKey = (formId: string) => {
   const channelRef = useRef<BroadcastChannel<SecretKeyBroadcastMessage>>()
 
   useEffect(() => {
+    if (isWorkflowPrototype) return
     const secretKeyChannel = new BroadcastChannel<SecretKeyBroadcastMessage>(
       SECRETKEY_BROADCAST_KEY,
     )

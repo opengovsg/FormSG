@@ -20,6 +20,9 @@ import { adminFormKeys } from '../common/queries'
 
 import { getFormIssues } from './FeedbackPage/issue/IssueService'
 import { getFormFeedback } from './FeedbackPage/review/ReviewService'
+import { answersFor, localQuery, metadataFor } from './prototype/adapters'
+import { isWorkflowPrototype } from './prototype/config'
+import { useOptionalPrototypeStore } from './prototype/context'
 import { useStorageResponsesContext } from './ResponsesPage/storage/StorageResponsesContext'
 import { TABLE_RESPONSE_LIMIT } from './ResponsesPage/storage/UnlockedResponses/responseLimit'
 import {
@@ -106,6 +109,12 @@ export const useFormResponses = ({
   submissionId?: string
   enabled?: boolean
 } = {}): UseQueryResult<SubmissionMetadataList> => {
+  const prototype = useOptionalPrototypeStore()
+  const prototypeResponses = prototype?.responses
+  const prototypeMetadata = useMemo(
+    () => (prototypeResponses ? metadataFor(prototypeResponses) : undefined),
+    [prototypeResponses],
+  )
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -118,15 +127,20 @@ export const useFormResponses = ({
     return { page }
   }, [page, submissionId])
 
-  return useQuery(
+  const query = useQuery(
     adminFormResponsesKeys.metadata(formId, params),
     () => getFormSubmissionsMetadata(formId, params),
     {
       staleTime: 0,
       keepPreviousData: !submissionId,
-      enabled: enabled && !!secretKey && (page > 0 || !!submissionId),
+      enabled:
+        !isWorkflowPrototype &&
+        enabled &&
+        !!secretKey &&
+        (page > 0 || !!submissionId),
     },
   )
+  return prototype ? localQuery(query, prototypeMetadata!) : query
 }
 
 /**
@@ -138,13 +152,19 @@ export const useAllFormResponses = ({
 }: {
   enabled?: boolean
 } = {}): UseQueryResult<SubmissionMetadataList> => {
+  const prototype = useOptionalPrototypeStore()
+  const prototypeResponses = prototype?.responses
+  const prototypeMetadata = useMemo(
+    () => (prototypeResponses ? metadataFor(prototypeResponses) : undefined),
+    [prototypeResponses],
+  )
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
   const { secretKey, dateRange } = useStorageResponsesContext()
   const [startDate, endDate] = dateRange
 
-  return useQuery(
+  const query = useQuery(
     adminFormResponsesKeys.allMetadata(formId, dateRange),
     async () => {
       const startedAt = performance.now()
@@ -165,9 +185,10 @@ export const useAllFormResponses = ({
     },
     {
       staleTime: 0,
-      enabled: enabled && !!secretKey,
+      enabled: !isWorkflowPrototype && enabled && !!secretKey,
     },
   )
+  return prototype ? localQuery(query, prototypeMetadata!) : query
 }
 
 /**
@@ -210,6 +231,15 @@ export const useDecryptedResponsesBySubmissionId = ({
 }: {
   enabled?: boolean
 } = {}): UseQueryResult<Map<string, FormField[]>> => {
+  const prototype = useOptionalPrototypeStore()
+  const prototypeResponses = prototype?.responses
+  const prototypeAnswers = useMemo(
+    () =>
+      prototypeResponses
+        ? new Map(prototypeResponses.map((r) => [r.id, answersFor(r)]))
+        : undefined,
+    [prototypeResponses],
+  )
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
 
@@ -218,7 +248,7 @@ export const useDecryptedResponsesBySubmissionId = ({
   const queryClient = useQueryClient()
   const queryKey = adminFormResponsesKeys.decryptedResponses(formId, dateRange)
 
-  return useQuery(
+  const query = useQuery(
     queryKey,
     async () => {
       const decrypted = new Map<string, FormField[]>()
@@ -270,9 +300,10 @@ export const useDecryptedResponsesBySubmissionId = ({
     },
     {
       staleTime: Infinity,
-      enabled: enabled && !!secretKey,
+      enabled: !isWorkflowPrototype && enabled && !!secretKey,
     },
   )
+  return prototype ? localQuery(query, prototypeAnswers!) : query
 }
 
 /**

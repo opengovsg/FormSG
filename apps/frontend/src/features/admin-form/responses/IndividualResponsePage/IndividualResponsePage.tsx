@@ -38,6 +38,9 @@ import {
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
 import { useIsDelightfulDashboard } from '../hooks'
+import { isWorkflowPrototype } from '../prototype/config'
+import { ResponseDrawerExploration } from '../prototype/ResponseDrawerExploration'
+import { WorkflowStatusOverview } from '../prototype/WorkflowStatusOverview'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
@@ -214,123 +217,153 @@ export const IndividualResponsePage = ({
   const workflowCurrentStepNumber = data?.mrf?.workflowCurrentStepNumber
   const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
 
+  const overview = (
+    <Stack bg="primary.100" p="1.5rem" textStyle="body-1">
+      <StackRow
+        label="Response ID"
+        value={submissionId}
+        isLoading={isLoading}
+        isError={isError}
+      />
+      <StackRow
+        label={hasWorkflow ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
+        value={data?.submissionTime ?? t('features.common.loadingWithEllipsis')}
+        isLoading={isLoading}
+        isError={isError}
+      />
+      {hasWorkflow && !isWorkflowPrototype ? (
+        <>
+          <StackRow
+            label={MRF_WORKFLOW_STATUS_LABEL}
+            value={responseMrfStatus}
+            isLoading={isLoading}
+            isError={isError}
+          />
+          <StackRow
+            label={MRF_PENDING_RESPONSE_AT_LABEL}
+            value={
+              workflowStatus === undefined ||
+              workflowCurrentStepNumber === undefined ||
+              workflowNumTotalSteps === undefined
+                ? '-'
+                : getPendingResponseAtString({
+                    workflowStatus,
+                    workflowCurrentStepNumber,
+                    workflowNumTotalSteps,
+                  })
+            }
+            isLoading={isLoading}
+            isError={isError}
+          />
+          <StackRow
+            label={MRF_STATUS_TRACKING_LABEL}
+            value={''}
+            statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
+            isLoading={isLoading}
+            isError={isError}
+          />
+        </>
+      ) : null}
+      {hasWorkflow && isWorkflowPrototype && (
+        <>
+          <WorkflowStatusOverview responseId={submissionId} />
+          <StackRow
+            label={MRF_STATUS_TRACKING_LABEL}
+            value=""
+            statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
+            isLoading={isLoading}
+            isError={isError}
+          />
+        </>
+      )}
+      {attachmentDownloadUrls.size > 0 && (
+        <Stack
+          spacing={{ base: '0', md: '0.5rem' }}
+          direction={{ base: 'column', md: 'row' }}
+        >
+          <Text
+            as="span"
+            textStyle="subhead-1"
+            py={{ base: '0', md: '0.25rem' }}
+          >
+            {t('features.common.attachments')}:
+          </Text>
+          <Skeleton isLoaded={!isLoading && !isError}>
+            <Button
+              data-dd-action-name="Click on attachment field download button"
+              variant="link"
+              isDisabled={downloadAttachmentsAsZipMutation.isLoading}
+              onClick={handleDownload}
+              rightIcon={
+                downloadAttachmentsAsZipMutation.isLoading ? (
+                  <Spinner fontSize="1.5rem" />
+                ) : (
+                  <BiDownload fontSize="1.5rem" />
+                )
+              }
+            >
+              {t(
+                'features.adminForm.responses.individualResponse.downloadAttachmentsAsZip',
+                { attachmentSize: attachmentDownloadUrls.size },
+              )}
+            </Button>
+          </Skeleton>
+        </Stack>
+      )}
+      {form?.responseMode === FormResponseMode.Multirespondent &&
+        user?.betaFlags?.mrfAdminSubmissionKey && (
+          <StackRow
+            label={t(
+              'features.adminForm.responses.individualResponse.responseLinkLabel',
+            )}
+            value={responseLinkWithKey}
+            isLoading={isLoading}
+            isError={isError}
+          />
+        )}
+    </Stack>
+  )
+  const answers =
+    isLoading || isError ? (
+      <LoadingDecryption />
+    ) : (
+      <>
+        <Stack spacing="1.5rem" divider={<StackDivider />}>
+          {data?.responses.map((r, idx) => (
+            <DecryptedRow
+              row={r}
+              attachmentDecryptionKey={attachmentDecryptionKey}
+              key={idx}
+            />
+          ))}
+          <Box />
+        </Stack>
+        {data?.payment && (
+          <PaymentSection payment={data.payment} formId={formId} />
+        )}
+      </>
+    )
   const body = (
     <Stack
-      px={{ md: '1.75rem', lg: '2rem' }}
+      px={{
+        base: isWorkflowPrototype ? '1rem' : undefined,
+        md: '1.75rem',
+        lg: '2rem',
+      }}
       spacing={{ base: '1.5rem', md: '2.5rem' }}
       data-dd-privacy="mask"
     >
-      <Stack bg="primary.100" p="1.5rem" textStyle="body-1">
-        <StackRow
-          label="Response ID"
-          value={submissionId}
-          isLoading={isLoading}
-          isError={isError}
-        />
-        <StackRow
-          label={hasWorkflow ? MRF_RESPONSE_TIMESTAMP_LABEL : 'Timestamp'}
-          value={
-            data?.submissionTime ?? t('features.common.loadingWithEllipsis')
-          }
-          isLoading={isLoading}
-          isError={isError}
-        />
-        {hasWorkflow ? (
-          <>
-            <StackRow
-              label={MRF_WORKFLOW_STATUS_LABEL}
-              value={responseMrfStatus}
-              isLoading={isLoading}
-              isError={isError}
-            />
-            <StackRow
-              label={MRF_PENDING_RESPONSE_AT_LABEL}
-              value={
-                workflowStatus === undefined ||
-                workflowCurrentStepNumber === undefined ||
-                workflowNumTotalSteps === undefined
-                  ? '-'
-                  : getPendingResponseAtString({
-                      workflowStatus,
-                      workflowCurrentStepNumber,
-                      workflowNumTotalSteps,
-                    })
-              }
-              isLoading={isLoading}
-              isError={isError}
-            />
-            <StackRow
-              label={MRF_STATUS_TRACKING_LABEL}
-              value={''}
-              statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
-              isLoading={isLoading}
-              isError={isError}
-            />
-          </>
-        ) : null}
-        {attachmentDownloadUrls.size > 0 && (
-          <Stack
-            spacing={{ base: '0', md: '0.5rem' }}
-            direction={{ base: 'column', md: 'row' }}
-          >
-            <Text
-              as="span"
-              textStyle="subhead-1"
-              py={{ base: '0', md: '0.25rem' }}
-            >
-              {t('features.common.attachments')}:
-            </Text>
-            <Skeleton isLoaded={!isLoading && !isError}>
-              <Button
-                data-dd-action-name="Click on attachment field download button"
-                variant="link"
-                isDisabled={downloadAttachmentsAsZipMutation.isLoading}
-                onClick={handleDownload}
-                rightIcon={
-                  downloadAttachmentsAsZipMutation.isLoading ? (
-                    <Spinner fontSize="1.5rem" />
-                  ) : (
-                    <BiDownload fontSize="1.5rem" />
-                  )
-                }
-              >
-                {t(
-                  'features.adminForm.responses.individualResponse.downloadAttachmentsAsZip',
-                  { attachmentSize: attachmentDownloadUrls.size },
-                )}
-              </Button>
-            </Skeleton>
-          </Stack>
-        )}
-        {form?.responseMode === FormResponseMode.Multirespondent &&
-          user?.betaFlags?.mrfAdminSubmissionKey && (
-            <StackRow
-              label={t(
-                'features.adminForm.responses.individualResponse.responseLinkLabel',
-              )}
-              value={responseLinkWithKey}
-              isLoading={isLoading}
-              isError={isError}
-            />
-          )}
-      </Stack>
-      {isLoading || isError ? (
-        <LoadingDecryption />
+      {isWorkflowPrototype ? (
+        <ResponseDrawerExploration
+          responseId={submissionId}
+          overview={overview}
+        >
+          {answers}
+        </ResponseDrawerExploration>
       ) : (
         <>
-          <Stack spacing="1.5rem" divider={<StackDivider />}>
-            {data?.responses.map((r, idx) => (
-              <DecryptedRow
-                row={r}
-                attachmentDecryptionKey={attachmentDecryptionKey}
-                key={idx}
-              />
-            ))}
-            <Box />
-          </Stack>
-          {data?.payment && (
-            <PaymentSection payment={data.payment} formId={formId} />
-          )}
+          {overview}
+          {answers}
         </>
       )}
     </Stack>

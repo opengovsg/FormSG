@@ -7,6 +7,7 @@ import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { HttpError } from '~services/ApiService'
 
+import { isWorkflowPrototype } from '~features/admin-form/responses/prototype/config'
 import { fetchUser } from '~features/user/UserService'
 
 export const userKeys = {
@@ -31,7 +32,9 @@ export const useUser = ({
     remove,
   } = useQuery(userKeys.base, () => fetchUser(), {
     enabled,
-    onSuccess: () => setIsLocalStorageAuthenticated(true),
+    onSuccess: () => {
+      if (!isWorkflowPrototype) setIsLocalStorageAuthenticated(true)
+    },
     onError: (err) => {
       if (err instanceof HttpError && err.code === StatusCodes.UNAUTHORIZED) {
         setIsLocalStorageAuthenticated(undefined)

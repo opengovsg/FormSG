@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Activity log · Separate sections</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#1f2430;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px}.review{margin:26px auto 25px;max-width:590px;font-size:12px;color:#6b7280;letter-spacing:.02em}.activity{max-width:590px;margin:0 auto;padding:0 14px 28px 0}.event{position:relative;padding:0 0 32px 49px}.event:before{content:"";position:absolute;left:15px;top:32px;bottom:0;width:1px;background:#d9dde3}.event:last-child:before{bottom:18px}.mark{position:absolute;left:0;top:0;width:32px;height:32px;display:grid;place-items:center;border:1px solid #d9dde3;border-radius:50%;background:#fff;color:#535c6b}.mark svg{width:16px;height:16px}.heading{font-size:14px;line-height:22px;font-weight:600;margin:0}.heading .actor{font-weight:400}.date{font-size:12px;color:#737b88;margin:5px 0 10px;line-height:18px}.step{display:inline-block;background:#f5f6f8;padding:4px 8px;border-radius:4px;color:#626b79;font-size:11px;line-height:16px}.reason{margin:18px 0 20px;background:#f5f6f8;border-radius:4px;padding:13px 15px;line-height:21px}.metadata{display:grid;gap:17px}.meta-label{display:flex;align-items:center;gap:7px;color:#626b79;font-size:12px;margin-bottom:8px}.meta-label svg{width:15px;height:15px;flex:none}.chips{display:flex;gap:6px;flex-wrap:wrap;padding-left:22px}.chip{border-radius:4px;background:#f5f6f8;padding:5px 8px;font-size:12px;color:#515a68;line-height:17px}@media(max-width:620px){.review{margin-left:24px}.activity{margin:0 24px}}
+body{max-width:650px;padding:28px;font-family:Inter,Arial,sans-serif}.review{margin:0 0 28px}.activity{margin:0;padding:0}.heading{font-size:15px}.event:last-child:before{display:none}</style>
+</head>
+<body>
+<p class="review">2 · Separate sections</p>
+<main class="activity" aria-label="Form activity">
+<article class="event">
+<div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v5h4M10 13h5M10 17h5"/></svg></div>
+<h2 class="heading">Submitted <span class="actor">by submitter@example.org</span></h2>
+<p class="date">10 Sep 2026, 9:00 am</p>
+<span class="step">Step 1 · Submitter</span>
+</article>
+<article class="event">
+<div class="mark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="7" y="7" width="10" height="10" rx="1"/></svg></div>
+<h2 class="heading">Workflow stopped <span class="actor">by admin@example.org</span></h2>
+<p class="date">12 Sep 2026, 10:00 am</p>
+<span class="step">Step 2 · Team lead</span>
+<div class="reason"><strong style="display:block;font-size:12px;margin-bottom:5px">Reason</strong>This request has already been resolved.</div>
+<div class="metadata">
+<section aria-label="Assignment ended for">
+<div class="meta-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="7" r="3.5"/><path d="M5 21v-3a7 7 0 0 1 14 0v3"/></svg>Assignment ended for</div>
+<div class="chips"><span class="chip">lead@example.org</span><span class="chip">deputy@example.org</span></div>
+</section>
+<section aria-label="Notified">
+<div class="meta-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 6 9 7 9-7"/></svg>Notified</div>
+<div class="chips"><span class="chip">lead@example.org</span><span class="chip">deputy@example.org</span><span class="chip">submitter@example.org</span></div>
+</section>
+</div>
+</article>
+</main>
+</body>
+</html>

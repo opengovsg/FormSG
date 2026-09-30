@@ -10,6 +10,7 @@ import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { NavigationPrompt } from '~templates/NavigationPrompt'
 
+import { isWorkflowPrototype } from '~features/admin-form/responses/prototype/config'
 import { useUser } from '~features/user/queries'
 
 import { DirtyModal } from '../common/components/DirtyModal'
@@ -54,7 +55,7 @@ export const CreatePage = (): JSX.Element => {
     useLocalStorage<boolean>(localStorageFeatureTourKey)
 
   const shouldFeatureTourRender = useMemo(() => {
-    return !isLoading && !hasAdminSeenFeatureTour
+    return !isWorkflowPrototype && !isLoading && !hasAdminSeenFeatureTour
   }, [isLoading, hasAdminSeenFeatureTour])
 
   const isDirty = useDirtyFieldStore(isDirtySelector)

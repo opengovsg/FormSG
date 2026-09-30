@@ -5,6 +5,8 @@ import { FCC } from '~typings/react'
 import { LOGGED_IN_KEY } from '~constants/localStorage'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 
+import { isWorkflowPrototype } from '~features/admin-form/responses/prototype/config'
+
 type AuthContextProps = {
   isAuthenticated?: boolean
 }
@@ -41,6 +43,6 @@ const useProvideAuth = () => {
 
   // Return the user object and auth methods
   return {
-    isAuthenticated,
+    isAuthenticated: isWorkflowPrototype || isAuthenticated,
   }
 }

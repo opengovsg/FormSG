@@ -9,9 +9,11 @@ declare global {
 export const env: FrontendRuntimeEnv = {
   appUrl: window.__ENV__?.appUrl ?? import.meta.env.VITE_APP_URL ?? '',
   apiBaseUrl:
-    window.__ENV__?.apiBaseUrl ??
-    import.meta.env.VITE_APP_BASE_URL ??
-    '/api/v3',
+    import.meta.env.MODE === 'prototype'
+      ? '/api/v3'
+      : (window.__ENV__?.apiBaseUrl ??
+        import.meta.env.VITE_APP_BASE_URL ??
+        '/api/v3'),
   gaTrackingId:
     window.__ENV__?.gaTrackingId ??
     import.meta.env.VITE_APP_GA_TRACKING_ID ??

@@ -75,21 +75,23 @@ const ddProxyUrl =
     ? `${window.__ENV__?.appUrl ?? window.location.origin}/api/v1/proxy/datadog/rum`
     : undefined
 
-// Init Datadog RUM
-datadogRum.init({
-  applicationId: '@VITE_APP_DD_RUM_APP_ID',
-  clientToken: '@VITE_APP_DD_RUM_CLIENT_TOKEN',
-  env: window.__ENV__?.ddRumEnv ?? '',
-  site: 'datadoghq.com',
-  service: 'formsg-react',
-  proxy: ddProxyUrl,
-  allowedTracingUrls: [window.__ENV__?.appUrl ?? window.location.origin],
-  version: '@VITE_APP_VERSION',
-  sessionSampleRate,
-  sessionReplaySampleRate: 100,
-  trackUserInteractions: true,
-  defaultPrivacyLevel: 'mask-user-input',
-  beforeSend: ddBeforeSend,
-})
+// The standalone prototype does not collect analytics.
+if (import.meta.env.MODE !== 'prototype') {
+  datadogRum.init({
+    applicationId: '@VITE_APP_DD_RUM_APP_ID',
+    clientToken: '@VITE_APP_DD_RUM_CLIENT_TOKEN',
+    env: window.__ENV__?.ddRumEnv ?? '',
+    site: 'datadoghq.com',
+    service: 'formsg-react',
+    proxy: ddProxyUrl,
+    allowedTracingUrls: [window.__ENV__?.appUrl ?? window.location.origin],
+    version: '@VITE_APP_VERSION',
+    sessionSampleRate,
+    sessionReplaySampleRate: 100,
+    trackUserInteractions: true,
+    defaultPrivacyLevel: 'mask-user-input',
+    beforeSend: ddBeforeSend,
+  })
 
-datadogRum.startSessionReplayRecording()
+  datadogRum.startSessionReplayRecording()
+}
