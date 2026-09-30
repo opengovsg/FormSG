@@ -2,6 +2,7 @@ import { CSSProperties, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
+  CellProps,
   Column,
   Row,
   useFlexLayout,
@@ -322,16 +323,28 @@ const PAYMENT_RESPONSE_TABLE_COLUMNS =
 
 const WORKFLOW_PREFIX_COLUMNS = MRF_RESPONSE_TABLE_COLUMNS
 
+const SingleLineCell = ({ value }: CellProps<ResponseColumnData>) => (
+  <Text noOfLines={1} title={String(value ?? '')}>
+    {value}
+  </Text>
+)
+
 const NO_WORKFLOW_PREFIX_COLUMNS: Column<ResponseColumnData>[] = [
   BASE_RESPONSE_TABLE_COLUMNS[0],
-  BASE_RESPONSE_TABLE_COLUMNS[1],
+  {
+    ...BASE_RESPONSE_TABLE_COLUMNS[1],
+    Cell: SingleLineCell,
+    minWidth: 240,
+    maxWidth: 400,
+  },
   {
     Header: MRF_RESPONSE_TIMESTAMP_LABEL,
+    Cell: SingleLineCell,
     accessor: 'submissionTime',
     sortType: byServerOrder,
     width: 250,
-    minWidth: 250,
-    disableResizing: true,
+    minWidth: 200,
+    maxWidth: 400,
   },
 ]
 
