@@ -19,6 +19,8 @@ import { NavigationTab, NavigationTabList } from '~templates/NavigationTabs'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 
+import { DashboardVersionToggle } from './DashboardVersionToggle'
+
 export const LegacyFormResultsNavbar = (): JSX.Element => {
   const { ref, onMouseDown } = useDraggable<HTMLDivElement>()
 
@@ -55,46 +57,54 @@ export const LegacyFormResultsNavbar = (): JSX.Element => {
       zIndex="docked"
       flex={0}
     >
-      <NavigationTabList
-        ref={ref}
-        onMouseDown={onMouseDown}
+      <Flex
         maxW="69.5rem"
         px="1.25rem"
-        pt="0.625rem"
         m="auto"
         w="100vw"
-        borderBottom="none"
-        justifySelf="flex-start"
+        align="center"
+        gap="1rem"
       >
-        <NavigationTab
-          to={RESULTS_RESPONSES_SUBROUTE}
-          isActive={checkTabActive(RESULTS_RESPONSES_SUBROUTE)}
+        <NavigationTabList
+          ref={ref}
+          onMouseDown={onMouseDown}
+          pt="0.625rem"
+          flex={1}
+          minW={0}
+          borderBottom="none"
+          justifySelf="flex-start"
         >
-          {t('features.common.responses')}
-        </NavigationTab>
-        <NavigationTab
-          to={RESULTS_FEEDBACK_SUBROUTE}
-          isActive={checkTabActive(RESULTS_FEEDBACK_SUBROUTE)}
-        >
-          {t('features.common.feedback')}
-        </NavigationTab>
-        {shouldShowCharts ? (
           <NavigationTab
-            to={RESULTS_CHARTS_SUBROUTE}
-            isActive={checkTabActive(RESULTS_CHARTS_SUBROUTE)}
+            to={RESULTS_RESPONSES_SUBROUTE}
+            isActive={checkTabActive(RESULTS_RESPONSES_SUBROUTE)}
           >
-            {t('features.common.charts')}
-            <Badge
-              colorScheme="primary"
-              variant="subtle"
-              color="secondary.500"
-              ml="0.5rem"
-            >
-              {t('features.common.betaBadgeLabel')}
-            </Badge>
+            {t('features.common.responses')}
           </NavigationTab>
-        ) : null}
-      </NavigationTabList>
+          <NavigationTab
+            to={RESULTS_FEEDBACK_SUBROUTE}
+            isActive={checkTabActive(RESULTS_FEEDBACK_SUBROUTE)}
+          >
+            {t('features.common.feedback')}
+          </NavigationTab>
+          {shouldShowCharts ? (
+            <NavigationTab
+              to={RESULTS_CHARTS_SUBROUTE}
+              isActive={checkTabActive(RESULTS_CHARTS_SUBROUTE)}
+            >
+              {t('features.common.charts')}
+              <Badge
+                colorScheme="primary"
+                variant="subtle"
+                color="secondary.500"
+                ml="0.5rem"
+              >
+                {t('features.common.betaBadgeLabel')}
+              </Badge>
+            </NavigationTab>
+          ) : null}
+        </NavigationTabList>
+        <DashboardVersionToggle />
+      </Flex>
     </Flex>
   )
 }
