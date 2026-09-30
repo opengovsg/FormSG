@@ -9,6 +9,7 @@ import {
 } from '~constants/routes'
 
 import {
+  DashboardVersionToggle,
   FormResultsNavbar,
   LegacyFormResultsNavbar,
   useResultsTabs,
@@ -64,7 +65,18 @@ export const FormResultsLayout = (): JSX.Element => {
         onChange={handleTabChange}
       >
         <FormResultsNavbar tabs={tabs} />
-        <Box w="100%" minW={0}>
+        <Box w="100%" minW={0} position="relative">
+          <Box
+            position="absolute"
+            top={0}
+            right={{ base: '1rem', md: '1.75rem', lg: '2rem' }}
+            h="1.5rem"
+            display="flex"
+            alignItems="center"
+            zIndex={1}
+          >
+            <DashboardVersionToggle />
+          </Box>
           <Outlet />
         </Box>
       </Tabs>
