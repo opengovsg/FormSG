@@ -1,13 +1,16 @@
-import * as pdfjs from 'pdfjs-dist/'
-
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/legacy/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString()
+const loadPdfjs = async () => {
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs')
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/legacy/build/pdf.worker.min.mjs',
+    import.meta.url,
+  ).toString()
+  return pdfjs
+}
 
 export const pdfBinaryToImageDataUrls = async (
   pdfData: ArrayBuffer,
 ): Promise<string[]> => {
+  const pdfjs = await loadPdfjs()
   const pdfDoc = await pdfjs.getDocument({ data: pdfData }).promise
   const numPages = pdfDoc.numPages
 
