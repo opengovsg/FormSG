@@ -19,7 +19,7 @@ import FormLabel from '~components/FormControl/FormLabel'
 import { ModalCloseButton } from '~components/Modal'
 
 const VIEW_NAME_MIN_LENGTH = 4
-const VIEW_NAME_MAX_LENGTH = 200
+const VIEW_NAME_MAX_LENGTH = 50
 
 interface SaveViewModalProps extends Pick<
   UseDisclosureReturn,
