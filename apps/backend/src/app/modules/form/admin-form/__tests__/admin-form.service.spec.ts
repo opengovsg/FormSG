@@ -10,6 +10,7 @@ import {
   FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
 } from 'formsg-shared/constants/errors'
 import { VALID_UPLOAD_FILE_TYPES } from 'formsg-shared/constants/file'
+import { MAX_SAVED_VIEWS } from 'formsg-shared/constants/form'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
@@ -98,6 +99,7 @@ import {
   FormChangedWhileEditingError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
+  SavedViewLimitError,
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
 import { OverrideProps } from '../admin-form.types'
@@ -2610,6 +2612,58 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(DatabaseValidationError)
+    })
+  })
+
+  describe('createFormSavedView', () => {
+    const mockForm = { _id: new ObjectId() } as unknown as IPopulatedForm
+    const savedView = { name: 'Pending approvals', filter: {} }
+
+    it('should push the view only onto a form below the saved view limit', async () => {
+      // Arrange
+      const createdView = { _id: new ObjectId().toHexString(), ...savedView }
+      const UPDATE_SPY = jest
+        .spyOn(FormModel, 'findOneAndUpdate')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ savedViews: [createdView] }),
+        })
+
+      // Act
+      const actual = await AdminFormService.createFormSavedView(
+        mockForm,
+        savedView,
+      )
+
+      // Assert
+      expect(UPDATE_SPY).toHaveBeenCalledWith(
+        {
+          _id: mockForm._id,
+          [`savedViews.${MAX_SAVED_VIEWS - 1}`]: { $exists: false },
+        },
+        { $push: { savedViews: savedView } },
+        { new: true, runValidators: true },
+      )
+      expect(actual._unsafeUnwrap()).toEqual([createdView])
+    })
+
+    it('should return SavedViewLimitError when the form already has the most views allowed', async () => {
+      // Arrange
+      jest
+        .spyOn(FormModel, 'findOneAndUpdate')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockReturnValue({ exec: jest.fn().mockResolvedValue(null) })
+
+      // Act
+      const actual = await AdminFormService.createFormSavedView(
+        mockForm,
+        savedView,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(SavedViewLimitError)
     })
   })
 

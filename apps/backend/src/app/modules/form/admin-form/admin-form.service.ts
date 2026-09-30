@@ -6,6 +6,7 @@ import {
   FORM_WHITELIST_CONTAINS_EMPTY_ROWS_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_DUPLICATES_ERROR_MESSAGE,
   FORM_WHITELIST_SETTING_CONTAINS_INVALID_FORMAT_SUBMITTERID_ERROR_MESSAGE,
+  MAX_SAVED_VIEWS,
   MAX_UPLOAD_FILE_SIZE,
   VALID_UPLOAD_FILE_TYPES,
   WHITELISTED_SUBMITTER_ID_DECRYPTION_FIELDS,
@@ -127,6 +128,7 @@ import {
   FormChangedWhileEditingError,
   InvalidCollaboratorError,
   InvalidFileTypeError,
+  SavedViewLimitError,
 } from './admin-form.errors'
 import {
   getUpdatedFormFields,
@@ -2385,10 +2387,13 @@ export const updateFormMetadata = (
 export const createFormSavedView = (
   form: IPopulatedForm,
   savedView: FormSavedViewInput,
-): ResultAsync<FormSavedView[], DatabaseError | FormNotFoundError> => {
+): ResultAsync<FormSavedView[], DatabaseError | SavedViewLimitError> => {
   return ResultAsync.fromPromise(
-    FormModel.findByIdAndUpdate(
-      form._id,
+    FormModel.findOneAndUpdate(
+      {
+        _id: form._id,
+        [`savedViews.${MAX_SAVED_VIEWS - 1}`]: { $exists: false },
+      },
       { $push: { savedViews: savedView } },
       { new: true, runValidators: true },
     ).exec(),
@@ -2405,7 +2410,7 @@ export const createFormSavedView = (
     },
   ).andThen((updatedForm) => {
     if (!updatedForm) {
-      return errAsync(new FormNotFoundError())
+      return errAsync(new SavedViewLimitError())
     }
     return okAsync(updatedForm.savedViews ?? [])
   })

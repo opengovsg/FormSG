@@ -63,6 +63,7 @@ import {
   ModelResponseInvalidSchemaFormatError,
   ModelResponseInvalidSyntaxError,
   PaymentChannelNotFoundError,
+  SavedViewLimitError,
   WorkflowDeletionDisabledError,
 } from './admin-form.errors'
 import {
@@ -86,6 +87,7 @@ export const mapRouteError = (
 ): ErrorResponseData => {
   switch (error.constructor) {
     case SmsLimitExceededError:
+    case SavedViewLimitError:
       return {
         statusCode: StatusCodes.CONFLICT,
         errorMessage: error.message,

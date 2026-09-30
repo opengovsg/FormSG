@@ -132,3 +132,5 @@ export const TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID =
   '66c0966666c0966666c09666'
 
 export const RESPONDENT_EMAIL_FIELD_ID = 'respondent_email_field'
+
+export const MAX_SAVED_VIEWS = 5
