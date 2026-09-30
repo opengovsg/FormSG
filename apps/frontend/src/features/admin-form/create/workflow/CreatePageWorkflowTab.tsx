@@ -29,7 +29,8 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
       }
     }, []),
   )
-  const { isLoading, formWorkflow } = useAdminFormWorkflow()
+  // Refresh cross-tab webhook changes while the workflow page is mounted.
+  const { isLoading, formWorkflow } = useAdminFormWorkflow({ staleTime: 0 })
   const sidebarWidth = useSidebarWidth()
 
   const isEmptyWorkflow = useMemo(

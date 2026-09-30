@@ -27,6 +27,7 @@ export const WebhooksSection = (): JSX.Element => {
     refetch,
   } = useAdminForm({
     enabled: isFormLoadRequired,
+    staleTime: 0,
   })
   if (isFormLoadRequired && isError) {
     return <WebhooksErrorMsg onRetry={refetch} isRetrying={isRefetching} />
