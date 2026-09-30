@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiFilterAlt } from 'react-icons/bi'
 import {
@@ -9,7 +9,11 @@ import {
   MenuList,
   Stack,
   Text,
+  useDisclosure,
+  useOutsideClick,
 } from '@chakra-ui/react'
+
+import { DateString } from 'formsg-shared/types'
 
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
@@ -57,25 +61,43 @@ export const FilterMenu = ({
 
   useEffect(() => setDraftDateRange(dateRange), [dateRange])
 
-  const commitDateRange = useCallback(() => {
-    if (
-      draftDateRange[0] === dateRange[0] &&
-      draftDateRange[1] === dateRange[1]
-    ) {
-      return
+  const { isOpen, onOpen, onClose } = useDisclosure({
+    onClose: () => setDraftDateRange(dateRange),
+  })
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+
+  useOutsideClick({
+    ref: listRef,
+    enabled: isOpen,
+    handler: (event) => {
+      const target = event.target as Element
+      if (buttonRef.current?.contains(target)) return
+      if (target.closest('.chakra-portal')) return
+      onClose()
+    },
+  })
+
+  const handleDateRangeChange = (nextDateRange: DateString[]) => {
+    setDraftDateRange(nextDateRange)
+    if (nextDateRange.length === 0 || nextDateRange.length === 2) {
+      setDateRange(nextDateRange)
     }
-    setDateRange(draftDateRange)
-  }, [dateRange, draftDateRange, setDateRange])
+  }
 
   return (
     <Menu
       closeOnSelect={false}
+      closeOnBlur={false}
       placement="bottom-start"
-      onClose={commitDateRange}
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onClose={onClose}
     >
-      {({ isOpen }) => (
+      {() => (
         <>
           <MenuButton
+            ref={buttonRef}
             variant="clear"
             colorScheme="secondary"
             isActive={isOpen}
@@ -89,6 +111,7 @@ export const FilterMenu = ({
             })}
           />
           <MenuList
+            ref={listRef}
             display="flex"
             flexDirection="column"
             maxH="28rem"
@@ -103,7 +126,7 @@ export const FilterMenu = ({
                     draftDateRange,
                   )}
                   onChange={(nextDateRange) =>
-                    setDraftDateRange(
+                    handleDateRangeChange(
                       dateRangePickerHelper.datePickerValueToDateString(
                         nextDateRange,
                       ),
