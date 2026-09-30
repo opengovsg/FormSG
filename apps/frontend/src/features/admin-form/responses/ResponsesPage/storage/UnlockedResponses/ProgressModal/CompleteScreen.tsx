@@ -24,6 +24,7 @@ import { DownloadResult } from '../../types'
 interface CompleteScreenProps {
   isWithAttachments: boolean
   onClose: () => void
+  isBeta?: boolean
   downloadMetadata?: DownloadResult
 }
 
@@ -31,6 +32,7 @@ export const CompleteScreen = ({
   isWithAttachments,
   onClose,
   downloadMetadata,
+  isBeta = true,
 }: CompleteScreenProps): JSX.Element => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
@@ -51,11 +53,11 @@ export const CompleteScreen = ({
     if (isWithAttachments) {
       return simplur`**${successCount.toLocaleString()}** ${[
         successCount,
-      ]}response[|s] and attachment[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
+      ]}response[|s] and attachment[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details.`
     }
     return simplur`**${successCount.toLocaleString()}** ${[
       successCount,
-    ]}response[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details`
+    ]}response[|s] ha[s|ve] been downloaded successfully, refer to the downloaded CSV file for more details.`
   }, [downloadMetadata, isWithAttachments])
 
   const attachmentErrorMessage = useMemo(() => {
@@ -79,14 +81,16 @@ export const CompleteScreen = ({
               'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.downloadComplete',
             )}
           </Text>
-          <Badge
-            w="fit-content"
-            colorScheme="primary"
-            variant="subtle"
-            color="secondary.500"
-          >
-            {t('features.common.betaBadgeLabel')}
-          </Badge>
+          {isBeta ? (
+            <Badge
+              w="fit-content"
+              colorScheme="primary"
+              variant="subtle"
+              color="secondary.500"
+            >
+              {t('features.common.betaBadgeLabel')}
+            </Badge>
+          ) : null}
         </Wrap>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">

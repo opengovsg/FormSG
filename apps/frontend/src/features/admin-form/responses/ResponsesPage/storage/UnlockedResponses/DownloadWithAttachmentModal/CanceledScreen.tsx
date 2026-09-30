@@ -14,10 +14,12 @@ import { ModalCloseButton } from '~components/Modal'
 
 interface CanceledScreenProps {
   onClose: () => void
+  isBeta?: boolean
 }
 
 export const CanceledScreen = ({
   onClose,
+  isBeta = true,
 }: CanceledScreenProps): JSX.Element => {
   const isMobile = useIsMobile()
   const { t } = useTranslation()
@@ -32,14 +34,16 @@ export const CanceledScreen = ({
               'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.canceledScreen.downloadStopped',
             )}
           </Text>
-          <Badge
-            w="fit-content"
-            colorScheme="primary"
-            variant="subtle"
-            color="secondary.500"
-          >
-            {t('features.common.betaBadgeLabel')}
-          </Badge>
+          {isBeta ? (
+            <Badge
+              w="fit-content"
+              colorScheme="primary"
+              variant="subtle"
+              color="secondary.500"
+            >
+              {t('features.common.betaBadgeLabel')}
+            </Badge>
+          ) : null}
         </Wrap>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">

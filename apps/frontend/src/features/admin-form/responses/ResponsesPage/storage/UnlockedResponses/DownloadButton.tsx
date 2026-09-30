@@ -28,7 +28,12 @@ import { CSV_BUFFER_MAX_RESPONSES } from '~features/admin-form/responses/constan
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
-import { CanceledResult, DownloadOptions, DownloadResult } from '../types'
+import {
+  CanceledResult,
+  DownloadOptions,
+  DownloadResult,
+  isCsvOnlyDownload,
+} from '../types'
 import useDecryptionWorkers from '../useDecryptionWorkers'
 import { CsvExportView } from '../utils/csvExportView'
 
@@ -57,11 +62,13 @@ const DownloadSelector = ({
   onDownload,
   downloadOptions,
   setDownloadOptions,
+  isCsvConfirmed,
 }: {
   onClickNext: () => void
   downloadOptions: DownloadOptions
   onDownload: () => void
   setDownloadOptions: (downloadOptions: DownloadOptions) => void
+  isCsvConfirmed: boolean
 }) => {
   const { t } = useTranslation('translation', {
     keyPrefix:
@@ -70,8 +77,7 @@ const DownloadSelector = ({
 
   const { isDownloadCsv, isDownloadAttachments, isDownloadPdf } =
     downloadOptions
-  const onlyDownloadCsv =
-    isDownloadCsv && !isDownloadAttachments && !isDownloadPdf
+  const onlyDownloadCsv = !isCsvConfirmed && isCsvOnlyDownload(downloadOptions)
   const isDownloadOptionSelected =
     isDownloadCsv || isDownloadAttachments || isDownloadPdf
 
@@ -137,6 +143,7 @@ export const DownloadButton = ({
     sortColumnId,
     sortDirection,
     hiddenColumnIds,
+    isShowingRecentOnly,
   } = useUnlockedResponses()
 
   const exportSubmissionIds =
@@ -200,6 +207,11 @@ export const DownloadButton = ({
 
   const dateRangeResponsesCount =
     exportSubmissionIds?.length ?? totalResponsesInRange
+
+  const isResponsesCountHidden =
+    isDelightfulDashboard &&
+    isShowingRecentOnly &&
+    isCsvOnlyDownload(downloadOptions)
 
   const [_downloadCount, setDownloadCount] = useState(0)
   const [_pdfGenerationCount, setPdfGenerationCount] = useState(0)
@@ -360,6 +372,8 @@ export const DownloadButton = ({
           isDownloading={handleBulkDownloadMutation.isLoading}
           downloadMetadata={downloadMetadata}
           downloadOptions={downloadOptions}
+          isCsvFollowingTable={isDelightfulDashboard}
+          isResponsesCountHidden={isResponsesCountHidden}
         />
       )}
       {dateRangeResponsesCount !== undefined && (
@@ -373,11 +387,6 @@ export const DownloadButton = ({
           <Text mb="1rem">
             {t(
               'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.progressModalContent',
-              {
-                dateRangeResponsesCount: (
-                  <b>{dateRangeResponsesCount.toLocaleString()}</b>
-                ),
-              },
             )}
           </Text>
         </ProgressModal>
@@ -432,6 +441,7 @@ export const DownloadButton = ({
                   }}
                   downloadOptions={downloadOptions}
                   setDownloadOptions={setDownloadOptions}
+                  isCsvConfirmed={isDelightfulDashboard}
                 />
               </MenuList>
             </>

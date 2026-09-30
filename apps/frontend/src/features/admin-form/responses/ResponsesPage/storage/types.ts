@@ -59,6 +59,13 @@ export interface DownloadOptions {
   isDownloadPdf: boolean
 }
 
+export const isCsvOnlyDownload = ({
+  isDownloadCsv,
+  isDownloadAttachments,
+  isDownloadPdf,
+}: DownloadOptions): boolean =>
+  isDownloadCsv && !isDownloadAttachments && !isDownloadPdf
+
 /**
  * Decrypted formatted data returned by the decryption worker.
  */

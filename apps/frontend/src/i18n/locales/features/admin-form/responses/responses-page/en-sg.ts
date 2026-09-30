@@ -26,6 +26,9 @@ export const enSG: ResponsesResponsesPage = {
           attachmentsDescription:
             'For attachments, <strong>a separate zip file</strong> will be downloaded for each response.',
           downloadTitle: 'Download {downloadItems}',
+          csvTitle: 'Download CSV',
+          csvAppliesTableView:
+            'The CSV includes the filters, sorting and columns applied to the table.',
           responsesText: 'responses',
           pdfsText: 'PDFs',
           attachmentsText: 'attachments',
@@ -114,7 +117,7 @@ export const enSG: ResponsesResponsesPage = {
           confirmButtonText: 'Yes, leave this page',
         },
         progressModalContent:
-          '{dateRangeResponsesCount} responses are being processed. Navigating away from this page will stop the download.',
+          'All responses are being processed. Navigating away from this page will stop the download.',
         menuItem: {
           csv: 'Spreadsheet of responses (.csv)',
           attachments: 'Respondent-uploaded attachments',

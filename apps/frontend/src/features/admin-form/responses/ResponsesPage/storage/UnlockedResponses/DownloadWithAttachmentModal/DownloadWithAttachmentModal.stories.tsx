@@ -13,6 +13,14 @@ export default {
   title: 'Features/Storage/DownloadWithAttachmentModal',
   component: DownloadWithAttachmentModal,
   decorators: [fullScreenDecorator],
+  args: {
+    responsesCount: 12345,
+    downloadOptions: {
+      isDownloadAttachments: true,
+      isDownloadCsv: true,
+      isDownloadPdf: false,
+    },
+  },
   parameters: {
     layout: 'fullscreen',
     // Prevent flaky tests due to modal animating in.
