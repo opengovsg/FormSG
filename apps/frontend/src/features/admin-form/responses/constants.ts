@@ -5,7 +5,7 @@ export const MRF_WORKFLOW_STATUS_LABEL = 'Workflow status'
 export const MRF_REMINDERS_LABEL = 'Reminders'
 export const MRF_STATUS_TRACKING_LABEL = 'Status tracking link'
 
-export const SIGNATURE_ADDED_TEXT = 'User added a signature.'
+export const SIGNATURE_ADDED_TEXT = 'Signature captured.'
 
 export const TABLE_DECRYPTION_LIMIT = 10000
 
