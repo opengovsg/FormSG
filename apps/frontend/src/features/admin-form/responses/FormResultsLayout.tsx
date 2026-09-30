@@ -55,6 +55,17 @@ export const FormResultsLayout = (): JSX.Element => {
 
   return (
     <Box overflowX="hidden" overflowY="auto" position="relative" flex={1}>
+      <Box
+        position="absolute"
+        top={{ base: '2.5rem', lg: '3.125rem' }}
+        right={{ base: '2.5rem', md: '3.5rem', lg: '4rem' }}
+        h="1.5rem"
+        display="flex"
+        alignItems="center"
+        zIndex={1}
+      >
+        <DashboardVersionToggle />
+      </Box>
       <Tabs
         orientation="vertical"
         variant="line"
@@ -65,18 +76,7 @@ export const FormResultsLayout = (): JSX.Element => {
         onChange={handleTabChange}
       >
         <FormResultsNavbar tabs={tabs} />
-        <Box w="100%" minW={0} position="relative">
-          <Box
-            position="absolute"
-            top={0}
-            right={{ base: '1rem', md: '1.75rem', lg: '2rem' }}
-            h="1.5rem"
-            display="flex"
-            alignItems="center"
-            zIndex={1}
-          >
-            <DashboardVersionToggle />
-          </Box>
+        <Box w="100%" minW={0}>
           <Outlet />
         </Box>
       </Tabs>
