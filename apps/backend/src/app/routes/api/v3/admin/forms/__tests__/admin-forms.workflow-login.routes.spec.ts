@@ -95,6 +95,9 @@ describe('workflow step login saves', () => {
       replSet: { count: 1, storageEngine: 'wiredTiger' },
     })
     await mongoose.connect(replSet.getUri())
+    // Create the collections and indexes before any transaction writes to
+    // them, or a background index build can conflict with the first save.
+    await Promise.all([FormModel.init(), WhitelistModel.init()])
   })
 
   beforeEach(async () => {
