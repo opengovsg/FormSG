@@ -23,7 +23,7 @@ packages:
 overrides:
   "mdast-util-gfm-autolink-literal": "2.0.0"
   # --- Migrated from package.json pnpm.overrides (pnpm 10.30 no longer reads that field) ---
-  "axios": "^1.16.0"
+  "axios": "^1.20.0" # CVE-2026-101898 (HTTP/2 adapter proxy/DNS bypass), fixed in 1.20.0
   "handlebars": "^4.7.9"
   "jspdf": "^4.2.1"
   "fast-xml-parser@<5": "^4.5.5"
