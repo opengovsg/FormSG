@@ -1,6 +1,12 @@
 import { FormSavedView, SavedViewSortDirection } from 'formsg-shared/types'
 
-import { matchesSavedView, ResponsesViewState } from './savedViews'
+import {
+  fromSavedView,
+  matchesSavedView,
+  normaliseSort,
+  RESPONSE_NUMBER_COLUMN_ID,
+  ResponsesViewState,
+} from './savedViews'
 
 const COLUMN_OPTIONS = [
   { id: 'a', label: 'A' },
@@ -64,5 +70,47 @@ describe('matchesSavedView', () => {
 
   it('matches nothing when there are no saved views', () => {
     expect(matchesSavedView(STATE, [], COLUMN_OPTIONS)).toBe(false)
+  })
+})
+
+describe('normaliseSort', () => {
+  it('treats Response # descending as the default order', () => {
+    expect(
+      normaliseSort(
+        RESPONSE_NUMBER_COLUMN_ID,
+        SavedViewSortDirection.Descending,
+      ),
+    ).toEqual({
+      sortColumnId: undefined,
+      sortDirection: SavedViewSortDirection.Descending,
+    })
+  })
+
+  it('keeps Response # ascending as a sort', () => {
+    expect(
+      normaliseSort(
+        RESPONSE_NUMBER_COLUMN_ID,
+        SavedViewSortDirection.Ascending,
+      ),
+    ).toEqual({
+      sortColumnId: RESPONSE_NUMBER_COLUMN_ID,
+      sortDirection: SavedViewSortDirection.Ascending,
+    })
+  })
+})
+
+describe('fromSavedView', () => {
+  it('keeps a Response # sort, though # is not a column option', () => {
+    const view: FormSavedView = {
+      _id: 'view-3',
+      name: 'Oldest first',
+      sort: {
+        columnId: RESPONSE_NUMBER_COLUMN_ID,
+        direction: SavedViewSortDirection.Ascending,
+      },
+    }
+    expect(fromSavedView(view, COLUMN_OPTIONS).sortColumnId).toBe(
+      RESPONSE_NUMBER_COLUMN_ID,
+    )
   })
 })

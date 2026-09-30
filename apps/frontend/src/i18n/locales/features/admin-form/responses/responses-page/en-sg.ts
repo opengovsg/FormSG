@@ -96,7 +96,7 @@ export const enSG: ResponsesResponsesPage = {
       sortMenu: {
         column: 'Column',
         direction: 'Direction',
-        none: 'None',
+        responseNumber: 'Response #',
         ascending: 'Ascending',
         descending: 'Descending',
       },
