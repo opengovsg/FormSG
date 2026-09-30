@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.38.1](https://github.com/opengovsg/formsg/compare/v9.38.0...v9.38.1) (2026-09-30)
+
+
+### Bug Fixes
+
+* **frontend:** lazy-load pdf.js legacy build so old Safari can load forms (#10157) ([#10157](https://github.com/opengovsg/formsg/commit/73da877d7b7b041f558b84b55ba371283ec7c339))
+
 ## [9.38.0](https://github.com/opengovsg/formsg/compare/v9.37.0...v9.38.0) (2026-09-30)
 
 
