@@ -5,7 +5,7 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 import { Meta, StoryFn } from '@storybook/react'
-import { expect, userEvent, waitFor, within } from '@storybook/test'
+import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
 
 import { FormResponseMode } from 'formsg-shared/types/form'
 
@@ -14,6 +14,7 @@ import {
   getAdminFormCollaborators,
   getAdminFormSubmissions,
   getMultiRespondentSubmissionMetadataResponse,
+  getStorageSubmission,
   getStorageSubmissionMetadataResponse,
 } from '~/mocks/msw/handlers/admin-form'
 import { getUser } from '~/mocks/msw/handlers/user'
@@ -29,6 +30,7 @@ import { AdminFormLayout } from './common/AdminFormLayout'
 import {
   FeedbackPage,
   FormResultsLayout,
+  IndividualResponseDrawer,
   ResponsesLayout,
   ResponsesPage,
 } from './responses'
@@ -228,6 +230,86 @@ MultiRespondentFormUnlocked.parameters = {
   },
 }
 MultiRespondentFormUnlocked.play = StorageFormUnlocked.play
+
+const MOCK_SUBMISSION_ID = '62a8a7476f4f3e005bcd5ab7'
+
+// Mirrors the app's routes so a response opens in the drawer over the table.
+const DrawerTemplate: StoryFn = () => {
+  const router = createMemoryRouter(
+    createRoutesFromElements(
+      <Route path={`${ADMINFORM_ROUTE}/:formId`} element={<AdminFormLayout />}>
+        <Route
+          path={ADMINFORM_RESULTS_SUBROUTE}
+          element={<FormResultsLayout />}
+        >
+          <Route element={<ResponsesLayout showResponses />}>
+            <Route index />
+            <Route
+              path=":submissionId"
+              element={<IndividualResponseDrawer />}
+            />
+          </Route>
+        </Route>
+      </Route>,
+    ),
+    {
+      initialEntries: [
+        `${ADMINFORM_ROUTE}/61540ece3d4a6e50ac0cc6ff/${ADMINFORM_RESULTS_SUBROUTE}/${MOCK_SUBMISSION_ID}`,
+      ],
+    },
+  )
+  return <RouterProvider router={router} />
+}
+
+export const StorageFormResponseDrawer = DrawerTemplate.bind({})
+StorageFormResponseDrawer.parameters = {
+  msw: {
+    handlers: {
+      default: [
+        ...createFormBuilderMocks(
+          {
+            responseMode: FormResponseMode.Encrypt,
+            publicKey: MOCK_KEYPAIR.publicKey,
+          },
+          0,
+        ),
+        getAdminFormSubmissions(),
+        getStorageSubmissionMetadataResponse(),
+        getStorageSubmission({ publicKey: MOCK_KEYPAIR.publicKey }),
+        getUser(),
+        getAdminFormCollaborators(),
+      ],
+    },
+  },
+}
+// The drawer portals outside the canvas and its overlay blocks the table's
+// input, so unlock through the last (drawer) secret-key input on the page.
+const unlockFromDrawer: StoryFn['play'] = async () => {
+  const lastSecretKeyInput = () => screen.getAllByTestId('secretKey').at(-1)
+
+  await waitFor(
+    async () => {
+      expect(lastSecretKeyInput()).not.toBeDisabled()
+    },
+    { timeout: 5000 },
+  )
+  const input = lastSecretKeyInput()
+  const unlockButton = screen
+    .getAllByRole('button', { name: /unlock responses/i })
+    .at(-1)
+  if (!input || !unlockButton) throw new Error('Drawer secret-key form missing')
+
+  await userEvent.type(input, MOCK_KEYPAIR.secretKey)
+  await userEvent.click(unlockButton)
+}
+StorageFormResponseDrawer.play = unlockFromDrawer
+
+export const StorageFormResponseDrawerMobile = DrawerTemplate.bind({})
+StorageFormResponseDrawerMobile.parameters = {
+  ...EmailFormMobile.parameters,
+  ...StorageFormResponseDrawer.parameters,
+}
+StorageFormResponseDrawerMobile.play = unlockFromDrawer
 
 export const Loading = Template.bind({})
 Loading.parameters = {
