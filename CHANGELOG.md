@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.38.0](https://github.com/opengovsg/formsg/compare/v9.37.0...v9.38.0) (2026-09-30)
+
+
+### Features
+
+* **webhooks:** explain workflow conflicts before saving (#10134) ([#10134](https://github.com/opengovsg/formsg/commit/75a262eac50df95f4d72d7982a7ca98fc2def6cf))
+
+
+### Bug Fixes
+
+* **shared:** use slice(-2) for UEN T-series 2-digit year so future years reject (#10026) ([#10026](https://github.com/opengovsg/formsg/commit/772739b93485f1beac3e793643ddf77758952815))
+
+
+### Styles
+
+* **shared:** fix prettier formatting in UEN validation (#10142) ([#10142](https://github.com/opengovsg/formsg/commit/0b36f6ca8477be622b926b9031824e4f6ce43f65))
+
+
+### Dependencies
+
+* **deps:** bump axios to 1.20.0 for CVE-2026-101898 (#10143) ([#10143](https://github.com/opengovsg/formsg/commit/bc39acd96c9cca7e5301b586f5b188d29bd9e1c0))
+
 ## [9.37.0](https://github.com/opengovsg/formsg/compare/v9.36.0...v9.37.0) (2026-09-29)
 
 
