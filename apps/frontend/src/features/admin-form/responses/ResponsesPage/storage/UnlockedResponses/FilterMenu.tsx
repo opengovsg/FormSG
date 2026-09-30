@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiFilterAlt } from 'react-icons/bi'
 import {
@@ -9,8 +9,6 @@ import {
   MenuList,
   Stack,
   Text,
-  useDisclosure,
-  useOutsideClick,
 } from '@chakra-ui/react'
 
 import { DateString } from 'formsg-shared/types'
@@ -25,6 +23,7 @@ import Menu from '~components/Menu'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
+import { useToolbarMenuDisclosure } from './hooks/useToolbarMenuDisclosure'
 import { toolbarMenuButtonProps } from './toolbarButtonProps'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
@@ -61,22 +60,10 @@ export const FilterMenu = ({
 
   useEffect(() => setDraftDateRange(dateRange), [dateRange])
 
-  const { isOpen, onOpen, onClose } = useDisclosure({
-    onClose: () => setDraftDateRange(dateRange),
-  })
-  const buttonRef = useRef<HTMLButtonElement>(null)
-  const listRef = useRef<HTMLDivElement>(null)
-
-  useOutsideClick({
-    ref: listRef,
-    enabled: isOpen,
-    handler: (event) => {
-      const target = event.target as Element
-      if (buttonRef.current?.contains(target)) return
-      if (target.closest('.chakra-portal')) return
-      onClose()
-    },
-  })
+  const { isOpen, onOpen, onClose, buttonRef, listRef } =
+    useToolbarMenuDisclosure({
+      onClose: () => setDraftDateRange(dateRange),
+    })
 
   const handleDateRangeChange = (nextDateRange: DateString[]) => {
     setDraftDateRange(nextDateRange)
