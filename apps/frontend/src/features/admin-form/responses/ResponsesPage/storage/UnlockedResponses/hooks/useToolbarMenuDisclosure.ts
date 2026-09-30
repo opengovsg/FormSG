@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useDisclosure, useOutsideClick } from '@chakra-ui/react'
 
-const PORTAL_SELECTOR = '.chakra-portal'
+const PORTAL_SELECTOR = '.chakra-portal, [data-floating-ui-portal]'
 
 export const useToolbarMenuDisclosure = ({
   onClose,

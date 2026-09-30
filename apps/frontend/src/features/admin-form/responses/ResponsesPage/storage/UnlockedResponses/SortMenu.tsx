@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { BiSortAlt2 } from 'react-icons/bi'
-import { Box, MenuButton, MenuList, Select, Text } from '@chakra-ui/react'
+import { Box, MenuButton, MenuList, Text } from '@chakra-ui/react'
 
+import { SingleSelect } from '~components/Dropdown'
 import Menu from '~components/Menu'
 
+import { useToolbarMenuDisclosure } from './hooks/useToolbarMenuDisclosure'
 import { toolbarMenuButtonProps } from './toolbarButtonProps'
 import {
   ResponseSortDirection,
@@ -28,61 +30,67 @@ export const SortMenu = ({
   )
   const { columnOptions, sortColumnId, sortDirection, setSort } =
     useUnlockedResponses()
+  const { isOpen, onOpen, onClose, buttonRef, listRef } =
+    useToolbarMenuDisclosure()
 
   return (
-    <Menu closeOnSelect={false} placement="bottom-start">
-      {({ isOpen }) => (
-        <>
-          <MenuButton
-            variant="clear"
-            colorScheme="secondary"
-            isActive={isOpen}
-            {...toolbarMenuButtonProps({
-              icon: <BiSortAlt2 fontSize="1.25rem" />,
-              label: t(
-                'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.sort',
-              ),
-              isOpen,
-              isIconOnly,
-            })}
+    <Menu
+      closeOnSelect={false}
+      closeOnBlur={false}
+      placement="bottom-start"
+      isOpen={isOpen}
+      onOpen={onOpen}
+      onClose={onClose}
+    >
+      <MenuButton
+        ref={buttonRef}
+        variant="clear"
+        colorScheme="secondary"
+        isActive={isOpen}
+        {...toolbarMenuButtonProps({
+          icon: <BiSortAlt2 fontSize="1.25rem" />,
+          label: t(
+            'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.sort',
+          ),
+          isOpen,
+          isIconOnly,
+        })}
+      />
+      <MenuList ref={listRef} minW="18rem">
+        <SectionLabel>{column}</SectionLabel>
+        <Box px="1rem" py="0.75rem">
+          <SingleSelect
+            name="sortColumn"
+            items={columnOptions.map(({ id, label }) => ({
+              value: id,
+              label,
+            }))}
+            value={sortColumnId ?? ''}
+            placeholder={none}
+            onChange={(columnId) =>
+              setSort(columnId || undefined, sortDirection)
+            }
           />
-          <MenuList minW="18rem">
-            <SectionLabel>{column}</SectionLabel>
-            <Box px="1rem" py="0.75rem">
-              <Select
-                value={sortColumnId ?? ''}
-                onChange={(event) =>
-                  setSort(event.target.value || undefined, sortDirection)
-                }
-              >
-                <option value="">{none}</option>
-                {columnOptions.map(({ id, label }) => (
-                  <option key={id} value={id}>
-                    {label}
-                  </option>
-                ))}
-              </Select>
-            </Box>
+        </Box>
 
-            <SectionLabel>{direction}</SectionLabel>
-            <Box px="1rem" py="0.75rem">
-              <Select
-                value={sortDirection}
-                isDisabled={!sortColumnId}
-                onChange={(event) =>
-                  setSort(
-                    sortColumnId,
-                    event.target.value as ResponseSortDirection,
-                  )
-                }
-              >
-                <option value="asc">{ascending}</option>
-                <option value="desc">{descending}</option>
-              </Select>
-            </Box>
-          </MenuList>
-        </>
-      )}
+        <SectionLabel>{direction}</SectionLabel>
+        <Box px="1rem" py="0.75rem">
+          <SingleSelect
+            name="sortDirection"
+            items={[
+              { value: 'asc', label: ascending },
+              { value: 'desc', label: descending },
+            ]}
+            value={sortDirection}
+            isDisabled={!sortColumnId}
+            isClearable={false}
+            isSearchable={false}
+            onChange={(nextDirection) =>
+              setSort(sortColumnId, nextDirection as ResponseSortDirection)
+            }
+          />
+        </Box>
+      </MenuList>
     </Menu>
   )
 }
