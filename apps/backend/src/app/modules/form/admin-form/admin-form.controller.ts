@@ -2584,7 +2584,7 @@ const joiLogicBody = {
 }
 
 const joiSavedViewBody = {
-  name: Joi.string().trim().min(4).max(200).required(),
+  name: Joi.string().trim().min(4).max(50).required(),
   filter: Joi.object({
     startDate: Joi.string().optional(),
     endDate: Joi.string().optional(),
