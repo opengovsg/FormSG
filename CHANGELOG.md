@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.40.1](https://github.com/opengovsg/formsg/compare/v9.40.0...v9.40.1) (2026-10-01)
+
+
+### Bug Fixes
+
+* **submission:** project myInfoReadOnlyFields on combined MRF read paths (#10186) ([#10186](https://github.com/opengovsg/formsg/commit/0984f02092018fc9544effdfa99fe726dc143771))
+
 ## [9.40.0](https://github.com/opengovsg/formsg/compare/v9.39.2...v9.40.0) (2026-10-01)
 
 
