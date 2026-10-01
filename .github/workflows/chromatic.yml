@@ -105,6 +105,17 @@ jobs:
       - name: Build SDK
         working-directory: .
         run: pnpm build:sdk
+      - name: Check for build tooling changes
+        id: tooling
+        working-directory: .
+        # TurboSnap can't see build tooling bumps (see the script), so those
+        # build in full. PRs compare with their fork point from develop, develop
+        # pushes with the previous develop commit.
+        run: |
+          base=${BEFORE:-$(git merge-base HEAD origin/develop)}
+          .github/scripts/chromatic-tooling-changed.sh apps/frontend "$base"
+        env:
+          BEFORE: ${{ github.event_name == 'push' && github.event.before || '' }}
         # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@c93e0bc3a63aa176e14a75b61a31847cbfdd341c # v1
@@ -115,7 +126,7 @@ jobs:
           workingDir: apps/frontend
           autoAcceptChanges: develop
           exitOnceUploaded: true
-          onlyChanged: true
+          onlyChanged: ${{ steps.tooling.outputs.changed != 'true' }}
           storybookBaseDir: apps/frontend
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
@@ -155,6 +166,14 @@ jobs:
       - name: Build SDK
         working-directory: .
         run: pnpm build:sdk
+      - name: Check for build tooling changes
+        id: tooling
+        working-directory: .
+        run: |
+          base=${BEFORE:-$(git merge-base HEAD origin/develop)}
+          .github/scripts/chromatic-tooling-changed.sh packages/react-email-preview "$base"
+        env:
+          BEFORE: ${{ github.event_name == 'push' && github.event.before || '' }}
         # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
         uses: chromaui/action@c93e0bc3a63aa176e14a75b61a31847cbfdd341c # v1
@@ -165,7 +184,7 @@ jobs:
           workingDir: packages/react-email-preview
           autoAcceptChanges: develop
           exitOnceUploaded: true
-          onlyChanged: true
+          onlyChanged: ${{ steps.tooling.outputs.changed != 'true' }}
           storybookBaseDir: packages/react-email-preview
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
