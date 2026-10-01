@@ -1,6 +1,8 @@
 import crypto from 'crypto'
 import { Document, Model, Mongoose, Schema } from 'mongoose'
 
+import { isPositiveInteger } from '../../../models/utils'
+
 import { MYINFO_FAPI_SESSION_MAX_AGE_MS } from './myinfo.fapi.constants'
 import {
   decrypt,
@@ -18,10 +20,18 @@ export const MYINFO_FAPI_SESSION_SCHEMA_ID = 'MyInfoFapiSession'
  */
 export type MyInfoFapiSessionPhase = 'pending' | 'exchanged' | 'failed'
 
+// formId is already stored on the session. The step index refers to its saved workflow.
+export interface MyInfoMrfSessionContext {
+  submissionId: string
+  workflowStep: number
+  stepTokenHash?: string
+}
+
 export interface IMyInfoFapiSessionSchema extends Document<string> {
   _id: string
   phase: MyInfoFapiSessionPhase
   formId: string
+  mrfContext?: MyInfoMrfSessionContext
   encodedQuery?: string
   state: string
   nonce: string
@@ -34,6 +44,7 @@ export interface IMyInfoFapiSessionSchema extends Document<string> {
 
 export type MyInfoFapiRedirectTarget = {
   formId: string
+  mrfContext?: MyInfoMrfSessionContext
   encodedQuery?: string
 }
 
@@ -62,6 +73,7 @@ export type MyInfoFapiCallbackSession =
   | { phase: 'exchanged'; target: MyInfoFapiRedirectTarget }
 
 export type MyInfoFapiExchangedSession = {
+  mrfContext?: MyInfoMrfSessionContext
   formId: string
   accessToken: string
   /** Pseudonymous subject from the ID token, asserted against userinfo. */
@@ -100,6 +112,30 @@ export interface IMyInfoFapiSessionModel extends Model<IMyInfoFapiSessionSchema>
 const requiredString = { type: String, required: true }
 const optionalString = { type: String }
 
+const MrfContextSchema = new Schema<MyInfoMrfSessionContext>(
+  {
+    submissionId: { ...requiredString, match: /^[a-fA-F0-9]{24}$/ },
+    workflowStep: {
+      type: Number,
+      required: true,
+      min: 1,
+      validate: {
+        validator: isPositiveInteger,
+        message: 'workflowStep must be an integer',
+      },
+    },
+    stepTokenHash: optionalString,
+  },
+  { _id: false, strict: 'throw' },
+)
+
+const toMrfContextEntry = (
+  session: IMyInfoFapiSessionSchema,
+): { mrfContext?: MyInfoMrfSessionContext } => {
+  const mrfContext = (session.mrfContext as Document | undefined)?.toObject()
+  return mrfContext ? { mrfContext } : {}
+}
+
 const MyInfoFapiSessionSchema = new Schema<
   IMyInfoFapiSessionSchema,
   IMyInfoFapiSessionModel
@@ -109,6 +145,7 @@ const MyInfoFapiSessionSchema = new Schema<
     _id: { type: String, default: () => crypto.randomUUID() },
     phase: { ...requiredString, enum: ['pending', 'exchanged', 'failed'] },
     formId: requiredString,
+    mrfContext: { type: MrfContextSchema, default: undefined },
     encodedQuery: optionalString,
     state: requiredString,
     nonce: requiredString,
@@ -129,6 +166,7 @@ MyInfoFapiSessionSchema.statics.createPending = async function (
   const created = await this.create({
     phase: 'pending',
     formId: session.formId,
+    mrfContext: session.mrfContext,
     encodedQuery: session.encodedQuery,
     state: session.state,
     nonce: session.nonce,
@@ -155,6 +193,7 @@ MyInfoFapiSessionSchema.statics.loadForCallback = async function (
   const target = {
     formId: session.formId,
     encodedQuery: session.encodedQuery,
+    ...toMrfContextEntry(session),
   }
   if (session.phase === 'exchanged') {
     return { phase: 'exchanged', target }
@@ -261,6 +300,7 @@ MyInfoFapiSessionSchema.statics.consume = async function ({
     status: 'exchanged',
     session: {
       formId: exchanged.formId,
+      ...toMrfContextEntry(exchanged),
       accessToken: await decrypt(exchanged.accessTokenEnc),
       sub: exchanged.sub,
       dpopPrivateJwk: await decryptJwk(exchanged.dpopPrivateJwkEnc),

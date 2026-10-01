@@ -11,6 +11,8 @@ export type IHashes = Partial<{
 
 interface IMyInfoHash {
   uinFin: string
+  authSessionId?: string
+  workflowStep?: number
   form: IFormSchema['_id']
   fields: IHashes
   expireAt: Date
