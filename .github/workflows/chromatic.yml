@@ -13,12 +13,13 @@ on:
     branches:
       - develop
   pull_request:
-    types: [opened, reopened, synchronize]
+    types: [opened, reopened, synchronize, ready_for_review]
 
 # List of jobs
 jobs:
   # JOB to run change detection
   changes:
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
     # Set job outputs to values from filter step
     outputs:
