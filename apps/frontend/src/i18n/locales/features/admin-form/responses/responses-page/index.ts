@@ -1,4 +1,13 @@
-export * from './en-sg'
+import { Language } from 'formsg-shared/types/form/form_enums'
+
+import { registerNamespace } from '~/i18n/registerNamespace'
+
+import { enSG } from './en-sg'
+
+export const responsesPageNs = registerNamespace(
+  'features/admin-form/responses/responses-page',
+  { [Language.ENGLISH]: enSG },
+)
 
 export interface ResponsesResponsesPage {
   emptyResponses: {

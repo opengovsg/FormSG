@@ -4,6 +4,8 @@ import { Box, Flex, useBreakpointValue, useDisclosure } from '@chakra-ui/react'
 
 import { MAX_SAVED_VIEWS } from 'formsg-shared/constants'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 import Tooltip from '~components/Tooltip'
@@ -19,9 +21,9 @@ import { useUnlockedResponses } from './UnlockedResponsesProvider'
 import { useSavedViewMutation } from './useSavedViewMutation'
 
 export const ResponsesToolbar = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
   const { saveView: saveViewLabel, viewLimitReached } = t(
-    'features.adminForm.responses.responsesPage.storage.unlockedResponses.views',
+    'storage.unlockedResponses.views',
     { returnObjects: true },
   )
   const saveViewModal = useDisclosure()

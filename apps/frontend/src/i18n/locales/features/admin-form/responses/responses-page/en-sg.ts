@@ -1,4 +1,4 @@
-import { ResponsesResponsesPage } from '.'
+import type { ResponsesResponsesPage } from '.'
 
 export const enSG: ResponsesResponsesPage = {
   emptyResponses: {

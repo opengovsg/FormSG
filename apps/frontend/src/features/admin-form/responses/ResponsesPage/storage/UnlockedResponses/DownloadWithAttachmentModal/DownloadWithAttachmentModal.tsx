@@ -9,6 +9,8 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import { XMotionBox } from '~templates/MotionBox'
 
 import {
@@ -93,7 +95,7 @@ export const DownloadWithAttachmentModal = ({
     return onDownload()
   }, [downloadOptions, onDownload])
 
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
 
   return (
     <Modal
@@ -127,10 +129,10 @@ export const DownloadWithAttachmentModal = ({
               <Text mb="1rem">
                 {isCsvOnly
                   ? t(
-                      'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.progressModalContent',
+                      'storage.unlockedResponses.downloadButton.progressModalContent',
                     )
                   : t(
-                      'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.modal.progressMessage',
+                      'storage.unlockedResponses.downloadWithAttachmentModal.modal.progressMessage',
                       {
                         responsesCount: (
                           <b>{responsesCount.toLocaleString()}</b>

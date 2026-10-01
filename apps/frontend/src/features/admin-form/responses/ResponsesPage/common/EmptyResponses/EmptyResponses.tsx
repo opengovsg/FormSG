@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Flex, Text } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import { OGP_POSTMAN } from '~constants/links'
 import Link from '~components/Link'
 
@@ -10,7 +12,7 @@ import { useIsDelightfulDashboard } from '../../../hooks'
 import { EmptyResponsesSvgr } from './EmptyResponsesSvgr'
 
 export function EmptyResponses(): JSX.Element {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
   const isDelightfulDashboard = useIsDelightfulDashboard()
 
   if (!isDelightfulDashboard) return <LegacyEmptyResponses />
@@ -24,19 +26,16 @@ export function EmptyResponses(): JSX.Element {
       {...resultsNavBleed}
     >
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
-        {t('features.adminForm.responses.responsesPage.emptyResponses.title')}
+        {t('emptyResponses.title')}
       </Text>
       <Text textStyle="body-1" color="secondary.500">
-        {t(
-          'features.adminForm.responses.responsesPage.emptyResponses.subtitle',
-          {
-            link: (
-              <Link isExternal href={OGP_POSTMAN}>
-                Postman.gov.sg
-              </Link>
-            ),
-          },
-        )}
+        {t('emptyResponses.subtitle', {
+          link: (
+            <Link isExternal href={OGP_POSTMAN}>
+              Postman.gov.sg
+            </Link>
+          ),
+        })}
       </Text>
       <EmptyResponsesSvgr mt="1.5rem" w="280px" maxW="100%" />
     </Flex>
@@ -44,23 +43,20 @@ export function EmptyResponses(): JSX.Element {
 }
 
 const LegacyEmptyResponses = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
   return (
     <Flex justify="center" flexDir="column" align="center" px="2rem" py="4rem">
       <Text as="h2" textStyle="h2" color="primary.500" mb="1rem">
-        {t('features.adminForm.responses.responsesPage.emptyResponses.title')}
+        {t('emptyResponses.title')}
       </Text>
       <Text textStyle="body-1" color="secondary.500">
-        {t(
-          'features.adminForm.responses.responsesPage.emptyResponses.subtitle',
-          {
-            link: (
-              <Link isExternal href={OGP_POSTMAN}>
-                Postman.gov.sg
-              </Link>
-            ),
-          },
-        )}
+        {t('emptyResponses.subtitle', {
+          link: (
+            <Link isExternal href={OGP_POSTMAN}>
+              Postman.gov.sg
+            </Link>
+          ),
+        })}
       </Text>
       <EmptyResponsesSvgr mt="1.5rem" w="280px" maxW="100%" />
     </Flex>

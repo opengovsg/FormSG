@@ -13,6 +13,8 @@ import {
 
 import { DateString } from 'formsg-shared/types'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import {
@@ -38,16 +40,13 @@ export const FilterMenu = ({
 }: {
   isIconOnly?: boolean
 }): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
   const {
     dateRange: dateRangeLabel,
     columns,
     checkAll,
     uncheckAll,
-  } = t(
-    'features.adminForm.responses.responsesPage.storage.unlockedResponses.filterMenu',
-    { returnObjects: true },
-  )
+  } = t('storage.unlockedResponses.filterMenu', { returnObjects: true })
   const {
     columnOptions,
     excludedSearchColumnIds,
@@ -90,9 +89,7 @@ export const FilterMenu = ({
             isActive={isOpen}
             {...toolbarMenuButtonProps({
               icon: <BiFilterAlt fontSize="1.25rem" />,
-              label: t(
-                'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.filter',
-              ),
+              label: t('storage.unlockedResponses.toolbar.filter'),
               isOpen,
               isIconOnly,
             })}

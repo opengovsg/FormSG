@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useDebounce } from 'react-use'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import Searchbar, { useSearchbar } from '~components/Searchbar'
 
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
@@ -9,7 +11,7 @@ import { useUnlockedResponses } from './UnlockedResponsesProvider'
 const SEARCH_DEBOUNCE_MS = 200
 
 export const ResponsesSearchbar = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
   const { searchText, setSearchText } = useUnlockedResponses()
   const [inputValue, setInputValue] = useState(searchText)
   const { inputRef } = useSearchbar()
@@ -27,9 +29,7 @@ export const ResponsesSearchbar = (): JSX.Element => {
       value={inputValue}
       onChange={setInputValue}
       onSearch={setSearchText}
-      placeholder={t(
-        'features.adminForm.responses.responsesPage.storage.unlockedResponses.searchResponsesPlaceholder',
-      )}
+      placeholder={t('storage.unlockedResponses.searchResponsesPlaceholder')}
     />
   )
 }

@@ -10,6 +10,8 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import {
   DateRangePicker,
   dateRangePickerHelper,
@@ -43,7 +45,7 @@ export const UnlockedResponses = (): JSX.Element => {
 }
 
 const DelightfulUnlockedResponses = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
 
   const {
     count,
@@ -120,8 +122,8 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
             </Text>{' '}
             {t(
               searchResultCount !== undefined
-                ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
-                : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
+                ? 'storage.unlockedResponses.unlockedResponses.resultsFound'
+                : 'storage.unlockedResponses.unlockedResponses.responsesToDate',
               { count: searchResultCount ?? countToUse ?? 0 },
             )}
           </Text>
@@ -129,8 +131,8 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
             <Text textStyle="body-2" color="secondary.400">
               {t(
                 hasActiveFilters
-                  ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.recentOnlyWithView'
-                  : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.recentOnly',
+                  ? 'storage.unlockedResponses.unlockedResponses.recentOnlyWithView'
+                  : 'storage.unlockedResponses.unlockedResponses.recentOnly',
                 { limit: TABLE_RESPONSE_LIMIT.toLocaleString() },
               )}
             </Text>
@@ -200,7 +202,7 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
 }
 
 const LegacyUnlockedResponses = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
 
   const {
     currentPage,
@@ -246,8 +248,8 @@ const LegacyUnlockedResponses = (): JSX.Element => {
               </Text>{' '}
               {t(
                 submissionId
-                  ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
-                  : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
+                  ? 'storage.unlockedResponses.unlockedResponses.resultsFound'
+                  : 'storage.unlockedResponses.unlockedResponses.responsesToDate',
                 { count: countToUse ?? 0 },
               )}
             </Text>

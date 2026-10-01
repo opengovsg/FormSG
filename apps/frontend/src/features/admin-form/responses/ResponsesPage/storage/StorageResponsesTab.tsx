@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Container, Flex } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import { FormActivationSvg } from '~features/admin-form/settings/components/FormActivationSvg'
 
 import { resultsNavBleed } from '../../components/FormResultsNavbar'
@@ -12,7 +14,7 @@ import { useStorageResponsesContext } from './StorageResponsesContext'
 import { UnlockedResponses } from './UnlockedResponses'
 
 export const StorageResponsesTab = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
   const isDelightfulDashboard = useIsDelightfulDashboard()
 
@@ -23,12 +25,8 @@ export const StorageResponsesTab = (): JSX.Element => {
   const verification = (
     <SecretKeyVerification
       heroSvg={<FormActivationSvg />}
-      ctaText={t(
-        'features.adminForm.responses.responsesPage.storage.storageResponsesTab.secretKeyVerification.ctaText',
-      )}
-      label={t(
-        'features.adminForm.responses.responsesPage.storage.storageResponsesTab.secretKeyVerification.label',
-      )}
+      ctaText={t('storage.storageResponsesTab.secretKeyVerification.ctaText')}
+      label={t('storage.storageResponsesTab.secretKeyVerification.label')}
     />
   )
 
@@ -49,11 +47,9 @@ export const StorageResponsesTab = (): JSX.Element => {
         <SecretKeyVerification
           heroSvg={<FormActivationSvg />}
           ctaText={t(
-            'features.adminForm.responses.responsesPage.storage.storageResponsesTab.secretKeyVerification.ctaText',
+            'storage.storageResponsesTab.secretKeyVerification.ctaText',
           )}
-          label={t(
-            'features.adminForm.responses.responsesPage.storage.storageResponsesTab.secretKeyVerification.label',
-          )}
+          label={t('storage.storageResponsesTab.secretKeyVerification.label')}
         />
       </Container>
     </Flex>

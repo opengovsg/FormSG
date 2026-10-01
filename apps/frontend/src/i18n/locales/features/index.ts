@@ -12,7 +12,6 @@ export {
   type ResponsesCharts,
   type ResponsesComponents,
   type ResponsesIndividualResponse,
-  type ResponsesResponsesPage,
   type Settings,
   type Share,
   type Template,

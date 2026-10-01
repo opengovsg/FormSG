@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import Searchbar, { useSearchbar } from '~components/Searchbar'
 
 export const SubmissionSearchbar = ({
@@ -23,7 +25,7 @@ export const SubmissionSearchbar = ({
 
   const { inputRef } = useSearchbar()
 
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
 
   return (
     <Searchbar
@@ -37,8 +39,8 @@ export const SubmissionSearchbar = ({
       onSearch={setSubmissionId}
       placeholder={t(
         isExpandable
-          ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.submissionSearchbarPlaceholder'
-          : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.searchResponsesPlaceholder',
+          ? 'storage.unlockedResponses.submissionSearchbarPlaceholder'
+          : 'storage.unlockedResponses.searchResponsesPlaceholder',
       )}
     />
   )

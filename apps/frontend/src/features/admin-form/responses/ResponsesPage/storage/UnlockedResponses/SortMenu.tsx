@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { BiSortAlt2 } from 'react-icons/bi'
 import { Box, MenuButton, MenuList, Text } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import { SingleSelect } from '~components/Dropdown'
 import Menu from '~components/Menu'
 
@@ -24,9 +26,9 @@ export const SortMenu = ({
 }: {
   isIconOnly?: boolean
 }): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
   const { column, direction, responseNumber, ascending, descending } = t(
-    'features.adminForm.responses.responsesPage.storage.unlockedResponses.sortMenu',
+    'storage.unlockedResponses.sortMenu',
     { returnObjects: true },
   )
   const { columnOptions, sortColumnId, sortDirection, setSort } =
@@ -58,9 +60,7 @@ export const SortMenu = ({
         isActive={isOpen}
         {...toolbarMenuButtonProps({
           icon: <BiSortAlt2 fontSize="1.25rem" />,
-          label: t(
-            'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.sort',
-          ),
+          label: t('storage.unlockedResponses.toolbar.sort'),
           isOpen,
           isIconOnly,
         })}

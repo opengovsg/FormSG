@@ -14,6 +14,8 @@ import {
   Wrap,
 } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
@@ -55,11 +57,14 @@ export const ConfirmationScreen = ({
 }: ConfirmationScreenProps): JSX.Element => {
   const isCsvOnly = isCsvOnlyDownload(downloadOptions)
   const isMobile = useIsMobile()
-  const { t: confirmationScreenTranslation } = useTranslation('translation', {
+  const { t: confirmationScreenTranslation } = useTranslation(responsesPageNs, {
     keyPrefix:
-      'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen',
+      'storage.unlockedResponses.downloadWithAttachmentModal.confirmationScreen',
   })
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
+  const { t: tCommon } = useTranslation('translation', {
+    keyPrefix: 'features.common',
+  })
 
   const getTitle = () => {
     if (isCsvOnly) return confirmationScreenTranslation('csvTitle')
@@ -100,7 +105,7 @@ export const ConfirmationScreen = ({
               variant="subtle"
               color="secondary.500"
             >
-              {t('features.common.betaBadgeLabel')}
+              {tCommon('betaBadgeLabel')}
             </Badge>
           )}
         </Wrap>
@@ -196,7 +201,7 @@ export const ConfirmationScreen = ({
             onClick={onCancel}
             isDisabled={isDownloading}
           >
-            {t('features.common.cancel')}
+            {tCommon('cancel')}
           </Button>
         </Stack>
       </ModalFooter>
