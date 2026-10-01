@@ -1,4 +1,5 @@
 import {
+  DecryptedAttachments,
   DecryptParamsV3,
   EncryptedAttachmentRecords,
   EncryptedContent,
@@ -194,4 +195,9 @@ export type DecryptedContentV4 = {
   responses: FieldResponsesV4
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   verified?: Record<string, any>
+}
+
+export type DecryptedContentAndAttachmentsV4 = {
+  content: DecryptedContentV4
+  attachments: DecryptedAttachments
 }
