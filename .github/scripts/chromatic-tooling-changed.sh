@@ -21,12 +21,14 @@ TOOLING='^(storybook|@storybook/.+|vite|vite-plugin-.+|vite-tsconfig-paths|@vite
 
 # "<name> <version>" for each direct dependency of $importer at <rev>. An
 # unreadable lockfile prints nothing, so every tooling package counts as changed.
+# The peer suffix is dropped (storybook is locked as "8.6.18(prettier@3.8.1)"),
+# so a peer bump doesn't count; a tooling peer is caught by its own entry.
 versions() {
   git show "$1:pnpm-lock.yaml" 2>/dev/null | awk -v importer="  $importer:" '
     $0 == importer { found = 1; next }
     found && /^  [^ ]/ { exit }
     found && /^      [^ ]/ { name = $1; sub(/:$/, "", name); gsub(/\047/, "", name) }
-    found && /^        version:/ { print name, $2 }
+    found && /^        version:/ { version = $2; sub(/\(.*/, "", version); print name, version }
   ' | sort || true
 }
 
