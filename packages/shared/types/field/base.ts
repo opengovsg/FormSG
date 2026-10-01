@@ -44,7 +44,18 @@ export enum GenericStringAnswerResponseFieldV3 {
   CountryRegion = 'country_region',
 }
 
+export enum CorppassAttribute {
+  Uen = 'uen',
+  Uid = 'uid',
+}
+
+export type AllowCorppassBase<T extends CorppassAttribute = CorppassAttribute> =
+  {
+    corppass?: { attr: T }
+  }
+
 export enum MyInfoAttribute {
+  UinFin = 'uinfin',
   Name = 'name',
   PassportNumber = 'passportnumber',
   RegisteredAddress = 'regadd',
@@ -96,6 +107,7 @@ export enum MyInfoChildAttributes {
 
 export type AllowedMyInfoFieldOption = Exclude<
   MyInfoAttribute,
+  | MyInfoAttribute.UinFin
   | MyInfoAttribute.ChildName
   | MyInfoAttribute.ChildBirthCertNo
   | MyInfoAttribute.ChildDateOfBirth

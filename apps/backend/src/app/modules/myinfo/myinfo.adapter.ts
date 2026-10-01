@@ -47,6 +47,8 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
     case InternalAttr.VehicleNo:
       return `${ExternalAttr.Vehicles}.vehicleno` as const
     // Unchanged fields
+    case InternalAttr.UinFin:
+      return ExternalAttr.UinFin
     case InternalAttr.Name:
       return ExternalAttr.Name
     case InternalAttr.PassportNumber:
@@ -127,6 +129,8 @@ export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
     case InternalAttr.VehicleNo:
       return ExternalAttr.Vehicles
     // Unchanged fields
+    case InternalAttr.UinFin:
+      return ExternalAttr.UinFin
     case InternalAttr.Name:
       return ExternalAttr.Name
     case InternalAttr.PassportNumber:
