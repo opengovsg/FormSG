@@ -1,4 +1,6 @@
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
+
+import type { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
 
 /**
  * The copy for each of the guided flow's five completion moments.
@@ -8,7 +10,11 @@ import { TFunction } from 'i18next'
  * place because the pattern has to read the same at every moment.
  */
 
-const PREFIX = 'features.adminForm.sidebar.workflow.completionPeek'
+/**
+ * `t` scoped to this pattern's copy, so the keys below are type-checked. Get it
+ * from `useTranslation(workflowNs, { keyPrefix: 'completionPeek' })`.
+ */
+export type CompletionPeekT = TFunction<typeof workflowNs, 'completionPeek'>
 
 export enum CompletionPeekMomentType {
   /**
@@ -57,16 +63,16 @@ export interface CompletionPeekContent {
  * subtitle is optional but no moment currently omits it.
  */
 export const getCompletionPeekContent = (
-  t: TFunction,
+  t: CompletionPeekT,
   moment: CompletionPeekMoment,
 ): CompletionPeekContent => ({
   title: t(
-    `${PREFIX}.${moment.type}.title`,
+    `${moment.type}.title`,
     moment.type === CompletionPeekMomentType.LaterStepDone
       ? { stepNumber: moment.stepNumber + 1 }
       : undefined,
   ),
-  subtitle: t(`${PREFIX}.${moment.type}.subtitle`),
+  subtitle: t(`${moment.type}.subtitle`),
 })
 
 export interface CompletionPeekActionLabels {
@@ -83,12 +89,12 @@ export interface CompletionPeekActionLabels {
  * driving the flow.
  */
 export const getCompletionPeekActionLabels = (
-  t: TFunction,
+  t: CompletionPeekT,
 ): CompletionPeekActionLabels => ({
-  declineAnotherStep: t(`${PREFIX}.actions.declineAnotherStep`),
-  addAnotherStep: t(`${PREFIX}.actions.addAnotherStep`),
-  continue: t(`${PREFIX}.actions.continue`),
-  finish: t(`${PREFIX}.actions.finish`),
+  declineAnotherStep: t('actions.declineAnotherStep'),
+  addAnotherStep: t('actions.addAnotherStep'),
+  continue: t('actions.continue'),
+  finish: t('actions.finish'),
 })
 
 /**

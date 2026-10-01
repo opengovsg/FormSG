@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Flex } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import Button from '~components/Button'
 
 import { GuidedSecondaryAction } from '../../../utils/guidedStepPolicy'
@@ -24,7 +26,7 @@ export const GuidedActionGroup = ({
   onContinue,
   onDone,
 }: GuidedActionGroupProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
 
   return (
     <Flex
@@ -44,8 +46,8 @@ export const GuidedActionGroup = ({
         >
           {t(
             secondaryAction === GuidedSecondaryAction.Back
-              ? 'features.adminForm.sidebar.workflow.guided.back'
-              : 'features.adminForm.sidebar.workflow.guided.cancel',
+              ? 'guided.back'
+              : 'guided.cancel',
           )}
         </Button>
       )}
@@ -53,11 +55,7 @@ export const GuidedActionGroup = ({
         isLoading={isOnLastSection && isLoading}
         onClick={isOnLastSection ? onDone : onContinue}
       >
-        {t(
-          isOnLastSection
-            ? 'features.adminForm.sidebar.workflow.guided.done'
-            : 'features.adminForm.sidebar.workflow.guided.continue',
-        )}
+        {t(isOnLastSection ? 'guided.done' : 'guided.continue')}
       </Button>
     </Flex>
   )

@@ -4,6 +4,8 @@ import { FormControl, Stack, Text } from '@chakra-ui/react'
 
 import { UserDto } from 'formsg-shared/types'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { textStyles } from '~theme/textStyles'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -34,7 +36,7 @@ export const RespondentBlock = ({
   isLoading,
   formMethods,
 }: RespondentBlockProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const {
     formState: { errors },
     watch,
@@ -64,15 +66,15 @@ export const RespondentBlock = ({
           <Text style={textStyles.h4}>
             {t(
               isRedesign
-                ? 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondentRedesign'
-                : 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
+                ? 'respondentBlock.stepRespondentRedesign'
+                : 'respondentBlock.stepRespondent',
             )}
           </Text>
           <Text>
             {t(
               isRedesign
-                ? 'features.adminForm.sidebar.workflow.respondentBlock.anyoneRedesign'
-                : 'features.adminForm.sidebar.workflow.respondentBlock.anyone',
+                ? 'respondentBlock.anyoneRedesign'
+                : 'respondentBlock.anyone',
             )}
           </Text>
         </Stack>
@@ -85,13 +87,13 @@ export const RespondentBlock = ({
           <FormLabel style={textStyles.h4}>
             {t(
               isRedesign
-                ? 'features.adminForm.sidebar.workflow.respondentBlock.selectRedesign'
-                : 'features.adminForm.sidebar.workflow.respondentBlock.select',
+                ? 'respondentBlock.selectRedesign'
+                : 'respondentBlock.select',
             )}
           </FormLabel>
           {isActiveSection ? (
             <Text textStyle="body-2" color="secondary.400" mb="0.5rem">
-              {t('features.adminForm.sidebar.workflow.guidedHints.respondent')}
+              {t('guidedHints.respondent')}
             </Text>
           ) : null}
           <Stack spacing="0.25rem">

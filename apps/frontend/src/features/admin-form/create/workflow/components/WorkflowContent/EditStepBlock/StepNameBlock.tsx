@@ -10,6 +10,8 @@ import {
   Text,
 } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { textStyles } from '~theme/textStyles'
 import FormLabel from '~components/FormControl/FormLabel'
 
@@ -31,7 +33,7 @@ export const StepNameBlock = ({
   stepNumber,
   formMethods,
 }: StepNameProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const { cardRadius, stepLabelTextStyle } = useWorkflowSurfaces()
   const isActiveSection = useIsSpotlightActiveSection()
   const {
@@ -70,11 +72,11 @@ export const StepNameBlock = ({
             isInvalid={!!errors[STEP_NAME]}
           >
             <FormLabel isRequired style={textStyles.h4} textStyle={'subhead-1'}>
-              {t('features.adminForm.sidebar.workflow.stepName.label')}
+              {t('stepName.label')}
             </FormLabel>
             {isActiveSection ? (
               <Text textStyle="body-2" color="secondary.400" mb="0.5rem">
-                {t('features.adminForm.sidebar.workflow.guidedHints.stepName', {
+                {t('guidedHints.stepName', {
                   stepNumber: stepNumber + 1,
                 })}
               </Text>

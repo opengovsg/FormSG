@@ -1,9 +1,11 @@
 import { Language } from 'formsg-shared/types'
 
 import i18n from '~/i18n/i18n'
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
 
 import {
   CompletionPeekMomentType,
+  CompletionPeekT,
   getCompletionPeekActionLabels,
   getCompletionPeekContent,
   isCompletionPeekTucked,
@@ -26,7 +28,13 @@ import {
 // the locale files.
 beforeAll(() => i18n.changeLanguage(Language.ENGLISH))
 
-const t = i18n.t.bind(i18n)
+// i18next v21 types getFixedT loosely; the component path gets this same `t`
+// from `useTranslation(workflowNs, { keyPrefix: 'completionPeek' })`.
+const t = i18n.getFixedT(
+  null,
+  workflowNs,
+  'completionPeek',
+) as unknown as CompletionPeekT
 
 describe('getCompletionPeekContent', () => {
   it('should give step 1 its own wording, not the later-step wording', () => {

@@ -13,12 +13,13 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
-const COPY_KEY =
-  'features.adminForm.sidebar.workflow.conditionalRouting.modals.closeFormFirstToEdit'
+const COPY_KEY = 'conditionalRouting.modals.closeFormFirstToEdit'
 
 export interface CloseFormToEditModalProps {
   isOpen: boolean
@@ -29,7 +30,7 @@ export const CloseFormToEditModal = ({
   isOpen,
   onClose,
 }: CloseFormToEditModalProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const { formId } = useParams()
   const navigate = useNavigate()
   const modalSize = useBreakpointValue({ base: 'mobile', md: 'md' })

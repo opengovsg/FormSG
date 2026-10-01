@@ -16,6 +16,8 @@ import { BasicField, FormField } from 'formsg-shared/types'
 import { FormWorkflowStepDto, WorkflowType } from 'formsg-shared/types/form'
 import { checkIsOptionsMismatched } from 'formsg-shared/utils/options-recipients-map-validation'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { LogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/LogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'
@@ -131,7 +133,7 @@ export const InactiveStepBlock = ({
   stepNumber,
   step,
 }: InactiveStepBlockProps): JSX.Element | null => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const isRedesign = useIsWorkflowBuilderRedesign()
   const {
     cardRadius,
@@ -212,7 +214,7 @@ export const InactiveStepBlock = ({
   const fieldsSection = (
     <Stack>
       <Text textStyle={sectionLabelTextStyle}>
-        {t('features.adminForm.sidebar.workflow.respondentBlock.fieldsToFill')}
+        {t('respondentBlock.fieldsToFill')}
       </Text>
       <Stack direction="column" spacing="0.25rem">
         {questionBadges}
@@ -252,16 +254,16 @@ export const InactiveStepBlock = ({
             <Text textStyle={sectionLabelTextStyle}>
               {t(
                 isRedesign
-                  ? 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondentRedesign'
-                  : 'features.adminForm.sidebar.workflow.respondentBlock.stepRespondent',
+                  ? 'respondentBlock.stepRespondentRedesign'
+                  : 'respondentBlock.stepRespondent',
               )}
             </Text>
             {isFirstStep ? (
               <Text>
                 {t(
                   isRedesign
-                    ? 'features.adminForm.sidebar.workflow.respondentBlock.anyoneRedesign'
-                    : 'features.adminForm.sidebar.workflow.respondentBlock.anyone',
+                    ? 'respondentBlock.anyoneRedesign'
+                    : 'respondentBlock.anyone',
                 )}
               </Text>
             ) : (

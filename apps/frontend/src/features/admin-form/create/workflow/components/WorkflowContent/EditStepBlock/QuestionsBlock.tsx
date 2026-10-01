@@ -2,6 +2,8 @@ import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, FormHelperText } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { textStyles } from '~theme/textStyles'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -31,7 +33,7 @@ export const QuestionsBlock = ({
   formMethods,
   isFirstStep,
 }: QuestionsBlockProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const isRedesign = useIsWorkflowBuilderRedesign()
   const stageFieldAndNavigate = useStageFieldAndNavigate()
   const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
@@ -73,17 +75,9 @@ export const QuestionsBlock = ({
           style={textStyles.h4}
           tooltipVariant="info"
           tooltipPlacement="top"
-          tooltipText={
-            isRedesign
-              ? undefined
-              : t('features.adminForm.sidebar.workflow.questions.tooltip')
-          }
+          tooltipText={isRedesign ? undefined : t('questions.tooltip')}
         >
-          {t(
-            isRedesign
-              ? 'features.adminForm.sidebar.workflow.questions.labelRedesign'
-              : 'features.adminForm.sidebar.workflow.questions.label',
-          )}
+          {t(isRedesign ? 'questions.labelRedesign' : 'questions.label')}
         </FormLabel>
         <Controller
           control={control}
@@ -95,12 +89,10 @@ export const QuestionsBlock = ({
                   picker="fields"
                   message={t(
                     hasOnlyMyInfoFields
-                      ? 'features.adminForm.sidebar.workflow.emptyStates.noFieldsMyInfoOnly'
-                      : 'features.adminForm.sidebar.workflow.emptyStates.noFields',
+                      ? 'emptyStates.noFieldsMyInfoOnly'
+                      : 'emptyStates.noFields',
                   )}
-                  actionLabel={t(
-                    'features.adminForm.sidebar.workflow.emptyStates.noFieldsAction',
-                  )}
+                  actionLabel={t('emptyStates.noFieldsAction')}
                   onAction={() => stageFieldAndNavigate(undefined, getValues())}
                 />
               )
@@ -116,8 +108,8 @@ export const QuestionsBlock = ({
                 isDisabled={isLoading}
                 placeholder={t(
                   isRedesign
-                    ? 'features.adminForm.sidebar.workflow.questions.placeholderRedesign'
-                    : 'features.adminForm.sidebar.workflow.questions.placeholder',
+                    ? 'questions.placeholderRedesign'
+                    : 'questions.placeholder',
                 )}
                 items={items}
                 isSelectedItemFullWidth
@@ -130,9 +122,7 @@ export const QuestionsBlock = ({
         />
         {isRedesign && selectedApprovalField ? (
           <FormHelperText>
-            {t(
-              'features.adminForm.sidebar.workflow.questions.autoAddHelperTextRedesign',
-            )}
+            {t('questions.autoAddHelperTextRedesign')}
           </FormHelperText>
         ) : null}
         <FormErrorMessage>{errors.workflow_type?.message}</FormErrorMessage>

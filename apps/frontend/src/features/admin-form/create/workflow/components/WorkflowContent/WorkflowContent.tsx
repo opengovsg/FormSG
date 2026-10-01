@@ -10,6 +10,8 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import IconButton from '~components/IconButton'
 
@@ -42,7 +44,7 @@ export const STEP_CONNECTOR_TEST_ID = 'workflow-step-connector'
 const WORKFLOW_CARD_PADDING = '1.5rem'
 
 export const WorkflowContent = (): JSX.Element | null => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const { formWorkflow, isLoading } = useAdminFormWorkflow()
   const isRedesign = useIsWorkflowBuilderRedesign()
   const isGuidedMode = useIsWorkflowGuidedMode()
@@ -103,9 +105,7 @@ export const WorkflowContent = (): JSX.Element | null => {
                   transitionDuration="normal"
                   _hover={{ color: 'danger.500', bg: 'danger.100' }}
                   _active={{ color: 'danger.500', bg: 'danger.200' }}
-                  aria-label={t(
-                    'features.adminForm.sidebar.workflow.aria.deleteWorkflow',
-                  )}
+                  aria-label={t('aria.deleteWorkflow')}
                   icon={<BiTrash />}
                   onClick={onDeleteModalOpen}
                 />

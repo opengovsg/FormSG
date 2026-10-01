@@ -6,7 +6,7 @@ import {
   CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
 } from 'formsg-shared/constants/errors'
 
-import { Workflow } from '.'
+import type { Workflow } from '.'
 
 export const enSG: Workflow = {
   title: 'Add workflow',

@@ -6,6 +6,8 @@ import { Stack, Text, useDisclosure } from '@chakra-ui/react'
 
 import { FormWorkflowStep } from 'formsg-shared/types'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { ADMINFORM_ROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
@@ -31,7 +33,7 @@ import { CloseFormToEditModal } from '../../CloseFormToEditModal'
 import { EditStepBlock } from '../EditStepBlock'
 
 const WebhookBlockedStep = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const { formId } = useParams()
 
   return (
@@ -39,7 +41,8 @@ const WebhookBlockedStep = () => {
       <InlineMessage variant="info">
         <Text>
           <Trans
-            i18nKey="features.adminForm.sidebar.workflow.webhookEnabledNoMoreSteps"
+            t={t}
+            i18nKey="webhookEnabledNoMoreSteps"
             components={{
               webhookSettingsLink: (
                 <Link
@@ -52,14 +55,14 @@ const WebhookBlockedStep = () => {
         </Text>
       </InlineMessage>
       <Button variant="outline" leftIcon={<BiPlus />} isDisabled>
-        {t('features.adminForm.sidebar.workflow.approvals.addStep')}
+        {t('approvals.addStep')}
       </Button>
     </Stack>
   )
 }
 
 export const NewStepBlock = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const { formWorkflow, isPaymentEnabled, isGenericWebhookEnabled } =
     useAdminFormWorkflow()
   const { createStepMutation } = useWorkflowMutations()
@@ -138,9 +141,7 @@ export const NewStepBlock = () => {
       isLoading={createStepMutation.isLoading}
       onSubmit={handleSubmit}
       defaultValues={draftInputs ?? { edit: [] }}
-      submitButtonLabel={t(
-        'features.adminForm.sidebar.workflow.approvals.addStep',
-      )}
+      submitButtonLabel={t('approvals.addStep')}
     />
   ) : (
     <>
@@ -149,11 +150,7 @@ export const NewStepBlock = () => {
         onClose={onBlockedModalClose}
       />
       <Tooltip
-        label={
-          isPaymentEnabled
-            ? t('features.adminForm.sidebar.workflow.paymentEnabledNoSteps')
-            : undefined
-        }
+        label={isPaymentEnabled ? t('paymentEnabledNoSteps') : undefined}
         shouldWrapChildren={isPaymentEnabled}
       >
         <Button
@@ -162,7 +159,7 @@ export const NewStepBlock = () => {
           leftIcon={<BiPlus />}
           isDisabled={isPaymentEnabled}
         >
-          {t('features.adminForm.sidebar.workflow.approvals.addStep')}
+          {t('approvals.addStep')}
         </Button>
       </Tooltip>
     </>

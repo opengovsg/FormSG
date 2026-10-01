@@ -1,4 +1,13 @@
-export * from './en-sg'
+import { Language } from 'formsg-shared/types/form/form_enums'
+
+import { registerNamespace } from '~/i18n/registerNamespace'
+
+import { enSG } from './en-sg'
+
+export const workflowNs = registerNamespace(
+  'features/admin-form/sidebar/workflow',
+  { [Language.ENGLISH]: enSG },
+)
 
 interface CompletionPeekText {
   title: string

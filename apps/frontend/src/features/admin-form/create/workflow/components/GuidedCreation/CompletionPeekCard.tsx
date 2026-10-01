@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { useAdminWorkflowStore } from '../../adminWorkflowStore'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
 
@@ -67,7 +69,7 @@ export type CompletionPeekCardProps =
 export const CompletionPeekCard = (
   props: CompletionPeekCardProps,
 ): JSX.Element | null => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs, { keyPrefix: 'completionPeek' })
   const isRedesign = useIsWorkflowBuilderRedesign()
   // One check rather than one per card type: an open card is an open card. The
   // completion email card of FRM-2495 becomes a third variant of

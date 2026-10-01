@@ -17,6 +17,8 @@ import {
 
 import { FormStatus } from 'formsg-shared/types'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { ADMINFORM_ROUTE, ADMINFORM_SETTINGS_SUBROUTE } from '~constants/routes'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
@@ -63,7 +65,7 @@ export const DeleteWorkflowModal = ({
   onClose,
   entryPoint,
 }: DeleteWorkflowModalProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const navigate = useNavigate()
   const { formId } = useParams()
   const { data: form } = useAdminForm()
@@ -95,10 +97,10 @@ export const DeleteWorkflowModal = ({
   // Full literal keys rather than an interpolated path: i18next types its keys
   // off string literals, and building the path up would drop that checking.
   const copyKey = isFormOpen
-    ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.closeFormFirst'
+    ? 'conditionalRouting.modals.closeFormFirst'
     : entryPoint === 'first-step'
-      ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteFirstStep'
-      : 'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteWorkflow'
+      ? 'conditionalRouting.modals.deleteFirstStep'
+      : 'conditionalRouting.modals.deleteWorkflow'
 
   const copy = t(copyKey, { returnObjects: true })
 

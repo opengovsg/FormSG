@@ -4,6 +4,8 @@ import { Dictionary } from 'lodash'
 
 import { FormField, FormWorkflowStepDto } from 'formsg-shared/types'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { FieldLogicBadge } from '~features/admin-form/create/logic/components/LogicContent/InactiveLogicBlock/FieldLogicBadge'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
@@ -18,15 +20,13 @@ const ApprovalStepBadge = ({
   approvalFormField,
   isDeleted = false,
 }: ApprovalStepBadgeProps): JSX.Element | null => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   if (isDeleted) {
     return (
       <FieldLogicBadge
         defaults={{
           variant: 'error',
-          message: t(
-            'features.adminForm.sidebar.workflow.approvals.yesNoDeleted',
-          ),
+          message: t('approvals.yesNoDeleted'),
         }}
       />
     )
@@ -36,9 +36,7 @@ const ApprovalStepBadge = ({
       <FieldLogicBadge
         defaults={{
           variant: 'info',
-          message: t(
-            'features.adminForm.sidebar.workflow.approvals.notRequired',
-          ),
+          message: t('approvals.notRequired'),
         }}
       />
     )
@@ -55,7 +53,7 @@ export const InactiveApprovalsBlock = ({
   step,
   idToFieldMap,
 }: InactiveApprovalsBlockProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const { sectionLabelTextStyle } = useWorkflowSurfaces()
   const approvalFormField = step.approval_field
     ? idToFieldMap[step.approval_field]
@@ -63,9 +61,7 @@ export const InactiveApprovalsBlock = ({
 
   return (
     <Stack>
-      <Text textStyle={sectionLabelTextStyle}>
-        {t('features.adminForm.sidebar.workflow.approvals.title')}
-      </Text>
+      <Text textStyle={sectionLabelTextStyle}>{t('approvals.title')}</Text>
       <Stack direction="column" spacing="0.25rem">
         <ApprovalStepBadge
           isDeleted={Boolean(step.approval_field && !approvalFormField)}
