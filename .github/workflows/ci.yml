@@ -59,6 +59,9 @@ jobs:
             sdk:
               - packages/sdk/src/**
               - packages/sdk/spec/**
+              - packages/sdk/examples/**
+              - packages/sdk/README.md
+              - docs/v4-webhooks.md
               - packages/sdk/package.json
               - packages/sdk/tsconfig*.json
               - packages/sdk/jest.config.js
