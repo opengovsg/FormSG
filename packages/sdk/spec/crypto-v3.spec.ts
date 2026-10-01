@@ -3,6 +3,7 @@ import { decodeUTF8 } from '../src/util/encoding'
 
 import Crypto from '../src/crypto'
 import CryptoV3 from '../src/crypto-v3'
+import type { FieldResponsesV4, LoginVerification } from '../src'
 import { SIGNING_KEYS } from '../src/resource/signing-keys'
 import { encryptMessage } from '../src/util/crypto'
 
@@ -102,6 +103,117 @@ describe('CryptoV3', function () {
     })
     // Assert
     expect(decrypted).toHaveProperty('responses', plaintext)
+  })
+
+  describe('V4 login verification provenance', () => {
+    // Placeholder proof bytes. This suite checks storage, not signature validity.
+    const signature = 'c2lnbmF0dXJl'
+    const workflowStepId = '507f1f77bcf86cd799439011'
+    const cases: {
+      fieldType: 'nric' | 'uen' | 'textfield'
+      value: string
+      verification: LoginVerification
+    }[] = [
+      {
+        fieldType: 'nric',
+        value: 'S1234567D',
+        verification: {
+          version: 1,
+          provider: 'MyInfo',
+          attribute: 'uinfin',
+          workflowStepId,
+          signature,
+        },
+      },
+      {
+        fieldType: 'textfield',
+        value: 'Jane Tan',
+        verification: {
+          version: 1,
+          provider: 'MyInfo',
+          attribute: 'name',
+          workflowStepId,
+          signature,
+        },
+      },
+      {
+        fieldType: 'uen',
+        value: '201234567A',
+        verification: {
+          version: 1,
+          provider: 'CP',
+          attribute: 'uen',
+          workflowStepId,
+          signature,
+        },
+      },
+      {
+        fieldType: 'textfield',
+        value: 'FOREIGN-ID-123',
+        verification: {
+          version: 1,
+          provider: 'CP',
+          attribute: 'uid',
+          workflowStepId,
+          signature,
+        },
+      },
+    ]
+
+    it.each(cases)(
+      'preserves $verification.provider/$verification.attribute proof through encryption and decryption',
+      ({ fieldType, value, verification }) => {
+        const responses: FieldResponsesV4 = {
+          fieldId: {
+            fieldType,
+            question: 'Authenticated identity',
+            answer: { value },
+            provenance: { loginVerification: verification },
+            previousAnswers: [
+              {
+                answer: { value: 'earlier value' },
+                provenance: { loginVerification: verification },
+              },
+            ],
+          },
+        }
+        const { publicKey, secretKey } = crypto.generate()
+        const encrypted = crypto.encrypt(responses, publicKey)
+        const params = { ...encrypted, version: INTERNAL_TEST_VERSION }
+
+        expect(crypto.decrypt(secretKey, params)?.responses).toEqual(responses)
+        expect(
+          crypto.decryptFromSubmissionKey(encrypted.submissionSecretKey, params)
+            ?.responses
+        ).toEqual(responses)
+        expect(crypto.decryptToV4(secretKey, params, {})?.responses).toEqual(
+          responses
+        )
+      }
+    )
+
+    it('keeps legacy provenance without adding a login verification stamp', () => {
+      const responses: FieldResponsesV4 = {
+        fieldId: {
+          fieldType: 'nric',
+          question: 'Typed NRIC',
+          answer: { value: 'S1234567D' },
+          provenance: {},
+        },
+      }
+      const { publicKey, secretKey } = crypto.generate()
+      const encrypted = crypto.encrypt(responses, publicKey)
+      const decrypted = crypto.decryptToV4(
+        secretKey,
+        { ...encrypted, version: INTERNAL_TEST_VERSION },
+        {}
+      )
+
+      expect(decrypted?.responses).toEqual(responses)
+      expect(decrypted?.responses.fieldId.provenance).not.toHaveProperty(
+        'loginVerification'
+      )
+    })
   })
 
   describe('decryptToV4 — MRF step-token recovery', () => {

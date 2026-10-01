@@ -1,6 +1,35 @@
 import { DecryptParamsV3, EncryptedContent, FieldType } from './types'
 
-// TODO: provenance shape may be updated when it is implemented
+/**
+ * Version 1 of a FormSG-signed login verification record.
+ *
+ * Phase 2 must sign the version, provider, attribute, stable workflow step ID,
+ * form ID, submission ID, field ID and exact answer value using a distinct
+ * signing format. The form/submission/field IDs and answer come from the
+ * containing response context rather than being duplicated in this record.
+ *
+ * Presence alone is not proof. Consumers must verify the signature and its
+ * context bindings. Signing and verification are not implemented by this type.
+ */
+export type LoginVerificationV1 = {
+  version: 1
+  workflowStepId: string
+  /** Base64-encoded FormSG signature. */
+  signature: string
+} & (
+  | {
+      provider: 'MyInfo'
+      // Matches existing MyInfo attribute metadata; the server validates support.
+      attribute: MyInfoMetaV4['attr']
+    }
+  | {
+      provider: 'CP'
+      attribute: 'uen' | 'uid'
+    }
+)
+
+export type LoginVerification = LoginVerificationV1
+
 export type ResponseProvenance = {
   submittedAt?: string
   stepNumber?: number
@@ -10,6 +39,11 @@ export type ResponseProvenance = {
    * verification happened (e.g. user-filled child records).
    */
   myinfoVerified?: boolean
+  /**
+   * Optional signed login proof, created by the server in Phase 2. Never
+   * client-supplied or inferred for historical or manually entered answers.
+   */
+  loginVerification?: LoginVerification
 }
 
 export type PreviousAnswer = {

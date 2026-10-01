@@ -46,6 +46,8 @@ export type {
   FormFieldMeta,
   FormFieldV4,
   FormFieldsV4,
+  LoginVerification,
+  LoginVerificationV1,
   RadioAnswerV4,
   ResponseProvenance,
   SignatureAnswerV4,
