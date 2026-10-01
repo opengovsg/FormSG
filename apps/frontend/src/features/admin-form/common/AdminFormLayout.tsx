@@ -6,6 +6,7 @@ import { get } from 'lodash'
 
 import { featureFlags } from 'formsg-shared/constants'
 
+import { useGrowthBookFormId } from '~contexts/GrowthbookContext'
 import { fillHeightCss } from '~utils/fillHeightCss'
 import { getBannerProps } from '~utils/getBannerProps'
 import { Banner } from '~components/Banner'
@@ -27,6 +28,7 @@ import { useAdminForm } from './queries'
 export const AdminFormLayout = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
+  useGrowthBookFormId(formId)
 
   const { data: { siteBannerContent, adminBannerContent } = {} } = useEnv()
   const siteBannerContentGB = useFeatureValue('site-banner-content', '')
