@@ -19,6 +19,11 @@ on:
   # Dispatched by chromatic-stack-unblock.yml once a stacked PR's base passes.
   workflow_dispatch:
 
+# Jobs run PR code (pnpm install, Storybook build), so the token is
+# read-only by default; jobs that need more declare it themselves.
+permissions:
+  contents: read
+
 # List of jobs
 jobs:
   # JOB to run change detection
@@ -105,7 +110,6 @@ jobs:
         uses: chromaui/action@c93e0bc3a63aa176e14a75b61a31847cbfdd341c # v1
         # Chromatic GitHub Action options
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           workingDir: apps/frontend
@@ -156,7 +160,6 @@ jobs:
         uses: chromaui/action@c93e0bc3a63aa176e14a75b61a31847cbfdd341c # v1
         # Chromatic GitHub Action options
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
           projectToken: ${{ secrets.CHROMATIC_EMAIL_PROJECT_TOKEN }}
           workingDir: packages/react-email-preview
