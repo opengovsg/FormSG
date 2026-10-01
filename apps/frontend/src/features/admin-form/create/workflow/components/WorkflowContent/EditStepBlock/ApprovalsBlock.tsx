@@ -5,6 +5,8 @@ import { FormControl, Text } from '@chakra-ui/react'
 
 import { BasicField } from 'formsg-shared/types'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { textStyles } from '~theme/textStyles'
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -37,7 +39,7 @@ export const ApprovalsBlock = ({
   formMethods,
   stepNumber,
 }: ApprovalsBlockProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const isRedesign = useIsWorkflowBuilderRedesign()
   const isSavePermissive = useIsWorkflowSavePermissive()
   const isActiveSection = useIsSpotlightActiveSection()
@@ -122,7 +124,7 @@ export const ApprovalsBlock = ({
     <EditStepBlockContainer>
       {isActiveSection ? (
         <Text textStyle="body-2" color="secondary.400">
-          {t('features.adminForm.sidebar.workflow.guidedHints.approvals')}
+          {t('guidedHints.approvals')}
         </Text>
       ) : null}
       <Toggle
@@ -132,20 +134,16 @@ export const ApprovalsBlock = ({
         labelStyles={{ ...textStyles.h4, color: 'inherit' }}
         label={t(
           isRedesign
-            ? 'features.adminForm.sidebar.workflow.approvals.toggle.labelRedesign'
-            : 'features.adminForm.sidebar.workflow.approvals.toggle.label',
+            ? 'approvals.toggle.labelRedesign'
+            : 'approvals.toggle.label',
         )}
         description={t(
           isRedesign
-            ? 'features.adminForm.sidebar.workflow.approvals.toggle.descriptionRedesign'
-            : 'features.adminForm.sidebar.workflow.approvals.toggle.description',
+            ? 'approvals.toggle.descriptionRedesign'
+            : 'approvals.toggle.description',
         )}
         descriptionStyles={isRedesign ? { color: 'secondary.700' } : undefined}
-        tooltipText={
-          isRedesign
-            ? undefined
-            : t('features.adminForm.sidebar.workflow.approvals.toggle.tooltip')
-        }
+        tooltipText={isRedesign ? undefined : t('approvals.toggle.tooltip')}
         tooltipVariant="info"
         tooltipPlacement="top"
       />
@@ -162,14 +160,12 @@ export const ApprovalsBlock = ({
                 if (!value && isApprovalToggleChecked && !isSavePermissive) {
                   return t(
                     isRedesign
-                      ? 'features.adminForm.sidebar.workflow.approvals.validation.noFieldRedesign'
-                      : 'features.adminForm.sidebar.workflow.approvals.validation.noField',
+                      ? 'approvals.validation.noFieldRedesign'
+                      : 'approvals.validation.noField',
                   )
                 }
                 if (value && approvalFieldsFromOtherSteps.includes(value)) {
-                  return t(
-                    'features.adminForm.sidebar.workflow.approvals.validation.fieldAlreadyUsed',
-                  )
+                  return t('approvals.validation.fieldAlreadyUsed')
                 }
                 if (
                   value &&
@@ -177,8 +173,8 @@ export const ApprovalsBlock = ({
                 ) {
                   return t(
                     isRedesign
-                      ? 'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUserRedesign'
-                      : 'features.adminForm.sidebar.workflow.approvals.validation.fieldNotAssignedToUser',
+                      ? 'approvals.validation.fieldNotAssignedToUserRedesign'
+                      : 'approvals.validation.fieldNotAssignedToUser',
                   )
                 }
               },
@@ -189,12 +185,8 @@ export const ApprovalsBlock = ({
                 return (
                   <FieldEmptyState
                     picker="yesno"
-                    message={t(
-                      'features.adminForm.sidebar.workflow.emptyStates.noYesNoField',
-                    )}
-                    actionLabel={t(
-                      'features.adminForm.sidebar.workflow.emptyStates.noYesNoFieldAction',
-                    )}
+                    message={t('emptyStates.noYesNoField')}
+                    actionLabel={t('emptyStates.noYesNoFieldAction')}
                     onAction={() =>
                       stageFieldAndNavigate(BasicField.YesNo, getValues())
                     }
@@ -207,9 +199,7 @@ export const ApprovalsBlock = ({
               }
               return (
                 <SingleSelect
-                  placeholder={t(
-                    'features.adminForm.sidebar.workflow.approvals.toggle.placeholder',
-                  )}
+                  placeholder={t('approvals.toggle.placeholder')}
                   items={yesNoFieldItems}
                   value={displayValue}
                   isClearable

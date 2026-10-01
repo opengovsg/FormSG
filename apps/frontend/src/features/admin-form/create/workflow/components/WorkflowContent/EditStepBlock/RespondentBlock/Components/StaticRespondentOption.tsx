@@ -6,6 +6,8 @@ import isEmail from 'validator/lib/isEmail'
 
 import { WorkflowType } from 'formsg-shared/types'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 import { TagInput } from '~components/TagInput'
@@ -29,7 +31,7 @@ export const StaticRespondentOption = ({
   } = formMethods
   const staticTagInputErrorMessage = get(errors, 'emails.message')
 
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
   const isSavePermissive = useIsWorkflowSavePermissive()
@@ -74,9 +76,7 @@ export const StaticRespondentOption = ({
                     !emails ||
                     emails.every((email) => isEmail(email)) ||
                     (isRedesign
-                      ? t(
-                          'features.adminForm.sidebar.workflow.staticRespondent.invalidEmailsRedesign',
-                        )
+                      ? t('staticRespondent.invalidEmailsRedesign')
                       : 'Please enter valid email(s) (e.g. me@example.com) separated by commas, as invalid emails will not be saved'),
                 },
               }}

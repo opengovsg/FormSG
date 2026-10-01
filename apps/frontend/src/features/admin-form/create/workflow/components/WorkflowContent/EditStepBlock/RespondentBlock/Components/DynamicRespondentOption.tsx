@@ -4,6 +4,8 @@ import { FormControl, Text } from '@chakra-ui/react'
 
 import { BasicField, WorkflowType } from 'formsg-shared/types'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
@@ -27,7 +29,7 @@ export const DynamicRespondentOption = ({
   formMethods,
   emailFieldItems,
 }: DynamicRespondentOptionProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const {
     register,
     formState: { errors },
@@ -57,9 +59,7 @@ export const DynamicRespondentOption = ({
           },
         }}
       >
-        <Text>
-          {t('features.adminForm.sidebar.workflow.dynamicRespondent.title')}
-        </Text>
+        <Text>{t('dynamicRespondent.title')}</Text>
         {selectedWorkflowType === WorkflowType.Dynamic ? (
           <FormControl
             pt="0.5rem"
@@ -77,8 +77,8 @@ export const DynamicRespondentOption = ({
                   ? false
                   : t(
                       isRedesign
-                        ? 'features.adminForm.sidebar.workflow.dynamicRespondent.requiredRedesign'
-                        : 'features.adminForm.sidebar.workflow.dynamicRespondent.required',
+                        ? 'dynamicRespondent.requiredRedesign'
+                        : 'dynamicRespondent.required',
                     ),
                 validate: (selectedValue) => {
                   if (!selectedValue) return true
@@ -90,8 +90,8 @@ export const DynamicRespondentOption = ({
                     ) ||
                     t(
                       isRedesign
-                        ? 'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmailRedesign'
-                        : 'features.adminForm.sidebar.workflow.dynamicRespondent.mustBeEmail',
+                        ? 'dynamicRespondent.mustBeEmailRedesign'
+                        : 'dynamicRespondent.mustBeEmail',
                     )
                   )
                 },
@@ -100,12 +100,8 @@ export const DynamicRespondentOption = ({
                 showEmptyState ? (
                   <FieldEmptyState
                     picker="email"
-                    message={t(
-                      'features.adminForm.sidebar.workflow.emptyStates.noEmailField',
-                    )}
-                    actionLabel={t(
-                      'features.adminForm.sidebar.workflow.emptyStates.noEmailFieldAction',
-                    )}
+                    message={t('emptyStates.noEmailField')}
+                    actionLabel={t('emptyStates.noEmailFieldAction')}
                     onAction={() =>
                       stageFieldAndNavigate(BasicField.Email, getValues())
                     }
@@ -114,9 +110,7 @@ export const DynamicRespondentOption = ({
                   <SingleSelect
                     isDisabled={isLoading}
                     isClearable={false}
-                    placeholder={t(
-                      'features.adminForm.sidebar.workflow.dynamicRespondent.select',
-                    )}
+                    placeholder={t('dynamicRespondent.select')}
                     items={emailFieldItems}
                     value={value}
                     {...rest}

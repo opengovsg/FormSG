@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { BiEnvelope } from 'react-icons/bi'
 import { Flex, Icon, Stack, Text } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
 
 /**
@@ -10,7 +12,7 @@ import { useWorkflowSurfaces } from '../../hooks/useWorkflowSurfaces'
  * of the step number.
  */
 export const CompletionEmailLabel = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const { cardRadius, stepLabelTextStyle } = useWorkflowSurfaces()
   return (
     <Stack
@@ -35,9 +37,7 @@ export const CompletionEmailLabel = (): JSX.Element => {
         <Icon as={BiEnvelope} aria-hidden fontSize="1.25rem" />
       </Flex>
       <Flex direction="row">
-        <Text>
-          {t('features.adminForm.sidebar.workflow.completionEmail.title')}
-        </Text>
+        <Text>{t('completionEmail.title')}</Text>
       </Flex>
     </Stack>
   )

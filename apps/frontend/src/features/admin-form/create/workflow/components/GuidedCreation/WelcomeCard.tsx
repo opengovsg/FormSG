@@ -8,6 +8,8 @@ import {
   usePrefersReducedMotion,
 } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import Button from '~components/Button'
 
 import {
@@ -17,14 +19,12 @@ import {
 import { useGuidedSetupTaught } from '../../hooks/useGuidedSetupTaught'
 import { FormToWorkflowIllustration } from '../FormToWorkflowIllustration'
 
-const WELCOME_I18N_PREFIX = 'features.adminForm.sidebar.workflow.welcome'
-
 const ILLUSTRATION_DELAY_MS = 600
 
 const LEAVE_DURATION_MS = 150
 
 export const WelcomeCard = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const startBuilding = useAdminWorkflowStore(startBuildingFromWelcomeSelector)
   const { markTaught } = useGuidedSetupTaught()
   const prefersReducedMotion = usePrefersReducedMotion()
@@ -81,19 +81,17 @@ export const WelcomeCard = (): JSX.Element => {
         <Stack spacing="1.5rem" flex={1}>
           <Stack spacing="0.75rem">
             <Text textStyle="h4" color="secondary.500">
-              {t(`${WELCOME_I18N_PREFIX}.header`)}
+              {t('welcome.header')}
             </Text>
             <Text textStyle="body-1" color="secondary.400">
-              {t(`${WELCOME_I18N_PREFIX}.stepOne`)}
+              {t('welcome.stepOne')}
             </Text>
             <Text textStyle="body-1" color="secondary.400">
-              {t(`${WELCOME_I18N_PREFIX}.whatNext`)}
+              {t('welcome.whatNext')}
             </Text>
           </Stack>
           <Box>
-            <Button onClick={handleStartBuilding}>
-              {t(`${WELCOME_I18N_PREFIX}.cta`)}
-            </Button>
+            <Button onClick={handleStartBuilding}>{t('welcome.cta')}</Button>
           </Box>
         </Stack>
       </Flex>

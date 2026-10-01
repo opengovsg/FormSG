@@ -18,6 +18,8 @@ import {
 
 import { MAX_UPLOAD_FILE_SIZE } from 'formsg-shared/constants'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import { NextAndBackButtonGroup } from '~components/Button'
 import Attachment from '~components/Field/Attachment'
@@ -55,7 +57,7 @@ const StepOneModalContent = ({
   isCsvTemplateDownloaded,
   onClose,
 }: StepOneModalContentProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const isRedesign = useIsWorkflowBuilderRedesign()
 
   //carousel image variables
@@ -67,21 +69,11 @@ const StepOneModalContent = ({
     carouselImage5,
   ]
   const captions = [
-    t(
-      'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.carousel.caption1',
-    ),
-    t(
-      'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.carousel.caption2',
-    ),
-    t(
-      'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.carousel.caption3',
-    ),
-    t(
-      'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.carousel.caption4',
-    ),
-    t(
-      'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.carousel.caption5',
-    ),
+    t('conditionalRouting.modals.addMapping.step1.carousel.caption1'),
+    t('conditionalRouting.modals.addMapping.step1.carousel.caption2'),
+    t('conditionalRouting.modals.addMapping.step1.carousel.caption3'),
+    t('conditionalRouting.modals.addMapping.step1.carousel.caption4'),
+    t('conditionalRouting.modals.addMapping.step1.carousel.caption5'),
   ]
 
   return (
@@ -91,8 +83,8 @@ const StepOneModalContent = ({
         <Text mb="0.25rem">
           {t(
             isRedesign
-              ? 'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.titleRedesign'
-              : 'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.title',
+              ? 'conditionalRouting.modals.addMapping.step1.titleRedesign'
+              : 'conditionalRouting.modals.addMapping.step1.title',
           )}
         </Text>
         <ProgressIndicator
@@ -121,14 +113,14 @@ const StepOneModalContent = ({
                 onClick={onDownloadCsvClick}
               >
                 {t(
-                  'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.button',
+                  'conditionalRouting.modals.addMapping.step1.download.button',
                 )}
               </Button>
             </Stack>
             <Stack spacing="1.5rem">
               <Text textStyle="h4" color="secondary.500">
                 {t(
-                  'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.title',
+                  'conditionalRouting.modals.addMapping.step1.download.howto.title',
                 )}
               </Text>
               <Box>
@@ -138,16 +130,16 @@ const StepOneModalContent = ({
                   fontSize={'10px'}
                 >
                   {t(
-                    'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.title',
+                    'conditionalRouting.modals.addMapping.step1.download.howto.option.title',
                   )}
                 </Text>
                 <Text textStyle="body-2">
                   {t(
-                    'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.explanation',
+                    'conditionalRouting.modals.addMapping.step1.download.howto.option.explanation',
                   ) + ' '}
                   <Text as="span" fontWeight="semibold">
                     {t(
-                      'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.option.notice',
+                      'conditionalRouting.modals.addMapping.step1.download.howto.option.notice',
                     )}
                   </Text>
                 </Text>
@@ -159,16 +151,16 @@ const StepOneModalContent = ({
                   fontSize={'10px'}
                 >
                   {t(
-                    'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.title',
+                    'conditionalRouting.modals.addMapping.step1.download.howto.email.title',
                   )}
                 </Text>
                 <Text textStyle="body-2">
                   {t(
-                    'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.explanation',
+                    'conditionalRouting.modals.addMapping.step1.download.howto.email.explanation',
                   ) + ' '}
                   <Text as="span" fontWeight="semibold">
                     {t(
-                      'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.download.howto.email.notice',
+                      'conditionalRouting.modals.addMapping.step1.download.howto.email.notice',
                     )}
                   </Text>
                 </Text>
@@ -183,7 +175,7 @@ const StepOneModalContent = ({
       <ModalFooter>
         <NextAndBackButtonGroup
           nextButtonLabel={t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step1.nextButton',
+            'conditionalRouting.modals.addMapping.step1.nextButton',
           )}
           handleBack={onClose}
           handleNext={() => setStepNumber(1)}
@@ -213,15 +205,13 @@ const StepTwoModalContent = ({
   isSubmitDisabled,
   validateCsvFile,
 }: StepTwoModalContentProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   return (
     <ModalContent>
       <ModalCloseButton />
       <ModalHeader>
         <Text mb="0.25rem">
-          {t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.title',
-          )}
+          {t('conditionalRouting.modals.addMapping.step2.title')}
         </Text>
         <ProgressIndicator
           numIndicators={NUM_STEPS}
@@ -231,26 +221,19 @@ const StepTwoModalContent = ({
       </ModalHeader>
       <ModalBody>
         <Text mb="2.5rem">
-          {t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.prefix',
-          ) + ' '}
+          {t('conditionalRouting.modals.addMapping.step2.description.prefix') +
+            ' '}
           <Text as="span" fontWeight="semibold">
-            {t(
-              'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.csv',
-            )}
+            {t('conditionalRouting.modals.addMapping.step2.description.csv')}
           </Text>{' '}
-          {t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.description.suffix',
-          )}
+          {t('conditionalRouting.modals.addMapping.step2.description.suffix')}
         </Text>
         <FormControl isInvalid={!!errors.csvFile}>
           <Controller
             name="csvFile"
             control={control}
             rules={{
-              required: t(
-                'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.required',
-              ),
+              required: t('conditionalRouting.errors.csv.required'),
               validate: validateCsvFile,
             }}
             render={({ field: { onChange, name, value } }) => (
@@ -273,7 +256,7 @@ const StepTwoModalContent = ({
       <ModalFooter>
         <NextAndBackButtonGroup
           nextButtonLabel={t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.step2.confirm',
+            'conditionalRouting.modals.addMapping.step2.confirm',
           )}
           handleBack={() => setStepNumber(0)}
           handleNext={onSubmit}
@@ -301,35 +284,33 @@ const StepReplaceModalContent = ({
   validateCsvFile,
   onClose,
 }: StepReplaceModalContentProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   return (
     <ModalContent>
       <ModalCloseButton />
       <ModalHeader>
         <Text mb="0.25rem">
-          {t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.stepReplace.title',
-          )}
+          {t('conditionalRouting.modals.addMapping.stepReplace.title')}
         </Text>
       </ModalHeader>
       <ModalBody>
         <Text mb="2.5rem">
           {t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.stepReplace.description.info',
+            'conditionalRouting.modals.addMapping.stepReplace.description.info',
           ) + ' '}
           <Text as="span" fontWeight="semibold">
             {t(
-              'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.stepReplace.description.warning',
+              'conditionalRouting.modals.addMapping.stepReplace.description.warning',
             )}
           </Text>{' '}
         </Text>
         <Text mb="2.5rem">
           {t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.stepReplace.description.info1',
+            'conditionalRouting.modals.addMapping.stepReplace.description.info1',
           ) + ' '}
           <Text mb="2.5rem" as="span" fontWeight="semibold">
             {t(
-              'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.stepReplace.description.info2',
+              'conditionalRouting.modals.addMapping.stepReplace.description.info2',
             )}
           </Text>
         </Text>
@@ -338,9 +319,7 @@ const StepReplaceModalContent = ({
             name="csvFile"
             control={control}
             rules={{
-              required: t(
-                'features.adminForm.sidebar.workflow.conditionalRouting.errors.csv.required',
-              ),
+              required: t('conditionalRouting.errors.csv.required'),
               validate: validateCsvFile,
             }}
             render={({ field: { onChange, name, value } }) => (
@@ -364,7 +343,7 @@ const StepReplaceModalContent = ({
       <ModalFooter>
         <NextAndBackButtonGroup
           nextButtonLabel={t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.addMapping.stepReplace.confirm',
+            'conditionalRouting.modals.addMapping.stepReplace.confirm',
           )}
           handleBack={onClose}
           handleNext={onSubmit}

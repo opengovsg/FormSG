@@ -12,6 +12,8 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -32,7 +34,7 @@ export const DeleteStepModal = ({
   isOpen,
   stepNumber,
 }: DeleteStepModalProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const setToInactive = useAdminWorkflowStore(setToInactiveSelector)
   const { deleteStepMutation } = useWorkflowMutations()
   const modalSize = useBreakpointValue({
@@ -65,7 +67,7 @@ export const DeleteStepModal = ({
   }, [setToInactive, deleteStepMutation, stepNumber, onClose])
 
   const { title, description, confirm, cancel } = t(
-    'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteStep',
+    'conditionalRouting.modals.deleteStep',
     { returnObjects: true },
   )
   return (

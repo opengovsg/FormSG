@@ -12,6 +12,8 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, SeenFlags } from 'formsg-shared/types'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { MultiParty, PhHandsClapping } from '~assets/icons'
 import { BxsDockTop } from '~assets/icons/BxsDockTop'
 import { BxsWidget } from '~assets/icons/BxsWidget'
@@ -44,6 +46,7 @@ import { DrawerTabIcon } from './DrawerTabIcon'
 
 export const CreatePageSidebar = (): JSX.Element | null => {
   const { t } = useTranslation()
+  const { t: tWorkflow } = useTranslation(workflowNs)
   const isMobile = useIsMobile()
   const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
 
@@ -131,7 +134,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
 
   const workflowTab = isMrf ? (
     <DrawerTabIcon
-      label={t('features.adminForm.sidebar.workflow.title')}
+      label={tWorkflow('title')}
       navLabel={
         showNavLabels
           ? t('features.adminForm.sidebar.navLabels.workflow')

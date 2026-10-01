@@ -1,5 +1,7 @@
 import { useTranslation } from 'react-i18next'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import {
   guidedWrapUpSelector,
   setGuidedWrapUpSelector,
@@ -16,7 +18,7 @@ import {
 import { PeekCard } from './PeekCard'
 
 export const EmailSetUpPeekCard = (): JSX.Element | null => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs, { keyPrefix: 'completionPeek' })
   const isGuidedMode = useIsWorkflowGuidedMode()
   const guidedWrapUp = useAdminWorkflowStore(guidedWrapUpSelector)
   const setGuidedWrapUp = useAdminWorkflowStore(setGuidedWrapUpSelector)

@@ -9,6 +9,8 @@ import {
   ModalOverlay,
 } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { NextAndBackButtonGroup } from '~components/Button/NextAndBackButtonGroup'
 
 interface ConditionalRoutingMappingDeleteModalProps {
@@ -22,29 +24,25 @@ export const ConditionalRoutingMappingDeleteModal = ({
   onClose,
   handleDelete,
 }: ConditionalRoutingMappingDeleteModalProps) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalCloseButton />
         <ModalHeader>
-          {t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteMapping.title',
-          )}
+          {t('conditionalRouting.modals.deleteMapping.title')}
         </ModalHeader>
         <ModalBody>
-          {t(
-            'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteMapping.description',
-          )}
+          {t('conditionalRouting.modals.deleteMapping.description')}
         </ModalBody>
         <ModalFooter>
           <NextAndBackButtonGroup
             nextButtonLabel={t(
-              'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteMapping.confirm',
+              'conditionalRouting.modals.deleteMapping.confirm',
             )}
             backButtonLabel={t(
-              'features.adminForm.sidebar.workflow.conditionalRouting.modals.deleteMapping.cancel',
+              'conditionalRouting.modals.deleteMapping.cancel',
             )}
             handleBack={onClose}
             handleNext={handleDelete}

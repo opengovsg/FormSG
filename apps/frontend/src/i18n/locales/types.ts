@@ -31,7 +31,6 @@ import {
   ThankYou,
   Toasts,
   TransferOwnership,
-  Workflow,
   Workspace,
 } from './features'
 import { FieldValidation, FormValidation, WorkspaceValidation } from './utils'
@@ -46,7 +45,6 @@ interface Translation {
           logic?: Logic
           navLabels?: NavLabels
           thankYou?: ThankYou
-          workflow?: Workflow
         }
         navbar?: Navbar
         meta?: Meta

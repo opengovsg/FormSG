@@ -12,6 +12,8 @@ import {
   useDisclosure,
 } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 import Toggle from '~components/Toggle'
@@ -20,11 +22,8 @@ import { useAdminFormWorkflow } from '../../hooks/useAdminFormWorkflow'
 import { useGuidedSetupPreference } from '../../hooks/useGuidedSetupPreference'
 import { useIsWorkflowBuilderRedesign } from '../../hooks/useIsWorkflowBuilderRedesign'
 
-const WORKFLOW_I18N_PREFIX = 'features.adminForm.sidebar.workflow'
-const SKIP_I18N_PREFIX = `${WORKFLOW_I18N_PREFIX}.skipGuidance`
-
 export const GuidedSetupToggle = (): JSX.Element | null => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const { isOpen, onOpen, onClose } = useDisclosure()
   const isRedesign = useIsWorkflowBuilderRedesign()
   const { isGuidedSetup, setGuidedSetup } = useGuidedSetupPreference()
@@ -49,7 +48,7 @@ export const GuidedSetupToggle = (): JSX.Element | null => {
 
   if (!isRedesign) return null
 
-  const label = t(`${WORKFLOW_I18N_PREFIX}.guidedMode.label`)
+  const label = t('guidedMode.label')
 
   return (
     <>
@@ -65,14 +64,14 @@ export const GuidedSetupToggle = (): JSX.Element | null => {
         <ModalContent>
           <ModalCloseButton />
           <ModalHeader color="secondary.700">
-            {t(`${SKIP_I18N_PREFIX}.modal.title`)}
+            {t('skipGuidance.modal.title')}
           </ModalHeader>
           <ModalBody>
             <Text textStyle="body-2" color="secondary.500">
               {t(
                 hasSteps
-                  ? `${SKIP_I18N_PREFIX}.modal.bodyWithSteps`
-                  : `${SKIP_I18N_PREFIX}.modal.bodyWithoutSteps`,
+                  ? 'skipGuidance.modal.bodyWithSteps'
+                  : 'skipGuidance.modal.bodyWithoutSteps',
               )}
             </Text>
           </ModalBody>
@@ -83,10 +82,10 @@ export const GuidedSetupToggle = (): JSX.Element | null => {
               justify="flex-end"
             >
               <Button variant="clear" colorScheme="secondary" onClick={onClose}>
-                {t(`${SKIP_I18N_PREFIX}.modal.cancel`)}
+                {t('skipGuidance.modal.cancel')}
               </Button>
               <Button onClick={handleConfirm}>
-                {t(`${SKIP_I18N_PREFIX}.modal.confirm`)}
+                {t('skipGuidance.modal.confirm')}
               </Button>
             </Stack>
           </ModalFooter>

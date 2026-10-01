@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Box, Flex, Stack, Text } from '@chakra-ui/react'
 
+import { workflowNs } from '~/i18n/locales/features/admin-form/sidebar/workflow'
+
 import { GUIDE_FORM_MRF } from '~constants/links'
 import Button from '~components/Button'
 import Link from '~components/Link'
@@ -24,12 +26,10 @@ import {
 } from './FormToWorkflowIllustration'
 import { WorkflowSvgr } from './WorkflowSvgr'
 
-const INTRO_I18N_PREFIX = 'features.adminForm.sidebar.workflow.intro'
-
 export const INTRO_ILLUSTRATION_TEST_ID = 'workflow-intro-illustration'
 
 export const EmptyWorkflow = (): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(workflowNs)
   const setToCreating = useAdminWorkflowStore(setToCreatingSelector)
   const { setGuidedSetup } = useGuidedSetupPreference()
   const showWelcomeCard = useAdminWorkflowStore(showWelcomeCardSelector)
@@ -48,7 +48,7 @@ export const EmptyWorkflow = (): JSX.Element => {
   const { hasBeenTaught } = useGuidedSetupTaught()
 
   const paymentBlockedLabel = isPaymentEnabled
-    ? t('features.adminForm.sidebar.workflow.paymentEnabledNoSteps')
+    ? t('paymentEnabledNoSteps')
     : undefined
 
   if (isRedesign) {
@@ -61,10 +61,10 @@ export const EmptyWorkflow = (): JSX.Element => {
         pt={{ base: '0.5rem', md: '2.75rem' }}
       >
         <Text textStyle="h2" as="h2">
-          {t(`${INTRO_I18N_PREFIX}.header`)}
+          {t('intro.header')}
         </Text>
         <Text textStyle="body-1" mt="1rem">
-          {t(`${INTRO_I18N_PREFIX}.subheader`)}
+          {t('intro.subheader')}
         </Text>
         <Tooltip
           label={paymentBlockedLabel}
@@ -77,14 +77,14 @@ export const EmptyWorkflow = (): JSX.Element => {
             justify="center"
           >
             <Button onClick={startSetup(true)} isDisabled={isPaymentEnabled}>
-              {t(`${INTRO_I18N_PREFIX}.guided`)}
+              {t('intro.guided')}
             </Button>
             <Button
               variant="outline"
               onClick={startSetup(false)}
               isDisabled={isPaymentEnabled}
             >
-              {t(`${INTRO_I18N_PREFIX}.manual`)}
+              {t('intro.manual')}
             </Button>
           </Stack>
         </Tooltip>
