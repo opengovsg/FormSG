@@ -19,7 +19,6 @@ import {
   FormSettings,
   FormStatus,
   LogicDto,
-  SubmissionType,
 } from 'formsg-shared/types'
 import * as CryptoUtil from 'formsg-shared/utils/crypto'
 import { StatusCodes } from 'http-status-codes'
@@ -1850,21 +1849,21 @@ describe('admin-form.controller', () => {
         MockSubmissionService.getFormSubmissionsCount,
       ).toHaveBeenNthCalledWith(1, {
         formId: String(MOCK_FORM._id),
-        submissionType: SubmissionType.Encrypt,
+        formResponseMode: FormResponseMode.Encrypt,
         dateRange: {},
       })
       expect(
         MockSubmissionService.getFormSubmissionsCount,
       ).toHaveBeenNthCalledWith(2, {
         formId: String(MOCK_FORM._id),
-        submissionType: SubmissionType.Email,
+        formResponseMode: FormResponseMode.Email,
         dateRange: {},
       })
       expect(
         MockSubmissionService.getFormSubmissionsCount,
       ).toHaveBeenNthCalledWith(3, {
         formId: String(MOCK_FORM._id),
-        submissionType: SubmissionType.Multirespondent,
+        formResponseMode: FormResponseMode.Multirespondent,
         dateRange: {},
       })
     })

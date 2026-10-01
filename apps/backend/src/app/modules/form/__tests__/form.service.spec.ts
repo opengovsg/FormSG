@@ -981,6 +981,51 @@ describe('FormService', () => {
         const updated = await Form.findById(form._id)
         expect(updated!.status).toBe('PRIVATE')
       })
+
+      it('should count pre-migration encrypt submissions towards the submission limit', async () => {
+        // Arrange
+        // A mode-migrated multirespondent form retains its pre-migration
+        // encrypt submissions; both types count towards the limit.
+        const formParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
+          responseMode: FormResponseMode.Multirespondent,
+          status: FormStatus.Public,
+          submissionLimit: 5,
+        })
+        const validForm = new Form(formParams)
+        const form = (await validForm.save()) as IPopulatedForm
+
+        const encryptSubmissionPromises = times(3, () =>
+          Submission.create({
+            form: form._id,
+            myInfoFields: [],
+            submissionType: SubmissionType.Encrypt,
+            encryptedContent: 'mockEncryptedContent',
+            version: 1,
+            created: new Date('2020-01-01'),
+          }),
+        )
+        const mrfSubmissionPromises = times(2, () =>
+          Submission.create(mockMultirespondentSubmissionForForm(form._id)),
+        )
+        await Promise.all([
+          ...encryptSubmissionPromises,
+          ...mrfSubmissionPromises,
+        ])
+
+        // Act
+        const actual =
+          await FormService.checkFormSubmissionLimitAndDeactivateForm(form)
+
+        // Assert
+        expect(actual._unsafeUnwrapErr()).toEqual(
+          new PrivateFormError(
+            'Submission made after form submission limit was reached',
+            form.title,
+          ),
+        )
+        const updated = await Form.findById(form._id)
+        expect(updated!.status).toBe('PRIVATE')
+      })
     })
   })
 
