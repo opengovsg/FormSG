@@ -42,6 +42,12 @@ jobs:
   chromatic-deployment-frontend:
     needs: changes
     if: ${{ needs.changes.outputs.frontend == 'true' }}
+    # A newer push to the same PR cancels this run; Chromatic only bills once
+    # the Storybook is uploaded (~3 min in). develop builds never cancel. Set on
+    # the job, not the workflow, so runs whose jobs are skipped can't cancel.
+    concurrency:
+      group: chromatic-frontend-${{ github.event_name == 'push' && github.sha || github.head_ref || github.ref_name }}
+      cancel-in-progress: ${{ github.event_name != 'push' }}
     # Operating System
     runs-on: ubuntu-latest
     defaults:
@@ -93,6 +99,9 @@ jobs:
   chromatic-deployment-emailpreview:
     needs: changes
     if: ${{ needs.changes.outputs.emailpreview == 'true' }}
+    concurrency:
+      group: chromatic-emailpreview-${{ github.event_name == 'push' && github.sha || github.head_ref || github.ref_name }}
+      cancel-in-progress: ${{ github.event_name != 'push' }}
     # Operating System
     runs-on: ubuntu-latest
     defaults:
