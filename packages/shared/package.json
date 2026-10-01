@@ -227,6 +227,10 @@
       "require": "./dist/utils/workflow-step-completion.js",
       "default": "./utils/workflow-step-completion.ts"
     },
+    "./utils/version": {
+      "require": "./dist/utils/version.js",
+      "default": "./utils/version.ts"
+    },
     "./modules/logic": {
       "require": "./dist/modules/logic/index.js",
       "default": "./modules/logic/index.ts"

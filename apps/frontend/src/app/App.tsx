@@ -11,6 +11,7 @@ import { GrowthBookProvider } from '~contexts/GrowthbookContext'
 import { HttpError } from '~services/ApiService'
 
 import { TurnstileChallengeProvider } from '~features/turnstile/TurnstileChallengeProvider'
+import { ForceRefreshModal } from '~features/version-check/ForceRefreshModal'
 
 import { AppHelmet } from './AppHelmet'
 import { AppRouter } from './AppRouter'
@@ -75,6 +76,7 @@ export const App = (): JSX.Element => {
               <AuthProvider>
                 <GrowthBookProvider>
                   <AppRouter />
+                  <ForceRefreshModal />
                 </GrowthBookProvider>
               </AuthProvider>
             </TurnstileChallengeProvider>
