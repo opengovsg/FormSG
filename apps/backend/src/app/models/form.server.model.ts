@@ -30,6 +30,7 @@ import {
   FormStatus,
   FormWebhookResponseModeSettings,
   FormWebhookSettings,
+  FormWorkflowDto,
   Language,
   LogicConditionState,
   LogicDto,
@@ -453,6 +454,11 @@ const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
   },
   workflow: {
     type: [WorkflowStepSchema],
+    validate: {
+      validator: (workflow: FormWorkflowDto) => !workflow[0]?.auth,
+      message:
+        'Step 1 login uses form-level settings; only Steps 2+ can set step-level auth',
+    },
   },
   emails: {
     type: [
@@ -625,6 +631,14 @@ MultirespondentFormSchema.pre<IMultirespondentFormSchema>(
   },
 )
 
+const hasMyInfoLogin = (form: IFormSchema): boolean =>
+  form.authType === FormAuthType.MyInfo ||
+  form.authType === FormAuthType.SGID_MyInfo ||
+  (form.responseMode === FormResponseMode.Multirespondent &&
+    !!(form as IMultirespondentFormSchema).workflow
+      ?.slice(1)
+      .some((step) => step.auth?.auth_type === FormAuthType.MyInfo))
+
 const compileFormModel = (db: Mongoose): IFormModel => {
   const User = getUserModel(db)
 
@@ -651,9 +665,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
             )
             return (
               myInfoFieldCount === 0 ||
-              ((this.authType === FormAuthType.MyInfo ||
-                this.authType === FormAuthType.SGID_MyInfo) &&
-                myInfoFieldCount <= 30)
+              (hasMyInfoLogin(this) && myInfoFieldCount <= 30)
             )
           },
           message:
