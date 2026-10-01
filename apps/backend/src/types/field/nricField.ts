@@ -4,4 +4,5 @@ import { IFieldSchema } from './baseField'
 
 export interface INricFieldSchema extends NricFieldBase, IFieldSchema {
   fieldType: BasicField.Nric
+  myInfo?: NricFieldBase['myInfo']
 }

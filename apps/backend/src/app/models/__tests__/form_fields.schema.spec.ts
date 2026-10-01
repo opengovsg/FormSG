@@ -1,6 +1,7 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import {
   BasicField,
+  FormAuthType,
   FormResponseMode,
   NumberSelectedLengthValidation,
   NumberSelectedValidation,
@@ -38,6 +39,120 @@ describe('Form Field Schema', () => {
   )
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
+
+  describe('Login-filled identity fields', () => {
+    const identityField = {
+      title: 'Approver NRIC / FIN',
+      description: '',
+      required: true,
+      disabled: false,
+      fieldType: BasicField.Nric,
+      myInfo: { attr: 'uinfin' },
+    }
+
+    it('retains a login-filled NRIC source when saving and loading a form', async () => {
+      const form = await Form.create({
+        ...MOCK_ENCRYPTED_FORM_PARAMS,
+        authType: FormAuthType.MyInfo,
+        form_fields: [identityField],
+      })
+
+      const saved = await Form.findById(form._id).orFail()
+
+      expect(saved.form_fields![0].toObject()).toMatchObject({
+        fieldType: BasicField.Nric,
+        myInfo: { attr: 'uinfin' },
+      })
+    })
+
+    it('retains separate Corppass entity and representative sources', async () => {
+      const form = await Form.create({
+        ...MOCK_ENCRYPTED_FORM_PARAMS,
+        form_fields: [
+          {
+            ...identityField,
+            fieldType: BasicField.Uen,
+            myInfo: undefined,
+            corppass: { attr: 'uen' },
+          },
+          {
+            ...identityField,
+            fieldType: BasicField.ShortText,
+            myInfo: undefined,
+            corppass: { attr: 'uid' },
+          },
+        ],
+      })
+
+      const saved = await Form.findById(form._id).orFail()
+
+      expect(saved.form_fields!.map((field) => field.toObject())).toMatchObject(
+        [
+          { fieldType: BasicField.Uen, corppass: { attr: 'uen' } },
+          { fieldType: BasicField.ShortText, corppass: { attr: 'uid' } },
+        ],
+      )
+    })
+
+    it.each([
+      { fieldType: BasicField.ShortText, myInfo: { attr: 'uinfin' } },
+      { fieldType: BasicField.Nric, myInfo: { attr: 'name' } },
+      {
+        fieldType: BasicField.Uen,
+        myInfo: undefined,
+        corppass: { attr: 'uid' },
+      },
+      {
+        fieldType: BasicField.ShortText,
+        myInfo: undefined,
+        corppass: { attr: 'uen' },
+      },
+      {
+        fieldType: BasicField.Nric,
+        myInfo: undefined,
+        corppass: { attr: 'uid' },
+      },
+      {
+        fieldType: BasicField.ShortText,
+        myInfo: { attr: 'name' },
+        corppass: { attr: 'uid' },
+      },
+      { fieldType: BasicField.ShortText, myInfo: undefined, corppass: {} },
+    ])(
+      'rejects incompatible or conflicting identity sources: %j',
+      async (source) => {
+        await expect(
+          Form.create({
+            ...MOCK_ENCRYPTED_FORM_PARAMS,
+            authType: FormAuthType.MyInfo,
+            form_fields: [{ ...identityField, ...source }],
+          }),
+        ).rejects.toThrow(mongoose.Error.ValidationError)
+      },
+    )
+
+    it('retains ordinary identity fields and existing MyInfo attributes', async () => {
+      const form = await Form.create({
+        ...MOCK_ENCRYPTED_FORM_PARAMS,
+        authType: FormAuthType.MyInfo,
+        form_fields: [
+          { ...identityField, myInfo: undefined },
+          { ...identityField, fieldType: BasicField.Uen, myInfo: undefined },
+          {
+            ...identityField,
+            fieldType: BasicField.ShortText,
+            myInfo: { attr: 'name' },
+          },
+        ],
+      })
+      const saved = await Form.findById(form._id).orFail()
+      await saved.save()
+
+      expect(saved.form_fields![0].toObject()).not.toHaveProperty('myInfo')
+      expect(saved.form_fields![1].toObject()).not.toHaveProperty('corppass')
+      expect(saved.form_fields![2].toObject().myInfo).toEqual({ attr: 'name' })
+    })
+  })
 
   describe('Email Field', () => {
     describe('restrict email domains', () => {
