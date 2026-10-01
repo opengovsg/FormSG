@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -33,6 +33,14 @@ import { SubmitEmailFormArgs } from '~features/public-form/PublicFormService'
 import { useEnv } from '../../env/queries'
 import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
+
+import { carryOverPreviousStepValues } from './utils/carryOverPreviousStepValues'
+import { clampWorkflowStep } from './utils/clampWorkflowStep'
+import { getPreviewStepLabel } from './utils/getPreviewStepLabel'
+import {
+  PREVIEW_STEP_PARAM,
+  withPreviewStepParam,
+} from './utils/previewStepParam'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -333,19 +341,40 @@ export const PreviewFormProvider = ({
     })
   }
 
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const form = data?.form
   const formFields = form?.form_fields
-  const currentWorkflowStepNumber = 0
+
   const formWorkflow =
     form?.responseMode === FormResponseMode.Multirespondent
       ? form.workflow
       : undefined
+
+  const currentWorkflowStepNumber = useMemo(() => {
+    const stepParam = searchParams.get(PREVIEW_STEP_PARAM)
+    if (!stepParam) return 0
+    const parsed = parseInt(stepParam, 10)
+    if (isNaN(parsed)) return 0
+    return clampWorkflowStep(parsed, formWorkflow?.length ?? 0)
+  }, [searchParams, formWorkflow])
+
   const currentStepNumberWorkflowStep =
     formWorkflow && formWorkflow.length > currentWorkflowStepNumber
       ? formWorkflow[currentWorkflowStepNumber]
       : undefined
+
+  useEffect(() => {
+    if (!formWorkflow) return
+    const rawStepParam = searchParams.get(PREVIEW_STEP_PARAM)
+    const canonicalStepParam =
+      currentWorkflowStepNumber === 0 ? null : String(currentWorkflowStepNumber)
+    if (rawStepParam === canonicalStepParam) return
+    setSearchParams(
+      (prev) => withPreviewStepParam(prev, currentWorkflowStepNumber),
+      { replace: true },
+    )
+  }, [formWorkflow, searchParams, currentWorkflowStepNumber, setSearchParams])
 
   const fieldPrefillMap = useMemo(
     () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
@@ -385,6 +414,43 @@ export const PreviewFormProvider = ({
     defaultValues: defaultFormValues,
   })
 
+  const hasSeenInitialStepRef = useRef(false)
+  const stepToastIdRef = useRef<string | number>()
+
+  const hasLoadedWorkflow = !!formWorkflow
+
+  useEffect(() => {
+    formMethods.reset(
+      carryOverPreviousStepValues({
+        augmentedFormFields,
+        precedingWorkflowSteps:
+          formWorkflow?.slice(0, currentWorkflowStepNumber) ?? [],
+        enteredValues: formMethods.getValues(),
+        defaultFormValues,
+      }),
+      { keepDirty: true },
+    )
+
+    if (!hasLoadedWorkflow) return
+    if (!hasSeenInitialStepRef.current) {
+      hasSeenInitialStepRef.current = true
+      return
+    }
+    if (!currentStepNumberWorkflowStep) return
+
+    if (stepToastIdRef.current) {
+      toast.close(stepToastIdRef.current)
+    }
+    stepToastIdRef.current = toast({
+      status: 'success',
+      description: `You're previewing ${getPreviewStepLabel(
+        currentStepNumberWorkflowStep,
+        currentWorkflowStepNumber,
+      )}.`,
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentWorkflowStepNumber, hasLoadedWorkflow])
+
   if (isNotFormId) {
     return <NotFoundErrorPage />
   }
@@ -410,6 +476,13 @@ export const PreviewFormProvider = ({
         fieldPrefillMap,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
+        previewWorkflowStepNumber: formWorkflow
+          ? currentWorkflowStepNumber
+          : undefined,
+        previewWorkflowSteps: formWorkflow?.map((step) => ({
+          _id: step._id,
+          step_name: step.step_name,
+        })),
         ...commonFormValues,
         ...data,
         ...rest,
