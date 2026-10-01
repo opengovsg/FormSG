@@ -45,8 +45,7 @@ import { CreatePage } from '~features/admin-form/create/CreatePage'
 import {
   FeedbackPage,
   FormResultsLayout,
-  IndividualResponseRoute,
-  ResponsesIndexRoute,
+  IndividualResponseDrawer,
   ResponsesLayout,
   ResponsesPage,
 } from '~features/admin-form/responses'
@@ -220,10 +219,10 @@ export const AppRouter = (): JSX.Element => {
             element={<FormResultsLayout />}
           >
             <Route element={<ResponsesLayout showResponses />}>
-              <Route index element={<ResponsesIndexRoute />} />
+              <Route index />
               <Route
                 path=":submissionId"
-                element={<IndividualResponseRoute />}
+                element={<IndividualResponseDrawer />}
               />
             </Route>
             <Route

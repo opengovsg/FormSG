@@ -50,10 +50,6 @@ vi.mock('../ResponsesPage/storage', () => ({
   useStorageResponsesContext: () => ({ secretKey: 'mock-secret-key' }),
 }))
 
-vi.mock('./IndividualResponseNavbar', () => ({
-  IndividualResponseNavbar: () => <div data-testid="navbar" />,
-}))
-
 vi.mock('./mutations', () => ({
   useMutateDownloadAttachments: () => ({
     downloadAttachmentMutation: { mutate: vi.fn(), isLoading: false },
