@@ -1,5 +1,17 @@
 /* eslint-env node */
 
+// Global key prefixes whose copy has moved into its own i18next namespace (see
+// src/i18n/registerNamespace.ts). Add a namespace's old prefix here when
+// migrating it, so stale keys fail lint even where `t` is untyped.
+const MIGRATED_I18N_KEY_PREFIXES = ['features.adminForm.sidebar.workflow']
+
+const migratedKeyPattern = `/^(${MIGRATED_I18N_KEY_PREFIXES.map((prefix) =>
+  prefix.replaceAll('.', '\\.'),
+).join('|')})(\\.|$)/`
+
+const namespaceMessage =
+  'Import the namespace constant from ~/i18n/locales/... instead of naming it, so TurboSnap can trace the locale file to this component.'
+
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
@@ -65,6 +77,39 @@ module.exports = {
                 'Import from a dependency-free leaf module (e.g. formsg-shared/types/form/form_enums) to keep the Storybook preview dependency graph small.',
             })),
           },
+        ],
+      },
+    },
+    {
+      files: ['src/**/*.ts', 'src/**/*.tsx'],
+      rules: {
+        'no-restricted-syntax': [
+          'error',
+          {
+            // 'translation' is the legacy global namespace, allowed until
+            // every namespace is migrated.
+            selector:
+              "CallExpression[callee.name='useTranslation'][arguments.0.type='Literal'][arguments.0.value!='translation']",
+            message: namespaceMessage,
+          },
+          {
+            selector:
+              "CallExpression[callee.name='useTranslation'] > ArrayExpression > Literal",
+            message: namespaceMessage,
+          },
+          {
+            selector: "Property[key.name='ns'][value.type='Literal']",
+            message: namespaceMessage,
+          },
+          {
+            selector: "JSXAttribute[name.name='ns'][value.type='Literal']",
+            message: namespaceMessage,
+          },
+          ...['Literal[value', 'TemplateElement[value.raw'].map((node) => ({
+            selector: `${node}=${migratedKeyPattern}]`,
+            message:
+              'This copy moved to its own namespace. Use `useTranslation(<namespace>)` and a key relative to it.',
+          })),
         ],
       },
     },
