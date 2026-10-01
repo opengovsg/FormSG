@@ -1,6 +1,7 @@
-# Re-runs Chromatic for stacked PRs that chromatic-gate.sh held back, once the
-# PR below them passes UI Tests (changes accepted, or nothing changed).
-# `status` events only run this file from the default branch.
+# Re-runs Chromatic for stacked PRs that `chromatic-stack.sh gate` held back,
+# once the PR below them passes UI Tests (changes accepted, or nothing changed).
+# `status` events only run this file from the default branch, so the script it
+# executes is trusted code, never a PR's.
 name: 'Chromatic stack unblock'
 
 on: status
@@ -11,29 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       actions: write
+      contents: read
       pull-requests: read
       statuses: read
     steps:
-      - name: Dispatch Chromatic for gated child PRs
+      - uses: actions/checkout@v4.3.1
+      - name: Dispatch Chromatic for held child PRs
+        run: .github/scripts/chromatic-stack.sh unblock
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           # Branches whose head is the commit that just passed.
           BRANCHES: ${{ toJSON(github.event.branches) }}
-        run: |
-          jq -r '.[].name' <<<"$BRANCHES" | while read -r base; do
-            gh pr list --repo "$REPO" --base "$base" --state open \
-              --json headRefName,headRefOid,isDraft \
-              --jq '.[] | select(.isDraft | not) | "\(.headRefName) \(.headRefOid)"' |
-              while read -r head sha; do
-                gate=$(gh api "repos/$REPO/commits/$sha/status" \
-                  --jq '.statuses[] | select(.context == "Chromatic stack gate") | .state')
-                if [ "$gate" = pending ]; then
-                  echo "Dispatching Chromatic for $head"
-                  # Fails if the branch predates workflow_dispatch in chromatic.yml;
-                  # it gets built on its next push instead.
-                  gh workflow run chromatic.yml --repo "$REPO" --ref "$head" ||
-                    echo "::warning::Could not dispatch Chromatic for $head"
-                fi
-              done
-          done
