@@ -295,9 +295,9 @@ SubmissionSchema.statics.findEncryptedOrMultirespondentSubmissionById =
 
 /**
  * Builds a metadata entry for a document of either admin-viewable submission
- * type. Multirespondent docs carry workflow-derived mrf metadata; encrypt
- * docs carry payment metadata and no mrf metadata, so the dashboard renders
- * them like a multirespondent submission with no workflow (empty cells).
+ * type. Both types carry payment metadata; multirespondent docs additionally
+ * carry workflow-derived mrf metadata, so the dashboard renders encrypt docs
+ * like a multirespondent submission with no workflow (empty cells).
  */
 const buildMixedSubmissionMetadata = (
   result: MixedMetadataAggregateResult,
@@ -307,6 +307,7 @@ const buildMixedSubmissionMetadata = (
     return buildSubmissionMetadata({
       result,
       currentNumber,
+      paymentMeta: result.payments?.[0],
       mrfMeta: {
         workflowStep: result.workflowStep ?? 0,
         workflow: result.workflow ?? [],

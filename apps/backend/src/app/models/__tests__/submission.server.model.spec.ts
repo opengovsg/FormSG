@@ -1011,6 +1011,47 @@ describe('Submission Model', () => {
         expect(actualResult?.mrf?.workflowNumTotalSteps).toEqual(2)
       })
 
+      it('should return payment metadata alongside mrf for a multirespondent submission with a completed payment', async () => {
+        // Arrange
+        const submission = await MultirespondentSubmission.create(
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+        const payment = await PaymentSubmission.create({
+          amount: 100,
+          email: 'MOCK_EMAIL',
+          paymentIntentId: 'MOCK_PAYMENT_INTENT_ID',
+          gstEnabled: false,
+          targetAccountId: 'targetAccountId',
+          formId: MOCK_FORM_ID.toHexString(),
+          pendingSubmissionId: submission._id,
+          status: 'succeeded',
+          completedPayment: {
+            paymentDate: new Date('2024-01-01T00:00:00.000Z'),
+            submissionId: submission._id,
+            transactionFee: 10,
+            receiptUrl: 'https://example.com/receipt',
+          },
+        })
+        submission.paymentId = payment._id
+        await submission.save()
+
+        // Act
+        const actualResult =
+          await Submission.findEncryptedOrMultirespondentSingleMetadata(
+            MOCK_FORM_ID.toHexString(),
+            submission._id.toHexString(),
+          )
+
+        // Assert
+        expect(actualResult?.mrf).toBeDefined()
+        expect(actualResult?.payments).toEqual({
+          payoutDate: null,
+          paymentAmt: 100,
+          transactionFee: 10,
+          email: 'MOCK_EMAIL',
+        })
+      })
+
       it('should return null for an email submission', async () => {
         // Arrange
         const submission = await EmailSubmission.create(
