@@ -1,6 +1,7 @@
 import { getSigningPublicKey, getVerificationPublicKey } from './util/publicKey'
 import Crypto from './crypto'
 import CryptoV3 from './crypto-v3'
+import CryptoV4 from './crypto-v4'
 import { PackageInitParams } from './types'
 import Verification from './verification'
 import Webhooks from './webhooks'
@@ -41,6 +42,7 @@ export type {
   ChildrenAnswerV4,
   ChildSubFieldAnswerV4,
   DecryptedContentV4,
+  DecryptedContentAndAttachmentsV4,
   DecryptParamsV4,
   FieldResponsesV4,
   FieldResponseV4,
@@ -82,6 +84,7 @@ export default function (config: PackageInitParams = {}) {
     }),
     crypto: new Crypto({ signingPublicKey }),
     cryptoV3: new CryptoV3({ signingPublicKey }),
+    cryptoV4: new CryptoV4({ signingPublicKey }),
     verification: new Verification({
       publicKey: verificationPublicKey,
       secretKey: verificationOptions?.secretKey,

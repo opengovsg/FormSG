@@ -1,11 +1,11 @@
 import mockAxios from 'jest-mock-axios'
 
-import formsg from '../src'
+import formsg, { FieldResponsesV4 } from '../src'
 
 jest.mock('axios', () => mockAxios)
 
-const { cryptoV3 } = formsg({ mode: 'test' })
-const responses = {
+const { cryptoV3, cryptoV4 } = formsg({ mode: 'test' })
+const responses: FieldResponsesV4 = {
   attachment: {
     fieldType: 'attachment',
     question: 'Evidence',
@@ -21,7 +21,7 @@ it('decrypts V4 content and attachments using the wrapped submission key', async
   const encrypted = cryptoV3.encrypt(responses, keys.publicKey)
   const bytes = new Uint8Array([104, 101, 108, 108, 111])
   const file = await cryptoV3.encryptFile(bytes, encrypted.submissionPublicKey)
-  const result = cryptoV3.decryptWithAttachments(keys.secretKey, {
+  const result = cryptoV4.decryptWithAttachments(keys.secretKey, {
     ...encrypted,
     version: 4,
     attachmentDownloadUrls: { attachment: 'https://files.example/evidence' },
@@ -68,7 +68,7 @@ it.each(['wrong key', 'unknown field', 'download failure', 'corrupt file'])(
       version: 1,
       attachmentDownloadUrls,
     })
-    const native = cryptoV3.decryptWithAttachments(secretKey, {
+    const native = cryptoV4.decryptWithAttachments(secretKey, {
       ...v4,
       version: 4,
       attachmentDownloadUrls,
@@ -90,7 +90,7 @@ it.each(['wrong key', 'unknown field', 'download failure', 'corrupt file'])(
 it('returns the V1 result shape with an empty attachment map when URLs are omitted', async () => {
   const keys = cryptoV3.generate()
   const encrypted = cryptoV3.encrypt(responses, keys.publicKey)
-  const result = await cryptoV3.decryptWithAttachments(keys.secretKey, {
+  const result = await cryptoV4.decryptWithAttachments(keys.secretKey, {
     ...encrypted,
     version: 4,
   })
@@ -106,7 +106,7 @@ it('returns null for an attachment URL without a usable filename, like V1', asyn
     keys.publicKey
   )
   await expect(
-    cryptoV3.decryptWithAttachments(keys.secretKey, {
+    cryptoV4.decryptWithAttachments(keys.secretKey, {
       ...encrypted,
       version: 4,
       attachmentDownloadUrls: { attachment: 'https://files.example/evidence' },
