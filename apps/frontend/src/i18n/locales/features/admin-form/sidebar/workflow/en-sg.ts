@@ -4,7 +4,7 @@ import {
   CONDITIONAL_ROUTING_EMAILS_OPTIONS_MISSING_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_INVALID_CSV_FORMAT_ERROR_MESSAGE,
   CONDITIONAL_ROUTING_MISMATCHED_OPTIONS_ERROR_MESSAGE,
-} from 'formsg-shared/constants'
+} from 'formsg-shared/constants/errors'
 
 import { Workflow } from '.'
 
