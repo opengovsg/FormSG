@@ -41,6 +41,53 @@ describe('MyInfo Hash Model', () => {
   beforeEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
+  it('keeps later-step login hashes out of legacy Step 1 reads and updates', async () => {
+    const scoped = await MyInfoHash.create({
+      ...DEFAULT_SAVED_PARAMS,
+      authSessionId: 'later-login-session',
+      workflowStep: 1,
+      expireAt: new Date(Date.now() + 300000),
+    })
+
+    await expect(
+      MyInfoHash.findHashes(
+        DEFAULT_INPUT_PARAMS.uinFin,
+        String(DEFAULT_INPUT_PARAMS.form),
+      ),
+    ).resolves.toBeNull()
+    await MyInfoHash.updateHashes(
+      DEFAULT_INPUT_PARAMS.uinFin,
+      String(DEFAULT_INPUT_PARAMS.form),
+      { name: 'step-one-hash' },
+      300000,
+    )
+
+    expect((await MyInfoHash.findById(scoped._id).orFail()).fields).toEqual({
+      name: 'mockHash',
+    })
+    await expect(
+      MyInfoHash.findHashes(
+        DEFAULT_INPUT_PARAMS.uinFin,
+        String(DEFAULT_INPUT_PARAMS.form),
+      ),
+    ).resolves.toEqual({ name: 'step-one-hash' })
+  })
+
+  it.each([
+    { authSessionId: 'session-without-step' },
+    { workflowStep: 1 },
+    { authSessionId: '', workflowStep: 1 },
+    { authSessionId: 'session', workflowStep: 0 },
+    { authSessionId: 'session', workflowStep: 1.5 },
+  ])(
+    'rejects incomplete or invalid scoped hash context %j',
+    async (context) => {
+      await expect(
+        MyInfoHash.create({ ...DEFAULT_INPUT_PARAMS, ...context }),
+      ).rejects.toThrow(mongoose.Error.ValidationError)
+    },
+  )
+
   describe('Schema', () => {
     it('should create and save successfully', async () => {
       // Act

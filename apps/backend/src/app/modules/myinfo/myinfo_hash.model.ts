@@ -4,6 +4,7 @@ import { Mongoose, Schema } from 'mongoose'
 import { IHashes, IMyInfoHashModel, IMyInfoHashSchema } from '../../../types'
 import { sessionSecret } from '../../config/config'
 import { FORM_SCHEMA_ID } from '../../models/form.server.model'
+import { isPositiveInteger } from '../../models/utils'
 
 export const MYINFO_HASH_SCHEMA_ID = 'MyInfoHash'
 
@@ -24,6 +25,25 @@ const MyInfoHashSchema = new Schema<IMyInfoHashSchema, IMyInfoHashModel>(
     fields: {
       type: Object,
       required: true,
+    },
+    authSessionId: {
+      type: String,
+      minlength: 1,
+      required: function (this: IMyInfoHashSchema) {
+        return this.workflowStep !== undefined
+      },
+    },
+    workflowStep: {
+      type: Number,
+      required: function (this: IMyInfoHashSchema) {
+        return this.authSessionId !== undefined
+      },
+      // Scoped hashes are only for MRF Steps 2+, Step 1 uses the unscoped hash.
+      min: 1,
+      validate: {
+        validator: isPositiveInteger,
+        message: 'workflowStep must be an integer',
+      },
     },
     expireAt: {
       type: Date,
@@ -58,6 +78,7 @@ MyInfoHashSchema.statics.updateHashes = async function (
     {
       uinFin: hashedUinFin,
       form: formId,
+      authSessionId: { $exists: false },
     },
     {
       $set: {
@@ -80,6 +101,7 @@ MyInfoHashSchema.statics.findHashes = async function (
   const hashInfo = await this.findOne({
     uinFin: hashedUinFin,
     form: formId,
+    authSessionId: { $exists: false },
   })
   return hashInfo ? hashInfo.fields : null
 }

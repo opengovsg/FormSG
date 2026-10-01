@@ -35,6 +35,34 @@ describe('myinfo.fapi.session.model', () => {
   afterEach(async () => await dbHandler.clearDatabase())
   afterAll(async () => await dbHandler.closeDatabase())
 
+  it('retains later-step context through callback and session consumption', async () => {
+    const mrfContext = {
+      submissionId: '6aba5b3256cd468621fcb715',
+      workflowStep: 1,
+      stepTokenHash: 'step-token-hash',
+    }
+    const sessionId = await MyInfoFapiSession.createPending({
+      ...pendingSession,
+      mrfContext,
+    })
+
+    expect(
+      (await MyInfoFapiSession.loadForCallback(sessionId))?.target,
+    ).toEqual({
+      formId: MOCK_FORM_ID,
+      encodedQuery: pendingSession.encodedQuery,
+      mrfContext,
+    })
+    await MyInfoFapiSession.markExchanged(sessionId, {
+      accessToken: MOCK_ACCESS_TOKEN,
+      sub: MOCK_SUB,
+    })
+    expect(await consume(sessionId)).toMatchObject({
+      status: 'exchanged',
+      session: { mrfContext },
+    })
+  })
+
   describe('createPending and loadForCallback', () => {
     it('should round-trip the exchange material through encryption at rest', async () => {
       const sessionId = await MyInfoFapiSession.createPending(pendingSession)
