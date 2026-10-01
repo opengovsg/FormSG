@@ -1,9 +1,6 @@
-import axios from 'axios'
 import nacl from 'tweetnacl'
 
 import {
-  areAttachmentFieldIdsValid,
-  convertEncryptedAttachmentToFileContent,
   decryptContent,
   encryptMessage,
   verifySignedMessage,
@@ -11,14 +8,11 @@ import {
 import { decodeBase64, decodeUTF8, encodeUTF8 } from './util/encoding'
 import { determineIsFormFields } from './util/validate'
 import CryptoBase from './crypto-base'
-import { AttachmentDecryptionError, MissingPublicKeyError } from './errors'
+import { MissingPublicKeyError } from './errors'
 import {
-  DecryptedAttachments,
   DecryptedContent,
   DecryptedContentAndAttachments,
   DecryptParams,
-  EncryptedAttachmentContent,
-  EncryptedAttachmentRecords,
   EncryptedContent,
   FormField,
 } from './types'
@@ -39,6 +33,7 @@ export default class Crypto extends CryptoBase {
    * @returns The encrypted basestring.
    */
   encrypt = (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     msg: any,
     encryptionPublicKey: string,
     signingPrivateKey?: string
@@ -154,11 +149,8 @@ export default class Crypto extends CryptoBase {
     formSecretKey: string,
     decryptParams: DecryptParams
   ): Promise<DecryptedContentAndAttachments | null> => {
-    const decryptedRecords: DecryptedAttachments = {}
     const filenames: Record<string, string> = {}
 
-    const attachmentRecords: EncryptedAttachmentRecords =
-      decryptParams.attachmentDownloadUrls ?? {}
     const decryptedContent = this.decrypt(formSecretKey, decryptParams)
     if (decryptedContent === null) return null
 
@@ -169,48 +161,11 @@ export default class Crypto extends CryptoBase {
       }
     })
 
-    const fieldIds = Object.keys(attachmentRecords)
-    // Check if all fieldIds are within filenames
-    if (!areAttachmentFieldIdsValid(fieldIds, filenames)) {
-      return null
-    }
-
-    const downloadPromises = fieldIds.map((fieldId) => {
-      return (
-        axios
-          // Retrieve all the attachments as JSON
-          .get<EncryptedAttachmentContent>(attachmentRecords[fieldId], {
-            responseType: 'json',
-          })
-          // Decrypt all the attachments
-          .then(({ data: downloadResponse }) => {
-            const encryptedFile =
-              convertEncryptedAttachmentToFileContent(downloadResponse)
-            return this.decryptFile(formSecretKey, encryptedFile)
-          })
-          .then((decryptedFile) => {
-            // Check if the file exists and set the filename accordingly; otherwise, throw an error
-            if (decryptedFile) {
-              decryptedRecords[fieldId] = {
-                filename: filenames[fieldId],
-                content: decryptedFile,
-              }
-            } else {
-              throw new AttachmentDecryptionError()
-            }
-          })
-      )
-    })
-
-    try {
-      await Promise.all(downloadPromises)
-    } catch {
-      return null
-    }
-
-    return {
-      content: decryptedContent,
-      attachments: decryptedRecords,
-    }
+    const attachments = await this.decryptAttachments(
+      formSecretKey,
+      decryptParams.attachmentDownloadUrls ?? {},
+      filenames
+    )
+    return attachments ? { content: decryptedContent, attachments } : null
   }
 }
