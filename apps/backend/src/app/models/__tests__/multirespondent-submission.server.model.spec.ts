@@ -2,6 +2,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import {
   BasicField,
+  FormAuthType,
   SubmissionMetadata,
   SubmissionType,
   WorkflowStatus,
@@ -11,6 +12,7 @@ import { pick, times } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
 
+import { getMultirespondentFormModel } from 'src/app/models/form.server.model'
 import getPaymentModel from 'src/app/models/payment.server.model'
 import getSubmissionModel, {
   getEmailSubmissionModel,
@@ -18,6 +20,7 @@ import getSubmissionModel, {
 } from 'src/app/models/submission.server.model'
 import { IMultirespondentSubmissionSchema } from 'src/types'
 
+const MultirespondentForm = getMultirespondentFormModel(mongoose)
 const Submission = getSubmissionModel(mongoose)
 const EmailSubmission = getEmailSubmissionModel(mongoose)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
@@ -59,6 +62,118 @@ describe('Multirespondent Submission Model', () => {
     edit: [YES_NO_FIELD._id],
     approval_field: YES_NO_FIELD._id,
   }
+
+  describe('Schema', () => {
+    const identityField = {
+      title: 'Approver NRIC / FIN',
+      description: '',
+      required: true,
+      disabled: false,
+      fieldType: BasicField.Nric,
+      myInfo: { attr: 'uinfin' },
+    }
+
+    const step = () => ({
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: [],
+    })
+
+    it('retains legacy encrypted answers, verified content and versions after saving', async () => {
+      const submission = await MultirespondentSubmission.create({
+        form: new ObjectId(),
+        authType: FormAuthType.MyInfo,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [YES_NO_FIELD],
+        form_logics: [],
+        workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2],
+        submissionPublicKey: MOCK_SUBMISSION_PUBLIC_KEY,
+        encryptedSubmissionSecretKey: MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY,
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        verifiedContent: 'legacy-step-one-identity',
+        version: 4,
+        mrfVersion: 2,
+        workflowStep: 0,
+      })
+      const saved = await MultirespondentSubmission.findById(
+        submission._id,
+      ).orFail()
+      await saved.save()
+
+      expect(saved).toMatchObject({
+        authType: FormAuthType.MyInfo,
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+        verifiedContent: 'legacy-step-one-identity',
+        version: 4,
+        mrfVersion: 2,
+      })
+      expect(saved.workflow.every((item) => !('auth' in item))).toBe(true)
+    })
+
+    it('retains the saved field source, ownership and login provider after the live form changes', async () => {
+      const { user } = await dbHandler.insertFormCollectionReqs()
+      const formId = new mongoose.Types.ObjectId()
+      const fieldId = new mongoose.Types.ObjectId()
+      const stepId = new mongoose.Types.ObjectId()
+      const form = await MultirespondentForm.create({
+        _id: formId,
+        title: 'Snapshot policy',
+        admin: user._id,
+        publicKey: 'test-public-key',
+        form_fields: [
+          {
+            ...identityField,
+            _id: fieldId,
+            fieldType: BasicField.Uen,
+            myInfo: undefined,
+            corppass: { attr: 'uen' },
+          },
+        ],
+        workflow: [
+          step(),
+          {
+            ...step(),
+            _id: stepId,
+            edit: [fieldId],
+            auth: {
+              auth_type: FormAuthType.CP,
+            },
+          },
+        ],
+      })
+      const submission = await MultirespondentSubmission.create({
+        form: form._id,
+        authType: FormAuthType.NIL,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: form.toObject().form_fields,
+        workflow: form.toObject().workflow,
+        form_logics: [],
+        submissionPublicKey: 'submission-key',
+        encryptedSubmissionSecretKey: 'encrypted-secret',
+        encryptedContent: 'field-id-answers',
+        verifiedContent: 'legacy-step-one-identity',
+        version: 4,
+        mrfVersion: 2,
+        workflowStep: 0,
+      })
+      form.workflow[1].auth = { auth_type: FormAuthType.MyInfo }
+      form.form_fields![0].title = 'Renamed entity'
+      await form.save()
+
+      const saved = await MultirespondentSubmission.findById(
+        submission._id,
+      ).orFail()
+      expect(saved.workflow[1].auth).toMatchObject({
+        auth_type: FormAuthType.CP,
+      })
+      expect(saved.form_fields[0]).toMatchObject({
+        title: 'Approver NRIC / FIN',
+        corppass: { attr: 'uen' },
+      })
+      expect(String(saved.workflow[1].edit[0])).toBe(String(fieldId))
+      expect(saved.verifiedContent).toBe('legacy-step-one-identity')
+    })
+  })
 
   describe('Statics', () => {
     describe('findSingleMetadata', () => {

@@ -1,9 +1,17 @@
 import { FormFieldDto } from '../field'
+import type { FormAuthType } from './form'
 
 export enum WorkflowType {
   Static = 'static',
   Dynamic = 'dynamic',
   Conditional = 'conditional',
+}
+
+export type WorkflowStepAuthType = FormAuthType.MyInfo | FormAuthType.CP
+
+// Step 1 keeps the form-level settings. Identity collection uses fields on Step 2+.
+export interface FormWorkflowStepAuth {
+  auth_type: WorkflowStepAuthType
 }
 
 export interface FormWorkflowStepBase {
@@ -12,6 +20,7 @@ export interface FormWorkflowStepBase {
   approval_field?: FormFieldDto['_id']
   is_approval_enabled?: boolean
   step_name?: string
+  auth?: FormWorkflowStepAuth
 }
 
 export interface FormWorkflowStepStatic extends FormWorkflowStepBase {

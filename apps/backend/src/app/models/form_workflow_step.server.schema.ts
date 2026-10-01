@@ -1,4 +1,4 @@
-import { WorkflowType } from 'formsg-shared/types'
+import { FormAuthType, WorkflowType } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 import validator from 'validator'
 
@@ -9,6 +9,19 @@ import {
   IWorkflowStepStaticSchema,
 } from '../../types'
 import { transformEmails } from '../modules/form/form.utils'
+
+// Only MRF Steps 2+ uses step-level auth settings
+// Step 1 login uses form-level settings
+const WorkflowStepAuthSchema = new Schema(
+  {
+    auth_type: {
+      type: String,
+      enum: [FormAuthType.MyInfo, FormAuthType.CP],
+      required: true,
+    },
+  },
+  { _id: false, strict: 'throw' },
+)
 
 const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
   {
@@ -29,6 +42,7 @@ const WorkflowStepSchema = new Schema<IWorkflowStepSchema>(
       type: Boolean,
       required: false,
     },
+    auth: { type: WorkflowStepAuthSchema, default: undefined },
     step_name: {
       type: String,
       required: false,
