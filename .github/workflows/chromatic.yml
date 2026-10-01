@@ -47,11 +47,20 @@ jobs:
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
+          # The lockfile is listed so lockfile-only bumps reach TurboSnap and the
+          # tooling check; unrelated bumps trace to zero stories. The Chromatic
+          # CI files are listed so changes to them run on their own PR.
           filters: |
+            ci: &ci
+              - pnpm-lock.yaml
+              - .github/workflows/chromatic.yml
+              - .github/scripts/chromatic-*.sh
             frontend:
+              - *ci
               - packages/shared/**
               - apps/frontend/**
             emailpreview:
+              - *ci
               - packages/react-email-preview/**
       - name: Hold stacked PRs whose base awaits Chromatic review
         id: gate
