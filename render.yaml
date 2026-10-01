@@ -1,0 +1,16 @@
+previews:
+  generation: manual
+  expireAfterDays: 3
+
+services:
+  - type: web
+    name: formsg
+    runtime: docker
+    region: singapore
+    plan: standard
+    autoDeployTrigger: "off"
+    dockerfilePath: ./Dockerfile.production
+    dockerContext: .
+    envVars:
+      - key: PORT
+        value: 4545
