@@ -761,6 +761,29 @@ describe('Submission Model', () => {
         expect(mrfResult.workflow).toBeDefined()
       })
 
+      it('should project myInfoReadOnlyFields for a multirespondent submission', async () => {
+        // Arrange
+        const myInfoFieldId = new ObjectId().toHexString()
+        const submission = await MultirespondentSubmission.create({
+          ...MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+          myInfoReadOnlyFields: [myInfoFieldId],
+        })
+
+        // Act
+        const actualResult =
+          await Submission.findEncryptedOrMultirespondentSubmissionById(
+            MOCK_FORM_ID.toHexString(),
+            submission._id.toHexString(),
+          )
+
+        // Assert
+        // The [MyInfo] prefix on the admin response view depends on this
+        // field being projected.
+        expect(
+          (actualResult as MultirespondentSubmissionData).myInfoReadOnlyFields,
+        ).toEqual([myInfoFieldId])
+      })
+
       it('should find every submission type on a mode-migrated form holding encrypt, v3 and v4 submissions', async () => {
         // Arrange
         const encryptSubmission = await EncryptedSubmission.create(
@@ -918,6 +941,32 @@ describe('Submission Model', () => {
             nextStepRecipientEmails: ['next@example.com'],
           },
         ])
+      })
+
+      it('should project myInfoReadOnlyFields for multirespondent submissions', async () => {
+        // Arrange
+        const myInfoFieldId = new ObjectId().toHexString()
+        await MultirespondentSubmission.create({
+          ...MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+          myInfoReadOnlyFields: [myInfoFieldId],
+        })
+
+        // Act
+        const cursor =
+          Submission.getEncryptedOrMultirespondentSubmissionCursorByFormId(
+            MOCK_FORM_ID.toHexString(),
+            {},
+          )
+        const docs = []
+        for await (const doc of cursor) docs.push(doc)
+
+        // Assert
+        // The [MyInfo] prefix in MRF exports depends on this field being
+        // projected.
+        expect(docs).toHaveLength(1)
+        expect(
+          (docs[0] as MultirespondentSubmissionCursorData).myInfoReadOnlyFields,
+        ).toEqual([myInfoFieldId])
       })
 
       it('should project the payment reference for encrypt submissions and never for multirespondent submissions', async () => {
