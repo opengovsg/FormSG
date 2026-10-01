@@ -12,5 +12,6 @@ services:
     dockerfilePath: ./Dockerfile.production
     dockerContext: .
     envVars:
+      - fromGroup: formsg-stg-preview
       - key: PORT
         value: 4545
