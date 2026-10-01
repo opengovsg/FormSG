@@ -41,6 +41,7 @@ export type {
   ChildrenAnswerV4,
   ChildSubFieldAnswerV4,
   DecryptedContentV4,
+  DecryptParamsV4,
   FieldResponsesV4,
   FieldResponseV4,
   FormFieldMeta,

@@ -1,10 +1,50 @@
+import axios from 'axios'
 import nacl from 'tweetnacl'
 
-import { generateKeypair } from './util/crypto'
+import {
+  areAttachmentFieldIdsValid,
+  convertEncryptedAttachmentToFileContent,
+  generateKeypair,
+} from './util/crypto'
 import { decodeBase64, encodeBase64 } from './util/encoding'
-import { EncryptedFileContent } from './types'
+import { AttachmentDecryptionError } from './errors'
+import {
+  DecryptedAttachments,
+  EncryptedAttachmentContent,
+  EncryptedAttachmentRecords,
+  EncryptedFileContent,
+} from './types'
 
 export default class CryptoBase {
+  protected decryptAttachments = async (
+    secretKey: string,
+    urls: EncryptedAttachmentRecords,
+    filenames: Record<string, string>
+  ): Promise<DecryptedAttachments | null> => {
+    const fieldIds = Object.keys(urls)
+    if (!areAttachmentFieldIdsValid(fieldIds, filenames)) return null
+    const attachments: DecryptedAttachments = {}
+    try {
+      await Promise.all(
+        fieldIds.map(async (fieldId) => {
+          const { data } = await axios.get<EncryptedAttachmentContent>(
+            urls[fieldId],
+            { responseType: 'json' }
+          )
+          const content = await this.decryptFile(
+            secretKey,
+            convertEncryptedAttachmentToFileContent(data)
+          )
+          if (!content) throw new AttachmentDecryptionError()
+          attachments[fieldId] = { filename: filenames[fieldId], content }
+        })
+      )
+    } catch {
+      return null
+    }
+    return attachments
+  }
+
   /**
    * Generates a new keypair for encryption.
    * @returns The generated keypair.

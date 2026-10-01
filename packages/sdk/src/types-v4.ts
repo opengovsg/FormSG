@@ -1,4 +1,9 @@
-import { DecryptParamsV3, EncryptedContent, FieldType } from './types'
+import {
+  DecryptParamsV3,
+  EncryptedAttachmentRecords,
+  EncryptedContent,
+  FieldType,
+} from './types'
 
 // TODO: provenance shape may be updated when it is implemented
 export type ResponseProvenance = {
@@ -179,6 +184,7 @@ export type AdaptV3ToV4Options = {
 // --------------- Decrypted content V4 ---------------
 
 export interface DecryptParamsV4 extends DecryptParamsV3 {
+  attachmentDownloadUrls?: EncryptedAttachmentRecords
   encryptedStepToken?: EncryptedContent
 }
 
