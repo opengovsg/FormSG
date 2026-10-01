@@ -261,3 +261,43 @@ and decide if the difference is within your tolerance. We use a tolerance of 5 m
 
 - Check that request is for an expected form by verifying the form ID
 - Check that the submission ID is new, and that your system has not received it before
+
+## V4 webhooks for multirespondent forms (SDK 8.2.0)
+
+Use `cryptoV3.decryptWithAttachments(formSecretKey, decryptParams)` for a V4 webhook. It unwraps `encryptedSubmissionSecretKey` using your form secret key, then decrypts the answers and attachments with the submission key. The result is `{ content, attachments }`: `content` is the V4 decrypt result; each attachment contains its original `filename` and `content` as a `Uint8Array`. Filenames come from attachment answers.
+
+The argument order, download behavior and null/throw behavior match `crypto.decryptWithAttachments`: invalid ciphertext, unknown attachment fields, failed downloads or failed file decryption return `null`. Missing signing configuration for verified content throws `MissingPublicKeyError`. An omitted attachment URL map produces an empty attachment map.
+
+Authenticate the webhook signature before decrypting, as above. Use the full [executable TypeScript example](examples/v4-webhook.ts), including its type declarations; its consumer function is reproduced below and runs in CI. Pass your initialized SDK as `sdk`.
+
+```typescript
+// Call after authenticating the webhook signature with sdk.webhooks.authenticate.
+export async function decryptWebhook(
+  sdk: Sdk,
+  formSecretKey: string,
+  data: WebhookData
+) {
+  if (data.version === 4) {
+    if (!('encryptedSubmissionSecretKey' in data) || !data.workflowContent) {
+      throw new Error('Incomplete V4 webhook')
+    }
+    const submission = await sdk.cryptoV3.decryptWithAttachments(
+      formSecretKey,
+      data
+    )
+    if (!submission) throw new Error('Unable to decrypt V4 webhook')
+    const { workflowStep, submittedSteps } = data.workflowContent
+    // A submission has multiple deliveries. Retries of one delivery share this key.
+    const deliveryKey = `${data.submissionId}:${submittedSteps.length - 1}:${workflowStep}`
+    return { deliveryKey, submission }
+  }
+  const submission = await sdk.crypto.decryptWithAttachments(
+    formSecretKey,
+    data
+  )
+  if (!submission) throw new Error('Unable to decrypt legacy webhook')
+  return { deliveryKey: data.submissionId, submission }
+}
+```
+
+Each completed workflow step sends cumulative content. Deduplicate retries by submission ID and workflow metadata, not submission ID alone. Persist the example's `deliveryKey` with your processing result in one transaction. See the [V4 consumer guide](../../docs/v4-webhooks.md) for delivery behavior and selecting legacy webhooks.
