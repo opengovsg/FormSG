@@ -113,9 +113,8 @@ export type FormWebhook = {
   url: string
   isRetryEnabled: boolean
   /**
-   * NOTE: Present if and only if `url` has been set at least once to a generic webhook consumer. Absent means no
-   * generic webhook consumer has ever been set for this form, so the form is free to
-   * follow whatever the platform default becomes.
+   * MRF only. Present iff set by the admin, or pinned when a generic URL was first set.
+   * Plumber always receives V4; generic consumers resolve an absent format to V1.
    */
   webhookFormat?: FormWebhookFormat
 }

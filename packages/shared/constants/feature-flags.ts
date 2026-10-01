@@ -10,6 +10,7 @@ export const featureFlags = {
   adminPrintPdf: 'admin-print-pdf' as const,
   ogpSuiteSso: 'ogp-suite-sso' as const,
   enableIntranetSgidLogin: 'enable-intranet-sgid-login' as const,
+  mrfWebhooksV4: 'mrf-webhooks-v4' as const,
   enableMrfWebhooks: 'enable-mrf-webhooks' as const,
   spcpOidcStateNonce: 'spcp-oidc-state-nonce' as const,
   lambdaPdfGeneration: 'lambda-pdf-generation' as const,

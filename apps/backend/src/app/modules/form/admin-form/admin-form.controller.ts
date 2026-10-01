@@ -1458,6 +1458,22 @@ export const handleDuplicateFormField: ControllerHandler<
     })
 }
 
+// Evaluate only where a webhook format is chosen, with owner targeting.
+// Workflow saves check the stored format instead, so they never read this flag.
+const checkIsMrfWebhooksV4Enabled = (
+  form: IPopulatedForm,
+  growthbook?: GrowthBook,
+): boolean => {
+  if (!isFormMultirespondent(form)) return false
+  void growthbook?.setAttributes({
+    ...growthbook.getAttributes(),
+    formId: form._id.toString(),
+    adminEmail: form.admin.email,
+    adminAgency: form.admin.agency.shortName,
+  })
+  return growthbook?.isOn(featureFlags.mrfWebhooksV4) ?? false
+}
+
 export const _handleUpdateSettings: ControllerHandler<
   { formId: string },
   FormSettings | ErrorDto,
@@ -1478,7 +1494,11 @@ export const _handleUpdateSettings: ControllerHandler<
       }),
     )
     .andThen((retrievedForm) =>
-      AdminFormService.updateFormSettings(retrievedForm, settingsToPatch),
+      AdminFormService.updateFormSettings(
+        retrievedForm,
+        settingsToPatch,
+        checkIsMrfWebhooksV4Enabled(retrievedForm, req.growthbook),
+      ),
     )
     .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
     .mapErr((error) => {
@@ -1550,9 +1570,13 @@ export const _handleUpdateWebhookSettings: ControllerHandler<
       }),
     )
     .andThen((retrievedForm) =>
-      AdminFormService.updateFormSettings(retrievedForm, {
-        webhook: webhookSettings,
-      }),
+      AdminFormService.updateFormSettings(
+        retrievedForm,
+        {
+          webhook: webhookSettings,
+        },
+        checkIsMrfWebhooksV4Enabled(retrievedForm, req.growthbook),
+      ),
     )
     .map((updatedSettings) => {
       const webhookSettings = { webhook: updatedSettings.webhook }
