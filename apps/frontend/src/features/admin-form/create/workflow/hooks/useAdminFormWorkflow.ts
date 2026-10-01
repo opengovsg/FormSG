@@ -80,8 +80,10 @@ export const useAdminFormWorkflow = (options?: { staleTime?: number }) => {
     isPaymentEnabled:
       form?.responseMode === FormResponseMode.Multirespondent &&
       !!form.payments_field?.enabled,
-    isGenericWebhookEnabled:
-      !!form?.webhook.url && !PLUMBER_WEBHOOK_URL_REGEX.test(form.webhook.url),
+    isLegacyWebhookEnabled:
+      !!form?.webhook.url &&
+      !PLUMBER_WEBHOOK_URL_REGEX.test(form.webhook.url) &&
+      form.webhook.webhookFormat !== 'v4',
     idToFieldMap,
     emailFormFields,
     yesNoFormFields,

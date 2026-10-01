@@ -189,14 +189,18 @@ const mrfWebhooksGrowthBook = new GrowthBook({
   features: { [featureFlags.enableMrfWebhooks]: { defaultValue: true } },
 })
 
-const webhookWorkflowParameters = (stepCount: number, url = '') => ({
+const webhookWorkflowParameters = (
+  stepCount: number,
+  url = '',
+  webhookFormat?: 'v1' | 'v4',
+) => ({
   msw: {
     handlers: {
       default: [
         ...buildMswRoutes({
           overrides: {
             responseMode: FormResponseMode.Multirespondent,
-            webhook: { url, isRetryEnabled: false },
+            webhook: { url, isRetryEnabled: false, webhookFormat },
           },
         }),
         getAdminFormView({
@@ -264,3 +268,41 @@ RecoverableAdminFormError.parameters = {
     },
   },
 }
+
+const withV4Webhooks = (Story: StoryFn) => (
+  <GrowthBookProvider
+    growthbook={
+      new GrowthBook({
+        features: {
+          [featureFlags.enableMrfWebhooks]: { defaultValue: true },
+          [featureFlags.mrfWebhooksV4]: { defaultValue: true },
+        },
+      })
+    }
+  >
+    <Story />
+  </GrowthBookProvider>
+)
+
+export const V4Webhook = Template.bind({})
+V4Webhook.decorators = [withV4Webhooks]
+V4Webhook.parameters = webhookWorkflowParameters(
+  1,
+  'https://webhook.site/c0b42763-e934-4a48-9b1e-745690a10f81',
+)
+
+export const MultiStepV4Webhook = Template.bind({})
+MultiStepV4Webhook.decorators = [withV4Webhooks]
+MultiStepV4Webhook.parameters = webhookWorkflowParameters(
+  2,
+  'https://example.com/webhook',
+  'v4',
+)
+
+export const V4WebhookRolloutOff = Template.bind({})
+V4WebhookRolloutOff.decorators = [withMrfWebhooks]
+V4WebhookRolloutOff.parameters = webhookWorkflowParameters(
+  1,
+  'https://example.com/webhook',
+  'v4',
+)

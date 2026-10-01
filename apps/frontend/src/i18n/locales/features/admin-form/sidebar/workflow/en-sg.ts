@@ -271,6 +271,8 @@ export const enSG: Workflow = {
     cancel: 'Cancel',
     done: 'Done',
   },
+  legacyWebhookEnabledNoMoreSteps:
+    'Legacy webhooks only work with forms that have at most one workflow step. Turn off "Use legacy webhooks" in <webhookSettingsLink>webhook settings</webhookSettingsLink> to add more steps.',
   webhookEnabledNoMoreSteps:
     'Remove your webhook URL in <webhookSettingsLink>webhook settings</webhookSettingsLink> to add more steps.',
   paymentEnabledNoSteps:

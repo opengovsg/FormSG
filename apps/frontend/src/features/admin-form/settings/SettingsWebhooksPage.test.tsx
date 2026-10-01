@@ -1,18 +1,24 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { composeStories, composeStory } from '@storybook/react'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http } from 'msw'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, WorkflowType } from 'formsg-shared/types/form'
 
 import {
   getAdminFormSettings,
   getAdminFormView,
+  patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
 import * as stories from './SettingsWebhooksPage.stories'
 
 const {
+  MultiStepV4Webhook,
+  V4Webhook,
+  V4WebhookRolloutOff,
   RecoverableAdminFormError,
   MultiStepWorkflow,
   MultiStepPlumber,
@@ -176,6 +182,14 @@ describe('webhook workflow guard', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('keeps a multi-step Plumber URL locked while the V4 rollout is off', async () => {
+    await act(async () => {
+      render(<MultiStepPlumber />)
+    })
+    await screen.findByText(/reduce your workflow to one step/i)
+    expect(screen.getByRole('textbox')).toBeDisabled()
+  })
+
   it('lets admins disconnect Plumber from a multi-step form', async () => {
     const user = userEvent.setup()
     await act(async () => {
@@ -252,3 +266,200 @@ describe('workflow details loading', () => {
     expect(screen.queryByText(ERROR_MSG)).not.toBeInTheDocument()
   })
 })
+
+describe('V4 webhooks', () => {
+  it('allows editing a generic V4 URL on a multi-step form and disables legacy selection', async () => {
+    await act(async () => {
+      render(<MultiStepV4Webhook />)
+    })
+    expect(await screen.findByRole('textbox')).toBeEnabled()
+    expect(
+      screen.getByRole('checkbox', { name: 'Use legacy webhooks' }),
+    ).toBeDisabled()
+    expect(
+      screen.queryByText(/Forms with two or more steps only support Plumber/),
+    ).not.toBeInTheDocument()
+  })
+})
+
+const renderToggleCase = async ({
+  enabled,
+  format,
+  url,
+  steps,
+}: {
+  enabled: boolean
+  format?: 'v1' | 'v4'
+  url: string
+  steps: number
+}) => {
+  const growthbook = new GrowthBook({
+    features: {
+      [featureFlags.enableMrfWebhooks]: { defaultValue: true },
+      [featureFlags.mrfWebhooksV4]: { defaultValue: enabled },
+    },
+  })
+  const webhook = {
+    url,
+    isRetryEnabled: false,
+    webhookFormat: format,
+  }
+  const Case = composeStory(
+    {
+      ...stories.SingleStepWorkflow,
+      decorators: [
+        (Story) => (
+          <GrowthBookProvider growthbook={growthbook}>
+            <Story />
+          </GrowthBookProvider>
+        ),
+      ],
+      parameters: {
+        msw: {
+          handlers: {
+            default: [
+              getAdminFormSettings({
+                overrides: {
+                  responseMode: FormResponseMode.Multirespondent,
+                  webhook,
+                },
+              }),
+              getAdminFormView({
+                overrides: {
+                  responseMode: FormResponseMode.Multirespondent,
+                  workflow: Array.from({ length: steps }, (_, i) => ({
+                    _id: `step-${i}`,
+                    workflow_type: WorkflowType.Static,
+                    emails: [],
+                    edit: [],
+                  })),
+                },
+              }),
+              patchAdminFormSettings({
+                overrides: {
+                  responseMode: FormResponseMode.Multirespondent,
+                  webhook,
+                },
+              }),
+            ],
+          },
+        },
+      },
+    },
+    stories.default,
+  )
+  await act(async () => {
+    render(<Case />)
+  })
+  await screen.findByRole('textbox')
+}
+
+describe('legacy toggle decisions', () => {
+  it.each(
+    [false, true].flatMap((enabled) =>
+      [undefined, 'v1', 'v4'].flatMap((format) =>
+        [
+          '',
+          'https://example.com/hook',
+          'https://plumber.gov.sg/webhooks/test',
+        ].flatMap((url) =>
+          [1, 2].map((steps) => ({ enabled, format, url, steps })),
+        ),
+      ),
+    ),
+  )(
+    'flag $enabled, format $format, URL $url, steps $steps',
+    async ({ enabled, format, url, steps }) => {
+      await renderToggleCase({
+        enabled,
+        format: format as 'v1' | 'v4' | undefined,
+        url,
+        steps,
+      })
+      const toggle = screen.queryByRole('checkbox', {
+        name: 'Use legacy webhooks',
+      })
+      if (!url.includes('plumber.gov.sg') && (enabled || format === 'v4')) {
+        expect(toggle).toBeInTheDocument()
+        expect(toggle).toHaveProperty('checked', format === 'v1')
+        // Multi-step forms can leave legacy but not enter it.
+        if (steps === 2 && format !== 'v1') expect(toggle).toBeDisabled()
+        else expect(toggle).toBeEnabled()
+      } else expect(toggle).not.toBeInTheDocument()
+    },
+  )
+
+  it('lets a multi-step form with legacy chosen before any URL turn legacy off', async () => {
+    await renderToggleCase({ enabled: true, format: 'v1', url: '', steps: 2 })
+    const toggle = screen.getByRole('checkbox', { name: 'Use legacy webhooks' })
+    expect(toggle).toBeChecked()
+    expect(toggle).toBeEnabled()
+    expect(screen.getByRole('textbox')).toBeDisabled()
+
+    await userEvent.click(toggle)
+
+    await waitFor(() => expect(toggle).not.toBeChecked())
+    expect(screen.getByRole('textbox')).toBeEnabled()
+  })
+
+  it('saves legacy immediately without a confirmation modal', async () => {
+    await act(async () => {
+      render(<V4Webhook />)
+    })
+    const toggle = await screen.findByRole('checkbox', {
+      name: 'Use legacy webhooks',
+    })
+    expect(toggle).not.toBeChecked()
+    await userEvent.click(toggle)
+    await waitFor(() => expect(toggle).toBeChecked())
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await userEvent.click(toggle)
+    await waitFor(() => expect(toggle).not.toBeChecked())
+  })
+})
+
+it('hides format selection after switching V4 to legacy while rollout is off', async () => {
+  await act(async () => {
+    render(<V4WebhookRolloutOff />)
+  })
+  const toggle = await screen.findByRole('checkbox', {
+    name: 'Use legacy webhooks',
+  })
+  await userEvent.click(toggle)
+  await waitFor(() =>
+    expect(
+      screen.queryByRole('checkbox', { name: 'Use legacy webhooks' }),
+    ).not.toBeInTheDocument(),
+  )
+})
+
+it.each([stories.StorageModeEmpty, stories.UnsupportedEmailMode])(
+  'never offers legacy selection on non-MRF forms even with rollout enabled',
+  async (story) => {
+    const growthbook = new GrowthBook({
+      features: {
+        [featureFlags.enableMrfWebhooks]: { defaultValue: true },
+        [featureFlags.mrfWebhooksV4]: { defaultValue: true },
+      },
+    })
+    const Case = composeStory(
+      {
+        ...story,
+        decorators: [
+          (Story) => (
+            <GrowthBookProvider growthbook={growthbook}>
+              <Story />
+            </GrowthBookProvider>
+          ),
+        ],
+      },
+      stories.default,
+    )
+    await act(async () => {
+      render(<Case />)
+    })
+    expect(
+      screen.queryByRole('checkbox', { name: 'Use legacy webhooks' }),
+    ).not.toBeInTheDocument()
+  },
+)
