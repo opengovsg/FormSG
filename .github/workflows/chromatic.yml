@@ -52,6 +52,11 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+          # Build the PR head, not GitHub's merge commit with develop: TurboSnap
+          # diffs from the checkout, so the merge commit leaks every develop
+          # change into the PR's changed files.
+          # https://www.chromatic.com/docs/github-actions/#recommended-configuration-for-build-events
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -98,6 +103,7 @@ jobs:
       - uses: actions/checkout@v4.3.1
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
