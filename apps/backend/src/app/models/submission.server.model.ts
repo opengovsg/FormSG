@@ -470,6 +470,9 @@ SubmissionSchema.statics.getEncryptedOrMultirespondentSubmissionCursorByFormId =
       encryptedContent: 1,
       verifiedContent: 1,
       attachmentMetadata: 1,
+      // Payment references appear on pre-migration encrypt submissions and
+      // on payment-enabled (zero-step) multirespondent submissions alike.
+      paymentId: 1,
       created: 1,
       version: 1,
       form_fields: 1,
