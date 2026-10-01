@@ -66,6 +66,7 @@ import {
   MalformedParametersError,
 } from '../core/core.errors'
 import { InvalidSubmissionIdError } from '../feedback/feedback.errors'
+import { getSubmissionType } from '../form/form.utils'
 import { PaymentNotFoundError } from '../payments/payments.errors'
 import * as PaymentsService from '../payments/payments.service'
 
@@ -119,6 +120,8 @@ const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
  * @param dateRange optional date range to narrow down submission count
  * @param dateRange.startDate the start date of the date range
  * @param dateRange.endDate the end date of the date range
+ * @param formResponseMode optional response mode of the form, used to count
+ * only the submission types countable for that mode
  *
  * @returns ok(form submission count)
  * @returns err(MalformedParametersError) if date range provided is malformed
@@ -128,14 +131,14 @@ const PendingSubmissionModel = getPendingSubmissionModel(mongoose)
 export const getFormSubmissionsCount = ({
   formId,
   dateRange = {},
-  submissionType,
+  formResponseMode,
 }: {
   formId: string
   dateRange?: {
     startDate?: string
     endDate?: string
   }
-  submissionType?: SubmissionType | SubmissionType[]
+  formResponseMode?: FormResponseMode
 }): ResultAsync<number, MalformedParametersError | DatabaseError> => {
   if (
     isMalformedDate(dateRange.startDate) ||
@@ -144,16 +147,22 @@ export const getFormSubmissionsCount = ({
     return errAsync(new MalformedParametersError('Malformed date parameter'))
   }
 
+  // RATIONALE: For storage mode forms converted from email mode, only count
+  // encrypt mode submissions. Multirespondent forms mode-migrated from
+  // storage mode retain their pre-migration encrypt submissions, so both
+  // admin-viewable types count — on the dashboard and toward the submission
+  // limit alike.
+  const submissionType =
+    formResponseMode === undefined
+      ? undefined
+      : formResponseMode === FormResponseMode.Multirespondent
+        ? { $in: [SubmissionType.Encrypt, SubmissionType.Multirespondent] }
+        : getSubmissionType(formResponseMode)
+
   const countQuery = {
     form: formId,
     ...createQueryWithDateParam(dateRange?.startDate, dateRange?.endDate),
-    ...(submissionType
-      ? {
-          submissionType: Array.isArray(submissionType)
-            ? { $in: submissionType }
-            : submissionType,
-        }
-      : {}),
+    ...(submissionType ? { submissionType } : {}),
   }
 
   return ResultAsync.fromPromise(

@@ -56,7 +56,6 @@ import {
 } from './form.errors'
 import {
   getCollabEmailsWithPermission,
-  getSubmissionType,
   hasVerifiableMobileFieldformFields,
 } from './form.utils'
 
@@ -436,7 +435,7 @@ export const checkFormSubmissionLimitAndDeactivateForm = (
 
   return SubmissionService.getFormSubmissionsCount({
     formId,
-    submissionType: getSubmissionType(form.responseMode), // RATIONALE: For storage mode forms converted from email mode, only count encrypt mode submissions
+    formResponseMode: form.responseMode,
   })
     .mapErr((error) => {
       logger.error({

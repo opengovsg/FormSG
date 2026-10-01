@@ -245,7 +245,7 @@ describe('submission.service', () => {
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
     })
 
-    it('should return correct form counts when submission type is provided', async () => {
+    it('should return correct form counts when form response mode is provided', async () => {
       // Arrange
       const expectedSubmissionCount = 4
       const subEncryptPromise = times(expectedSubmissionCount, () =>
@@ -282,14 +282,14 @@ describe('submission.service', () => {
 
       const actualResult = await SubmissionService.getFormSubmissionsCount({
         formId: MOCK_FORM_ID.toHexString(),
-        submissionType: SubmissionType.Encrypt,
+        formResponseMode: FormResponseMode.Encrypt,
       })
 
       expect(actualResult.isOk()).toEqual(true)
       expect(actualResult._unsafeUnwrap()).toEqual(expectedSubmissionCount)
     })
 
-    it('should count across submission types when an array of types is provided', async () => {
+    it('should count both encrypt and multirespondent submissions for multirespondent forms', async () => {
       // Arrange
       // A mode-migrated multirespondent form holds encrypt submissions
       // alongside multirespondent ones; the count must span both while
@@ -334,10 +334,7 @@ describe('submission.service', () => {
       // Act
       const actualResult = await SubmissionService.getFormSubmissionsCount({
         formId: MOCK_FORM_ID.toHexString(),
-        submissionType: [
-          SubmissionType.Encrypt,
-          SubmissionType.Multirespondent,
-        ],
+        formResponseMode: FormResponseMode.Multirespondent,
       })
 
       // Assert

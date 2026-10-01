@@ -52,7 +52,6 @@ import {
   SmsCountsDto,
   StartPageUpdateDto,
   SubmissionCountQueryDto,
-  SubmissionType,
   WebhookSettingsUpdateDto,
 } from 'formsg-shared/types'
 import {
@@ -87,7 +86,7 @@ import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
 import { PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
-import { getSubmissionType, isFormMultirespondent } from '../form.utils'
+import { isFormMultirespondent } from '../form.utils'
 
 import {
   DeleteFirstWorkflowStepError,
@@ -638,20 +637,11 @@ export const countFormSubmissions: ControllerHandler<
 
   // Step 3: Has permissions, continue to retrieve submission counts.
   return formResult
-    .map(({ responseMode }) =>
-      // RATIONALE: For storage mode forms converted from email mode, only
-      // count encrypt mode submissions. Multirespondent forms mode-migrated
-      // from storage mode retain their pre-migration encrypt submissions, so
-      // both admin-viewable types are counted to match the metadata list.
-      responseMode === FormResponseMode.Multirespondent
-        ? [SubmissionType.Encrypt, SubmissionType.Multirespondent]
-        : getSubmissionType(responseMode),
-    )
-    .asyncAndThen((submissionType) =>
+    .asyncAndThen(({ responseMode }) =>
       SubmissionService.getFormSubmissionsCount({
         formId,
         dateRange,
-        submissionType,
+        formResponseMode: responseMode,
       }),
     )
     .map((count) => res.json(count))
