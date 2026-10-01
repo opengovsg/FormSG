@@ -7,6 +7,7 @@
 // mints fresh per send, so byte-equality cannot hold on a fixture with
 // attachments. The URL keys and their S3 targets are still compared.
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import formsg from '@opengovsg/formsg-sdk'
 import axios, { AxiosResponse } from 'axios'
 import { ObjectId } from 'bson'
 import { MULTIRESPONDENT_FORM_SUBMISSION_VERSION } from 'formsg-shared/constants'
@@ -235,5 +236,48 @@ describe('[GATE] v4 initial-send route parity', () => {
         )
       }
     }
+  })
+
+  it('decrypts a real V4 POST and its attachment with the in-repo SDK', async () => {
+    const sdk = formsg({ mode: 'test' })
+    const keys = sdk.crypto.generate()
+    const responses = {
+      [attachmentFieldId]: {
+        fieldType: 'attachment',
+        question: 'Evidence',
+        answer: { value: 'evidence.txt', hasBeenScanned: true },
+        provenance: { stepNumber: 0 },
+      },
+    }
+    const encrypted = sdk.cryptoV3.encrypt(responses, keys.publicKey)
+    const plaintext = new Uint8Array([104, 101, 108, 108, 111])
+    const file = await sdk.cryptoV3.encryptFile(
+      plaintext,
+      encrypted.submissionPublicKey,
+    )
+    const row = await createRow()
+    row.encryptedContent = encrypted.encryptedContent
+    row.encryptedSubmissionSecretKey = encrypted.encryptedSubmissionSecretKey
+    row.verifiedContent = undefined
+    await row.save()
+    const payload = await capturePostedPayload(row)
+    MockAxios.get.mockResolvedValue({
+      data: {
+        encryptedFile: {
+          ...file,
+          binary: Buffer.from(file.binary).toString('base64'),
+        },
+      },
+    })
+    const result = await sdk.cryptoV4.decryptWithAttachments(keys.secretKey, {
+      ...payload,
+      encryptedSubmissionSecretKey: payload.encryptedSubmissionSecretKey!,
+    })
+    expect(result).toMatchObject({
+      content: { responses },
+      attachments: {
+        [attachmentFieldId]: { filename: 'evidence.txt', content: plaintext },
+      },
+    })
   })
 })

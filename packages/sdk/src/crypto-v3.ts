@@ -23,7 +23,7 @@ import {
 } from './types'
 import {
   DecryptedContentV4,
-  DecryptParamsV4,
+  DecryptParamsV4WithStepToken,
   FieldResponsesV4,
   FormFieldMeta,
 } from './types-v4'
@@ -234,7 +234,7 @@ export default class CryptoV3 extends CryptoBase {
    */
   decryptToV4 = (
     formSecretKey: string,
-    decryptParams: DecryptParamsV4,
+    decryptParams: DecryptParamsV4WithStepToken,
     formFields: Record<string, FormFieldMeta>
   ): DecryptedContentV4 | null => {
     const decrypted = this.decrypt(formSecretKey, decryptParams)

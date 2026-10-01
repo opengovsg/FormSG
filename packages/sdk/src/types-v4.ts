@@ -1,4 +1,10 @@
-import { DecryptParamsV3, EncryptedContent, FieldType } from './types'
+import {
+  DecryptedAttachments,
+  DecryptParamsV3,
+  EncryptedAttachmentRecords,
+  EncryptedContent,
+  FieldType,
+} from './types'
 
 // TODO: provenance shape may be updated when it is implemented
 export type ResponseProvenance = {
@@ -179,6 +185,11 @@ export type AdaptV3ToV4Options = {
 // --------------- Decrypted content V4 ---------------
 
 export interface DecryptParamsV4 extends DecryptParamsV3 {
+  attachmentDownloadUrls?: EncryptedAttachmentRecords
+}
+
+/** Admin submission decryption can include a step token; webhooks never do. */
+export interface DecryptParamsV4WithStepToken extends DecryptParamsV4 {
   encryptedStepToken?: EncryptedContent
 }
 
@@ -188,4 +199,9 @@ export type DecryptedContentV4 = {
   responses: FieldResponsesV4
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   verified?: Record<string, any>
+}
+
+export type DecryptedContentAndAttachmentsV4 = {
+  content: DecryptedContentV4
+  attachments: DecryptedAttachments
 }
