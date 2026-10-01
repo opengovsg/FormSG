@@ -24,7 +24,6 @@ import {
   ResponsesCharts,
   ResponsesComponents,
   ResponsesIndividualResponse,
-  ResponsesResponsesPage,
   Settings,
   Share,
   Template,
@@ -60,7 +59,6 @@ interface Translation {
           charts?: ResponsesCharts
           components?: ResponsesComponents
           individualResponse?: ResponsesIndividualResponse
-          responsesPage?: ResponsesResponsesPage
         }
       }
       app?: App

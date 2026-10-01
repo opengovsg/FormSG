@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { Container, Skeleton, Stack, Text } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import { useFormResponsesCount } from '../../queries'
 import { EmptyResponses } from '../common/EmptyResponses'
 
@@ -10,7 +12,7 @@ export const EmailResponsesTab = (): JSX.Element => {
   const { data: responsesCount, isLoading: isFormResponsesLoading } =
     useFormResponsesCount()
 
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
 
   if (responsesCount === 0) {
     return <EmptyResponses />
@@ -26,16 +28,13 @@ export const EmailResponsesTab = (): JSX.Element => {
               {responsesCount?.toLocaleString() ?? '-'}
             </Text>
             {' ' +
-              t(
-                'features.adminForm.responses.responsesPage.emailResponsesTab.responsesToDate',
-                { responsesCount: responsesCount ?? 0 },
-              )}
+              t('emailResponsesTab.responsesToDate', {
+                responsesCount: responsesCount ?? 0,
+              })}
           </Text>
         </Skeleton>
         <Text textStyle="body-1">
-          {t(
-            'features.adminForm.responses.responsesPage.emailResponsesTab.responsesNotStoredInEmailMode',
-          )}
+          {t('emailResponsesTab.responsesNotStoredInEmailMode')}
         </Text>
       </Stack>
     </Container>

@@ -3,7 +3,10 @@
 // Global key prefixes whose copy has moved into its own i18next namespace (see
 // src/i18n/registerNamespace.ts). Add a namespace's old prefix here when
 // migrating it, so stale keys fail lint even where `t` is untyped.
-const MIGRATED_I18N_KEY_PREFIXES = ['features.adminForm.sidebar.workflow']
+const MIGRATED_I18N_KEY_PREFIXES = [
+  'features.adminForm.sidebar.workflow',
+  'features.adminForm.responses.responsesPage',
+]
 
 const migratedKeyPattern = `/^(${MIGRATED_I18N_KEY_PREFIXES.map((prefix) =>
   prefix.replaceAll('.', '\\.'),

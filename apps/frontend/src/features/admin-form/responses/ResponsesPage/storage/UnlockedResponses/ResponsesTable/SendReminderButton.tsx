@@ -4,6 +4,8 @@ import { BiBell, BiCheck } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import { Text } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import Button from '~components/Button'
 
 import { useFormRemindersMutations } from '~features/admin-form/common/mutations'
@@ -14,7 +16,10 @@ export const SendReminderButton = ({
 }: {
   submissionId: string
 }) => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
+  const { t: tCommon } = useTranslation('translation', {
+    keyPrefix: 'features.common',
+  })
 
   const { formId = '' } = useParams()
 
@@ -40,9 +45,7 @@ export const SendReminderButton = ({
     <Button
       isLoading={isLoadingSubmissionData}
       loadingText={
-        isLoadingSubmissionData
-          ? t('features.common.loading')
-          : t('features.common.sending')
+        isLoadingSubmissionData ? tCommon('loading') : tCommon('sending')
       }
       m="0"
       p="0"
@@ -67,7 +70,7 @@ export const SendReminderButton = ({
     >
       <Text textStyle="subhead-2">
         {t(
-          'features.adminForm.responses.responsesPage.storage.unlockedResponses.responsesTable.sendReminderButton.sendReminder',
+          'storage.unlockedResponses.responsesTable.sendReminderButton.sendReminder',
         )}
       </Text>
     </Button>
@@ -75,7 +78,7 @@ export const SendReminderButton = ({
     <Button variant="clear" m="0" p="0" leftIcon={<BiCheck />} isDisabled>
       <Text textStyle="subhead-2">
         {t(
-          'features.adminForm.responses.responsesPage.storage.unlockedResponses.responsesTable.sendReminderButton.reminderSent',
+          'storage.unlockedResponses.responsesTable.sendReminderButton.reminderSent',
         )}
       </Text>
     </Button>

@@ -13,6 +13,8 @@ import {
   UseDisclosureReturn,
 } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import Button from '~components/Button'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
@@ -33,7 +35,10 @@ export const SaveViewModal = ({
   onClose,
   onSave,
 }: SaveViewModalProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
+  const { t: tCommon } = useTranslation('translation', {
+    keyPrefix: 'features.common',
+  })
   const {
     saveAsNewView,
     viewName,
@@ -41,10 +46,7 @@ export const SaveViewModal = ({
     viewNameRequired,
     viewNameMinLength,
     viewNameMaxLength,
-  } = t(
-    'features.adminForm.responses.responsesPage.storage.unlockedResponses.views',
-    { returnObjects: true },
-  )
+  } = t('storage.unlockedResponses.views', { returnObjects: true })
 
   const {
     register,
@@ -102,10 +104,10 @@ export const SaveViewModal = ({
         <ModalFooter>
           <ButtonGroup spacing="1rem">
             <Button variant="clear" colorScheme="secondary" onClick={onClose}>
-              {t('features.common.cancel')}
+              {tCommon('cancel')}
             </Button>
             <Button type="submit" form="save-view-form">
-              {t('features.common.save')}
+              {tCommon('save')}
             </Button>
           </ButtonGroup>
         </ModalFooter>

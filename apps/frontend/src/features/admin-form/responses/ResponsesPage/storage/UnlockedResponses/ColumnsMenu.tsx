@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { BiColumns } from 'react-icons/bi'
 import { MenuButton, MenuList, Stack } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import Checkbox from '~components/Checkbox'
 import Menu from '~components/Menu'
 
@@ -13,7 +15,7 @@ export const ColumnsMenu = ({
 }: {
   isIconOnly?: boolean
 }): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
   const { columnOptions, hiddenColumnIds, toggleColumnVisibility } =
     useUnlockedResponses()
 
@@ -28,9 +30,7 @@ export const ColumnsMenu = ({
             isDisabled={columnOptions.length === 0}
             {...toolbarMenuButtonProps({
               icon: <BiColumns fontSize="1.25rem" />,
-              label: t(
-                'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.columns',
-              ),
+              label: t('storage.unlockedResponses.toolbar.columns'),
               isOpen,
               isIconOnly,
             })}

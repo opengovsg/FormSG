@@ -12,6 +12,8 @@ import {
 } from '@chakra-ui/react'
 import simplur from 'simplur'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import { BxsCheckCircle, BxsXCircle } from '~assets/icons'
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useMdComponents } from '~hooks/useMdComponents'
@@ -34,7 +36,10 @@ export const CompleteScreen = ({
   downloadMetadata,
   isBeta = true,
 }: CompleteScreenProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
+  const { t: tCommon } = useTranslation('translation', {
+    keyPrefix: 'features.common',
+  })
   const isMobile = useIsMobile()
   const mdComponents = useMdComponents()
 
@@ -78,7 +83,7 @@ export const CompleteScreen = ({
         <Wrap shouldWrapChildren direction="row" align="center">
           <Text>
             {t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.downloadComplete',
+              'storage.unlockedResponses.progressModal.completeScreen.downloadComplete',
             )}
           </Text>
           {isBeta ? (
@@ -88,7 +93,7 @@ export const CompleteScreen = ({
               variant="subtle"
               color="secondary.500"
             >
-              {t('features.common.betaBadgeLabel')}
+              {tCommon('betaBadgeLabel')}
             </Badge>
           ) : null}
         </Wrap>
@@ -126,7 +131,7 @@ export const CompleteScreen = ({
       <ModalFooter>
         <Button isFullWidth={isMobile} onClick={onClose}>
           {t(
-            'features.adminForm.responses.responsesPage.storage.unlockedResponses.progressModal.completeScreen.backToResponses',
+            'storage.unlockedResponses.progressModal.completeScreen.backToResponses',
           )}
         </Button>
       </ModalFooter>

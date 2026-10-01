@@ -11,6 +11,8 @@ import {
   useBreakpointValue,
 } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
 
@@ -29,9 +31,12 @@ export const DeleteViewModal = ({
   isLoading,
   viewName,
 }: DeleteViewModalProps): JSX.Element => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
+  const { t: tCommon } = useTranslation('translation', {
+    keyPrefix: 'features.common',
+  })
   const { deleteViewTitle, deleteViewDescription } = t(
-    'features.adminForm.responses.responsesPage.storage.unlockedResponses.views',
+    'storage.unlockedResponses.views',
     { returnObjects: true },
   )
   const modalSize = useBreakpointValue({
@@ -70,14 +75,14 @@ export const DeleteViewModal = ({
               isDisabled={isLoading}
               onClick={onClose}
             >
-              {t('features.common.cancel')}
+              {tCommon('cancel')}
             </Button>
             <Button
               colorScheme="danger"
               isLoading={isLoading}
               onClick={onDelete}
             >
-              {t('features.common.delete')}
+              {tCommon('delete')}
             </Button>
           </Stack>
         </ModalFooter>

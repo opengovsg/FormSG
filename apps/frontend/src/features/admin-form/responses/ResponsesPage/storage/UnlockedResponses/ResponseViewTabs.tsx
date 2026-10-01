@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { BiX } from 'react-icons/bi'
 import { Flex } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import Button from '~components/Button'
 import IconButton from '~components/IconButton'
 
@@ -23,11 +25,10 @@ export const ResponseViewTabs = ({
   onSelectView?: (viewId: string) => void
   onDeleteView?: (viewId: string) => void
 }): JSX.Element => {
-  const { t } = useTranslation()
-  const { allResponses, deleteView } = t(
-    'features.adminForm.responses.responsesPage.storage.unlockedResponses.views',
-    { returnObjects: true },
-  )
+  const { t } = useTranslation(responsesPageNs)
+  const { allResponses, deleteView } = t('storage.unlockedResponses.views', {
+    returnObjects: true,
+  })
 
   const tabs = [
     { id: ALL_RESPONSES_TAB_ID, name: allResponses, isSavedView: false },

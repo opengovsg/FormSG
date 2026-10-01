@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom'
 
 import { FormSavedViewInput } from 'formsg-shared/types'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import { useToast } from '~hooks/useToast'
 
 import { adminFormKeys } from '~features/admin-form/common/queries'
@@ -31,7 +33,7 @@ export const useSavedViewMutation = () => {
 }
 
 export const useDeleteSavedViewMutation = () => {
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
   const { formId } = useParams()
   const queryClient = useQueryClient()
   const toast = useToast({ status: 'success', isClosable: true })
@@ -43,9 +45,7 @@ export const useDeleteSavedViewMutation = () => {
         await queryClient.invalidateQueries(adminFormKeys.id(formId as string))
         toast.closeAll()
         toast({
-          description: t(
-            'features.adminForm.responses.responsesPage.storage.unlockedResponses.views.deleteViewSuccess',
-          ),
+          description: t('storage.unlockedResponses.views.deleteViewSuccess'),
         })
       },
       onError: (error: Error) => {

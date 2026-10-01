@@ -8,6 +8,8 @@ import {
   Wrap,
 } from '@chakra-ui/react'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import { useIsMobile } from '~hooks/useIsMobile'
 import Button from '~components/Button'
 import { ModalCloseButton } from '~components/Modal'
@@ -22,7 +24,10 @@ export const CanceledScreen = ({
   isBeta = true,
 }: CanceledScreenProps): JSX.Element => {
   const isMobile = useIsMobile()
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
+  const { t: tCommon } = useTranslation('translation', {
+    keyPrefix: 'features.common',
+  })
 
   return (
     <>
@@ -31,7 +36,7 @@ export const CanceledScreen = ({
         <Wrap shouldWrapChildren direction="row" align="center">
           <Text>
             {t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.canceledScreen.downloadStopped',
+              'storage.unlockedResponses.downloadWithAttachmentModal.canceledScreen.downloadStopped',
             )}
           </Text>
           {isBeta ? (
@@ -41,20 +46,20 @@ export const CanceledScreen = ({
               variant="subtle"
               color="secondary.500"
             >
-              {t('features.common.betaBadgeLabel')}
+              {tCommon('betaBadgeLabel')}
             </Badge>
           ) : null}
         </Wrap>
       </ModalHeader>
       <ModalBody whiteSpace="pre-wrap" color="secondary.500">
         {t(
-          'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.canceledScreen.title',
+          'storage.unlockedResponses.downloadWithAttachmentModal.canceledScreen.title',
         )}
       </ModalBody>
       <ModalFooter>
         <Button isFullWidth={isMobile} onClick={onClose}>
           {t(
-            'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadWithAttachmentModal.canceledScreen.backToResponses',
+            'storage.unlockedResponses.downloadWithAttachmentModal.canceledScreen.backToResponses',
           )}
         </Button>
       </ModalFooter>

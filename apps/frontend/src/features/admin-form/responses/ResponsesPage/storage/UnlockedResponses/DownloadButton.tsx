@@ -15,6 +15,8 @@ import {
 import { datadogLogs } from '@datadog/browser-logs'
 import simplur from 'simplur'
 
+import { responsesPageNs } from '~/i18n/locales/features/admin-form/responses/responses-page'
+
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
 import { useToast } from '~hooks/useToast'
@@ -70,9 +72,8 @@ const DownloadSelector = ({
   setDownloadOptions: (downloadOptions: DownloadOptions) => void
   isCsvConfirmed: boolean
 }) => {
-  const { t } = useTranslation('translation', {
-    keyPrefix:
-      'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.menuItem',
+  const { t } = useTranslation(responsesPageNs, {
+    keyPrefix: 'storage.unlockedResponses.downloadButton.menuItem',
   })
 
   const { isDownloadCsv, isDownloadAttachments, isDownloadPdf } =
@@ -345,19 +346,22 @@ export const DownloadButton = ({
     setDownloadMetadata({ isCanceled: true })
   }, [resetDownload])
 
-  const { t } = useTranslation()
+  const { t } = useTranslation(responsesPageNs)
+  const { t: tCommon } = useTranslation('translation', {
+    keyPrefix: 'features.common',
+  })
 
   return (
     <>
       <NavigationPrompt
         title={t(
-          'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.navigateAwayPrompt.title',
+          'storage.unlockedResponses.downloadButton.navigateAwayPrompt.title',
         )}
         description={t(
-          'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.navigateAwayPrompt.description',
+          'storage.unlockedResponses.downloadButton.navigateAwayPrompt.description',
         )}
         confirmButtonText={t(
-          'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.navigateAwayPrompt.confirmButtonText',
+          'storage.unlockedResponses.downloadButton.navigateAwayPrompt.confirmButtonText',
         )}
         when={handleBulkDownloadMutation.isLoading}
       />
@@ -385,9 +389,7 @@ export const DownloadButton = ({
           downloadMetadata={downloadMetadata}
         >
           <Text mb="1rem">
-            {t(
-              'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.progressModalContent',
-            )}
+            {t('storage.unlockedResponses.downloadButton.progressModalContent')}
           </Text>
         </ProgressModal>
       )}
@@ -406,7 +408,7 @@ export const DownloadButton = ({
                   isLoading={handleBulkDownloadMutation.isLoading}
                   isActive={isOpen}
                   aria-label={t(
-                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
+                    'storage.unlockedResponses.downloadButton.label',
                   )}
                   icon={<BiDownload fontSize="1.25rem" />}
                 />
@@ -417,7 +419,7 @@ export const DownloadButton = ({
                   isLoading={handleBulkDownloadMutation.isLoading}
                   isActive={isOpen}
                   aria-label={t(
-                    'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
+                    'storage.unlockedResponses.downloadButton.label',
                   )}
                   leftIcon={
                     isDelightfulDashboard ? (
@@ -426,7 +428,7 @@ export const DownloadButton = ({
                   }
                   rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
                 >
-                  {t('features.common.download')}
+                  {tCommon('download')}
                 </MenuButton>
               )}
               <MenuList>
