@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.40.0](https://github.com/opengovsg/formsg/compare/v9.39.2...v9.40.0) (2026-10-01)
+
+
+### Features
+
+* **submission:** flow payment data for pre-migration rows in MRF exports (4/4) (#9988) ([#9988](https://github.com/opengovsg/formsg/commit/4b70b035c058a040fb41c4a7f12f45e1d9027a1e))
+* **submission:** list pre-migration encrypt rows in MRF dashboard metadata (3/4) (#9987) ([#9987](https://github.com/opengovsg/formsg/commit/077279adf6f5a7c680b1081b1e0d07395f5b5e40))
+* **submission:** serve pre-migration encrypt submissions on the MRF individual response view (1/4) (#9929) ([#9929](https://github.com/opengovsg/formsg/commit/142cdca81bc9a325c62811a9eec2d00397b3e95a))
+* **submission:** stream pre-migration encrypt rows in MRF exports (2/4) (#9930) ([#9930](https://github.com/opengovsg/formsg/commit/32e54614e2619a531044dbea68a5c12bcec3ffcd))
+
+
+### Chores
+
+* skip Chromatic for draft PRs (#10169) ([#10169](https://github.com/opengovsg/formsg/commit/279afe38b9bdf123be53f908580a40bb1fcf912f))
+
 ## [9.39.2](https://github.com/opengovsg/formsg/compare/v9.39.1...v9.39.2) (2026-09-30)
 
 ## [9.39.1](https://github.com/opengovsg/formsg/compare/v9.39.0...v9.39.1) (2026-09-30)
