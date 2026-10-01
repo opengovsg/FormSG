@@ -7,6 +7,7 @@ import {
   TranslationMapping,
 } from '../field'
 
+import { FormResponseMode, Language } from './form_enums'
 import { FormLogo } from './form_logo'
 import type { Except, Merge, Tagged, PartialDeep } from 'type-fest'
 import {
@@ -32,6 +33,8 @@ import {
 import { ErrorCode } from '../errorCodes'
 
 import type { Schema } from 'mongoose'
+
+export { FormResponseMode, Language } from './form_enums'
 
 export type FormId = Tagged<string, 'FormId'>
 
@@ -83,13 +86,6 @@ export enum FormAuthType {
   SGID_MyInfo = 'SGID_MyInfo',
 }
 
-export enum Language {
-  ENGLISH = 'en-SG',
-  CHINESE = 'zh-SG',
-  MALAY = 'ms-SG',
-  TAMIL = 'ta-SG',
-}
-
 export enum FormStatus {
   Private = 'PRIVATE',
   Public = 'PUBLIC',
@@ -118,12 +114,6 @@ export type FormWebhook = {
    * follow whatever the platform default becomes.
    */
   webhookFormat?: FormWebhookFormat
-}
-
-export enum FormResponseMode {
-  Encrypt = 'encrypt',
-  Email = 'email',
-  Multirespondent = 'multirespondent',
 }
 
 export enum FormOrigin {

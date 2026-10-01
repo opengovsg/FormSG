@@ -3,7 +3,7 @@ import i18n from 'i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import ICU from 'i18next-icu'
 
-import { Language } from 'formsg-shared/types/form/form'
+import { Language } from 'formsg-shared/types/form/form_enums'
 
 import { locales } from './locales'
 

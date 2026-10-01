@@ -1,4 +1,4 @@
-import { FormResponseMode } from 'formsg-shared/types/form/form'
+import { FormResponseMode } from 'formsg-shared/types/form/form_enums'
 
 export const enSG = {
   prettyLastModified: 'Edited {prettyLastModified}',
