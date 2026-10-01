@@ -411,6 +411,145 @@ describe('EncryptedResponseCsvGenerator', () => {
       })
     })
 
+    describe('mode-migrated form submissions', () => {
+      it('should share one column per field id between encrypt and mrf rows, leaving mrf metadata cells empty for encrypt rows', () => {
+        // Arrange
+        // On a mode-migrated form, a pre-migration encrypt row and an MRF row
+        // answer the same field (same field id). The MRF row additionally
+        // carries the workflow-status/pending-at pseudo-fields that
+        // CsvRecord.materializeSubmissionData injects (reserved ids).
+        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0, true)
+        const sharedField = generateRecord(1)
+        const workflowStatusColumn: CsvRecordData = {
+          _id: '000000000000000000010001',
+          fieldType: 'textfield',
+          question: 'Workflow status',
+          answer: 'Rejected',
+        }
+        const pendingAtColumn: CsvRecordData = {
+          _id: '000000000000000000010002',
+          fieldType: 'textfield',
+          question: 'Pending response at',
+          answer: '',
+        }
+        const mrfRecord = {
+          record: [workflowStatusColumn, pendingAtColumn, sharedField],
+          created: mockCreatedLater,
+          submissionId: 'mockMrfSubmissionId',
+        }
+        const encryptRecord = {
+          record: [
+            { ...sharedField, answer: 'preMigrationAnswer' } as CsvRecordData,
+          ],
+          created: mockCreatedEarly,
+          submissionId: 'mockEncryptSubmissionId',
+        }
+        mrfGenerator.addRecord(encryptRecord)
+        mrfGenerator.addRecord(mrfRecord)
+
+        // Act
+        mrfGenerator.process()
+
+        // Assert
+        // One shared column for the field; empty mrf metadata cells for the
+        // encrypt row. The mrf metadata columns keep their canonical
+        // position ahead of response columns even though the first-added
+        // (encrypt) record did not carry them.
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          MRF_RESPONSE_TIMESTAMP_LABEL,
+          workflowStatusColumn.question,
+          pendingAtColumn.question,
+          sharedField.question,
+        ])
+        const expectedEncryptRow = stringify([
+          encryptRecord.submissionId,
+          getFormattedDate(encryptRecord.created),
+          '',
+          '',
+          'preMigrationAnswer',
+        ])
+        const expectedMrfRow = stringify([
+          mrfRecord.submissionId,
+          getFormattedDate(mrfRecord.created),
+          workflowStatusColumn.answer,
+          pendingAtColumn.answer,
+          sharedField.answer,
+        ])
+        expect(mrfGenerator.records).toEqual([
+          UTF8_BYTE_ORDER_MARK,
+          expectedHeaderRow,
+          expectedEncryptRow,
+          expectedMrfRow,
+        ])
+      })
+
+      it('should order mrf metadata columns right after download status, ahead of response and payment columns', () => {
+        // Arrange
+        // The reported bug: an encrypt row decrypted first seeds the header
+        // map with download status, response and payment columns only, so a
+        // later mrf row's workflow columns landed at the very end.
+        const mrfGenerator = new EncryptedResponseCsvGenerator(2, 0, true)
+        const downloadStatusColumn: CsvRecordData = {
+          _id: '000000000000000000000000',
+          fieldType: 'textfield',
+          question: 'Download Status',
+          answer: 'Success',
+        }
+        const paymentColumn: CsvRecordData = {
+          _id: '000000000000000000000002',
+          fieldType: 'textfield',
+          question: 'Payment amount',
+          answer: '1.00',
+        }
+        const workflowStatusColumn: CsvRecordData = {
+          _id: '000000000000000000010001',
+          fieldType: 'textfield',
+          question: 'Workflow status',
+          answer: 'Rejected',
+        }
+        const pendingAtColumn: CsvRecordData = {
+          _id: '000000000000000000010002',
+          fieldType: 'textfield',
+          question: 'Pending response at',
+          answer: '',
+        }
+        const sharedField = generateRecord(1)
+        const encryptRecord = {
+          record: [downloadStatusColumn, sharedField, paymentColumn],
+          created: mockCreatedEarly,
+          submissionId: 'mockEncryptSubmissionId',
+        }
+        const mrfRecord = {
+          record: [
+            downloadStatusColumn,
+            workflowStatusColumn,
+            pendingAtColumn,
+            sharedField,
+          ],
+          created: mockCreatedLater,
+          submissionId: 'mockMrfSubmissionId',
+        }
+        mrfGenerator.addRecord(encryptRecord)
+        mrfGenerator.addRecord(mrfRecord)
+
+        // Act
+        mrfGenerator.process()
+
+        // Assert
+        const expectedHeaderRow = stringify([
+          'Response ID',
+          MRF_RESPONSE_TIMESTAMP_LABEL,
+          downloadStatusColumn.question,
+          workflowStatusColumn.question,
+          pendingAtColumn.question,
+          sharedField.question,
+          paymentColumn.question,
+        ])
+        expect(mrfGenerator.records[1]).toEqual(expectedHeaderRow)
+      })
+    })
+
     describe('submissions with only answer key', () => {
       it('should handle a single submission', () => {
         // Arrange

@@ -30,6 +30,7 @@ import {
   IEncryptSubmissionModel,
   IMultirespondentSubmissionModel,
   IPopulatedForm,
+  ISubmissionModel,
   ISubmissionSchema,
   MultirespondentSubmissionCursorData,
   StorageModeSubmissionCursorData,
@@ -696,6 +697,7 @@ export const getSubmissionCursor = (
   ReturnType<
     | IEncryptSubmissionModel['getSubmissionCursorByFormId']
     | IMultirespondentSubmissionModel['getSubmissionCursorByFormId']
+    | ISubmissionModel['getEncryptedOrMultirespondentSubmissionCursorByFormId']
   >,
   MalformedParametersError
 > => {
@@ -713,12 +715,22 @@ export const getSubmissionCursor = (
   return getEncryptedSubmissionModelByResponseMode(responseMode).andThen(
     (modelToUse) =>
       ok(
-        modelToUse.getSubmissionCursorByFormId(
-          formId,
-          dateRange,
-          isSortByLatest,
-          limit,
-        ),
+        // Multirespondent forms mode-migrated from storage mode retain their
+        // pre-migration encrypt submissions, so their stream must span both
+        // submission types via the base model.
+        responseMode === FormResponseMode.Multirespondent
+          ? SubmissionModel.getEncryptedOrMultirespondentSubmissionCursorByFormId(
+              formId,
+              dateRange,
+              isSortByLatest,
+              limit,
+            )
+          : modelToUse.getSubmissionCursorByFormId(
+              formId,
+              dateRange,
+              isSortByLatest,
+              limit,
+            ),
       ),
   )
 }

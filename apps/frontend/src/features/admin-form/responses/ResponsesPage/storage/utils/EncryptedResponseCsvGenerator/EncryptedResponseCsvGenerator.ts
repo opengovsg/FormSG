@@ -7,7 +7,10 @@ import type { Merge } from 'type-fest'
 import { BasicField } from 'formsg-shared/types'
 import { SIGNATURE_CAPTURED_STRING } from 'formsg-shared/utils/signature'
 
-import { MRF_RESPONSE_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
+import {
+  CSV_FIXED_COLUMN_IDS,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+} from '~features/admin-form/responses/constants'
 
 import { CsvGenerator } from '../../../../common/utils'
 import {
@@ -297,9 +300,22 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
   /** Field ids to emit, in header order, with the hidden ones dropped. */
   private _visibleFieldIds(): string[] {
     const hidden = new Set(this.view.hiddenColumnIds ?? [])
-    return Array.from(this.fieldIdToQuestion.keys()).filter(
+    const visible = Array.from(this.fieldIdToQuestion.keys()).filter(
       (fieldId) => !hidden.has(fieldId),
     )
+    // The fixed pseudo-columns (download status, workflow status, pending
+    // response at) keep their canonical position regardless of which record
+    // introduced them — on a mode-migrated form the first-decrypted row may
+    // be a pre-migration encrypt row that carries no mrf columns, which
+    // would otherwise push them behind the response and payment columns.
+    const visibleSet = new Set(visible)
+    const fixed = CSV_FIXED_COLUMN_IDS.filter((fieldId) =>
+      visibleSet.has(fieldId),
+    )
+    return [
+      ...fixed,
+      ...visible.filter((fieldId) => !CSV_FIXED_COLUMN_IDS.includes(fieldId)),
+    ]
   }
 
   /**

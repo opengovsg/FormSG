@@ -6,6 +6,9 @@ import {
 } from 'formsg-shared/types'
 
 import {
+  CSV_DOWNLOAD_STATUS_COLUMN_ID,
+  CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID,
+  CSV_MRF_WORKFLOW_STATUS_COLUMN_ID,
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
@@ -109,9 +112,9 @@ export class CsvRecord {
   ): string {
     switch (key) {
       case MRF_WORKFLOW_STATUS_LABEL:
-        return '000000000000000000010001'
+        return CSV_MRF_WORKFLOW_STATUS_COLUMN_ID
       case MRF_PENDING_RESPONSE_AT_LABEL:
-        return '000000000000000000010002'
+        return CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID
       default: {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const _: never = key
@@ -133,7 +136,7 @@ export class CsvRecord {
    */
   materializeSubmissionData() {
     const downloadStatus: CsvRecordData = {
-      _id: '000000000000000000000000',
+      _id: CSV_DOWNLOAD_STATUS_COLUMN_ID,
       fieldType: 'textfield',
       question: 'Download Status',
       answer: this.#statusMessage,
