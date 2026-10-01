@@ -108,12 +108,13 @@ const collectKeys = (value: unknown): string[] => {
 const capturePostedPayload = async (
   submission: IMultirespondentSubmissionSchema,
   view?: WebhookView,
+  url = MOCK_WEBHOOK_URL,
 ): Promise<WebhookData> => {
   MockAxios.post.mockClear()
   MockAxios.post.mockResolvedValue(MOCK_AXIOS_RESPONSE)
 
   const liveView = view ?? (await submission.getWebhookView())
-  const result = await sendWebhook(liveView, MOCK_WEBHOOK_URL)
+  const result = await sendWebhook(liveView, url)
   expect(result.isOk()).toBe(true)
 
   return (MockAxios.post.mock.calls[0][1] as WebhookView).data
@@ -219,6 +220,31 @@ describe('[GATE] v4 initial-send route parity', () => {
       expect(liveRow.version).toBe(4)
     },
   )
+
+  it('locks the generic V4 wire key set to the Plumber contract', async () => {
+    const row = await createRow()
+    const generic = await capturePostedPayload(
+      row,
+      undefined,
+      'https://example.com/hook',
+    )
+    const plumber = await capturePostedPayload(row)
+    const keys = (data: WebhookData) =>
+      Object.keys(JSON.parse(JSON.stringify(data))).sort()
+    expect(keys(generic)).toEqual([
+      'attachmentDownloadUrls',
+      'created',
+      'encryptedContent',
+      'encryptedSubmissionSecretKey',
+      'formId',
+      'paymentContent',
+      'submissionId',
+      'verifiedContent',
+      'version',
+      'workflowContent',
+    ])
+    expect(keys(generic)).toEqual(keys(plumber))
+  })
 
   it('ships the read key but never a step token, for either consumer class', async () => {
     for (const webhookType of ['plumber', 'generic'] as WebhookConsumerType[]) {

@@ -447,6 +447,9 @@ EmailFormSchema.methods.__replaceWithStorageModeFormWithSameId =
   }
 
 const MultirespondentFormSchema = new Schema<IMultirespondentFormSchema>({
+  webhook: {
+    webhookFormat: { type: String, enum: ['v1', 'v4'], required: false },
+  },
   publicKey: {
     type: String,
     required: true,
@@ -933,18 +936,6 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         isRetryEnabled: {
           type: Boolean,
           default: false,
-        },
-        /**
-         * Used to determine the webhook content format for generic webhook consumers only.
-         * Plumber webhook consumers are always v4.
-         */
-        webhookFormat: {
-          type: String,
-          enum: ['v1', 'v4'],
-          // RATIONALE: We set the format on updateFormSettings when the webhook.url is set.
-          // This prevents tying a form that does not have a webhook.url to a specific content format,
-          // allowing us to change platform defaults without a datafix.
-          required: false,
         },
       },
 

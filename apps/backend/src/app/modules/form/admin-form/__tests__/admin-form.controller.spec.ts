@@ -5621,6 +5621,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
       )
     })
 
@@ -5730,6 +5731,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
       )
     })
 
@@ -5806,6 +5808,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
       )
     })
 
@@ -5847,6 +5850,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
       )
     })
 
@@ -5915,6 +5919,7 @@ describe('admin-form.controller', () => {
       expect(MockAdminFormService.updateFormSettings).toHaveBeenCalledWith(
         MOCK_FORM,
         MOCK_REQ.body,
+        false,
       )
     })
   })

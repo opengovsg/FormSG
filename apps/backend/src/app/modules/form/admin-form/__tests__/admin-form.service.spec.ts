@@ -19,7 +19,6 @@ import {
   DuplicateFormBodyDto,
   FieldCreateDto,
   FieldUpdateDto,
-  FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
   FormAuthType,
   FormColorTheme,
   FormEndPage,
@@ -1479,7 +1478,7 @@ describe('admin-form.service', () => {
       })
     })
 
-    it('should pin a generic webhook url to the platform default format on creation', async () => {
+    it('should not pin a webhook format on creation', async () => {
       // Arrange
       const formParams: Parameters<typeof AdminFormService.createForm>[0] = {
         title: 'create form title',
@@ -1501,14 +1500,7 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actualResult._unsafeUnwrap()).toEqual(expectedForm)
-      expect(createSpy).toHaveBeenCalledWith({
-        ...withCreationDefaults(formParams),
-        webhook: {
-          url: 'https://example.com',
-          isRetryEnabled: false,
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
-        },
-      })
+      expect(createSpy).toHaveBeenCalledWith(withCreationDefaults(formParams))
     })
 
     it('should not override an explicitly provided webhookFormat on creation', async () => {
@@ -1862,10 +1854,8 @@ describe('admin-form.service', () => {
       expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalledWith(
         { _id: MOCK_ENCRYPT_FORM._id },
         // Should be dotified
-        {
-          'webhook.url': 'https://example.com',
-          'webhook.webhookFormat': 'v1',
-        },
+        // Storage forms never get a pinned webhook format.
+        { 'webhook.url': 'https://example.com' },
         { new: true, runValidators: true },
       )
       expect(MOCK_UPDATED_FORM.getSettings).toHaveBeenCalledTimes(1)
@@ -1950,6 +1940,8 @@ describe('admin-form.service', () => {
         {
           _id: MOCK_MULTIRESPONDENT_FORM._id,
           'workflow.1': { $exists: false },
+          'webhook.url': { $in: ['', null] },
+          'webhook.webhookFormat': { $exists: false },
         },
         {
           'webhook.url': 'https://example.com',

@@ -3,7 +3,9 @@ import { Trans, useTranslation } from 'react-i18next'
 import { BiPlus } from 'react-icons/bi'
 import { Link as RouterLink, useParams } from 'react-router-dom'
 import { Stack, Text, useDisclosure } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormWorkflowStep } from 'formsg-shared/types'
 
 import { ADMINFORM_ROUTE } from '~constants/routes'
@@ -31,6 +33,7 @@ import { CloseFormToEditModal } from '../../CloseFormToEditModal'
 import { EditStepBlock } from '../EditStepBlock'
 
 const WebhookBlockedStep = () => {
+  const v4Enabled = useFeatureIsOn(featureFlags.mrfWebhooksV4)
   const { t } = useTranslation()
   const { formId } = useParams()
 
@@ -39,7 +42,11 @@ const WebhookBlockedStep = () => {
       <InlineMessage variant="info">
         <Text>
           <Trans
-            i18nKey="features.adminForm.sidebar.workflow.webhookEnabledNoMoreSteps"
+            i18nKey={
+              v4Enabled
+                ? 'features.adminForm.sidebar.workflow.legacyWebhookEnabledNoMoreSteps'
+                : 'features.adminForm.sidebar.workflow.webhookEnabledNoMoreSteps'
+            }
             components={{
               webhookSettingsLink: (
                 <Link
@@ -60,7 +67,7 @@ const WebhookBlockedStep = () => {
 
 export const NewStepBlock = () => {
   const { t } = useTranslation()
-  const { formWorkflow, isPaymentEnabled, isGenericWebhookEnabled } =
+  const { formWorkflow, isPaymentEnabled, isLegacyWebhookEnabled } =
     useAdminFormWorkflow()
   const { createStepMutation } = useWorkflowMutations()
   const {
@@ -96,7 +103,7 @@ export const NewStepBlock = () => {
 
   const newStepNumber = formWorkflow?.length ?? 0
 
-  const isWebhookBlocked = isGenericWebhookEnabled && newStepNumber >= 1
+  const isWebhookBlocked = isLegacyWebhookEnabled && newStepNumber >= 1
 
   const handleAddStep = () => {
     if (isEditBlocked) {
