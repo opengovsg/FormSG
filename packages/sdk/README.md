@@ -19,7 +19,7 @@ const submission = await formsg.cryptoV4.decryptWithAttachments(
 
 Both methods accept the form secret key and the webhook's `data` object, including
 `encryptedContent`, `encryptedSubmissionSecretKey`, `version`, and optional
-`verifiedContent`, `encryptedStepToken`, and `attachmentDownloadUrls`. No form
+`verifiedContent` and `attachmentDownloadUrls`. No form
 metadata or manual submission-key handling is required. Question text is preserved
 from the encrypted content; missing question text is not fetched from the form.
 
@@ -27,8 +27,8 @@ from the encrypted content; missing question text is not fetched from the form.
 `{ content: DecryptedContentV4, attachments } | null`, with the same attachment map
 and failure behaviour as `crypto.decryptWithAttachments`. Both return V4 responses
 keyed by field ID, rather than V1's response array. The V4 content type also includes
-`submissionSecretKey` and optional `stepToken`; consumers do not need to use the
-submission key to decrypt attachments.
+`submissionSecretKey`; consumers do not need to use the submission key to decrypt
+attachments. Webhooks never include an encrypted step token.
 
 `cryptoV4.valid(publicKey, secretKey)` checks a form keypair.
 `cryptoV4.encrypt(responses, formPublicKey)` accepts V4 responses and returns the

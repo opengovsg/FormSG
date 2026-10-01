@@ -186,6 +186,10 @@ export type AdaptV3ToV4Options = {
 
 export interface DecryptParamsV4 extends DecryptParamsV3 {
   attachmentDownloadUrls?: EncryptedAttachmentRecords
+}
+
+/** Admin submission decryption can include a step token; webhooks never do. */
+export interface StorageDecryptParamsV4 extends DecryptParamsV4 {
   encryptedStepToken?: EncryptedContent
 }
 
