@@ -189,7 +189,7 @@ export interface DecryptParamsV4 extends DecryptParamsV3 {
 }
 
 /** Admin submission decryption can include a step token; webhooks never do. */
-export interface StorageDecryptParamsV4 extends DecryptParamsV4 {
+export interface DecryptParamsV4WithStepToken extends DecryptParamsV4 {
   encryptedStepToken?: EncryptedContent
 }
 
