@@ -269,7 +269,7 @@ describe('[GATE] v4 initial-send route parity', () => {
         },
       },
     })
-    const result = await sdk.cryptoV3.decryptWithAttachments(keys.secretKey, {
+    const result = await sdk.cryptoV4.decryptWithAttachments(keys.secretKey, {
       ...payload,
       encryptedSubmissionSecretKey: payload.encryptedSubmissionSecretKey!,
     })

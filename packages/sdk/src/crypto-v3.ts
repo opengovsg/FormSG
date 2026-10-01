@@ -15,7 +15,6 @@ import { adaptV3ToV4, deriveQuestionFromMeta } from './adapt-v3-to-v4'
 import CryptoBase from './crypto-base'
 import { MissingPublicKeyError } from './errors'
 import {
-  DecryptedAttachments,
   DecryptedContentV3,
   DecryptParams,
   DecryptParamsV3,
@@ -264,36 +263,6 @@ export default class CryptoV3 extends CryptoBase {
       responses,
       verified: decrypted.verified,
     }
-  }
-
-  /** Downloads and decrypts V4 attachments with the unwrapped submission key. */
-  decryptWithAttachments = async (
-    formSecretKey: string,
-    decryptParams: DecryptParamsV4
-  ): Promise<{
-    content: DecryptedContentV4
-    attachments: DecryptedAttachments
-  } | null> => {
-    const content = this.decryptToV4(formSecretKey, decryptParams, {})
-    if (!content) return null
-    const filenames: Record<string, string> = {}
-    for (const [fieldId, response] of Object.entries(content.responses)) {
-      if (
-        response.fieldType === 'attachment' &&
-        response.answer !== null &&
-        typeof response.answer === 'object' &&
-        'value' in response.answer &&
-        typeof response.answer.value === 'string'
-      ) {
-        filenames[fieldId] = response.answer.value
-      }
-    }
-    const attachments = await this.decryptAttachments(
-      content.submissionSecretKey,
-      decryptParams.attachmentDownloadUrls ?? {},
-      filenames
-    )
-    return attachments ? { content, attachments } : null
   }
 
   /**
