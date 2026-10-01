@@ -15,7 +15,7 @@ set -euo pipefail
 
 UI_TESTS='UI Tests: formsg-app'
 # Must match the `frontend` paths-filter in chromatic.yml.
-FRONTEND_PATHS='^(apps/frontend|packages/shared)/'
+FRONTEND_PATHS='^(apps/frontend/|packages/shared/|pnpm-lock\.yaml$|\.github/workflows/chromatic\.yml$|\.github/scripts/chromatic-[^/]*\.sh$)'
 
 out() { echo "$1" >>"$GITHUB_OUTPUT"; }
 ui_tests() { # <sha>: latest UI Tests state, empty if Chromatic never reported
