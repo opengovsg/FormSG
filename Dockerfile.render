@@ -7,7 +7,7 @@ WORKDIR /build
 
 COPY . ./
 
-RUN pnpm install --frozen-lockfile --filter "!services/*" --filter "!packages/react-email-preview/*"
+RUN pnpm install --frozen-lockfile --filter '!{services/**}' --filter '!{packages/react-email-preview}'
 
 ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN pnpm build
