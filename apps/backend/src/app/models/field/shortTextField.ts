@@ -1,3 +1,4 @@
+import { CorppassAttribute } from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 
 import { IShortTextFieldSchema } from '../../../types'
@@ -26,6 +27,26 @@ const createShortTextFieldSchema = () => {
       default: false,
       required: false,
     },
+  })
+
+  // A Corppass UID is filled from the login and may be a foreign identifier,
+  // so text constraints could reject it and URL prefill could replace it.
+  ShortTextFieldSchema.pre<IShortTextFieldSchema>('validate', function (next) {
+    if (this.corppass?.attr !== CorppassAttribute.Uid) return next()
+
+    const { customVal, selectedValidation } = this.ValidationOptions ?? {}
+    if (
+      customVal != null ||
+      selectedValidation != null ||
+      this.allowPrefill ||
+      this.lockPrefill
+    ) {
+      this.invalidate(
+        'corppass',
+        'The Corppass UID source does not allow text validation or prefill',
+      )
+    }
+    return next()
   })
 
   return ShortTextFieldSchema
