@@ -5,6 +5,7 @@ import {
   FormResponseMode,
   NumberSelectedLengthValidation,
   NumberSelectedValidation,
+  TextSelectedValidation,
 } from 'formsg-shared/types'
 import mongoose, { Types } from 'mongoose'
 
@@ -130,6 +131,59 @@ describe('Form Field Schema', () => {
         ).rejects.toThrow(mongoose.Error.ValidationError)
       },
     )
+
+    describe('Corppass UID source', () => {
+      const uidField = {
+        ...identityField,
+        fieldType: BasicField.ShortText,
+        myInfo: undefined,
+        corppass: { attr: 'uid' },
+      }
+
+      it.each([
+        {
+          ValidationOptions: {
+            customVal: 9,
+            selectedValidation: TextSelectedValidation.Maximum,
+          },
+        },
+        { ValidationOptions: { customVal: 9, selectedValidation: null } },
+        { allowPrefill: true },
+        { lockPrefill: true },
+      ])(
+        'rejects text constraints that could reject or replace the login value: %j',
+        async (settings) => {
+          await expect(
+            Form.create({
+              ...MOCK_ENCRYPTED_FORM_PARAMS,
+              form_fields: [{ ...uidField, ...settings }],
+            }),
+          ).rejects.toThrow(mongoose.Error.ValidationError)
+        },
+      )
+
+      it('still allows text constraints on ordinary short text', async () => {
+        const form = await Form.create({
+          ...MOCK_ENCRYPTED_FORM_PARAMS,
+          form_fields: [
+            {
+              ...uidField,
+              corppass: undefined,
+              ValidationOptions: {
+                customVal: 9,
+                selectedValidation: TextSelectedValidation.Maximum,
+              },
+              allowPrefill: true,
+            },
+          ],
+        })
+
+        expect(form.form_fields![0].toObject()).toMatchObject({
+          ValidationOptions: { customVal: 9 },
+          allowPrefill: true,
+        })
+      })
+    })
 
     it('retains ordinary identity fields and existing MyInfo attributes', async () => {
       const form = await Form.create({
