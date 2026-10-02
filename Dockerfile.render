@@ -1,0 +1,42 @@
+# syntax=docker/dockerfile:1
+ARG BUILD_BASE_IMAGE=ghcr.io/opengovsg/formsg:build-latest
+ARG RUNTIME_BASE_IMAGE=ghcr.io/opengovsg/formsg:runtime-latest
+
+FROM ${BUILD_BASE_IMAGE} AS build
+WORKDIR /build
+
+COPY . ./
+
+RUN pnpm install --frozen-lockfile --filter '!{services/**}' --filter '!{packages/react-email-preview}'
+
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN pnpm build
+
+
+FROM ${RUNTIME_BASE_IMAGE}
+WORKDIR /opt/formsg
+
+COPY --from=build /build/apps/frontend/dist /opt/formsg/apps/frontend/dist
+COPY --from=build /build/packages/shared/package.json /opt/formsg/packages/shared/
+COPY --from=build /build/packages/shared/node_modules /opt/formsg/packages/shared/node_modules
+COPY --from=build /build/packages/shared/dist /opt/formsg/packages/shared/dist
+COPY --from=build /build/packages/sdk/package.json /opt/formsg/packages/sdk/
+COPY --from=build /build/packages/sdk/node_modules /opt/formsg/packages/sdk/node_modules
+COPY --from=build /build/packages/sdk/cjs-entry.cjs /opt/formsg/packages/sdk/
+COPY --from=build /build/packages/sdk/dist /opt/formsg/packages/sdk/dist
+
+COPY --from=build /build/pnpm-workspace.yaml /opt/formsg/pnpm-workspace.yaml
+COPY --from=build /build/node_modules /opt/formsg/node_modules
+COPY --from=build /build/package.json /opt/formsg/package.json
+
+COPY --from=build /build/apps/backend/node_modules /opt/formsg/apps/backend/node_modules
+COPY --from=build /build/apps/backend/package.json /opt/formsg/apps/backend/package.json
+COPY --from=build /build/apps/backend/dist /opt/formsg/apps/backend/dist
+
+USER formsguser
+
+ENV NODE_ENV=production
+EXPOSE 4545
+
+ENTRYPOINT [ "tini", "--" ]
+CMD [ "pnpm", "start" ]
