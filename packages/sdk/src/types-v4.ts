@@ -1,6 +1,12 @@
 import { DecryptParamsV3, EncryptedContent, FieldType } from './types'
 
 // TODO: provenance shape may be updated when it is implemented
+/**
+ * Verification flags are set by FormSG when it accepts a submission and are
+ * never client-supplied. `true` means FormSG verified the answer; a missing
+ * flag makes no claim. They are FormSG's assertion, not a signature, so they
+ * cannot be checked independently once the response leaves FormSG.
+ */
 export type ResponseProvenance = {
   submittedAt?: string
   stepNumber?: number
@@ -10,6 +16,11 @@ export type ResponseProvenance = {
    * verification happened (e.g. user-filled child records).
    */
   myinfoVerified?: boolean
+  /**
+   * Set when the answer came from the respondent's Corppass login: the
+   * entity UEN or the representative UID.
+   */
+  corppassVerified?: boolean
 }
 
 export type PreviousAnswer = {

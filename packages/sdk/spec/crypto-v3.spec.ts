@@ -1,10 +1,11 @@
 import mockAxios from 'jest-mock-axios'
-import { decodeUTF8 } from '../src/util/encoding'
 
+import type { FieldResponsesV4, ResponseProvenance } from '../src'
 import Crypto from '../src/crypto'
 import CryptoV3 from '../src/crypto-v3'
 import { SIGNING_KEYS } from '../src/resource/signing-keys'
 import { encryptMessage } from '../src/util/crypto'
+import { decodeUTF8 } from '../src/util/encoding'
 
 import {
   ciphertext,
@@ -102,6 +103,85 @@ describe('CryptoV3', function () {
     })
     // Assert
     expect(decrypted).toHaveProperty('responses', plaintext)
+  })
+
+  describe('V4 login verification provenance', () => {
+    const cases: {
+      fieldType: 'nric' | 'uen' | 'textfield'
+      value: string
+      provenance: ResponseProvenance
+    }[] = [
+      {
+        fieldType: 'nric',
+        value: 'S1234567D',
+        provenance: { myinfoVerified: true },
+      },
+      {
+        fieldType: 'textfield',
+        value: 'Jane Tan',
+        provenance: { myinfoVerified: true },
+      },
+      {
+        fieldType: 'uen',
+        value: '201234567A',
+        provenance: { corppassVerified: true },
+      },
+      {
+        fieldType: 'textfield',
+        value: 'FOREIGN-ID-123',
+        provenance: { corppassVerified: true },
+      },
+    ]
+
+    it.each(cases)(
+      'preserves $fieldType provenance $provenance through encryption and decryption',
+      ({ fieldType, value, provenance }) => {
+        const responses: FieldResponsesV4 = {
+          fieldId: {
+            fieldType,
+            question: 'Authenticated identity',
+            answer: { value },
+            provenance,
+            previousAnswers: [
+              { answer: { value: 'earlier value' }, provenance },
+            ],
+          },
+        }
+        const { publicKey, secretKey } = crypto.generate()
+        const encrypted = crypto.encrypt(responses, publicKey)
+        const params = { ...encrypted, version: INTERNAL_TEST_VERSION }
+
+        expect(crypto.decrypt(secretKey, params)?.responses).toEqual(responses)
+        expect(
+          crypto.decryptFromSubmissionKey(encrypted.submissionSecretKey, params)
+            ?.responses
+        ).toEqual(responses)
+        expect(crypto.decryptToV4(secretKey, params, {})?.responses).toEqual(
+          responses
+        )
+      }
+    )
+
+    it('keeps legacy provenance without adding a verification flag', () => {
+      const responses: FieldResponsesV4 = {
+        fieldId: {
+          fieldType: 'nric',
+          question: 'Typed NRIC',
+          answer: { value: 'S1234567D' },
+          provenance: {},
+        },
+      }
+      const { publicKey, secretKey } = crypto.generate()
+      const encrypted = crypto.encrypt(responses, publicKey)
+      const decrypted = crypto.decryptToV4(
+        secretKey,
+        { ...encrypted, version: INTERNAL_TEST_VERSION },
+        {}
+      )
+
+      expect(decrypted?.responses).toEqual(responses)
+      expect(decrypted?.responses.fieldId.provenance).toEqual({})
+    })
   })
 
   describe('decryptToV4 — MRF step-token recovery', () => {
