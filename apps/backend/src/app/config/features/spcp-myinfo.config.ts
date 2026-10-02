@@ -34,6 +34,7 @@ type ISpcpConfig = {
   cpOidcRpJwksSecret: string
   cpOidcRpJwksPublicPath: string
   cpOidcRpJwksSecretPath: string
+  cpFormsgEsrvcId: string
 }
 
 type IMyInfoConfig = {
@@ -235,6 +236,12 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: validateNonIacStringParam,
     default: null,
     env: 'CP_OIDC_RP_JWKS_SECRET_PATH',
+  },
+  cpFormsgEsrvcId: {
+    doc: "FormSG's own Corppass e-service ID",
+    format: String,
+    default: '',
+    env: 'CP_FORMSG_ESRVC_ID',
   },
 }
 

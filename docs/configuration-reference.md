@@ -234,6 +234,7 @@ Note that MyInfo is currently not supported for storage mode forms and enabling 
 | `CP_OIDC_RP_REDIRECT_URL`        | The Relying Party's Corppass Redirect URL                                                                                                                                    |
 | `CP_OIDC_RP_JWKS_PUBLIC_PATH`    | Path to the Relying Party's Public Json Web Key Set used for Corppass-related communication with NDI. This will be hosted at api/v3/corppass/.well-known/jwks.json endpoint. |
 | `CP_OIDC_RP_JWKS_SECRET_PATH`    | Path to the Relying Party's Secret Json Web Key Set used for Corppass-related communication with NDI                                                                         |
+| `CP_FORMSG_ESRVC_ID`             | FormSG's own Corppass e-service ID. Corppass forms log in with it when the `corppass-formsg-esrvc-id` flag is on. Optional.                                                  |
 | `MYINFO_JWT_SECRET`              | Secret for signing MyInfo JWT.                                                                                                                                               |
 | `IS_SP_MAINTENANCE`              | If set, displays a banner message on Singpass forms. Overrides `IS_CP_MAINTENANCE`.                                                                                          |
 | `IS_CP_MAINTENANCE`              | If set, displays a banner message on Corppass forms.                                                                                                                         |
