@@ -9,7 +9,7 @@ services:
     region: singapore
     plan: standard
     autoDeployTrigger: "off"
-    dockerfilePath: ./Dockerfile.production
+    dockerfilePath: ./Dockerfile.render
     dockerContext: .
     envVars:
       - fromGroup: formsg-stg-preview
