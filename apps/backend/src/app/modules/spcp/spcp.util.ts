@@ -8,6 +8,8 @@ import {
 import { err, ok, Result } from 'neverthrow'
 
 import { IFormSchema, SPCPFieldTitle } from '../../../types'
+import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
+import { createLoggerWithLabel } from '../../config/logger'
 import {
   AuthTypeMismatchError,
   FormAuthNoEsrvcIdError,
@@ -19,8 +21,9 @@ import {
   ExtractedCorppassNDIPayload,
   RedirectTargetSpcpOidc,
   SingpassJwtPayloadFromCookie,
-  SpcpForm,
 } from './spcp.types'
+
+const logger = createLoggerWithLabel(module)
 
 // Matches the MongoDB ObjectID hex format exactly (24 hex characters)
 const DESTINATION_REGEX = /^\/([a-fA-F0-9]{24})\/?$/
@@ -188,29 +191,46 @@ export const startsWithSPCPFieldTitle = (key: string): boolean =>
   Object.values(SPCPFieldTitle).some((title) => key.startsWith(title))
 
 /**
- * Validates that a form is a SPCP form with an e-service ID
- * @param form Form to validate
+ * The Corppass e-service ID to log in with: FormSG's when the flag is on.
+ * Falls back to the form's own ID if FormSG's is not configured, so
+ * environments without it keep working.
  */
-export const validateSpcpForm = <T extends IFormSchema>(
-  form: T,
-): Result<SpcpForm<T>, FormAuthNoEsrvcIdError | AuthTypeMismatchError> => {
-  // This is an extra check to return the specific error encountered
-  if (!form.esrvcId) {
-    return err(new FormAuthNoEsrvcIdError(form.id))
-  }
-  if (isSpcpForm(form)) {
-    return ok(form)
-  }
-  return err(new AuthTypeMismatchError(FormAuthType.CP, form.authType))
+export const getCpLoginEsrvcId = (
+  form: { _id?: unknown; esrvcId?: string },
+  useFormsgEsrvcId: boolean,
+): string | undefined => {
+  if (!useFormsgEsrvcId) return form.esrvcId
+  if (spcpMyInfoConfig.cpFormsgEsrvcId) return spcpMyInfoConfig.cpFormsgEsrvcId
+  logger.error({
+    message:
+      'Corppass FormSG e-service ID flag is on but CP_FORMSG_ESRVC_ID is not set, falling back to the form e-service ID',
+    meta: { action: 'getCpLoginEsrvcId', formId: String(form._id) },
+  })
+  return form.esrvcId
 }
 
-// Typeguard to ensure that form has eserviceId and correct authType
-const isSpcpForm = <F extends IFormSchema>(form: F): form is SpcpForm<F> => {
-  return (
-    !!form.authType &&
-    [FormAuthType.SP, FormAuthType.CP].includes(form.authType) &&
-    !!form.esrvcId
-  )
+/**
+ * Validates that a form is a SPCP form with an e-service ID to log in with
+ * @param form Form to validate
+ * @param useFormsgEsrvcId whether Corppass logs in with FormSG's e-service ID
+ * @returns the e-service ID to log in with
+ */
+export const validateSpcpForm = (
+  form: IFormSchema,
+  useFormsgEsrvcId = false,
+): Result<string, FormAuthNoEsrvcIdError | AuthTypeMismatchError> => {
+  const esrvcId =
+    form.authType === FormAuthType.CP
+      ? getCpLoginEsrvcId(form, useFormsgEsrvcId)
+      : form.esrvcId
+  // This is an extra check to return the specific error encountered
+  if (!esrvcId) {
+    return err(new FormAuthNoEsrvcIdError(form.id))
+  }
+  if (form.authType === FormAuthType.SP || form.authType === FormAuthType.CP) {
+    return ok(esrvcId)
+  }
+  return err(new AuthTypeMismatchError(FormAuthType.CP, form.authType))
 }
 
 /**
