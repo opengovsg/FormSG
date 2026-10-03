@@ -36,6 +36,7 @@ export * from './countryRegionField'
 export * from './emailField'
 export * from './homeNoField'
 export * from './imageField'
+export * from './loginIdentityField'
 export * from './longTextField'
 export * from './mobileField'
 export * from './nricField'
@@ -85,7 +86,8 @@ export type MyInfoField = SetRequired<
   | DropdownFieldBase
   | MobileFieldBase
   | ShortTextFieldBase
-  | ChildrenCompoundFieldBase,
+  | ChildrenCompoundFieldBase
+  | NricFieldBase,
   'myInfo'
 >
 

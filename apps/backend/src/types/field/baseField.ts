@@ -1,4 +1,8 @@
-import { AllowMyInfoBase, FieldBase } from 'formsg-shared/types'
+import {
+  AllowCorppassBase,
+  AllowMyInfoBase,
+  FieldBase,
+} from 'formsg-shared/types'
 import { Document } from 'mongoose'
 
 import { IFormSchema } from '../form'
@@ -12,7 +16,8 @@ export interface IMyInfoSchema extends IMyInfo, Document {
 }
 
 // Manual override since mongoose types don't have generics yet.
-export interface IFieldSchema extends AllowMyInfoBase, FieldBase, Document {
+export interface IFieldSchema
+  extends AllowMyInfoBase, AllowCorppassBase, FieldBase, Document {
   /** Returns the top level document of this sub-document. */
   ownerDocument(): IFormSchema
   /** Returns this sub-documents parent document. */

@@ -1,4 +1,9 @@
-import { BasicField, Language, MyInfoAttribute } from 'formsg-shared/types'
+import {
+  BasicField,
+  CorppassAttribute,
+  Language,
+  MyInfoAttribute,
+} from 'formsg-shared/types'
 import { Schema } from 'mongoose'
 import UIDGenerator from 'uid-generator'
 
@@ -13,6 +18,15 @@ export const MyInfoSchema = new Schema<IMyInfoSchema>(
     attr: {
       type: String,
       enum: Object.values(MyInfoAttribute),
+      validate: {
+        validator: function (this: IMyInfoSchema, attr: MyInfoAttribute) {
+          return (
+            attr !== MyInfoAttribute.UinFin ||
+            this.parent().fieldType === BasicField.Nric
+          )
+        },
+        message: 'The MyInfo NRIC / FIN source requires an NRIC field',
+      },
     },
   },
   {
@@ -20,9 +34,35 @@ export const MyInfoSchema = new Schema<IMyInfoSchema>(
   },
 )
 
+export const createAttrSourceSchema = (values: readonly string[]) =>
+  new Schema(
+    { attr: { type: String, enum: values, required: true } },
+    { _id: false },
+  )
+
+const CORPPASS_ATTR_FIELD_TYPE: Record<CorppassAttribute, BasicField> = {
+  [CorppassAttribute.Uen]: BasicField.Uen,
+  [CorppassAttribute.Uid]: BasicField.ShortText,
+}
+
 export const BaseFieldSchema = new Schema<IFieldSchema>(
   {
     globalId: String,
+    corppass: {
+      type: createAttrSourceSchema(Object.values(CorppassAttribute)),
+      default: undefined,
+      validate: {
+        validator: function (this: IFieldSchema) {
+          if (!this.corppass) return true
+          return (
+            !this.myInfo &&
+            CORPPASS_ATTR_FIELD_TYPE[this.corppass.attr] === this.fieldType
+          )
+        },
+        message:
+          'Corppass sources require the matching field type and no MyInfo source',
+      },
+    },
     title: {
       type: String,
       trim: true,

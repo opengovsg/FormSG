@@ -1022,6 +1022,102 @@ describe('Form Model', () => {
         },
       )
 
+      describe('Step login', () => {
+        const step = () => ({
+          workflow_type: WorkflowType.Static,
+          emails: [],
+          edit: [],
+        })
+
+        it('retains a later-step login without an identity collection toggle', async () => {
+          const fieldId = new mongoose.Types.ObjectId()
+          const form = await MultirespondentForm.create({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            authType: FormAuthType.NIL,
+            workflow: [
+              step(),
+              {
+                ...step(),
+                edit: [fieldId],
+                auth: { auth_type: FormAuthType.MyInfo },
+              },
+            ],
+            form_fields: [
+              {
+                ...generateDefaultField(BasicField.Nric),
+                _id: fieldId,
+                myInfo: { attr: 'uinfin' },
+              },
+            ],
+          })
+
+          const saved = await MultirespondentForm.findById(form._id).orFail()
+
+          expect(saved.toObject().workflow[0]).not.toHaveProperty('auth')
+          expect(saved.toObject().workflow[1].auth).toEqual({
+            auth_type: FormAuthType.MyInfo,
+          })
+          expect(saved.authType).toBe(FormAuthType.NIL)
+        })
+
+        it.each([
+          {
+            auth: { auth_type: FormAuthType.NIL },
+            reason: 'unsupported provider',
+          },
+          {
+            auth: {
+              auth_type: FormAuthType.CP,
+              is_submitter_id_collection_enabled: true,
+            },
+            reason: 'later-step collection toggle',
+          },
+          {
+            auth: {
+              auth_type: FormAuthType.CP,
+              whitelisted_submitter_ids: { isWhitelistEnabled: true },
+            },
+            reason: 'deferred later-step whitelist',
+          },
+        ])('rejects $reason', async ({ auth }) => {
+          await expect(
+            MultirespondentForm.create({
+              ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+              workflow: [step(), { ...step(), auth }],
+            }),
+          ).rejects.toThrow(mongoose.Error.ValidationError)
+        })
+
+        it('rejects duplicated Step 1 login policy', async () => {
+          await expect(
+            MultirespondentForm.create({
+              ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+              workflow: [
+                { ...step(), auth: { auth_type: FormAuthType.CP } },
+                step(),
+              ],
+            }),
+          ).rejects.toThrow('Step 1 login uses form-level settings')
+        })
+
+        it('retains Step 1 collection settings when saving a legacy workflow', async () => {
+          const form = await MultirespondentForm.create({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            authType: FormAuthType.MyInfo,
+            isSubmitterIdCollectionEnabled: true,
+            workflow: [step(), step()],
+          })
+          const saved = await MultirespondentForm.findById(form._id).orFail()
+          await saved.save()
+
+          expect(saved.authType).toBe(FormAuthType.MyInfo)
+          expect(saved.isSubmitterIdCollectionEnabled).toBe(true)
+          expect(
+            saved.toObject().workflow.every((item) => !('auth' in item)),
+          ).toBe(true)
+        })
+      })
+
       describe('payment invariants', () => {
         const ENABLED_PAYMENTS_FIELD = {
           enabled: true,

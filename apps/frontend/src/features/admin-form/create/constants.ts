@@ -300,6 +300,11 @@ const BiDummyIcon = BiCalendar // random icon that is not actually shown in app
 export const MYINFO_FIELD_TO_DRAWER_META: {
   [key in MyInfoAttribute]: BuilderSidebarFieldMeta
 } = {
+  [MyInfoAttribute.UinFin]: {
+    label: 'NRIC / FIN',
+    icon: BiUser,
+    isSubmitted: true,
+  },
   [MyInfoAttribute.Name]: {
     label: 'Name',
     icon: BiUser,

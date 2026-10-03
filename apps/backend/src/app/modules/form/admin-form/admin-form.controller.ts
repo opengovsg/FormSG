@@ -43,6 +43,7 @@ import {
   LogicDto,
   LogicIfValue,
   LogicType,
+  MyInfoAttribute,
   PermissionsUpdateDto,
   PreviewFormViewDto,
   PrivateFormErrorDto,
@@ -2297,6 +2298,15 @@ export const handleEncryptPreviewSubmission = [
   submitEncryptPreview,
 ] as ControllerHandler[]
 
+// TODO Phase 2: Remove this guard once trusted login prefill and server-side
+// submission enforcement are implemented for MyInfo NRIC/FIN and Corppass UEN/UID.
+const loginSourceAuthoringGuard = {
+  corppass: Joi.forbidden(),
+  myInfo: Joi.object({ attr: Joi.any().invalid(MyInfoAttribute.UinFin) })
+    .unknown(true)
+    .allow(null),
+}
+
 /**
  * Handler for PUT /forms/:formId/fields/:fieldId
  * @security session
@@ -2325,6 +2335,7 @@ export const handleUpdateFormField = [
         required: Joi.boolean().required(),
         title: Joi.string().trim().required(),
         disabled: Joi.boolean().required(),
+        ...loginSourceAuthoringGuard,
         // Allow other field related key-values to be provided and let the model
         // layer handle the validation.
       })
@@ -2760,6 +2771,7 @@ export const handleCreateFormField = [
       description: Joi.string().allow(''),
       required: Joi.boolean(),
       disabled: Joi.boolean(),
+      ...loginSourceAuthoringGuard,
       // Allow other field related key-values to be provided and let the model
       // layer handle the validation.
     })
