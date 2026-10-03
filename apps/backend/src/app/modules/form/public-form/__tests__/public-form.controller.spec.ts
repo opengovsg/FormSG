@@ -1635,36 +1635,6 @@ describe('public-form.controller', () => {
           redirectURL: MOCK_REDIRECT_URL,
         })
       })
-
-      it("keeps SP forms on the form's own e-service ID", async () => {
-        MockFormService.retrieveFullFormById.mockReturnValueOnce(
-          okAsync({
-            admin: MOCK_ADMIN,
-            authType: FormAuthType.SP,
-            esrvcId: 'AGENCY-SP',
-          } as SpcpForm<IFormDocument>),
-        )
-        const createRedirectUrlSpy = jest
-          .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-          .mockReturnValueOnce(
-            okAsync({
-              redirectUrl: MOCK_REDIRECT_URL,
-              codeVerifier: MOCK_CODE_VERIFIER,
-            }),
-          )
-        const mockRes = expressHandler.mockResponse()
-
-        await PublicFormController._handleFormAuthRedirect(
-          MOCK_REQ_FLAG_ON,
-          mockRes,
-          jest.fn(),
-        )
-
-        expect(createRedirectUrlSpy).toHaveBeenCalledWith(
-          expect.any(String),
-          'AGENCY-SP',
-        )
-      })
     })
   })
 

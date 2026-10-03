@@ -21,6 +21,7 @@ import {
   ExtractedCorppassNDIPayload,
   RedirectTargetSpcpOidc,
   SingpassJwtPayloadFromCookie,
+  SpcpForm,
 } from './spcp.types'
 
 const logger = createLoggerWithLabel(module)
@@ -210,27 +211,49 @@ export const getCpLoginEsrvcId = (
 }
 
 /**
- * Validates that a form is a SPCP form with an e-service ID to log in with
+ * Validates that a form is a SPCP form with an e-service ID
+ * @param form Form to validate
+ */
+export const validateSpcpForm = <T extends IFormSchema>(
+  form: T,
+): Result<SpcpForm<T>, FormAuthNoEsrvcIdError | AuthTypeMismatchError> => {
+  // This is an extra check to return the specific error encountered
+  if (!form.esrvcId) {
+    return err(new FormAuthNoEsrvcIdError(form.id))
+  }
+  if (isSpcpForm(form)) {
+    return ok(form)
+  }
+  return err(new AuthTypeMismatchError(FormAuthType.CP, form.authType))
+}
+
+// Typeguard to ensure that form has eserviceId and correct authType
+const isSpcpForm = <F extends IFormSchema>(form: F): form is SpcpForm<F> => {
+  return (
+    !!form.authType &&
+    [FormAuthType.SP, FormAuthType.CP].includes(form.authType) &&
+    !!form.esrvcId
+  )
+}
+
+/**
+ * Validates that a Corppass form has an e-service ID to log in with
  * @param form Form to validate
  * @param useFormsgEsrvcId whether Corppass logs in with FormSG's e-service ID
  * @returns the e-service ID to log in with
  */
-export const validateSpcpForm = (
+export const validateCpForm = (
   form: IFormSchema,
-  useFormsgEsrvcId = false,
+  useFormsgEsrvcId: boolean,
 ): Result<string, FormAuthNoEsrvcIdError | AuthTypeMismatchError> => {
-  const esrvcId =
-    form.authType === FormAuthType.CP
-      ? getCpLoginEsrvcId(form, useFormsgEsrvcId)
-      : form.esrvcId
-  // This is an extra check to return the specific error encountered
+  if (form.authType !== FormAuthType.CP) {
+    return err(new AuthTypeMismatchError(FormAuthType.CP, form.authType))
+  }
+  const esrvcId = getCpLoginEsrvcId(form, useFormsgEsrvcId)
   if (!esrvcId) {
     return err(new FormAuthNoEsrvcIdError(form.id))
   }
-  if (form.authType === FormAuthType.SP || form.authType === FormAuthType.CP) {
-    return ok(esrvcId)
-  }
-  return err(new AuthTypeMismatchError(FormAuthType.CP, form.authType))
+  return ok(esrvcId)
 }
 
 /**

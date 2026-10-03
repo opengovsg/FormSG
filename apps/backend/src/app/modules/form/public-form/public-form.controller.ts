@@ -65,6 +65,7 @@ import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import {
   getRedirectTargetSpcpOidc,
+  validateCpForm,
   validateSpcpForm,
 } from '../../spcp/spcp.util'
 import { generateHashedSubmitterId } from '../../submission/submission.utils'
@@ -730,7 +731,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
             return redirectUrl
           })
         case FormAuthType.SP: {
-          return validateSpcpForm(form).asyncAndThen((esrvcId) => {
+          return validateSpcpForm(form).asyncAndThen((form) => {
             const target = getRedirectTargetSpcpOidc(
               formId,
               FormAuthType.SP,
@@ -740,7 +741,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
             )
             const oidcService = getOidcService(FormAuthType.SP)
             return oidcService
-              .createRedirectUrl(target, esrvcId)
+              .createRedirectUrl(target, form.esrvcId)
               .map(({ redirectUrl, codeVerifier }) => {
                 res.cookie(
                   oidcService.getCodeVerifierCookieName(nonce),
@@ -754,7 +755,7 @@ export const _handleFormAuthRedirect: ControllerHandler<
         case FormAuthType.CP: {
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
           // If authType is not SP, assume that it was set erroneously and default it to false
-          return validateSpcpForm(form, useFormsgEsrvcId).asyncAndThen(
+          return validateCpForm(form, useFormsgEsrvcId).asyncAndThen(
             (esrvcId) => {
               const target = getRedirectTargetSpcpOidc(
                 formId,
