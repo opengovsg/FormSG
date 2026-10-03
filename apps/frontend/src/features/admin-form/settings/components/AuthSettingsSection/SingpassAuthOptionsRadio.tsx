@@ -12,6 +12,7 @@ import { FormAuthType, FormSettings, FormStatus } from 'formsg-shared/types'
 import Radio from '~components/Radio'
 import { Tag } from '~components/Tag'
 
+import { useIsCorppassFormsgEsrvcIdEnabled } from '../../hooks/useIsCorppassFormsgEsrvcIdEnabled'
 import { useMutateFormSettings } from '../../mutations'
 import { isEsrvcidRequired } from '../utils'
 
@@ -35,6 +36,7 @@ export const SingpassAuthOptionsRadio = ({
 }: SingpassAuthOptionsRadioProps): JSX.Element => {
   const { mutateFormAuthType } = useMutateFormSettings()
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
+  const isCorppassFormsgEsrvcIdEnabled = useIsCorppassFormsgEsrvcIdEnabled()
 
   const isFormPublic = settings.status === FormStatus.Public
 
@@ -91,7 +93,9 @@ export const SingpassAuthOptionsRadio = ({
             <Radio value={authType} isDisabled={checkIsDisabled()}>
               <Flex>
                 {text}
-                {authType === FormAuthType.MyInfo ? (
+                {/* Corppass is free too once it uses FormSG's e-service ID */}
+                {authType === FormAuthType.MyInfo &&
+                !isCorppassFormsgEsrvcIdEnabled ? (
                   <>
                     <Spacer w="16px" />
                     <Tag size="sm" variant="subtle">
@@ -102,7 +106,8 @@ export const SingpassAuthOptionsRadio = ({
               </Flex>
             </Radio>
           </Box>
-          {isEsrvcidRequired(authType) && authType === settings.authType ? (
+          {isEsrvcidRequired(authType, isCorppassFormsgEsrvcIdEnabled) &&
+          authType === settings.authType ? (
             <EsrvcIdBox settings={settings} isDisabled={isEsrvcIdBoxDisabled} />
           ) : null}
         </Fragment>

@@ -3,7 +3,12 @@ import { Meta, StoryFn } from '@storybook/react'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { DateString } from 'formsg-shared/types'
-import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
+import {
+  FormAuthType,
+  FormResponseMode,
+  FormSettings,
+  FormStatus,
+} from 'formsg-shared/types/form'
 
 import {
   getAdminFormSettings,
@@ -83,6 +88,23 @@ WithResponseLimitAndScheduledClosure.parameters = {
           responseMode: FormResponseMode.Encrypt,
           submissionLimit: 1000,
           closeAt: '2026-12-31T15:59:59.999Z' as DateString,
+        },
+      }),
+    },
+  },
+}
+
+/** A private Corppass form with no agency e-service ID yet. */
+export const PrivateCorppassFormWithoutEsrvcId = Template.bind({})
+PrivateCorppassFormWithoutEsrvcId.parameters = {
+  msw: {
+    handlers: {
+      default: buildMswRoutes({
+        overrides: {
+          title: 'Corppass form',
+          status: FormStatus.Private,
+          authType: FormAuthType.CP,
+          esrvcId: '',
         },
       }),
     },
