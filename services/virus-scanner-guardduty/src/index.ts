@@ -5,7 +5,11 @@ import { validate } from 'uuid'
 
 import { config } from './config'
 import { getLambdaLogger } from './logger'
-import { S3Service } from './s3.service'
+import {
+  MissingS3VersionIdError,
+  S3Service,
+  ZeroByteS3ObjectError,
+} from './s3.service'
 import { isBodyWithKey, MalwareScanTagValue } from './types'
 
 /**
@@ -66,8 +70,25 @@ export const handler = async (
       objectKey: quarantineFileKey,
     })
   } catch (err) {
+    // Distinguish the three failure modes so the warn log is filterable per
+    // case (404, missing VersionId, 0-byte). The HTTP response stays 404 with
+    // the same body for all three, preserving existing caller behaviour.
+    let reason: 'not_found' | 'missing_version_id' | 'zero_byte'
+    let logMessage: string
+    if (err instanceof ZeroByteS3ObjectError) {
+      reason = 'zero_byte'
+      logMessage = 'S3 object is 0 bytes'
+    } else if (err instanceof MissingS3VersionIdError) {
+      reason = 'missing_version_id'
+      logMessage = 'S3 object is missing a version id'
+    } else {
+      reason = 'not_found'
+      logMessage = 'File not found in s3'
+    }
+
     logger.warn({
-      message: 'File not found or its content is empty',
+      message: logMessage,
+      reason,
       err,
       quarantineFileKey,
     })
