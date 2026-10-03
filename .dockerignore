@@ -1,4 +1,5 @@
 **/*.pem
+**/.npmrc
 **/.aws
 **/.ssh
 **/.ebextensions
