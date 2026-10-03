@@ -1,5 +1,5 @@
 import { composeStories } from '@storybook/react'
-import { render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 import { REQUIRED_ERROR } from '~constants/validation'
@@ -44,6 +44,37 @@ describe('required field', () => {
       screen.getByText(new RegExp(`{"value":"${radioOption}"}`, 'i')),
     ).toBeInTheDocument()
     expect(screen.queryByText(REQUIRED_ERROR)).not.toBeInTheDocument()
+  })
+
+  it('selects the radio when clicking the circle while text is selected', async () => {
+    // Arrange
+    const radioOption =
+      WithoutOthersOption.args?.schema?.fieldOptions?.[0] ?? ''
+    render(<WithoutOthersOption />)
+    const fieldTitle = screen.getByText('Favourite fruit')
+    const firstRadioButton = screen.getByLabelText(radioOption)
+    /* eslint-disable testing-library/no-node-access -- the visual circle is aria-hidden, so it cannot be queried by role */
+    const firstRadioControl = firstRadioButton.parentElement?.querySelector(
+      '.chakra-radio__control',
+    )
+    /* eslint-enable testing-library/no-node-access */
+    const selection = window.getSelection()
+    const range = document.createRange()
+    range.selectNodeContents(fieldTitle)
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+
+    try {
+      expect(firstRadioControl).toBeInTheDocument()
+
+      // Act
+      await act(async () => fireEvent.click(firstRadioControl as Element))
+
+      // Assert
+      expect(firstRadioButton).toBeChecked()
+    } finally {
+      selection?.removeAllRanges()
+    }
   })
 
   it('renders success when valid radio field selected when submitted (with others option)', async () => {
