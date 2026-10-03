@@ -1,7 +1,9 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Flex, Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { BasicField } from 'formsg-shared/types'
 import {
   EmailFormDto,
@@ -15,7 +17,6 @@ import { Switch } from '~components/Toggle/Switch'
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useIncompleteWorkflowStepLabels } from '~features/admin-form/create/workflow/hooks/useIncompleteWorkflowStepLabels'
 
-import { useIsCorppassFormsgEsrvcIdEnabled } from '../hooks/useIsCorppassFormsgEsrvcIdEnabled'
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
@@ -34,7 +35,9 @@ export const FormStatusToggle = (): JSX.Element => {
     useAdminFormSettings()
 
   const { status, responseMode, authType, esrvcId } = formSettings ?? {}
-  const isCorppassFormsgEsrvcIdEnabled = useIsCorppassFormsgEsrvcIdEnabled()
+  const isCorppassFormsgEsrvcIdEnabled = useFeatureIsOn(
+    featureFlags.corppassFormsgEsrvcId,
+  )
 
   const secretKeyActivationModalProps = useDisclosure()
   const { onOpen: onOpenActivationModal } = secretKeyActivationModalProps

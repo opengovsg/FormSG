@@ -6,13 +6,14 @@ import {
   useState,
 } from 'react'
 import { Box, Flex, Spacer } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormAuthType, FormSettings, FormStatus } from 'formsg-shared/types'
 
 import Radio from '~components/Radio'
 import { Tag } from '~components/Tag'
 
-import { useIsCorppassFormsgEsrvcIdEnabled } from '../../hooks/useIsCorppassFormsgEsrvcIdEnabled'
 import { useMutateFormSettings } from '../../mutations'
 import { isEsrvcidRequired } from '../utils'
 
@@ -36,7 +37,9 @@ export const SingpassAuthOptionsRadio = ({
 }: SingpassAuthOptionsRadioProps): JSX.Element => {
   const { mutateFormAuthType } = useMutateFormSettings()
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
-  const isCorppassFormsgEsrvcIdEnabled = useIsCorppassFormsgEsrvcIdEnabled()
+  const isCorppassFormsgEsrvcIdEnabled = useFeatureIsOn(
+    featureFlags.corppassFormsgEsrvcId,
+  )
 
   const isFormPublic = settings.status === FormStatus.Public
 
