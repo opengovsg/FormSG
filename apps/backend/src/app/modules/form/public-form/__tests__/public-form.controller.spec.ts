@@ -1,10 +1,12 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
 import { ObjectId } from 'bson'
 import { Request } from 'express'
+import { featureFlags } from 'formsg-shared/constants'
 import { ErrorCode, FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
 import { errAsync, okAsync } from 'neverthrow'
 
+import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
 import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
 import { IPersonResponse } from 'src/app/modules/myinfo/myinfo.person.types'
@@ -1547,6 +1549,91 @@ describe('public-form.controller', () => {
       expect(mockRes.status).toHaveBeenCalledWith(500)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Sorry, something went wrong. Please try again.',
+      })
+    })
+
+    describe("when Corppass logs in with FormSG's e-service ID", () => {
+      const FORMSG_ESRVC_ID = 'FORMSG-CP'
+      const originalFormsgEsrvcId = spcpMyInfoConfig.cpFormsgEsrvcId
+      const MOCK_REQ_FLAG_ON = expressHandler.mockRequest({
+        params: { formId: new ObjectId().toHexString() },
+        others: {
+          growthbook: {
+            isOn: jest.fn(
+              (flag: string) => flag === featureFlags.corppassFormsgEsrvcId,
+            ),
+            getAttributes: jest.fn(() => ({})),
+            setAttributes: jest.fn().mockResolvedValue(undefined),
+          },
+        },
+      })
+
+      beforeEach(() => {
+        spcpMyInfoConfig.cpFormsgEsrvcId = FORMSG_ESRVC_ID
+      })
+
+      afterAll(() => {
+        spcpMyInfoConfig.cpFormsgEsrvcId = originalFormsgEsrvcId
+      })
+
+      const mockCpRedirect = () =>
+        jest
+          .spyOn(CpOidcServiceClass.prototype, 'createRedirectUrl')
+          .mockReturnValueOnce(
+            okAsync({
+              redirectUrl: MOCK_REDIRECT_URL,
+              codeVerifier: MOCK_CODE_VERIFIER,
+            }),
+          )
+
+      it("uses FormSG's e-service ID even when the form has its own", async () => {
+        MockFormService.retrieveFullFormById.mockReturnValueOnce(
+          okAsync({
+            admin: MOCK_ADMIN,
+            authType: FormAuthType.CP,
+            esrvcId: 'AGENCY-CP',
+          } as SpcpForm<IFormDocument>),
+        )
+        const createRedirectUrlSpy = mockCpRedirect()
+        const mockRes = expressHandler.mockResponse()
+
+        await PublicFormController._handleFormAuthRedirect(
+          MOCK_REQ_FLAG_ON,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(createRedirectUrlSpy).toHaveBeenCalledWith(
+          expect.any(String),
+          FORMSG_ESRVC_ID,
+        )
+        expect(mockRes.status).toHaveBeenCalledWith(200)
+      })
+
+      it('redirects a CP form that has no e-service ID of its own', async () => {
+        MockFormService.retrieveFullFormById.mockReturnValueOnce(
+          okAsync({
+            admin: MOCK_ADMIN,
+            authType: FormAuthType.CP,
+          } as unknown as SpcpForm<IFormDocument>),
+        )
+        const createRedirectUrlSpy = mockCpRedirect()
+        const mockRes = expressHandler.mockResponse()
+
+        await PublicFormController._handleFormAuthRedirect(
+          MOCK_REQ_FLAG_ON,
+          mockRes,
+          jest.fn(),
+        )
+
+        expect(createRedirectUrlSpy).toHaveBeenCalledWith(
+          expect.any(String),
+          FORMSG_ESRVC_ID,
+        )
+        expect(mockRes.status).toHaveBeenCalledWith(200)
+        expect(mockRes.json).toHaveBeenCalledWith({
+          redirectURL: MOCK_REDIRECT_URL,
+        })
       })
     })
   })

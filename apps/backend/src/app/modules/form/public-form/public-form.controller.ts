@@ -65,6 +65,7 @@ import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import {
   getRedirectTargetSpcpOidc,
+  validateCpForm,
   validateSpcpForm,
 } from '../../spcp/spcp.util'
 import { generateHashedSubmitterId } from '../../submission/submission.utils'
@@ -712,6 +713,9 @@ export const _handleFormAuthRedirect: ControllerHandler<
       // Fail closed: without a growthbook instance, only birth records are fetched.
       const isMrfChildrenEnabled =
         req.growthbook?.isOn(featureFlags.mrfChildren) ?? false
+      // Fail closed: without a growthbook instance, Corppass uses the form's own e-service ID.
+      const useFormsgEsrvcId =
+        req.growthbook?.isOn(featureFlags.corppassFormsgEsrvcId) ?? false
       switch (form.authType) {
         case FormAuthType.MyInfo:
           return MyInfoFapiService.startLogin({
@@ -751,26 +755,28 @@ export const _handleFormAuthRedirect: ControllerHandler<
         case FormAuthType.CP: {
           // NOTE: Persistent login is only set (and relevant) when the authType is SP.
           // If authType is not SP, assume that it was set erroneously and default it to false
-          return validateSpcpForm(form).asyncAndThen((form) => {
-            const target = getRedirectTargetSpcpOidc(
-              formId,
-              FormAuthType.CP,
-              isPersistentLogin,
-              encodedQuery,
-              nonce,
-            )
-            const oidcService = getOidcService(FormAuthType.CP)
-            return oidcService
-              .createRedirectUrl(target, form.esrvcId)
-              .map(({ redirectUrl, codeVerifier }) => {
-                res.cookie(
-                  oidcService.getCodeVerifierCookieName(nonce),
-                  codeVerifier,
-                  oidcService.getCodeVerifierCookieOptions(),
-                )
-                return redirectUrl
-              })
-          })
+          return validateCpForm(form, useFormsgEsrvcId).asyncAndThen(
+            (esrvcId) => {
+              const target = getRedirectTargetSpcpOidc(
+                formId,
+                FormAuthType.CP,
+                isPersistentLogin,
+                encodedQuery,
+                nonce,
+              )
+              const oidcService = getOidcService(FormAuthType.CP)
+              return oidcService
+                .createRedirectUrl(target, esrvcId)
+                .map(({ redirectUrl, codeVerifier }) => {
+                  res.cookie(
+                    oidcService.getCodeVerifierCookieName(nonce),
+                    codeVerifier,
+                    oidcService.getCodeVerifierCookieOptions(),
+                  )
+                  return redirectUrl
+                })
+            },
+          )
         }
         case FormAuthType.SGID:
           return validateSgidForm(form)
