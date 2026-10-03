@@ -228,7 +228,7 @@ describe('email-submission.util', () => {
       )
 
       const { question, answerArray, fieldType } = response
-      const answer = answerArray.join(', ')
+      const answer = answerArray.join('; ')
 
       const expectedDataCollationData = [{ question, answer }]
       const expectedFormData = [
@@ -342,7 +342,7 @@ describe('email-submission.util', () => {
       )
 
       const { question, fieldType } = response
-      const answer = answerArray.join(', ')
+      const answer = answerArray.join('; ')
 
       const expectedDataCollationData = [{ question, answer }]
       const expectedFormData = [
