@@ -1,5 +1,6 @@
 import { FormAuthType } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
+import { okAsync } from 'neverthrow'
 
 import config from '../../config/config'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -8,6 +9,7 @@ import { ControllerHandler } from '../core/core.types'
 import * as FormService from '../form/form.service'
 
 import { getOidcService } from './spcp.oidc.service'
+import { isCpFormsgEsrvcIdOn, isCpLoginWithFormsgEsrvcId } from './spcp.util'
 
 const logger = createLoggerWithLabel(module)
 
@@ -107,7 +109,18 @@ export const handleSpcpOidcLogin: (
     return res.redirect(destination)
   }
 
-  return BillingService.recordLoginByForm(form)
+  // RATIONALE: State and cookies are client-controlled, so the redirect cannot
+  // pass a trustworthy "free login" marker. Re-evaluate the flag with the same
+  // attributes instead. A flip between redirect and callback only changes
+  // whether one login is billed.
+  const isFreeLogin =
+    authType === FormAuthType.CP &&
+    isCpLoginWithFormsgEsrvcId(isCpFormsgEsrvcIdOn(req.growthbook, form))
+  const recordLoginResult = isFreeLogin
+    ? okAsync(undefined)
+    : BillingService.recordLoginByForm(form)
+
+  return recordLoginResult
     .map(() => {
       res.cookie(oidcService.jwtName, jwtResult.value, {
         maxAge: cookieDuration,

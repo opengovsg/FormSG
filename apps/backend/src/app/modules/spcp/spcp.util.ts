@@ -1,4 +1,6 @@
+import type { GrowthBook } from '@growthbook/growthbook'
 import type { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
+import { featureFlags } from 'formsg-shared/constants'
 import { BasicField, FieldResponsesV3, FormAuthType } from 'formsg-shared/types'
 import { hasProp } from 'formsg-shared/utils/has-prop'
 import {
@@ -7,7 +9,7 @@ import {
 } from 'formsg-shared/utils/verified-content'
 import { err, ok, Result } from 'neverthrow'
 
-import { IFormSchema, SPCPFieldTitle } from '../../../types'
+import { IFormSchema, IPopulatedForm, SPCPFieldTitle } from '../../../types'
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import {
@@ -190,6 +192,31 @@ export const isSPCPFieldTitle = (key: string): key is SPCPFieldTitle =>
 
 export const startsWithSPCPFieldTitle = (key: string): boolean =>
   Object.values(SPCPFieldTitle).some((title) => key.startsWith(title))
+
+/**
+ * Whether the corppass-formsg-esrvc-id flag is on for this form. Targets the
+ * same attributes as the login redirect, so the callback agrees with it.
+ * Fails closed when growthbook is unavailable.
+ */
+export const isCpFormsgEsrvcIdOn = (
+  growthbook: GrowthBook | undefined,
+  form: IPopulatedForm,
+): boolean => {
+  if (!growthbook) return false
+  void growthbook.setAttributes({
+    ...growthbook.getAttributes(),
+    formId: String(form._id),
+    adminEmail: form.admin.email,
+  })
+  return growthbook.isOn(featureFlags.corppassFormsgEsrvcId)
+}
+
+/**
+ * Whether Corppass logs in with FormSG's own e-service ID rather than the
+ * agency's. Such logins are free, so they are not recorded for billing.
+ */
+export const isCpLoginWithFormsgEsrvcId = (useFormsgEsrvcId: boolean) =>
+  useFormsgEsrvcId && !!spcpMyInfoConfig.cpFormsgEsrvcId
 
 /**
  * The Corppass e-service ID to log in with: FormSG's when the flag is on.
