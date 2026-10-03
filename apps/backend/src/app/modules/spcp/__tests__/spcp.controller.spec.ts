@@ -1,8 +1,10 @@
 import expressHandler from '__tests__/unit/backend/helpers/jest-express'
+import { featureFlags } from 'formsg-shared/constants'
 import { FormAuthType } from 'formsg-shared/types'
 import { err, errAsync, ok, okAsync } from 'neverthrow'
 
 import config from 'src/app/config/config'
+import { spcpMyInfoConfig } from 'src/app/config/features/spcp-myinfo.config'
 import * as FormService from 'src/app/modules/form/form.service'
 import { MOCK_COOKIE_AGE } from 'src/app/modules/myinfo/__tests__/myinfo.test.constants'
 
@@ -70,6 +72,28 @@ const MOCK_CPOIDC_LOGIN_REQ = expressHandler.mockRequest({
   query: { state: MOCK_OIDC_STATE, code: MOCK_CP_OIDC_AUTHORISATION_CODE },
   cookies: { [CodeVerifierCookieName.CP]: MOCK_CP_CODE_VERIFIER },
 })
+const mockGrowthbook = (isCpFormsgEsrvcIdOn: boolean) => ({
+  isOn: jest.fn(
+    (flag: string) =>
+      isCpFormsgEsrvcIdOn && flag === featureFlags.corppassFormsgEsrvcId,
+  ),
+  getAttributes: jest.fn(() => ({})),
+  setAttributes: jest.fn().mockResolvedValue(undefined),
+})
+const mockLoginReqWithFlag = (
+  authType: FormAuthType.SP | FormAuthType.CP,
+  isCpFormsgEsrvcIdOn: boolean,
+) =>
+  expressHandler.mockRequest({
+    query: {
+      state: MOCK_OIDC_STATE,
+      code:
+        authType === FormAuthType.SP
+          ? MOCK_SP_OIDC_AUTHORISATION_CODE
+          : MOCK_CP_OIDC_AUTHORISATION_CODE,
+    },
+    others: { growthbook: mockGrowthbook(isCpFormsgEsrvcIdOn) },
+  })
 const MOCK_CPOIDC_LOGIN_REQ_NO_CODE_VERIFIER = expressHandler.mockRequest({
   query: { state: MOCK_OIDC_STATE, code: MOCK_CP_OIDC_AUTHORISATION_CODE },
 })
@@ -770,6 +794,65 @@ describe('spcp.controller', () => {
           MOCK_CP_FORM,
         )
         expect(mockCpOidcServiceClass.getCookieSettings).not.toHaveBeenCalled()
+      })
+
+      describe("with FormSG's e-service ID", () => {
+        const originalFormsgEsrvcId = spcpMyInfoConfig.cpFormsgEsrvcId
+
+        beforeEach(() => {
+          mockCpOidcServiceClass.jwtName = JwtName.CP
+          spcpMyInfoConfig.cpFormsgEsrvcId = 'FORMSG-CP'
+        })
+
+        afterAll(() => {
+          spcpMyInfoConfig.cpFormsgEsrvcId = originalFormsgEsrvcId
+        })
+
+        it('should log in without recording a billed login when the flag is on', async () => {
+          await loginHandler(
+            mockLoginReqWithFlag(FormAuthType.CP, true),
+            MOCK_RESPONSE,
+            jest.fn(),
+          )
+
+          expect(MockBillingService.recordLoginByForm).not.toHaveBeenCalled()
+          expect(MOCK_RESPONSE.cookie).toHaveBeenCalledWith(
+            'jwtCp',
+            MOCK_JWT,
+            expect.objectContaining({ maxAge: MOCK_COOKIE_AGE }),
+          )
+          expect(MOCK_RESPONSE.cookie).not.toHaveBeenCalledWith(
+            'isLoginError',
+            true,
+          )
+          expect(MOCK_RESPONSE.redirect).toHaveBeenCalledWith(MOCK_DESTINATION)
+        })
+
+        it('should record the login when the flag is off', async () => {
+          await loginHandler(
+            mockLoginReqWithFlag(FormAuthType.CP, false),
+            MOCK_RESPONSE,
+            jest.fn(),
+          )
+
+          expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
+            MOCK_CP_FORM,
+          )
+        })
+
+        it("should record the login when the flag is on but FormSG's ID is not configured", async () => {
+          spcpMyInfoConfig.cpFormsgEsrvcId = ''
+
+          await loginHandler(
+            mockLoginReqWithFlag(FormAuthType.CP, true),
+            MOCK_RESPONSE,
+            jest.fn(),
+          )
+
+          expect(MockBillingService.recordLoginByForm).toHaveBeenCalledWith(
+            MOCK_CP_FORM,
+          )
+        })
       })
     })
   })
