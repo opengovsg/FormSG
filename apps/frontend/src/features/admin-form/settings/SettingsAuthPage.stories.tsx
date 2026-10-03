@@ -122,6 +122,21 @@ PrivateStorageCorppassForm.parameters = {
   },
 }
 
+/** A Corppass form with no agency e-service ID yet. */
+export const PrivateStorageCorppassFormWithoutEsrvcId = Template.bind({})
+PrivateStorageCorppassFormWithoutEsrvcId.parameters = {
+  msw: {
+    handlers: {
+      default: buildEncryptModeMswRoutes({
+        status: FormStatus.Private,
+        authType: FormAuthType.CP,
+        esrvcId: '',
+        responseMode: FormResponseMode.Encrypt,
+      }),
+    },
+  },
+}
+
 export const PublicEmailSingpassForm = Template.bind({})
 PublicEmailSingpassForm.parameters = {
   msw: {

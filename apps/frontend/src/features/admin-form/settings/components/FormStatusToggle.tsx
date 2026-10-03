@@ -15,6 +15,7 @@ import { Switch } from '~components/Toggle/Switch'
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { useIncompleteWorkflowStepLabels } from '~features/admin-form/create/workflow/hooks/useIncompleteWorkflowStepLabels'
 
+import { useIsCorppassFormsgEsrvcIdEnabled } from '../hooks/useIsCorppassFormsgEsrvcIdEnabled'
 import { useMutateFormSettings } from '../mutations'
 import { useAdminFormSettings } from '../queries'
 
@@ -33,6 +34,7 @@ export const FormStatusToggle = (): JSX.Element => {
     useAdminFormSettings()
 
   const { status, responseMode, authType, esrvcId } = formSettings ?? {}
+  const isCorppassFormsgEsrvcIdEnabled = useIsCorppassFormsgEsrvcIdEnabled()
 
   const secretKeyActivationModalProps = useDisclosure()
   const { onOpen: onOpenActivationModal } = secretKeyActivationModalProps
@@ -43,12 +45,24 @@ export const FormStatusToggle = (): JSX.Element => {
     if (status === FormStatus.Public) return
 
     // Prevent form activation if form has authType but no esrvcId.
-    if (authType && isEsrvcidRequired(authType) && !esrvcId) {
+    if (
+      authType &&
+      isEsrvcidRequired(authType, isCorppassFormsgEsrvcIdEnabled) &&
+      !esrvcId
+    ) {
       return t(
         'features.adminForm.settings.general.status.supplySingpassEServiceId',
       )
     }
-  }, [authType, esrvcId, formSettings?.responseMode, form_fields, status, t])
+  }, [
+    authType,
+    esrvcId,
+    formSettings?.responseMode,
+    form_fields,
+    isCorppassFormsgEsrvcIdEnabled,
+    status,
+    t,
+  ])
 
   const { mutateFormStatus } = useMutateFormSettings()
 
