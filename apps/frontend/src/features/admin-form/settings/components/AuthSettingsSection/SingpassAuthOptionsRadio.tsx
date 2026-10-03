@@ -6,7 +6,9 @@ import {
   useState,
 } from 'react'
 import { Box, Flex, Spacer } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormAuthType, FormSettings, FormStatus } from 'formsg-shared/types'
 
 import Radio from '~components/Radio'
@@ -35,6 +37,9 @@ export const SingpassAuthOptionsRadio = ({
 }: SingpassAuthOptionsRadioProps): JSX.Element => {
   const { mutateFormAuthType } = useMutateFormSettings()
   const [focusedValue, setFocusedValue] = useState<FormAuthType>()
+  const isCorppassFormsgEsrvcIdEnabled = useFeatureIsOn(
+    featureFlags.corppassFormsgEsrvcId,
+  )
 
   const isFormPublic = settings.status === FormStatus.Public
 
@@ -91,7 +96,9 @@ export const SingpassAuthOptionsRadio = ({
             <Radio value={authType} isDisabled={checkIsDisabled()}>
               <Flex>
                 {text}
-                {authType === FormAuthType.MyInfo ? (
+                {/* Corppass is free too once it uses FormSG's e-service ID */}
+                {authType === FormAuthType.MyInfo &&
+                !isCorppassFormsgEsrvcIdEnabled ? (
                   <>
                     <Spacer w="16px" />
                     <Tag size="sm" variant="subtle">
@@ -102,7 +109,8 @@ export const SingpassAuthOptionsRadio = ({
               </Flex>
             </Radio>
           </Box>
-          {isEsrvcidRequired(authType) && authType === settings.authType ? (
+          {isEsrvcidRequired(authType, isCorppassFormsgEsrvcIdEnabled) &&
+          authType === settings.authType ? (
             <EsrvcIdBox settings={settings} isDisabled={isEsrvcIdBoxDisabled} />
           ) : null}
         </Fragment>
