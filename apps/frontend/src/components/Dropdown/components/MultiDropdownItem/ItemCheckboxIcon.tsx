@@ -3,6 +3,8 @@ import { Box, Icon, useMultiStyleConfig } from '@chakra-ui/react'
 import { BxCheckAnimated } from '~assets/icons'
 import { CHECKBOX_THEME_KEY } from '~theme/components/Checkbox'
 
+export const ITEM_CHECKBOX_TEST_ID = 'dropdown-item-checkbox'
+
 interface ItemCheckboxIconProps {
   isChecked?: boolean
 }
@@ -14,6 +16,7 @@ export const ItemCheckboxIcon = ({
 
   return (
     <Box
+      data-testid={ITEM_CHECKBOX_TEST_ID}
       display="inline-flex"
       alignItems="center"
       justifyContent="center"
