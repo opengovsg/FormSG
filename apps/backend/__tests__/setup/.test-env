@@ -1,11 +1,5 @@
 MOCKPASS_PORT=5156
 
-SP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/openid-configuration
-SP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/keys
-SP_OIDC_RP_CLIENT_ID=rpClientId
-SP_OIDC_RP_REDIRECT_URL=http://localhost:5000/api/v3/singpass/login
-SP_OIDC_RP_JWKS_PUBLIC_PATH=./__tests__/setup/certs/test_sp_rp_public_jwks.json
-SP_OIDC_RP_JWKS_SECRET_PATH=./__tests__/setup/certs/test_sp_rp_secret_jwks.json
 CP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/openid-configuration
 CP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/keys
 CP_OIDC_RP_CLIENT_ID=rpClientId
@@ -23,13 +17,9 @@ MYINFO_FAPI_RP_JWKS_SECRET_PATH=./__tests__/setup/certs/test_myinfo_fapi_rp_secr
 SGID_HOSTNAME=http://localhost:5156
 SGID_CLIENT_ID=sgidclientid
 SGID_CLIENT_SECRET=sgidclientsecret
-SGID_FORM_LOGIN_REDIRECT_URI=http://localhost:5000/sgid/login
 SGID_ADMIN_LOGIN_REDIRECT_URI=http://localhost:5000/api/v3/auth/sgid/login
 SGID_PRIVATE_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/key.pem
-SGID_PUBLIC_KEY_PATH=./node_modules/@opengovsg/mockpass/static/certs/server.crt
-SGID_JWT_SECRET=sgidjwtsecret
 
-IS_SP_MAINTENANCE=Date/Time-SP
 IS_CP_MAINTENANCE=Date/Time-CP
 
 GOOGLE_CAPTCHA=123456789
@@ -83,7 +73,6 @@ INTRANET_IP_LIST_PATH=__tests__/setup/mock-intranet-ips.txt
 MOCKPASS_NRIC=S9812379B
 MOCKPASS_UID=S8979373D # Not used by mockpass but keep in sync with MOCKPASS_UEN for Corppass tests
 MOCKPASS_UEN=123456789A
-SP_RP_JWKS_ENDPOINT=http://localhost:5000/sp/.well-known/jwks.json
 CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
 FAPI_CLIENT_JWKS_ENDPOINT=http://localhost:5000/mi/fapi/.well-known/jwks.json
 
