@@ -49,12 +49,14 @@ import {
   CREATE_MYINFO_PERSONAL_DROP_ID,
   CREATE_MYINFO_PERSONAL_FIELDS_ORDERED,
   FIELD_LIST_DROP_ID,
+  PENDING_CREATE_FIELD_ID,
 } from './constants'
 import { DeleteFieldModal } from './DeleteFieldModal'
 import { DeletePaymentModal } from './DeletePaymentModal'
 import { DndPlaceholderProps } from './types'
 import { useCreateTabForm } from './useCreateTabForm'
 import {
+  setCreateInsertionIndexSelector,
   updateCreateStateSelector,
   useFieldBuilderStore,
 } from './useFieldBuilderStore'
@@ -73,6 +75,9 @@ export const BuilderAndDesignTab = (): JSX.Element => {
   } = useMagicFormBuilder()
 
   const setToCreating = useFieldBuilderStore(updateCreateStateSelector)
+  const setCreateInsertionIndex = useFieldBuilderStore(
+    setCreateInsertionIndexSelector,
+  )
   const { data } = useCreateTabForm()
 
   const { reorderFieldMutation } = useReorderFormField()
@@ -102,7 +107,7 @@ export const BuilderAndDesignTab = (): JSX.Element => {
   )
 
   const onDragEnd = useCallback(
-    ({ source, destination }: DropResult) => {
+    ({ source, destination, draggableId }: DropResult) => {
       setPlaceholderProps({})
 
       if (!data || !destination) return
@@ -209,6 +214,11 @@ export const BuilderAndDesignTab = (): JSX.Element => {
           if (destination.index === source.index) {
             return
           }
+          // The placeholder has no saved row to reorder, so moving it only
+          // updates where it will be inserted on create.
+          if (draggableId === PENDING_CREATE_FIELD_ID) {
+            return setCreateInsertionIndex(destination.index)
+          }
           return reorderFieldMutation.mutate({
             fields: data.form_fields,
             from: source.index,
@@ -217,7 +227,13 @@ export const BuilderAndDesignTab = (): JSX.Element => {
         }
       }
     },
-    [data, reorderFieldMutation, setToCreating, setPlaceholderProps],
+    [
+      data,
+      reorderFieldMutation,
+      setToCreating,
+      setPlaceholderProps,
+      setCreateInsertionIndex,
+    ],
   )
 
   const deleteFieldModalDisclosure = useDisclosure()
