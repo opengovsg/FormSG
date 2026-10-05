@@ -35,7 +35,11 @@ import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
 
 import { pickPrecedingStepValues } from './pickPrecedingStepValues'
-import { usePreviewStep, withPreviewStep } from './usePreviewStep'
+import {
+  getPreviewStepLabel,
+  usePreviewStep,
+  withPreviewStep,
+} from './usePreviewStep'
 
 interface PreviewFormProviderProps {
   formId: string
@@ -427,6 +431,7 @@ export const PreviewFormProvider = ({
   )
 
   const previousWorkflowStepNumberRef = useRef<number>()
+  const stepToastIdRef = useRef<string | number>()
   useEffect(() => {
     if (!formWorkflow) return
     const previousWorkflowStepNumber = previousWorkflowStepNumberRef.current
@@ -438,7 +443,23 @@ export const PreviewFormProvider = ({
       return
     }
     formMethods.reset(defaultFormValues)
-  }, [formWorkflow, currentWorkflowStepNumber, defaultFormValues, formMethods])
+
+    if (stepToastIdRef.current) {
+      toast.close(stepToastIdRef.current)
+    }
+    stepToastIdRef.current = toast({
+      description: `You're previewing ${getPreviewStepLabel(
+        formWorkflow[currentWorkflowStepNumber],
+        currentWorkflowStepNumber,
+      )}.`,
+    })
+  }, [
+    formWorkflow,
+    currentWorkflowStepNumber,
+    defaultFormValues,
+    formMethods,
+    toast,
+  ])
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
