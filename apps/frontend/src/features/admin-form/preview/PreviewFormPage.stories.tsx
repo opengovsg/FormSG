@@ -1,8 +1,10 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 import dedent from 'dedent'
 import { http, HttpResponse } from 'msw'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { BasicField } from 'formsg-shared/types/field'
 import {
   FormAuthType,
@@ -516,7 +518,21 @@ const selectPreviewStep = async (
   )
 }
 
+const withWorkflowBuilderRedesign = (isOn: boolean) => {
+  const growthbook = new GrowthBook({
+    features: {
+      [featureFlags.workflowBuilderRedesign]: { defaultValue: isOn },
+    },
+  })
+  return (Story: StoryFn) => (
+    <GrowthBookProvider growthbook={growthbook}>
+      <Story />
+    </GrowthBookProvider>
+  )
+}
+
 export const MultistepWorkflow = Template.bind({})
+MultistepWorkflow.decorators = [withWorkflowBuilderRedesign(true)]
 MultistepWorkflow.parameters = {
   msw: [...envHandlers, getMultistepPreviewFormResponse()],
 }
@@ -577,4 +593,28 @@ MultistepWorkflow.play = async ({ canvasElement }) => {
   await expect(
     canvas.getByRole('textbox', { name: /Reason for request/ }),
   ).toHaveValue('')
+}
+
+export const MultistepWorkflowWithoutRedesign = Template.bind({})
+MultistepWorkflowWithoutRedesign.decorators = [
+  withWorkflowBuilderRedesign(false),
+]
+MultistepWorkflowWithoutRedesign.parameters = {
+  msw: [...envHandlers, getMultistepPreviewFormResponse()],
+}
+MultistepWorkflowWithoutRedesign.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await expect(
+    await canvas.findByRole(
+      'textbox',
+      { name: /Reason for request/ },
+      { timeout: 5000 },
+    ),
+  ).toBeEnabled()
+  await expect(
+    canvas.getByRole('textbox', { name: /Finance decision/ }),
+  ).toBeDisabled()
+  await expect(
+    canvas.queryByRole('combobox', { name: 'Preview step' }),
+  ).not.toBeInTheDocument()
 }

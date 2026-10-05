@@ -27,6 +27,7 @@ import { HttpError } from '~services/ApiService'
 import { FormFieldValues } from '~templates/Field'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
+import { useIsWorkflowBuilderRedesign } from '~features/admin-form/create/workflow/hooks/useIsWorkflowBuilderRedesign'
 import { isFormPaymentsEnabled } from '~features/form/utils/isFormPaymentsEnabled'
 import { SubmitEmailFormArgs } from '~features/public-form/PublicFormService'
 
@@ -348,15 +349,17 @@ export const PreviewFormProvider = ({
     form?.responseMode === FormResponseMode.Multirespondent
       ? form.workflow
       : undefined
+  const isPerStepPreviewEnabled = useIsWorkflowBuilderRedesign()
+  const previewWorkflow = isPerStepPreviewEnabled ? formWorkflow : undefined
   const [currentWorkflowStepNumber, setCurrentWorkflowStepNumber] =
-    usePreviewStep(formWorkflow?.length ?? 0)
+    usePreviewStep(previewWorkflow?.length ?? 0)
   const currentStepNumberWorkflowStep =
     formWorkflow && formWorkflow.length > currentWorkflowStepNumber
       ? formWorkflow[currentWorkflowStepNumber]
       : undefined
 
   useEffect(() => {
-    if (!formWorkflow) return
+    if (!previewWorkflow) return
     const canonicalSearchParams = withPreviewStep(
       searchParams,
       currentWorkflowStepNumber,
@@ -365,7 +368,7 @@ export const PreviewFormProvider = ({
       setCurrentWorkflowStepNumber(currentWorkflowStepNumber)
     }
   }, [
-    formWorkflow,
+    previewWorkflow,
     searchParams,
     currentWorkflowStepNumber,
     setCurrentWorkflowStepNumber,
@@ -421,19 +424,22 @@ export const PreviewFormProvider = ({
     (stepNumber: number) => {
       setPrecedingStepValues(
         pickPrecedingStepValues(
-          formWorkflow?.slice(0, stepNumber) ?? [],
+          previewWorkflow?.slice(0, stepNumber) ?? [],
           formMethods.getValues(),
         ),
       )
       setCurrentWorkflowStepNumber(stepNumber)
     },
-    [formWorkflow, formMethods, setCurrentWorkflowStepNumber],
+    [previewWorkflow, formMethods, setCurrentWorkflowStepNumber],
   )
 
   const previousWorkflowStepNumberRef = useRef<number>()
   const stepToastIdRef = useRef<string | number>()
   useEffect(() => {
-    if (!formWorkflow) return
+    if (!previewWorkflow) {
+      previousWorkflowStepNumberRef.current = undefined
+      return
+    }
     const previousWorkflowStepNumber = previousWorkflowStepNumberRef.current
     previousWorkflowStepNumberRef.current = currentWorkflowStepNumber
     if (
@@ -449,12 +455,12 @@ export const PreviewFormProvider = ({
     }
     stepToastIdRef.current = toast({
       description: `You're previewing ${getPreviewStepLabel(
-        formWorkflow[currentWorkflowStepNumber],
+        previewWorkflow[currentWorkflowStepNumber],
         currentWorkflowStepNumber,
       )}.`,
     })
   }, [
-    formWorkflow,
+    previewWorkflow,
     currentWorkflowStepNumber,
     defaultFormValues,
     formMethods,
@@ -487,10 +493,12 @@ export const PreviewFormProvider = ({
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
         currentWorkflowStep: currentStepNumberWorkflowStep,
-        previewWorkflowStepNumber: formWorkflow
+        previewWorkflowStepNumber: previewWorkflow
           ? currentWorkflowStepNumber
           : undefined,
-        onPreviewWorkflowStepChange: handlePreviewWorkflowStepChange,
+        onPreviewWorkflowStepChange: previewWorkflow
+          ? handlePreviewWorkflowStepChange
+          : undefined,
         ...commonFormValues,
         ...data,
         ...rest,
