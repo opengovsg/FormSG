@@ -15,11 +15,11 @@ export const enSG: Workflow = {
   },
   respondentBlock: {
     stepRespondent: 'Respondent in this step',
-    stepRespondentRedesign: 'Who fills in this step?',
+    stepRespondentRedesign: 'Who should fill in this step?',
     anyone: 'Anyone who has access to your form',
     anyoneRedesign: 'Anyone with your form link can fill in Step 1.',
     select: 'Select a respondent',
-    selectRedesign: 'Who fills in this step?',
+    selectRedesign: 'Who should fill in this step?',
     fieldsToFill: 'Fields to fill',
     clickToEdit: 'Click to edit',
   },
@@ -229,6 +229,9 @@ export const enSG: Workflow = {
   },
   stepName: {
     label: 'Step name',
+    placeholderStepOne: 'e.g. Step 1, Applicant, Parent, Vendor, New request',
+    placeholderLaterStep:
+      "e.g. Step {stepNumber}, Staff, HOD approval, Applicant's acknowledgement",
   },
   guidedMode: {
     label: 'Guided setup',
@@ -236,7 +239,7 @@ export const enSG: Workflow = {
   guidedHints: {
     stepName: "Name this step, or keep it as 'Step {stepNumber}'.",
     respondent:
-      'Select who fills in this step. You can always change this later.',
+      'Choose who FormSG sends the form to next. You can always change this later.',
     approvals:
       'Choose what they do in this step. Most steps just need people to fill in fields.',
   },

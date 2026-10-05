@@ -195,6 +195,8 @@ export interface Workflow {
   }
   stepName: {
     label: string
+    placeholderStepOne: string
+    placeholderLaterStep: string
   }
   guidedMode: {
     label: string
