@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.41.0](https://github.com/opengovsg/formsg/compare/v9.40.1...v9.41.0) (2026-10-05)
+
+
+### Features
+
+* **flags:** scope frontend form targeting to admin form pages (#10187) ([#10187](https://github.com/opengovsg/formsg/commit/2bc4c85448f82af16180c5e7dc05447933c8343b))
+
+
+### Bug Fixes
+
+* **mrf:** preserve attachment checksums as hexadecimal (#10203) ([#10203](https://github.com/opengovsg/formsg/commit/25cddbb746d77a572d115050366d9fb780805a2a))
+
 ## [9.40.1](https://github.com/opengovsg/formsg/compare/v9.40.0...v9.40.1) (2026-10-01)
 
 
