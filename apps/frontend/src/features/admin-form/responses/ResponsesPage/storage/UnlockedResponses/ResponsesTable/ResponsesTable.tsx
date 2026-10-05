@@ -661,15 +661,19 @@ export const ResponsesTable = () => {
     setRenderedRowCount(rows.length)
   }, [isDelightfulDashboard, rows.length, setRenderedRowCount])
 
-  const columnWidthVars = Object.fromEntries(
-    visibleColumns.flatMap((column, index) => [
+  const columnWidthVars = Object.fromEntries([
+    ...visibleColumns.flatMap((column, index) => [
       [`--col-${index}-width`, `${column.totalWidth}px`],
       [
         `--col-${index}-grow`,
         String((column as { totalFlexWidth?: number }).totalFlexWidth ?? 0),
       ],
     ]),
-  ) as CSSProperties
+    [
+      '--row-width',
+      `${visibleColumns.reduce((total, column) => total + column.totalWidth, 0)}px`,
+    ],
+  ]) as CSSProperties
 
   const columnIndexById = useMemo(
     () => new Map(visibleColumns.map((column, index) => [column.id, index])),
@@ -752,6 +756,10 @@ export const ResponsesTable = () => {
                   ? {
                       display: 'flex',
                       minW: '100%',
+                      style: {
+                        ...row.getRowProps().style,
+                        minWidth: 'var(--row-width)',
+                      },
                       role: 'group',
                       sx: {
                         contentVisibility: 'auto',
