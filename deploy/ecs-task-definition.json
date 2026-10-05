@@ -53,10 +53,6 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_PRIVATE_KEY"
         },
         {
-          "name": "SGID_JWT_SECRET",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_JWT_SECRET"
-        },
-        {
           "name": "PAYMENT_STRIPE_SECRET_KEY",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/PAYMENT_STRIPE_SECRET_KEY"
         },
@@ -168,14 +164,6 @@
         {
           "name": "SGID_ADMIN_LOGIN_REDIRECT_URI",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_ADMIN_LOGIN_REDIRECT_URI"
-        },
-        {
-          "name": "SGID_FORM_LOGIN_REDIRECT_URI",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_FORM_LOGIN_REDIRECT_URI"
-        },
-        {
-          "name": "SGID_PUBLIC_KEY",
-          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/SGID_PUBLIC_KEY"
         },
         {
           "name": "SGID_HOSTNAME",
