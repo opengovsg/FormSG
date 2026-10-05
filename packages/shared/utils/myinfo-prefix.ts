@@ -1,4 +1,4 @@
-import { FormFieldDto, MyInfoAttribute } from '../types'
+import { MyInfoAttribute } from '../types'
 
 import type { FlattenedV1Response } from './flatten-v4-to-v1'
 
@@ -29,13 +29,15 @@ export const applyMyInfoPrefix = (
   )
 }
 
-export const applyMyInfoPrefixToFormFields = <F extends FormFieldDto>(
+export const applyMyInfoPrefixToFormFields = <
+  F extends MyInfoPrefixCandidate & { title: string },
+>(
   formFields: readonly F[],
   readOnlyFieldIds: Iterable<string>,
 ): F[] => {
   const readOnly = asSet(readOnlyFieldIds)
   return formFields.map((field) =>
-    shouldPrefixMyInfoQuestion(field as MyInfoPrefixCandidate, readOnly)
+    shouldPrefixMyInfoQuestion(field, readOnly)
       ? { ...field, title: `${MYINFO_QUESTION_PREFIX}${field.title}` }
       : field,
   )
