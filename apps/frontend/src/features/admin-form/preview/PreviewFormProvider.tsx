@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { FormProvider, SubmitHandler, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -34,6 +34,7 @@ import { useEnv } from '../../env/queries'
 import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
 
+import { pickPrecedingStepValues } from './pickPrecedingStepValues'
 import { usePreviewStep, withPreviewStep } from './usePreviewStep'
 
 interface PreviewFormProviderProps {
@@ -380,7 +381,10 @@ export const PreviewFormProvider = ({
 
   const isSaveDraftEnabled = Boolean(form?.isSaveDraftEnabled)
 
-  const defaultFormValues = useMemo(() => {
+  const [precedingStepValues, setPrecedingStepValues] =
+    useState<FormFieldValues>({})
+
+  const stepDefaultFormValues = useMemo(() => {
     if (!form?.responseMode) return {}
     return getInitialFormValues({
       formResponseMode: form?.responseMode,
@@ -400,9 +404,41 @@ export const PreviewFormProvider = ({
     searchParams,
   ])
 
+  const defaultFormValues = useMemo(
+    () => ({ ...stepDefaultFormValues, ...precedingStepValues }),
+    [stepDefaultFormValues, precedingStepValues],
+  )
+
   const formMethods = useForm<FormFieldValues>({
     defaultValues: defaultFormValues,
   })
+
+  const handlePreviewWorkflowStepChange = useCallback(
+    (stepNumber: number) => {
+      setPrecedingStepValues(
+        pickPrecedingStepValues(
+          formWorkflow?.slice(0, stepNumber) ?? [],
+          formMethods.getValues(),
+        ),
+      )
+      setCurrentWorkflowStepNumber(stepNumber)
+    },
+    [formWorkflow, formMethods, setCurrentWorkflowStepNumber],
+  )
+
+  const previousWorkflowStepNumberRef = useRef<number>()
+  useEffect(() => {
+    if (!formWorkflow) return
+    const previousWorkflowStepNumber = previousWorkflowStepNumberRef.current
+    previousWorkflowStepNumberRef.current = currentWorkflowStepNumber
+    if (
+      previousWorkflowStepNumber === undefined ||
+      previousWorkflowStepNumber === currentWorkflowStepNumber
+    ) {
+      return
+    }
+    formMethods.reset(defaultFormValues)
+  }, [formWorkflow, currentWorkflowStepNumber, defaultFormValues, formMethods])
 
   if (isNotFormId) {
     return <NotFoundErrorPage />
@@ -433,7 +469,7 @@ export const PreviewFormProvider = ({
         previewWorkflowStepNumber: formWorkflow
           ? currentWorkflowStepNumber
           : undefined,
-        onPreviewWorkflowStepChange: setCurrentWorkflowStepNumber,
+        onPreviewWorkflowStepChange: handlePreviewWorkflowStepChange,
         ...commonFormValues,
         ...data,
         ...rest,
