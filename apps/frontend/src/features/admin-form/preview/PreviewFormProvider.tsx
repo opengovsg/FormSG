@@ -410,6 +410,7 @@ export const PreviewFormProvider = ({
         fieldPrefillMap,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
+        currentWorkflowStep: currentStepNumberWorkflowStep,
         ...commonFormValues,
         ...data,
         ...rest,

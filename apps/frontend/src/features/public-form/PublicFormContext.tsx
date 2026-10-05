@@ -12,7 +12,10 @@ import {
   FormFieldDto,
   PublicMultirespondentSubmissionDto,
 } from 'formsg-shared/types'
-import { PublicFormViewDto } from 'formsg-shared/types/form'
+import {
+  PublicFormViewDto,
+  StrippedFormWorkflowStepDto,
+} from 'formsg-shared/types/form'
 
 import { FormFieldValues } from '~templates/Field'
 
@@ -109,6 +112,7 @@ export interface PublicFormContextProps
   defaultFormValues: FormFieldValues
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap
+  currentWorkflowStep?: StrippedFormWorkflowStepDto
 }
 
 export const PublicFormContext = createContext<

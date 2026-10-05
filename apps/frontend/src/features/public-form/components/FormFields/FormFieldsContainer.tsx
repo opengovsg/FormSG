@@ -22,12 +22,10 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     isLoading,
     handleSubmitForm,
     submissionData,
-    encryptedPreviousSubmission,
     previousSubmission,
     previousAttachments,
+    currentWorkflowStep,
   } = usePublicFormContext()
-
-  const { workflowStep } = encryptedPreviousSubmission ?? {}
 
   const renderFields = useMemo(() => {
     if (isLoading) {
@@ -66,15 +64,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
         previousAttachments={previousAttachments}
         formFields={form.form_fields}
         formLogics={form.form_logics}
-        workflowStep={
-          form.responseMode === FormResponseMode.Multirespondent
-            ? form.workflow[
-                // If no submission, then the workflowStep will be undefined.
-                // Require explicit undefined check here since both 0 and undefined are falsy but mean different things here.
-                workflowStep === undefined ? 0 : workflowStep + 1
-              ]
-            : undefined
-        }
+        workflowStep={currentWorkflowStep}
         colorTheme={form.startPage.colorTheme}
         onSubmit={handleSubmitForm}
       />
@@ -84,7 +74,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     form,
     isAuthRequired,
     previousAttachments,
-    workflowStep,
+    currentWorkflowStep,
     handleSubmitForm,
     hasSingleSubmissionValidationError,
     hasRespondentNotWhitelistedError,
