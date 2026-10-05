@@ -10,12 +10,12 @@ import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Toggle from '~components/Toggle'
 
+import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowSavePermissive } from '../../../hooks/useIsWorkflowSavePermissive'
-import { useStageFieldAndNavigate } from '../../../hooks/useStageFieldAndNavigate'
 import { EditStepInputs } from '../../../types'
 import { useIsSpotlightActiveSection } from '../../Spotlight'
 import { nextEditFieldsForApproval } from '../utils/nextEditFieldsForApproval'
@@ -26,7 +26,6 @@ import {
   FIELDS_TO_EDIT_NAME,
 } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
-import { FieldEmptyState } from './EmptyStates'
 
 interface ApprovalsBlockProps {
   formMethods: UseFormReturn<EditStepInputs>
@@ -41,7 +40,11 @@ export const ApprovalsBlock = ({
   const isRedesign = useIsWorkflowBuilderRedesign()
   const isSavePermissive = useIsWorkflowSavePermissive()
   const isActiveSection = useIsSpotlightActiveSection()
-  const stageFieldAndNavigate = useStageFieldAndNavigate()
+  const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
+    label: t('features.adminForm.sidebar.workflow.addField.yesNo'),
+    fieldType: BasicField.YesNo,
+    enabled: isRedesign,
+  })
   const {
     control,
     setValue,
@@ -185,32 +188,18 @@ export const ApprovalsBlock = ({
             }}
             render={({ field: { value = '', onChange, ...rest } }) => {
               const displayValue = getValueIfNotDeleted(value)
-              if (isRedesign && yesNoFieldItems.length === 0) {
-                return (
-                  <FieldEmptyState
-                    picker="yesno"
-                    message={t(
-                      'features.adminForm.sidebar.workflow.emptyStates.noYesNoField',
-                    )}
-                    actionLabel={t(
-                      'features.adminForm.sidebar.workflow.emptyStates.noYesNoFieldAction',
-                    )}
-                    onAction={() =>
-                      stageFieldAndNavigate(BasicField.YesNo, getValues())
-                    }
-                  />
-                )
-              }
-              const handleApprovalFieldChange = (newValue: string) => {
-                assignApprovalFieldToStep(newValue)
-                onChange(newValue)
-              }
+              const handleApprovalFieldChange = withAddFieldAction(
+                (newValue: string) => {
+                  assignApprovalFieldToStep(newValue)
+                  onChange(newValue)
+                },
+              )
               return (
                 <SingleSelect
                   placeholder={t(
                     'features.adminForm.sidebar.workflow.approvals.toggle.placeholder',
                   )}
-                  items={yesNoFieldItems}
+                  items={withAddFieldItem(yesNoFieldItems)}
                   value={displayValue}
                   isClearable
                   isDisabled={isLoading}

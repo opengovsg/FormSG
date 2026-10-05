@@ -178,18 +178,14 @@ export const enSG: Workflow = {
     placeholderRedesign: 'Select fields from your form',
     autoAddHelperTextRedesign:
       'The approval field is added here automatically.',
-  },
-  emptyStates: {
-    noEmailField: 'Your form has no Email field yet.',
-    noEmailFieldAction: 'Add an Email field',
-    noDropdownField: 'Your form has no Dropdown field yet.',
-    noDropdownFieldAction: 'Add a Dropdown field',
-    noYesNoField: 'Your form has no Yes/No field yet.',
-    noYesNoFieldAction: 'Add a Yes/No field',
-    noFields: 'Your form has no fields yet.',
-    noFieldsMyInfoOnly:
+    myInfoOnlyHelperText:
       'Your form only has MyInfo fields, which can only be used in the first step.',
-    noFieldsAction: 'Add fields',
+  },
+  addField: {
+    fields: 'Add fields',
+    email: 'Add an Email field',
+    dropdown: 'Add a Dropdown field',
+    yesNo: 'Add a Yes/No field',
   },
   approvals: {
     title: 'Approvals',
