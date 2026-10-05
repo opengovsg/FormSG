@@ -8,10 +8,10 @@ import { FormHeader } from './FormHeader'
 import { useFormHeader } from './useFormHeader'
 
 interface FormStartPageProps {
-  isTemplate?: boolean
+  hasStickyPreviewBanner?: boolean
 }
 export const FormStartPage = ({
-  isTemplate,
+  hasStickyPreviewBanner,
 }: FormStartPageProps): JSX.Element => {
   const {
     form,
@@ -43,7 +43,7 @@ export const FormStartPage = ({
       miniHeaderRef={miniHeaderRef}
       onMobileDrawerOpen={onMobileDrawerOpen}
       handleLogout={handleLogout}
-      isTemplate={isTemplate}
+      hasStickyPreviewBanner={hasStickyPreviewBanner}
       {...formHeaderProps}
     />
   )

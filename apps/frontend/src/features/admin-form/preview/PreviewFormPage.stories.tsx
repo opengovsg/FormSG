@@ -1,12 +1,19 @@
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 import { expect, userEvent, waitFor, within } from '@storybook/test'
 import dedent from 'dedent'
+import { http, HttpResponse } from 'msw'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { BasicField } from 'formsg-shared/types/field'
 import {
   FormAuthType,
   FormColorTheme,
   FormResponseMode,
+  LogicConditionState,
+  LogicIfValue,
+  LogicType,
+  WorkflowType,
 } from 'formsg-shared/types/form'
 
 import { TABLE_FIELD_ADDITIONAL_ROWS_FIELD } from '~/mocks/msw/handlers/admin-form'
@@ -16,6 +23,7 @@ import {
 } from '~/mocks/msw/handlers/admin-form/preview-form'
 import { envHandlers } from '~/mocks/msw/handlers/env'
 import {
+  BASE_FORM,
   postGenerateVfnOtpResponse,
   postVerifyVfnOtpResponse,
   postVfnTransactionResponse,
@@ -417,4 +425,196 @@ MultirespondentFormWithAdditionalRowsTableField.parameters = {
       },
     }),
   ],
+}
+
+const MRF_FIELD_IDS = {
+  reason: '66f000000000000000000001',
+  isUrgent: '66f000000000000000000002',
+  urgencyNotes: '66f000000000000000000003',
+  approval: '66f000000000000000000004',
+}
+
+const mrfShortTextField = (_id: string, title: string) => ({
+  _id,
+  title,
+  description: '',
+  required: true,
+  disabled: false,
+  allowPrefill: false,
+  fieldType: BasicField.ShortText,
+  ValidationOptions: {
+    customVal: null,
+    selectedValidation: null,
+  },
+})
+
+const getMultistepPreviewFormResponse = () =>
+  http.get('/api/v3/admin/forms/:formId/preview', ({ params }) =>
+    HttpResponse.json({
+      form: {
+        ...BASE_FORM,
+        _id: params.formId,
+        title: 'Laptop request',
+        responseMode: FormResponseMode.Multirespondent,
+        form_fields: [
+          mrfShortTextField(MRF_FIELD_IDS.reason, 'Reason for request'),
+          {
+            _id: MRF_FIELD_IDS.isUrgent,
+            title: 'Is this urgent?',
+            description: '',
+            required: true,
+            disabled: false,
+            fieldType: BasicField.YesNo,
+          },
+          mrfShortTextField(MRF_FIELD_IDS.urgencyNotes, 'Urgency notes'),
+          mrfShortTextField(MRF_FIELD_IDS.approval, 'Finance decision'),
+        ],
+        form_logics: [
+          {
+            _id: '66f0000000000000000000a1',
+            logicType: LogicType.ShowFields,
+            show: [MRF_FIELD_IDS.urgencyNotes],
+            conditions: [
+              {
+                ifValueType: LogicIfValue.SingleSelect,
+                field: MRF_FIELD_IDS.isUrgent,
+                state: LogicConditionState.Equal,
+                value: 'Yes',
+              },
+            ],
+          },
+        ],
+        workflow: [
+          {
+            _id: '66f0000000000000000000b1',
+            workflow_type: WorkflowType.Static,
+            step_name: 'Requestor',
+            edit: [MRF_FIELD_IDS.reason, MRF_FIELD_IDS.isUrgent],
+          },
+          {
+            _id: '66f0000000000000000000b2',
+            workflow_type: WorkflowType.Static,
+            step_name: 'Approver',
+            edit: [MRF_FIELD_IDS.urgencyNotes],
+          },
+          {
+            _id: '66f0000000000000000000b3',
+            workflow_type: WorkflowType.Static,
+            edit: [MRF_FIELD_IDS.approval],
+          },
+        ],
+      },
+    }),
+  )
+
+const selectPreviewStep = async (
+  canvasElement: HTMLElement,
+  stepLabel: string,
+) => {
+  const canvas = within(canvasElement)
+  await userEvent.click(canvas.getByRole('combobox', { name: 'Preview step' }))
+  await userEvent.click(
+    await within(document.body).findByRole('option', { name: stepLabel }),
+  )
+}
+
+const withWorkflowBuilderRedesign = (isOn: boolean) => {
+  const growthbook = new GrowthBook({
+    features: {
+      [featureFlags.workflowBuilderRedesign]: { defaultValue: isOn },
+    },
+  })
+  return (Story: StoryFn) => (
+    <GrowthBookProvider growthbook={growthbook}>
+      <Story />
+    </GrowthBookProvider>
+  )
+}
+
+export const MultistepWorkflow = Template.bind({})
+MultistepWorkflow.decorators = [withWorkflowBuilderRedesign(true)]
+MultistepWorkflow.parameters = {
+  msw: [...envHandlers, getMultistepPreviewFormResponse()],
+}
+MultistepWorkflow.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  const reason = await canvas.findByRole(
+    'textbox',
+    { name: /Reason for request/ },
+    { timeout: 5000 },
+  )
+  await expect(reason).toBeEnabled()
+  await userEvent.type(reason, 'New laptop')
+  await userEvent.click(
+    canvas.getByRole('button', { name: /Is this urgent\? Yes option/ }),
+  )
+
+  await selectPreviewStep(canvasElement, 'Step 2: Approver')
+
+  await waitFor(() =>
+    expect(
+      canvas.getByRole('textbox', { name: /Reason for request/ }),
+    ).toBeDisabled(),
+  )
+  await expect(
+    canvas.getByRole('textbox', { name: /Reason for request/ }),
+  ).toHaveValue('New laptop')
+  const urgencyNotes = canvas.getByRole('textbox', { name: /Urgency notes/ })
+  await expect(urgencyNotes).toBeEnabled()
+  await expect(
+    canvas.getByRole('textbox', { name: /Finance decision/ }),
+  ).toBeDisabled()
+
+  await userEvent.type(urgencyNotes, 'Needed by Friday')
+  await userEvent.clear(urgencyNotes)
+  await expect(
+    canvas.getByRole('textbox', { name: /Reason for request/ }),
+  ).toHaveValue('New laptop')
+
+  await userEvent.click(canvas.getByRole('button', { name: /Submit now/ }))
+  await waitFor(() =>
+    expect(canvas.getAllByText(/This field is required/)).toHaveLength(1),
+  )
+  await expect(urgencyNotes).toHaveAttribute('aria-invalid', 'true')
+
+  await selectPreviewStep(canvasElement, 'Step 3')
+  const approval = await canvas.findByRole('textbox', {
+    name: /Finance decision/,
+  })
+  await waitFor(() => expect(approval).toBeEnabled())
+  await userEvent.type(approval, 'Approved')
+
+  await selectPreviewStep(canvasElement, 'Step 1: Requestor')
+  await waitFor(() =>
+    expect(
+      canvas.getByRole('textbox', { name: /Finance decision/ }),
+    ).toHaveValue(''),
+  )
+  await expect(
+    canvas.getByRole('textbox', { name: /Reason for request/ }),
+  ).toHaveValue('')
+}
+
+export const MultistepWorkflowWithoutRedesign = Template.bind({})
+MultistepWorkflowWithoutRedesign.decorators = [
+  withWorkflowBuilderRedesign(false),
+]
+MultistepWorkflowWithoutRedesign.parameters = {
+  msw: [...envHandlers, getMultistepPreviewFormResponse()],
+}
+MultistepWorkflowWithoutRedesign.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await expect(
+    await canvas.findByRole(
+      'textbox',
+      { name: /Reason for request/ },
+      { timeout: 5000 },
+    ),
+  ).toBeEnabled()
+  await expect(
+    canvas.getByRole('textbox', { name: /Finance decision/ }),
+  ).toBeDisabled()
+  await expect(
+    canvas.queryByRole('combobox', { name: 'Preview step' }),
+  ).not.toBeInTheDocument()
 }

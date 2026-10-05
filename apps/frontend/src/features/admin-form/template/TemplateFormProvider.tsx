@@ -173,6 +173,7 @@ export const TemplateFormProvider = ({
         fieldPrefillMap,
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
+        currentWorkflowStep: currentStepNumberWorkflowStep,
         ...commonFormValues,
         ...data,
         ...rest,

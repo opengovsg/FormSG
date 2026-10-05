@@ -1428,6 +1428,7 @@ export const PublicFormProvider = ({
         defaultFormValues,
         augmentedFormFields,
         fieldPrefillMap,
+        currentWorkflowStep: currentStepNumberWorkflowStep,
         ...commonFormValues,
         ...data,
         ...rest,

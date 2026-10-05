@@ -32,7 +32,7 @@ export type MiniHeaderProps = Pick<
   | 'miniHeaderRef'
   | 'onMobileDrawerOpen'
   | 'colorScheme'
-> & { isOpen: boolean; isTemplate?: boolean }
+> & { isOpen: boolean; hasStickyPreviewBanner?: boolean }
 
 export const MiniHeader = ({
   title,
@@ -43,7 +43,7 @@ export const MiniHeader = ({
   onMobileDrawerOpen,
   colorScheme,
   isOpen,
-  isTemplate,
+  hasStickyPreviewBanner,
 }: MiniHeaderProps): JSX.Element => {
   const {
     isSaveDraftEnabled,
@@ -64,7 +64,7 @@ export const MiniHeader = ({
     >
       <Box
         bg={titleBg}
-        mt={isTemplate ? '4.75rem' : '0'}
+        mt={hasStickyPreviewBanner ? '4.75rem' : '0'}
         px={{ base: '1.5rem', md: '2rem' }}
         py={{ base: '0.5rem', md: '1rem' }}
         sx={noPrintCss}
@@ -143,7 +143,7 @@ interface FormHeaderProps {
   loggedInId?: string
   showMiniHeader?: boolean
   activeSectionId?: string
-  isTemplate?: boolean
+  hasStickyPreviewBanner?: boolean
   miniHeaderRef?: RefObject<HTMLDivElement>
   onMobileDrawerOpen?: () => void
   handleLogout?: () => void
@@ -161,7 +161,7 @@ export const FormHeader = ({
   showMiniHeader,
   activeSectionId,
   miniHeaderRef,
-  isTemplate,
+  hasStickyPreviewBanner,
   onMobileDrawerOpen,
   handleLogout,
 }: FormHeaderProps): JSX.Element | null => {
@@ -195,7 +195,7 @@ export const FormHeader = ({
           miniHeaderRef={miniHeaderRef}
           onMobileDrawerOpen={onMobileDrawerOpen}
           isOpen={isOpen}
-          isTemplate={isTemplate}
+          hasStickyPreviewBanner={hasStickyPreviewBanner}
         />
       ) : null}
       <Flex

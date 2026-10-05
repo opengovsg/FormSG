@@ -54,7 +54,7 @@ export const TemplateFormPage = (): JSX.Element => {
         <PreviewFormBannerContainer isTemplate />
         <FormSectionsProvider>
           <PublicFormLogo />
-          <FormStartPage isTemplate />
+          <FormStartPage hasStickyPreviewBanner />
           <PublicFormWrapper>
             <FormInstructions />
             <FormFields />

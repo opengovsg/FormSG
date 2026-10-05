@@ -18,6 +18,7 @@ import {
   Text,
   TextProps,
   useDisclosure,
+  VisuallyHidden,
 } from '@chakra-ui/react'
 
 import { FormId } from 'formsg-shared/types/form/form'
@@ -25,8 +26,10 @@ import { FormId } from 'formsg-shared/types/form/form'
 import { FORMSG_UAT } from '~constants/links'
 import { ADMINFORM_ROUTE, DASHBOARD_ROUTE } from '~constants/routes'
 import Button, { ButtonProps } from '~components/Button'
+import { SingleSelect } from '~components/Dropdown'
 import Link from '~components/Link'
 
+import { getPreviewStepLabel } from '~features/admin-form/preview/usePreviewStep'
 import { UseTemplateModal } from '~features/admin-form/template/UseTemplateModal'
 // Explicit deep import to avoid circular dependency warnings by rollup.
 import {
@@ -38,14 +41,21 @@ import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 // Explicit import to avoid circular dependency warnings by rollup
 import { DuplicateFormModal } from '~features/workspace/components/DuplicateFormModal/DuplicateFormModal'
 
+import {
+  useHasStickyPreviewBanner,
+  usePreviewWorkflow,
+} from './usePreviewWorkflow'
+
 export const StickyPreviewHeader = ({
   isOpen,
+  isTemplate,
 }: {
   isOpen: boolean
+  isTemplate?: boolean
 }): JSX.Element => (
   <Portal>
     <Slide direction="top" in={isOpen}>
-      <PreviewFormBanner isTemplate isSticky />
+      <PreviewFormBanner isTemplate={isTemplate} isSticky />
     </Slide>
   </Portal>
 )
@@ -60,6 +70,46 @@ const textProps: TextProps = {
   mx: '2rem',
   mt: '0.5rem',
   mb: '0.5rem',
+}
+
+const PreviewStepSelect = ({
+  isSticky,
+}: {
+  isSticky?: boolean
+}): JSX.Element | null => {
+  const workflow = usePreviewWorkflow()
+  const { previewWorkflowStepNumber, onPreviewWorkflowStepChange } =
+    usePublicFormContext()
+  const items = useMemo(
+    () =>
+      workflow?.map((workflowStep, index) => ({
+        value: String(index),
+        label: getPreviewStepLabel(workflowStep, index),
+      })) ?? [],
+    [workflow],
+  )
+
+  if (
+    !items.length ||
+    previewWorkflowStepNumber === undefined ||
+    !onPreviewWorkflowStepChange
+  ) {
+    return null
+  }
+
+  const name = isSticky ? 'preview-step-sticky' : 'preview-step'
+  return (
+    <Flex minW="10rem" maxW="17.5rem">
+      <VisuallyHidden id={`${name}-label`}>Preview step</VisuallyHidden>
+      <SingleSelect
+        name={name}
+        isClearable={false}
+        value={String(previewWorkflowStepNumber)}
+        onChange={(value) => onPreviewWorkflowStepChange(Number(value))}
+        items={items}
+      />
+    </Flex>
+  )
 }
 
 export const PreviewFormBanner = ({
@@ -100,18 +150,21 @@ export const PreviewFormBanner = ({
         width="100%"
       >
         <Flex align="center" flex={1} justify="space-between" flexDir="row">
-          <Flex align="center">
-            <Icon
-              aria-hidden
-              as={BiShow}
-              fontSize="1.5rem"
-              mr={{ base: '0.5rem', md: '1rem' }}
-            />
-            <Text textStyle="subhead-3">
-              {isTemplate
-                ? t('features.adminForm.template.previewLabel')
-                : 'Form Preview'}
-            </Text>
+          <Flex align="center" gap="1rem">
+            <Flex align="center" flexShrink={0}>
+              <Icon
+                aria-hidden
+                as={BiShow}
+                fontSize="1.5rem"
+                mr={{ base: '0.5rem', md: '1rem' }}
+              />
+              <Text textStyle="subhead-3">
+                {isTemplate
+                  ? t('features.adminForm.template.previewLabel')
+                  : 'Form Preview'}
+              </Text>
+            </Flex>
+            {isTemplate ? null : <PreviewStepSelect isSticky={isSticky} />}
           </Flex>
           {isTemplate ? (
             <>
@@ -229,6 +282,7 @@ export const PreviewFormBannerContainer = ({
   isTemplate,
 }: PreviewFormBannerProps): JSX.Element => {
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const hasStickyHeader = useHasStickyPreviewBanner(isTemplate)
   const handlePositionChange = useCallback(
     (pos: Waypoint.CallbackArgs) => {
       // Required so a page that loads in the middle of the page can still
@@ -244,7 +298,9 @@ export const PreviewFormBannerContainer = ({
 
   return (
     <>
-      {isTemplate ? <StickyPreviewHeader isOpen={isOpen} /> : null}
+      {hasStickyHeader ? (
+        <StickyPreviewHeader isOpen={isOpen} isTemplate={isTemplate} />
+      ) : null}
       <PreviewFormBanner isTemplate={isTemplate} />
       {
         /* Sentinel to know when sticky navbar is starting */
