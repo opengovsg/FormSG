@@ -274,6 +274,10 @@
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CP_OIDC_RP_REDIRECT_URL"
         },
         {
+          "name": "CP_FORMSG_ESRVC_ID",
+          "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CP_FORMSG_ESRVC_ID"
+        },
+        {
           "name": "CP_OIDC_RP_JWKS_PUBLIC",
           "valueFrom": "/<ENVIRONMENT_SITE_NAME>/CP_OIDC_RP_JWKS_PUBLIC"
         },
