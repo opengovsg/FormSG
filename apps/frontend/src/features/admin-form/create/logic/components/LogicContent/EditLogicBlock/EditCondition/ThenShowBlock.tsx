@@ -14,6 +14,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import InlineMessage from '~components/InlineMessage'
 import Textarea from '~components/Textarea'
 
+import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditLogicInputs } from '~features/admin-form/create/logic/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
@@ -223,6 +224,9 @@ const ThenLogicInput = ({
 
   const logicTypeValue = watch('logicType')
   const logicConditionsWatch = useWatchDependency(watch, 'conditions')
+  const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
+    label: t('features.adminForm.sidebar.logic.logicClause.addFieldsAction'),
+  })
 
   const thenValueItems = useMemo(() => {
     // Return every field except fields that are already used in the logic.
@@ -291,13 +295,14 @@ const ThenLogicInput = ({
             ),
           },
         }}
-        render={({ field: { value, ...rest } }) => (
+        render={({ field: { value, onChange, ...rest } }) => (
           <MultiSelect
             isDisabled={!logicTypeValue || isLoading}
             placeholder={null}
-            items={thenValueItems}
+            items={withAddFieldItem(thenValueItems)}
             values={value ?? []}
             isSelectedItemFullWidth
+            onChange={withAddFieldAction(onChange)}
             {...rest}
           />
         )}

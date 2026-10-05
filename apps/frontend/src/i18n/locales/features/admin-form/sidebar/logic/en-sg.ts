@@ -25,6 +25,7 @@ export const enSG: Logic = {
     show: 'show',
     selectField: 'Select a field',
     selectResultType: 'Select a type of result',
+    addFieldsAction: 'Add fields',
   },
   inactiveBlock: {
     if: 'If',

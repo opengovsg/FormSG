@@ -29,6 +29,7 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import IconButton from '~components/IconButton'
 import NumberInput from '~components/NumberInput'
 
+import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { EditLogicInputs } from '~features/admin-form/create/logic/types'
 import { FormFieldWithQuestionNo } from '~features/form/types'
@@ -55,6 +56,9 @@ export const EditConditionBlock = ({
 }: EditConditionBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const name = useMemo(() => `conditions.${index}` as const, [index])
+  const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
+    label: t('features.adminForm.sidebar.logic.logicClause.addFieldsAction'),
+  })
 
   const {
     watch,
@@ -333,14 +337,15 @@ export const EditConditionBlock = ({
                   Object.keys(logicableFields).includes(value) ||
                   t('features.adminForm.sidebar.logic.errors.fieldInvalid'),
               }}
-              render={({ field }) => (
+              render={({ field: { onChange, ...field } }) => (
                 <SingleSelect
                   isDisabled={isLoading}
                   isClearable={false}
                   placeholder={t(
                     'features.adminForm.sidebar.logic.logicClause.selectField',
                   )}
-                  items={allowedIfConditionFieldsOptions}
+                  items={withAddFieldItem(allowedIfConditionFieldsOptions)}
+                  onChange={withAddFieldAction(onChange)}
                   {...field}
                 />
               )}

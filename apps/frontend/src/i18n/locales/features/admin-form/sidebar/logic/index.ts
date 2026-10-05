@@ -23,6 +23,7 @@ export interface Logic {
     show: string
     selectField: string
     selectResultType: string
+    addFieldsAction: string
   }
   inactiveBlock: {
     if: string
