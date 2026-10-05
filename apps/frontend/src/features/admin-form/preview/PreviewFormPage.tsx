@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { Flex } from '@chakra-ui/react'
 
+import { useGrowthBookFormId } from '~contexts/GrowthbookContext'
 import { fillHeightCss } from '~utils/fillHeightCss'
 import GovtMasthead from '~components/GovtMasthead'
 
@@ -29,6 +30,7 @@ const PreviewFormStartPage = (): JSX.Element => (
 export const PreviewFormPage = (): JSX.Element => {
   const { formId } = useParams()
   if (!formId) throw new Error('No formId provided')
+  useGrowthBookFormId(formId)
 
   return (
     <Flex flexDir="column" css={fillHeightCss} pos="relative">
