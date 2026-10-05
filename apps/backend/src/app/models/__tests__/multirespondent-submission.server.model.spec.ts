@@ -137,6 +137,7 @@ describe('Multirespondent Submission Model', () => {
             edit: [fieldId],
             auth: {
               auth_type: FormAuthType.CP,
+              esrvc_id: 'AGENCY-CP',
             },
           },
         ],
@@ -165,6 +166,7 @@ describe('Multirespondent Submission Model', () => {
       ).orFail()
       expect(saved.workflow[1].auth).toMatchObject({
         auth_type: FormAuthType.CP,
+        esrvc_id: 'AGENCY-CP',
       })
       expect(saved.form_fields[0]).toMatchObject({
         title: 'Approver NRIC / FIN',

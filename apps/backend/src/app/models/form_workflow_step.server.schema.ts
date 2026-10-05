@@ -19,6 +19,23 @@ const WorkflowStepAuthSchema = new Schema(
       enum: [FormAuthType.MyInfo, FormAuthType.CP],
       required: true,
     },
+    // Each Corppass step logs in with its own e-service ID, so Corppass
+    // applies that agency's authorisation list.
+    esrvc_id: {
+      type: String,
+      validate: [
+        {
+          validator: (v: string) => /^\S*$/.test(v),
+          message: 'e-service ID must not contain whitespace',
+        },
+        {
+          validator: function (this: { auth_type?: FormAuthType }, v: string) {
+            return !v || this.auth_type === FormAuthType.CP
+          },
+          message: 'Only Corppass step logins have an e-service ID',
+        },
+      ],
+    },
   },
   { _id: false, strict: 'throw' },
 )

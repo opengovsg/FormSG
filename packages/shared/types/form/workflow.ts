@@ -12,6 +12,8 @@ export type WorkflowStepAuthType = FormAuthType.MyInfo | FormAuthType.CP
 // Step 1 keeps the form-level settings. Identity collection uses fields on Step 2+.
 export interface FormWorkflowStepAuth {
   auth_type: WorkflowStepAuthType
+  // Corppass only. Corppass checks its authorisation list against this ID.
+  esrvc_id?: string
 }
 
 export interface FormWorkflowStepBase {

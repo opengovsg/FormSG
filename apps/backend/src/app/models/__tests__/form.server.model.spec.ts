@@ -1060,10 +1060,38 @@ describe('Form Model', () => {
           expect(saved.authType).toBe(FormAuthType.NIL)
         })
 
+        it("retains a Corppass step's own e-service ID", async () => {
+          const form = await MultirespondentForm.create({
+            ...MOCK_MULTIRESPONDENT_FORM_PARAMS,
+            workflow: [
+              step(),
+              {
+                ...step(),
+                auth: { auth_type: FormAuthType.CP, esrvc_id: 'AGENCY-CP' },
+              },
+            ],
+          })
+
+          const saved = await MultirespondentForm.findById(form._id).orFail()
+
+          expect(saved.toObject().workflow[1].auth).toEqual({
+            auth_type: FormAuthType.CP,
+            esrvc_id: 'AGENCY-CP',
+          })
+        })
+
         it.each([
           {
             auth: { auth_type: FormAuthType.NIL },
             reason: 'unsupported provider',
+          },
+          {
+            auth: { auth_type: FormAuthType.MyInfo, esrvc_id: 'AGENCY-CP' },
+            reason: 'e-service ID on a Singpass step',
+          },
+          {
+            auth: { auth_type: FormAuthType.CP, esrvc_id: 'AGENCY CP' },
+            reason: 'e-service ID with whitespace',
           },
           {
             auth: {
