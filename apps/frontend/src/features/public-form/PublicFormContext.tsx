@@ -113,6 +113,8 @@ export interface PublicFormContextProps
   augmentedFormFields: FormFieldDto[]
   fieldPrefillMap: PrefillMap
   currentWorkflowStep?: StrippedFormWorkflowStepDto
+  previewWorkflowStepNumber?: number
+  onPreviewWorkflowStepChange?: (stepNumber: number) => void
 }
 
 export const PublicFormContext = createContext<

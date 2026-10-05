@@ -1,4 +1,8 @@
-import { parsePreviewStep, withPreviewStep } from './usePreviewStep'
+import {
+  getPreviewStepLabel,
+  parsePreviewStep,
+  withPreviewStep,
+} from './usePreviewStep'
 
 describe('parsePreviewStep', () => {
   it.each([
@@ -40,5 +44,17 @@ describe('withPreviewStep', () => {
     const params = new URLSearchParams('step=2')
     withPreviewStep(params, 2)
     expect(params.toString()).toBe('step=2')
+  })
+})
+
+describe('getPreviewStepLabel', () => {
+  it('shows the one-indexed step and its name', () => {
+    expect(getPreviewStepLabel({ step_name: 'Approver' }, 1)).toBe(
+      'Step 2: Approver',
+    )
+  })
+
+  it('shows only the step number when the step is unnamed', () => {
+    expect(getPreviewStepLabel({}, 0)).toBe('Step 1')
   })
 })

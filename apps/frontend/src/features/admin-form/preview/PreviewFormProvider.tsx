@@ -430,6 +430,10 @@ export const PreviewFormProvider = ({
         hasSingleSubmissionValidationError: false,
         hasRespondentNotWhitelistedError: false,
         currentWorkflowStep: currentStepNumberWorkflowStep,
+        previewWorkflowStepNumber: formWorkflow
+          ? currentWorkflowStepNumber
+          : undefined,
+        onPreviewWorkflowStepChange: setCurrentWorkflowStepNumber,
         ...commonFormValues,
         ...data,
         ...rest,

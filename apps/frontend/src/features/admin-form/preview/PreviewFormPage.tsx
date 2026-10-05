@@ -15,9 +15,16 @@ import FormStartPage from '~features/public-form/components/FormStartPage'
 import LanguageControl from '~features/public-form/components/LanguageControl'
 import { PublicFormWrapper } from '~features/public-form/components/PublicFormWrapper'
 
-import { PreviewFormBannerContainer } from '../common/components/PreviewFormBanner'
+import {
+  PreviewFormBannerContainer,
+  useHasStickyPreviewBanner,
+} from '../common/components/PreviewFormBanner'
 
 import { PreviewFormProvider } from './PreviewFormProvider'
+
+const PreviewFormStartPage = (): JSX.Element => (
+  <FormStartPage hasStickyPreviewBanner={useHasStickyPreviewBanner()} />
+)
 
 export const PreviewFormPage = (): JSX.Element => {
   const { formId } = useParams()
@@ -30,7 +37,7 @@ export const PreviewFormPage = (): JSX.Element => {
         <PreviewFormBannerContainer />
         <FormSectionsProvider>
           <PublicFormLogo />
-          <FormStartPage />
+          <PreviewFormStartPage />
           <LanguageControl />
           <PublicFormWrapper>
             <FormInstructions />

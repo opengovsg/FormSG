@@ -37,3 +37,8 @@ export const usePreviewStep = (stepCount: number) => {
   )
   return [step, setStep] as const
 }
+
+export const getPreviewStepLabel = (
+  step: { step_name?: string },
+  index: number,
+): string => `Step ${index + 1}${step.step_name ? `: ${step.step_name}` : ''}`
