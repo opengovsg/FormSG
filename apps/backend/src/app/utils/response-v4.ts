@@ -14,7 +14,17 @@ export const isFieldResponseV4Equal = (
   if (l.fieldType === 'attachment') {
     const lMd5 = (l.answer as AttachmentAnswerV4).md5Hash
     const rMd5 = (r.answer as AttachmentAnswerV4).md5Hash
-    return !lMd5 || !rMd5 || lMd5 === rMd5
+    if (!lMd5 || !rMd5 || lMd5 === rMd5) return true
+
+    // Older submissions stored raw digest bytes decoded as UTF-8. That encoding
+    // is lossy, so reproduce it from the hex side when comparing across formats.
+    // Keep hex-to-hex comparisons exact to avoid introducing that loss again.
+    const lIsHex = /^[0-9a-f]{32}$/.test(lMd5)
+    const rIsHex = /^[0-9a-f]{32}$/.test(rMd5)
+    if (lIsHex === rIsHex) return false
+    return lIsHex
+      ? Buffer.from(lMd5, 'hex').toString('utf8') === rMd5
+      : Buffer.from(rMd5, 'hex').toString('utf8') === lMd5
   }
 
   if (l.fieldType === 'table') {
