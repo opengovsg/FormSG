@@ -18,6 +18,14 @@ const SnapshotBase = z.object({
 const SnapshotV4 = SnapshotBase.extend({
   contentFormat: z.literal('v4'),
   encryptedSubmissionSecretKey: z.string(),
+  // Optional for snapshots written before webhook field metadata was introduced.
+  formFields: z
+    .record(
+      z.object({
+        question: z.string(),
+      }),
+    )
+    .optional(),
 })
 
 const SnapshotV1 = SnapshotBase.extend({

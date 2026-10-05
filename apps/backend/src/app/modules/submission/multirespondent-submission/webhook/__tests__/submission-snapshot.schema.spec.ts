@@ -4,6 +4,7 @@ import { parseSnapshot } from '../submission-snapshot.schema'
 
 const makeValidV4 = () =>
   buildV4Snapshot({
+    formFields: {},
     formId: 'form-123',
     submissionId: 'sub-456',
     submissionIndex: 2,
@@ -14,6 +15,19 @@ const makeValidV4 = () =>
   })
 
 describe('parseSnapshot', () => {
+  it('reads older V4 snapshots without question metadata', () => {
+    // Prepare: emulate a persisted snapshot written before formFields was introduced.
+    const snapshot = makeValidV4()
+    delete snapshot.formFields
+
+    // Act
+    const parsed = parseSnapshot(JSON.stringify(snapshot))._unsafeUnwrap()
+
+    // Assert: retries can still use the snapshot without fabricating labels.
+    expect(parsed).toEqual(snapshot)
+    expect(parsed).not.toHaveProperty('formFields')
+  })
+
   it('should round-trip a valid v4 snapshot from its JSON string', () => {
     // Arrange
     const snapshot = makeValidV4()
