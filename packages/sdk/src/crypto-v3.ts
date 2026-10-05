@@ -228,17 +228,19 @@ export default class CryptoV3 extends CryptoBase {
    * If the decrypted data is in V3 format, it is adapted to V4 using the provided formFields metadata.
    * @param formSecretKey The base-64 encoded form secret key for decrypting the submission.
    * @param decryptParams The params containing encrypted content, encrypted submission key and information.
-   * @param formFields A record mapping field IDs to their metadata (question text, myInfo attrs, etc).
+   * @param formFields Optional field metadata overrides. Otherwise uses metadata supplied in the webhook payload.
    * @returns The decrypted content in V4 format if successful. Else, null will be returned.
    * @throws {MissingPublicKeyError} if a public key is not provided when instantiating this class and is needed for verifying signed content.
    */
   decryptToV4 = (
     formSecretKey: string,
     decryptParams: DecryptParamsV4,
-    formFields: Record<string, FormFieldMeta>
+    formFields: Record<string, FormFieldMeta> = {}
   ): DecryptedContentV4 | null => {
     const decrypted = this.decrypt(formSecretKey, decryptParams)
     if (!decrypted) return null
+
+    formFields = { ...decryptParams.formFields, ...formFields }
 
     // If the decrypted responses are already in V4 format, return them with
     // any missing question text backfilled from the form definition.
