@@ -32,11 +32,13 @@ import * as LogicAdaptor from 'src/app/utils/logic-adaptor'
 import * as FeatureFlagService from '../../../feature-flags/feature-flags.service'
 import * as FormService from '../../../form/form.service'
 import { SubmissionNotFoundError } from '../../submission.errors'
+import * as SubmissionService from '../../submission.service'
 import { generateHashedSubmitterId } from '../../submission.utils'
 import {
   createFormsgAndRetrieveForm,
   encryptSubmission,
   handleNdiResponses,
+  scanAndRetrieveAttachments,
   validateMultirespondentRemindBody,
   validateMultirespondentSubmission,
   validatePaymentSubmission,
@@ -96,6 +98,44 @@ jest.mock('src/app/config/formsg-sdk', () => ({
 }))
 
 describe('Multirespondent Submission Middleware', () => {
+  describe('scanAndRetrieveAttachments', () => {
+    afterEach(() => jest.restoreAllMocks())
+
+    it('stores the scanned attachment checksum as hexadecimal', async () => {
+      const fieldId = new ObjectId().toHexString()
+      const content = Buffer.from('hello')
+      const scanned = {
+        fieldType: BasicField.Attachment,
+        answer: { value: 'hello.txt', content, hasBeenScanned: false },
+        provenance: {},
+      }
+      const scan = jest
+        .spyOn(
+          SubmissionService,
+          'triggerGuardDutyScanThenDownloadCleanFileChainV4',
+        )
+        .mockReturnValueOnce(okAsync(scanned as any))
+      const req = {
+        get: jest.fn(),
+        headers: {},
+        body: { responses: { [fieldId]: scanned } },
+        formsg: { formDef: { _id: new ObjectId() } },
+      }
+      const next = jest.fn()
+
+      await scanAndRetrieveAttachments(req as any, {} as any, next)
+
+      expect(scan).toHaveBeenCalledTimes(1)
+      expect(req.body.responses[fieldId].answer).toEqual({
+        value: 'hello.txt',
+        content,
+        hasBeenScanned: true,
+        md5Hash: '5d41402abc4b2a76b9719d911017c592',
+      })
+      expect(next).toHaveBeenCalledWith()
+    })
+  })
+
   describe('validateMultirespondentRemindBody', () => {
     const runValidator = (body: Record<string, unknown>): Promise<unknown> =>
       new Promise((resolve) =>

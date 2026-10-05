@@ -13,6 +13,59 @@ describe('isFieldResponseV4Equal', () => {
       provenance: {},
     }) as FieldResponseV4
 
+  describe('attachment fields', () => {
+    const hex = '5d41402abc4b2a76b9719d911017c592' // MD5 of "hello"
+    const legacy = Buffer.from(hex, 'hex').toString('utf8')
+    const otherHex = '7d793037a0760186574b0282f2f435e7' // MD5 of "world"
+    const otherLegacy = Buffer.from(otherHex, 'hex').toString('utf8')
+    const makeAttachment = (md5Hash?: string): FieldResponseV4 => ({
+      fieldType: 'attachment',
+      answer: { value: 'file.txt', hasBeenScanned: true, md5Hash },
+      provenance: {},
+    })
+
+    it.each([
+      ['hex hashes', hex, hex],
+      ['legacy hashes', legacy, legacy],
+      ['incoming hex and stored legacy', hex, legacy],
+      ['incoming legacy and stored hex', legacy, hex],
+    ])('accepts the same attachment with %s', (_name, left, right) => {
+      expect(
+        isFieldResponseV4Equal(makeAttachment(left), makeAttachment(right)),
+      ).toBe(true)
+    })
+
+    it.each([
+      ['hex hashes', hex, otherHex],
+      ['legacy hashes', legacy, otherLegacy],
+      ['incoming hex and stored legacy', hex, otherLegacy],
+      ['incoming legacy and stored hex', legacy, otherHex],
+      // Two valid hex digests must not be compared through lossy UTF-8 decoding.
+      [
+        'distinct hex hashes with the same UTF-8 representation',
+        '80'.repeat(16),
+        '81'.repeat(16),
+      ],
+    ])('rejects different attachments with %s', (_name, left, right) => {
+      expect(
+        isFieldResponseV4Equal(makeAttachment(left), makeAttachment(right)),
+      ).toBe(false)
+    })
+
+    it.each([
+      [undefined, hex],
+      [hex, undefined],
+      [undefined, undefined],
+    ])(
+      'preserves comparison when a hash is missing (%s, %s)',
+      (left, right) => {
+        expect(
+          isFieldResponseV4Equal(makeAttachment(left), makeAttachment(right)),
+        ).toBe(true)
+      },
+    )
+  })
+
   describe('table fields', () => {
     it('should return true when rows match but row keys differ', () => {
       // Arrange

@@ -462,8 +462,7 @@ export const scanAndRetrieveAttachments = async (
     attachmentResponse.answer.md5Hash = crypto
       .createHash('md5')
       .update(Buffer.from(attachmentResponse.answer.content))
-      .digest()
-      .toString()
+      .digest('hex')
     req.body.responses[id] =
       attachmentResponse as unknown as FieldResponsesV4[string]
   }
