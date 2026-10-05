@@ -32,17 +32,11 @@ const getSignInText = (
   t: (key: string) => string,
 ) => {
   switch (authType) {
-    case FormAuthType.SP:
     case FormAuthType.MyInfo:
       return t('features.publicForm.components.formAuthMessage.signIn.singpass')
     case FormAuthType.CP:
       return t(
         'features.publicForm.components.formAuthMessage.signIn.corporate',
-      )
-    case FormAuthType.SGID:
-    case FormAuthType.SGID_MyInfo:
-      return t(
-        'features.publicForm.components.formAuthMessage.signIn.singpassApp',
       )
     default: {
       const _: never = authType

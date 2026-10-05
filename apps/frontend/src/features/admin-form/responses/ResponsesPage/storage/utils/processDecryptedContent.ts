@@ -8,7 +8,6 @@ import {
 import { BasicField, FormFieldDto, LogicDto } from 'formsg-shared/types'
 import { flattenV4ToFormFields } from 'formsg-shared/utils/flatten-v4-to-v1'
 import {
-  SgidFieldTitle,
   SPCPFieldTitle,
   VerifiedKeys,
 } from 'formsg-shared/utils/verified-content'
@@ -25,7 +24,7 @@ const getVerifiedFieldFromResponse = (
 ): VerifiedFormField | null => {
   // Extract verifiedKey and optional step number (for MRF cases) from singpassAuthType
   const verifiedKeyMatch = singpassAuthType.match(
-    /^(uinFin|cpUen|cpUid|sgidUinFin)(?: \(Step (\d+)\))?$/,
+    /^(uinFin|cpUen|cpUid)(?: \(Step (\d+)\))?$/,
   )
   if (!verifiedKeyMatch) return null
 
@@ -54,14 +53,6 @@ const getVerifiedFieldFromResponse = (
         fieldType: BasicField.Nric,
         answer: value,
         _id: SPCPFieldTitle.CpUid,
-      }
-
-    case VerifiedKeys.SgidUinFin:
-      return {
-        question: SgidFieldTitle.SgidNric,
-        fieldType: 'nric',
-        answer: value,
-        _id: SgidFieldTitle.SgidNric,
       }
 
     default:
@@ -129,7 +120,7 @@ export const buildFormFieldMetaMap = (
  * Converts V4 decrypted responses into FormField[] for the shared
  * augmentDecryptedResponses pipeline.
  *
- * NOTE: Verified content (SPCP/sgID) is appended after the form fields, the
+ * NOTE: Verified content (SPCP) is appended after the form fields, the
  * same way the storage-mode path does it.
  */
 export const processDecryptedContentV4 = (

@@ -1,10 +1,7 @@
 import { FieldResponsesV4 } from '@opengovsg/formsg-sdk'
 
 import { BasicField, FormFieldDto } from 'formsg-shared/types'
-import {
-  SgidFieldTitle,
-  SPCPFieldTitle,
-} from 'formsg-shared/utils/verified-content'
+import { SPCPFieldTitle } from 'formsg-shared/utils/verified-content'
 
 import { processDecryptedContentV4 } from './processDecryptedContent'
 
@@ -67,23 +64,6 @@ describe('processDecryptedContentV4', () => {
     })
     expect(result[2]).toMatchObject({
       fieldType: BasicField.Nric,
-      answer: 'S1234567A',
-    })
-  })
-
-  it('appends the sgID verified NRIC after the form fields', () => {
-    const result = processDecryptedContentV4(FORM_FIELDS, [], RESPONSES, {
-      sgidUinFin: 'S1234567A',
-    })
-
-    expect(result.map((field) => field._id)).toEqual([
-      FIELD_ID,
-      SgidFieldTitle.SgidNric,
-    ])
-    expect(result[1]).toMatchObject({
-      _id: SgidFieldTitle.SgidNric,
-      question: SgidFieldTitle.SgidNric,
-      fieldType: 'nric',
       answer: 'S1234567A',
     })
   })

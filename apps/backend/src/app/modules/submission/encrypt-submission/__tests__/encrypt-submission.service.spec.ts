@@ -22,7 +22,7 @@ import {
   IAttachmentInfo,
   IEncryptedSubmissionSchema,
   IPopulatedEncryptedForm,
-  SgidFieldTitle,
+  SPCPFieldTitle,
 } from 'src/types'
 
 import { ProcessedFieldResponse } from '../../submission.types'
@@ -163,7 +163,7 @@ describe('encrypt-submission.service', () => {
         const mockResponses: ProcessedFieldResponse[] = [
           {
             _id: new ObjectId().toHexString(),
-            question: SgidFieldTitle.SgidNric,
+            question: SPCPFieldTitle.SpNric,
             answer: MOCK_NRIC,
             fieldType: BasicField.Nric,
           },
@@ -207,7 +207,7 @@ describe('encrypt-submission.service', () => {
         const mockResponses: ProcessedFieldResponse[] = [
           {
             _id: new ObjectId().toHexString(),
-            question: SgidFieldTitle.SgidNric,
+            question: SPCPFieldTitle.SpNric,
             answer: MOCK_NRIC,
             fieldType: BasicField.Nric,
           },
@@ -251,7 +251,7 @@ describe('encrypt-submission.service', () => {
         const mockResponses: ProcessedFieldResponse[] = [
           {
             _id: new ObjectId().toHexString(),
-            question: SgidFieldTitle.SgidNric,
+            question: SPCPFieldTitle.SpNric,
             answer: MOCK_NRIC,
             fieldType: BasicField.Nric,
           },
@@ -296,7 +296,7 @@ describe('encrypt-submission.service', () => {
           [
             {
               _id: new ObjectId().toHexString(),
-              question: SgidFieldTitle.SgidNric,
+              question: SPCPFieldTitle.SpNric,
               answer: MOCK_NRIC,
               fieldType: BasicField.Nric,
             },
@@ -352,7 +352,7 @@ describe('encrypt-submission.service', () => {
           [
             {
               _id: new ObjectId().toHexString(),
-              question: SgidFieldTitle.SgidNric,
+              question: SPCPFieldTitle.SpNric,
               answer: MOCK_NRIC,
               fieldType: BasicField.Nric,
             },
@@ -406,7 +406,7 @@ describe('encrypt-submission.service', () => {
         const mockResponses: ProcessedFieldResponse[] = [
           {
             _id: new ObjectId().toHexString(),
-            question: SgidFieldTitle.SgidNric,
+            question: SPCPFieldTitle.SpNric,
             answer: MOCK_NRIC,
             fieldType: BasicField.Nric,
           },
@@ -499,7 +499,7 @@ describe('encrypt-submission.service', () => {
           [
             {
               _id: new ObjectId().toHexString(),
-              question: SgidFieldTitle.SgidNric,
+              question: SPCPFieldTitle.SpNric,
               answer: MOCK_NRIC,
               fieldType: BasicField.Nric,
             },
@@ -547,7 +547,7 @@ describe('encrypt-submission.service', () => {
           const mockResponses: ProcessedFieldResponse[] = [
             {
               _id: new ObjectId().toHexString(),
-              question: SgidFieldTitle.SgidNric,
+              question: SPCPFieldTitle.SpNric,
               answer: MOCK_NRIC,
               fieldType: BasicField.Nric,
             },
@@ -573,7 +573,7 @@ describe('encrypt-submission.service', () => {
               answer: MOCK_NRIC,
               fieldType: BasicField.Nric,
               answerTemplate: [MOCK_NRIC],
-              question: SgidFieldTitle.SgidNric,
+              question: SPCPFieldTitle.SpNric,
             },
           ])
         })

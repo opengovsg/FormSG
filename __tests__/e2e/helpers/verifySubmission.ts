@@ -2,7 +2,7 @@ import { expect, Page } from '@playwright/test'
 // import { readFileSync } from 'fs'
 import { BasicField, FormAuthType, FormResponseMode } from 'formsg-shared/types'
 
-import { IFormSchema, SgidFieldTitle, SPCPFieldTitle } from 'src/types'
+import { IFormSchema, SPCPFieldTitle } from 'src/types'
 
 import {
   ADMIN_EMAIL,
@@ -132,10 +132,9 @@ export const verifyEmailSubmission = async (
     formSettings.isSubmitterIdCollectionEnabled &&
     formSettings.authType !== FormAuthType.NIL
   ) {
-    // Verify that form auth correctly returned NRIC (SPCP/SGID) and UEN (CP)
+    // Verify that form auth correctly returned NRIC (MyInfo) and UEN (CP)
     if (!formSettings.nric) throw new Error('No nric provided!')
     switch (formSettings.authType) {
-      case FormAuthType.SP:
       case FormAuthType.MyInfo:
         expectSubmissionContains([SPCPFieldTitle.SpNric, formSettings.nric])
         break
@@ -143,9 +142,6 @@ export const verifyEmailSubmission = async (
         expectSubmissionContains([SPCPFieldTitle.CpUid, formSettings.nric])
         if (!formSettings.uen) throw new Error('No uen provided!')
         expectSubmissionContains([SPCPFieldTitle.CpUen, formSettings.uen])
-        break
-      case FormAuthType.SGID:
-        expectSubmissionContains([SgidFieldTitle.SgidNric, formSettings.nric])
         break
     }
   }
@@ -224,10 +220,9 @@ export const verifyEncryptSubmission = async (
       formSettings.isSubmitterIdCollectionEnabled &&
       formSettings.authType !== FormAuthType.NIL
     ) {
-      // Verify that form auth correctly returned NRIC (SPCP/SGID) and UEN (CP)
+      // Verify that form auth correctly returned NRIC (MyInfo) and UEN (CP)
       if (!formSettings.nric) throw new Error('No nric provided!')
       switch (formSettings.authType) {
-        case FormAuthType.SP:
         case FormAuthType.MyInfo:
           expectSubmissionContains([SPCPFieldTitle.SpNric, formSettings.nric])
           break
@@ -235,9 +230,6 @@ export const verifyEncryptSubmission = async (
           expectSubmissionContains([SPCPFieldTitle.CpUid, formSettings.nric])
           if (!formSettings.uen) throw new Error('No uen provided!')
           expectSubmissionContains([SPCPFieldTitle.CpUen, formSettings.uen])
-          break
-        case FormAuthType.SGID:
-          expectSubmissionContains([SgidFieldTitle.SgidNric, formSettings.nric])
           break
       }
     }
@@ -249,7 +241,6 @@ export const verifyEncryptSubmission = async (
         SPCPFieldTitle.SpNric,
         SPCPFieldTitle.CpUid,
         SPCPFieldTitle.CpUen,
-        SgidFieldTitle.SgidNric,
       ])
       if (formSettings.nric) {
         expectSubmissionNotToContain([formSettings.nric])

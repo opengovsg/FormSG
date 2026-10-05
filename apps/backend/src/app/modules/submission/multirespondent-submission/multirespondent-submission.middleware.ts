@@ -918,7 +918,7 @@ export const verifyMyInfoHashes = async (
     ...createReqMeta(req),
   }
 
-  return extractMyInfoLoginJwt(req.cookies, formDef.authType)
+  return extractMyInfoLoginJwt(req.cookies)
     .andThen(MyInfoService.verifyLoginJwt)
     .asyncAndThen(({ uinFin }) =>
       MyInfoService.fetchMyInfoHashes(uinFin, formId).andThen((hashes) =>
@@ -1120,7 +1120,7 @@ export const handleNdiResponses = async (
     let jwtPayloadResult
     switch (authType) {
       case FormAuthType.CP: {
-        const oidcService = getOidcService(FormAuthType.CP)
+        const oidcService = getOidcService()
         jwtPayloadResult = await oidcService
           .extractJwt(req.cookies)
           .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
@@ -1132,7 +1132,7 @@ export const handleNdiResponses = async (
         break
       }
       case FormAuthType.MyInfo: {
-        jwtPayloadResult = await extractMyInfoLoginJwt(req.cookies, authType)
+        jwtPayloadResult = await extractMyInfoLoginJwt(req.cookies)
           .andThen(MyInfoService.verifyLoginJwt)
           .map(({ uinFin }) => {
             return uinFin

@@ -170,7 +170,7 @@ SingpassUnauthorized.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
           startPage: {
             colorTheme: FormColorTheme.Grey,
           },
@@ -196,7 +196,7 @@ SingpassAuthorized.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
         },
       },
     }),
@@ -231,40 +231,6 @@ CorppassAuthorized.parameters = {
         form: {
           title: 'Corppass login form',
           authType: FormAuthType.CP,
-        },
-      },
-    }),
-  ],
-}
-
-export const SgidUnauthorized = Template.bind({})
-SgidUnauthorized.storyName = 'SGID/Unauthorized'
-SgidUnauthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPreviewFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID login form',
-          authType: FormAuthType.SGID,
-        },
-      },
-    }),
-  ],
-}
-
-export const SgidAuthorized = Template.bind({})
-SgidAuthorized.storyName = 'SGID/Authorized'
-SgidAuthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPreviewFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID login form',
-          authType: FormAuthType.SGID,
         },
       },
     }),

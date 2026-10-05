@@ -10,7 +10,6 @@ import { DatabaseError } from 'src/app/modules/core/core.errors'
 import { IFormSchema } from 'src/types'
 
 import { MYINFO_LOGIN_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
-import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
 import { JwtName } from '../../../spcp/spcp.types'
 import { FormNotFoundError } from '../../form.errors'
 import * as PublicFormService from '../public-form.service'
@@ -23,18 +22,7 @@ describe('public-form.service', () => {
   beforeEach(() => jest.clearAllMocks())
 
   describe('getCookieNameByAuthType', () => {
-    it('should return JwtName[FormAuthType.SP] when authType is SP', () => {
-      // Arrange
-      const authType = FormAuthType.SP
-
-      // Act
-      const result = PublicFormService.getCookieNameByAuthType(authType)
-
-      // Assert
-      expect(result).toEqual(JwtName[FormAuthType.SP])
-    })
-
-    it('should return JwtName[FormAuthType.CP] when authType is CP', () => {
+    it('should return JwtName.CP when authType is CP', () => {
       // Arrange
       const authType = FormAuthType.CP
 
@@ -42,7 +30,7 @@ describe('public-form.service', () => {
       const result = PublicFormService.getCookieNameByAuthType(authType)
 
       // Assert
-      expect(result).toEqual(JwtName[FormAuthType.CP])
+      expect(result).toEqual(JwtName.CP)
     })
 
     it('should return MYINFO_LOGIN_COOKIE_NAME when authType is MyInfo', () => {
@@ -54,17 +42,6 @@ describe('public-form.service', () => {
 
       // Assert
       expect(result).toEqual(MYINFO_LOGIN_COOKIE_NAME)
-    })
-
-    it('should return SGID_COOKIE_NAME when authType is SGID', () => {
-      // Arrange
-      const authType = FormAuthType.SGID
-
-      // Act
-      const result = PublicFormService.getCookieNameByAuthType(authType)
-
-      // Assert
-      expect(result).toEqual(SGID_COOKIE_NAME)
     })
   })
 

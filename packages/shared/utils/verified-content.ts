@@ -6,7 +6,6 @@ export enum VerifiedKeys {
   SpUinFin = 'uinFin',
   CpUen = 'cpUen',
   CpUid = 'cpUid',
-  SgidUinFin = 'sgidUinFin',
 }
 
 /**
@@ -21,15 +20,10 @@ export enum SPCPFieldTitle {
   CpUen = 'CorpPass Validated UEN',
 }
 
-export enum SgidFieldTitle {
-  SgidNric = 'sgID Validated NRIC',
-}
-
 export const VerifiedKeyToSPCPTitleMap: Record<VerifiedKeys, SPCPFieldTitle> = {
   [VerifiedKeys.SpUinFin]: SPCPFieldTitle.SpNric,
   [VerifiedKeys.CpUen]: SPCPFieldTitle.CpUen,
   [VerifiedKeys.CpUid]: SPCPFieldTitle.CpUid,
-  [VerifiedKeys.SgidUinFin]: SPCPFieldTitle.SpNric, // safeguarding for backwards compatibility
 }
 
 /**

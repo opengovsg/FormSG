@@ -143,14 +143,12 @@ export interface PublicForm {
       authType: {
         singpass: string
         singpassCorporate: string
-        singpassApp: string
       }
     }
     formAuthMessage: {
       signIn: {
         singpass: string
         corporate: string
-        singpassApp: string
       }
       submitterId: {
         included: {

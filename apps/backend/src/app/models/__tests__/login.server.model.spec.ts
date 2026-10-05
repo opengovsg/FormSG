@@ -25,7 +25,7 @@ describe('login.server.model', () => {
     const DEFAULT_PARAMS: mongoose.LeanDocument<ILoginSchema> = {
       admin: new ObjectId(),
       agency: new ObjectId(),
-      authType: FormAuthType.SP,
+      authType: FormAuthType.CP,
       esrvcId: 'mock-esrvc-id',
       form: new ObjectId(),
     }
@@ -111,7 +111,7 @@ describe('login.server.model', () => {
       const formId = new ObjectId()
       const agencyId = new ObjectId()
       const mockEsrvcId = 'esrvcid'
-      const mockAuthType = 'SP'
+      const mockAuthType = 'CP'
       const fullForm = {
         _id: formId,
         admin: {
@@ -175,7 +175,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: FormAuthType.SP,
+            authType: FormAuthType.CP,
             esrvcId: VALID_ESRVC_ID,
             created: CURR_DATE,
           },
@@ -184,7 +184,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: FormAuthType.SP,
+            authType: FormAuthType.CP,
             esrvcId: VALID_ESRVC_ID,
             created: CURR_DATE,
           },
@@ -193,7 +193,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: FormAuthType.SP,
+            authType: FormAuthType.CP,
             esrvcId: VALID_ESRVC_ID,
             created: CURR_DATE,
           },
@@ -202,7 +202,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: FormAuthType.SP,
+            authType: FormAuthType.CP,
             esrvcId: VALID_ESRVC_ID,
             created: FUTURE_DATE,
           },
@@ -249,7 +249,7 @@ describe('login.server.model', () => {
           {
             adminEmail: testUser.email,
             formId: testForm._id,
-            authType: FormAuthType.SP,
+            authType: FormAuthType.CP,
             formName: testForm.title,
             total: loginsInRange.length,
           },

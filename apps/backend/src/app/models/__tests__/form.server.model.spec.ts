@@ -736,20 +736,6 @@ describe('Form Model', () => {
         )
       })
 
-      // Ensure that encrypted sgID forms can be created since they could not before
-      it('should set authType to SGID when given authType is SGID', async () => {
-        // Arrange
-        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          authType: FormAuthType.SGID,
-        })
-
-        // Act
-        const sgidForm = await EncryptedForm.create(encryptFormParams)
-
-        // Assert
-        await expect(sgidForm.authType).toBe(FormAuthType.SGID)
-      })
-
       // Ensure that encrypted MyInfo forms can be created since they could not before
       it('should set authType to MyInfo when given authType is MyInfo', async () => {
         // Arrange
@@ -762,20 +748,6 @@ describe('Form Model', () => {
 
         // Assert
         await expect(myInfoForm.authType).toBe(FormAuthType.MyInfo)
-      })
-
-      // Ensure that encrypted SGID MyInfo forms can be created since they could not before
-      it('should set authType to SGID MyInfo when given authType is SGID MyInfo', async () => {
-        // Arrange
-        const encryptFormParams = merge({}, MOCK_ENCRYPTED_FORM_PARAMS, {
-          authType: FormAuthType.SGID_MyInfo,
-        })
-
-        // Act
-        const sgidMyInfoForm = await EncryptedForm.create(encryptFormParams)
-
-        // Assert
-        await expect(sgidMyInfoForm.authType).toBe(FormAuthType.SGID_MyInfo)
       })
 
       it('should save with default payments settings', async () => {
@@ -1258,7 +1230,7 @@ describe('Form Model', () => {
           isForceConvertToStorageMode: true,
         })
         const MOCK_PUBLIC_KEY = 'mockPublicKey'
-        emailFormToReplace.authType = FormAuthType.SGID
+        emailFormToReplace.authType = FormAuthType.CP
         emailFormToReplace.isSingleSubmission = true
         emailFormToReplace.form_fields = [
           generateDefaultField(BasicField.Date),
@@ -3480,7 +3452,7 @@ describe('Form Model', () => {
         const MOCK_ALL_FORM_PARAMS = {
           title: 'Test Form',
           admin: MOCK_ADMIN_OBJ_ID,
-          authType: FormAuthType.SP,
+          authType: FormAuthType.CP,
           isSubmitterIdCollectionEnabled: true,
           isSingleSubmission: true,
           isSaveDraftEnabled: true,

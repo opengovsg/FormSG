@@ -10,15 +10,11 @@ import {
   encryptVerifiedContent,
   getVerifiedContent,
 } from '../verified-content.service'
-import {
-  CpVerifiedContent,
-  SgidVerifiedContent,
-  SpVerifiedContent,
-} from '../verified-content.types'
+import { CpVerifiedContent, SpVerifiedContent } from '../verified-content.types'
 
 describe('verified-content.service', () => {
   describe('getVerifiedContent', () => {
-    it('should return verified content for FormAuthType.SP data', async () => {
+    it('should return verified content for FormAuthType.MyInfo data', async () => {
       // Arrange
       const mockData = {
         extraData: 'some extra data',
@@ -31,7 +27,7 @@ describe('verified-content.service', () => {
 
       // Act
       const result = getVerifiedContent({
-        type: FormAuthType.SP,
+        type: FormAuthType.MyInfo,
         data: mockData,
       })
 
@@ -61,27 +57,7 @@ describe('verified-content.service', () => {
       expect(result._unsafeUnwrap()).toEqual(expected)
     })
 
-    it('should return verified content for FormAuthType.SGID data', async () => {
-      // Arrange
-      const mockData = {
-        extraData: 'some extra data again',
-        uinFin: 'S1234567Z',
-      }
-      const expected: SgidVerifiedContent = {
-        sgidUinFin: mockData['uinFin'],
-      }
-
-      // Act
-      const result = getVerifiedContent({
-        type: FormAuthType.SGID,
-        data: mockData,
-      })
-
-      // Assert
-      expect(result._unsafeUnwrap()).toEqual(expected)
-    })
-
-    it('should return error if retrieved SP data does not fit the expected shape', async () => {
+    it('should return error if retrieved MyInfo data does not fit the expected shape', async () => {
       // Arrange
       const mockDataWithoutUin = {
         extraData: 'some data',
@@ -90,7 +66,7 @@ describe('verified-content.service', () => {
 
       // Act
       const result = getVerifiedContent({
-        type: FormAuthType.SP,
+        type: FormAuthType.MyInfo,
         data: mockDataWithoutUin,
       })
 
@@ -112,25 +88,6 @@ describe('verified-content.service', () => {
       // Act
       const result = getVerifiedContent({
         type: FormAuthType.CP,
-        data: mockDataWithoutUin,
-      })
-
-      // Assert
-      expect(result._unsafeUnwrapErr()).toEqual(
-        new MalformedVerifiedContentError(),
-      )
-    })
-
-    it('should return error if retrieved SGID data does not fit the expected shape', async () => {
-      // Arrange
-      const mockDataWithoutUin = {
-        extraData: 'some data',
-        anotherExtraData: 'more useless data',
-      }
-
-      // Act
-      const result = getVerifiedContent({
-        type: FormAuthType.SGID,
         data: mockDataWithoutUin,
       })
 

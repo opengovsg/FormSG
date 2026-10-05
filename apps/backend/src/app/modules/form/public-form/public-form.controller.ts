@@ -17,7 +17,7 @@ import {
 } from 'formsg-shared/types'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
-import { err, ok, okAsync, Result } from 'neverthrow'
+import { err, okAsync } from 'neverthrow'
 
 import { IPopulatedMultirespondentForm } from '../../../../types'
 import { isTest } from '../../../config/config'
@@ -47,20 +47,6 @@ import {
   createMyInfoLoginCookie,
   shouldFetchSponsoredChildren,
 } from '../../myinfo/myinfo.util'
-import { SGIDMyInfoData } from '../../sgid/sgid.adapter'
-import {
-  SGID_CODE_VERIFIER_COOKIE_NAME,
-  SGID_COOKIE_NAME,
-  SGID_MYINFO_COOKIE_NAME,
-  SGID_MYINFO_LOGIN_COOKIE_NAME,
-} from '../../sgid/sgid.constants'
-import {
-  SgidInvalidJwtError,
-  SgidMalformedMyInfoCookieError,
-  SgidVerifyJwtError,
-} from '../../sgid/sgid.errors'
-import { SgidService } from '../../sgid/sgid.service'
-import { validateSgidForm } from '../../sgid/sgid.util'
 import { InvalidJwtError, VerifyJwtError } from '../../spcp/spcp.errors'
 import { getOidcService } from '../../spcp/spcp.oidc.service'
 import {
@@ -160,31 +146,8 @@ export const handleGetPublicForm: ControllerHandler<
 
   // extract spcpSession and myInfoFields based on authType
   switch (authType) {
-    case FormAuthType.SP: {
-      const oidcService = getOidcService(FormAuthType.SP)
-      const jwtPayloadResult = await oidcService.extractJwtPayloadFromRequest(
-        req.cookies,
-      )
-      if (jwtPayloadResult.isErr()) {
-        const error = jwtPayloadResult.error
-        // Report only relevant errors - verification failed for user here
-        if (
-          error instanceof VerifyJwtError ||
-          error instanceof InvalidJwtError
-        ) {
-          logger.error({
-            message: 'Error getting public form',
-            meta: logMeta,
-            error,
-          })
-        }
-        return res.json({ form: publicForm, isIntranetUser })
-      }
-      spcpSession = jwtPayloadResult.value
-      break
-    }
     case FormAuthType.CP: {
-      const oidcService = getOidcService(FormAuthType.CP)
+      const oidcService = getOidcService()
       const jwtPayloadResult = await oidcService.extractJwtPayloadFromRequest(
         req.cookies,
       )
@@ -263,103 +226,6 @@ export const handleGetPublicForm: ControllerHandler<
         })
       }
 
-      spcpSession = { userName: myInfoFields.getUinFin() }
-      break
-    }
-    case FormAuthType.SGID: {
-      const jwtPayloadResult = await SgidService.extractSgidSingpassJwtPayload(
-        req.cookies[SGID_COOKIE_NAME],
-      )
-      if (jwtPayloadResult.isErr()) {
-        const error = jwtPayloadResult.error
-        // Report only relevant errors - verification failed for user here
-        if (
-          error instanceof SgidVerifyJwtError ||
-          error instanceof SgidInvalidJwtError
-        ) {
-          logger.error({
-            message: 'Error getting public form',
-            meta: logMeta,
-            error,
-          })
-        }
-        return res.json({ form: publicForm, isIntranetUser })
-      }
-      spcpSession = jwtPayloadResult.value
-      break
-    }
-    case FormAuthType.SGID_MyInfo: {
-      const parseSgidMyInfoCookieResult = Result.fromThrowable(
-        () =>
-          JSON.parse(req.cookies[SGID_MYINFO_COOKIE_NAME] ?? '{}') as {
-            jwt?: string
-            sub?: string
-          },
-        (error) => {
-          logger.error({
-            message: 'Error while calling JSON.parse on SGID MyInfo cookie',
-            meta: logMeta,
-            error,
-          })
-          return new SgidMalformedMyInfoCookieError()
-        },
-      )()
-
-      if (parseSgidMyInfoCookieResult.isErr()) {
-        return res.json({
-          form: publicForm,
-          isIntranetUser,
-        })
-      }
-
-      const parseSgidMyInfoCookie = parseSgidMyInfoCookieResult.value
-      const { jwt: accessToken = '', sub = '' } = parseSgidMyInfoCookie
-
-      if (!accessToken) {
-        return res.json({
-          form: publicForm,
-          isIntranetUser,
-        })
-      }
-      res.clearCookie(SGID_MYINFO_COOKIE_NAME)
-      res.clearCookie(SGID_MYINFO_LOGIN_COOKIE_NAME)
-
-      const jwtPayloadResult =
-        await SgidService.extractSgidJwtMyInfoPayload(accessToken)
-      if (jwtPayloadResult.isErr()) {
-        const error = jwtPayloadResult.error
-        logger.error({
-          message: 'sgID: MyInfo login error',
-          meta: logMeta,
-          error,
-        })
-        return res.json({
-          form: publicForm,
-          errorCodes: [ErrorCode.myInfo],
-          isIntranetUser,
-        })
-      }
-      const jwtPayload = jwtPayloadResult.value
-      const myInfoFieldsResult = await SgidService.retrieveUserInfo({
-        accessToken: jwtPayload.accessToken,
-        sub,
-      })
-
-      if (myInfoFieldsResult.isErr()) {
-        const error = myInfoFieldsResult.error
-        logger.error({
-          message: 'sgID: MyInfo login error',
-          meta: logMeta,
-          error,
-        })
-        return res.json({
-          form: publicForm,
-          errorCodes: [ErrorCode.myInfo],
-          isIntranetUser,
-        })
-      }
-
-      myInfoFields = new SGIDMyInfoData(myInfoFieldsResult.value.data)
       spcpSession = { userName: myInfoFields.getUinFin() }
       break
     }
@@ -451,7 +317,6 @@ export const handleGetPublicForm: ControllerHandler<
 
   // generate form response based on authType
   switch (authType) {
-    case FormAuthType.SP:
     case FormAuthType.CP:
       return res.json({
         form: publicForm,
@@ -512,63 +377,6 @@ export const handleGetPublicForm: ControllerHandler<
           myInfoChildrenBirthRecords: (
             myInfoFields as MyInfoData
           ).getChildrenBirthRecords(form.getUniqueMyInfoAttrs()),
-        })
-    }
-    case FormAuthType.SGID:
-      return res.json({
-        form: publicForm,
-        isIntranetUser,
-        spcpSession,
-      })
-    case FormAuthType.SGID_MyInfo: {
-      if (!myInfoFields) {
-        logger.error({
-          message: 'sgID_MyInfo: Failed to load MyInfo fields',
-          meta: logMeta,
-        })
-        // No need for cookie if data could not be retrieved
-        // NOTE: If the user does not have any cookie, clearing the cookie still has the same result
-        return res.json({
-          form: publicForm,
-          errorCodes: [ErrorCode.myInfo],
-          isIntranetUser,
-        })
-      }
-      const prefilledFieldsResult =
-        await MyInfoService.prefillAndSaveMyInfoFields(
-          form._id,
-          myInfoFields,
-          form.toJSON().form_fields,
-        )
-
-      if (prefilledFieldsResult.isErr()) {
-        const error = prefilledFieldsResult.error
-        logger.error({
-          message: 'sgID_MyInfo: Failed to prefill and save MyInfo fields',
-          meta: logMeta,
-          error,
-        })
-        return res.json({
-          form: publicForm,
-          errorCodes: [ErrorCode.myInfo],
-          isIntranetUser,
-        })
-      }
-
-      const prefilledFields = prefilledFieldsResult.value
-      return res
-        .cookie(
-          SGID_MYINFO_LOGIN_COOKIE_NAME,
-          createMyInfoLoginCookie(myInfoFields.getUinFin()),
-          MYINFO_LOGIN_COOKIE_OPTIONS,
-        )
-        .json({
-          form: {
-            ...publicForm,
-            form_fields: prefilledFields as FormFieldDto[],
-          },
-          spcpSession: { userName: myInfoFields.getUinFin() },
-          isIntranetUser,
         })
     }
     default: {
@@ -666,8 +474,7 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
 }
 /**
  * NOTE: This is exported only for testing
- * Generates redirect URL to Official SingPass/CorpPass log in page
- * @param isPersistentLogin whether the client wants to have their login information stored
+ * Generates redirect URL to the MyInfo (Singpass) or Corppass log in page
  * @param encodedQuery base64 encoded queryId for frontend to retrieve stored query params (usually contains prefilled form information)
  * @returns 200 with the redirect url when the user authenticates successfully
  * @returns 400 when there is an error on the authType of the form
@@ -681,10 +488,10 @@ export const _handleFormAuthRedirect: ControllerHandler<
   { formId: string },
   PublicFormAuthRedirectDto | ErrorDto,
   unknown,
-  { isPersistentLogin?: boolean; encodedQuery?: string }
+  { encodedQuery?: string }
 > = (req, res) => {
   const { formId } = req.params
-  const { isPersistentLogin, encodedQuery } = req.query
+  const { encodedQuery } = req.query
   const logMeta = {
     action: 'handleFormAuthRedirect',
     ...createReqMeta(req),
@@ -726,40 +533,14 @@ export const _handleFormAuthRedirect: ControllerHandler<
             setMyInfoFapiSessionCookie(res, sessionId)
             return redirectUrl
           })
-        case FormAuthType.SP: {
-          return validateSpcpForm(form).asyncAndThen((form) => {
-            const target = getRedirectTargetSpcpOidc(
-              formId,
-              FormAuthType.SP,
-              isPersistentLogin,
-              encodedQuery,
-              nonce,
-            )
-            const oidcService = getOidcService(FormAuthType.SP)
-            return oidcService
-              .createRedirectUrl(target, form.esrvcId)
-              .map(({ redirectUrl, codeVerifier }) => {
-                res.cookie(
-                  oidcService.getCodeVerifierCookieName(nonce),
-                  codeVerifier,
-                  oidcService.getCodeVerifierCookieOptions(),
-                )
-                return redirectUrl
-              })
-          })
-        }
         case FormAuthType.CP: {
-          // NOTE: Persistent login is only set (and relevant) when the authType is SP.
-          // If authType is not SP, assume that it was set erroneously and default it to false
           return validateSpcpForm(form).asyncAndThen((form) => {
             const target = getRedirectTargetSpcpOidc(
               formId,
-              FormAuthType.CP,
-              isPersistentLogin,
               encodedQuery,
               nonce,
             )
-            const oidcService = getOidcService(FormAuthType.CP)
+            const oidcService = getOidcService()
             return oidcService
               .createRedirectUrl(target, form.esrvcId)
               .map(({ redirectUrl, codeVerifier }) => {
@@ -772,42 +553,6 @@ export const _handleFormAuthRedirect: ControllerHandler<
               })
           })
         }
-        case FormAuthType.SGID:
-          return validateSgidForm(form)
-            .andThen(() =>
-              SgidService.createRedirectUrl(
-                formId,
-                Boolean(isPersistentLogin),
-                [],
-                encodedQuery,
-              ),
-            )
-            .andThen(({ redirectUrl, codeVerifier }) => {
-              res.cookie(
-                SGID_CODE_VERIFIER_COOKIE_NAME,
-                codeVerifier,
-                SgidService.getCookieSettings(),
-              )
-              return ok(redirectUrl)
-            })
-        case FormAuthType.SGID_MyInfo:
-          return validateSgidForm(form)
-            .andThen(() =>
-              SgidService.createRedirectUrl(
-                formId,
-                false,
-                form.getUniqueMyInfoAttrs(),
-                encodedQuery,
-              ),
-            )
-            .andThen(({ redirectUrl, codeVerifier }) => {
-              res.cookie(
-                SGID_CODE_VERIFIER_COOKIE_NAME,
-                codeVerifier,
-                SgidService.getCookieSettings(),
-              )
-              return ok(redirectUrl)
-            })
         default:
           return err<never, AuthTypeMismatchError>(
             new AuthTypeMismatchError(form.authType),
@@ -835,7 +580,6 @@ export const _handleFormAuthRedirect: ControllerHandler<
         error,
       })
       const { statusCode, errorMessage } = mapFormAuthError(error)
-      res.clearCookie(SGID_CODE_VERIFIER_COOKIE_NAME)
       return res.status(statusCode).json({ message: errorMessage })
     })
 }
@@ -849,6 +593,8 @@ export const handleFormAuthRedirect = [
       formId: Joi.string().pattern(/^[a-fA-F0-9]{24}$/),
     }),
     [Segments.QUERY]: Joi.object({
+      // Unused since Singpass persistent login was removed; still accepted so
+      // that clients on an older frontend build do not get a 400.
       isPersistentLogin: Joi.boolean().optional(),
       encodedQuery: Joi.string().allow('').optional(),
     }),
@@ -858,7 +604,7 @@ export const handleFormAuthRedirect = [
 
 /**
  * NOTE: This is exported only for testing
- * Logs user out of SP / CP / MyInfo / SGID by deleting cookie
+ * Logs user out of CP / MyInfo by deleting cookie
  * @param authType type of authentication
  *
  * @returns 200 with success message when user logs out successfully
@@ -866,12 +612,7 @@ export const handleFormAuthRedirect = [
  */
 export const _handlePublicAuthLogout: ControllerHandler<
   {
-    authType:
-      | FormAuthType.SP
-      | FormAuthType.CP
-      | FormAuthType.MyInfo
-      | FormAuthType.SGID
-      | FormAuthType.SGID_MyInfo
+    authType: FormAuthType.CP | FormAuthType.MyInfo
   },
   PublicFormAuthLogoutDto
 > = (req, res) => {
@@ -891,19 +632,13 @@ export const _handlePublicAuthLogout: ControllerHandler<
 
 /**
  * Handler for /forms/auth/:authType/logout
- * Valid AuthTypes are SP / CP / MyInfo / SGID
+ * Valid AuthTypes are CP / MyInfo
  */
 export const handlePublicAuthLogout = [
   celebrate({
     [Segments.PARAMS]: Joi.object({
       authType: Joi.string()
-        .valid(
-          FormAuthType.SP,
-          FormAuthType.CP,
-          FormAuthType.MyInfo,
-          FormAuthType.SGID,
-          FormAuthType.SGID_MyInfo,
-        )
+        .valid(FormAuthType.CP, FormAuthType.MyInfo)
         .required(),
     }),
   }),

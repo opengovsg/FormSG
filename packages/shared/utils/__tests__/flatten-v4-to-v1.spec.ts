@@ -256,7 +256,7 @@ describe('Children fields explode like encrypt mode stores them', () => {
 
 describe('entries come from the form definition and nowhere else', () => {
   it('drops a V4 response with no matching form field', () => {
-    // Verified SPCP/sgID content is keyed by its title, never by a form field
+    // Verified SPCP content is keyed by its title, never by a form field
     // id. It is the caller's job to concatenate it after the flatten.
     const v4Responses = {
       ...shortTextAnswer('an answer'),
