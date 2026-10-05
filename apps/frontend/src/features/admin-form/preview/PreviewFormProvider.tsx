@@ -34,6 +34,8 @@ import { useEnv } from '../../env/queries'
 import { axiosDebugFlow } from '../../public-form/utils'
 import { usePreviewFormMutations } from '../common/mutations'
 
+import { usePreviewStep, withPreviewStep } from './usePreviewStep'
+
 interface PreviewFormProviderProps {
   formId: string
   children: React.ReactNode
@@ -337,15 +339,32 @@ export const PreviewFormProvider = ({
 
   const form = data?.form
   const formFields = form?.form_fields
-  const currentWorkflowStepNumber = 0
   const formWorkflow =
     form?.responseMode === FormResponseMode.Multirespondent
       ? form.workflow
       : undefined
+  const [currentWorkflowStepNumber, setCurrentWorkflowStepNumber] =
+    usePreviewStep(formWorkflow?.length ?? 0)
   const currentStepNumberWorkflowStep =
     formWorkflow && formWorkflow.length > currentWorkflowStepNumber
       ? formWorkflow[currentWorkflowStepNumber]
       : undefined
+
+  useEffect(() => {
+    if (!formWorkflow) return
+    const canonicalSearchParams = withPreviewStep(
+      searchParams,
+      currentWorkflowStepNumber,
+    )
+    if (canonicalSearchParams.toString() !== searchParams.toString()) {
+      setCurrentWorkflowStepNumber(currentWorkflowStepNumber)
+    }
+  }, [
+    formWorkflow,
+    searchParams,
+    currentWorkflowStepNumber,
+    setCurrentWorkflowStepNumber,
+  ])
 
   const fieldPrefillMap = useMemo(
     () => (formFields ? getFieldPrefillMap(formFields, searchParams) : {}),
