@@ -6,12 +6,12 @@ import { createLoggerWithLabel } from '../../../config/logger'
 import { createReqMeta } from '../../../utils/request'
 import { resolveRedirectionUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
-import { SGID_CODE_VERIFIER_COOKIE_NAME } from '../../sgid/sgid.constants'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
 import { SessionUser } from '../auth.types'
 import { mapRouteError } from '../auth.utils'
 
+import { SGID_CODE_VERIFIER_COOKIE_NAME } from './auth-sgid.constants'
 import { AuthSgidService, SGID_LOGIN_OAUTH_STATE } from './auth-sgid.service'
 
 const logger = createLoggerWithLabel(module)
