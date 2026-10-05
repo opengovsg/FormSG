@@ -4,38 +4,6 @@ _Please note that this is an SDK for webhooks integration, and_ **_not_** _the F
 
 This SDK provides convenient utilities for verifying FormSG webhooks and decrypting submissions in JavaScript and Node.js.
 
-### V4 webhooks
-
-Use `formsg.cryptoV4` for V4 webhook data after authenticating the webhook:
-
-```typescript
-const content = formsg.cryptoV4.decrypt(formSecretKey, req.body.data)
-// Or download and decrypt attachments as well:
-const submission = await formsg.cryptoV4.decryptWithAttachments(
-  formSecretKey,
-  req.body.data
-)
-```
-
-Both methods accept the form secret key and the webhook's `data` object, including
-`encryptedContent`, `encryptedSubmissionSecretKey`, `version`, and optional
-`verifiedContent` and `attachmentDownloadUrls`. No form
-metadata or manual submission-key handling is required. Question text is preserved
-from the encrypted content; missing question text is not fetched from the form.
-
-`decrypt` returns `DecryptedContentV4 | null`. `decryptWithAttachments` returns
-`{ content: DecryptedContentV4, attachments } | null`, with the same attachment map
-and failure behaviour as `crypto.decryptWithAttachments`. Both return V4 responses
-keyed by field ID, rather than V1's response array. The V4 content type also includes
-`submissionSecretKey`; consumers do not need to use the submission key to decrypt
-attachments. Webhooks never include an encrypted step token.
-
-`cryptoV4.valid(publicKey, secretKey)` checks a form keypair.
-`cryptoV4.encrypt(responses, formPublicKey)` accepts V4 responses and returns the
-existing V3 encryption envelope, including the wrapped submission key. Unlike the
-V1 encrypt method, it does not accept a signing private key: signed verified content
-is encrypted separately. The underlying encryption scheme is unchanged.
-
 This package used to live at [`opengovsg/formsg-javascript-sdk`](https://github.com/opengovsg/formsg-javascript-sdk) and is now developed in the main FormSG monorepo under [`packages/sdk`](./). It is still published to npm as [`@opengovsg/formsg-sdk`](https://www.npmjs.com/package/@opengovsg/formsg-sdk); starting with this migration the major version is bumped to `v7` to track the FormSG monorepo.
 
 Not using JavaScript? Check out our sister SDKs:
