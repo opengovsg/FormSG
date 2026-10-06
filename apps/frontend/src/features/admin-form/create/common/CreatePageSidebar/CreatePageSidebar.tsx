@@ -15,6 +15,7 @@ import { FormResponseMode, SeenFlags } from 'formsg-shared/types'
 import { MultiParty, PhHandsClapping } from '~assets/icons'
 import { BxsDockTop } from '~assets/icons/BxsDockTop'
 import { BxsWidget } from '~assets/icons/BxsWidget'
+import { OneLogoMark } from '~assets/icons/OneLogoMark'
 import { FORM_GUIDE } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
@@ -243,6 +244,19 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           onClick={handleDrawerEndpageClick}
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR_IDS[3].id}
+        />
+        <DrawerTabIcon
+          label={t('features.adminForm.sidebar.suite.title')}
+          navLabel={
+            showNavLabels
+              ? t('features.adminForm.sidebar.suite.title')
+              : undefined
+          }
+          trackingLabel="create_builder.drawer_tab.suite"
+          icon={<OneLogoMark fontSize="1.5rem" />}
+          // TODO: decide what clicking the Suite tab should do.
+          onClick={handleDrawerSuiteClick}
+          isActive={false}
         />
         {/* Control keeps production's layout: Workflow at the bottom, below a divider. */}
         {!showNavLabels && isMrf && (
