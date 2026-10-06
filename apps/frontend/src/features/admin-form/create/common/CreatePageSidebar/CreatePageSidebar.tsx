@@ -47,6 +47,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
   const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
+  const showSuiteTab = useFeatureIsOn(featureFlags.suiteLauncher)
 
   const { data } = useAdminForm()
   const { user, isLoading: isUserLoading } = useUser()
@@ -251,18 +252,20 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR_IDS[3].id}
         />
-        <DrawerTabIcon
-          label={t('features.adminForm.sidebar.suite.title')}
-          navLabel={
-            showNavLabels
-              ? t('features.adminForm.sidebar.suite.title')
-              : undefined
-          }
-          trackingLabel="create_builder.drawer_tab.suite"
-          icon={<OneLogoMark fontSize="1.5rem" />}
-          onClick={handleDrawerSuiteClick}
-          isActive={activeTab === DrawerTabs.Suite}
-        />
+        {showSuiteTab && (
+          <DrawerTabIcon
+            label={t('features.adminForm.sidebar.suite.title')}
+            navLabel={
+              showNavLabels
+                ? t('features.adminForm.sidebar.suite.title')
+                : undefined
+            }
+            trackingLabel="create_builder.drawer_tab.suite"
+            icon={<OneLogoMark fontSize="1.5rem" />}
+            onClick={handleDrawerSuiteClick}
+            isActive={activeTab === DrawerTabs.Suite}
+          />
+        )}
         {/* Control keeps production's layout: Workflow at the bottom, below a divider. */}
         {!showNavLabels && isMrf && (
           <>
