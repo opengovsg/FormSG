@@ -66,6 +66,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     handleLogicClick,
     handleEndpageClick,
     handleWorkflowClick,
+    handleSuiteClick,
     reportSidebarWidth,
   } = useCreatePageSidebar()
 
@@ -111,6 +112,11 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const handleDrawerEndpageClick = useCallback(
     () => handleEndpageClick(isDirty),
     [handleEndpageClick, isDirty],
+  )
+
+  const handleDrawerSuiteClick = useCallback(
+    () => handleSuiteClick(isDirty),
+    [handleSuiteClick, isDirty],
   )
 
   const handleDrawerWorkflowClick = useCallback(() => {
@@ -254,9 +260,8 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           }
           trackingLabel="create_builder.drawer_tab.suite"
           icon={<OneLogoMark fontSize="1.5rem" />}
-          // TODO: decide what clicking the Suite tab should do.
           onClick={handleDrawerSuiteClick}
-          isActive={false}
+          isActive={activeTab === DrawerTabs.Suite}
         />
         {/* Control keeps production's layout: Workflow at the bottom, below a divider. */}
         {!showNavLabels && isMrf && (

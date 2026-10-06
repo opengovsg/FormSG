@@ -30,6 +30,7 @@ export enum DrawerTabs {
   Logic,
   EndPage,
   Workflow,
+  Suite,
 }
 
 export type CreatePageSidebarContextProps = {
@@ -42,6 +43,7 @@ export type CreatePageSidebarContextProps = {
   handleLogicClick: (shouldBePending: boolean) => void
   handleEndpageClick: (shouldBePending: boolean) => void
   handleWorkflowClick: (shouldBePending: boolean) => void
+  handleSuiteClick: (shouldBePending: boolean) => void
   handleClose: (shouldBePending: boolean) => void
   isDrawerOpen: boolean
   fieldListTabIndex: FieldListTabIndex
@@ -82,7 +84,10 @@ export const useCreatePageSidebarContext =
       DrawerTabs | null | undefined
     >()
     const isDrawerOpen = useMemo(
-      () => activeTab !== null && activeTab !== DrawerTabs.Logic,
+      () =>
+        activeTab !== null &&
+        activeTab !== DrawerTabs.Logic &&
+        activeTab !== DrawerTabs.Suite,
       [activeTab],
     )
     const fieldBuilderState = useFieldBuilderStore(fieldBuilderStateSelector)
@@ -156,6 +161,12 @@ export const useCreatePageSidebarContext =
       [setActiveOrPendingTab],
     )
 
+    const handleSuiteClick = useCallback(
+      (shouldBePending: boolean) =>
+        setActiveOrPendingTab(DrawerTabs.Suite, shouldBePending),
+      [setActiveOrPendingTab],
+    )
+
     const handleClose = useCallback(
       (shouldBePending: boolean) => {
         setActiveOrPendingTab(null, shouldBePending)
@@ -185,6 +196,7 @@ export const useCreatePageSidebarContext =
       handleLogicClick,
       handleEndpageClick,
       handleWorkflowClick,
+      handleSuiteClick,
       handleClose,
       fieldListTabIndex,
       setFieldListTabIndex,
