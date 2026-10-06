@@ -22,13 +22,11 @@ import {
   requestSwitchToCreatingSelector,
   setCompletedStepSelector,
   setToCreatingSelector,
-  stepDraftSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowEditBlocked } from '../../../hooks/useIsWorkflowEditBlocked'
 import { useWorkflowMutations } from '../../../mutations'
-import { AdminEditWorkflowState } from '../../../types'
 import { CloseFormToEditModal } from '../../CloseFormToEditModal'
 import { EditStepBlock } from '../EditStepBlock'
 
@@ -88,12 +86,6 @@ export const NewStepBlock = () => {
     setCompletedStep: setCompletedStepSelector(state),
   }))
 
-  const stepDraft = useAdminWorkflowStore(stepDraftSelector)
-  const draftInputs =
-    stepDraft?.target.state === AdminEditWorkflowState.CreatingStep
-      ? stepDraft.inputs
-      : undefined
-
   const isEditBlocked = useIsWorkflowEditBlocked()
   const {
     isOpen: isBlockedModalOpen,
@@ -144,7 +136,7 @@ export const NewStepBlock = () => {
       stepNumber={formWorkflow.length}
       isLoading={createStepMutation.isLoading}
       onSubmit={handleSubmit}
-      defaultValues={draftInputs ?? { edit: [] }}
+      defaultValues={{ edit: [] }}
       submitButtonLabel={t(
         'features.adminForm.sidebar.workflow.approvals.addStep',
       )}

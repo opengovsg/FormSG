@@ -24,11 +24,6 @@ export enum GuidedWrapUp {
   Done = 'done',
 }
 
-export interface StepDraft {
-  target: CreateOrEditData
-  inputs: Partial<EditStepInputs>
-}
-
 export type EditStepInputs = FormWorkflowStep & {
   _id: string
   workflow_type: WorkflowType

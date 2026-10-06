@@ -11,21 +11,13 @@ import { useAdminFormWorkflow } from './hooks/useAdminFormWorkflow'
 import { useAdminWorkflowStore } from './adminWorkflowStore'
 
 export const CreatePageWorkflowTab = (): JSX.Element => {
-  const {
-    createOrEditData,
-    isOnWelcomeCard,
-    reset,
-    stepDraft,
-    restoreStepDraft,
-  } = useAdminWorkflowStore(
+  const { createOrEditData, isOnWelcomeCard, reset } = useAdminWorkflowStore(
     useCallback((state) => {
       return {
         createOrEditData: state.createOrEditData,
         isOnWelcomeCard: state.isOnWelcomeCard,
         setToCreating: state.setToCreating,
         reset: state.reset,
-        stepDraft: state.stepDraft,
-        restoreStepDraft: state.restoreStepDraft,
       }
     }, []),
   )
@@ -34,13 +26,11 @@ export const CreatePageWorkflowTab = (): JSX.Element => {
   const sidebarWidth = useSidebarWidth()
 
   const isEmptyWorkflow = useMemo(
-    () => formWorkflow?.length === 0 && !createOrEditData && !stepDraft,
-    [createOrEditData, formWorkflow?.length, stepDraft],
+    () => formWorkflow?.length === 0 && !createOrEditData,
+    [createOrEditData, formWorkflow?.length],
   )
 
   useEffect(() => reset, [reset])
-
-  useEffect(() => restoreStepDraft(), [restoreStepDraft])
 
   if (isLoading) return <WorkflowSkeleton />
 
