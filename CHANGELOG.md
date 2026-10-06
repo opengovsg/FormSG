@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.43.0](https://github.com/opengovsg/formsg/compare/v9.42.0...v9.43.0) (2026-10-06)
+
+
+### Features
+
+* **sdk:** decrypt V4 webhook attachments with submission keys (#10188) ([#10188](https://github.com/opengovsg/formsg/commit/c07b45a97bee8b1909448b2f48a58fac35b4cb01))
+* **webhooks:** add legacy storage-mode infobox for V4 rollout (#10218) ([#10218](https://github.com/opengovsg/formsg/commit/ccea0c1dcb5929fd4d2a3a13a4d302011db5c19a))
+* **webhooks:** enable generic MRF V4 format selection (#10216) ([#10216](https://github.com/opengovsg/formsg/commit/e0ff7c863f6d45749feab8917d6bfc5a4ece3c58))
+* **webhooks:** expose legacy opt-in for MRF admins (#10185) ([#10185](https://github.com/opengovsg/formsg/commit/942bcdf26ff6d7168c41bd7d54d9c2ad61205301))
+* **webhooks:** include form field metadata in V4 payloads (#10207) ([#10207](https://github.com/opengovsg/formsg/commit/4841043f36e815f1543c7c08b9a2e5d2bb7a3dac))
+
 ## [9.42.0](https://github.com/opengovsg/formsg/compare/v9.41.0...v9.42.0) (2026-10-06)
 
 
