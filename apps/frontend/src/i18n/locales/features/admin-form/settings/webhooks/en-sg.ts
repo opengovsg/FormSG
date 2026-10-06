@@ -1,5 +1,13 @@
 export const enSG = {
   title: 'Webhooks',
+  legacy: {
+    label: 'Use legacy webhooks',
+    description:
+      'Legacy webhooks only work with forms that have at most one workflow step.',
+    saved: 'Webhook format updated',
+  },
+  legacyWorkflowUnsupported:
+    'Legacy webhooks only work with forms that have at most one workflow step. Turn off "Use legacy webhooks" or reduce the workflow to one step.',
   workflowUnsupported:
     'Forms with two or more steps only support Plumber webhooks, which must be connected through [Plumber]({plumberUrl}). Reduce your workflow to one step to enter a webhook URL here.',
   remove: 'Remove webhook',

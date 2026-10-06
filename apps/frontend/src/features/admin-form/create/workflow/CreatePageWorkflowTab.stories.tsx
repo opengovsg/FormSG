@@ -586,6 +586,7 @@ Loading.parameters = {
 const webhookWorkflowParameters = (
   url: string,
   workflow = [workflow_step_1],
+  webhookFormat?: 'v1' | 'v4',
 ) => ({
   msw: {
     handlers: {
@@ -597,7 +598,7 @@ const webhookWorkflowParameters = (
         ...buildMswRoutes({
           ...FORM_WITH_WORKFLOW,
           workflow,
-          webhook: { url, isRetryEnabled: false },
+          webhook: { url, isRetryEnabled: false, webhookFormat },
         }),
       ],
     },
@@ -623,4 +624,11 @@ export const NoWorkflowGenericWebhook = Template.bind({})
 NoWorkflowGenericWebhook.parameters = webhookWorkflowParameters(
   'https://example.com/webhook',
   [],
+)
+
+export const SingleStepV4Webhook = Template.bind({})
+SingleStepV4Webhook.parameters = webhookWorkflowParameters(
+  'https://example.com/webhook',
+  [workflow_step_1],
+  'v4',
 )

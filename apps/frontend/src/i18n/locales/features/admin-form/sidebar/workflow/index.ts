@@ -231,6 +231,7 @@ export interface Workflow {
     cancel: string
     done: string
   }
+  legacyWebhookEnabledNoMoreSteps: string
   webhookEnabledNoMoreSteps: string
   paymentEnabledNoSteps: string
   completionEmail: {
