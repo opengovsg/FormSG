@@ -1,18 +1,21 @@
-import { useTranslation } from 'react-i18next'
-import { Skeleton, Stack } from '@chakra-ui/react'
+import { Trans, useTranslation } from 'react-i18next'
+import { useParams } from 'react-router-dom'
+import { Skeleton, Stack, Text, useDisclosure } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import {
   featureFlags,
   PLUMBER_WEBHOOK_URL_REGEX,
 } from 'formsg-shared/constants'
-import { FormResponseMode } from 'formsg-shared/types'
+import { FormId, FormResponseMode } from 'formsg-shared/types'
 
 import { OGP_PLUMBER } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 import Toggle from '~components/Toggle'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
+import { DuplicateFormModal } from '~features/workspace/components/DuplicateFormModal'
 
 import { useMutateFormSettings } from '../../mutations'
 import { useAdminFormSettings } from '../../queries'
@@ -23,6 +26,8 @@ import { WebhookUrlInput } from './WebhookUrlInput'
 
 export const WebhooksSection = (): JSX.Element => {
   const { t } = useTranslation()
+  const { formId } = useParams<{ formId: FormId }>()
+  const duplicateModal = useDisclosure()
   const { data: settings } = useAdminFormSettings()
   const v4Enabled = useFeatureIsOn(featureFlags.mrfWebhooksV4)
   const { mutateWebhookFormat } = useMutateFormSettings()
@@ -58,6 +63,25 @@ export const WebhooksSection = (): JSX.Element => {
   return (
     <Skeleton isLoaded={!isFormLoadRequired || !isLoading}>
       <Stack mt="2.5rem" spacing="2.5rem">
+        {settings?.responseMode === FormResponseMode.Encrypt && v4Enabled && (
+          <InlineMessage variant="info">
+            <Text>
+              <Trans
+                i18nKey="features.adminForm.settings.webhooks.legacyStorageNotice"
+                components={{
+                  duplicateLink: (
+                    <Link
+                      as="button"
+                      type="button"
+                      display="inline"
+                      onClick={duplicateModal.onOpen}
+                    />
+                  ),
+                }}
+              />
+            </Text>
+          </InlineMessage>
+        )}
         {isWorkflowUnsupported && (
           <InlineMessage variant="info" useMarkdown>
             {t(
@@ -94,6 +118,13 @@ export const WebhooksSection = (): JSX.Element => {
             />
           )}
       </Stack>
+      {duplicateModal.isOpen && (
+        <DuplicateFormModal
+          isOpen={duplicateModal.isOpen}
+          onClose={duplicateModal.onClose}
+          formIdToDuplicate={formId}
+        />
+      )}
     </Skeleton>
   )
 }
