@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.2.0](https://github.com/opengovsg/formsg/compare/sdk-v8.1.1...sdk-v8.2.0) (2026-10-06)
+
+
+### Features
+
+* **sdk:** decrypt V4 webhook attachments with submission keys (#10188) ([#10188](https://github.com/opengovsg/formsg/commit/c07b45a97bee8b1909448b2f48a58fac35b4cb01))
+* **webhooks:** include form field metadata in V4 payloads (#10207) ([#10207](https://github.com/opengovsg/formsg/commit/4841043f36e815f1543c7c08b9a2e5d2bb7a3dac))
+
 ## [8.1.1](https://github.com/opengovsg/formsg/compare/sdk-v8.1.0...sdk-v8.1.1) (2026-09-30)
 
 
