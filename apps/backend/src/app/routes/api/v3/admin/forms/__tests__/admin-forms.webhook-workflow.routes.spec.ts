@@ -1,6 +1,7 @@
 import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { GrowthBook } from '@growthbook/growthbook'
 import { Router } from 'express'
 import {
   FormStatus,
@@ -27,6 +28,12 @@ jest.mock('src/app/modules/webhook/webhook.validation')
 const FormModel = getFormModel(mongoose)
 // Mirror the public API's webhook settings handler, as in the webhook-format specs.
 const router = Router()
+router.use((req, _res, next) => {
+  req.growthbook = new GrowthBook({
+    features: { 'mrf-webhooks-v4': { defaultValue: false } },
+  })
+  next()
+})
 router.patch(
   '/:formId([a-fA-F0-9]{24})/webhooksettings',
   ...(AdminFormController.handleUpdateWebhookSettings as never[]),
@@ -70,7 +77,7 @@ const cases = urlCases.flatMap((consumer) =>
   })),
 )
 const conflictMessage =
-  'Forms with two or more workflow steps can only use Plumber webhooks. Use a Plumber webhook or reduce the workflow to one step.'
+  'Legacy webhooks only work with forms that have at most one workflow step. Turn off legacy webhooks or reduce the workflow to one step.'
 const staleFormMessage =
   'This form changed while you were editing. Refresh and try again.'
 
@@ -86,6 +93,51 @@ describe('webhook and workflow compatibility', () => {
     jest.restoreAllMocks()
   })
   afterAll(async () => await dbHandler.closeDatabase())
+
+  it('allows a generic V4 form to add a second workflow step with the rollout off', async () => {
+    const { form, user } = await dbHandler.insertMultirespondentForm({
+      formOptions: {
+        status: FormStatus.Private,
+        workflow: [persistedStep()],
+        webhook: {
+          url: genericUrl,
+          isRetryEnabled: false,
+          webhookFormat: 'v4',
+        },
+      },
+    })
+    const session = await createAuthedSession(user.email, supertest(app))
+    const response = await session
+      .post(`/admin/forms/${form._id}/workflow`)
+      .send(step())
+    expect(response.status).toBe(200)
+    expect(response.body).toHaveLength(2)
+  })
+
+  it.each([
+    { change: { url: genericUrl }, status: 200 },
+    { change: { webhookFormat: 'v1' }, status: 400 },
+  ])(
+    'checks the resulting format on a multi-step settings save: $change',
+    async ({ change, status }) => {
+      const { form, user } = await dbHandler.insertMultirespondentForm({
+        formOptions: {
+          status: FormStatus.Private,
+          workflow: [persistedStep(), persistedStep()],
+          webhook: {
+            url: genericUrl,
+            isRetryEnabled: false,
+            webhookFormat: 'v4',
+          },
+        },
+      })
+      const session = await createAuthedSession(user.email, supertest(app))
+      const response = await session
+        .patch(`/admin/forms/${form._id}/settings`)
+        .send({ webhook: change })
+      expect(response.status).toBe(status)
+    },
+  )
 
   it.each(
     cases.flatMap((testCase) =>
@@ -208,6 +260,88 @@ describe('webhook and workflow compatibility', () => {
       )
     },
   )
+
+  it('rejects a stale workflow save after the format alone changes to legacy', async () => {
+    const { form, user } = await dbHandler.insertMultirespondentForm({
+      formOptions: {
+        status: FormStatus.Private,
+        workflow: [persistedStep()],
+        webhook: {
+          url: genericUrl,
+          isRetryEnabled: false,
+          webhookFormat: 'v4',
+        },
+      },
+    })
+    const stale = await FormModel.findById(form._id).populate('admin').orFail()
+    const session = await createAuthedSession(user.email, supertest(app))
+    expect(
+      (
+        await session
+          .patch(`/admin/forms/${form._id}/settings`)
+          .send({ webhook: { webhookFormat: 'v1' } })
+      ).status,
+    ).toBe(200)
+    const result = await AdminFormService.createWorkflowStep(
+      stale as IPopulatedForm,
+      persistedStep(),
+    )
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr().message).toBe(staleFormMessage)
+  })
+
+  it('allows only one of concurrent legacy selection and second-step creation', async () => {
+    const { form } = await dbHandler.insertMultirespondentForm({
+      formOptions: {
+        status: FormStatus.Private,
+        workflow: [persistedStep()],
+        webhook: {
+          url: genericUrl,
+          isRetryEnabled: false,
+          webhookFormat: 'v4',
+        },
+      },
+    })
+    const original = (await FormModel.findById(form._id)
+      .populate('admin')
+      .orFail()) as IPopulatedForm
+    const results = await Promise.all([
+      AdminFormService.updateFormSettings(original, {
+        webhook: { webhookFormat: 'v1' },
+      }),
+      AdminFormService.createWorkflowStep(original, persistedStep()),
+    ])
+    expect(results.filter((result) => result.isOk())).toHaveLength(1)
+    expect(
+      results.find((result) => result.isErr())?._unsafeUnwrapErr().message,
+    ).toBe(staleFormMessage)
+  })
+
+  it('rejects a stale generic URL save after a multi-step form selects legacy with no URL', async () => {
+    const { form, user } = await dbHandler.insertMultirespondentForm({
+      formOptions: {
+        status: FormStatus.Private,
+        workflow: [persistedStep(), persistedStep()],
+        webhook: { url: '', isRetryEnabled: false, webhookFormat: 'v4' },
+      },
+    })
+    const stale = (await FormModel.findById(form._id)
+      .populate('admin')
+      .orFail()) as IPopulatedForm
+    const session = await createAuthedSession(user.email, supertest(app))
+    expect(
+      (
+        await session
+          .patch(`/admin/forms/${form._id}/settings`)
+          .send({ webhook: { webhookFormat: 'v1' } })
+      ).status,
+    ).toBe(200)
+    const result = await AdminFormService.updateFormSettings(stale, {
+      webhook: { url: genericUrl },
+    })
+    expect(result.isErr()).toBe(true)
+    expect(result._unsafeUnwrapErr().message).toBe(staleFormMessage)
+  })
 
   it('rejects a stale settings save after another request adds a second step', async () => {
     const { form, user } = await dbHandler.insertMultirespondentForm({

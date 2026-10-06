@@ -598,10 +598,7 @@ export const createForm = (
 
   // Copied forms bypass createForm, so they keep inheriting their source's
   // setting; the schema default stays false for forms predating the field.
-  const newFormParams = pinGenericConsumerWebhookFormat(
-    { ...formParams, isSaveDraftEnabled: true },
-    formParams.webhook?.webhookFormat,
-  )
+  const newFormParams = { ...formParams, isSaveDraftEnabled: true }
 
   if (workspaceId)
     return ResultAsync.fromPromise(
@@ -1607,7 +1604,7 @@ const incompleteStepsError = (
 
 const webhookWorkflowConflict = () =>
   new MalformedParametersError(
-    'Forms with two or more workflow steps can only use Plumber webhooks. Use a Plumber webhook or reduce the workflow to one step.',
+    'Legacy webhooks only work with forms that have at most one workflow step. Turn off legacy webhooks or reduce the workflow to one step.',
   )
 
 const isNonPlumberWebhook = (url: string | undefined): boolean =>
@@ -1616,24 +1613,31 @@ const isNonPlumberWebhook = (url: string | undefined): boolean =>
 const hasWebhookWorkflowConflict = (
   url: string | undefined,
   stepCount: number,
-): boolean => stepCount >= 2 && isNonPlumberWebhook(url)
+  format: FormWebhook['webhookFormat'],
+): boolean => stepCount >= 2 && isNonPlumberWebhook(url) && format !== 'v4'
 
-// RATIONALE: The webhook url may have been updated since the webhook workflow conflict was done.
-// Thus, we only update the workflow if the previously checked webhook URL is not changed.
-const getCheckedWebhookUrlFilterIfMultistepWorkflow = (
+// Keep both parts of the checked webhook choice stable until the write.
+const getCheckedWebhookFilter = (form: IPopulatedForm) => ({
+  'webhook.url': form.webhook?.url || { $in: ['', null] },
+  'webhook.webhookFormat': form.webhook?.webhookFormat ?? { $exists: false },
+})
+
+const getCheckedWebhookFilterIfMultistepWorkflow = (
   form: IPopulatedForm,
   stepCount: number,
-) => {
-  const isMultistepWorkflow = stepCount >= 2
-  const checkedUrl = form.webhook?.url || { $in: ['', null] }
-  return isMultistepWorkflow ? { 'webhook.url': checkedUrl } : {}
-}
+) => (stepCount >= 2 ? getCheckedWebhookFilter(form) : {})
 
 const checkResultingWorkflowIsAllowed = (
   form: IPopulatedForm,
   workflow: FormWorkflowDto,
 ): Result<true, MalformedParametersError> => {
-  if (hasWebhookWorkflowConflict(form.webhook?.url, workflow.length)) {
+  if (
+    hasWebhookWorkflowConflict(
+      form.webhook?.url,
+      workflow.length,
+      form.webhook?.webhookFormat,
+    )
+  ) {
     return err(webhookWorkflowConflict())
   }
 
@@ -1775,7 +1779,7 @@ export const createWorkflowStep = (
       {
         _id: originalMrfForm._id,
         'payments_field.enabled': { $ne: true },
-        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
+        ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
           updatedWorkflow.length,
         ),
@@ -1933,7 +1937,7 @@ export const updateFormWorkflowStep = (
     MultirespondentFormModel.findOneAndUpdate(
       {
         _id: originalMrfForm._id,
-        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
+        ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
           updatedWorkflow.length,
         ),
@@ -2086,7 +2090,7 @@ export const deleteFormWorkflowStep = (
     MultirespondentFormModel.findOneAndUpdate(
       {
         _id: originalMrfForm._id,
-        ...getCheckedWebhookUrlFilterIfMultistepWorkflow(
+        ...getCheckedWebhookFilterIfMultistepWorkflow(
           originalForm,
           updatedWorkflow.length,
         ),
@@ -2161,39 +2165,28 @@ const withHasUsedGuidedModeWriteOnce = (
   return next as SettingsUpdateDto
 }
 
-/**
- * Pins a generic consumer's webhook to the platform default the first time a
- * generic webhook URL is set.
- * RATIONALE: Do not set for plumber consumers since they will always be v4.
- */
-const pinGenericConsumerWebhookFormat = <
-  T extends { webhook?: Partial<FormWebhook> },
->(
-  body: T,
-  existingWebhookFormat: FormWebhook['webhookFormat'],
-): T => {
-  const isGenericWebhookUrl =
-    !!body.webhook?.url &&
-    toConsumerType(getWebhookType(body.webhook.url)) === 'generic'
-
-  if (!isGenericWebhookUrl || existingWebhookFormat !== undefined) {
+/** Pin an MRF format only when a generic URL is first saved without a choice. */
+const pinMrfWebhookFormat = (
+  form: IPopulatedForm,
+  body: SettingsUpdateDto,
+  isV4Enabled: boolean,
+): SettingsUpdateDto => {
+  if (
+    !isFormMultirespondent(form) ||
+    !isNonPlumberWebhook(body.webhook?.url) ||
+    form.webhook?.webhookFormat !== undefined ||
+    body.webhook?.webhookFormat !== undefined
+  ) {
     return body
   }
-
   return {
     ...body,
     webhook: {
       ...body.webhook,
-      webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+      webhookFormat: isV4Enabled ? 'v4' : FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
     },
   }
 }
-
-const withGenericConsumerPlatformDefaultWebhookFormat = (
-  originalForm: IPopulatedForm,
-  body: SettingsUpdateDto,
-): SettingsUpdateDto =>
-  pinGenericConsumerWebhookFormat(body, originalForm.webhook?.webhookFormat)
 
 /**
  * Updates form settings.
@@ -2206,6 +2199,7 @@ const withGenericConsumerPlatformDefaultWebhookFormat = (
 export const updateFormSettings = (
   originalForm: IPopulatedForm,
   body: SettingsUpdateDto,
+  isV4Enabled = false,
 ): ResultAsync<
   FormSettings,
   | MalformedParametersError
@@ -2215,6 +2209,30 @@ export const updateFormSettings = (
   | DatabaseConflictError
   | DatabasePayloadSizeError
 > => {
+  const resultingUrl = body.webhook?.url ?? originalForm.webhook?.url
+  if (
+    body.webhook?.webhookFormat !== undefined &&
+    (!isFormMultirespondent(originalForm) ||
+      (resultingUrl && !isNonPlumberWebhook(resultingUrl)))
+  ) {
+    return errAsync(
+      new MalformedParametersError(
+        'Webhook format can only be selected for multirespondent forms without a Plumber URL',
+      ),
+    )
+  }
+  if (
+    body.webhook?.webhookFormat === 'v4' &&
+    originalForm.webhook?.webhookFormat !== 'v4' &&
+    !isV4Enabled
+  ) {
+    return errAsync(
+      new MalformedParametersError(
+        'V4 webhooks are not available for this form',
+      ),
+    )
+  }
+
   if (isFormEmailMode(originalForm)) {
     if (
       originalForm.isForceConvertToStorageMode &&
@@ -2262,11 +2280,18 @@ export const updateFormSettings = (
     }
   }
 
+  body = pinMrfWebhookFormat(originalForm, body, isV4Enabled)
+  const changesWebhookFormatOrUrl =
+    body.webhook?.url !== undefined || body.webhook?.webhookFormat !== undefined
+  const resultingFormat =
+    body.webhook?.webhookFormat ?? originalForm.webhook?.webhookFormat
   if (isFormMultirespondent(originalForm)) {
     if (
+      changesWebhookFormatOrUrl &&
       hasWebhookWorkflowConflict(
-        body.webhook?.url,
+        resultingUrl,
         originalForm.workflow?.length ?? 0,
+        resultingFormat,
       )
     ) {
       return errAsync(webhookWorkflowConflict())
@@ -2287,12 +2312,9 @@ export const updateFormSettings = (
   }
 
   const dotifiedSettingsToUpdate = dotifyObject(
-    withGenericConsumerPlatformDefaultWebhookFormat(
+    withHasUsedGuidedModeWriteOnce(
       originalForm,
-      withHasUsedGuidedModeWriteOnce(
-        originalForm,
-        withExpiredCloseAtCleared(originalForm, body),
-      ),
+      withExpiredCloseAtCleared(originalForm, body),
     ),
   )
   const ModelToUse = getFormModelByResponseMode(originalForm.responseMode)
@@ -2301,7 +2323,9 @@ export const updateFormSettings = (
   // Thus, we only update the workflow if the second step is not present for non-plumber webhooks.
   const requiresSingleStep =
     isFormMultirespondent(originalForm) &&
-    isNonPlumberWebhook(body.webhook?.url)
+    changesWebhookFormatOrUrl &&
+    isNonPlumberWebhook(resultingUrl) &&
+    resultingFormat !== 'v4'
 
   const noSecondStepFilterIfRequiresSingleStep = requiresSingleStep
     ? { 'workflow.1': { $exists: false } }
@@ -2312,6 +2336,9 @@ export const updateFormSettings = (
       {
         _id: originalForm._id,
         ...noSecondStepFilterIfRequiresSingleStep,
+        ...(isFormMultirespondent(originalForm) && changesWebhookFormatOrUrl
+          ? getCheckedWebhookFilter(originalForm)
+          : {}),
       },
       dotifiedSettingsToUpdate,
       { new: true, runValidators: true },
