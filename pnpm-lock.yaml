@@ -6486,8 +6486,8 @@ packages:
     resolution: {integrity: sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==}
     engines: {node: '>= 0.8'}
 
-  basic-ftp@6.2.1:
-    resolution: {integrity: sha512-bK67isD+lKq46AU8vNtjvMaT2ZqAOAmNCbxUHlFBRD4k15NWxyEjmaKtZPlgce58So4BNTjITGQOVTjL9y0ECA==}
+  basic-ftp@6.2.2:
+    resolution: {integrity: sha512-LIkJcf/F6bTTfvE3k2YcTxrJsLKKVXiEpHZYkQP6JoqTb7khng7c13ckRTDQbqRh5IkehVH3F00sSlAa2F6DwA==}
     engines: {node: '>=10.0.0'}
 
   bcrypt@5.1.1:
@@ -21101,7 +21101,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.1.2
 
-  basic-ftp@6.2.1: {}
+  basic-ftp@6.2.2: {}
 
   bcrypt@5.1.1(encoding@0.1.13):
     dependencies:
@@ -23946,7 +23946,7 @@ snapshots:
 
   get-uri@6.0.5:
     dependencies:
-      basic-ftp: 6.2.1
+      basic-ftp: 6.2.2
       data-uri-to-buffer: 6.0.2
       debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:
