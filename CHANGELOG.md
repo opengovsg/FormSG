@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.44.0](https://github.com/opengovsg/formsg/compare/v9.43.0...v9.44.0) (2026-10-06)
+
+
+### Features
+
+* **workflow-builder-redesign-and-logic:** add a field from any field picker without leaving the builder; copy changes and better placeholders (#10215) ([#10215](https://github.com/opengovsg/formsg/commit/43bec3d2af21a519aa90d08a1fc343e20a8eb0f8))
+
+
+### Bug Fixes
+
+* **results:** don't crash the responses table on a form with no workflow (#10220) ([#10220](https://github.com/opengovsg/formsg/commit/46db6a4a1385e7af5b3abc3ecea5112ba10194e2))
+
+
+### Refactors
+
+* **workflow:** remove the step draft stash (#10219) ([#10219](https://github.com/opengovsg/formsg/commit/ffbcaa03648939f5099bc07e0772e31597ed22f3))
+
 ## [9.43.0](https://github.com/opengovsg/formsg/compare/v9.42.0...v9.43.0) (2026-10-06)
 
 
