@@ -11,6 +11,7 @@ import {
 import { useSelectContext } from '~components/Dropdown/SelectContext'
 import { ComboboxItem } from '~components/Dropdown/types'
 import {
+  isItemAction,
   itemToDescriptionString,
   itemToIcon,
   itemToLabelString,
@@ -38,16 +39,18 @@ export const MultiDropdownItem = ({
     inputValue,
   } = useSelectContext()
 
-  const { isSelected, isHighlighted, icon, label, description } = useMemo(
-    () => ({
-      isSelected: isItemSelected(item),
-      isHighlighted: highlightedIndex === index,
-      icon: itemToIcon(item),
-      label: itemToLabelString(item),
-      description: itemToDescriptionString(item),
-    }),
-    [highlightedIndex, index, isItemSelected, item],
-  )
+  const { isSelected, isHighlighted, icon, label, description, isAction } =
+    useMemo(
+      () => ({
+        isSelected: isItemSelected(item),
+        isHighlighted: highlightedIndex === index,
+        icon: itemToIcon(item),
+        label: itemToLabelString(item),
+        description: itemToDescriptionString(item),
+        isAction: isItemAction(item),
+      }),
+      [highlightedIndex, index, isItemSelected, item],
+    )
 
   return (
     <ListItem
@@ -60,7 +63,7 @@ export const MultiDropdownItem = ({
       title={label}
     >
       <Stack direction="row" spacing="1rem" overflowX="auto">
-        <ItemCheckboxIcon isChecked={isSelected} />
+        {isAction ? null : <ItemCheckboxIcon isChecked={isSelected} />}
         <Flex flexDir="column" minW={0}>
           <Stack direction="row" spacing="0.5rem" align="center">
             {icon ? <Icon as={icon} sx={styles.icon} /> : null}

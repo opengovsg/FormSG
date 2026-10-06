@@ -154,17 +154,13 @@ export interface Workflow {
     placeholder: string
     placeholderRedesign: string
     autoAddHelperTextRedesign: string
+    myInfoOnlyHelperText: string
   }
-  emptyStates: {
-    noEmailField: string
-    noEmailFieldAction: string
-    noDropdownField: string
-    noDropdownFieldAction: string
-    noYesNoField: string
-    noYesNoFieldAction: string
-    noFields: string
-    noFieldsMyInfoOnly: string
-    noFieldsAction: string
+  addField: {
+    fields: string
+    email: string
+    dropdown: string
+    yesNo: string
   }
   approvals: {
     title: string
@@ -195,6 +191,8 @@ export interface Workflow {
   }
   stepName: {
     label: string
+    placeholderStepOne: string
+    placeholderLaterStep: string
   }
   guidedMode: {
     label: string

@@ -79,3 +79,30 @@ describe('pendingFieldCreation', () => {
     })
   })
 })
+
+describe('setCreateInsertionIndex', () => {
+  it('moves the pending field without touching the draft', () => {
+    const { updateCreateState, setCreateInsertionIndex } =
+      useFieldBuilderStore.getState()
+
+    const editedDraft = { ...emailField, title: 'Typed while dragging' }
+    updateCreateState(editedDraft, 3)
+    setCreateInsertionIndex(0)
+
+    expect(useFieldBuilderStore.getState().stateData).toEqual({
+      state: FieldBuilderState.CreatingField,
+      field: editedDraft,
+      insertionIndex: 0,
+    })
+  })
+
+  it('ignores a move when no field is being created', () => {
+    const { setCreateInsertionIndex } = useFieldBuilderStore.getState()
+
+    setCreateInsertionIndex(2)
+
+    expect(useFieldBuilderStore.getState().stateData).toEqual({
+      state: FieldBuilderState.Inactive,
+    })
+  })
+})

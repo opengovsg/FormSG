@@ -43,9 +43,13 @@ export const StepNameBlock = ({
 
   const customStepName = watch(STEP_NAME)
 
-  const displayStepName = customStepName
+  const placeholder = customStepName
     ? customStepName
-    : `Step ${stepNumber + 1}`
+    : stepNumber === 0
+      ? t('features.adminForm.sidebar.workflow.stepName.placeholderStepOne')
+      : t('features.adminForm.sidebar.workflow.stepName.placeholderLaterStep', {
+          stepNumber: stepNumber + 1,
+        })
 
   return (
     <EditStepBlockContainer>
@@ -91,7 +95,7 @@ export const StepNameBlock = ({
               render={({ field }) => (
                 <Input
                   {...field}
-                  placeholder={displayStepName}
+                  placeholder={placeholder}
                   _focus={{
                     _placeholder: { color: 'transparent' },
                   }}

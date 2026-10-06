@@ -15,11 +15,11 @@ export const enSG: Workflow = {
   },
   respondentBlock: {
     stepRespondent: 'Respondent in this step',
-    stepRespondentRedesign: 'Who fills in this step?',
+    stepRespondentRedesign: 'Who should fill in this step?',
     anyone: 'Anyone who has access to your form',
     anyoneRedesign: 'Anyone with your form link can fill in Step 1.',
     select: 'Select a respondent',
-    selectRedesign: 'Who fills in this step?',
+    selectRedesign: 'Who should fill in this step?',
     fieldsToFill: 'Fields to fill',
     clickToEdit: 'Click to edit',
   },
@@ -178,18 +178,14 @@ export const enSG: Workflow = {
     placeholderRedesign: 'Select fields from your form',
     autoAddHelperTextRedesign:
       'The approval field is added here automatically.',
-  },
-  emptyStates: {
-    noEmailField: 'Your form has no Email field yet.',
-    noEmailFieldAction: 'Add an Email field',
-    noDropdownField: 'Your form has no Dropdown field yet.',
-    noDropdownFieldAction: 'Add a Dropdown field',
-    noYesNoField: 'Your form has no Yes/No field yet.',
-    noYesNoFieldAction: 'Add a Yes/No field',
-    noFields: 'Your form has no fields yet.',
-    noFieldsMyInfoOnly:
+    myInfoOnlyHelperText:
       'Your form only has MyInfo fields, which can only be used in the first step.',
-    noFieldsAction: 'Add fields',
+  },
+  addField: {
+    fields: 'Add fields',
+    email: 'Add an Email field',
+    dropdown: 'Add a Dropdown field',
+    yesNo: 'Add a Yes/No field',
   },
   approvals: {
     title: 'Approvals',
@@ -229,6 +225,9 @@ export const enSG: Workflow = {
   },
   stepName: {
     label: 'Step name',
+    placeholderStepOne: 'e.g. Step 1, Applicant, Parent, Vendor, New request',
+    placeholderLaterStep:
+      "e.g. Step {stepNumber}, Staff, HOD approval, Applicant's acknowledgement",
   },
   guidedMode: {
     label: 'Guided setup',
@@ -236,7 +235,7 @@ export const enSG: Workflow = {
   guidedHints: {
     stepName: "Name this step, or keep it as 'Step {stepNumber}'.",
     respondent:
-      'Select who fills in this step. You can always change this later.',
+      'Choose who FormSG sends the form to in this step. You can always change this later.',
     approvals:
       'Choose what they do in this step. Most steps just need people to fill in fields.',
   },

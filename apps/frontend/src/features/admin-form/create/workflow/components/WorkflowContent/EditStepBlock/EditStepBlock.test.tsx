@@ -15,7 +15,7 @@ const {
 } = composeStories(pageStories)
 
 const STEP_NAME_LABEL = /step name/i
-const PEOPLE_LABEL = /who fills in this step/i
+const PEOPLE_LABEL = /who should fill in this step/i
 const WHAT_THEY_DO_LABEL = /make this person approve/i
 const FIELDS_LABEL = /choose the fields this person fills in/i
 

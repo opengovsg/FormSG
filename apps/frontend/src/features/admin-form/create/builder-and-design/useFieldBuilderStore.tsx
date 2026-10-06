@@ -28,6 +28,11 @@ export type FieldBuilderStore = {
     holding?: boolean,
   ) => void
   updateEditState: (field: FormFieldDto, holding?: boolean) => void
+  /**
+   * Moves the not-yet-created field without touching the draft itself, so a
+   * drag cannot clobber edits the drawer has not flushed yet.
+   */
+  setCreateInsertionIndex: (insertionIndex: number) => void
   setToInactive: (holding?: boolean) => void
   stateData:
     | FieldBuilderCreateEditStateData
@@ -82,6 +87,16 @@ export const useFieldBuilderStore = create<FieldBuilderStore>()(
       } else {
         set({ stateData })
       }
+    },
+    setCreateInsertionIndex: (insertionIndex) => {
+      const { stateData } = get()
+      if (
+        stateData.state !== FieldBuilderState.CreatingField ||
+        stateData.insertionIndex === insertionIndex
+      ) {
+        return
+      }
+      set({ stateData: { ...stateData, insertionIndex } })
     },
     updateEditState: (field, holding) => {
       // perf: prevent store update if field is the same
@@ -146,6 +161,10 @@ export const updateCreateStateSelector = (
 export const updateEditStateSelector = (
   state: FieldBuilderStore,
 ): FieldBuilderStore['updateEditState'] => state.updateEditState
+
+export const setCreateInsertionIndexSelector = (
+  state: FieldBuilderStore,
+): FieldBuilderStore['setCreateInsertionIndex'] => state.setCreateInsertionIndex
 
 export const pendingFieldCreationSelector = (
   state: FieldBuilderStore,

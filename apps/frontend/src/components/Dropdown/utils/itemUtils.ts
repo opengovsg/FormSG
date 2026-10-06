@@ -37,6 +37,17 @@ export const isItemDisabled = <Item extends ComboboxItem>(
   return itemIsObject(item) && !!item.disabled
 }
 
+/**
+ * Items flagged with `isAction` trigger an action instead of being selected as
+ * a value, so a multiselect renders them without a checkbox. Opt-in: items that
+ * do not set it keep the existing rendering.
+ */
+export const isItemAction = <Item extends ComboboxItem>(
+  item: Item,
+): boolean => {
+  return itemIsObject(item) && !!item.isAction
+}
+
 export const itemToDescriptionString = <Item extends ComboboxItem>(
   item: Item,
 ): string | undefined => {

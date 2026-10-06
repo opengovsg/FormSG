@@ -73,6 +73,7 @@ import {
   setToInactiveSelector as setPaymentToInactiveSelector,
   usePaymentStore,
 } from '../../BuilderAndDesignDrawer/FieldListDrawer/field-panels/usePaymentStore'
+import { PENDING_CREATE_FIELD_ID } from '../../constants'
 import { useDeleteFormField } from '../../mutations/useDeleteFormField'
 import { useDuplicateFormField } from '../../mutations/useDuplicateFormField'
 import { useCreateTabForm } from '../../useCreateTabForm'
@@ -249,14 +250,24 @@ const FieldRowContainer = ({
     [handleFieldClick],
   )
 
+  // The placeholder moves in local state only, so a dirty draft is no reason
+  // to block it. A save in flight still is.
+  const canDragPendingField =
+    !isMobile &&
+    field._id === PENDING_CREATE_FIELD_ID &&
+    fieldBuilderState === FieldBuilderState.CreatingField
+
   const isDragDisabled = useMemo(() => {
-    return (
-      !isActive ||
-      isDirty ||
-      !!numFormFieldMutations ||
-      fieldBuilderState === FieldBuilderState.CreatingField
-    )
-  }, [isActive, isDirty, numFormFieldMutations, fieldBuilderState])
+    if (!isActive || !!numFormFieldMutations) return true
+    if (canDragPendingField) return false
+    return isDirty || fieldBuilderState === FieldBuilderState.CreatingField
+  }, [
+    isActive,
+    isDirty,
+    numFormFieldMutations,
+    fieldBuilderState,
+    canDragPendingField,
+  ])
 
   return (
     <Draggable
@@ -336,7 +347,8 @@ const FieldRowContainer = ({
                     snapshot.isDragging ? 'secondary.300' : 'secondary.200'
                   }
                 >
-                  {fieldBuilderState === FieldBuilderState.EditingField &&
+                  {(fieldBuilderState === FieldBuilderState.EditingField ||
+                    canDragPendingField) &&
                   !isDragDisabled ? (
                     <Icon as={BiGridHorizontal} fontSize="1.5rem" />
                   ) : (

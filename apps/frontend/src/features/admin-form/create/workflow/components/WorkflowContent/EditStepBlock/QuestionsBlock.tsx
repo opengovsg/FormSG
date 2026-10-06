@@ -7,6 +7,7 @@ import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 
+import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { getLogicFieldLabel } from '~features/admin-form/create/logic/components/LogicContent/utils/getLogicFieldLabel'
 import { EditStepInputs } from '~features/admin-form/create/workflow/types'
@@ -14,11 +15,9 @@ import { NON_RESPONSE_FIELD_SET } from '~features/form/constants'
 
 import { useAdminFormWorkflow } from '../../../hooks/useAdminFormWorkflow'
 import { useIsWorkflowBuilderRedesign } from '../../../hooks/useIsWorkflowBuilderRedesign'
-import { useStageFieldAndNavigate } from '../../../hooks/useStageFieldAndNavigate'
 
 import { APPROVAL_FIELD_NAME, FIELDS_TO_EDIT_NAME } from './EditStepBlock'
 import { EditStepBlockContainer } from './EditStepBlockContainer'
-import { FieldEmptyState } from './EmptyStates'
 
 interface QuestionsBlockProps {
   isLoading: boolean
@@ -33,14 +32,16 @@ export const QuestionsBlock = ({
 }: QuestionsBlockProps): JSX.Element => {
   const { t } = useTranslation()
   const isRedesign = useIsWorkflowBuilderRedesign()
-  const stageFieldAndNavigate = useStageFieldAndNavigate()
+  const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
+    label: t('features.adminForm.sidebar.workflow.addField.fields'),
+    enabled: isRedesign,
+  })
   const { formFields = [], idToFieldMap } = useAdminFormWorkflow()
   const {
     formState: { errors },
     control,
     watch,
     trigger,
-    getValues,
   } = formMethods
   const selectedApprovalField = watch(APPROVAL_FIELD_NAME)
 
@@ -48,7 +49,7 @@ export const QuestionsBlock = ({
     (f) => !NON_RESPONSE_FIELD_SET.has(f.fieldType),
   )
 
-  const items = fillableFields
+  const fieldItems = fillableFields
     // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
     .filter((f) => !('myInfo' in f) || isFirstStep)
     .map((f) => ({
@@ -57,9 +58,8 @@ export const QuestionsBlock = ({
       icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
     }))
 
-  const hasOnlyMyInfoFields = items.length === 0 && fillableFields.length > 0
-
-  const showEmptyState = isRedesign && items.length === 0
+  const hasOnlyMyInfoFields =
+    fieldItems.length === 0 && fillableFields.length > 0
 
   return (
     <EditStepBlockContainer>
@@ -89,28 +89,14 @@ export const QuestionsBlock = ({
           control={control}
           name={FIELDS_TO_EDIT_NAME}
           render={({ field: { value = [], onChange, ...field } }) => {
-            if (showEmptyState) {
-              return (
-                <FieldEmptyState
-                  picker="fields"
-                  message={t(
-                    hasOnlyMyInfoFields
-                      ? 'features.adminForm.sidebar.workflow.emptyStates.noFieldsMyInfoOnly'
-                      : 'features.adminForm.sidebar.workflow.emptyStates.noFields',
-                  )}
-                  actionLabel={t(
-                    'features.adminForm.sidebar.workflow.emptyStates.noFieldsAction',
-                  )}
-                  onAction={() => stageFieldAndNavigate(undefined, getValues())}
-                />
-              )
-            }
-            const handleFieldsChange = (newValue: string[]) => {
-              onChange(newValue)
-              if (isRedesign && selectedApprovalField) {
-                void trigger(APPROVAL_FIELD_NAME)
-              }
-            }
+            const handleFieldsChange = withAddFieldAction(
+              (newValue: string[]) => {
+                onChange(newValue)
+                if (isRedesign && selectedApprovalField) {
+                  void trigger(APPROVAL_FIELD_NAME)
+                }
+              },
+            )
             return (
               <MultiSelect
                 isDisabled={isLoading}
@@ -119,7 +105,7 @@ export const QuestionsBlock = ({
                     ? 'features.adminForm.sidebar.workflow.questions.placeholderRedesign'
                     : 'features.adminForm.sidebar.workflow.questions.placeholder',
                 )}
-                items={items}
+                items={withAddFieldItem(fieldItems)}
                 isSelectedItemFullWidth
                 values={value}
                 onChange={handleFieldsChange}
@@ -128,6 +114,13 @@ export const QuestionsBlock = ({
             )
           }}
         />
+        {isRedesign && hasOnlyMyInfoFields ? (
+          <FormHelperText>
+            {t(
+              'features.adminForm.sidebar.workflow.questions.myInfoOnlyHelperText',
+            )}
+          </FormHelperText>
+        ) : null}
         {isRedesign && selectedApprovalField ? (
           <FormHelperText>
             {t(

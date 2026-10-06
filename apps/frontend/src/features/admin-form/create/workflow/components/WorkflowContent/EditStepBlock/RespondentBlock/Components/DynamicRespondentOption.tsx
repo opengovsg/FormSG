@@ -8,10 +8,10 @@ import { SingleSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
+import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
+
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
-import { useStageFieldAndNavigate } from '../../../../../hooks/useStageFieldAndNavigate'
-import { FieldEmptyState } from '../../EmptyStates'
 
 import { useWorkflowTypeValidation } from './hooks'
 import { NESTED_CONTROL_PR } from './layout'
@@ -32,15 +32,16 @@ export const DynamicRespondentOption = ({
     register,
     formState: { errors },
     control,
-    getValues,
   } = formMethods
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
-  const stageFieldAndNavigate = useStageFieldAndNavigate()
   const isSavePermissive = useIsWorkflowSavePermissive()
-
-  const showEmptyState = isRedesign && !emailFieldItems?.length
+  const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
+    label: t('features.adminForm.sidebar.workflow.addField.email'),
+    fieldType: BasicField.Email,
+    enabled: isRedesign,
+  })
 
   return (
     <>
@@ -96,33 +97,19 @@ export const DynamicRespondentOption = ({
                   )
                 },
               }}
-              render={({ field: { value = '', ...rest } }) =>
-                showEmptyState ? (
-                  <FieldEmptyState
-                    picker="email"
-                    message={t(
-                      'features.adminForm.sidebar.workflow.emptyStates.noEmailField',
-                    )}
-                    actionLabel={t(
-                      'features.adminForm.sidebar.workflow.emptyStates.noEmailFieldAction',
-                    )}
-                    onAction={() =>
-                      stageFieldAndNavigate(BasicField.Email, getValues())
-                    }
-                  />
-                ) : (
-                  <SingleSelect
-                    isDisabled={isLoading}
-                    isClearable={false}
-                    placeholder={t(
-                      'features.adminForm.sidebar.workflow.dynamicRespondent.select',
-                    )}
-                    items={emailFieldItems}
-                    value={value}
-                    {...rest}
-                  />
-                )
-              }
+              render={({ field: { value = '', onChange, ...rest } }) => (
+                <SingleSelect
+                  isDisabled={isLoading}
+                  isClearable={false}
+                  placeholder={t(
+                    'features.adminForm.sidebar.workflow.dynamicRespondent.select',
+                  )}
+                  items={withAddFieldItem(emailFieldItems)}
+                  value={value}
+                  onChange={withAddFieldAction(onChange)}
+                  {...rest}
+                />
+              )}
             />
             <FormErrorMessage>{errors.field?.message}</FormErrorMessage>
           </FormControl>

@@ -29,13 +29,12 @@ import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import Radio from '~components/Radio'
 
 import { useEditFormField } from '~features/admin-form/create/builder-and-design/mutations/useEditFormField'
+import { useAddFieldPicker } from '~features/admin-form/create/common/useAddFieldPicker'
 import { BASICFIELD_TO_DRAWER_META } from '~features/admin-form/create/constants'
 import { FormFieldWithQuestionNo } from '~features/form/types'
 
 import { useIsWorkflowBuilderRedesign } from '../../../../../hooks/useIsWorkflowBuilderRedesign'
 import { useIsWorkflowSavePermissive } from '../../../../../hooks/useIsWorkflowSavePermissive'
-import { useStageFieldAndNavigate } from '../../../../../hooks/useStageFieldAndNavigate'
-import { FieldEmptyState } from '../../EmptyStates'
 
 import { ConditionalRoutingMappingDeleteModal } from './ConditionalRoutingMappingDeleteModal'
 import { ConditionalRoutingOptionModal } from './ConditionalRoutingOptionModal'
@@ -362,10 +361,13 @@ export const ConditionalRoutingOption = ({
 
   const workflowTypeValidation = useWorkflowTypeValidation()
   const isRedesign = useIsWorkflowBuilderRedesign()
-  const stageFieldAndNavigate = useStageFieldAndNavigate()
   const isSavePermissive = useIsWorkflowSavePermissive()
 
-  const showEmptyState = isRedesign && !conditionalFieldItems.length
+  const { withAddFieldItem, withAddFieldAction } = useAddFieldPicker({
+    label: t('features.adminForm.sidebar.workflow.addField.dropdown'),
+    fieldType: BasicField.Dropdown,
+    enabled: isRedesign,
+  })
 
   const handleOpenModal = () => {
     conditionalRoutingConfigSetValue('csvFile', null)
@@ -461,33 +463,21 @@ export const ConditionalRoutingOption = ({
                     )
                   },
                 }}
-                render={({ field: { value = '', ...rest } }) =>
-                  showEmptyState ? (
-                    <FieldEmptyState
-                      picker="dropdown"
-                      message={t(
-                        'features.adminForm.sidebar.workflow.emptyStates.noDropdownField',
-                      )}
-                      actionLabel={t(
-                        'features.adminForm.sidebar.workflow.emptyStates.noDropdownFieldAction',
-                      )}
-                      onAction={() =>
-                        stageFieldAndNavigate(BasicField.Dropdown, getValues())
-                      }
-                    />
-                  ) : (
-                    <SingleSelect
-                      isDisabled={isLoading}
-                      isClearable={false}
-                      placeholder={t(
-                        'features.adminForm.sidebar.workflow.dynamicRespondent.select',
-                      )}
-                      items={conditionalFieldItems}
-                      value={value}
-                      {...rest}
-                    />
-                  )
-                }
+                render={({ field: { value = '', onChange, ...rest } }) => (
+                  <SingleSelect
+                    isDisabled={isLoading}
+                    isClearable={false}
+                    placeholder={t(
+                      'features.adminForm.sidebar.workflow.dynamicRespondent.select',
+                    )}
+                    // The picker gets the action row; the mapping modal keeps
+                    // only real fields.
+                    items={withAddFieldItem(conditionalFieldItems)}
+                    value={value}
+                    onChange={withAddFieldAction(onChange)}
+                    {...rest}
+                  />
+                )}
               />
               {isSelectedConditionalFieldFound ? (
                 isOptionsToRecipientsMapAttached ? (
