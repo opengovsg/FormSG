@@ -10,7 +10,7 @@ import {
   HTMLChakraProps,
   Icon,
   Image,
-  SimpleGrid,
+  Stack,
   Text,
 } from '@chakra-ui/react'
 
@@ -63,11 +63,11 @@ const productMark = (name: string): { monogram: string; accent: string } => {
 const ProductLogo = ({
   name,
   logoUrl,
-  size = 48,
+  size = '2.5rem',
 }: {
   name: string
   logoUrl?: string
-  size?: number
+  size?: string
 }): JSX.Element => {
   const { monogram, accent } = productMark(name)
   const [failedUrl, setFailedUrl] = useState<string | null>(null)
@@ -79,7 +79,7 @@ const ProductLogo = ({
       <Image
         src={logoUrl}
         alt=""
-        boxSize={`${size}px`}
+        boxSize={size}
         objectFit="contain"
         onError={() => setFailedUrl(logoUrl)}
       />
@@ -90,14 +90,11 @@ const ProductLogo = ({
     <Flex
       align="center"
       justify="center"
-      boxSize={`${size}px`}
-      borderRadius="xl"
+      boxSize={size}
+      borderRadius="4px"
       bg={accent}
       color="white"
-      fontFamily="mono"
-      fontSize="md"
-      fontWeight={600}
-      letterSpacing="-0.02em"
+      textStyle="subhead-1"
     >
       {monogram}
     </Flex>
@@ -120,7 +117,7 @@ export interface ProductTileProps extends HTMLChakraProps<'a'> {
   logoUrl?: string
 }
 
-// Ported from opengovsg/suite
+// Ported from opengovsg/suite, restyled to the logic/workflow block convention
 // https://github.com/opengovsg/suite/blob/c4a665c9232ff42823da898b0dd9814f667c12cc/apps/suite/src/components/brand/ProductTile.tsx#L59
 export const ProductTile = ({
   name,
@@ -135,70 +132,44 @@ export const ProductTile = ({
       href={href}
       // `data-group` rather than `role="group"` so the tile keeps its link role.
       data-group
-      pos="relative"
       display="flex"
-      flexDir="column"
-      gap="0.875rem"
-      minH="200px"
-      p="1.5rem"
-      borderTop="1px solid"
-      borderBottom="1px solid"
-      borderRight="1px solid"
+      gap="1rem"
+      px={{ base: '1.5rem', md: '2rem' }}
+      py={{ base: '1rem', md: '1.5rem' }}
+      bg="white"
+      border="1px solid"
       borderColor="neutral.300"
-      transition="background-color 0.15s"
-      _hover={{ bg: 'white' }}
+      borderRadius="4px"
+      transition="border-color 0.15s"
+      _hover={{ borderColor: 'secondary.300' }}
       {...props}
     >
+      <ProductLogo name={name} logoUrl={logoUrl} />
+      <Box flex={1} minW={0}>
+        <Text as="h3" textStyle="h4">
+          {name}
+        </Text>
+        {domain ? (
+          <Text textStyle="caption-2" color="secondary.400" mt="0.125rem">
+            {domain}
+          </Text>
+        ) : null}
+        {description ? (
+          <Text textStyle="body-2" color="secondary.400" mt="0.5rem">
+            {description}
+          </Text>
+        ) : null}
+      </Box>
       <Icon
         as={BiRightArrowAlt}
         aria-hidden
-        pos="absolute"
-        top="1.5rem"
-        right="1.5rem"
-        boxSize="1.25rem"
-        color="secondary.700"
+        alignSelf="center"
+        fontSize="1.5rem"
         opacity={0}
         transform="translateX(-0.25rem)"
         transition="opacity 0.2s ease-out, transform 0.2s ease-out"
         _groupHover={{ opacity: 1, transform: 'translateX(0)' }}
       />
-      <ProductLogo name={name} logoUrl={logoUrl} size={40} />
-      <Box minW={0}>
-        <Text
-          as="span"
-          display="block"
-          fontSize="xl"
-          fontWeight={500}
-          letterSpacing="-0.01em"
-          color="secondary.700"
-        >
-          {name}
-        </Text>
-        {domain && (
-          <Text
-            as="span"
-            display="block"
-            mt="0.125rem"
-            wordBreak="break-all"
-            fontFamily="mono"
-            fontSize="xs"
-            color="secondary.400"
-          >
-            {domain}
-          </Text>
-        )}
-      </Box>
-      {/* `flex={1}` so the last-sign-in line sits on the same bottom edge in every cell. */}
-      <Text
-        m={0}
-        flex={1}
-        noOfLines={2}
-        fontSize="sm"
-        lineHeight="tall"
-        color="secondary.400"
-      >
-        {description}
-      </Text>
     </chakra.a>
   )
 }
@@ -211,79 +182,54 @@ export const LauncherApps = ({
   tiles: LauncherTile[]
 }): JSX.Element => {
   const { t } = useTranslation()
-  const hasTiles = tiles.length > 0
 
   return (
-    <>
+    <Flex flexDir="column" color="secondary.500">
+      {/* Cardless centred header, as on the logic and workflow intros. */}
       <Flex
-        mb="1.5rem"
-        gap="1.5rem"
-        wrap="wrap"
-        justify="space-between"
-        align={{ base: 'flex-start', md: 'flex-end' }}
-        direction={{ base: 'column', md: 'row' }}
+        textAlign="center"
+        flexDir="column"
+        align="center"
+        pt={{ base: '0.5rem', md: '2.75rem' }}
       >
-        <Flex
-          gap="0.5rem"
-          color="secondary.400"
-          textAlign="left"
-          flexDir="column"
-        >
-          <Flex align="center" gap="0.5rem">
-            <Text textStyle="body-1">
-              {t('features.adminForm.sidebar.integration.header.title')}
-            </Text>
-            <Badge
-              colorScheme="primary"
-              variant="subtle"
-              color="secondary.500"
-              borderRadius="full"
-              flexShrink={0}
-            >
-              {t('features.common.betaBadgeLabel')}
-            </Badge>
-          </Flex>
-          <Text textStyle="caption-2">
-            {t('features.adminForm.sidebar.integration.header.description')}
-          </Text>
-        </Flex>
+        <Text as="h2" textStyle="h2">
+          {t('features.adminForm.sidebar.integration.header.title')}
+          {/* Inline so the badge trails the last word rather than the whole block. */}
+          <Badge
+            as="span"
+            colorScheme="primary"
+            variant="subtle"
+            color="secondary.500"
+            borderRadius="full"
+            ml="0.5rem"
+            verticalAlign="middle"
+            whiteSpace="nowrap"
+          >
+            {t('features.common.betaBadgeLabel')}
+          </Badge>
+        </Text>
+        <Text textStyle="body-1" mt="1rem">
+          {t('features.adminForm.sidebar.integration.header.description')}
+        </Text>
       </Flex>
 
-      <Box borderTop="1px solid" borderColor="neutral.300" />
-
-      {!hasTiles ? (
-        <Box
-          mt="2.5rem"
-          px="1.5rem"
-          py="3.5rem"
-          textAlign="center"
-          borderRadius="xl"
-          border="1px dashed"
-          borderColor="neutral.300"
-        >
-          <Text textStyle="subhead-1" color="secondary.700">
+      {tiles.length === 0 ? (
+        <Flex textAlign="center" flexDir="column" align="center" mt="2.5rem">
+          <Text textStyle="subhead-1">
             {t('features.adminForm.sidebar.integration.empty.title')}
           </Text>
-          <Text mt="0.375rem" textStyle="body-2" color="secondary.400">
+          <Text textStyle="body-2" color="secondary.400" mt="0.375rem">
             {t('features.adminForm.sidebar.integration.empty.description')}
           </Text>
-        </Box>
+        </Flex>
       ) : (
-        // Ruled sheet: the grid draws the left hairlines and each tile its
-        // right/bottom/top, so the columns must be explicit per breakpoint — an
-        // auto-fit grid would leave a short last row's right rule floating.
-        <SimpleGrid
-          mt="1.5rem"
-          columns={{ base: 1, sm: 2, lg: 3 }}
-          borderLeft="1px solid"
-          borderColor="neutral.300"
-        >
-          {TILES.map((tile) => (
+        <Stack mt="2.5rem" spacing="1rem">
+          {tiles.map((tile) => (
             <ProductTile key={tile.name} {...tile} />
           ))}
-        </SimpleGrid>
+        </Stack>
       )}
-    </>
+    </Flex>
   )
 }
 
@@ -299,12 +245,14 @@ const TILES: LauncherTile[] = [
 
 export const CreatePageIntegrationTab = (): JSX.Element => {
   return (
-    <Box flex={1} overflow="auto" bg="neutral.100">
-      <Container
-        py={{ base: '2rem', md: '1rem' }}
-        px={{ base: '1.5rem', md: '3.75rem' }}
-        maxW="70rem"
-      >
+    <Box
+      flex={1}
+      overflow="auto"
+      bg="neutral.100"
+      py={{ base: '2rem', md: '1rem' }}
+      px={{ base: '1.5rem', md: '3.75rem' }}
+    >
+      <Container p={0} maxW="42.5rem">
         <LauncherApps tiles={TILES} />
       </Container>
     </Box>
