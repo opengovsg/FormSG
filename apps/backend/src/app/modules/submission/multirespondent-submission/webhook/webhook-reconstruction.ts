@@ -76,6 +76,9 @@ export const reconstructMrfWebhookData = (
     encryptedContent: snapshot.encryptedContent,
     verifiedContent: snapshot.verifiedContent,
     version: contentFormatToWebhookVersion(snapshot.contentFormat),
+    ...(snapshot.formFields !== undefined
+      ? { formFields: snapshot.formFields }
+      : {}),
   }
 
   const liveWorkflow = liveData.workflowContent

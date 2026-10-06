@@ -10,6 +10,7 @@ export const buildV4Snapshot = (input: {
   workflowStep: number
   encryptedContent: string
   encryptedSubmissionSecretKey: string
+  formFields: NonNullable<SubmissionSnapshotV4['formFields']>
   verifiedContent?: string
   attachmentMetadata?: Record<string, string>
   createdAt: string
@@ -24,6 +25,7 @@ export const buildV4Snapshot = (input: {
     encryptedContent: input.encryptedContent,
     encryptedSubmissionSecretKey: input.encryptedSubmissionSecretKey,
     createdAt: input.createdAt,
+    formFields: input.formFields,
   }
 
   if (input.verifiedContent !== undefined) {

@@ -20,6 +20,7 @@ describe('buildV4Snapshot', () => {
       formsgSdk.cryptoV3.encrypt(PLAINTEXT, publicKey)
 
     const snapshot = buildV4Snapshot({
+      formFields: {},
       formId: 'form-1',
       submissionId: 'sub-1',
       submissionIndex: 0,
@@ -46,6 +47,7 @@ describe('buildV4Snapshot', () => {
 
     // Act
     const snapshot = buildV4Snapshot({
+      formFields: {},
       formId: 'form-1',
       submissionId: 'sub-1',
       submissionIndex: 3,
@@ -77,6 +79,7 @@ describe('buildV4Snapshot', () => {
     const verifiedContent = 'native-submission-key-verified-blob'
 
     const snapshot = buildV4Snapshot({
+      formFields: {},
       formId: 'form-1',
       submissionId: 'sub-1',
       submissionIndex: 0,
@@ -97,6 +100,7 @@ describe('buildV4Snapshot', () => {
       formsgSdk.cryptoV3.encrypt(PLAINTEXT, publicKey)
 
     const snapshot = buildV4Snapshot({
+      formFields: {},
       formId: 'form-1',
       submissionId: 'sub-1',
       submissionIndex: 0,
@@ -116,6 +120,7 @@ describe('buildV4Snapshot', () => {
     const attachmentMetadata = { 'field-9': 'attachment-key-abc' }
 
     const snapshot = buildV4Snapshot({
+      formFields: {},
       formId: 'form-1',
       submissionId: 'sub-1',
       submissionIndex: 0,

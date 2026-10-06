@@ -179,6 +179,8 @@ export type AdaptV3ToV4Options = {
 // --------------- Decrypted content V4 ---------------
 
 export interface DecryptParamsV4 extends DecryptParamsV3 {
+  /** Original question titles from the submission snapshot. */
+  formFields?: Record<string, Pick<FormFieldMeta, 'question'>>
   encryptedStepToken?: EncryptedContent
 }
 

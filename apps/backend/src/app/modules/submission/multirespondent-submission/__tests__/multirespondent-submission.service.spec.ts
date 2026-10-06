@@ -9,6 +9,7 @@ import {
   FormResponseMode,
   FormWebhook,
   FormWorkflowStepDto,
+  MyInfoAttribute,
   SubmissionType,
   WorkflowStatus,
   WorkflowType,
@@ -3928,69 +3929,118 @@ describe('multirespondent-submission.service', () => {
 
     // ---- Committed-step-has-a-readable-snapshot (write side) ----
 
-    it('writes a v4 snapshot matching the committed step and records the token on create', async () => {
-      MockSnapshotStore.writeSnapshot.mockReturnValue(
-        okAsync({ token: 'tok-create', key: 'key-create' }),
-      )
+    it.each([
+      { scenario: 'editable MyInfo', readOnly: false, expectedQuestion: 'Q1' },
+      {
+        scenario: 'verified read-only MyInfo',
+        readOnly: true,
+        expectedQuestion: 'Q1',
+      },
+    ])(
+      'creates a first-step snapshot with $scenario labels and saves its retry token',
+      async ({ readOnly, expectedQuestion }) => {
+        // Prepare: verification for the first step is supplied by the validated submission payload.
+        MockSnapshotStore.writeSnapshot.mockReturnValue(
+          okAsync({ token: 'tok-create', key: 'key-create' }),
+        )
 
-      const result = await createMultiRespondentFormSubmission({
-        form: buildV4Form(),
-        encryptedPayload: buildV4Payload(),
-        logMeta: { action: 'test' },
-      })
+        const form = buildV4Form()
+        Object.assign(form.form_fields[0], {
+          myInfo: { attr: MyInfoAttribute.Name },
+        })
+        // Act
+        const result = await createMultiRespondentFormSubmission({
+          form,
+          encryptedPayload: buildV4Payload({
+            myInfoReadOnlyFields: readOnly ? [fieldId] : [],
+          }),
+          logMeta: { action: 'test' },
+        })
 
-      expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
-      const snapshot = MockSnapshotStore.writeSnapshot.mock.calls[0][0]
-      expect(snapshot.submissionIndex).toBe(0)
-      expect(snapshot.workflowStep).toBe(0)
-      expect(snapshot.encryptedContent).toBe('v4-encrypted-content')
-      expect(snapshot.encryptedSubmissionSecretKey).toBe('wrapped-read-key-v4')
+        // Assert: the frozen payload and persisted token describe the same committed step.
+        expect(result.isOk()).toBe(true)
+        expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
+        const snapshot = MockSnapshotStore.writeSnapshot.mock.calls[0][0]
+        expect(snapshot.submissionIndex).toBe(0)
+        expect(snapshot.workflowStep).toBe(0)
+        expect(snapshot.encryptedContent).toBe('v4-encrypted-content')
+        expect(snapshot.encryptedSubmissionSecretKey).toBe(
+          'wrapped-read-key-v4',
+        )
+        expect(snapshot.formFields).toEqual({
+          [fieldId]: { question: expectedQuestion },
+        })
 
-      const saved = await getMultirespondentSubmissionModel(mongoose).findById(
-        result._unsafeUnwrap().submission._id,
-      )
-      expect(saved?.submittedSteps?.[0]?.snapshotTokens?.v4).toBe('tok-create')
-    })
+        const saved = await getMultirespondentSubmissionModel(
+          mongoose,
+        ).findById(result._unsafeUnwrap().submission._id)
+        expect(saved?.submittedSteps?.[0]?.snapshotTokens?.v4).toBe(
+          'tok-create',
+        )
+      },
+    )
 
-    it('writes a v4 snapshot for the appended step and records the token on update', async () => {
-      const Model = getMultirespondentSubmissionModel(mongoose)
-      const row = await Model.create({
-        form: mockFormId,
-        submissionType: SubmissionType.Multirespondent,
-        form_fields: [],
-        form_logics: [],
-        workflow: twoStepWorkflow,
-        submissionPublicKey: 'pk',
-        encryptedSubmissionSecretKey: 'esk',
-        encryptedContent: 'ec',
-        version: 2,
-        workflowStep: 0,
-        submittedSteps: [
-          { isApproval: false, submittedAt: new Date().toISOString() },
-        ],
-      })
-      MockSnapshotStore.writeSnapshot.mockReturnValue(
-        okAsync({ token: 'tok-update', key: 'key-update' }),
-      )
+    it.each([
+      { scenario: 'editable MyInfo', readOnly: false, expectedQuestion: 'Q1' },
+      {
+        scenario: 'verified read-only MyInfo',
+        readOnly: true,
+        expectedQuestion: 'Q1',
+      },
+    ])(
+      'snapshots the next step with saved $scenario labels and records its retry token',
+      async ({ readOnly, expectedQuestion }) => {
+        // Prepare: later steps must preserve the verification status saved on the original row.
+        const Model = getMultirespondentSubmissionModel(mongoose)
+        const row = await Model.create({
+          form: mockFormId,
+          submissionType: SubmissionType.Multirespondent,
+          form_fields: [],
+          form_logics: [],
+          workflow: twoStepWorkflow,
+          submissionPublicKey: 'pk',
+          encryptedSubmissionSecretKey: 'esk',
+          encryptedContent: 'ec',
+          version: 2,
+          workflowStep: 0,
+          myInfoReadOnlyFields: readOnly ? [fieldId] : [],
+          submittedSteps: [
+            { isApproval: false, submittedAt: new Date().toISOString() },
+          ],
+        })
+        MockSnapshotStore.writeSnapshot.mockReturnValue(
+          okAsync({ token: 'tok-update', key: 'key-update' }),
+        )
 
-      const result = await updateMultiRespondentFormSubmission({
-        submissionId: row._id.toString(),
-        snapshottedFormDef: buildSnapshottedFormDef(),
-        encryptedPayload: buildV4Payload({ workflowStep: 1 }),
-        logMeta: { action: 'test' },
-      })
+        const snapshottedFormDef = buildSnapshottedFormDef()
+        Object.assign(snapshottedFormDef.form_fields[0], {
+          myInfo: { attr: MyInfoAttribute.Name },
+        })
+        // Act
+        const result = await updateMultiRespondentFormSubmission({
+          submissionId: row._id.toString(),
+          snapshottedFormDef,
+          encryptedPayload: buildV4Payload({ workflowStep: 1 }),
+          logMeta: { action: 'test' },
+        })
 
-      expect(result.isOk()).toBe(true)
-      expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
-      const snapshot = MockSnapshotStore.writeSnapshot.mock.calls[0][0]
-      expect(snapshot.submissionIndex).toBe(1)
-      expect(snapshot.workflowStep).toBe(1)
-      expect(snapshot.encryptedContent).toBe('v4-encrypted-content')
+        // Assert: the frozen payload and persisted token describe the same committed step.
+        expect(result.isOk()).toBe(true)
+        expect(MockSnapshotStore.writeSnapshot).toHaveBeenCalledTimes(1)
+        const snapshot = MockSnapshotStore.writeSnapshot.mock.calls[0][0]
+        expect(snapshot.submissionIndex).toBe(1)
+        expect(snapshot.workflowStep).toBe(1)
+        expect(snapshot.encryptedContent).toBe('v4-encrypted-content')
+        expect(snapshot.formFields).toEqual({
+          [fieldId]: { question: expectedQuestion },
+        })
 
-      const saved = await Model.findById(row._id)
-      expect(saved?.submittedSteps?.[1]?.snapshotTokens?.v4).toBe('tok-update')
-    })
+        const saved = await Model.findById(row._id)
+        expect(saved?.submittedSteps?.[1]?.snapshotTokens?.v4).toBe(
+          'tok-update',
+        )
+      },
+    )
 
     it('does not write a snapshot when the write-condition is false (mrfVersion 1)', async () => {
       const result = await createMultiRespondentFormSubmission({

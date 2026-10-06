@@ -2,6 +2,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import {
   BasicField,
+  MyInfoAttribute,
   SubmissionMetadata,
   SubmissionType,
   WorkflowStatus,
@@ -31,6 +32,95 @@ describe('Multirespondent Submission Model', () => {
   const MOCK_SUBMISSION_PUBLIC_KEY = 'This is a public key'
   const MOCK_ENCRYPTED_SUBMISSION_SECRET_KEY = 'This is an encrypted secret key'
   const MOCK_ENCRYPTED_CONTENT = 'abcdefg encryptedContent'
+
+  it.each([
+    {
+      scenario: 'an older row without read-only metadata',
+      readOnly: undefined,
+      expectedQuestion: 'Birth country',
+    },
+    {
+      scenario: 'an editable MyInfo field',
+      readOnly: false,
+      expectedQuestion: 'Birth country',
+    },
+    {
+      scenario: 'a verified read-only MyInfo field',
+      readOnly: true,
+      expectedQuestion: 'Birth country',
+    },
+  ])(
+    'uses the saved question label for $scenario',
+    async ({ readOnly, expectedQuestion }) => {
+      // Prepare: the form definition identifies MyInfo fields; the saved row records verification.
+      const fieldId = new ObjectId().toHexString()
+      const submission = new MultirespondentSubmission({
+        form: new ObjectId(),
+        mrfVersion: 2,
+        form_fields: [
+          {
+            _id: fieldId,
+            title: 'Birth country',
+            fieldType: BasicField.Dropdown,
+            myInfo: { attr: MyInfoAttribute.BirthCountry },
+          },
+        ],
+        myInfoReadOnlyFields:
+          readOnly === undefined ? undefined : readOnly ? [fieldId] : [],
+        workflow: [],
+        submittedSteps: [],
+        encryptedContent: MOCK_ENCRYPTED_CONTENT,
+      })
+      // Act
+      const { data } = await submission.getWebhookView()
+
+      // Assert: the public metadata contains only the final question label.
+      expect(data.formFields).toEqual({
+        [fieldId]: { question: expectedQuestion },
+      })
+    },
+  )
+
+  it.each([
+    {
+      scenario: 'omits question metadata from legacy V3 deliveries',
+      mrfVersion: 1,
+      includesMetadata: false,
+    },
+    {
+      scenario: 'includes saved question metadata in V4 deliveries',
+      mrfVersion: 2,
+      includesMetadata: true,
+    },
+  ])('$scenario', async ({ mrfVersion, includesMetadata }) => {
+    // Prepare: both row formats have a saved form definition.
+    const fieldId = new ObjectId().toHexString()
+    const submission = new MultirespondentSubmission({
+      form: new ObjectId(),
+      mrfVersion,
+      form_fields: [
+        {
+          _id: fieldId,
+          title: 'Saved question',
+          fieldType: BasicField.ShortText,
+          description: 'Not metadata',
+        },
+      ],
+      workflow: [],
+      submittedSteps: [],
+      encryptedContent: MOCK_ENCRYPTED_CONTENT,
+    })
+    // Act
+    const { data } = await submission.getWebhookView()
+
+    // Assert: metadata is an additive V4 contract, not a change to V3.
+    expect(data.formFields).toEqual(
+      includesMetadata
+        ? { [fieldId]: { question: 'Saved question' } }
+        : undefined,
+    )
+    expect(Object.hasOwn(data, 'formFields')).toBe(includesMetadata)
+  })
 
   const YES_NO_FIELD = {
     _id: 'yes_no_field_id',

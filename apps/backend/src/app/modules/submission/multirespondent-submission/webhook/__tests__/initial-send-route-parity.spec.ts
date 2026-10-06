@@ -10,7 +10,7 @@ import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import axios, { AxiosResponse } from 'axios'
 import { ObjectId } from 'bson'
 import { MULTIRESPONDENT_FORM_SUBMISSION_VERSION } from 'formsg-shared/constants'
-import { SubmissionType, WorkflowType } from 'formsg-shared/types'
+import { BasicField, SubmissionType, WorkflowType } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
@@ -20,6 +20,7 @@ import { WebhookData } from 'src/types/submission'
 
 import { sendWebhook } from '../../../../webhook/webhook.service'
 import { buildV4Snapshot } from '../submission-snapshot.producer'
+import { buildWebhookFormFields } from '../webhook-form-fields'
 import {
   getWebhookPayloadPolicy,
   WebhookConsumerType,
@@ -136,7 +137,14 @@ describe('[GATE] v4 initial-send route parity', () => {
     await MultirespondentSubmissionModel.create({
       form: formId,
       submissionType: SubmissionType.Multirespondent,
-      form_fields: [],
+      form_fields: [
+        { _id: fieldId, title: 'Name', fieldType: BasicField.ShortText },
+        {
+          _id: attachmentFieldId,
+          title: 'Evidence',
+          fieldType: BasicField.Attachment,
+        },
+      ],
       form_logics: [],
       workflow,
       submissionPublicKey: 'submission-public-key',
@@ -176,6 +184,7 @@ describe('[GATE] v4 initial-send route parity', () => {
       encryptedSubmissionSecretKey: ENCRYPTED_SUBMISSION_SECRET_KEY,
       verifiedContent: VERIFIED_CONTENT,
       attachmentMetadata: ATTACHMENT_METADATA,
+      formFields: buildWebhookFormFields(submission.form_fields),
       createdAt: submission.submittedSteps?.[submissionIndex]
         ?.submittedAt as string,
     })
@@ -199,13 +208,19 @@ describe('[GATE] v4 initial-send route parity', () => {
   }
 
   it.each<WebhookConsumerType>(['plumber', 'generic'])(
-    'produces the same payload whether or not the step was snapshotted (%s)',
+    'delivers identical question labels and submission data with or without a snapshot (%s)',
     async (webhookType) => {
+      // Act: deliver the same saved submission through both supported routes.
       const { snapshotBacked, liveRow } = await bothRoutes(webhookType)
 
+      // Assert: snapshot storage does not change the consumer's payload or question labels.
       expect(comparablePayload(snapshotBacked)).toEqual(
         comparablePayload(liveRow),
       )
+      expect(liveRow.formFields).toEqual({
+        [fieldId]: { question: 'Name' },
+        [attachmentFieldId]: { question: 'Evidence' },
+      })
     },
   )
 

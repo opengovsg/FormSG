@@ -37,6 +37,7 @@ const COORDS = {
 
 const makeSnapshot = (): SubmissionSnapshotV4 =>
   buildV4Snapshot({
+    formFields: {},
     ...COORDS,
     workflowStep: 1,
     encryptedContent: 'encrypted-content-blob',

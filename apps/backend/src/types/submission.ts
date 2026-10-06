@@ -1,3 +1,4 @@
+import type { FormFieldMeta } from '@opengovsg/formsg-sdk'
 import {
   EmailModeSubmissionBase,
   MultirespondentSubmissionBase,
@@ -37,6 +38,7 @@ export interface WebhookData {
   paymentContent?: PaymentWebhookEventObject | object
   workflowContent?: WorkflowWebhookEventObject
   encryptedSubmissionSecretKey?: string
+  formFields?: Record<string, Pick<FormFieldMeta, 'question'>>
 }
 
 export interface WebhookView {

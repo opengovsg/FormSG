@@ -181,6 +181,7 @@ describe('[GATE] v4 per-step retry fidelity', () => {
     workflowStep: number
   }): SubmissionSnapshotV4 =>
     buildV4Snapshot({
+      formFields: {},
       formId: formId.toHexString(),
       submissionId: String(submission._id),
       submissionIndex,

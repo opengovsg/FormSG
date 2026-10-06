@@ -95,6 +95,7 @@ import {
   buildV1VerifiedContent,
 } from './webhook/v1-content.producer'
 import { assertStorageShapedKeySet } from './webhook/v1-payload'
+import { buildWebhookFormFields } from './webhook/webhook-form-fields'
 import {
   getWebhookPayloadPolicy,
   mrfVersionToContentFormat,
@@ -1026,6 +1027,7 @@ export const createMultiRespondentFormSubmission = ({
             buildV4Snapshot({
               ...snapshotBase,
               ...v4OnlyContent,
+              formFields: buildWebhookFormFields(form.form_fields),
               encryptedContent,
               encryptedSubmissionSecretKey,
             }),
@@ -1935,6 +1937,9 @@ export const updateMultiRespondentFormSubmission = ({
               workflowStep,
               encryptedContent,
               encryptedSubmissionSecretKey,
+              formFields: buildWebhookFormFields(
+                snapshottedFormDef.form_fields,
+              ),
               verifiedContent,
               attachmentMetadata: Object.fromEntries(
                 attachmentMetadata ?? new Map(),

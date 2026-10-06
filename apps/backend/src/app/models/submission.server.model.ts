@@ -39,6 +39,7 @@ import {
 } from '../../types'
 import { getPaymentWebhookEventObject } from '../modules/payments/payment.service.utils'
 import { MultirespondentSubmissionContent } from '../modules/submission/multirespondent-submission/multirespondent-submission.types'
+import { buildWebhookFormFields } from '../modules/submission/multirespondent-submission/webhook/webhook-form-fields'
 import {
   contentFormatToWebhookVersion,
   mrfVersionToContentFormat,
@@ -928,6 +929,7 @@ type MixedMetadataAggregateResult = MetadataAggregateResult &
 MultirespondentSubmissionSchema.methods.getWebhookView = async function (
   this: IMultirespondentSubmissionSchema,
 ): Promise<WebhookView> {
+  const contentFormat = mrfVersionToContentFormat(this.mrfVersion)
   const formId = this.populated('form')
     ? String((this as IMultirespondentSubmissionSchema).form._id)
     : String(this.form)
@@ -947,10 +949,13 @@ MultirespondentSubmissionSchema.methods.getWebhookView = async function (
     submissionId: String(this._id),
     encryptedContent: this.encryptedContent,
     encryptedSubmissionSecretKey: this.encryptedSubmissionSecretKey,
+    ...(contentFormat === 'v4'
+      ? {
+          formFields: buildWebhookFormFields(this.form_fields),
+        }
+      : {}),
     verifiedContent: this.verifiedContent,
-    version: contentFormatToWebhookVersion(
-      mrfVersionToContentFormat(this.mrfVersion),
-    ),
+    version: contentFormatToWebhookVersion(contentFormat),
     created: this.created,
     attachmentDownloadUrls: attachmentRecords,
     paymentContent,

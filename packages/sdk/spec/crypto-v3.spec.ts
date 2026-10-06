@@ -1,10 +1,10 @@
 import mockAxios from 'jest-mock-axios'
-import { decodeUTF8 } from '../src/util/encoding'
 
 import Crypto from '../src/crypto'
 import CryptoV3 from '../src/crypto-v3'
 import { SIGNING_KEYS } from '../src/resource/signing-keys'
 import { encryptMessage } from '../src/util/crypto'
+import { decodeUTF8 } from '../src/util/encoding'
 
 import {
   ciphertext,
@@ -226,6 +226,134 @@ describe('CryptoV3', function () {
   })
 
   describe('decryptToV4', () => {
+    describe('webhook question metadata', () => {
+      const createWebhook = () => {
+        const { publicKey, secretKey } = crypto.generate()
+        const responses = {
+          name: {
+            fieldType: 'textfield',
+            answer: { value: 'Jane' },
+            provenance: {},
+          },
+          country: {
+            fieldType: 'dropdown',
+            answer: { value: 'MALAYSIA' },
+            provenance: {},
+          },
+          existing: {
+            fieldType: 'textfield',
+            answer: { value: 'x' },
+            question: 'Encrypted question',
+            provenance: {},
+          },
+        }
+        return {
+          secretKey,
+          responses,
+          params: {
+            ...crypto.encrypt(responses, publicKey),
+            version: 4,
+            formFields: {
+              name: { question: 'Name' },
+              country: { question: '[Myinfo] Birth country' },
+              existing: { question: 'Replacement question' },
+            },
+          },
+        }
+      }
+
+      it.each([
+        { scenario: 'omitted', overrides: undefined },
+        { scenario: 'empty', overrides: {} },
+      ])(
+        'fills missing questions from the webhook when caller overrides are $scenario',
+        ({ overrides }) => {
+          // Prepare: the wire answers omit questions, and the backend supplies the final labels.
+          const { secretKey, params, responses } = createWebhook()
+
+          // Act: an empty third argument must behave the same as the default argument.
+          const decrypted = crypto.decryptToV4(secretKey, params, overrides)
+
+          // Assert: labels are filled without changing answers or adding another MyInfo prefix.
+          expect(decrypted?.responses.name).toEqual({
+            ...responses.name,
+            question: 'Name',
+          })
+          expect(decrypted?.responses.country).toEqual({
+            ...responses.country,
+            question: '[Myinfo] Birth country',
+          })
+        }
+      )
+
+      it('preserves encrypted question text when webhook metadata has a different label', () => {
+        // Prepare
+        const { secretKey, params } = createWebhook()
+
+        // Act
+        const decrypted = crypto.decryptToV4(secretKey, params)
+
+        // Assert: only missing questions may be backfilled.
+        expect(decrypted?.responses.existing.question).toBe(
+          'Encrypted question'
+        )
+      })
+
+      it('overrides one webhook label without dropping other labels or mutating the payload', () => {
+        // Prepare: the caller supplies metadata for only one of the fields.
+        const { secretKey, params } = createWebhook()
+        const originalMetadata = JSON.parse(JSON.stringify(params.formFields))
+        const overrides = { name: { question: 'Caller label' } }
+
+        // Act
+        const decrypted = crypto.decryptToV4(secretKey, params, overrides)
+
+        // Assert: caller metadata wins per field, while other webhook labels remain available.
+        expect(decrypted?.responses.name.question).toBe('Caller label')
+        expect(decrypted?.responses.country.question).toBe(
+          '[Myinfo] Birth country'
+        )
+        expect(params.formFields).toEqual(originalMetadata)
+        expect(overrides).toEqual({ name: { question: 'Caller label' } })
+      })
+
+      it('keeps responses without metadata and does not create answers for metadata-only fields', () => {
+        // Prepare: the metadata map and submitted answer IDs overlap only partially.
+        const { secretKey, params, responses } = createWebhook()
+        const partialParams = {
+          ...params,
+          formFields: {
+            name: { question: 'Name' },
+            unanswered: { question: 'Not submitted' },
+          },
+        }
+
+        // Act
+        const decrypted = crypto.decryptToV4(secretKey, partialParams)
+
+        // Assert: metadata enriches answers but does not determine which answers exist.
+        expect(decrypted?.responses.name.question).toBe('Name')
+        expect(decrypted?.responses.country).toEqual(responses.country)
+        expect(decrypted?.responses).not.toHaveProperty('unanswered')
+      })
+
+      it('decrypts older V4 payloads unchanged when question metadata is absent', () => {
+        // Prepare: older senders provide only the encrypted content and wrapped key.
+        const { secretKey, params, responses } = createWebhook()
+        const legacyParams = {
+          encryptedContent: params.encryptedContent,
+          encryptedSubmissionSecretKey: params.encryptedSubmissionSecretKey,
+          version: params.version,
+        }
+
+        // Act
+        const decrypted = crypto.decryptToV4(secretKey, legacyParams)
+
+        // Assert
+        expect(decrypted?.responses).toEqual(responses)
+      })
+    })
+
     const FIELD_ID_1 = '000000000000000000000001'
     const FIELD_ID_2 = '000000000000000000000002'
 
