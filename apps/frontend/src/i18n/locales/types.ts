@@ -27,6 +27,7 @@ import {
   ResponsesResponsesPage,
   Settings,
   Share,
+  Suite,
   Template,
   ThankYou,
   Toasts,
@@ -45,6 +46,7 @@ interface Translation {
           headerAndInstructions?: HeaderAndInstructions
           logic?: Logic
           navLabels?: NavLabels
+          suite?: Suite
           thankYou?: ThankYou
           workflow?: Workflow
         }

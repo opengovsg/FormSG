@@ -7,6 +7,7 @@ import { BuilderAndDesignTab } from '../../builder-and-design/BuilderAndDesignTa
 import MagicFormBuilderProvider from '../../builder-and-design/MagicFormBuilder/MagicFormBuilderProvider'
 import { EndPageTab } from '../../end-page/EndPageTab'
 import { CreatePageLogicTab } from '../../logic/CreatePageLogicTab'
+import { CreatePageSuiteTab } from '../../suite/CreatePageSuiteTab'
 import { CreatePageWorkflowTab } from '../../workflow/CreatePageWorkflowTab'
 
 export const CreatePageContent = (): JSX.Element => {
@@ -18,6 +19,8 @@ export const CreatePageContent = (): JSX.Element => {
       return <EndPageTab />
     case DrawerTabs.Workflow:
       return <CreatePageWorkflowTab />
+    case DrawerTabs.Suite:
+      return <CreatePageSuiteTab />
     default:
       // builder or design
       return (

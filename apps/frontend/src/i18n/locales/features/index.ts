@@ -15,6 +15,7 @@ export {
   type ResponsesResponsesPage,
   type Settings,
   type Share,
+  type Suite,
   type Template,
   type ThankYou,
   type Toasts,

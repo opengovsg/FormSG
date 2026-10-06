@@ -54,6 +54,7 @@ vi.mock(
       Logic: 2,
       EndPage: 3,
       Workflow: 4,
+      Suite: 5,
     },
     useCreatePageSidebar: () => ({
       activeTab: null,
@@ -62,6 +63,7 @@ vi.mock(
       handleLogicClick: vi.fn(),
       handleEndpageClick: vi.fn(),
       handleWorkflowClick: vi.fn(),
+      handleSuiteClick: vi.fn(),
       reportSidebarWidth: vi.fn(),
     }),
   }),
@@ -82,7 +84,7 @@ describe('CreatePageSidebar', () => {
     mockIsMobile.current = false
   })
 
-  it('renders MRF tabs in the order Fields, Header, Logic, Thank you, Workflow when the flag is off (control = production)', () => {
+  it('renders MRF tabs in the order Fields, Header, Logic, Thank you, Suite, Workflow when the flag is off (control = production)', () => {
     mockUseFeatureIsOn.mockReturnValue(false)
     mockResponseMode.current = FormResponseMode.Multirespondent
 
@@ -93,6 +95,7 @@ describe('CreatePageSidebar', () => {
       'create_builder.drawer_tab.edit_header',
       'create_builder.drawer_tab.add_logic',
       'create_builder.drawer_tab.edit_thank_you_page',
+      'create_builder.drawer_tab.suite',
       'create_builder.drawer_tab.add_workflow',
     ])
   })
@@ -122,6 +125,7 @@ describe('CreatePageSidebar', () => {
       'create_builder.drawer_tab.add_workflow',
       'create_builder.drawer_tab.add_logic',
       'create_builder.drawer_tab.edit_thank_you_page',
+      'create_builder.drawer_tab.suite',
     ])
   })
 
