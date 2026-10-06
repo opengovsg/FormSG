@@ -211,6 +211,11 @@ export const updateFormWebhookUrl = async (
   })
 }
 
+export const updateFormWebhookFormat = async (
+  formId: string,
+  webhookFormat: NonNullable<FormSettings['webhook']['webhookFormat']>,
+) => updateFormSettings(formId, { webhook: { webhookFormat } })
+
 export const updateFormWebhookRetries = async (
   formId: string,
   nextEnabled?: FormSettings['webhook']['isRetryEnabled'],

@@ -46,6 +46,7 @@ import {
   updateFormStatus,
   updateFormSupportedLanguages,
   updateFormTitle,
+  updateFormWebhookFormat,
   updateFormWebhookRetries,
   updateFormWebhookUrl,
   updateFormWhitelistSetting,
@@ -562,6 +563,21 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateWebhookFormat = useMutation(
+    (format: NonNullable<FormSettings['webhook']['webhookFormat']>) =>
+      updateFormWebhookFormat(formId, format),
+    {
+      onSuccess: (newData) =>
+        handleSuccess({
+          newData,
+          toastDescription: t(
+            'features.adminForm.settings.webhooks.legacy.saved',
+          ),
+        }),
+      onError: handleError,
+    },
+  )
+
   const mutateWebhookRetries = useMutation(
     (nextEnabled: boolean) => updateFormWebhookRetries(formId, nextEnabled),
     {
@@ -612,6 +628,7 @@ export const useMutateFormSettings = () => {
   )
 
   return {
+    mutateWebhookFormat,
     mutateWebhookRetries,
     mutateFormWebhookUrl,
     mutateFormStatus,
