@@ -9,6 +9,7 @@ import { getAdminFormView } from '~/mocks/msw/handlers/admin-form'
 import * as stories from '../CreatePageWorkflowTab.stories'
 
 const {
+  SingleStepV4Webhook,
   NoWorkflowGenericWebhook,
   SingleStepGenericWebhook,
   SingleStepGenericWebhookRedesign,
@@ -119,6 +120,11 @@ describe('webhook workflow restrictions', () => {
       'the first step with a generic webhook',
       NoWorkflowGenericWebhook,
       /create workflow/i,
+    ],
+    [
+      'a second step with a generic V4 webhook',
+      SingleStepV4Webhook,
+      /add step/i,
     ],
     [
       'a second step with a Plumber webhook',
