@@ -1,8 +1,8 @@
 import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
+import { GrowthBook } from '@growthbook/growthbook'
 import { Router } from 'express'
-import { FORMAT_FOR_NEW_GENERIC_WEBHOOKS } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
@@ -33,20 +33,35 @@ WebhookSettingsTestRouter.route(
   '/:formId([a-fA-F0-9]{24})/webhooksettings',
 ).patch(...(AdminFormController.handleUpdateWebhookSettings as never[]))
 
-const settingsApp = setupApp('/admin/forms', AdminFormsRouter, {
+let v4Enabled = false
+let v4Rules: import('@growthbook/growthbook').FeatureRule[] = []
+const settingsRouter = Router()
+settingsRouter.use((req, _res, next) => {
+  req.growthbook = new GrowthBook({
+    features: {
+      'mrf-webhooks-v4': { defaultValue: v4Enabled, rules: v4Rules },
+    },
+  })
+  next()
+})
+settingsRouter.use(AdminFormsRouter)
+const settingsApp = setupApp('/admin/forms', settingsRouter, {
   setupWithAuth: true,
 })
-const webhookSettingsApp = setupApp('/admin/forms', WebhookSettingsTestRouter, {
+settingsRouter.use(WebhookSettingsTestRouter)
+const webhookSettingsApp = setupApp('/admin/forms', settingsRouter, {
   setupWithAuth: true,
 })
 
-// Every value, valid enum member or not. None of them may be settable while
-// the term has no meaning a caller can rely on.
-const REFUSED_VALUES = ['v1', 'v4', 'v2', 'V1', '', 'plumber']
+// Without rollout or a stored V4 choice, V4 is unavailable.
+// Other strings are invalid regardless of rollout.
+const REFUSED_VALUES = ['v4', 'v2', 'V1', '', 'plumber']
 
 describe('webhook.webhookFormat', () => {
   beforeAll(async () => await dbHandler.connect())
   beforeEach(() => {
+    v4Enabled = false
+    v4Rules = []
     MockWebhookValidation.validateWebhookUrl.mockResolvedValue(undefined)
   })
   afterEach(async () => {
@@ -62,7 +77,227 @@ describe('webhook.webhookFormat', () => {
     return (reread as unknown as { webhook?: Record<string, unknown> }).webhook
   }
 
-  describe('is not settable — PATCH /admin/forms/:formId/settings', () => {
+  it('lets an admin choose V4 before setting a URL when the rollout is enabled', async () => {
+    v4Enabled = true
+    const { form, user } = await dbHandler.insertMultirespondentForm()
+    const session = await createAuthedSession(
+      user.email,
+      supertest(settingsApp),
+    )
+    const response = await session
+      .patch(`/admin/forms/${form._id}/settings`)
+      .send({ webhook: { webhookFormat: 'v4' } })
+    expect(response.status).toBe(200)
+    expect(response.body.webhook).toMatchObject({
+      webhookFormat: 'v4',
+      url: '',
+    })
+  })
+
+  it('defaults a new generic webhook to V4 when the rollout is enabled', async () => {
+    v4Enabled = true
+    const { form, user } = await dbHandler.insertMultirespondentForm()
+    const session = await createAuthedSession(
+      user.email,
+      supertest(settingsApp),
+    )
+    const response = await session
+      .patch(`/admin/forms/${form._id}/settings`)
+      .send({ webhook: { url: WEBHOOK_URL } })
+    expect(response.status).toBe(200)
+    expect(response.body.webhook.webhookFormat).toBe('v4')
+  })
+
+  it.each(['storage', 'Plumber'])(
+    'rejects an explicit format for %s even with the flag on',
+    async (kind) => {
+      v4Enabled = true
+      const { form, user } =
+        kind === 'storage'
+          ? await dbHandler.insertEncryptForm()
+          : await dbHandler.insertMultirespondentForm({
+              formOptions: { webhook: { url: PLUMBER_WEBHOOK_URL } },
+            })
+      const session = await createAuthedSession(
+        user.email,
+        supertest(settingsApp),
+      )
+      const response = await session
+        .patch(`/admin/forms/${form._id}/settings`)
+        .send({ webhook: { webhookFormat: 'v4' } })
+      expect(response.status).toBe(400)
+    },
+  )
+
+  it('preserves an explicit legacy choice when setting the first URL with V4 enabled', async () => {
+    v4Enabled = true
+    const { form, user } = await dbHandler.insertMultirespondentForm()
+    const session = await createAuthedSession(
+      user.email,
+      supertest(settingsApp),
+    )
+    const response = await session
+      .patch(`/admin/forms/${form._id}/settings`)
+      .send({ webhook: { url: WEBHOOK_URL, webhookFormat: 'v1' } })
+    expect(response.status).toBe(200)
+    expect(response.body.webhook.webhookFormat).toBe('v1')
+  })
+
+  it('does not pin a webhook format on storage forms', async () => {
+    const { form, user } = await dbHandler.insertEncryptForm()
+    const session = await createAuthedSession(
+      user.email,
+      supertest(settingsApp),
+    )
+    const response = await session
+      .patch(`/admin/forms/${form._id}/settings`)
+      .send({ webhook: { url: WEBHOOK_URL } })
+    expect(response.status).toBe(200)
+    expect(response.body.webhook).not.toHaveProperty('webhookFormat')
+  })
+
+  it.each(['settings', 'webhooksettings'])(
+    '%s evaluates the V4 pilot against the form ID and owner agency',
+    async (endpoint) => {
+      const { form, user, agency } = await dbHandler.insertMultirespondentForm()
+      const editorAgency = await dbHandler.insertAgency({
+        mailDomain: 'editor.gov.sg',
+        shortName: 'EDITOR',
+      })
+      const editor = await dbHandler.insertUser({
+        agencyId: editorAgency._id,
+        mailDomain: 'editor.gov.sg',
+      })
+      form.permissionList = [{ email: editor.email, write: true }]
+      await form.save()
+      v4Rules = [
+        {
+          condition: {
+            formId: String(form._id),
+            adminEmail: user.email,
+            adminAgency: agency.shortName,
+          },
+          force: true,
+        },
+      ]
+      const session = await createAuthedSession(
+        editor.email,
+        supertest(webhookSettingsApp),
+      )
+      const response = await session
+        .patch(`/admin/forms/${form._id}/${endpoint}`)
+        .send({ webhook: { webhookFormat: 'v4' } })
+      expect(response.status).toBe(200)
+      expect(response.body.webhook.webhookFormat).toBe('v4')
+      const other = await dbHandler.insertMultirespondentForm({
+        mailName: 'other',
+        mailDomain: 'other.gov.sg',
+      })
+      const ownerSession = await createAuthedSession(
+        other.user.email,
+        supertest(webhookSettingsApp),
+      )
+      const notTargeted = await ownerSession
+        .patch(`/admin/forms/${other.form._id}/${endpoint}`)
+        .send({ webhook: { webhookFormat: 'v4' } })
+      expect(notTargeted.status).toBe(400)
+    },
+  )
+
+  it.each(
+    ['settings', 'webhooksettings'].flatMap((endpoint) =>
+      [false, true].flatMap((enabled) =>
+        [undefined, 'v1', 'v4'].flatMap((stored) =>
+          ['v1', 'v4'].map((requested) => ({
+            endpoint,
+            enabled,
+            stored,
+            requested,
+            accepted: enabled || requested === 'v1' || stored === 'v4',
+          })),
+        ),
+      ),
+    ),
+  )(
+    '$endpoint: flag $enabled, stored $stored, requested $requested',
+    async ({ endpoint, enabled, stored, requested, accepted }) => {
+      v4Enabled = enabled
+      const { form, user } = await dbHandler.insertMultirespondentForm({
+        formOptions: {
+          webhook: {
+            url: '',
+            isRetryEnabled: false,
+            webhookFormat: stored as 'v1' | 'v4' | undefined,
+          },
+        },
+      })
+      const session = await createAuthedSession(
+        user.email,
+        supertest(webhookSettingsApp),
+      )
+      const response = await session
+        .patch(`/admin/forms/${form._id}/${endpoint}`)
+        .send({ webhook: { webhookFormat: requested } })
+      expect(response.status).toBe(accepted ? 200 : 400)
+      expect(response.body).toMatchObject(
+        accepted
+          ? { webhook: { webhookFormat: requested } }
+          : { message: 'V4 webhooks are not available for this form' },
+      )
+    },
+  )
+
+  it.each(
+    ['settings', 'webhooksettings'].flatMap((endpoint) =>
+      ['storage', 'email', 'Plumber'].map((mode) => ({ endpoint, mode })),
+    ),
+  )(
+    '$endpoint rejects format selection for $mode with rollout on',
+    async ({ endpoint, mode }) => {
+      v4Enabled = true
+      const { form, user } =
+        mode === 'storage'
+          ? await dbHandler.insertEncryptForm()
+          : mode === 'email'
+            ? await dbHandler.insertEmailForm()
+            : await dbHandler.insertMultirespondentForm()
+      const session = await createAuthedSession(
+        user.email,
+        supertest(webhookSettingsApp),
+      )
+      const response = await session
+        .patch(`/admin/forms/${form._id}/${endpoint}`)
+        .send({
+          webhook: {
+            webhookFormat: 'v1',
+            ...(mode === 'Plumber' ? { url: PLUMBER_WEBHOOK_URL } : {}),
+          },
+        })
+      expect(response.status).toBe(400)
+    },
+  )
+
+  it('retains pre-existing storage format data in settings responses', async () => {
+    const { form, user } = await dbHandler.insertEncryptForm()
+    await FormModel.collection.updateOne(
+      { _id: form._id },
+      { $set: { 'webhook.webhookFormat': 'v1' } },
+    )
+    const session = await createAuthedSession(
+      user.email,
+      supertest(settingsApp),
+    )
+    const response = await session
+      .patch(`/admin/forms/${form._id}/settings`)
+      .send({ webhook: { isRetryEnabled: true } })
+    expect(response.status).toBe(200)
+    expect(response.body.webhook).toMatchObject({
+      webhookFormat: 'v1',
+      isRetryEnabled: true,
+    })
+  })
+
+  describe('rejects unavailable or invalid formats — PATCH /admin/forms/:formId/settings', () => {
     let request: Session
     beforeEach(() => {
       request = supertest(settingsApp)
@@ -87,13 +322,13 @@ describe('webhook.webhookFormat', () => {
 
     it('refuses webhookFormat even beside a term it does accept', async () => {
       // A caller that sends the whole webhook object back must not have the
-      // rest of its update applied while the unknown term is dropped.
+      // rest of its update applied while the rejected format is dropped.
       const { form, user } = await dbHandler.insertMultirespondentForm()
       const session = await createAuthedSession(user.email, request)
 
       const response = await session
         .patch(`/admin/forms/${form._id}/settings`)
-        .send({ webhook: { isRetryEnabled: true, webhookFormat: 'v1' } })
+        .send({ webhook: { isRetryEnabled: true, webhookFormat: 'v4' } })
 
       expect(response.status).toEqual(400)
       const webhook = await readWebhookFromDb(form._id)
@@ -142,7 +377,7 @@ describe('webhook.webhookFormat', () => {
 
       const response = await session
         .patch(`/admin/forms/${form._id}/webhooksettings`)
-        .send({ webhook: { webhookFormat: 'v1' } })
+        .send({ webhook: { webhookFormat: 'v4' } })
 
       expect(response.status).toEqual(400)
       await expect(readWebhookFromDb(form._id)).resolves.not.toHaveProperty(
@@ -162,7 +397,7 @@ describe('webhook.webhookFormat', () => {
       await expect(readWebhookFromDb(form._id)).resolves.toEqual(
         expect.objectContaining({
           url: WEBHOOK_URL,
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+          webhookFormat: 'v1',
         }),
       )
     })
@@ -189,23 +424,20 @@ describe('webhook.webhookFormat', () => {
     it.each([
       { name: 'a plain generic URL', url: WEBHOOK_URL },
       { name: 'a zapier URL', url: ZAPIER_WEBHOOK_URL },
-    ])(
-      'sets FORMAT_FOR_NEW_GENERIC_WEBHOOKS when $name is first set',
-      async ({ url }) => {
-        const { form, user } = await dbHandler.insertMultirespondentForm()
-        const session = await createAuthedSession(user.email, request)
+    ])('sets v1 when $name is first set', async ({ url }) => {
+      const { form, user } = await dbHandler.insertMultirespondentForm()
+      const session = await createAuthedSession(user.email, request)
 
-        const response = await patchWebhook(form._id, { url }, session)
+      const response = await patchWebhook(form._id, { url }, session)
 
-        expect(response.status).toEqual(200)
-        await expect(readWebhookFromDb(form._id)).resolves.toEqual(
-          expect.objectContaining({
-            url,
-            webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
-          }),
-        )
-      },
-    )
+      expect(response.status).toEqual(200)
+      await expect(readWebhookFromDb(form._id)).resolves.toEqual(
+        expect.objectContaining({
+          url,
+          webhookFormat: 'v1',
+        }),
+      )
+    })
 
     it('does not set webhookFormat when a plumber URL is set', async () => {
       const { form, user } = await dbHandler.insertMultirespondentForm()
@@ -242,7 +474,7 @@ describe('webhook.webhookFormat', () => {
       await expect(readWebhookFromDb(form._id)).resolves.toEqual(
         expect.objectContaining({
           url: ANOTHER_WEBHOOK_URL,
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+          webhookFormat: 'v1',
         }),
       )
     })
@@ -262,7 +494,7 @@ describe('webhook.webhookFormat', () => {
       await expect(readWebhookFromDb(form._id)).resolves.toEqual(
         expect.objectContaining({
           url: WEBHOOK_URL,
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+          webhookFormat: 'v1',
         }),
       )
     })
@@ -284,7 +516,7 @@ describe('webhook.webhookFormat', () => {
       await expect(readWebhookFromDb(form._id)).resolves.toEqual(
         expect.objectContaining({
           url: PLUMBER_WEBHOOK_URL,
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+          webhookFormat: 'v1',
         }),
       )
     })
@@ -301,7 +533,7 @@ describe('webhook.webhookFormat', () => {
       await expect(readWebhookFromDb(form._id)).resolves.toEqual(
         expect.objectContaining({
           url: '',
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+          webhookFormat: 'v1',
         }),
       )
     })

@@ -148,6 +148,7 @@ describe('[GATE] webhook retry consumer fidelity', () => {
   const submit = async ({
     withAttachments = false,
     webhookUrl = GENERIC_URL,
+    webhookFormat = undefined as 'v1' | 'v4' | undefined,
   } = {}) => {
     const { form } = await dbHandler.insertMultirespondentForm({
       formOptions: {
@@ -173,7 +174,7 @@ describe('[GATE] webhook retry consumer fidelity', () => {
             : []),
         ] as never,
         form_logics: [],
-        webhook: { url: webhookUrl, isRetryEnabled: true },
+        webhook: { url: webhookUrl, isRetryEnabled: true, webhookFormat },
       },
     })
     const populated = (await getFormModel(mongoose).getFullFormById(
@@ -330,18 +331,26 @@ describe('[GATE] webhook retry consumer fidelity', () => {
   )
 
   it.each([
-    ['generic V1', GENERIC_URL, aws.submissionHistoryV1AttachmentS3Bucket],
+    [
+      'generic V1',
+      GENERIC_URL,
+      aws.submissionHistoryV1AttachmentS3Bucket,
+      'v1',
+    ],
+    ['generic V4', GENERIC_URL, aws.attachmentS3Bucket, 'v4'],
     [
       'Plumber V4',
       'https://plumber.gov.sg/webhooks/retry',
       aws.attachmentS3Bucket,
+      'v4',
     ],
   ])(
     'replays %s with fresh URLs targeting the same attachment objects for every field',
-    async (_case, webhookUrl, bucket) => {
+    async (_case, webhookUrl, bucket, format) => {
       const { submission, form } = await submit({
         withAttachments: true,
         webhookUrl,
+        webhookFormat: format as 'v1' | 'v4' | undefined,
       })
       submission.encryptedContent = 'changed-native-content'
       submission.verifiedContent = 'changed-native-verified-content'
@@ -353,6 +362,10 @@ describe('[GATE] webhook retry consumer fidelity', () => {
         webhookUrl === GENERIC_URL
           ? 'https://plumber.gov.sg/webhooks/changed'
           : GENERIC_URL
+      if (format === 'v4') {
+        form.webhook!.url = 'https://example.com/changed'
+        form.webhook!.webhookFormat = 'v1'
+      }
       await form.save()
 
       await consume()
