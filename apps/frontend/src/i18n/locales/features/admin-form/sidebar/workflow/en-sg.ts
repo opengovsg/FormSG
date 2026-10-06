@@ -235,7 +235,7 @@ export const enSG: Workflow = {
   guidedHints: {
     stepName: "Name this step, or keep it as 'Step {stepNumber}'.",
     respondent:
-      'Choose who FormSG sends the form to next. You can always change this later.',
+      'Choose who FormSG sends the form to in this step. You can always change this later.',
     approvals:
       'Choose what they do in this step. Most steps just need people to fill in fields.',
   },
