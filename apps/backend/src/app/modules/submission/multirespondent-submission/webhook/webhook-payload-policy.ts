@@ -1,6 +1,5 @@
 import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
 import {
-  FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
   FORMAT_FOR_PLUMBER_WEBHOOKS,
   FormWebhook,
   FormWebhookFormat,
@@ -48,7 +47,7 @@ export const resolveWebhookContentFormat = ({
 >): FormWebhookFormat =>
   webhookType === 'plumber'
     ? FORMAT_FOR_PLUMBER_WEBHOOKS
-    : (webhookFormat ?? FORMAT_FOR_NEW_GENERIC_WEBHOOKS)
+    : (webhookFormat ?? 'v1')
 
 export const getWebhookPayloadPolicy = ({
   webhookType,

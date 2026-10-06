@@ -3,7 +3,6 @@ import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { GrowthBook } from '@growthbook/growthbook'
 import { Router } from 'express'
-import { FORMAT_FOR_NEW_GENERIC_WEBHOOKS } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
@@ -398,7 +397,7 @@ describe('webhook.webhookFormat', () => {
       await expect(readWebhookFromDb(form._id)).resolves.toEqual(
         expect.objectContaining({
           url: WEBHOOK_URL,
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+          webhookFormat: 'v1',
         }),
       )
     })
@@ -425,23 +424,20 @@ describe('webhook.webhookFormat', () => {
     it.each([
       { name: 'a plain generic URL', url: WEBHOOK_URL },
       { name: 'a zapier URL', url: ZAPIER_WEBHOOK_URL },
-    ])(
-      'sets FORMAT_FOR_NEW_GENERIC_WEBHOOKS when $name is first set',
-      async ({ url }) => {
-        const { form, user } = await dbHandler.insertMultirespondentForm()
-        const session = await createAuthedSession(user.email, request)
+    ])('sets v1 when $name is first set', async ({ url }) => {
+      const { form, user } = await dbHandler.insertMultirespondentForm()
+      const session = await createAuthedSession(user.email, request)
 
-        const response = await patchWebhook(form._id, { url }, session)
+      const response = await patchWebhook(form._id, { url }, session)
 
-        expect(response.status).toEqual(200)
-        await expect(readWebhookFromDb(form._id)).resolves.toEqual(
-          expect.objectContaining({
-            url,
-            webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
-          }),
-        )
-      },
-    )
+      expect(response.status).toEqual(200)
+      await expect(readWebhookFromDb(form._id)).resolves.toEqual(
+        expect.objectContaining({
+          url,
+          webhookFormat: 'v1',
+        }),
+      )
+    })
 
     it('does not set webhookFormat when a plumber URL is set', async () => {
       const { form, user } = await dbHandler.insertMultirespondentForm()
@@ -478,7 +474,7 @@ describe('webhook.webhookFormat', () => {
       await expect(readWebhookFromDb(form._id)).resolves.toEqual(
         expect.objectContaining({
           url: ANOTHER_WEBHOOK_URL,
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+          webhookFormat: 'v1',
         }),
       )
     })
@@ -498,7 +494,7 @@ describe('webhook.webhookFormat', () => {
       await expect(readWebhookFromDb(form._id)).resolves.toEqual(
         expect.objectContaining({
           url: WEBHOOK_URL,
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+          webhookFormat: 'v1',
         }),
       )
     })
@@ -520,7 +516,7 @@ describe('webhook.webhookFormat', () => {
       await expect(readWebhookFromDb(form._id)).resolves.toEqual(
         expect.objectContaining({
           url: PLUMBER_WEBHOOK_URL,
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+          webhookFormat: 'v1',
         }),
       )
     })
@@ -537,7 +533,7 @@ describe('webhook.webhookFormat', () => {
       await expect(readWebhookFromDb(form._id)).resolves.toEqual(
         expect.objectContaining({
           url: '',
-          webhookFormat: FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+          webhookFormat: 'v1',
         }),
       )
     })

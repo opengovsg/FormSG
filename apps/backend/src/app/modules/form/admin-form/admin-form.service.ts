@@ -20,7 +20,6 @@ import {
   EndPageUpdateDto,
   FieldCreateDto,
   FieldUpdateDto,
-  FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
   FormFieldDto,
   FormLogoState,
   FormMetadata,
@@ -2165,8 +2164,7 @@ const withHasUsedGuidedModeWriteOnce = (
   return next as SettingsUpdateDto
 }
 
-/** Pin an MRF format only when a generic URL is first saved without a choice. */
-const pinMrfWebhookFormat = (
+const pinMrfWebhookFormatIfUnsetAndGeneric = (
   form: IPopulatedForm,
   body: SettingsUpdateDto,
   isV4Enabled: boolean,
@@ -2183,7 +2181,7 @@ const pinMrfWebhookFormat = (
     ...body,
     webhook: {
       ...body.webhook,
-      webhookFormat: isV4Enabled ? 'v4' : FORMAT_FOR_NEW_GENERIC_WEBHOOKS,
+      webhookFormat: isV4Enabled ? 'v4' : 'v1',
     },
   }
 }
@@ -2280,7 +2278,7 @@ export const updateFormSettings = (
     }
   }
 
-  body = pinMrfWebhookFormat(originalForm, body, isV4Enabled)
+  body = pinMrfWebhookFormatIfUnsetAndGeneric(originalForm, body, isV4Enabled)
   const changesWebhookFormatOrUrl =
     body.webhook?.url !== undefined || body.webhook?.webhookFormat !== undefined
   const resultingFormat =

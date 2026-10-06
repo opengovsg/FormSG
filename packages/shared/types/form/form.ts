@@ -104,10 +104,6 @@ export type FormSupportedLanguages = {
 export type FormWebhookFormat = 'v1' | 'v4'
 
 export const FORMAT_FOR_PLUMBER_WEBHOOKS: FormWebhookFormat = 'v4'
-/**
- * The platform default content format pinned onto a webhook the first time its URL is set.
- */
-export const FORMAT_FOR_NEW_GENERIC_WEBHOOKS: FormWebhookFormat = 'v1'
 
 export type FormWebhook = {
   url: string
