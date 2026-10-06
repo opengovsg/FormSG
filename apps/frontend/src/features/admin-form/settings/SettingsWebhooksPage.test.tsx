@@ -1,6 +1,6 @@
 import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { composeStories, composeStory } from '@storybook/react'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { http } from 'msw'
 
@@ -101,6 +101,130 @@ describe('SettingsWebhooksPage', () => {
     await screen.findByText(/endpoint url/i)
     expect(screen.queryByText(PLUMBER_CONNECTED_MSG)).not.toBeInTheDocument()
     expect(screen.queryByText(UNSUPPORTED_MSG)).not.toBeInTheDocument()
+  })
+})
+
+describe('legacy storage webhook notice', () => {
+  const notice = /This form uses legacy webhooks/
+
+  it.each([
+    { name: 'empty URL', story: stories.StorageModeV4RolloutOn },
+    {
+      name: 'populated URL',
+      story: stories.StorageModeV4RolloutOnWithWebhook,
+    },
+  ])('shows the notice with rollout enabled and $name', async ({ story }) => {
+    const Case = composeStory(story, stories.default)
+    await act(async () => {
+      render(<Case />)
+    })
+
+    expect(await screen.findByText(notice)).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'duplicate this form' }),
+    ).toBeEnabled()
+  })
+
+  it.each([
+    { name: 'empty URL', story: stories.StorageModeEmpty },
+    { name: 'populated URL', story: stories.StorageModeRetryEnabled },
+  ])('hides the notice with rollout disabled and $name', async ({ story }) => {
+    const growthbook = new GrowthBook({
+      features: {
+        [featureFlags.enableMrfWebhooks]: { defaultValue: true },
+        [featureFlags.mrfWebhooksV4]: { defaultValue: false },
+      },
+    })
+    const Case = composeStory(
+      {
+        ...story,
+        decorators: [
+          (Story) => (
+            <GrowthBookProvider growthbook={growthbook}>
+              <Story />
+            </GrowthBookProvider>
+          ),
+        ],
+      },
+      stories.default,
+    )
+    await act(async () => {
+      render(<Case />)
+    })
+
+    await screen.findByRole('textbox')
+    expect(screen.queryByText(notice)).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'duplicate this form' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('hides the storage notice for MRF forms with rollout enabled', async () => {
+    await act(async () => {
+      render(<V4Webhook />)
+    })
+
+    await screen.findByRole('checkbox', { name: 'Use legacy webhooks' })
+    expect(screen.queryByText(notice)).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'duplicate this form' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('opens duplication for the current form and returns to unchanged settings on close', async () => {
+    const user = userEvent.setup()
+    const previewRequested = vi.fn()
+    const story = stories.StorageModeV4RolloutOnMrfCutover
+    const Case = composeStory(
+      {
+        ...story,
+        parameters: {
+          ...story.parameters,
+          msw: {
+            handlers: {
+              ...story.parameters?.msw.handlers,
+              duplication: [
+                http.get(
+                  '/api/v3/admin/forms/:formId/preview',
+                  ({ params }) => {
+                    previewRequested(params.formId)
+                  },
+                ),
+                ...(story.parameters?.msw.handlers.duplication ?? []),
+              ],
+            },
+          },
+        },
+      },
+      stories.default,
+    )
+    await act(async () => {
+      render(<Case />)
+    })
+    await user.click(
+      await screen.findByRole('button', { name: 'duplicate this form' }),
+    )
+
+    const dialog = await screen.findByRole('dialog', { name: 'Duplicate form' })
+    await waitFor(() =>
+      expect(
+        within(dialog).getByRole('textbox', { name: 'Form name' }),
+      ).toHaveValue('Storage webhook form_1'),
+    )
+    expect(previewRequested).toHaveBeenCalledTimes(1)
+    expect(previewRequested).toHaveBeenCalledWith('61540ece3d4a6e50ac0cc6ff')
+    await user.click(within(dialog).getByRole('button', { name: 'Close' }))
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    )
+    expect(screen.getByRole('textbox')).toHaveValue(
+      'https://example.com/webhook',
+    )
+    expect(
+      screen.getByRole('checkbox', { name: 'Enable retries' }),
+    ).toBeChecked()
+    expect(screen.getByText(notice)).toBeInTheDocument()
   })
 })
 
