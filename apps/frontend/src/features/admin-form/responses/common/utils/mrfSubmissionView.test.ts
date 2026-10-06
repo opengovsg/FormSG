@@ -87,6 +87,14 @@ describe('hasWorkflowSteps', () => {
     ).toBe(false)
   })
 
+  it('is false for a multi-respondent form with no workflow', () => {
+    expect(
+      hasWorkflowSteps(
+        form({ responseMode: FormResponseMode.Multirespondent }),
+      ),
+    ).toBe(false)
+  })
+
   it('is false for a storage form and for no form at all', () => {
     expect(
       hasWorkflowSteps(form({ responseMode: FormResponseMode.Encrypt })),
