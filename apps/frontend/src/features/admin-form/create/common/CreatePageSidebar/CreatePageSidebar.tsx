@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
   BiChevronsLeft,
   BiChevronsRight,
+  BiExtension,
   BiGitMerge,
   BiQuestionMark,
 } from 'react-icons/bi'
@@ -15,7 +16,6 @@ import { FormResponseMode, SeenFlags } from 'formsg-shared/types'
 import { MultiParty, PhHandsClapping } from '~assets/icons'
 import { BxsDockTop } from '~assets/icons/BxsDockTop'
 import { BxsWidget } from '~assets/icons/BxsWidget'
-import { OneLogoMark } from '~assets/icons/OneLogoMark'
 import { FORM_GUIDE } from '~constants/links'
 import { useIsMobile } from '~hooks/useIsMobile'
 import IconButton from '~components/IconButton'
@@ -261,7 +261,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
                 : undefined
             }
             trackingLabel="create_builder.drawer_tab.integration"
-            icon={<OneLogoMark fontSize="1.5rem" />}
+            icon={<BiExtension fontSize="1.5rem" />}
             onClick={handleDrawerIntegrationClick}
             isActive={activeTab === DrawerTabs.Integration}
           />

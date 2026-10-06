@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
-import { BiRightArrowAlt, BiSearch } from 'react-icons/bi'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { BiRightArrowAlt } from 'react-icons/bi'
 import {
+  Badge,
   Box,
   chakra,
   Container,
@@ -8,9 +10,6 @@ import {
   HTMLChakraProps,
   Icon,
   Image,
-  Input,
-  InputGroup,
-  InputLeftElement,
   SimpleGrid,
   Text,
 } from '@chakra-ui/react'
@@ -123,16 +122,6 @@ export interface ProductTileProps extends HTMLChakraProps<'a'> {
 
 // Ported from opengovsg/suite
 // https://github.com/opengovsg/suite/blob/c4a665c9232ff42823da898b0dd9814f667c12cc/apps/suite/src/components/brand/ProductTile.tsx#L59
-/**
- * A single launcher tile: the product logo (or a deterministic accent monogram
- * when there isn't one), the product name over its domain, an optional
- * description, and — once the officer has opened the product — a last-sign-in
- * line (dot + mono time).
- *
- * The tiles form a "ruled sheet": the tile draws its right and bottom hairline
- * and the containing grid draws the top and left. The tile is a transparent
- * target, filled white on hover, with the arrow revealed only then.
- */
 export const ProductTile = ({
   name,
   href,
@@ -216,56 +205,48 @@ export const ProductTile = ({
 
 // Ported from opengovsg/suite, without the server-computed greeting
 // https://github.com/opengovsg/suite/blob/c4a665c9232ff42823da898b0dd9814f667c12cc/apps/suite/src/app/apps/product-grid.tsx#L39
-/**
- * Launcher body: a live "Search products" filter over the product-tile grid,
- * with empty states for no tiles and no matches.
- */
 export const LauncherApps = ({
   tiles,
 }: {
   tiles: LauncherTile[]
 }): JSX.Element => {
-  const [query, setQuery] = useState('')
+  const { t } = useTranslation()
   const hasTiles = tiles.length > 0
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return tiles
-    return tiles.filter(
-      (tile) =>
-        tile.name.toLowerCase().includes(q) ||
-        tile.domain?.toLowerCase().includes(q) ||
-        tile.description?.toLowerCase().includes(q),
-    )
-  }, [query, tiles])
 
   return (
     <>
       <Flex
-        mb="2.5rem"
+        mb="1.5rem"
         gap="1.5rem"
         wrap="wrap"
         justify="space-between"
         align={{ base: 'flex-start', md: 'flex-end' }}
         direction={{ base: 'column', md: 'row' }}
       >
-        <Text textStyle="body-1" color="secondary.400">
-          Open connected Suite products - no login needed.
-        </Text>
-        {hasTiles ? (
-          <InputGroup w="260px" maxW="100%">
-            <InputLeftElement>
-              <Icon as={BiSearch} color="secondary.500" fontSize="1.25rem" />
-            </InputLeftElement>
-            <Input
-              type="search"
-              placeholder="Search products"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              aria-label="Search products"
-            />
-          </InputGroup>
-        ) : null}
+        <Flex
+          gap="0.5rem"
+          color="secondary.400"
+          textAlign="left"
+          flexDir="column"
+        >
+          <Flex align="center" gap="0.5rem">
+            <Text textStyle="body-1">
+              {t('features.adminForm.sidebar.integration.header.title')}
+            </Text>
+            <Badge
+              colorScheme="primary"
+              variant="subtle"
+              color="secondary.500"
+              borderRadius="full"
+              flexShrink={0}
+            >
+              {t('features.common.betaBadgeLabel')}
+            </Badge>
+          </Flex>
+          <Text textStyle="caption-2">
+            {t('features.adminForm.sidebar.integration.header.description')}
+          </Text>
+        </Flex>
       </Flex>
 
       <Box borderTop="1px solid" borderColor="neutral.300" />
@@ -281,14 +262,13 @@ export const LauncherApps = ({
           borderColor="neutral.300"
         >
           <Text textStyle="subhead-1" color="secondary.700">
-            No apps are available in the launcher yet.
+            {t('features.adminForm.sidebar.integration.empty.title')}
           </Text>
           <Text mt="0.375rem" textStyle="body-2" color="secondary.400">
-            Once a product opts into the directory, it will appear here for you
-            to launch.
+            {t('features.adminForm.sidebar.integration.empty.description')}
           </Text>
         </Box>
-      ) : filtered.length > 0 ? (
+      ) : (
         // Ruled sheet: the grid draws the left hairlines and each tile its
         // right/bottom/top, so the columns must be explicit per breakpoint — an
         // auto-fit grid would leave a short last row's right rule floating.
@@ -298,19 +278,10 @@ export const LauncherApps = ({
           borderLeft="1px solid"
           borderColor="neutral.300"
         >
-          {filtered.map((tile) => (
+          {TILES.map((tile) => (
             <ProductTile key={tile.name} {...tile} />
           ))}
         </SimpleGrid>
-      ) : (
-        <Text
-          py="4rem"
-          textAlign="center"
-          textStyle="body-1"
-          color="secondary.400"
-        >
-          No products match “{query}”.
-        </Text>
       )}
     </>
   )
