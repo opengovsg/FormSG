@@ -1,0 +1,48 @@
+name: Render preview
+
+on:
+  pull_request:
+    types: [labeled, unlabeled, reopened, closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: render-preview-${{ github.event.pull_request.number }}
+
+jobs:
+  up:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.state == 'open' &&
+      contains(github.event.pull_request.labels.*.name, 'render-preview') &&
+      (github.event.action == 'reopened' || github.event.label.name == 'render-preview')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+      - id: render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: .github/scripts/render-preview.sh up "formsg-pr-${{ github.event.pull_request.number }}" "$BRANCH"
+      - if: steps.render.outputs.created == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          URL: ${{ steps.render.outputs.url }}
+          DASHBOARD: ${{ steps.render.outputs.dashboard }}
+        run: |
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "Render preview is building: $URL ([logs]($DASHBOARD)). It uses staging's database and config, and is deleted when the \`render-preview\` label is removed or the PR closes."
+
+  down:
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      ((github.event.action == 'unlabeled' && github.event.label.name == 'render-preview') ||
+       (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'render-preview')))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+      - env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: .github/scripts/render-preview.sh down "formsg-pr-${{ github.event.pull_request.number }}"
