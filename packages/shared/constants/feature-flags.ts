@@ -39,6 +39,7 @@ export const featureFlags = {
   scheduledFormClosure: 'scheduled-form-closure' as const,
   mrfChildren: 'mrf-children' as const,
   delightfulDashboard: 'delightful-dashboard' as const,
+  suiteLauncher: 'suite-launcher' as const,
 }
 
 export enum AdminEmailPdfFeatureValue {

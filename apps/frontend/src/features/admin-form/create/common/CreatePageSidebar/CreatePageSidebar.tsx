@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import {
   BiChevronsLeft,
   BiChevronsRight,
+  BiExtension,
   BiGitMerge,
   BiQuestionMark,
 } from 'react-icons/bi'
@@ -46,6 +47,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
   const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
+  const showIntegrationTab = useFeatureIsOn(featureFlags.suiteLauncher)
 
   const { data } = useAdminForm()
   const { user, isLoading: isUserLoading } = useUser()
@@ -65,6 +67,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     handleLogicClick,
     handleEndpageClick,
     handleWorkflowClick,
+    handleIntegrationClick,
     reportSidebarWidth,
   } = useCreatePageSidebar()
 
@@ -110,6 +113,11 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const handleDrawerEndpageClick = useCallback(
     () => handleEndpageClick(isDirty),
     [handleEndpageClick, isDirty],
+  )
+
+  const handleDrawerIntegrationClick = useCallback(
+    () => handleIntegrationClick(isDirty),
+    [handleIntegrationClick, isDirty],
   )
 
   const handleDrawerWorkflowClick = useCallback(() => {
@@ -244,6 +252,20 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR_IDS[3].id}
         />
+        {showIntegrationTab && (
+          <DrawerTabIcon
+            label={t('features.adminForm.sidebar.integration.title')}
+            navLabel={
+              showNavLabels
+                ? t('features.adminForm.sidebar.integration.title')
+                : undefined
+            }
+            trackingLabel="create_builder.drawer_tab.integration"
+            icon={<BiExtension fontSize="1.5rem" />}
+            onClick={handleDrawerIntegrationClick}
+            isActive={activeTab === DrawerTabs.Integration}
+          />
+        )}
         {/* Control keeps production's layout: Workflow at the bottom, below a divider. */}
         {!showNavLabels && isMrf && (
           <>

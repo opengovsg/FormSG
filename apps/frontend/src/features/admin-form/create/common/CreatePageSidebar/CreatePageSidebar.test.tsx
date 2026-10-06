@@ -1,6 +1,7 @@
 import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types'
 
 import { render } from '~/test-utils'
@@ -12,7 +13,7 @@ const mockResponseMode = { current: FormResponseMode.Multirespondent }
 const mockIsMobile = { current: false }
 
 vi.mock('@growthbook/growthbook-react', () => ({
-  useFeatureIsOn: () => mockUseFeatureIsOn(),
+  useFeatureIsOn: (key: string) => mockUseFeatureIsOn(key),
 }))
 
 vi.mock('react-i18next', () => ({
@@ -54,6 +55,7 @@ vi.mock(
       Logic: 2,
       EndPage: 3,
       Workflow: 4,
+      Integration: 5,
     },
     useCreatePageSidebar: () => ({
       activeTab: null,
@@ -62,6 +64,7 @@ vi.mock(
       handleLogicClick: vi.fn(),
       handleEndpageClick: vi.fn(),
       handleWorkflowClick: vi.fn(),
+      handleIntegrationClick: vi.fn(),
       reportSidebarWidth: vi.fn(),
     }),
   }),
@@ -97,6 +100,37 @@ describe('CreatePageSidebar', () => {
     ])
   })
 
+  it('shows the Integration tab after Thank you when only the integration tab flag is on', () => {
+    mockUseFeatureIsOn.mockImplementation(
+      (key: string) => key === featureFlags.suiteLauncher,
+    )
+    mockResponseMode.current = FormResponseMode.Multirespondent
+
+    render(<CreatePageSidebar />)
+
+    expect(navTrackingOrder()).toEqual([
+      'create_builder.drawer_tab.add_fields',
+      'create_builder.drawer_tab.edit_header',
+      'create_builder.drawer_tab.add_logic',
+      'create_builder.drawer_tab.edit_thank_you_page',
+      'create_builder.drawer_tab.integration',
+      'create_builder.drawer_tab.add_workflow',
+    ])
+  })
+
+  it('hides the Integration tab when the integration tab flag is off, even with nav labels on', () => {
+    mockUseFeatureIsOn.mockImplementation(
+      (key: string) => key === featureFlags.sidebarNavLabels,
+    )
+    mockResponseMode.current = FormResponseMode.Multirespondent
+
+    render(<CreatePageSidebar />)
+
+    expect(navTrackingOrder()).not.toContain(
+      'create_builder.drawer_tab.integration',
+    )
+  })
+
   it('keeps the production divider above the MRF workflow tab in the control arm', () => {
     mockUseFeatureIsOn.mockReturnValue(false)
     mockResponseMode.current = FormResponseMode.Multirespondent
@@ -122,6 +156,7 @@ describe('CreatePageSidebar', () => {
       'create_builder.drawer_tab.add_workflow',
       'create_builder.drawer_tab.add_logic',
       'create_builder.drawer_tab.edit_thank_you_page',
+      'create_builder.drawer_tab.integration',
     ])
   })
 

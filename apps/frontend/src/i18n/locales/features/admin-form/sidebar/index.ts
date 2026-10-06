@@ -1,6 +1,7 @@
 export * from './en-sg'
 export { type Fields } from './fields'
 export { type HeaderAndInstructions } from './header-and-instructions'
+export { type Integration } from './integration'
 export { type Logic } from './logic'
 export { type NavLabels } from './nav-labels'
 export { type ThankYou } from './thank-you'

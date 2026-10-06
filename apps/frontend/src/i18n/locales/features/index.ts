@@ -4,6 +4,7 @@ export {
   type Feedback,
   type Fields,
   type HeaderAndInstructions,
+  type Integration,
   type Logic,
   type Meta,
   type Modals,
