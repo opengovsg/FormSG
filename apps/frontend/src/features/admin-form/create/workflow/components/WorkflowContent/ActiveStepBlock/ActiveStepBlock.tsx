@@ -7,11 +7,9 @@ import { datadogRum } from '~utils/datadog'
 import {
   cancelPendingSwitchSelector,
   completeSaveSelector,
-  stepDraftSelector,
   useAdminWorkflowStore,
 } from '../../../adminWorkflowStore'
 import { useWorkflowMutations } from '../../../mutations'
-import { AdminEditWorkflowState } from '../../../types'
 import { EditStepBlock } from '../EditStepBlock'
 
 export interface ActiveStepBlockProps {
@@ -48,12 +46,6 @@ export const ActiveStepBlock = ({
   const { updateStepMutation } = useWorkflowMutations()
   const completeSave = useAdminWorkflowStore(completeSaveSelector)
   const cancelPendingSwitch = useAdminWorkflowStore(cancelPendingSwitchSelector)
-  const stepDraft = useAdminWorkflowStore(stepDraftSelector)
-  const draftInputs =
-    stepDraft?.target.state === AdminEditWorkflowState.EditingStep &&
-    stepDraft.target.stepNumber === stepNumber
-      ? stepDraft.inputs
-      : undefined
 
   const handleSubmit = useCallback(
     (step: FormWorkflowStep) => {
@@ -78,7 +70,7 @@ export const ActiveStepBlock = ({
       isLoading={updateStepMutation.isLoading}
       handleOpenDeleteModal={handleOpenDeleteModal}
       onSubmit={handleSubmit}
-      defaultValues={draftInputs ? { ...step, ...draftInputs } : step}
+      defaultValues={step}
       submitButtonLabel="Save step"
     />
   )
