@@ -14,6 +14,8 @@ import {
   getAdminFormView,
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
+import { getPreviewFormResponse } from '~/mocks/msw/handlers/admin-form/preview-form'
+import { userHandlers } from '~/mocks/msw/handlers/user'
 
 import {
   getMobileViewParameters,
@@ -286,12 +288,53 @@ const withV4Webhooks = (Story: StoryFn) => (
 
 export const StorageModeV4RolloutOn = Template.bind({})
 StorageModeV4RolloutOn.decorators = [withV4Webhooks]
-StorageModeV4RolloutOn.parameters = StorageModeEmpty.parameters
+StorageModeV4RolloutOn.parameters = {
+  router: { initialEntries: ['/61540ece3d4a6e50ac0cc6ff'] },
+  msw: {
+    handlers: {
+      ...StorageModeEmpty.parameters.msw.handlers,
+      duplication: [
+        ...userHandlers({ delay: 0 }),
+        getPreviewFormResponse({
+          overrides: { form: { title: 'Storage webhook form' } },
+        }),
+        http.get('/api/v3/admin/forms', () => HttpResponse.json([])),
+      ],
+    },
+  },
+}
 
 export const StorageModeV4RolloutOnWithWebhook = Template.bind({})
 StorageModeV4RolloutOnWithWebhook.decorators = [withV4Webhooks]
-StorageModeV4RolloutOnWithWebhook.parameters =
-  StorageModeRetryEnabled.parameters
+StorageModeV4RolloutOnWithWebhook.parameters = {
+  ...StorageModeV4RolloutOn.parameters,
+  msw: {
+    handlers: {
+      ...StorageModeV4RolloutOn.parameters.msw.handlers,
+      ...StorageModeRetryEnabled.parameters.msw.handlers,
+    },
+  },
+}
+
+export const StorageModeV4RolloutOnMrfCutover = Template.bind({})
+StorageModeV4RolloutOnMrfCutover.decorators = [
+  (Story) => (
+    <GrowthBookProvider
+      growthbook={
+        new GrowthBook({
+          features: {
+            [featureFlags.mrfWebhooksV4]: { defaultValue: true },
+            [featureFlags.mrfCutover]: { defaultValue: true },
+          },
+        })
+      }
+    >
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+StorageModeV4RolloutOnMrfCutover.parameters =
+  StorageModeV4RolloutOnWithWebhook.parameters
 
 export const StorageModeV4RolloutOnMobile = Template.bind({})
 StorageModeV4RolloutOnMobile.decorators = [withV4Webhooks]

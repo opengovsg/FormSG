@@ -7,7 +7,7 @@ export const enSG = {
     saved: 'Webhook format updated',
   },
   legacyStorageNotice:
-    'This form uses legacy webhooks. To use the latest webhooks, [duplicate this form]({guideUrl}) to the latest version of FormSG. If your system can only read legacy webhooks, no change is needed.',
+    'This form uses legacy webhooks. To use the latest webhooks, <duplicateLink>duplicate this form</duplicateLink> to the latest version of FormSG. If your system can only read legacy webhooks, no change is needed.',
   legacyWorkflowUnsupported:
     'Legacy webhooks only work with forms that have at most one workflow step. Turn off "Use legacy webhooks" or reduce the workflow to one step.',
   workflowUnsupported:
