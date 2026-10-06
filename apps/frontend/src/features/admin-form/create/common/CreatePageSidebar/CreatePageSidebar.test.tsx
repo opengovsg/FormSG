@@ -102,7 +102,7 @@ describe('CreatePageSidebar', () => {
 
   it('shows the Integration tab after Thank you when only the integration tab flag is on', () => {
     mockUseFeatureIsOn.mockImplementation(
-      (key: string) => key === featureFlags.integrationTab,
+      (key: string) => key === featureFlags.suiteLauncher,
     )
     mockResponseMode.current = FormResponseMode.Multirespondent
 
