@@ -4,6 +4,7 @@ export * from './en-sg'
 
 export interface Webhooks extends HasTitle {
   legacy: { label: string; description: string; saved: string }
+  legacyStorageNotice: string
   legacyWorkflowUnsupported: string
   workflowUnsupported: string
   remove: string

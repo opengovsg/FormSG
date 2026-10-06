@@ -284,6 +284,22 @@ const withV4Webhooks = (Story: StoryFn) => (
   </GrowthBookProvider>
 )
 
+export const StorageModeV4RolloutOn = Template.bind({})
+StorageModeV4RolloutOn.decorators = [withV4Webhooks]
+StorageModeV4RolloutOn.parameters = StorageModeEmpty.parameters
+
+export const StorageModeV4RolloutOnWithWebhook = Template.bind({})
+StorageModeV4RolloutOnWithWebhook.decorators = [withV4Webhooks]
+StorageModeV4RolloutOnWithWebhook.parameters =
+  StorageModeRetryEnabled.parameters
+
+export const StorageModeV4RolloutOnMobile = Template.bind({})
+StorageModeV4RolloutOnMobile.decorators = [withV4Webhooks]
+StorageModeV4RolloutOnMobile.parameters = {
+  ...StorageModeV4RolloutOnWithWebhook.parameters,
+  ...getMobileViewParameters(),
+}
+
 export const V4Webhook = Template.bind({})
 V4Webhook.decorators = [withV4Webhooks]
 V4Webhook.parameters = webhookWorkflowParameters(

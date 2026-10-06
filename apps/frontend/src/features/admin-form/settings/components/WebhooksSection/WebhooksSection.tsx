@@ -8,7 +8,7 @@ import {
 } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types'
 
-import { OGP_PLUMBER } from '~constants/links'
+import { FORM_GUIDE, OGP_PLUMBER } from '~constants/links'
 import InlineMessage from '~components/InlineMessage'
 import Toggle from '~components/Toggle'
 
@@ -58,6 +58,13 @@ export const WebhooksSection = (): JSX.Element => {
   return (
     <Skeleton isLoaded={!isFormLoadRequired || !isLoading}>
       <Stack mt="2.5rem" spacing="2.5rem">
+        {settings?.responseMode === FormResponseMode.Encrypt && v4Enabled && (
+          <InlineMessage variant="info" useMarkdown>
+            {t('features.adminForm.settings.webhooks.legacyStorageNotice', {
+              guideUrl: FORM_GUIDE,
+            })}
+          </InlineMessage>
+        )}
         {isWorkflowUnsupported && (
           <InlineMessage variant="info" useMarkdown>
             {t(
