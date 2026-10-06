@@ -55,7 +55,7 @@ vi.mock(
       Logic: 2,
       EndPage: 3,
       Workflow: 4,
-      Suite: 5,
+      Integration: 5,
     },
     useCreatePageSidebar: () => ({
       activeTab: null,
@@ -64,7 +64,7 @@ vi.mock(
       handleLogicClick: vi.fn(),
       handleEndpageClick: vi.fn(),
       handleWorkflowClick: vi.fn(),
-      handleSuiteClick: vi.fn(),
+      handleIntegrationClick: vi.fn(),
       reportSidebarWidth: vi.fn(),
     }),
   }),
@@ -100,9 +100,9 @@ describe('CreatePageSidebar', () => {
     ])
   })
 
-  it('shows the Suite tab after Thank you when only the suite launcher flag is on', () => {
+  it('shows the Integration tab after Thank you when only the integration tab flag is on', () => {
     mockUseFeatureIsOn.mockImplementation(
-      (key: string) => key === featureFlags.suiteLauncher,
+      (key: string) => key === featureFlags.integrationTab,
     )
     mockResponseMode.current = FormResponseMode.Multirespondent
 
@@ -113,12 +113,12 @@ describe('CreatePageSidebar', () => {
       'create_builder.drawer_tab.edit_header',
       'create_builder.drawer_tab.add_logic',
       'create_builder.drawer_tab.edit_thank_you_page',
-      'create_builder.drawer_tab.suite',
+      'create_builder.drawer_tab.integration',
       'create_builder.drawer_tab.add_workflow',
     ])
   })
 
-  it('hides the Suite tab when the suite launcher flag is off, even with nav labels on', () => {
+  it('hides the Integration tab when the integration tab flag is off, even with nav labels on', () => {
     mockUseFeatureIsOn.mockImplementation(
       (key: string) => key === featureFlags.sidebarNavLabels,
     )
@@ -126,7 +126,9 @@ describe('CreatePageSidebar', () => {
 
     render(<CreatePageSidebar />)
 
-    expect(navTrackingOrder()).not.toContain('create_builder.drawer_tab.suite')
+    expect(navTrackingOrder()).not.toContain(
+      'create_builder.drawer_tab.integration',
+    )
   })
 
   it('keeps the production divider above the MRF workflow tab in the control arm', () => {
@@ -154,7 +156,7 @@ describe('CreatePageSidebar', () => {
       'create_builder.drawer_tab.add_workflow',
       'create_builder.drawer_tab.add_logic',
       'create_builder.drawer_tab.edit_thank_you_page',
-      'create_builder.drawer_tab.suite',
+      'create_builder.drawer_tab.integration',
     ])
   })
 

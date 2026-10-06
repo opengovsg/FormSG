@@ -11,6 +11,7 @@ import {
   Feedback,
   Fields,
   HeaderAndInstructions,
+  Integration,
   LandingPage,
   LandingPayments,
   Logic,
@@ -27,7 +28,6 @@ import {
   ResponsesResponsesPage,
   Settings,
   Share,
-  Suite,
   Template,
   ThankYou,
   Toasts,
@@ -44,9 +44,9 @@ interface Translation {
         sidebar?: {
           fields?: Fields
           headerAndInstructions?: HeaderAndInstructions
+          integration?: Integration
           logic?: Logic
           navLabels?: NavLabels
-          suite?: Suite
           thankYou?: ThankYou
           workflow?: Workflow
         }

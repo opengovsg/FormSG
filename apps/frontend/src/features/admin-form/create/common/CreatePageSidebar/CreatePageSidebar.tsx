@@ -47,7 +47,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
   const { t } = useTranslation()
   const isMobile = useIsMobile()
   const showNavLabels = useFeatureIsOn(featureFlags.sidebarNavLabels)
-  const showSuiteTab = useFeatureIsOn(featureFlags.suiteLauncher)
+  const showIntegrationTab = useFeatureIsOn(featureFlags.suiteLauncher)
 
   const { data } = useAdminForm()
   const { user, isLoading: isUserLoading } = useUser()
@@ -67,7 +67,7 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     handleLogicClick,
     handleEndpageClick,
     handleWorkflowClick,
-    handleSuiteClick,
+    handleIntegrationClick,
     reportSidebarWidth,
   } = useCreatePageSidebar()
 
@@ -115,9 +115,9 @@ export const CreatePageSidebar = (): JSX.Element | null => {
     [handleEndpageClick, isDirty],
   )
 
-  const handleDrawerSuiteClick = useCallback(
-    () => handleSuiteClick(isDirty),
-    [handleSuiteClick, isDirty],
+  const handleDrawerIntegrationClick = useCallback(
+    () => handleIntegrationClick(isDirty),
+    [handleIntegrationClick, isDirty],
   )
 
   const handleDrawerWorkflowClick = useCallback(() => {
@@ -252,18 +252,18 @@ export const CreatePageSidebar = (): JSX.Element | null => {
           isActive={activeTab === DrawerTabs.EndPage}
           id={FEATURE_TOUR_IDS[3].id}
         />
-        {showSuiteTab && (
+        {showIntegrationTab && (
           <DrawerTabIcon
-            label={t('features.adminForm.sidebar.suite.title')}
+            label={t('features.adminForm.sidebar.integration.title')}
             navLabel={
               showNavLabels
-                ? t('features.adminForm.sidebar.suite.title')
+                ? t('features.adminForm.sidebar.integration.title')
                 : undefined
             }
-            trackingLabel="create_builder.drawer_tab.suite"
+            trackingLabel="create_builder.drawer_tab.integration"
             icon={<OneLogoMark fontSize="1.5rem" />}
-            onClick={handleDrawerSuiteClick}
-            isActive={activeTab === DrawerTabs.Suite}
+            onClick={handleDrawerIntegrationClick}
+            isActive={activeTab === DrawerTabs.Integration}
           />
         )}
         {/* Control keeps production's layout: Workflow at the bottom, below a divider. */}

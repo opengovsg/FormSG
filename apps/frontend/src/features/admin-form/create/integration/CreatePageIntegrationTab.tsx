@@ -326,7 +326,7 @@ const TILES: LauncherTile[] = [
   },
 ]
 
-export const CreatePageSuiteTab = (): JSX.Element => {
+export const CreatePageIntegrationTab = (): JSX.Element => {
   return (
     <Box flex={1} overflow="auto" bg="neutral.100">
       <Container

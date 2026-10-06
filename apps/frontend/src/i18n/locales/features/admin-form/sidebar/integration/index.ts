@@ -1,5 +1,5 @@
 export * from './en-sg'
 
-export interface Suite {
+export interface Integration {
   title: string
 }

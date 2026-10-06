@@ -14,9 +14,9 @@ export { type Share } from './share'
 export {
   type Fields,
   type HeaderAndInstructions,
+  type Integration,
   type Logic,
   type NavLabels,
-  type Suite,
   type ThankYou,
   type Workflow,
 } from './sidebar'
