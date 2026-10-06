@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.42.0](https://github.com/opengovsg/formsg/compare/v9.41.0...v9.42.0) (2026-10-06)
+
+
+### Features
+
+* **admin-form:** per-step preview for MRF workflows (#10204) ([#10204](https://github.com/opengovsg/formsg/commit/e1a57d935cbadf3557e04dfc8c7f92d7fdc3f686))
+
+
+### Bug Fixes
+
+* **results:** size table rows to their cells so right columns paint (#10206) ([#10206](https://github.com/opengovsg/formsg/commit/1523394c25ea4dd8e50a4e5048484f3edc3cbe45))
+
+
+### Builds
+
+* **render:** add PR preview environments (#10193) ([#10193](https://github.com/opengovsg/formsg/commit/92c27ee9e1a3e3cd9478b727c301e0ad597b1e94))
+
 ## [9.41.0](https://github.com/opengovsg/formsg/compare/v9.40.1...v9.41.0) (2026-10-05)
 
 
