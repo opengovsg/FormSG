@@ -319,7 +319,7 @@ export const LauncherApps = ({
 const TILES: LauncherTile[] = [
   {
     name: 'Plumber',
-    href: 'https://plumber.gov.sg',
+    href: 'https://plumber.gov.sg/login/sso?iss=https%3A%2F%2Fone.gov.sg%2Fapi%2Fauth',
     domain: 'plumber.gov.sg',
     description: 'Automate workflows with AI',
     logoUrl: 'https://file.go.gov.sg/plumber-logo.png',
