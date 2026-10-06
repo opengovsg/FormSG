@@ -216,6 +216,7 @@ MultiRespondentFormUnlocked.parameters = {
           {
             responseMode: FormResponseMode.Multirespondent,
             publicKey: MOCK_KEYPAIR.publicKey,
+            workflow: [],
           },
           0,
         ),

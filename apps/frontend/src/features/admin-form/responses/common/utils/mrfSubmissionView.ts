@@ -13,7 +13,7 @@ import {
  */
 export const hasWorkflowSteps = (form?: AdminFormDto): boolean =>
   form?.responseMode === FormResponseMode.Multirespondent &&
-  form.workflow.length > 0
+  (form.workflow?.length ?? 0) > 0
 
 export const hasWorkflowSubmission = (
   metadata: Pick<SubmissionMetadata, 'mrf'>[],
