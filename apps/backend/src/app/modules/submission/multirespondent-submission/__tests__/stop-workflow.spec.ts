@@ -3,7 +3,9 @@ import { ObjectId } from 'bson'
 import { SubmissionType, WorkflowStatus } from 'formsg-shared/types'
 import mongoose from 'mongoose'
 
-import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
+import getSubmissionModel, {
+  getMultirespondentSubmissionModel,
+} from 'src/app/models/submission.server.model'
 
 import {
   MrfWorkflowNotPendingError,
@@ -15,6 +17,7 @@ import {
 } from '../multirespondent-submission.service'
 
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
+const SubmissionModel = getSubmissionModel(mongoose)
 
 const formId = new ObjectId()
 const adminId = new ObjectId().toHexString()
@@ -156,5 +159,36 @@ describe('stopMultirespondentSubmission', () => {
     })
 
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(MrfWorkflowStoppedError)
+  })
+
+  it('returns the stop time on every admin read of the submission', async () => {
+    const submission = await createSubmission()
+    const stoppedAt = (await stop(submission._id))._unsafeUnwrap()
+      .stoppedAt as Date
+
+    const [single, page, mixedSingle, mixedPage, streamed] = await Promise.all([
+      MultirespondentSubmission.findSingleMetadata(
+        String(formId),
+        String(submission._id),
+      ),
+      MultirespondentSubmission.findAllMetadataByFormId(String(formId)),
+      SubmissionModel.findEncryptedOrMultirespondentSingleMetadata(
+        String(formId),
+        String(submission._id),
+      ),
+      SubmissionModel.findAllEncryptedOrMultirespondentMetadataByFormId(
+        String(formId),
+      ),
+      MultirespondentSubmission.getSubmissionCursorByFormId(
+        String(formId),
+      ).next(),
+    ])
+
+    const expected = stoppedAt.toISOString()
+    expect(single?.mrf?.stoppedAt).toEqual(expected)
+    expect(page.metadata[0].mrf?.stoppedAt).toEqual(expected)
+    expect(mixedSingle?.mrf?.stoppedAt).toEqual(expected)
+    expect(mixedPage.metadata[0].mrf?.stoppedAt).toEqual(expected)
+    expect(streamed?.stoppedAt).toEqual(stoppedAt)
   })
 })

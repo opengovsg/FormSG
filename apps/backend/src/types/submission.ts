@@ -274,6 +274,7 @@ export type MultirespondentSubmissionCursorData = Pick<
   | 'workflowStep'
   | 'submittedSteps'
   | 'workflow'
+  | 'stoppedAt'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
 export type SubmissionCursorData =

@@ -69,4 +69,37 @@ describe('status-tracker.controller', () => {
     expect(serialised).not.toContain('SNAPSHOT_TOKEN_LEAF_VALUE')
     expect(serialised).not.toContain('next@example.com')
   })
+
+  it('returns when the workflow was stopped, without who stopped it', async () => {
+    const stopperId = new ObjectId()
+    const submission = new MultirespondentSubmission({
+      form: new ObjectId(),
+      form_fields: [],
+      form_logics: [],
+      workflow: [],
+      submissionPublicKey: 'public key',
+      encryptedSubmissionSecretKey: 'secret key',
+      encryptedContent: 'encrypted content',
+      version: 1,
+      workflowStep: 0,
+      submittedSteps: [],
+      stoppedAt: new Date('2026-10-07T08:00:00.000Z'),
+      stoppedBy: stopperId,
+    })
+    jest
+      .spyOn(MultirespondentSubmissionService, 'getMultirespondentSubmission')
+      .mockReturnValue(okAsync(submission))
+    const mockRes = expressHandler.mockResponse()
+
+    await getStatusTrackerSubmissionData(
+      expressHandler.mockRequest({
+        params: { submissionId: String(submission._id) },
+      }),
+      mockRes,
+    )
+
+    const body = mockRes.json.mock.calls[0][0] as StatusTrackerData
+    expect(body.stoppedAt).toEqual('2026-10-07T08:00:00.000Z')
+    expect(JSON.stringify(body)).not.toContain(String(stopperId))
+  })
 })

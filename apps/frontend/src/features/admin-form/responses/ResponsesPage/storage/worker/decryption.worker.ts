@@ -373,6 +373,7 @@ async function getMaterializedCsvRecord(
             parsedSubmission.mrfMeta.hasNextStepRecipientEmails,
           isWorkflowActionsEligible:
             parsedSubmission.mrfMeta.isWorkflowActionsEligible,
+          stoppedAt: parsedSubmission.mrfMeta.stoppedAt,
         }
       : undefined,
   )

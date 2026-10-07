@@ -783,6 +783,7 @@ export const addMrfMetadata = (): Transform => {
           workflow,
           workflowStep,
           submittedSteps,
+          stoppedAt,
           myInfoReadOnlyFields,
           form_fields,
           ...rest
@@ -800,6 +801,7 @@ export const addMrfMetadata = (): Transform => {
             workflowStep,
             submittedSteps,
             created: rest.created,
+            stoppedAt,
           }),
         }
         return callback(null, dataWithMrfMeta)
