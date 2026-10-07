@@ -39,6 +39,20 @@ describe('EmailTemplate', () => {
 
     expect(html).toMatchSnapshot()
   })
+
+  it('should render the workflow stopped email without answers', async () => {
+    const html = await render(
+      EmailTemplate({
+        formTitle: 'Mock form',
+        responseId: 'mock-response-id',
+        timestamp: 'Wed, 7 Oct 2026, 08:17:08 AM',
+        outcome: WorkflowOutcome.STOPPED,
+      }),
+    )
+
+    expect(html).toContain('Stopped')
+    expect(html).toMatchSnapshot()
+  })
 })
 
 describe('FormScheduledClosureNotification', () => {

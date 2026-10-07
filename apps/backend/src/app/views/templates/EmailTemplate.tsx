@@ -46,6 +46,7 @@ export type EmailData = {
 export enum WorkflowOutcome {
   APPROVED = 'Approved',
   NOT_APPROVED = 'Not approved',
+  STOPPED = 'Stopped',
 }
 
 export type QuestionAnswer = {

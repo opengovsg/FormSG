@@ -1390,6 +1390,21 @@ export class MailService {
       actionName: 'sendMrfApprovalEmail',
     })
 
+  sendMrfWorkflowStoppedEmail = (props: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    submissionId: string
+    timestamp: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendMrfOutcomeEmail({
+      ...props,
+      outcome: WorkflowOutcome.STOPPED,
+      emailType: EmailType.WorkflowStopped,
+      actionName: 'sendMrfWorkflowStoppedEmail',
+    })
+
   sendRespondentCopyEmail = ({
     formId,
     formTitle,
