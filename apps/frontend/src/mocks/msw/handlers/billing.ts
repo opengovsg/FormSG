@@ -1,6 +1,11 @@
 import { delay as MswDelay, http, HttpResponse } from 'msw'
 
-import { BillingInfoDto, FormAuthType, FormId } from 'formsg-shared/types'
+import {
+  BillingInfoDto,
+  FormAuthType,
+  FormId,
+  LegacyLoginAuthType,
+} from 'formsg-shared/types'
 
 const generateBillingMeta = (): BillingInfoDto => {
   return {
@@ -9,7 +14,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin4@mock.gov.sg',
         formName: 'form1',
         formId: 'form1id' as FormId,
-        authType: FormAuthType.SP,
+        authType: LegacyLoginAuthType.SP,
         total: 5,
       },
       {
@@ -45,7 +50,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin7@mock.gov.sg',
         formName: 'form6',
         formId: 'form6id' as FormId,
-        authType: FormAuthType.SP,
+        authType: LegacyLoginAuthType.SP,
         total: 5,
       },
       {
@@ -59,7 +64,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin1@mock.gov.sg',
         formName: 'form8',
         formId: 'form8id' as FormId,
-        authType: FormAuthType.SP,
+        authType: LegacyLoginAuthType.SP,
         total: 3,
       },
       {
@@ -80,7 +85,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin8@mock.gov.sg',
         formName: 'form11',
         formId: 'form11id' as FormId,
-        authType: FormAuthType.SP,
+        authType: LegacyLoginAuthType.SP,
         total: 5,
       },
       {

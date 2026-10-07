@@ -10,7 +10,6 @@ import {
   prefixLoginIdentityQuestions,
 } from '../login-identity-answers'
 
-jest.mock('../../spcp/spcp.oidc.service/spcp.oidc.service.sp')
 jest.mock('../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 
 const nricField = {

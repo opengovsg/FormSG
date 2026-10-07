@@ -320,7 +320,7 @@ SingpassUnauthorized.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
           startPage: {
             colorTheme: FormColorTheme.Grey,
           },
@@ -343,7 +343,7 @@ SingpassUnauthorizedSubmitterIdCollectionEnabled.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
           startPage: {
             colorTheme: FormColorTheme.Grey,
           },
@@ -370,7 +370,7 @@ SingpassAuthorized.parameters = {
       overrides: {
         form: {
           title: 'Singpass login form',
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
         },
         spcpSession: {
           userName: 'S1234567A',
@@ -485,8 +485,8 @@ SingpassSingleSubmissionFailureMessage.parameters = {
       delay: 0,
       overrides: {
         form: {
-          title: 'SP login form',
-          authType: FormAuthType.SP,
+          title: 'Singpass login form',
+          authType: FormAuthType.MyInfo,
           isSingleSubmission: true,
         },
         errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],

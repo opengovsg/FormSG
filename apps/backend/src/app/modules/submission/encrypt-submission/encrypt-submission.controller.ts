@@ -138,26 +138,8 @@ const submitEncryptModeForm = async (
   let userInfo
   const { authType } = formDef
   switch (authType) {
-    case FormAuthType.SP: {
-      const oidcService = getOidcService(FormAuthType.SP)
-      const jwtPayloadResult = await oidcService
-        .extractJwt(req.cookies)
-        .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
-      if (jwtPayloadResult.isErr()) {
-        logger.error({
-          message: 'Failed to verify Singpass JWT with auth client',
-          meta: logMeta,
-          error: jwtPayloadResult.error,
-        })
-        return sendRouteError(res, mapRouteError(jwtPayloadResult.error), {
-          spcpSubmissionFailure: true,
-        })
-      }
-      userName = jwtPayloadResult.value.userName
-      break
-    }
     case FormAuthType.CP: {
-      const oidcService = getOidcService(FormAuthType.CP)
+      const oidcService = getOidcService()
       const jwtPayloadResult = await oidcService
         .extractJwt(req.cookies)
         .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))
@@ -209,9 +191,7 @@ const submitEncryptModeForm = async (
   if (
     submitterId &&
     form.whitelistedSubmitterIds?.isWhitelistEnabled &&
-    (form.authType === FormAuthType.SP ||
-      form.authType === FormAuthType.CP ||
-      form.authType === FormAuthType.MyInfo)
+    (form.authType === FormAuthType.CP || form.authType === FormAuthType.MyInfo)
   ) {
     const hasRespondentNotWhitelistedErrorResult =
       await FormService.checkHasRespondentNotWhitelistedFailure(
@@ -269,7 +249,6 @@ const submitEncryptModeForm = async (
         })
         break
       }
-      case FormAuthType.SP:
       case FormAuthType.MyInfo: {
         if (!userName) break
         parsedResponses.addNdiResponses({
@@ -282,7 +261,6 @@ const submitEncryptModeForm = async (
 
     // generate verified content which is used to construct submitter login id for form response
     if (
-      form.authType === FormAuthType.SP ||
       form.authType === FormAuthType.CP ||
       form.authType === FormAuthType.MyInfo
     ) {

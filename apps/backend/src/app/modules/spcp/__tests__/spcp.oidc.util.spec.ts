@@ -1,4 +1,4 @@
-import { BasicField, FormAuthType } from 'formsg-shared/types'
+import { BasicField } from 'formsg-shared/types'
 
 import { InvalidIdTokenError } from '../spcp.oidc.client.errors'
 import {
@@ -272,39 +272,28 @@ describe('SpOidcUtil', () => {
     const MOCK_ENCODED_QUERY = 'cmVkaXJlY3RlZFF1ZXJ5SWQ9YWJj'
 
     it('should emit the legacy 2-segment format when no nonce is given', () => {
-      const state = getRedirectTargetSpcpOidc(
-        MOCK_FORM_ID,
-        FormAuthType.SP,
-        true,
-      )
+      const state = getRedirectTargetSpcpOidc(MOCK_FORM_ID)
 
-      expect(state).toBe(`/${MOCK_FORM_ID}-true`)
+      expect(state).toBe(`/${MOCK_FORM_ID}-false`)
       expect(state.split('-')).toHaveLength(2)
     })
 
     it('should emit the legacy 3-segment format when no nonce is given and there is an encodedQuery', () => {
-      const state = getRedirectTargetSpcpOidc(
-        MOCK_FORM_ID,
-        FormAuthType.SP,
-        true,
-        MOCK_ENCODED_QUERY,
-      )
+      const state = getRedirectTargetSpcpOidc(MOCK_FORM_ID, MOCK_ENCODED_QUERY)
 
-      expect(state).toBe(`/${MOCK_FORM_ID}-true-${MOCK_ENCODED_QUERY}`)
+      expect(state).toBe(`/${MOCK_FORM_ID}-false-${MOCK_ENCODED_QUERY}`)
       expect(state.split('-')).toHaveLength(3)
     })
 
     it('should emit 4 segments when a nonce is given, so that the format is distinguishable from the legacy format', () => {
       const state = getRedirectTargetSpcpOidc(
         MOCK_FORM_ID,
-        FormAuthType.SP,
-        true,
         MOCK_ENCODED_QUERY,
         MOCK_NONCE,
       )
 
       expect(state).toBe(
-        `/${MOCK_FORM_ID}-true-${MOCK_NONCE}-${MOCK_ENCODED_QUERY}`,
+        `/${MOCK_FORM_ID}-false-${MOCK_NONCE}-${MOCK_ENCODED_QUERY}`,
       )
       expect(state.split('-')).toHaveLength(4)
     })
@@ -312,8 +301,6 @@ describe('SpOidcUtil', () => {
     it('should emit 4 segments with an empty encodedQuery segment when a nonce is given without an encodedQuery', () => {
       const state = getRedirectTargetSpcpOidc(
         MOCK_FORM_ID,
-        FormAuthType.SP,
-        false,
         undefined,
         MOCK_NONCE,
       )
@@ -324,30 +311,14 @@ describe('SpOidcUtil', () => {
       expect(state.split('-')).toHaveLength(4)
     })
 
-    it('should force persistentLogin to false for CP even when a nonce is given', () => {
-      const state = getRedirectTargetSpcpOidc(
-        MOCK_FORM_ID,
-        FormAuthType.CP,
-        true,
-        undefined,
-        MOCK_NONCE,
-      )
-
-      expect(state).toBe(`/${MOCK_FORM_ID}-false-${MOCK_NONCE}-`)
-    })
-
     it('should produce a different state for each login attempt so that concurrent logins do not collide', () => {
       const first = getRedirectTargetSpcpOidc(
         MOCK_FORM_ID,
-        FormAuthType.SP,
-        false,
         undefined,
         'a'.repeat(32),
       )
       const second = getRedirectTargetSpcpOidc(
         MOCK_FORM_ID,
-        FormAuthType.SP,
-        false,
         undefined,
         'b'.repeat(32),
       )

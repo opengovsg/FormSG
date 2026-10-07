@@ -2,7 +2,7 @@ import { createAuthedSession } from '__tests__/integration/helpers/express-auth'
 import { setupApp } from '__tests__/integration/helpers/express-setup'
 import { buildCelebrateError } from '__tests__/unit/backend/helpers/celebrate'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
-import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
+import { FormResponseMode, LegacyLoginAuthType } from 'formsg-shared/types'
 import { flatten, sortBy, times } from 'lodash'
 import mongoose from 'mongoose'
 import { errAsync } from 'neverthrow'
@@ -75,14 +75,14 @@ describe('billings.routes', () => {
           formName: generatedForms[0].title,
           total: generatedLoginTimes[0],
           formId: String(generatedForms[0]._id),
-          authType: FormAuthType.SP,
+          authType: LegacyLoginAuthType.SP,
         },
         {
           adminEmail: defaultUser.email,
           formName: generatedForms[1].title,
           total: generatedLoginTimes[1],
           formId: String(generatedForms[1]._id),
-          authType: FormAuthType.SP,
+          authType: LegacyLoginAuthType.SP,
         },
       ]
       expect(response.status).toEqual(200)
@@ -244,7 +244,7 @@ const generateLoginStatistics = async ({
           form: form._id,
           admin: user._id,
           agency: user.agency,
-          authType: FormAuthType.SP,
+          authType: LegacyLoginAuthType.SP,
           esrvcId: esrvcIdToCheck,
         }),
       ),
@@ -257,7 +257,7 @@ const generateLoginStatistics = async ({
         form: forms[2]._id,
         admin: user._id,
         agency: user.agency,
-        authType: FormAuthType.SP,
+        authType: LegacyLoginAuthType.SP,
         esrvcId: altEsrvcId,
       }),
     ),
