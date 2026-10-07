@@ -52,6 +52,7 @@ const getStatusTrackerSubmissionData: ControllerHandler<
         workflow: strippedWorkflow,
         responseId: submissionData.id,
         form: submissionData.form,
+        stoppedAt: submissionData.stoppedAt?.toISOString(),
       }
 
       // Return relevant data in response

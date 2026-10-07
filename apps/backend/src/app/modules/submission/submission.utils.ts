@@ -1018,9 +1018,10 @@ export const buildMrfMetadata = ({
   workflow,
   workflowStep,
   submittedSteps,
+  stoppedAt,
 }: Pick<
   IMultirespondentSubmissionSchema,
-  'workflow' | 'workflowStep' | 'submittedSteps'
+  'workflow' | 'workflowStep' | 'submittedSteps' | 'stoppedAt'
 >): SubmissionMrfMetadata => {
   const workflowCurrentStepNumber = workflowStep + 1 // since workflowStep is zero indexed.
   const workflowNumTotalSteps = workflow.length
@@ -1047,6 +1048,7 @@ export const buildMrfMetadata = ({
     workflowStatus,
     lastSubmittedAt,
     hasNextStepRecipientEmails,
+    ...(stoppedAt ? { stoppedAt: new Date(stoppedAt).toISOString() } : {}),
   }
 }
 

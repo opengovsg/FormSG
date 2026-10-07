@@ -371,6 +371,7 @@ async function getMaterializedCsvRecord(
           lastSubmittedAt: parsedSubmission.mrfMeta.lastSubmittedAt,
           hasNextStepRecipientEmails:
             parsedSubmission.mrfMeta.hasNextStepRecipientEmails,
+          stoppedAt: parsedSubmission.mrfMeta.stoppedAt,
         }
       : undefined,
   )

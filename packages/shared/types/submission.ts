@@ -348,6 +348,7 @@ export const MultirespondentSubmissionStreamDto =
       workflowStatus: z.nativeEnum(WorkflowStatus).optional(),
       lastSubmittedAt: z.string().optional(),
       hasNextStepRecipientEmails: z.boolean(),
+      stoppedAt: z.string().optional(),
     }),
   })
 
@@ -376,6 +377,7 @@ export type SubmissionMrfMetadata =
       workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
       lastSubmittedAt: string | undefined
       hasNextStepRecipientEmails: boolean
+      stoppedAt?: string
     }
   | undefined
 
@@ -475,6 +477,7 @@ export type StatusTrackerData = {
   workflow: StrippedFormWorkflowDto
   responseId: string | undefined
   form: string
+  stoppedAt?: string
 }
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.
