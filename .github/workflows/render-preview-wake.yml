@@ -1,0 +1,44 @@
+name: Render preview wake
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  wake:
+    if: >-
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/preview wake') &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
+    concurrency:
+      group: render-preview-wake-${{ github.event.issue.number }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+      - id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.issue.number }}
+        run: echo "sha=$(gh pr view "$PR" --repo "$GITHUB_REPOSITORY" --json headRefOid -q .headRefOid)" >>"$GITHUB_OUTPUT"
+      - id: render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SHA: ${{ steps.pr.outputs.sha }}
+        run: .github/scripts/render-preview.sh wake "formsg-pr-${{ github.event.issue.number }}" "$SHA"
+      - env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.issue.number }}
+          WOKE: ${{ steps.render.outputs.woke }}
+          URL: ${{ steps.render.outputs.url }}
+        run: |
+          case "$WOKE" in
+            true) body="Render preview resumed: $URL" ;;
+            false) body="Render preview is already awake: $URL" ;;
+            *) body="This PR has no Render preview. Add the \`render-preview\` label to create one." ;;
+          esac
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$body"

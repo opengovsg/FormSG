@@ -18,7 +18,11 @@ render() {
 
 find_service() {
   render GET "/services?ownerId=$OWNER_ID&name=$1&limit=20" |
-    jq -r --arg name "$1" '[.[].service | select(.name == $name)][0] // empty | "\(.id) \(.serviceDetails.url)"'
+    jq -r --arg name "$1" '[.[].service | select(.name == $name)][0] // empty | "\(.id) \(.serviceDetails.url) \(.suspended)"'
+}
+
+deploy() {
+  render POST "/services/$1/deploys" '{"clearCache":"do_not_clear"}' >/dev/null
 }
 
 output() {
@@ -27,11 +31,12 @@ output() {
 }
 
 up() {
-  local name=$1 branch=$2 existing id url created
+  local name=$1 branch=$2 existing id url suspended created
   existing=$(find_service "$name")
   if [ -n "$existing" ]; then
-    read -r id url <<<"$existing"
-    render POST "/services/$id/deploys" '{"clearCache":"do_not_clear"}' >/dev/null
+    read -r id url suspended <<<"$existing"
+    if [ "$suspended" = suspended ]; then render POST "/services/$id/resume" >/dev/null; fi
+    deploy "$id"
     created=false
   else
     created=$(jq -n --arg name "$name" --arg owner "$OWNER_ID" --arg repo "$REPO_URL" --arg branch "$branch" '{
@@ -59,7 +64,7 @@ up() {
     fi
     render POST "/env-groups/$ENV_GROUP_ID/services/$id" >/dev/null
     render PUT "/services/$id/env-vars/APP_URL" "$(jq -n --arg v "$url" '{value: $v}')" >/dev/null
-    render POST "/services/$id/deploys" '{"clearCache":"do_not_clear"}' >/dev/null
+    deploy "$id"
     created=true
   fi
   output url "$url"
@@ -79,8 +84,28 @@ down() {
   output deleted true
 }
 
+wake() {
+  local name=$1 sha=$2 existing id url suspended deployed
+  existing=$(find_service "$name")
+  if [ -z "$existing" ]; then
+    output woke missing
+    return
+  fi
+  read -r id url suspended <<<"$existing"
+  output url "$url"
+  if [ "$suspended" != suspended ]; then
+    output woke false
+    return
+  fi
+  render POST "/services/$id/resume" >/dev/null
+  deployed=$(render GET "/services/$id/deploys?limit=1" | jq -r '.[0].deploy.commit.id // empty')
+  if [ "$deployed" != "$sha" ]; then deploy "$id"; fi
+  output woke true
+}
+
 case "${1:-}" in
   up) up "$2" "$3" ;;
   down) down "$2" ;;
-  *) echo "usage: $0 up <service-name> <branch> | down <service-name>" >&2; exit 64 ;;
+  wake) wake "$2" "$3" ;;
+  *) echo "usage: $0 up <service-name> <branch> | down <service-name> | wake <service-name> <sha>" >&2; exit 64 ;;
 esac

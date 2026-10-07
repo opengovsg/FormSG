@@ -2,17 +2,16 @@ name: Render preview
 
 on:
   pull_request:
-    types: [labeled, unlabeled, reopened, closed]
+    types: [labeled, unlabeled, reopened, closed, synchronize]
 
 permissions:
   contents: read
   pull-requests: write
 
-concurrency:
-  group: render-preview-${{ github.event.pull_request.number }}
-
 jobs:
   up:
+    concurrency:
+      group: render-preview-${{ github.event.pull_request.number }}
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       github.event.pull_request.state == 'open' &&
@@ -35,7 +34,32 @@ jobs:
         run: |
           gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "Render preview is building: $URL ([logs]($DASHBOARD)). It uses staging's database and config, and is deleted when the \`render-preview\` label is removed or the PR closes."
 
+  wake:
+    concurrency:
+      group: render-preview-wake-${{ github.event.pull_request.number }}
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.action == 'synchronize' &&
+      contains(github.event.pull_request.labels.*.name, 'render-preview')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+      - id: render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: .github/scripts/render-preview.sh wake "formsg-pr-${{ github.event.pull_request.number }}" "$SHA"
+      - if: steps.render.outputs.woke == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
+          URL: ${{ steps.render.outputs.url }}
+        run: |
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "Render preview woken by a push and deploying: $URL"
+
   down:
+    concurrency:
+      group: render-preview-${{ github.event.pull_request.number }}
     if: >-
       github.event.pull_request.head.repo.full_name == github.repository &&
       ((github.event.action == 'unlabeled' && github.event.label.name == 'render-preview') ||
