@@ -3,6 +3,7 @@ import { List, ListItem } from '@chakra-ui/react'
 import { FloatingPortal } from '@floating-ui/react'
 
 import { VIRTUAL_LIST_OVERSCAN_HEIGHT } from '../constants'
+import { useDropdownMenuZIndex } from '../DropdownMenuLayer'
 import { useSelectContext } from '../SelectContext'
 import { itemToValue } from '../utils/itemUtils'
 
@@ -21,6 +22,7 @@ export const MultiSelectMenu = (): JSX.Element => {
   } = useSelectContext()
 
   const { floatingRef, floatingStyles } = useSelectPopover()
+  const menuZIndex = useDropdownMenuZIndex()
 
   return (
     <FloatingPortal>
@@ -30,7 +32,7 @@ export const MultiSelectMenu = (): JSX.Element => {
           hidden: !isOpen,
           ref: floatingRef,
         })}
-        zIndex="dropdown"
+        zIndex={menuZIndex ?? 'dropdown'}
         sx={styles.list}
       >
         {isOpen && items.length > 0 && (
