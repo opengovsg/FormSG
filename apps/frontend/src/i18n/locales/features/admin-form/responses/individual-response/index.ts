@@ -1,9 +1,6 @@
 export * from './en-sg'
 
 export interface ResponsesIndividualResponse {
-  backToList: string
-  nextSubmission: string
-  previousSubmission: string
   secretKeyVerification: {
     ctaText: string
     label: string
