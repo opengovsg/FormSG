@@ -10,15 +10,13 @@ import { resolveRedirectionUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
-import { isEmailInDomainWhitelist, mapRouteError } from '../auth.utils'
+import { mapRouteError } from '../auth.utils'
 
 import {
   ONE_CODE_VERIFIER_COOKIE_NAME,
   ONE_NONCE_COOKIE_NAME,
   ONE_STATE_COOKIE_NAME,
-  ONE_USER_DOMAIN_WHITELIST,
 } from './auth-one.constants'
-import { OneNotWhitelistedError } from './auth-one.errors'
 import { AuthOneService } from './auth-one.service'
 
 const logger = createLoggerWithLabel(module)
@@ -175,15 +173,6 @@ export const handleLoginCallback: ControllerHandler<
     .andThen((tokens) => AuthOneService.retrieveClaims(tokens))
     .andThen((claims) => {
       const userEmail = claims.email.toLowerCase()
-      if (!isEmailInDomainWhitelist(userEmail, ONE_USER_DOMAIN_WHITELIST)) {
-        logger.error({
-          message: 'Error logging in user; email is not in domain whitelist',
-          meta: logMeta,
-        })
-
-        return errAsync(new OneNotWhitelistedError())
-      }
-
       return AuthService.validateEmailDomain(userEmail)
         .andThen((agency) => UserService.retrieveUser(userEmail, agency._id))
         .map((user) => ({ user, claims }))
