@@ -243,10 +243,12 @@ const generatePlumberTile = (
   id: string,
   name: string,
 ): LauncherTile => {
+  const SSO_BASE_URL = 'https://plumber.gov.sg/login/sso'
   // Encode the redirect as a single param so its own `&`s don't leak into the
   // SSO URL's query string.
   const redirect = `/form?${new URLSearchParams({ id, webhook: webhookUrl, name })}`
-  const href = new URL('https://plumber.gov.sg/login/sso')
+
+  const href = new URL(SSO_BASE_URL)
   href.searchParams.set('iss', 'https://one.gov.sg/api/auth')
   href.searchParams.set('redirect', redirect)
 
