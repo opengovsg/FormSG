@@ -52,6 +52,44 @@ describe('CsvRecord', () => {
       })
     })
 
+    describe('when the workflow was stopped', () => {
+      it('should show Stopped and no pending step', () => {
+        const record = new CsvRecord(
+          'mockId',
+          '2025-02-17T00:00:00.000Z',
+          CsvRecordStatus.Ok,
+          'mockFormId',
+          'mockHostOrigin',
+          undefined,
+          {
+            workflowStatus: WorkflowStatus.PENDING,
+            workflowCurrentStepNumber: 1,
+            workflowNumTotalSteps: 2,
+            lastSubmittedAt: '2025-02-17T00:00:00.000Z',
+            hasNextStepRecipientEmails: true,
+            isWorkflowActionsEligible: true,
+            stoppedAt: '2026-10-07T08:00:00.000Z',
+          },
+        )
+
+        record.materializeSubmissionData()
+
+        const { record: recordResult } = record.submissionData!
+        expect(recordResult).toContainEqual(
+          expect.objectContaining({
+            question: MRF_WORKFLOW_STATUS_LABEL,
+            answer: 'Stopped',
+          }),
+        )
+        expect(recordResult).toContainEqual(
+          expect.objectContaining({
+            question: MRF_PENDING_RESPONSE_AT_LABEL,
+            answer: '-',
+          }),
+        )
+      })
+    })
+
     describe('when paymentData is defined and mrfData is undefined', () => {
       it('should output payment columns and no mrf columns for a pre-migration encrypt row', () => {
         // Arrange
