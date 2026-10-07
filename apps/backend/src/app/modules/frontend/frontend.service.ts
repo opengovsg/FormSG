@@ -62,7 +62,6 @@ export const getClientEnvVars = (): ClientEnvVars => {
     formsgSdkMode: config.formsgSdkMode,
     captchaPublicKey: captchaConfig.captchaPublicKey, // Recaptcha
     turnstileSiteKey: turnstileConfig.turnstileSiteKey,
-    isSPMaintenance: spcpMyInfoConfig.isSPMaintenance, // Singpass maintenance message
     isCPMaintenance: spcpMyInfoConfig.isCPMaintenance, // Corppass maintenance message
     myInfoBannerContent: spcpMyInfoConfig.myInfoBannerContent, // MyInfo maintenance message
     spcpCookieDomain: spcpMyInfoConfig.spcpCookieDomain, // Cookie domain used for removing spcp cookies
