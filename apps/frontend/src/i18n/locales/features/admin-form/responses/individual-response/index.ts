@@ -7,6 +7,11 @@ export interface ResponsesIndividualResponse {
   }
   downloadAttachmentsAsZip: string
   responseLinkLabel: string
+  statusTrackingLinkLabel: string
+  workflowActions: {
+    whoIsNotifiedLabel: string
+    whoIsNotifiedNone: string
+  }
   paymentSection: {
     paymentStatusLabel: {
       partiallyRefunded: string

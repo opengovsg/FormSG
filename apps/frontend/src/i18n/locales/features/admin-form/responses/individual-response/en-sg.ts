@@ -8,6 +8,11 @@ export const enSG: ResponsesIndividualResponse = {
   downloadAttachmentsAsZip:
     'Download {attachmentSize, plural, =1 {# attachment} other {# attachments}} as .zip',
   responseLinkLabel: 'Response link',
+  statusTrackingLinkLabel: 'View',
+  workflowActions: {
+    whoIsNotifiedLabel: 'Who will be notified',
+    whoIsNotifiedNone: 'No one will be notified.',
+  },
   paymentSection: {
     paymentStatusLabel: {
       partiallyRefunded: 'Partially refunded',
