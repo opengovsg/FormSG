@@ -1,0 +1,35 @@
+import { useTranslation } from 'react-i18next'
+import { useMutation, useQueryClient } from 'react-query'
+
+import { ApiError } from '~typings/core'
+
+import { useToast } from '~hooks/useToast'
+
+import { stopWorkflow } from '../AdminSubmissionsService'
+import { adminFormResponsesKeys } from '../queries'
+
+import { WORKFLOW_ACTIONS_I18N } from './i18n'
+
+export const useStopWorkflowMutation = (formId: string) => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const toast = useToast({ isClosable: true })
+
+  return useMutation(
+    ({ submissionId, emails }: { submissionId: string; emails: string[] }) =>
+      stopWorkflow({ formId, submissionId, emails }),
+    {
+      onSuccess: () => {
+        toast({
+          status: 'success',
+          description: t(`${WORKFLOW_ACTIONS_I18N}.stopModal.toastSuccess`),
+        })
+      },
+      onError: (error: ApiError) => {
+        toast({ status: 'danger', description: error.message })
+      },
+      onSettled: () =>
+        queryClient.invalidateQueries(adminFormResponsesKeys.id(formId)),
+    },
+  )
+}

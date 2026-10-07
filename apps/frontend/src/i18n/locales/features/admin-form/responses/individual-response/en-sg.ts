@@ -12,6 +12,15 @@ export const enSG: ResponsesIndividualResponse = {
   workflowActions: {
     whoIsNotifiedLabel: 'Who will be notified',
     whoIsNotifiedNone: 'No one will be notified.',
+    stopButton: 'Stop',
+    stopModal: {
+      title: 'Stop this workflow?',
+      description:
+        'No further actions can be taken, and its status will change to Stopped. Responses will stay available to view and download.',
+      notifyHeading: 'Select who to notify when the workflow is stopped',
+      confirm: 'Stop workflow',
+      toastSuccess: 'The workflow was successfully stopped.',
+    },
   },
   paymentSection: {
     paymentStatusLabel: {
