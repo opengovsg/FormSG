@@ -104,6 +104,7 @@ export const createMultirespondentSubmissionDto = (
       workflowStep: submissionData.workflowStep,
       submittedSteps: submissionData.submittedSteps,
       created: submissionData.created,
+      stoppedAt: submissionData.stoppedAt,
     }),
     submittedSteps: submissionData.submittedSteps?.map(
       projectSubmittedStepForAdmin,
