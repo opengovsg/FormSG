@@ -48,6 +48,7 @@ export type WebhookResponse = z.infer<typeof WebhookResponse>
  * Kept so those documents still pass schema validation when re-saved.
  */
 export enum LegacySubmissionAuthType {
+  SP = 'SP',
   SGID = 'SGID',
   SGID_MyInfo = 'SGID_MyInfo',
 }
