@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { FormAuthType } from 'formsg-shared/types'
+import { FormAuthType, LegacyLoginAuthType } from 'formsg-shared/types'
 import { omit } from 'lodash'
 import moment from 'moment-timezone'
 import mongoose from 'mongoose'
@@ -25,7 +25,7 @@ describe('login.server.model', () => {
     const DEFAULT_PARAMS: mongoose.LeanDocument<ILoginSchema> = {
       admin: new ObjectId(),
       agency: new ObjectId(),
-      authType: FormAuthType.SP,
+      authType: FormAuthType.MyInfo,
       esrvcId: 'mock-esrvc-id',
       form: new ObjectId(),
     }
@@ -42,6 +42,17 @@ describe('login.server.model', () => {
         }),
       )
     })
+
+    // Forms can no longer use these auth types, but login records stored
+    // before their removal are still billed and must remain valid.
+    it.each(Object.values(LegacyLoginAuthType))(
+      'should save a login with legacy authType %s',
+      async (authType) => {
+        const actual = await LoginModel.create({ ...DEFAULT_PARAMS, authType })
+
+        expect(actual.authType).toBe(authType)
+      },
+    )
 
     it('should throw validation error when admin param is missing', async () => {
       // Act
@@ -175,7 +186,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: FormAuthType.SP,
+            authType: LegacyLoginAuthType.SP,
             esrvcId: VALID_ESRVC_ID,
             created: CURR_DATE,
           },
@@ -184,7 +195,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: FormAuthType.SP,
+            authType: LegacyLoginAuthType.SP,
             esrvcId: VALID_ESRVC_ID,
             created: CURR_DATE,
           },
@@ -193,7 +204,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: FormAuthType.SP,
+            authType: LegacyLoginAuthType.SP,
             esrvcId: VALID_ESRVC_ID,
             created: CURR_DATE,
           },
@@ -202,7 +213,7 @@ describe('login.server.model', () => {
             form: form._id,
             admin: user._id,
             agency: agency._id,
-            authType: FormAuthType.SP,
+            authType: LegacyLoginAuthType.SP,
             esrvcId: VALID_ESRVC_ID,
             created: FUTURE_DATE,
           },
@@ -249,7 +260,7 @@ describe('login.server.model', () => {
           {
             adminEmail: testUser.email,
             formId: testForm._id,
-            authType: FormAuthType.SP,
+            authType: LegacyLoginAuthType.SP,
             formName: testForm.title,
             total: loginsInRange.length,
           },
