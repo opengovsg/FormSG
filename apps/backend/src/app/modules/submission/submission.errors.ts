@@ -52,6 +52,18 @@ export class MrfWorkflowStoppedError extends ApplicationError {
   }
 }
 
+export class MrfWorkflowActionsUnavailableError extends ApplicationError {
+  constructor(
+    message = 'Workflow actions are not available for this response.',
+  ) {
+    super(
+      message,
+      undefined,
+      ErrorCodes.SUBMISSION_MRF_WORKFLOW_ACTIONS_UNAVAILABLE,
+    )
+  }
+}
+
 export class MrfWorkflowNotPendingError extends ApplicationError {
   constructor(message = 'This workflow is no longer pending.') {
     super(message, undefined, ErrorCodes.SUBMISSION_MRF_WORKFLOW_NOT_PENDING)

@@ -146,6 +146,7 @@ import {
   MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfWorkflowActionsUnavailableError,
   MrfWorkflowNotPendingError,
   MrfWorkflowOverflowError,
   MrfWorkflowStoppedError,
@@ -476,6 +477,11 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'This workflow has been stopped. Please contact the form admin that gave you this link.',
         errorMessageKey: submissionErrorKey('mrf.workflowStopped'),
+      }
+    case MrfWorkflowActionsUnavailableError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
       }
     case MrfWorkflowNotPendingError:
       return {
