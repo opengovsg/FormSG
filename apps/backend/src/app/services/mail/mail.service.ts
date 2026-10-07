@@ -1346,7 +1346,6 @@ export class MailService {
       ? WorkflowOutcome.NOT_APPROVED
       : WorkflowOutcome.APPROVED
     const htmlData: EmailData = {
-      emailTitle: `${formTitle} has been ${outcome.toLowerCase()}`,
       formTitle,
       responseId: responseId.toString(),
       timestamp,
