@@ -3,6 +3,7 @@ description: Fail unless the user has write access or higher to this repo
 
 inputs:
   user:
+    description: GitHub login whose repository permission should be checked
     required: true
 
 runs:
