@@ -17,6 +17,7 @@ import { getPaymentDataView } from '../../../common/utils/getPaymentDataView'
 import {
   getPendingResponseAtString,
   getStatusFromWorkflowStatus,
+  MRF_STATUS,
 } from '../../../common/utils/mrfSubmissionView'
 import {
   CsvRecordData,
@@ -158,9 +159,12 @@ export class CsvRecord {
 
     if (this.mrfData) {
       const workflowStatus = this.mrfData.workflowStatus
-      const mrfSubmissionStatus = workflowStatus
-        ? getStatusFromWorkflowStatus(workflowStatus)
-        : ''
+      const isStopped = !!this.mrfData.stoppedAt
+      const mrfSubmissionStatus = isStopped
+        ? MRF_STATUS.STOPPED
+        : workflowStatus
+          ? getStatusFromWorkflowStatus(workflowStatus)
+          : ''
       const workFlowStatusColumn: CsvRecordData = {
         _id: this.mrfDataKeyToId(MRF_WORKFLOW_STATUS_LABEL),
         fieldType: 'textfield',
@@ -171,10 +175,11 @@ export class CsvRecord {
       const workflowCurrentStepNumber = this.mrfData.workflowCurrentStepNumber
       const workflowNumTotalSteps = this.mrfData.workflowNumTotalSteps
 
-      const pendingAtString =
-        workflowStatus === undefined ||
-        workflowCurrentStepNumber === undefined ||
-        workflowNumTotalSteps === undefined
+      const pendingAtString = isStopped
+        ? '-'
+        : workflowStatus === undefined ||
+            workflowCurrentStepNumber === undefined ||
+            workflowNumTotalSteps === undefined
           ? ''
           : getPendingResponseAtString({
               workflowStatus,

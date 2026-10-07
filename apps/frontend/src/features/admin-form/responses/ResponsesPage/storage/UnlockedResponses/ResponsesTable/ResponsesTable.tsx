@@ -25,7 +25,9 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FormResponseMode,
@@ -129,6 +131,17 @@ function NotApprovedBadge() {
       textColor="danger.700"
       backgroundColor="danger.100"
       statusText={t('features.common.notApproved')}
+    />
+  )
+}
+
+function StoppedBadge() {
+  const { t } = useTranslation()
+  return (
+    <StatusBadge
+      textColor="danger.700"
+      backgroundColor="danger.100"
+      statusText={t('features.common.stopped')}
     />
   )
 }
@@ -246,6 +259,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
       if (!mrf?.workflowStatus) {
         return ''
       }
+      if (mrf.stoppedAt) {
+        return <StoppedBadge />
+      }
       if (mrf.workflowStatus === WorkflowStatus.PENDING) {
         return <PendingBadge />
       }
@@ -266,6 +282,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: MRF_PENDING_RESPONSE_AT_LABEL,
     accessor: ({ mrf }) => {
+      if (mrf?.stoppedAt) return '-'
       const workflowStatus = mrf?.workflowStatus
       const workflowCurrentStepNumber = mrf?.workflowCurrentStepNumber
       const workflowNumTotalSteps = mrf?.workflowNumTotalSteps
@@ -417,13 +434,17 @@ export const ResponsesTable = () => {
     [form, metadata],
   )
 
+  const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
+
   const metadataToUse = useMemo(() => {
-    if (submissionId) {
-      return filteredMetadata
-    } else {
-      return metadata
-    }
-  }, [filteredMetadata, metadata, submissionId])
+    const rows = submissionId ? filteredMetadata : metadata
+    if (isWorkflowActionsOn) return rows
+    return rows.map((row) =>
+      row.mrf?.stoppedAt
+        ? { ...row, mrf: { ...row.mrf, stoppedAt: undefined } }
+        : row,
+    )
+  }, [filteredMetadata, metadata, submissionId, isWorkflowActionsOn])
 
   const legacyColumns = useMemo(() => {
     if (isMultiRespondentForm) {

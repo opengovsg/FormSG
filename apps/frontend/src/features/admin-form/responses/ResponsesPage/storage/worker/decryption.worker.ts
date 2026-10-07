@@ -316,6 +316,7 @@ type LineData = {
   isDownloadAttachments: boolean
   formId: string
   hostOrigin: string
+  isWorkflowActionsOn: boolean
   isDownloadAttachmentsSuccessful: boolean
 } & DecryptionResult
 
@@ -334,6 +335,7 @@ async function getMaterializedCsvRecord(
     isDecryptionSuccessful,
     formId,
     hostOrigin,
+    isWorkflowActionsOn,
     isDownloadAttachmentsSuccessful,
   } = lineData
 
@@ -373,7 +375,9 @@ async function getMaterializedCsvRecord(
             parsedSubmission.mrfMeta.hasNextStepRecipientEmails,
           isWorkflowActionsEligible:
             parsedSubmission.mrfMeta.isWorkflowActionsEligible,
-          stoppedAt: parsedSubmission.mrfMeta.stoppedAt,
+          stoppedAt: isWorkflowActionsOn
+            ? parsedSubmission.mrfMeta.stoppedAt
+            : undefined,
         }
       : undefined,
   )
@@ -530,11 +534,12 @@ async function getDecryptedData(
   }
 
   if (isDownloadCsv) {
-    const { formId, hostOrigin } = getDecryptedDataParams
+    const { formId, hostOrigin, isWorkflowActionsOn } = getDecryptedDataParams
     materializedCsvRecord = await getMaterializedCsvRecord(ctx, {
       isDownloadAttachments,
       formId,
       hostOrigin,
+      isWorkflowActionsOn: !!isWorkflowActionsOn,
       isDownloadAttachmentsSuccessful:
         isDownloadAndDecryptSubmissionAttachmentsSuccessful,
       ...decryptedSubmissionResult,
