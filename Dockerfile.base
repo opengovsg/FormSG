@@ -19,6 +19,7 @@ WORKDIR /build
 
 # Copy only dependency-related files for layer caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY patches ./patches/
 COPY apps/backend/package.json ./apps/backend/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/sdk/package.json ./packages/sdk/

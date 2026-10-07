@@ -20,6 +20,7 @@ WORKDIR /workspace
 
 # Copy workspace config and lockfile from monorepo root
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY patches ./patches/
 COPY services/virus-scanner-guardduty/package.json ./services/virus-scanner-guardduty/
 
 # Install only virus-scanner dependencies
