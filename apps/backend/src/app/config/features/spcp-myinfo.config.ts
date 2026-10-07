@@ -8,24 +8,13 @@ import {
 import { resetToApplicationDefaultForUndefinedSsmValues } from '../schema'
 
 const HOUR_IN_MILLIS = 1000 * 60 * 60
-const DAY_IN_MILLIS = 24 * HOUR_IN_MILLIS
 
 type ISpcpConfig = {
-  isSPMaintenance: string
   isCPMaintenance: string
   myInfoBannerContent: string
   spCookieMaxAge: number
-  spCookieMaxAgePreserved: number
   spcpCookieDomain: string
   cpCookieMaxAge: number
-  spOidcNdiDiscoveryEndpoint: string
-  spOidcNdiJwksEndpoint: string
-  spOidcRpClientId: string
-  spOidcRpRedirectUrl: string
-  spOidcRpJwksPublic: string
-  spOidcRpJwksSecret: string
-  spOidcRpJwksPublicPath: string
-  spOidcRpJwksSecretPath: string
   cpOidcNdiDiscoveryEndpoint: string
   cpOidcNdiJwksEndpoint: string
   cpOidcRpClientId: string
@@ -56,12 +45,6 @@ convict.addFormat(url)
 const optionalValuesFromSsm: Path<ISpcpMyInfo>[] = ['spcpCookieDomain']
 
 const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
-  isSPMaintenance: {
-    doc: 'If set, displays a banner message on SingPass forms. Overrides IS_CP_MAINTENANCE',
-    format: '*',
-    default: null,
-    env: 'IS_SP_MAINTENANCE',
-  },
   isCPMaintenance: {
     doc: 'If set, displays a banner message on CorpPass forms',
     format: '*',
@@ -75,16 +58,10 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     env: 'MYINFO_BANNER_CONTENT',
   },
   spCookieMaxAge: {
-    doc: 'Max SingPass cookie age with remember me unchecked',
+    doc: 'Max MyInfo login cookie age',
     format: 'int',
     default: 3 * HOUR_IN_MILLIS,
     env: 'SP_COOKIE_MAX_AGE',
-  },
-  spCookieMaxAgePreserved: {
-    doc: 'Max SingPass cookie age with remember me checked',
-    format: 'int',
-    default: 30 * DAY_IN_MILLIS,
-    env: 'SPCP_COOKIE_MAX_AGE_PRESERVED',
   },
   spcpCookieDomain: {
     doc: 'Domain name set on cookie that holds the SPCP jwt',
@@ -139,54 +116,6 @@ const spcpMyInfoSchema: Schema<ISpcpMyInfo> = {
     format: validateNonIacStringParam,
     default: null,
     env: 'MYINFO_FAPI_RP_JWKS_SECRET_PATH',
-  },
-  spOidcNdiDiscoveryEndpoint: {
-    doc: "NDI's Singpass OIDC Discovery Endpoint",
-    format: String,
-    default: null,
-    env: 'SP_OIDC_NDI_DISCOVERY_ENDPOINT',
-  },
-  spOidcNdiJwksEndpoint: {
-    doc: "NDI's Singpass OIDC JWKS Endpoint",
-    format: String,
-    default: null,
-    env: 'SP_OIDC_NDI_JWKS_ENDPOINT',
-  },
-  spOidcRpClientId: {
-    doc: "The Relying Party's Singpass Client ID as registered with NDI",
-    format: String,
-    default: null,
-    env: 'SP_OIDC_RP_CLIENT_ID',
-  },
-  spOidcRpRedirectUrl: {
-    doc: "The Relying Party's Singpass Redirect URL",
-    format: String,
-    default: null,
-    env: 'SP_OIDC_RP_REDIRECT_URL',
-  },
-  spOidcRpJwksPublic: {
-    doc: "The Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.",
-    format: validateIacStringParam,
-    default: null,
-    env: 'SP_OIDC_RP_JWKS_PUBLIC',
-  },
-  spOidcRpJwksSecret: {
-    doc: "The Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
-    format: validateIacStringParam,
-    default: null,
-    env: 'SP_OIDC_RP_JWKS_SECRET',
-  },
-  spOidcRpJwksPublicPath: {
-    doc: "Path to the Relying Party's Public Json Web Key Set used for Singpass-related communication with NDI. This will be hosted at /sp/.well-known/jwks.json endpoint.",
-    format: validateNonIacStringParam,
-    default: null,
-    env: 'SP_OIDC_RP_JWKS_PUBLIC_PATH',
-  },
-  spOidcRpJwksSecretPath: {
-    doc: "Path to the Relying Party's Secret Json Web Key Set used for Singpass-related communication with NDI",
-    format: validateNonIacStringParam,
-    default: null,
-    env: 'SP_OIDC_RP_JWKS_SECRET_PATH',
   },
   cpOidcNdiDiscoveryEndpoint: {
     doc: "NDI's Corppass OIDC Discovery Endpoint",
