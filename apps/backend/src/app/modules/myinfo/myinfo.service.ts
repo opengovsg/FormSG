@@ -17,7 +17,6 @@ import {
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError } from '../core/core.errors'
-import { SGIDMyInfoData } from '../sgid/sgid.adapter'
 import { ProcessedFieldResponse } from '../submission/submission.types'
 
 import { MyInfoData } from './myinfo.adapter'
@@ -73,7 +72,7 @@ export class MyInfoServiceClass {
    */
   prefillAndSaveMyInfoFields(
     formId: string,
-    myInfoData: MyInfoData | SGIDMyInfoData,
+    myInfoData: MyInfoData,
     currFormFields: FlattenMaps<IFieldSchema[]>,
   ): ResultAsync<PossiblyPrefilledField[], MyInfoHashingError | DatabaseError> {
     const allChildAttrs: InternalAttr[] = []
@@ -103,7 +102,6 @@ export class MyInfoServiceClass {
             fieldValue,
             myInfoAttr,
             myInfoConstantsList,
-            myInfoData,
           )
         }
       }

@@ -5,7 +5,7 @@ export interface MyInfoDataTransformer<T, U> {
   getUinFin(): string
 
   /**
-   * Formats the sgID information to a string.
+   * Formats the MyInfo information to a string.
    */
   _formatFieldValue(attr: T): string | undefined
 
@@ -15,7 +15,7 @@ export interface MyInfoDataTransformer<T, U> {
    * does not contain marriage-related information (decision by SNDGO & MSF due to
    * overseas unregistered marriages).
    *
-   * @param attr The field/attribute name directly obtained from the sgID
+   * @param attr The field/attribute name directly obtained from the MyInfo
    *    information source.
    * @param fieldValue FormSG field value.
    */
@@ -23,8 +23,8 @@ export interface MyInfoDataTransformer<T, U> {
 
   /**
    * Retrieves the fieldValue for the givern internal
-   * sgID-compatible attribute.
-   * @param attr Internal FormSG sgID attribute.
+   * MyInfo-compatible attribute.
+   * @param attr Internal FormSG MyInfo attribute.
    */
   getFieldValueForAttr(attr: U): {
     fieldValue: string | undefined

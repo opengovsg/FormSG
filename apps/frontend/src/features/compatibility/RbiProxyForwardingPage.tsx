@@ -9,7 +9,6 @@ import Spinner from '~components/Spinner'
 import { useIsRbiIpCheck } from '~features/login/queries'
 
 const ALLOWED_FORWARDING_ROUTES = [
-  '/sgid/login',
   '/mi/fapi/login',
   '/api/v3/singpass/login',
   '/api/v3/corppass/login',

@@ -438,100 +438,6 @@ CorppassAuthorized.parameters = {
   ],
 }
 
-export const SgidUnauthorized = Template.bind({})
-SgidUnauthorized.storyName = 'SGID/Unauthorized'
-SgidUnauthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID login form',
-          authType: FormAuthType.SGID,
-        },
-      },
-    }),
-  ],
-}
-
-export const SgidUnauthorizedSubmitterIdCollectionEnabled = Template.bind({})
-SgidUnauthorizedSubmitterIdCollectionEnabled.storyName =
-  'SGID/Unauthorized/Submitter ID Collection Enabled'
-SgidUnauthorizedSubmitterIdCollectionEnabled.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID login form',
-          authType: FormAuthType.SGID,
-          isSubmitterIdCollectionEnabled: true,
-        },
-      },
-    }),
-  ],
-}
-
-export const SgidAuthorized = Template.bind({})
-SgidAuthorized.storyName = 'SGID/Authorized'
-SgidAuthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID login form',
-          authType: FormAuthType.SGID,
-        },
-        spcpSession: {
-          userName: 'S0000000Z',
-        },
-      },
-    }),
-  ],
-}
-
-export const SgidMyInfoUnauthorized = Template.bind({})
-SgidMyInfoUnauthorized.storyName = 'SGID_MyInfo/Unauthorized'
-SgidMyInfoUnauthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID_MyInfo login form',
-          authType: FormAuthType.SGID_MyInfo,
-        },
-      },
-    }),
-  ],
-}
-
-export const SgidMyInfoUnauthorizedSubmitterIdCollectionEnabled = Template.bind(
-  {},
-)
-SgidMyInfoUnauthorizedSubmitterIdCollectionEnabled.storyName =
-  'SGID_MyInfo/Unauthorized/Submitter ID Collection Enabled'
-SgidMyInfoUnauthorizedSubmitterIdCollectionEnabled.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID_MyInfo login form',
-          authType: FormAuthType.SGID_MyInfo,
-          isSubmitterIdCollectionEnabled: true,
-        },
-      },
-    }),
-  ],
-}
-
 export const SingpassMyInfoUnauthorized = Template.bind({})
 SingpassMyInfoUnauthorized.storyName = 'SP_MyInfo/Unauthorized'
 SingpassMyInfoUnauthorized.parameters = {
@@ -564,26 +470,6 @@ SingpassMyInfoUnauthorizedSubmitterIdCollectionEnabled.parameters = {
           authType: FormAuthType.MyInfo,
           isSubmitterIdCollectionEnabled: true,
         },
-      },
-    }),
-  ],
-}
-
-export const SgIdSingleSubmissionFailureMessage = Template.bind({})
-SgIdSingleSubmissionFailureMessage.storyName =
-  'SGID/Single Submission Per NRIC/FIN/UEN Failure Sign In Screen Message'
-SgIdSingleSubmissionFailureMessage.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID login form',
-          authType: FormAuthType.SGID,
-          isSingleSubmission: true,
-        },
-        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
       },
     }),
   ],
@@ -629,29 +515,6 @@ CorppassSingleSubmissionFailureMessage.parameters = {
   ],
 }
 
-export const SgIdSingleSubmissionFailureModalAfterSubmit = Template.bind({})
-SgIdSingleSubmissionFailureModalAfterSubmit.storyName =
-  'SGID/Single Submission Per NRIC/FIN/UEN Failure Modal After Submit'
-SgIdSingleSubmissionFailureModalAfterSubmit.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID login form',
-          authType: FormAuthType.SGID,
-          isSingleSubmission: true,
-        },
-        spcpSession: {
-          userName: 'S1234567A',
-        },
-        errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
-      },
-    }),
-  ],
-}
-
 export const CpSingleSubmissionFailureModalAfterSubmit = Template.bind({})
 CpSingleSubmissionFailureModalAfterSubmit.storyName =
   'CP/Single Submission Per NRIC/FIN/UEN Failure Modal After Submit'
@@ -670,28 +533,6 @@ CpSingleSubmissionFailureModalAfterSubmit.parameters = {
           userName: 'uen-123456789A',
         },
         errorCodes: [ErrorCode.respondentSingleSubmissionValidationFailure],
-      },
-    }),
-  ],
-}
-
-export const SgIdRespondentNotWhitelistedFailureMessage = Template.bind({})
-SgIdRespondentNotWhitelistedFailureMessage.storyName =
-  'SGID/Respondent Not Whitelisted Failure Sign In Screen Message'
-SgIdRespondentNotWhitelistedFailureMessage.parameters = {
-  msw: [
-    ...envHandlers,
-    getPublicFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID login form',
-          authType: FormAuthType.SGID,
-          whitelistedSubmitterIds: {
-            isWhitelistEnabled: true,
-          },
-        },
-        errorCodes: [ErrorCode.respondentNotWhitelisted],
       },
     }),
   ],

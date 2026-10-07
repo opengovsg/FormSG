@@ -33,7 +33,6 @@ import {
 import * as MyInfoFapiService from '../../../myinfo/fapi/myinfo.fapi.service'
 import { MYINFO_LOGIN_COOKIE_NAME } from '../../../myinfo/myinfo.constants'
 import { MyInfoService } from '../../../myinfo/myinfo.service'
-import { SGID_COOKIE_NAME } from '../../../sgid/sgid.constants'
 import {
   CreateRedirectUrlError,
   MissingJwtError,
@@ -1632,33 +1631,6 @@ describe('public-form.controller', () => {
         MYINFO_FAPI_SESSION_COOKIE_NAME,
         MYINFO_FAPI_SESSION_COOKIE_IDENTITY,
       )
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Successfully logged out.',
-      })
-    })
-
-    it('should return 200 if authType is SGID and call clearCookie()', async () => {
-      const authType = FormAuthType.SGID as const
-      MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
-        SGID_COOKIE_NAME,
-      )
-      const mockReq = expressHandler.mockRequest({
-        params: {
-          authType,
-        },
-      })
-      const mockRes = expressHandler.mockResponse({
-        clearCookie: jest.fn().mockReturnThis(),
-      })
-
-      await PublicFormController._handlePublicAuthLogout(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
-
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.clearCookie).toHaveBeenCalledWith(SGID_COOKIE_NAME)
       expect(mockRes.json).toHaveBeenCalledWith({
         message: 'Successfully logged out.',
       })

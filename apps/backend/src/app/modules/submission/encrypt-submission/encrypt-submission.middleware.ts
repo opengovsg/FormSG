@@ -381,9 +381,8 @@ export const validateStorageSubmission = async (
       // Validate MyInfo responses
       const { authType } = form
       switch (authType) {
-        case FormAuthType.SGID_MyInfo:
         case FormAuthType.MyInfo: {
-          return extractMyInfoLoginJwt(req.cookies, authType)
+          return extractMyInfoLoginJwt(req.cookies)
             .andThen(MyInfoService.verifyLoginJwt)
             .asyncAndThen(({ uinFin }) =>
               MyInfoService.fetchMyInfoHashes(uinFin, form._id)
@@ -403,9 +402,7 @@ export const validateStorageSubmission = async (
             .mapErr((error) => {
               spcpSubmissionFailure = true
               logger.error({
-                message: `Error verifying MyInfo${
-                  authType === FormAuthType.SGID_MyInfo ? '(over SGID)' : ''
-                } hashes`,
+                message: 'Error verifying MyInfo hashes',
                 meta: logMeta,
                 error,
               })

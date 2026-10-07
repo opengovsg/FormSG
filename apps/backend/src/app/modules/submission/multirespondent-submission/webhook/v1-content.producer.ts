@@ -26,7 +26,7 @@ export const buildV1VerifiedContent = ({
   }
 
   // V1 eligibility guarantees a single step. Keep the same flat keys and
-  // signing/encryption path as storage mode, including sgID's unsuffixed key.
+  // signing/encryption path as storage mode.
   const flatContent = Object.fromEntries(
     Object.entries(verifiedContent).map(([key, value]) => [
       key.replace(/ \(Step 1\)$/, ''),

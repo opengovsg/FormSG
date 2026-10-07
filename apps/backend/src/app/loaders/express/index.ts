@@ -11,7 +11,6 @@ import { FrontendRouter } from '../../modules/frontend/frontend.routes'
 import * as IntranetMiddleware from '../../modules/intranet/intranet.middleware'
 import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
-import { SgidRouter } from '../../modules/sgid/sgid.routes'
 import { ApiRouter } from '../../routes/api'
 import { LegacyRedirectRouter } from '../../routes/legacy-redirect'
 import { SpOidcJwksRouter } from '../../routes/singpass'
@@ -119,8 +118,6 @@ const loadExpressApp = async (connection: Connection) => {
    * @deprecated TODO(FRM-1893): remove after config on Singpass portal is also updated for Prod
    */
   app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
-  // Registered routes with sgID
-  app.use('/sgid', SgidRouter)
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
   // Legacy frontend routes which may still be in use

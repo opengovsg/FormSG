@@ -38,11 +38,6 @@ import {
   MyInfoMissingLoginCookieError,
 } from '../myinfo/myinfo.errors'
 import {
-  SgidInvalidJwtError,
-  SgidMissingJwtError,
-  SgidVerifyJwtError,
-} from '../sgid/sgid.errors'
-import {
   InvalidJwtError,
   MissingJwtError,
   VerifyJwtError,
@@ -223,9 +218,6 @@ export const mapRouteError: MapRouteError = (
     case MissingJwtError:
     case InvalidJwtError:
     case VerifyJwtError:
-    case SgidVerifyJwtError:
-    case SgidInvalidJwtError:
-    case SgidMissingJwtError:
     case MyInfoMissingLoginCookieError:
     case MyInfoInvalidLoginCookieError:
     case MrfJwtValidationError:

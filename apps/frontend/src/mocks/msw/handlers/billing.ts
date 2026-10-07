@@ -30,7 +30,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin5@mock.gov.sg',
         formName: 'form4',
         formId: 'form4id' as FormId,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.CP,
         total: 7,
       },
       {
@@ -66,7 +66,7 @@ const generateBillingMeta = (): BillingInfoDto => {
         adminEmail: 'admin7@mock.gov.sg',
         formName: 'form9',
         formId: 'form9id' as FormId,
-        authType: FormAuthType.SGID,
+        authType: FormAuthType.CP,
         total: 14,
       },
       {
