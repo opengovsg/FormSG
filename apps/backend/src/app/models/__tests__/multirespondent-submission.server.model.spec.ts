@@ -202,6 +202,7 @@ describe('Multirespondent Submission Model', () => {
             workflowStatus: WorkflowStatus.REJECTED,
             lastSubmittedAt: '2024-01-01T00:00:00.000Z',
             hasNextStepRecipientEmails: false,
+            isWorkflowActionsEligible: true,
           },
         }
         expect(result).toEqual(expected)
@@ -353,6 +354,7 @@ describe('Multirespondent Submission Model', () => {
                 workflowStatus: WorkflowStatus.COMPLETED,
                 lastSubmittedAt: '2024-01-01T00:00:00.000Z',
                 hasNextStepRecipientEmails: false,
+                isWorkflowActionsEligible: false,
               },
             }))
             .reverse(),
@@ -467,6 +469,7 @@ describe('Multirespondent Submission Model', () => {
                 workflowStatus: WorkflowStatus.APPROVED,
                 lastSubmittedAt: '2024-01-01T00:00:00.000Z',
                 hasNextStepRecipientEmails: false,
+                isWorkflowActionsEligible: false,
               },
             },
           ],
@@ -532,6 +535,7 @@ describe('Multirespondent Submission Model', () => {
                 workflowStatus: WorkflowStatus.COMPLETED,
                 lastSubmittedAt: '2024-01-02T00:00:00.000Z',
                 hasNextStepRecipientEmails: false,
+                isWorkflowActionsEligible: false,
               },
             },
           ],
