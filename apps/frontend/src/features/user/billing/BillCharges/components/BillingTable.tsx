@@ -9,7 +9,12 @@ import {
 } from 'react-table'
 import { Flex, Icon, Table, Tbody, Td, Th, Thead, Tr } from '@chakra-ui/react'
 
-import { FormAuthType, FormBillingStatistic } from 'formsg-shared/types'
+import {
+  FormAuthType,
+  FormBillingStatistic,
+  LegacyLoginAuthType,
+  LoginAuthType,
+} from 'formsg-shared/types'
 
 import { BxsChevronDown } from '~assets/icons/BxsChevronDown'
 import { BxsChevronUp } from '~assets/icons/BxsChevronUp'
@@ -19,9 +24,9 @@ type BillingColumnData = Pick<
   'formName' | 'adminEmail' | 'authType' | 'total'
 >
 
-const AUTHTYPE_TO_TEXT: { [K in FormAuthType]?: string } = {
+const AUTHTYPE_TO_TEXT: { [K in LoginAuthType]?: string } = {
   [FormAuthType.NIL]: '-',
-  [FormAuthType.SP]: 'Singpass',
+  [LegacyLoginAuthType.SP]: 'Singpass',
   [FormAuthType.MyInfo]: 'MyInfo',
   [FormAuthType.CP]: 'Corppass',
 }

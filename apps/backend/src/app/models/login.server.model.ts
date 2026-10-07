@@ -1,4 +1,4 @@
-import { FormAuthType } from 'formsg-shared/types'
+import { LoginAuthType } from 'formsg-shared/types'
 import { Mongoose, Schema } from 'mongoose'
 
 import {
@@ -33,7 +33,7 @@ const LoginSchema = new Schema<ILoginSchema, ILoginModel>(
     },
     authType: {
       type: String,
-      enum: Object.values(FormAuthType),
+      enum: Object.values(LoginAuthType),
       required: true,
     },
     esrvcId: {
