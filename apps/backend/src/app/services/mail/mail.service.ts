@@ -1317,18 +1317,57 @@ export class MailService {
     })
   }
 
-  sendMrfApprovalEmail = ({
+  #sendMrfOutcomeEmail = ({
+    outcome,
+    emailType,
+    actionName,
     emails,
     formId,
     formTitle,
     responseId,
     submissionId,
     timestamp,
-    isRejected,
     formQuestionAnswers,
     responseJson,
     attachments,
     replyTo,
+  }: {
+    outcome: WorkflowOutcome
+    emailType: EmailType
+    actionName: string
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    submissionId?: string
+    timestamp: string
+    formQuestionAnswers?: QuestionAnswer[]
+    responseJson?: string
+    attachments?: Mail.Attachment[]
+    replyTo?: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendEmailWithTemplate({
+      emails,
+      formId,
+      subject: `${outcome} - ${formTitle} (${responseId})`,
+      htmlData: {
+        formTitle,
+        responseId: responseId.toString(),
+        timestamp,
+        outcome,
+        formQuestionAnswers,
+        responseJson,
+      },
+      attachments,
+      emailType,
+      actionName,
+      submissionId,
+      replyTo,
+    })
+
+  sendMrfApprovalEmail = ({
+    isRejected,
+    ...props
   }: {
     emails: string[]
     formId: string
@@ -1341,31 +1380,15 @@ export class MailService {
     responseJson: string
     attachments?: Mail.Attachment[]
     replyTo?: string
-  }): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const outcome = isRejected
-      ? WorkflowOutcome.NOT_APPROVED
-      : WorkflowOutcome.APPROVED
-    const htmlData: EmailData = {
-      formTitle,
-      responseId: responseId.toString(),
-      timestamp,
-      outcome,
-      formQuestionAnswers,
-      responseJson,
-    }
-
-    return this.#sendEmailWithTemplate({
-      emails,
-      formId,
-      subject: `${outcome} - ${formTitle} (${responseId})`,
-      htmlData,
-      attachments,
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendMrfOutcomeEmail({
+      ...props,
+      outcome: isRejected
+        ? WorkflowOutcome.NOT_APPROVED
+        : WorkflowOutcome.APPROVED,
       emailType: EmailType.WorkflowApproval,
       actionName: 'sendMrfApprovalEmail',
-      submissionId,
-      replyTo,
     })
-  }
 
   sendRespondentCopyEmail = ({
     formId,
