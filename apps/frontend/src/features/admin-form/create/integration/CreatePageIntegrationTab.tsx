@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiRightArrowAlt } from 'react-icons/bi'
+import { useParams } from 'react-router-dom'
 import {
   Badge,
   Box,
@@ -13,6 +14,10 @@ import {
   Stack,
   Text,
 } from '@chakra-ui/react'
+
+import Spinner from '~components/Spinner'
+
+import { useAdminFormSettings } from '~features/admin-form/settings/queries'
 
 // Ported from opengovsg/suite
 // https://github.com/opengovsg/suite/blob/c4a665c9232ff42823da898b0dd9814f667c12cc/apps/suite/src/app/apps/product-grid.tsx#L9
@@ -233,17 +238,45 @@ export const LauncherApps = ({
   )
 }
 
-const TILES: LauncherTile[] = [
-  {
+const generatePlumberTile = (
+  webhookUrl: string,
+  id: string,
+  name: string,
+): LauncherTile => {
+  // Encode the redirect as a single param so its own `&`s don't leak into the
+  // SSO URL's query string.
+  const redirect = `/form?${new URLSearchParams({ id, webhook: webhookUrl, name })}`
+  const href = new URL('https://plumber.gov.sg/login/sso')
+  href.searchParams.set('iss', 'https://one.gov.sg/api/auth')
+  href.searchParams.set('redirect', redirect)
+
+  return {
     name: 'Plumber',
-    href: 'https://plumber.gov.sg/login/sso?iss=https%3A%2F%2Fone.gov.sg%2Fapi%2Fauth',
+    href: href.toString(),
     domain: 'plumber.gov.sg',
     description: 'Automate workflows with AI',
     logoUrl: 'https://file.go.gov.sg/plumber-logo.png',
-  },
-]
+  }
+}
 
 export const CreatePageIntegrationTab = (): JSX.Element => {
+  const { formId } = useParams()
+  const { data: settings, isLoading } = useAdminFormSettings()
+
+  if (isLoading) {
+    return (
+      <Flex flex={1} justify="center" align="center" bg="neutral.100">
+        <Spinner fontSize="2rem" />
+      </Flex>
+    )
+  }
+
+  const plumberTile = generatePlumberTile(
+    settings?.webhook.url ?? '',
+    formId ?? '',
+    settings?.title ?? '',
+  )
+
   return (
     <Box
       flex={1}
@@ -253,7 +286,7 @@ export const CreatePageIntegrationTab = (): JSX.Element => {
       px={{ base: '1.5rem', md: '3.75rem' }}
     >
       <Container p={0} maxW="42.5rem">
-        <LauncherApps tiles={TILES} />
+        <LauncherApps tiles={[plumberTile]} />
       </Container>
     </Box>
   )
