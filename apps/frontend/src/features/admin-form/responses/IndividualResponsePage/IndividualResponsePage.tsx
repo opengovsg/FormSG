@@ -38,6 +38,7 @@ import {
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
+import { useWorkflowActionsGate } from '../workflowActions'
 
 import { DecryptedRow } from './DecryptedRow'
 import { useMutateDownloadAttachments } from './mutations'
@@ -71,12 +72,14 @@ const StackRow = ({
   isLoading,
   isError,
   statusTrackerUrl,
+  linkLabel,
 }: {
   label: string
   value: string
   isLoading: boolean
   isError: boolean
   statusTrackerUrl?: string
+  linkLabel?: string
 }) => {
   return (
     <Stack
@@ -98,10 +101,11 @@ const StackRow = ({
           <Link
             target="_blank"
             href={statusTrackerUrl}
+            title={linkLabel ? statusTrackerUrl : undefined}
             overflowWrap="anywhere"
             data-dd-action-name="Click on status tracker link"
           >
-            {statusTrackerUrl}
+            {linkLabel ?? statusTrackerUrl}
             <Icon
               as={BiLinkExternal}
               fontSize="1.25rem"
@@ -132,6 +136,7 @@ export const IndividualResponsePage = (): JSX.Element => {
   const { user } = useUser()
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
+  const isWorkflowActionsOn = useWorkflowActionsGate(data?.mrf)
 
   // Logic to determine which key to use to decrypt attachments.
   const attachmentDecryptionKey =
@@ -257,6 +262,13 @@ export const IndividualResponsePage = (): JSX.Element => {
               label={MRF_STATUS_TRACKING_LABEL}
               value={''}
               statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
+              linkLabel={
+                isWorkflowActionsOn
+                  ? t(
+                      'features.adminForm.responses.individualResponse.statusTrackingLinkLabel',
+                    )
+                  : undefined
+              }
               isLoading={isLoading}
               isError={isError}
             />
