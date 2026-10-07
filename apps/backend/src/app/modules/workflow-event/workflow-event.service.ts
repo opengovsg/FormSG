@@ -30,9 +30,9 @@ export const recordWorkflowEvent = ({
   stepNumber,
   emails,
 }: {
-  submission: { _id: unknown; form: unknown; created?: Date }
+  submission: { _id?: unknown; form: unknown; created?: Date }
   type: WorkflowEventType
-  actor: { _id: unknown; email: string }
+  actor: { _id?: unknown; email: string }
   stepNumber: number
   emails: string[]
 }): ResultAsync<IWorkflowEventSchema | null, DatabaseError> => {
