@@ -29,6 +29,7 @@ import {
   getPendingResponseAtString,
   getStatusFromWorkflowStatus,
   hasWorkflowSteps,
+  MRF_STATUS,
 } from '../common/utils/mrfSubmissionView'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import {
@@ -197,9 +198,12 @@ export const IndividualResponsePage = (): JSX.Element => {
   })}`
 
   const workflowStatus = data?.mrf?.workflowStatus
-  const responseMrfStatus = workflowStatus
-    ? getStatusFromWorkflowStatus(workflowStatus)
-    : ''
+  const isStopped = isWorkflowActionsOn && !!data?.mrf?.stoppedAt
+  const responseMrfStatus = isStopped
+    ? MRF_STATUS.STOPPED
+    : workflowStatus
+      ? getStatusFromWorkflowStatus(workflowStatus)
+      : ''
 
   // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
   // const lastSubmittedAt = data?.mrf?.lastSubmittedAt
@@ -245,6 +249,7 @@ export const IndividualResponsePage = (): JSX.Element => {
             <StackRow
               label={MRF_PENDING_RESPONSE_AT_LABEL}
               value={
+                isStopped ||
                 workflowStatus === undefined ||
                 workflowCurrentStepNumber === undefined ||
                 workflowNumTotalSteps === undefined

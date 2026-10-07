@@ -83,6 +83,7 @@ const useDecryptionWorkers = ({
 
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
+  const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -223,6 +224,7 @@ const useDecryptionWorkers = ({
                 secretKey,
                 formId: adminForm._id,
                 hostOrigin: window.location.origin,
+                isWorkflowActionsOn,
                 // Resolved here (on the main thread) so the worker doesn't
                 // need to import env.ts (which references window).
                 formsgSdkMode: env.formsgSdkMode,
@@ -531,6 +533,7 @@ const useDecryptionWorkers = ({
     },
     [
       adminForm,
+      isWorkflowActionsOn,
       onDecryptionProgress,
       onPdfGenerationProgress,
       user?._id,

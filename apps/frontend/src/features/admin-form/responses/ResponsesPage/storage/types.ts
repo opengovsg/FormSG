@@ -43,6 +43,7 @@ export interface SubmissionDataForDecryption {
   hostOrigin: string
   formsgSdkMode: string
   useV4?: boolean
+  isWorkflowActionsOn?: boolean
 }
 
 export type CleanableDecryptionWorkerApi = {
