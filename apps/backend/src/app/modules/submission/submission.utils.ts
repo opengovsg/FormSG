@@ -156,7 +156,9 @@ import {
   MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfWorkflowNotPendingError,
   MrfWorkflowOverflowError,
+  MrfWorkflowStoppedError,
   ParseVirusScannerLambdaPayloadError,
   ProcessingError,
   ResponseModeError,
@@ -480,6 +482,19 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
+      }
+    case MrfWorkflowStoppedError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'This workflow has been stopped. Please contact the form admin that gave you this link.',
+        errorMessageKey: submissionErrorKey('mrf.workflowStopped'),
+      }
+    case MrfWorkflowNotPendingError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage:
+          'This workflow is no longer pending. Refresh to see its latest status.',
       }
     case MrfWorkflowOverflowError:
       return {

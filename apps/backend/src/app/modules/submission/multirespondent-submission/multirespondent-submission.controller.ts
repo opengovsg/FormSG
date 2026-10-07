@@ -51,6 +51,7 @@ import {
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import {
   InvalidSubmissionTypeError,
+  MrfWorkflowStoppedError,
   SubmissionFailedError,
   SubmissionSaveError,
 } from '../submission.errors'
@@ -620,6 +621,9 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
       .andThen((submissionData) => {
         if (submissionData.submissionType !== SubmissionType.Multirespondent) {
           return errAsync(new InvalidSubmissionTypeError())
+        }
+        if (submissionData.stoppedAt) {
+          return errAsync(new MrfWorkflowStoppedError())
         }
 
         // Remaining login duration in seconds.

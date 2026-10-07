@@ -66,6 +66,8 @@ import {
   MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfWorkflowNotPendingError,
+  MrfWorkflowStoppedError,
   ResponseModeError,
   SubmissionNotFoundError,
   SubmissionSaveError,
@@ -360,7 +362,9 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
   | MrfReminderRecipientEmailsEmptyError
 > => {
   return getMultirespondentSubmission(submissionId).andThen(
-    ({ workflow, submittedSteps }) => {
+    ({ workflow, submittedSteps, stoppedAt }) => {
+      if (stoppedAt) return errAsync(new MrfWorkflowStoppedError())
+
       const logMeta = {
         action: 'getPendingStepRecipientEmailsFromSubmittedStepsMeta',
         submissionId,
@@ -1808,6 +1812,9 @@ export const updateMultiRespondentFormSubmission = ({
         })
         return errAsync(new SubmissionNotFoundError())
       }
+      if (submission.stoppedAt) {
+        return errAsync(new MrfWorkflowStoppedError())
+      }
       return okAsync({ submission, attachmentMetadata })
     })
     .andThen(({ submission, attachmentMetadata }) => {
@@ -2215,3 +2222,61 @@ export const getMultirespondentSubmission = (
     }
     return okAsync(submission)
   })
+
+export const stopMultirespondentSubmission = ({
+  formId,
+  submissionId,
+  stoppedBy,
+}: {
+  formId: string
+  submissionId: string
+  stoppedBy: string
+}): ResultAsync<
+  IMultirespondentSubmissionSchema,
+  DatabaseError | SubmissionNotFoundError | MrfWorkflowNotPendingError
+> =>
+  getMultirespondentSubmission(submissionId)
+    .andThen((submission) => {
+      if (String(submission.form) !== formId) {
+        return errAsync(new SubmissionNotFoundError())
+      }
+      const isPending =
+        !submission.stoppedAt &&
+        getMrfSubmissionWorkflowStatus(
+          (submission.submittedSteps ?? []) as SubmittedStep[],
+          submission.workflow.length,
+        ) === WorkflowStatus.PENDING
+      if (!isPending) return errAsync(new MrfWorkflowNotPendingError())
+      return okAsync(submission)
+    })
+    .andThen((submission) =>
+      ResultAsync.fromPromise(
+        MultirespondentSubmission.findOneAndUpdate(
+          {
+            _id: submission._id,
+            __v: submission.__v,
+            stoppedAt: { $exists: false },
+          },
+          {
+            $set: { stoppedAt: new Date(), stoppedBy },
+            $inc: { __v: 1 },
+          },
+          { new: true },
+        ).exec(),
+        (error) => {
+          logger.error({
+            message: 'Error stopping multirespondent submission',
+            meta: {
+              action: 'stopMultirespondentSubmission',
+              formId,
+              submissionId,
+            },
+            error,
+          })
+          return transformMongoError(error)
+        },
+      ),
+    )
+    .andThen((stopped) =>
+      stopped ? okAsync(stopped) : errAsync(new MrfWorkflowNotPendingError()),
+    )

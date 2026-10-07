@@ -69,6 +69,8 @@ export const enSG: PublicForm = {
           'Failed to retrieve submitter ID. Please try again.',
         invalidLink:
           'The link you used is no longer valid. Please contact the form admin that gave you this link.',
+        workflowStopped:
+          'This workflow has been stopped. Please contact the form admin that gave you this link.',
         invalidWorkflowType:
           'Invalid workflow type encountered. Please contact the form admin and try again later.',
         expectedResponseNotFound:
