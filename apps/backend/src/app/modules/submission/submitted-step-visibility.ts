@@ -1,4 +1,5 @@
 import {
+  AdminSubmittedStep,
   PublicSubmittedStep,
   SUBMITTED_STEP_VISIBILITY,
   SubmittedStep,
@@ -33,6 +34,11 @@ export const projectSubmittedStepForPublic = (
   step: SubmittedStep,
 ): PublicSubmittedStep =>
   projectSubmittedStep(step, 'public') as PublicSubmittedStep
+
+export const projectSubmittedStepForAdmin = (
+  step: SubmittedStep,
+): AdminSubmittedStep =>
+  projectSubmittedStep(step, 'admin') as AdminSubmittedStep
 
 export const buildAdminSubmittedStepsMongoProjection = (): Record<string, 1> =>
   Object.fromEntries(

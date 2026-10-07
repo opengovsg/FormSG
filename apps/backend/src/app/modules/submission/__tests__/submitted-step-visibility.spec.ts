@@ -3,6 +3,7 @@ import { model, Schema } from 'mongoose'
 
 import {
   buildAdminSubmittedStepsMongoProjection,
+  projectSubmittedStepForAdmin,
   projectSubmittedStepForPublic,
   projectSubmittedStepForWebhook,
 } from '../submitted-step-visibility'
@@ -31,6 +32,21 @@ describe('projectSubmittedStepForWebhook', () => {
       nextStepRecipientEmails: ['next@example.com'],
       submitterId: 'SUBMITTER_ID_HASH',
     })
+    expect(JSON.stringify(out)).not.toContain('SNAPSHOT_TOKEN_LEAF_VALUE')
+  })
+})
+
+describe('projectSubmittedStepForAdmin', () => {
+  it('keeps recipients for the admin activity log but drops internal fields', () => {
+    const out = projectSubmittedStepForAdmin(fullApprovalStep)
+
+    expect(out).toEqual({
+      isApproval: true,
+      submittedAt: '2026-07-22T00:00:00.000Z',
+      status: WorkflowStatus.APPROVED,
+      nextStepRecipientEmails: ['next@example.com'],
+    })
+    expect(JSON.stringify(out)).not.toContain('SUBMITTER_ID_HASH')
     expect(JSON.stringify(out)).not.toContain('SNAPSHOT_TOKEN_LEAF_VALUE')
   })
 })

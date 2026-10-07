@@ -281,6 +281,8 @@ describe('multirespondent-submission.utils', () => {
         },
       })
 
+      expect(actual).not.toHaveProperty('submittedSteps', expect.anything())
+
       const dropdownFf = actual.form_fields.find(
         (field) => field.fieldType === BasicField.Dropdown,
       )
@@ -387,6 +389,12 @@ describe('multirespondent-submission.utils', () => {
             submittedSteps[submittedSteps.length - 1].submittedAt,
           hasNextStepRecipientEmails: false,
         },
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: submittedSteps[0].submittedAt,
+          },
+        ],
       })
     })
   })
