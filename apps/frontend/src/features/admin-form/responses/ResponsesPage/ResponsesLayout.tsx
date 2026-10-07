@@ -1,8 +1,5 @@
 import { Outlet } from 'react-router-dom'
 
-import { useIsDelightfulDashboard } from '../hooks'
-
-import { ResponsesTabWrapper } from './common/ResponsesTabWrapper'
 import { UnlockedResponsesProvider } from './storage/UnlockedResponses'
 import { ResponsesPage } from './ResponsesPage'
 
@@ -14,18 +11,6 @@ export const ResponsesLayout = ({
 }: {
   showResponses?: boolean
 } = {}): JSX.Element => {
-  const isDelightfulDashboard = useIsDelightfulDashboard()
-
-  if (!isDelightfulDashboard) {
-    return (
-      <ResponsesTabWrapper>
-        <UnlockedResponsesProvider>
-          <Outlet />
-        </UnlockedResponsesProvider>
-      </ResponsesTabWrapper>
-    )
-  }
-
   return (
     <UnlockedResponsesProvider>
       {showResponses ? <ResponsesPage /> : null}

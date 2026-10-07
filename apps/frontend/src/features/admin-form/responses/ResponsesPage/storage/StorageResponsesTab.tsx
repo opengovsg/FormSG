@@ -5,7 +5,6 @@ import { FormActivationSvg } from '~features/admin-form/settings/components/Form
 
 import { resultsNavBleed } from '../../components/FormResultsNavbar'
 import { SecretKeyVerification } from '../../components/SecretKeyVerification'
-import { useIsDelightfulDashboard } from '../../hooks'
 import { EmptyResponses } from '../common/EmptyResponses'
 
 import { useStorageResponsesContext } from './StorageResponsesContext'
@@ -14,26 +13,9 @@ import { UnlockedResponses } from './UnlockedResponses'
 export const StorageResponsesTab = (): JSX.Element => {
   const { t } = useTranslation()
   const { totalResponsesCount, secretKey } = useStorageResponsesContext()
-  const isDelightfulDashboard = useIsDelightfulDashboard()
 
   if (totalResponsesCount === 0) {
     return <EmptyResponses />
-  }
-
-  const verification = (
-    <SecretKeyVerification
-      heroSvg={<FormActivationSvg />}
-      ctaText={t(
-        'features.adminForm.responses.responsesPage.storage.storageResponsesTab.secretKeyVerification.ctaText',
-      )}
-      label={t(
-        'features.adminForm.responses.responsesPage.storage.storageResponsesTab.secretKeyVerification.label',
-      )}
-    />
-  )
-
-  if (!isDelightfulDashboard) {
-    return secretKey ? <UnlockedResponses /> : verification
   }
 
   return secretKey ? (

@@ -1,9 +1,6 @@
 import { ResponsesIndividualResponse } from '.'
 
 export const enSG: ResponsesIndividualResponse = {
-  backToList: 'Back to list',
-  nextSubmission: 'Next submission',
-  previousSubmission: 'Previous submission',
   secretKeyVerification: {
     ctaText: 'Unlock responses',
     label: 'Enter or upload Secret Key',

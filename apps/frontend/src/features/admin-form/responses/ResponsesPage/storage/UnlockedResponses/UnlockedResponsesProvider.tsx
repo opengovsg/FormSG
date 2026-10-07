@@ -11,7 +11,6 @@ import {
   DateString,
   FormSavedView,
   SavedViewSortDirection,
-  SubmissionId,
   SubmissionMetadata,
 } from 'formsg-shared/types'
 
@@ -33,8 +32,6 @@ import {
   hasActiveViewState,
   ResponsesViewState,
 } from './savedViews'
-
-const PAGE_SIZE = 10
 
 export const ALL_RESPONSES_VIEW_ID = 'all-responses'
 
@@ -97,12 +94,6 @@ interface UnlockedResponsesContextProps {
   showMoreRows: () => void
   renderedRowCount: number
   setRenderedRowCount: (count: number) => void
-  getNextSubmissionId: (currentSubmissionId: string) => SubmissionId | undefined
-  getPreviousSubmissionId: (
-    currentSubmissionId: string,
-  ) => SubmissionId | undefined
-  onNavNextSubmissionId: (currentSubmissionId: string) => void
-  onNavPreviousSubmissionId: (currentSubmissionId: string) => void
   onRowClick: () => void
   lastNavPage?: number
   lastNavSubmissionId?: string
@@ -221,14 +212,14 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     isLoading: isPagedLoading,
   } = useFormResponses({ page: pages.current, enabled: paginationEnabled })
 
-  const {
-    data: { metadata: prevMetadata = [] } = {},
-    isFetching: isPrevFetching,
-  } = useFormResponses({ page: pages.prev, enabled: paginationEnabled })
-  const {
-    data: { metadata: nextMetadata = [] } = {},
-    isFetching: isNextFetching,
-  } = useFormResponses({ page: pages.next, enabled: paginationEnabled })
+  const { isFetching: isPrevFetching } = useFormResponses({
+    page: pages.prev,
+    enabled: paginationEnabled,
+  })
+  const { isFetching: isNextFetching } = useFormResponses({
+    page: pages.next,
+    enabled: paginationEnabled,
+  })
 
   const { data: allData, isLoading: isLoadingAll } = useAllFormResponses({
     enabled: isInfiniteScroll && !submissionId,
@@ -261,11 +252,6 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     isInfiniteScroll && exceedsTableLimit(allData?.count)
   const isLoading = isInfiniteScroll ? isTableLoading : isPagedLoading
 
-  const totalPageCount = useMemo(
-    () => (count ? Math.ceil(count / PAGE_SIZE) : 0),
-    [count],
-  )
-
   const isAnyFetching = useMemo(
     () =>
       isLoading ||
@@ -277,116 +263,6 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       isLoading,
       isNextFetching,
       isPrevFetching,
-    ],
-  )
-
-  const onNavNextSubmissionId = useCallback(
-    (currentSubmissionId: string) => {
-      if (
-        isInfiniteScroll ||
-        isAnyFetching ||
-        (lastNavPage ?? 1) >= totalPageCount ||
-        !!lastNavSubmissionId
-      )
-        return
-      // Get row index of current submission in the metadata.
-      const currentResponseIndex = metadata.findIndex(
-        (response) => response.refNo === currentSubmissionId,
-      )
-
-      if (currentResponseIndex === -1) return
-
-      // If id belongs to the last submission in page, return first of next page
-      if (currentResponseIndex === metadata.length - 1) {
-        setLastNavPage((lastNavPage ?? 1) + 1)
-      }
-    },
-    [
-      isAnyFetching,
-      isInfiniteScroll,
-      lastNavPage,
-      lastNavSubmissionId,
-      metadata,
-      totalPageCount,
-    ],
-  )
-
-  const onNavPreviousSubmissionId = useCallback(
-    (currentSubmissionId: string) => {
-      if (isInfiniteScroll || isAnyFetching || !!lastNavSubmissionId) return
-
-      // Get row index of current submission in the metadata.
-      const currentResponseIndex = metadata.findIndex(
-        (response) => response.refNo === currentSubmissionId,
-      )
-
-      // If id belongs to the first submission in page, return last of previous page
-      if (currentResponseIndex === 0 && lastNavPage && lastNavPage > 1) {
-        setLastNavPage(lastNavPage - 1)
-      }
-    },
-    [
-      isAnyFetching,
-      isInfiniteScroll,
-      lastNavPage,
-      lastNavSubmissionId,
-      metadata,
-    ],
-  )
-
-  const getNextSubmissionId = useCallback(
-    (currentSubmissionId: string) => {
-      if (isAnyFetching || !!lastNavSubmissionId) return
-      // Get row index of current submission in the metadata.
-      const currentResponseIndex = metadata.findIndex(
-        (response) => response.refNo === currentSubmissionId,
-      )
-
-      if (currentResponseIndex === -1) return
-
-      if (isInfiniteScroll) return metadata[currentResponseIndex + 1]?.refNo
-
-      // If id belongs to the last submission in page, return first of next page
-      if (currentResponseIndex === metadata.length - 1) {
-        return nextMetadata[0]?.refNo
-      }
-      return metadata[currentResponseIndex + 1]?.refNo
-    },
-    [
-      isAnyFetching,
-      isInfiniteScroll,
-      metadata,
-      nextMetadata,
-      lastNavSubmissionId,
-    ],
-  )
-
-  const getPreviousSubmissionId = useCallback(
-    (currentSubmissionId: string) => {
-      if (isAnyFetching || !!lastNavSubmissionId) return
-
-      // Get row index of current submission in the metadata.
-      const currentResponseIndex = metadata.findIndex(
-        (response) => response.refNo === currentSubmissionId,
-      )
-
-      if (currentResponseIndex === -1) return
-
-      if (isInfiniteScroll) return metadata[currentResponseIndex - 1]?.refNo
-
-      // If id belongs to the first submission in page, return last of previous page
-      if (currentResponseIndex === 0 && lastNavPage && lastNavPage > 1) {
-        return prevMetadata[prevMetadata.length - 1]?.refNo
-      }
-      return metadata[currentResponseIndex - 1]?.refNo
-    },
-    [
-      isAnyFetching,
-      isInfiniteScroll,
-      lastNavPage,
-      metadata,
-      prevMetadata,
-      lastNavSubmissionId,
     ],
   )
 
@@ -467,10 +343,6 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     showMoreRows,
     renderedRowCount,
     setRenderedRowCount,
-    getNextSubmissionId,
-    getPreviousSubmissionId,
-    onNavNextSubmissionId,
-    onNavPreviousSubmissionId,
     lastNavPage,
     lastNavSubmissionId,
     filteredCount,

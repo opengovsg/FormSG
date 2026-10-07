@@ -4,7 +4,7 @@ import { BiDownload, BiLinkExternal } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import {
   Box,
-  Flex,
+  Icon,
   Link,
   Skeleton,
   Stack,
@@ -37,11 +37,9 @@ import {
   MRF_STATUS_TRACKING_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
-import { useIsDelightfulDashboard } from '../hooks'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
 
 import { DecryptedRow } from './DecryptedRow'
-import { IndividualResponseNavbar } from './IndividualResponseNavbar'
 import { useMutateDownloadAttachments } from './mutations'
 import { PaymentSection } from './PaymentSection'
 import { useIndividualSubmission } from './queries'
@@ -93,40 +91,36 @@ const StackRow = ({
       >
         {label}:
       </Text>
-      <Skeleton isLoaded={!isLoading && !isError}>
+      {/* minW 0 lets the flex item shrink so long URLs wrap instead of overflowing the drawer. */}
+      <Skeleton isLoaded={!isLoading && !isError} minW={0}>
         {statusTrackerUrl ? (
-          <>
-            <Stack direction={'row'}>
-              <Link
-                target="_blank"
-                href={statusTrackerUrl}
-                display="inline-flex"
-                wordBreak="break-word"
-                gap="0.25rem"
-                data-dd-action-name="Click on status tracker link"
-              >
-                {statusTrackerUrl}{' '}
-                <Box fontSize="1.25rem" display="flex" alignItems="center">
-                  <BiLinkExternal />
-                </Box>
-              </Link>
-            </Stack>
-          </>
+          // Inline so the icon trails the last character of a wrapped URL.
+          <Link
+            target="_blank"
+            href={statusTrackerUrl}
+            overflowWrap="anywhere"
+            data-dd-action-name="Click on status tracker link"
+          >
+            {statusTrackerUrl}
+            <Icon
+              as={BiLinkExternal}
+              fontSize="1.25rem"
+              verticalAlign="text-bottom"
+              ml="0.25rem"
+            />
+          </Link>
         ) : (
-          value
+          <Text as="span" overflowWrap="anywhere">
+            {value}
+          </Text>
         )}
       </Skeleton>
     </Stack>
   )
 }
 
-export const IndividualResponsePage = ({
-  inDrawer = false,
-}: {
-  inDrawer?: boolean
-} = {}): JSX.Element => {
+export const IndividualResponsePage = (): JSX.Element => {
   const { t } = useTranslation()
-  const isDelightfulDashboard = useIsDelightfulDashboard()
   const { submissionId, formId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
   if (!formId) throw new Error('Missing formId')
@@ -214,9 +208,9 @@ export const IndividualResponsePage = ({
   const workflowCurrentStepNumber = data?.mrf?.workflowCurrentStepNumber
   const workflowNumTotalSteps = data?.mrf?.workflowNumTotalSteps
 
-  const body = (
+  return (
     <Stack
-      px={{ md: '1.75rem', lg: '2rem' }}
+      px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
       spacing={{ base: '1.5rem', md: '2.5rem' }}
       data-dd-privacy="mask"
     >
@@ -337,22 +331,5 @@ export const IndividualResponsePage = ({
         </>
       )}
     </Stack>
-  )
-
-  if (inDrawer) return body
-
-  return (
-    <Flex
-      flexDir="column"
-      marginTop={
-        isDelightfulDashboard
-          ? { base: '-2.5rem', lg: '-3.125rem' }
-          : { base: '-1.5rem', md: '-3rem' }
-      }
-      pt={isDelightfulDashboard ? { base: '2.5rem', lg: '3.125rem' } : 0}
-    >
-      <IndividualResponseNavbar />
-      {body}
-    </Flex>
   )
 }

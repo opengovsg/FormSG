@@ -752,24 +752,21 @@ export const ResponsesTable = () => {
                   handleRowClick(row.values.refNo, row.values.number)
                 }
                 cursor="pointer"
+                display="flex"
+                minW="100%"
+                role="group"
                 {...(isDelightfulDashboard
                   ? {
-                      display: 'flex',
-                      minW: '100%',
                       style: {
                         ...row.getRowProps().style,
                         minWidth: 'var(--row-width)',
                       },
-                      role: 'group',
                       sx: {
                         contentVisibility: 'auto',
                         containIntrinsicHeight: ROW_HEIGHT,
                       },
                     }
-                  : {
-                      _hover: { bg: 'primary.100' },
-                      _active: { bg: 'primary.200' },
-                    })}
+                  : {})}
               >
                 {leftSpacer}
                 {sliceToWindow(row.cells).map((cell) => {
@@ -784,18 +781,15 @@ export const ResponsesTable = () => {
                       key={cell.getCellProps().key}
                       display="flex"
                       alignItems="center"
+                      minW={0}
+                      flexShrink={0}
+                      overflow="hidden"
+                      transitionProperty="background"
+                      transitionDuration="normal"
+                      _groupHover={{ bg: 'primary.100' }}
+                      _groupActive={{ bg: 'primary.200' }}
                       {...(isDelightfulDashboard
-                        ? {
-                            h: ROW_HEIGHT,
-                            py: 0,
-                            minW: 0,
-                            flexShrink: 0,
-                            overflow: 'hidden',
-                            transitionProperty: 'background',
-                            transitionDuration: 'normal',
-                            _groupHover: { bg: 'primary.100' },
-                            _groupActive: { bg: 'primary.200' },
-                          }
+                        ? { h: ROW_HEIGHT, py: 0 }
                         : {})}
                     >
                       {cell.render('Cell')}
@@ -821,12 +815,10 @@ export const ResponsesTable = () => {
       variant="solid"
       colorScheme="secondary"
       {...getTableProps()}
+      minW="fit-content"
+      w="100%"
       {...(isDelightfulDashboard
-        ? {
-            minW: 'fit-content',
-            w: '100%',
-            style: { ...getTableProps().style, ...columnWidthVars },
-          }
+        ? { style: { ...getTableProps().style, ...columnWidthVars } }
         : {})}
     >
       <Thead as="div" pos="sticky" top={0}>
@@ -844,9 +836,9 @@ export const ResponsesTable = () => {
                 pos="relative"
                 {...column.getHeaderProps()}
                 key={column.getHeaderProps().key}
-                {...(isDelightfulDashboard
-                  ? { minW: 0, flexShrink: 0, overflow: 'hidden' }
-                  : {})}
+                minW={0}
+                flexShrink={0}
+                overflow="hidden"
               >
                 <Flex align="center">{column.render('Header')}</Flex>
 
@@ -856,7 +848,7 @@ export const ResponsesTable = () => {
                     justify="center"
                     top={0}
                     right={0}
-                    zIndex={isDelightfulDashboard ? 2 : 1}
+                    zIndex={2}
                     transitionProperty="background"
                     transitionDuration="normal"
                     pos="absolute"
