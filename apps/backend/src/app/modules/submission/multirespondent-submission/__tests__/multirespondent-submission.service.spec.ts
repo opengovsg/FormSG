@@ -38,6 +38,7 @@ import * as FormService from '../../../form/form.service'
 import {
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfWorkflowStoppedError,
   SubmissionSaveError,
 } from '../../submission.errors'
 import { mapRouteError } from '../../submission.utils'
@@ -3543,6 +3544,37 @@ describe('multirespondent-submission.service', () => {
       expect(saved?.encryptedStepToken).toBeUndefined()
       expect('stepTokenHash' in (saved as object)).toBe(false)
       expect('encryptedStepToken' in (saved as object)).toBe(false)
+    })
+
+    it('rejects a step on a stopped workflow without appending it', async () => {
+      const Model = getMultirespondentSubmissionModel(mongoose)
+      const row = await Model.create({
+        form: mockFormId,
+        submissionType: SubmissionType.Multirespondent,
+        form_fields: [],
+        form_logics: [],
+        workflow: twoStepWorkflow,
+        submissionPublicKey: 'pk',
+        encryptedSubmissionSecretKey: 'esk',
+        encryptedContent: 'ec',
+        version: 2,
+        workflowStep: 0,
+        submittedSteps: [
+          { isApproval: false, submittedAt: new Date().toISOString() },
+        ],
+        stoppedAt: new Date(),
+      })
+
+      const result = await updateMultiRespondentFormSubmission({
+        submissionId: row._id.toString(),
+        snapshottedFormDef: buildSnapshottedFormDef(),
+        encryptedPayload: buildPayload({ workflowStep: 1 }),
+        logMeta: { action: 'test' },
+      })
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(MrfWorkflowStoppedError)
+      const saved = await Model.findById(row._id).lean()
+      expect(saved?.submittedSteps).toHaveLength(1)
     })
 
     it('rotates the token on advance, upgrading a legacy row that carried no hash (migration)', async () => {

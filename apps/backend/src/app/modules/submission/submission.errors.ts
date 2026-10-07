@@ -46,6 +46,18 @@ export class MrfWorkflowOverflowError extends ApplicationError {
   }
 }
 
+export class MrfWorkflowStoppedError extends ApplicationError {
+  constructor(message = 'This workflow has been stopped.') {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_WORKFLOW_STOPPED)
+  }
+}
+
+export class MrfWorkflowNotPendingError extends ApplicationError {
+  constructor(message = 'This workflow is no longer pending.') {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_WORKFLOW_NOT_PENDING)
+  }
+}
+
 /**
  * A custom error class returned when given submission has invalid encryption encoding
  */

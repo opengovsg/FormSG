@@ -295,6 +295,7 @@ SubmissionSchema.statics.findEncryptedOrMultirespondentSubmissionById =
         ...buildAdminSubmittedStepsMongoProjection(),
         encryptedStepToken: 1,
         workflowEvents: 1,
+        stoppedAt: 1,
       })
       .exec() as Promise<SubmissionData | null>
   }
@@ -948,6 +949,13 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: [workflowEventSchema],
     default: undefined,
   },
+  stoppedAt: {
+    type: Date,
+  },
+  stoppedBy: {
+    type: Schema.Types.ObjectId,
+    ref: USER_SCHEMA_ID,
+  },
 })
 
 type MultiRespondentAggregates = Pick<
@@ -1286,6 +1294,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       ...buildAdminSubmittedStepsMongoProjection(),
       encryptedStepToken: 1,
       workflowEvents: 1,
+      stoppedAt: 1,
     })
     .exec()
 }
