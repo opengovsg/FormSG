@@ -799,6 +799,7 @@ export const addMrfMetadata = (): Transform => {
             workflow,
             workflowStep,
             submittedSteps,
+            created: rest.created,
           }),
         }
         return callback(null, dataWithMrfMeta)

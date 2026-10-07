@@ -111,6 +111,7 @@ describe('hasWorkflowSubmission', () => {
       workflowStatus: undefined,
       lastSubmittedAt: undefined,
       hasNextStepRecipientEmails: false,
+      isWorkflowActionsEligible: false,
     },
   })
 
