@@ -248,6 +248,45 @@ describe('multirespondent-submision.controller', () => {
         {},
       )
     })
+
+    it('returns 400 when the workflow has been stopped', async () => {
+      const mockReq = expressHandler.mockRequest({
+        params: { formId: mockFormId, submissionId: mockSubmissionId },
+        session: { cookie: { maxAge: 1000 } },
+        body: {} as any,
+      })
+      const mockRes = expressHandler.mockResponse()
+      MockFormService.retrieveFullFormById = jest.fn().mockReturnValue(
+        okAsync({
+          _id: mockFormId,
+          responseMode: FormResponseMode.Multirespondent,
+          title: 'Mock Form',
+          status: FormStatus.Public,
+        }),
+      )
+      MockSubmissionService.getEncryptedSubmissionData.mockReturnValue(
+        okAsync({
+          submissionType: SubmissionType.Multirespondent,
+          workflowStep: 0,
+          workflow: [],
+          stoppedAt: new Date('2026-10-07T08:00:00.000Z'),
+        } as unknown as MultirespondentSubmissionData),
+      )
+
+      await handleGetMultirespondentSubmissionForRespondent(
+        mockReq,
+        mockRes,
+        jest.fn(),
+      )
+
+      expect(mockRes.status).toHaveBeenCalledWith(400)
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: expect.stringContaining('This workflow has been stopped'),
+        }),
+      )
+      expect(mockRes.cookie).not.toHaveBeenCalled()
+    })
   })
 
   describe('submitMultirespondentForm', () => {
