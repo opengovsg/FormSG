@@ -39,6 +39,22 @@ describe('EmailTemplate', () => {
 
     expect(html).toMatchSnapshot()
   })
+
+  it('should render the workflow stopped email', async () => {
+    // Same fields MailService.sendMrfWorkflowStoppedEmail passes.
+    const html = await render(
+      EmailTemplate({
+        formTitle: 'Mock form',
+        responseId: 'mock-response-id',
+        timestamp: 'Wed, 7 Oct 2026, 08:17:08 AM',
+        outcome: WorkflowOutcome.STOPPED,
+        formQuestionAnswers: [{ question: 'Q1', answer: 'A1' }],
+        responseJson: '{"a":1}',
+      }),
+    )
+
+    expect(html).toMatchSnapshot()
+  })
 })
 
 describe('FormScheduledClosureNotification', () => {

@@ -59,6 +59,10 @@ import {
 } from '~features/admin-form/responses/constants'
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { useDecryptedResponsesBySubmissionId } from '~features/admin-form/responses/queries'
+import {
+  useIsWorkflowStopEnabled,
+  useStoppedSubmissionIds,
+} from '~features/admin-form/responses/workflowStop'
 
 import { useColumnVirtualizer } from '../hooks/useColumnVirtualizer'
 import { RESPONSE_NUMBER_COLUMN_ID } from '../savedViews'
@@ -67,7 +71,10 @@ import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 import { SendReminderButton } from './SendReminderButton'
 import { getIsPaymentsForm, getNetAmount } from './utils'
 
-type ResponseColumnData = SubmissionMetadata
+type ResponseColumnData = SubmissionMetadata & {
+  /** Stopped in the workflow-stop design preview. */
+  isWorkflowStopped?: boolean
+}
 
 const StatusBadge = ({
   textColor,
@@ -118,6 +125,17 @@ function ApprovedBadge() {
       textColor="success.700"
       backgroundColor="success.100"
       statusText={t('features.common.approved')}
+    />
+  )
+}
+
+function StoppedBadge() {
+  const { t } = useTranslation()
+  return (
+    <StatusBadge
+      textColor="danger.700"
+      backgroundColor="danger.100"
+      statusText={t('features.common.stopped')}
     />
   )
 }
@@ -242,9 +260,12 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_WORKFLOW_STATUS_LABEL,
-    accessor: ({ mrf }) => {
+    accessor: ({ mrf, isWorkflowStopped }) => {
       if (!mrf?.workflowStatus) {
         return ''
+      }
+      if (isWorkflowStopped) {
+        return <StoppedBadge />
       }
       if (mrf.workflowStatus === WorkflowStatus.PENDING) {
         return <PendingBadge />
@@ -265,7 +286,8 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_PENDING_RESPONSE_AT_LABEL,
-    accessor: ({ mrf }) => {
+    accessor: ({ mrf, isWorkflowStopped }) => {
+      if (isWorkflowStopped) return '-'
       const workflowStatus = mrf?.workflowStatus
       const workflowCurrentStepNumber = mrf?.workflowCurrentStepNumber
       const workflowNumTotalSteps = mrf?.workflowNumTotalSteps
@@ -324,6 +346,10 @@ const PAYMENT_RESPONSE_TABLE_COLUMNS =
   BASE_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
 
 const WORKFLOW_PREFIX_COLUMNS = MRF_RESPONSE_TABLE_COLUMNS
+const WORKFLOW_PREFIX_COLUMNS_WITHOUT_REMINDERS =
+  WORKFLOW_PREFIX_COLUMNS.filter(
+    (column) => column.Header !== MRF_REMINDERS_LABEL,
+  )
 
 const SingleLineCell = ({ value }: CellProps<ResponseColumnData>) => (
   <Text noOfLines={1} title={String(value ?? '')}>
@@ -417,25 +443,34 @@ export const ResponsesTable = () => {
     [form, metadata],
   )
 
-  const metadataToUse = useMemo(() => {
-    if (submissionId) {
-      return filteredMetadata
-    } else {
-      return metadata
-    }
-  }, [filteredMetadata, metadata, submissionId])
+  const isWorkflowStopEnabled = useIsWorkflowStopEnabled()
+  // Read once for the whole table rather than per row.
+  const stoppedSubmissionIds = useStoppedSubmissionIds(isWorkflowStopEnabled)
+
+  const metadataToUse = useMemo((): ResponseColumnData[] => {
+    const rows = submissionId ? filteredMetadata : metadata
+    if (stoppedSubmissionIds.size === 0) return rows
+    return rows.map((row) =>
+      stoppedSubmissionIds.has(row.refNo)
+        ? { ...row, isWorkflowStopped: true }
+        : row,
+    )
+  }, [filteredMetadata, metadata, submissionId, stoppedSubmissionIds])
+
+  // With workflow stop on, reminders move into the response drawer.
+  const mrfColumns = isWorkflowStopEnabled
+    ? WORKFLOW_PREFIX_COLUMNS_WITHOUT_REMINDERS
+    : WORKFLOW_PREFIX_COLUMNS
 
   const legacyColumns = useMemo(() => {
     if (isMultiRespondentForm) {
-      return isPaymentsForm
-        ? MRF_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
-        : MRF_RESPONSE_TABLE_COLUMNS
+      return isPaymentsForm ? mrfColumns.concat(PAYMENT_COLUMNS) : mrfColumns
     }
     if (isPaymentsForm) {
       return PAYMENT_RESPONSE_TABLE_COLUMNS
     }
     return BASE_RESPONSE_TABLE_COLUMNS
-  }, [isMultiRespondentForm, isPaymentsForm])
+  }, [isMultiRespondentForm, isPaymentsForm, mrfColumns])
 
   const answerableFields = useMemo(() => {
     if (!isDelightfulDashboard || !form) return []
@@ -445,11 +480,11 @@ export const ResponsesTable = () => {
   }, [form, isDelightfulDashboard])
 
   const prefixColumns = useMemo(() => {
-    if (hasWorkflow) return WORKFLOW_PREFIX_COLUMNS
+    if (hasWorkflow) return mrfColumns
     return isPaymentsForm
       ? NO_WORKFLOW_PREFIX_COLUMNS.concat(PAYMENT_COLUMNS)
       : NO_WORKFLOW_PREFIX_COLUMNS
-  }, [hasWorkflow, isPaymentsForm])
+  }, [hasWorkflow, isPaymentsForm, mrfColumns])
 
   const fieldColumns = useMemo((): Column<ResponseColumnData>[] => {
     return answerableFields.map((formField) => ({

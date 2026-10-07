@@ -26,6 +26,10 @@ import {
   makeWorkerApiAndCleanup,
 } from '../../common/utils/decryptionWorker'
 import { generateResponsePdfBlob } from '../../IndividualResponsePage/utils/generateResponsePdf'
+import {
+  applyWorkflowStopToCsvRecord,
+  useIsWorkflowStopEnabled,
+} from '../../workflowStop'
 
 import { CsvExportView } from './utils/csvExportView'
 import { downloadResponseAttachment } from './utils/downloadCsv'
@@ -83,6 +87,7 @@ const useDecryptionWorkers = ({
 
   const { data: adminForm } = useAdminForm()
   const { user } = useUser()
+  const isWorkflowStopEnabled = useIsWorkflowStopEnabled()
 
   useEffect(() => {
     return () => killWorkers(workers)
@@ -262,15 +267,18 @@ const useDecryptionWorkers = ({
                       break
                     case CsvRecordStatus.Ok: {
                       try {
+                        const submissionData = isWorkflowStopEnabled
+                          ? applyWorkflowStopToCsvRecord(
+                              materializedCsvRecord.submissionData,
+                            )
+                          : materializedCsvRecord.submissionData
                         if (bufferedRecords) {
                           bufferedRecords.set(
-                            materializedCsvRecord.submissionData.submissionId,
-                            materializedCsvRecord.submissionData,
+                            submissionData.submissionId,
+                            submissionData,
                           )
                         } else {
-                          csvGenerator.addRecord(
-                            materializedCsvRecord.submissionData,
-                          )
+                          csvGenerator.addRecord(submissionData)
                         }
                         csvSuccessCount++
                       } catch (e) {
@@ -531,6 +539,7 @@ const useDecryptionWorkers = ({
     },
     [
       adminForm,
+      isWorkflowStopEnabled,
       onDecryptionProgress,
       onPdfGenerationProgress,
       user?._id,

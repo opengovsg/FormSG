@@ -36,6 +36,7 @@ export const featureFlags = {
   formIdJson: 'formid-json' as const,
   mrfPayments: 'mrf-payments' as const,
   workflowDeletion: 'workflow-deletion' as const,
+  workflowStop: 'mrf-workflow-stop' as const,
   scheduledFormClosure: 'scheduled-form-closure' as const,
   mrfChildren: 'mrf-children' as const,
   delightfulDashboard: 'delightful-dashboard' as const,

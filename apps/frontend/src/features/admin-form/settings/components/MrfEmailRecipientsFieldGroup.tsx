@@ -37,6 +37,8 @@ export interface MrfEmailRecipientControlProps {
   otherPartiesPlaceholder?: string
   onOtherPartiesBlur: () => void
   onSelectBlur?: () => void
+  /** Hide the info tooltip on "Any email addresses you choose". */
+  hideOtherPartiesTooltip?: boolean
 }
 
 export interface MrfEmailRecipientsFieldGroupProps extends MrfEmailRecipientControlProps {
@@ -49,6 +51,7 @@ const OtherPartiesRecipientControl = ({
   isHighContrast,
   otherPartiesPlaceholder,
   onOtherPartiesBlur,
+  hideOtherPartiesTooltip,
 }: MrfEmailRecipientControlProps): JSX.Element => {
   const { t } = useTranslation()
   const { errors } = useFormState({
@@ -69,9 +72,13 @@ const OtherPartiesRecipientControl = ({
         mb="0.75rem"
         tooltipVariant="info"
         tooltipPlacement="top"
-        tooltipText={t(
-          'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.tooltipText',
-        )}
+        tooltipText={
+          hideOtherPartiesTooltip
+            ? undefined
+            : t(
+                'features.adminForm.settings.emailNotifications.section.mrf.respondents.others.tooltipText',
+              )
+        }
         isHighContrast={isHighContrast}
       >
         {t(

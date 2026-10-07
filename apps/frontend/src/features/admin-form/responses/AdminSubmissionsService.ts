@@ -193,6 +193,14 @@ export const getDecryptedSubmissionById = async ({
     responses,
     mrfVersion,
     stepToken,
+    // Per-step history and the workflow snapshot, for the activity log.
+    workflowHistory:
+      encryptedSubmission.submissionType === SubmissionType.Multirespondent
+        ? {
+            submittedSteps: encryptedSubmission.submittedSteps ?? [],
+            workflow: encryptedSubmission.workflow,
+          }
+        : undefined,
   }
 }
 

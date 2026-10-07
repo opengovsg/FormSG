@@ -46,6 +46,7 @@ export type EmailData = {
 export enum WorkflowOutcome {
   APPROVED = 'Approved',
   NOT_APPROVED = 'Not approved',
+  STOPPED = 'Stopped',
 }
 
 export type QuestionAnswer = {
@@ -197,7 +198,7 @@ export const EmailTemplate = ({
 
       {/* Email end */}
       <Text style={secondaryTextStyle}>
-        For more details, please contact the respondent(s) or form
+        For more details, please contact the respondent(s) or the form
         administrator.
       </Text>
       {renderMargin(40)}

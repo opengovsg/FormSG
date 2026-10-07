@@ -2,7 +2,7 @@ import { useParams } from 'react-router-dom'
 import { Box, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
 import { useFeatureValue } from '@growthbook/growthbook-react'
 
-import { StepData, WorkflowStatus } from 'formsg-shared/types'
+import { WorkflowStatus } from 'formsg-shared/types'
 
 import { AppFooter } from '~/app/AppFooter'
 
@@ -14,6 +14,9 @@ import { AppGrid } from '~templates/AppGrid'
 
 import NotFoundErrorPage from '~pages/NotFoundError'
 import { getWorkflowStatusFromFormResponse } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+// Imported directly, not via the barrel, to keep admin UI out of this bundle.
+import { useWorkflowStop } from '~features/admin-form/responses/workflowStop/previewStore'
+import { useIsWorkflowStopEnabled } from '~features/admin-form/responses/workflowStop/useIsWorkflowStopEnabled'
 import {
   BackgroundBox,
   BaseGridLayout,
@@ -25,7 +28,7 @@ import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 import { useStatusTracker } from './queries'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
-import { TimelineRunSteps } from './TimelineRunSteps'
+import { TimelineRunSteps, TimelineStepData } from './TimelineRunSteps'
 
 // Grid area styling for the login form.
 export const TimelineGridArea: FCC = ({ children }) => (
@@ -97,6 +100,12 @@ export const StatusTrackerPage = (): JSX.Element => {
   if (!submissionId) throw new Error('No submissionId provided')
 
   const { data, isLoading, error } = useStatusTracker(submissionId)
+  // TODO(workflow-stop): read from the status API once the backend stores
+  // stops. Today this is the design-preview store. Showing a stop is flagged,
+  // like everywhere else; blocking submits on a stopped workflow is not.
+  const isWorkflowStopEnabled = useIsWorkflowStopEnabled()
+  const storedStop = useWorkflowStop(submissionId)
+  const stop = isWorkflowStopEnabled ? storedStop : null
 
   const ogpAwareness = useFeatureValue('ogp-awareness', 'none')
   const ogpAwarenessComponent = (() => {
@@ -118,7 +127,7 @@ export const StatusTrackerPage = (): JSX.Element => {
   const { submittedSteps, workflow } = data
 
   let isWorkFlowRejected = false
-  const stepData: StepData[] = workflow.map((step, index) => {
+  const stepData: TimelineStepData[] = workflow.map((step, index) => {
     const name = step.step_name ? step.step_name : `Step ${index + 1}`
     const stepNumber = index + 1
 
@@ -147,7 +156,12 @@ export const StatusTrackerPage = (): JSX.Element => {
       workflowStatus: workflowStatus,
       ...(isWorkFlowRejected
         ? {}
-        : { isCurrentPendingStep: index === submittedSteps.length }),
+        : stop
+          ? // The step the workflow was waiting on when it was stopped.
+            index === submittedSteps.length
+            ? { stoppedAt: stop.stoppedAt }
+            : {}
+          : { isCurrentPendingStep: index === submittedSteps.length }),
     }
   })
 

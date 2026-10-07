@@ -608,7 +608,7 @@ export const useFormRemindersMutations = () => {
     {
       onSuccess: () => {
         toast({
-          description: 'Your reminder has been sent',
+          description: 'Your reminder has been sent.',
         })
       },
       onError: handleError,

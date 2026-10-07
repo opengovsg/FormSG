@@ -269,15 +269,22 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   mrfVersion: number
 
   mrfMeta: SubmissionMrfMetadata
+  /** Per-step history for the admin activity log. Admin boundary only. */
+  submittedSteps?: AdminSubmittedStep[]
 }
 
 export type PublicMultirespondentSubmissionDto = Omit<
   MultirespondentSubmissionDto,
-  'workflow' | 'form_fields' | 'encryptedStepToken' | 'payment'
+  | 'workflow'
+  | 'form_fields'
+  | 'encryptedStepToken'
+  | 'payment'
+  | 'submittedSteps'
 > & {
   form_fields: StrippedFormFieldDto[]
   workflow: StrippedFormWorkflowDto
   encryptedStepToken: undefined
+  submittedSteps?: undefined
 }
 
 export type SubmissionDto =

@@ -76,6 +76,19 @@ const DEFAULT_RETRY_PARAMS: MailServiceParams['retryParams'] = {
   minTimeout: 5000,
 }
 
+type MrfOutcomeEmailProps = {
+  emails: string[]
+  formId: string
+  formTitle: string
+  responseId: string
+  submissionId?: string
+  timestamp: string
+  formQuestionAnswers: QuestionAnswer[]
+  responseJson: string
+  attachments?: Mail.Attachment[]
+  replyTo?: string
+}
+
 export class MailService {
   /**
    * The application name to be shown in some sent emails' fields such as mail
@@ -1317,56 +1330,77 @@ export class MailService {
     })
   }
 
-  sendMrfApprovalEmail = ({
+  /**
+   * Shared by the workflow outcome emails (approved, not approved, stopped).
+   * The "Outcome" card carries the result, so there is no heading.
+   */
+  #sendMrfOutcomeEmail = ({
+    outcome,
+    emailType,
+    actionName,
     emails,
     formId,
     formTitle,
     responseId,
     submissionId,
     timestamp,
-    isRejected,
     formQuestionAnswers,
     responseJson,
     attachments,
     replyTo,
-  }: {
-    emails: string[]
-    formId: string
-    formTitle: string
-    responseId: string
-    submissionId?: string
-    timestamp: string
-    isRejected: boolean
-    formQuestionAnswers: QuestionAnswer[]
-    responseJson: string
-    attachments?: Mail.Attachment[]
-    replyTo?: string
-  }): ResultAsync<true, MailGenerationError | MailSendError> => {
-    const outcome = isRejected
-      ? WorkflowOutcome.NOT_APPROVED
-      : WorkflowOutcome.APPROVED
-    const htmlData: EmailData = {
-      emailTitle: `${formTitle} has been ${outcome.toLowerCase()}`,
-      formTitle,
-      responseId: responseId.toString(),
-      timestamp,
-      outcome,
-      formQuestionAnswers,
-      responseJson,
-    }
-
-    return this.#sendEmailWithTemplate({
+  }: MrfOutcomeEmailProps & {
+    outcome: WorkflowOutcome
+    emailType: EmailType
+    actionName: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendEmailWithTemplate({
       emails,
       formId,
       subject: `${outcome} - ${formTitle} (${responseId})`,
-      htmlData,
+      htmlData: {
+        formTitle,
+        responseId,
+        timestamp,
+        outcome,
+        formQuestionAnswers,
+        responseJson,
+      },
       attachments,
-      emailType: EmailType.WorkflowApproval,
-      actionName: 'sendMrfApprovalEmail',
+      emailType,
+      actionName,
       submissionId,
       replyTo,
     })
-  }
+
+  sendMrfApprovalEmail = ({
+    isRejected,
+    ...props
+  }: MrfOutcomeEmailProps & {
+    isRejected: boolean
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendMrfOutcomeEmail({
+      ...props,
+      outcome: isRejected
+        ? WorkflowOutcome.NOT_APPROVED
+        : WorkflowOutcome.APPROVED,
+      emailType: EmailType.WorkflowApproval,
+      actionName: 'sendMrfApprovalEmail',
+    })
+
+  /**
+   * Sent when an admin stops a pending workflow.
+   * TODO(workflow-stop): only called by the dev-only design preview so far.
+   * The real stop endpoint should call it; incident datafixes must not.
+   */
+  sendMrfWorkflowStoppedEmail = (
+    props: MrfOutcomeEmailProps,
+  ): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendMrfOutcomeEmail({
+      ...props,
+      outcome: WorkflowOutcome.STOPPED,
+      emailType: EmailType.WorkflowStopped,
+      actionName: 'sendMrfWorkflowStoppedEmail',
+    })
 
   sendRespondentCopyEmail = ({
     formId,

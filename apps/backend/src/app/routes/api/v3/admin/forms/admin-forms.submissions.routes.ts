@@ -1,8 +1,10 @@
 import { Router } from 'express'
 
+import { Environment } from '../../../../../../types'
 import { rateLimitConfig } from '../../../../../config/config'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as MultirespondentSubmissionController from '../../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
+import * as WorkflowStopPreviewController from '../../../../../modules/submission/multirespondent-submission/workflow-stop-preview.controller'
 import * as SubmissionController from '../../../../../modules/submission/submission.controller'
 import { limitRate } from '../../../../../utils/limit-rate'
 
@@ -92,3 +94,25 @@ AdminFormsSubmissionsRouter.post(
   limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
   MultirespondentSubmissionController.handlePendingMrfSubmissionRemind,
 )
+
+/**
+ * DESIGN PREVIEW ONLY: dev-only routes that send workflow-stop emails for the
+ * frontend design preview. Registered in local development only.
+ * TODO(workflow-stop): delete with workflow-stop-preview.controller.ts.
+ * @security session
+ * @returns 200 when the email is sent
+ * @returns 400 when the body is invalid
+ * @returns 403 when the user cannot edit the form
+ */
+if (process.env.NODE_ENV === Environment.Dev) {
+  AdminFormsSubmissionsRouter.post(
+    '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/stop-preview-email',
+    limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
+    WorkflowStopPreviewController.handleStopPreviewEmail,
+  )
+  AdminFormsSubmissionsRouter.post(
+    '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/assignee-email-preview',
+    limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
+    WorkflowStopPreviewController.handleAssigneeEmailPreview,
+  )
+}

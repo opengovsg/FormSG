@@ -278,6 +278,9 @@ describe('multirespondent-submission.utils', () => {
         },
       })
 
+      // Step history carries recipient emails, so it must never be public.
+      expect(actual).not.toHaveProperty('submittedSteps', expect.anything())
+
       const dropdownFf = actual.form_fields.find(
         (field) => field.fieldType === BasicField.Dropdown,
       )
@@ -384,6 +387,13 @@ describe('multirespondent-submission.utils', () => {
             submittedSteps[submittedSteps.length - 1].submittedAt,
           hasNextStepRecipientEmails: false,
         },
+        // Admin-boundary projection of the step history.
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: submittedSteps[0].submittedAt,
+          },
+        ],
       })
     })
   })

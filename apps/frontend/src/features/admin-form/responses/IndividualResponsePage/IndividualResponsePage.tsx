@@ -29,6 +29,7 @@ import {
   getPendingResponseAtString,
   getStatusFromWorkflowStatus,
   hasWorkflowSteps,
+  MRF_STATUS,
 } from '../common/utils/mrfSubmissionView'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import {
@@ -38,6 +39,12 @@ import {
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
+import {
+  useIsWorkflowStopEnabled,
+  useWorkflowStop,
+  WorkflowActionsSection,
+  WorkflowActivityLog,
+} from '../workflowStop'
 
 import { DecryptedRow } from './DecryptedRow'
 import { useMutateDownloadAttachments } from './mutations'
@@ -71,12 +78,15 @@ const StackRow = ({
   isLoading,
   isError,
   statusTrackerUrl,
+  linkLabel,
 }: {
   label: string
   value: string
   isLoading: boolean
   isError: boolean
   statusTrackerUrl?: string
+  /** Shown instead of the raw URL when set. The URL stays as the tooltip. */
+  linkLabel?: string
 }) => {
   return (
     <Stack
@@ -98,10 +108,11 @@ const StackRow = ({
           <Link
             target="_blank"
             href={statusTrackerUrl}
+            title={linkLabel ? statusTrackerUrl : undefined}
             overflowWrap="anywhere"
             data-dd-action-name="Click on status tracker link"
           >
-            {statusTrackerUrl}
+            {linkLabel ?? statusTrackerUrl}
             <Icon
               as={BiLinkExternal}
               fontSize="1.25rem"
@@ -132,6 +143,8 @@ export const IndividualResponsePage = (): JSX.Element => {
   const { user } = useUser()
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
+  const isWorkflowStopEnabled = useIsWorkflowStopEnabled()
+  const stop = useWorkflowStop(submissionId)
 
   // Logic to determine which key to use to decrypt attachments.
   const attachmentDecryptionKey =
@@ -192,9 +205,11 @@ export const IndividualResponsePage = (): JSX.Element => {
   })}`
 
   const workflowStatus = data?.mrf?.workflowStatus
-  const responseMrfStatus = workflowStatus
-    ? getStatusFromWorkflowStatus(workflowStatus)
-    : ''
+  const responseMrfStatus = stop
+    ? MRF_STATUS.STOPPED
+    : workflowStatus
+      ? getStatusFromWorkflowStatus(workflowStatus)
+      : ''
 
   // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
   // const lastSubmittedAt = data?.mrf?.lastSubmittedAt
@@ -214,6 +229,18 @@ export const IndividualResponsePage = (): JSX.Element => {
       spacing={{ base: '1.5rem', md: '2.5rem' }}
       data-dd-privacy="mask"
     >
+      {hasWorkflow ? (
+        <WorkflowActionsSection
+          submissionId={submissionId}
+          workflowStatus={workflowStatus}
+          hasNextStepRecipientEmails={!!data?.mrf?.hasNextStepRecipientEmails}
+          history={data?.workflowHistory}
+          responses={data?.responses}
+          submissionSecretKey={data?.submissionSecretKey}
+          stepToken={data?.stepToken}
+          isLoading={isLoading || isError}
+        />
+      ) : null}
       <Stack bg="primary.100" p="1.5rem" textStyle="body-1">
         <StackRow
           label="Response ID"
@@ -240,6 +267,7 @@ export const IndividualResponsePage = (): JSX.Element => {
             <StackRow
               label={MRF_PENDING_RESPONSE_AT_LABEL}
               value={
+                stop ||
                 workflowStatus === undefined ||
                 workflowCurrentStepNumber === undefined ||
                 workflowNumTotalSteps === undefined
@@ -257,6 +285,13 @@ export const IndividualResponsePage = (): JSX.Element => {
               label={MRF_STATUS_TRACKING_LABEL}
               value={''}
               statusTrackerUrl={`${window.location.origin}/${getStatusTrackerPath(formId, submissionId)}`}
+              linkLabel={
+                isWorkflowStopEnabled
+                  ? t(
+                      'features.adminForm.responses.individualResponse.statusTrackingLinkLabel',
+                    )
+                  : undefined
+              }
               isLoading={isLoading}
               isError={isError}
             />
@@ -328,6 +363,13 @@ export const IndividualResponsePage = (): JSX.Element => {
           {data?.payment && (
             <PaymentSection payment={data.payment} formId={formId} />
           )}
+          {hasWorkflow && isWorkflowStopEnabled ? (
+            <WorkflowActivityLog
+              submissionId={submissionId}
+              submissionTime={data?.submissionTime}
+              history={data?.workflowHistory}
+            />
+          ) : null}
         </>
       )}
     </Stack>

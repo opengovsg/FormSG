@@ -32,7 +32,10 @@ vi.mock('react-router-dom', () => ({
 
 let mockResponseMode: FormResponseMode = FormResponseMode.Encrypt
 
-vi.mock('~features/admin-form/common/queries', () => ({
+vi.mock('~features/admin-form/common/queries', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('~features/admin-form/common/queries')
+  >()),
   useAdminForm: () => ({
     data: {
       _id: 'mock-form-id',
