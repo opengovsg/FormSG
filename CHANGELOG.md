@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.45.0](https://github.com/opengovsg/formsg/compare/v9.44.0...v9.45.0) (2026-10-07)
+
+
+### Features
+
+* **one-gov:** add Suite sidebar (#10222) ([#10222](https://github.com/opengovsg/formsg/commit/5d96d0ec4fa6fa3e2822b7b9cd97dc848dc475a2))
+* **results:** show the results side nav bar and response drawer to every admin (#10168) ([#10168](https://github.com/opengovsg/formsg/commit/94e20c118d09956d9449699cee1b55136dfe4d09))
+
+
+### CI
+
+* **render:** create PR previews through the Render API (#10223) ([#10223](https://github.com/opengovsg/formsg/commit/40d194d8e6e1e628c8b6acf0115d8842bec4738c))
+* **render:** only start or wake previews for users with write access (#10227) ([#10227](https://github.com/opengovsg/formsg/commit/43ac6b1a566f0719b5d29a29d333c25a46c81795))
+* **render:** suspend idle previews and wake them on demand (#10225) ([#10225](https://github.com/opengovsg/formsg/commit/c652d8de7b5c870fa10dde70ff462442355f0b14))
+
+
+### Dependencies
+
+* **deps:** resolve high-severity Endor findings in basic-ftp and braces (#10213) ([#10213](https://github.com/opengovsg/formsg/commit/ccae5fc0360f9d41ff85770f2712412a9250cf78))
+
 ## [9.44.0](https://github.com/opengovsg/formsg/compare/v9.43.0...v9.44.0) (2026-10-06)
 
 
