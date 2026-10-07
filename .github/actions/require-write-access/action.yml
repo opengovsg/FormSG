@@ -1,0 +1,23 @@
+name: Require write access
+description: Fail unless the user has write access or higher to this repo
+
+inputs:
+  user:
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        COLLABORATOR: ${{ inputs.user }}
+      run: |
+        permission=$(gh api "repos/$GITHUB_REPOSITORY/collaborators/$COLLABORATOR/permission" -q .permission 2>/dev/null || true)
+        case "$permission" in
+          admin | write) ;;
+          *)
+            echo "::error::$COLLABORATOR needs write access to $GITHUB_REPOSITORY to start or wake a Render preview"
+            exit 1
+            ;;
+        esac
