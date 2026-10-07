@@ -34,6 +34,7 @@ export interface WorkflowActionModalProps {
   confirmLabel: string
   confirmColorScheme?: ThemingProps['colorScheme']
   isConfirmDisabled?: boolean
+  isConfirmLoading?: boolean
   onConfirm: () => void
 }
 
@@ -48,6 +49,7 @@ export const WorkflowActionModal = ({
   confirmLabel,
   confirmColorScheme,
   isConfirmDisabled,
+  isConfirmLoading,
   onConfirm,
 }: WorkflowActionModalProps): JSX.Element => {
   const { t } = useTranslation()
@@ -115,6 +117,7 @@ export const WorkflowActionModal = ({
             <Button
               colorScheme={confirmColorScheme}
               isDisabled={isConfirmDisabled}
+              isLoading={isConfirmLoading}
               onClick={onConfirm}
             >
               {confirmLabel}
