@@ -6,6 +6,7 @@ export const enSG: Login = {
     banner: 'You can now collect payments directly on your form!',
     forbidden: 'You do not have access to this service.',
     expiredSession: 'Your login session has expired. Please login again.',
+    signingInWithOne: 'Signing into one.gov.sg...',
   },
   SelectProfilePage: {
     accountSelection: 'Choose an account to continue to FormSG',

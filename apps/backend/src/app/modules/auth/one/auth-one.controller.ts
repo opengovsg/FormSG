@@ -37,10 +37,10 @@ export const ONE_AUTH_COOKIE_OPTIONS = {
  * Handler for GET /api/v3/auth/one/login endpoint.
  *
  * Starts the Authorization Code + PKCE flow against one.gov.sg and 302s the
- * browser to the IdP. This endpoint doubles as the RP's `initiate_login_uri`
- * (OpenID Connect Core §4): the one.gov.sg app launcher deep-links here with
- * an `?iss=` param, which must match the issuer we trust (ADR-0006). Absent
- * `iss` is a normal login-button click.
+ * browser to the IdP. For IdP-initiated logins (OpenID Connect Core §4) the
+ * one.gov.sg app launcher opens the frontend /login page (the registered
+ * `initiate_login_uri`), which forwards its `?iss=` param here; it must match
+ * the issuer we trust (ADR-0006). Absent `iss` is a normal login-button click.
  */
 export const handleLogin: ControllerHandler<
   unknown,

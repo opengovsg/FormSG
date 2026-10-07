@@ -6,8 +6,8 @@ export const AuthOneRouter = Router()
 
 /**
  * Starts the one.gov.sg Authorization Code + PKCE flow and 302s to the IdP.
- * Also serves as this RP's `initiate_login_uri` for IdP-initiated logins
- * (the one.gov.sg app launcher deep-links here with an `?iss=` param).
+ * Also reached from the frontend /login page, which is this RP's
+ * `initiate_login_uri`: it forwards the launcher's `?iss=` param here.
  * @route GET /api/v3/auth/one/login
  */
 AuthOneRouter.get('/login', AuthOneController.handleLogin)
