@@ -1,0 +1,34 @@
+name: Render preview sweep
+
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only log what would be suspended or deleted
+        type: boolean
+        default: true
+      idle_hours:
+        description: Hours without a deploy or visit before suspending
+        default: '24'
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: render-preview-sweep
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4.3.1
+      - env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+          IDLE_HOURS: ${{ inputs.idle_hours || '24' }}
+        run: .github/scripts/render-preview.sh sweep
