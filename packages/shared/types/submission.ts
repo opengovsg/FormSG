@@ -327,6 +327,7 @@ export const MultirespondentSubmissionStreamDto =
       workflowStatus: z.nativeEnum(WorkflowStatus).optional(),
       lastSubmittedAt: z.string().optional(),
       hasNextStepRecipientEmails: z.boolean(),
+      isWorkflowActionsEligible: z.boolean(),
     }),
   })
 
@@ -355,6 +356,7 @@ export type SubmissionMrfMetadata =
       workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
       lastSubmittedAt: string | undefined
       hasNextStepRecipientEmails: boolean
+      isWorkflowActionsEligible: boolean
     }
   | undefined
 

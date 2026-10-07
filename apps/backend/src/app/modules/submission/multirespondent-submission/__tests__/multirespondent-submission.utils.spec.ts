@@ -275,6 +275,7 @@ describe('multirespondent-submission.utils', () => {
           lastSubmittedAt:
             submittedSteps[submittedSteps.length - 1].submittedAt,
           hasNextStepRecipientEmails: false,
+          isWorkflowActionsEligible: true,
         },
       })
 
@@ -385,6 +386,7 @@ describe('multirespondent-submission.utils', () => {
           lastSubmittedAt:
             submittedSteps[submittedSteps.length - 1].submittedAt,
           hasNextStepRecipientEmails: false,
+          isWorkflowActionsEligible: true,
         },
         submittedSteps: [
           {

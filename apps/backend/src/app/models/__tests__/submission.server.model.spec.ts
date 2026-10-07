@@ -1222,6 +1222,7 @@ describe('Submission Model', () => {
             workflow: submission.workflow,
             workflowStep: submission.workflowStep,
             submittedSteps: submission.submittedSteps,
+            created: submission.created,
           }),
         )
         expect(result?.refNo).toBeDefined()
@@ -1290,6 +1291,7 @@ describe('Submission Model', () => {
             workflowStep: submission.workflowStep,
             workflow: submission.workflow,
             submittedSteps: submission.submittedSteps,
+            created: submission.created,
           }),
         )
         expect(result.metadata[0].refNo).toBeDefined()
