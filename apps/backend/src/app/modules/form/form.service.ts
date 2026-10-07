@@ -634,13 +634,10 @@ export const checkIsIntranetFormAccess = (
   // and the form has authentication set
   if (
     isIntranetUser &&
-    [FormAuthType.SP, FormAuthType.CP, FormAuthType.MyInfo].includes(
-      form.authType,
-    )
+    [FormAuthType.CP, FormAuthType.MyInfo].includes(form.authType)
   ) {
     logger.warn({
-      message:
-        'Attempting to access SingPass, CorpPass or MyInfo form from intranet',
+      message: 'Attempting to access CorpPass or MyInfo form from intranet',
       meta: {
         action: 'checkIsIntranetFormAccess',
         formId: form._id,

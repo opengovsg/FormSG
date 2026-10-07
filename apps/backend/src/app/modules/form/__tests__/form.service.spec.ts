@@ -111,7 +111,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         responseMode: FormResponseMode.Multirespondent,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         publicKey: 'mockPublicKey',
         getWhitelistedSubmitterIds: () => ({
           isWhitelistEnabled: true,
@@ -154,7 +154,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         responseMode: FormResponseMode.Encrypt,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         publicKey: 'mockPublicKey',
         getWhitelistedSubmitterIds: () => ({
           isWhitelistEnabled: true,
@@ -180,7 +180,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         responseMode: FormResponseMode.Email,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
       } as unknown as IPopulatedForm
 
       const result = await FormService.checkHasRespondentNotWhitelistedFailure(
@@ -212,7 +212,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         responseMode: FormResponseMode.Encrypt,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         getWhitelistedSubmitterIds: () => ({
           isWhitelistEnabled: false,
           encryptedWhitelistedSubmitterIds: undefined,
@@ -233,7 +233,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         responseMode: FormResponseMode.Encrypt,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         getWhitelistedSubmitterIds: () => ({
           isWhitelistEnabled: true,
           encryptedWhitelistedSubmitterIds: mockWhitelistId,
@@ -253,7 +253,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         responseMode: FormResponseMode.Encrypt,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         getWhitelistedSubmitterIds: () => ({
           isWhitelistEnabled: true,
           encryptedWhitelistedSubmitterIds: undefined,
@@ -276,7 +276,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         responseMode: FormResponseMode.Encrypt,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         publicKey: undefined,
         getWhitelistedSubmitterIds: () => ({
           isWhitelistEnabled: true,
@@ -312,7 +312,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         responseMode: FormResponseMode.Encrypt,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         publicKey: 'mockPublicKey',
         getWhitelistedSubmitterIds: () => ({
           isWhitelistEnabled: true,
@@ -351,7 +351,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         responseMode: FormResponseMode.Encrypt,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         publicKey: 'mockPublicKey',
         getWhitelistedSubmitterIds: () => ({
           isWhitelistEnabled: true,
@@ -380,7 +380,7 @@ describe('FormService', () => {
       const form = {
         _id: new ObjectId(),
         responseMode: FormResponseMode.Encrypt,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
         publicKey: 'mockPublicKey',
         getWhitelistedSubmitterIds: () => ({
           isWhitelistEnabled: true,

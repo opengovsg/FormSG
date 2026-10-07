@@ -1120,7 +1120,7 @@ export const handleNdiResponses = async (
     let jwtPayloadResult
     switch (authType) {
       case FormAuthType.CP: {
-        const oidcService = getOidcService(FormAuthType.CP)
+        const oidcService = getOidcService()
         jwtPayloadResult = await oidcService
           .extractJwt(req.cookies)
           .asyncAndThen((jwt) => oidcService.extractJwtPayload(jwt))

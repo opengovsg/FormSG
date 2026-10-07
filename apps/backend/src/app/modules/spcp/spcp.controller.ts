@@ -12,12 +12,12 @@ import { getOidcService } from './spcp.oidc.service'
 const logger = createLoggerWithLabel(module)
 
 /**
- * Higher-order function which returns an Express handler to handle Singpass
- * and Corppass OIDC login requests.
- * @param authType 'SP' or 'CP'
+ * Higher-order function which returns an Express handler to handle Corppass
+ * OIDC login requests.
+ * @param authType 'CP'
  */
 export const handleSpcpOidcLogin: (
-  authType: FormAuthType.SP | FormAuthType.CP,
+  authType: FormAuthType.CP,
 ) => ControllerHandler<
   unknown,
   unknown,
@@ -32,7 +32,7 @@ export const handleSpcpOidcLogin: (
     authType,
   }
 
-  const oidcService = getOidcService(authType)
+  const oidcService = getOidcService()
 
   // State must be parsed before the code_verifier is read: the nonce it carries
   // is what scopes the verifier cookie to this login attempt.

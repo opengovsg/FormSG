@@ -3452,7 +3452,7 @@ describe('Form Model', () => {
         const MOCK_ALL_FORM_PARAMS = {
           title: 'Test Form',
           admin: MOCK_ADMIN_OBJ_ID,
-          authType: FormAuthType.SP,
+          authType: FormAuthType.CP,
           isSubmitterIdCollectionEnabled: true,
           isSingleSubmission: true,
           isSaveDraftEnabled: true,

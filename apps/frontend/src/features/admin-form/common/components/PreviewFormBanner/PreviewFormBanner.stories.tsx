@@ -44,7 +44,7 @@ WithAuthenticatedForm.parameters = {
     getPreviewFormResponse({
       overrides: {
         form: {
-          authType: FormAuthType.SP,
+          authType: FormAuthType.MyInfo,
         },
       },
     }),

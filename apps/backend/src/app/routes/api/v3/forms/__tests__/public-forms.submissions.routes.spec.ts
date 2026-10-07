@@ -18,10 +18,7 @@ import {
 } from '../../../../../modules/myinfo/__tests__/myinfo.test.constants'
 import { MYINFO_LOGIN_COOKIE_NAME } from '../../../../../modules/myinfo/myinfo.constants'
 import getMyInfoHashModel from '../../../../../modules/myinfo/myinfo_hash.model'
-import {
-  CpOidcClient,
-  SpOidcClient,
-} from '../../../../../modules/spcp/spcp.oidc.client'
+import { CpOidcClient } from '../../../../../modules/spcp/spcp.oidc.client'
 // Import last so mocks are imported correctly
 // eslint-disable-next-line import/first
 import { PublicFormsRouter } from '../public-forms.routes'
@@ -69,167 +66,7 @@ describe('public-form.submissions.routes', () => {
 
   afterAll(async () => await dbHandler.closeDatabase())
 
-  describe('SP, CP and MyInfo authentication', () => {
-    describe('SingPass', () => {
-      it('should return 200 when submission is valid', async () => {
-        // Arrange
-        jest.spyOn(SpOidcClient.prototype, 'verifyJwt').mockResolvedValueOnce({
-          userName: 'S1234567A',
-        })
-
-        const { form } = await dbHandler.insertEncryptForm({
-          formOptions: {
-            esrvcId: 'mockEsrvcId',
-            authType: FormAuthType.SP,
-            hasCaptcha: false,
-            status: FormStatus.Public,
-          },
-        })
-
-        // Act
-        const response = await request
-          .post(`/forms/${form._id}/submissions/storage`)
-          .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
-          .query({ captchaResponse: 'null', captchaType: '' })
-          .set('Cookie', ['jwtSp=mockJwt'])
-
-        // Assert
-        expect(response.status).toBe(200)
-        expect(response.body).toEqual({
-          message: 'Form submission successful.',
-          submissionId: expect.any(String),
-          timestamp: expect.any(Number),
-        })
-      })
-
-      it('should return 401 when submission does not have JWT', async () => {
-        // Arrange
-        const { form } = await dbHandler.insertEncryptForm({
-          formOptions: {
-            esrvcId: 'mockEsrvcId',
-            authType: FormAuthType.SP,
-            hasCaptcha: false,
-            status: FormStatus.Public,
-          },
-        })
-
-        // Act
-        const response = await request
-          .post(`/forms/${form._id}/submissions/storage`)
-          .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
-          .query({ captchaResponse: 'null', captchaType: '' })
-        // Note cookie is not set
-
-        // Assert
-        expect(response.status).toBe(401)
-        expect(response.body).toEqual({
-          message:
-            'Something went wrong with your login. Please try logging in and submitting again.',
-          messageKey:
-            'features.publicForm.backendErrors.submission.loginFailed',
-          spcpSubmissionFailure: true,
-        })
-      })
-
-      it('should return 401 when submission has the wrong JWT type', async () => {
-        // Arrange
-        const { form } = await dbHandler.insertEncryptForm({
-          formOptions: {
-            esrvcId: 'mockEsrvcId',
-            authType: FormAuthType.SP,
-            hasCaptcha: false,
-            status: FormStatus.Public,
-          },
-        })
-
-        // Act
-        const response = await request
-          .post(`/forms/${form._id}/submissions/storage`)
-          .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
-          .query({ captchaResponse: 'null', captchaType: '' })
-          // Note cookie is for CorpPass, not SingPass
-          .set('Cookie', ['jwtCp=mockJwt'])
-
-        // Assert
-        expect(response.status).toBe(401)
-        expect(response.body).toEqual({
-          message:
-            'Something went wrong with your login. Please try logging in and submitting again.',
-          messageKey:
-            'features.publicForm.backendErrors.submission.loginFailed',
-          spcpSubmissionFailure: true,
-        })
-      })
-
-      it('should return 401 when submission has invalid JWT', async () => {
-        // Arrange
-        // Mock auth client to return error when decoding JWT
-        jest
-          .spyOn(SpOidcClient.prototype, 'verifyJwt')
-          .mockRejectedValueOnce(new Error())
-
-        const { form } = await dbHandler.insertEncryptForm({
-          formOptions: {
-            esrvcId: 'mockEsrvcId',
-            authType: FormAuthType.SP,
-            hasCaptcha: false,
-            status: FormStatus.Public,
-          },
-        })
-
-        // Act
-        const response = await request
-          .post(`/forms/${form._id}/submissions/storage`)
-          .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
-          .query({ captchaResponse: 'null', captchaType: '' })
-          .set('Cookie', ['jwtSp=mockJwt'])
-
-        // Assert
-        expect(response.status).toBe(401)
-        expect(response.body).toEqual({
-          message:
-            'Something went wrong with your login. Please try logging in and submitting again.',
-          messageKey:
-            'features.publicForm.backendErrors.submission.loginFailed',
-          spcpSubmissionFailure: true,
-        })
-      })
-
-      it('should return 401 when submission has JWT with the wrong shape', async () => {
-        // Arrange
-        // Mock auth client to return wrong decoded shape
-        jest.spyOn(SpOidcClient.prototype, 'verifyJwt').mockResolvedValueOnce({
-          wrongKey: 'S1234567A',
-        })
-
-        const { form } = await dbHandler.insertEncryptForm({
-          formOptions: {
-            esrvcId: 'mockEsrvcId',
-            authType: FormAuthType.SP,
-            hasCaptcha: false,
-            status: FormStatus.Public,
-          },
-        })
-
-        // Act
-        const response = await request
-          .post(`/forms/${form._id}/submissions/storage`)
-          .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
-          .query({ captchaResponse: 'null', captchaType: '' })
-          .set('Cookie', ['jwtSp=mockJwt'])
-
-        // Assert
-        expect(response.status).toBe(401)
-        expect(response.body).toEqual({
-          message:
-            'Something went wrong with your login. Please try logging in and submitting again.',
-          messageKey:
-            'features.publicForm.backendErrors.submission.loginFailed',
-          spcpSubmissionFailure: true,
-        })
-      })
-    })
-
+  describe('CP and MyInfo authentication', () => {
     describe('MyInfo', () => {
       afterEach(() => jest.restoreAllMocks())
 
@@ -320,8 +157,8 @@ describe('public-form.submissions.routes', () => {
           .post(`/forms/${form._id}/submissions/storage`)
           .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
           .query({ captchaResponse: 'null', captchaType: '' })
-          // Note cookie is for SingPass, not MyInfo
-          .set('Cookie', ['jwtSp=mockJwt'])
+          // Note cookie is for CorpPass, not MyInfo
+          .set('Cookie', ['jwtCp=mockJwt'])
 
         // Assert
         expect(response.status).toBe(401)
@@ -481,8 +318,8 @@ describe('public-form.submissions.routes', () => {
           .post(`/forms/${form._id}/submissions/storage`)
           .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
           .query({ captchaResponse: 'null', captchaType: '' })
-          // Note cookie is for SingPass, not CorpPass
-          .set('Cookie', ['jwtSp=mockJwt'])
+          // Note cookie is for MyInfo, not CorpPass
+          .set('Cookie', [`${MYINFO_LOGIN_COOKIE_NAME}=mockJwt`])
 
         // Assert
         expect(response.status).toBe(401)
@@ -1162,171 +999,7 @@ describe('public-form.submissions.routes', () => {
       })
     })
 
-    describe('SP, CP and MyInfo authentication', () => {
-      describe('SingPass', () => {
-        it('should return 200 when submission is valid', async () => {
-          // Arrange
-          jest
-            .spyOn(SpOidcClient.prototype, 'verifyJwt')
-            .mockResolvedValueOnce({
-              userName: 'S1234567A',
-            })
-
-          const { form } = await dbHandler.insertEncryptForm({
-            formOptions: {
-              esrvcId: 'mockEsrvcId',
-              authType: FormAuthType.SP,
-              hasCaptcha: false,
-              status: FormStatus.Public,
-            },
-          })
-
-          // Act
-          const response = await request
-            .post(`/forms/${form._id}/submissions/storage`)
-            .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null', captchaType: '' })
-            .set('Cookie', ['jwtSp=mockJwt'])
-
-          // Assert
-          expect(response.status).toBe(200)
-          expect(response.body).toEqual({
-            message: 'Form submission successful.',
-            submissionId: expect.any(String),
-            timestamp: expect.any(Number),
-          })
-        })
-
-        it('should return 401 when submission does not have JWT', async () => {
-          // Arrange
-          const { form } = await dbHandler.insertEncryptForm({
-            formOptions: {
-              esrvcId: 'mockEsrvcId',
-              authType: FormAuthType.SP,
-              hasCaptcha: false,
-              status: FormStatus.Public,
-            },
-          })
-
-          // Act
-          const response = await request
-            .post(`/forms/${form._id}/submissions/storage`)
-            .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null', captchaType: '' })
-          // Note cookie is not set
-
-          // Assert
-          expect(response.status).toBe(401)
-          expect(response.body).toEqual({
-            message:
-              'Something went wrong with your login. Please try logging in and submitting again.',
-            messageKey:
-              'features.publicForm.backendErrors.submission.loginFailed',
-            spcpSubmissionFailure: true,
-          })
-        })
-
-        it('should return 401 when submission has the wrong JWT type', async () => {
-          // Arrange
-          const { form } = await dbHandler.insertEncryptForm({
-            formOptions: {
-              esrvcId: 'mockEsrvcId',
-              authType: FormAuthType.SP,
-              hasCaptcha: false,
-              status: FormStatus.Public,
-            },
-          })
-
-          // Act
-          const response = await request
-            .post(`/forms/${form._id}/submissions/storage`)
-            .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null', captchaType: '' })
-            // Note cookie is for CorpPass, not SingPass
-            .set('Cookie', ['jwtCp=mockJwt'])
-
-          // Assert
-          expect(response.status).toBe(401)
-          expect(response.body).toEqual({
-            message:
-              'Something went wrong with your login. Please try logging in and submitting again.',
-            messageKey:
-              'features.publicForm.backendErrors.submission.loginFailed',
-            spcpSubmissionFailure: true,
-          })
-        })
-
-        it('should return 401 when submission has invalid JWT', async () => {
-          // Arrange
-          // Mock auth client to return error when decoding JWT
-          jest
-            .spyOn(SpOidcClient.prototype, 'verifyJwt')
-            .mockRejectedValueOnce(new Error())
-
-          const { form } = await dbHandler.insertEncryptForm({
-            formOptions: {
-              esrvcId: 'mockEsrvcId',
-              authType: FormAuthType.SP,
-              hasCaptcha: false,
-              status: FormStatus.Public,
-            },
-          })
-
-          // Act
-          const response = await request
-            .post(`/forms/${form._id}/submissions/storage`)
-            .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null', captchaType: '' })
-            .set('Cookie', ['jwtSp=mockJwt'])
-
-          // Assert
-          expect(response.status).toBe(401)
-          expect(response.body).toEqual({
-            message:
-              'Something went wrong with your login. Please try logging in and submitting again.',
-            messageKey:
-              'features.publicForm.backendErrors.submission.loginFailed',
-            spcpSubmissionFailure: true,
-          })
-        })
-
-        it('should return 401 when submission has JWT with the wrong shape', async () => {
-          // Arrange
-          // Mock auth client to return wrong decoded shape
-          jest
-            .spyOn(SpOidcClient.prototype, 'verifyJwt')
-            .mockResolvedValueOnce({
-              wrongKey: 'S1234567A',
-            })
-
-          const { form } = await dbHandler.insertEncryptForm({
-            formOptions: {
-              esrvcId: 'mockEsrvcId',
-              authType: FormAuthType.SP,
-              hasCaptcha: false,
-              status: FormStatus.Public,
-            },
-          })
-
-          // Act
-          const response = await request
-            .post(`/forms/${form._id}/submissions/storage`)
-            .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
-            .query({ captchaResponse: 'null', captchaType: '' })
-            .set('Cookie', ['jwtSp=mockJwt'])
-
-          // Assert
-          expect(response.status).toBe(401)
-          expect(response.body).toEqual({
-            message:
-              'Something went wrong with your login. Please try logging in and submitting again.',
-            messageKey:
-              'features.publicForm.backendErrors.submission.loginFailed',
-            spcpSubmissionFailure: true,
-          })
-        })
-      })
-
+    describe('CP and MyInfo authentication', () => {
       describe('CorpPass', () => {
         it('should return 200 when submission is valid', async () => {
           // Arrange
@@ -1404,8 +1077,8 @@ describe('public-form.submissions.routes', () => {
             .post(`/forms/${form._id}/submissions/storage`)
             .field('body', JSON.stringify(MOCK_STORAGE_NO_RESPONSES_BODY))
             .query({ captchaResponse: 'null', captchaType: '' })
-            // Note cookie is for SingPass, not CorpPass
-            .set('Cookie', ['jwtSp=mockJwt'])
+            // Note cookie is for MyInfo, not CorpPass
+            .set('Cookie', [`${MYINFO_LOGIN_COOKIE_NAME}=mockJwt`])
 
           // Assert
           expect(response.status).toBe(401)
