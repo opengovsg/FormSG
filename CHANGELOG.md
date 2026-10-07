@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.45.1](https://github.com/opengovsg/formsg/compare/v9.45.0...v9.45.1) (2026-10-07)
+
+
+### Bug Fixes
+
+* **docker:** copy patches/ before pnpm install (#10231) ([#10231](https://github.com/opengovsg/formsg/commit/f2c0708cf947bce28604f66a1cf192fae39eef53))
+
 ## [9.45.0](https://github.com/opengovsg/formsg/compare/v9.44.0...v9.45.0) (2026-10-07)
 
 
