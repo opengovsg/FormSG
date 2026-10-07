@@ -39,7 +39,10 @@ import {
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
-import { useWorkflowActionsGate } from '../workflowActions'
+import {
+  useWorkflowActionsGate,
+  WorkflowActionsSection,
+} from '../workflowActions'
 
 import { DecryptedRow } from './DecryptedRow'
 import { useMutateDownloadAttachments } from './mutations'
@@ -223,6 +226,15 @@ export const IndividualResponsePage = (): JSX.Element => {
       spacing={{ base: '1.5rem', md: '2.5rem' }}
       data-dd-privacy="mask"
     >
+      {hasWorkflow ? (
+        <WorkflowActionsSection
+          submissionId={submissionId}
+          mrf={data?.mrf}
+          history={data?.workflowHistory}
+          responses={data?.responses}
+          isLoading={isLoading || isError}
+        />
+      ) : null}
       <Stack bg="primary.100" p="1.5rem" textStyle="body-1">
         <StackRow
           label="Response ID"
