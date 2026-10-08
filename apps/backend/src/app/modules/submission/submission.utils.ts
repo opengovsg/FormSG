@@ -154,6 +154,7 @@ import {
   InvalidFileKeyError,
   InvalidWorkflowTypeError,
   MissingSubmitterIdError,
+  MrfAssigneeAlreadyAssignedError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
   MrfWorkflowActionsUnavailableError,
@@ -490,6 +491,11 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'This workflow has been stopped. Please contact the form admin that gave you this link.',
         errorMessageKey: submissionErrorKey('mrf.workflowStopped'),
+      }
+    case MrfAssigneeAlreadyAssignedError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage: error.message,
       }
     case MrfWorkflowActionsUnavailableError:
       return {
