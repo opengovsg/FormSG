@@ -67,7 +67,11 @@ import { RESPONSE_NUMBER_COLUMN_ID } from '../savedViews'
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { SendReminderButton } from './SendReminderButton'
-import { getIsPaymentsForm, getNetAmount } from './utils'
+import {
+  getIsPaymentsForm,
+  getNetAmount,
+  getReminderButtonState,
+} from './utils'
 
 type ResponseColumnData = SubmissionMetadata
 
@@ -323,14 +327,13 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: MRF_REMINDERS_LABEL,
     Cell: ({ row }) => {
-      const isPending =
-        row.original.mrf?.workflowStatus === WorkflowStatus.PENDING
-      const hasNextStepRecipientEmails =
-        row.original.mrf?.hasNextStepRecipientEmails
-      const submissionId = row.original.refNo
-      return isPending && hasNextStepRecipientEmails ? (
-        <SendReminderButton submissionId={submissionId} />
-      ) : null
+      const reminderButtonState = getReminderButtonState(row.original.mrf)
+      return reminderButtonState === 'hidden' ? null : (
+        <SendReminderButton
+          submissionId={row.original.refNo}
+          isDisabled={reminderButtonState === 'disabled'}
+        />
+      )
     },
     minWidth: 160,
     width: 160,
