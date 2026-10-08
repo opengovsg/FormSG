@@ -343,7 +343,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
 const PAYMENT_RESPONSE_TABLE_COLUMNS =
   BASE_RESPONSE_TABLE_COLUMNS.concat(PAYMENT_COLUMNS)
 
-const WORKFLOW_PREFIX_COLUMNS = MRF_RESPONSE_TABLE_COLUMNS
+const WORKFLOW_PREFIX_COLUMNS = MRF_RESPONSE_TABLE_COLUMNS.filter(
+  ({ Header }) => Header !== MRF_REMINDERS_LABEL,
+)
 
 const SingleLineCell = ({ value }: CellProps<ResponseColumnData>) => (
   <Text noOfLines={1} title={String(value ?? '')}>
