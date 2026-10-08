@@ -67,18 +67,22 @@ export const recordWorkflowEvent = ({
  * @returns ok(events) for the submission, oldest first
  * @returns err(DatabaseError) if the query fails
  */
-export const getWorkflowEvents = (
-  submissionId: string,
-): ResultAsync<WorkflowEventDto[], DatabaseError> =>
+export const getWorkflowEvents = ({
+  formId,
+  submissionId,
+}: {
+  formId: string
+  submissionId: string
+}): ResultAsync<WorkflowEventDto[], DatabaseError> =>
   ResultAsync.fromPromise(
-    WorkflowEventModel.find({ submissionId })
+    WorkflowEventModel.find({ formId, submissionId })
       .sort({ created: 1 })
       .lean()
       .exec(),
     (error) => {
       logger.error({
         message: 'Error retrieving workflow events',
-        meta: { action: 'getWorkflowEvents', submissionId },
+        meta: { action: 'getWorkflowEvents', formId, submissionId },
         error,
       })
       return new DatabaseError(getMongoErrorMessage(error))
