@@ -1,6 +1,10 @@
 import { datadogLogs } from '@datadog/browser-logs'
 
-import { FormSavedView, FormSavedViewInput } from 'formsg-shared/types'
+import {
+  FormSavedView,
+  FormSavedViewInput,
+  WorkflowEventDto,
+} from 'formsg-shared/types'
 import {
   FormSubmissionMetadataQueryDto,
   SubmissionCountQueryDto,
@@ -301,3 +305,32 @@ export const getAllDecryptedSubmission = async ({
   })
   return decryptionResults
 }
+
+export const getWorkflowEvents = ({
+  formId,
+  submissionId,
+}: {
+  formId: string
+  submissionId: string
+}): Promise<WorkflowEventDto[]> =>
+  ApiService.get<WorkflowEventDto[]>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/workflow-events`,
+  ).then(({ data }) => data)
+
+export const addAssignees = ({
+  formId,
+  submissionId,
+  emails,
+  submissionSecretKey,
+  stepToken,
+}: {
+  formId: string
+  submissionId: string
+  emails: string[]
+  submissionSecretKey: string
+  stepToken?: string
+}): Promise<{ stepNumber: number; emails: string[] }> =>
+  ApiService.post<{ stepNumber: number; emails: string[] }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/assignees`,
+    { emails, submissionSecretKey, stepToken },
+  ).then(({ data }) => data)

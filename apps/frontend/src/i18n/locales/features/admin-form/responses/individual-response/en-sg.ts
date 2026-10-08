@@ -13,6 +13,19 @@ export const enSG: ResponsesIndividualResponse = {
     whoIsNotifiedLabel: 'Who will be notified',
     whoIsNotifiedNone: 'No one will be notified.',
     stopButton: 'Stop',
+    reassignButton: 'Reassign',
+    addAssigneeModal: {
+      title: 'Add assignee',
+      description:
+        'Add someone to respond to this step. Current assignees can still respond.',
+      label: 'Add assignee',
+      invalidEmail: 'Please enter a valid email',
+      alreadyAssigned:
+        '{emails} {count, plural, one {is} other {are}} already assigned to this step.',
+      confirm: 'Add assignee',
+      toastSuccess:
+        '{count, plural, one {The new assignee was} other {The new assignees were}} successfully added.',
+    },
     stopModal: {
       title: 'Stop this workflow?',
       description:
