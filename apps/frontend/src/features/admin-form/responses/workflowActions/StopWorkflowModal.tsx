@@ -5,6 +5,7 @@ import { Box, Text } from '@chakra-ui/react'
 import { uniq } from 'lodash'
 import isEmail from 'validator/lib/isEmail'
 
+import { WorkflowEventDto } from 'formsg-shared/types'
 import { MultirespondentFormSettings } from 'formsg-shared/types/form'
 
 import {
@@ -32,6 +33,7 @@ export interface StopWorkflowModalProps {
   onConfirm: (notifiedEmails: string[]) => void
   isLoading?: boolean
   history: WorkflowHistory
+  events?: WorkflowEventDto[]
   responses?: DecryptedResponseLike[]
 }
 
@@ -41,6 +43,7 @@ export const StopWorkflowModal = ({
   onConfirm,
   isLoading,
   history,
+  events,
   responses,
 }: StopWorkflowModalProps): JSX.Element => {
   const { t } = useTranslation()
@@ -72,12 +75,20 @@ export const StopWorkflowModal = ({
     () =>
       getStopNotifiedEmails({
         history,
+        events,
         responses,
         otherEmails: (otherEmails ?? []).filter((email) => isEmail(email)),
         stepOneEmailFieldId,
         stepIdsToNotify: stepIdsToNotify ?? [],
       }),
-    [history, responses, otherEmails, stepOneEmailFieldId, stepIdsToNotify],
+    [
+      history,
+      events,
+      responses,
+      otherEmails,
+      stepOneEmailFieldId,
+      stepIdsToNotify,
+    ],
   )
 
   return (
