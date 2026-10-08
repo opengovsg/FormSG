@@ -93,6 +93,7 @@ import {
 import {
   adaptV4ResponsesForMyInfoHashCheck,
   MRF_VERSION_V4,
+  reconcileChildTypesWithChildTypeAnswers,
   stampMyInfoVerifiedOnResponses,
   validateMrfFieldResponses,
 } from './multirespondent-submission.utils'
@@ -930,6 +931,13 @@ export const verifyMyInfoHashes = async (
           hashes,
         ),
       ),
+    )
+    .andThen((verifiedKeys) =>
+      reconcileChildTypesWithChildTypeAnswers(
+        req.body.responses ?? {},
+        formDef.form_fields,
+        verifiedKeys,
+      ).map(() => verifiedKeys),
     )
     .map((verifiedKeys) => {
       req.formsg.myInfoReadOnlyFields = resolveMrfMyInfoReadOnlyFields({

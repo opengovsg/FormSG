@@ -39,6 +39,8 @@ import {
 import { ParsedClearFormFieldResponsesV4 } from 'src/types/api'
 
 import * as fieldValidation from '../../../../utils/field-validation'
+import { MyInfoHashDidNotMatchError } from '../../../myinfo/myinfo.errors'
+import { getMyInfoChildHashKey } from '../../../myinfo/myinfo.util'
 import { ValidateFieldErrorV4 } from '../../submission.errors'
 import {
   adaptV4ResponsesForMyInfoHashCheck,
@@ -47,6 +49,7 @@ import {
   createPublicMultirespondentSubmissionDto,
   extractRespondentCopyEmailDatas,
   getQuestionAnswerPairsForMultipleFields,
+  reconcileChildTypesWithChildTypeAnswers,
   retrieveWorkflowStepEmailAddresses,
   validateMrfFieldResponses,
 } from '../multirespondent-submission.utils'
@@ -878,6 +881,127 @@ describe('multirespondent-submission.utils', () => {
           myInfo: { attr: 'name' },
         }),
       ])
+    })
+  })
+
+  describe('reconcileChildTypesWithChildTypeAnswers', () => {
+    const CHILDREN_FIELD_ID = new ObjectId().toHexString()
+
+    const makeChildrenField = (childrenSubFields: MyInfoChildAttributes[]) =>
+      ({
+        _id: CHILDREN_FIELD_ID,
+        title: 'Children',
+        fieldType: BasicField.Children,
+        childrenSubFields,
+        myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+      }) as unknown as FormFieldDto
+
+    const makeResponses = (child0: Record<string, unknown>) =>
+      ({
+        [CHILDREN_FIELD_ID]: {
+          fieldType: BasicField.Children,
+          question: 'Children',
+          answer: { child0 },
+        },
+      }) as unknown as ParsedClearFormFieldResponsesV4
+
+    const childWith = (childType: string, type?: string) => ({
+      value: {
+        [MyInfoChildAttributes.ChildName]: { value: 'THRO RY' },
+        [MyInfoChildAttributes.ChildType]: { value: childType },
+      },
+      ...(type && { type }),
+    })
+
+    const WITH_CHILD_TYPE = makeChildrenField([
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildType,
+    ])
+
+    // The Child type answer of child0 passed the MyInfo hash check.
+    const CHILD_TYPE_VERIFIED = new Set([
+      getMyInfoChildHashKey(
+        CHILDREN_FIELD_ID,
+        MyInfoChildAttributes.ChildType,
+        0,
+        'THRO RY',
+      ),
+    ])
+
+    const typeOf = (responses: ParsedClearFormFieldResponsesV4) =>
+      (
+        responses[CHILDREN_FIELD_ID].answer as {
+          child0: { type?: string }
+        }
+      ).child0.type
+
+    it('should accept a type that agrees with the verified Child type answer', () => {
+      const responses = makeResponses(childWith('SPONSORED', 'sponsored'))
+
+      const result = reconcileChildTypesWithChildTypeAnswers(
+        responses,
+        [WITH_CHILD_TYPE],
+        CHILD_TYPE_VERIFIED,
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(typeOf(responses)).toBe('sponsored')
+    })
+
+    it('should fill a missing type from the verified Child type answer', () => {
+      const responses = makeResponses(childWith('SPONSORED'))
+
+      const result = reconcileChildTypesWithChildTypeAnswers(
+        responses,
+        [WITH_CHILD_TYPE],
+        CHILD_TYPE_VERIFIED,
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(typeOf(responses)).toBe('sponsored')
+    })
+
+    it('should reject a type that disagrees with the verified Child type answer', () => {
+      const responses = makeResponses(childWith('SPONSORED', 'local'))
+
+      const result = reconcileChildTypesWithChildTypeAnswers(
+        responses,
+        [WITH_CHILD_TYPE],
+        CHILD_TYPE_VERIFIED,
+      )
+
+      expect(result._unsafeUnwrapErr()).toBeInstanceOf(
+        MyInfoHashDidNotMatchError,
+      )
+    })
+
+    it('should leave type alone when the Child type answer was not verified', () => {
+      const responses = makeResponses(childWith('SPONSORED', 'local'))
+
+      const result = reconcileChildTypesWithChildTypeAnswers(
+        responses,
+        [WITH_CHILD_TYPE],
+        new Set(),
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(typeOf(responses)).toBe('local')
+    })
+
+    it('should leave type alone on a field without the Child type sub-field', () => {
+      const responses = makeResponses({
+        value: { [MyInfoChildAttributes.ChildName]: { value: 'THRO RY' } },
+        type: 'local',
+      })
+
+      const result = reconcileChildTypesWithChildTypeAnswers(
+        responses,
+        [makeChildrenField([MyInfoChildAttributes.ChildName])],
+        CHILD_TYPE_VERIFIED,
+      )
+
+      expect(result.isOk()).toBe(true)
+      expect(typeOf(responses)).toBe('local')
     })
   })
 
