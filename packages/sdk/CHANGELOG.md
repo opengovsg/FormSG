@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [8.2.1](https://github.com/opengovsg/formsg/compare/sdk-v8.2.0...sdk-v8.2.1) (2026-10-08)
+
+
+### Documentation
+
+* **sdk:** V4 webhook guide and V1-to-V4 migration guide (#10233) ([#10233](https://github.com/opengovsg/formsg/commit/a77a1c93b973441fd61d938d4c4686c665ab8d6f))
+
 ## [8.2.0](https://github.com/opengovsg/formsg/compare/sdk-v8.1.1...sdk-v8.2.0) (2026-10-06)
 
 
