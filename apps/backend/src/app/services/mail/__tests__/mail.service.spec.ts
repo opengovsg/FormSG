@@ -1767,6 +1767,9 @@ describe('mail.service', () => {
           }),
         }),
       )
+      expect(sendMailSpy.mock.calls[0][0].html).toContain(
+        'This workflow has been stopped',
+      )
       expect(sendMailSpy.mock.calls[0][0].html).not.toContain('Start of JSON')
     })
   })
