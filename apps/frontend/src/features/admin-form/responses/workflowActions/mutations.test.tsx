@@ -25,6 +25,7 @@ describe('useAddAssigneesMutation', () => {
       new Promise(() => undefined),
     )
     const wrapper = ({ children }: PropsWithChildren) => (
+      // @ts-expect-error missing FC type in old version
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
     const { result } = renderHook(() => useAddAssigneesMutation('form-id'), {
