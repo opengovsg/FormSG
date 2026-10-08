@@ -187,7 +187,7 @@
     "vite": "^6.4.3",
     "vite-plugin-svgr": "^4.2.0",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^3.2.6"
+    "vitest": "^4.1.11"
   },
   "proxy": "http://localhost:5001",
   "msw": {
