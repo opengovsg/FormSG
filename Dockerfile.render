@@ -39,6 +39,7 @@ USER formsguser
 
 ENV NODE_ENV=production
 ENV npm_config_manage_package_manager_versions=false
+ENV npm_config_verify_deps_before_run=false
 EXPOSE 4545
 
 ENTRYPOINT [ "tini", "--" ]
