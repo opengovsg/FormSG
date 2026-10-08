@@ -1318,6 +1318,7 @@ export class MailService {
   }
 
   #sendMrfOutcomeEmail = ({
+    emailTitle,
     outcome,
     emailType,
     actionName,
@@ -1332,6 +1333,7 @@ export class MailService {
     attachments,
     replyTo,
   }: {
+    emailTitle?: string
     outcome: WorkflowOutcome
     emailType: EmailType
     actionName: string
@@ -1351,6 +1353,7 @@ export class MailService {
       formId,
       subject: `${outcome} - ${formTitle} (${responseId})`,
       htmlData: {
+        emailTitle,
         formTitle,
         responseId: responseId.toString(),
         timestamp,
@@ -1400,6 +1403,7 @@ export class MailService {
   }): ResultAsync<true, MailGenerationError | MailSendError> =>
     this.#sendMrfOutcomeEmail({
       ...props,
+      emailTitle: 'This workflow has been stopped',
       outcome: WorkflowOutcome.STOPPED,
       emailType: EmailType.WorkflowStopped,
       actionName: 'sendMrfWorkflowStoppedEmail',
