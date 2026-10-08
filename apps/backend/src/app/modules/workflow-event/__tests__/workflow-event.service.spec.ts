@@ -77,9 +77,10 @@ describe('workflow-event.service', () => {
         })
       }
 
-      const result = await WorkflowEventService.getWorkflowEvents(
-        String(submission._id),
-      )
+      const result = await WorkflowEventService.getWorkflowEvents({
+        formId: String(submission.form),
+        submissionId: String(submission._id),
+      })
 
       expect(result._unsafeUnwrap()).toEqual([
         expect.objectContaining({
@@ -91,6 +92,26 @@ describe('workflow-event.service', () => {
         }),
         expect.objectContaining({ type: WorkflowEventType.Stopped }),
       ])
+    })
+  })
+
+  describe('getWorkflowEvents for another form', () => {
+    it('returns nothing when the submission belongs to a different form', async () => {
+      const submission = makeSubmission(WORKFLOW_ACTIONS_CUTOFF)
+      await WorkflowEventService.recordWorkflowEvent({
+        submission,
+        type: WorkflowEventType.Stopped,
+        actor,
+        stepNumber: 2,
+        emails: [],
+      })
+
+      const result = await WorkflowEventService.getWorkflowEvents({
+        formId: String(new ObjectId()),
+        submissionId: String(submission._id),
+      })
+
+      expect(result._unsafeUnwrap()).toEqual([])
     })
   })
 })
