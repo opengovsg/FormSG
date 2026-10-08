@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
-ARG BUILD_BASE_IMAGE=ghcr.io/opengovsg/formsg:build-38a7abbc699a2316
-ARG RUNTIME_BASE_IMAGE=ghcr.io/opengovsg/formsg:runtime-38a7abbc699a2316
+ARG BUILD_BASE_IMAGE=ghcr.io/opengovsg/formsg:build-adeab9a9177ea5da
+ARG RUNTIME_BASE_IMAGE=ghcr.io/opengovsg/formsg:runtime-adeab9a9177ea5da
 
 FROM ${BUILD_BASE_IMAGE} AS build
 WORKDIR /build
