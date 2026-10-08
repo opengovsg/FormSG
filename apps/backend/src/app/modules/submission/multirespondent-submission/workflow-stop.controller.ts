@@ -1,22 +1,15 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
-import { featureFlags } from 'formsg-shared/constants'
-import { FormResponseMode } from 'formsg-shared/types'
 import moment from 'moment-timezone'
-import { errAsync, okAsync } from 'neverthrow'
 
 import { createLoggerWithLabel } from '../../../config/logger'
 import MailService from '../../../services/mail/mail.service'
 import { createReqMeta } from '../../../utils/request'
-import * as AuthService from '../../auth/auth.service'
 import { ControllerHandler } from '../../core/core.types'
-import { PermissionLevel } from '../../form/admin-form/admin-form.types'
-import { FormInvalidResponseModeError } from '../../form/form.errors'
-import * as UserService from '../../user/user.service'
-import { MrfWorkflowActionsUnavailableError } from '../submission.errors'
 import { mapRouteError, sendRouteError } from '../submission.utils'
 
 import { stopMultirespondentSubmission } from './multirespondent-submission.service'
+import { checkWorkflowActionAllowed } from './workflow-actions.gate'
 
 const logger = createLoggerWithLabel(module)
 
@@ -47,23 +40,12 @@ const stopPendingMrfSubmission: ControllerHandler<
     ...createReqMeta(req),
   }
 
-  return UserService.findUserById(authedUserId)
-    .andThen((user) =>
-      AuthService.getFormAfterPermissionChecks({
-        user,
-        formId,
-        level: PermissionLevel.Write,
-      }).map((form) => ({ form, user })),
-    )
-    .andThen(({ form, user }) => {
-      if (form.responseMode !== FormResponseMode.Multirespondent) {
-        return errAsync(new FormInvalidResponseModeError())
-      }
-      if (!req.growthbook?.isOn(featureFlags.workflowActions)) {
-        return errAsync(new MrfWorkflowActionsUnavailableError())
-      }
-      return okAsync({ form, user })
-    })
+  return checkWorkflowActionAllowed({
+    userId: authedUserId,
+    formId,
+    submissionId,
+    growthbook: req.growthbook,
+  })
     .andThen(({ form, user }) =>
       stopMultirespondentSubmission({
         formId,
