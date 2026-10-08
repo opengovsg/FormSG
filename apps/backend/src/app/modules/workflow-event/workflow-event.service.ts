@@ -89,3 +89,40 @@ export const toWorkflowEventDtos = (
       created: new Date(event.created).toISOString() as DateString,
     }))
     .sort((a, b) => a.created.localeCompare(b.created))
+
+/**
+ * @returns ok(emails) added to the step through Reassign, lowercased and deduped
+ * @returns err(DatabaseError) if the query fails
+ */
+export const getAddedAssignees = ({
+  submissionId,
+  stepNumber,
+}: {
+  submissionId: string
+  stepNumber: number
+}): ResultAsync<string[], DatabaseError> =>
+  ResultAsync.fromPromise(
+    MultirespondentSubmission.findById(submissionId, { workflowEvents: 1 })
+      .lean()
+      .exec(),
+    (error) => {
+      logger.error({
+        message: 'Error retrieving added assignees',
+        meta: { action: 'getAddedAssignees', submissionId, stepNumber },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).map((submission) =>
+    Array.from(
+      new Set(
+        (submission?.workflowEvents ?? [])
+          .filter(
+            (event) =>
+              event.type === WorkflowEventType.AssigneesAdded &&
+              event.stepNumber === stepNumber,
+          )
+          .flatMap(({ emails }) => emails.map((email) => email.toLowerCase())),
+      ),
+    ),
+  )
