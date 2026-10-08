@@ -27,6 +27,7 @@ COPY --from=build /build/packages/sdk/dist /opt/formsg/packages/sdk/dist
 
 COPY --from=build /build/pnpm-workspace.yaml /opt/formsg/pnpm-workspace.yaml
 COPY --from=build /build/pnpm-lock.yaml /opt/formsg/pnpm-lock.yaml
+COPY --from=build /build/patches /opt/formsg/patches
 COPY --from=build /build/node_modules /opt/formsg/node_modules
 COPY --from=build /build/package.json /opt/formsg/package.json
 
