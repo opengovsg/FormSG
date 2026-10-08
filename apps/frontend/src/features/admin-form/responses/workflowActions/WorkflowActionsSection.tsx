@@ -8,6 +8,7 @@ import { SubmissionMrfMetadata, WorkflowStatus } from 'formsg-shared/types'
 import Button from '~components/Button'
 
 import { useAdminFormCollaborators } from '~features/admin-form/common/queries'
+import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
 import { AddAssigneeModal } from './AddAssigneeModal'
 import {
@@ -18,6 +19,7 @@ import {
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
 import { useAddAssigneesMutation, useStopWorkflowMutation } from './mutations'
 import { useWorkflowEvents } from './queries'
+import { RemindButton } from './RemindButton'
 import { StopWorkflowModal } from './StopWorkflowModal'
 import { useWorkflowActionsGate } from './useWorkflowActionsGate'
 
@@ -43,6 +45,7 @@ export const WorkflowActionsSection = ({
   const { t } = useTranslation()
   const { formId = '' } = useParams()
   const isWorkflowActionsOn = useWorkflowActionsGate(mrf)
+  const isDelightfulDashboard = useIsDelightfulDashboard()
   const { hasEditAccess } = useAdminFormCollaborators(formId)
   const stopModal = useDisclosure()
   const addAssigneeModal = useDisclosure()
@@ -54,12 +57,7 @@ export const WorkflowActionsSection = ({
     enabled: isWorkflowActionsOn,
   })
 
-  if (
-    !isWorkflowActionsOn ||
-    !hasEditAccess ||
-    mrf?.stoppedAt ||
-    mrf?.workflowStatus !== WorkflowStatus.PENDING
-  ) {
+  if (mrf?.stoppedAt || mrf?.workflowStatus !== WorkflowStatus.PENDING) {
     return null
   }
 
@@ -68,6 +66,10 @@ export const WorkflowActionsSection = ({
     events,
     stepNumber: history.submittedSteps.length + 1,
   })
+  const canRemind = isDelightfulDashboard && pendingStepAssignees.length > 0
+  const canActOnWorkflow = isWorkflowActionsOn && hasEditAccess
+
+  if (!canRemind && !canActOnWorkflow) return null
 
   const handleAddAssignees = (emails: string[]) => {
     if (!submissionSecretKey) return
@@ -86,34 +88,47 @@ export const WorkflowActionsSection = ({
   return (
     <>
       <Flex gap="0.5rem" wrap="wrap" pt="0.25rem">
-        <Button
-          variant="outline"
-          colorScheme="secondary"
-          leftIcon={<BiTransferAlt fontSize="1.25rem" />}
-          isDisabled={isLoading || isEventsLoading || !submissionSecretKey}
-          onClick={addAssigneeModal.onOpen}
-        >
-          {t(`${WORKFLOW_ACTIONS_I18N}.reassignButton`)}
-        </Button>
-        <Button
-          variant="outline"
-          colorScheme="secondary"
-          _hover={{
-            bg: 'danger.100',
-            color: 'danger.500',
-            borderColor: 'danger.500',
-          }}
-          _active={{
-            bg: 'danger.200',
-            color: 'danger.500',
-            borderColor: 'danger.500',
-          }}
-          leftIcon={<BiStopCircle fontSize="1.25rem" />}
-          isDisabled={isLoading || isEventsLoading}
-          onClick={stopModal.onOpen}
-        >
-          {t(`${WORKFLOW_ACTIONS_I18N}.stopButton`)}
-        </Button>
+        {canRemind ? (
+          <RemindButton
+            formId={formId}
+            submissionId={submissionId}
+            submissionSecretKey={submissionSecretKey}
+            stepToken={stepToken}
+            recipients={pendingStepAssignees}
+          />
+        ) : null}
+        {canActOnWorkflow ? (
+          <>
+            <Button
+              variant="outline"
+              colorScheme="secondary"
+              leftIcon={<BiTransferAlt fontSize="1.25rem" />}
+              isDisabled={isLoading || isEventsLoading || !submissionSecretKey}
+              onClick={addAssigneeModal.onOpen}
+            >
+              {t(`${WORKFLOW_ACTIONS_I18N}.reassignButton`)}
+            </Button>
+            <Button
+              variant="outline"
+              colorScheme="secondary"
+              _hover={{
+                bg: 'danger.100',
+                color: 'danger.500',
+                borderColor: 'danger.500',
+              }}
+              _active={{
+                bg: 'danger.200',
+                color: 'danger.500',
+                borderColor: 'danger.500',
+              }}
+              leftIcon={<BiStopCircle fontSize="1.25rem" />}
+              isDisabled={isLoading || isEventsLoading}
+              onClick={stopModal.onOpen}
+            >
+              {t(`${WORKFLOW_ACTIONS_I18N}.stopButton`)}
+            </Button>
+          </>
+        ) : null}
       </Flex>
       <AddAssigneeModal
         isOpen={addAssigneeModal.isOpen}

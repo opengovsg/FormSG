@@ -13,6 +13,12 @@ export const enSG: ResponsesIndividualResponse = {
     whoIsNotifiedLabel: 'Who will be notified',
     whoIsNotifiedNone: 'No one will be notified.',
     stopButton: 'Stop',
+    remindButton: 'Remind',
+    reminderModal: {
+      title: 'Send a reminder',
+      description: 'Remind the people who need to respond.',
+      confirm: 'Send reminder',
+    },
     reassignButton: 'Reassign',
     addAssigneeModal: {
       title: 'Add assignee',
