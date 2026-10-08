@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.46.3](https://github.com/opengovsg/formsg/compare/v9.46.2...v9.46.3) (2026-10-08)
+
+
+### Dependencies
+
+* **deps:** patch @serverless/dashboard-plugin for simple-git 4 (#10246) ([#10246](https://github.com/opengovsg/formsg/commit/e6de88da5619db440b6927345b481445813d0ed6))
+
 ## [9.46.2](https://github.com/opengovsg/formsg/compare/v9.46.1...v9.46.2) (2026-10-08)
 
 
