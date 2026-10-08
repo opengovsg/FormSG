@@ -43,6 +43,7 @@ describe('EmailTemplate', () => {
   it('should render the workflow stopped email without answers', async () => {
     const html = await render(
       EmailTemplate({
+        emailTitle: 'This workflow has been stopped',
         formTitle: 'Mock form',
         responseId: 'mock-response-id',
         timestamp: 'Wed, 7 Oct 2026, 08:17:08 AM',
