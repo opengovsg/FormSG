@@ -154,28 +154,49 @@ Each entry in `responses` looks like this:
 }
 ```
 
-### Look up answers by field ID
+### Find a field's answer
 
-Responses are keyed by field ID, so you read a field directly instead of searching a list. To find each field's ID, send one test submission and log `req.body.data.formFields`. It maps every field ID to its question.
+You can find a field by its question or by its field ID.
+
+**By question.** This is the simplest option. Every response carries the `question` the respondent saw:
 
 ```javascript
-const NAME_FIELD_ID = '6a27d7a5e1b2c3d4e5f60718' // Short answer: "Your name"
-const PHONE_FIELD_ID = '6a27d7a5e1b2c3d4e5f6071a' // Mobile number: "Phone", optional
+const findByQuestion = (question) =>
+  Object.values(submission.responses).find((r) => r.question === question)
 
-const nameField = submission.responses[NAME_FIELD_ID]
-const name = nameField?.answer.value // 'Tan Ah Kow'
-
-const phoneField = submission.responses[PHONE_FIELD_ID]
-const phone = phoneField?.answer.value // undefined if left blank
+const name = findByQuestion('Your name')?.answer.value // 'Tan Ah Kow'
 ```
 
-Field IDs stay the same when you edit a question's title, and when you duplicate the form. They change when you delete a field and add it again.
+This breaks if an admin edits the question, and returns the first match if two fields share a question.
+
+**By field ID.** Use this when the form's questions might change. Field IDs stay the same when a question is edited or the form is duplicated. They change only when a field is deleted and added again.
+
+Every webhook lists the form's fields in `req.body.data.formFields`, keyed by field ID. It includes fields the respondent left blank. Log it once from a test submission and copy the IDs you need:
+
+```javascript
+console.log(req.body.data.formFields)
+// {
+//   '6a27d7a5e1b2c3d4e5f60718': { question: 'Your name' },
+//   '6a27d7a5e1b2c3d4e5f6071a': { question: 'Phone' },
+//   ...
+// }
+```
+
+Then read answers directly:
+
+```javascript
+const NAME_FIELD_ID = '6a27d7a5e1b2c3d4e5f60718'
+const PHONE_FIELD_ID = '6a27d7a5e1b2c3d4e5f6071a'
+
+const name = submission.responses[NAME_FIELD_ID]?.answer.value // 'Tan Ah Kow'
+const phone = submission.responses[PHONE_FIELD_ID]?.answer.value // undefined if left blank
+```
 
 Three rules apply to every submission:
 
 - **Unanswered fields are absent.** Use optional chaining (`?.`) for any field that is optional or hidden by logic.
 - **Section headers, statements, and images are absent.** They have no answer.
-- **Key order is not form order.** Use your own list of field IDs if order matters.
+- **Key order is not form order.** `data.formFields` follows form order, so iterate it if order matters.
 
 ### Answer shapes by field type
 
@@ -276,7 +297,6 @@ const childNames = Object.values(childrenField?.answer ?? {}).map(
 
 ### Other properties
 
-- `question` is the field title the respondent saw. Admins can edit titles, so identify fields by ID.
 - `provenance` is always present and usually `{}`. On Myinfo children fields, `provenance.myinfoVerified` is `true` when FormSG checked the answer against Myinfo.
 - `myInfo?: { attr }` is optional metadata. It can be absent even on Myinfo-prefilled fields, so identify Myinfo fields by ID.
 

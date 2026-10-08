@@ -26,7 +26,7 @@ Legacy and latest are webhook formats (`data.version` `2.1` and `4`), not SDK ve
 | Unanswered fields            | Present, with `""` or `[]`                                                                                      | Absent                                                                                                                                                                  |
 | Sections, statements, images | Sections present with `isHeader: true`                                                                          | Absent                                                                                                                                                                  |
 | Whitespace in text answers   | Trimmed. See [Text answers](#text-answers) for the field types                                                  | Kept as the respondent typed it                                                                                                                                         |
-| Myinfo questions             | Start with `[Myinfo] `                                                                                          | No added prefix. Identify fields using your configured IDs.                                                                                                             |
+| Myinfo questions             | Start with `[Myinfo] `                                                                                          | No added prefix                                                                                                                                                         |
 | Keys in `verified`           | `uinFin`                                                                                                        | `uinFin (Step 1)`                                                                                                                                                       |
 | Webhooks per submission      | One                                                                                                             | One per workflow step                                                                                                                                                   |
 | Attachment encryption        | Form key                                                                                                        | Submission key                                                                                                                                                          |
@@ -202,7 +202,7 @@ First decide what `handleLatest` should save. You have two options.
 
 You do not have to copy every legacy behaviour. Legacy webhooks trimmed whitespace, wrote **Others** answers as `"Others: <text>"`, and moved **Others** to the end of checkbox lists. Reproduce only what your downstream systems depend on.
 
-Use [Before and after, field by field](#before-and-after-field-by-field) for every field your code reads. If you download attachments, change the call to `formsg.cryptoV4.decryptWithAttachments`.
+Field IDs are the same in both formats: a legacy entry's `_id` is the key in the latest `responses`. Use [Before and after, field by field](#before-and-after-field-by-field) for every field your code reads. If you download attachments, change the call to `formsg.cryptoV4.decryptWithAttachments`.
 
 #### Option A: Keep your current records
 
@@ -532,9 +532,9 @@ latestResponses[HEADING_FIELD_ID] // undefined. Heading, Paragraph, and Image fi
 
 Most differences are covered field by field above. These ones are easy to miss:
 
-**Field order.** Legacy arrays followed form order. Latest key order means nothing. If you build a document or CSV in form order, keep your own list of field IDs.
+**Field order.** Legacy arrays followed form order. Latest `responses` key order means nothing. If you need form order, iterate `data.formFields`, which follows it.
 
-**Question text and Myinfo.** `question` has no `[Myinfo] ` prefix, and table questions no longer include column names. The latest format can omit `response.myInfo` even on Myinfo-prefilled fields. Match fields on ID, never on question text.
+**Question text and Myinfo.** `question` has no `[Myinfo] ` prefix, and table questions no longer include column names. If you match fields on question text, update those strings. The latest format can omit `response.myInfo` even on Myinfo-prefilled fields.
 
 **Verified data keys.** `verified.uinFin` becomes `verified['uinFin (Step 1)']`, and `cpUen` becomes `cpUen (Step 1)`. FormSG collects Singpass and Corppass data only on the first step, so the suffix is always `(Step 1)` today.
 
