@@ -12,6 +12,16 @@ export interface ResponsesIndividualResponse {
     whoIsNotifiedLabel: string
     whoIsNotifiedNone: string
     stopButton: string
+    reassignButton: string
+    addAssigneeModal: {
+      title: string
+      description: string
+      label: string
+      invalidEmail: string
+      alreadyAssigned: string
+      confirm: string
+      toastSuccess: string
+    }
     stopModal: {
       title: string
       description: string

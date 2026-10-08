@@ -10,6 +10,7 @@ import { WorkflowActionsSection } from './WorkflowActionsSection'
 let mockIsGateOn = true
 let mockHasEditAccess = true
 const mockMutate = vi.fn()
+const mockAddAssignees = vi.fn()
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k }),
@@ -29,6 +30,29 @@ vi.mock('~features/admin-form/common/queries', () => ({
 
 vi.mock('./mutations', () => ({
   useStopWorkflowMutation: () => ({ mutate: mockMutate, isLoading: false }),
+  useAddAssigneesMutation: () => ({
+    mutate: mockAddAssignees,
+    isLoading: false,
+  }),
+}))
+
+vi.mock('./queries', () => ({
+  useWorkflowEvents: () => ({ data: [], isLoading: false }),
+}))
+
+vi.mock('./AddAssigneeModal', () => ({
+  AddAssigneeModal: ({
+    isOpen,
+    onConfirm,
+  }: {
+    isOpen: boolean
+    onConfirm: (emails: string[]) => void
+  }) =>
+    isOpen ? (
+      <button onClick={() => onConfirm(['new@agency.gov.sg'])}>
+        confirm add
+      </button>
+    ) : null,
 }))
 
 vi.mock('./StopWorkflowModal', () => ({
@@ -48,6 +72,8 @@ vi.mock('./StopWorkflowModal', () => ({
 
 const STOP =
   'features.adminForm.responses.individualResponse.workflowActions.stopButton'
+const REASSIGN =
+  'features.adminForm.responses.individualResponse.workflowActions.reassignButton'
 
 const pendingMrf = (
   overrides: Partial<NonNullable<SubmissionMrfMetadata>> = {},
@@ -66,6 +92,8 @@ const renderSection = (mrf: SubmissionMrfMetadata = pendingMrf()) =>
     <WorkflowActionsSection
       submissionId="mock-submission-id"
       mrf={mrf}
+      submissionSecretKey="mock-secret-key"
+      stepToken="mock-step-token"
       isLoading={false}
     />,
   )
@@ -75,6 +103,7 @@ describe('WorkflowActionsSection', () => {
     mockIsGateOn = true
     mockHasEditAccess = true
     mockMutate.mockReset()
+    mockAddAssignees.mockReset()
   })
 
   it('stops the workflow with the chosen emails', async () => {
@@ -109,5 +138,30 @@ describe('WorkflowActionsSection', () => {
   it('hides Stop once the workflow is no longer pending', () => {
     renderSection(pendingMrf({ workflowStatus: WorkflowStatus.APPROVED }))
     expect(screen.queryByRole('button', { name: STOP })).not.toBeInTheDocument()
+  })
+
+  it('adds assignees with the step link credentials', async () => {
+    renderSection()
+
+    await userEvent.click(screen.getByRole('button', { name: REASSIGN }))
+    await userEvent.click(screen.getByRole('button', { name: 'confirm add' }))
+
+    expect(mockAddAssignees).toHaveBeenCalledWith(
+      {
+        submissionId: 'mock-submission-id',
+        emails: ['new@agency.gov.sg'],
+        submissionSecretKey: 'mock-secret-key',
+        stepToken: 'mock-step-token',
+      },
+      expect.anything(),
+    )
+  })
+
+  it('hides Reassign from read-only collaborators', () => {
+    mockHasEditAccess = false
+    renderSection()
+    expect(
+      screen.queryByRole('button', { name: REASSIGN }),
+    ).not.toBeInTheDocument()
   })
 })
