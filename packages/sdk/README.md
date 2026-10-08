@@ -13,8 +13,6 @@ submission.responses['6a27d7a5e1b2c3d4e5f60718'].answer.value // 'Tan Ah Kow'
 
 > **Already receiving webhooks with `formsg.crypto.decrypt`?** You are on the legacy V1 format. Read [Migrating from V1 to V4](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/migrating-from-v1.md) to see what you gain and how to switch.
 
-Not using JavaScript? See [formsg-python-sdk](https://github.com/opengovsg/formsg-python-sdk).
-
 ## Contents
 
 - [Before you begin](#before-you-begin)
@@ -23,7 +21,7 @@ Not using JavaScript? See [formsg-python-sdk](https://github.com/opengovsg/forms
 - [Handle multi-step workflows](#handle-multi-step-workflows)
 - [Download attachments](#download-attachments)
 - [Read verified Singpass and Corppass data](#read-verified-singpass-and-corppass-data)
-- [Run a reliable endpoint](#run-a-reliable-endpoint)
+- [Prepare your endpoint for production](#prepare-your-endpoint-for-production)
 - [Reference](#reference)
 - [Verify signatures without the SDK](#verify-signatures-without-the-sdk)
 - [Legacy V1 webhooks](#legacy-v1-webhooks)
@@ -110,6 +108,24 @@ app.post(
 app.listen(8080, () => console.log('Listening on port 8080'))
 ```
 
+The handler prints one line per answered field: the field ID, the question, and the answer. For example, take a form with four fields: **Your name** (short text), **Email** (verified with an OTP), **Interests** (checkbox), and **Home address** (address). A respondent fills in all four and leaves an optional **Phone** field blank. The handler prints:
+
+```text
+6a27d7a5e1b2c3d4e5f60718 Your name { value: 'Tan Ah Kow' }
+6a27d7a5e1b2c3d4e5f60719 Email { value: 'ahkow@example.com', signature: '<signature>' }
+6a27d7a5e1b2c3d4e5f6071c Interests { value: [ 'Sports', 'Music' ] }
+6a27d7a5e1b2c3d4e5f6071b Home address {
+  postalCode: { value: '570123' },
+  blockNumber: { value: '123' },
+  streetName: { value: 'Bishan Street 11' },
+  buildingName: { value: '' },
+  levelNumber: { value: '05' },
+  unitNumber: { value: '67' }
+}
+```
+
+**Phone** does not appear, because V4 leaves out unanswered fields. The lines can appear in any order. See [Answer shapes by field type](#answer-shapes-by-field-type) for every field type.
+
 If you integrate with FormSG staging, set `mode: 'staging'`. The mode selects the public key that the SDK uses to check signatures.
 
 ### 3. Start the server
@@ -128,12 +144,7 @@ Expose port 8080 at the HTTPS URL that you set as `POST_URI`.
 
 ### 5. Send a test submission
 
-Open the form and submit it. Your server prints one line per answered field:
-
-```text
-6a27d7a5e1b2c3d4e5f60718 Your name { value: 'Tan Ah Kow' }
-6a27d7a5e1b2c3d4e5f60719 Email { value: 'ahkow@example.com', signature: '...' }
-```
+Open the form and submit it. Your server prints one line per answered field, as shown in [step 2](#2-write-the-webhook-handler).
 
 If the server prints nothing, check these causes first:
 
@@ -168,11 +179,14 @@ Each entry in `responses` looks like this:
 Responses are keyed by field ID, so you read a field directly instead of searching a list. To find each field's ID, send one test submission and log `req.body.data.formFields`. It maps every field ID to its question.
 
 ```javascript
-const NAME_FIELD = '6a27d7a5e1b2c3d4e5f60718'
-const PHONE_FIELD = '6a27d7a5e1b2c3d4e5f6071a'
+const NAME_FIELD_ID = '6a27d7a5e1b2c3d4e5f60718' // Short answer: "Your name"
+const PHONE_FIELD_ID = '6a27d7a5e1b2c3d4e5f6071a' // Mobile number: "Phone", optional
 
-const name = submission.responses[NAME_FIELD]?.answer.value
-const phone = submission.responses[PHONE_FIELD]?.answer.value // undefined if left blank
+const nameField = submission.responses[NAME_FIELD_ID]
+const name = nameField?.answer.value // 'Tan Ah Kow'
+
+const phoneField = submission.responses[PHONE_FIELD_ID]
+const phone = phoneField?.answer.value // undefined if left blank
 ```
 
 Field IDs stay the same when you edit a question's title, and when you duplicate the form. They change when you delete a field and add it again.
@@ -187,19 +201,19 @@ Three rules apply to every submission:
 
 Use `fieldType` to choose how to read `answer`. JavaScript examples below assume you know the type of each configured field. TypeScript consumers also need to check the answer's shape; see [TypeScript types](#typescript-types).
 
-| `fieldType`                                                                                                   | `answer`                                                                                                                                                                             |
-| ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `textfield`, `textarea`, `number`, `decimal`, `dropdown`, `rating`, `nric`, `uen`, `homeno`, `country_region` | `{ value: string }`                                                                                                                                                                  |
-| `date`                                                                                                        | `{ value: '09/09/2026' }`, always `dd/MM/yyyy`                                                                                                                                       |
-| `yes_no`                                                                                                      | `{ value: 'Yes' }` or `{ value: 'No' }`                                                                                                                                              |
-| `email`, `mobile`                                                                                             | `{ value: string, signature?: string }`. `signature` is present when the respondent verified the value with an OTP.                                                                  |
-| `radiobutton`                                                                                                 | `{ value: string, isOthersInput: boolean }`. If `isOthersInput` is `true`, `value` is the text the respondent typed in **Others**.                                                   |
-| `checkbox`                                                                                                    | `{ value: string[], othersInput?: string }`. If the respondent ticked **Others**, `value` contains `'!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'` and `othersInput` holds their text. |
-| `address`                                                                                                     | `{ postalCode, blockNumber, streetName, buildingName, levelNumber, unitNumber }`. Each part is `{ value: string }`.                                                                  |
-| `table`                                                                                                       | `{ [rowId]: { rowNum: number, value: { [columnId]: string \| number } } }`. Sort rows by `rowNum`.                                                                                   |
-| `attachment`                                                                                                  | `{ value: 'filename.pdf', hasBeenScanned: boolean, md5Hash?: string }`                                                                                                               |
-| `signature`                                                                                                   | `{ type: 'draw', value: [x, y, pressure][][] }`. Each inner array is one pen stroke; the third coordinate is pointer pressure.                                                       |
-| `children`                                                                                                    | `{ [childKey]: { type?: string, value: { [attr]: { value: string, myInfo?: { attr } } } } }`. One entry per child.                                                                   |
+| Field in the form builder                                                                                | `fieldType`                                                                                                   | `answer`                                                                                                                                                                                        |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Short answer, Long answer, Number, Decimal, Dropdown, Rating, NRIC/FIN, UEN, Home number, Country/Region | `textfield`, `textarea`, `number`, `decimal`, `dropdown`, `rating`, `nric`, `uen`, `homeno`, `country_region` | `{ value: 'Tan Ah Kow' }`                                                                                                                                                                       |
+| Date                                                                                                     | `date`                                                                                                        | `{ value: '09/09/2026' }`, always `dd/MM/yyyy`                                                                                                                                                  |
+| Yes/No                                                                                                   | `yes_no`                                                                                                      | `{ value: 'Yes' }` or `{ value: 'No' }`                                                                                                                                                         |
+| Email, Mobile number                                                                                     | `email`, `mobile`                                                                                             | `{ value: 'ahkow@example.com', signature?: string }`. `signature` is present when the respondent verified the value with an OTP.                                                                |
+| Radio                                                                                                    | `radiobutton`                                                                                                 | `{ value: 'Email', isOthersInput: false }`. If `isOthersInput` is `true`, `value` is the text the respondent typed in **Others**.                                                               |
+| Checkbox                                                                                                 | `checkbox`                                                                                                    | `{ value: ['Sports', 'Music'], othersInput?: string }`. If the respondent ticked **Others**, `value` contains `'!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'` and `othersInput` holds their text. |
+| Local address                                                                                            | `address`                                                                                                     | `{ postalCode, blockNumber, streetName, buildingName, levelNumber, unitNumber }`. Each part is `{ value: string }`.                                                                             |
+| Table                                                                                                    | `table`                                                                                                       | `{ [rowId]: { rowNum: number, value: { [columnId]: string \| number } } }`. `rowNum` counts from `0`. Sort rows by `rowNum`.                                                                    |
+| Attachment                                                                                               | `attachment`                                                                                                  | `{ value: 'filename.pdf', hasBeenScanned: boolean, md5Hash?: string }`                                                                                                                          |
+| Signature                                                                                                | `signature`                                                                                                   | `{ type: 'draw', value: [x, y, pressure][][] }`. Each inner array is one pen stroke; the third coordinate is pointer pressure.                                                                  |
+| Children                                                                                                 | `children`                                                                                                    | `{ [childKey]: { type?: string, value: { [attr]: { value: string, myInfo?: { attr } } } } }`. One entry per child. See [Children fields](#children-fields).                                     |
 
 Answers are stored as the respondent typed them. Trim whitespace yourself if your system needs it.
 
@@ -208,27 +222,85 @@ Answers are stored as the respondent typed them. Trim whitespace yourself if you
 Example: read an address and a checkbox.
 
 ```javascript
-const OTHERS = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
+const ADDRESS_FIELD_ID = '6a27d7a5e1b2c3d4e5f6071b' // Local address: "Home address"
+const INTERESTS_FIELD_ID = '6a27d7a5e1b2c3d4e5f6071c' // Checkbox: "Interests"
+const CHECKBOX_OTHERS = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
 
-const address = submission.responses[ADDRESS_FIELD]?.answer
-const postalCode = address?.postalCode.value
+const addressField = submission.responses[ADDRESS_FIELD_ID]
+const postalCode = addressField?.answer.postalCode.value // '570123'
 
-const checkbox = submission.responses[INTERESTS_FIELD]?.answer
-const interests = (checkbox?.value ?? []).map((v) =>
-  v === OTHERS ? checkbox.othersInput : v
+// The respondent ticked Sports and Others, and typed "Chess" in Others:
+// checkboxField.answer is { value: ['Sports', CHECKBOX_OTHERS], othersInput: 'Chess' }
+const checkboxField = submission.responses[INTERESTS_FIELD_ID]
+const interests = (checkboxField?.answer.value ?? []).map((option) =>
+  option === CHECKBOX_OTHERS ? checkboxField.answer.othersInput : option
 )
+// ['Sports', 'Chess']
 ```
 
 For tables, column IDs are separate from the table field's ID. Submit a test row and inspect its keys:
 
 ```javascript
-const table = submission.responses[TABLE_FIELD]?.answer
-for (const row of Object.values(table ?? {})) {
-  console.log(row.rowNum, Object.keys(row.value))
+const TABLE_FIELD_ID = '6a27d7a5e1b2c3d4e5f6071d' // Table: "Household members"
+
+const tableField = submission.responses[TABLE_FIELD_ID]
+for (const row of Object.values(tableField?.answer ?? {})) {
+  console.log(row.rowNum, row.value)
 }
+// 0 { '6a27d7a5e1b2c3d4e5f60721': 'Tan Ah Kow', '6a27d7a5e1b2c3d4e5f60722': '45' }
+// 1 { '6a27d7a5e1b2c3d4e5f60721': 'Tan Ah Mei', '6a27d7a5e1b2c3d4e5f60722': '42' }
 ```
 
 Save those column IDs in your configuration and map them to your application's column names.
+
+### Children fields
+
+A Myinfo children field holds one entry per child that the respondent selected. Each entry is keyed by a `childKey`.
+
+- **`childKey`** is a label that FormSG generates for each child: `child0`, `child1`, and so on, in the order the respondent selected them. It is not a child's ID, name, or birth certificate number, and the same child can get a different `childKey` in another submission. Use it only to tell the children in one answer apart.
+- **`attr`** is the Myinfo attribute name of a child detail, such as `childname` or `childdateofbirth`.
+
+```json
+{
+  "child0": {
+    "type": "local",
+    "value": {
+      "childname": {
+        "value": "Tan Xiao Ming",
+        "myInfo": { "attr": "childname" }
+      },
+      "childdateofbirth": {
+        "value": "15/03/2020",
+        "myInfo": { "attr": "childdateofbirth" }
+      }
+    }
+  },
+  "child1": {
+    "value": {
+      "childname": {
+        "value": "Tan Xiao Hua",
+        "myInfo": { "attr": "childname" }
+      },
+      "childdateofbirth": {
+        "value": "02/11/2022",
+        "myInfo": { "attr": "childdateofbirth" }
+      }
+    }
+  }
+}
+```
+
+To list each child's name:
+
+```javascript
+const CHILDREN_FIELD_ID = '6a27d7a5e1b2c3d4e5f60720' // Children
+
+const childrenField = submission.responses[CHILDREN_FIELD_ID]
+const childNames = Object.values(childrenField?.answer ?? {}).map(
+  (child) => child.value.childname?.value
+)
+// ['Tan Xiao Ming', 'Tan Xiao Hua']
+```
 
 ### Question text
 
@@ -339,15 +411,23 @@ if (result) {
 
 If the form collects the respondent's identity through Singpass or Corppass, `submission.verified` holds the values that FormSG signed. The SDK checks the signature for you and returns `null` if the check fails.
 
-Keys carry the step that collected them:
+Each key ends with the step that collected it. FormSG collects Singpass and Corppass data only on the first step of a form, so today the suffix is always `(Step 1)`.
+
+A Singpass form:
 
 ```json
-{ "uinFin (Step 1)": "S1234567D", "cpUen (Step 2)": "201912345A" }
+{ "uinFin (Step 1)": "S1234567D" }
+```
+
+A Corppass form:
+
+```json
+{ "cpUen (Step 1)": "201912345A", "cpUid (Step 1)": "S1234567D" }
 ```
 
 Use `verified`, not the matching entry in `responses`, when you need a value that the respondent could not have edited.
 
-## Run a reliable endpoint
+## Prepare your endpoint for production
 
 **Respond within 10 seconds.** FormSG waits 10 seconds, follows no redirects, and counts only a `2xx` status as success. Queue slow work and respond first.
 
@@ -386,7 +466,6 @@ The returned object has these modules:
 | `webhooks` | Check the `X-FormSG-Signature` header.                                                                         |
 | `cryptoV4` | Decrypt V4 payloads.                                                                                           |
 | `crypto`   | Decrypt [legacy V1](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/legacy-v1.md) payloads. |
-| `cryptoV3` | Decrypt pre-2026 multi-respondent payloads (`version: 3`). Most integrations do not need it.                   |
 
 ### `webhooks.authenticate(header, uri)`
 
