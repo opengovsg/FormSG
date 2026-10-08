@@ -126,3 +126,31 @@ export const getAddedAssignees = ({
       ),
     ),
   )
+
+/**
+ * @returns ok(events) for the submission, oldest first
+ * @returns err(DatabaseError) if the query fails
+ */
+export const getWorkflowEvents = ({
+  formId,
+  submissionId,
+}: {
+  formId: string
+  submissionId: string
+}): ResultAsync<WorkflowEventDto[], DatabaseError> =>
+  ResultAsync.fromPromise(
+    MultirespondentSubmission.findOne(
+      { _id: submissionId, form: formId },
+      { workflowEvents: 1 },
+    )
+      .lean()
+      .exec(),
+    (error) => {
+      logger.error({
+        message: 'Error retrieving workflow events',
+        meta: { action: 'getWorkflowEvents', formId, submissionId },
+        error,
+      })
+      return new DatabaseError(getMongoErrorMessage(error))
+    },
+  ).map((submission) => toWorkflowEventDtos(submission?.workflowEvents))

@@ -220,4 +220,52 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
       WorkflowEvent.countDocuments({ submissionId: submission._id }),
     ).resolves.toBe(0)
   })
+
+  describe('GET /admin/forms/:formId/submissions/:submissionId/workflow-events', () => {
+    it('returns the people added, to a read-only collaborator too', async () => {
+      const form = await createForm()
+      const submission = await createSubmission(form._id)
+      await addAssignees(form._id, submission._id, ['new@example.com'])
+      await MultirespondentFormModel.updateOne(
+        { _id: form._id },
+        {
+          admin: (
+            await dbHandler.insertUser({
+              agencyId: defaultUser.agency as never,
+              mailName: 'owner',
+            })
+          )._id,
+          permissionList: [{ email: defaultUser.email, write: false }],
+        },
+      )
+
+      const response = await request.get(
+        `/admin/forms/${form._id}/submissions/${submission._id}/workflow-events`,
+      )
+
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual([
+        expect.objectContaining({
+          type: WorkflowEventType.AssigneesAdded,
+          stepNumber: 2,
+          emails: ['new@example.com'],
+          actorEmail: defaultUser.email,
+        }),
+      ])
+    })
+
+    it("returns nothing for another form's submission", async () => {
+      const form = await createForm()
+      const otherForm = await createForm()
+      const submission = await createSubmission(otherForm._id)
+      await addAssignees(otherForm._id, submission._id, ['new@example.com'])
+
+      const response = await request.get(
+        `/admin/forms/${form._id}/submissions/${submission._id}/workflow-events`,
+      )
+
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual([])
+    })
+  })
 })
