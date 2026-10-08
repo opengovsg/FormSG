@@ -733,11 +733,26 @@ export const PublicFormProvider = ({
       }
     }
 
+    if (previousSubmissionId && encryptedSubmissionError) {
+      return {
+        title: data?.form.title ?? t('features.publicForm.errors.notFound'),
+        header: t('features.publicForm.errors.notAvailable'),
+        message: encryptedSubmissionError.message,
+      }
+    }
+
     // Decryption failed for previous submission
     if (isSubmissionSecretKeyInvalid) {
       return t('features.publicForm.errors.submissionSecretKeyInvalid')
     }
-  }, [error, data, previousSubmissionId, isSubmissionSecretKeyInvalid, t])
+  }, [
+    error,
+    encryptedSubmissionError,
+    data,
+    previousSubmissionId,
+    isSubmissionSecretKeyInvalid,
+    t,
+  ])
 
   const generateVfnExpiryToast = useCallback(() => {
     if (vfnToastIdRef.current) {
