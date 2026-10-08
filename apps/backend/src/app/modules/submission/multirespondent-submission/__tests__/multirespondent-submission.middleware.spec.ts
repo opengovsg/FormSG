@@ -1132,6 +1132,73 @@ describe('Multirespondent Submission Middleware', () => {
       )
     })
 
+    it('should reject the submission with 401 when a child type disagrees with its Child type answer', async () => {
+      // Arrange
+      setupMyInfoLoginMocks()
+      const childrenFieldId = new ObjectId().toHexString()
+      const childrenField = {
+        _id: childrenFieldId,
+        title: 'Children',
+        fieldType: BasicField.Children,
+        childrenSubFields: [
+          MyInfoChildAttributes.ChildName,
+          MyInfoChildAttributes.ChildType,
+        ],
+        myInfo: { attr: MyInfoAttribute.ChildrenBirthRecords },
+      }
+      const childrenResponse = {
+        fieldType: BasicField.Children,
+        question: 'Children',
+        provenance: {},
+        answer: {
+          child0: {
+            value: {
+              [MyInfoChildAttributes.ChildName]: { value: 'THRO RY' },
+              [MyInfoChildAttributes.ChildType]: { value: 'SPONSORED' },
+            },
+            type: 'local',
+          },
+        },
+      }
+      const { getMyInfoChildHashKey } = jest.requireActual<typeof MyInfoUtil>(
+        'src/app/modules/myinfo/myinfo.util',
+      )
+      jest
+        .mocked(MyInfoUtil.getMyInfoChildHashKey)
+        .mockImplementation(getMyInfoChildHashKey)
+      jest.mocked(MyInfoService.fetchMyInfoHashes).mockReturnValue(okAsync({}))
+      jest
+        .mocked(MyInfoService.checkMyInfoHashes)
+        .mockReturnValue(
+          okAsync(
+            new Set([
+              getMyInfoChildHashKey(
+                childrenFieldId,
+                MyInfoChildAttributes.ChildType,
+                0,
+                'THRO RY',
+              ),
+            ]),
+          ),
+        )
+
+      const mockNext = jest.fn()
+      const mockReq = createMyInfoMockReq()
+      mockReq.formsg.formDef = {
+        ...MOCK_MYINFO_FORM_DEF,
+        form_fields: [childrenField],
+      }
+      mockReq.body.responses = { [childrenFieldId]: childrenResponse }
+      const mockRes = createMockRes()
+
+      // Act
+      await verifyMyInfoHashes(mockReq, mockRes as any, mockNext)
+
+      // Assert
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+    })
+
     it('should reject the submission with 410 when MyInfo hashes are missing or expired', async () => {
       // Arrange
       setupMyInfoLoginMocks()

@@ -4,7 +4,10 @@ import type {
   FieldResponseV4,
 } from '@opengovsg/formsg-sdk'
 import { CLIENT_CHECKBOX_OTHERS_INPUT_VALUE } from 'formsg-shared/constants'
-import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
+import {
+  MYINFO_ATTRIBUTE_MAP,
+  MYINFO_CHILD_TYPE_LABELS,
+} from 'formsg-shared/constants/field/myinfo'
 import {
   BasicField,
   ChildrenCompoundFieldBase,
@@ -14,6 +17,8 @@ import {
   FormWorkflowStepDto,
   MultirespondentSubmissionDto,
   MyInfoAttribute,
+  MyInfoChildAttributes,
+  MyInfoChildrenScope,
   PublicMultirespondentSubmissionDto,
   SubmissionPaymentDto,
   SubmissionType,
@@ -47,7 +52,9 @@ import { convertToSignaturePngDataUri } from '../../../utils/convert-vector-arra
 import { validateFieldV4 } from '../../../utils/field-validation'
 import { checkIsResponseChangedV4 } from '../../../utils/field-validation/field-validation.utils'
 import { FieldIdSet } from '../../../utils/logic-adaptor'
+import { MyInfoHashDidNotMatchError } from '../../myinfo/myinfo.errors'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
+import { getMyInfoChildHashKey } from '../../myinfo/myinfo.util'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
 import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
 import {
@@ -449,6 +456,74 @@ export const stampMyInfoVerifiedOnResponses = (
       response.provenance = { ...response.provenance, myinfoVerified: true }
     }
   }
+}
+
+const CHILD_TYPE_LABEL_TO_SCOPE: Record<string, MyInfoChildrenScope> =
+  Object.fromEntries(
+    Object.entries(MYINFO_CHILD_TYPE_LABELS).map(([scope, label]) => [
+      label,
+      scope as MyInfoChildrenScope,
+    ]),
+  )
+
+/**
+ * On a Children field that collects the Child type sub-field, makes each
+ * child's v4 `type` agree with that sub-field's answer wherever the MyInfo
+ * hash check verified it. A missing `type` is filled from the answer; one
+ * that disagrees fails the submission. Children whose Child type answer was
+ * not verified (no stored hash, i.e. not a MyInfo child) and fields without
+ * the sub-field are left alone, since nothing trustworthy says which record
+ * they came from.
+ *
+ * Must run after checkMyInfoHashes. Mutates responses in place.
+ */
+export const reconcileChildTypesWithChildTypeAnswers = (
+  responses: ParsedClearFormFieldResponsesV4,
+  formFields: FormFieldSchema[] | FormFieldDto[],
+  verifiedKeys: Set<MyInfoKey>,
+): Result<void, MyInfoHashDidNotMatchError> => {
+  for (const field of formFields) {
+    if (
+      field.fieldType !== BasicField.Children ||
+      !(field as ChildrenCompoundFieldBase).childrenSubFields?.includes(
+        MyInfoChildAttributes.ChildType,
+      )
+    ) {
+      continue
+    }
+    const fieldId = field._id.toString()
+    const response = responses[fieldId]
+    if (!response) continue
+
+    const answer = (response.answer ?? {}) as ChildrenAnswerV4
+    // Same child ordering as the hash check (adaptV4ChildrenResponseForMyInfoHashCheck).
+    for (const [childIdx, childKey] of Object.keys(answer).sort().entries()) {
+      const childEntry = answer[childKey]
+      const childName =
+        childEntry.value?.[MyInfoChildAttributes.ChildName]?.value ?? ''
+      const isChildTypeVerified = verifiedKeys.has(
+        getMyInfoChildHashKey(
+          fieldId,
+          MyInfoChildAttributes.ChildType,
+          childIdx,
+          childName,
+        ),
+      )
+      if (!isChildTypeVerified) continue
+
+      const label = childEntry.value[MyInfoChildAttributes.ChildType]?.value
+      const scope = label ? CHILD_TYPE_LABEL_TO_SCOPE[label] : undefined
+      if (!scope || (childEntry.type && childEntry.type !== scope)) {
+        return err(
+          new MyInfoHashDidNotMatchError(
+            'Child type did not match the child type answer',
+          ),
+        )
+      }
+      childEntry.type = scope
+    }
+  }
+  return ok(undefined)
 }
 
 /**
