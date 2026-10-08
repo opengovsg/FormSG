@@ -4,15 +4,36 @@ This guide is for teams that receive FormSG webhooks with `formsg.crypto.decrypt
 
 Your authentication code does not change. Your endpoint URL, the `X-FormSG-Signature` header, and `formsg.webhooks.authenticate` all stay the same. The work is in how you decrypt and read the answers.
 
+**Version terminology:** V1 and V4 name webhook formats. Their wire values are `data.version: 2.1` and `data.version: 4`. The npm package has a separate version, such as `8.2.0`. Installing a newer SDK does not switch your form's webhook format.
+
 ## Contents
 
-- [What you gain](#what-you-gain)
 - [What changes at a glance](#what-changes-at-a-glance)
+- [What you gain](#what-you-gain)
 - [Choose your migration path](#choose-your-migration-path)
 - [Migrate step by step](#migrate-step-by-step)
 - [Translate each field type](#translate-each-field-type)
 - [Gotchas](#gotchas)
 - [Questions](#questions)
+
+## What changes at a glance
+
+|                                         | V1                                     | V4                                                              |
+| --------------------------------------- | -------------------------------------- | --------------------------------------------------------------- |
+| SDK version                             | Your current V1-capable version        | **8.2.0 or later**                                              |
+| Decrypt with                            | `formsg.crypto`                        | `formsg.cryptoV4`                                               |
+| `data.version`                          | `2.1`                                  | `4`                                                             |
+| `responses`                             | Array, in form order                   | Object keyed by field ID                                        |
+| Each answer                             | `answer` string or `answerArray`       | `answer` object, shape depends on `fieldType`                   |
+| Unanswered fields                       | Present, with `""` or `[]`             | Absent                                                          |
+| Sections, statements, images            | Sections present with `isHeader: true` | Absent                                                          |
+| Whitespace in generic string answers    | Trimmed                                | Preserved                                                       |
+| Myinfo questions                        | Start with `[Myinfo] `                 | No added prefix. Identify fields using your configured IDs.     |
+| Keys in `verified`                      | `uinFin`                               | `uinFin (Step 1)`                                               |
+| Webhooks per submission                 | One                                    | One per workflow step                                           |
+| Attachment encryption                   | Form key                               | Submission key                                                  |
+| New payload keys                        |                                        | `encryptedSubmissionSecretKey`, `formFields`, `workflowContent` |
+| Signature header, retries, IP addresses |                                        | Unchanged                                                       |
 
 ## What you gain
 
@@ -57,25 +78,6 @@ In V4, every submission has its own encryption key. `decrypt` returns it as `sub
 ### One format across FormSG
 
 V4 is the format that Plumber receives, and the format in which FormSG stores multi-respondent submissions. V1 is produced by converting V4 at send time.
-
-## What changes at a glance
-
-|                                         | V1                                     | V4                                                              |
-| --------------------------------------- | -------------------------------------- | --------------------------------------------------------------- |
-| SDK version                             | Any                                    | **8.2.0 or later**                                              |
-| Decrypt with                            | `formsg.crypto`                        | `formsg.cryptoV4`                                               |
-| `data.version`                          | `2.1`                                  | `4`                                                             |
-| `responses`                             | Array, in form order                   | Object keyed by field ID                                        |
-| Each answer                             | `answer` string or `answerArray`       | `answer` object, shape depends on `fieldType`                   |
-| Unanswered fields                       | Present, with `""` or `[]`             | Absent                                                          |
-| Sections, statements, images            | Sections present with `isHeader: true` | Absent                                                          |
-| Whitespace                              | Trimmed                                | As typed                                                        |
-| Myinfo questions                        | Start with `[Myinfo] `                 | No prefix. Use `response.myInfo`.                               |
-| Keys in `verified`                      | `uinFin`                               | `uinFin (Step 1)`                                               |
-| Webhooks per submission                 | One                                    | One per workflow step                                           |
-| Attachment encryption                   | Form key                               | Submission key                                                  |
-| New payload keys                        |                                        | `encryptedSubmissionSecretKey`, `formFields`, `workflowContent` |
-| Signature header, retries, IP addresses |                                        | Unchanged                                                       |
 
 ## Choose your migration path
 
@@ -152,13 +154,17 @@ const OTHERS = '!!FORMSG_INTERNAL_CHECKBOX_OTHERS_VALUE!!'
 
 function handleV4(data, { responses }) {
   const interests = responses[INTERESTS_FIELD]?.answer
+  const values = interests?.value ?? []
+  // V1 moved Others to the end, regardless of its position in the input.
+  const interestNames = values.filter((v) => v !== OTHERS)
+  if (values.includes(OTHERS)) {
+    interestNames.push(`Others: ${interests.othersInput ?? ''}`)
+  }
   return saveApplication({
     submissionId: data.submissionId,
     name: responses[NAME_FIELD]?.answer.value.trim() ?? '',
     postalCode: responses[ADDRESS_FIELD]?.answer.postalCode.value ?? '',
-    interests: (interests?.value ?? []).map((v) =>
-      v === OTHERS ? `Others: ${interests.othersInput}` : v
-    ),
+    interests: interestNames,
   })
 }
 ```
@@ -176,8 +182,10 @@ Switching the toggle affects live submissions at once, so test on a copy first.
 
 1. Duplicate the form. The copy has a new form ID and a new secret key.
 2. In the copy's **Settings > Webhooks**, enter your test endpoint and turn off **Use legacy webhooks**.
-3. Submit the copy with answers that cover every field type you read, including blank optional fields.
+3. Submit the copy with answers that cover every field type you read. Include blank optional fields, leading/trailing whitespace, checkbox Others, table rows, and attachments where applicable.
 4. Check that `handleV4` produces the same records that `handleV1` produces for the same answers.
+5. If you collect verified identity data, check the step-suffixed keys in `submission.verified`. Identify Myinfo-prefilled questions using field IDs, not the presence of `response.myInfo`.
+6. If you use workflows, test an intermediate approval, early rejection, and the last step. Deliver a duplicate and an earlier step again to check your deduplication and ordering handling.
 
 The copy keeps the original's field IDs, so your production field mappings work on it unchanged. Only the form ID and secret key differ.
 
@@ -187,7 +195,7 @@ In the live form, go to **Settings > Webhooks** and turn off **Use legacy webhoo
 
 ### 6. Remove the V1 path after retries drain
 
-If **Enable retries** is on, a delivery that failed before the switch is retried in its original V1 format for up to about 24 hours. Keep the V1 branch for at least 24 hours after the switch. Then delete it, along with `handleV1`.
+If **Enable retries** is on, a delivery that failed before the switch is retried in its original V1 format for up to about 24 hours. Keep the V1 branch for at least 24 hours after the switch and confirm those deliveries have drained before deleting it. If the endpoint still serves other V1 forms, keep the branch for them.
 
 ### 7. Add workflow steps, if you need them
 
@@ -217,11 +225,11 @@ In this table, `r` is `responses[fieldId]`.
 
 **Missing keys.** V4 leaves out unanswered fields. Code such as `responses[FIELD].answer.value` throws on a blank optional field. Use `?.` and a default.
 
-**Whitespace.** V1 trimmed answers. V4 does not. Trim values that you compare or store as keys.
+**Whitespace.** V1 trimmed generic string answers, including short and long text. V4 preserves their whitespace. Trim values that you compare or store as keys.
 
 **Field order.** V1 arrays followed form order. V4 key order means nothing. If you build a document or CSV in form order, keep your own list of field IDs.
 
-**Question text.** `r.question` comes from the field titles at submission time. It never carries the `[Myinfo] ` prefix. Table questions no longer include column names. Match fields on ID, never on question text.
+**Question text and Myinfo.** `r.question` comes from the field titles at submission time, without an added `[Myinfo] ` prefix. Table questions no longer include column names. Current V4 submissions can omit top-level `r.myInfo` even for Myinfo-prefilled fields, so keep a field-ID mapping for those questions. Nested children metadata is separate from top-level field metadata. Match fields on ID, never on question text.
 
 **Table columns.** V4 keys table cells by column ID, not by column title. Record the column IDs from a test submission, and map each one to your own column name.
 
@@ -233,6 +241,8 @@ In this table, `r` is `responses[fieldId]`.
 
 **More than one webhook per submission.** On a form with several steps, each step sends a webhook with the same `submissionId`. If your system uses `submissionId` as a unique key, it now drops or overwrites later steps. Use `(submissionId, data.workflowContent.workflowStep)` to tell deliveries apart. Every delivery carries all answers so far, so the latest step has the complete record.
 
+**Workflow completion.** An intermediate `APPROVED` step can have further steps remaining. A `REJECTED` step ends the workflow early. See the [completion example in the README](../README.md#handle-multi-step-workflows) to handle rejection, the last step, and forms with no workflow.
+
 **Retries out of order.** With retries on, the delivery for step 0 can arrive after the delivery for step 1. Do not overwrite a record with data from an earlier `workflowStep`.
 
 ## Questions
@@ -242,6 +252,8 @@ No, if you switch with the toggle. Yes, if you duplicate a Storage mode form.
 
 **Can I switch back to V1?**
 Yes, while the form has at most one workflow step. Turn **Use legacy webhooks** back on. After you add a second step, you cannot turn it back on.
+
+Keep accepting both formats during rollback. Failed V4 deliveries keep their V4 format when retried, just as failed V1 deliveries do after switching to V4. Keep the V4 handler through the retry window and confirm outstanding V4 deliveries have drained before removing it.
 
 **Does FormSG resend past submissions in V4?**
 No. Only new submissions use V4. Retries of earlier deliveries keep their original format.

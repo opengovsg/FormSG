@@ -11,7 +11,7 @@ const submission = formsg.cryptoV4.decrypt(formSecretKey, req.body.data)
 submission.responses['6a27d7a5e1b2c3d4e5f60718'].answer.value // 'Tan Ah Kow'
 ```
 
-> **Already receiving webhooks with `formsg.crypto.decrypt`?** You are on the legacy V1 format. Read [Migrating from V1 to V4](./docs/migrating-from-v1.md) to see what you gain and how to switch.
+> **Already receiving webhooks with `formsg.crypto.decrypt`?** You are on the legacy V1 format. Read [Migrating from V1 to V4](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/migrating-from-v1.md) to see what you gain and how to switch.
 
 Not using JavaScript? See [formsg-python-sdk](https://github.com/opengovsg/formsg-python-sdk).
 
@@ -47,6 +47,8 @@ FormSG sends one of two payload formats. This guide covers V4, the current forma
 | A Storage mode form created in an earlier version of FormSG              | V1 (legacy)     | `formsg.crypto`   |
 
 You can also check a payload you received. V4 payloads have `data.version` set to `4`. V1 payloads have `data.version` set to `2.1`.
+
+The SDK package version and webhook format are separate. For example, SDK **8.2.0** can read both V1 and V4. Upgrading the package does not change what your form sends; the form's webhook settings select the format.
 
 ## Quickstart: receive your first submission
 
@@ -183,7 +185,7 @@ Three rules apply to every submission:
 
 ### Answer shapes by field type
 
-Switch on `fieldType` to read `answer`. The TypeScript type `FormFieldV4` narrows `answer` for you when you check `fieldType`.
+Use `fieldType` to choose how to read `answer`. JavaScript examples below assume you know the type of each configured field. TypeScript consumers also need to check the answer's shape; see [TypeScript types](#typescript-types).
 
 | `fieldType`                                                                                                   | `answer`                                                                                                                                                                             |
 | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -196,10 +198,12 @@ Switch on `fieldType` to read `answer`. The TypeScript type `FormFieldV4` narrow
 | `address`                                                                                                     | `{ postalCode, blockNumber, streetName, buildingName, levelNumber, unitNumber }`. Each part is `{ value: string }`.                                                                  |
 | `table`                                                                                                       | `{ [rowId]: { rowNum: number, value: { [columnId]: string \| number } } }`. Sort rows by `rowNum`.                                                                                   |
 | `attachment`                                                                                                  | `{ value: 'filename.pdf', hasBeenScanned: boolean, md5Hash?: string }`                                                                                                               |
-| `signature`                                                                                                   | `{ type: 'draw', value: [x, y, t][][] }`. Each inner array is one pen stroke.                                                                                                        |
-| `children`                                                                                                    | `{ [childKey]: { value: { [attr]: { value: string, myInfo?: { attr } } } } }`. One entry per child.                                                                                  |
+| `signature`                                                                                                   | `{ type: 'draw', value: [x, y, pressure][][] }`. Each inner array is one pen stroke; the third coordinate is pointer pressure.                                                       |
+| `children`                                                                                                    | `{ [childKey]: { type?: string, value: { [attr]: { value: string, myInfo?: { attr } } } } }`. One entry per child.                                                                   |
 
 Answers are stored as the respondent typed them. Trim whitespace yourself if your system needs it.
+
+`number`, `decimal`, and `rating` values are strings. Convert them explicitly if your application needs numbers. A child entry's optional `type` records its Myinfo scope, such as `local`; older answers can omit it. It does not establish that the answer was verified.
 
 Example: read an address and a checkbox.
 
@@ -215,6 +219,17 @@ const interests = (checkbox?.value ?? []).map((v) =>
 )
 ```
 
+For tables, column IDs are separate from the table field's ID. Submit a test row and inspect its keys:
+
+```javascript
+const table = submission.responses[TABLE_FIELD]?.answer
+for (const row of Object.values(table ?? {})) {
+  console.log(row.rowNum, Object.keys(row.value))
+}
+```
+
+Save those column IDs in your configuration and map them to your application's column names.
+
 ### Question text
 
 `response.question` holds the field title that the respondent saw. The SDK fills it in from `data.formFields` in the payload. Use the field ID, not the question text, to identify a field: an admin can edit a title at any time.
@@ -222,7 +237,7 @@ const interests = (checkbox?.value ?? []).map((v) =>
 ### Other properties
 
 - `provenance` is always present. Today it is usually `{}`. On Myinfo children fields, `provenance.myinfoVerified` is `true` when FormSG checked the answer against Myinfo.
-- `myInfo` is `{ attr }` when the field was prefilled from Myinfo.
+- Top-level `myInfo?: { attr: string }` is optional metadata. Current V4 submissions can omit it even on Myinfo-prefilled fields. Identify Myinfo fields using the field IDs in your configuration. Children attributes can carry nested `myInfo` metadata; metadata alone does not establish verification.
 
 ## Handle multi-step workflows
 
@@ -235,36 +250,82 @@ Each delivery for the same submission:
 - contains **all** answers so far, not only the answers from that step.
 
 ```json
-"workflowContent": {
-  "workflowStep": 1,
-  "workflow": [ { "_id": "...", "workflow_type": "static", "edit": ["<fieldId>"] }, "..." ],
-  "submittedSteps": [
-    { "isApproval": false, "submittedAt": "2026-10-01T03:00:00.000Z" },
-    { "isApproval": true, "status": "APPROVED", "submittedAt": "2026-10-02T08:15:00.000Z" }
-  ]
+{
+  "workflowContent": {
+    "workflowStep": 1,
+    "workflow": [
+      { "_id": "step-0", "workflow_type": "static", "edit": ["<fieldId>"] },
+      { "_id": "step-1", "workflow_type": "static", "edit": [] },
+      { "_id": "step-2", "workflow_type": "static", "edit": ["<otherFieldId>"] }
+    ],
+    "submittedSteps": [
+      { "isApproval": false, "submittedAt": "2026-10-01T03:00:00.000Z" },
+      {
+        "isApproval": true,
+        "status": "APPROVED",
+        "submittedAt": "2026-10-02T08:15:00.000Z"
+      }
+    ]
+  }
 }
 ```
 
-To process each step once, store the pair `(submissionId, workflowStep)` and skip a delivery you have already seen. To act only on the final result, check whether `workflowStep` is the last index of `workflow`, or check the approval `status` in `submittedSteps`.
+Each entry in `submittedSteps` describes one completed step:
+
+| Key                       | Meaning                                                               |
+| ------------------------- | --------------------------------------------------------------------- |
+| `isApproval`              | Whether this was an approval step.                                    |
+| `submittedAt`             | ISO 8601 time when the step was submitted.                            |
+| `status`                  | `APPROVED` or `REJECTED`, present on approval steps.                  |
+| `nextStepRecipientEmails` | Optional list of recipients resolved for the next step.               |
+| `submitterId`             | Optional hashed submitter identifier, not a plaintext identity value. |
+
+To process each step once, store the pair `(submissionId, workflowStep)` and skip a delivery you have already seen.
+
+An `APPROVED` status describes one step; more steps may remain. A `REJECTED` status ends the workflow immediately. To act only on the final result, handle rejection, the last step, and forms with no workflow:
+
+```javascript
+const { workflow, workflowStep, submittedSteps } = req.body.data.workflowContent
+const rejected = submittedSteps.some(
+  (step) => step.isApproval && step.status === 'REJECTED'
+)
+const complete =
+  workflow.length === 0 || rejected || workflowStep === workflow.length - 1
+
+if (complete) {
+  // Process the final outcome, including rejection.
+}
+```
+
+Use `complete && !rejected` if you only want successfully completed workflows.
 
 ## Download attachments
 
 To download and decrypt uploaded files as well as the answers, call `decryptWithAttachments`:
 
 ```javascript
+const fs = require('node:fs')
+const path = require('node:path')
+const { randomUUID } = require('node:crypto')
+const UPLOAD_DIR = './uploads'
+
 const result = await formsg.cryptoV4.decryptWithAttachments(
   formSecretKey,
   req.body.data
 )
 
 if (result) {
-  const { content, attachments } = result
+  await fs.promises.mkdir(UPLOAD_DIR, { recursive: true })
+  const { attachments } = result
   for (const [fieldId, file] of Object.entries(attachments)) {
     // file.filename: string, file.content: Uint8Array
+    const storedName = randomUUID()
     await fs.promises.writeFile(
-      path.join(UPLOAD_DIR, file.filename),
-      file.content
+      path.join(UPLOAD_DIR, storedName),
+      file.content,
+      { flag: 'wx' }
     )
+    // Save fieldId, storedName, and file.filename in your application's metadata.
   }
 }
 ```
@@ -272,7 +333,7 @@ if (result) {
 - The download URLs in the payload expire **one hour** after FormSG sends the webhook. Call `decryptWithAttachments` within that hour.
 - If any file fails to download or decrypt, the whole call returns `null`.
 - `answer.hasBeenScanned` tells you whether FormSG scanned the file. Treat every file as untrusted input anyway.
-- Use `path.basename` or your own naming scheme before you write `file.filename` to disk. The respondent chose the filename.
+- The respondent chose `file.filename`. The example uses a generated storage name so paths cannot escape the upload directory and repeated original filenames do not overwrite earlier files. Keep the original filename as metadata.
 
 ## Read verified Singpass and Corppass data
 
@@ -304,7 +365,14 @@ Use `verified`, not the matching entry in `responses`, when you need a value tha
 
 ```javascript
 const formsg = require('@opengovsg/formsg-sdk')({ mode: 'production' })
-// or: import formsgSdk from '@opengovsg/formsg-sdk'
+```
+
+With ES modules or TypeScript:
+
+```typescript
+import formsgSdk from '@opengovsg/formsg-sdk'
+
+const formsg = formsgSdk({ mode: 'production' })
 ```
 
 | Option | Default        | Description                                          |
@@ -313,16 +381,16 @@ const formsg = require('@opengovsg/formsg-sdk')({ mode: 'production' })
 
 The returned object has these modules:
 
-| Module     | Use it to                                                                                    |
-| ---------- | -------------------------------------------------------------------------------------------- |
-| `webhooks` | Check the `X-FormSG-Signature` header.                                                       |
-| `cryptoV4` | Decrypt V4 payloads.                                                                         |
-| `crypto`   | Decrypt [legacy V1](./docs/legacy-v1.md) payloads.                                           |
-| `cryptoV3` | Decrypt pre-2026 multi-respondent payloads (`version: 3`). Most integrations do not need it. |
+| Module     | Use it to                                                                                                      |
+| ---------- | -------------------------------------------------------------------------------------------------------------- |
+| `webhooks` | Check the `X-FormSG-Signature` header.                                                                         |
+| `cryptoV4` | Decrypt V4 payloads.                                                                                           |
+| `crypto`   | Decrypt [legacy V1](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/legacy-v1.md) payloads. |
+| `cryptoV3` | Decrypt pre-2026 multi-respondent payloads (`version: 3`). Most integrations do not need it.                   |
 
 ### `webhooks.authenticate(header, uri)`
 
-Throws `WebhookAuthenticateError` if the signature is invalid or more than 5 minutes old. Returns nothing on success.
+Returns `true` on success. Throws `WebhookAuthenticateError` if the signature is invalid or its timestamp differs from the server clock by more than 5 minutes, in either direction.
 
 ### `cryptoV4.decrypt(formSecretKey, data)`
 
@@ -341,23 +409,104 @@ Returns `Promise<{ content: DecryptedContentV4, attachments: Record<fieldId, { f
 
 FormSG sends a `POST` with the header `X-FormSG-Signature` and a JSON body of the form `{ "data": { ... } }`.
 
-| Key in `data`                  | Type                            | Description                                                                                                             |
-| ------------------------------ | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `formId`                       | string                          | The form ID.                                                                                                            |
-| `submissionId`                 | string                          | The submission ID. Shown to respondents as **Response ID**. The same across all steps of a workflow.                    |
-| `version`                      | number                          | `4`.                                                                                                                    |
-| `created`                      | string                          | ISO 8601 creation time of the submission.                                                                               |
-| `encryptedContent`             | string                          | The encrypted responses.                                                                                                |
-| `encryptedSubmissionSecretKey` | string                          | The submission key, encrypted with the form key.                                                                        |
-| `verifiedContent`              | string                          | Optional. The encrypted, signed Singpass or Corppass data.                                                              |
-| `formFields`                   | `Record<fieldId, { question }>` | The field titles at submission time. The SDK uses these to fill in `question`.                                          |
-| `attachmentDownloadUrls`       | `Record<fieldId, string>`       | URLs of encrypted attachments. Valid for one hour. `{}` if there are none.                                              |
-| `paymentContent`               | object                          | Payment details. `{}` if the form has no payment. See [payment content](./docs/legacy-v1.md#format-of-payment-content). |
-| `workflowContent`              | object                          | `{ workflow, workflowStep, submittedSteps }`. See [Handle multi-step workflows](#handle-multi-step-workflows).          |
+Here is an illustrative V4 request for a form with no workflow or attachments. The encrypted strings are placeholders:
+
+```json
+{
+  "data": {
+    "formId": "6a27d7a5e1b2c3d4e5f60710",
+    "submissionId": "6a27d7a5e1b2c3d4e5f60711",
+    "version": 4,
+    "created": "2026-10-01T03:00:00.000Z",
+    "encryptedContent": "<encrypted responses>",
+    "encryptedSubmissionSecretKey": "<encrypted submission key>",
+    "formFields": {
+      "6a27d7a5e1b2c3d4e5f60718": { "question": "Your name" }
+    },
+    "attachmentDownloadUrls": {},
+    "paymentContent": {},
+    "workflowContent": {
+      "workflow": [],
+      "workflowStep": 0,
+      "submittedSteps": [
+        { "isApproval": false, "submittedAt": "2026-10-01T03:00:00.000Z" }
+      ]
+    }
+  }
+}
+```
+
+After decryption, the corresponding `submission` looks like this:
+
+```json
+{
+  "responses": {
+    "6a27d7a5e1b2c3d4e5f60718": {
+      "fieldType": "textfield",
+      "question": "Your name",
+      "answer": { "value": "Tan Ah Kow" },
+      "provenance": {}
+    }
+  },
+  "submissionSecretKey": "<base64 submission secret key>"
+}
+```
+
+Workflow and payment metadata remain in `req.body.data`; they are not properties of the decrypted `submission`.
+
+| Key in `data`                  | Type                            | Description                                                                                                    |
+| ------------------------------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `formId`                       | string                          | The form ID.                                                                                                   |
+| `submissionId`                 | string                          | The submission ID. Shown to respondents as **Response ID**. The same across all steps of a workflow.           |
+| `version`                      | number                          | `4`.                                                                                                           |
+| `created`                      | string                          | ISO 8601 creation time of the submission.                                                                      |
+| `encryptedContent`             | string                          | The encrypted responses.                                                                                       |
+| `encryptedSubmissionSecretKey` | string                          | The submission key, encrypted with the form key.                                                               |
+| `verifiedContent`              | string                          | Optional. The encrypted, signed Singpass or Corppass data.                                                     |
+| `formFields`                   | `Record<fieldId, { question }>` | The field titles at submission time. The SDK uses these to fill in `question`.                                 |
+| `attachmentDownloadUrls`       | `Record<fieldId, string>`       | URLs of encrypted attachments. Valid for one hour. `{}` if there are none.                                     |
+| `paymentContent`               | object                          | Payment details. `{}` if the form has no payment. See [payment content](#payment-content).                     |
+| `workflowContent`              | object                          | `{ workflow, workflowStep, submittedSteps }`. See [Handle multi-step workflows](#handle-multi-step-workflows). |
+
+### Payment content
+
+These keys are present in `data.paymentContent` if the submission includes a payment. Otherwise it is `{}`. The format is shared by V1 and V4. Amounts are decimal strings; `dateTime` and `transactionFee` can be `"-"` when unavailable.
+
+| Key              | Type               | Description                          |
+| ---------------- | ------------------ | ------------------------------------ |
+| `type`           | `'payment_charge'` | The payment event for this webhook.  |
+| `status`         | string             | The status of the payment intent.    |
+| `payer`          | string             | The payer's email.                   |
+| `url`            | string             | The URL of the proof of payment.     |
+| `paymentIntent`  | string             | The payment intent ID.               |
+| `amount`         | string             | The amount charged.                  |
+| `productService` | string             | The product or service name.         |
+| `dateTime`       | string             | The time of the transaction.         |
+| `transactionFee` | string             | The fee charged for the transaction. |
 
 ### TypeScript types
 
 The package exports types for every shape in this guide, including `DecryptedContentV4`, `FieldResponsesV4`, `FormFieldV4`, `AnswerV4`, and one type per answer shape, such as `AddressAnswerV4` and `TableAnswerV4`.
+
+`FormFieldV4` is a discriminated union: checking its `fieldType` narrows its `answer`. However, `cryptoV4.decrypt` currently returns `FieldResponseV4` entries, whose type does not connect each field type to its answer shape. Checking only `fieldType` on a decrypted response does not narrow `answer` in TypeScript.
+
+Check the answer's shape before accessing a type-specific property. For example:
+
+```typescript
+import type { DecryptedContentV4 } from '@opengovsg/formsg-sdk'
+
+function readText(submission: DecryptedContentV4, fieldId: string) {
+  const response = submission.responses[fieldId]
+  if (
+    response?.fieldType === 'textfield' &&
+    'value' in response.answer &&
+    typeof response.answer.value === 'string'
+  ) {
+    return response.answer.value
+  }
+  return undefined
+}
+```
 
 ## Verify signatures without the SDK
 
@@ -388,12 +537,12 @@ X-FormSG-Signature: t=1582558358788,
    | production         | `3Tt8VduXsjjd4IrpdCd7BAkdZl/vUCstu9UvTX84FWw=` |
    | staging            | `rjv41kYqZwcbe3r6ymMEEKQ+Vd+DPuogN+Gzq3lP2Og=` |
 
-4. Reject the request if the epoch is more than 5 minutes old.
+4. Reject the request if `Math.abs(Date.now() - epoch)` is greater than `300000`. This rejects timestamps more than 5 minutes in the past or future.
 5. Check that the form ID is one you expect.
 
 ### Encryption
 
-FormSG encrypts submissions end to end. FormSG servers cannot read submission data. The cryptosystem is `x25519-xsalsa20-poly1305`, implemented by [tweetnacl-js](https://github.com/dchest/tweetnacl-js), which [Cure53 audited](https://cure53.de/tweetnacl.pdf).
+FormSG encrypts webhook answers and attachments using `x25519-xsalsa20-poly1305`, implemented by [tweetnacl-js](https://github.com/dchest/tweetnacl-js), which [Cure53 audited](https://cure53.de/tweetnacl.pdf). In the current V4 submission path, FormSG servers handle plaintext responses during submission processing and encrypt them before storage and webhook delivery.
 
 In V4, each submission has its own key pair. FormSG encrypts the answers and attachments with the submission key, then encrypts the submission secret key with your form's public key. Your form secret key unlocks the submission key, and the submission key unlocks the data.
 
@@ -401,8 +550,8 @@ In V4, each submission has its own key pair. FormSG encrypts the answers and att
 
 V1 is the format that `formsg.crypto.decrypt` reads. It is still supported, but new integrations should use V4.
 
-- [Migrating from V1 to V4](./docs/migrating-from-v1.md): what changes and how to switch without downtime.
-- [Legacy V1 webhook reference](./docs/legacy-v1.md): the V1 payload, decryption API, and field formats.
+- [Migrating from V1 to V4](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/migrating-from-v1.md): what changes and how to switch without downtime.
+- [Legacy V1 webhook reference](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/legacy-v1.md): the V1 payload, decryption API, and field formats.
 
 ## About this package
 

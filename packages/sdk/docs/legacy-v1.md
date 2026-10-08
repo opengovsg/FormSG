@@ -96,16 +96,4 @@ Attachment URLs expire **one hour** after FormSG sends the webhook. Treat every 
 
 ## Format of payment content
 
-These keys are present if the submission includes a payment. Otherwise `paymentContent` is `{}`. The format is the same in V4.
-
-| Key              | Type               | Description                          |
-| ---------------- | ------------------ | ------------------------------------ |
-| `type`           | `'payment_charge'` | The payment event for this webhook.  |
-| `status`         | string             | The status of the payment intent.    |
-| `payer`          | string             | The payer's email.                   |
-| `url`            | string             | The URL of the proof of payment.     |
-| `paymentIntent`  | string             | The payment intent ID.               |
-| `amount`         | string             | The amount charged.                  |
-| `productService` | string             | The product or service name.         |
-| `dateTime`       | string             | The time of the transaction.         |
-| `transactionFee` | string             | The fee charged for the transaction. |
+V1 and V4 share the same `data.paymentContent` format. See [Payment content in the SDK reference](../README.md#payment-content).
