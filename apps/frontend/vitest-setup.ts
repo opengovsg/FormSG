@@ -10,11 +10,15 @@ import * as globalStorybookConfig from './.storybook/preview'
 setProjectAnnotations(globalStorybookConfig)
 
 // Mock the ResizeObserver
-const ResizeObserverMock = vi.fn(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}))
+const ResizeObserverMock = vi.fn(function (this: {
+  observe: () => void
+  unobserve: () => void
+  disconnect: () => void
+}) {
+  this.observe = vi.fn()
+  this.unobserve = vi.fn()
+  this.disconnect = vi.fn()
+})
 
 // Stub the global ResizeObserver
 vi.stubGlobal('ResizeObserver', ResizeObserverMock)
