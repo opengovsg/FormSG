@@ -14,11 +14,7 @@ overrides:
   ajv@>=7.0.0-alpha.0 <8.18.0: ^8.18.0
   axios: ^1.20.0
   baseline-browser-mapping@>=2.0.0 <2.11.0: ^2.11.0
-  basic-ftp@<=5.2.1: ^5.2.2
-  basic-ftp@<=5.2.2: ^5.3.0
-  basic-ftp@<=5.3.0: ^5.3.1
-  basic-ftp@<=6.2.0: ^6.2.1
-  basic-ftp@=5.2.0: ^5.2.1
+  basic-ftp@<6.2.1: ^6.2.1
   body-parser@<1.20.6: ~1.20.6
   body-parser@>=2.0.0 <2.3.0: ^2.3.0
   brace-expansion@<1.1.13: ^1.1.13
@@ -6506,8 +6502,8 @@ packages:
     resolution: {integrity: sha512-NF+epuEdnUYVlGuhaxbbq+dvJttwLnGY+YixlXlME5KpQ5W3CnXA5cVTneY3SPbPDRkcjMbifrwmFYcClgOZeg==}
     engines: {node: '>= 0.8'}
 
-  basic-ftp@5.3.1:
-    resolution: {integrity: sha512-bopVNp6ugyA150DDuZfPFdt1KZ5a94ZDiwX4hMgZDzF+GttD80lEy8kj98kbyhLXnPvhtIo93mdnLIjpCAeeOw==}
+  basic-ftp@6.2.2:
+    resolution: {integrity: sha512-LIkJcf/F6bTTfvE3k2YcTxrJsLKKVXiEpHZYkQP6JoqTb7khng7c13ckRTDQbqRh5IkehVH3F00sSlAa2F6DwA==}
     engines: {node: '>=10.0.0'}
 
   bcrypt@5.1.1:
@@ -21124,7 +21120,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.1.2
 
-  basic-ftp@5.3.1: {}
+  basic-ftp@6.2.2: {}
 
   bcrypt@5.1.1(encoding@0.1.13):
     dependencies:
@@ -23970,7 +23966,7 @@ snapshots:
 
   get-uri@6.0.5:
     dependencies:
-      basic-ftp: 5.3.1
+      basic-ftp: 6.2.2
       data-uri-to-buffer: 6.0.2
       debug: 4.4.3(supports-color@8.1.1)
     transitivePeerDependencies:

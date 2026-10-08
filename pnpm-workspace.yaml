@@ -23,11 +23,7 @@ overrides:
   ajv@>=7.0.0-alpha.0 <8.18.0: ^8.18.0
   axios: ^1.20.0
   baseline-browser-mapping@>=2.0.0 <2.11.0: ^2.11.0
-  basic-ftp@<=5.2.1: ^5.2.2
-  basic-ftp@<=5.2.2: ^5.3.0
-  basic-ftp@<=5.3.0: ^5.3.1
-  basic-ftp@<=6.2.0: ^6.2.1
-  basic-ftp@=5.2.0: ^5.2.1
+  basic-ftp@<6.2.1: ^6.2.1
   body-parser@<1.20.6: ~1.20.6
   body-parser@>=2.0.0 <2.3.0: ^2.3.0
   brace-expansion@<1.1.13: ^1.1.13
