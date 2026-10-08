@@ -1,5 +1,6 @@
 import { Meta, StoryFn } from '@storybook/react/*'
-import { expect, waitFor } from '@storybook/test'
+import { expect, waitFor, within } from '@storybook/test'
+import { http, HttpResponse } from 'msw'
 
 import { FormResponseMode, WorkflowType } from 'formsg-shared/types'
 
@@ -346,3 +347,34 @@ WithMultiRespondentFormStep2EditableTableFieldAdditionalRowsWithSaveDraft.play =
       })
     })
   }
+
+export const WithStoppedWorkflow = Template.bind({})
+WithStoppedWorkflow.parameters = {
+  msw: [
+    http.get('/api/v3/forms/:formId/submissions/:submissionId', () =>
+      HttpResponse.json(
+        {
+          message:
+            'This workflow has been stopped. Please contact the form admin that gave you this link.',
+          messageKey:
+            'features.publicForm.backendErrors.submission.mrf.workflowStopped',
+        },
+        { status: 400 },
+      ),
+    ),
+    getPublicFormResponse({
+      overrides: {
+        form: { responseMode: FormResponseMode.Multirespondent },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithStoppedWorkflow.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await waitFor(() =>
+    expect(
+      canvas.getByText(/This workflow has been stopped/),
+    ).toBeInTheDocument(),
+  )
+}
