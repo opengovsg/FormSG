@@ -28,8 +28,9 @@ export const useStopWorkflowMutation = (formId: string) => {
       onError: (error: ApiError) => {
         toast({ status: 'danger', description: error.message })
       },
-      onSettled: () =>
-        queryClient.invalidateQueries(adminFormResponsesKeys.id(formId)),
+      onSettled: () => {
+        void queryClient.invalidateQueries(adminFormResponsesKeys.id(formId))
+      },
     },
   )
 }
@@ -59,8 +60,9 @@ export const useAddAssigneesMutation = (formId: string) => {
       onError: (error: ApiError) => {
         toast({ status: 'danger', description: error.message })
       },
-      onSettled: () =>
-        queryClient.invalidateQueries(adminFormResponsesKeys.id(formId)),
+      onSettled: () => {
+        void queryClient.invalidateQueries(adminFormResponsesKeys.id(formId))
+      },
     },
   )
 }

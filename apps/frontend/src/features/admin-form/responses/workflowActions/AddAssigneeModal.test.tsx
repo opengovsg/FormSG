@@ -50,4 +50,18 @@ describe('AddAssigneeModal', () => {
     expect(screen.getByRole('button', { name: CONFIRM })).toBeDisabled()
     expect(onConfirm).not.toHaveBeenCalled()
   })
+
+  it('adds more than two people at once', async () => {
+    const onConfirm = vi.fn()
+    showModal(onConfirm)
+
+    await typeEmails('a@agency.gov.sg,b@agency.gov.sg,c@agency.gov.sg,')
+    await userEvent.click(screen.getByRole('button', { name: CONFIRM }))
+
+    expect(onConfirm).toHaveBeenCalledWith([
+      'a@agency.gov.sg',
+      'b@agency.gov.sg',
+      'c@agency.gov.sg',
+    ])
+  })
 })
