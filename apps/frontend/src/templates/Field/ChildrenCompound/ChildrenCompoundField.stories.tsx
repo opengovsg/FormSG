@@ -8,6 +8,7 @@ import {
   BasicField,
   MyInfoChildAttributes,
   MyInfoChildData,
+  MyInfoChildrenScope,
 } from 'formsg-shared/types/field'
 
 import Button from '~components/Button'
@@ -59,6 +60,7 @@ const Template: StoryFn<StoryChildrenCompoundFieldProps> = ({
   const formMethods = useForm({ defaultValues })
 
   const [submitValues, setSubmitValues] = useState<string>()
+  const [submitTypes, setSubmitTypes] = useState<string>()
 
   const onSubmit = (values: Record<string, unknown>) => {
     // Form values are nested under the field id (RHF nests on dots).
@@ -66,6 +68,7 @@ const Template: StoryFn<StoryChildrenCompoundFieldProps> = ({
       JSON.stringify(get(values, `${args.schema._id}.child`)) ||
         'Nothing was selected',
     )
+    setSubmitTypes(JSON.stringify(get(values, `${args.schema._id}.childTypes`)))
   }
 
   return (
@@ -84,6 +87,7 @@ const Template: StoryFn<StoryChildrenCompoundFieldProps> = ({
           Submit
         </Button>
         {submitValues && <Text>You have submitted: {submitValues}</Text>}
+        {submitTypes && <Text>Child types: {submitTypes}</Text>}
       </form>
     </FormProvider>
   )
@@ -145,4 +149,27 @@ LegacySecondaryRaceSubField.args = {
       MyInfoChildAttributes.ChildSecondaryRace,
     ],
   }),
+}
+
+/**
+ * MyInfo returns the same child name as both a birth record and a sponsored
+ * record. Each record is listed and selectable on its own.
+ */
+export const SameNamedLocalAndSponsored = Template.bind({})
+SameNamedLocalAndSponsored.args = {
+  schema: merge({}, baseSchema, {
+    childrenSubFields: [
+      MyInfoChildAttributes.ChildName,
+      MyInfoChildAttributes.ChildType,
+    ],
+  }),
+  childrenBirthRecords: {
+    [MyInfoChildAttributes.ChildName]: ['SITI RY', 'THRO RY', 'THRO RY'],
+    [MyInfoChildAttributes.ChildType]: ['LOCAL', 'LOCAL', 'SPONSORED'],
+    scopes: [
+      MyInfoChildrenScope.Local,
+      MyInfoChildrenScope.Local,
+      MyInfoChildrenScope.Sponsored,
+    ],
+  },
 }
