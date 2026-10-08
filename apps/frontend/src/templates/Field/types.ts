@@ -156,9 +156,13 @@ export type ChildrenCompoundFieldValues = {
   childFields: MyInfoChildAttributes[]
   // MyInfo scope each child's record came from, parallel to `child`; an
   // undefined slot means the scope was never derived (e.g. pre-scope drafts
-  // and carried-forward answers) and submits without a type. Only 'local' is
-  // ever derived today; 'sponsored' once that scope is fetched.
+  // and carried-forward answers) and submits without a type.
   childTypes?: (MyInfoChildrenScope | undefined)[]
+  // Index into the MyInfo children columns of the record each child was
+  // picked from, parallel to `child`. Names are not unique (a child can come
+  // back as both a birth record and a sponsored record), so the record is
+  // tracked by position. UI state only: never submitted.
+  childRecordIndices?: (number | undefined)[]
 }
 
 export type AddressCompoundFieldValues = {

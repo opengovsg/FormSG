@@ -23,7 +23,6 @@ import { DATE_DISPLAY_FORMAT } from 'formsg-shared/constants/dates'
 import { MYINFO_ATTRIBUTE_MAP } from 'formsg-shared/constants/field/myinfo'
 import {
   FormColorTheme,
-  MyInfoAttribute,
   MyInfoChildAttributes,
   MyInfoChildData,
   MyInfoChildrenScope,
@@ -35,6 +34,7 @@ import { REQUIRED_ERROR } from '~constants/validation'
 import { createChildrenValidationRules } from '~utils/fieldValidation'
 import { DatePicker } from '~components/DatePicker'
 import { SingleSelect } from '~components/Dropdown/SingleSelect'
+import { ComboboxItem } from '~components/Dropdown/types'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import { FormLabel } from '~components/FormControl/FormLabel/FormLabel'
 
@@ -167,6 +167,16 @@ interface ChildrenBodyProps {
 
 const CHILD_NAME_INDEX = 0
 
+// Dropdown values for MyInfo records carry a prefix so that they can never be
+// mistaken for a child's name.
+const RECORD_VALUE_PREFIX = 'record:'
+const toRecordValue = (recordIdx: number) =>
+  `${RECORD_VALUE_PREFIX}${recordIdx}`
+const fromRecordValue = (value: string): number =>
+  value.startsWith(RECORD_VALUE_PREFIX)
+    ? Number(value.slice(RECORD_VALUE_PREFIX.length))
+    : -1
+
 const ChildrenBody = ({
   currChildBodyIdx,
   schema,
@@ -178,7 +188,7 @@ const ChildrenBody = ({
   formContext,
   error,
 }: ChildrenBodyProps): JSX.Element => {
-  const { register, getValues, setValue, watch, control } = formContext
+  const { register, setValue, watch, control } = formContext
 
   const childNamePath = useMemo(
     () => `${schema._id}.child.${currChildBodyIdx}.0`,
@@ -190,65 +200,64 @@ const ChildrenBody = ({
     [schema, disableRequiredValidation],
   )
 
+  const recordIndexPath =
+    `${schema._id}.childRecordIndices.${currChildBodyIdx}` as const
+  const childTypePath = `${schema._id}.childTypes.${currChildBodyIdx}` as const
+
   const childName = watch(childNamePath) as unknown as string
+  const pickedRecordIndex = watch(recordIndexPath) as unknown as
+    | number
+    | undefined
 
-  const allChildren = useMemo<string[]>(() => {
-    if (myInfoChildrenBirthRecords === undefined) {
-      return []
-    }
-    return myInfoChildrenBirthRecords[MyInfoAttribute.ChildName] ?? []
-  }, [myInfoChildrenBirthRecords])
-
-  // useCallback to re-compute names because for some reason watch doesn't
-  // work on this nested field in react-hook-form.
-  const allSelectedNames = useCallback((): string[] => {
-    const child = getValues(`${schema._id}.child`)
-    // Really important to note that sometimes react-hook-form stores our "array"
-    // as a object with key=index and values=array entry.
-    const childValues = child ? Object.values(child) : []
-    const childNames = childValues.map((arr) => arr[0])
-    return childNames
-  }, [getValues, schema._id])
-
-  // useCallback to re-compute names, again because of buggy allSelectedNames
-  const namesNotSelected = useCallback((): string[] => {
-    if (myInfoChildrenBirthRecords === undefined) {
-      return []
-    }
-    const temp = new Set(allSelectedNames())
-    // We want all child names that haven't already been selected.
-    // O(n^2) but n is small so it should be okay.
-    return allChildren.filter((name) => !temp.has(name))
-  }, [myInfoChildrenBirthRecords, allChildren, allSelectedNames])
-
-  const childNameValues = useMemo(() => {
-    return [childName, ...namesNotSelected()].filter((name) => {
-      if (name === '' || name === undefined) {
-        return false
-      } else return true
-    })
-  }, [childName, namesNotSelected])
-
-  const indexOfChild: number = useMemo(() => {
-    return (
-      myInfoChildrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.indexOf(
-        childName,
-      ) ?? -1
-    )
-  }, [myInfoChildrenBirthRecords, childName])
-
-  // Scope the selected child's record was retrieved under, defaulting to local.
-  const getChildScope = useCallback(
-    (name: string): MyInfoChildrenScope => {
-      const idx =
-        myInfoChildrenBirthRecords?.[MyInfoChildAttributes.ChildName]?.indexOf(
-          name,
-        ) ?? -1
-      return (
-        myInfoChildrenBirthRecords?.scopes?.[idx] ?? MyInfoChildrenScope.Local
-      )
-    },
+  const recordNames = useMemo<string[]>(
+    () => myInfoChildrenBirthRecords?.[MyInfoChildAttributes.ChildName] ?? [],
     [myInfoChildrenBirthRecords],
+  )
+
+  // Scope a record was retrieved under, defaulting to local.
+  const getRecordScope = useCallback(
+    (recordIdx: number): MyInfoChildrenScope =>
+      myInfoChildrenBirthRecords?.scopes?.[recordIdx] ??
+      MyInfoChildrenScope.Local,
+    [myInfoChildrenBirthRecords],
+  )
+
+  // The MyInfo record the selected child came from. Names are not unique, so
+  // the record is identified by the position picked in the dropdown.
+  const indexOfChild =
+    pickedRecordIndex !== undefined &&
+    recordNames[pickedRecordIndex] === childName
+      ? pickedRecordIndex
+      : -1
+
+  // One item per record, so that same-named records stay distinct. Records
+  // without a name are children above 21.
+  const childNameItems = useMemo<ComboboxItem[]>(() => {
+    const items: ComboboxItem[] = recordNames.flatMap((name, idx) =>
+      name ? [{ value: toRecordValue(idx), label: name }] : [],
+    )
+    // A name with no record to point at (e.g. carried forward to a later MRF
+    // step, which has no MyInfo data) is still shown as the selection.
+    if (childName && indexOfChild < 0) items.push(childName)
+    return items
+  }, [recordNames, childName, indexOfChild])
+
+  const onChildRecordChange = useCallback(
+    (value: string, onChange: (name: string) => void) => {
+      const recordIdx = fromRecordValue(value)
+      const name = recordNames[recordIdx]
+      if (name === undefined) {
+        // Cleared, or re-selected a name that has no record.
+        onChange(value)
+        setValue(recordIndexPath, undefined)
+        setValue(childTypePath, undefined)
+        return
+      }
+      onChange(name)
+      setValue(recordIndexPath, recordIdx)
+      setValue(childTypePath, getRecordScope(recordIdx))
+    },
+    [recordNames, setValue, recordIndexPath, childTypePath, getRecordScope],
   )
 
   const getChildAttr = useCallback(
@@ -315,16 +324,16 @@ const ChildrenBody = ({
                       schema.disabled ? undefined : "Select your child's name"
                     }
                     colorScheme={`theme-${colorTheme}`}
-                    items={childNameValues}
-                    value={value as unknown as string}
+                    items={childNameItems}
+                    value={
+                      indexOfChild >= 0
+                        ? toRecordValue(indexOfChild)
+                        : ((value as unknown as string) ?? '')
+                    }
                     isDisabled={isSubmitting || schema.disabled}
-                    onChange={(name) => {
-                      onChange(name)
-                      setValue(
-                        `${schema._id}.childTypes.${currChildBodyIdx}`,
-                        getChildScope(name),
-                      )
-                    }}
+                    onChange={(selected) =>
+                      onChildRecordChange(selected, onChange)
+                    }
                   />
                 )}
               />
