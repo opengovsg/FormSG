@@ -26,6 +26,7 @@ COPY --from=build /build/packages/sdk/cjs-entry.cjs /opt/formsg/packages/sdk/
 COPY --from=build /build/packages/sdk/dist /opt/formsg/packages/sdk/dist
 
 COPY --from=build /build/pnpm-workspace.yaml /opt/formsg/pnpm-workspace.yaml
+COPY --from=build /build/pnpm-lock.yaml /opt/formsg/pnpm-lock.yaml
 COPY --from=build /build/node_modules /opt/formsg/node_modules
 COPY --from=build /build/package.json /opt/formsg/package.json
 
@@ -36,6 +37,7 @@ COPY --from=build /build/apps/backend/dist /opt/formsg/apps/backend/dist
 USER formsguser
 
 ENV NODE_ENV=production
+ENV npm_config_manage_package_manager_versions=false
 EXPOSE 4545
 
 ENTRYPOINT [ "tini", "--" ]
