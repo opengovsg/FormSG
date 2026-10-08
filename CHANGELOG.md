@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.46.1](https://github.com/opengovsg/formsg/compare/v9.46.0...v9.46.1) (2026-10-08)
+
+
+### Bug Fixes
+
+* **children:** select child records by position, not name (#10236) ([#10236](https://github.com/opengovsg/formsg/commit/d96c87fe6f4d200b09e643cddfd4b346b0ba2fde))
+* **mrf:** check child type against the Child type answer (#10237) ([#10237](https://github.com/opengovsg/formsg/commit/b471cc40ab7fcf30c959125331b6699e080bfd2e))
+
 ## [9.46.0](https://github.com/opengovsg/formsg/compare/v9.45.1...v9.46.0) (2026-10-08)
 
 
