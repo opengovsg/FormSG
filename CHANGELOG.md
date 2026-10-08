@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.46.0](https://github.com/opengovsg/formsg/compare/v9.45.1...v9.46.0) (2026-10-08)
+
+
+### Features
+
+* **auth:** remove sgID form login (#10210) ([#10210](https://github.com/opengovsg/formsg/commit/a4ee87f785b34af9a6cae0f2a2e2e7e7494832b2))
+
 ## [9.45.1](https://github.com/opengovsg/formsg/compare/v9.45.0...v9.45.1) (2026-10-07)
 
 
