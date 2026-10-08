@@ -1,17 +1,17 @@
-# Legacy V1 webhook reference
+# Legacy webhook reference
 
-> **V1 is the legacy format.** FormSG still delivers it, but new integrations should use [V4](../README.md). If you run a V1 integration today, read [Migrating from V1 to V4](./migrating-from-v1.md).
+> FormSG still delivers legacy webhooks, but new integrations should use the [latest format](../README.md). If you receive legacy webhooks today, read [Migrating to the latest webhooks](./migrating-to-latest.md).
 
-This page describes the V1 payload and the `formsg.crypto` module that decrypts it. Authentication is the same for V1 and V4. See [the README](../README.md#quickstart-receive-your-first-submission).
+This page describes the legacy payload and the `formsg.crypto` module that decrypts it. Authentication is the same for legacy and latest webhooks. See [the README](../README.md#quickstart-receive-your-first-submission).
 
-## Which forms send V1
+## Which forms send legacy webhooks
 
-- Storage mode forms created in an earlier version of FormSG. These forms always send V1.
-- Forms with **Use legacy webhooks** turned on in **Settings > Webhooks**. V1 works only on forms whose workflow has at most one step.
+- Legacy forms (previously known as Storage mode forms). These forms always send legacy webhooks.
+- Forms with **Use legacy webhooks** turned on in **Settings > Webhooks**. Legacy webhooks work only on forms whose workflow has at most one step.
 
-A V1 payload has `data.version` set to `2.1`, and has no `encryptedSubmissionSecretKey`.
+A legacy payload has `data.version` set to `2.1`, and has no `encryptedSubmissionSecretKey`.
 
-## Decrypt a V1 submission
+## Decrypt a legacy submission
 
 ```javascript
 const formsg = require('@opengovsg/formsg-sdk')()
@@ -45,12 +45,12 @@ Both return `null` if decryption or validation fails.
 
 `formsg.crypto.decrypt(formSecretKey, decryptParams)` returns:
 
-<pre>
+```typescript
 {
-  responses: <a href="../src/types.ts">FormField</a>[]
-  verified?: Record&lt;string, any&gt;
+  responses: FormField[] // see src/types.ts
+  verified?: Record<string, any>
 }
-</pre>
+```
 
 `responses` is an array in form order. Each entry has this shape:
 
@@ -62,7 +62,7 @@ Both return `null` if decryption or validation fails.
 | `fieldType`   | string                     | The field type.                                                              |
 | `_id`         | string                     | The field ID. It changes when a field is deleted and added again.            |
 
-V1 entries can also carry `isHeader`, `isUserVerified`, `isVisible`, `signature`, and `myInfo`. FormSG may add internal fields from time to time. Do not reject a webhook because it has keys you do not expect.
+Legacy entries can also carry `isHeader`, `isUserVerified`, `isVisible`, `signature`, and `myInfo`. FormSG may add internal fields from time to time. Do not reject a webhook because it has keys you do not expect.
 
 `decrypt` [validates](../src/util/validate.ts) the decrypted content and returns `null` if any entry lacks the keys above.
 
@@ -70,7 +70,7 @@ If `verifiedContent` exists, the SDK decrypts it, checks its signature with the 
 
 ### Field formats
 
-| Field type       | V1 representation                                                                                                  |
+| Field type       | Legacy representation                                                                                              |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
 | Most text fields | `answer: "text"`, trimmed.                                                                                         |
 | `date`           | `answer: "09 Sep 2026"`.                                                                                           |
@@ -96,4 +96,4 @@ Attachment URLs expire **one hour** after FormSG sends the webhook. Treat every 
 
 ## Format of payment content
 
-V1 and V4 share the same `data.paymentContent` format. See [Payment content in the SDK reference](../README.md#payment-content).
+Legacy and latest webhooks share the same `data.paymentContent` format. See [Payment content in the SDK reference](../README.md#payment-content).

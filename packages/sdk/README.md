@@ -11,7 +11,7 @@ const submission = formsg.cryptoV4.decrypt(formSecretKey, req.body.data)
 submission.responses['6a27d7a5e1b2c3d4e5f60718'].answer.value // 'Tan Ah Kow'
 ```
 
-> **Already receiving webhooks with `formsg.crypto.decrypt`?** You are on the legacy V1 format. Read [Migrating from V1 to V4](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/migrating-from-v1.md) to see what you gain and how to switch.
+> **Already decrypting with `formsg.crypto.decrypt`?** You receive legacy webhooks. Read [Migrating to the latest webhooks](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/migrating-to-latest.md) to see what you gain and how to switch.
 
 ## Contents
 
@@ -24,7 +24,7 @@ submission.responses['6a27d7a5e1b2c3d4e5f60718'].answer.value // 'Tan Ah Kow'
 - [Prepare your endpoint for production](#prepare-your-endpoint-for-production)
 - [Reference](#reference)
 - [Verify signatures without the SDK](#verify-signatures-without-the-sdk)
-- [Legacy V1 webhooks](#legacy-v1-webhooks)
+- [Legacy webhooks](#legacy-webhooks)
 
 ## Before you begin
 
@@ -32,21 +32,19 @@ You need:
 
 - A FormSG form and its **secret key**. FormSG gives you the secret key as a file when you create the form. FormSG does not keep a copy, so store it in a secret manager.
 - An HTTPS endpoint that the internet can reach. If you restrict inbound traffic, allow the [FormSG webhook IP addresses](https://guide.form.gov.sg/user-guides/advanced-guide/webhooks).
-- Node.js and `@opengovsg/formsg-sdk` version **8.2.0 or later**. Earlier versions cannot decrypt V4 attachments or fill in question text.
+- Node.js and `@opengovsg/formsg-sdk` version **8.2.0 or later**. Earlier versions cannot decrypt attachments in the latest format or fill in question text.
 
 ### Check which format your form sends
 
-FormSG sends one of two payload formats. This guide covers V4, the current format.
+FormSG sends webhooks in one of two formats: **latest** or **legacy**. This guide covers the latest format.
 
 | Your form                                                                | Format it sends | Decrypt with      |
 | ------------------------------------------------------------------------ | --------------- | ----------------- |
-| A form created in the current version of FormSG                          | **V4**          | `formsg.cryptoV4` |
-| A form with **Use legacy webhooks** turned on in **Settings > Webhooks** | V1 (legacy)     | `formsg.crypto`   |
-| A Storage mode form created in an earlier version of FormSG              | V1 (legacy)     | `formsg.crypto`   |
+| A form created in the current version of FormSG                          | **Latest**      | `formsg.cryptoV4` |
+| A form with **Use legacy webhooks** turned on in **Settings > Webhooks** | Legacy          | `formsg.crypto`   |
+| A legacy form (previously known as a Storage mode form)                  | Legacy          | `formsg.crypto`   |
 
-You can also check a payload you received. V4 payloads have `data.version` set to `4`. V1 payloads have `data.version` set to `2.1`.
-
-The SDK package version and webhook format are separate. For example, SDK **8.2.0** can read both V1 and V4. Upgrading the package does not change what your form sends; the form's webhook settings select the format.
+You can also check `data.version` in a payload: `4` for latest, `2.1` for legacy. The SDK version is separate; upgrading the SDK does not change what your form sends.
 
 ## Quickstart: receive your first submission
 
@@ -93,7 +91,7 @@ app.post(
     const submission = formsg.cryptoV4.decrypt(formSecretKey, req.body.data)
 
     if (!submission) {
-      // Wrong secret key, or the payload is not V4.
+      // Wrong secret key, or the form sends legacy webhooks.
       return res.status(400).send({ message: 'Could not decrypt' })
     }
 
@@ -107,24 +105,6 @@ app.post(
 
 app.listen(8080, () => console.log('Listening on port 8080'))
 ```
-
-The handler prints one line per answered field: the field ID, the question, and the answer. For example, take a form with four fields: **Your name** (short text), **Email** (verified with an OTP), **Interests** (checkbox), and **Home address** (address). A respondent fills in all four and leaves an optional **Phone** field blank. The handler prints:
-
-```text
-6a27d7a5e1b2c3d4e5f60718 Your name { value: 'Tan Ah Kow' }
-6a27d7a5e1b2c3d4e5f60719 Email { value: 'ahkow@example.com', signature: '<signature>' }
-6a27d7a5e1b2c3d4e5f6071c Interests { value: [ 'Sports', 'Music' ] }
-6a27d7a5e1b2c3d4e5f6071b Home address {
-  postalCode: { value: '570123' },
-  blockNumber: { value: '123' },
-  streetName: { value: 'Bishan Street 11' },
-  buildingName: { value: '' },
-  levelNumber: { value: '05' },
-  unitNumber: { value: '67' }
-}
-```
-
-**Phone** does not appear, because V4 leaves out unanswered fields. The lines can appear in any order. See [Answer shapes by field type](#answer-shapes-by-field-type) for every field type.
 
 If you integrate with FormSG staging, set `mode: 'staging'`. The mode selects the public key that the SDK uses to check signatures.
 
@@ -144,12 +124,12 @@ Expose port 8080 at the HTTPS URL that you set as `POST_URI`.
 
 ### 5. Send a test submission
 
-Open the form and submit it. Your server prints one line per answered field, as shown in [step 2](#2-write-the-webhook-handler).
+Open the form and submit it. Your server prints one line per answered field. Unanswered fields do not appear.
 
 If the server prints nothing, check these causes first:
 
 - **You get a `401`.** `POST_URI` does not exactly match the URL in FormSG, or the server clock is more than 5 minutes off.
-- **You get a `400`.** The secret key is for a different form, or the form sends V1. See [Check which format your form sends](#check-which-format-your-form-sends).
+- **You get a `400`.** The secret key is for a different form, or the form sends legacy webhooks. See [Check which format your form sends](#check-which-format-your-form-sends).
 
 ## Read the responses
 
@@ -268,10 +248,6 @@ A Myinfo children field holds one entry per child that the respondent selected. 
       "childname": {
         "value": "Tan Xiao Ming",
         "myInfo": { "attr": "childname" }
-      },
-      "childdateofbirth": {
-        "value": "15/03/2020",
-        "myInfo": { "attr": "childdateofbirth" }
       }
     }
   },
@@ -280,10 +256,6 @@ A Myinfo children field holds one entry per child that the respondent selected. 
       "childname": {
         "value": "Tan Xiao Hua",
         "myInfo": { "attr": "childname" }
-      },
-      "childdateofbirth": {
-        "value": "02/11/2022",
-        "myInfo": { "attr": "childdateofbirth" }
       }
     }
   }
@@ -302,14 +274,11 @@ const childNames = Object.values(childrenField?.answer ?? {}).map(
 // ['Tan Xiao Ming', 'Tan Xiao Hua']
 ```
 
-### Question text
-
-`response.question` holds the field title that the respondent saw. The SDK fills it in from `data.formFields` in the payload. Use the field ID, not the question text, to identify a field: an admin can edit a title at any time.
-
 ### Other properties
 
-- `provenance` is always present. Today it is usually `{}`. On Myinfo children fields, `provenance.myinfoVerified` is `true` when FormSG checked the answer against Myinfo.
-- Top-level `myInfo?: { attr: string }` is optional metadata. Current V4 submissions can omit it even on Myinfo-prefilled fields. Identify Myinfo fields using the field IDs in your configuration. Children attributes can carry nested `myInfo` metadata; metadata alone does not establish verification.
+- `question` is the field title the respondent saw. Admins can edit titles, so identify fields by ID.
+- `provenance` is always present and usually `{}`. On Myinfo children fields, `provenance.myinfoVerified` is `true` when FormSG checked the answer against Myinfo.
+- `myInfo?: { attr }` is optional metadata. It can be absent even on Myinfo-prefilled fields, so identify Myinfo fields by ID.
 
 ## Handle multi-step workflows
 
@@ -461,11 +430,11 @@ const formsg = formsgSdk({ mode: 'production' })
 
 The returned object has these modules:
 
-| Module     | Use it to                                                                                                      |
-| ---------- | -------------------------------------------------------------------------------------------------------------- |
-| `webhooks` | Check the `X-FormSG-Signature` header.                                                                         |
-| `cryptoV4` | Decrypt V4 payloads.                                                                                           |
-| `crypto`   | Decrypt [legacy V1](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/legacy-v1.md) payloads. |
+| Module     | Use it to                                                                                                         |
+| ---------- | ----------------------------------------------------------------------------------------------------------------- |
+| `webhooks` | Check the `X-FormSG-Signature` header.                                                                            |
+| `cryptoV4` | Decrypt payloads in the latest format.                                                                            |
+| `crypto`   | Decrypt [legacy](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/legacy-webhooks.md) payloads. |
 
 ### `webhooks.authenticate(header, uri)`
 
@@ -478,7 +447,7 @@ Returns `true` on success. Throws `WebhookAuthenticateError` if the signature is
 | `formSecretKey` | `string`          | The form's base64 secret key.  |
 | `data`          | `DecryptParamsV4` | `req.body.data`, passed as is. |
 
-Returns `DecryptedContentV4 | null`. Returns `null` if the key is wrong, the payload is not V4-compatible, or the verified-content signature is invalid.
+Returns `DecryptedContentV4 | null`. Returns `null` if the key is wrong, the payload is not in the latest format, or the verified-content signature is invalid.
 
 ### `cryptoV4.decryptWithAttachments(formSecretKey, data)`
 
@@ -488,7 +457,7 @@ Returns `Promise<{ content: DecryptedContentV4, attachments: Record<fieldId, { f
 
 FormSG sends a `POST` with the header `X-FormSG-Signature` and a JSON body of the form `{ "data": { ... } }`.
 
-Here is an illustrative V4 request for a form with no workflow or attachments. The encrypted strings are placeholders:
+Here is an illustrative request for a form with no workflow or attachments. The encrypted strings are placeholders:
 
 ```json
 {
@@ -515,23 +484,7 @@ Here is an illustrative V4 request for a form with no workflow or attachments. T
 }
 ```
 
-After decryption, the corresponding `submission` looks like this:
-
-```json
-{
-  "responses": {
-    "6a27d7a5e1b2c3d4e5f60718": {
-      "fieldType": "textfield",
-      "question": "Your name",
-      "answer": { "value": "Tan Ah Kow" },
-      "provenance": {}
-    }
-  },
-  "submissionSecretKey": "<base64 submission secret key>"
-}
-```
-
-Workflow and payment metadata remain in `req.body.data`; they are not properties of the decrypted `submission`.
+The SDK decrypts `encryptedContent` into `submission.responses`. Workflow and payment metadata stay in `req.body.data`.
 
 | Key in `data`                  | Type                            | Description                                                                                                    |
 | ------------------------------ | ------------------------------- | -------------------------------------------------------------------------------------------------------------- |
@@ -549,7 +502,7 @@ Workflow and payment metadata remain in `req.body.data`; they are not properties
 
 ### Payment content
 
-These keys are present in `data.paymentContent` if the submission includes a payment. Otherwise it is `{}`. The format is shared by V1 and V4. Amounts are decimal strings; `dateTime` and `transactionFee` can be `"-"` when unavailable.
+These keys are present in `data.paymentContent` if the submission includes a payment. Otherwise it is `{}`. Legacy and latest webhooks share this format. Amounts are decimal strings; `dateTime` and `transactionFee` can be `"-"` when unavailable.
 
 | Key              | Type               | Description                          |
 | ---------------- | ------------------ | ------------------------------------ |
@@ -567,9 +520,7 @@ These keys are present in `data.paymentContent` if the submission includes a pay
 
 The package exports types for every shape in this guide, including `DecryptedContentV4`, `FieldResponsesV4`, `FormFieldV4`, `AnswerV4`, and one type per answer shape, such as `AddressAnswerV4` and `TableAnswerV4`.
 
-`FormFieldV4` is a discriminated union: checking its `fieldType` narrows its `answer`. However, `cryptoV4.decrypt` currently returns `FieldResponseV4` entries, whose type does not connect each field type to its answer shape. Checking only `fieldType` on a decrypted response does not narrow `answer` in TypeScript.
-
-Check the answer's shape before accessing a type-specific property. For example:
+`cryptoV4.decrypt` returns `FieldResponseV4` entries, whose type does not link `fieldType` to the answer shape. Checking `fieldType` alone does not narrow `answer`, so also check the answer's shape:
 
 ```typescript
 import type { DecryptedContentV4 } from '@opengovsg/formsg-sdk'
@@ -600,7 +551,7 @@ X-FormSG-Signature: t=1582558358788,
   v1=rUAgQ9krNZspCrQtfSvRfjME6Nq4+I80apGXnCsNrwPbcq44SBNglWtA1MkpC/VhWtDeJfuV89uV2Aqi42UQBA==
 ```
 
-`t` is the epoch time in milliseconds, `s` is the submission ID, and `f` is the form ID. `v1` is the signature. The `v1` label names the signature scheme. It is not related to the V1 payload format.
+`t` is the epoch time in milliseconds, `s` is the submission ID, and `f` is the form ID. `v1` is the signature. The `v1` label names the signature scheme. It is not related to legacy webhooks.
 
 1. Split the header on `,`, then split each element on the first `=`.
 2. Join the endpoint URL ([href](https://nodejs.org/api/url.html#url_url_href)), the submission ID, the form ID, and the epoch with `.`:
@@ -621,16 +572,16 @@ X-FormSG-Signature: t=1582558358788,
 
 ### Encryption
 
-FormSG encrypts webhook answers and attachments using `x25519-xsalsa20-poly1305`, implemented by [tweetnacl-js](https://github.com/dchest/tweetnacl-js), which [Cure53 audited](https://cure53.de/tweetnacl.pdf). In the current V4 submission path, FormSG servers handle plaintext responses during submission processing and encrypt them before storage and webhook delivery.
+FormSG encrypts webhook answers and attachments using `x25519-xsalsa20-poly1305`, implemented by [tweetnacl-js](https://github.com/dchest/tweetnacl-js), which [Cure53 audited](https://cure53.de/tweetnacl.pdf). In the latest format, FormSG servers handle plaintext responses during submission processing and encrypt them before storage and webhook delivery.
 
-In V4, each submission has its own key pair. FormSG encrypts the answers and attachments with the submission key, then encrypts the submission secret key with your form's public key. Your form secret key unlocks the submission key, and the submission key unlocks the data.
+In the latest format, each submission has its own key pair. FormSG encrypts the answers and attachments with the submission key, then encrypts the submission secret key with your form's public key. Your form secret key unlocks the submission key, and the submission key unlocks the data.
 
-## Legacy V1 webhooks
+## Legacy webhooks
 
-V1 is the format that `formsg.crypto.decrypt` reads. It is still supported, but new integrations should use V4.
+Legacy webhooks are what `formsg.crypto.decrypt` reads. They are still supported, but new integrations should use the latest format.
 
-- [Migrating from V1 to V4](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/migrating-from-v1.md): what changes and how to switch without downtime.
-- [Legacy V1 webhook reference](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/legacy-v1.md): the V1 payload, decryption API, and field formats.
+- [Migrating to the latest webhooks](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/migrating-to-latest.md): what changes and how to switch without downtime.
+- [Legacy webhook reference](https://github.com/opengovsg/FormSG/blob/develop/packages/sdk/docs/legacy-webhooks.md): the legacy payload, decryption API, and field formats.
 
 ## About this package
 
