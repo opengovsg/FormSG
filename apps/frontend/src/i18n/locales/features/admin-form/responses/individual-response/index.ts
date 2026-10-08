@@ -18,6 +18,19 @@ export interface ResponsesIndividualResponse {
       description: string
       confirm: string
     }
+    activityLog: {
+      title: string
+      stepNumber: string
+      stepNameLabel: string
+      stepCompleted: string
+      stepCompletedSentTo: string
+      stepApproved: string
+      stepApprovedSentTo: string
+      stepNotApproved: string
+      assigneeAdded: string
+      reminderSent: string
+      stopped: string
+    }
     reassignButton: string
     addAssigneeModal: {
       title: string

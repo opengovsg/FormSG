@@ -58,6 +58,7 @@ let mockIsWorkflowActionsOn = false
 vi.mock('../workflowActions', () => ({
   useWorkflowActionsGate: () => mockIsWorkflowActionsOn,
   WorkflowActionsSection: () => null,
+  WorkflowActivityLog: () => null,
 }))
 
 vi.mock('./mutations', () => ({
