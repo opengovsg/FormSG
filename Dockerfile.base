@@ -25,6 +25,14 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/sdk/package.json ./packages/sdk/
 COPY apps/frontend/package.json ./apps/frontend/
 
+# pnpm 12 resolves directory filters against projects present on disk, so the
+# excluded projects' manifests must exist for '!{services/**}' to match them
+COPY services/form-payment-reconciliation/package.json ./services/form-payment-reconciliation/
+COPY services/form-scheduled-closure/package.json ./services/form-scheduled-closure/
+COPY services/pdf-gen-sparticuz/package.json ./services/pdf-gen-sparticuz/
+COPY services/virus-scanner-guardduty/package.json ./services/virus-scanner-guardduty/
+COPY packages/react-email-preview/package.json ./packages/react-email-preview/
+
 RUN pnpm install --frozen-lockfile --filter '!{services/**}' --filter '!{packages/react-email-preview}'
 
 # =============================================================================
