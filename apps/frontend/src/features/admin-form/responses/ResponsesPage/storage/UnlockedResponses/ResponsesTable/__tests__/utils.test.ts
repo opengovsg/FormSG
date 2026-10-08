@@ -2,10 +2,15 @@ import {
   AdminFormDto,
   FormResponseMode,
   SubmissionMetadata,
+  WorkflowStatus,
 } from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
-import { getIsPaymentsForm, getNetAmount } from '../utils'
+import {
+  getIsPaymentsForm,
+  getNetAmount,
+  getReminderButtonState,
+} from '../utils'
 
 describe('getIsPaymentsForm', () => {
   it('should return false when form is undefined', () => {
@@ -131,5 +136,47 @@ describe('getNetAmount', () => {
     const result = getNetAmount(zeroTransactionFee)
     // Assert
     expect(result).toContain(centsToDollars(EXPECTED_PAYMENT_AMOUNT))
+  })
+})
+
+describe('getReminderButtonState', () => {
+  const pending: SubmissionMetadata['mrf'] = {
+    workflowStatus: WorkflowStatus.PENDING,
+    workflowCurrentStepNumber: 1,
+    workflowNumTotalSteps: 3,
+    lastSubmittedAt: undefined,
+    hasNextStepRecipientEmails: true,
+    isWorkflowActionsEligible: true,
+  }
+
+  it('enables the reminder for a pending step with recipients', () => {
+    expect(getReminderButtonState(pending)).toBe('enabled')
+  })
+
+  it('disables the reminder once the workflow is stopped', () => {
+    expect(
+      getReminderButtonState({
+        ...pending!,
+        stoppedAt: '2026-10-07T08:00:00.000Z',
+      }),
+    ).toBe('disabled')
+  })
+
+  it('hides the reminder when the step has no recipients', () => {
+    expect(
+      getReminderButtonState({
+        ...pending!,
+        hasNextStepRecipientEmails: false,
+      }),
+    ).toBe('hidden')
+  })
+
+  it('hides the reminder once the workflow is no longer pending', () => {
+    expect(
+      getReminderButtonState({
+        ...pending!,
+        workflowStatus: WorkflowStatus.APPROVED,
+      }),
+    ).toBe('hidden')
   })
 })

@@ -2,6 +2,7 @@ import {
   AdminFormDto,
   FormResponseMode,
   SubmissionMetadata,
+  WorkflowStatus,
 } from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
@@ -31,4 +32,16 @@ export const getNetAmount = (payments: SubmissionMetadata['payments']) => {
     return `Est. ${grossAmt}`
   }
   return `${grossAmt}`
+}
+
+export const getReminderButtonState = (
+  mrf: SubmissionMetadata['mrf'],
+): 'hidden' | 'disabled' | 'enabled' => {
+  if (
+    mrf?.workflowStatus !== WorkflowStatus.PENDING ||
+    !mrf.hasNextStepRecipientEmails
+  ) {
+    return 'hidden'
+  }
+  return mrf.stoppedAt ? 'disabled' : 'enabled'
 }
