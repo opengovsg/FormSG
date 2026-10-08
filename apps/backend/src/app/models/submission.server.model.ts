@@ -1,6 +1,7 @@
 import {
   FormAuthType,
   MyInfoAttribute,
+  SubmissionAuthType,
   SubmissionMetadata,
   SubmissionType,
   WebhookResponse,
@@ -93,7 +94,7 @@ export const SubmissionSchema = new Schema<ISubmissionSchema, ISubmissionModel>(
     },
     authType: {
       type: String,
-      enum: Object.values(FormAuthType),
+      enum: Object.values(SubmissionAuthType.enum),
       default: FormAuthType.NIL,
     },
     submitterId: {

@@ -15,7 +15,6 @@ import {
 } from './verified-content.types'
 import {
   getCpVerifiedContent,
-  getSgidVerifiedContent,
   getSpVerifiedContent,
 } from './verified-content.utils'
 
@@ -38,9 +37,6 @@ export const getVerifiedContent = ({
       return getSpVerifiedContent(data)
     case FormAuthType.CP:
       return getCpVerifiedContent(data)
-    case FormAuthType.SGID_MyInfo:
-    case FormAuthType.SGID:
-      return getSgidVerifiedContent(data)
   }
 }
 

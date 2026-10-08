@@ -108,11 +108,7 @@ const authForm = async (
   await page
     .getByRole('button', {
       name: `Log in with Singpass${
-        formSettings.authType === FormAuthType.CP
-          ? ' (Corporate)'
-          : formSettings.authType === FormAuthType.SGID
-            ? ' app'
-            : ''
+        formSettings.authType === FormAuthType.CP ? ' (Corporate)' : ''
       }`,
     })
     .click()

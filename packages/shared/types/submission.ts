@@ -42,9 +42,26 @@ export const WebhookResponse = z.object({
 
 export type WebhookResponse = z.infer<typeof WebhookResponse>
 
+/**
+ * Auth types that forms can no longer be set to, but which remain on
+ * submissions and pending submissions stored before they were removed.
+ * Kept so those documents still pass schema validation when re-saved.
+ */
+export enum LegacySubmissionAuthType {
+  SGID = 'SGID',
+  SGID_MyInfo = 'SGID_MyInfo',
+}
+
+// Single source of truth for the auth types a stored submission may hold.
+export const SubmissionAuthType = z.nativeEnum({
+  ...FormAuthType,
+  ...LegacySubmissionAuthType,
+})
+export type SubmissionAuthType = z.infer<typeof SubmissionAuthType>
+
 export const SubmissionBase = z.object({
   form: z.string(),
-  authType: z.nativeEnum(FormAuthType),
+  authType: SubmissionAuthType,
   submitterId: z.string().optional(),
   myInfoFields: z.array(z.nativeEnum(MyInfoAttribute)).optional(),
   myInfoReadOnlyFields: z.array(z.string()).optional(),

@@ -12,7 +12,6 @@ import {
 import {
   BasicField,
   ChildrenCompoundFieldBase,
-  FormAuthType,
   FormResponseMode,
   MyInfoAttribute as InternalAttr,
   MyInfoAttribute,
@@ -38,14 +37,11 @@ import {
 import { spcpMyInfoConfig } from '../../config/features/spcp-myinfo.config'
 import { createLoggerWithLabel } from '../../config/logger'
 import { DatabaseError } from '../core/core.errors'
-import { SGIDMyInfoData } from '../sgid/sgid.adapter'
-import { SGID_MYINFO_LOGIN_COOKIE_NAME } from '../sgid/sgid.constants'
 import {
   ProcessedChildrenResponse,
   ProcessedFieldResponse,
 } from '../submission/submission.types'
 
-import { MyInfoData } from './myinfo.adapter'
 import { MYINFO_LOGIN_COOKIE_NAME } from './myinfo.constants'
 import {
   MyInfoHashDidNotMatchError,
@@ -266,14 +262,8 @@ export const isMyInfoLoginCookie = (
  */
 export const extractMyInfoLoginJwt = (
   cookies: Record<string, unknown>,
-  authType: FormAuthType.MyInfo | FormAuthType.SGID_MyInfo,
 ): Result<string, MyInfoMissingLoginCookieError> => {
-  const jwt =
-    cookies[
-      authType === FormAuthType.MyInfo
-        ? MYINFO_LOGIN_COOKIE_NAME
-        : SGID_MYINFO_LOGIN_COOKIE_NAME
-    ]
+  const jwt = cookies[MYINFO_LOGIN_COOKIE_NAME]
   if (typeof jwt === 'string' && !!jwt) {
     return ok(jwt)
   }
@@ -508,38 +498,16 @@ export const logIfFieldValueNotInMyinfoList = (
   fieldValue: string,
   myInfoAttr: string | string[],
   myInfoList: string[],
-  myInfoData: MyInfoData | SGIDMyInfoData,
 ) => {
-  const isFieldValueInMyinfoList = myInfoList.includes(fieldValue)
-  const myInfoSource =
-    myInfoData instanceof MyInfoData ? 'Singpass MyInfo' : 'SGID MyInfo'
+  if (myInfoList.includes(fieldValue)) return
 
-  if (isFieldValueInMyinfoList) return
-
-  if (myInfoSource === 'Singpass MyInfo') {
-    logger.error({
-      message: 'Myinfo field value not found in existing Myinfo constants list',
-      meta: {
-        action: 'prefillAndSaveMyInfoFields',
-        myInfoFieldValue: fieldValue,
-        myInfoAttr,
-        myInfoSource,
-      },
-    })
-  } else if (
-    // SGID returns NA instead of empty field values, we don't need this to be logged
-    // as this is expected behaviour
-    myInfoSource === 'SGID MyInfo' &&
-    fieldValue !== 'NA'
-  ) {
-    logger.error({
-      message: 'Myinfo field value not found in existing Myinfo constants list',
-      meta: {
-        action: 'prefillAndSaveMyInfoFields',
-        myInfoFieldValue: fieldValue,
-        myInfoAttr,
-        myInfoSource,
-      },
-    })
-  }
+  logger.error({
+    message: 'Myinfo field value not found in existing Myinfo constants list',
+    meta: {
+      action: 'prefillAndSaveMyInfoFields',
+      myInfoFieldValue: fieldValue,
+      myInfoAttr,
+      myInfoSource: 'Singpass MyInfo',
+    },
+  })
 }

@@ -5,6 +5,7 @@ import {
   BasicField,
   FormAuthType,
   FormResponseMode,
+  LegacySubmissionAuthType,
   PaymentType,
   SubmissionType,
   WebhookResponse,
@@ -30,6 +31,7 @@ import {
   StorageModeSubmissionCursorData,
 } from '../../../types'
 import getPaymentModel from '../payment.server.model'
+import getPendingSubmissionModel from '../pending_submission.server.model'
 
 jest.mock('dns', () => ({
   promises: {
@@ -43,6 +45,7 @@ const EncryptedSubmission = getEncryptSubmissionModel(mongoose)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
 const EmailSubmission = getEmailSubmissionModel(mongoose)
 const PaymentSubmission = getPaymentModel(mongoose)
+const PendingSubmission = getPendingSubmissionModel(mongoose)
 
 // TODO: Add more tests for the rest of the submission schema.
 describe('Submission Model', () => {
@@ -258,6 +261,34 @@ describe('Submission Model', () => {
         )
         expect(actualSavedObject).toEqual(expectedObject)
       })
+
+      // Forms can no longer use sgID, but submissions stored before its
+      // removal still carry these auth types and must remain saveable.
+      it.each(Object.values(LegacySubmissionAuthType))(
+        'should save a submission with legacy authType %s',
+        async (authType) => {
+          const saved = await new Submission({
+            ...MOCK_ENCRYPT_SUBMISSION_PARAMS,
+            authType,
+          }).save()
+
+          expect(saved.authType).toBe(authType)
+        },
+      )
+
+      // Confirming a pending submission re-saves it into the submissions
+      // collection, so pending submissions must accept the same values.
+      it.each(Object.values(LegacySubmissionAuthType))(
+        'should save a pending submission with legacy authType %s',
+        async (authType) => {
+          const saved = await new PendingSubmission({
+            ...MOCK_ENCRYPT_SUBMISSION_PARAMS,
+            authType,
+          }).save()
+
+          expect(saved.authType).toBe(authType)
+        },
+      )
     })
   })
 

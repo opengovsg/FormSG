@@ -245,40 +245,6 @@ CorppassAuthorized.parameters = {
   ],
 }
 
-export const SgidUnauthorized = Template.bind({})
-SgidUnauthorized.storyName = 'SGID/Unauthorized'
-SgidUnauthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPreviewFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID login form',
-          authType: FormAuthType.SGID,
-        },
-      },
-    }),
-  ],
-}
-
-export const SgidAuthorized = Template.bind({})
-SgidAuthorized.storyName = 'SGID/Authorized'
-SgidAuthorized.parameters = {
-  msw: [
-    ...envHandlers,
-    getPreviewFormResponse({
-      delay: 0,
-      overrides: {
-        form: {
-          title: 'SGID login form',
-          authType: FormAuthType.SGID,
-        },
-      },
-    }),
-  ],
-}
-
 export const VerifiedFieldsExpiry = Template.bind({})
 VerifiedFieldsExpiry.parameters = {
   msw: [

@@ -32,9 +32,6 @@ const getDispayedAuthTypeText = (
       return t(
         'features.publicForm.components.formAuth.authType.singpassCorporate',
       )
-    case FormAuthType.SGID:
-    case FormAuthType.SGID_MyInfo:
-      return t('features.publicForm.components.formAuth.authType.singpassApp')
   }
 }
 

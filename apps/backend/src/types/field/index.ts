@@ -59,10 +59,6 @@ export enum SPCPFieldTitle {
   CpUen = 'CorpPass Validated UEN',
 }
 
-export enum SgidFieldTitle {
-  SgidNric = 'sgID Validated NRIC',
-}
-
 export type FormFieldSchema =
   | IAddressCompoundFieldSchema
   | IAttachmentFieldSchema

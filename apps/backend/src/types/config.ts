@@ -162,16 +162,9 @@ export interface ISgidVarsSchema {
   clientId: string
   clientSecret: string
   privateKey: string
-  publicKey: string
   privateKeyPath: string
-  publicKeyPath: string
-  formLoginRedirectUri: string
   adminLoginRedirectUri: string
-  cookieMaxAge: number
-  cookieMaxAgePreserved: number
-  cookieDomain: string
   hostname: string
-  jwtSecret: string
 }
 
 export interface ISsoVarsSchema {

@@ -79,8 +79,6 @@ export enum FormAuthType {
   SP = 'SP',
   CP = 'CP',
   MyInfo = 'MyInfo',
-  SGID = 'SGID',
-  SGID_MyInfo = 'SGID_MyInfo',
 }
 
 export enum Language {

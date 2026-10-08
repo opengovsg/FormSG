@@ -182,14 +182,12 @@ export const enSG: PublicForm = {
       authType: {
         singpass: 'Singpass',
         singpassCorporate: 'Singpass (Corporate)',
-        singpassApp: 'Singpass app',
       },
     },
     formAuthMessage: {
       signIn: {
         singpass: 'Sign in with Singpass to access this form.\n',
         corporate: 'Corporate entity login is required for this form.\n',
-        singpassApp: 'Sign in with the Singpass app to access this form.\n',
       },
       submitterId: {
         included: {

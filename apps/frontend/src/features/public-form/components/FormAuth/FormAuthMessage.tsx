@@ -39,11 +39,6 @@ const getSignInText = (
       return t(
         'features.publicForm.components.formAuthMessage.signIn.corporate',
       )
-    case FormAuthType.SGID:
-    case FormAuthType.SGID_MyInfo:
-      return t(
-        'features.publicForm.components.formAuthMessage.signIn.singpassApp',
-      )
     default: {
       const _: never = authType
       throw new Error('Invalid auth type')
