@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiBell, BiCheck } from 'react-icons/bi'
+import { useQueryClient } from 'react-query'
 import { useDisclosure } from '@chakra-ui/react'
 
 import Button from '~components/Button'
@@ -8,6 +9,7 @@ import Button from '~components/Button'
 import { useFormRemindersMutations } from '~features/admin-form/common/mutations'
 
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
+import { workflowEventsKey } from './queries'
 import { WorkflowActionModal } from './WorkflowActionModal'
 
 const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.reminderModal` as const
@@ -31,6 +33,7 @@ export const RemindButton = ({
   const { isOpen, onOpen, onClose } = useDisclosure()
   const { sendReminderForResponseMutation } = useFormRemindersMutations()
   const [isSent, setIsSent] = useState(false)
+  const queryClient = useQueryClient()
 
   const handleConfirm = () => {
     if (!submissionSecretKey) return
@@ -40,6 +43,9 @@ export const RemindButton = ({
         onSuccess: () => {
           setIsSent(true)
           onClose()
+          void queryClient.invalidateQueries(
+            workflowEventsKey(formId, submissionId),
+          )
         },
       },
     )
