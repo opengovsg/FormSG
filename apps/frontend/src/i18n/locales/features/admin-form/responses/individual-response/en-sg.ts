@@ -19,6 +19,23 @@ export const enSG: ResponsesIndividualResponse = {
       description: 'Remind the people who need to respond.',
       confirm: 'Send reminder',
     },
+    activityLog: {
+      title: 'Activity log',
+      stepNumber: 'Step {stepNumber}',
+      stepNameLabel: ' ({name})',
+      stepCompleted: '<bold>{step}</bold>{stepName} completed.',
+      stepCompletedSentTo:
+        '<bold>{step}</bold>{stepName} completed. Sent to <bold>{recipients}</bold> to respond.',
+      stepApproved: '<bold>{step}</bold>{stepName} approved.',
+      stepApprovedSentTo:
+        '<bold>{step}</bold>{stepName} approved. Sent to <bold>{recipients}</bold> to respond.',
+      stepNotApproved: '<bold>{step}</bold>{stepName} not approved.',
+      assigneeAdded:
+        '<bold>{emails}</bold> added to <bold>{step}</bold>{stepName} by <bold>{actor}</bold>.',
+      reminderSent:
+        'Reminder sent to <bold>{recipients}</bold> by <bold>{actor}</bold>.',
+      stopped: 'Workflow stopped by <bold>{actor}</bold>.',
+    },
     reassignButton: 'Reassign',
     addAssigneeModal: {
       title: 'Add assignee',

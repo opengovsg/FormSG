@@ -42,6 +42,7 @@ import { useStorageResponsesContext } from '../ResponsesPage/storage'
 import {
   useWorkflowActionsGate,
   WorkflowActionsSection,
+  WorkflowActivityLog,
 } from '../workflowActions'
 
 import { DecryptedRow } from './DecryptedRow'
@@ -359,6 +360,12 @@ export const IndividualResponsePage = (): JSX.Element => {
           {data?.payment && (
             <PaymentSection payment={data.payment} formId={formId} />
           )}
+          {hasWorkflow && isWorkflowActionsOn ? (
+            <WorkflowActivityLog
+              submissionId={submissionId}
+              history={data?.workflowHistory}
+            />
+          ) : null}
         </>
       )}
     </Stack>
