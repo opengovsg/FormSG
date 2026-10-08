@@ -1305,6 +1305,16 @@ describe('multirespondent-submision.controller', () => {
           title: 'Mock Form',
         }),
       )
+
+      MockMultiRespondentSubmissionService.getMultirespondentSubmission = jest
+        .fn()
+        .mockReturnValue(
+          okAsync({
+            _id: mockSubmissionId,
+            form: mockFormId,
+            created: new Date('2025-01-01T00:00:00.000Z'),
+          } as unknown as IMultirespondentSubmissionSchema),
+        )
     })
 
     it('returns 401 when findUserById returns MissingUserError', async () => {
