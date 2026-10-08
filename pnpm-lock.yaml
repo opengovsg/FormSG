@@ -19,12 +19,12 @@ overrides:
   body-parser@>=2.0.0 <2.3.0: ^2.3.0
   brace-expansion@<1.1.13: ^1.1.13
   brace-expansion@<1.1.16: ^1.1.16
+  brace-expansion@<1.1.21: ^1.1.21
   brace-expansion@>=1.0.0 <=1.1.11: ^1.1.12
   brace-expansion@>=2.0.0 <2.0.3: ^2.0.3
   brace-expansion@>=2.0.0 <2.1.2: ^2.1.2
-  brace-expansion@>=2.0.0 <=2.0.1: ^2.0.2
-  brace-expansion@<1.1.21: ^1.1.21
   brace-expansion@>=2.0.0 <2.1.7: ^2.1.7
+  brace-expansion@>=2.0.0 <=2.0.1: ^2.0.2
   brace-expansion@>=3.0.0 <5.0.7: ^5.0.7
   brace-expansion@>=4.0.0 <5.0.12: ^5.0.12
   braces@<3.0.3: ^3.0.3
@@ -36,10 +36,10 @@ overrides:
   d3-color@<3.1.0: ^3.1.0
   diff@>=4.0.0 <4.0.4: ^4.0.4
   dompurify@<3.3.2: ^3.3.2
-  dompurify@<3.4.16: ^3.4.16
   dompurify@<3.4.0: ^3.4.0
   dompurify@<3.4.12: ^3.4.12
   dompurify@<3.4.13: ^3.4.13
+  dompurify@<3.4.16: ^3.4.16
   dompurify@<=3.3.1: ^3.3.2
   dompurify@<=3.3.3: ^3.4.0
   dompurify@>=1.0.10 <3.4.0: ^3.4.0
@@ -96,9 +96,9 @@ overrides:
   multer@<2.1.0: ^2.1.0
   multer@<2.1.1: ^2.1.1
   multer@<2.3.0: ^2.3.0
+  multer@<2.4.0: ^2.4.0
   multer@>=1.4.4-lts.1 <2.0.1: ^2.0.1
   multer@>=1.4.4-lts.1 <2.0.2: ^2.0.2
-  multer@<2.4.0: ^2.4.0
   nanoid@<3.3.18: ^3.3.18
   next@>=10.0.0 <15.5.14: ^15.5.14
   next@>=10.0.0 <15.5.24: ^15.5.24
@@ -119,9 +119,9 @@ overrides:
   postcss@<8.5.10: ^8.5.10
   postcss@<8.5.23: ^8.5.23
   prismjs@<1.30.0: ^1.30.0
-  proxy-addr@>=1.1.0 <2.0.8: ^2.0.8
   protobufjs@<7.5.5: ^7.5.5
   protobufjs@<7.6.3: ^7.6.3
+  proxy-addr@>=1.1.0 <2.0.8: ^2.0.8
   qs@<6.14.1: ^6.14.1
   qs@<6.16.0: ^6.16.0
   qs@>=6.7.0 <=6.14.1: ^6.14.2
@@ -151,6 +151,9 @@ overrides:
   yauzl@=3.2.0: ^3.2.1
 
 patchedDependencies:
+  '@serverless/dashboard-plugin@7.2.3':
+    hash: 2a4d1d6ced6208e64da781cbafde8d0e61e135a3264b1ee7447d667347ffc9f8
+    path: patches/@serverless__dashboard-plugin@7.2.3.patch
   braces@3.0.3:
     hash: 670192ceffea407101538b5379f1ac3f32588246c695da0cdfafafaac93a8313
     path: patches/braces@3.0.3.patch
@@ -18593,7 +18596,7 @@ snapshots:
       domhandler: 5.0.3
       selderee: 0.11.0
 
-  '@serverless/dashboard-plugin@7.2.3(@types/node@18.19.130)(encoding@0.1.13)(supports-color@8.1.1)':
+  '@serverless/dashboard-plugin@7.2.3(patch_hash=2a4d1d6ced6208e64da781cbafde8d0e61e135a3264b1ee7447d667347ffc9f8)(@types/node@18.19.130)(encoding@0.1.13)(supports-color@8.1.1)':
     dependencies:
       '@aws-sdk/client-cloudformation': 3.1002.0
       '@aws-sdk/client-sts': 3.693.0
@@ -29059,7 +29062,7 @@ snapshots:
       '@aws-sdk/client-iam': 3.1002.0
       '@aws-sdk/client-lambda': 3.775.0
       '@aws-sdk/client-s3': 3.775.0
-      '@serverless/dashboard-plugin': 7.2.3(@types/node@18.19.130)(encoding@0.1.13)(supports-color@8.1.1)
+      '@serverless/dashboard-plugin': 7.2.3(patch_hash=2a4d1d6ced6208e64da781cbafde8d0e61e135a3264b1ee7447d667347ffc9f8)(@types/node@18.19.130)(encoding@0.1.13)(supports-color@8.1.1)
       '@serverless/platform-client': 4.5.1(supports-color@8.1.1)
       '@serverless/utils': 6.15.0(@types/node@18.19.130)(encoding@0.1.13)
       abort-controller: 3.0.0
