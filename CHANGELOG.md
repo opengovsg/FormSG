@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.46.2](https://github.com/opengovsg/formsg/compare/v9.46.1...v9.46.2) (2026-10-08)
+
+
+### Dependencies
+
+* **deps:** resolve open Dependabot alerts (2026-10 batch) (#10235) ([#10235](https://github.com/opengovsg/formsg/commit/1dffbeded12d12a089a800eec01a7de765879249))
+
 ## [9.46.1](https://github.com/opengovsg/formsg/compare/v9.46.0...v9.46.1) (2026-10-08)
 
 
