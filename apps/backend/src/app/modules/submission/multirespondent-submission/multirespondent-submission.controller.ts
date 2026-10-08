@@ -7,11 +7,12 @@ import {
   PaymentType,
   PublicMultirespondentSubmissionDto,
   SubmissionType,
+  WorkflowEventType,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 import { StatusCodes } from 'http-status-codes'
 import mongoose from 'mongoose'
-import { errAsync, okAsync } from 'neverthrow'
+import { errAsync } from 'neverthrow'
 import Stripe from 'stripe'
 
 import { Environment, IPopulatedMultirespondentForm } from '../../../../types'
@@ -38,6 +39,7 @@ import { assertFormAvailable } from '../../form/admin-form/admin-form.utils'
 import { FormInvalidResponseModeError } from '../../form/form.errors'
 import * as FormService from '../../form/form.service'
 import * as UserService from '../../user/user.service'
+import { recordWorkflowEvent } from '../../workflow-event/workflow-event.service'
 import {
   ensureFormWithinSubmissionLimits,
   ensurePublicForm,
@@ -67,6 +69,7 @@ import {
   checkFormIsMultirespondent,
   createMultiRespondentFormPendingSubmission,
   createMultiRespondentFormSubmission,
+  getMultirespondentSubmission,
   getPendingStepRecipientEmailsFromSubmittedStepsMeta,
   performMultiRespondentPostSubmissionCreateActions,
   performMultiRespondentPostSubmissionUpdateActions,
@@ -707,6 +710,13 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
           ),
         )
       }
+      return getMultirespondentSubmission(submissionId).map((submission) => ({
+        form,
+        user,
+        submission,
+      }))
+    })
+    .andThen(({ form, user, submission }) => {
       return getPendingStepRecipientEmailsFromSubmittedStepsMeta({
         submissionId,
       }).map(({ recipientEmails, reminderStepNumber }) => ({
@@ -714,34 +724,55 @@ const sendPendingMrfSubmissionReminder: ControllerHandler<
         reminderStepNumber,
         form,
         user,
+        submission,
       }))
     })
-    .andThen(({ recipientEmails, reminderStepNumber, form, user }) => {
-      return okAsync({
-        recipientEmails,
-        reminderStepNumber,
+    .andThen(
+      ({ recipientEmails, reminderStepNumber, form, user, submission }) =>
+        sendNextStepReminderEmail({
+          senderEmail: user.email,
+          submissionId,
+          emails: recipientEmails,
+          responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
+            form._id,
+            submissionId,
+            { key: submissionSecretKey, stepToken },
+          )}`,
+          formTitle: form.title,
+          formId,
+          reminderStepNumber,
+        }).map(() => ({
+          form,
+          user,
+          submission,
+          recipientEmails,
+          reminderStepNumber,
+        })),
+    )
+    .map(
+      async ({
         form,
         user,
-      })
-    })
-    .andThen(({ recipientEmails, reminderStepNumber, form, user }) => {
-      return sendNextStepReminderEmail({
-        senderEmail: user.email,
-        submissionId,
-        emails: recipientEmails,
-        responseUrl: `${appUrl}/${getMultirespondentSubmissionEditPath(
-          form._id,
-          submissionId,
-          { key: submissionSecretKey, stepToken },
-        )}`,
-        formTitle: form.title,
-        formId,
+        submission,
+        recipientEmails,
         reminderStepNumber,
-      }).map((sendNextStepReminderEmailResult) => ({
-        sendNextStepReminderEmailResult,
-        form,
-      }))
-    })
+      }) => {
+        await recordWorkflowEvent({
+          submission,
+          type: WorkflowEventType.ReminderSent,
+          actor: user,
+          stepNumber: reminderStepNumber,
+          emails: recipientEmails,
+        }).mapErr((error) =>
+          logger.error({
+            message: 'Failed to record workflow reminder event',
+            meta: logMeta,
+            error,
+          }),
+        )
+        return { form }
+      },
+    )
     .map(({ form }) => {
       logger.info({
         message: 'Reminder sent successfully',
