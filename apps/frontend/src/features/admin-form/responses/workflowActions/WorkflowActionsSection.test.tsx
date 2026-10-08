@@ -9,6 +9,7 @@ import { WorkflowActionsSection } from './WorkflowActionsSection'
 
 let mockIsGateOn = true
 let mockHasEditAccess = true
+let mockIsV2 = true
 const mockMutate = vi.fn()
 const mockAddAssignees = vi.fn()
 
@@ -28,6 +29,10 @@ vi.mock('~features/admin-form/common/queries', () => ({
   useAdminFormCollaborators: () => ({ hasEditAccess: mockHasEditAccess }),
 }))
 
+vi.mock('~features/admin-form/responses/hooks', () => ({
+  useIsDelightfulDashboard: () => mockIsV2,
+}))
+
 vi.mock('./mutations', () => ({
   useStopWorkflowMutation: () => ({ mutate: mockMutate, isLoading: false }),
   useAddAssigneesMutation: () => ({
@@ -38,6 +43,12 @@ vi.mock('./mutations', () => ({
 
 vi.mock('./queries', () => ({
   useWorkflowEvents: () => ({ data: [], isLoading: false }),
+}))
+
+vi.mock('./RemindButton', () => ({
+  RemindButton: ({ recipients }: { recipients: string[] }) => (
+    <button>remind {recipients.join(',')}</button>
+  ),
 }))
 
 vi.mock('./AddAssigneeModal', () => ({
@@ -87,11 +98,24 @@ const pendingMrf = (
   ...overrides,
 })
 
-const renderSection = (mrf: SubmissionMrfMetadata = pendingMrf()) =>
+const renderSection = (
+  mrf: SubmissionMrfMetadata = pendingMrf(),
+  recipients: string[] = ['lead@agency.gov.sg'],
+) =>
   render(
     <WorkflowActionsSection
       submissionId="mock-submission-id"
       mrf={mrf}
+      history={{
+        submittedSteps: [
+          {
+            isApproval: false,
+            submittedAt: '2026-10-08T01:00:00.000Z',
+            nextStepRecipientEmails: recipients,
+          },
+        ],
+        workflow: [{ _id: 'step-1' }, { _id: 'step-2' }, { _id: 'step-3' }],
+      }}
       submissionSecretKey="mock-secret-key"
       stepToken="mock-step-token"
       isLoading={false}
@@ -102,6 +126,7 @@ describe('WorkflowActionsSection', () => {
   afterEach(() => {
     mockIsGateOn = true
     mockHasEditAccess = true
+    mockIsV2 = true
     mockMutate.mockReset()
     mockAddAssignees.mockReset()
   })
@@ -162,6 +187,53 @@ describe('WorkflowActionsSection', () => {
     renderSection()
     expect(
       screen.queryByRole('button', { name: REASSIGN }),
+    ).not.toBeInTheDocument()
+  })
+
+  it("offers Remind to the pending step's people", () => {
+    renderSection()
+    expect(
+      screen.getByRole('button', { name: 'remind lead@agency.gov.sg' }),
+    ).toBeInTheDocument()
+  })
+
+  it('hides Remind when the pending step has nobody to remind', () => {
+    renderSection(pendingMrf(), [])
+    expect(
+      screen.queryByRole('button', { name: /^remind/ }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('offers Remind on the V2 dashboard without workflow actions', () => {
+    mockIsGateOn = false
+    renderSection()
+    expect(
+      screen.getByRole('button', { name: 'remind lead@agency.gov.sg' }),
+    ).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: STOP })).not.toBeInTheDocument()
+  })
+
+  it('offers Remind to view-only collaborators', () => {
+    mockHasEditAccess = false
+    renderSection()
+    expect(
+      screen.getByRole('button', { name: 'remind lead@agency.gov.sg' }),
+    ).toBeInTheDocument()
+  })
+
+  it('leaves Remind to the table on the V1 dashboard', () => {
+    mockIsV2 = false
+    renderSection()
+    expect(
+      screen.queryByRole('button', { name: /^remind/ }),
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: STOP })).toBeInTheDocument()
+  })
+
+  it('hides Remind once the workflow is stopped', () => {
+    renderSection(pendingMrf({ stoppedAt: '2026-10-07T08:00:00.000Z' }))
+    expect(
+      screen.queryByRole('button', { name: /^remind/ }),
     ).not.toBeInTheDocument()
   })
 })
