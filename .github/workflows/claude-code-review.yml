@@ -1,25 +1,28 @@
 name: Claude code review
 
-# issue_comment only: GitHub runs it from the default branch's workflow file.
-# pull_request_review* events run the file from the PR head, so a fork could rewrite it.
+# pull_request, not pull_request_target: fork PRs get no secrets, so a fork
+# cannot reach the API key. Review fork PRs by pushing the branch to this repo.
 on:
-  issue_comment:
-    types: [created]
+  pull_request:
+    types: [review_requested]
 
 permissions: {}
 
 concurrency:
-  group: claude-review-${{ github.event.issue.number }}
+  group: claude-review-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   review:
     name: Code review
-    # claude-code-action rejects commenters without write access before Claude runs.
+    # CLAUDE_REVIEWER is the user login or team slug that stands in for Claude.
+    # An unset variable must not match, because Actions treats null == '' as true.
+    # claude-code-action then rejects requesters without write access.
     if: |
-      github.event.issue.pull_request != null &&
-      contains(github.event.comment.body, '@claude') &&
-      contains(github.event.comment.body, 'review')
+      vars.CLAUDE_REVIEWER != '' && (
+        github.event.requested_reviewer.login == vars.CLAUDE_REVIEWER ||
+        github.event.requested_team.slug == vars.CLAUDE_REVIEWER
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -30,6 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0 # review reads git blame and history
 
       - name: Check AWS review configuration
@@ -54,11 +58,10 @@ jobs:
         with:
           github_token: ${{ github.token }}
           use_aws_platform: 'true'
-          track_progress: true
 
           prompt: |
             REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.issue.number }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
 
             First, write a short review plan: what the PR changes at a high level,
             which areas carry risk, and what you will check. Then review.
