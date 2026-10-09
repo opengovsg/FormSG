@@ -6,13 +6,13 @@ import * as oidcClient from 'openid-client'
 import { AgencyDocument, IPopulatedUser } from 'src/types'
 
 import * as UserService from '../../user/user.service'
+import { InvalidDomainError } from '../auth.errors'
 import * as AuthService from '../auth.service'
 
 import {
   ONE_CODE_VERIFIER_COOKIE_NAME,
   ONE_NONCE_COOKIE_NAME,
   ONE_STATE_COOKIE_NAME,
-  ONE_USER_DOMAIN_WHITELIST,
 } from './auth-one.constants'
 import * as AuthOneController from './auth-one.controller'
 import { OneCreateRedirectUrlError } from './auth-one.errors'
@@ -39,10 +39,10 @@ const MOCK_TOKENS = {
   id_token: 'id',
 } as unknown as oidcClient.TokenEndpointResponse &
   oidcClient.TokenEndpointResponseHelpers
-const MOCK_WHITELISTED_EMAIL = `user@${ONE_USER_DOMAIN_WHITELIST[0]}`
+const MOCK_EMAIL = 'user@agency.gov.sg'
 const MOCK_CLAIMS = {
-  sub: MOCK_WHITELISTED_EMAIL,
-  email: MOCK_WHITELISTED_EMAIL,
+  sub: MOCK_EMAIL,
+  email: MOCK_EMAIL,
   sid: 'mock-sid',
 }
 
@@ -203,12 +203,10 @@ describe('AuthOneController', () => {
       )
     })
 
-    it('redirects with FORBIDDEN when the email is not whitelisted', async () => {
-      MockAuthOneService.retrieveAccessToken.mockReturnValue(
-        okAsync(MOCK_TOKENS),
-      )
-      MockAuthOneService.retrieveClaims.mockReturnValue(
-        ok({ ...MOCK_CLAIMS, sub: 'user@evil.com', email: 'user@evil.com' }),
+    it('redirects with UNAUTHORIZED when the email domain has no agency', async () => {
+      mockHappyPathServices()
+      MockAuthService.validateEmailDomain.mockReturnValue(
+        errAsync(new InvalidDomainError()),
       )
       const mockReq = expressHandler.mockRequest({
         query: { code: 'mock-code', state: 'mock-state' },
@@ -218,9 +216,12 @@ describe('AuthOneController', () => {
 
       await AuthOneController.handleLoginCallback(mockReq, mockRes, jest.fn())
 
+      expect(MockAuthService.validateEmailDomain).toHaveBeenCalledWith(
+        MOCK_EMAIL,
+      )
       expect(mockReq.session.user).toBeUndefined()
       expect(mockRes.redirect).toHaveBeenCalledWith(
-        `/login/one?status=${StatusCodes.FORBIDDEN}`,
+        `/login/one?status=${StatusCodes.UNAUTHORIZED}`,
       )
     })
 
