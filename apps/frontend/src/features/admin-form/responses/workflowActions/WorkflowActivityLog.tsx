@@ -26,28 +26,33 @@ const formatActivityTimestamp = (iso: string): string =>
     'EEE, d MMM yyyy, hh:mm:ss a',
   )
 
+type ActivityTone = 'step' | 'complete' | 'reminder' | 'negative' | 'neutral'
+
+const TONE_COLORS: Record<ActivityTone, string> = {
+  step: 'primary.500',
+  complete: 'success.500',
+  reminder: 'warning.500',
+  negative: 'danger.500',
+  neutral: 'neutral.400',
+}
+
 interface ActivityEntry {
   at: string
   title: ReactNode
-  isStop?: boolean
+  tone: ActivityTone
 }
 
 const ActivityLogEntry = ({
   title,
   timestamp,
-  isStop,
+  tone,
 }: {
   title: ReactNode
   timestamp: string
-  isStop?: boolean
+  tone: ActivityTone
 }) => (
   <Flex gap="0.75rem" align="flex-start">
-    <Circle
-      size="0.5rem"
-      mt="0.5rem"
-      flexShrink={0}
-      bg={isStop ? 'danger.500' : 'neutral.400'}
-    />
+    <Circle size="0.5rem" mt="0.5rem" flexShrink={0} bg={TONE_COLORS[tone]} />
     <Stack spacing="0.125rem">
       <Text textStyle="body-2" color="secondary.700">
         {title}
@@ -87,10 +92,10 @@ export const WorkflowActivityLog = ({
     at: string,
     key: ActivityLogKey,
     values: Record<string, string>,
-    isStop?: boolean,
+    tone: ActivityTone,
   ): ActivityEntry => ({
     at,
-    isStop,
+    tone,
     title: (
       <Trans
         i18nKey={`${I18N_PREFIX}.${key}`}
@@ -117,31 +122,53 @@ export const WorkflowActivityLog = ({
           : sentTo
             ? 'stepCompletedSentTo'
             : 'stepCompleted'
-    return entry(step.submittedAt, key, {
-      ...stepValues(index + 1),
-      recipients: formatEmailList(recipients),
-    })
+    const isLastStep = index === workflow.length - 1
+    const tone: ActivityTone =
+      status === WorkflowStatus.REJECTED
+        ? 'negative'
+        : isLastStep
+          ? 'complete'
+          : 'step'
+    return entry(
+      step.submittedAt,
+      key,
+      {
+        ...stepValues(index + 1),
+        recipients: formatEmailList(recipients),
+      },
+      tone,
+    )
   })
 
   const eventEntries = events.map((event) => {
     switch (event.type) {
       case WorkflowEventType.AssigneesAdded:
-        return entry(event.created, 'assigneeAdded', {
-          emails: formatEmailList(event.emails),
-          ...stepValues(event.stepNumber),
-          actor: event.actorEmail,
-        })
+        return entry(
+          event.created,
+          'assigneeAdded',
+          {
+            emails: formatEmailList(event.emails),
+            ...stepValues(event.stepNumber),
+            actor: event.actorEmail,
+          },
+          'neutral',
+        )
       case WorkflowEventType.ReminderSent:
-        return entry(event.created, 'reminderSent', {
-          recipients: formatEmailList(event.emails),
-          actor: event.actorEmail,
-        })
+        return entry(
+          event.created,
+          'reminderSent',
+          {
+            recipients: formatEmailList(event.emails),
+            actor: event.actorEmail,
+          },
+          'reminder',
+        )
       case WorkflowEventType.Stopped:
         return entry(
           event.created,
           'stopped',
           { actor: event.actorEmail },
-          true,
+          'negative',
         )
     }
   })
@@ -151,17 +178,17 @@ export const WorkflowActivityLog = ({
   )
 
   return (
-    <Stack spacing="1rem" data-dd-privacy="mask">
+    <Stack spacing="1rem" pb="2.5rem" data-dd-privacy="mask">
       <Text textStyle="subhead-1" color="secondary.700">
         {t(`${I18N_PREFIX}.title`)}
       </Text>
       <Stack spacing="1rem">
-        {entries.map(({ at, title, isStop }, index) => (
+        {entries.map(({ at, title, tone }, index) => (
           <ActivityLogEntry
             key={`${at}-${index}`}
             title={title}
             timestamp={formatActivityTimestamp(at)}
-            isStop={isStop}
+            tone={tone}
           />
         ))}
       </Stack>
