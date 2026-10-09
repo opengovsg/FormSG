@@ -19,7 +19,7 @@ jobs:
       (github.event.action == 'reopened' || github.event.label.name == 'render-preview')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: ./.github/actions/require-write-access
         with:
           user: ${{ github.event.sender.login }}
@@ -46,7 +46,7 @@ jobs:
       contains(github.event.pull_request.labels.*.name, 'render-preview')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - uses: ./.github/actions/require-write-access
         with:
           user: ${{ github.event.sender.login }}
@@ -72,7 +72,7 @@ jobs:
        (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'render-preview')))
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.3.1
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
       - env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
         run: .github/scripts/render-preview.sh down "formsg-pr-${{ github.event.pull_request.number }}"
