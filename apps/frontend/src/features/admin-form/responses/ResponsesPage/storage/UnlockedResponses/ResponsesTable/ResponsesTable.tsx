@@ -1,5 +1,4 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef } from 'react'
-import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   CellProps,
@@ -13,7 +12,6 @@ import {
   useTable,
 } from 'react-table'
 import {
-  BadgeProps,
   Box,
   Flex,
   Skeleton,
@@ -32,11 +30,8 @@ import {
   BasicField,
   FormResponseMode,
   SubmissionMetadata,
-  WorkflowStatus,
 } from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
-
-import Badge from '~components/Badge'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import {
@@ -45,14 +40,17 @@ import {
 } from '~features/admin-form/responses/common/utils/formatResponseForCell'
 import {
   getPendingResponseAtString,
+  getStatusFromWorkflowStatus,
   hasWorkflowSteps,
   hasWorkflowSubmission,
+  MRF_STATUS,
 } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import {
   matchesSearchQuery,
   normaliseSearchQuery,
   searchableColumnIds,
 } from '~features/admin-form/responses/common/utils/responseSearch'
+import { WorkflowStatusBadge } from '~features/admin-form/responses/components/WorkflowStatusBadge'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_REMINDERS_LABEL,
@@ -74,81 +72,6 @@ import {
 } from './utils'
 
 type ResponseColumnData = SubmissionMetadata
-
-const StatusBadge = ({
-  textColor,
-  backgroundColor,
-  statusText,
-}: {
-  textColor: BadgeProps['textColor']
-  backgroundColor: BadgeProps['backgroundColor']
-  statusText: string
-}) => (
-  <Badge
-    width="fit-content"
-    display="flex"
-    textColor={textColor}
-    textStyle="caption-1"
-    backgroundColor={backgroundColor}
-  >
-    {statusText}
-  </Badge>
-)
-
-function PendingBadge() {
-  const { t } = useTranslation()
-  return (
-    <StatusBadge
-      textColor="warning.700"
-      backgroundColor="warning.100"
-      statusText={t('features.common.pending')}
-    />
-  )
-}
-
-function CompletedBadge() {
-  const { t } = useTranslation()
-  return (
-    <StatusBadge
-      textColor="success.700"
-      backgroundColor="success.100"
-      statusText={t('features.common.completed')}
-    />
-  )
-}
-
-function ApprovedBadge() {
-  const { t } = useTranslation()
-  return (
-    <StatusBadge
-      textColor="success.700"
-      backgroundColor="success.100"
-      statusText={t('features.common.approved')}
-    />
-  )
-}
-
-function NotApprovedBadge() {
-  const { t } = useTranslation()
-  return (
-    <StatusBadge
-      textColor="danger.700"
-      backgroundColor="danger.100"
-      statusText={t('features.common.notApproved')}
-    />
-  )
-}
-
-function StoppedBadge() {
-  const { t } = useTranslation()
-  return (
-    <StatusBadge
-      textColor="danger.700"
-      backgroundColor="danger.100"
-      statusText={t('features.common.stopped')}
-    />
-  )
-}
 
 const byServerOrder = (
   rowA: Row<ResponseColumnData>,
@@ -263,21 +186,15 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
       if (!mrf?.workflowStatus) {
         return ''
       }
-      if (mrf.stoppedAt) {
-        return <StoppedBadge />
-      }
-      if (mrf.workflowStatus === WorkflowStatus.PENDING) {
-        return <PendingBadge />
-      }
-      if (mrf.workflowStatus === WorkflowStatus.APPROVED) {
-        return <ApprovedBadge />
-      }
-      if (mrf.workflowStatus === WorkflowStatus.REJECTED) {
-        return <NotApprovedBadge />
-      }
-      if (mrf.workflowStatus === WorkflowStatus.COMPLETED) {
-        return <CompletedBadge />
-      }
+      return (
+        <WorkflowStatusBadge
+          status={
+            mrf.stoppedAt
+              ? MRF_STATUS.STOPPED
+              : getStatusFromWorkflowStatus(mrf.workflowStatus)
+          }
+        />
+      )
     },
     width: 160,
     minWidth: 160,

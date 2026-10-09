@@ -12,7 +12,6 @@ import {
 
 import { isMaskedInDatadogReplay, render } from '~/test-utils'
 
-import { MRF_STATUS } from '../common/utils/mrfSubmissionView'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
@@ -58,6 +57,7 @@ let mockIsWorkflowActionsOn = false
 vi.mock('../workflowActions', () => ({
   useWorkflowActionsGate: () => mockIsWorkflowActionsOn,
   WorkflowActionsSection: () => null,
+  WorkflowActivityLog: () => null,
 }))
 
 vi.mock('./mutations', () => ({
@@ -102,6 +102,7 @@ const MOCK_PAYMENT: SubmissionPaymentDto = {
 }
 
 let mockMrf: SubmissionMrfMetadata = undefined
+let mockPayment: SubmissionPaymentDto | undefined = MOCK_PAYMENT
 
 vi.mock('./queries', () => ({
   useIndividualSubmission: () => ({
@@ -109,7 +110,7 @@ vi.mock('./queries', () => ({
       refNo: 'mock-submission-id',
       submissionTime: 'Mon, 6 Jul 2026, 12:00:00 pm',
       responses: MOCK_RESPONSES,
-      payment: MOCK_PAYMENT,
+      payment: mockPayment,
       mrf: mockMrf,
     },
     isLoading: false,
@@ -122,6 +123,7 @@ describe('IndividualResponsePage', () => {
     mockResponseMode = FormResponseMode.Encrypt
     mockIsWorkflowActionsOn = false
     mockMrf = undefined
+    mockPayment = MOCK_PAYMENT
   })
 
   it('shows the payment section for a pre-migration encrypt submission on a multirespondent form', () => {
@@ -188,6 +190,7 @@ describe('IndividualResponsePage', () => {
   describe('a stopped workflow', () => {
     beforeEach(() => {
       mockResponseMode = FormResponseMode.Multirespondent
+      mockPayment = undefined
       mockMrf = {
         workflowStatus: WorkflowStatus.PENDING,
         workflowCurrentStepNumber: 1,
@@ -204,15 +207,19 @@ describe('IndividualResponsePage', () => {
 
       render(<IndividualResponsePage />)
 
-      expect(screen.getByText(MRF_STATUS.STOPPED)).toBeInTheDocument()
-      expect(screen.queryByText(MRF_STATUS.PENDING)).not.toBeInTheDocument()
+      expect(screen.getByText('features.common.stopped')).toBeInTheDocument()
+      expect(
+        screen.queryByText('features.common.pending'),
+      ).not.toBeInTheDocument()
     })
 
     it('shows Pending without workflow actions', () => {
       render(<IndividualResponsePage />)
 
-      expect(screen.getByText(MRF_STATUS.PENDING)).toBeInTheDocument()
-      expect(screen.queryByText(MRF_STATUS.STOPPED)).not.toBeInTheDocument()
+      expect(screen.getByText('features.common.pending')).toBeInTheDocument()
+      expect(
+        screen.queryByText('features.common.stopped'),
+      ).not.toBeInTheDocument()
     })
   })
 })
