@@ -1743,6 +1743,37 @@ describe('mail.service', () => {
     })
   })
 
+  describe('sendMrfWorkflowStoppedEmail', () => {
+    const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
+    it('should send the stopped outcome email without answers', async () => {
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const actualResult = await mailService.sendMrfWorkflowStoppedEmail({
+        emails: [MOCK_VALID_EMAIL],
+        formId: 'mockFormId',
+        formTitle: 'mockFormTitle',
+        responseId: MOCK_RESPONSE_ID,
+        submissionId: MOCK_RESPONSE_ID,
+        timestamp: 'Wed, 7 Oct 2026, 08:17:08 AM',
+      })
+
+      expect(actualResult).toEqual(ok(true))
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: [MOCK_VALID_EMAIL],
+          subject: `Stopped - mockFormTitle (${MOCK_RESPONSE_ID})`,
+          headers: expect.objectContaining({
+            'X-Formsg-Email-Type': 'Workflow stopped',
+          }),
+        }),
+      )
+      expect(sendMailSpy.mock.calls[0][0].html).toContain(
+        'This workflow has been stopped',
+      )
+      expect(sendMailSpy.mock.calls[0][0].html).not.toContain('Start of JSON')
+    })
+  })
+
   describe('sendMRFWorkflowStepEmail', () => {
     const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
     it('should send notification email successfully', async () => {

@@ -29,6 +29,7 @@ import {
   getPendingResponseAtString,
   getStatusFromWorkflowStatus,
   hasWorkflowSteps,
+  MRF_STATUS,
 } from '../common/utils/mrfSubmissionView'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
 import {
@@ -38,7 +39,10 @@ import {
   MRF_WORKFLOW_STATUS_LABEL,
 } from '../constants'
 import { useStorageResponsesContext } from '../ResponsesPage/storage'
-import { useWorkflowActionsGate } from '../workflowActions'
+import {
+  useWorkflowActionsGate,
+  WorkflowActionsSection,
+} from '../workflowActions'
 
 import { DecryptedRow } from './DecryptedRow'
 import { useMutateDownloadAttachments } from './mutations'
@@ -197,9 +201,12 @@ export const IndividualResponsePage = (): JSX.Element => {
   })}`
 
   const workflowStatus = data?.mrf?.workflowStatus
-  const responseMrfStatus = workflowStatus
-    ? getStatusFromWorkflowStatus(workflowStatus)
-    : ''
+  const isStopped = isWorkflowActionsOn && !!data?.mrf?.stoppedAt
+  const responseMrfStatus = isStopped
+    ? MRF_STATUS.STOPPED
+    : workflowStatus
+      ? getStatusFromWorkflowStatus(workflowStatus)
+      : ''
 
   // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
   // const lastSubmittedAt = data?.mrf?.lastSubmittedAt
@@ -219,6 +226,15 @@ export const IndividualResponsePage = (): JSX.Element => {
       spacing={{ base: '1.5rem', md: '2.5rem' }}
       data-dd-privacy="mask"
     >
+      {hasWorkflow ? (
+        <WorkflowActionsSection
+          submissionId={submissionId}
+          mrf={data?.mrf}
+          history={data?.workflowHistory}
+          responses={data?.responses}
+          isLoading={isLoading || isError}
+        />
+      ) : null}
       <Stack bg="primary.100" p="1.5rem" textStyle="body-1">
         <StackRow
           label="Response ID"
@@ -245,6 +261,7 @@ export const IndividualResponsePage = (): JSX.Element => {
             <StackRow
               label={MRF_PENDING_RESPONSE_AT_LABEL}
               value={
+                isStopped ||
                 workflowStatus === undefined ||
                 workflowCurrentStepNumber === undefined ||
                 workflowNumTotalSteps === undefined

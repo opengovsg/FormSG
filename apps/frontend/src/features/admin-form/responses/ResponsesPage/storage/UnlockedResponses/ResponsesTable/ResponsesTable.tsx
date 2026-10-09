@@ -25,7 +25,9 @@ import {
   Thead,
   Tr,
 } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
   FormResponseMode,
@@ -65,7 +67,11 @@ import { RESPONSE_NUMBER_COLUMN_ID } from '../savedViews'
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { SendReminderButton } from './SendReminderButton'
-import { getIsPaymentsForm, getNetAmount } from './utils'
+import {
+  getIsPaymentsForm,
+  getNetAmount,
+  getReminderButtonState,
+} from './utils'
 
 type ResponseColumnData = SubmissionMetadata
 
@@ -129,6 +135,17 @@ function NotApprovedBadge() {
       textColor="danger.700"
       backgroundColor="danger.100"
       statusText={t('features.common.notApproved')}
+    />
+  )
+}
+
+function StoppedBadge() {
+  const { t } = useTranslation()
+  return (
+    <StatusBadge
+      textColor="danger.700"
+      backgroundColor="danger.100"
+      statusText={t('features.common.stopped')}
     />
   )
 }
@@ -246,6 +263,9 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
       if (!mrf?.workflowStatus) {
         return ''
       }
+      if (mrf.stoppedAt) {
+        return <StoppedBadge />
+      }
       if (mrf.workflowStatus === WorkflowStatus.PENDING) {
         return <PendingBadge />
       }
@@ -266,6 +286,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: MRF_PENDING_RESPONSE_AT_LABEL,
     accessor: ({ mrf }) => {
+      if (mrf?.stoppedAt) return '-'
       const workflowStatus = mrf?.workflowStatus
       const workflowCurrentStepNumber = mrf?.workflowCurrentStepNumber
       const workflowNumTotalSteps = mrf?.workflowNumTotalSteps
@@ -306,14 +327,13 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   {
     Header: MRF_REMINDERS_LABEL,
     Cell: ({ row }) => {
-      const isPending =
-        row.original.mrf?.workflowStatus === WorkflowStatus.PENDING
-      const hasNextStepRecipientEmails =
-        row.original.mrf?.hasNextStepRecipientEmails
-      const submissionId = row.original.refNo
-      return isPending && hasNextStepRecipientEmails ? (
-        <SendReminderButton submissionId={submissionId} />
-      ) : null
+      const reminderButtonState = getReminderButtonState(row.original.mrf)
+      return reminderButtonState === 'hidden' ? null : (
+        <SendReminderButton
+          submissionId={row.original.refNo}
+          isDisabled={reminderButtonState === 'disabled'}
+        />
+      )
     },
     minWidth: 160,
     width: 160,
@@ -417,13 +437,17 @@ export const ResponsesTable = () => {
     [form, metadata],
   )
 
+  const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
+
   const metadataToUse = useMemo(() => {
-    if (submissionId) {
-      return filteredMetadata
-    } else {
-      return metadata
-    }
-  }, [filteredMetadata, metadata, submissionId])
+    const rows = submissionId ? filteredMetadata : metadata
+    if (isWorkflowActionsOn) return rows
+    return rows.map((row) =>
+      row.mrf?.stoppedAt
+        ? { ...row, mrf: { ...row.mrf, stoppedAt: undefined } }
+        : row,
+    )
+  }, [filteredMetadata, metadata, submissionId, isWorkflowActionsOn])
 
   const legacyColumns = useMemo(() => {
     if (isMultiRespondentForm) {

@@ -193,8 +193,29 @@ export const getDecryptedSubmissionById = async ({
     responses,
     mrfVersion,
     stepToken,
+    workflowHistory:
+      encryptedSubmission.submissionType === SubmissionType.Multirespondent
+        ? {
+            submittedSteps: encryptedSubmission.submittedSteps ?? [],
+            workflow: encryptedSubmission.workflow,
+          }
+        : undefined,
   }
 }
+
+export const stopWorkflow = ({
+  formId,
+  submissionId,
+  emails,
+}: {
+  formId: string
+  submissionId: string
+  emails: string[]
+}): Promise<{ stoppedAt: string }> =>
+  ApiService.post<{ stoppedAt: string }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/stop`,
+    { emails },
+  ).then(({ data }) => data)
 
 type DecryptedContent = NonNullable<ReturnType<typeof formsgSdk.crypto.decrypt>>
 export type DecryptedSubmission = Pick<DecryptedContent, 'responses'>

@@ -54,6 +54,7 @@ import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 import { PAYMENT_SCHEMA_ID } from './payment.server.model'
+import { USER_SCHEMA_ID } from './user.server.model'
 
 export const SUBMISSION_SCHEMA_ID = 'Submission'
 
@@ -292,6 +293,7 @@ SubmissionSchema.statics.findEncryptedOrMultirespondentSubmissionById =
         mrfVersion: 1,
         ...buildAdminSubmittedStepsMongoProjection(),
         encryptedStepToken: 1,
+        stoppedAt: 1,
       })
       .exec() as Promise<SubmissionData | null>
   }
@@ -315,6 +317,7 @@ const buildMixedSubmissionMetadata = (
         workflowStep: result.workflowStep ?? 0,
         workflow: result.workflow ?? [],
         submittedSteps: result.submittedSteps,
+        stoppedAt: result.stoppedAt,
       },
     })
   }
@@ -336,6 +339,7 @@ const MIXED_METADATA_AGGREGATE_PROJECTION = {
   workflowStep: 1,
   workflow: 1,
   submittedSteps: 1,
+  stoppedAt: 1,
   'payments.payout': 1,
   'payments.completedPayment': 1,
   'payments.amount': 1,
@@ -484,6 +488,7 @@ SubmissionSchema.statics.getEncryptedOrMultirespondentSubmissionCursorByFormId =
       workflow: 1,
       workflowStep: 1,
       ...buildAdminSubmittedStepsMongoProjection(),
+      stoppedAt: 1,
       encryptedSubmissionSecretKey: 1,
       mrfVersion: 1,
       id: 1,
@@ -905,11 +910,18 @@ export const MultirespondentSubmissionSchema = new Schema<
     // Defer loading of the ref due to circular dependency on schema IDs.
     ref: () => PAYMENT_SCHEMA_ID,
   },
+  stoppedAt: {
+    type: Date,
+  },
+  stoppedBy: {
+    type: Schema.Types.ObjectId,
+    ref: USER_SCHEMA_ID,
+  },
 })
 
 type MultiRespondentAggregates = Pick<
   IMultirespondentSubmissionSchema,
-  'workflowStep' | 'workflow' | 'submittedSteps'
+  'workflowStep' | 'workflow' | 'submittedSteps' | 'stoppedAt'
 >
 type MultiRespondentAggregateResult = MetadataAggregateResult &
   MultiRespondentAggregates
@@ -1064,6 +1076,7 @@ MultirespondentSubmissionSchema.statics.findSingleMetadata = function (
       workflowStep: result.workflowStep,
       workflow: result.workflow,
       submittedSteps: result.submittedSteps,
+      stoppedAt: result.stoppedAt,
     }
     // Build submissionMetadata object.
     const metadata = buildSubmissionMetadata({
@@ -1118,6 +1131,7 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
           workflowStep: 1,
           workflow: 1,
           submittedSteps: 1,
+          stoppedAt: 1,
           'payments.payout': 1,
           'payments.completedPayment': 1,
           'payments.amount': 1,
@@ -1143,6 +1157,7 @@ MultirespondentSubmissionSchema.statics.findAllMetadataByFormId = function (
         workflowStep: result.workflowStep,
         workflow: result.workflow,
         submittedSteps: result.submittedSteps,
+        stoppedAt: result.stoppedAt,
       }
       const metadataEntry = buildSubmissionMetadata({
         result,
@@ -1186,6 +1201,7 @@ MultirespondentSubmissionSchema.statics.getSubmissionCursorByFormId = function (
     workflow: 1,
     workflowStep: 1,
     ...buildAdminSubmittedStepsMongoProjection(),
+    stoppedAt: 1,
     encryptedSubmissionSecretKey: 1,
     encryptedContent: 1,
     verifiedContent: 1,
@@ -1242,6 +1258,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       mrfVersion: 1,
       ...buildAdminSubmittedStepsMongoProjection(),
       encryptedStepToken: 1,
+      stoppedAt: 1,
     })
     .exec()
 }
@@ -1335,6 +1352,7 @@ const buildSubmissionMetadata = ({
           workflowStep: mrfMeta.workflowStep,
           submittedSteps: mrfMeta.submittedSteps,
           created: result.created,
+          stoppedAt: mrfMeta.stoppedAt,
         })
       : undefined,
   }

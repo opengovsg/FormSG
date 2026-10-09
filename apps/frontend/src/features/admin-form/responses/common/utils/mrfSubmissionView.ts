@@ -24,6 +24,7 @@ export enum MRF_STATUS {
   PENDING = 'Pending',
   APPROVED = 'Approved',
   REJECTED = 'Not approved',
+  STOPPED = 'Stopped',
 }
 
 interface CurrentWorkflowInfo {

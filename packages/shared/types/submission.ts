@@ -345,6 +345,7 @@ export const MultirespondentSubmissionStreamDto =
       lastSubmittedAt: z.string().optional(),
       hasNextStepRecipientEmails: z.boolean(),
       isWorkflowActionsEligible: z.boolean(),
+      stoppedAt: z.string().optional(),
     }),
   })
 
@@ -374,6 +375,7 @@ export type SubmissionMrfMetadata =
       lastSubmittedAt: string | undefined
       hasNextStepRecipientEmails: boolean
       isWorkflowActionsEligible: boolean
+      stoppedAt?: string
     }
   | undefined
 
@@ -473,6 +475,7 @@ export type StatusTrackerData = {
   workflow: StrippedFormWorkflowDto
   responseId: string | undefined
   form: string
+  stoppedAt?: string
 }
 
 // TODO: (Kill Email Mode) Remove this route after kill email mode is fully implemented.

@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { rateLimitConfig } from '../../../../../config/config'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as MultirespondentSubmissionController from '../../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
+import * as WorkflowStopController from '../../../../../modules/submission/multirespondent-submission/workflow-stop.controller'
 import * as SubmissionController from '../../../../../modules/submission/submission.controller'
 import { limitRate } from '../../../../../utils/limit-rate'
 
@@ -91,4 +92,21 @@ AdminFormsSubmissionsRouter.post(
   '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/remind',
   limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
   MultirespondentSubmissionController.handlePendingMrfSubmissionRemind,
+)
+
+/**
+ * Stop a pending multirespondent workflow
+ * @route POST /admin/forms/:formId/submissions/:submissionId/stop
+ * @security session
+ *
+ * @returns 200 with the time the workflow was stopped
+ * @returns 400 when the body is invalid
+ * @returns 403 when the user cannot edit the form, or workflow actions are unavailable
+ * @returns 404 when the submission cannot be found
+ * @returns 409 when the workflow is no longer pending
+ */
+AdminFormsSubmissionsRouter.post(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/stop',
+  limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
+  WorkflowStopController.handleStopPendingMrfSubmission,
 )

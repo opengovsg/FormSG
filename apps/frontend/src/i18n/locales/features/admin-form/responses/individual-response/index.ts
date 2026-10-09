@@ -11,6 +11,14 @@ export interface ResponsesIndividualResponse {
   workflowActions: {
     whoIsNotifiedLabel: string
     whoIsNotifiedNone: string
+    stopButton: string
+    stopModal: {
+      title: string
+      description: string
+      notifyHeading: string
+      confirm: string
+      toastSuccess: string
+    }
   }
   paymentSection: {
     paymentStatusLabel: {

@@ -5,11 +5,14 @@ import {
   BasicField,
   FormResponseMode,
   PaymentStatus,
+  SubmissionMrfMetadata,
   SubmissionPaymentDto,
+  WorkflowStatus,
 } from 'formsg-shared/types'
 
 import { isMaskedInDatadogReplay, render } from '~/test-utils'
 
+import { MRF_STATUS } from '../common/utils/mrfSubmissionView'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
@@ -54,6 +57,7 @@ let mockIsWorkflowActionsOn = false
 
 vi.mock('../workflowActions', () => ({
   useWorkflowActionsGate: () => mockIsWorkflowActionsOn,
+  WorkflowActionsSection: () => null,
 }))
 
 vi.mock('./mutations', () => ({
@@ -97,6 +101,8 @@ const MOCK_PAYMENT: SubmissionPaymentDto = {
   receiptUrl: 'https://example.com/mock-receipt-url',
 }
 
+let mockMrf: SubmissionMrfMetadata = undefined
+
 vi.mock('./queries', () => ({
   useIndividualSubmission: () => ({
     data: {
@@ -104,6 +110,7 @@ vi.mock('./queries', () => ({
       submissionTime: 'Mon, 6 Jul 2026, 12:00:00 pm',
       responses: MOCK_RESPONSES,
       payment: MOCK_PAYMENT,
+      mrf: mockMrf,
     },
     isLoading: false,
     isError: false,
@@ -114,6 +121,7 @@ describe('IndividualResponsePage', () => {
   afterEach(() => {
     mockResponseMode = FormResponseMode.Encrypt
     mockIsWorkflowActionsOn = false
+    mockMrf = undefined
   })
 
   it('shows the payment section for a pre-migration encrypt submission on a multirespondent form', () => {
@@ -175,5 +183,36 @@ describe('IndividualResponsePage', () => {
       'title',
       expect.stringContaining('/mock-form-id/status/mock-submission-id'),
     )
+  })
+
+  describe('a stopped workflow', () => {
+    beforeEach(() => {
+      mockResponseMode = FormResponseMode.Multirespondent
+      mockMrf = {
+        workflowStatus: WorkflowStatus.PENDING,
+        workflowCurrentStepNumber: 1,
+        workflowNumTotalSteps: 2,
+        lastSubmittedAt: undefined,
+        hasNextStepRecipientEmails: true,
+        isWorkflowActionsEligible: true,
+        stoppedAt: '2026-10-07T08:00:00.000Z',
+      }
+    })
+
+    it('shows Stopped and no pending step with workflow actions', () => {
+      mockIsWorkflowActionsOn = true
+
+      render(<IndividualResponsePage />)
+
+      expect(screen.getByText(MRF_STATUS.STOPPED)).toBeInTheDocument()
+      expect(screen.queryByText(MRF_STATUS.PENDING)).not.toBeInTheDocument()
+    })
+
+    it('shows Pending without workflow actions', () => {
+      render(<IndividualResponsePage />)
+
+      expect(screen.getByText(MRF_STATUS.PENDING)).toBeInTheDocument()
+      expect(screen.queryByText(MRF_STATUS.STOPPED)).not.toBeInTheDocument()
+    })
   })
 })
