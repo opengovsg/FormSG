@@ -130,7 +130,41 @@ jobs:
                `git diff origin/<descendant base>...origin/<descendant head> -- <file>`.
                If the branch is not on origin, use `gh pr diff <n>` and read only that
                file's section. Drop the finding if a later slice fixes it, and list it
-               in the summary in one line as "Deferred to #N".
+               in the summary's Stack section in one line as "Deferred to #N".
+
+            Output format:
+            Post one finding per inline comment. Post no praise comments. Use exactly
+            this inline comment body:
+
+            **<severity>** · <category> — <one-line claim>
+
+            <failure scenario: concrete input/state -> wrong result. 1-3 sentences.>
+
+            <optional ```suggestion block with the exact replacement lines, only when the fix is local to the commented lines>
+
+            Severity is one of: `blocker` (bug, security, data loss), `should-fix`, `nit`.
+            Category is one of: `correctness`, `security`, `performance`,
+            `maintainability`, `tests`.
+
+            Then post exactly one summary with `gh pr comment`. Use exactly these
+            sections and drop none. Write "None" in a section that has nothing.
+
+            ## Claude review
+
+            **Verdict:** <approve | approve with nits | changes requested>
+
+            ### Plan
+            <2-4 bullets: what the PR does, where the risk is>
+
+            ### Findings
+            | Severity | Location | Finding |
+            |---|---|---|
+            | blocker | `path:line` | <one line> |
+
+            ### Stack
+            <parent / descendants reviewed for context, and "Deferred to #N" items; "Not part of a stack" otherwise>
+
+            The Findings table lists every inline comment, sorted blocker first.
           show_full_output: true
           claude_args: |
             --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(git diff:*)"
