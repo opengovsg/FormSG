@@ -112,7 +112,7 @@ export const handleLoginCallback: ControllerHandler<
   unknown,
   ErrorDto | undefined,
   unknown,
-  { code?: string; state: string; iss?: string }
+  { code?: string; state: string; iss?: string; forwarded?: string }
 > = async (req, res) => {
   const { code } = req.query // can trust on FE query
   const codeVerifier = req.cookies[ONE_CODE_VERIFIER_COOKIE_NAME]
