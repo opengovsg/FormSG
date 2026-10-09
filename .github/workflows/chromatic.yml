@@ -47,11 +47,20 @@ jobs:
       - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
         id: filter
         with:
+          # The lockfile is listed so lockfile-only bumps reach TurboSnap and the
+          # tooling check; unrelated bumps trace to zero stories. The Chromatic
+          # CI files are listed so changes to them run on their own PR.
           filters: |
+            ci: &ci
+              - pnpm-lock.yaml
+              - .github/workflows/chromatic.yml
+              - .github/scripts/chromatic-*.sh
             frontend:
+              - *ci
               - packages/shared/**
               - apps/frontend/**
             emailpreview:
+              - *ci
               - packages/react-email-preview/**
       - name: Hold stacked PRs whose base awaits Chromatic review
         id: gate
@@ -105,9 +114,20 @@ jobs:
       - name: Build SDK
         working-directory: .
         run: pnpm build:sdk
+      - name: Check for build tooling changes
+        id: tooling
+        working-directory: .
+        # TurboSnap can't see build tooling bumps (see the script), so those
+        # build in full. PRs compare with their fork point from develop, develop
+        # pushes with the previous develop commit.
+        run: |
+          base=${BEFORE:-$(git merge-base HEAD origin/develop)}
+          .github/scripts/chromatic-tooling-changed.sh apps/frontend "$base"
+        env:
+          BEFORE: ${{ github.event_name == 'push' && github.event.before || '' }}
         # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@c93e0bc3a63aa176e14a75b61a31847cbfdd341c # v1
+        uses: chromaui/action@db3ceb5efb0cd7447d63c2d8cce7da732ce89322 # v18.10.1
         # Chromatic GitHub Action options
         with:
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
@@ -115,7 +135,7 @@ jobs:
           workingDir: apps/frontend
           autoAcceptChanges: develop
           exitOnceUploaded: true
-          onlyChanged: true
+          onlyChanged: ${{ steps.tooling.outputs.changed != 'true' }}
           storybookBaseDir: apps/frontend
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
@@ -155,9 +175,17 @@ jobs:
       - name: Build SDK
         working-directory: .
         run: pnpm build:sdk
+      - name: Check for build tooling changes
+        id: tooling
+        working-directory: .
+        run: |
+          base=${BEFORE:-$(git merge-base HEAD origin/develop)}
+          .github/scripts/chromatic-tooling-changed.sh packages/react-email-preview "$base"
+        env:
+          BEFORE: ${{ github.event_name == 'push' && github.event.before || '' }}
         # 👇 Adds Chromatic as a step in the workflow
       - name: Publish to Chromatic
-        uses: chromaui/action@c93e0bc3a63aa176e14a75b61a31847cbfdd341c # v1
+        uses: chromaui/action@db3ceb5efb0cd7447d63c2d8cce7da732ce89322 # v18.10.1
         # Chromatic GitHub Action options
         with:
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
@@ -165,7 +193,7 @@ jobs:
           workingDir: packages/react-email-preview
           autoAcceptChanges: develop
           exitOnceUploaded: true
-          onlyChanged: true
+          onlyChanged: ${{ steps.tooling.outputs.changed != 'true' }}
           storybookBaseDir: packages/react-email-preview
           # Skip running Chromatic on dependabot PRs
           skip: dependabot/**
