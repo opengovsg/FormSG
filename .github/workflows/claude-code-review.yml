@@ -1,0 +1,117 @@
+name: Claude code review
+
+# issue_comment only: GitHub runs it from the default branch's workflow file.
+# pull_request_review* events run the file from the PR head, so a fork could rewrite it.
+on:
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+concurrency:
+  group: claude-review-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+env:
+  REVIEW_TEAM: formsg-team
+
+jobs:
+  authorize:
+    name: Authorize
+    if: |
+      github.event.issue.pull_request != null &&
+      contains(github.event.comment.body, '@claude') &&
+      contains(github.event.comment.body, 'review')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions: {}
+    outputs:
+      allowed: ${{ steps.membership.outputs.allowed }}
+    steps:
+      - name: Check team membership
+        id: membership
+        # github.token cannot read org team membership; a separate token with org Members: read can.
+        env:
+          GH_TOKEN: ${{ secrets.CLAUDE_TEAM_READ_TOKEN }}
+          ORG: ${{ github.repository_owner }}
+          TEAM: ${{ env.REVIEW_TEAM }}
+          ACTOR: ${{ github.event.comment.user.login }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::Set the CLAUDE_TEAM_READ_TOKEN repository secret to a token with organization Members: read permission."
+            exit 1
+          fi
+          if ! state=$(gh api "orgs/${ORG}/teams/${TEAM}/memberships/${ACTOR}" --jq .state 2>err.txt); then
+            if ! grep -q "HTTP 404" err.txt; then
+              cat err.txt
+              echo "::error::Team membership lookup failed. Check that CLAUDE_TEAM_READ_TOKEN has organization Members: read permission."
+              exit 1
+            fi
+            state=""
+          fi
+          if [ "$state" = "active" ]; then
+            echo "allowed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::${ACTOR} is not an active member of ${ORG}/${TEAM}; skipping review."
+            echo "allowed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  review:
+    name: Code review
+    needs: authorize
+    if: needs.authorize.outputs.allowed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read # lets Claude read CI results on the PR
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+        with:
+          fetch-depth: 0 # review reads git blame and history
+
+      - name: Check AWS review configuration
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_AWS_WORKSPACE_ID: ${{ vars.ANTHROPIC_AWS_WORKSPACE_ID }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::Set the ANTHROPIC_API_KEY repository secret."
+            exit 1
+          fi
+          if [ -z "$ANTHROPIC_AWS_WORKSPACE_ID" ]; then
+            echo "::error::Set the ANTHROPIC_AWS_WORKSPACE_ID repository variable."
+            exit 1
+          fi
+
+      - uses: opengovsg/claude-code-action@04c4bbcd49f4b09c8eb6a8fd4b62c1103b9e50da
+        env:
+          ANTHROPIC_AWS_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_AWS_WORKSPACE_ID: ${{ vars.ANTHROPIC_AWS_WORKSPACE_ID }}
+          AWS_REGION: us-east-1
+        with:
+          github_token: ${{ github.token }}
+          use_aws_platform: 'true'
+          track_progress: true
+
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.issue.number }}
+
+            First, write a short review plan: what the PR changes at a high level,
+            which areas carry risk, and what you will check. Then review.
+
+            Review this pull request with a focus on:
+            - Code quality and best practices
+            - Potential bugs or issues
+            - Security implications
+            - Performance considerations
+
+            Provide detailed feedback using inline comments for specific issues.
+          show_full_output: true
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --max-turns 40
