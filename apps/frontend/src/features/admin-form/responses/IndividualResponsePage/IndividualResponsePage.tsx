@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo } from 'react'
+import { memo, ReactNode, useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiDownload, BiLinkExternal } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
@@ -32,6 +32,7 @@ import {
   MRF_STATUS,
 } from '../common/utils/mrfSubmissionView'
 import { SecretKeyVerification } from '../components/SecretKeyVerification'
+import { WorkflowStatusBadge } from '../components/WorkflowStatusBadge'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_RESPONSE_TIMESTAMP_LABEL,
@@ -78,9 +79,11 @@ const StackRow = ({
   isError,
   statusTrackerUrl,
   linkLabel,
+  children,
 }: {
   label: string
   value: string
+  children?: ReactNode
   isLoading: boolean
   isError: boolean
   statusTrackerUrl?: string
@@ -101,7 +104,9 @@ const StackRow = ({
       </Text>
       {/* minW 0 lets the flex item shrink so long URLs wrap instead of overflowing the drawer. */}
       <Skeleton isLoaded={!isLoading && !isError} minW={0}>
-        {statusTrackerUrl ? (
+        {children ? (
+          children
+        ) : statusTrackerUrl ? (
           // Inline so the icon trails the last character of a wrapped URL.
           <Link
             target="_blank"
@@ -260,7 +265,11 @@ export const IndividualResponsePage = (): JSX.Element => {
               value={responseMrfStatus}
               isLoading={isLoading}
               isError={isError}
-            />
+            >
+              {responseMrfStatus ? (
+                <WorkflowStatusBadge status={responseMrfStatus} />
+              ) : null}
+            </StackRow>
             <StackRow
               label={MRF_PENDING_RESPONSE_AT_LABEL}
               value={
