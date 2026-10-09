@@ -111,7 +111,27 @@ jobs:
             - Performance considerations
 
             Provide detailed feedback using inline comments for specific issues.
+
+            Stacked PRs:
+            This PR may be one slice of a stack. A later, unmerged slice may already
+            fix something this slice gets wrong. Do not report those as findings.
+            1. Find the stack. Read this PR's base and head branches with
+               `gh pr view <PR NUMBER> --json baseRefName,headRefName`.
+               - Parent: the base branch, if it is not `develop`.
+               - Descendants: open PRs whose base is this PR's head branch, from
+                 `gh pr list --base <head> --state open --json number,title,headRefName`.
+                 Repeat with each descendant's head branch until no more PRs come back.
+            2. Review only this PR's diff. Do not review descendant PRs. Treat the
+               parent PR's changes as already-reviewed context, not as this PR's diff.
+            3. Keep context small. For each descendant, fetch its file list only:
+               `gh pr view <n> --json files --jq '.files[].path'`.
+            4. Before posting a finding, check whether a descendant touches the same
+               file. If one does, read that descendant's change to that file only:
+               `git diff origin/<descendant base>...origin/<descendant head> -- <file>`.
+               If the branch is not on origin, use `gh pr diff <n>` and read only that
+               file's section. Drop the finding if a later slice fixes it, and list it
+               in the summary in one line as "Deferred to #N".
           show_full_output: true
           claude_args: |
-            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(git diff:*)"
             --max-turns 40
