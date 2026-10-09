@@ -12,61 +12,20 @@ concurrency:
   group: claude-review-${{ github.event.issue.number }}
   cancel-in-progress: false
 
-env:
-  REVIEW_TEAM: formsg-team
-
 jobs:
-  authorize:
-    name: Authorize
+  review:
+    name: Code review
+    # claude-code-action rejects commenters without write access before Claude runs.
     if: |
       github.event.issue.pull_request != null &&
       contains(github.event.comment.body, '@claude') &&
       contains(github.event.comment.body, 'review')
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions: {}
-    outputs:
-      allowed: ${{ steps.membership.outputs.allowed }}
-    steps:
-      - name: Check team membership
-        id: membership
-        # github.token cannot read org team membership; a separate token with org Members: read can.
-        env:
-          GH_TOKEN: ${{ secrets.CLAUDE_TEAM_READ_TOKEN }}
-          ORG: ${{ github.repository_owner }}
-          TEAM: ${{ env.REVIEW_TEAM }}
-          ACTOR: ${{ github.event.comment.user.login }}
-        run: |
-          if [ -z "$GH_TOKEN" ]; then
-            echo "::error::Set the CLAUDE_TEAM_READ_TOKEN repository secret to a token with organization Members: read permission."
-            exit 1
-          fi
-          if ! state=$(gh api "orgs/${ORG}/teams/${TEAM}/memberships/${ACTOR}" --jq .state 2>err.txt); then
-            if ! grep -q "HTTP 404" err.txt; then
-              cat err.txt
-              echo "::error::Team membership lookup failed. Check that CLAUDE_TEAM_READ_TOKEN has organization Members: read permission."
-              exit 1
-            fi
-            state=""
-          fi
-          if [ "$state" = "active" ]; then
-            echo "allowed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::${ACTOR} is not an active member of ${ORG}/${TEAM}; skipping review."
-            echo "allowed=false" >> "$GITHUB_OUTPUT"
-          fi
-
-  review:
-    name: Code review
-    needs: authorize
-    if: needs.authorize.outputs.allowed == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: write
       issues: write
-      id-token: write
       actions: read # lets Claude read CI results on the PR
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
