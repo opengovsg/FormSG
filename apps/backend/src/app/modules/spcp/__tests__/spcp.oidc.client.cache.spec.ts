@@ -23,7 +23,7 @@ jest.mock('axios')
 
 const TEST_RP_SECRET_JWKS: SecretJwks = JSON.parse(
   fs
-    .readFileSync('__tests__/setup/certs/test_sp_rp_secret_jwks.json')
+    .readFileSync('__tests__/setup/certs/test_cp_rp_secret_jwks.json')
     .toString(),
 )
 const TEST_NDI_PUBLIC_JWKS: PublicJwks = JSON.parse(

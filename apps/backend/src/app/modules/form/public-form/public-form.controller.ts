@@ -146,31 +146,8 @@ export const handleGetPublicForm: ControllerHandler<
 
   // extract spcpSession and myInfoFields based on authType
   switch (authType) {
-    case FormAuthType.SP: {
-      const oidcService = getOidcService(FormAuthType.SP)
-      const jwtPayloadResult = await oidcService.extractJwtPayloadFromRequest(
-        req.cookies,
-      )
-      if (jwtPayloadResult.isErr()) {
-        const error = jwtPayloadResult.error
-        // Report only relevant errors - verification failed for user here
-        if (
-          error instanceof VerifyJwtError ||
-          error instanceof InvalidJwtError
-        ) {
-          logger.error({
-            message: 'Error getting public form',
-            meta: logMeta,
-            error,
-          })
-        }
-        return res.json({ form: publicForm, isIntranetUser })
-      }
-      spcpSession = jwtPayloadResult.value
-      break
-    }
     case FormAuthType.CP: {
-      const oidcService = getOidcService(FormAuthType.CP)
+      const oidcService = getOidcService()
       const jwtPayloadResult = await oidcService.extractJwtPayloadFromRequest(
         req.cookies,
       )
@@ -340,7 +317,6 @@ export const handleGetPublicForm: ControllerHandler<
 
   // generate form response based on authType
   switch (authType) {
-    case FormAuthType.SP:
     case FormAuthType.CP:
       return res.json({
         form: publicForm,
@@ -498,8 +474,7 @@ export const handleGetPublicFormSampleSubmission: ControllerHandler<
 }
 /**
  * NOTE: This is exported only for testing
- * Generates redirect URL to Official SingPass/CorpPass log in page
- * @param isPersistentLogin whether the client wants to have their login information stored
+ * Generates redirect URL to the MyInfo (Singpass) or Corppass log in page
  * @param encodedQuery base64 encoded queryId for frontend to retrieve stored query params (usually contains prefilled form information)
  * @returns 200 with the redirect url when the user authenticates successfully
  * @returns 400 when there is an error on the authType of the form
@@ -513,10 +488,10 @@ export const _handleFormAuthRedirect: ControllerHandler<
   { formId: string },
   PublicFormAuthRedirectDto | ErrorDto,
   unknown,
-  { isPersistentLogin?: boolean; encodedQuery?: string }
+  { encodedQuery?: string }
 > = (req, res) => {
   const { formId } = req.params
-  const { isPersistentLogin, encodedQuery } = req.query
+  const { encodedQuery } = req.query
   const logMeta = {
     action: 'handleFormAuthRedirect',
     ...createReqMeta(req),
@@ -558,40 +533,14 @@ export const _handleFormAuthRedirect: ControllerHandler<
             setMyInfoFapiSessionCookie(res, sessionId)
             return redirectUrl
           })
-        case FormAuthType.SP: {
-          return validateSpcpForm(form).asyncAndThen((form) => {
-            const target = getRedirectTargetSpcpOidc(
-              formId,
-              FormAuthType.SP,
-              isPersistentLogin,
-              encodedQuery,
-              nonce,
-            )
-            const oidcService = getOidcService(FormAuthType.SP)
-            return oidcService
-              .createRedirectUrl(target, form.esrvcId)
-              .map(({ redirectUrl, codeVerifier }) => {
-                res.cookie(
-                  oidcService.getCodeVerifierCookieName(nonce),
-                  codeVerifier,
-                  oidcService.getCodeVerifierCookieOptions(),
-                )
-                return redirectUrl
-              })
-          })
-        }
         case FormAuthType.CP: {
-          // NOTE: Persistent login is only set (and relevant) when the authType is SP.
-          // If authType is not SP, assume that it was set erroneously and default it to false
           return validateSpcpForm(form).asyncAndThen((form) => {
             const target = getRedirectTargetSpcpOidc(
               formId,
-              FormAuthType.CP,
-              isPersistentLogin,
               encodedQuery,
               nonce,
             )
-            const oidcService = getOidcService(FormAuthType.CP)
+            const oidcService = getOidcService()
             return oidcService
               .createRedirectUrl(target, form.esrvcId)
               .map(({ redirectUrl, codeVerifier }) => {
@@ -644,6 +593,8 @@ export const handleFormAuthRedirect = [
       formId: Joi.string().pattern(/^[a-fA-F0-9]{24}$/),
     }),
     [Segments.QUERY]: Joi.object({
+      // Unused since Singpass persistent login was removed; still accepted so
+      // that clients on an older frontend build do not get a 400.
       isPersistentLogin: Joi.boolean().optional(),
       encodedQuery: Joi.string().allow('').optional(),
     }),
@@ -653,7 +604,7 @@ export const handleFormAuthRedirect = [
 
 /**
  * NOTE: This is exported only for testing
- * Logs user out of SP / CP / MyInfo by deleting cookie
+ * Logs user out of CP / MyInfo by deleting cookie
  * @param authType type of authentication
  *
  * @returns 200 with success message when user logs out successfully
@@ -661,7 +612,7 @@ export const handleFormAuthRedirect = [
  */
 export const _handlePublicAuthLogout: ControllerHandler<
   {
-    authType: FormAuthType.SP | FormAuthType.CP | FormAuthType.MyInfo
+    authType: FormAuthType.CP | FormAuthType.MyInfo
   },
   PublicFormAuthLogoutDto
 > = (req, res) => {
@@ -681,13 +632,13 @@ export const _handlePublicAuthLogout: ControllerHandler<
 
 /**
  * Handler for /forms/auth/:authType/logout
- * Valid AuthTypes are SP / CP / MyInfo
+ * Valid AuthTypes are CP / MyInfo
  */
 export const handlePublicAuthLogout = [
   celebrate({
     [Segments.PARAMS]: Joi.object({
       authType: Joi.string()
-        .valid(FormAuthType.SP, FormAuthType.CP, FormAuthType.MyInfo)
+        .valid(FormAuthType.CP, FormAuthType.MyInfo)
         .required(),
     }),
   }),

@@ -18,7 +18,6 @@ import {
   CorppassJwtPayloadFromCookie,
   ExtractedCorppassNDIPayload,
   RedirectTargetSpcpOidc,
-  SingpassJwtPayloadFromCookie,
   SpcpForm,
 } from './spcp.types'
 
@@ -35,21 +34,6 @@ export const extractFormId = (destination: string): string | null => {
     return null
   }
   return regexSplit[1]
-}
-
-/**
- * Typeguard for SingPass JWT payload.
- * @param payload Payload decrypted from JWT
- */
-export const isSingpassJwtPayload = (
-  payload: unknown,
-): payload is SingpassJwtPayloadFromCookie => {
-  return (
-    typeof payload === 'object' &&
-    !!payload &&
-    hasProp(payload, 'userName') &&
-    typeof payload.userName === 'string'
-  )
 }
 
 /**
@@ -206,18 +190,13 @@ export const validateSpcpForm = <T extends IFormSchema>(
 
 // Typeguard to ensure that form has eserviceId and correct authType
 const isSpcpForm = <F extends IFormSchema>(form: F): form is SpcpForm<F> => {
-  return (
-    !!form.authType &&
-    [FormAuthType.SP, FormAuthType.CP].includes(form.authType) &&
-    !!form.esrvcId
-  )
+  return form.authType === FormAuthType.CP && !!form.esrvcId
 }
 
 /**
  * Generates the redirect target for the form
  * Differs from SAML implementation in using hyphen separation because NDI OIDC does not allow comma in state
  * @param formId
- * @param isPersistentLogin
  * @param encodedQuery
  * @param nonce per-login-attempt nonce used to scope the PKCE code_verifier
  * cookie to this login. Omitted when the spcpOidcStateNonce flag is off, which
@@ -226,14 +205,12 @@ const isSpcpForm = <F extends IFormSchema>(form: F): form is SpcpForm<F> => {
  */
 export const getRedirectTargetSpcpOidc = (
   formId: string,
-  authType: FormAuthType.SP | FormAuthType.CP,
-  isPersistentLogin?: boolean,
   encodedQuery?: string,
   nonce?: string,
 ): RedirectTargetSpcpOidc => {
-  // Need to cast to boolean because undefined is allowed as a valid value
-  const persistentLogin =
-    authType === FormAuthType.SP ? !!isPersistentLogin : false
+  // The state keeps its legacy persistent-login segment, which is always false
+  // now that Corppass is the only NDI OIDC login and does not support it.
+  const persistentLogin = false
   // TODO [CP-PKCE]: drop the legacy branch once the spcpOidcStateNonce flag is
   // permanently on and no legacy state can still be in flight.
   if (!nonce) {

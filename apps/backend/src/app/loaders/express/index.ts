@@ -13,7 +13,6 @@ import { MYINFO_ROUTER_PREFIX } from '../../modules/myinfo/myinfo.constants'
 import { MyInfoRouter } from '../../modules/myinfo/myinfo.routes'
 import { ApiRouter } from '../../routes/api'
 import { LegacyRedirectRouter } from '../../routes/legacy-redirect'
-import { SpOidcJwksRouter } from '../../routes/singpass'
 
 import {
   catchNonExistentStaticRoutesMiddleware,
@@ -110,14 +109,6 @@ const loadExpressApp = async (connection: Connection) => {
     app.use(growthbookMiddleware)
   }
 
-  /**
-   * jwks endpoint for SP OIDC
-   */
-  app.use('/sp/.well-known/jwks.json', SpOidcJwksRouter)
-  /** Legacy route for backward compatibility
-   * @deprecated TODO(FRM-1893): remove after config on Singpass portal is also updated for Prod
-   */
-  app.use('/singpass/.well-known/jwks.json', SpOidcJwksRouter)
   app.use(MYINFO_ROUTER_PREFIX, MyInfoRouter)
 
   // Legacy frontend routes which may still be in use

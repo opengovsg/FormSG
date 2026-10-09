@@ -38,7 +38,6 @@ import {
   MissingJwtError,
 } from '../../../spcp/spcp.errors'
 import { CpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.cp'
-import { SpOidcServiceClass } from '../../../spcp/spcp.oidc.service/spcp.oidc.service.sp'
 import { CodeVerifierCookieName, JwtName } from '../../../spcp/spcp.types'
 import { generateHashedSubmitterId } from '../../../submission/submission.utils'
 import { FormNotFoundError, PrivateFormError } from '../../form.errors'
@@ -50,7 +49,6 @@ import { getCookieNameByAuthType } from '../public-form.service'
 jest.mock('../public-form.service')
 jest.mock('../../form.service')
 jest.mock('../../../auth/auth.service')
-jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.sp')
 jest.mock('../../../spcp/spcp.oidc.service/spcp.oidc.service.cp')
 jest.mock('../../../myinfo/myinfo.service')
 jest.mock('../../../myinfo/fapi/myinfo.fapi.service')
@@ -201,6 +199,7 @@ describe('public-form.controller', () => {
     describe('valid form id', () => {
       const MOCK_JWT_PAYLOAD: JwtPayload = {
         userName: 'mock',
+        userInfo: 'mockUserInfo',
         rememberMe: false,
       }
 
@@ -246,54 +245,11 @@ describe('public-form.controller', () => {
         })
       })
 
-      it('should return 200 when client authenticates using SP', async () => {
-        // Arrange
-        const MOCK_SPCP_SESSION = {
-          userName: MOCK_JWT_PAYLOAD.userName,
-          exp: 1000000000,
-          iat: 100000000,
-          rememberMe: false,
-        }
-        const MOCK_SP_AUTH_FORM = {
-          ...BASE_FORM,
-          authType: FormAuthType.SP,
-        } as unknown as IPopulatedForm
-        const mockRes = expressHandler.mockResponse()
-
-        MockAuthService.getFormIfPublic.mockReturnValueOnce(
-          okAsync(MOCK_SP_AUTH_FORM),
-        )
-        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(MOCK_SP_AUTH_FORM),
-        )
-
-        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(MOCK_SP_AUTH_FORM),
-        )
-
-        jest
-          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
-          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
-
-        // Act
-        await PublicFormController.handleGetPublicForm(
-          MOCK_REQ,
-          mockRes,
-          jest.fn(),
-        )
-
-        // Assert
-        expect(mockRes.json).toHaveBeenCalledWith({
-          form: MOCK_SP_AUTH_FORM.getPublicView(),
-          isIntranetUser: false,
-          spcpSession: MOCK_SPCP_SESSION,
-        })
-      })
-
       it('should return 200 when client authenticates using CP', async () => {
         // Arrange
         const MOCK_SPCP_SESSION = {
           userName: MOCK_JWT_PAYLOAD.userName,
+          userInfo: 'mockUserInfo',
           exp: 1000000000,
           iat: 100000000,
           rememberMe: false,
@@ -669,49 +625,10 @@ describe('public-form.controller', () => {
     })
 
     describe('errors in spcp', () => {
-      const MOCK_SP_FORM = {
-        ...BASE_FORM,
-        authType: FormAuthType.SP,
-      } as unknown as IPopulatedForm
       const MOCK_CP_FORM = {
         ...BASE_FORM,
         authType: FormAuthType.CP,
       } as unknown as IPopulatedForm
-      it('should return 200 with the form but without a spcpSession when the JWT token could not be found for SP form', async () => {
-        // Arrange
-        // 1. Mock the response and calls
-        const mockRes = expressHandler.mockResponse()
-
-        MockAuthService.getFormIfPublic.mockReturnValueOnce(
-          okAsync(MOCK_SP_FORM),
-        )
-        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(MOCK_SP_FORM),
-        )
-        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(MOCK_SP_FORM),
-        )
-        jest
-          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
-          .mockReturnValueOnce(errAsync(new MissingJwtError()))
-
-        // Act
-        // 2. GET the endpoint
-        await PublicFormController.handleGetPublicForm(
-          MOCK_REQ,
-          mockRes,
-          jest.fn(),
-        )
-
-        // Assert
-        // Status should be 200
-        // json object should only have form property
-        expect(mockRes.json).toHaveBeenCalledWith({
-          form: MOCK_SP_FORM.getPublicView(),
-          isIntranetUser: false,
-        })
-      })
-
       it('should return 200 with the form but without a spcpSession when the JWT token could not be found for CP form', async () => {
         // Arrange
         // 1. Mock the response and calls
@@ -808,28 +725,29 @@ describe('public-form.controller', () => {
     })
 
     describe('errors due to single submission per submitterId violation', () => {
-      const MOCK_SP_FORM = {
+      const MOCK_CP_FORM = {
         ...BASE_FORM,
-        authType: FormAuthType.SP,
+        authType: FormAuthType.CP,
       } as unknown as IPopulatedForm
       const MOCK_SPCP_SESSION = {
         userName: 'submitterId',
+        userInfo: 'mockUserInfo',
         exp: 1000000000,
         iat: 100000000,
         rememberMe: false,
       }
       it('should return 200 but with single submission validation failure flag when submitterId already submitted for form id', async () => {
         MockAuthService.getFormIfPublic.mockReturnValueOnce(
-          okAsync(MOCK_SP_FORM),
+          okAsync(MOCK_CP_FORM),
         )
         MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(MOCK_SP_FORM),
+          okAsync(MOCK_CP_FORM),
         )
         MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(MOCK_SP_FORM),
+          okAsync(MOCK_CP_FORM),
         )
         jest
-          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
+          .spyOn(CpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
           .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
 
         const checkHasSingleSubmissionValidationFailureSpy = jest
@@ -851,7 +769,7 @@ describe('public-form.controller', () => {
         ).toEqual(
           generateHashedSubmitterId(
             MOCK_SPCP_SESSION.userName.toUpperCase(),
-            MOCK_SP_FORM._id,
+            MOCK_CP_FORM._id,
           ),
         )
 
@@ -859,7 +777,7 @@ describe('public-form.controller', () => {
         expect(mockRes.status).not.toHaveBeenCalled()
         // Assert that the form details is still returned so that FE can populate the title
         expect((mockRes.json as jest.Mock).mock.calls[0][0].form).toEqual(
-          MOCK_SP_FORM.getPublicView(),
+          MOCK_CP_FORM.getPublicView(),
         )
         // Assert that the response contains the single submission validation failure flag
         expect((mockRes.json as jest.Mock).mock.calls[0][0].errorCodes).toEqual(
@@ -871,7 +789,7 @@ describe('public-form.controller', () => {
           'spcpSession',
         )
         expect(mockRes.clearCookie).toHaveBeenCalledExactlyOnceWith(
-          getCookieNameByAuthType(FormAuthType.SP),
+          getCookieNameByAuthType(FormAuthType.CP),
         )
       })
     })
@@ -982,6 +900,7 @@ describe('public-form.controller', () => {
     describe('errors in form access', () => {
       const MOCK_SPCP_SESSION = {
         userName: 'mock',
+        userInfo: 'mockUserInfo',
         exp: 1000000000,
         iat: 100000000,
         rememberMe: false,
@@ -1017,44 +936,6 @@ describe('public-form.controller', () => {
         expect(mockRes.json).toHaveBeenCalledWith({
           form: MOCK_NIL_AUTH_FORM.getPublicView(),
           isIntranetUser: false,
-        })
-      })
-
-      it('should return 200 with isIntranetUser set to true when a intranet user accesses an FormAuthType.SP form', async () => {
-        // Arrange
-        const MOCK_SP_AUTH_FORM = {
-          ...BASE_FORM,
-          authType: FormAuthType.SP,
-        } as unknown as IPopulatedForm
-
-        const mockRes = expressHandler.mockResponse()
-
-        jest
-          .spyOn(SpOidcServiceClass.prototype, 'extractJwtPayloadFromRequest')
-          .mockReturnValueOnce(okAsync(MOCK_SPCP_SESSION))
-        MockFormService.checkIsIntranetFormAccess.mockReturnValueOnce(true)
-        MockAuthService.getFormIfPublic.mockReturnValueOnce(
-          okAsync(MOCK_SP_AUTH_FORM),
-        )
-        MockFormService.checkFormSubmissionLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(MOCK_SP_AUTH_FORM),
-        )
-        MockFormService.checkFormSmsLimitAndDeactivateForm.mockReturnValueOnce(
-          okAsync(MOCK_SP_AUTH_FORM),
-        )
-
-        // Act
-        await PublicFormController.handleGetPublicForm(
-          MOCK_REQ,
-          mockRes,
-          jest.fn(),
-        )
-
-        // Assert
-        expect(mockRes.json).toHaveBeenCalledWith({
-          form: MOCK_SP_AUTH_FORM.getPublicView(),
-          spcpSession: MOCK_SPCP_SESSION,
-          isIntranetUser: true,
         })
       })
 
@@ -1156,9 +1037,6 @@ describe('public-form.controller', () => {
       params: {
         formId: new ObjectId().toHexString(),
       },
-      query: {
-        isPersistentLogin: true,
-      },
       others: {
         growthbook: {
           isOn: jest.fn(() => false),
@@ -1181,150 +1059,16 @@ describe('public-form.controller', () => {
     }
 
     beforeEach(() => {
-      SpOidcServiceClass.prototype.codeVerifierCookieName =
-        CodeVerifierCookieName.SP
       CpOidcServiceClass.prototype.codeVerifierCookieName =
         CodeVerifierCookieName.CP
       jest
-        .spyOn(SpOidcServiceClass.prototype, 'getCodeVerifierCookieOptions')
-        .mockReturnValue(MOCK_CODE_VERIFIER_COOKIE_OPTIONS)
-      jest
         .spyOn(CpOidcServiceClass.prototype, 'getCodeVerifierCookieOptions')
         .mockReturnValue(MOCK_CODE_VERIFIER_COOKIE_OPTIONS)
-      jest
-        .spyOn(SpOidcServiceClass.prototype, 'getCodeVerifierCookieName')
-        .mockImplementation(
-          ActualSpcpOidcServiceClass.prototype.getCodeVerifierCookieName,
-        )
       jest
         .spyOn(CpOidcServiceClass.prototype, 'getCodeVerifierCookieName')
         .mockImplementation(
           ActualSpcpOidcServiceClass.prototype.getCodeVerifierCookieName,
         )
-    })
-
-    it('should return 200 with the redirect url when the request is valid and the form has authType SP', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        admin: MOCK_ADMIN,
-        authType: FormAuthType.SP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormDocument>
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      const createRedirectUrlSpy = jest
-        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockReturnValueOnce(
-          okAsync({
-            redirectUrl: MOCK_REDIRECT_URL,
-            codeVerifier: MOCK_CODE_VERIFIER,
-          }),
-        )
-
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(createRedirectUrlSpy).toHaveBeenCalledWith(
-        expect.any(String),
-        MOCK_FORM.esrvcId,
-      )
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        redirectURL: MOCK_REDIRECT_URL,
-      })
-      expect(mockRes.cookie).toHaveBeenCalledWith(
-        CodeVerifierCookieName.SP,
-        MOCK_CODE_VERIFIER,
-        expect.anything(),
-      )
-    })
-
-    it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is undefined', async () => {
-      // Arrange
-      const MOCK_REQ_WITHOUT_PERSISTENT_LOGIN = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-      })
-      const MOCK_FORM = {
-        admin: MOCK_ADMIN,
-        authType: FormAuthType.SP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormDocument>
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      jest
-        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockReturnValueOnce(
-          okAsync({
-            redirectUrl: MOCK_REDIRECT_URL,
-            codeVerifier: MOCK_CODE_VERIFIER,
-          }),
-        )
-
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ_WITHOUT_PERSISTENT_LOGIN,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        redirectURL: MOCK_REDIRECT_URL,
-      })
-    })
-
-    it('should return 200 with the redirect url when the request is valid, form has authType SP and isPersistentLogin is false', async () => {
-      // Arrange
-      const MOCK_REQ_WITH_FALSE_PERSISTENT_LOGIN = expressHandler.mockRequest({
-        params: {
-          formId: new ObjectId().toHexString(),
-        },
-        query: {
-          isPersistentLogin: false,
-        },
-      })
-      const MOCK_FORM = {
-        admin: MOCK_ADMIN,
-        authType: FormAuthType.SP,
-        esrvcId: '12345',
-      } as SpcpForm<IFormDocument>
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      jest
-        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockReturnValueOnce(
-          okAsync({
-            redirectUrl: MOCK_REDIRECT_URL,
-            codeVerifier: MOCK_CODE_VERIFIER,
-          }),
-        )
-
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ_WITH_FALSE_PERSISTENT_LOGIN,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        redirectURL: MOCK_REDIRECT_URL,
-      })
     })
 
     it('should return 200 with the redirect url when the request is valid and the form has authType CP', async () => {
@@ -1489,36 +1233,6 @@ describe('public-form.controller', () => {
       })
     })
 
-    it('should return 500 when the redirectURL could not be created for SP form', async () => {
-      // Arrange
-      const MOCK_FORM = {
-        admin: MOCK_ADMIN,
-        esrvcId: '234',
-        authType: FormAuthType.SP,
-      } as unknown as SpcpForm<IFormDocument>
-
-      const mockRes = expressHandler.mockResponse()
-      MockFormService.retrieveFullFormById.mockReturnValueOnce(
-        okAsync(MOCK_FORM),
-      )
-      jest
-        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
-        .mockReturnValue(errAsync(new CreateRedirectUrlError()))
-
-      // Act
-      await PublicFormController._handleFormAuthRedirect(
-        MOCK_REQ,
-        mockRes,
-        jest.fn(),
-      )
-
-      // Assert
-      expect(mockRes.status).toHaveBeenCalledWith(500)
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Sorry, something went wrong. Please try again.',
-      })
-    })
-
     it('should return 500 when the redirectURL could not be created for CP form', async () => {
       // Arrange
       const MOCK_FORM = {
@@ -1551,33 +1265,6 @@ describe('public-form.controller', () => {
   })
 
   describe('handlePublicAuthLogout', () => {
-    it('should return 200 if authType is SP and call clearCookie()', async () => {
-      const authType = FormAuthType.SP as const
-      MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(
-        JwtName[authType],
-      )
-      const mockReq = expressHandler.mockRequest({
-        params: {
-          authType,
-        },
-      })
-      const mockRes = expressHandler.mockResponse({
-        clearCookie: jest.fn().mockReturnThis(),
-      })
-
-      await PublicFormController._handlePublicAuthLogout(
-        mockReq,
-        mockRes,
-        jest.fn(),
-      )
-
-      expect(mockRes.status).toHaveBeenCalledWith(200)
-      expect(mockRes.clearCookie).toHaveBeenCalledWith(JwtName[authType])
-      expect(mockRes.json).toHaveBeenCalledWith({
-        message: 'Successfully logged out.',
-      })
-    })
-
     it('should return 200 if authType is CP and call clearCookie()', async () => {
       const authType = FormAuthType.CP as const
       MockPublicFormService.getCookieNameByAuthType.mockReturnValueOnce(

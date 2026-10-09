@@ -15,10 +15,7 @@ import { MyInfoData } from 'src/app/modules/myinfo/myinfo.adapter'
 import { IPersonResponse } from 'src/app/modules/myinfo/myinfo.person.types'
 
 import * as AuthService from '../../../../../modules/auth/auth.service'
-import {
-  CpOidcClient,
-  SpOidcClient,
-} from '../../../../../modules/spcp/spcp.oidc.client'
+import { CpOidcClient } from '../../../../../modules/spcp/spcp.oidc.client'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 import { MOCK_UINFIN } from './public-forms.routes.spec.constants'
@@ -86,44 +83,6 @@ describe('public-form.form.routes', () => {
       expect(actualResponse.body).toEqual(expectedResponseBody)
     })
 
-    it('should return 200 with public form when form has FormAuthType.SP and valid formId', async () => {
-      // Arrange
-      jest.spyOn(SpOidcClient.prototype, 'verifyJwt').mockResolvedValueOnce({
-        userName: MOCK_COOKIE_PAYLOAD.userName,
-        iat: 100000000,
-        exp: 1000000000,
-      })
-      const { form } = await dbHandler.insertEmailForm({
-        formOptions: {
-          esrvcId: 'mockEsrvcId',
-          authType: FormAuthType.SP,
-          hasCaptcha: false,
-          status: FormStatus.Public,
-        },
-      })
-      const formId = form._id
-      // NOTE: This is needed to inject admin info into the form
-      const fullForm = await dbHandler.getFullFormById(formId)
-      const expectedResponseBody = {
-        form: JSON.parse(JSON.stringify(fullForm?.getPublicView())),
-        spcpSession: expect.objectContaining({
-          userName: MOCK_COOKIE_PAYLOAD.userName,
-          iat: 100000000,
-          exp: 1000000000,
-        }),
-        isIntranetUser: false,
-      }
-
-      // Act
-      // Set cookie on request
-      const actualResponse = await request
-        .get(`/forms/${form._id}`)
-        .set('Cookie', ['jwtSp=mockJwt'])
-
-      // Assert
-      expect(actualResponse.status).toEqual(200)
-      expect(actualResponse.body).toEqual(expectedResponseBody)
-    })
     it('should return 200 with public form when form has FormAuthType.CP and valid formId', async () => {
       // Arrange
       mockCpClient.verifyJwt.mockResolvedValueOnce({

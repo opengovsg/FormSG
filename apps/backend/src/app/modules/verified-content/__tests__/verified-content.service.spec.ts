@@ -14,7 +14,7 @@ import { CpVerifiedContent, SpVerifiedContent } from '../verified-content.types'
 
 describe('verified-content.service', () => {
   describe('getVerifiedContent', () => {
-    it('should return verified content for FormAuthType.SP data', async () => {
+    it('should return verified content for FormAuthType.MyInfo data', async () => {
       // Arrange
       const mockData = {
         extraData: 'some extra data',
@@ -27,7 +27,7 @@ describe('verified-content.service', () => {
 
       // Act
       const result = getVerifiedContent({
-        type: FormAuthType.SP,
+        type: FormAuthType.MyInfo,
         data: mockData,
       })
 
@@ -66,7 +66,7 @@ describe('verified-content.service', () => {
 
       // Act
       const result = getVerifiedContent({
-        type: FormAuthType.SP,
+        type: FormAuthType.MyInfo,
         data: mockDataWithoutUin,
       })
 

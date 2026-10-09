@@ -34,7 +34,6 @@ import {
 import {
   CryptoKeys,
   SigningKey,
-  SpClientIdField,
   SpcpOidcClientConstructorParams,
 } from './spcp.oidc.client.types'
 import {
@@ -49,8 +48,8 @@ import {
 /**
  * Wrapper around the openid-client library to carry out authentication related tasks with Singpass and Corppass NDI,
  * and provides methods for decryption and verification of JWE/JWS returned by NDI after authorisation code exchange.
- * This is a base class for the Singpass and CorpPass OIDC client classes and is not meant to be instantiated on its own.
- * @parent for SpOidcClient and CpOidcClient classes
+ * This is a base class for the CorpPass OIDC client class and is not meant to be instantiated on its own.
+ * @parent for CpOidcClient class
  * Exported for testing.
  */
 export abstract class SpcpOidcBaseClient {
@@ -266,15 +265,6 @@ export abstract class SpcpOidcBaseClient {
   }
 
   /**
-   * Optional method to inject additional fields into token exchange request
-   * @returns Object with string key and properties
-   */
-
-  getExtraTokenFields(): { [key: string]: string } {
-    return {}
-  }
-
-  /**
    * Method to exchange authorisation code for idToken from NDI and then decode and verify it
    * @async
    * @param authCode authorisation code provided from browser after authorisation
@@ -321,7 +311,7 @@ export abstract class SpcpOidcBaseClient {
       )
 
       // Construct request body. It is necessary to stringify the body because
-      // SP/CP OIDC requires content type to be application/x-www-form-urlencoded
+      // CP OIDC requires content type to be application/x-www-form-urlencoded
       const tokenParams: Record<string, string> = {
         grant_type: 'authorization_code',
         redirect_uri: this.#rpRedirectUrl,
@@ -329,7 +319,6 @@ export abstract class SpcpOidcBaseClient {
         client_assertion_type:
           'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
         client_assertion: clientAssertion,
-        ...this.getExtraTokenFields(),
       }
 
       if (codeVerifier) {
@@ -499,27 +488,6 @@ export abstract class SpcpOidcBaseClient {
     const { payload } = await jwtVerify(jwt, verificationKeyResult)
 
     return payload
-  }
-}
-
-/**
- * Singpass OIDC Client
- * @extends SpcpOidcBaseClient
- */
-export class SpOidcClient extends SpcpOidcBaseClient {
-  authType = FormAuthType.SP
-  eServiceIdKey = 'esrvc'
-
-  constructor(params: SpcpOidcClientConstructorParams) {
-    super(params)
-  }
-
-  /**
-   * Method to inject client ID when sending the token exchange request for singpass oidc
-   */
-
-  getExtraTokenFields(): SpClientIdField {
-    return { client_id: this.rpClientId }
   }
 }
 

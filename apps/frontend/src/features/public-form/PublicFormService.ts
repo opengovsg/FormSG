@@ -85,17 +85,16 @@ export const getAdminUseEmailModeFeedbackFormView =
 /**
  * Gets the redirect url for public form login
  * @param formId form id of form to log in.
- * @param isPersistentLogin whether login is persistent; affects cookie lifetime.
+ * @param encodedQuery encoded query params to restore after login.
  * @returns redirect url for public form login
  */
 export const getPublicFormAuthRedirectUrl = async (
   formId: string,
-  isPersistentLogin = false,
   encodedQuery?: string,
 ): Promise<PublicFormAuthRedirectDto['redirectURL']> => {
   return ApiService.get<PublicFormAuthRedirectDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/auth/redirect`,
-    { params: { encodedQuery, isPersistentLogin } },
+    { params: { encodedQuery } },
   ).then(({ data }) => data.redirectURL)
 }
 

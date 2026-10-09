@@ -132,10 +132,9 @@ export const verifyEmailSubmission = async (
     formSettings.isSubmitterIdCollectionEnabled &&
     formSettings.authType !== FormAuthType.NIL
   ) {
-    // Verify that form auth correctly returned NRIC (SP/MyInfo) and UEN (CP)
+    // Verify that form auth correctly returned NRIC (MyInfo) and UEN (CP)
     if (!formSettings.nric) throw new Error('No nric provided!')
     switch (formSettings.authType) {
-      case FormAuthType.SP:
       case FormAuthType.MyInfo:
         expectSubmissionContains([SPCPFieldTitle.SpNric, formSettings.nric])
         break
@@ -221,10 +220,9 @@ export const verifyEncryptSubmission = async (
       formSettings.isSubmitterIdCollectionEnabled &&
       formSettings.authType !== FormAuthType.NIL
     ) {
-      // Verify that form auth correctly returned NRIC (SP/MyInfo) and UEN (CP)
+      // Verify that form auth correctly returned NRIC (MyInfo) and UEN (CP)
       if (!formSettings.nric) throw new Error('No nric provided!')
       switch (formSettings.authType) {
-        case FormAuthType.SP:
         case FormAuthType.MyInfo:
           expectSubmissionContains([SPCPFieldTitle.SpNric, formSettings.nric])
           break

@@ -517,7 +517,7 @@ describe('multirespondent-submission.utils', () => {
       it('should return error when the form is not MyInfo-authed', () => {
         const result = actWithGate({
           workflowStep: 0,
-          formAuthType: FormAuthType.SP,
+          formAuthType: FormAuthType.CP,
           isMrfChildrenEnabled: true,
         })
 

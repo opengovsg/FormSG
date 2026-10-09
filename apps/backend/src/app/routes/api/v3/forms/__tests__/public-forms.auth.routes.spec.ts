@@ -15,11 +15,8 @@ import * as FormService from '../../../../../modules/form/form.service'
 import { MYINFO_FAPI_SESSION_COOKIE_NAME } from '../../../../../modules/myinfo/fapi/myinfo.fapi.constants'
 import * as MyInfoFapiService from '../../../../../modules/myinfo/fapi/myinfo.fapi.service'
 import { CreateRedirectUrlError } from '../../../../../modules/spcp/spcp.errors'
-import {
-  CpOidcClient,
-  SpOidcClient,
-} from '../../../../../modules/spcp/spcp.oidc.client'
-import { SpOidcServiceClass } from '../../../../../modules/spcp/spcp.oidc.service/spcp.oidc.service.sp'
+import { CpOidcClient } from '../../../../../modules/spcp/spcp.oidc.client'
+import { CpOidcServiceClass } from '../../../../../modules/spcp/spcp.oidc.service/spcp.oidc.service.cp'
 import { PublicFormsRouter } from '../public-forms.routes'
 
 jest.mock('../../../../../modules/spcp/spcp.oidc.client')
@@ -42,41 +39,6 @@ describe('public-form.auth.routes', () => {
   })
   afterAll(async () => await dbHandler.closeDatabase())
   describe('GET /forms/:formId/auth/redirect', () => {
-    it('should return 200 with the redirect URL when the form is valid and has authType SP', async () => {
-      // Arrange
-      const { form } = await dbHandler.insertEncryptForm({
-        formOptions: {
-          authType: FormAuthType.SP,
-          status: FormStatus.Public,
-          esrvcId: new ObjectId().toHexString(),
-        },
-      })
-
-      jest
-        .spyOn(SpOidcClient.prototype, 'createAuthorisationUrl')
-        .mockResolvedValue(
-          `${encodeURI(
-            getRedirectTargetSpcpOidc(form._id, FormAuthType.SP, false),
-          )}&esrvc=${form.esrvcId}`,
-        )
-
-      // Act
-      const response = await request
-        .get(`/forms/${form._id}/auth/redirect`)
-        .query({ isPersistentLogin: false })
-
-      // Assert
-      expect(response.status).toEqual(StatusCodes.OK)
-      expect(response.body).toMatchObject({
-        redirectURL: expect.toIncludeMultiple([
-          encodeURI(
-            getRedirectTargetSpcpOidc(form._id, FormAuthType.SP, false),
-          ),
-          form.esrvcId!,
-        ]),
-      })
-    })
-
     it('should return 200 with the redirect URL when the form is valid and has authType CP', async () => {
       // Arrange
       const { form } = await dbHandler.insertEncryptForm({
@@ -91,7 +53,7 @@ describe('public-form.auth.routes', () => {
         .spyOn(CpOidcClient.prototype, 'createAuthorisationUrl')
         .mockResolvedValue(
           `${encodeURI(
-            getRedirectTargetSpcpOidc(form._id, FormAuthType.CP, false),
+            getRedirectTargetSpcpOidc(form._id),
           )}&esrvc=${form.esrvcId}`,
         )
 
@@ -104,9 +66,7 @@ describe('public-form.auth.routes', () => {
       expect(response.status).toEqual(StatusCodes.OK)
       expect(response.body).toMatchObject({
         redirectURL: expect.toIncludeMultiple([
-          encodeURI(
-            getRedirectTargetSpcpOidc(form._id, FormAuthType.CP, false),
-          ),
+          encodeURI(getRedirectTargetSpcpOidc(form._id)),
           form.esrvcId!,
         ]),
       })
@@ -243,7 +203,7 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEncryptForm({
         formOptions: {
-          authType: FormAuthType.SP,
+          authType: FormAuthType.CP,
           status: FormStatus.Public,
           esrvcId: new ObjectId().toHexString(),
         },
@@ -269,7 +229,7 @@ describe('public-form.auth.routes', () => {
       // Arrange
       const { form } = await dbHandler.insertEmailForm({
         formOptions: {
-          authType: FormAuthType.SP,
+          authType: FormAuthType.CP,
           status: FormStatus.Public,
           esrvcId: new ObjectId().toHexString(),
         },
@@ -278,7 +238,7 @@ describe('public-form.auth.routes', () => {
         message: 'Sorry, something went wrong. Please try again.',
       })
       jest
-        .spyOn(SpOidcServiceClass.prototype, 'createRedirectUrl')
+        .spyOn(CpOidcServiceClass.prototype, 'createRedirectUrl')
         .mockReturnValueOnce(errAsync(new CreateRedirectUrlError()))
 
       // Act

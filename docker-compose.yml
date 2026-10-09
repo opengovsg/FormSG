@@ -61,19 +61,12 @@ services:
       # Keep in sync with the development key in
       # https://github.com/opengovsg/formsg-javascript-sdk/blob/develop/src/resource/signing-keys.ts
       - SIGNING_SECRET_KEY=HDBXpu+2/gu10bLHpy8HjpN89xbA6boH9GwibPGJA8BOXmB+zOUpxCP33/S5p8vBWlPokC7gLR0ca8urVwfMUQ==
-      - SP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/openid-configuration
-      - SP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/singpass/v2/.well-known/keys
-      - SP_OIDC_RP_CLIENT_ID=rpClientId
-      - SP_OIDC_RP_REDIRECT_URL=http://localhost:5001/api/v3/singpass/login
-      - SP_OIDC_RP_JWKS_PUBLIC_PATH=__tests__/setup/certs/test_sp_rp_public_jwks.json
-      - SP_OIDC_RP_JWKS_SECRET_PATH=__tests__/setup/certs/test_sp_rp_secret_jwks.json
       - CP_OIDC_NDI_DISCOVERY_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/openid-configuration
       - CP_OIDC_NDI_JWKS_ENDPOINT=http://localhost:5156/corppass/v2/.well-known/keys
       - CP_OIDC_RP_CLIENT_ID=rpClientId
       - CP_OIDC_RP_REDIRECT_URL=http://localhost:5001/api/v3/corppass/login
       - CP_OIDC_RP_JWKS_PUBLIC_PATH=__tests__/setup/certs/test_cp_rp_public_jwks.json
       - CP_OIDC_RP_JWKS_SECRET_PATH=__tests__/setup/certs/test_cp_rp_secret_jwks.json
-      - IS_SP_MAINTENANCE
       - IS_CP_MAINTENANCE
       - MYINFO_BANNER_CONTENT
       - MYINFO_JWT_SECRET=mockJwtSecret
@@ -154,7 +147,6 @@ services:
       - MOCKPASS_NRIC=S6005038D
       - MOCKPASS_UEN=123456789A
       - SHOW_LOGIN_PAGE=true
-      - SP_RP_JWKS_ENDPOINT=http://localhost:5000/sp/.well-known/jwks.json
       - CP_RP_JWKS_ENDPOINT=http://localhost:5000/api/v3/corppass/.well-known/jwks.json
       - FAPI_CLIENT_JWKS_ENDPOINT=http://localhost:5000/mi/fapi/.well-known/jwks.json
     network_mode: 'service:backend' # reuse backend service's network stack so that it can resolve localhost:5156 to mockpass:5156
