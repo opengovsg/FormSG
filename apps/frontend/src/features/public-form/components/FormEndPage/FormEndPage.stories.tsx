@@ -53,6 +53,16 @@ Default.args = {
   handleSubmitFeedback: (inputs) => console.log(inputs),
 }
 
+export const BulletedParagraph = Template.bind({})
+BulletedParagraph.args = {
+  ...Default.args,
+  endPage: {
+    ...Default.args.endPage!,
+    paragraph:
+      'Thank you for registering. What happens next:\n\n* We will review your application\n* You will receive an email within 3 working days\n* Contact us at hello@example.gov.sg if you have questions',
+  },
+}
+
 export const ColorThemeGreen = Template.bind({})
 ColorThemeGreen.args = {
   ...Default.args,
