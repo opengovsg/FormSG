@@ -12,6 +12,7 @@ import {
   SubmittedApprovalStep,
   SubmittedNonApprovalStep,
   SubmittedStep,
+  WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
@@ -59,11 +60,16 @@ import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { SnapshotRef } from '../../webhook/webhook.types'
 import {
+  getAddedAssignees,
+  recordWorkflowEvent,
+} from '../../workflow-event/workflow-event.service'
+import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
   InvalidApprovalFieldTypeError,
   InvalidWorkflowTypeError,
   MissingSubmitterIdError,
+  MrfAssigneeAlreadyAssignedError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
   MrfWorkflowNotPendingError,
@@ -392,20 +398,30 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
         return errAsync(new MrfReminderInvalidWorkflowStepError())
       }
 
-      const recipientEmails = pendingStep.nextStepRecipientEmails
-
-      if (!recipientEmails) {
-        logger.error({
-          message:
-            'No recipient emails found to send mrf next step submission reminder email',
-          meta: logMeta,
-        })
-        return errAsync(new MrfReminderRecipientEmailsEmptyError())
-      }
-
       const reminderStepNumber = submittedSteps.length + 1
 
-      return okAsync({ recipientEmails, reminderStepNumber })
+      return getAddedAssignees({
+        submissionId,
+        stepNumber: reminderStepNumber,
+      }).andThen((addedAssignees) => {
+        const recipientEmails = Array.from(
+          new Set([
+            ...(pendingStep.nextStepRecipientEmails ?? []),
+            ...addedAssignees,
+          ]),
+        )
+
+        if (recipientEmails.length === 0) {
+          logger.error({
+            message:
+              'No recipient emails found to send mrf next step submission reminder email',
+            meta: logMeta,
+          })
+          return errAsync(new MrfReminderRecipientEmailsEmptyError())
+        }
+
+        return okAsync({ recipientEmails, reminderStepNumber })
+      })
     },
   )
 }
@@ -2279,4 +2295,64 @@ export const stopMultirespondentSubmission = ({
     )
     .andThen((stopped) =>
       stopped ? okAsync(stopped) : errAsync(new MrfWorkflowNotPendingError()),
+    )
+
+export const addAssigneesToPendingStep = ({
+  formId,
+  submissionId,
+  emails,
+  actor,
+}: {
+  formId: string
+  submissionId: string
+  emails: string[]
+  actor: { _id?: unknown; email: string }
+}): ResultAsync<
+  { submission: IMultirespondentSubmissionSchema; stepNumber: number },
+  | DatabaseError
+  | SubmissionNotFoundError
+  | MrfWorkflowNotPendingError
+  | MrfAssigneeAlreadyAssignedError
+> =>
+  getMultirespondentSubmission(submissionId)
+    .andThen((submission) => {
+      if (String(submission.form) !== formId) {
+        return errAsync(new SubmissionNotFoundError())
+      }
+      const submittedSteps = (submission.submittedSteps ??
+        []) as SubmittedStep[]
+      const isPending =
+        !submission.stoppedAt &&
+        submittedSteps.length > 0 &&
+        getMrfSubmissionWorkflowStatus(
+          submittedSteps,
+          submission.workflow.length,
+        ) === WorkflowStatus.PENDING
+      if (!isPending) return errAsync(new MrfWorkflowNotPendingError())
+
+      const stepNumber = submittedSteps.length + 1
+      return getAddedAssignees({ submissionId, stepNumber }).andThen(
+        (addedAssignees) => {
+          const assigned = new Set([
+            ...(
+              submittedSteps[submittedSteps.length - 1]
+                .nextStepRecipientEmails ?? []
+            ).map((email) => email.toLowerCase()),
+            ...addedAssignees,
+          ])
+          const alreadyAssigned = emails.filter((email) => assigned.has(email))
+          return alreadyAssigned.length > 0
+            ? errAsync(new MrfAssigneeAlreadyAssignedError(alreadyAssigned))
+            : okAsync({ submission, stepNumber })
+        },
+      )
+    })
+    .andThen(({ submission, stepNumber }) =>
+      recordWorkflowEvent({
+        submission,
+        type: WorkflowEventType.AssigneesAdded,
+        actor,
+        stepNumber,
+        emails,
+      }).map(() => ({ submission, stepNumber })),
     )

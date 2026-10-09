@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { BiStopCircle } from 'react-icons/bi'
+import { BiStopCircle, BiTransferAlt } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import { Flex, useDisclosure } from '@chakra-ui/react'
 
@@ -9,9 +9,15 @@ import Button from '~components/Button'
 
 import { useAdminFormCollaborators } from '~features/admin-form/common/queries'
 
-import { DecryptedResponseLike, WorkflowHistory } from './getStopNotifiedEmails'
+import { AddAssigneeModal } from './AddAssigneeModal'
+import {
+  DecryptedResponseLike,
+  getStepRecipients,
+  WorkflowHistory,
+} from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
-import { useStopWorkflowMutation } from './mutations'
+import { useAddAssigneesMutation, useStopWorkflowMutation } from './mutations'
+import { useWorkflowEvents } from './queries'
 import { StopWorkflowModal } from './StopWorkflowModal'
 import { useWorkflowActionsGate } from './useWorkflowActionsGate'
 
@@ -20,6 +26,8 @@ interface WorkflowActionsSectionProps {
   mrf: SubmissionMrfMetadata
   history?: WorkflowHistory
   responses?: DecryptedResponseLike[]
+  submissionSecretKey?: string
+  stepToken?: string
   isLoading: boolean
 }
 
@@ -28,6 +36,8 @@ export const WorkflowActionsSection = ({
   mrf,
   history = { submittedSteps: [], workflow: [] },
   responses,
+  submissionSecretKey,
+  stepToken,
   isLoading,
 }: WorkflowActionsSectionProps): JSX.Element | null => {
   const { t } = useTranslation()
@@ -35,7 +45,14 @@ export const WorkflowActionsSection = ({
   const isWorkflowActionsOn = useWorkflowActionsGate(mrf)
   const { hasEditAccess } = useAdminFormCollaborators(formId)
   const stopModal = useDisclosure()
+  const addAssigneeModal = useDisclosure()
   const stopMutation = useStopWorkflowMutation(formId)
+  const addAssigneesMutation = useAddAssigneesMutation(formId)
+  const { data: events, isLoading: isEventsLoading } = useWorkflowEvents({
+    formId,
+    submissionId,
+    enabled: isWorkflowActionsOn,
+  })
 
   if (
     !isWorkflowActionsOn ||
@@ -44,6 +61,20 @@ export const WorkflowActionsSection = ({
     mrf?.workflowStatus !== WorkflowStatus.PENDING
   ) {
     return null
+  }
+
+  const pendingStepAssignees = getStepRecipients({
+    submittedSteps: history.submittedSteps,
+    events,
+    stepNumber: history.submittedSteps.length + 1,
+  })
+
+  const handleAddAssignees = (emails: string[]) => {
+    if (!submissionSecretKey) return
+    addAssigneesMutation.mutate(
+      { submissionId, emails, submissionSecretKey, stepToken },
+      { onSuccess: addAssigneeModal.onClose },
+    )
   }
 
   const handleStop = (emails: string[]) =>
@@ -58,6 +89,15 @@ export const WorkflowActionsSection = ({
         <Button
           variant="outline"
           colorScheme="secondary"
+          leftIcon={<BiTransferAlt fontSize="1.25rem" />}
+          isDisabled={isLoading || isEventsLoading || !submissionSecretKey}
+          onClick={addAssigneeModal.onOpen}
+        >
+          {t(`${WORKFLOW_ACTIONS_I18N}.reassignButton`)}
+        </Button>
+        <Button
+          variant="outline"
+          colorScheme="secondary"
           _hover={{
             bg: 'danger.100',
             color: 'danger.500',
@@ -69,18 +109,26 @@ export const WorkflowActionsSection = ({
             borderColor: 'danger.500',
           }}
           leftIcon={<BiStopCircle fontSize="1.25rem" />}
-          isDisabled={isLoading}
+          isDisabled={isLoading || isEventsLoading}
           onClick={stopModal.onOpen}
         >
           {t(`${WORKFLOW_ACTIONS_I18N}.stopButton`)}
         </Button>
       </Flex>
+      <AddAssigneeModal
+        isOpen={addAssigneeModal.isOpen}
+        onClose={addAssigneeModal.onClose}
+        onConfirm={handleAddAssignees}
+        isLoading={addAssigneesMutation.isLoading}
+        currentAssignees={pendingStepAssignees}
+      />
       <StopWorkflowModal
         isOpen={stopModal.isOpen}
         onClose={stopModal.onClose}
         onConfirm={handleStop}
         isLoading={stopMutation.isLoading}
         history={history}
+        events={events}
         responses={responses}
       />
     </>

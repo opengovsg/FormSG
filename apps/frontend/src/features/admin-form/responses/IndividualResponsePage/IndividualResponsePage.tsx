@@ -232,6 +232,8 @@ export const IndividualResponsePage = (): JSX.Element => {
           mrf={data?.mrf}
           history={data?.workflowHistory}
           responses={data?.responses}
+          submissionSecretKey={data?.submissionSecretKey}
+          stepToken={data?.stepToken}
           isLoading={isLoading || isError}
         />
       ) : null}

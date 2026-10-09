@@ -64,6 +64,16 @@ export class MrfWorkflowActionsUnavailableError extends ApplicationError {
   }
 }
 
+export class MrfAssigneeAlreadyAssignedError extends ApplicationError {
+  constructor(emails: string[]) {
+    super(
+      `${emails.join(', ')} ${emails.length === 1 ? 'is' : 'are'} already assigned to this step.`,
+      undefined,
+      ErrorCodes.SUBMISSION_MRF_ASSIGNEE_ALREADY_ASSIGNED,
+    )
+  }
+}
+
 export class MrfWorkflowNotPendingError extends ApplicationError {
   constructor(message = 'This workflow is no longer pending.') {
     super(message, undefined, ErrorCodes.SUBMISSION_MRF_WORKFLOW_NOT_PENDING)
