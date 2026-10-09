@@ -1334,6 +1334,7 @@ const buildSubmissionMetadata = ({
           workflow: mrfMeta.workflow,
           workflowStep: mrfMeta.workflowStep,
           submittedSteps: mrfMeta.submittedSteps,
+          created: result.created,
         })
       : undefined,
   }

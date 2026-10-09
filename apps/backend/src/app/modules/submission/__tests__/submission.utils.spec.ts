@@ -6,6 +6,7 @@ import {
   WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
+import { WORKFLOW_ACTIONS_CUTOFF } from 'formsg-shared/utils/workflow-actions'
 import { readFileSync } from 'fs'
 import { StatusCodes } from 'http-status-codes'
 import { cloneDeep, merge } from 'lodash'
@@ -353,7 +354,26 @@ describe('submission.utils', () => {
         workflowStatus: WorkflowStatus.PENDING,
         lastSubmittedAt: submittedAt,
         hasNextStepRecipientEmails: false,
+        isWorkflowActionsEligible: false,
       })
+    })
+
+    it('should mark a submission created on or after the cutoff as eligible for workflow actions', () => {
+      const build = (created: Date) =>
+        buildMrfMetadata({
+          workflow: [WORKFLOW_STEP_1, WORKFLOW_STEP_2],
+          workflowStep: 0,
+          submittedSteps: [],
+          created,
+        })
+
+      expect(build(WORKFLOW_ACTIONS_CUTOFF)?.isWorkflowActionsEligible).toBe(
+        true,
+      )
+      expect(
+        build(new Date(WORKFLOW_ACTIONS_CUTOFF.getTime() - 1))
+          ?.isWorkflowActionsEligible,
+      ).toBe(false)
     })
 
     it('should build mrf metadata successfully for completed submission without approval step', () => {
@@ -381,6 +401,7 @@ describe('submission.utils', () => {
         workflowStatus: WorkflowStatus.COMPLETED,
         lastSubmittedAt: submittedSteps[submittedSteps.length - 1].submittedAt,
         hasNextStepRecipientEmails: false,
+        isWorkflowActionsEligible: false,
       })
     })
 
@@ -407,6 +428,7 @@ describe('submission.utils', () => {
         workflowStatus: WorkflowStatus.PENDING,
         lastSubmittedAt: '2024-01-02T00:00:00.000Z',
         hasNextStepRecipientEmails: false,
+        isWorkflowActionsEligible: false,
       })
     })
 
@@ -440,6 +462,7 @@ describe('submission.utils', () => {
         workflowStatus: WorkflowStatus.APPROVED,
         lastSubmittedAt: submittedSteps[submittedSteps.length - 1].submittedAt,
         hasNextStepRecipientEmails: false,
+        isWorkflowActionsEligible: false,
       })
     })
 
@@ -466,6 +489,7 @@ describe('submission.utils', () => {
         workflowStatus: WorkflowStatus.REJECTED,
         lastSubmittedAt: '2024-01-02T00:00:00.000Z',
         hasNextStepRecipientEmails: false,
+        isWorkflowActionsEligible: false,
       })
     })
   })

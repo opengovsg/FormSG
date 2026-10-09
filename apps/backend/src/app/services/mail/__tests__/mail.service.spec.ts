@@ -1715,6 +1715,34 @@ describe('mail.service', () => {
     })
   })
 
+  describe('sendMrfApprovalEmail', () => {
+    const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
+    it('should carry the outcome in the subject and not in a heading', async () => {
+      sendMailSpy.mockResolvedValueOnce('mockedSuccessResponse')
+
+      const actualResult = await mailService.sendMrfApprovalEmail({
+        emails: [MOCK_VALID_EMAIL],
+        formId: 'mockFormId',
+        formTitle: 'mockFormTitle',
+        responseId: MOCK_RESPONSE_ID,
+        timestamp: 'Wed, 7 Oct 2026, 08:17:08 AM',
+        isRejected: false,
+        formQuestionAnswers: [{ question: 'Q1', answer: 'A1' }],
+        responseJson: '{"Q1":"A1"}',
+      })
+
+      expect(actualResult).toEqual(ok(true))
+      expect(sendMailSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          subject: `Approved - mockFormTitle (${MOCK_RESPONSE_ID})`,
+        }),
+      )
+      expect(sendMailSpy.mock.calls[0][0].html).not.toContain(
+        'has been approved',
+      )
+    })
+  })
+
   describe('sendMRFWorkflowStepEmail', () => {
     const MOCK_RESPONSE_ID = '666872d118b702c4f517ef9a'
     it('should send notification email successfully', async () => {

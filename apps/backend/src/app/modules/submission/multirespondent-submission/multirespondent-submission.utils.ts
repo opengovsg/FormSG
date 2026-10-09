@@ -67,6 +67,7 @@ import {
   ProcessedFieldResponse,
 } from '../submission.types'
 import { buildMrfMetadata } from '../submission.utils'
+import { projectSubmittedStepForAdmin } from '../submitted-step-visibility'
 
 import { MrfJwtPayload } from './multirespondent-submission.types'
 
@@ -109,7 +110,11 @@ export const createMultirespondentSubmissionDto = (
       workflow: submissionData.workflow,
       workflowStep: submissionData.workflowStep,
       submittedSteps: submissionData.submittedSteps,
+      created: submissionData.created,
     }),
+    submittedSteps: submissionData.submittedSteps?.map(
+      projectSubmittedStepForAdmin,
+    ),
   }
 }
 
@@ -134,6 +139,7 @@ export const createPublicMultirespondentSubmissionDto = (
     ),
     workflow: stripWorkflowEmails(submissionData.workflow),
     encryptedStepToken: undefined,
+    submittedSteps: undefined,
   }
 }
 

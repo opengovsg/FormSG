@@ -50,6 +50,12 @@ vi.mock('../ResponsesPage/storage', () => ({
   useStorageResponsesContext: () => ({ secretKey: 'mock-secret-key' }),
 }))
 
+let mockIsWorkflowActionsOn = false
+
+vi.mock('../workflowActions', () => ({
+  useWorkflowActionsGate: () => mockIsWorkflowActionsOn,
+}))
+
 vi.mock('./mutations', () => ({
   useMutateDownloadAttachments: () => ({
     downloadAttachmentMutation: { mutate: vi.fn(), isLoading: false },
@@ -107,6 +113,7 @@ vi.mock('./queries', () => ({
 describe('IndividualResponsePage', () => {
   afterEach(() => {
     mockResponseMode = FormResponseMode.Encrypt
+    mockIsWorkflowActionsOn = false
   })
 
   it('shows the payment section for a pre-migration encrypt submission on a multirespondent form', () => {
@@ -140,5 +147,33 @@ describe('IndividualResponsePage', () => {
 
     const payerEmail = screen.getByText(MOCK_PAYER_EMAIL)
     expect(isMaskedInDatadogReplay(payerEmail)).toBe(true)
+  })
+
+  it('shows the status tracking link as its URL without workflow actions', () => {
+    mockResponseMode = FormResponseMode.Multirespondent
+
+    render(<IndividualResponsePage />)
+
+    expect(
+      screen.getByRole('link', {
+        name: /\/mock-form-id\/status\/mock-submission-id/,
+      }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows the status tracking link as "View" with workflow actions', () => {
+    mockResponseMode = FormResponseMode.Multirespondent
+    mockIsWorkflowActionsOn = true
+
+    render(<IndividualResponsePage />)
+
+    expect(
+      screen.getByRole('link', {
+        name: 'features.adminForm.responses.individualResponse.statusTrackingLinkLabel',
+      }),
+    ).toHaveAttribute(
+      'title',
+      expect.stringContaining('/mock-form-id/status/mock-submission-id'),
+    )
   })
 })

@@ -286,15 +286,21 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
   mrfVersion: number
 
   mrfMeta: SubmissionMrfMetadata
+  submittedSteps?: AdminSubmittedStep[]
 }
 
 export type PublicMultirespondentSubmissionDto = Omit<
   MultirespondentSubmissionDto,
-  'workflow' | 'form_fields' | 'encryptedStepToken' | 'payment'
+  | 'workflow'
+  | 'form_fields'
+  | 'encryptedStepToken'
+  | 'payment'
+  | 'submittedSteps'
 > & {
   form_fields: StrippedFormFieldDto[]
   workflow: StrippedFormWorkflowDto
   encryptedStepToken: undefined
+  submittedSteps?: undefined
 }
 
 export type SubmissionDto =
@@ -338,6 +344,7 @@ export const MultirespondentSubmissionStreamDto =
       workflowStatus: z.nativeEnum(WorkflowStatus).optional(),
       lastSubmittedAt: z.string().optional(),
       hasNextStepRecipientEmails: z.boolean(),
+      isWorkflowActionsEligible: z.boolean(),
     }),
   })
 
@@ -366,6 +373,7 @@ export type SubmissionMrfMetadata =
       workflowStatus: WorkflowStatus | undefined // `undefined` is due to submissions before this PR not storing this value
       lastSubmittedAt: string | undefined
       hasNextStepRecipientEmails: boolean
+      isWorkflowActionsEligible: boolean
     }
   | undefined
 
