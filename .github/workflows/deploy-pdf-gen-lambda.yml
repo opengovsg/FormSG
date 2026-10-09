@@ -44,7 +44,7 @@ jobs:
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@d78e1a4a9656d3b223e59b80676a797f20093133 # v2
       - name: Install pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           version: 10.30.3
       - name: Use Node.js
