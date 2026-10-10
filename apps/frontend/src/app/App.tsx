@@ -1,6 +1,6 @@
 import { Inspector, InspectParams } from 'react-dev-inspector'
 import { HelmetProvider } from 'react-helmet-async'
-import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider, setLogger } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { ChakraProvider } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
@@ -14,6 +14,21 @@ import { TurnstileChallengeProvider } from '~features/turnstile/TurnstileChallen
 
 import { AppHelmet } from './AppHelmet'
 import { AppRouter } from './AppRouter'
+
+// react-query logs every failed query via console.error, which Datadog RUM
+// records as an error. 4xx responses (e.g. 403 when an admin opens a form
+// they have no access to) are expected client errors, so log them as warnings.
+setLogger({
+  log: console.log,
+  warn: console.warn,
+  error: (error) => {
+    if (error instanceof HttpError && String(error.code).startsWith('4')) {
+      console.warn(error)
+      return
+    }
+    console.error(error)
+  },
+})
 
 // Create a client
 const queryClient = new QueryClient({
