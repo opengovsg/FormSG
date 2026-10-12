@@ -11,12 +11,14 @@ import { FormSubmitterIdCollectionToggle } from './FormNricCollectionToggle'
 import { FormSingleSubmissionToggle } from './FormSingleSubmissionToggle'
 import { FormWhitelistAttachmentField } from './FormWhitelistAttachmentField'
 import { SingpassAuthOptionsRadio } from './SingpassAuthOptionsRadio'
+import { SubmitterIdCollectionSetting } from './SubmitterIdCollectionSetting'
 
 export interface AuthSettingsSingpassSectionProps {
   settings: FormSettings
   isFormPublic: boolean
   hasLoginFields: boolean
   hasIdentityFields: boolean
+  nextQuestionNumber?: number
 }
 
 export const AuthSettingsSingpassSection = ({
@@ -24,6 +26,7 @@ export const AuthSettingsSingpassSection = ({
   isFormPublic,
   hasLoginFields,
   hasIdentityFields,
+  nextQuestionNumber,
 }: AuthSettingsSingpassSectionProps): JSX.Element => {
   const { t } = useTranslation('translation', {
     keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
@@ -53,7 +56,13 @@ export const AuthSettingsSingpassSection = ({
       {!usesIdentityFields && (
         <>
           <Divider my="2.5rem" />
-          {isToggleLockedByIdentityFields ? (
+          {isNricFieldEnabled && isEncryptOrMultirespondentMode ? (
+            <SubmitterIdCollectionSetting
+              settings={settings}
+              isFormPublic={isFormPublic}
+              nextQuestionNumber={nextQuestionNumber}
+            />
+          ) : isToggleLockedByIdentityFields ? (
             <Stack spacing="1rem">
               <FormSubmitterIdCollectionToggle settings={settings} isDisabled />
               <InlineMessage>{t('removeIdentityFieldsFirst')}</InlineMessage>

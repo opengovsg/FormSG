@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQueryClient } from 'react-query'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { formatInTimeZone } from 'date-fns-tz'
 
 import { DateString } from 'formsg-shared/types'
@@ -17,6 +17,7 @@ import { PAYMENT_DELETE_DEFAULT } from 'formsg-shared/utils/payments'
 
 import { ApiError } from '~typings/core'
 
+import { ADMINFORM_ROUTE } from '~constants/routes'
 import { useToast } from '~hooks/useToast'
 import { convertUnicodeLocaleToLanguage } from '~utils/multiLanguage'
 import { formatOrdinal } from '~utils/stringFormat'
@@ -25,9 +26,11 @@ import { useAdminFeedbackStore } from '~features/workspace/components/AdminFeedb
 
 import { updateFormPayments } from '../common/AdminFormPageService'
 import { adminFormKeys } from '../common/queries'
+import { FOCUS_CONVERTED_IDENTITY_STATE } from '../create/builder-and-design/useFocusConvertedIdentityField'
 
 import { adminFormSettingsKeys } from './queries'
 import {
+  convertSubmitterIdCollection,
   createStripeAccount,
   MrfEmailNotificationSettings,
   unlinkStripeAccount,
@@ -60,6 +63,7 @@ import {
 export const useMutateFormSettings = () => {
   const { t } = useTranslation()
   const { formId } = useParams()
+  const navigate = useNavigate()
   if (!formId) {
     throw new Error(t('features.adminForm.settings.mutations.missingFormId'))
   }
@@ -506,6 +510,26 @@ export const useMutateFormSettings = () => {
     },
   )
 
+  const mutateConvertSubmitterIdCollection = useMutation(
+    () => convertSubmitterIdCollection(formId),
+    {
+      onSuccess: (newData) => {
+        handleSuccess({
+          newData,
+          toastDescription: t(
+            'features.adminForm.sidebar.fields.loginIdentity.convertedToast',
+          ),
+        })
+        // Convert also changes the form fields and MRF Step 1.
+        void queryClient.invalidateQueries(adminFormKeys.id(formId))
+        navigate(`${ADMINFORM_ROUTE}/${formId}`, {
+          state: FOCUS_CONVERTED_IDENTITY_STATE,
+        })
+      },
+      onError: handleError,
+    },
+  )
+
   const mutateIsSingleSubmission = useMutation(
     (nextIsSingleSubmissionPerNricEnabled: boolean) => {
       return updateIsSingleSubmission(
@@ -647,6 +671,7 @@ export const useMutateFormSettings = () => {
     mutateFormTitle,
     mutateFormAuthType,
     mutateIsSubmitterIdCollectionEnabled,
+    mutateConvertSubmitterIdCollection,
     mutateIsSingleSubmission,
     mutateFormWhitelistSetting,
     mutateFormEsrvcId,

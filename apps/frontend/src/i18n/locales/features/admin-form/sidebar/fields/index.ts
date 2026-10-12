@@ -2,12 +2,16 @@ export * from './en-sg'
 
 export interface Fields {
   loginIdentity: {
+    convertedCorppassTitle: string
+    convertedMyInfoTitle: string
+    gotIt: string
     entities: string
     corppassUsers: string
     sectionLabel: string
     corppassPanelInfo: string
     loginMissing: string
     convertFirst: string
+    convertedToast: string
     details: {
       uinfin: string
       uen: string
