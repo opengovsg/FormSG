@@ -14,6 +14,7 @@ import { MAX_SAVED_VIEWS } from 'formsg-shared/constants/form'
 import {
   AdminDashboardFormMetaDto,
   BasicField,
+  CorppassAttribute,
   CustomFormLogo,
   DropdownFieldBase,
   DuplicateFormBodyDto,
@@ -1790,6 +1791,24 @@ describe('admin-form.service', () => {
       })
 
     beforeEach(() => jest.clearAllMocks())
+
+    it('allows closing a form even if its stored identity configuration is invalid', async () => {
+      const result = await AdminFormService.updateFormSettings(
+        {
+          ...MOCK_ENCRYPT_FORM,
+          authType: FormAuthType.NIL,
+          form_fields: [
+            {
+              fieldType: BasicField.Nric,
+              myInfo: { attr: MyInfoAttribute.UinFin },
+            },
+          ],
+        } as unknown as IPopulatedForm,
+        { status: FormStatus.Private },
+      )
+      expect(result.isOk()).toBe(true)
+      expect(ENCRYPT_UPDATE_SPY).toHaveBeenCalled()
+    })
 
     it('should return updated form settings when successfully updating email form settings', async () => {
       // Arrange
@@ -4702,6 +4721,70 @@ describe('admin-form.service', () => {
       )
     },
   )
+
+  describe('identity fields in workflow updates', () => {
+    const identityId = new ObjectId().toHexString()
+    const regularId = new ObjectId().toHexString()
+    const firstStep = {
+      workflow_type: WorkflowType.Static,
+      emails: [],
+      edit: [identityId, regularId],
+    }
+    const nextStep = {
+      workflow_type: WorkflowType.Static,
+      emails: ['next@example.com'],
+      edit: [regularId],
+    }
+    const makeForm = (status: FormStatus) =>
+      ({
+        _id: new ObjectId(),
+        authType: FormAuthType.CP,
+        responseMode: FormResponseMode.Multirespondent,
+        status,
+        webhook: { webhookFormat: 'v4' },
+        form_fields: [
+          {
+            _id: identityId,
+            fieldType: BasicField.Uen,
+            corppass: { attr: CorppassAttribute.Uen },
+          },
+          { _id: regularId, fieldType: BasicField.ShortText },
+        ],
+        workflow: [firstStep, nextStep],
+      }) as unknown as IPopulatedForm
+
+    it.each([FormStatus.Public, FormStatus.Private])(
+      'allows removing an identity from Step 1 on a %s form',
+      async (status) => {
+        const write = jest
+          .spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+          // @ts-ignore
+          .mockReturnValue({
+            exec: jest.fn().mockResolvedValue({ _id: 'form', workflow: [] }),
+          })
+        const result = await AdminFormService.updateFormWorkflowStep(
+          makeForm(status),
+          0,
+          { ...firstStep, edit: [regularId] } as any,
+        )
+        expect(result.isOk()).toBe(true)
+        expect(write).toHaveBeenCalled()
+      },
+    )
+
+    it('rejects assigning an identity to a later step', async () => {
+      const write = jest.spyOn(MultirespondentFormModel, 'findOneAndUpdate')
+      const result = await AdminFormService.updateFormWorkflowStep(
+        makeForm(FormStatus.Private),
+        1,
+        { ...nextStep, edit: [identityId, regularId] } as any,
+      )
+      expect(result._unsafeUnwrapErr().message).toContain(
+        'UEN fields can only be filled in by Step 1.',
+      )
+      expect(write).not.toHaveBeenCalled()
+    })
+  })
 
   describe('workflow completeness', () => {
     const FIELD_ID = new ObjectId().toHexString()
