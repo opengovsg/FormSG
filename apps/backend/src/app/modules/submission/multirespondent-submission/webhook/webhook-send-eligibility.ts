@@ -20,10 +20,9 @@ export const shouldSendMrfWebhook = ({
   isMrfWebhooksEnabled: boolean
   workflowStepCount: number
 }): boolean => {
-  if (webhookConsumerType === 'plumber') {
-    return true
-  }
-  if (!isMrfWebhooksEnabled) {
+  // Plumber bypasses the rollout flag only; the V1 step-count gate below
+  // applies to every consumer, since V1 cannot deliver past the first step.
+  if (webhookConsumerType !== 'plumber' && !isMrfWebhooksEnabled) {
     return false
   }
 
