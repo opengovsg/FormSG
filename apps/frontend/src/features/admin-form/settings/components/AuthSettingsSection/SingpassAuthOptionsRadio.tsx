@@ -5,12 +5,11 @@ import {
   useCallback,
   useState,
 } from 'react'
-import { Box, Flex, Spacer } from '@chakra-ui/react'
+import { Box } from '@chakra-ui/react'
 
 import { FormAuthType, FormSettings, FormStatus } from 'formsg-shared/types'
 
 import Radio from '~components/Radio'
-import { Tag } from '~components/Tag'
 
 import { useMutateFormSettings } from '../../mutations'
 import { isEsrvcidRequired } from '../utils'
@@ -89,17 +88,7 @@ export const SingpassAuthOptionsRadio = ({
         <Fragment key={authType}>
           <Box onClick={handleOptionClick(authType)}>
             <Radio value={authType} isDisabled={checkIsDisabled()}>
-              <Flex>
-                {text}
-                {authType === FormAuthType.MyInfo ? (
-                  <>
-                    <Spacer w="16px" />
-                    <Tag size="sm" variant="subtle">
-                      Free
-                    </Tag>
-                  </>
-                ) : null}
-              </Flex>
+              {text}
             </Radio>
           </Box>
           {isEsrvcidRequired(authType) && authType === settings.authType ? (
