@@ -6988,6 +6988,9 @@ describe('admin-form.controller', () => {
       MockAdminFormService.createFormField.mockReturnValue(
         okAsync(generateDefaultField(BasicField.Nric)),
       )
+      MockAdminFormService.convertSubmitterIdCollection.mockReturnValue(
+        okAsync({ isSubmitterIdCollectionEnabled: false } as FormSettings),
+      )
     })
 
     describe.each<LoginIdentityAttribute>([
@@ -7032,6 +7035,26 @@ describe('admin-form.controller', () => {
         undefined,
       )
     })
+
+    it.each([undefined, false, true])(
+      'gates the conversion endpoint, flag=%s',
+      async (enabled) => {
+        const req = createRequest(
+          createLoginIdentityField(MyInfoAttribute.UinFin),
+          enabled,
+        )
+        const res = expressHandler.mockResponse()
+        await AdminFormController.handleConvertSubmitterIdCollection(
+          req,
+          res,
+          jest.fn(),
+        )
+        expect(res.status).toHaveBeenCalledWith(enabled ? 200 : 403)
+        expect(
+          MockAdminFormService.convertSubmitterIdCollection.mock.calls,
+        ).toEqual(enabled ? [[form]] : [])
+      },
+    )
   })
 
   describe('_handleCreateFormField', () => {

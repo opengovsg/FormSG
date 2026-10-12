@@ -1561,6 +1561,55 @@ const isNricFieldEnabledFor = (
   return growthbook?.isOn(featureFlags.isNricFieldEnabled) ?? false
 }
 
+/**
+ * Handler for POST /forms/:formId/settings/submitter-id-collection/convert.
+ * Converts the Collect NRIC/FIN/UENs setting into Step 1 login identity fields.
+ * @security session
+ *
+ * @returns 200 with updated form settings
+ * @returns 400 when the form has nothing to convert
+ * @returns 403 when write permission or the NRIC field flag is missing
+ * @returns 409 when the form is open to responses
+ * @returns 404 when form cannot be found
+ * @returns 410 when the form is archived
+ * @returns 422 when the converted form fails validation
+ * @returns 500 when database error occurs
+ */
+export const handleConvertSubmitterIdCollection: ControllerHandler<
+  { formId: string },
+  FormSettings | ErrorDto
+> = (req, res) => {
+  const { formId } = req.params
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      isNricFieldEnabledFor(req.growthbook, user, formId)
+        ? AuthService.getFormAfterPermissionChecks({
+            user,
+            formId,
+            level: PermissionLevel.Write,
+          })
+        : errAsync(new ForbiddenFormError(LOGIN_IDENTITY_FIELDS_DISABLED)),
+    )
+    .andThen(AdminFormService.convertSubmitterIdCollection)
+    .map((updatedSettings) => res.status(StatusCodes.OK).json(updatedSettings))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when converting submitter ID collection',
+        meta: {
+          action: 'handleConvertSubmitterIdCollection',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
 export const _handleUpdateWebhookSettings: ControllerHandler<
   { formId: string },
   FormWebhookSettings | ErrorDto,

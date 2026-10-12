@@ -4929,3 +4929,64 @@ describe('admin-form.service', () => {
     })
   })
 })
+
+describe('convertSubmitterIdCollection', () => {
+  const makeForm = (overrides: Record<string, unknown> = {}) =>
+    ({
+      status: FormStatus.Private,
+      authType: FormAuthType.CP,
+      responseMode: FormResponseMode.Multirespondent,
+      isSubmitterIdCollectionEnabled: true,
+      ...overrides,
+    }) as unknown as IPopulatedForm
+  it.each([
+    { status: FormStatus.Public },
+    { isSubmitterIdCollectionEnabled: false },
+    { authType: FormAuthType.NIL },
+  ])('rejects unavailable conversion %j without writing', async (overrides) => {
+    const insertFormFields = jest.fn()
+    const result = await AdminFormService.convertSubmitterIdCollection(
+      makeForm({ ...overrides, insertFormFields }),
+    )
+    expect(result.isErr()).toBe(true)
+    expect(insertFormFields).not.toHaveBeenCalled()
+  })
+  it('assigns converted fields to an existing MRF Step 1', async () => {
+    const insertFormFields = jest
+      .fn()
+      .mockResolvedValue({ getSettings: () => ({}) })
+    const form = makeForm({
+      insertFormFields,
+      workflow: [{ edit: ['existing'] }],
+    })
+    await AdminFormService.convertSubmitterIdCollection(form)
+    const [[newFields]] = insertFormFields.mock.calls
+    expect(
+      (form as unknown as { workflow: { edit: unknown[] }[] }).workflow[0].edit,
+    ).toEqual([
+      'existing',
+      ...newFields.map(({ _id }: { _id: unknown }) => String(_id)),
+    ])
+  })
+  it('converts both Corppass identities in one append operation', async () => {
+    const settings = { isSubmitterIdCollectionEnabled: false }
+    const insertFormFields = jest
+      .fn()
+      .mockResolvedValue({ getSettings: () => settings })
+    const form = makeForm({ insertFormFields })
+    const result = await AdminFormService.convertSubmitterIdCollection(form)
+    expect(result._unsafeUnwrap()).toEqual(settings)
+    expect(form.isSubmitterIdCollectionEnabled).toBe(false)
+    // NRIC/FIN comes first, as in the builder's Corppass panel.
+    expect(insertFormFields).toHaveBeenCalledWith([
+      expect.objectContaining({
+        fieldType: BasicField.Nric,
+        corppass: { attr: CorppassAttribute.Uid },
+      }),
+      expect.objectContaining({
+        fieldType: BasicField.Uen,
+        corppass: { attr: CorppassAttribute.Uen },
+      }),
+    ])
+  })
+})
