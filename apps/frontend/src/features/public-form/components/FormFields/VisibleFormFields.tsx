@@ -6,6 +6,10 @@ import {
   LogicDto,
   StrippedFormWorkflowStepDto,
 } from 'formsg-shared/types/form'
+import {
+  isLoginIdentityField,
+  isStepOneOnlyField,
+} from 'formsg-shared/utils/login-identity'
 
 import { FormFieldValues } from '~templates/Field'
 
@@ -13,7 +17,6 @@ import { FormFieldWithQuestionNo } from '~features/form/types'
 import { augmentFieldWithQuestionNo } from '~features/form/utils'
 import { isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 import { getVisibleFieldIds } from '~features/logic/utils'
-import { isMyInfo } from '~features/myinfo/utils'
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
 import { FieldFactory } from './FieldFactory'
@@ -78,10 +81,12 @@ export const VisibleFormFields = ({
           colorTheme={colorTheme}
           field={field}
           disableRequiredValidation={
-            !isFieldEnabledByMrfWorkflow(workflowStep, field)
+            !isFieldEnabledByMrfWorkflow(workflowStep, field) ||
+            isLoginIdentityField(field)
           }
           isHighContrast={
-            !isFieldEnabledByMrfWorkflow(workflowStep, field) || isMyInfo(field)
+            !isFieldEnabledByMrfWorkflow(workflowStep, field) ||
+            isStepOneOnlyField(field)
           }
           key={field._id}
           prefill={fieldPrefillMap[field._id]}
