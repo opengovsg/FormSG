@@ -947,9 +947,6 @@ importers:
       react-csv:
         specifier: ^2.2.2
         version: 2.2.2
-      react-dev-inspector:
-        specifier: ^2.0.1
-        version: 2.0.1(@types/react@18.3.12)(eslint@8.57.1)(react@18.3.1)(typescript@5.9.3)(webpack@4.47.0)
       react-dom:
         specifier: ^18.3.0
         version: 18.3.1(react@18.3.1)
@@ -1218,6 +1215,9 @@ importers:
       prettier:
         specifier: ^3.2.5
         version: 3.8.1
+      react-dev-inspector:
+        specifier: ^2.0.1
+        version: 2.0.1(@types/react@18.3.12)(eslint@8.57.1)(react@18.3.1)(typescript@5.9.3)(webpack@4.47.0)
       resize-observer-polyfill:
         specifier: ^1.5.1
         version: 1.5.1
