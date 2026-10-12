@@ -86,9 +86,10 @@ const reconstructNonPlumberPayload = (
  *
  * | Consumer         | webhookFormat    | webhookContentFormat |
  * |------------------|------------------|------------|
- * | plumber          | any (ignored)    | v4         |
- * | generic / zapier | unset or 'v1'    | v1         |
- * | generic / zapier | 'v4'             | v4         |
+ * | any              | 'v1'             | v1         |
+ * | any              | 'v4'             | v4         |
+ * | plumber          | unset            | v4         |
+ * | generic / zapier | unset            | v1         |
  */
 const ROWS: {
   name: string
@@ -103,13 +104,13 @@ const ROWS: {
     expectedContentFormat: 'v4',
   },
   {
-    name: 'plumber, v1 (ignored)',
+    name: 'plumber, v1',
     webhookUrl: PLUMBER_URL,
     webhookFormat: 'v1',
-    expectedContentFormat: 'v4',
+    expectedContentFormat: 'v1',
   },
   {
-    name: 'plumber, v4 (ignored)',
+    name: 'plumber, v4',
     webhookUrl: PLUMBER_URL,
     webhookFormat: 'v4',
     expectedContentFormat: 'v4',

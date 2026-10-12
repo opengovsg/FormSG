@@ -108,7 +108,8 @@ export type FormWebhook = {
   isRetryEnabled: boolean
   /**
    * MRF only. Present iff set by the admin, or pinned when a generic URL was first set.
-   * Plumber always receives V4; generic consumers resolve an absent format to V1.
+   * When set, it is always respected; an absent format resolves to V4 for
+   * Plumber and V1 for generic consumers.
    */
   webhookFormat?: FormWebhookFormat
 }
