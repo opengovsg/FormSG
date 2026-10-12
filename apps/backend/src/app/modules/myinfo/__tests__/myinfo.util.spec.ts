@@ -12,6 +12,7 @@ import { PossiblyPrefilledField } from 'src/types/field/myinfoField'
 import { ProcessedChildrenResponse } from '../../submission/submission.types'
 import {
   compareHashedValues,
+  getMyInfoAttr,
   getMyInfoChildHashKey,
   hashFieldValues,
 } from '../myinfo.util'
@@ -262,4 +263,12 @@ describe('myinfo.util', () => {
       expect(results.size).toBe(0)
     })
   })
+})
+
+it('does not request the login NRIC/FIN from MyInfo', () => {
+  const field = {
+    fieldType: BasicField.Nric,
+    myInfo: { attr: MyInfoAttribute.UinFin },
+  } as PossiblyPrefilledField
+  expect(getMyInfoAttr(field)).toBeUndefined()
 })
