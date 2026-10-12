@@ -15,10 +15,6 @@ import {
   Text,
 } from '@chakra-ui/react'
 
-import Spinner from '~components/Spinner'
-
-import { useAdminFormSettings } from '~features/admin-form/settings/queries'
-
 // Ported from opengovsg/suite
 // https://github.com/opengovsg/suite/blob/c4a665c9232ff42823da898b0dd9814f667c12cc/apps/suite/src/app/apps/product-grid.tsx#L9
 /** A launcher tile, fully resolved on the server (href already carries `?iss=`). */
@@ -238,15 +234,15 @@ export const LauncherApps = ({
   )
 }
 
-const generatePlumberTile = (
-  webhookUrl: string,
-  id: string,
-  name: string,
-): LauncherTile => {
+const generateAiEditorPrompt = (id: string) => {
+  return `I would like to connect my FormSG form with form id: ${id}. Suggest workflows I can build with this form.`
+}
+
+const generatePlumberTile = (id: string): LauncherTile => {
   const SSO_BASE_URL = 'https://plumber.gov.sg/login/sso'
   // Encode the redirect as a single param so its own `&`s don't leak into the
   // SSO URL's query string.
-  const redirect = `/form?${new URLSearchParams({ id, webhook: webhookUrl, name })}`
+  const redirect = `/editor/ai?${new URLSearchParams({ from: 'form', start: generateAiEditorPrompt(id) })}`
 
   const href = new URL(SSO_BASE_URL)
   href.searchParams.set('iss', 'https://one.gov.sg/api/auth')
@@ -263,21 +259,8 @@ const generatePlumberTile = (
 
 export const CreatePageIntegrationTab = (): JSX.Element => {
   const { formId } = useParams()
-  const { data: settings, isLoading } = useAdminFormSettings()
 
-  if (isLoading) {
-    return (
-      <Flex flex={1} justify="center" align="center" bg="neutral.100">
-        <Spinner fontSize="2rem" />
-      </Flex>
-    )
-  }
-
-  const plumberTile = generatePlumberTile(
-    settings?.webhook.url ?? '',
-    formId ?? '',
-    settings?.title ?? '',
-  )
+  const plumberTile = generatePlumberTile(formId ?? '')
 
   return (
     <Box
