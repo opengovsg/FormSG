@@ -9,6 +9,11 @@ import {
 
 import { FormResponseMode } from 'formsg-shared/types'
 import { AllowedMyInfoFieldOption, BasicField } from 'formsg-shared/types/field'
+import {
+  createLoginIdentityField,
+  LOGIN_IDENTITY_LABELS,
+  LoginIdentityAttribute,
+} from 'formsg-shared/utils/login-identity'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import Badge from '~components/Badge'
@@ -110,6 +115,55 @@ export const DraggableBasicFieldListOption = ({
           </>
         )
       }}
+    </Draggable>
+  )
+}
+
+interface DraggableLoginIdentityFieldOptionProps extends Omit<
+  FieldOptionProps,
+  'isActive'
+> {
+  index: number
+  attr: LoginIdentityAttribute
+}
+
+export const DraggableLoginIdentityFieldListOption = ({
+  attr,
+  index,
+  isDisabled,
+  ...props
+}: DraggableLoginIdentityFieldOptionProps): JSX.Element => {
+  const isMobile = useIsMobile()
+
+  return (
+    <Draggable
+      index={index}
+      isDragDisabled={isDisabled || isMobile}
+      disableInteractiveElementBlocking
+      // Basic options already use the field types as their ids.
+      draggableId={`login-identity-${attr}`}
+    >
+      {(provided, snapshot) => (
+        <>
+          <LoginIdentityFieldOption
+            attr={attr}
+            isDisabled={isDisabled}
+            {...props}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            style={getDraggableAnimationProps(provided, snapshot)}
+            ref={provided.innerRef}
+          />
+          {snapshot.isDragging && (
+            <LoginIdentityFieldOption
+              attr={attr}
+              isActive={snapshot.isDragging}
+              style={{ transform: 'none !important' }}
+              opacity={0.5}
+            />
+          )}
+        </>
+      )}
     </Draggable>
   )
 }
@@ -230,6 +284,39 @@ export const MyInfoFieldOption = forwardRef<MyInfoFieldOptionProps, 'button'>(
     )
   },
 )
+
+interface LoginIdentityFieldOptionProps extends FieldOptionProps {
+  attr: LoginIdentityAttribute
+}
+
+export const LoginIdentityFieldOption = forwardRef<
+  LoginIdentityFieldOptionProps,
+  'button'
+>(({ attr, isDisabled, ...props }, ref) => {
+  const { data: form } = useCreateTabForm()
+  const numFields = form?.form_fields?.length ?? 0
+
+  const newFieldMeta = useMemo(() => createLoginIdentityField(attr), [attr])
+  const meta = BASICFIELD_TO_DRAWER_META[newFieldMeta.fieldType]
+
+  const updateCreateState = useFieldBuilderStore(updateCreateStateSelector)
+
+  const handleClick = useCallback(() => {
+    if (!isDisabled) updateCreateState(newFieldMeta, numFields)
+  }, [newFieldMeta, numFields, updateCreateState, isDisabled])
+
+  return (
+    <FieldListOption
+      {...props}
+      isDisabled={isDisabled}
+      onClick={handleClick}
+      ref={ref}
+    >
+      <Icon fontSize="1.5rem" as={meta.icon} />
+      <Text textStyle="body-1">{LOGIN_IDENTITY_LABELS[attr]}</Text>
+    </FieldListOption>
+  )
+})
 
 export const FieldListOption = forwardRef<FieldOptionProps, 'button'>(
   ({ isDisabled, isActive, children, ...props }, ref) => {

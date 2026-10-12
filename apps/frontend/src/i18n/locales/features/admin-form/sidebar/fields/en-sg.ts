@@ -1,6 +1,24 @@
 import { Fields } from '.'
 
 export const enSG: Fields = {
+  loginIdentity: {
+    entities: 'Singapore-registered entities',
+    corppassUsers: 'Corppass users',
+    sectionLabel: 'Identity',
+    corppassPanelInfo:
+      "These fields fill in from the respondent's Corppass login.",
+    loginMissing:
+      "Enable {loginName} in <settingsLink>Settings</settingsLink> to fill these fields from the respondent's login.",
+    convertFirst:
+      'This form collects NRIC/FIN/UENs through <settingsLink>Singpass settings</settingsLink>. Convert that setting to add these fields.',
+    // Keyed by login identity attribute.
+    details: {
+      uinfin:
+        'The NRIC/FIN of the respondent. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
+      uen: 'The UEN of the organisation the respondent represents.',
+      uid: "The NRIC/FIN or foreign ID of the respondent, who logs in on behalf of the organisation. This is different from the organisation's UEN.",
+    },
+  },
   builder: {
     title: 'Fields',
     createField: 'Create field',
@@ -9,6 +27,7 @@ export const enSG: Fields = {
     tabs: {
       basic: 'Basic',
       myInfo: 'MyInfo',
+      corppass: 'Corppass',
       payments: 'Payments',
     },
     image: 'Image',

@@ -12,7 +12,8 @@ import {
   MyInfoChildAttributes,
   ShortTextFieldBase,
 } from 'formsg-shared/types/field'
-import { FormResponseMode } from 'formsg-shared/types/form'
+import { FormAuthType, FormResponseMode } from 'formsg-shared/types/form'
+import { getLoginIdentityAttrsForAuthType } from 'formsg-shared/utils/login-identity'
 
 import { MyInfoFieldMeta } from '~features/myinfo/types'
 
@@ -135,10 +136,12 @@ export const CREATE_MYINFO_CHILDREN_DROP_ID = 'create-myinfo-children'
 export const FIELD_LIST_DROP_ID = 'formFieldList'
 export const PENDING_CREATE_FIELD_ID = 'FIELD-PENDING-CREATION'
 
+// Stable tab keys, not positions: the drawer maps each to its visible index.
 export enum FieldListTabIndex {
   Basic = 0,
   MyInfo,
   Payments,
+  Corppass,
 }
 
 // Name is always collected, so it is not offered as a choice. Labels reuse the
@@ -236,3 +239,12 @@ export const CREATE_FIELD_DATES_AND_NUMBER_DROP_ID =
   'create-fields-field-dates-and-number'
 export const CREATE_FIELD_PERSONAL_DROP_ID = 'create-fields-field-personal'
 export const CREATE_FIELD_OTHERS_DROP_ID = 'create-fields-field-others'
+// The identities each login fills. Drop handlers read the dragged identity by
+// its index in these lists.
+export const CREATE_MYINFO_IDENTITY_FIELDS_ORDERED =
+  getLoginIdentityAttrsForAuthType(FormAuthType.MyInfo)
+export const CREATE_CORPPASS_IDENTITY_FIELDS_ORDERED =
+  getLoginIdentityAttrsForAuthType(FormAuthType.CP)
+
+export const CREATE_MYINFO_IDENTITY_DROP_ID = 'create-myinfo-identity'
+export const CREATE_CORPPASS_IDENTITY_DROP_ID = 'create-corppass-identity'
