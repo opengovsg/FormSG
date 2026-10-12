@@ -11,6 +11,10 @@ import { getFieldCreationMeta } from '../utils/fieldCreation'
 import { BuilderAndDesignContent } from './BuilderAndDesignContent'
 
 vi.mock('./FormBuilder', () => ({ FormBuilder: () => null }))
+// Focusing a converted identity field needs the router; not under test here.
+vi.mock('../useFocusConvertedIdentityField', () => ({
+  useFocusConvertedIdentityField: () => undefined,
+}))
 
 vi.mock('~features/admin-form/settings/queries', () => ({
   useAdminFormSettings: () => ({ data: undefined }),
