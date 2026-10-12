@@ -1,15 +1,12 @@
 import { useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
 import { Box } from '@chakra-ui/react'
 
 import {
   FormAuthType,
-  FormResponseMode,
   FormSettings,
   FormStatus,
 } from 'formsg-shared/types/form'
-
-import InlineMessage from '~components/InlineMessage'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
 import { isMyInfo } from '~features/myinfo/utils'
@@ -26,13 +23,18 @@ interface AuthSettingsSectionProps {
 export const AuthSettingsSection = ({
   settings,
 }: AuthSettingsSectionProps): JSX.Element => {
-  const { t } = useTranslation()
   const { data: form } = useAdminForm()
 
   const containsMyInfoFields = useMemo(
     () => form?.form_fields.some(isMyInfo) ?? false,
     [form?.form_fields],
   )
+  const containsLoginIdentityFields = useMemo(
+    () => form?.form_fields.some(isLoginIdentityField) ?? false,
+    [form?.form_fields],
+  )
+  // Both kinds of fields depend on the current login, so lock it while they exist.
+  const hasLoginFields = containsMyInfoFields || containsLoginIdentityFields
 
   const isFormPublic = settings.status === FormStatus.Public
 
@@ -41,18 +43,20 @@ export const AuthSettingsSection = ({
       <AuthSettingsDisabledExplanationText
         isFormPublic={isFormPublic}
         containsMyInfoFields={containsMyInfoFields}
+        containsLoginIdentityFields={containsLoginIdentityFields}
         formResponseMode={form?.responseMode}
       />
       <AuthSettingsDescriptionText />
       <FormSingpassAuthToggle
         settings={settings!}
-        isDisabled={isFormPublic || containsMyInfoFields}
+        isDisabled={isFormPublic || hasLoginFields}
       />
       {settings.authType !== FormAuthType.NIL ? (
         <AuthSettingsSingpassSection
           settings={settings}
           isFormPublic={isFormPublic}
-          containsMyInfoFields={containsMyInfoFields}
+          hasLoginFields={hasLoginFields}
+          hasIdentityFields={containsLoginIdentityFields}
         />
       ) : null}
     </Box>

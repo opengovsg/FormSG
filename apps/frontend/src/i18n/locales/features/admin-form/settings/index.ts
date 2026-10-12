@@ -10,6 +10,12 @@ export type HasTitle = {
   title: string
 }
 
+export interface SingpassSettingsStrings extends HasTitle {
+  submitterIdCollection: {
+    loginFieldsLockAuth: string
+  }
+}
+
 export interface SettingsTabsStrings {
   newBadge: string
   multiLanguage: string
@@ -106,7 +112,7 @@ export interface SettingsMutationsStrings {
 
 export interface Settings {
   general: General
-  singpass: HasTitle
+  singpass: SingpassSettingsStrings
   tabs: SettingsTabsStrings
   secretKeyModal: SecretKeyModalStrings
   secretKeyVerification: SecretKeyVerificationStrings

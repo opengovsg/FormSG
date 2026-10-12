@@ -8,6 +8,10 @@ export const enSG = {
   general,
   singpass: {
     title: 'Singpass',
+    submitterIdCollection: {
+      loginFieldsLockAuth:
+        'To change your Singpass authentication mode, remove the existing login-filled fields.',
+    },
   },
   tabs: {
     newBadge: 'New',

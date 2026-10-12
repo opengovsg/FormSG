@@ -1,5 +1,7 @@
 import { Divider } from '@chakra-ui/react'
+import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
 
 import { FormSubmitterIdCollectionToggle } from './FormNricCollectionToggle'
@@ -10,20 +12,29 @@ import { SingpassAuthOptionsRadio } from './SingpassAuthOptionsRadio'
 export interface AuthSettingsSingpassSectionProps {
   settings: FormSettings
   isFormPublic: boolean
-  containsMyInfoFields: boolean
+  hasLoginFields: boolean
+  hasIdentityFields: boolean
 }
 
 export const AuthSettingsSingpassSection = ({
   settings,
   isFormPublic,
-  containsMyInfoFields,
+  hasLoginFields,
+  hasIdentityFields,
 }: AuthSettingsSingpassSectionProps): JSX.Element => {
+  const isNricFieldEnabled = useFeatureIsOn(featureFlags.isNricFieldEnabled)
   const isSingpassSettingsDisabled = isFormPublic
   const isSinglepassAuthOptionsDisabled =
-    isSingpassSettingsDisabled || containsMyInfoFields
+    isSingpassSettingsDisabled || hasLoginFields
   const isEncryptOrMultirespondentMode =
     settings.responseMode === FormResponseMode.Encrypt ||
     settings.responseMode === FormResponseMode.Multirespondent
+  // Keep converted forms usable if rollout is paused. Unconverted forms keep
+  // the legacy toggle until the flag enables identity fields.
+  const usesIdentityFields =
+    isEncryptOrMultirespondentMode &&
+    !settings.isSubmitterIdCollectionEnabled &&
+    (isNricFieldEnabled || hasIdentityFields)
 
   return (
     <>
@@ -31,11 +42,15 @@ export const AuthSettingsSingpassSection = ({
         settings={settings}
         isDisabled={isSinglepassAuthOptionsDisabled}
       />
-      <Divider my="2.5rem" />
-      <FormSubmitterIdCollectionToggle
-        settings={settings}
-        isDisabled={isFormPublic}
-      />
+      {!usesIdentityFields && (
+        <>
+          <Divider my="2.5rem" />
+          <FormSubmitterIdCollectionToggle
+            settings={settings}
+            isDisabled={isFormPublic}
+          />
+        </>
+      )}
       <Divider my="2.5rem" />
       <FormSingleSubmissionToggle
         settings={settings}
