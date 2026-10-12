@@ -5,6 +5,12 @@ import {
   FieldCreateDto,
   MyInfoAttribute,
 } from 'formsg-shared/types/field'
+import {
+  getLoginIdentityAttr,
+  isLoginIdentityField,
+  LOGIN_IDENTITY_LABELS,
+  LoginIdentityFieldBase,
+} from 'formsg-shared/utils/login-identity'
 
 import {
   BASICFIELD_TO_DRAWER_META,
@@ -37,6 +43,7 @@ import {
   EditHeader,
   EditHomeno,
   EditImage,
+  EditLoginIdentity,
   EditLongText,
   EditMobile,
   EditMyInfo,
@@ -66,6 +73,8 @@ export const EditFieldDrawer = (): JSX.Element | null => {
 
   const basicFieldText = useMemo(() => {
     if (!fieldToEdit?.fieldType) return ''
+    const loginIdentityAttr = getLoginIdentityAttr(fieldToEdit)
+    if (loginIdentityAttr) return LOGIN_IDENTITY_LABELS[loginIdentityAttr]
     if (isMyInfo(fieldToEdit)) {
       return MYINFO_FIELD_TO_DRAWER_META[fieldToEdit.myInfo.attr].label
     }
@@ -111,6 +120,11 @@ interface MemoFieldDrawerContentProps {
 export const MemoFieldDrawerContent = memo<MemoFieldDrawerContentProps>(
   ({ field, ...props }) => {
     const { user } = useUser()
+    if (isLoginIdentityField(field)) {
+      return (
+        <EditLoginIdentity {...props} field={field as LoginIdentityFieldBase} />
+      )
+    }
     if (isMyInfo(field)) {
       if (
         field?.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords &&
