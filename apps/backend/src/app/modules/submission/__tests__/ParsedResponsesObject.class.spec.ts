@@ -1,5 +1,6 @@
 import {
   BasicField,
+  CorppassAttribute,
   FormResponseMode,
   LogicType,
   MyInfoAttribute,
@@ -167,5 +168,42 @@ describe('ParsedResponsesObject', () => {
 
     expect(result.isOk()).toEqual(true)
     expect(result._unsafeUnwrap().getAllResponses()).toEqual(expectedParsed)
+  })
+})
+
+describe('login identity answers', () => {
+  const parseIdentityAnswer = (
+    identity: Record<string, unknown>,
+    answer: string,
+  ) => {
+    const field = {
+      ...generateDefaultField(BasicField.Nric),
+      ...identity,
+    } as FormFieldSchema
+    return ParsedResponsesObject.parseResponses(
+      {
+        responseMode: FormResponseMode.Encrypt,
+        form_fields: [field],
+      } as IFormDocument,
+      [generateSingleAnswerResponse(field, answer)],
+    )
+  }
+
+  it('accepts a foreign Corppass UID, which is not a valid NRIC', () => {
+    expect(
+      parseIdentityAnswer(
+        { corppass: { attr: CorppassAttribute.Uid } },
+        'FOREIGN12345',
+      ).isOk(),
+    ).toBe(true)
+  })
+
+  it('still validates the MyInfo NRIC/FIN as an NRIC', () => {
+    expect(
+      parseIdentityAnswer(
+        { myInfo: { attr: MyInfoAttribute.UinFin } },
+        'FOREIGN12345',
+      )._unsafeUnwrapErr(),
+    ).toBeInstanceOf(ValidateFieldError)
   })
 })

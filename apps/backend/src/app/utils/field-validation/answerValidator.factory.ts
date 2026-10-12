@@ -114,7 +114,7 @@ export const constructSingleAnswerValidator = (
     case BasicField.LongText:
       return constructTextValidator(formField)
     case BasicField.Nric:
-      return constructNricValidator()
+      return constructNricValidator(formField)
     case BasicField.HomeNo:
       return constructHomeNoValidator(formField)
     case BasicField.Radio:
@@ -233,7 +233,7 @@ export const constructFieldResponseValidatorV4 = ({
     case BasicField.Rating:
       return constructRatingValidatorV4(formField)
     case BasicField.Nric:
-      return constructNricValidatorV4()
+      return constructNricValidatorV4(formField)
     case BasicField.Uen:
       return constructUenValidatorV4()
     case BasicField.Date:

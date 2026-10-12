@@ -1,5 +1,9 @@
 import { StringAnswerV4 } from '@opengovsg/formsg-sdk'
-import { BasicField } from 'formsg-shared/types'
+import {
+  BasicField,
+  CorppassAttribute,
+  NricFieldBase,
+} from 'formsg-shared/types'
 import {
   isMFinSeriesValid,
   isNricValid,
@@ -14,7 +18,15 @@ import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submi
 import { notEmptySingleAnswerResponse } from './common'
 
 type NricValidator = ResponseValidator<ProcessedSingleAnswerResponse>
-type NricValidatorConstructor = () => NricValidator
+type NricFieldSource = Pick<NricFieldBase, 'corppass'>
+type NricValidatorConstructor = (nricField: NricFieldSource) => NricValidator
+
+/**
+ * Corppass supplies the representative's identifier, which can be foreign, so
+ * the Corppass NRIC/FIN field only checks that it matches the login.
+ */
+const isCorppassUidField = (nricField: NricFieldSource): boolean =>
+  nricField.corppass?.attr === CorppassAttribute.Uid
 
 /**
  * Returns a validator to check if nric
@@ -29,8 +41,10 @@ const nricValidator: NricValidator = (response) => {
 /**
  * Returns a validation function for a nric field when called.
  */
-export const constructNricValidator: NricValidatorConstructor = () =>
-  flow(notEmptySingleAnswerResponse, chain(nricValidator))
+export const constructNricValidator: NricValidatorConstructor = (nricField) =>
+  isCorppassUidField(nricField)
+    ? notEmptySingleAnswerResponse
+    : flow(notEmptySingleAnswerResponse, chain(nricValidator))
 
 // V4
 
@@ -65,8 +79,15 @@ const nricValidatorV4: ResponseValidator<NricResponseV4> = (response) => {
     : left(`NricValidatorV4:\tanswer is not a valid NRIC`)
 }
 
-export const constructNricValidatorV4: () => ResponseValidator<
-  ParsedClearFormFieldResponseV4,
-  NricResponseV4
-> = () =>
-  flow(isNricResponseV4, chain(notEmptyNricAnswerV4), chain(nricValidatorV4))
+export const constructNricValidatorV4: (
+  nricField: NricFieldSource,
+) => ResponseValidator<ParsedClearFormFieldResponseV4, NricResponseV4> = (
+  nricField,
+) =>
+  isCorppassUidField(nricField)
+    ? flow(isNricResponseV4, chain(notEmptyNricAnswerV4))
+    : flow(
+        isNricResponseV4,
+        chain(notEmptyNricAnswerV4),
+        chain(nricValidatorV4),
+      )
