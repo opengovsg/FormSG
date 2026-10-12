@@ -66,6 +66,7 @@ export const buildV1EncryptedContent = ({
     const v1Fields = applyMyInfoPrefix(
       flattenV4ToFormFields({ v4Responses, formFields, formLogics }),
       myInfoReadOnlyFieldIds,
+      formFields,
     )
 
     return ok(formsgSdk.crypto.encrypt(v1Fields, formPublicKey))

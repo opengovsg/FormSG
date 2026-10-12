@@ -7,6 +7,7 @@ import {
   LogicConditionState,
   LogicDto,
   LogicType,
+  CorppassAttribute,
   MyInfoAttribute,
   MyInfoChildAttributes,
 } from '../../types'
@@ -71,6 +72,33 @@ describe('question injection', () => {
         fieldType: BasicField.ShortText,
       },
     ])
+  })
+})
+
+describe('Step 1 login identity fields', () => {
+  it('emits identity answers like any other answer, without a corppass key', () => {
+    const uidField = shortTextField({
+      fieldType: BasicField.Nric,
+      title: 'NRIC/FIN',
+      corppass: { attr: CorppassAttribute.Uid },
+    })
+    const [entry] = flattenV4ToFormFields({
+      v4Responses: {
+        [FIELD_ID]: {
+          fieldType: BasicField.Nric,
+          answer: { value: 'FOREIGN12345' },
+        },
+      } as FieldResponsesV4Input,
+      formFields: [uidField],
+      formLogics: [],
+    })
+    // Storage mode does not store `corppass` on the answer either.
+    expect(entry).toEqual({
+      _id: FIELD_ID,
+      question: 'NRIC/FIN',
+      answer: 'FOREIGN12345',
+      fieldType: BasicField.Nric,
+    })
   })
 })
 
