@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.46.4](https://github.com/opengovsg/formsg/compare/v9.46.3...v9.46.4) (2026-10-12)
+
+
+### Bug Fixes
+
+* **settings:** remove "Free" tag from Singpass auth option (#10260) ([#10260](https://github.com/opengovsg/formsg/commit/2e362e165b5fcd24f35c82450ab0ed7ab33e60b7))
+
+
+### Dependencies
+
+* **deps:** move react-dev-inspector to devDependencies (#10262) ([#10262](https://github.com/opengovsg/formsg/commit/34d7ac28c2b4b387aae3003b11a8558547a37b9a))
+
+
+### Chores
+
+* **ci:** pin all GitHub Actions to commit SHAs, add missing Dependabot ecosystems (#10245) ([#10245](https://github.com/opengovsg/formsg/commit/a99327670769b5a1cbc4ad45dfa9d7e4415a14fa))
+
 ## [9.46.3](https://github.com/opengovsg/formsg/compare/v9.46.2...v9.46.3) (2026-10-08)
 
 
