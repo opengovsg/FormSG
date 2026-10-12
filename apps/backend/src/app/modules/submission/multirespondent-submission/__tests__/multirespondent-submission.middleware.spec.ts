@@ -7,6 +7,7 @@ import { ObjectId } from 'bson'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
+  CorppassAttribute,
   FormAuthType,
   FormResponseMode,
   MyInfoAttribute,
@@ -42,6 +43,7 @@ import {
   validateMultirespondentRemindBody,
   validateMultirespondentSubmission,
   validatePaymentSubmission,
+  verifyLoginIdentityAnswers,
   verifyMyInfoHashes,
 } from '../multirespondent-submission.middleware'
 import {
@@ -1269,6 +1271,110 @@ describe('Multirespondent Submission Middleware', () => {
       expect(
         jest.mocked(MyInfoService.checkMyInfoHashes),
       ).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('verifyLoginIdentityAnswers', () => {
+    const MOCK_FORM_ID = new ObjectId().toHexString()
+    const UID_FIELD_ID = new ObjectId().toHexString()
+    const UEN_FIELD_ID = new ObjectId().toHexString()
+    const CP_FORM_DEF = {
+      _id: MOCK_FORM_ID,
+      authType: FormAuthType.CP,
+      form_fields: [
+        {
+          _id: UID_FIELD_ID,
+          fieldType: BasicField.Nric,
+          title: 'NRIC/FIN',
+          corppass: { attr: CorppassAttribute.Uid },
+        },
+        {
+          _id: UEN_FIELD_ID,
+          fieldType: BasicField.Uen,
+          title: 'UEN',
+          corppass: { attr: CorppassAttribute.Uen },
+        },
+      ],
+    }
+    const createIdentityMockReq = (
+      uid: string,
+      formsg: Record<string, unknown> = {},
+    ) => {
+      const mockReq = createMockReq({ formId: MOCK_FORM_ID })
+      mockReq.body.responses = {
+        [UID_FIELD_ID]: {
+          fieldType: BasicField.Nric,
+          answer: { value: uid },
+          provenance: {},
+        },
+        [UEN_FIELD_ID]: {
+          fieldType: BasicField.Uen,
+          answer: { value: '201912345A' },
+          provenance: {},
+        },
+      }
+      mockReq.formsg = {
+        formDef: CP_FORM_DEF,
+        myInfoReadOnlyFields: [],
+        ...formsg,
+      }
+      return mockReq
+    }
+
+    beforeEach(() => {
+      jest.resetAllMocks()
+      jest.mocked(OidcService.getOidcService).mockReturnValue({
+        extractJwt: () => ok('jwt'),
+        extractJwtPayload: () =>
+          okAsync({ userName: '201912345A', userInfo: 'FOREIGN12345' }),
+      } as any)
+    })
+
+    it('marks Step 1 identity answers that match the login as verified', async () => {
+      const mockNext = jest.fn()
+      const mockReq = createIdentityMockReq('FOREIGN12345')
+
+      await verifyLoginIdentityAnswers(
+        mockReq,
+        createMockRes() as any,
+        mockNext,
+      )
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(mockReq.formsg.myInfoReadOnlyFields).toEqual([
+        UID_FIELD_ID,
+        UEN_FIELD_ID,
+      ])
+    })
+
+    it('rejects an identity answer that differs from the login', async () => {
+      const mockNext = jest.fn()
+      const mockRes = createMockRes()
+
+      await verifyLoginIdentityAnswers(
+        createIdentityMockReq('S9999999Z'),
+        mockRes as any,
+        mockNext,
+      )
+
+      expect(mockNext).not.toHaveBeenCalled()
+      expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.UNAUTHORIZED)
+    })
+
+    it('skips forms without identity fields', async () => {
+      const mockNext = jest.fn()
+      const mockReq = createIdentityMockReq('S9999999Z', {
+        formDef: { ...CP_FORM_DEF, form_fields: [] },
+      })
+
+      await verifyLoginIdentityAnswers(
+        mockReq,
+        createMockRes() as any,
+        mockNext,
+      )
+
+      expect(mockNext).toHaveBeenCalled()
+      expect(OidcService.getOidcService).not.toHaveBeenCalled()
     })
   })
 

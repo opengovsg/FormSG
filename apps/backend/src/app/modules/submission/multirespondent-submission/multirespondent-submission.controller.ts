@@ -557,6 +557,7 @@ export const handleMultirespondentSubmission = [
   MultirespondentSubmissionMiddleware.scanAndRetrieveAttachments,
   MultirespondentSubmissionMiddleware.validateMultirespondentSubmission,
   MultirespondentSubmissionMiddleware.verifyMyInfoHashes,
+  MultirespondentSubmissionMiddleware.verifyLoginIdentityAnswers,
   MultirespondentSubmissionMiddleware.validatePaymentSubmission,
   MultirespondentSubmissionMiddleware.encryptSubmission,
   MultirespondentSubmissionMiddleware.handleNdiResponses,
