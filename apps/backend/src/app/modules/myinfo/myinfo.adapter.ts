@@ -39,6 +39,9 @@ const logger = createLoggerWithLabel(module)
  */
 export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
   switch (attr) {
+    // getMyInfoAttr skips login identity fields; this case keeps the switch exhaustive.
+    case InternalAttr.UinFin:
+      return ExternalAttr.UinFin
     // Changes between MyInfo V2 and V3
     case InternalAttr.WorkpassStatus:
       return ExternalAttr.PassStatus
@@ -119,6 +122,8 @@ export const internalAttrToScope = (attr: InternalAttr): MyInfoScope => {
  */
 export const internalAttrToExternal = (attr: InternalAttr): ExternalAttr => {
   switch (attr) {
+    case InternalAttr.UinFin:
+      return ExternalAttr.UinFin
     // Changes between MyInfo V2 and V3
     case InternalAttr.WorkpassStatus:
       return ExternalAttr.PassStatus
@@ -197,7 +202,7 @@ export const internalAttrListToScopes = (
   attrs: InternalAttr[],
   { includeSponsoredChildren = false }: InternalAttrListToScopesOptions = {},
 ): MyInfoScope[] => {
-  // Always ask for consent for UinFin, even though it is not a form field
+  // Always request UinFin consent; login identity fields do not request MyInfo data.
   const scopes = attrs.map(internalAttrToScope).concat(ExternalAttr.UinFin)
   if (includeSponsoredChildren) {
     for (const attr of attrs) {

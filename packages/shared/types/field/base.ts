@@ -44,7 +44,19 @@ export enum GenericStringAnswerResponseFieldV3 {
   CountryRegion = 'country_region',
 }
 
+/** Corppass login identities a field can be filled with. */
+export enum CorppassAttribute {
+  Uen = 'uen',
+  Uid = 'uid',
+}
+
+export type AllowCorppassBase<T extends CorppassAttribute> = {
+  corppass?: { attr: T }
+}
+
 export enum MyInfoAttribute {
+  // Filled from Singpass login, on an NRIC field only.
+  UinFin = 'uinfin',
   Name = 'name',
   PassportNumber = 'passportnumber',
   RegisteredAddress = 'regadd',
@@ -96,6 +108,7 @@ export enum MyInfoChildAttributes {
 
 export type AllowedMyInfoFieldOption = Exclude<
   MyInfoAttribute,
+  | MyInfoAttribute.UinFin
   | MyInfoAttribute.ChildName
   | MyInfoAttribute.ChildBirthCertNo
   | MyInfoAttribute.ChildDateOfBirth
