@@ -1,5 +1,5 @@
 import { generateDefaultFieldV4 } from '__tests__/unit/backend/helpers/generate-form-data'
-import { BasicField } from 'formsg-shared/types'
+import { BasicField, CorppassAttribute } from 'formsg-shared/types'
 
 import { ValidateFieldErrorV4 } from 'src/app/modules/submission/submission.errors'
 import { validateFieldV4 } from 'src/app/utils/field-validation'
@@ -77,6 +77,34 @@ describe('Uen field validation V4', () => {
     expect(validateResult._unsafeUnwrapErr()).toEqual(
       new ValidateFieldErrorV4('Invalid answer submitted'),
     )
+  })
+
+  it('should allow a non-UEN entity ID in a Corppass UEN field', () => {
+    const formField = generateDefaultFieldV4(BasicField.Uen, {
+      corppass: { attr: CorppassAttribute.Uen },
+    })
+    const response = makeUenResponseV4({ value: 'C123456789' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isOk()).toBe(true)
+  })
+
+  it('should still require an answer in a Corppass UEN field', () => {
+    const formField = generateDefaultFieldV4(BasicField.Uen, {
+      corppass: { attr: CorppassAttribute.Uen },
+    })
+    const response = makeUenResponseV4({ value: '' })
+    const validateResult = validateFieldV4({
+      formId: 'formId',
+      formField,
+      response,
+      isVisible: true,
+    })
+    expect(validateResult.isErr()).toBe(true)
   })
 
   it('should disallow responses submitted for hidden fields', () => {

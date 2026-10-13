@@ -682,6 +682,8 @@ export const useUenValidationRules = (
           t,
         ),
         validUen: (val?: string) => {
+          // Corppass supplies the entity's ID, which can be a non-UEN ID.
+          if (schema.corppass?.attr === CorppassAttribute.Uen) return true
           if (!val) return true
           return isUenValid(val) || t('validUen')
         },

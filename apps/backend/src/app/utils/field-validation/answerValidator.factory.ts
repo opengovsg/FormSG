@@ -136,7 +136,7 @@ export const constructSingleAnswerValidator = (
     case BasicField.Email:
       return constructEmailValidator(formField)
     case BasicField.Uen:
-      return constructUenValidator()
+      return constructUenValidator(formField)
     case BasicField.YesNo:
       return constructYesNoValidator()
     default:
@@ -235,7 +235,7 @@ export const constructFieldResponseValidatorV4 = ({
     case BasicField.Nric:
       return constructNricValidatorV4(formField)
     case BasicField.Uen:
-      return constructUenValidatorV4()
+      return constructUenValidatorV4(formField)
     case BasicField.Date:
       return constructDateValidatorV4(formField)
     case BasicField.CountryRegion:

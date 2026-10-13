@@ -175,9 +175,10 @@ describe('login identity answers', () => {
   const parseIdentityAnswer = (
     identity: Record<string, unknown>,
     answer: string,
+    fieldType: BasicField.Nric | BasicField.Uen = BasicField.Nric,
   ) => {
     const field = {
-      ...generateDefaultField(BasicField.Nric),
+      ...generateDefaultField(fieldType),
       ...identity,
     } as FormFieldSchema
     return ParsedResponsesObject.parseResponses(
@@ -194,6 +195,16 @@ describe('login identity answers', () => {
       parseIdentityAnswer(
         { corppass: { attr: CorppassAttribute.Uid } },
         'FOREIGN12345',
+      ).isOk(),
+    ).toBe(true)
+  })
+
+  it('accepts a non-UEN Corppass entity ID, which is not a valid UEN', () => {
+    expect(
+      parseIdentityAnswer(
+        { corppass: { attr: CorppassAttribute.Uen } },
+        'C123456789',
+        BasicField.Uen,
       ).isOk(),
     ).toBe(true)
   })
