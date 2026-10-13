@@ -20,6 +20,12 @@ vi.mock(
   }),
 )
 
+const mockUseStorageResponsesContext = vi.fn(() => ({ secretKey: 'secret' }))
+
+vi.mock('../ResponsesPage/storage', () => ({
+  useStorageResponsesContext: () => mockUseStorageResponsesContext(),
+}))
+
 vi.mock('./IndividualResponsePage', () => ({
   IndividualResponsePage: () => <div>response body</div>,
 }))
@@ -123,4 +129,12 @@ describe('IndividualResponseDrawer', () => {
     expect(onNavigateToSubmission).toHaveBeenCalledWith('next-id')
   })
 
+  it('stays closed while responses are locked', () => {
+    mockProvider()
+    mockUseStorageResponsesContext.mockReturnValueOnce({ secretKey: '' })
+
+    renderDrawer()
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
 })

@@ -17,12 +17,13 @@ import { SubmissionMetadata } from 'formsg-shared/types'
 import { ADMINFORM_RESULTS_SUBROUTE, ADMINFORM_ROUTE } from '~constants/routes'
 import IconButton from '~components/IconButton'
 
+import { useStorageResponsesContext } from '../ResponsesPage/storage'
 import { useUnlockedResponses } from '../ResponsesPage/storage/UnlockedResponses/UnlockedResponsesProvider'
 
 import { IndividualResponsePage } from './IndividualResponsePage'
 import { IndividualResponseTitle } from './IndividualResponseTitle'
 
-export const IndividualResponseDrawer = (): JSX.Element => {
+export const IndividualResponseDrawer = (): JSX.Element | null => {
   const { t } = useTranslation()
   const { formId, submissionId } = useParams()
   if (!submissionId) throw new Error('Missing submissionId')
@@ -33,6 +34,7 @@ export const IndividualResponseDrawer = (): JSX.Element => {
     getAdjacentSubmissions,
     onNavigateToSubmission,
   } = useUnlockedResponses()
+  const { secretKey } = useStorageResponsesContext()
   const resultsRoute = `${ADMINFORM_ROUTE}/${formId}/${ADMINFORM_RESULTS_SUBROUTE}`
 
   // Closing lands back on the page and search the admin opened the response
@@ -64,6 +66,10 @@ export const IndividualResponseDrawer = (): JSX.Element => {
     },
     [navigate, onNavigateToSubmission, resultsRoute],
   )
+
+  // The page underneath shows the secret-key form; a second copy inside the
+  // drawer only hid it. The drawer opens once the key is in.
+  if (!secretKey) return null
 
   return (
     <Drawer isOpen placement="right" size="lg" onClose={onClose}>
