@@ -11,6 +11,8 @@ export const enSG = {
     submitterIdCollection: {
       loginFieldsLockAuth:
         'To change your Singpass authentication mode, remove the existing login-filled fields.',
+      removeIdentityFieldsFirst:
+        'Your form already collects NRIC/FIN/UENs through form fields. To use this setting instead, remove those fields first.',
     },
   },
   tabs: {

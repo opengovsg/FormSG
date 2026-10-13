@@ -1,8 +1,11 @@
-import { Divider } from '@chakra-ui/react'
+import { useTranslation } from 'react-i18next'
+import { Divider, Stack } from '@chakra-ui/react'
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
+
+import InlineMessage from '~components/InlineMessage'
 
 import { FormSubmitterIdCollectionToggle } from './FormNricCollectionToggle'
 import { FormSingleSubmissionToggle } from './FormSingleSubmissionToggle'
@@ -22,6 +25,9 @@ export const AuthSettingsSingpassSection = ({
   hasLoginFields,
   hasIdentityFields,
 }: AuthSettingsSingpassSectionProps): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.settings.singpass.submitterIdCollection',
+  })
   const isNricFieldEnabled = useFeatureIsOn(featureFlags.isNricFieldEnabled)
   const isSingpassSettingsDisabled = isFormPublic
   const isSinglepassAuthOptionsDisabled =
@@ -29,12 +35,14 @@ export const AuthSettingsSingpassSection = ({
   const isEncryptOrMultirespondentMode =
     settings.responseMode === FormResponseMode.Encrypt ||
     settings.responseMode === FormResponseMode.Multirespondent
-  // Keep converted forms usable if rollout is paused. Unconverted forms keep
-  // the legacy toggle until the flag enables identity fields.
+  // Unconverted forms keep the legacy toggle until the flag enables identity
+  // fields. If rollout is paused, the toggle stays locked while those fields exist.
   const usesIdentityFields =
     isEncryptOrMultirespondentMode &&
     !settings.isSubmitterIdCollectionEnabled &&
-    (isNricFieldEnabled || hasIdentityFields)
+    isNricFieldEnabled
+  const isToggleLockedByIdentityFields =
+    !settings.isSubmitterIdCollectionEnabled && hasIdentityFields
 
   return (
     <>
@@ -45,10 +53,17 @@ export const AuthSettingsSingpassSection = ({
       {!usesIdentityFields && (
         <>
           <Divider my="2.5rem" />
-          <FormSubmitterIdCollectionToggle
-            settings={settings}
-            isDisabled={isFormPublic}
-          />
+          {isToggleLockedByIdentityFields ? (
+            <Stack spacing="1rem">
+              <FormSubmitterIdCollectionToggle settings={settings} isDisabled />
+              <InlineMessage>{t('removeIdentityFieldsFirst')}</InlineMessage>
+            </Stack>
+          ) : (
+            <FormSubmitterIdCollectionToggle
+              settings={settings}
+              isDisabled={isFormPublic}
+            />
+          )}
         </>
       )}
       <Divider my="2.5rem" />

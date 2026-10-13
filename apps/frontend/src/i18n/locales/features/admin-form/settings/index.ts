@@ -13,6 +13,7 @@ export type HasTitle = {
 export interface SingpassSettingsStrings extends HasTitle {
   submitterIdCollection: {
     loginFieldsLockAuth: string
+    removeIdentityFieldsFirst: string
   }
 }
 
