@@ -8,6 +8,7 @@ import { featureFlags } from 'formsg-shared/constants'
 import { Switch } from '~components/Toggle/Switch'
 
 import { useResultsDashboardVersion } from '../../hooks/useIsDelightfulDashboard'
+import { useStorageResponsesContext } from '../../ResponsesPage/storage'
 
 const versionIcon = (label: string) => {
   const VersionIcon = (props: SVGProps<SVGSVGElement>) => (
@@ -34,8 +35,11 @@ export const DashboardVersionToggle = (): JSX.Element | null => {
   const { t } = useTranslation()
   const isEnabled = useFeatureIsOn(featureFlags.delightfulDashboard)
   const [version, setVersion] = useResultsDashboardVersion()
+  // The version only changes the unlocked table, so the toggle stays hidden
+  // until the secret key is in.
+  const { secretKey } = useStorageResponsesContext()
 
-  if (!isEnabled) return null
+  if (!isEnabled || !secretKey) return null
 
   return (
     <Flex align="center" gap="0.5rem" flexShrink={0}>
