@@ -13,7 +13,16 @@ on:
     branches:
       - develop
   pull_request:
-    types: [opened, reopened, synchronize, ready_for_review]
+    # edited: only acts when the base changes, e.g. a stacked PR retargeted
+    # to develop after the PR below it merges.
+    types: [opened, reopened, synchronize, ready_for_review, edited]
+  # Dispatched by chromatic-stack-unblock.yml once a stacked PR's base passes.
+  workflow_dispatch:
+
+# Jobs run PR code (pnpm install, Storybook build), so the token is
+# read-only by default; jobs that need more declare it themselves.
+permissions:
+  contents: read
 
 # List of jobs
 jobs:
@@ -21,10 +30,16 @@ jobs:
   changes:
     if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      statuses: read
     # Set job outputs to values from filter step
     outputs:
       frontend: ${{ steps.filter.outputs.frontend }}
       emailpreview: ${{ steps.filter.outputs.emailpreview }}
+      eligible: ${{ steps.gate.outputs.eligible }}
+      stack_ready: ${{ steps.gate.outputs.stack_ready }}
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
@@ -38,10 +53,29 @@ jobs:
               - apps/frontend/**
             emailpreview:
               - packages/react-email-preview/**
+      - name: Hold stacked PRs whose base awaits Chromatic review
+        id: gate
+        run: .github/scripts/chromatic-stack.sh gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          EVENT: ${{ github.event_name }}
+          ACTION: ${{ github.event.action }}
+          REF_NAME: ${{ github.ref_name }}
+          BASE_CHANGED: ${{ github.event.changes.base && 'true' || 'false' }}
+          PR_BASE: ${{ github.event.pull_request.base.ref }}
+          FRONTEND: ${{ steps.filter.outputs.frontend }}
 
   chromatic-deployment-frontend:
     needs: changes
-    if: ${{ needs.changes.outputs.frontend == 'true' }}
+    if: ${{ needs.changes.outputs.frontend == 'true' && needs.changes.outputs.eligible == 'true' && needs.changes.outputs.stack_ready == 'true' }}
+    # A newer push to the same PR cancels this run; Chromatic only bills once
+    # the Storybook is uploaded (~3 min in). develop builds never cancel. Set on
+    # the job, not the workflow, so runs whose jobs are skipped can't cancel.
+    concurrency:
+      group: chromatic-frontend-${{ github.event_name == 'push' && github.sha || github.head_ref || github.ref_name }}
+      cancel-in-progress: ${{ github.event_name != 'push' }}
     # Operating System
     runs-on: ubuntu-latest
     defaults:
@@ -52,6 +86,11 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+          # Build the PR head, not GitHub's merge commit with develop: TurboSnap
+          # diffs from the checkout, so the merge commit leaks every develop
+          # change into the PR's changed files.
+          # https://www.chromatic.com/docs/github-actions/#recommended-configuration-for-build-events
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -71,7 +110,6 @@ jobs:
         uses: chromaui/action@c93e0bc3a63aa176e14a75b61a31847cbfdd341c # v1
         # Chromatic GitHub Action options
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           workingDir: apps/frontend
@@ -87,7 +125,10 @@ jobs:
 
   chromatic-deployment-emailpreview:
     needs: changes
-    if: ${{ needs.changes.outputs.emailpreview == 'true' }}
+    if: ${{ needs.changes.outputs.emailpreview == 'true' && needs.changes.outputs.eligible == 'true' }}
+    concurrency:
+      group: chromatic-emailpreview-${{ github.event_name == 'push' && github.sha || github.head_ref || github.ref_name }}
+      cancel-in-progress: ${{ github.event_name != 'push' }}
     # Operating System
     runs-on: ubuntu-latest
     defaults:
@@ -98,6 +139,7 @@ jobs:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Install pnpm
         uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
@@ -118,7 +160,6 @@ jobs:
         uses: chromaui/action@c93e0bc3a63aa176e14a75b61a31847cbfdd341c # v1
         # Chromatic GitHub Action options
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           # 👇 Chromatic projectToken, refer to the manage page to obtain it.
           projectToken: ${{ secrets.CHROMATIC_EMAIL_PROJECT_TOKEN }}
           workingDir: packages/react-email-preview

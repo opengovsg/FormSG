@@ -46,6 +46,27 @@ module.exports = {
       },
     },
     {
+      // Everything here is imported by .storybook/preview.tsx, so any file it
+      // reaches invalidates every Chromatic snapshot when it changes. The
+      // formsg-shared barrels pull in ~60 unrelated files; import the leaf
+      // module that defines the symbol instead.
+      files: ['.storybook/**', 'src/i18n/**'],
+      rules: {
+        'no-restricted-imports': [
+          'error',
+          {
+            paths: ['formsg-shared/types', 'formsg-shared/constants'].map(
+              (name) => ({
+                name,
+                message:
+                  'Import from the defining module (e.g. formsg-shared/types/form/form) to keep the Storybook preview dependency graph small.',
+              }),
+            ),
+          },
+        ],
+      },
+    },
+    {
       files: ['**/*Context.[jt]s?(x)', '**/*Provider.[jt]s?(x)'],
       rules: {
         'react-refresh/only-export-components': 'off',

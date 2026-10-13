@@ -32,6 +32,9 @@
     "./types/form/form": {
       "default": "./types/form/form.ts"
     },
+    "./types/form/form_logic": {
+      "default": "./types/form/form_logic.ts"
+    },
     "./types/form/form_logo": {
       "default": "./types/form/form_logo.ts"
     },

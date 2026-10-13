@@ -1,6 +1,6 @@
 import { ResourceLanguage } from 'i18next'
 
-import { Language } from 'formsg-shared/types'
+import { Language } from 'formsg-shared/types/form/form'
 
 import { enSG } from './en-sg'
 import { msSG } from './ms-sg'
