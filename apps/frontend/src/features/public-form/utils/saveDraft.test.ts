@@ -1,5 +1,6 @@
 import {
   BasicField,
+  CorppassAttribute,
   FormFieldDto,
   MyInfoAttribute,
   StrippedFormWorkflowStepDto,
@@ -173,6 +174,36 @@ describe('saveDraft', () => {
         field1: 'test value 1',
         field2: 'test value 2',
       })
+    })
+
+    it('should exclude Corppass login identity fields', () => {
+      const formFields = [
+        createMockFormField('field1', BasicField.ShortText),
+        {
+          ...createMockFormField('cpUid', BasicField.Nric),
+          corppass: { attr: CorppassAttribute.Uid },
+        } as FormFieldDto,
+        {
+          ...createMockFormField('cpUen', BasicField.Uen),
+          corppass: { attr: CorppassAttribute.Uen },
+        } as FormFieldDto,
+      ]
+      const formFieldValues = {
+        field1: 'test value 1',
+        cpUid: 'S1234567D',
+        cpUen: '53308948A',
+      }
+
+      const result = getDraftToSave({
+        currentFormFieldValues: formFieldValues,
+        dirtyFieldIds: ['field1', 'cpUid', 'cpUen'],
+        // Login fills these, so they count as prefilled
+        prefilledFieldIds: ['cpUid', 'cpUen'],
+        currentStepNumberWorkflowStep: undefined,
+        formFields,
+      })
+
+      expect(result.draftResponses).toEqual({ field1: 'test value 1' })
     })
 
     it('should remove signatures from verifiable fields and keep non-verifiable field signatures as undefined', () => {
