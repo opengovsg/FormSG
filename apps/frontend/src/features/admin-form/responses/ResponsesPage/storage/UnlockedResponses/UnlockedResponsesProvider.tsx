@@ -67,6 +67,7 @@ interface UnlockedResponsesContextProps {
   setColumnOptions: (columnOptions: ResponseColumnOption[]) => void
   hiddenColumnIds: string[]
   toggleColumnVisibility: (columnId: string) => void
+  setAllColumnsVisible: (isVisible: boolean) => void
   searchText: string
   setSearchText: (searchText: string) => void
   excludedSearchColumnIds: string[]
@@ -126,6 +127,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
         : [...hidden, columnId],
     )
   }, [])
+
+  const setAllColumnsVisible = useCallback(
+    (isVisible: boolean) =>
+      setHiddenColumnIds(isVisible ? [] : columnOptions.map(({ id }) => id)),
+    [columnOptions],
+  )
 
   const [sortColumnId, setSortColumnId] = useState<string>()
   const [sortDirection, setSortDirection] = useState<ResponseSortDirection>(
@@ -319,6 +326,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     setColumnOptions,
     hiddenColumnIds,
     toggleColumnVisibility,
+    setAllColumnsVisible,
     searchText,
     setSearchText,
     excludedSearchColumnIds,

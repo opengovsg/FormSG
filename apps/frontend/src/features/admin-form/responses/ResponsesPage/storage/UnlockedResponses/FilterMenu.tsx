@@ -1,19 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiFilterAlt } from 'react-icons/bi'
-import {
-  Box,
-  ButtonGroup,
-  Divider,
-  MenuButton,
-  MenuList,
-  Stack,
-  Text,
-} from '@chakra-ui/react'
+import { Box, MenuButton, MenuList, Stack, Text } from '@chakra-ui/react'
 
 import { DateString } from 'formsg-shared/types'
 
-import Button from '~components/Button'
 import Checkbox from '~components/Checkbox'
 import {
   DateRangePicker,
@@ -24,6 +15,7 @@ import Menu from '~components/Menu'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { useToolbarMenuDisclosure } from './hooks/useToolbarMenuDisclosure'
+import { CheckAllFooter } from './CheckAllFooter'
 import { toolbarMenuButtonProps } from './toolbarButtonProps'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
@@ -39,12 +31,7 @@ export const FilterMenu = ({
   isIconOnly?: boolean
 }): JSX.Element => {
   const { t } = useTranslation()
-  const {
-    dateRange: dateRangeLabel,
-    columns,
-    checkAll,
-    uncheckAll,
-  } = t(
+  const { dateRange: dateRangeLabel, columns } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.filterMenu',
     { returnObjects: true },
   )
@@ -137,18 +124,10 @@ export const FilterMenu = ({
                 ))}
               </Stack>
             </Box>
-            <Divider />
-            <ButtonGroup px="1rem" py="0.75rem" spacing="0.5rem">
-              <Button variant="clear" onClick={() => setAllSearchColumns(true)}>
-                {checkAll}
-              </Button>
-              <Button
-                variant="clear"
-                onClick={() => setAllSearchColumns(false)}
-              >
-                {uncheckAll}
-              </Button>
-            </ButtonGroup>
+            <CheckAllFooter
+              onCheckAll={() => setAllSearchColumns(true)}
+              onUncheckAll={() => setAllSearchColumns(false)}
+            />
           </MenuList>
         </>
       )}

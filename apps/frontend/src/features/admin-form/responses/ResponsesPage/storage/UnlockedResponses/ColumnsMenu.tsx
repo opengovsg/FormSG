@@ -5,6 +5,7 @@ import { MenuButton, MenuList, Stack } from '@chakra-ui/react'
 import Checkbox from '~components/Checkbox'
 import Menu from '~components/Menu'
 
+import { CheckAllFooter } from './CheckAllFooter'
 import { toolbarMenuButtonProps } from './toolbarButtonProps'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
@@ -14,8 +15,12 @@ export const ColumnsMenu = ({
   isIconOnly?: boolean
 }): JSX.Element => {
   const { t } = useTranslation()
-  const { columnOptions, hiddenColumnIds, toggleColumnVisibility } =
-    useUnlockedResponses()
+  const {
+    columnOptions,
+    hiddenColumnIds,
+    toggleColumnVisibility,
+    setAllColumnsVisible,
+  } = useUnlockedResponses()
 
   return (
     <Menu closeOnSelect={false} placement="bottom-end">
@@ -35,8 +40,8 @@ export const ColumnsMenu = ({
               isIconOnly,
             })}
           />
-          <MenuList maxH="20rem" overflowY="auto">
-            <Stack spacing={0}>
+          <MenuList display="flex" flexDirection="column" maxH="20rem" pb={0}>
+            <Stack spacing={0} flex={1} minH={0} overflowY="auto">
               {columnOptions.map(({ id, label }) => (
                 <Checkbox
                   key={id}
@@ -49,6 +54,10 @@ export const ColumnsMenu = ({
                 </Checkbox>
               ))}
             </Stack>
+            <CheckAllFooter
+              onCheckAll={() => setAllColumnsVisible(true)}
+              onUncheckAll={() => setAllColumnsVisible(false)}
+            />
           </MenuList>
         </>
       )}

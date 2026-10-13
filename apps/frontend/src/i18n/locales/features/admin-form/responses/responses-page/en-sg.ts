@@ -77,8 +77,6 @@ export const enSG: ResponsesResponsesPage = {
       filterMenu: {
         dateRange: 'Date range',
         columns: 'Columns',
-        checkAll: 'Check all',
-        uncheckAll: 'Uncheck all',
       },
       views: {
         allResponses: 'All responses',
@@ -107,6 +105,8 @@ export const enSG: ResponsesResponsesPage = {
         filter: 'Filter',
         sort: 'Sort',
         columns: 'Columns',
+        checkAll: 'Check all',
+        uncheckAll: 'Uncheck all',
       },
       downloadButton: {
         label: 'Download options',
