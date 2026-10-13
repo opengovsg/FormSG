@@ -8,7 +8,7 @@ import Button from '~components/Button'
 
 // The backend starts the Authorization Code + PKCE flow and 302s straight to
 // the one.gov.sg IdP, so this button navigates instead of fetching an auth URL.
-const ONE_LOGIN_URL = `${API_BASE_URL}/auth/one/login`
+export const ONE_LOGIN_URL = `${API_BASE_URL}/auth/one/login`
 
 export const OneLoginButton = (): JSX.Element | null => {
   const [isNavigating, setIsNavigating] = useState(false)
@@ -20,6 +20,8 @@ export const OneLoginButton = (): JSX.Element | null => {
   const handleOneLogin = () => {
     setIsNavigating(true)
     delay(setIsNavigating, 3000, false)
+    // Drop Menlo's stale remote-tab pairing, see LoginPage.
+    window.name = ''
     window.location.assign(ONE_LOGIN_URL)
   }
 

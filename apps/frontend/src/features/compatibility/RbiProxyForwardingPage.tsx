@@ -14,6 +14,7 @@ const ALLOWED_FORWARDING_ROUTES = [
   '/api/v3/corppass/login',
   '/api/v3/auth/sgid/login/callback',
   '/api/v3/auth/sso/login/callback',
+  '/api/v3/auth/one/login/callback',
 ]
 
 export const FORWARDING_DEFAULT_TIMEOUT = 1000 // Default timeout for forwarding requests from the user's browser

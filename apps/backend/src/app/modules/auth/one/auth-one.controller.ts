@@ -10,15 +10,13 @@ import { resolveRedirectionUrl } from '../../../utils/urls'
 import { ControllerHandler } from '../../core/core.types'
 import * as UserService from '../../user/user.service'
 import * as AuthService from '../auth.service'
-import { isEmailInDomainWhitelist, mapRouteError } from '../auth.utils'
+import { mapRouteError } from '../auth.utils'
 
 import {
   ONE_CODE_VERIFIER_COOKIE_NAME,
   ONE_NONCE_COOKIE_NAME,
   ONE_STATE_COOKIE_NAME,
-  ONE_USER_DOMAIN_WHITELIST,
 } from './auth-one.constants'
-import { OneNotWhitelistedError } from './auth-one.errors'
 import { AuthOneService } from './auth-one.service'
 
 const logger = createLoggerWithLabel(module)
@@ -37,10 +35,10 @@ export const ONE_AUTH_COOKIE_OPTIONS = {
  * Handler for GET /api/v3/auth/one/login endpoint.
  *
  * Starts the Authorization Code + PKCE flow against one.gov.sg and 302s the
- * browser to the IdP. This endpoint doubles as the RP's `initiate_login_uri`
- * (OpenID Connect Core §4): the one.gov.sg app launcher deep-links here with
- * an `?iss=` param, which must match the issuer we trust (ADR-0006). Absent
- * `iss` is a normal login-button click.
+ * browser to the IdP. For IdP-initiated logins (OpenID Connect Core §4) the
+ * one.gov.sg app launcher opens the frontend /login page (the registered
+ * `initiate_login_uri`), which forwards its `?iss=` param here; it must match
+ * the issuer we trust (ADR-0006). Absent `iss` is a normal login-button click.
  */
 export const handleLogin: ControllerHandler<
   unknown,
@@ -114,7 +112,7 @@ export const handleLoginCallback: ControllerHandler<
   unknown,
   ErrorDto | undefined,
   unknown,
-  { code?: string; state: string; iss?: string }
+  { code?: string; state: string; iss?: string; forwarded?: string }
 > = async (req, res) => {
   const { code } = req.query // can trust on FE query
   const codeVerifier = req.cookies[ONE_CODE_VERIFIER_COOKIE_NAME]
@@ -175,15 +173,6 @@ export const handleLoginCallback: ControllerHandler<
     .andThen((tokens) => AuthOneService.retrieveClaims(tokens))
     .andThen((claims) => {
       const userEmail = claims.email.toLowerCase()
-      if (!isEmailInDomainWhitelist(userEmail, ONE_USER_DOMAIN_WHITELIST)) {
-        logger.error({
-          message: 'Error logging in user; email is not in domain whitelist',
-          meta: logMeta,
-        })
-
-        return errAsync(new OneNotWhitelistedError())
-      }
-
       return AuthService.validateEmailDomain(userEmail)
         .andThen((agency) => UserService.retrieveUser(userEmail, agency._id))
         .map((user) => ({ user, claims }))

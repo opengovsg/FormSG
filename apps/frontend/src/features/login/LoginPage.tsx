@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
-import { Stack } from '@chakra-ui/react'
+import { Stack, Text } from '@chakra-ui/react'
 import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 import { StatusCodes } from 'http-status-codes'
 
@@ -13,6 +13,7 @@ import { useIsMobile } from '~hooks/useIsMobile'
 import { useLocalStorage } from '~hooks/useLocalStorage'
 import { useToast } from '~hooks/useToast'
 import { sendLoginOtp, verifyLoginOtp } from '~services/AuthService'
+import Spinner from '~components/Spinner'
 
 import {
   trackAdminLogin,
@@ -20,7 +21,7 @@ import {
 } from '~features/analytics/AnalyticsService'
 
 import { LoginForm, LoginFormInputs } from './components/LoginForm'
-import { OneLoginButton } from './components/OneLoginButton'
+import { ONE_LOGIN_URL, OneLoginButton } from './components/OneLoginButton'
 import { OrDivider } from './components/OrDivider'
 import { OtpForm, OtpFormInputs } from './components/OtpForm'
 import { SgidLoginButton } from './components/SgidLoginButton'
@@ -125,6 +126,20 @@ export const LoginPage = (): JSX.Element => {
     }
   }, [statusCode])
 
+  // RATIONALE: this page is the RP's initiate_login_uri, not the API endpoint,
+  // so the launcher hop lands in the officer's own browser before /authorize.
+  // On GSIB, Menlo keeps its remote-tab pairing in window.name; left in place,
+  // the next one.gov.sg navigation re-attaches to the stale remote tab (parked
+  // on this page) and bounces back here forever. The backend validates iss.
+  const iss = params.get('iss')
+  useEffect(() => {
+    if (!iss) return
+    window.name = ''
+    window.location.assign(
+      `${ONE_LOGIN_URL}?${new URLSearchParams({ iss }).toString()}`,
+    )
+  }, [iss])
+
   useEffect(() => {
     if (!toastMessage) return
     toast({ description: toastMessage })
@@ -163,6 +178,16 @@ export const LoginPage = (): JSX.Element => {
       throw new Error('Something went wrong')
     }
     await sendLoginOtp(email).then(({ otpPrefix }) => setOtpPrefix(otpPrefix))
+  }
+
+  // Same layout as OneHoldingPage, so the launcher hop doesn't flash the form.
+  if (iss) {
+    return (
+      <Stack spacing={4} align="center" justify="center" height="100%">
+        <Spinner />
+        <Text>{t('features.login.LoginPage.signingInWithOne')}</Text>
+      </Stack>
+    )
   }
 
   return (

@@ -37,6 +37,7 @@ export interface Login {
     banner: string
     forbidden: string
     expiredSession: string
+    signingInWithOne: string
   }
   SelectProfilePage: {
     accountSelection: string

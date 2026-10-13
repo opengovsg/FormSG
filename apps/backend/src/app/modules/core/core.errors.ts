@@ -175,7 +175,6 @@ export enum ErrorCodes {
   // [110600 - 110699] One (one.gov.sg) Errors (/modules/auth/one)
   ONE_CREATE_REDIRECT_URL = 110600,
   ONE_DISCOVERY = 110601,
-  ONE_NOT_WHITELISTED = 110602,
   // End of Auth Errors --------------------------------------------------------
 
   // [12xxxx] Database Errors (/modules/core) ----------------------------------

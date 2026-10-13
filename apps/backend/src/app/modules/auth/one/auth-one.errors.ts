@@ -11,9 +11,3 @@ export class OneDiscoveryError extends ApplicationError {
     super(message, undefined, ErrorCodes.ONE_DISCOVERY)
   }
 }
-
-export class OneNotWhitelistedError extends ApplicationError {
-  constructor(message = 'User is not whitelisted for one.gov.sg login') {
-    super(message, undefined, ErrorCodes.ONE_NOT_WHITELISTED)
-  }
-}
