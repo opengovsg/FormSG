@@ -15,33 +15,25 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install datadog-ci
-      shell: bash
-      run: |
-        curl -L --fail "https://github.com/DataDog/datadog-ci/releases/download/v5.12.1/datadog-ci_linux-x64" --output /usr/local/bin/datadog-ci
-        chmod +x /usr/local/bin/datadog-ci
-
     # The suite lives in Datadog, status "paused" so it never alerts on its own
-    # schedule; CI triggers are the only runs. START_URL points every request at
-    # the environment under test:
+    # schedule; CI triggers are the only runs. Every test routes its requests
+    # through the START_URL variable, which points them at the environment
+    # under test:
     #   nev-jju-pik  homepage serves (status, content-type, #root, latency)
     #   uar-ap6-m4w  backend API responds (GET /api/v3/client/env)
     #   rwb-ah7-7yh  landing page renders in a real browser
     - name: Run smoke suite
-      shell: bash
-      env:
-        DATADOG_API_KEY: ${{ inputs.dd-api-key }}
-        DATADOG_APP_KEY: ${{ inputs.dd-app-key }}
-        DATADOG_SITE: datadoghq.com
-        DATADOG_SUBDOMAIN: ogp
-        URL: ${{ inputs.url }}
-      run: |
-        datadog-ci synthetics run-tests \
-          --public-id nev-jju-pik \
-          --public-id uar-ap6-m4w \
-          --public-id rwb-ah7-7yh \
-          --override startUrl="${URL}/" \
-          --override variables.START_URL="${URL}" \
-          --failOnTimeout \
-          --failOnCriticalErrors \
-          --failOnMissingTests
+      uses: DataDog/synthetics-ci-github-action@7039855343386c30068a97ca381e68ea405e8539 # v4.1.1
+      with:
+        api-key: ${{ inputs.dd-api-key }}
+        app-key: ${{ inputs.dd-app-key }}
+        datadog-site: datadoghq.com
+        subdomain: ogp
+        public-ids: |
+          nev-jju-pik
+          uar-ap6-m4w
+          rwb-ah7-7yh
+        variables: START_URL=${{ inputs.url }}
+        fail-on-timeout: 'true'
+        fail-on-critical-errors: 'true'
+        fail-on-missing-tests: 'true'
