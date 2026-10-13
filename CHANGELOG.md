@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.46.6](https://github.com/opengovsg/formsg/compare/v9.46.5...v9.46.6) (2026-10-13)
+
+
+### Dependencies
+
+* **deps:** resolve handlebars, next, nodemailer Dependabot alerts via overrides (#10276) ([#10276](https://github.com/opengovsg/formsg/commit/db974a577702d39b945f28c29960eaa1def0a596))
+
 ## [9.46.5](https://github.com/opengovsg/formsg/compare/v9.46.4...v9.46.5) (2026-10-13)
 
 
