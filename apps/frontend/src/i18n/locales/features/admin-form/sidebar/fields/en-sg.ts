@@ -2,9 +2,6 @@ import { Fields } from '.'
 
 export const enSG: Fields = {
   loginIdentity: {
-    convertedCorppassTitle: 'NRIC/FIN and UEN fields added',
-    convertedMyInfoTitle: 'NRIC/FIN field added',
-    gotIt: 'Got it',
     entities: 'Singapore-registered entities',
     corppassUsers: 'Corppass users',
     sectionLabel: 'Identity',

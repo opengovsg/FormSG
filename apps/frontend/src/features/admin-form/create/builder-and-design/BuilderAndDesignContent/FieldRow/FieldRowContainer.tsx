@@ -24,12 +24,7 @@ import { Draggable } from '@hello-pangea/dnd'
 import { isEqual, times } from 'lodash'
 
 import { FormColorTheme, FormResponseMode } from 'formsg-shared/types'
-import {
-  BasicField,
-  FormFieldDto,
-  MyInfoAttribute,
-} from 'formsg-shared/types/field'
-import { getLoginIdentityAttr } from 'formsg-shared/utils/login-identity'
+import { BasicField, FormFieldDto } from 'formsg-shared/types/field'
 
 import { useIsMobile } from '~hooks/useIsMobile'
 import { useToast } from '~hooks/useToast'
@@ -95,7 +90,6 @@ import {
 } from '../../useFieldBuilderStore'
 import { getAttachmentSizeLimit } from '../../utils/getAttachmentSizeLimit'
 
-import { ConvertedIdentityPeekCard } from './ConvertedIdentityPeekCard'
 import { SectionFieldRow } from './SectionFieldRow'
 import { VerifiableFieldBuilderContainer } from './VerifiableFieldBuilderContainer'
 
@@ -164,7 +158,6 @@ const FieldRowContainer = ({
     setPaymentToInactiveSelector,
   )
 
-  const identityAttr = getLoginIdentityAttr(field)
   const sourceBadge = getFieldSourceLabel(field)
 
   // Explicitly defining isActive here to prevent constant checks to undefined
@@ -391,12 +384,6 @@ const FieldRowContainer = ({
               </Collapse>
             </HighlightableFlex>
           </Tooltip>
-          {isActive && field.fieldType === BasicField.Nric && identityAttr && (
-            <ConvertedIdentityPeekCard
-              isCorppass={identityAttr !== MyInfoAttribute.UinFin}
-              fieldRef={ref}
-            />
-          )}
         </Box>
       )}
     </Draggable>
