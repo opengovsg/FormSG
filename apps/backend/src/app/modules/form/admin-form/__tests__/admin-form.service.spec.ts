@@ -4937,8 +4937,37 @@ describe('convertSubmitterIdCollection', () => {
       authType: FormAuthType.CP,
       responseMode: FormResponseMode.Multirespondent,
       isSubmitterIdCollectionEnabled: true,
+      increment: jest.fn(),
       ...overrides,
     }) as unknown as IPopulatedForm
+  it('saves only if the form is unchanged since it was loaded', async () => {
+    const increment = jest.fn()
+    const insertFormFields = jest
+      .fn()
+      .mockResolvedValue({ getSettings: () => ({}) })
+    const result = await AdminFormService.convertSubmitterIdCollection(
+      makeForm({ increment, insertFormFields }),
+    )
+    expect(result.isOk()).toBe(true)
+    // The version check must be set before the save is sent.
+    expect(increment.mock.invocationCallOrder[0]).toBeLessThan(
+      insertFormFields.mock.invocationCallOrder[0],
+    )
+  })
+  it('returns a conflict when another request changed the form first', async () => {
+    const insertFormFields = jest.fn().mockRejectedValue(
+      // @ts-ignore
+      new mongoose.Error.VersionError({}, 1, ['form_fields']),
+    )
+    const result = await AdminFormService.convertSubmitterIdCollection(
+      makeForm({ insertFormFields }),
+    )
+    expect(result._unsafeUnwrapErr()).toEqual(
+      new DatabaseConflictError(
+        'This form has just been changed. Refresh the page and try again.',
+      ),
+    )
+  })
   it.each([
     { status: FormStatus.Public },
     { isSubmitterIdCollectionEnabled: false },

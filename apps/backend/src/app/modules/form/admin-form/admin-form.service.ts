@@ -2265,6 +2265,8 @@ export const convertSubmitterIdCollection = (
   }
 
   form.isSubmitterIdCollectionEnabled = false
+  // Save only if form is unchanged to prevent race condition
+  form.increment()
   const newFields = getLoginIdentityAttrsForAuthType(form.authType).map(
     (attr) => ({
       ...createLoginIdentityField(attr),
@@ -2277,6 +2279,11 @@ export const convertSubmitterIdCollection = (
     stepOne.edit.push(...newFields.map(({ _id }) => String(_id)))
   }
   return ResultAsync.fromPromise(form.insertFormFields(newFields), (error) => {
+    if (error instanceof mongoose.Error.VersionError) {
+      return new DatabaseConflictError(
+        'This form has just been changed. Refresh the page and try again.',
+      )
+    }
     logger.error({
       message: 'Error converting submitter ID collection into fields',
       meta: { action: 'convertSubmitterIdCollection', formId: form._id },
