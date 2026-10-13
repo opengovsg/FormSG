@@ -60,7 +60,7 @@ export const QuestionsBlock = ({
       icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
     }))
 
-  const hasOnlyMyInfoFields =
+  const hasOnlyStepOneOnlyFields =
     fieldItems.length === 0 && fillableFields.length > 0
 
   return (
@@ -116,10 +116,10 @@ export const QuestionsBlock = ({
             )
           }}
         />
-        {isRedesign && hasOnlyMyInfoFields ? (
+        {isRedesign && hasOnlyStepOneOnlyFields ? (
           <FormHelperText>
             {t(
-              'features.adminForm.sidebar.workflow.questions.myInfoOnlyHelperText',
+              'features.adminForm.sidebar.workflow.questions.stepOneOnlyHelperText',
             )}
           </FormHelperText>
         ) : null}

@@ -154,7 +154,7 @@ export interface Workflow {
     placeholder: string
     placeholderRedesign: string
     autoAddHelperTextRedesign: string
-    myInfoOnlyHelperText: string
+    stepOneOnlyHelperText: string
   }
   addField: {
     fields: string
