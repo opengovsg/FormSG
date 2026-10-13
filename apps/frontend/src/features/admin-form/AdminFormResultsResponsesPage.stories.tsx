@@ -4,9 +4,11 @@ import {
   createRoutesFromElements,
   RouterProvider,
 } from 'react-router-dom'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
 import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form'
 
 import {
@@ -164,6 +166,28 @@ StorageFormUnlocked.play = async ({ canvasElement }) => {
     canvas.getByRole('button', { name: /unlock responses/i }),
   )
 }
+
+const delightfulDashboardGrowthBook = new GrowthBook({
+  features: { [featureFlags.delightfulDashboard]: { defaultValue: true } },
+})
+
+export const StorageFormUnlockedV2 = Template.bind({})
+StorageFormUnlockedV2.parameters = StorageForm.parameters
+// Asserting the v2 toolbar guards against a local v1 toggle in localStorage
+// silently rendering v1 under this story's name.
+StorageFormUnlockedV2.play = async (context) => {
+  await StorageFormUnlocked.play?.(context)
+  await within(context.canvasElement).findByRole('button', {
+    name: /columns/i,
+  })
+}
+StorageFormUnlockedV2.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={delightfulDashboardGrowthBook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
 
 export const StorageFormUnlockedTablet = Template.bind({})
 StorageFormUnlockedTablet.parameters = {
