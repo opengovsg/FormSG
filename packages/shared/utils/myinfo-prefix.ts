@@ -3,7 +3,6 @@ import { CorppassAttribute, MyInfoAttribute } from '../types'
 import type { FlattenedV1Response } from './flatten-v4-to-v1'
 
 export const MYINFO_QUESTION_PREFIX = '[Myinfo] '
-/** Marks a Corppass login identity answer, like the MyInfo prefix. */
 export const CORPPASS_QUESTION_PREFIX = '[Corppass] '
 
 type MyInfoPrefixCandidate = {
@@ -31,9 +30,10 @@ const asSet = (readOnlyFieldIds: Iterable<string>): ReadonlySet<string> =>
   new Set(Array.from(readOnlyFieldIds, String))
 
 /**
- * @param formFields the form definition, which says whether a field is a
- * Corppass login identity field. V1 entries carry `myInfo` but not
- * `corppass`, to match storage mode byte for byte.
+ * @param formFields the form's fields. Needed to mark Corppass answers: V1
+ * entries copy `myInfo` but not `corppass`, to match storage mode exactly, so
+ * an entry alone can't tell a Corppass identity answer apart. Without it,
+ * Corppass answers get no prefix.
  */
 export const applyMyInfoPrefix = (
   v1Fields: readonly FlattenedV1Response[],
