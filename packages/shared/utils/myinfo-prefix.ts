@@ -1,3 +1,5 @@
+import { CorppassAttribute, MyInfoAttribute } from '../types'
+
 import type { FlattenedV1Response } from './flatten-v4-to-v1'
 
 export const MYINFO_QUESTION_PREFIX = '[Myinfo] '
@@ -6,8 +8,8 @@ export const CORPPASS_QUESTION_PREFIX = '[Corppass] '
 
 type MyInfoPrefixCandidate = {
   _id: string
-  myInfo?: { attr?: string } | null
-  corppass?: { attr?: string } | null
+  myInfo?: { attr?: MyInfoAttribute } | null
+  corppass?: { attr?: CorppassAttribute } | null
 }
 
 /**

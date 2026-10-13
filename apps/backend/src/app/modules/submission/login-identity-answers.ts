@@ -1,4 +1,4 @@
-import { FormAuthType } from 'formsg-shared/types'
+import { FormAuthType, MyInfoAttribute } from 'formsg-shared/types'
 import {
   getLoginIdentityAttr,
   LoginIdentityCandidate,
@@ -88,8 +88,16 @@ export const prefixLoginIdentityQuestions = (
   for (const response of responses) {
     const field = fieldsById.get(String(response._id))
     if (!field) continue
+    // Schema fields type attr as string, so rebuild the field from its
+    // checked identity before choosing the prefix.
+    const attr = getLoginIdentityAttr(field)
     const prefix = getVerifiedQuestionPrefix(
-      { ...field, _id: String(field._id) },
+      {
+        _id: String(field._id),
+        myInfo: attr === MyInfoAttribute.UinFin ? { attr } : undefined,
+        corppass:
+          attr && attr !== MyInfoAttribute.UinFin ? { attr } : undefined,
+      },
       verified,
     )
     response.question = `${prefix}${response.question}`
