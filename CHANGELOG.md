@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.46.5](https://github.com/opengovsg/formsg/compare/v9.46.4...v9.46.5) (2026-10-13)
+
+
+### Bug Fixes
+
+* **auth-one:** make /login the initiate_login_uri for GSIB/Menlo (#10232) ([#10232](https://github.com/opengovsg/formsg/commit/5e2e622ca9128b5335a459d791173331c9581f9d))
+
+
+### CI
+
+* **chromatic:** cut unnecessary TurboSnap full rebuilds (#10173) ([#10173](https://github.com/opengovsg/formsg/commit/c3c794036e26a759456d9c019258d4eec6fecb22))
+* **chromatic:** upgrade CLI so TurboSnap traces pnpm deps (#10176) ([#10176](https://github.com/opengovsg/formsg/commit/22f81f8263b793cc45d25eb601efa7f274bf1461))
+
+
+### Dependencies
+
+* **deps:** bump multiparty to 4.3.1 for CVE-2026-87908 (#10274) ([#10274](https://github.com/opengovsg/formsg/commit/ec1e3b42f49c8948ff1a84cab3071687a2876214))
+
 ## [9.46.4](https://github.com/opengovsg/formsg/compare/v9.46.3...v9.46.4) (2026-10-12)
 
 
