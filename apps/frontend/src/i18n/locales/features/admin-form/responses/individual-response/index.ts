@@ -7,6 +7,8 @@ export interface ResponsesIndividualResponse {
   }
   downloadAttachmentsAsZip: string
   responseLinkLabel: string
+  previousResponse: string
+  nextResponse: string
   paymentSection: {
     paymentStatusLabel: {
       partiallyRefunded: string

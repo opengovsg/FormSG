@@ -8,6 +8,8 @@ export const enSG: ResponsesIndividualResponse = {
   downloadAttachmentsAsZip:
     'Download {attachmentSize, plural, =1 {# attachment} other {# attachments}} as .zip',
   responseLinkLabel: 'Response link',
+  previousResponse: 'Previous response',
+  nextResponse: 'Next response',
   paymentSection: {
     paymentStatusLabel: {
       partiallyRefunded: 'Partially refunded',
