@@ -17,7 +17,6 @@
     "lint-ci": "pnpm exec eslint src/ --quiet"
   },
   "dependencies": {
-    "formsg-shared": "workspace:*",
     "@aws-sdk/client-cloudwatch-logs": "^3.775.0",
     "@aws-sdk/client-lambda": "^3.775.0",
     "@aws-sdk/client-s3": "^3.775.0",
@@ -64,6 +63,7 @@
     "express-session": "^1.18.2",
     "express-winston": "^4.2.0",
     "file-saver": "^2.0.5",
+    "formsg-shared": "workspace:*",
     "fp-ts": "^2.16.9",
     "helmet": "^8.1.0",
     "hot-shots": "^10.1.1",
@@ -89,7 +89,7 @@
     "mongodb-uri": "^0.9.7",
     "mongoose": "^7.8.10",
     "multer": "^2.3.0",
-    "multiparty": ">=4.3.0",
+    "multiparty": "^4.3.1",
     "nan": "^2.22.2",
     "neverthrow": "^8.0.0",
     "node-cache": "^5.1.2",
