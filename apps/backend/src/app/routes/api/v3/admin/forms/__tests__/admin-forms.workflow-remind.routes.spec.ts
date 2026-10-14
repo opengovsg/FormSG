@@ -9,7 +9,6 @@ import {
   WorkflowEventType,
   WorkflowType,
 } from 'formsg-shared/types'
-import { WORKFLOW_ACTIONS_CUTOFF } from 'formsg-shared/utils/workflow-actions'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
@@ -111,7 +110,6 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/remind', () => {
           nextStepRecipientEmails: ['two@example.com'],
         },
       ],
-      created: new Date(WORKFLOW_ACTIONS_CUTOFF.getTime() + 1000),
     })
 
   const remind = (formId: unknown, submissionId: unknown) =>
