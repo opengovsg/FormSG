@@ -6,6 +6,7 @@ import {
   ACTIVE_ADMINFORM_RESULTS_ROUTE_REGEX,
   ADMINFORM_RESULTS_SUBROUTE,
   ADMINFORM_ROUTE,
+  RESULTS_RESPONSES_SUBROUTE,
 } from '~constants/routes'
 
 import {
@@ -40,20 +41,25 @@ export const FormResultsLayout = (): JSX.Element => {
   if (!formId) throw new Error('No formId provided')
 
   const tabIndex = tabs.findIndex((tab) => checkTabActive(tab.path))
+  // The version only changes the responses table, so the toggle has nothing
+  // to switch on the Feedback and Charts tabs.
+  const isResponsesTab = checkTabActive(RESULTS_RESPONSES_SUBROUTE)
 
   return (
     <Box overflowX="hidden" overflowY="auto" position="relative" flex={1}>
-      <Box
-        position="absolute"
-        top={{ base: '2.5rem', lg: '3.125rem' }}
-        right={{ base: '2.5rem', md: '3.5rem', lg: '4rem' }}
-        h="1.5rem"
-        display="flex"
-        alignItems="center"
-        zIndex={1}
-      >
-        <DashboardVersionToggle />
-      </Box>
+      {isResponsesTab ? (
+        <Box
+          position="absolute"
+          top={{ base: '2.5rem', lg: '3.125rem' }}
+          right={{ base: '2.5rem', md: '3.5rem', lg: '4rem' }}
+          h="1.5rem"
+          display="flex"
+          alignItems="center"
+          zIndex={1}
+        >
+          <DashboardVersionToggle />
+        </Box>
+      ) : null}
       <Tabs
         orientation="vertical"
         variant="line"

@@ -67,6 +67,7 @@ interface UnlockedResponsesContextProps {
   setColumnOptions: (columnOptions: ResponseColumnOption[]) => void
   hiddenColumnIds: string[]
   toggleColumnVisibility: (columnId: string) => void
+  setAllColumnsVisible: (isVisible: boolean) => void
   searchText: string
   setSearchText: (searchText: string) => void
   excludedSearchColumnIds: string[]
@@ -95,6 +96,13 @@ interface UnlockedResponsesContextProps {
   renderedRowCount: number
   setRenderedRowCount: (count: number) => void
   onRowClick: () => void
+  /** Neighbours of a response in the order the table shows them. */
+  getAdjacentSubmissions: (submissionId: string) => {
+    previous?: SubmissionMetadata
+    next?: SubmissionMetadata
+  }
+  /** Keeps the paginated table on the page the navigated-to response is on. */
+  onNavigateToSubmission: (submissionId: string) => void
   lastNavPage?: number
   lastNavSubmissionId?: string
 }
@@ -126,6 +134,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
         : [...hidden, columnId],
     )
   }, [])
+
+  const setAllColumnsVisible = useCallback(
+    (isVisible: boolean) =>
+      setHiddenColumnIds(isVisible ? [] : columnOptions.map(({ id }) => id)),
+    [columnOptions],
+  )
 
   const [sortColumnId, setSortColumnId] = useState<string>()
   const [sortDirection, setSortDirection] = useState<ResponseSortDirection>(
@@ -212,14 +226,14 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     isLoading: isPagedLoading,
   } = useFormResponses({ page: pages.current, enabled: paginationEnabled })
 
-  const { isFetching: isPrevFetching } = useFormResponses({
-    page: pages.prev,
-    enabled: paginationEnabled,
-  })
-  const { isFetching: isNextFetching } = useFormResponses({
-    page: pages.next,
-    enabled: paginationEnabled,
-  })
+  const {
+    data: { metadata: prevMetadata = [] } = {},
+    isFetching: isPrevFetching,
+  } = useFormResponses({ page: pages.prev, enabled: paginationEnabled })
+  const {
+    data: { metadata: nextMetadata = [] } = {},
+    isFetching: isNextFetching,
+  } = useFormResponses({ page: pages.next, enabled: paginationEnabled })
 
   const { data: allData, isLoading: isLoadingAll } = useAllFormResponses({
     enabled: isInfiniteScroll && !submissionId,
@@ -264,6 +278,56 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       isNextFetching,
       isPrevFetching,
     ],
+  )
+
+  // Responses in the order the admin sees them, spanning the neighbouring
+  // pages when paginated so the arrows can cross a page boundary. A response
+  // ID search shows one row, so there is nothing to step through.
+  const navigableMetadata = useMemo(() => {
+    if (lastNavSubmissionId) return []
+    if (!isInfiniteScroll) {
+      return [...prevMetadata, ...pagedMetadata, ...nextMetadata]
+    }
+    if (!visibleSubmissionIds) return allMetadata
+    const byRefNo = new Map<string, SubmissionMetadata>(
+      allMetadata.map((row) => [row.refNo, row]),
+    )
+    return visibleSubmissionIds.flatMap((refNo) => byRefNo.get(refNo) ?? [])
+  }, [
+    allMetadata,
+    isInfiniteScroll,
+    lastNavSubmissionId,
+    nextMetadata,
+    pagedMetadata,
+    prevMetadata,
+    visibleSubmissionIds,
+  ])
+
+  const getAdjacentSubmissions = useCallback(
+    (submissionId: string) => {
+      if (isAnyFetching) return {}
+      const index = navigableMetadata.findIndex(
+        (row) => row.refNo === submissionId,
+      )
+      if (index === -1) return {}
+      return {
+        previous: navigableMetadata[index - 1],
+        next: navigableMetadata[index + 1],
+      }
+    },
+    [isAnyFetching, navigableMetadata],
+  )
+
+  const onNavigateToSubmission = useCallback(
+    (submissionId: string) => {
+      if (isInfiniteScroll) return
+      if (prevMetadata.some((row) => row.refNo === submissionId)) {
+        setLastNavPage((page) => Math.max((page ?? 1) - 1, 1))
+      } else if (nextMetadata.some((row) => row.refNo === submissionId)) {
+        setLastNavPage((page) => (page ?? 1) + 1)
+      }
+    },
+    [isInfiniteScroll, nextMetadata, prevMetadata],
   )
 
   const { data: form } = useAdminForm()
@@ -319,6 +383,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     setColumnOptions,
     hiddenColumnIds,
     toggleColumnVisibility,
+    setAllColumnsVisible,
     searchText,
     setSearchText,
     excludedSearchColumnIds,
@@ -350,6 +415,8 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     submissionId,
     setSubmissionId,
     onRowClick,
+    getAdjacentSubmissions,
+    onNavigateToSubmission,
   }
 }
 

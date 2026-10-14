@@ -159,7 +159,6 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     sortType: byServerOrder,
     width: 250,
     minWidth: 250,
-    disableResizing: true,
   },
 ]
 
@@ -788,9 +787,8 @@ export const ResponsesTable = () => {
                       transitionDuration="normal"
                       _groupHover={{ bg: 'primary.100' }}
                       _groupActive={{ bg: 'primary.200' }}
-                      {...(isDelightfulDashboard
-                        ? { h: ROW_HEIGHT, py: 0 }
-                        : {})}
+                      h={ROW_HEIGHT}
+                      py={0}
                     >
                       {cell.render('Cell')}
                     </Td>

@@ -415,11 +415,7 @@ export const DownloadButton = ({
                   aria-label={t(
                     'features.adminForm.responses.responsesPage.storage.unlockedResponses.downloadButton.label',
                   )}
-                  leftIcon={
-                    isDelightfulDashboard ? (
-                      <BiDownload fontSize="1.25rem" />
-                    ) : undefined
-                  }
+                  leftIcon={<BiDownload fontSize="1.25rem" />}
                   rightIcon={isOpen ? <BxsChevronUp /> : <BxsChevronDown />}
                 >
                   {t('features.common.download')}

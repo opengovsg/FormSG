@@ -4,9 +4,11 @@ import {
   createRoutesFromElements,
   RouterProvider,
 } from 'react-router-dom'
+import { GrowthBook, GrowthBookProvider } from '@growthbook/growthbook-react'
 import { Meta, StoryFn } from '@storybook/react'
-import { expect, screen, userEvent, waitFor, within } from '@storybook/test'
+import { expect, userEvent, waitFor, within } from '@storybook/test'
 
+import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types/form'
 
 import {
@@ -165,6 +167,28 @@ StorageFormUnlocked.play = async ({ canvasElement }) => {
   )
 }
 
+const delightfulDashboardGrowthBook = new GrowthBook({
+  features: { [featureFlags.delightfulDashboard]: { defaultValue: true } },
+})
+
+export const StorageFormUnlockedV2 = Template.bind({})
+StorageFormUnlockedV2.parameters = StorageForm.parameters
+// Asserting the v2 toolbar guards against a local v1 toggle in localStorage
+// silently rendering v1 under this story's name.
+StorageFormUnlockedV2.play = async (context) => {
+  await StorageFormUnlocked.play?.(context)
+  await within(context.canvasElement).findByRole('button', {
+    name: /columns/i,
+  })
+}
+StorageFormUnlockedV2.decorators = [
+  (Story) => (
+    <GrowthBookProvider growthbook={delightfulDashboardGrowthBook}>
+      <Story />
+    </GrowthBookProvider>
+  ),
+]
+
 export const StorageFormUnlockedTablet = Template.bind({})
 StorageFormUnlockedTablet.parameters = {
   ...EmailFormTablet.parameters,
@@ -283,34 +307,14 @@ StorageFormResponseDrawer.parameters = {
     },
   },
 }
-// The drawer portals outside the canvas and its overlay blocks the table's
-// input, so unlock through the last (drawer) secret-key input on the page.
-const unlockFromDrawer: StoryFn['play'] = async () => {
-  const lastSecretKeyInput = () => screen.getAllByTestId('secretKey').at(-1)
-
-  await waitFor(
-    async () => {
-      expect(lastSecretKeyInput()).not.toBeDisabled()
-    },
-    { timeout: 5000 },
-  )
-  const input = lastSecretKeyInput()
-  const unlockButton = screen
-    .getAllByRole('button', { name: /unlock responses/i })
-    .at(-1)
-  if (!input || !unlockButton) throw new Error('Drawer secret-key form missing')
-
-  await userEvent.type(input, MOCK_KEYPAIR.secretKey)
-  await userEvent.click(unlockButton)
-}
-StorageFormResponseDrawer.play = unlockFromDrawer
+StorageFormResponseDrawer.play = StorageFormUnlocked.play
 
 export const StorageFormResponseDrawerMobile = DrawerTemplate.bind({})
 StorageFormResponseDrawerMobile.parameters = {
   ...EmailFormMobile.parameters,
   ...StorageFormResponseDrawer.parameters,
 }
-StorageFormResponseDrawerMobile.play = unlockFromDrawer
+StorageFormResponseDrawerMobile.play = StorageFormUnlocked.play
 
 export const Loading = Template.bind({})
 Loading.parameters = {

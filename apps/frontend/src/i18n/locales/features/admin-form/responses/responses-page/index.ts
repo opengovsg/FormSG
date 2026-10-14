@@ -66,8 +66,6 @@ export interface ResponsesResponsesPage {
       filterMenu: {
         dateRange: string
         columns: string
-        checkAll: string
-        uncheckAll: string
       }
       views: {
         allResponses: string
@@ -95,6 +93,8 @@ export interface ResponsesResponsesPage {
         filter: string
         sort: string
         columns: string
+        checkAll: string
+        uncheckAll: string
       }
       downloadButton: {
         label: string

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, Skeleton, Spinner, Stack, Text } from '@chakra-ui/react'
+import { Box, Flex, Skeleton, Spinner, Text } from '@chakra-ui/react'
 
 import {
   DateRangePicker,
@@ -217,71 +217,62 @@ const LegacyUnlockedResponses = (): JSX.Element => {
       flexDir="column"
       pr={{ base: '1rem', md: '1.75rem', lg: '2rem' }}
       w="100%"
-      maxW="69.5rem"
-      mx="auto"
+      maxW="100%"
       minW={0}
-      overflowX="hidden"
     >
       <Flex
-        direction={{ base: 'column', sm: 'row' }}
+        direction="column"
         mb="1rem"
-        alignItems={{ base: 'flex-start', md: 'center' }}
-        justifyContent="space-between"
         color="secondary.500"
-        gap="1rem"
         w="100%"
         maxW="100%"
-        flexWrap="wrap"
+        flexShrink={0}
+      >
+        <Skeleton isLoaded={!isAnyFetching} w={{ base: '100%', md: 'auto' }}>
+          <Text
+            textStyle="h4"
+            mb={{ base: '0.25rem', md: '0.5rem' }}
+            noOfLines={{ base: 2, md: 1 }}
+          >
+            <Text as="span" color="primary.500">
+              {countToUse?.toLocaleString()}
+            </Text>{' '}
+            {t(
+              submissionId
+                ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
+                : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
+              { count: countToUse ?? 0 },
+            )}
+          </Text>
+        </Skeleton>
+      </Flex>
+
+      <ResponseViewTabs />
+
+      <Flex
+        direction={{ base: 'column', lg: 'row' }}
+        align={{ base: 'stretch', lg: 'center' }}
+        justify="space-between"
+        gap="0.75rem"
+        w="100%"
+        maxW="100%"
+        mb="1rem"
         flexShrink={0}
       >
         <Flex
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          w={{ base: '100%', sm: 'auto' }}
-          flex={{ base: '0 0 auto', sm: '1' }}
+          direction={{ base: 'column', sm: 'row' }}
+          align={{ base: 'stretch', sm: 'center' }}
+          gap="0.75rem"
+          flex={1}
           minW={0}
         >
-          <Flex direction="column" flex={1} minW={0}>
-            <Skeleton
-              isLoaded={!isAnyFetching}
-              w={{ base: '100%', md: 'auto' }}
-            >
-              <Text
-                textStyle="h4"
-                mb={{ base: '0.25rem', md: '0.5rem' }}
-                noOfLines={{ base: 2, md: 1 }}
-              >
-                <Text as="span" color="primary.500">
-                  {countToUse?.toLocaleString()}
-                </Text>{' '}
-                {t(
-                  submissionId
-                    ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
-                    : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
-                  { count: countToUse ?? 0 },
-                )}
-              </Text>
-            </Skeleton>
-          </Flex>
-
-          <Flex minW="fit-content" flexShrink={0} ml={{ base: '1rem', sm: 0 }}>
+          <Flex flexShrink={0}>
             <SubmissionSearchbar
               submissionId={submissionId}
               setSubmissionId={setSubmissionId}
               isAnyFetching={isAnyFetching}
             />
           </Flex>
-        </Flex>
-
-        <Stack
-          direction={{ base: 'column', sm: 'row' }}
-          align={{ base: 'stretch', sm: 'flex-end' }}
-          spacing="0.5rem"
-          w={{ base: '100%', sm: 'auto' }}
-          flexShrink={0}
-          maxW="100%"
-        >
           <DateRangePicker
             value={dateRangePickerHelper.dateStringToDatePickerValue(dateRange)}
             onChange={(nextDateRange) =>
@@ -292,8 +283,8 @@ const LegacyUnlockedResponses = (): JSX.Element => {
               )
             }
           />
-          <DownloadButton />
-        </Stack>
+        </Flex>
+        <DownloadButton />
       </Flex>
 
       <Box
