@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.47.0](https://github.com/opengovsg/formsg/compare/v9.46.6...v9.47.0) (2026-10-14)
+
+
+### Features
+
+* **results:** align v1 with v2, bulk column toggle, drawer prev/next arrows (#10273) ([#10273](https://github.com/opengovsg/formsg/commit/9dd01ffbfd314fedaf1785829684d74bd9c497de))
+
 ## [9.46.6](https://github.com/opengovsg/formsg/compare/v9.46.5...v9.46.6) (2026-10-13)
 
 
