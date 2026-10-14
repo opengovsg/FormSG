@@ -57,7 +57,6 @@ const pendingMrf = (
   workflowNumTotalSteps: 3,
   lastSubmittedAt: undefined,
   hasNextStepRecipientEmails: true,
-  isWorkflowActionsEligible: true,
   ...overrides,
 })
 

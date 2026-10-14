@@ -32,7 +32,7 @@ export const WorkflowActionsSection = ({
 }: WorkflowActionsSectionProps): JSX.Element | null => {
   const { t } = useTranslation()
   const { formId = '' } = useParams()
-  const isWorkflowActionsOn = useWorkflowActionsGate(mrf)
+  const isWorkflowActionsOn = useWorkflowActionsGate()
   const { hasEditAccess } = useAdminFormCollaborators(formId)
   const stopModal = useDisclosure()
   const stopMutation = useStopWorkflowMutation(formId)

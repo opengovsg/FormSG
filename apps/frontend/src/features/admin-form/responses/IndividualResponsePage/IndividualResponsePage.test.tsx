@@ -194,7 +194,6 @@ describe('IndividualResponsePage', () => {
         workflowNumTotalSteps: 2,
         lastSubmittedAt: undefined,
         hasNextStepRecipientEmails: true,
-        isWorkflowActionsEligible: true,
         stoppedAt: '2026-10-07T08:00:00.000Z',
       }
     })

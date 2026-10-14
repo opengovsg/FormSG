@@ -146,7 +146,6 @@ describe('getReminderButtonState', () => {
     workflowNumTotalSteps: 3,
     lastSubmittedAt: undefined,
     hasNextStepRecipientEmails: true,
-    isWorkflowActionsEligible: true,
   }
 
   it('enables the reminder for a pending step with recipients', () => {

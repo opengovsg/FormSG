@@ -10,7 +10,6 @@ import {
   WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
-import { WORKFLOW_ACTIONS_CUTOFF } from 'formsg-shared/utils/workflow-actions'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
@@ -85,7 +84,6 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/stop', () => {
   const createSubmission = (
     formId: unknown,
     {
-      created = new Date(WORKFLOW_ACTIONS_CUTOFF.getTime() + 1000),
       submittedSteps = [
         {
           isApproval: false,
@@ -94,7 +92,6 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/stop', () => {
         },
       ],
     }: {
-      created?: Date
       submittedSteps?: Record<string, unknown>[]
     } = {},
   ) =>
@@ -110,7 +107,6 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/stop', () => {
       version: 3,
       workflowStep: submittedSteps.length - 1,
       submittedSteps,
-      created,
     })
 
   const stop = (formId: unknown, submissionId: unknown, emails: unknown) =>
@@ -165,17 +161,6 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/stop', () => {
     expect(response.status).toEqual(403)
     const stored = await MultirespondentSubmission.findById(submission._id)
     expect(stored?.stoppedAt).toBeUndefined()
-  })
-
-  it('returns 403 for a submission created before the cutoff', async () => {
-    const form = await createForm()
-    const submission = await createSubmission(form._id, {
-      created: new Date(WORKFLOW_ACTIONS_CUTOFF.getTime() - 1000),
-    })
-
-    const response = await stop(form._id, submission._id, [])
-
-    expect(response.status).toEqual(403)
   })
 
   it('returns 403 for a read-only collaborator', async () => {

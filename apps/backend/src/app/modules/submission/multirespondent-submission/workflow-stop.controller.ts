@@ -2,7 +2,6 @@ import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode } from 'formsg-shared/types'
-import { isWorkflowActionsEligible } from 'formsg-shared/utils/workflow-actions'
 import moment from 'moment-timezone'
 import { errAsync, okAsync } from 'neverthrow'
 
@@ -17,10 +16,7 @@ import * as UserService from '../../user/user.service'
 import { MrfWorkflowActionsUnavailableError } from '../submission.errors'
 import { mapRouteError, sendRouteError } from '../submission.utils'
 
-import {
-  getMultirespondentSubmission,
-  stopMultirespondentSubmission,
-} from './multirespondent-submission.service'
+import { stopMultirespondentSubmission } from './multirespondent-submission.service'
 
 const logger = createLoggerWithLabel(module)
 
@@ -68,13 +64,6 @@ const stopPendingMrfSubmission: ControllerHandler<
       }
       return okAsync({ form, user })
     })
-    .andThen(({ form, user }) =>
-      getMultirespondentSubmission(submissionId).andThen((submission) =>
-        isWorkflowActionsEligible(submission.created)
-          ? okAsync({ form, user })
-          : errAsync(new MrfWorkflowActionsUnavailableError()),
-      ),
-    )
     .andThen(({ form, user }) =>
       stopMultirespondentSubmission({
         formId,
