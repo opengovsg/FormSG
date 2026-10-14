@@ -56,6 +56,7 @@ import { MyInfoHashDidNotMatchError } from '../../myinfo/myinfo.errors'
 import { MyInfoKey } from '../../myinfo/myinfo.types'
 import { getMyInfoChildHashKey } from '../../myinfo/myinfo.util'
 import { startsWithSPCPFieldTitle } from '../../spcp/spcp.util'
+import { toWorkflowEventDtos } from '../../workflow-event/workflow-event.service'
 import { MYINFO_PREFIX } from '../email-submission/email-submission.constants'
 import {
   InvalidWorkflowTypeError,
@@ -115,6 +116,7 @@ export const createMultirespondentSubmissionDto = (
     submittedSteps: submissionData.submittedSteps?.map(
       projectSubmittedStepForAdmin,
     ),
+    workflowEvents: toWorkflowEventDtos(submissionData.workflowEvents),
   }
 }
 
@@ -140,6 +142,8 @@ export const createPublicMultirespondentSubmissionDto = (
     workflow: stripWorkflowEmails(submissionData.workflow),
     encryptedStepToken: undefined,
     submittedSteps: undefined,
+    // Events name the admins who acted, so they never reach respondents.
+    workflowEvents: undefined,
   }
 }
 

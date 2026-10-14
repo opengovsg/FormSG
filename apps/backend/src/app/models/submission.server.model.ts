@@ -5,6 +5,7 @@ import {
   SubmissionMetadata,
   SubmissionType,
   WebhookResponse,
+  WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
 import moment from 'moment-timezone'
@@ -54,6 +55,7 @@ import { createQueryWithDateParam } from '../utils/date'
 
 import { FORM_SCHEMA_ID } from './form.server.model'
 import { PAYMENT_SCHEMA_ID } from './payment.server.model'
+import { USER_SCHEMA_ID } from './user.server.model'
 
 export const SUBMISSION_SCHEMA_ID = 'Submission'
 
@@ -292,6 +294,7 @@ SubmissionSchema.statics.findEncryptedOrMultirespondentSubmissionById =
         mrfVersion: 1,
         ...buildAdminSubmittedStepsMongoProjection(),
         encryptedStepToken: 1,
+        workflowEvents: 1,
       })
       .exec() as Promise<SubmissionData | null>
   }
@@ -845,6 +848,39 @@ const submittedStepSchema = new Schema(
   { _id: false },
 )
 
+const workflowEventSchema = new Schema(
+  {
+    type: {
+      type: String,
+      enum: Object.values(WorkflowEventType),
+      required: true,
+    },
+    actorId: {
+      type: Schema.Types.ObjectId,
+      ref: USER_SCHEMA_ID,
+      required: true,
+    },
+    actorEmail: {
+      type: String,
+      required: true,
+    },
+    stepNumber: {
+      type: Number,
+      min: 1,
+      required: true,
+    },
+    emails: {
+      type: [String],
+      default: [],
+    },
+    created: {
+      type: Date,
+      required: true,
+    },
+  },
+  { _id: false },
+)
+
 export const MultirespondentSubmissionSchema = new Schema<
   IMultirespondentSubmissionSchema,
   IMultirespondentSubmissionModel
@@ -904,6 +940,13 @@ export const MultirespondentSubmissionSchema = new Schema<
     type: Schema.Types.ObjectId,
     // Defer loading of the ref due to circular dependency on schema IDs.
     ref: () => PAYMENT_SCHEMA_ID,
+  },
+  // RATIONALE: admin actions live on the submission so that an action and its
+  // log entry are written in one conditional update. Only ever $push to this
+  // array; assigning it from a loaded document and saving drops newer events.
+  workflowEvents: {
+    type: [workflowEventSchema],
+    default: undefined,
   },
 })
 
@@ -1242,6 +1285,7 @@ MultirespondentSubmissionSchema.statics.findEncryptedSubmissionById = function (
       mrfVersion: 1,
       ...buildAdminSubmittedStepsMongoProjection(),
       encryptedStepToken: 1,
+      workflowEvents: 1,
     })
     .exec()
 }

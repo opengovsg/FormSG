@@ -15,6 +15,7 @@ import {
   ShortTextResponseV3,
   SignatureVectorArray,
   SubmissionType,
+  WorkflowEventType,
   WorkflowStatus,
   WorkflowType,
 } from 'formsg-shared/types'
@@ -326,6 +327,42 @@ describe('multirespondent-submission.utils', () => {
       expect(actual.encryptedStepToken).toBeUndefined()
       expect(JSON.stringify(actual)).not.toContain('encryptedStepToken')
     })
+
+    it('should never expose workflow events in the public DTO', () => {
+      // Arrange
+      const submissionData = {
+        submissionType: SubmissionType.Multirespondent,
+        _id: new ObjectId(),
+        created: new Date(),
+        workflow: [],
+        workflowStep: 1,
+        form_fields: [],
+        form_logics: [],
+        attachmentMetadata: {},
+        version: 3,
+        mrfVersion: 3,
+        workflowEvents: [
+          {
+            type: WorkflowEventType.ReminderSent,
+            actorId: new ObjectId(),
+            actorEmail: 'admin@example.com',
+            stepNumber: 2,
+            emails: ['approver@example.com'],
+            created: new Date(),
+          },
+        ],
+      } as unknown as MultirespondentSubmissionData
+
+      // Act
+      const actual = createPublicMultirespondentSubmissionDto(
+        submissionData,
+        {},
+      )
+
+      // Assert
+      expect(actual.workflowEvents).toBeUndefined()
+      expect(JSON.stringify(actual)).not.toContain('admin@example.com')
+    })
   })
 
   describe('createMultirespondentSubmissionDto', () => {
@@ -397,7 +434,64 @@ describe('multirespondent-submission.utils', () => {
             submittedAt: submittedSteps[0].submittedAt,
           },
         ],
+        workflowEvents: [],
       })
+    })
+
+    it('should return workflow events to admins oldest first, without actor ids', () => {
+      // Arrange
+      const actorId = new ObjectId()
+      const submissionData = {
+        submissionType: SubmissionType.Multirespondent,
+        _id: new ObjectId(),
+        created: new Date(),
+        workflow: [],
+        workflowStep: 0,
+        form_fields: [],
+        form_logics: [],
+        attachmentMetadata: {},
+        version: 3,
+        mrfVersion: 3,
+        workflowEvents: [
+          {
+            type: WorkflowEventType.Stopped,
+            actorId,
+            actorEmail: 'admin@example.com',
+            stepNumber: 2,
+            emails: [],
+            created: new Date('2026-10-09T00:00:00.000Z'),
+          },
+          {
+            type: WorkflowEventType.ReminderSent,
+            actorId,
+            actorEmail: 'admin@example.com',
+            stepNumber: 2,
+            emails: ['approver@example.com'],
+            created: new Date('2026-10-08T00:00:00.000Z'),
+          },
+        ],
+      } as unknown as MultirespondentSubmissionData
+
+      // Act
+      const actual = createMultirespondentSubmissionDto(submissionData, {})
+
+      // Assert
+      expect(actual.workflowEvents).toEqual([
+        {
+          type: WorkflowEventType.ReminderSent,
+          actorEmail: 'admin@example.com',
+          stepNumber: 2,
+          emails: ['approver@example.com'],
+          created: '2026-10-08T00:00:00.000Z',
+        },
+        {
+          type: WorkflowEventType.Stopped,
+          actorEmail: 'admin@example.com',
+          stepNumber: 2,
+          emails: [],
+          created: '2026-10-09T00:00:00.000Z',
+        },
+      ])
     })
   })
 

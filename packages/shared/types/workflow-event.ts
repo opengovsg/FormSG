@@ -8,8 +8,6 @@ export enum WorkflowEventType {
 
 export type WorkflowEventBase = {
   type: WorkflowEventType
-  formId: string
-  submissionId: string
   actorEmail: string
   stepNumber: number
   emails: string[]

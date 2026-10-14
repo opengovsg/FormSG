@@ -14,6 +14,7 @@ import {
   StrippedFormWorkflowDto,
 } from './form'
 import { ErrorCode } from './errorCodes'
+import { WorkflowEventDto } from './workflow-event'
 export type SubmissionId = Opaque<string, 'SubmissionId'>
 export const SubmissionId = z.string() as unknown as z.Schema<SubmissionId>
 
@@ -287,6 +288,7 @@ export type MultirespondentSubmissionDto = SubmissionDtoBase & {
 
   mrfMeta: SubmissionMrfMetadata
   submittedSteps?: AdminSubmittedStep[]
+  workflowEvents?: WorkflowEventDto[]
 }
 
 export type PublicMultirespondentSubmissionDto = Omit<
@@ -296,11 +298,13 @@ export type PublicMultirespondentSubmissionDto = Omit<
   | 'encryptedStepToken'
   | 'payment'
   | 'submittedSteps'
+  | 'workflowEvents'
 > & {
   form_fields: StrippedFormFieldDto[]
   workflow: StrippedFormWorkflowDto
   encryptedStepToken: undefined
   submittedSteps?: undefined
+  workflowEvents?: undefined
 }
 
 export type SubmissionDto =
