@@ -15,7 +15,6 @@ import supertest, { Session } from 'supertest-session'
 
 import { getMultirespondentFormModel } from 'src/app/models/form.server.model'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
-import getWorkflowEventModel from 'src/app/models/workflow_event.server.model'
 import MailService from 'src/app/services/mail/mail.service'
 import { IUserSchema } from 'src/types'
 
@@ -46,7 +45,6 @@ const app = setupApp('/admin/forms', routerWithGrowthbook, {
 
 const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
-const WorkflowEvent = getWorkflowEventModel(mongoose)
 
 const step = (email: string) => ({
   _id: new ObjectId(),
@@ -112,6 +110,7 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
     formId: unknown,
     submissionId: unknown,
     emails: unknown,
+    expectedStepNumber = 2,
   ) =>
     request
       .post(`/admin/forms/${formId}/submissions/${submissionId}/assignees`)
@@ -119,6 +118,7 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
         emails,
         submissionSecretKey: 'mock-key',
         stepToken: 'mock-token',
+        expectedStepNumber,
       })
 
   it('adds the people and emails them the step link without answers', async () => {
@@ -135,8 +135,8 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
       stepNumber: 2,
       emails: ['new@example.com'],
     })
-    const events = await WorkflowEvent.find({ submissionId: submission._id })
-    expect(events[0]).toMatchObject({
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.workflowEvents?.[0]).toMatchObject({
       type: WorkflowEventType.AssigneesAdded,
       stepNumber: 2,
       emails: ['new@example.com'],
@@ -163,6 +163,20 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
     expect(response.body.message).toEqual(
       'two@example.com is already assigned to this step.',
     )
+  })
+
+  it('returns 409 when the page saw an earlier step', async () => {
+    const form = await createForm()
+    const submission = await createSubmission(form._id)
+
+    const response = await addAssignees(
+      form._id,
+      submission._id,
+      ['new@example.com'],
+      3,
+    )
+
+    expect(response.status).toEqual(409)
   })
 
   it('returns 400 with no one to add', async () => {
@@ -216,56 +230,7 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
     ])
 
     expect(response.status).toEqual(403)
-    await expect(
-      WorkflowEvent.countDocuments({ submissionId: submission._id }),
-    ).resolves.toBe(0)
-  })
-
-  describe('GET /admin/forms/:formId/submissions/:submissionId/workflow-events', () => {
-    it('returns the people added, to a read-only collaborator too', async () => {
-      const form = await createForm()
-      const submission = await createSubmission(form._id)
-      await addAssignees(form._id, submission._id, ['new@example.com'])
-      await MultirespondentFormModel.updateOne(
-        { _id: form._id },
-        {
-          admin: (
-            await dbHandler.insertUser({
-              agencyId: defaultUser.agency as never,
-              mailName: 'owner',
-            })
-          )._id,
-          permissionList: [{ email: defaultUser.email, write: false }],
-        },
-      )
-
-      const response = await request.get(
-        `/admin/forms/${form._id}/submissions/${submission._id}/workflow-events`,
-      )
-
-      expect(response.status).toEqual(200)
-      expect(response.body).toEqual([
-        expect.objectContaining({
-          type: WorkflowEventType.AssigneesAdded,
-          stepNumber: 2,
-          emails: ['new@example.com'],
-          actorEmail: defaultUser.email,
-        }),
-      ])
-    })
-
-    it("returns nothing for another form's submission", async () => {
-      const form = await createForm()
-      const otherForm = await createForm()
-      const submission = await createSubmission(otherForm._id)
-      await addAssignees(otherForm._id, submission._id, ['new@example.com'])
-
-      const response = await request.get(
-        `/admin/forms/${form._id}/submissions/${submission._id}/workflow-events`,
-      )
-
-      expect(response.status).toEqual(200)
-      expect(response.body).toEqual([])
-    })
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.workflowEvents).toBeUndefined()
   })
 })

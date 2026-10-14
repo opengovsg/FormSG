@@ -38,6 +38,7 @@ describe('useAddAssigneesMutation', () => {
         submissionId: 'submission-id',
         emails: ['new@agency.gov.sg'],
         submissionSecretKey: 'key',
+        expectedStepNumber: 2,
       },
       { onSuccess },
     )

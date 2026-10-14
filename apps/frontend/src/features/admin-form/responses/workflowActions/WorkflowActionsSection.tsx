@@ -17,7 +17,6 @@ import {
 } from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
 import { useAddAssigneesMutation, useStopWorkflowMutation } from './mutations'
-import { useWorkflowEvents } from './queries'
 import { StopWorkflowModal } from './StopWorkflowModal'
 import { useWorkflowActionsGate } from './useWorkflowActionsGate'
 
@@ -48,11 +47,8 @@ export const WorkflowActionsSection = ({
   const addAssigneeModal = useDisclosure()
   const stopMutation = useStopWorkflowMutation(formId)
   const addAssigneesMutation = useAddAssigneesMutation(formId)
-  const { data: events, isLoading: isEventsLoading } = useWorkflowEvents({
-    formId,
-    submissionId,
-    enabled: isWorkflowActionsOn,
-  })
+  const events = history.workflowEvents
+  const pendingStepNumber = history.submittedSteps.length + 1
 
   if (
     !isWorkflowActionsOn ||
@@ -66,13 +62,19 @@ export const WorkflowActionsSection = ({
   const pendingStepAssignees = getStepRecipients({
     submittedSteps: history.submittedSteps,
     events,
-    stepNumber: history.submittedSteps.length + 1,
+    stepNumber: pendingStepNumber,
   })
 
   const handleAddAssignees = (emails: string[]) => {
     if (!submissionSecretKey) return
     addAssigneesMutation.mutate(
-      { submissionId, emails, submissionSecretKey, stepToken },
+      {
+        submissionId,
+        emails,
+        submissionSecretKey,
+        stepToken,
+        expectedStepNumber: pendingStepNumber,
+      },
       { onSuccess: addAssigneeModal.onClose },
     )
   }
@@ -90,7 +92,7 @@ export const WorkflowActionsSection = ({
           variant="outline"
           colorScheme="secondary"
           leftIcon={<BiTransferAlt fontSize="1.25rem" />}
-          isDisabled={isLoading || isEventsLoading || !submissionSecretKey}
+          isDisabled={isLoading || !submissionSecretKey}
           onClick={addAssigneeModal.onOpen}
         >
           {t(`${WORKFLOW_ACTIONS_I18N}.reassignButton`)}
@@ -109,7 +111,7 @@ export const WorkflowActionsSection = ({
             borderColor: 'danger.500',
           }}
           leftIcon={<BiStopCircle fontSize="1.25rem" />}
-          isDisabled={isLoading || isEventsLoading}
+          isDisabled={isLoading}
           onClick={stopModal.onOpen}
         >
           {t(`${WORKFLOW_ACTIONS_I18N}.stopButton`)}

@@ -91,66 +91,20 @@ export const toWorkflowEventDtos = (
     .sort((a, b) => a.created.localeCompare(b.created))
 
 /**
- * @returns ok(emails) added to the step through Reassign, lowercased and deduped
- * @returns err(DatabaseError) if the query fails
+ * @returns the emails added to the step through Reassign, lowercased and deduped
  */
-export const getAddedAssignees = ({
-  submissionId,
-  stepNumber,
-}: {
-  submissionId: string
-  stepNumber: number
-}): ResultAsync<string[], DatabaseError> =>
-  ResultAsync.fromPromise(
-    MultirespondentSubmission.findById(submissionId, { workflowEvents: 1 })
-      .lean()
-      .exec(),
-    (error) => {
-      logger.error({
-        message: 'Error retrieving added assignees',
-        meta: { action: 'getAddedAssignees', submissionId, stepNumber },
-        error,
-      })
-      return new DatabaseError(getMongoErrorMessage(error))
-    },
-  ).map((submission) =>
-    Array.from(
-      new Set(
-        (submission?.workflowEvents ?? [])
-          .filter(
-            (event) =>
-              event.type === WorkflowEventType.AssigneesAdded &&
-              event.stepNumber === stepNumber,
-          )
-          .flatMap(({ emails }) => emails.map((email) => email.toLowerCase())),
-      ),
+export const getAddedAssignees = (
+  events: IWorkflowEvent[] = [],
+  stepNumber: number,
+): string[] =>
+  Array.from(
+    new Set(
+      events
+        .filter(
+          (event) =>
+            event.type === WorkflowEventType.AssigneesAdded &&
+            event.stepNumber === stepNumber,
+        )
+        .flatMap(({ emails }) => emails.map((email) => email.toLowerCase())),
     ),
   )
-
-/**
- * @returns ok(events) for the submission, oldest first
- * @returns err(DatabaseError) if the query fails
- */
-export const getWorkflowEvents = ({
-  formId,
-  submissionId,
-}: {
-  formId: string
-  submissionId: string
-}): ResultAsync<WorkflowEventDto[], DatabaseError> =>
-  ResultAsync.fromPromise(
-    MultirespondentSubmission.findOne(
-      { _id: submissionId, form: formId },
-      { workflowEvents: 1 },
-    )
-      .lean()
-      .exec(),
-    (error) => {
-      logger.error({
-        message: 'Error retrieving workflow events',
-        meta: { action: 'getWorkflowEvents', formId, submissionId },
-        error,
-      })
-      return new DatabaseError(getMongoErrorMessage(error))
-    },
-  ).map((submission) => toWorkflowEventDtos(submission?.workflowEvents))

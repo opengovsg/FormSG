@@ -46,6 +46,7 @@ export const useAddAssigneesMutation = (formId: string) => {
       emails: string[]
       submissionSecretKey: string
       stepToken?: string
+      expectedStepNumber: number
     }) => addAssignees({ formId, ...params }),
     {
       onSuccess: ({ emails }) => {

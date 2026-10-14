@@ -9,7 +9,6 @@ import { WORKFLOW_ACTIONS_CUTOFF } from 'formsg-shared/utils/workflow-actions'
 import mongoose from 'mongoose'
 
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
-import getWorkflowEventModel from 'src/app/models/workflow_event.server.model'
 
 import {
   MrfAssigneeAlreadyAssignedError,
@@ -22,7 +21,6 @@ import {
 } from '../multirespondent-submission.service'
 
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
-const WorkflowEvent = getWorkflowEventModel(mongoose)
 
 const formId = new ObjectId()
 const actor = { _id: new ObjectId(), email: 'admin@example.com' }
@@ -51,20 +49,20 @@ const createSubmission = (
     created: new Date(WORKFLOW_ACTIONS_CUTOFF.getTime() + 1000),
   })
 
-const add = (submissionId: unknown, emails: string[]) =>
+const add = (submissionId: unknown, emails: string[], expectedStepNumber = 2) =>
   addAssigneesToPendingStep({
     formId: String(formId),
     submissionId: String(submissionId),
     emails,
+    expectedStepNumber,
     actor,
   })
 
 describe('addAssigneesToPendingStep', () => {
   beforeAll(() => dbHandler.connect())
-  beforeEach(async () => {
-    await dbHandler.clearCollection(MultirespondentSubmission.collection.name)
-    await dbHandler.clearCollection(WorkflowEvent.collection.name)
-  })
+  beforeEach(() =>
+    dbHandler.clearCollection(MultirespondentSubmission.collection.name),
+  )
   afterAll(() => dbHandler.closeDatabase())
 
   it('records the added people against the pending step', async () => {
@@ -73,9 +71,9 @@ describe('addAssigneesToPendingStep', () => {
     const result = await add(submission._id, ['new@example.com'])
 
     expect(result._unsafeUnwrap().stepNumber).toBe(2)
-    const events = await WorkflowEvent.find({ submissionId: submission._id })
-    expect(events).toHaveLength(1)
-    expect(events[0]).toMatchObject({
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.workflowEvents).toHaveLength(1)
+    expect(stored?.workflowEvents?.[0]).toMatchObject({
       type: WorkflowEventType.AssigneesAdded,
       stepNumber: 2,
       emails: ['new@example.com'],
@@ -112,7 +110,8 @@ describe('addAssigneesToPendingStep', () => {
     await stopMultirespondentSubmission({
       formId: String(formId),
       submissionId: String(submission._id),
-      stoppedBy: String(actor._id),
+      actor,
+      emails: [],
     })
 
     const result = await add(submission._id, ['new@example.com'])
@@ -133,6 +132,40 @@ describe('addAssigneesToPendingStep', () => {
     const result = await add(submission._id, ['new@example.com'])
 
     expect(result._unsafeUnwrapErr()).toBeInstanceOf(MrfWorkflowNotPendingError)
+  })
+
+  it('rejects a page that saw an earlier step', async () => {
+    const submission = await createSubmission([
+      {
+        isApproval: false,
+        submittedAt: '2026-10-08T07:00:00.000Z',
+        nextStepRecipientEmails: ['a@example.com'],
+      },
+      {
+        isApproval: false,
+        submittedAt: '2026-10-08T08:00:00.000Z',
+        nextStepRecipientEmails: ['finance@example.com'],
+      },
+    ])
+
+    const result = await add(submission._id, ['b@example.com'], 2)
+
+    expect(result._unsafeUnwrapErr()).toBeInstanceOf(MrfWorkflowNotPendingError)
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.workflowEvents).toBeUndefined()
+  })
+
+  it('adds the same person only once when two adds race', async () => {
+    const submission = await createSubmission()
+
+    const results = await Promise.all([
+      add(submission._id, ['new@example.com']),
+      add(submission._id, ['new@example.com']),
+    ])
+
+    expect(results.filter((result) => result.isOk())).toHaveLength(1)
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.workflowEvents).toHaveLength(1)
   })
 
   it('includes added people in reminders for the step', async () => {

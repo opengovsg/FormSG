@@ -32,16 +32,23 @@ const validateAddAssigneesBody = celebrate({
       .required(),
     submissionSecretKey: Joi.string().required(),
     stepToken: Joi.string().optional(),
+    expectedStepNumber: Joi.number().integer().min(2).required(),
   }),
 })
 
 const addAssigneesToPendingMrfSubmission: ControllerHandler<
   { formId: string; submissionId: string },
   unknown,
-  { emails: string[]; submissionSecretKey: string; stepToken?: string }
+  {
+    emails: string[]
+    submissionSecretKey: string
+    stepToken?: string
+    expectedStepNumber: number
+  }
 > = async (req, res) => {
   const { formId, submissionId } = req.params
-  const { emails, submissionSecretKey, stepToken } = req.body
+  const { emails, submissionSecretKey, stepToken, expectedStepNumber } =
+    req.body
   const authedUserId = (req.session as AuthedSessionData).user._id
   const logMeta = {
     action: 'addAssigneesToPendingMrfSubmission',
@@ -61,6 +68,7 @@ const addAssigneesToPendingMrfSubmission: ControllerHandler<
         formId,
         submissionId,
         emails,
+        expectedStepNumber,
         actor: user,
       }).map(({ stepNumber }) => ({ form, stepNumber })),
     )

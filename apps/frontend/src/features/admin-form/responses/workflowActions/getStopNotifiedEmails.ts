@@ -12,6 +12,7 @@ export type DecryptedResponseLike = {
 export type WorkflowHistory = {
   submittedSteps: AdminSubmittedStep[]
   workflow: { _id: string; step_name?: string }[]
+  workflowEvents?: WorkflowEventDto[]
 }
 
 const unique = (emails: string[]) =>

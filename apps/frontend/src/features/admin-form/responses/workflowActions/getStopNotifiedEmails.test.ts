@@ -30,8 +30,6 @@ const addedEvent = (
   emails: string[],
 ): WorkflowEventDto => ({
   type: WorkflowEventType.AssigneesAdded,
-  formId: 'form',
-  submissionId: 'submission',
   actorEmail: 'admin@agency.gov.sg',
   stepNumber,
   emails,

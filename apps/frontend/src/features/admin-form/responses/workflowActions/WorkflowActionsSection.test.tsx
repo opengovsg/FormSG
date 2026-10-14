@@ -36,10 +36,6 @@ vi.mock('./mutations', () => ({
   }),
 }))
 
-vi.mock('./queries', () => ({
-  useWorkflowEvents: () => ({ data: [], isLoading: false }),
-}))
-
 vi.mock('./AddAssigneeModal', () => ({
   AddAssigneeModal: ({
     isOpen,
@@ -151,6 +147,7 @@ describe('WorkflowActionsSection', () => {
         emails: ['new@agency.gov.sg'],
         submissionSecretKey: 'mock-secret-key',
         stepToken: 'mock-step-token',
+        expectedStepNumber: 1,
       },
       expect.anything(),
     )

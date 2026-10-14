@@ -6,7 +6,6 @@ import * as MultirespondentSubmissionController from '../../../../../modules/sub
 import * as WorkflowReassignController from '../../../../../modules/submission/multirespondent-submission/workflow-reassign.controller'
 import * as WorkflowStopController from '../../../../../modules/submission/multirespondent-submission/workflow-stop.controller'
 import * as SubmissionController from '../../../../../modules/submission/submission.controller'
-import * as WorkflowEventController from '../../../../../modules/workflow-event/workflow-event.controller'
 import { limitRate } from '../../../../../utils/limit-rate'
 
 export const AdminFormsSubmissionsRouter = Router()
@@ -105,7 +104,7 @@ AdminFormsSubmissionsRouter.post(
  * @returns 400 when the body is invalid
  * @returns 403 when the user cannot edit the form, or workflow actions are unavailable
  * @returns 404 when the submission cannot be found
- * @returns 409 when the workflow is no longer pending
+ * @returns 409 when the workflow is no longer pending on the expected step
  */
 AdminFormsSubmissionsRouter.post(
   '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/stop',
@@ -122,24 +121,10 @@ AdminFormsSubmissionsRouter.post(
  * @returns 400 when the body is invalid, or someone is already on the step
  * @returns 403 when the user cannot edit the form, or workflow actions are unavailable
  * @returns 404 when the submission cannot be found
- * @returns 409 when the workflow is no longer pending
+ * @returns 409 when the workflow is no longer pending on the expected step
  */
 AdminFormsSubmissionsRouter.post(
   '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/assignees',
   limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
   WorkflowReassignController.handleAddAssigneesToPendingMrfSubmission,
-)
-
-/**
- * Workflow actions recorded against a multirespondent submission
- * @route GET /admin/forms/:formId/submissions/:submissionId/workflow-events
- * @security session
- *
- * @returns 200 with the events, oldest first
- * @returns 403 when the user cannot view the form
- * @returns 404 when the form cannot be found
- */
-AdminFormsSubmissionsRouter.get(
-  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/workflow-events',
-  WorkflowEventController.handleGetWorkflowEvents,
 )

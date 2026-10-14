@@ -1,10 +1,6 @@
 import { datadogLogs } from '@datadog/browser-logs'
 
-import {
-  FormSavedView,
-  FormSavedViewInput,
-  WorkflowEventDto,
-} from 'formsg-shared/types'
+import { FormSavedView, FormSavedViewInput } from 'formsg-shared/types'
 import {
   FormSubmissionMetadataQueryDto,
   SubmissionCountQueryDto,
@@ -202,6 +198,7 @@ export const getDecryptedSubmissionById = async ({
         ? {
             submittedSteps: encryptedSubmission.submittedSteps ?? [],
             workflow: encryptedSubmission.workflow,
+            workflowEvents: encryptedSubmission.workflowEvents ?? [],
           }
         : undefined,
   }
@@ -306,31 +303,23 @@ export const getAllDecryptedSubmission = async ({
   return decryptionResults
 }
 
-export const getWorkflowEvents = ({
-  formId,
-  submissionId,
-}: {
-  formId: string
-  submissionId: string
-}): Promise<WorkflowEventDto[]> =>
-  ApiService.get<WorkflowEventDto[]>(
-    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/workflow-events`,
-  ).then(({ data }) => data)
-
 export const addAssignees = ({
   formId,
   submissionId,
   emails,
   submissionSecretKey,
   stepToken,
+  expectedStepNumber,
 }: {
   formId: string
   submissionId: string
   emails: string[]
   submissionSecretKey: string
   stepToken?: string
+  /** The pending step shown to the admin; the server rejects a stale page. */
+  expectedStepNumber: number
 }): Promise<{ stepNumber: number; emails: string[] }> =>
   ApiService.post<{ stepNumber: number; emails: string[] }>(
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/assignees`,
-    { emails, submissionSecretKey, stepToken },
+    { emails, submissionSecretKey, stepToken, expectedStepNumber },
   ).then(({ data }) => data)
