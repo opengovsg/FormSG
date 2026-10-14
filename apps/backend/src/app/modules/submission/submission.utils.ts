@@ -146,6 +146,7 @@ import {
   MissingSubmitterIdError,
   MrfAssigneeAlreadyAssignedError,
   MrfReminderInvalidWorkflowStepError,
+  MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
   MrfWorkflowActionsUnavailableError,
   MrfWorkflowNotPendingError,
@@ -467,6 +468,7 @@ const errorMapper: MapRouteError = (
         errorMessageKey: submissionErrorKey('mrf.invalidWorkflowType'),
       }
     case MrfReminderInvalidWorkflowStepError:
+    case MrfReminderLimitReachedError:
     case MrfReminderRecipientEmailsEmptyError:
       return {
         statusCode: StatusCodes.BAD_REQUEST,

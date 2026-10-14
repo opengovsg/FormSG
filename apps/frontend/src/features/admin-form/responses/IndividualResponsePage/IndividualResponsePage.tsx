@@ -370,10 +370,7 @@ export const IndividualResponsePage = (): JSX.Element => {
             <PaymentSection payment={data.payment} formId={formId} />
           )}
           {hasWorkflow && isWorkflowActionsOn ? (
-            <WorkflowActivityLog
-              submissionId={submissionId}
-              history={data?.workflowHistory}
-            />
+            <WorkflowActivityLog history={data?.workflowHistory} />
           ) : null}
         </>
       )}

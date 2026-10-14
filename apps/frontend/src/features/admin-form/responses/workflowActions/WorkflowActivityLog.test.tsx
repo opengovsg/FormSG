@@ -11,8 +11,6 @@ import { render } from '~/test-utils'
 
 import { WorkflowActivityLog } from './WorkflowActivityLog'
 
-let mockEvents: WorkflowEventDto[] = []
-
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, values?: Record<string, unknown>) =>
@@ -35,22 +33,12 @@ vi.mock('react-i18next', () => ({
   ),
 }))
 
-vi.mock('react-router-dom', () => ({
-  useParams: () => ({ formId: 'form-id' }),
-}))
-
-vi.mock('./queries', () => ({
-  useWorkflowEvents: () => ({ data: mockEvents }),
-}))
-
 const event = (
   type: WorkflowEventType,
   created: string,
   emails: string[],
 ): WorkflowEventDto => ({
   type,
-  formId: 'form-id',
-  submissionId: 'submission-id',
   actorEmail: 'admin@agency.gov.sg',
   stepNumber: 2,
   emails,
@@ -73,12 +61,8 @@ const history = {
 }
 
 describe('WorkflowActivityLog', () => {
-  afterEach(() => {
-    mockEvents = []
-  })
-
   it('lists steps and actions oldest first', () => {
-    mockEvents = [
+    const workflowEvents = [
       event(WorkflowEventType.Stopped, '2026-10-08T04:00:00.000Z', []),
       event(WorkflowEventType.AssigneesAdded, '2026-10-08T02:00:00.000Z', [
         'new@agency.gov.sg',
@@ -89,9 +73,7 @@ describe('WorkflowActivityLog', () => {
       ]),
     ]
 
-    render(
-      <WorkflowActivityLog submissionId="submission-id" history={history} />,
-    )
+    render(<WorkflowActivityLog history={{ ...history, workflowEvents }} />)
 
     const entries = screen
       .getAllByText(/^(step|assignee|reminder|stopped)/)
@@ -107,7 +89,6 @@ describe('WorkflowActivityLog', () => {
   it('shows an approval outcome', () => {
     render(
       <WorkflowActivityLog
-        submissionId="submission-id"
         history={{
           ...history,
           submittedSteps: [

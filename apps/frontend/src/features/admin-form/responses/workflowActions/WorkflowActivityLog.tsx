@@ -1,6 +1,5 @@
 import { ReactNode } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
-import { useParams } from 'react-router-dom'
 import { Circle, Flex, Stack, Text } from '@chakra-ui/react'
 import { formatInTimeZone } from 'date-fns-tz'
 
@@ -11,7 +10,6 @@ import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-
 import { formatEmailList } from './formatEmailList'
 import { WorkflowHistory } from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
-import { useWorkflowEvents } from './queries'
 
 const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.activityLog` as const
 const BOLD = { bold: <Text as="b" /> }
@@ -65,20 +63,12 @@ const ActivityLogEntry = ({
 )
 
 export const WorkflowActivityLog = ({
-  submissionId,
   history = { submittedSteps: [], workflow: [] },
 }: {
-  submissionId: string
   history?: WorkflowHistory
 }): JSX.Element => {
   const { t } = useTranslation()
-  const { formId = '' } = useParams()
-  const { data: events = [] } = useWorkflowEvents({
-    formId,
-    submissionId,
-    enabled: true,
-  })
-  const { submittedSteps, workflow } = history
+  const { submittedSteps, workflow, workflowEvents: events = [] } = history
 
   const stepValues = (stepNumber: number) => {
     const name = workflow[stepNumber - 1]?.step_name?.trim()

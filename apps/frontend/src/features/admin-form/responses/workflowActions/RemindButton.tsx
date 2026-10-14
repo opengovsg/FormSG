@@ -8,8 +8,9 @@ import Button from '~components/Button'
 
 import { useFormRemindersMutations } from '~features/admin-form/common/mutations'
 
+import { adminFormResponsesKeys } from '../queries'
+
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
-import { workflowEventsKey } from './queries'
 import { WorkflowActionModal } from './WorkflowActionModal'
 
 const I18N_PREFIX = `${WORKFLOW_ACTIONS_I18N}.reminderModal` as const
@@ -44,7 +45,7 @@ export const RemindButton = ({
           setIsSent(true)
           onClose()
           void queryClient.invalidateQueries(
-            workflowEventsKey(formId, submissionId),
+            adminFormResponsesKeys.individual(formId, submissionId),
           )
         },
       },

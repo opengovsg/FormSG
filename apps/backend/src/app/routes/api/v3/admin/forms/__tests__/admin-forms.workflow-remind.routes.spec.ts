@@ -15,7 +15,7 @@ import supertest, { Session } from 'supertest-session'
 
 import { getMultirespondentFormModel } from 'src/app/models/form.server.model'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
-import getWorkflowEventModel from 'src/app/models/workflow_event.server.model'
+import { MAX_REMINDERS_PER_STEP } from 'src/app/modules/submission/multirespondent-submission/multirespondent-submission.service'
 import { IUserSchema } from 'src/types'
 
 import { AdminFormsRouter } from '../admin-forms.routes'
@@ -45,7 +45,6 @@ const app = setupApp('/admin/forms', routerWithGrowthbook, {
 
 const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
-const WorkflowEvent = getWorkflowEventModel(mongoose)
 
 const step = (email: string) => ({
   _id: new ObjectId(),
@@ -127,9 +126,9 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/remind', () => {
     const response = await remind(form._id, submission._id)
 
     expect(response.status).toEqual(200)
-    const events = await WorkflowEvent.find({ submissionId: submission._id })
-    expect(events).toHaveLength(1)
-    expect(events[0]).toMatchObject({
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.workflowEvents).toHaveLength(1)
+    expect(stored?.workflowEvents?.[0]).toMatchObject({
       type: WorkflowEventType.ReminderSent,
       actorEmail: defaultUser.email,
       stepNumber: 2,
@@ -144,11 +143,39 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/remind', () => {
     const response = await remind(form._id, submission._id)
 
     expect(response.status).toEqual(200)
-    await expect(
-      WorkflowEvent.countDocuments({
-        submissionId: submission._id,
-        type: WorkflowEventType.ReminderSent,
-      }),
-    ).resolves.toBe(1)
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(
+      stored?.workflowEvents?.filter(
+        ({ type }) => type === WorkflowEventType.ReminderSent,
+      ),
+    ).toHaveLength(1)
+  })
+
+  it('returns 400 once the step has had the maximum reminders', async () => {
+    const form = await createForm()
+    const submission = await createSubmission(form._id)
+    const reminder = {
+      type: WorkflowEventType.ReminderSent,
+      actorId: defaultUser._id,
+      actorEmail: defaultUser.email,
+      stepNumber: 2,
+      emails: ['two@example.com'],
+      created: new Date(),
+    }
+    await MultirespondentSubmission.updateOne(
+      { _id: submission._id },
+      {
+        $set: {
+          workflowEvents: Array(MAX_REMINDERS_PER_STEP).fill(reminder),
+        },
+      },
+    )
+
+    const response = await remind(form._id, submission._id)
+
+    expect(response.status).toEqual(400)
+    expect(response.body.message).toEqual(
+      `This step has already been sent the maximum of ${MAX_REMINDERS_PER_STEP} reminders.`,
+    )
   })
 })
