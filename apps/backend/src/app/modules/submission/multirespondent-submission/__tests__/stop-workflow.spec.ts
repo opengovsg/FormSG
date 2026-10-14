@@ -1,6 +1,10 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
-import { SubmissionType, WorkflowStatus } from 'formsg-shared/types'
+import {
+  SubmissionType,
+  WorkflowEventType,
+  WorkflowStatus,
+} from 'formsg-shared/types'
 import mongoose from 'mongoose'
 
 import getSubmissionModel, {
@@ -49,7 +53,8 @@ const stop = (submissionId: unknown, form = formId) =>
   stopMultirespondentSubmission({
     formId: String(form),
     submissionId: String(submissionId),
-    stoppedBy: adminId,
+    actor: { _id: adminId, email: 'admin@example.com' },
+    emails: ['records@example.com'],
   })
 
 describe('stopMultirespondentSubmission', () => {
@@ -67,6 +72,14 @@ describe('stopMultirespondentSubmission', () => {
     const stopped = result._unsafeUnwrap()
     expect(stopped.stoppedAt).toBeInstanceOf(Date)
     expect(String(stopped.stoppedBy)).toBe(adminId)
+    expect(stopped.workflowEvents).toEqual([
+      expect.objectContaining({
+        type: WorkflowEventType.Stopped,
+        actorEmail: 'admin@example.com',
+        stepNumber: 2,
+        emails: ['records@example.com'],
+      }),
+    ])
   })
 
   it('rejects a workflow that is already stopped', async () => {

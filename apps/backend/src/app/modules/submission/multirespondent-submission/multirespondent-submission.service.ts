@@ -12,6 +12,7 @@ import {
   SubmittedApprovalStep,
   SubmittedNonApprovalStep,
   SubmittedStep,
+  WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
@@ -58,6 +59,7 @@ import { WebhookPushToQueueError } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { SnapshotRef } from '../../webhook/webhook.types'
+import { buildWorkflowEvent } from '../../workflow-event/workflow-event.service'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
@@ -2226,11 +2228,14 @@ export const getMultirespondentSubmission = (
 export const stopMultirespondentSubmission = ({
   formId,
   submissionId,
-  stoppedBy,
+  actor,
+  emails,
 }: {
   formId: string
   submissionId: string
-  stoppedBy: string
+  actor: { _id?: unknown; email: string }
+  /** People emailed about the stop, recorded on the stopped event. */
+  emails: string[]
 }): ResultAsync<
   IMultirespondentSubmissionSchema,
   DatabaseError | SubmissionNotFoundError | MrfWorkflowNotPendingError
@@ -2258,7 +2263,15 @@ export const stopMultirespondentSubmission = ({
             stoppedAt: { $exists: false },
           },
           {
-            $set: { stoppedAt: new Date(), stoppedBy },
+            $set: { stoppedAt: new Date(), stoppedBy: actor._id },
+            $push: {
+              workflowEvents: buildWorkflowEvent({
+                type: WorkflowEventType.Stopped,
+                actor,
+                stepNumber: (submission.submittedSteps?.length ?? 0) + 1,
+                emails,
+              }),
+            },
             $inc: { __v: 1 },
           },
           { new: true },

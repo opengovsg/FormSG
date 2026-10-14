@@ -16,7 +16,6 @@ import supertest, { Session } from 'supertest-session'
 
 import { getMultirespondentFormModel } from 'src/app/models/form.server.model'
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
-import getWorkflowEventModel from 'src/app/models/workflow_event.server.model'
 import MailService from 'src/app/services/mail/mail.service'
 import { IUserSchema } from 'src/types'
 
@@ -47,7 +46,6 @@ const app = setupApp('/admin/forms', routerWithGrowthbook, {
 
 const MultirespondentFormModel = getMultirespondentFormModel(mongoose)
 const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
-const WorkflowEvent = getWorkflowEventModel(mongoose)
 
 const step = (email: string) => ({
   _id: new ObjectId(),
@@ -134,9 +132,8 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/stop', () => {
     const stored = await MultirespondentSubmission.findById(submission._id)
     expect(stored?.stoppedAt).toBeInstanceOf(Date)
     expect(String(stored?.stoppedBy)).toEqual(String(defaultUser._id))
-    const events = await WorkflowEvent.find({ submissionId: submission._id })
-    expect(events).toHaveLength(1)
-    expect(events[0]).toMatchObject({
+    expect(stored?.workflowEvents).toHaveLength(1)
+    expect(stored?.workflowEvents?.[0]).toMatchObject({
       type: WorkflowEventType.Stopped,
       actorEmail: defaultUser.email,
       stepNumber: 2,

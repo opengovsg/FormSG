@@ -1,7 +1,7 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
 import { featureFlags } from 'formsg-shared/constants'
-import { FormResponseMode, WorkflowEventType } from 'formsg-shared/types'
+import { FormResponseMode } from 'formsg-shared/types'
 import { isWorkflowActionsEligible } from 'formsg-shared/utils/workflow-actions'
 import moment from 'moment-timezone'
 import { errAsync, okAsync } from 'neverthrow'
@@ -14,7 +14,6 @@ import { ControllerHandler } from '../../core/core.types'
 import { PermissionLevel } from '../../form/admin-form/admin-form.types'
 import { FormInvalidResponseModeError } from '../../form/form.errors'
 import * as UserService from '../../user/user.service'
-import { recordWorkflowEvent } from '../../workflow-event/workflow-event.service'
 import { MrfWorkflowActionsUnavailableError } from '../submission.errors'
 import { mapRouteError, sendRouteError } from '../submission.utils'
 
@@ -80,26 +79,13 @@ const stopPendingMrfSubmission: ControllerHandler<
       stopMultirespondentSubmission({
         formId,
         submissionId,
-        stoppedBy: String(user._id),
+        actor: user,
+        emails,
       }).map((submission) => ({ form, user, submission })),
     )
-    .map(async ({ form, user, submission }) => {
+    .map(async ({ form, submission }) => {
       const stoppedAt = submission.stoppedAt as Date
       logger.info({ message: 'Workflow stopped', meta: logMeta })
-
-      await recordWorkflowEvent({
-        submission,
-        type: WorkflowEventType.Stopped,
-        actor: user,
-        stepNumber: (submission.submittedSteps?.length ?? 0) + 1,
-        emails,
-      }).mapErr((error) =>
-        logger.error({
-          message: 'Failed to record workflow stopped event',
-          meta: logMeta,
-          error,
-        }),
-      )
 
       if (emails.length > 0) {
         await MailService.sendMrfWorkflowStoppedEmail({
