@@ -56,8 +56,8 @@ export const EndPageBlock = ({
   const mdComponents = useMdComponents({
     styles: {
       text: {
-        textStyle: 'subhead-1',
-        color: 'secondary.500',
+        textStyle: 'body-1',
+        color: 'secondary.700',
       },
     },
   })
