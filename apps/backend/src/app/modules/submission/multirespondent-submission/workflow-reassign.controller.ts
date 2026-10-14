@@ -60,7 +60,6 @@ const addAssigneesToPendingMrfSubmission: ControllerHandler<
   return checkWorkflowActionAllowed({
     userId: authedUserId,
     formId,
-    submissionId,
     growthbook: req.growthbook,
   })
     .andThen(({ form, user }) =>

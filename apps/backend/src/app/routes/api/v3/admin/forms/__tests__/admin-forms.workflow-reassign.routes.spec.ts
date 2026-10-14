@@ -9,7 +9,6 @@ import {
   WorkflowEventType,
   WorkflowType,
 } from 'formsg-shared/types'
-import { WORKFLOW_ACTIONS_CUTOFF } from 'formsg-shared/utils/workflow-actions'
 import mongoose from 'mongoose'
 import supertest, { Session } from 'supertest-session'
 
@@ -81,10 +80,7 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
       ...overrides,
     })
 
-  const createSubmission = (
-    formId: unknown,
-    created = new Date(WORKFLOW_ACTIONS_CUTOFF.getTime() + 1000),
-  ) =>
+  const createSubmission = (formId: unknown) =>
     MultirespondentSubmission.create({
       form: formId,
       submissionType: SubmissionType.Multirespondent,
@@ -103,7 +99,6 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
           nextStepRecipientEmails: ['two@example.com'],
         },
       ],
-      created,
     })
 
   const addAssignees = (
@@ -192,20 +187,6 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/assignees', () => 
     isFlagOn = false
     const form = await createForm()
     const submission = await createSubmission(form._id)
-
-    const response = await addAssignees(form._id, submission._id, [
-      'new@example.com',
-    ])
-
-    expect(response.status).toEqual(403)
-  })
-
-  it('returns 403 for a submission created before the cutoff', async () => {
-    const form = await createForm()
-    const submission = await createSubmission(
-      form._id,
-      new Date(WORKFLOW_ACTIONS_CUTOFF.getTime() - 1000),
-    )
 
     const response = await addAssignees(form._id, submission._id, [
       'new@example.com',

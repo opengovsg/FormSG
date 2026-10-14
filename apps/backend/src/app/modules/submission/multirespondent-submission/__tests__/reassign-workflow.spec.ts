@@ -5,7 +5,6 @@ import {
   WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
-import { WORKFLOW_ACTIONS_CUTOFF } from 'formsg-shared/utils/workflow-actions'
 import mongoose from 'mongoose'
 
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
@@ -46,7 +45,6 @@ const createSubmission = (
     version: 3,
     workflowStep: submittedSteps.length - 1,
     submittedSteps,
-    created: new Date(WORKFLOW_ACTIONS_CUTOFF.getTime() + 1000),
   })
 
 const add = (submissionId: unknown, emails: string[], expectedStepNumber = 2) =>
