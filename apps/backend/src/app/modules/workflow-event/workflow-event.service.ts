@@ -3,9 +3,8 @@ import {
   WorkflowEventDto,
   WorkflowEventType,
 } from 'formsg-shared/types'
-import { isWorkflowActionsEligible } from 'formsg-shared/utils/workflow-actions'
 import mongoose from 'mongoose'
-import { okAsync, ResultAsync } from 'neverthrow'
+import { ResultAsync } from 'neverthrow'
 
 import { IWorkflowEvent } from '../../../types'
 import { createLoggerWithLabel } from '../../config/logger'
@@ -40,24 +39,20 @@ export const buildWorkflowEvent = ({
 })
 
 /**
- * Appends a workflow action to the submission's `workflowEvents`. Submissions
- * created before the workflow actions cutoff are not logged.
+ * Appends a workflow action to the submission's `workflowEvents`.
  * @returns ok(event) when recorded
- * @returns ok(null) when the submission is before the cutoff
  * @returns err(DatabaseError) if the write fails
  */
 export const recordWorkflowEvent = ({
   submission,
   ...eventParams
 }: {
-  submission: { _id?: unknown; created?: Date }
+  submission: { _id?: unknown }
   type: WorkflowEventType
   actor: { _id?: unknown; email: string }
   stepNumber: number
   emails: string[]
-}): ResultAsync<IWorkflowEvent | null, DatabaseError> => {
-  if (!isWorkflowActionsEligible(submission.created)) return okAsync(null)
-
+}): ResultAsync<IWorkflowEvent, DatabaseError> => {
   const event = buildWorkflowEvent(eventParams)
   return ResultAsync.fromPromise(
     MultirespondentSubmission.updateOne(

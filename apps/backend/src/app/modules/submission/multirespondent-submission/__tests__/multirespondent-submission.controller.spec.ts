@@ -207,7 +207,6 @@ describe('multirespondent-submision.controller', () => {
           workflowStatus: undefined,
           lastSubmittedAt: undefined,
           hasNextStepRecipientEmails: false,
-          isWorkflowActionsEligible: false,
         },
         workflow: [omit(staticWorkflowStep, 'emails'), dynamicWorkflowStep],
         form_fields: [omit(dropdownField, 'optionsToRecipientsMap')],

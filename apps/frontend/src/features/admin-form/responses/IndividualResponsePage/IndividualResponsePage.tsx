@@ -136,7 +136,7 @@ export const IndividualResponsePage = (): JSX.Element => {
   const { user } = useUser()
   const { secretKey } = useStorageResponsesContext()
   const { data, isLoading, isError } = useIndividualSubmission()
-  const isWorkflowActionsOn = useWorkflowActionsGate(data?.mrf)
+  const isWorkflowActionsOn = useWorkflowActionsGate()
 
   // Logic to determine which key to use to decrypt attachments.
   const attachmentDecryptionKey =

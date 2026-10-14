@@ -32,7 +32,6 @@ describe('CsvRecord', () => {
             workflowNumTotalSteps: 2,
             lastSubmittedAt: '2025-02-17T00:00:00.000Z',
             hasNextStepRecipientEmails: false,
-            isWorkflowActionsEligible: false,
           },
         )
 

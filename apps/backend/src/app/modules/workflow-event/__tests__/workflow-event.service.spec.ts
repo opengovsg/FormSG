@@ -1,7 +1,6 @@
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { SubmissionType, WorkflowEventType } from 'formsg-shared/types'
-import { WORKFLOW_ACTIONS_CUTOFF } from 'formsg-shared/utils/workflow-actions'
 import mongoose from 'mongoose'
 
 import { getMultirespondentSubmissionModel } from 'src/app/models/submission.server.model'
@@ -12,7 +11,7 @@ const MultirespondentSubmission = getMultirespondentSubmissionModel(mongoose)
 
 const actor = { _id: new ObjectId(), email: 'admin@example.com' }
 
-const createSubmission = (created: Date) =>
+const createSubmission = () =>
   MultirespondentSubmission.create({
     form: new ObjectId(),
     submissionType: SubmissionType.Multirespondent,
@@ -21,7 +20,6 @@ const createSubmission = (created: Date) =>
     encryptedContent: 'encrypted content',
     version: 3,
     workflowStep: 0,
-    created,
   })
 
 describe('workflow-event.service', () => {
@@ -32,8 +30,8 @@ describe('workflow-event.service', () => {
   afterAll(() => dbHandler.closeDatabase())
 
   describe('recordWorkflowEvent', () => {
-    it('appends an event to a submission on or after the cutoff', async () => {
-      const submission = await createSubmission(WORKFLOW_ACTIONS_CUTOFF)
+    it('appends an event to the submission', async () => {
+      const submission = await createSubmission()
 
       const result = await WorkflowEventService.recordWorkflowEvent({
         submission,
@@ -43,7 +41,7 @@ describe('workflow-event.service', () => {
         emails: ['approver@example.com'],
       })
 
-      expect(result._unsafeUnwrap()).not.toBeNull()
+      expect(result.isOk()).toBe(true)
       const saved = await MultirespondentSubmission.findById(submission._id)
       expect(saved?.workflowEvents).toEqual([
         expect.objectContaining({
@@ -55,26 +53,8 @@ describe('workflow-event.service', () => {
       ])
     })
 
-    it('skips a submission before the cutoff', async () => {
-      const submission = await createSubmission(
-        new Date(WORKFLOW_ACTIONS_CUTOFF.getTime() - 1),
-      )
-
-      const result = await WorkflowEventService.recordWorkflowEvent({
-        submission,
-        type: WorkflowEventType.ReminderSent,
-        actor,
-        stepNumber: 2,
-        emails: ['approver@example.com'],
-      })
-
-      expect(result._unsafeUnwrap()).toBeNull()
-      const saved = await MultirespondentSubmission.findById(submission._id)
-      expect(saved?.workflowEvents).toBeUndefined()
-    })
-
     it('keeps the event when a respondent saves a copy loaded before it', async () => {
-      const submission = await createSubmission(WORKFLOW_ACTIONS_CUTOFF)
+      const submission = await createSubmission()
       const respondentCopy = await MultirespondentSubmission.findById(
         submission._id,
       )
