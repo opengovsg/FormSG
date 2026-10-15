@@ -2,9 +2,11 @@ import { FormResponseMode, WorkflowStatus } from 'formsg-shared/types'
 
 import {
   getPendingResponseAtString,
+  getWorkflowStatusText,
   hasWorkflowSteps,
   hasWorkflowSubmission,
 } from './mrfSubmissionView'
+import { matchesSearchQuery, normaliseSearchQuery } from './responseSearch'
 
 const noneString = '-'
 
@@ -125,5 +127,50 @@ describe('hasWorkflowSubmission', () => {
   it('is false with no submissions, or none carrying workflow metadata', () => {
     expect(hasWorkflowSubmission([])).toBe(false)
     expect(hasWorkflowSubmission([{ mrf: undefined }])).toBe(false)
+  })
+})
+
+describe('getWorkflowStatusText', () => {
+  test.each([
+    [WorkflowStatus.PENDING, 'Pending'],
+    [WorkflowStatus.COMPLETED, 'Completed'],
+    [WorkflowStatus.APPROVED, 'Approved'],
+    [WorkflowStatus.REJECTED, 'Not approved'],
+  ])('reads %s as %s', (workflowStatus, text) => {
+    expect(getWorkflowStatusText({ workflowStatus })).toBe(text)
+  })
+
+  test('reads a stopped workflow as Stopped, whatever its status', () => {
+    expect(
+      getWorkflowStatusText({
+        workflowStatus: WorkflowStatus.PENDING,
+        stoppedAt: '2026-10-16T00:00:00.000Z',
+      }),
+    ).toBe('Stopped')
+  })
+
+  test('reads a missing or unknown status as empty instead of throwing', () => {
+    expect(getWorkflowStatusText(undefined)).toBe('')
+    expect(getWorkflowStatusText({ workflowStatus: undefined })).toBe('')
+    expect(
+      getWorkflowStatusText({ workflowStatus: 'other' as WorkflowStatus }),
+    ).toBe('')
+  })
+
+  test('lets the table search match a row by its status', () => {
+    const query = normaliseSearchQuery('  pending ')
+
+    expect(
+      matchesSearchQuery(
+        [getWorkflowStatusText({ workflowStatus: WorkflowStatus.PENDING })],
+        query,
+      ),
+    ).toBe(true)
+    expect(
+      matchesSearchQuery(
+        [getWorkflowStatusText({ workflowStatus: WorkflowStatus.COMPLETED })],
+        query,
+      ),
+    ).toBe(false)
   })
 })
