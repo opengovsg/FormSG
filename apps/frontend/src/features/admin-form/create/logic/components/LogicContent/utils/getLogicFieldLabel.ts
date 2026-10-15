@@ -1,7 +1,7 @@
 import { BasicField } from 'formsg-shared/types'
 
 import { FormFieldWithQuestionNo } from '~features/form/types'
-import { isMyInfo } from '~features/myinfo/utils'
+import { getFieldSourceLabel } from '~features/myinfo/utils'
 
 export const getLogicFieldLabel = (field: FormFieldWithQuestionNo) => {
   const questionNumber = field.questionNumber ? `${field.questionNumber}. ` : ''
@@ -24,9 +24,10 @@ export const getLogicFieldLabel = (field: FormFieldWithQuestionNo) => {
       break
   }
 
-  // Add MyInfo tag if field is a MyInfo field
-  if (isMyInfo(field)) {
-    title = title + ' (Myinfo)'
+  // Tag fields filled from the login or MyInfo with their source
+  const sourceLabel = getFieldSourceLabel(field)
+  if (sourceLabel) {
+    title = `${title} (${sourceLabel})`
   }
 
   return questionNumber + title

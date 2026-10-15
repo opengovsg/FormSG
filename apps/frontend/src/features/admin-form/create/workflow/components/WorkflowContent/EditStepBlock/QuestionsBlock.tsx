@@ -2,6 +2,8 @@ import { Controller, UseFormReturn } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { FormControl, FormHelperText } from '@chakra-ui/react'
 
+import { isStepOneOnlyField } from 'formsg-shared/utils/login-identity'
+
 import { textStyles } from '~theme/textStyles'
 import { MultiSelect } from '~components/Dropdown'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
@@ -51,14 +53,14 @@ export const QuestionsBlock = ({
 
   const fieldItems = fillableFields
     // TODO(MRF-MYINFO): Remove this restriction once MyInfo fields are
-    .filter((f) => !('myInfo' in f) || isFirstStep)
+    .filter((f) => isFirstStep || !isStepOneOnlyField(f))
     .map((f) => ({
       value: f._id,
       label: getLogicFieldLabel(idToFieldMap[f._id]),
       icon: BASICFIELD_TO_DRAWER_META[f.fieldType].icon,
     }))
 
-  const hasOnlyMyInfoFields =
+  const hasOnlyStepOneOnlyFields =
     fieldItems.length === 0 && fillableFields.length > 0
 
   return (
@@ -114,10 +116,10 @@ export const QuestionsBlock = ({
             )
           }}
         />
-        {isRedesign && hasOnlyMyInfoFields ? (
+        {isRedesign && hasOnlyStepOneOnlyFields ? (
           <FormHelperText>
             {t(
-              'features.adminForm.sidebar.workflow.questions.myInfoOnlyHelperText',
+              'features.adminForm.sidebar.workflow.questions.stepOneOnlyHelperText',
             )}
           </FormHelperText>
         ) : null}

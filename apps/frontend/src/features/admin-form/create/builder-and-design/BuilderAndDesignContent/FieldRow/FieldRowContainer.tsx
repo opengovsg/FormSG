@@ -64,8 +64,8 @@ import { CreatePageSidebarContextProps } from '~features/admin-form/create/commo
 import {
   augmentWithMyInfoDisplayValue,
   extractPreviewValue,
+  getFieldSourceLabel,
   hasExistingFieldValue,
-  isMyInfo,
 } from '~features/myinfo/utils'
 
 import { useBuilderAndDesignContext } from '../../BuilderAndDesignContext'
@@ -158,7 +158,7 @@ const FieldRowContainer = ({
     setPaymentToInactiveSelector,
   )
 
-  const isMyInfoField = useMemo(() => isMyInfo(field), [field])
+  const sourceBadge = getFieldSourceLabel(field)
 
   // Explicitly defining isActive here to prevent constant checks to undefined
   // due to falsy nature of FieldBuilderState.CreatingField = 0
@@ -368,7 +368,7 @@ const FieldRowContainer = ({
                     field={field}
                     colorTheme={colorTheme}
                     responseMode={responseMode}
-                    showMyInfoBadge={isMyInfoField}
+                    sourceBadge={sourceBadge}
                   />
                 </FormProvider>
               </Box>
@@ -524,7 +524,7 @@ type FieldRowProps = {
   field: FormFieldDto
   colorTheme?: FormColorTheme
   responseMode: FormResponseMode
-  showMyInfoBadge?: boolean
+  sourceBadge?: string
 }
 
 const FieldRow = ({ field, ...rest }: FieldRowProps) => {

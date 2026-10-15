@@ -8,6 +8,7 @@ import InlineMessage from '~components/InlineMessage'
 interface AuthSettingsDisabledExplanationTextProps {
   isFormPublic: boolean
   containsMyInfoFields: boolean
+  containsLoginIdentityFields: boolean
   formResponseMode?: string
 }
 
@@ -19,6 +20,7 @@ const FORM_HAS_MYINFO_FIELDS =
 export const AuthSettingsDisabledExplanationText = ({
   isFormPublic,
   containsMyInfoFields,
+  containsLoginIdentityFields,
   formResponseMode,
 }: AuthSettingsDisabledExplanationTextProps) => {
   const { t } = useTranslation()
@@ -36,6 +38,14 @@ export const AuthSettingsDisabledExplanationText = ({
 
   if (containsMyInfoFields) {
     infoboxTextArray.push(FORM_HAS_MYINFO_FIELDS)
+  }
+
+  if (containsLoginIdentityFields) {
+    infoboxTextArray.push(
+      t(
+        'features.adminForm.settings.singpass.submitterIdCollection.loginFieldsLockAuth',
+      ),
+    )
   }
 
   const infoboxTextComponent = infoboxTextArray.length ? (

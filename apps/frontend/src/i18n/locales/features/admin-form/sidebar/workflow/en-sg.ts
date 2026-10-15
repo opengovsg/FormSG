@@ -178,8 +178,8 @@ export const enSG: Workflow = {
     placeholderRedesign: 'Select fields from your form',
     autoAddHelperTextRedesign:
       'The approval field is added here automatically.',
-    myInfoOnlyHelperText:
-      'Your form only has MyInfo fields, which can only be used in the first step.',
+    stepOneOnlyHelperText:
+      'Your form only has MyInfo or Corppass fields, which can only be used in the first step.',
   },
   addField: {
     fields: 'Add fields',

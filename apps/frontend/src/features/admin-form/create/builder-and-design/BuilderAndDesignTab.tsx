@@ -7,6 +7,8 @@ import {
   DropResult,
 } from '@hello-pangea/dnd'
 
+import { createLoginIdentityField } from 'formsg-shared/utils/login-identity'
+
 import {
   getFieldCreationMeta,
   getMyInfoFieldCreationMeta,
@@ -31,6 +33,8 @@ import {
   BASIC_FIELDS_ORDERED,
   BASIC_FIELDS_OTHERS,
   BASIC_FIELDS_PERSONAL,
+  CREATE_CORPPASS_IDENTITY_DROP_ID,
+  CREATE_CORPPASS_IDENTITY_FIELDS_ORDERED,
   CREATE_FIELD_BASIC_FIELDS_OPTIONS_DROP_ID,
   CREATE_FIELD_CONTENT_AND_DESCRIPTIONS_DROP_ID,
   CREATE_FIELD_DATES_AND_NUMBER_DROP_ID,
@@ -42,6 +46,8 @@ import {
   CREATE_MYINFO_CHILDREN_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  CREATE_MYINFO_IDENTITY_DROP_ID,
+  CREATE_MYINFO_IDENTITY_FIELDS_ORDERED,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
   CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
   CREATE_MYINFO_PARTICULARS_DROP_ID,
@@ -161,6 +167,24 @@ export const BuilderAndDesignTab = (): JSX.Element => {
         case CREATE_FIELD_OTHERS_DROP_ID: {
           return setToCreating(
             getFieldCreationMeta(BASIC_FIELDS_OTHERS[source.index]),
+            destination.index,
+          )
+        }
+
+        case CREATE_MYINFO_IDENTITY_DROP_ID: {
+          return setToCreating(
+            createLoginIdentityField(
+              CREATE_MYINFO_IDENTITY_FIELDS_ORDERED[source.index],
+            ),
+            destination.index,
+          )
+        }
+
+        case CREATE_CORPPASS_IDENTITY_DROP_ID: {
+          return setToCreating(
+            createLoginIdentityField(
+              CREATE_CORPPASS_IDENTITY_FIELDS_ORDERED[source.index],
+            ),
             destination.index,
           )
         }

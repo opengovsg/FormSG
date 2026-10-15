@@ -22,6 +22,8 @@ import {
   CREATE_MYINFO_CHILDREN_FIELDS_ORDERED,
   CREATE_MYINFO_CONTACT_DROP_ID,
   CREATE_MYINFO_CONTACT_FIELDS_ORDERED,
+  CREATE_MYINFO_IDENTITY_DROP_ID,
+  CREATE_MYINFO_IDENTITY_FIELDS_ORDERED,
   CREATE_MYINFO_MARRIAGE_DROP_ID,
   CREATE_MYINFO_MARRIAGE_FIELDS_ORDERED,
   CREATE_MYINFO_PARTICULARS_DROP_ID,
@@ -37,6 +39,8 @@ import { useCreateTabForm } from '../../../../builder-and-design/useCreateTabFor
 import { DraggableMyInfoFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
+import { LoginIdentityFieldSection } from './LoginIdentityFieldSection'
+import { useOfferedLoginIdentityAttrs } from './useOfferedLoginIdentityAttrs'
 import { filterFieldsBySearchValue } from './utils'
 
 export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
@@ -47,6 +51,10 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
 
   const { user } = useUser()
   const isMrfChildrenEnabled = useFeatureIsOn(featureFlags.mrfChildren)
+  const offeredIdentityAttrs = useOfferedLoginIdentityAttrs(
+    CREATE_MYINFO_IDENTITY_FIELDS_ORDERED,
+    searchValue,
+  )
 
   // Children fields remain admin-beta-gated everywhere; on MRF forms they
   // additionally require the mrf-children feature flag (default off).
@@ -102,27 +110,42 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
   return (
     <>
       <MyInfoMessage />
-      <Droppable isDropDisabled droppableId={CREATE_MYINFO_PERSONAL_DROP_ID}>
-        {(provided) => (
-          <Box ref={provided.innerRef} {...provided.droppableProps}>
-            {filteredCreateMyInfoPersonalFields.length > 0 && (
-              <FieldSection label={t('sections.personal')}>
-                {filteredCreateMyInfoPersonalFields.map(
-                  ({ fieldType, originalIndex }) => (
-                    <DraggableMyInfoFieldListOption
-                      index={originalIndex}
-                      isDisabled={isDisabled}
-                      key={originalIndex}
-                      fieldType={fieldType}
-                    />
-                  ),
+      {(filteredCreateMyInfoPersonalFields.length > 0 ||
+        offeredIdentityAttrs.length > 0) && (
+        <FieldSection label={t('sections.personal')}>
+          <LoginIdentityFieldSection
+            attrs={CREATE_MYINFO_IDENTITY_FIELDS_ORDERED}
+            droppableId={CREATE_MYINFO_IDENTITY_DROP_ID}
+            searchValue={searchValue}
+            withSectionLabel={false}
+            showConvertFirst
+          />
+          <Droppable
+            isDropDisabled
+            droppableId={CREATE_MYINFO_PERSONAL_DROP_ID}
+          >
+            {(provided) => (
+              <Box ref={provided.innerRef} {...provided.droppableProps}>
+                {filteredCreateMyInfoPersonalFields.length > 0 && (
+                  <FieldSection>
+                    {filteredCreateMyInfoPersonalFields.map(
+                      ({ fieldType, originalIndex }) => (
+                        <DraggableMyInfoFieldListOption
+                          index={originalIndex}
+                          isDisabled={isDisabled}
+                          key={originalIndex}
+                          fieldType={fieldType}
+                        />
+                      ),
+                    )}
+                  </FieldSection>
                 )}
-              </FieldSection>
+                <Box display="none">{provided.placeholder}</Box>
+              </Box>
             )}
-            <Box display="none">{provided.placeholder}</Box>
-          </Box>
-        )}
-      </Droppable>
+          </Droppable>
+        </FieldSection>
+      )}
       <Droppable isDropDisabled droppableId={CREATE_MYINFO_CONTACT_DROP_ID}>
         {(provided) => (
           <Box ref={provided.innerRef} {...provided.droppableProps}>

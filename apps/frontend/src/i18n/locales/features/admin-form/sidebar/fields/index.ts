@@ -1,6 +1,19 @@
 export * from './en-sg'
 
 export interface Fields {
+  loginIdentity: {
+    entities: string
+    corppassUsers: string
+    sectionLabel: string
+    corppassPanelInfo: string
+    loginMissing: string
+    convertFirst: string
+    details: {
+      uinfin: string
+      uen: string
+      uid: string
+    }
+  }
   builder: {
     title: string
     createField: string
@@ -9,6 +22,7 @@ export interface Fields {
     tabs: {
       basic: string
       myInfo: string
+      corppass: string
       payments: string
     }
     image: string

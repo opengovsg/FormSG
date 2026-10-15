@@ -1,10 +1,14 @@
 import { BasicField, MyInfoAttribute } from 'formsg-shared/types'
+import {
+  LOGIN_IDENTITY_LABELS,
+  LoginIdentityAttribute,
+} from 'formsg-shared/utils/login-identity'
 
 import { BuilderSidebarFieldMeta } from '~features/admin-form/create/constants'
 
 const checkSearchValueMatchesFieldMeta = (
   searchValue: string,
-  fieldMeta: BuilderSidebarFieldMeta,
+  fieldMeta: Pick<BuilderSidebarFieldMeta, 'label' | 'searchAliases'>,
 ): boolean => {
   const lowerCaseSearchValue = searchValue.toLowerCase()
   return !!(
@@ -43,3 +47,15 @@ export const filterFieldsBySearchValue = <
       return checkSearchValueMatchesFieldMeta(searchValue, fieldMeta)
     })
 }
+
+export const filterLoginIdentityAttrs = (
+  attrs: LoginIdentityAttribute[],
+  searchValue: string,
+) =>
+  attrs
+    .map((attr, originalIndex) => ({ attr, originalIndex }))
+    .filter(({ attr }) =>
+      checkSearchValueMatchesFieldMeta(searchValue, {
+        label: LOGIN_IDENTITY_LABELS[attr],
+      }),
+    )

@@ -46,9 +46,10 @@ export type BaseFieldProps = {
   isPrefilled?: boolean
 
   /**
-   * Whether the MyInfo badge should be shown next to the question name.
+   * Badge naming where the field's value comes from, shown next to the
+   * question name, e.g. "Myinfo", or "Corppass" for a login identity field.
    */
-  showMyInfoBadge?: boolean
+  sourceBadge?: string
 
   /**
    * Optional specification for error message variant.
@@ -68,7 +69,7 @@ export const FieldContainer = ({
   schema,
   children,
   errorKey,
-  showMyInfoBadge,
+  sourceBadge,
   errorVariant,
   isHighContrast,
 }: FieldContainerProps): JSX.Element => {
@@ -114,10 +115,10 @@ export const FieldContainer = ({
         >
           {title}
         </FormLabel>
-        {showMyInfoBadge && (
+        {sourceBadge && (
           <Box gridArea="myinfobadge">
             <Badge variant="subtle" colorScheme="secondary">
-              Myinfo
+              {sourceBadge}
             </Badge>
           </Box>
         )}
