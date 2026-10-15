@@ -58,11 +58,16 @@ import {
   EncryptedStringsMessageContent,
   encryptStringsMessage,
 } from 'formsg-shared/utils/crypto'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { StatusCodes } from 'http-status-codes'
 import JSONStream from 'JSONStream'
 import { errAsync, ResultAsync } from 'neverthrow'
 
-import { IFormDocument, IPopulatedForm } from '../../../../types'
+import {
+  IFormDocument,
+  IPopulatedForm,
+  IPopulatedUser,
+} from '../../../../types'
 import { EncryptSubmissionDto, FormUpdateParams } from '../../../../types/api'
 import { goGovConfig } from '../../../config/features/gogov.config'
 import { smsConfig } from '../../../config/features/sms.config'
@@ -84,7 +89,7 @@ import * as SubmissionService from '../../submission/submission.service'
 import { mapRouteError as mapSubmissionError } from '../../submission/submission.utils'
 import * as UserService from '../../user/user.service'
 import { removeFormsFromAllWorkspaces } from '../../workspace/workspace.service'
-import { PrivateFormError } from '../form.errors'
+import { ForbiddenFormError, PrivateFormError } from '../form.errors'
 import * as FormService from '../form.service'
 import { isFormMultirespondent } from '../form.utils'
 
@@ -1538,6 +1543,24 @@ export const handleUpdateSettings = [
   _handleUpdateSettings,
 ] as ControllerHandler[]
 
+const LOGIN_IDENTITY_FIELDS_DISABLED =
+  'NRIC/FIN/UEN login fields are not enabled.'
+
+const isNricFieldEnabledFor = (
+  growthbook: GrowthBook | undefined,
+  user: IPopulatedUser,
+  formId: string,
+): boolean => {
+  // Match frontend targeting for the signed-in admin, including collaborators.
+  void growthbook?.setAttributes({
+    ...growthbook.getAttributes(),
+    formId,
+    adminEmail: user.email,
+    adminAgency: user.agency?.shortName,
+  })
+  return growthbook?.isOn(featureFlags.isNricFieldEnabled) ?? false
+}
+
 export const _handleUpdateWebhookSettings: ControllerHandler<
   { formId: string },
   FormWebhookSettings | ErrorDto,
@@ -2463,11 +2486,14 @@ export const _handleCreateFormField: ControllerHandler<
     UserService.getPopulatedUserById(sessionUserId)
       .andThen((user) =>
         // Step 2: Retrieve form with write permission check.
-        AuthService.getFormAfterPermissionChecks({
-          user,
-          formId,
-          level: PermissionLevel.Write,
-        }),
+        isLoginIdentityField(formFieldToCreate) &&
+        !isNricFieldEnabledFor(req.growthbook, user, formId)
+          ? errAsync(new ForbiddenFormError(LOGIN_IDENTITY_FIELDS_DISABLED))
+          : AuthService.getFormAfterPermissionChecks({
+              user,
+              formId,
+              level: PermissionLevel.Write,
+            }),
       )
       // Step 3: User has permissions, proceed to create form field with provided body.
       .andThen((form) =>

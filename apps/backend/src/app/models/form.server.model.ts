@@ -35,6 +35,7 @@ import {
   LogicDto,
   LogicType,
   MultirespondentFormSettings,
+  MyInfoAttribute,
   PaymentChannel,
   PaymentType,
   PublicMultirespondentFormDto,
@@ -45,6 +46,11 @@ import {
 } from 'formsg-shared/types'
 import { reorder } from 'formsg-shared/utils/immutable-array-fns'
 import { getApplicableIfStates } from 'formsg-shared/utils/logic'
+import {
+  getLoginIdentityAttr,
+  getLoginIdentityConfigErrors,
+  isMyInfoDataField,
+} from 'formsg-shared/utils/login-identity'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { compact, omit, pick, uniq } from 'lodash'
@@ -649,7 +655,7 @@ const compileFormModel = (db: Mongoose): IFormModel => {
         validate: {
           validator: function (this: IFormSchema) {
             const myInfoFieldCount = (this.form_fields ?? []).reduce(
-              (acc, field) => acc + (field.myInfo ? 1 : 0),
+              (acc, field) => acc + (isMyInfoDataField(field) ? 1 : 0),
               0,
             )
             return (
@@ -1084,9 +1090,13 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       // Compact is used to remove undefined from array
       return compact(
         uniq(
-          this.form_fields?.flatMap((field) => {
-            return getMyInfoAttr(field)
-          }),
+          this.form_fields?.flatMap((field) =>
+            // The NRIC/FIN field is filled from the login, not prefilled from
+            // MyInfo, but still records uinfin. MyInfo always grants uinfin.
+            getLoginIdentityAttr(field) === MyInfoAttribute.UinFin
+              ? MyInfoAttribute.UinFin
+              : getMyInfoAttr(field),
+          ),
         ),
       )
     },
@@ -1672,6 +1682,21 @@ const compileFormModel = (db: Mongoose): IFormModel => {
       const validationError = this.invalidate(
         'webhook',
         'Webhook only allowed on storage and multirespondent mode form',
+      ) as mongoose.Error.ValidationError
+      return next(validationError)
+    }
+
+    const loginIdentityErrors = getLoginIdentityConfigErrors({
+      authType: this.authType ?? FormAuthType.NIL,
+      responseMode: this.responseMode,
+      isSubmitterIdCollectionEnabled: this.isSubmitterIdCollectionEnabled,
+      form_fields: this.form_fields,
+      workflow: this.get('workflow'),
+    })
+    if (loginIdentityErrors.length > 0) {
+      const validationError = this.invalidate(
+        'form_fields',
+        loginIdentityErrors.join(' '),
       ) as mongoose.Error.ValidationError
       return next(validationError)
     }

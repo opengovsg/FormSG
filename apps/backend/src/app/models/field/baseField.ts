@@ -12,13 +12,29 @@ export const MyInfoSchema = new Schema<IMyInfoSchema>(
   {
     attr: {
       type: String,
-      enum: Object.values(MyInfoAttribute),
+      // NRIC/FIN comes from the login and has its own schema on NRIC fields.
+      enum: Object.values(MyInfoAttribute).filter(
+        (attr) => attr !== MyInfoAttribute.UinFin,
+      ),
     },
   },
   {
     _id: false,
   },
 )
+
+/**
+ * A Step 1 login identity source (MyInfo NRIC/FIN or Corppass UEN/UID). Each
+ * field type accepts only its own attribute, so the enum enforces the type
+ * pairing.
+ */
+export const createAttrSourceSchema = (values: readonly string[]) => ({
+  type: new Schema(
+    { attr: { type: String, enum: values, required: true } },
+    { _id: false },
+  ),
+  default: undefined,
+})
 
 export const BaseFieldSchema = new Schema<IFieldSchema>(
   {

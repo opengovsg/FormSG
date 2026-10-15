@@ -38,6 +38,7 @@ export const featureFlags = {
   workflowDeletion: 'workflow-deletion' as const,
   scheduledFormClosure: 'scheduled-form-closure' as const,
   mrfChildren: 'mrf-children' as const,
+  isNricFieldEnabled: 'is-nric-field-enabled' as const,
   delightfulDashboard: 'delightful-dashboard' as const,
   suiteLauncher: 'suite-launcher' as const,
 }

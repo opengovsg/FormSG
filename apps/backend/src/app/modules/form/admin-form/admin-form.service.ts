@@ -45,6 +45,14 @@ import {
   EncryptedStringsMessageContentWithMyPrivateKey,
 } from 'formsg-shared/utils/crypto'
 import {
+  getLoginIdentityAttr,
+  getLoginIdentityConfigErrors,
+  isLoginIdentityField,
+  isMyInfoDataField,
+  LOGIN_IDENTITY_LABELS,
+  LoginIdentityCandidate,
+} from 'formsg-shared/utils/login-identity'
+import {
   isMFinSeriesValid,
   isNricValid,
 } from 'formsg-shared/utils/nric-validation'
@@ -923,6 +931,21 @@ export const updateOptionsToRecipientsMap = (
 }
 
 /**
+ * The question that fields filled from MyInfo or the login always show:
+ * the login identity label, or the stored MyInfo name.
+ */
+const getStandardTitle = (
+  field: Pick<FieldCreateDto, 'title' | 'myInfo'> & LoginIdentityCandidate,
+): string => {
+  const identityAttr = getLoginIdentityAttr(field)
+  if (identityAttr) return LOGIN_IDENTITY_LABELS[identityAttr]
+  const myInfoTitle = field.myInfo?.attr
+    ? MYINFO_ATTRIBUTE_MAP[field.myInfo.attr]?.value
+    : undefined
+  return myInfoTitle ?? field.title
+}
+
+/**
  * Updates the targeted form field with the new field provided
  * @param form the form the field to update belongs to
  * @param fieldId the id of the field to update
@@ -935,8 +958,35 @@ export const updateFormField = (
   form: IPopulatedForm,
   fieldId: string,
   newField: FieldUpdateDto,
-): ResultAsync<FormFieldSchema, PossibleDatabaseError | FieldNotFoundError> => {
+): ResultAsync<
+  FormFieldSchema,
+  PossibleDatabaseError | FieldNotFoundError | MalformedParametersError
+> => {
+  // Updates merge into the stored field, so compare the merged sources.
+  const existingField = getFormFieldById(form.form_fields, fieldId)
+  if (
+    existingField &&
+    getLoginIdentityAttr(existingField) !==
+      getLoginIdentityAttr({
+        fieldType: newField.fieldType,
+        myInfo: 'myInfo' in newField ? newField.myInfo : existingField.myInfo,
+        corppass:
+          'corppass' in newField
+            ? newField.corppass
+            : (existingField as LoginIdentityCandidate).corppass,
+      })
+  ) {
+    return errAsync(
+      new MalformedParametersError(
+        "A field's login identity can't be changed. Delete the field and add it again.",
+      ),
+    )
+  }
   const _newField = insertTableShortTextColumnDefaultValidationOptions(newField)
+  // Login identity fields keep their standard question.
+  if (existingField && isLoginIdentityField(existingField)) {
+    _newField.title = getStandardTitle(existingField)
+  }
 
   return ResultAsync.fromPromise(
     form.updateFormFieldById(fieldId, _newField),
@@ -1033,11 +1083,7 @@ export const createFormField = (
   FormFieldSchema,
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
-  // If MyInfo field, override field title to stored name.
-  if (newField.myInfo?.attr) {
-    newField.title =
-      MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title
-  }
+  newField.title = getStandardTitle(newField)
 
   return ResultAsync.fromPromise(
     form.insertFormField(newField, to),
@@ -1091,18 +1137,10 @@ export const createFormFields = ({
   FormFieldSchema[],
   PossibleDatabaseError | FormNotFoundError | FieldNotFoundError
 > => {
-  // If MyInfo field, override field title to store name.
-  const fieldsToSave = newFields.map((newField) => {
-    if (newField.myInfo?.attr) {
-      return {
-        ...newField,
-        title:
-          MYINFO_ATTRIBUTE_MAP[newField.myInfo.attr]?.value ?? newField.title,
-      }
-    } else {
-      return newField
-    }
-  })
+  const fieldsToSave = newFields.map((newField) => ({
+    ...newField,
+    title: getStandardTitle(newField),
+  }))
 
   return ResultAsync.fromPromise(
     form.insertFormFields(fieldsToSave, to),
@@ -1630,6 +1668,18 @@ const checkResultingWorkflowIsAllowed = (
   form: IPopulatedForm,
   workflow: FormWorkflowDto,
 ): Result<true, MalformedParametersError> => {
+  // Workflow query updates bypass the form's document validation hook.
+  const identityErrors = getLoginIdentityConfigErrors({
+    authType: form.authType,
+    responseMode: form.responseMode,
+    isSubmitterIdCollectionEnabled: form.isSubmitterIdCollectionEnabled,
+    form_fields: form.form_fields,
+    workflow,
+  })
+  if (identityErrors.length) {
+    return err(new MalformedParametersError(identityErrors.join(' ')))
+  }
+
   if (
     hasWebhookWorkflowConflict(
       form.webhook?.url,
@@ -1707,7 +1757,8 @@ export const createWorkflowStep = (
   if (!isFirstStep) {
     const editFieldIds = new Set((newWorkflowStep.edit ?? []).map(String))
     const myInfoFieldInEdit = originalForm.form_fields.find(
-      (field) => field.myInfo?.attr && editFieldIds.has(field._id.toString()),
+      (field) =>
+        isMyInfoDataField(field) && editFieldIds.has(field._id.toString()),
     )
     if (myInfoFieldInEdit) {
       return errAsync(
@@ -1859,7 +1910,8 @@ export const updateFormWorkflowStep = (
   if (!isFirstStep) {
     const editFieldIds = new Set((updatedWorkflowStep.edit ?? []).map(String))
     const myInfoFieldInEdit = originalForm.form_fields.find(
-      (field) => field.myInfo?.attr && editFieldIds.has(field._id.toString()),
+      (field) =>
+        isMyInfoDataField(field) && editFieldIds.has(field._id.toString()),
     )
     if (myInfoFieldInEdit) {
       return errAsync(
@@ -2258,6 +2310,30 @@ export const updateFormSettings = (
           incompleteStepNumbers,
           'before opening your form to responses',
         ),
+      )
+    }
+  }
+
+  // Settings updates skip the form's save hooks, so check the login identity
+  // fields against the login and toggle they would end up with.
+  if (
+    body.authType !== undefined ||
+    body.isSubmitterIdCollectionEnabled !== undefined
+  ) {
+    const loginIdentityErrors = getLoginIdentityConfigErrors({
+      authType: body.authType ?? originalForm.authType,
+      responseMode: originalForm.responseMode,
+      isSubmitterIdCollectionEnabled:
+        body.isSubmitterIdCollectionEnabled ??
+        originalForm.isSubmitterIdCollectionEnabled,
+      form_fields: originalForm.form_fields,
+      workflow: isFormMultirespondent(originalForm)
+        ? originalForm.workflow
+        : [],
+    })
+    if (loginIdentityErrors.length > 0) {
+      return errAsync(
+        new MalformedParametersError(loginIdentityErrors.join(' ')),
       )
     }
   }
