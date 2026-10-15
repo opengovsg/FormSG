@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.48.1](https://github.com/opengovsg/formsg/compare/v9.48.0...v9.48.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* **frontend:** keep the builder unchanged when the NRIC field flag is off (#10284) ([#10284](https://github.com/opengovsg/formsg/commit/a14341231e945be6ca31b880e67263c3f49246e8))
+
 ## [9.48.0](https://github.com/opengovsg/formsg/compare/v9.47.0...v9.48.0) (2026-10-15)
 
 
