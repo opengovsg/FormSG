@@ -21,6 +21,7 @@ import {
 } from 'formsg-shared/types'
 import { formatMyinfoDate } from 'formsg-shared/utils/dates'
 import { hasProp } from 'formsg-shared/utils/has-prop'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { StatusCodes } from 'http-status-codes'
 import jwt from 'jsonwebtoken'
 import moment from 'moment'
@@ -321,6 +322,9 @@ export const isMyInfoChildrenBirthRecords = (
 export const getMyInfoAttr = (
   field: IFieldSchema | FlattenMaps<IFieldSchema>,
 ): string | string[] | undefined => {
+  // NRIC/FIN login identity fields are filled from the login session, not
+  // requested from or verified against MyInfo.
+  if (isLoginIdentityField(field)) return undefined
   // Need to explode compound field.
   if (field.myInfo?.attr === MyInfoAttribute.ChildrenBirthRecords) {
     return (

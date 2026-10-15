@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Box } from '@chakra-ui/react'
 
 import { FormAuthType, FormResponseMode } from 'formsg-shared/types'
+import { isSubmitterIdCollected } from 'formsg-shared/utils/login-identity'
 
 import { usePublicFormContext } from '~features/public-form/PublicFormContext'
 
@@ -50,7 +51,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
       return (
         <FormAuth
           authType={form.authType}
-          isSubmitterIdCollectionEnabled={form.isSubmitterIdCollectionEnabled}
+          isSubmitterIdCollectionEnabled={isSubmitterIdCollected(form)}
           hasSingleSubmissionValidationError={
             hasSingleSubmissionValidationError
           }
@@ -73,6 +74,7 @@ export const FormFieldsContainer = (): JSX.Element | null => {
     isLoading,
     form,
     isAuthRequired,
+    previousSubmission,
     previousAttachments,
     currentWorkflowStep,
     handleSubmitForm,

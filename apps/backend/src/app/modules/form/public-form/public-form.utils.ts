@@ -1,3 +1,14 @@
+import {
+  CorppassAttribute,
+  FormAuthType,
+  FormFieldDto,
+} from 'formsg-shared/types'
+import {
+  getLoginIdentityAttr,
+  getLoginIdentityAttrsForAuthType,
+  isLoginIdentityFieldOwned,
+  LoginIdentityAttribute,
+} from 'formsg-shared/utils/login-identity'
 import { StatusCodes } from 'http-status-codes'
 
 import { MapRouteError } from 'src/types'
@@ -111,3 +122,43 @@ export const mapFormAuthError: MapRouteError = (
       }
   }
 }
+
+export type LoginIdentityValues = Partial<
+  Record<LoginIdentityAttribute, string>
+>
+
+/**
+ * The identities a Step 1 login provides, from the same session values the
+ * Collect NRIC/FIN/UENs setting records.
+ */
+export const getLoginIdentityValues = (
+  authType: FormAuthType,
+  session: { userName?: string; userInfo?: string } | undefined,
+): LoginIdentityValues => {
+  if (!session?.userName) return {}
+  // Corppass sessions carry the UEN as userName and the UID as userInfo.
+  return Object.fromEntries(
+    getLoginIdentityAttrsForAuthType(authType).map((attr) => [
+      attr,
+      attr === CorppassAttribute.Uid ? session.userInfo : session.userName,
+    ]),
+  )
+}
+
+/**
+ * Fills owned login identity fields from the login and makes them read-only.
+ * The server checks what the respondent sends back against the login.
+ */
+export const prefillLoginIdentityFields = <F extends FormFieldDto>(
+  formFields: readonly F[],
+  values: LoginIdentityValues,
+  workflow?: readonly { edit: readonly unknown[] }[],
+): F[] =>
+  formFields.map((field) => {
+    const attr = getLoginIdentityAttr(field)
+    const fieldValue =
+      attr && isLoginIdentityFieldOwned(field, workflow)
+        ? values[attr]
+        : undefined
+    return fieldValue ? { ...field, fieldValue, disabled: true } : field
+  })

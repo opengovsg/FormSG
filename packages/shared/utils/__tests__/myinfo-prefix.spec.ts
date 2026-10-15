@@ -1,9 +1,14 @@
-import { BasicField, FormFieldDto, MyInfoAttribute } from '../../types'
+import {
+  BasicField,
+  CorppassAttribute,
+  FormFieldDto,
+  MyInfoAttribute,
+} from '../../types'
 import { FlattenedV1Response } from '../flatten-v4-to-v1'
 import {
   applyMyInfoPrefix,
   applyMyInfoPrefixToFormFields,
-  shouldPrefixMyInfoQuestion,
+  getVerifiedQuestionPrefix,
 } from '../myinfo-prefix'
 
 const MYINFO_ID = 'aaaaaaaaaaaaaaaaaaaaaaaa'
@@ -47,20 +52,20 @@ const objectIdShaped = (hex: string) =>
 
 const stringWrapper = (hex: string) => Object(hex) as string
 
-describe('shouldPrefixMyInfoQuestion', () => {
-  it('returns true for a read-only MyInfo field', () => {
-    expect(
-      shouldPrefixMyInfoQuestion(myInfoEntry(), new Set([MYINFO_ID])),
-    ).toBe(true)
+describe('getVerifiedQuestionPrefix', () => {
+  it('returns [Myinfo] for a read-only MyInfo field', () => {
+    expect(getVerifiedQuestionPrefix(myInfoEntry(), new Set([MYINFO_ID]))).toBe(
+      '[Myinfo] ',
+    )
   })
 
-  it('returns false for a MyInfo field that is not read-only', () => {
-    expect(shouldPrefixMyInfoQuestion(myInfoEntry(), new Set())).toBe(false)
+  it('returns nothing for a MyInfo field that is not read-only', () => {
+    expect(getVerifiedQuestionPrefix(myInfoEntry(), new Set())).toBe('')
   })
 
-  it('returns false for a non-MyInfo field even when its ID is marked read-only', () => {
-    expect(shouldPrefixMyInfoQuestion(plainEntry(), new Set([PLAIN_ID]))).toBe(
-      false,
+  it('returns nothing for a non-MyInfo field even when its ID is marked read-only', () => {
+    expect(getVerifiedQuestionPrefix(plainEntry(), new Set([PLAIN_ID]))).toBe(
+      '',
     )
   })
 
@@ -68,11 +73,11 @@ describe('shouldPrefixMyInfoQuestion', () => {
     // findEncryptedSubmissionById does not lean(); nested form_fields keep
     // ObjectId _ids, while myInfoReadOnlyFields is stored as [String].
     expect(
-      shouldPrefixMyInfoQuestion(
+      getVerifiedQuestionPrefix(
         { ...myInfoEntry(), _id: objectIdShaped(MYINFO_ID) },
         new Set([MYINFO_ID]),
       ),
-    ).toBe(true)
+    ).toBe('[Myinfo] ')
   })
 })
 
@@ -134,6 +139,49 @@ describe('applyMyInfoPrefix', () => {
       new Set([stringWrapper(MYINFO_ID)]),
     )
     expect(prefixed.question).toBe('[Myinfo] Name')
+  })
+})
+
+describe('Corppass login identity fields', () => {
+  const CORPPASS_ID = 'cccccccccccccccccccccccc'
+  const corppassField = (): FormFieldDto =>
+    ({
+      _id: CORPPASS_ID,
+      fieldType: BasicField.Uen,
+      title: 'UEN',
+      corppass: { attr: CorppassAttribute.Uen },
+    }) as unknown as FormFieldDto
+  const corppassEntry = (): FlattenedV1Response =>
+    ({
+      _id: CORPPASS_ID,
+      fieldType: BasicField.Uen,
+      question: 'UEN',
+      answer: '201912345A',
+    }) as unknown as FlattenedV1Response
+
+  it('marks a verified Corppass answer [Corppass] using the form definition', () => {
+    const result = applyMyInfoPrefix(
+      [corppassEntry(), myInfoEntry()],
+      [CORPPASS_ID, MYINFO_ID],
+      [corppassField(), myInfoField()],
+    )
+    expect(result.map((entry) => entry.question)).toEqual([
+      '[Corppass] UEN',
+      '[Myinfo] Name',
+    ])
+  })
+
+  it('leaves an unverified Corppass answer unmarked', () => {
+    const [entry] = applyMyInfoPrefix([corppassEntry()], [], [corppassField()])
+    expect(entry.question).toBe('UEN')
+  })
+
+  it('marks a verified Corppass title [Corppass]', () => {
+    const [field] = applyMyInfoPrefixToFormFields(
+      [corppassField()],
+      [CORPPASS_ID],
+    )
+    expect(field.title).toBe('[Corppass] UEN')
   })
 })
 

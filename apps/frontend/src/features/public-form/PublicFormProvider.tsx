@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useDisclosure } from '@chakra-ui/react'
 import { datadogLogs } from '@datadog/browser-logs'
-import { useFeatureIsOn, useGrowthBook } from '@growthbook/growthbook-react'
+import { useGrowthBook } from '@growthbook/growthbook-react'
 import { differenceInMilliseconds, format, isPast } from 'date-fns'
 import { flow, times } from 'lodash'
 import get from 'lodash/get'
@@ -35,6 +35,7 @@ import {
   PublicFormDto,
   StrippedFormWorkflowStepDto,
 } from 'formsg-shared/types/form'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { centsToDollars, dollarsToCents } from 'formsg-shared/utils/payments'
 
 import { MONGODB_ID_REGEX } from '~constants/routes'
@@ -212,12 +213,21 @@ const transformFormInputTrimTextInputs =
     )
   }
 
+// The login fills these fields and the server rejects an answer that differs
+// from it, so they are never editable. They are labelled as required, since
+// the login always provides them.
+const augmentLoginIdentityField = (field: FormFieldDto): FormFieldDto =>
+  isLoginIdentityField(field)
+    ? { ...field, disabled: true, required: true }
+    : field
+
 export const augmentFormFields = (
   formFields: FormFieldDto[],
   currentStepNumberWorkflowStep?: StrippedFormWorkflowStepDto,
 ) => {
   return formFields
     .map(augmentWithMyInfo)
+    .map(augmentLoginIdentityField)
     .map((fields) =>
       augmentFieldWithMrfWorkflowDisabling(
         currentStepNumberWorkflowStep,

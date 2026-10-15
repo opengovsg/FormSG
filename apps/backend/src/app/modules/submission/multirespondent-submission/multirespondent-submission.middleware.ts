@@ -18,6 +18,7 @@ import {
   isPaymentsProducts,
   SubmissionType,
 } from 'formsg-shared/types'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { StatusCodes } from 'http-status-codes'
 import { err, errAsync, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 
@@ -60,6 +61,10 @@ import * as VerifiedContentService from '../../verified-content/verified-content
 import { VerifiedContentV3 } from '../../verified-content/verified-content.types'
 import { FormsgReqBodyExistsError } from '../encrypt-submission/encrypt-submission.errors'
 import { CreateFormsgAndRetrieveFormMiddlewareHandlerType } from '../encrypt-submission/encrypt-submission.types'
+import {
+  checkLoginIdentityAnswers,
+  getLoginIdentityValuesFromCookies,
+} from '../login-identity-answers'
 import {
   InvalidSubmissionTypeError,
   MissingSubmitterIdError,
@@ -952,6 +957,58 @@ export const verifyMyInfoHashes = async (
     .mapErr((error) => {
       logger.error({
         message: 'Error verifying MyInfo hashes',
+        meta: logMeta,
+        error,
+      })
+      return sendRouteError(res, mapRouteError(error), {
+        spcpSubmissionFailure: true,
+      })
+    })
+}
+
+/**
+ * Checks Step 1 login identity answers against the login, like
+ * verifyMyInfoHashes. Verified fields join myInfoReadOnlyFields, so outputs
+ * mark them `[Myinfo]` or `[Corppass]`. Must run before encryptSubmission.
+ */
+export const verifyLoginIdentityAnswers = async (
+  req: ProcessedMultirespondentSubmissionHandlerRequest,
+  res: Parameters<ProcessedMultirespondentSubmissionHandlerType>[1],
+  next: NextFunction,
+) => {
+  const { formId } = req.params
+  const { formDef } = req.formsg
+  const formFields = formDef.form_fields ?? []
+
+  if (!formFields.some(isLoginIdentityField)) return next()
+
+  const logMeta = {
+    action: 'verifyLoginIdentityAnswers',
+    formId,
+    ...createReqMeta(req),
+  }
+  const responses = req.body.responses ?? {}
+
+  return getLoginIdentityValuesFromCookies(formDef.authType, req.cookies)
+    .andThen((values) =>
+      checkLoginIdentityAnswers(
+        formFields,
+        (fieldId) =>
+          (responses[fieldId]?.answer as { value?: unknown } | undefined)
+            ?.value,
+        values,
+      ),
+    )
+    .map((verifiedFieldIds) => {
+      req.formsg.myInfoReadOnlyFields = [
+        ...(req.formsg.myInfoReadOnlyFields ?? []),
+        ...verifiedFieldIds,
+      ]
+      return next()
+    })
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error verifying login identity answers',
         meta: logMeta,
         error,
       })

@@ -12,11 +12,11 @@ import {
   FormFieldDto,
   StrippedFormWorkflowStepDto,
 } from 'formsg-shared/types'
+import { isStepOneOnlyField } from 'formsg-shared/utils/login-identity'
 
 import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 
 import { isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
-import { isMyInfo } from '~features/myinfo/utils'
 
 import { DraftSubmission } from '../PublicFormContext'
 
@@ -57,8 +57,8 @@ export const getDraftToSave = ({
       )
       .map((field) => field._id),
   ]
-  const myInfoFieldIds = formFields
-    .filter((field) => isMyInfo(field))
+  const authenticatedFieldIds = formFields
+    .filter((field) => isStepOneOnlyField(field))
     .map((field) => field._id)
 
   const verifiableFieldIds = formFields
@@ -88,7 +88,7 @@ export const getDraftToSave = ({
   }
   const fieldIdsToInclude = difference(
     currentlyExistingFieldIds,
-    myInfoFieldIds,
+    authenticatedFieldIds,
   )
 
   const updatedDraftResponses = pick(allFieldValuesToSave, fieldIdsToInclude)

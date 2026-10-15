@@ -1,5 +1,9 @@
 import { StringAnswerV4 } from '@opengovsg/formsg-sdk'
-import { BasicField } from 'formsg-shared/types'
+import {
+  BasicField,
+  CorppassAttribute,
+  UenFieldBase,
+} from 'formsg-shared/types'
 import { isUenValid } from 'formsg-shared/utils/uen-validation'
 import { chain, left, right } from 'fp-ts/lib/Either'
 import { flow } from 'fp-ts/lib/function'
@@ -11,7 +15,16 @@ import { ProcessedSingleAnswerResponse } from '../../../modules/submission/submi
 import { notEmptySingleAnswerResponse } from './common'
 
 type UenValidator = ResponseValidator<ProcessedSingleAnswerResponse>
-type UenValidatorConstructor = () => UenValidator
+type UenFieldSource = Pick<UenFieldBase, 'corppass'>
+type UenValidatorConstructor = (uenField: UenFieldSource) => UenValidator
+
+/**
+ * Corppass supplies the entity's ID, which is not a UEN for foreign, ASGD/ITR
+ * or GST-registered entities, so the Corppass UEN field only checks that it
+ * matches the login.
+ */
+const isCorppassUenField = (uenField: UenFieldSource): boolean =>
+  uenField.corppass?.attr === CorppassAttribute.Uen
 
 /**
  * Returns a validator to check if uen
@@ -26,8 +39,10 @@ const uenValidator: UenValidator = (response) => {
 /**
  * Returns a validation function for a uen field when called.
  */
-export const constructUenValidator: UenValidatorConstructor = () =>
-  flow(notEmptySingleAnswerResponse, chain(uenValidator))
+export const constructUenValidator: UenValidatorConstructor = (uenField) =>
+  isCorppassUenField(uenField)
+    ? notEmptySingleAnswerResponse
+    : flow(notEmptySingleAnswerResponse, chain(uenValidator))
 
 // V4
 
@@ -61,8 +76,11 @@ const uenValidatorV4: ResponseValidator<UenResponseV4> = (response) => {
     : left(`UenValidatorV4:\tanswer is not a valid UEN`)
 }
 
-export const constructUenValidatorV4: () => ResponseValidator<
-  ParsedClearFormFieldResponseV4,
-  UenResponseV4
-> = () =>
-  flow(isUenResponseV4, chain(notEmptyUenAnswerV4), chain(uenValidatorV4))
+export const constructUenValidatorV4: (
+  uenField: UenFieldSource,
+) => ResponseValidator<ParsedClearFormFieldResponseV4, UenResponseV4> = (
+  uenField,
+) =>
+  isCorppassUenField(uenField)
+    ? flow(isUenResponseV4, chain(notEmptyUenAnswerV4))
+    : flow(isUenResponseV4, chain(notEmptyUenAnswerV4), chain(uenValidatorV4))

@@ -7,6 +7,7 @@ import {
 } from 'formsg-shared/constants/errors'
 import {
   BasicField,
+  CorppassAttribute,
   ErrorCode,
   FormAuthType,
   MyInfoAttribute,
@@ -1074,7 +1075,17 @@ describe('encrypt-submission.controller', () => {
         _id: mockFormId,
         title: 'some form',
         authType: FormAuthType.CP,
-        form_fields: [] as FormFieldSchema[],
+        // Identity fields record the identity as answers, not verified content.
+        form_fields: [
+          {
+            fieldType: BasicField.Nric,
+            corppass: { attr: CorppassAttribute.Uid },
+          },
+          {
+            fieldType: BasicField.Uen,
+            corppass: { attr: CorppassAttribute.Uen },
+          },
+        ] as FormFieldSchema[],
         getUniqueMyInfoAttrs: () => [] as MyInfoAttribute[],
         isSubmitterIdCollectionEnabled: false,
       } as IPopulatedEncryptedForm

@@ -22,6 +22,7 @@ import {
   BasicField,
   CheckboxFieldBase,
   ChildrenCompoundFieldBase,
+  CorppassAttribute,
   DateFieldBase,
   DateSelectedValidation,
   DecimalFieldBase,
@@ -71,7 +72,6 @@ import {
   VerifiableFieldValues,
 } from '~templates/Field/types'
 
-import { CorppassUnauthorizedSubmitterIdCollectionEnabled } from '~features/public-form/PublicFormPage.stories'
 import { VerifiableFieldBase } from '~features/verifiable-fields/types'
 
 import {
@@ -682,6 +682,8 @@ export const useUenValidationRules = (
           t,
         ),
         validUen: (val?: string) => {
+          // Corppass supplies the entity's ID, which can be a non-UEN ID.
+          if (schema.corppass?.attr === CorppassAttribute.Uen) return true
           if (!val) return true
           return isUenValid(val) || t('validUen')
         },
@@ -707,6 +709,8 @@ export const useNricValidationRules = (
           t,
         ),
         validNric: (val?: string) => {
+          // Corppass supplies the representative's identifier, which can be foreign.
+          if (schema.corppass?.attr === CorppassAttribute.Uid) return true
           if (!val) return true
           return isNricValid(val) || isMFinSeriesValid(val) || t('validNric')
         },

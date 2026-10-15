@@ -15,6 +15,7 @@ import {
   PublicFormViewDto,
   StrippedFormWorkflowDto,
 } from 'formsg-shared/types'
+import { isLoginIdentityField } from 'formsg-shared/utils/login-identity'
 import { stripWorkflowEmails } from 'formsg-shared/utils/strip-workflow-emails'
 import { StatusCodes } from 'http-status-codes'
 import { err, okAsync } from 'neverthrow'
@@ -63,7 +64,12 @@ import {
 import * as FormService from '../form.service'
 
 import * as PublicFormService from './public-form.service'
-import { mapFormAuthError, mapRouteError } from './public-form.utils'
+import {
+  getLoginIdentityValues,
+  mapFormAuthError,
+  mapRouteError,
+  prefillLoginIdentityFields,
+} from './public-form.utils'
 
 const logger = createLoggerWithLabel(module)
 
@@ -338,12 +344,25 @@ export const handleGetPublicForm: ControllerHandler<
     })
   }
 
+  const withLoginIdentities = (formFields: FormFieldDto[]): FormFieldDto[] =>
+    prefillLoginIdentityFields(
+      formFields,
+      getLoginIdentityValues(authType, spcpSession),
+      'workflow' in publicForm ? publicForm.workflow : undefined,
+    )
+
   // generate form response based on authType
   switch (authType) {
     case FormAuthType.SP:
     case FormAuthType.CP:
       return res.json({
-        form: publicForm,
+        // Forms without login identity fields keep their response as is.
+        form: (publicForm.form_fields ?? []).some(isLoginIdentityField)
+          ? {
+              ...publicForm,
+              form_fields: withLoginIdentities(publicForm.form_fields),
+            }
+          : publicForm,
         isIntranetUser,
         spcpSession,
       })
@@ -395,7 +414,7 @@ export const handleGetPublicForm: ControllerHandler<
           spcpSession,
           form: {
             ...publicForm,
-            form_fields: prefilledFields as FormFieldDto[],
+            form_fields: withLoginIdentities(prefilledFields as FormFieldDto[]),
           },
           isIntranetUser,
           myInfoChildrenBirthRecords: (

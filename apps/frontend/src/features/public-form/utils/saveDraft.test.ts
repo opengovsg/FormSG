@@ -1,18 +1,13 @@
 import {
   BasicField,
+  CorppassAttribute,
   FormFieldDto,
+  MyInfoAttribute,
   StrippedFormWorkflowStepDto,
   WorkflowType,
 } from 'formsg-shared/types'
 
-import { isMyInfo } from '~features/myinfo/utils'
-
 import { getDraftToSave, getRestoreDraftFormValues } from './saveDraft'
-
-// Mock the isMyInfo function
-vi.mock('~features/myinfo/utils', () => ({
-  isMyInfo: vi.fn(),
-}))
 
 describe('saveDraft', () => {
   beforeEach(() => {
@@ -101,8 +96,6 @@ describe('saveDraft', () => {
       }
       const dirtyFieldIds = ['field1', 'field2']
 
-      vi.mocked(isMyInfo).mockReturnValue(false)
-
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
@@ -139,8 +132,6 @@ describe('saveDraft', () => {
       }
       const dirtyFieldIds = ['field1', 'section1', 'statement1', 'field2']
 
-      vi.mocked(isMyInfo).mockReturnValue(false)
-
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
@@ -158,7 +149,10 @@ describe('saveDraft', () => {
     it('should exclude MyInfo fields', () => {
       const formFields = [
         createMockFormField('field1', BasicField.ShortText),
-        createMockFormField('myinfo1', BasicField.ShortText),
+        {
+          ...createMockFormField('myinfo1', BasicField.ShortText),
+          myInfo: { attr: MyInfoAttribute.Name },
+        } as FormFieldDto,
         createMockFormField('field2', BasicField.LongText),
       ]
       const formFieldValues = {
@@ -167,11 +161,6 @@ describe('saveDraft', () => {
         field2: 'test value 2',
       }
       const dirtyFieldIds = ['field1', 'myinfo1', 'field2']
-
-      vi.mocked(isMyInfo)
-        .mockReturnValueOnce(false)
-        .mockReturnValueOnce(true)
-        .mockReturnValueOnce(false)
 
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
@@ -185,6 +174,36 @@ describe('saveDraft', () => {
         field1: 'test value 1',
         field2: 'test value 2',
       })
+    })
+
+    it('should exclude Corppass login identity fields', () => {
+      const formFields = [
+        createMockFormField('field1', BasicField.ShortText),
+        {
+          ...createMockFormField('cpUid', BasicField.Nric),
+          corppass: { attr: CorppassAttribute.Uid },
+        } as FormFieldDto,
+        {
+          ...createMockFormField('cpUen', BasicField.Uen),
+          corppass: { attr: CorppassAttribute.Uen },
+        } as FormFieldDto,
+      ]
+      const formFieldValues = {
+        field1: 'test value 1',
+        cpUid: 'S1234567D',
+        cpUen: '53308948A',
+      }
+
+      const result = getDraftToSave({
+        currentFormFieldValues: formFieldValues,
+        dirtyFieldIds: ['field1', 'cpUid', 'cpUen'],
+        // Login fills these, so they count as prefilled
+        prefilledFieldIds: ['cpUid', 'cpUen'],
+        currentStepNumberWorkflowStep: undefined,
+        formFields,
+      })
+
+      expect(result.draftResponses).toEqual({ field1: 'test value 1' })
     })
 
     it('should remove signatures from verifiable fields and keep non-verifiable field signatures as undefined', () => {
@@ -205,8 +224,6 @@ describe('saveDraft', () => {
         mobile2: { value: '+6587654321', signature: undefined },
       }
       const dirtyFieldIds = ['field1', 'email1', 'mobile1', 'email2', 'mobile2']
-
-      vi.mocked(isMyInfo).mockReturnValue(false)
 
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
@@ -241,8 +258,6 @@ describe('saveDraft', () => {
         field1: 'old value 1',
         field2: 'old value 2',
       }
-
-      vi.mocked(isMyInfo).mockReturnValue(false)
 
       const result = getDraftToSave({
         previousRestoredDraftResponses,
@@ -297,8 +312,6 @@ describe('saveDraft', () => {
       }
       const dirtyFieldIds = ['field1']
 
-      vi.mocked(isMyInfo).mockReturnValue(false)
-
       const result = getDraftToSave({
         previousRestoredDraftResponses: null,
         currentFormFieldValues: formFieldValues,
@@ -325,8 +338,6 @@ describe('saveDraft', () => {
       const dirtyFieldIds = ['field2']
       const prefilledFieldIds = ['prefill1']
 
-      vi.mocked(isMyInfo).mockReturnValue(false)
-
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
@@ -349,8 +360,6 @@ describe('saveDraft', () => {
       }
       const dirtyFieldIds = ['prefill1']
       const prefilledFieldIds = ['prefill1']
-
-      vi.mocked(isMyInfo).mockReturnValue(false)
 
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
@@ -379,8 +388,6 @@ describe('saveDraft', () => {
         'editable1',
       ])
 
-      vi.mocked(isMyInfo).mockReturnValue(false)
-
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
         dirtyFieldIds,
@@ -408,8 +415,6 @@ describe('saveDraft', () => {
       const currentStepNumberWorkflowStep = createMockWorkflowStep([
         'editablePrefill',
       ])
-
-      vi.mocked(isMyInfo).mockReturnValue(false)
 
       const result = getDraftToSave({
         currentFormFieldValues: formFieldValues,
