@@ -107,11 +107,35 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
     MYINFO_FIELD_TO_DRAWER_META,
   )
 
+  const renderPersonalFields = (label?: string) => (
+    <Droppable isDropDisabled droppableId={CREATE_MYINFO_PERSONAL_DROP_ID}>
+      {(provided) => (
+        <Box ref={provided.innerRef} {...provided.droppableProps}>
+          {filteredCreateMyInfoPersonalFields.length > 0 && (
+            <FieldSection label={label}>
+              {filteredCreateMyInfoPersonalFields.map(
+                ({ fieldType, originalIndex }) => (
+                  <DraggableMyInfoFieldListOption
+                    index={originalIndex}
+                    isDisabled={isDisabled}
+                    key={originalIndex}
+                    fieldType={fieldType}
+                  />
+                ),
+              )}
+            </FieldSection>
+          )}
+          <Box display="none">{provided.placeholder}</Box>
+        </Box>
+      )}
+    </Droppable>
+  )
+
   return (
     <>
       <MyInfoMessage />
-      {(filteredCreateMyInfoPersonalFields.length > 0 ||
-        offeredIdentityAttrs.length > 0) && (
+      {/* Without identity options, keep the original Personal section layout. */}
+      {offeredIdentityAttrs.length > 0 ? (
         <FieldSection label={t('sections.personal')}>
           <LoginIdentityFieldSection
             attrs={CREATE_MYINFO_IDENTITY_FIELDS_ORDERED}
@@ -120,31 +144,10 @@ export const MyInfoFieldPanel = ({ searchValue }: { searchValue: string }) => {
             withSectionLabel={false}
             showConvertFirst
           />
-          <Droppable
-            isDropDisabled
-            droppableId={CREATE_MYINFO_PERSONAL_DROP_ID}
-          >
-            {(provided) => (
-              <Box ref={provided.innerRef} {...provided.droppableProps}>
-                {filteredCreateMyInfoPersonalFields.length > 0 && (
-                  <FieldSection>
-                    {filteredCreateMyInfoPersonalFields.map(
-                      ({ fieldType, originalIndex }) => (
-                        <DraggableMyInfoFieldListOption
-                          index={originalIndex}
-                          isDisabled={isDisabled}
-                          key={originalIndex}
-                          fieldType={fieldType}
-                        />
-                      ),
-                    )}
-                  </FieldSection>
-                )}
-                <Box display="none">{provided.placeholder}</Box>
-              </Box>
-            )}
-          </Droppable>
+          {renderPersonalFields()}
         </FieldSection>
+      ) : (
+        renderPersonalFields(t('sections.personal'))
       )}
       <Droppable isDropDisabled droppableId={CREATE_MYINFO_CONTACT_DROP_ID}>
         {(provided) => (
