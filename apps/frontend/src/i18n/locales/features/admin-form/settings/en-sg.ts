@@ -9,10 +9,43 @@ export const enSG = {
   singpass: {
     title: 'Singpass',
     submitterIdCollection: {
+      toggleLabel: 'Collect NRIC/FIN/UENs with form submissions',
+      convert: 'Convert',
+      closeFormToConvert: 'Close your form to convert.',
       loginFieldsLockAuth:
         'To change your Singpass authentication mode, remove the existing login-filled fields.',
       removeIdentityFieldsFirst:
         'Your form already collects NRIC/FIN/UENs through form fields. To use this setting instead, remove those fields first.',
+      preview: {
+        title: 'Conversion preview',
+        before: 'Before',
+        after: 'After',
+        settingsTitle: 'Singpass settings',
+      },
+      // Singpass converts to one field and Corppass to two, so each login has
+      // its own sentences.
+      singpass: {
+        stopHint:
+          'To stop collecting, convert first, then delete the NRIC/FIN field.',
+        convertInfo:
+          'You can now collect this by adding the NRIC/FIN field. Converting changes how new responses record it, which can affect webhooks, email notifications, email JSON and CSV exports.',
+        modalTitle: 'Convert to NRIC field?',
+        modalBody:
+          "Adds the NRIC/FIN field at the bottom of your form, filled from the respondent's login. Your response limit and eligibility restrictions stay in these settings.",
+        warning:
+          'New responses will record this as an NRIC form field. This may affect webhooks, email notifications, email JSON and CSV exports. Past responses stay unchanged.',
+      },
+      corppass: {
+        stopHint:
+          'To stop collecting, convert first, then delete both the NRIC/FIN and UEN fields.',
+        convertInfo:
+          'You can now collect this by adding the NRIC/FIN and UEN fields. Converting changes how new responses record them, which can affect webhooks, email notifications, email JSON and CSV exports.',
+        modalTitle: 'Convert to NRIC and UEN fields?',
+        modalBody:
+          "Adds the NRIC/FIN and UEN fields at the bottom of your form, filled from the respondent's login. Your response limit and eligibility restrictions stay in these settings.",
+        warning:
+          'New responses will record these as form answers instead of verified login details. Check anything that reads them, such as webhooks, email notifications, email JSON and CSV exports. Past responses stay unchanged.',
+      },
     },
   },
   tabs: {

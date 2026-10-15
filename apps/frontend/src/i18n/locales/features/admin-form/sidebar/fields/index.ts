@@ -8,6 +8,7 @@ export interface Fields {
     corppassPanelInfo: string
     loginMissing: string
     convertFirst: string
+    convertedToast: string
     details: {
       uinfin: string
       uen: string

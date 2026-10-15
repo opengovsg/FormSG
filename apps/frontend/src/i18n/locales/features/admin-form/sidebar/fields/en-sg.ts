@@ -11,6 +11,8 @@ export const enSG: Fields = {
       "Enable {loginName} in <settingsLink>Settings</settingsLink> to fill these fields from the respondent's login.",
     convertFirst:
       'This form collects NRIC/FIN/UENs through <settingsLink>Singpass settings</settingsLink>. Convert that setting to add these fields.',
+    convertedToast:
+      'Your form now collects NRIC/FIN/UENs with login fields at the bottom of the form.',
     // Keyed by login identity attribute.
     details: {
       uinfin:

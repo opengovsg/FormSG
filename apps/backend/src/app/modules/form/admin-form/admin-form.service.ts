@@ -45,7 +45,10 @@ import {
   EncryptedStringsMessageContentWithMyPrivateKey,
 } from 'formsg-shared/utils/crypto'
 import {
+  canConvertSubmitterIdCollection,
+  createLoginIdentityField,
   getLoginIdentityAttr,
+  getLoginIdentityAttrsForAuthType,
   getLoginIdentityConfigErrors,
   isLoginIdentityField,
   isMyInfoDataField,
@@ -2236,6 +2239,62 @@ const pinMrfWebhookFormatIfUnsetAndGeneric = (
       webhookFormat: isV4Enabled ? 'v4' : 'v1',
     },
   }
+}
+
+/** Adds identity fields and disables legacy collection in a single save. */
+export const convertSubmitterIdCollection = (
+  form: IPopulatedForm,
+): ResultAsync<
+  FormSettings,
+  | FormOpenToResponsesError
+  | MalformedParametersError
+  | FormNotFoundError
+  | PossibleDatabaseError
+> => {
+  if (form.status === FormStatus.Public) {
+    return errAsync(
+      new FormOpenToResponsesError('Close your form to convert this setting.'),
+    )
+  }
+  if (!canConvertSubmitterIdCollection(form)) {
+    return errAsync(
+      new MalformedParametersError(
+        'This form does not collect NRIC/FIN/UENs through its settings.',
+      ),
+    )
+  }
+
+  form.isSubmitterIdCollectionEnabled = false
+  // Save only if form is unchanged to prevent race condition
+  form.increment()
+  const newFields = getLoginIdentityAttrsForAuthType(form.authType).map(
+    (attr) => ({
+      ...createLoginIdentityField(attr),
+      _id: new mongoose.Types.ObjectId(),
+    }),
+  )
+  // Keep collecting: an MRF workflow collects only through Step 1's fields.
+  const stepOne = isFormMultirespondent(form) ? form.workflow?.[0] : undefined
+  if (stepOne) {
+    stepOne.edit.push(...newFields.map(({ _id }) => String(_id)))
+  }
+  return ResultAsync.fromPromise(form.insertFormFields(newFields), (error) => {
+    if (error instanceof mongoose.Error.VersionError) {
+      return new DatabaseConflictError(
+        'This form has just been changed. Refresh the page and try again.',
+      )
+    }
+    logger.error({
+      message: 'Error converting submitter ID collection into fields',
+      meta: { action: 'convertSubmitterIdCollection', formId: form._id },
+      error,
+    })
+    return transformMongoError(error)
+  }).andThen((updatedForm) =>
+    updatedForm
+      ? okAsync(updatedForm.getSettings())
+      : errAsync(new FormNotFoundError()),
+  )
 }
 
 /**

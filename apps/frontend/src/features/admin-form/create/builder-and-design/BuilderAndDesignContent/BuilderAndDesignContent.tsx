@@ -13,6 +13,7 @@ import {
   setToInactiveSelector,
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
+import { useFocusConvertedIdentityField } from '../useFocusConvertedIdentityField'
 
 import { FormBuilder } from './FormBuilder'
 
@@ -40,6 +41,9 @@ export const BuilderAndDesignContent = ({
     setFieldsToInactive()
     return () => setFieldsToInactive()
   }, [setFieldsToInactive])
+
+  // Select the converted field after the mount-time reset above.
+  useFocusConvertedIdentityField()
 
   useEffect(() => {
     if (pendingFieldCreation) consumePendingFieldCreation()

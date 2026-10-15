@@ -4929,3 +4929,93 @@ describe('admin-form.service', () => {
     })
   })
 })
+
+describe('convertSubmitterIdCollection', () => {
+  const makeForm = (overrides: Record<string, unknown> = {}) =>
+    ({
+      status: FormStatus.Private,
+      authType: FormAuthType.CP,
+      responseMode: FormResponseMode.Multirespondent,
+      isSubmitterIdCollectionEnabled: true,
+      increment: jest.fn(),
+      ...overrides,
+    }) as unknown as IPopulatedForm
+  it('saves only if the form is unchanged since it was loaded', async () => {
+    const increment = jest.fn()
+    const insertFormFields = jest
+      .fn()
+      .mockResolvedValue({ getSettings: () => ({}) })
+    const result = await AdminFormService.convertSubmitterIdCollection(
+      makeForm({ increment, insertFormFields }),
+    )
+    expect(result.isOk()).toBe(true)
+    // The version check must be set before the save is sent.
+    expect(increment.mock.invocationCallOrder[0]).toBeLessThan(
+      insertFormFields.mock.invocationCallOrder[0],
+    )
+  })
+  it('returns a conflict when another request changed the form first', async () => {
+    const insertFormFields = jest.fn().mockRejectedValue(
+      // @ts-ignore
+      new mongoose.Error.VersionError({}, 1, ['form_fields']),
+    )
+    const result = await AdminFormService.convertSubmitterIdCollection(
+      makeForm({ insertFormFields }),
+    )
+    expect(result._unsafeUnwrapErr()).toEqual(
+      new DatabaseConflictError(
+        'This form has just been changed. Refresh the page and try again.',
+      ),
+    )
+  })
+  it.each([
+    { status: FormStatus.Public },
+    { isSubmitterIdCollectionEnabled: false },
+    { authType: FormAuthType.NIL },
+  ])('rejects unavailable conversion %j without writing', async (overrides) => {
+    const insertFormFields = jest.fn()
+    const result = await AdminFormService.convertSubmitterIdCollection(
+      makeForm({ ...overrides, insertFormFields }),
+    )
+    expect(result.isErr()).toBe(true)
+    expect(insertFormFields).not.toHaveBeenCalled()
+  })
+  it('assigns converted fields to an existing MRF Step 1', async () => {
+    const insertFormFields = jest
+      .fn()
+      .mockResolvedValue({ getSettings: () => ({}) })
+    const form = makeForm({
+      insertFormFields,
+      workflow: [{ edit: ['existing'] }],
+    })
+    await AdminFormService.convertSubmitterIdCollection(form)
+    const [[newFields]] = insertFormFields.mock.calls
+    expect(
+      (form as unknown as { workflow: { edit: unknown[] }[] }).workflow[0].edit,
+    ).toEqual([
+      'existing',
+      ...newFields.map(({ _id }: { _id: unknown }) => String(_id)),
+    ])
+  })
+  it('converts both Corppass identities in one append operation', async () => {
+    const settings = { isSubmitterIdCollectionEnabled: false }
+    const insertFormFields = jest
+      .fn()
+      .mockResolvedValue({ getSettings: () => settings })
+    const form = makeForm({ insertFormFields })
+    const result = await AdminFormService.convertSubmitterIdCollection(form)
+    expect(result._unsafeUnwrap()).toEqual(settings)
+    expect(form.isSubmitterIdCollectionEnabled).toBe(false)
+    // NRIC/FIN comes first, as in the builder's Corppass panel.
+    expect(insertFormFields).toHaveBeenCalledWith([
+      expect.objectContaining({
+        fieldType: BasicField.Nric,
+        corppass: { attr: CorppassAttribute.Uid },
+      }),
+      expect.objectContaining({
+        fieldType: BasicField.Uen,
+        corppass: { attr: CorppassAttribute.Uen },
+      }),
+    ])
+  })
+})

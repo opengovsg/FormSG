@@ -244,6 +244,19 @@ export const updateGstEnabledFlag = async (
 }
 
 /**
+ * Converts the Collect NRIC/FIN/UENs setting into Step 1 login identity fields.
+ * @param formId the id of the form to convert
+ * @returns updated form settings
+ */
+export const convertSubmitterIdCollection = async (
+  formId: string,
+): Promise<FormSettings> => {
+  return ApiService.post<FormSettings>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/settings/submitter-id-collection/convert`,
+  ).then(({ data }) => data)
+}
+
+/**
  * Internal function that calls the PATCH API.
  * @param formId the id of the form to update
  * @param settingsToUpdate the partial settings object to update
