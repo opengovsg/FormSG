@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.48.0](https://github.com/opengovsg/formsg/compare/v9.47.0...v9.48.0) (2026-10-15)
+
+
+### Features
+
+* **frontend:** let admins add NRIC/FIN and UEN fields (#10269) ([#10269](https://github.com/opengovsg/formsg/commit/87d058d3d8d336b6dc3152b71b61415722fabf94))
+* add NRIC/FIN and UEN login identity fields to the form model (#10267) ([#10267](https://github.com/opengovsg/formsg/commit/6afd77b9922f598f705c3dfda6f0caf9c10b6cfc))
+* convert "Collect NRIC/FIN/UENs" into identity fields (#10270) ([#10270](https://github.com/opengovsg/formsg/commit/4810e53d80d27656826ce9bf19b63b32789057ce))
+* fill and check login identity answers on submit (#10268) ([#10268](https://github.com/opengovsg/formsg/commit/f3684c3576ed0c82fcdfc7db9061d5e879f78a69))
+
 ## [9.47.0](https://github.com/opengovsg/formsg/compare/v9.46.6...v9.47.0) (2026-10-14)
 
 
