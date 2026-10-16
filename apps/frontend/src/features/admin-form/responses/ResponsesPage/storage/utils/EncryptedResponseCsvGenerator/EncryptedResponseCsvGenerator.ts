@@ -24,7 +24,10 @@ import {
   CsvExportView,
   directionFactor,
   EXPORT_RESPONSE_ID_COLUMN_ID,
+  EXPORT_TIMESTAMP_COLUMN_ID,
+  isTableColumnShown,
   isTimestampColumnId,
+  TABLE_COLUMN_ID_BY_CSV_COLUMN_ID,
 } from '../csvExportView'
 import {
   getAddressDecryptedResponseInstances,
@@ -37,9 +40,9 @@ type UnprocessedRecord = Merge<
   { record: Dictionary<Response> }
 >
 
-const MRF_CSV_HEADERS = ['Response ID', MRF_RESPONSE_TIMESTAMP_LABEL]
-
-const BASE_CSV_HEADERS = ['Response ID', 'Timestamp']
+const RESPONSE_ID_CSV_HEADER = 'Response ID'
+const MRF_TIMESTAMP_CSV_HEADER = MRF_RESPONSE_TIMESTAMP_LABEL
+const BASE_TIMESTAMP_CSV_HEADER = 'Timestamp'
 
 export class EncryptedResponseCsvGenerator extends CsvGenerator {
   hasBeenProcessed: boolean
@@ -137,7 +140,21 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     // NOTE: de-structuring is necessary to avoid mutating the array referenced by the `headers` array below.
     // See: https://github.com/opengovsg/FormSG/pull/7965#discussion_r1883954194.
     const visibleFieldIds = this._visibleFieldIds()
-    const headers = this.isMrf ? [...MRF_CSV_HEADERS] : [...BASE_CSV_HEADERS]
+    const isResponseIdShown = isTableColumnShown(
+      this.view,
+      EXPORT_RESPONSE_ID_COLUMN_ID,
+    )
+    const isTimestampShown = isTableColumnShown(
+      this.view,
+      EXPORT_TIMESTAMP_COLUMN_ID,
+    )
+    const headers: string[] = []
+    if (isResponseIdShown) headers.push(RESPONSE_ID_CSV_HEADER)
+    if (isTimestampShown) {
+      headers.push(
+        this.isMrf ? MRF_TIMESTAMP_CSV_HEADER : BASE_TIMESTAMP_CSV_HEADER,
+      )
+    }
     visibleFieldIds.forEach((fieldId) => {
       const question = this.fieldIdToQuestion.get(fieldId)?.question ?? ''
       for (let i = 0; i < this.fieldIdToNumCols[fieldId]; i++) {
@@ -150,17 +167,20 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     // Craft a new csv row for each unprocessed record
     // O(qn), where q = number of unique questions, n = number of submissions.
     this.unprocessed.forEach((up) => {
-      const row = [up.submissionId]
+      const row: string[] = []
+      if (isResponseIdShown) row.push(up.submissionId)
 
-      const formattedDate = isValid(parseISO(up.created))
-        ? formatInTimeZone(
-            up.created,
-            'Asia/Singapore',
-            'dd MMM yyyy hh:mm:ss a',
-          )
-        : up.created
+      if (isTimestampShown) {
+        const formattedDate = isValid(parseISO(up.created))
+          ? formatInTimeZone(
+              up.created,
+              'Asia/Singapore',
+              'dd MMM yyyy hh:mm:ss a',
+            )
+          : up.created
 
-      row.push(formattedDate)
+        row.push(formattedDate)
+      }
 
       // TODO(FRM-1933): disabled lastSubmittedAt as we are undecided on showing firstSubmission vs lastSubmittedAt
       // if (this.isMrf) {
@@ -297,11 +317,22 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     )
   }
 
-  /** Field ids to emit, in header order, with the hidden ones dropped. */
+  /**
+   * Field ids to emit, in header order, with the ones the table is not showing
+   * dropped.
+   */
   private _visibleFieldIds(): string[] {
     const hidden = new Set(this.view.hiddenColumnIds ?? [])
     const visible = Array.from(this.fieldIdToQuestion.keys()).filter(
-      (fieldId) => !hidden.has(fieldId),
+      (fieldId) => {
+        const tableColumnId = TABLE_COLUMN_ID_BY_CSV_COLUMN_ID[fieldId]
+        // RATIONALE: Only a reserved column is checked against the table's
+        // column list. A form field the table lacks, such as one since deleted
+        // from the form, still has answers the admin would lose otherwise.
+        return tableColumnId
+          ? isTableColumnShown(this.view, tableColumnId)
+          : !hidden.has(fieldId)
+      },
     )
     // The fixed pseudo-columns (download status, workflow status, pending
     // response at) keep their canonical position regardless of which record
