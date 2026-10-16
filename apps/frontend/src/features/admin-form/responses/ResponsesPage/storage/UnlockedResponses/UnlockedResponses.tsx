@@ -139,28 +139,9 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
       <ResponsesToolbar />
 
       <Flex direction="column" gap="1rem" mb="3rem" w="100%" minW={0}>
-        <Box
-          overflowX="auto"
-          w="100%"
-          minW={0}
-          maxW="100%"
-          sx={{
-            '&::-webkit-scrollbar': {
-              height: '8px',
-            },
-            '&::-webkit-scrollbar-track': {
-              background: 'neutral.200',
-              borderRadius: '4px',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              background: 'neutral.400',
-              borderRadius: '4px',
-              '&:hover': {
-                background: 'neutral.500',
-              },
-            },
-          }}
-        >
+        {/* No overflow here: the table scrolls its own body sideways, and an
+            overflowing ancestor would capture its sticky header. */}
+        <Box w="100%" minW={0} maxW="100%">
           <ResponsesTable />
         </Box>
         <ShowMoreRowsButton />
