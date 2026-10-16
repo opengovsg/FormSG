@@ -115,6 +115,7 @@ export interface ResponsesResponsesPage {
         responsesToDate: string
         recentOnly: string
         recentOnlyWithView: string
+        showMore: string
       }
     }
     storageResponsesTab: {

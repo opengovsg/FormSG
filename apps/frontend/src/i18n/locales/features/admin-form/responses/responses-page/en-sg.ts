@@ -131,6 +131,7 @@ export const enSG: ResponsesResponsesPage = {
         recentOnly: 'Only showing the most recent {limit} responses',
         recentOnlyWithView:
           'Only applying filters and sorting to the most recent {limit} responses',
+        showMore: 'Show more',
       },
     },
     storageResponsesTab: {
