@@ -9,6 +9,7 @@ import {
   CSV_DOWNLOAD_STATUS_COLUMN_ID,
   CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID,
   CSV_MRF_WORKFLOW_STATUS_COLUMN_ID,
+  CSV_PAYMENT_COLUMN_IDS,
   MRF_PENDING_RESPONSE_AT_LABEL,
   MRF_WORKFLOW_STATUS_LABEL,
 } from '~features/admin-form/responses/constants'
@@ -73,36 +74,6 @@ export class CsvRecord {
     this.#record = record
   }
 
-  // Function mapping payment data keys to ids. This is necessary to maintain
-  // static mapping from keys to IDs which is important for the csv generator to
-  // put the correct values in the correct columns.
-  private paymentDataKeyToId(key: keyof SubmissionPaymentDto): string {
-    switch (key) {
-      case 'id':
-        return '000000000000000000000001'
-      case 'amount':
-        return '000000000000000000000002'
-      case 'email':
-        return '000000000000000000000003'
-      case 'status':
-        return '000000000000000000000004'
-      case 'paymentDate':
-        return '000000000000000000000005'
-      case 'paymentIntentId':
-        return '000000000000000000000006'
-      case 'transactionFee':
-        return '000000000000000000000007'
-      case 'receiptUrl':
-        return '000000000000000000000008'
-      case 'payoutId':
-        return '000000000000000000000009'
-      case 'payoutDate':
-        return '00000000000000000000000a'
-      case 'products':
-        return '00000000000000000000000b'
-    }
-  }
-
   // Function mapping mrf data keys to ids. This is necessary to maintain
   // static mapping from keys to IDs which is important for the csv generator to
   // put the correct values in the correct columns.
@@ -149,7 +120,7 @@ export class CsvRecord {
       getPaymentDataView(this.hostOrigin, this.paymentData, this.form).forEach(
         ({ key, name, value }) =>
           output.push({
-            _id: this.paymentDataKeyToId(key),
+            _id: CSV_PAYMENT_COLUMN_IDS[key],
             fieldType: 'textfield',
             question: name,
             answer: value,

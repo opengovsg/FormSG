@@ -143,6 +143,7 @@ export const DownloadButton = ({
     sortColumnId,
     sortDirection,
     hiddenColumnIds,
+    columnOptions,
     isShowingRecentOnly,
   } = useUnlockedResponses()
 
@@ -160,14 +161,29 @@ export const DownloadButton = ({
   // The id list is what the table itself matched, against rendered cells rather
   // than stored answers, so it decides the rows whenever it is there and the
   // generator's own search stands in only past the count it can be built for.
-  const csvView: CsvExportView | undefined = isDelightfulDashboard
-    ? {
-        ...(exportSubmissionIds ? {} : { searchText, excludedSearchColumnIds }),
-        sortColumnId,
-        sortDirection,
-        hiddenColumnIds,
-      }
-    : undefined
+  const csvView = useMemo((): CsvExportView | undefined => {
+    if (!isDelightfulDashboard) return undefined
+    return {
+      ...(exportSubmissionIds ? {} : { searchText, excludedSearchColumnIds }),
+      sortColumnId,
+      sortDirection,
+      hiddenColumnIds,
+      // Until the table has reported its columns there is no list to hold
+      // the export to, and an empty one would drop every reserved column.
+      ...(columnOptions.length
+        ? { tableColumnIds: columnOptions.map(({ id }) => id) }
+        : {}),
+    }
+  }, [
+    columnOptions,
+    excludedSearchColumnIds,
+    exportSubmissionIds,
+    hiddenColumnIds,
+    isDelightfulDashboard,
+    searchText,
+    sortColumnId,
+    sortDirection,
+  ])
 
   const DEFAULT_DOWNLOAD_OPTIONS: DownloadOptions = useMemo(
     () => ({
@@ -245,7 +261,7 @@ export const DownloadButton = ({
   const resetDownloadMetadataAndProgress = useCallback(() => {
     setDownloadMetadata(undefined)
     resetDownloadProgress()
-  }, [])
+  }, [resetDownloadProgress])
 
   const { handleBulkDownloadMutation, abortDecryption } = useDecryptionWorkers({
     onDecryptionProgress: setDownloadCount,
@@ -322,14 +338,19 @@ export const DownloadButton = ({
     resetDownloadProgress()
     abortDecryption()
     onProgressModalClose()
-  }, [abortDecryption, onProgressModalClose])
+  }, [abortDecryption, onProgressModalClose, resetDownloadProgress])
 
   const handleModalClose = useCallback(() => {
     resetDownload()
     onDownloadModalClose()
     onProgressModalClose()
     resetDownloadMetadataAndProgress()
-  }, [onDownloadModalClose, onProgressModalClose, resetDownload])
+  }, [
+    onDownloadModalClose,
+    onProgressModalClose,
+    resetDownload,
+    resetDownloadMetadataAndProgress,
+  ])
 
   const handleNoAttachmentsDownloadCancel = useCallback(() => {
     handleModalClose()

@@ -7,14 +7,28 @@ import { SavedViewSortDirection } from 'formsg-shared/types'
 import { WorkflowStatus } from 'formsg-shared/types/submission'
 import { answerKey } from 'formsg-shared/utils/address'
 
-import { MRF_RESPONSE_TIMESTAMP_LABEL } from '~features/admin-form/responses/constants'
+import {
+  CSV_DOWNLOAD_STATUS_COLUMN_ID,
+  CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID,
+  CSV_MRF_WORKFLOW_STATUS_COLUMN_ID,
+  CSV_PAYMENT_COLUMN_IDS,
+  MRF_RESPONSE_TIMESTAMP_LABEL,
+} from '~features/admin-form/responses/constants'
 
 import { CsvRecordData, DecryptedSubmissionData } from '../../types'
 import {
   DisplayedResponseWithoutAnswer,
   Response,
 } from '../csv-response-classes'
-import { EXPORT_TIMESTAMP_COLUMN_ID } from '../csvExportView'
+import {
+  CsvExportView,
+  EXPORT_PAID_AMOUNT_COLUMN_ID,
+  EXPORT_PAYER_EMAIL_COLUMN_ID,
+  EXPORT_PENDING_RESPONSE_AT_COLUMN_ID,
+  EXPORT_RESPONSE_ID_COLUMN_ID,
+  EXPORT_TIMESTAMP_COLUMN_ID,
+  EXPORT_WORKFLOW_STATUS_COLUMN_ID,
+} from '../csvExportView'
 import { getDecryptedResponseInstance } from '../getDecryptedResponseInstance'
 
 import { EncryptedResponseCsvGenerator } from './EncryptedResponseCsvGenerator'
@@ -1294,5 +1308,139 @@ describe('the view carried over from the responses table', () => {
 
   it('keeps every record when the search is blank', () => {
     expect(build({ searchText: '   ' }).length()).toBe(3)
+  })
+})
+
+describe('the reserved columns carried over from the responses table', () => {
+  const WORKFLOW_TABLE_COLUMN_IDS = [
+    EXPORT_RESPONSE_ID_COLUMN_ID,
+    EXPORT_WORKFLOW_STATUS_COLUMN_ID,
+    EXPORT_PENDING_RESPONSE_AT_COLUMN_ID,
+    EXPORT_TIMESTAMP_COLUMN_ID,
+    'field',
+  ]
+
+  const reserved = (_id: string, question: string, answer: string) =>
+    ({ _id, question, answer, fieldType: 'textfield' }) as CsvRecordData
+
+  const exportCsv = (view: CsvExportView, isMrf = true): string[][] => {
+    const generator = new EncryptedResponseCsvGenerator(1, 0, isMrf, view)
+    generator.addRecord({
+      record: [
+        reserved(CSV_DOWNLOAD_STATUS_COLUMN_ID, 'Download Status', 'Success'),
+        reserved(CSV_MRF_WORKFLOW_STATUS_COLUMN_ID, 'Workflow status', 'Done'),
+        reserved(CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID, 'Pending at', '-'),
+        reserved(CSV_PAYMENT_COLUMN_IDS.status, 'Payment status', 'Paid'),
+        reserved(CSV_PAYMENT_COLUMN_IDS.email, 'Payer', 'a@b.com'),
+        reserved(CSV_PAYMENT_COLUMN_IDS.amount, 'Payment amount', 'S$1.00'),
+        reserved('field', 'Name', 'Alice'),
+      ],
+      created: '2019-11-05T13:12:14',
+      submissionId: 'submission-0',
+    } as DecryptedSubmissionData)
+    generator.process()
+    return generator.records
+      .slice(BOM_LENGTH)
+      .map((line) => line.trim().split(','))
+  }
+
+  const headerOf = (view: CsvExportView, isMrf?: boolean) =>
+    exportCsv(view, isMrf)[0]
+
+  it('drops the response id when the table hides it', () => {
+    const [header, row] = exportCsv({
+      hiddenColumnIds: [EXPORT_RESPONSE_ID_COLUMN_ID],
+      tableColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
+    })
+
+    expect(header).not.toContain('Response ID')
+    expect(row).not.toContain('submission-0')
+    expect(header).toHaveLength(row.length)
+  })
+
+  it('drops the timestamp when the table hides it', () => {
+    const [header, row] = exportCsv({
+      hiddenColumnIds: [EXPORT_TIMESTAMP_COLUMN_ID],
+      tableColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
+    })
+
+    expect(header).not.toContain(MRF_RESPONSE_TIMESTAMP_LABEL)
+    expect(header).toHaveLength(row.length)
+  })
+
+  it('drops the workflow columns when the table hides them', () => {
+    const [header, row] = exportCsv({
+      hiddenColumnIds: [
+        EXPORT_WORKFLOW_STATUS_COLUMN_ID,
+        EXPORT_PENDING_RESPONSE_AT_COLUMN_ID,
+      ],
+      tableColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
+    })
+
+    expect(header).not.toContain('Workflow status')
+    expect(header).not.toContain('Pending at')
+    expect(row).not.toContain('Done')
+    expect(header).toHaveLength(row.length)
+  })
+
+  it('drops the workflow columns when the table does not have them', () => {
+    const header = headerOf({
+      tableColumnIds: [
+        EXPORT_RESPONSE_ID_COLUMN_ID,
+        EXPORT_TIMESTAMP_COLUMN_ID,
+      ],
+    })
+
+    expect(header).toContain('Response ID')
+    expect(header).toContain(MRF_RESPONSE_TIMESTAMP_LABEL)
+    expect(header).not.toContain('Workflow status')
+    expect(header).not.toContain('Pending at')
+  })
+
+  it('drops a payment column when the table hides its counterpart', () => {
+    const header = headerOf(
+      {
+        hiddenColumnIds: [EXPORT_PAYER_EMAIL_COLUMN_ID],
+        tableColumnIds: [
+          EXPORT_RESPONSE_ID_COLUMN_ID,
+          EXPORT_TIMESTAMP_COLUMN_ID,
+          EXPORT_PAYER_EMAIL_COLUMN_ID,
+          EXPORT_PAID_AMOUNT_COLUMN_ID,
+        ],
+      },
+      false,
+    )
+
+    expect(header).not.toContain('Payer')
+    expect(header).toContain('Payment amount')
+  })
+
+  it('keeps the columns the table has no counterpart for', () => {
+    const header = headerOf({
+      hiddenColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
+      tableColumnIds: WORKFLOW_TABLE_COLUMN_IDS,
+    })
+
+    expect(header).toEqual(['Download Status', 'Payment status'])
+  })
+
+  it('keeps every reserved column when the table did not list its columns', () => {
+    expect(headerOf({})).toEqual([
+      'Response ID',
+      MRF_RESPONSE_TIMESTAMP_LABEL,
+      'Download Status',
+      'Workflow status',
+      'Pending at',
+      'Payment status',
+      'Payer',
+      'Payment amount',
+      'Name',
+    ])
+  })
+
+  it('keeps a form field the table does not have', () => {
+    expect(
+      headerOf({ tableColumnIds: [EXPORT_RESPONSE_ID_COLUMN_ID] }),
+    ).toContain('Name')
   })
 })

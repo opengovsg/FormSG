@@ -60,6 +60,14 @@ import {
 import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 import { useDecryptedResponsesBySubmissionId } from '~features/admin-form/responses/queries'
 
+import {
+  EXPORT_FEES_COLUMN_ID,
+  EXPORT_PAID_AMOUNT_COLUMN_ID,
+  EXPORT_PAYER_EMAIL_COLUMN_ID,
+  EXPORT_PAYOUT_DATE_COLUMN_ID,
+  EXPORT_PENDING_RESPONSE_AT_COLUMN_ID,
+  EXPORT_WORKFLOW_STATUS_COLUMN_ID,
+} from '../../utils/csvExportView'
 import { useColumnVirtualizer } from '../hooks/useColumnVirtualizer'
 import { RESPONSE_NUMBER_COLUMN_ID } from '../savedViews'
 import { useUnlockedResponses } from '../UnlockedResponsesProvider'
@@ -104,6 +112,7 @@ const BASE_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
 
 const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   {
+    id: EXPORT_PAYER_EMAIL_COLUMN_ID,
     Header: 'Email',
     accessor: ({ payments }) => {
       if (!payments?.email) {
@@ -116,6 +125,7 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   },
 
   {
+    id: EXPORT_PAID_AMOUNT_COLUMN_ID,
     Header: 'Paid Amount (S$)', //  (amt responder paid)
     accessor: ({ payments }) => {
       if (!payments) {
@@ -128,6 +138,7 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   },
 
   {
+    id: EXPORT_FEES_COLUMN_ID,
     Header: 'Fees (S$)', //  (paid - net)
     accessor: ({ payments }) => {
       if (!payments?.transactionFee) {
@@ -151,6 +162,7 @@ const PAYMENT_COLUMNS: Column<ResponseColumnData>[] = [
   },
 
   {
+    id: EXPORT_PAYOUT_DATE_COLUMN_ID,
     Header: 'Payout Date',
     accessor: ({ payments }) => {
       if (!payments) {
@@ -180,6 +192,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     maxWidth: 240,
   },
   {
+    id: EXPORT_WORKFLOW_STATUS_COLUMN_ID,
     Header: MRF_WORKFLOW_STATUS_LABEL,
     accessor: ({ mrf }) => {
       if (!mrf?.workflowStatus) {
@@ -200,6 +213,7 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
     maxWidth: 160,
   },
   {
+    id: EXPORT_PENDING_RESPONSE_AT_COLUMN_ID,
     Header: MRF_PENDING_RESPONSE_AT_LABEL,
     accessor: ({ mrf }) => {
       if (mrf?.stoppedAt) return '-'
