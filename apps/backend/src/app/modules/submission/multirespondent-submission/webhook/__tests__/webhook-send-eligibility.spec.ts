@@ -33,10 +33,19 @@ describe('shouldSendMrfWebhook', () => {
       expected: true,
     },
     {
+      // An explicit V1 format is respected for plumber too, so the V1
+      // step-count gate applies: V1 cannot deliver past the first step.
       webhookConsumerType: 'plumber',
       webhookFormat: 'v1',
       isMrfWebhooksEnabled: true,
       workflowStepCount: 3,
+      expected: false,
+    },
+    {
+      webhookConsumerType: 'plumber',
+      webhookFormat: 'v1',
+      isMrfWebhooksEnabled: false,
+      workflowStepCount: 1,
       expected: true,
     },
     {

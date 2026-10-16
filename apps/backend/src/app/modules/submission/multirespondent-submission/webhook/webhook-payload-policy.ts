@@ -38,6 +38,9 @@ export const getKeyPermissionsPolicy = ({
   includeEncryptedSubmissionSecretKey: contentFormat === 'v4',
 })
 
+// An explicit webhookFormat is always respected; the consumer type only
+// decides the default when no format is stored (Plumber defaults to V4,
+// generic consumers to V1).
 export const resolveWebhookContentFormat = ({
   webhookType,
   webhookFormat,
@@ -45,9 +48,8 @@ export const resolveWebhookContentFormat = ({
   WebhookPayloadPolicyInput,
   'webhookType' | 'webhookFormat'
 >): FormWebhookFormat =>
-  webhookType === 'plumber'
-    ? FORMAT_FOR_PLUMBER_WEBHOOKS
-    : (webhookFormat ?? 'v1')
+  webhookFormat ??
+  (webhookType === 'plumber' ? FORMAT_FOR_PLUMBER_WEBHOOKS : 'v1')
 
 export const getWebhookPayloadPolicy = ({
   webhookType,
