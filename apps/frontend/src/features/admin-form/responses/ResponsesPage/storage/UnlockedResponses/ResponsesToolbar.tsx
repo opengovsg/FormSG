@@ -16,7 +16,10 @@ import { matchesSavedView, toSavedViewInput } from './savedViews'
 import { SaveViewModal } from './SaveViewModal'
 import { SortMenu } from './SortMenu'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
-import { useSavedViewMutation } from './useSavedViewMutation'
+import {
+  useSavedViewMutation,
+  useUpdateSavedViewMutation,
+} from './useSavedViewMutation'
 
 export const ResponsesToolbar = (): JSX.Element => {
   const { t } = useTranslation()
@@ -34,20 +37,41 @@ export const ResponsesToolbar = (): JSX.Element => {
     savedViews,
     selectedViewId,
   } = useUnlockedResponses()
+  // On a saved view, saving overwrites that view rather than adding one, so
+  // only its own contents count as already saved and the limit does not apply.
+  const selectedView = savedViews.find(({ _id }) => _id === selectedViewId)
   const isViewSaved = matchesSavedView(
     currentViewState,
-    savedViews,
+    selectedView ? [selectedView] : savedViews,
     columnOptions,
   )
-  const isAtViewLimit = savedViews.length >= MAX_SAVED_VIEWS
-  const { mutate: saveView, isLoading: isSavingView } = useSavedViewMutation()
+  const isAtViewLimit = !selectedView && savedViews.length >= MAX_SAVED_VIEWS
+  const { mutate: createView, isLoading: isCreatingView } =
+    useSavedViewMutation()
+  const { mutate: updateView, isLoading: isUpdatingView } =
+    useUpdateSavedViewMutation()
+
+  const handleSaveView = () => {
+    if (!selectedView) {
+      saveViewModal.onOpen()
+      return
+    }
+    updateView({
+      savedViewId: selectedView._id,
+      savedView: toSavedViewInput(
+        selectedView.name,
+        currentViewState,
+        columnOptions,
+      ),
+    })
+  }
 
   const saveViewButtonProps = {
     variant: 'clear',
     colorScheme: 'secondary',
     isDisabled: isViewSaved || isAtViewLimit,
-    isLoading: isSavingView,
-    onClick: saveViewModal.onOpen,
+    isLoading: isCreatingView || isUpdatingView,
+    onClick: handleSaveView,
   } as const
 
   return (
@@ -105,7 +129,7 @@ export const ResponsesToolbar = (): JSX.Element => {
         isOpen={saveViewModal.isOpen}
         onClose={saveViewModal.onClose}
         onSave={(name) =>
-          saveView(toSavedViewInput(name, currentViewState, columnOptions))
+          createView(toSavedViewInput(name, currentViewState, columnOptions))
         }
       />
     </Flex>

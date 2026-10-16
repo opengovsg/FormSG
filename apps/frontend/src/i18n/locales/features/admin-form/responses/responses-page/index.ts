@@ -81,6 +81,7 @@ export interface ResponsesResponsesPage {
         deleteViewTitle: string
         deleteViewDescription: string
         deleteViewSuccess: string
+        saveViewSuccess: string
       }
       sortMenu: {
         column: string
