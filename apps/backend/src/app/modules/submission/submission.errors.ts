@@ -344,6 +344,16 @@ export class MrfReminderInvalidWorkflowStepError extends ApplicationError {
   }
 }
 
+export class MrfReminderLimitReachedError extends ApplicationError {
+  constructor(limit: number) {
+    super(
+      `This step has already been sent the maximum of ${limit} reminders.`,
+      undefined,
+      ErrorCodes.SUBMISSION_MRF_REMINDER_LIMIT_REACHED,
+    )
+  }
+}
+
 export class MrfReminderRecipientEmailsEmptyError extends ApplicationError {
   constructor(
     message = 'Unable to send reminder as no recipient emails found.',

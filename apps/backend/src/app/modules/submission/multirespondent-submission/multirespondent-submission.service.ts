@@ -71,6 +71,7 @@ import {
   MissingSubmitterIdError,
   MrfAssigneeAlreadyAssignedError,
   MrfReminderInvalidWorkflowStepError,
+  MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
   MrfWorkflowNotPendingError,
   MrfWorkflowStoppedError,
@@ -356,6 +357,10 @@ const sendNextStepEmail = ({
   )
 }
 
+// RATIONALE: each reminder is logged on the submission, so this bounds how
+// large a single submission's workflowEvents can grow.
+export const MAX_REMINDERS_PER_STEP = 50
+
 export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
   submissionId,
 }: {
@@ -365,6 +370,7 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
   | DatabaseError
   | SubmissionNotFoundError
   | MrfReminderInvalidWorkflowStepError
+  | MrfReminderLimitReachedError
   | MrfReminderRecipientEmailsEmptyError
 > => {
   return getMultirespondentSubmission(submissionId).andThen(
@@ -399,6 +405,16 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
       }
 
       const reminderStepNumber = submittedSteps.length + 1
+      const remindersSent = (workflowEvents ?? []).filter(
+        (event) =>
+          event.type === WorkflowEventType.ReminderSent &&
+          event.stepNumber === reminderStepNumber,
+      ).length
+      if (remindersSent >= MAX_REMINDERS_PER_STEP) {
+        return errAsync(
+          new MrfReminderLimitReachedError(MAX_REMINDERS_PER_STEP),
+        )
+      }
 
       const recipientEmails = Array.from(
         new Set([
