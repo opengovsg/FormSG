@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Box, Flex, Skeleton, Spinner, Text } from '@chakra-ui/react'
+import { Box, Flex, Skeleton, Text } from '@chakra-ui/react'
 
 import {
   DateRangePicker,
@@ -12,13 +12,13 @@ import { useIsDelightfulDashboard } from '~features/admin-form/responses/hooks'
 
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
-import { useInfiniteScrollTrigger } from './hooks/useInfiniteScrollTrigger'
 import { DeleteViewModal } from './DeleteViewModal'
 import { DownloadButton } from './DownloadButton'
 import { TABLE_RESPONSE_LIMIT } from './responseLimit'
 import { ResponsesTable } from './ResponsesTable'
 import { ResponsesToolbar } from './ResponsesToolbar'
 import { ResponseViewTabs } from './ResponseViewTabs'
+import { ShowMoreRowsButton } from './ShowMoreRowsButton'
 import { SubmissionSearchbar } from './SubmissionSearchbar'
 import {
   ALL_RESPONSES_VIEW_ID,
@@ -43,15 +43,11 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
     submissionId,
     isAnyFetching,
     searchResultCount,
-    isTableLoading,
     savedViews,
     selectedViewId,
     isShowingRecentOnly,
     hasActiveFilters,
     applyView,
-    renderLimit,
-    showMoreRows,
-    renderedRowCount,
   } = useUnlockedResponses()
 
   const [viewPendingDelete, setViewPendingDelete] = useState<string>()
@@ -68,13 +64,6 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
       },
     })
   }, [applyView, deleteSavedViewMutation, selectedViewId, viewPendingDelete])
-
-  const hasMoreRowsToRender = renderedRowCount >= renderLimit
-
-  const sentinelRef = useInfiniteScrollTrigger<HTMLDivElement>({
-    onTrigger: showMoreRows,
-    enabled: !isTableLoading && hasMoreRowsToRender,
-  })
 
   const countToUse = useMemo(
     () => (submissionId ? filteredCount : count),
@@ -149,43 +138,32 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
 
       <ResponsesToolbar />
 
-      <Box
-        mb="3rem"
-        overflowX="auto"
-        w="100%"
-        minW={0}
-        maxW="100%"
-        sx={{
-          '&::-webkit-scrollbar': {
-            height: '8px',
-          },
-          '&::-webkit-scrollbar-track': {
-            background: 'neutral.200',
-            borderRadius: '4px',
-          },
-          '&::-webkit-scrollbar-thumb': {
-            background: 'neutral.400',
-            borderRadius: '4px',
-            '&:hover': {
-              background: 'neutral.500',
+      <Flex direction="column" gap="1rem" mb="3rem" w="100%" minW={0}>
+        <Box
+          overflowX="auto"
+          w="100%"
+          minW={0}
+          maxW="100%"
+          sx={{
+            '&::-webkit-scrollbar': {
+              height: '8px',
             },
-          },
-        }}
-      >
-        <ResponsesTable />
-      </Box>
-
-      <Flex
-        ref={sentinelRef}
-        justify="center"
-        align="center"
-        w="100%"
-        minH="3rem"
-        pb={{ base: '1rem', md: '0' }}
-      >
-        {hasMoreRowsToRender ? (
-          <Spinner color="primary.500" thickness="2px" />
-        ) : null}
+            '&::-webkit-scrollbar-track': {
+              background: 'neutral.200',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'neutral.400',
+              borderRadius: '4px',
+              '&:hover': {
+                background: 'neutral.500',
+              },
+            },
+          }}
+        >
+          <ResponsesTable />
+        </Box>
+        <ShowMoreRowsButton />
       </Flex>
     </Flex>
   )
