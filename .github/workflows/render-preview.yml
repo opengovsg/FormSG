@@ -85,6 +85,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+      - name: Debug Datadog key access (temporary, remove before merge)
+        env:
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          DD_APP_KEY: ${{ secrets.DD_APP_KEY }}
+        run: |
+          echo "api key validate (expect 200):"
+          curl -s -o /dev/null -w '%{http_code}\n' -H "DD-API-KEY: $DD_API_KEY" https://api.datadoghq.com/api/v1/validate
+          echo "key pair org (GET /api/v1/org):"
+          curl -s -H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY" https://api.datadoghq.com/api/v1/org |
+            jq -r 'if .orgs then .orgs[0].name else .errors end'
+          echo "synthetics visible to key pair (GET /api/v1/synthetics/tests):"
+          curl -s -H "DD-API-KEY: $DD_API_KEY" -H "DD-APPLICATION-KEY: $DD_APP_KEY" https://api.datadoghq.com/api/v1/synthetics/tests |
+            jq -c 'if .tests then {count: (.tests | length), sees_smoke_test: ([.tests[].public_id] | index("nev-jju-pik") != null)} else .errors end'
+
       - name: Wait for preview deploy of head SHA
         id: await
         env:
