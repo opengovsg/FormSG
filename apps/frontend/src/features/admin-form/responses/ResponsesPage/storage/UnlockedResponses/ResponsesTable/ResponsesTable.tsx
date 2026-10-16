@@ -1,4 +1,5 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   CellProps,
@@ -45,6 +46,7 @@ import {
   hasWorkflowSubmission,
   MRF_STATUS,
 } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+import { getFieldColumnHeader } from '~features/admin-form/responses/common/utils/questionLabel'
 import {
   matchesSearchQuery,
   normaliseSearchQuery,
@@ -339,6 +341,8 @@ export const ResponsesTable = () => {
     setVisibleSubmissionIds,
   } = useUnlockedResponses()
   const isDelightfulDashboard = useIsDelightfulDashboard()
+  const { t } = useTranslation()
+  const verifiedLabel = t('features.common.verified')
 
   const { data: responsesBySubmissionId, isFetching: isDecrypting } =
     useDecryptedResponsesBySubmissionId({ enabled: isDelightfulDashboard })
@@ -396,7 +400,7 @@ export const ResponsesTable = () => {
   const fieldColumns = useMemo((): Column<ResponseColumnData>[] => {
     return answerableFields.map((formField) => ({
       id: formField._id,
-      Header: formField.title,
+      Header: getFieldColumnHeader(formField, verifiedLabel),
       accessor: ({ refNo }: ResponseColumnData) => {
         const responses = responsesBySubmissionId?.get(refNo)
         if (!responses) return undefined
@@ -421,7 +425,7 @@ export const ResponsesTable = () => {
       minWidth: 120,
       maxWidth: 400,
     }))
-  }, [answerableFields, isDecrypting, responsesBySubmissionId])
+  }, [answerableFields, isDecrypting, responsesBySubmissionId, verifiedLabel])
 
   const columns = useMemo(() => {
     if (!isDelightfulDashboard) return legacyColumns
@@ -461,10 +465,10 @@ export const ResponsesTable = () => {
       .concat(
         answerableFields.map((formField) => ({
           id: formField._id,
-          label: formField.title,
+          label: getFieldColumnHeader(formField, verifiedLabel),
         })),
       )
-  }, [answerableFields, isDelightfulDashboard, prefixColumns])
+  }, [answerableFields, isDelightfulDashboard, prefixColumns, verifiedLabel])
 
   useEffect(() => {
     setColumnOptions(columnOptions)

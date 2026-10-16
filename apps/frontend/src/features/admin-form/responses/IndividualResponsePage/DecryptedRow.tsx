@@ -11,6 +11,7 @@ import Button from '~components/Button'
 import FormLabel from '~components/FormControl/FormLabel'
 import Spinner from '~components/Spinner'
 
+import { getVerifiedQuestionLabel } from '../common/utils/questionLabel'
 import { AugmentedDecryptedResponse } from '../ResponsesPage/storage/utils/augmentDecryptedResponses'
 
 import { useMutateDownloadAttachments } from './mutations'
@@ -27,7 +28,11 @@ function DecryptedQuestionLabel({ row }: DecryptedRowBaseProps) {
   const { t } = useTranslation()
   return (
     <FormLabel questionNumber={`${row.questionNumber}.`} isRequired>
-      {`${row.signature ? `[${t('features.common.verified')}] ` : ''}${row.question}`}
+      {getVerifiedQuestionLabel(
+        row.question,
+        !!row.signature,
+        t('features.common.verified'),
+      )}
     </FormLabel>
   )
 }
