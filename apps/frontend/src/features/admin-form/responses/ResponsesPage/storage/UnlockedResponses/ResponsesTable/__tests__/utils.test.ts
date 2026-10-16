@@ -1,5 +1,9 @@
+import type { FormField } from '@opengovsg/formsg-sdk/dist/types'
+
 import {
   AdminFormDto,
+  BasicField,
+  FormFieldDto,
   FormResponseMode,
   SubmissionMetadata,
   WorkflowStatus,
@@ -7,6 +11,7 @@ import {
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
 import {
+  getFieldColumnSources,
   getIsPaymentsForm,
   getNetAmount,
   getReminderButtonState,
@@ -177,5 +182,80 @@ describe('getReminderButtonState', () => {
         workflowStatus: WorkflowStatus.APPROVED,
       }),
     ).toBe('hidden')
+  })
+})
+
+describe('getFieldColumnSources', () => {
+  const formField = (
+    _id: string,
+    title: string,
+    fieldType = BasicField.ShortText,
+  ) => ({ _id, title, fieldType }) as FormFieldDto
+  const response = (
+    _id: string,
+    question: string,
+    fieldType = BasicField.ShortText,
+  ): FormField => ({ _id, question, fieldType, answer: 'answer' })
+
+  it("lists the form's answerable fields in form order", () => {
+    const result = getFieldColumnSources({
+      formFields: [
+        formField('name', 'Name'),
+        formField('intro', 'Intro', BasicField.Section),
+        formField('email', 'Email', BasicField.Email),
+      ],
+      submissionIdsNewestFirst: [],
+    })
+
+    expect(result).toEqual([
+      { id: 'name', title: 'Name', fieldType: BasicField.ShortText },
+      { id: 'email', title: 'Email', fieldType: BasicField.Email },
+    ])
+  })
+
+  it('keeps a deleted field that a submission answered, after the current fields', () => {
+    const result = getFieldColumnSources({
+      formFields: [formField('name', 'Name')],
+      responsesBySubmissionId: new Map([
+        ['s1', [response('name', 'Name'), response('phone', 'Phone')]],
+      ]),
+      submissionIdsNewestFirst: ['s1'],
+    })
+
+    expect(result.map(({ id }) => id)).toEqual(['name', 'phone'])
+    expect(result[1].title).toBe('Phone')
+  })
+
+  it('titles a deleted field with the question from the newest submission', () => {
+    const result = getFieldColumnSources({
+      formFields: [],
+      responsesBySubmissionId: new Map([
+        ['old', [response('phone', 'Phone number')]],
+        ['new', [response('phone', 'Mobile number')]],
+      ]),
+      submissionIdsNewestFirst: ['new', 'old'],
+    })
+
+    expect(result).toEqual([
+      { id: 'phone', title: 'Mobile number', fieldType: BasicField.ShortText },
+    ])
+  })
+
+  it('skips headers and non-answerable deleted fields', () => {
+    const result = getFieldColumnSources({
+      formFields: [],
+      responsesBySubmissionId: new Map([
+        [
+          's1',
+          [
+            { ...response('header', 'Section'), isHeader: true },
+            response('statement', 'Read this', BasicField.Statement),
+          ],
+        ],
+      ]),
+      submissionIdsNewestFirst: ['s1'],
+    })
+
+    expect(result).toEqual([])
   })
 })
