@@ -14,6 +14,7 @@ export const config = convict({
       'stg-alt2',
       'stg-alt3',
       'uat',
+      'vapt',
       'production',
       'test',
     ],
