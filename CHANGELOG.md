@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.49.0](https://github.com/opengovsg/formsg/compare/v9.48.1...v9.49.0) (2026-10-16)
+
+
+### Features
+
+* **workflow-actions:** add people to a pending workflow step (#10234) ([#10234](https://github.com/opengovsg/formsg/commit/ba1a5ad722e8dbca15d9f49deb0614ee0aaead97))
+* **workflow-actions:** add the gate, events and modal for workflow actions (#10228) ([#10228](https://github.com/opengovsg/formsg/commit/a51242758f3345c7efdc7398ef4c5cd2915999b8))
+* **workflow-actions:** send reminders from the response drawer on V2 (#10242) ([#10242](https://github.com/opengovsg/formsg/commit/03d791871c42a79447474da7d007c499676aad8f))
+* **workflow-actions:** show the activity log in the response drawer (#10243) ([#10243](https://github.com/opengovsg/formsg/commit/5d02f07be73c43632ab2f3b51e20654b9d3afd67))
+* **workflow-actions:** stop a pending workflow (#10229) ([#10229](https://github.com/opengovsg/formsg/commit/55b2a47088853bb485d8e9c3f3cc219d9daa323b))
+
 ## [9.48.1](https://github.com/opengovsg/formsg/compare/v9.48.0...v9.48.1) (2026-10-15)
 
 
