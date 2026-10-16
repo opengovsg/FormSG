@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim
+FROM node:25-bookworm-slim
 
 # Install aws-lambda-cpp build dependencies
 RUN apt-get update && \
