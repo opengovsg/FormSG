@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.49.1](https://github.com/opengovsg/formsg/compare/v9.49.0...v9.49.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* **auth-sso:** clear cookie before sending 500 on SSO login failure (#10291) ([#10291](https://github.com/opengovsg/formsg/commit/e9d3aed6e898776c4910a9db4be6932f9ce11e20))
+
 ## [9.49.0](https://github.com/opengovsg/formsg/compare/v9.48.1...v9.49.0) (2026-10-16)
 
 
