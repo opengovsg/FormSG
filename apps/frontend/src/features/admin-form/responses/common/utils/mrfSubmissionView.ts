@@ -3,6 +3,7 @@ import {
   FormResponseMode,
   StrippedFormWorkflowDto,
   SubmissionMetadata,
+  SubmissionMrfMetadata,
   SubmittedStep,
   WorkflowStatus,
 } from 'formsg-shared/types'
@@ -67,6 +68,30 @@ const getCurrentStepString = ({
   return workflowCurrentStepNumber && workflowNumTotalSteps
     ? `Step ${workflowCurrentStepNumber} of ${workflowNumTotalSteps}`
     : ''
+}
+
+const WORKFLOW_STATUS_TEXT: Record<WorkflowStatus, MRF_STATUS> = {
+  [WorkflowStatus.PENDING]: MRF_STATUS.PENDING,
+  [WorkflowStatus.COMPLETED]: MRF_STATUS.COMPLETED,
+  [WorkflowStatus.APPROVED]: MRF_STATUS.APPROVED,
+  [WorkflowStatus.REJECTED]: MRF_STATUS.REJECTED,
+}
+
+/**
+ * The status as the responses table shows it, so search can match it. A stop
+ * overrides the workflow status, as in the CSV export. Unlike
+ * getStatusFromWorkflowStatus, an unknown or missing status reads as empty
+ * instead of throwing during render.
+ */
+export const getWorkflowStatusText = (
+  mrf?: Pick<
+    NonNullable<SubmissionMrfMetadata>,
+    'workflowStatus' | 'stoppedAt'
+  >,
+): MRF_STATUS | '' => {
+  if (!mrf?.workflowStatus) return ''
+  if (mrf.stoppedAt) return MRF_STATUS.STOPPED
+  return WORKFLOW_STATUS_TEXT[mrf.workflowStatus] ?? ''
 }
 
 /** Gets the business friendly string for MRF submission status. */

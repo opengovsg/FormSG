@@ -40,7 +40,7 @@ import {
 } from '~features/admin-form/responses/common/utils/formatResponseForCell'
 import {
   getPendingResponseAtString,
-  getStatusFromWorkflowStatus,
+  getWorkflowStatusText,
   hasWorkflowSteps,
   hasWorkflowSubmission,
   MRF_STATUS,
@@ -181,20 +181,11 @@ const MRF_RESPONSE_TABLE_COLUMNS: Column<ResponseColumnData>[] = [
   },
   {
     Header: MRF_WORKFLOW_STATUS_LABEL,
-    accessor: ({ mrf }) => {
-      if (!mrf?.workflowStatus) {
-        return ''
-      }
-      return (
-        <WorkflowStatusBadge
-          status={
-            mrf.stoppedAt
-              ? MRF_STATUS.STOPPED
-              : getStatusFromWorkflowStatus(mrf.workflowStatus)
-          }
-        />
-      )
-    },
+    // RATIONALE: the accessor returns text so search and sort can read the
+    // status, matching the CSV export; the Cell turns it back into a badge.
+    accessor: ({ mrf }) => getWorkflowStatusText(mrf),
+    Cell: ({ value }: CellProps<ResponseColumnData, MRF_STATUS | ''>) =>
+      value ? <WorkflowStatusBadge status={value} /> : null,
     width: 160,
     minWidth: 160,
     maxWidth: 160,
