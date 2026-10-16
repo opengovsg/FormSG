@@ -100,6 +100,7 @@ import {
   InvalidCollaboratorError,
   InvalidFileTypeError,
   SavedViewLimitError,
+  SavedViewNotFoundError,
 } from '../admin-form.errors'
 import * as AdminFormService from '../admin-form.service'
 import { OverrideProps } from '../admin-form.types'
@@ -2675,6 +2676,62 @@ describe('admin-form.service', () => {
 
       // Assert
       expect(actual._unsafeUnwrapErr()).toBeInstanceOf(SavedViewLimitError)
+    })
+  })
+
+  describe('updateFormSavedView', () => {
+    const savedViewId = new ObjectId().toHexString()
+    const mockForm = { _id: new ObjectId() } as unknown as IPopulatedForm
+    const savedView = {
+      name: 'Pending approvals',
+      filter: { searchText: 'pending' },
+      columnIds: ['a'],
+    }
+
+    it('should replace only the named view, keeping its id', async () => {
+      // Arrange
+      const updatedView = { _id: savedViewId, ...savedView }
+      const UPDATE_SPY = jest
+        .spyOn(FormModel, 'findOneAndUpdate')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockReturnValue({
+          exec: jest.fn().mockResolvedValue({ savedViews: [updatedView] }),
+        })
+
+      // Act
+      const actual = await AdminFormService.updateFormSavedView(
+        mockForm,
+        savedViewId,
+        savedView,
+      )
+
+      // Assert
+      expect(UPDATE_SPY).toHaveBeenCalledWith(
+        { _id: mockForm._id, 'savedViews._id': savedViewId },
+        { $set: { 'savedViews.$': { ...savedView, _id: savedViewId } } },
+        { new: true, runValidators: true },
+      )
+      expect(actual._unsafeUnwrap()).toEqual([updatedView])
+    })
+
+    it('should return SavedViewNotFoundError when the form has no such view', async () => {
+      // Arrange
+      jest
+        .spyOn(FormModel, 'findOneAndUpdate')
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        .mockReturnValue({ exec: jest.fn().mockResolvedValue(null) })
+
+      // Act
+      const actual = await AdminFormService.updateFormSavedView(
+        mockForm,
+        savedViewId,
+        savedView,
+      )
+
+      // Assert
+      expect(actual._unsafeUnwrapErr()).toBeInstanceOf(SavedViewNotFoundError)
     })
   })
 

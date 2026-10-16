@@ -64,6 +64,7 @@ import {
   ModelResponseInvalidSyntaxError,
   PaymentChannelNotFoundError,
   SavedViewLimitError,
+  SavedViewNotFoundError,
   WorkflowDeletionDisabledError,
 } from './admin-form.errors'
 import {
@@ -102,6 +103,7 @@ export const mapRouteError = (
     case FormNotFoundError:
     case FieldNotFoundError:
     case LogicNotFoundError:
+    case SavedViewNotFoundError:
     case WorkflowDeletionDisabledError:
       return {
         statusCode: StatusCodes.NOT_FOUND,
