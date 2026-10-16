@@ -198,6 +198,7 @@ export const getDecryptedSubmissionById = async ({
         ? {
             submittedSteps: encryptedSubmission.submittedSteps ?? [],
             workflow: encryptedSubmission.workflow,
+            workflowEvents: encryptedSubmission.workflowEvents ?? [],
           }
         : undefined,
   }
@@ -301,3 +302,24 @@ export const getAllDecryptedSubmission = async ({
   })
   return decryptionResults
 }
+
+export const addAssignees = ({
+  formId,
+  submissionId,
+  emails,
+  submissionSecretKey,
+  stepToken,
+  expectedStepNumber,
+}: {
+  formId: string
+  submissionId: string
+  emails: string[]
+  submissionSecretKey: string
+  stepToken?: string
+  /** The pending step shown to the admin; the server rejects a stale page. */
+  expectedStepNumber: number
+}): Promise<{ stepNumber: number; emails: string[] }> =>
+  ApiService.post<{ stepNumber: number; emails: string[] }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/assignees`,
+    { emails, submissionSecretKey, stepToken, expectedStepNumber },
+  ).then(({ data }) => data)

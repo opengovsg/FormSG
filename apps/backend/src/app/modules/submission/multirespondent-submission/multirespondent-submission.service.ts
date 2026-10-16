@@ -59,13 +59,17 @@ import { WebhookPushToQueueError } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { SnapshotRef } from '../../webhook/webhook.types'
-import { buildWorkflowEvent } from '../../workflow-event/workflow-event.service'
+import {
+  buildWorkflowEvent,
+  getAddedAssignees,
+} from '../../workflow-event/workflow-event.service'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
   InvalidApprovalFieldTypeError,
   InvalidWorkflowTypeError,
   MissingSubmitterIdError,
+  MrfAssigneeAlreadyAssignedError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
   MrfWorkflowNotPendingError,
@@ -364,7 +368,7 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
   | MrfReminderRecipientEmailsEmptyError
 > => {
   return getMultirespondentSubmission(submissionId).andThen(
-    ({ workflow, submittedSteps, stoppedAt }) => {
+    ({ workflow, submittedSteps, stoppedAt, workflowEvents }) => {
       if (stoppedAt) return errAsync(new MrfWorkflowStoppedError())
 
       const logMeta = {
@@ -394,9 +398,16 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
         return errAsync(new MrfReminderInvalidWorkflowStepError())
       }
 
-      const recipientEmails = pendingStep.nextStepRecipientEmails
+      const reminderStepNumber = submittedSteps.length + 1
 
-      if (!recipientEmails) {
+      const recipientEmails = Array.from(
+        new Set([
+          ...(pendingStep.nextStepRecipientEmails ?? []),
+          ...getAddedAssignees(workflowEvents, reminderStepNumber),
+        ]),
+      )
+
+      if (recipientEmails.length === 0) {
         logger.error({
           message:
             'No recipient emails found to send mrf next step submission reminder email',
@@ -404,8 +415,6 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
         })
         return errAsync(new MrfReminderRecipientEmailsEmptyError())
       }
-
-      const reminderStepNumber = submittedSteps.length + 1
 
       return okAsync({ recipientEmails, reminderStepNumber })
     },
@@ -2292,4 +2301,108 @@ export const stopMultirespondentSubmission = ({
     )
     .andThen((stopped) =>
       stopped ? okAsync(stopped) : errAsync(new MrfWorkflowNotPendingError()),
+    )
+
+export const addAssigneesToPendingStep = ({
+  formId,
+  submissionId,
+  emails,
+  expectedStepNumber,
+  actor,
+}: {
+  formId: string
+  submissionId: string
+  emails: string[]
+  /** The pending step the admin saw, so a stale page cannot add to a later step. */
+  expectedStepNumber: number
+  actor: { _id?: unknown; email: string }
+}): ResultAsync<
+  { submission: IMultirespondentSubmissionSchema; stepNumber: number },
+  | DatabaseError
+  | SubmissionNotFoundError
+  | MrfWorkflowNotPendingError
+  | MrfAssigneeAlreadyAssignedError
+> =>
+  getMultirespondentSubmission(submissionId)
+    .andThen((submission) => {
+      if (String(submission.form) !== formId) {
+        return errAsync(new SubmissionNotFoundError())
+      }
+      const submittedSteps = (submission.submittedSteps ??
+        []) as SubmittedStep[]
+      const isPending =
+        !submission.stoppedAt &&
+        submittedSteps.length > 0 &&
+        getMrfSubmissionWorkflowStatus(
+          submittedSteps,
+          submission.workflow.length,
+        ) === WorkflowStatus.PENDING
+      const stepNumber = submittedSteps.length + 1
+      if (!isPending || stepNumber !== expectedStepNumber) {
+        return errAsync(new MrfWorkflowNotPendingError())
+      }
+
+      const assigned = new Set([
+        ...(
+          submittedSteps[submittedSteps.length - 1].nextStepRecipientEmails ??
+          []
+        ).map((email) => email.toLowerCase()),
+        ...getAddedAssignees(submission.workflowEvents, stepNumber),
+      ])
+      const alreadyAssigned = emails.filter((email) => assigned.has(email))
+      return alreadyAssigned.length > 0
+        ? errAsync(new MrfAssigneeAlreadyAssignedError(alreadyAssigned))
+        : okAsync(stepNumber)
+    })
+    .andThen((stepNumber) =>
+      ResultAsync.fromPromise(
+        // RATIONALE: the filter re-checks, in the same write, that the
+        // workflow is still pending on this step and nobody added these
+        // emails since the read, so a concurrent stop, step submit or
+        // duplicate add fails instead of adding to the wrong step.
+        MultirespondentSubmission.findOneAndUpdate(
+          {
+            _id: submissionId,
+            form: formId,
+            stoppedAt: { $exists: false },
+            submittedSteps: { $size: stepNumber - 1 },
+            workflowEvents: {
+              $not: {
+                $elemMatch: {
+                  type: WorkflowEventType.AssigneesAdded,
+                  stepNumber,
+                  emails: { $in: emails },
+                },
+              },
+            },
+          },
+          {
+            $push: {
+              workflowEvents: buildWorkflowEvent({
+                type: WorkflowEventType.AssigneesAdded,
+                actor,
+                stepNumber,
+                emails,
+              }),
+            },
+          },
+          { new: true },
+        ).exec(),
+        (error) => {
+          logger.error({
+            message: 'Error adding assignees to pending step',
+            meta: {
+              action: 'addAssigneesToPendingStep',
+              formId,
+              submissionId,
+            },
+            error,
+          })
+          return transformMongoError(error)
+        },
+      ).andThen((submission) =>
+        submission
+          ? okAsync({ submission, stepNumber })
+          : errAsync(new MrfWorkflowNotPendingError()),
+      ),
     )
