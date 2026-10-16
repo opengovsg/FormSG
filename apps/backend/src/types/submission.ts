@@ -26,6 +26,7 @@ import {
 
 import { IFormSchema } from './form'
 import { IPaymentSchema } from './payment'
+import { IWorkflowEvent } from './workflow_event'
 
 export interface WebhookData {
   formId: string
@@ -238,6 +239,7 @@ export interface IMultirespondentSubmissionSchema
   submissionType: SubmissionType.Multirespondent
   getWebhookView(): Promise<WebhookView>
   mrfVersion: number
+  workflowEvents?: IWorkflowEvent[]
 }
 
 // When retrieving from database, the attachmentMetadata type becomes an object
@@ -310,6 +312,7 @@ export type MultirespondentSubmissionData = {
   | 'mrfVersion'
   | 'submittedSteps'
   | 'encryptedStepToken'
+  | 'workflowEvents'
 > &
   Document
 

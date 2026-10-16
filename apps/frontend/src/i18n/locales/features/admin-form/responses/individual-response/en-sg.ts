@@ -10,6 +10,11 @@ export const enSG: ResponsesIndividualResponse = {
   responseLinkLabel: 'Response link',
   previousResponse: 'Previous response',
   nextResponse: 'Next response',
+  statusTrackingLinkLabel: 'View',
+  workflowActions: {
+    whoIsNotifiedLabel: 'Who will be notified',
+    whoIsNotifiedNone: 'No one will be notified.',
+  },
   paymentSection: {
     paymentStatusLabel: {
       partiallyRefunded: 'Partially refunded',

@@ -197,7 +197,7 @@ export const EmailTemplate = ({
 
       {/* Email end */}
       <Text style={secondaryTextStyle}>
-        For more details, please contact the respondent(s) or form
+        For more details, please contact the respondent(s) or the form
         administrator.
       </Text>
       {renderMargin(40)}

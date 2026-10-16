@@ -9,6 +9,11 @@ export interface ResponsesIndividualResponse {
   responseLinkLabel: string
   previousResponse: string
   nextResponse: string
+  statusTrackingLinkLabel: string
+  workflowActions: {
+    whoIsNotifiedLabel: string
+    whoIsNotifiedNone: string
+  }
   paymentSection: {
     paymentStatusLabel: {
       partiallyRefunded: string
