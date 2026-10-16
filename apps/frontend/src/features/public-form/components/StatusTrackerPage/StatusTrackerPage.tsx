@@ -1,8 +1,9 @@
 import { useParams } from 'react-router-dom'
 import { Box, Flex, GridItem, GridProps, Text } from '@chakra-ui/react'
-import { useFeatureValue } from '@growthbook/growthbook-react'
+import { useFeatureIsOn, useFeatureValue } from '@growthbook/growthbook-react'
 
-import { StepData, WorkflowStatus } from 'formsg-shared/types'
+import { featureFlags } from 'formsg-shared/constants'
+import { WorkflowStatus } from 'formsg-shared/types'
 
 import { AppFooter } from '~/app/AppFooter'
 
@@ -25,7 +26,7 @@ import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
 import { useStatusTracker } from './queries'
 import { StatusTrackerSkeletonPage } from './StatusTrackerSkeletonPage'
-import { TimelineRunSteps } from './TimelineRunSteps'
+import { TimelineRunSteps, TimelineStepData } from './TimelineRunSteps'
 
 // Grid area styling for the login form.
 export const TimelineGridArea: FCC = ({ children }) => (
@@ -97,6 +98,7 @@ export const StatusTrackerPage = (): JSX.Element => {
   if (!submissionId) throw new Error('No submissionId provided')
 
   const { data, isLoading, error } = useStatusTracker(submissionId)
+  const isWorkflowActionsOn = useFeatureIsOn(featureFlags.workflowActions)
 
   const ogpAwareness = useFeatureValue('ogp-awareness', 'none')
   const ogpAwarenessComponent = (() => {
@@ -116,9 +118,10 @@ export const StatusTrackerPage = (): JSX.Element => {
     return <NotFoundErrorPage />
 
   const { submittedSteps, workflow } = data
+  const stoppedAt = isWorkflowActionsOn ? data.stoppedAt : undefined
 
   let isWorkFlowRejected = false
-  const stepData: StepData[] = workflow.map((step, index) => {
+  const stepData: TimelineStepData[] = workflow.map((step, index) => {
     const name = step.step_name ? step.step_name : `Step ${index + 1}`
     const stepNumber = index + 1
 
@@ -145,9 +148,11 @@ export const StatusTrackerPage = (): JSX.Element => {
       name: name,
       stepNumber: stepNumber,
       workflowStatus: workflowStatus,
-      ...(isWorkFlowRejected
+      ...(isWorkFlowRejected || index !== submittedSteps.length
         ? {}
-        : { isCurrentPendingStep: index === submittedSteps.length }),
+        : stoppedAt
+          ? { stoppedAt }
+          : { isCurrentPendingStep: true }),
     }
   })
 

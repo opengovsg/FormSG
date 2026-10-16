@@ -50,6 +50,7 @@ export interface PublicForm {
       mrf: {
         missingSubmitterId: string
         invalidLink: string
+        workflowStopped: string
         invalidWorkflowType: string
         expectedResponseNotFound: string
       }

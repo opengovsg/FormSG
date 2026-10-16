@@ -69,6 +69,7 @@ import {
   InvalidSubmissionTypeError,
   MissingSubmitterIdError,
   MrfWorkflowOverflowError,
+  MrfWorkflowStoppedError,
   ProcessingError,
   StepTokenVerificationError,
   SubmissionEncryptionVerificationError,
@@ -866,6 +867,9 @@ export const setCurrentWorkflowStep = async (
       .andThen((submissionData) => {
         if (submissionData.submissionType !== SubmissionType.Multirespondent) {
           return errAsync(new InvalidSubmissionTypeError())
+        }
+        if (submissionData.stoppedAt) {
+          return errAsync(new MrfWorkflowStoppedError())
         }
         // Increment previous submission's workflow step by 1 to get workflow step of current submission
         req.body.workflowStep = submissionData.workflowStep + 1

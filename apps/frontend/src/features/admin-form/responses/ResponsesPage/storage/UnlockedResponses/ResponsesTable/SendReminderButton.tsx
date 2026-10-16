@@ -11,8 +11,10 @@ import { useGetIndividualDecryptedSubmission } from '~features/admin-form/respon
 
 export const SendReminderButton = ({
   submissionId,
+  isDisabled,
 }: {
   submissionId: string
+  isDisabled?: boolean
 }) => {
   const { t } = useTranslation()
 
@@ -38,7 +40,8 @@ export const SendReminderButton = ({
 
   return !isSent ? (
     <Button
-      isLoading={isLoadingSubmissionData}
+      isDisabled={isDisabled}
+      isLoading={!isDisabled && isLoadingSubmissionData}
       loadingText={
         isLoadingSubmissionData
           ? t('features.common.loading')

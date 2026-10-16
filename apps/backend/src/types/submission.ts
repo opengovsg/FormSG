@@ -240,6 +240,9 @@ export interface IMultirespondentSubmissionSchema
   getWebhookView(): Promise<WebhookView>
   mrfVersion: number
   workflowEvents?: IWorkflowEvent[]
+  stoppedAt?: Date
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  stoppedBy?: any
 }
 
 // When retrieving from database, the attachmentMetadata type becomes an object
@@ -273,6 +276,7 @@ export type MultirespondentSubmissionCursorData = Pick<
   | 'workflowStep'
   | 'submittedSteps'
   | 'workflow'
+  | 'stoppedAt'
 > & { attachmentMetadata?: Record<string, string> } & Document
 
 export type SubmissionCursorData =
@@ -313,6 +317,7 @@ export type MultirespondentSubmissionData = {
   | 'submittedSteps'
   | 'encryptedStepToken'
   | 'workflowEvents'
+  | 'stoppedAt'
 > &
   Document
 

@@ -12,6 +12,7 @@ import {
   SubmittedApprovalStep,
   SubmittedNonApprovalStep,
   SubmittedStep,
+  WorkflowEventType,
   WorkflowStatus,
 } from 'formsg-shared/types'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
@@ -58,6 +59,7 @@ import { WebhookPushToQueueError } from '../../webhook/webhook.errors'
 import { WebhookFactory } from '../../webhook/webhook.factory'
 import { getWebhookType, toConsumerType } from '../../webhook/webhook.service'
 import { SnapshotRef } from '../../webhook/webhook.types'
+import { buildWorkflowEvent } from '../../workflow-event/workflow-event.service'
 import {
   AttachmentUploadError,
   ExpectedResponseNotFoundError,
@@ -66,6 +68,8 @@ import {
   MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfWorkflowNotPendingError,
+  MrfWorkflowStoppedError,
   ResponseModeError,
   SubmissionNotFoundError,
   SubmissionSaveError,
@@ -360,7 +364,9 @@ export const getPendingStepRecipientEmailsFromSubmittedStepsMeta = ({
   | MrfReminderRecipientEmailsEmptyError
 > => {
   return getMultirespondentSubmission(submissionId).andThen(
-    ({ workflow, submittedSteps }) => {
+    ({ workflow, submittedSteps, stoppedAt }) => {
+      if (stoppedAt) return errAsync(new MrfWorkflowStoppedError())
+
       const logMeta = {
         action: 'getPendingStepRecipientEmailsFromSubmittedStepsMeta',
         submissionId,
@@ -1808,6 +1814,9 @@ export const updateMultiRespondentFormSubmission = ({
         })
         return errAsync(new SubmissionNotFoundError())
       }
+      if (submission.stoppedAt) {
+        return errAsync(new MrfWorkflowStoppedError())
+      }
       return okAsync({ submission, attachmentMetadata })
     })
     .andThen(({ submission, attachmentMetadata }) => {
@@ -2215,3 +2224,72 @@ export const getMultirespondentSubmission = (
     }
     return okAsync(submission)
   })
+
+export const stopMultirespondentSubmission = ({
+  formId,
+  submissionId,
+  actor,
+  emails,
+}: {
+  formId: string
+  submissionId: string
+  actor: { _id?: unknown; email: string }
+  /** People emailed about the stop, recorded on the stopped event. */
+  emails: string[]
+}): ResultAsync<
+  IMultirespondentSubmissionSchema,
+  DatabaseError | SubmissionNotFoundError | MrfWorkflowNotPendingError
+> =>
+  getMultirespondentSubmission(submissionId)
+    .andThen((submission) => {
+      if (String(submission.form) !== formId) {
+        return errAsync(new SubmissionNotFoundError())
+      }
+      const isPending =
+        !submission.stoppedAt &&
+        getMrfSubmissionWorkflowStatus(
+          (submission.submittedSteps ?? []) as SubmittedStep[],
+          submission.workflow.length,
+        ) === WorkflowStatus.PENDING
+      if (!isPending) return errAsync(new MrfWorkflowNotPendingError())
+      return okAsync(submission)
+    })
+    .andThen((submission) =>
+      ResultAsync.fromPromise(
+        MultirespondentSubmission.findOneAndUpdate(
+          {
+            _id: submission._id,
+            __v: submission.__v,
+            stoppedAt: { $exists: false },
+          },
+          {
+            $set: { stoppedAt: new Date(), stoppedBy: actor._id },
+            $push: {
+              workflowEvents: buildWorkflowEvent({
+                type: WorkflowEventType.Stopped,
+                actor,
+                stepNumber: (submission.submittedSteps?.length ?? 0) + 1,
+                emails,
+              }),
+            },
+            $inc: { __v: 1 },
+          },
+          { new: true },
+        ).exec(),
+        (error) => {
+          logger.error({
+            message: 'Error stopping multirespondent submission',
+            meta: {
+              action: 'stopMultirespondentSubmission',
+              formId,
+              submissionId,
+            },
+            error,
+          })
+          return transformMongoError(error)
+        },
+      ),
+    )
+    .andThen((stopped) =>
+      stopped ? okAsync(stopped) : errAsync(new MrfWorkflowNotPendingError()),
+    )

@@ -26,5 +26,6 @@ export enum EmailType {
   WorkflowNotification = 'Workflow notification',
   WorkflowCompletion = 'Workflow completion',
   WorkflowApproval = 'Workflow approval',
+  WorkflowStopped = 'Workflow stopped',
   WarningNotification = 'Warning notification',
 }

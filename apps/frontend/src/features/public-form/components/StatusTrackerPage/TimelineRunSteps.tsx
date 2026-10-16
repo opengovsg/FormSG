@@ -31,11 +31,21 @@ const StatusIcon = ({
   workflowStatus,
   stepNumber,
   isCurrentPendingStep,
+  isStoppedStep,
 }: {
   workflowStatus: WorkflowStatus
   stepNumber: number
   isCurrentPendingStep: boolean | undefined
+  isStoppedStep?: boolean
 }): JSX.Element => {
+  if (isStoppedStep) {
+    return (
+      <Circle size="2rem" bg={statusColor[WorkflowStatus.REJECTED]}>
+        <Icon as={MdClose} color="#F5F6F8" boxSize="1rem" />
+      </Circle>
+    )
+  }
+
   if (isCurrentPendingStep) {
     return (
       <Circle size="2rem" border="2px" borderColor="warning.500" bg="yellow.50">
@@ -79,20 +89,28 @@ const StatusIcon = ({
   }
 }
 
+export type TimelineStepData = StepData & {
+  stoppedAt?: string
+}
+
 const TimelineStep = ({
   name,
   stepNumber,
   timestamp,
   workflowStatus,
   isCurrentPendingStep,
-}: StepData) => {
-  const submissionTimestamp = timestamp
-    ? format(new Date(timestamp), 'do MMM yyyy, h:mm:ss a')
-    : timestamp
+  stoppedAt,
+}: TimelineStepData) => {
+  const displayTimestamp = stoppedAt ?? timestamp
+  const submissionTimestamp = displayTimestamp
+    ? format(new Date(displayTimestamp), 'do MMM yyyy, h:mm:ss a')
+    : displayTimestamp
 
-  const approvalText = isCurrentPendingStep
-    ? 'Pending'
-    : statusTextMap[workflowStatus]
+  const approvalText = stoppedAt
+    ? 'Stopped'
+    : isCurrentPendingStep
+      ? 'Pending'
+      : statusTextMap[workflowStatus]
 
   return (
     <Box>
@@ -101,6 +119,7 @@ const TimelineStep = ({
           workflowStatus={workflowStatus}
           stepNumber={stepNumber}
           isCurrentPendingStep={isCurrentPendingStep}
+          isStoppedStep={!!stoppedAt}
         />
         <Stack spacing="4px">
           <Text textStyle="caption-2">{name}</Text>
@@ -123,7 +142,7 @@ const TimelineStep = ({
 export const TimelineRunSteps = ({
   steps,
 }: {
-  steps: StepData[]
+  steps: TimelineStepData[]
 }): JSX.Element[] => {
   return steps.map((step, i) => (
     <>

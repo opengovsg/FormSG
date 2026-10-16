@@ -146,7 +146,10 @@ import {
   MissingSubmitterIdError,
   MrfReminderInvalidWorkflowStepError,
   MrfReminderRecipientEmailsEmptyError,
+  MrfWorkflowActionsUnavailableError,
+  MrfWorkflowNotPendingError,
   MrfWorkflowOverflowError,
+  MrfWorkflowStoppedError,
   ParseVirusScannerLambdaPayloadError,
   ProcessingError,
   ResponseModeError,
@@ -467,6 +470,24 @@ const errorMapper: MapRouteError = (
       return {
         statusCode: StatusCodes.BAD_REQUEST,
         errorMessage: error.message,
+      }
+    case MrfWorkflowStoppedError:
+      return {
+        statusCode: StatusCodes.BAD_REQUEST,
+        errorMessage:
+          'This workflow has been stopped. Please contact the form admin that gave you this link.',
+        errorMessageKey: submissionErrorKey('mrf.workflowStopped'),
+      }
+    case MrfWorkflowActionsUnavailableError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage: error.message,
+      }
+    case MrfWorkflowNotPendingError:
+      return {
+        statusCode: StatusCodes.CONFLICT,
+        errorMessage:
+          'This workflow is no longer pending. Refresh to see its latest status.',
       }
     case MrfWorkflowOverflowError:
       return {
@@ -997,9 +1018,10 @@ export const buildMrfMetadata = ({
   workflow,
   workflowStep,
   submittedSteps,
+  stoppedAt,
 }: Pick<
   IMultirespondentSubmissionSchema,
-  'workflow' | 'workflowStep' | 'submittedSteps'
+  'workflow' | 'workflowStep' | 'submittedSteps' | 'stoppedAt'
 >): SubmissionMrfMetadata => {
   const workflowCurrentStepNumber = workflowStep + 1 // since workflowStep is zero indexed.
   const workflowNumTotalSteps = workflow.length
@@ -1026,6 +1048,7 @@ export const buildMrfMetadata = ({
     workflowStatus,
     lastSubmittedAt,
     hasNextStepRecipientEmails,
+    ...(stoppedAt ? { stoppedAt: new Date(stoppedAt).toISOString() } : {}),
   }
 }
 
