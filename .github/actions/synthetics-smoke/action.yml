@@ -1,0 +1,39 @@
+name: Datadog synthetics smoke
+description: >-
+  Runs the FormSG CI smoke suite (Datadog synthetics tagged ci:formsg-smoke)
+  against a deployed environment and fails if any test fails.
+inputs:
+  url:
+    description: Base URL of the environment under test, without trailing slash
+    required: true
+  dd-api-key:
+    description: Datadog API key
+    required: true
+  dd-app-key:
+    description: Datadog application key with synthetics_read + synthetics_write
+    required: true
+runs:
+  using: composite
+  steps:
+    # The suite lives in Datadog, status "paused" so it never alerts on its own
+    # schedule; CI triggers are the only runs. Every test routes its requests
+    # through the START_URL variable, which points them at the environment
+    # under test:
+    #   nev-jju-pik  homepage serves (status, content-type, #root, latency)
+    #   uar-ap6-m4w  backend API responds (GET /api/v3/client/env)
+    #   rwb-ah7-7yh  landing page renders in a real browser
+    - name: Run smoke suite
+      uses: DataDog/synthetics-ci-github-action@7039855343386c30068a97ca381e68ea405e8539 # v4.1.1
+      with:
+        api-key: ${{ inputs.dd-api-key }}
+        app-key: ${{ inputs.dd-app-key }}
+        datadog-site: datadoghq.com
+        subdomain: ogp
+        public-ids: |
+          nev-jju-pik
+          uar-ap6-m4w
+          rwb-ah7-7yh
+        variables: START_URL=${{ inputs.url }}
+        fail-on-timeout: 'true'
+        fail-on-critical-errors: 'true'
+        fail-on-missing-tests: 'true'
