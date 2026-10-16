@@ -134,3 +134,9 @@ export class SavedViewLimitError extends ApplicationError {
     super(message, undefined, ErrorCodes.ADMIN_FORM_SAVED_VIEW_LIMIT)
   }
 }
+
+export class SavedViewNotFoundError extends ApplicationError {
+  constructor(message = 'Saved view to update not found') {
+    super(message, undefined, ErrorCodes.ADMIN_FORM_SAVED_VIEW_NOT_FOUND)
+  }
+}

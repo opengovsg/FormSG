@@ -10,6 +10,7 @@ import { adminFormKeys } from '~features/admin-form/common/queries'
 import {
   createFormSavedView,
   deleteFormSavedView,
+  updateFormSavedView,
 } from '~features/admin-form/responses/AdminSubmissionsService'
 
 export const useSavedViewMutation = () => {
@@ -25,6 +26,38 @@ export const useSavedViewMutation = () => {
         queryClient.invalidateQueries(adminFormKeys.id(formId as string)),
       onError: (error) => {
         toast({ description: String(error) })
+      },
+    },
+  )
+}
+
+export const useUpdateSavedViewMutation = () => {
+  const { t } = useTranslation()
+  const { formId } = useParams()
+  const queryClient = useQueryClient()
+  const toast = useToast({ status: 'success', isClosable: true })
+
+  return useMutation(
+    ({
+      savedViewId,
+      savedView,
+    }: {
+      savedViewId: string
+      savedView: FormSavedViewInput
+    }) => updateFormSavedView(formId as string, savedViewId, savedView),
+    {
+      onSuccess: async () => {
+        await queryClient.invalidateQueries(adminFormKeys.id(formId as string))
+        toast.closeAll()
+        toast({
+          description: t(
+            'features.adminForm.responses.responsesPage.storage.unlockedResponses.views.saveViewSuccess',
+          ),
+        })
+      },
+      onError: (error: Error) => {
+        toast.closeAll()
+        toast({ description: error.message, status: 'danger' })
       },
     },
   )

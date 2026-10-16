@@ -2745,6 +2745,58 @@ export const handleCreateSavedView = [
   _handleCreateSavedView,
 ] as ControllerHandler[]
 
+export const _handleUpdateSavedView: ControllerHandler<
+  { formId: string; savedViewId: string },
+  FormSavedView[] | ErrorDto,
+  FormSavedViewInput
+> = (req, res) => {
+  const { formId, savedViewId } = req.params
+  const savedViewBody = req.body
+  const sessionUserId = (req.session as AuthedSessionData).user._id
+
+  return UserService.getPopulatedUserById(sessionUserId)
+    .andThen((user) =>
+      AuthService.getFormAfterPermissionChecks({
+        user,
+        formId,
+        level: PermissionLevel.Write,
+      }),
+    )
+    .andThen((retrievedForm) =>
+      AdminFormService.updateFormSavedView(
+        retrievedForm,
+        savedViewId,
+        savedViewBody,
+      ),
+    )
+    .map((savedViews) => res.status(StatusCodes.OK).json(savedViews))
+    .mapErr((error) => {
+      logger.error({
+        message: 'Error occurred when updating saved view',
+        meta: {
+          action: 'handleUpdateSavedView',
+          ...createReqMeta(req),
+          userId: sessionUserId,
+          formId,
+          savedViewId,
+        },
+        error,
+      })
+      const { errorMessage, statusCode } = mapRouteError(error)
+      return res.status(statusCode).json({ message: errorMessage })
+    })
+}
+
+/**
+ * Handler for PUT /forms/:formId/saved-views/:savedViewId
+ */
+export const handleUpdateSavedView = [
+  celebrate({
+    [Segments.BODY]: joiSavedViewBody,
+  }),
+  _handleUpdateSavedView,
+] as ControllerHandler[]
+
 export const handleDeleteSavedView: ControllerHandler<
   { formId: string; savedViewId: string },
   FormSavedView[] | ErrorDto

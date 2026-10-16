@@ -139,6 +139,7 @@ import {
   InvalidCollaboratorError,
   InvalidFileTypeError,
   SavedViewLimitError,
+  SavedViewNotFoundError,
 } from './admin-form.errors'
 import {
   getUpdatedFormFields,
@@ -2571,6 +2572,47 @@ export const createFormSavedView = (
   ).andThen((updatedForm) => {
     if (!updatedForm) {
       return errAsync(new SavedViewLimitError())
+    }
+    return okAsync(updatedForm.savedViews ?? [])
+  })
+}
+
+/**
+ * Replaces a saved view's contents in place, keeping its id so it stays the
+ * view admins have selected.
+ * @param form The form the saved view belongs to
+ * @param savedViewId The id of the saved view to replace
+ * @param savedView The view's new name, filter, sort and columns
+ * @returns ok(the form's saved views) on success
+ * @returns err(SavedViewNotFoundError) if the form has no view with that id
+ * @returns err(database errors) if db error is thrown during the update
+ */
+export const updateFormSavedView = (
+  form: IPopulatedForm,
+  savedViewId: string,
+  savedView: FormSavedViewInput,
+): ResultAsync<FormSavedView[], DatabaseError | SavedViewNotFoundError> => {
+  return ResultAsync.fromPromise(
+    FormModel.findOneAndUpdate(
+      { _id: form._id, 'savedViews._id': savedViewId },
+      { $set: { 'savedViews.$': { ...savedView, _id: savedViewId } } },
+      { new: true, runValidators: true },
+    ).exec(),
+    (error) => {
+      logger.error({
+        message: 'Error occurred when updating saved view',
+        meta: {
+          action: 'updateFormSavedView',
+          formId: form._id,
+          savedViewId,
+        },
+        error,
+      })
+      return transformMongoError(error)
+    },
+  ).andThen((updatedForm) => {
+    if (!updatedForm) {
+      return errAsync(new SavedViewNotFoundError())
     }
     return okAsync(updatedForm.savedViews ?? [])
   })
