@@ -46,11 +46,11 @@ export const login: ControllerHandler<
       })
       return res
         .status(StatusCodes.INTERNAL_SERVER_ERROR)
+        .clearCookie(SSO_CODE_VERIFIER_COOKIE_NAME)
         .json({
           message:
             'Generating SSO authentication url failed. Please try again later.',
         })
-        .clearCookie(SSO_CODE_VERIFIER_COOKIE_NAME)
     })
 }
 
