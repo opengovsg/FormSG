@@ -14,6 +14,12 @@ export interface ResponsesIndividualResponse {
     whoIsNotifiedLabel: string
     whoIsNotifiedNone: string
     stopButton: string
+    remindButton: string
+    reminderModal: {
+      title: string
+      description: string
+      confirm: string
+    }
     reassignButton: string
     addAssigneeModal: {
       title: string
