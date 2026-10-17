@@ -20,6 +20,8 @@ export const enSG = {
         'You cannot disable this anymore. Convert to fields and delete them instead.',
       autoConvertNotice:
         'This will automatically be converted for you by end Jun 2027.',
+      otherFormsAutoConvertNotice:
+        'This will automatically be converted for other forms by end Jun 2027.',
       preview: {
         title: 'Conversion preview',
         before: 'Before',
@@ -29,6 +31,8 @@ export const enSG = {
       // Singpass converts to one field and Corppass to two, so each login has
       // its own sentences.
       singpass: {
+        movedToFields:
+          'NRIC/FIN/UEN collection is now a form field. <builderLink>Add it from the Singpass tab</builderLink>.',
         modalTitle: 'Convert to NRIC/FIN field?',
         modalBody:
           'Add this field to the end of your form. It will be prefilled after the respondent logs in with Singpass.',
@@ -36,6 +40,8 @@ export const enSG = {
           '<bold>If you use webhooks, email JSON or CSV exports</bold>, check them after converting. In new responses, "SingPass Validated NRIC" becomes "NRIC/FIN". Past responses, response limits and eligibility stay the same.',
       },
       corppass: {
+        movedToFields:
+          'NRIC/FIN/UEN collection is now a form field. <builderLink>Add it from the Corppass tab</builderLink>.',
         modalTitle: 'Convert to NRIC/FIN and UEN fields?',
         modalBody:
           'Add these fields to the end of your form. These will be prefilled after the respondent logs in with Singpass.',

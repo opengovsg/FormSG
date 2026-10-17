@@ -11,6 +11,7 @@ export type HasTitle = {
 }
 
 type SubmitterIdCollectionLoginStrings = {
+  movedToFields: string
   modalTitle: string
   modalBody: string
   warning: string
@@ -25,6 +26,7 @@ export interface SingpassSettingsStrings extends HasTitle {
     removeIdentityFieldsFirst: string
     stopHint: string
     autoConvertNotice: string
+    otherFormsAutoConvertNotice: string
     preview: {
       title: string
       before: string
