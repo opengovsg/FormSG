@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import {
   ButtonGroup,
   Modal,
@@ -83,7 +83,13 @@ export const SubmitterIdCollectionSetting = ({
                 nextQuestionNumber={nextQuestionNumber}
               />
               <InlineMessage variant="warning">
-                {t(`${login}.warning`)}
+                <Text>
+                  <Trans
+                    t={t}
+                    i18nKey={`${login}.warning`}
+                    components={{ bold: <strong /> }}
+                  />
+                </Text>
               </InlineMessage>
             </Stack>
           </ModalBody>

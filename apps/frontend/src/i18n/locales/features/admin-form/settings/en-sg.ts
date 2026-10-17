@@ -29,18 +29,18 @@ export const enSG = {
       // Singpass converts to one field and Corppass to two, so each login has
       // its own sentences.
       singpass: {
-        modalTitle: 'Convert to NRIC field?',
+        modalTitle: 'Convert to NRIC/FIN field?',
         modalBody:
-          "Adds the NRIC/FIN field at the bottom of your form, filled from the respondent's login. Your response limit and eligibility restrictions stay in these settings.",
+          'Add this field to the end of your form. It will be prefilled after the respondent logs in with Singpass.',
         warning:
-          'New responses will record this as an NRIC form field. This may affect webhooks, email notifications, email JSON and CSV exports. Past responses stay unchanged.',
+          '<bold>If you use webhooks, email JSON or CSV exports</bold>, check them after converting. In new responses, "SingPass Validated NRIC" becomes "NRIC/FIN". Past responses, response limits and eligibility stay the same.',
       },
       corppass: {
-        modalTitle: 'Convert to NRIC and UEN fields?',
+        modalTitle: 'Convert to NRIC/FIN and UEN fields?',
         modalBody:
-          "Adds the NRIC/FIN and UEN fields at the bottom of your form, filled from the respondent's login. Your response limit and eligibility restrictions stay in these settings.",
+          'Add these fields to the end of your form. These will be prefilled after the respondent logs in with Singpass.',
         warning:
-          'New responses will record these as form answers instead of verified login details. Check anything that reads them, such as webhooks, email notifications, email JSON and CSV exports. Past responses stay unchanged.',
+          '<bold>If you use webhooks, email JSON or CSV exports</bold>, check them after converting. In new responses, "CorpPass Validated UID" becomes "NRIC/FIN" and "CorpPass Validated UEN" becomes "UEN". Past responses, response limits and eligibility stay the same.',
       },
     },
   },
