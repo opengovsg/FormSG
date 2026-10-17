@@ -2,8 +2,6 @@ export * from './en-sg'
 
 export interface Fields {
   loginIdentity: {
-    entities: string
-    corppassUsers: string
     sectionLabel: string
     corppassPanelInfo: string
     loginMissing: string

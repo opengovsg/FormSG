@@ -74,25 +74,17 @@ export const EditLoginIdentity = ({
       </VStack>
       <VStack align="flex-start">
         <Text textStyle="subhead-1">{t('verifiedFor')}</Text>
-        {attr === MyInfoAttribute.UinFin ? (
-          <>
-            <VerifiedFor>{t('singaporeans')}</VerifiedFor>
-            <VerifiedFor>{t('permanentResidents')}</VerifiedFor>
-            <VerifiedFor>
-              <Trans
-                t={t}
-                i18nKey="foreignersWithSingpass"
-                components={{
-                  singpassLink: <Link isExternal href={SINGPASS_FAQ} />,
-                }}
-              />
-            </VerifiedFor>
-          </>
-        ) : attr === CorppassAttribute.Uen ? (
-          <VerifiedFor>{tIdentity('entities')}</VerifiedFor>
-        ) : (
-          <VerifiedFor>{tIdentity('corppassUsers')}</VerifiedFor>
-        )}
+        <VerifiedFor>{t('singaporeans')}</VerifiedFor>
+        <VerifiedFor>{t('permanentResidents')}</VerifiedFor>
+        <VerifiedFor>
+          <Trans
+            t={t}
+            i18nKey="foreignersWithSingpass"
+            components={{
+              singpassLink: <Link isExternal href={SINGPASS_FAQ} />,
+            }}
+          />
+        </VerifiedFor>
       </VStack>
       <VStack align="flex-start">
         <Text textStyle="subhead-1">{t('fieldDetails')}</Text>

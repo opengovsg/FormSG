@@ -2,8 +2,6 @@ import { Fields } from '.'
 
 export const enSG: Fields = {
   loginIdentity: {
-    entities: 'Singapore-registered entities',
-    corppassUsers: 'Corppass users',
     sectionLabel: 'Personal',
     corppassPanelInfo:
       "These fields fill in from the respondent's Corppass login.",
