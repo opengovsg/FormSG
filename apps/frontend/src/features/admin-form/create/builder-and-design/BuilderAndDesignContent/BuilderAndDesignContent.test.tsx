@@ -15,6 +15,9 @@ vi.mock('./FormBuilder', () => ({ FormBuilder: () => null }))
 vi.mock('../useFocusConvertedIdentityField', () => ({
   useFocusConvertedIdentityField: () => undefined,
 }))
+vi.mock('../useOpenFieldListTabOnArrival', () => ({
+  useOpenFieldListTabOnArrival: () => undefined,
+}))
 
 vi.mock('~features/admin-form/settings/queries', () => ({
   useAdminFormSettings: () => ({ data: undefined }),

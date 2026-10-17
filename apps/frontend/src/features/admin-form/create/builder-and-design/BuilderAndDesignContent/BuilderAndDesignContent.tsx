@@ -14,6 +14,7 @@ import {
   useFieldBuilderStore,
 } from '../useFieldBuilderStore'
 import { useFocusConvertedIdentityField } from '../useFocusConvertedIdentityField'
+import { useOpenFieldListTabOnArrival } from '../useOpenFieldListTabOnArrival'
 
 import { FormBuilder } from './FormBuilder'
 
@@ -44,6 +45,7 @@ export const BuilderAndDesignContent = ({
 
   // Select the converted field after the mount-time reset above.
   useFocusConvertedIdentityField()
+  useOpenFieldListTabOnArrival()
 
   useEffect(() => {
     if (pendingFieldCreation) consumePendingFieldCreation()

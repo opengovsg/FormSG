@@ -16,6 +16,12 @@ export const enSG = {
         'To change your Singpass authentication mode, remove the existing login-filled fields.',
       removeIdentityFieldsFirst:
         'Your form already collects NRIC/FIN/UENs through form fields. To use this setting instead, remove those fields first.',
+      stopHint:
+        'You cannot disable this anymore. Convert to fields and delete them instead.',
+      autoConvertNotice:
+        'This will automatically be converted for you by end Jun 2027.',
+      otherFormsAutoConvertNotice:
+        'This will automatically be converted for other forms by end Jun 2027.',
       preview: {
         title: 'Conversion preview',
         before: 'Before',
@@ -25,26 +31,22 @@ export const enSG = {
       // Singpass converts to one field and Corppass to two, so each login has
       // its own sentences.
       singpass: {
-        stopHint:
-          'To stop collecting, convert first, then delete the NRIC/FIN field.',
-        convertInfo:
-          'You can now collect this by adding the NRIC/FIN field. Converting changes how new responses record it, which can affect webhooks, email notifications, email JSON and CSV exports.',
-        modalTitle: 'Convert to NRIC field?',
+        movedToFields:
+          'NRIC/FIN/UEN collection is now a form field. <builderLink>Add it from the Singpass tab</builderLink>.',
+        modalTitle: 'Convert to NRIC/FIN field?',
         modalBody:
-          "Adds the NRIC/FIN field at the bottom of your form, filled from the respondent's login. Your response limit and eligibility restrictions stay in these settings.",
+          'Add this field to the end of your form. It will be prefilled after the respondent logs in with Singpass.',
         warning:
-          'New responses will record this as an NRIC form field. This may affect webhooks, email notifications, email JSON and CSV exports. Past responses stay unchanged.',
+          '<bold>If you use webhooks, email JSON or CSV exports</bold>, check them after converting. In new responses, "SingPass Validated NRIC" becomes "NRIC/FIN". Past responses, response limits and eligibility stay the same.',
       },
       corppass: {
-        stopHint:
-          'To stop collecting, convert first, then delete both the NRIC/FIN and UEN fields.',
-        convertInfo:
-          'You can now collect this by adding the NRIC/FIN and UEN fields. Converting changes how new responses record them, which can affect webhooks, email notifications, email JSON and CSV exports.',
-        modalTitle: 'Convert to NRIC and UEN fields?',
+        movedToFields:
+          'NRIC/FIN/UEN collection is now a form field. <builderLink>Add it from the Corppass tab</builderLink>.',
+        modalTitle: 'Convert to NRIC/FIN and UEN fields?',
         modalBody:
-          "Adds the NRIC/FIN and UEN fields at the bottom of your form, filled from the respondent's login. Your response limit and eligibility restrictions stay in these settings.",
+          'Add these fields to the end of your form. These will be prefilled after the respondent logs in with Singpass.',
         warning:
-          'New responses will record these as form answers instead of verified login details. Check anything that reads them, such as webhooks, email notifications, email JSON and CSV exports. Past responses stay unchanged.',
+          '<bold>If you use webhooks, email JSON or CSV exports</bold>, check them after converting. In new responses, "CorpPass Validated UID" becomes "NRIC/FIN" and "CorpPass Validated UEN" becomes "UEN". Past responses, response limits and eligibility stay the same.',
       },
     },
   },

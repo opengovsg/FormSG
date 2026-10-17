@@ -4,12 +4,14 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
 import { FormResponseMode, FormSettings } from 'formsg-shared/types/form'
+import { getLoginIdentityAttrsForAuthType } from 'formsg-shared/utils/login-identity'
 
 import InlineMessage from '~components/InlineMessage'
 
 import { FormSubmitterIdCollectionToggle } from './FormNricCollectionToggle'
 import { FormSingleSubmissionToggle } from './FormSingleSubmissionToggle'
 import { FormWhitelistAttachmentField } from './FormWhitelistAttachmentField'
+import { MovedToFieldsMessage } from './MovedToFieldsMessage'
 import { SingpassAuthOptionsRadio } from './SingpassAuthOptionsRadio'
 import { SubmitterIdCollectionSetting } from './SubmitterIdCollectionSetting'
 
@@ -46,6 +48,9 @@ export const AuthSettingsSingpassSection = ({
     isNricFieldEnabled
   const isToggleLockedByIdentityFields =
     !settings.isSubmitterIdCollectionEnabled && hasIdentityFields
+  // Singpass-only login fills no identity fields, so there is nothing to point to.
+  const offersIdentityFields =
+    getLoginIdentityAttrsForAuthType(settings.authType).length > 0
 
   return (
     <>
@@ -73,6 +78,15 @@ export const AuthSettingsSingpassSection = ({
               isDisabled={isFormPublic}
             />
           )}
+        </>
+      )}
+      {usesIdentityFields && offersIdentityFields && (
+        <>
+          <Divider my="2.5rem" />
+          <Stack spacing="1rem">
+            <FormSubmitterIdCollectionToggle settings={settings} isDisabled />
+            <MovedToFieldsMessage authType={settings.authType} />
+          </Stack>
         </>
       )}
       <Divider my="2.5rem" />

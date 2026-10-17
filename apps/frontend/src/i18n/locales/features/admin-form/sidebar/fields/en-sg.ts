@@ -4,7 +4,7 @@ export const enSG: Fields = {
   loginIdentity: {
     entities: 'Singapore-registered entities',
     corppassUsers: 'Corppass users',
-    sectionLabel: 'Identity',
+    sectionLabel: 'Personal',
     corppassPanelInfo:
       "These fields fill in from the respondent's Corppass login.",
     loginMissing:
@@ -28,7 +28,7 @@ export const enSG: Fields = {
     searchPlaceholder: 'Search fields',
     tabs: {
       basic: 'Basic',
-      myInfo: 'MyInfo',
+      myInfo: 'Singpass',
       corppass: 'Corppass',
       payments: 'Payments',
     },
