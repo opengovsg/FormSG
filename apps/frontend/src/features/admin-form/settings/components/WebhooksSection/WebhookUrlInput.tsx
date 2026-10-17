@@ -11,6 +11,7 @@ import {
 } from '@chakra-ui/react'
 import validator from 'validator'
 
+import { GUIDE_WEBHOOKS } from '~constants/links'
 import FormErrorMessage from '~components/FormControl/FormErrorMessage'
 import FormLabel from '~components/FormControl/FormLabel'
 import IconButton from '~components/IconButton'
@@ -135,8 +136,12 @@ export const WebhookUrlInput = ({
       isInvalid={!!errors.url}
     >
       <FormLabel
+        useMarkdownForDescription
         description={t(
           'features.adminForm.settings.webhooks.input.description',
+          {
+            url: GUIDE_WEBHOOKS,
+          },
         )}
       >
         {t('features.adminForm.settings.webhooks.input.label')}
