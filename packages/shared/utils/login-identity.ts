@@ -32,8 +32,8 @@ export const LOGIN_IDENTITY_LABELS: Record<LoginIdentityAttribute, string> = {
 
 export const LOGIN_IDENTITY_SOURCES: Record<LoginIdentityAttribute, string> = {
   [MyInfoAttribute.UinFin]: 'Myinfo',
-  [CorppassAttribute.Uen]: 'Corppass',
-  [CorppassAttribute.Uid]: 'Corppass',
+  [CorppassAttribute.Uen]: 'Myinfo',
+  [CorppassAttribute.Uid]: 'Myinfo',
 }
 
 /** The identity the respondent's login fills into this field, if any. */

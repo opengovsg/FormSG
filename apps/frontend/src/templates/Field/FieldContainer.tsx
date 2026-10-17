@@ -47,7 +47,7 @@ export type BaseFieldProps = {
 
   /**
    * Badge naming where the field's value comes from, shown next to the
-   * question name, e.g. "Myinfo", or "Corppass" for a login identity field.
+   * question name, e.g. "Myinfo", also used for login identity fields.
    */
   sourceBadge?: string
 
