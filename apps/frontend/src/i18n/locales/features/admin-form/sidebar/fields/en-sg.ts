@@ -17,8 +17,8 @@ export const enSG: Fields = {
     details: {
       uinfin:
         'The NRIC/FIN of the respondent. This field is verified by ICA for Singaporeans/PRs & foreigners on Long-Term Visit Pass, and by MOM for Employment Pass holders.',
-      uen: 'The UEN of the organisation the respondent represents.',
-      uid: "The NRIC/FIN or foreign ID of the respondent, who logs in on behalf of the organisation. This is different from the organisation's UEN.",
+      uen: "The UEN of the respondent's organisation. This field is verified by Corppass.",
+      uid: 'The NRIC/FIN or foreign ID of the respondent. This field is verified by Corppass.',
     },
   },
   builder: {
