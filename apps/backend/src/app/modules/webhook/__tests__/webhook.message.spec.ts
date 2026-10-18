@@ -101,6 +101,21 @@ describe('WebhookQueueMessage', () => {
       })
     })
 
+    it('should parse a snapshot message carrying the token of the snapshot it was queued for', () => {
+      const withToken = {
+        ...VALID_SNAPSHOT_MESSAGE,
+        snapshotRef: {
+          submissionIndex: 1,
+          contentFormat: 'v4',
+          snapshotToken: 'snapshot-token',
+        },
+      }
+
+      const result = WebhookQueueMessage.deserialise(JSON.stringify(withToken))
+
+      expect(result._unsafeUnwrap().snapshotRef).toEqual(withToken.snapshotRef)
+    })
+
     it.each([
       'snapshotRef',
       'snapshotRef.submissionIndex',
@@ -169,6 +184,23 @@ describe('WebhookQueueMessage', () => {
           submissionIndex: 2,
           contentFormat: 'v4',
         },
+      })
+    })
+
+    it('should carry the snapshot token so a retry can tell if a send back replaced the snapshot', () => {
+      const submissionId = new ObjectId().toHexString()
+      const result = WebhookQueueMessage.fromSubmissionId(submissionId, {
+        submissionIndex: 2,
+        contentFormat: 'v4',
+        snapshotToken: 'snapshot-token',
+      })
+
+      expect(
+        JSON.parse(result._unsafeUnwrap().serialise()).snapshotRef,
+      ).toEqual({
+        submissionIndex: 2,
+        contentFormat: 'v4',
+        snapshotToken: 'snapshot-token',
       })
     })
   })

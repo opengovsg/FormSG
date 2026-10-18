@@ -1545,7 +1545,13 @@ const sendMrfInitialWebhookIfEligible = ({
           webhookUrl,
           isRetryEnabled,
           { data },
-          snapshotRef,
+          snapshotRef && {
+            ...snapshotRef,
+            // Lets a retry tell if a send back has since replaced the snapshot.
+            snapshotToken:
+              submission.submittedSteps?.[snapshotRef.submissionIndex]
+                ?.snapshotTokens?.[snapshotRef.contentFormat],
+          },
         ).map(() => undefined)
 
       if (policy.contentFormat === 'v1') {

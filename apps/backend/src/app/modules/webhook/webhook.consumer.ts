@@ -12,6 +12,7 @@ import { PossibleDatabaseError } from '../core/core.errors'
 import {
   SnapshotDataIntegrityError,
   SnapshotFormatNotRecordedError,
+  SnapshotSupersededError,
 } from '../submission/multirespondent-submission/webhook/submission-snapshot.errors'
 import {
   resolveSnapshotWebhookView,
@@ -201,6 +202,16 @@ export const createWebhookQueueHandler =
     if (retryResult.error instanceof WebhookRetriesNotEnabledError) {
       logger.warn({
         message: 'Webhook retries no longer enabled on form',
+        meta: logMeta,
+      })
+      return sqsMessage
+    }
+    // A send back superseded the step submission this retry was for; the
+    // new submission sends its own webhook.
+    if (retryResult.error instanceof SnapshotSupersededError) {
+      logger.warn({
+        message:
+          'Webhook retry dropped as its step submission was superseded by a send back',
         meta: logMeta,
       })
       return sqsMessage

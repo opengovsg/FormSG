@@ -37,6 +37,11 @@ const LiveRowQueueMessage = z.object({
 const SnapshotRef = z.object({
   submissionIndex: z.number().int(),
   contentFormat: z.enum(['v1', 'v4']),
+  // RATIONALE: A send back truncates submittedSteps, so the step at
+  // submissionIndex can be submitted again with a new snapshot. The token
+  // pins the retry to the snapshot it was queued for. Optional, as messages
+  // queued before it was added do not carry it.
+  snapshotToken: z.string().optional(),
 })
 export type SnapshotRef = z.infer<typeof SnapshotRef>
 

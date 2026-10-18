@@ -49,6 +49,20 @@ export class SnapshotFormatNotRecordedError extends ApplicationError {
 }
 
 /**
+ * Raised whenever a retry was queued for a snapshot that is no longer the
+ * step submission's, e.g. because the workflow was sent back and the step
+ * submitted again. The retry must not deliver the newer submission.
+ */
+export class SnapshotSupersededError extends ApplicationError {
+  constructor(
+    message = 'The submission snapshot was superseded by a later submission of the step',
+    meta?: unknown,
+  ) {
+    super(message, meta, ErrorCodes.SUBMISSION_MRF_SNAPSHOT_SUPERSEDED)
+  }
+}
+
+/**
  * Raised whenever a submission snapshot is missing, malformed, or otherwise
  * fails to parse.
  */
