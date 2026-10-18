@@ -144,6 +144,13 @@ export enum FieldListTabIndex {
   Corppass,
 }
 
+export type OpenFieldListTabState = { openFieldListTab: FieldListTabIndex }
+
+/** Router state that opens the field list on this tab, e.g. from Settings. */
+export const openFieldListTabState = (
+  tab: FieldListTabIndex,
+): OpenFieldListTabState => ({ openFieldListTab: tab })
+
 // Name is always collected, so it is not offered as a choice. Labels reuse the
 // sub-field descriptions shown to respondents so both pages read the same.
 export const CREATE_MYINFO_CHILDREN_SUBFIELDS_OPTIONS: {

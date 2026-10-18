@@ -9,8 +9,10 @@ import { ADMINFORM_ROUTE } from '~constants/routes'
 import InlineMessage from '~components/InlineMessage'
 import Link from '~components/Link'
 
-import { FieldListTabIndex } from '~features/admin-form/create/builder-and-design/constants'
-import { openFieldListTabState } from '~features/admin-form/create/builder-and-design/useOpenFieldListTabOnArrival'
+import {
+  FieldListTabIndex,
+  openFieldListTabState,
+} from '~features/admin-form/create/builder-and-design/constants'
 
 // Trans fills in the link text from the translation.
 const BuilderLink = ({
