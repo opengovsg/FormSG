@@ -618,7 +618,7 @@ export const getSubmissionMetadataList = (
         responseMode === FormResponseMode.Multirespondent
           ? SubmissionModel.findAllEncryptedOrMultirespondentMetadataByFormId(
               formId,
-              { page, pageSize },
+              { page, pageSize, ...dateRange },
             )
           : modelToUse.findAllMetadataByFormId(formId, {
               page,
