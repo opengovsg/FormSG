@@ -31,17 +31,22 @@ export const buildWorkflowEvent = ({
   actor,
   stepNumber,
   emails,
+  ...sendBackDetails
 }: {
   type: AdminWorkflowEventType
   actor: { _id?: unknown; email: string }
   stepNumber: number
   emails: string[]
-}): IAdminWorkflowEvent => ({
+} & Pick<
+  IAdminWorkflowEvent,
+  'fromStepNumber' | 'remarks' | 'undoneSteps'
+>): IAdminWorkflowEvent => ({
   type,
   actorId: actor._id,
   actorEmail: actor.email,
   stepNumber,
   emails,
+  ...sendBackDetails,
   created: new Date(),
 })
 
@@ -109,6 +114,13 @@ const toAdminWorkflowEventDto = (
   actorEmail: event.actorEmail,
   stepNumber: event.stepNumber,
   emails: event.emails,
+  ...(event.type === WorkflowEventType.SentBack
+    ? {
+        fromStepNumber: event.fromStepNumber,
+        remarks: event.remarks,
+        undoneSteps: event.undoneSteps,
+      }
+    : {}),
   created: new Date(event.created).toISOString() as DateString,
 })
 
@@ -125,3 +137,18 @@ export const toWorkflowEventDtos = (
         : toAdminWorkflowEventDto(event),
     )
     .sort((a, b) => a.created.localeCompare(b.created))
+
+/**
+ * The events since the workflow was last sent back. A step reached again after
+ * a send back starts afresh for counts kept per step, such as reminders.
+ */
+export const getEventsSinceLastSendBack = (
+  events: IWorkflowEvent[] = [],
+): IWorkflowEvent[] => {
+  const sinceLastSendBack = [...events]
+    .reverse()
+    .findIndex(({ type }) => type === WorkflowEventType.SentBack)
+  return sinceLastSendBack === -1
+    ? events
+    : events.slice(events.length - sinceLastSendBack)
+}

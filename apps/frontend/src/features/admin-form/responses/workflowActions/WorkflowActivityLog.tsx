@@ -160,6 +160,11 @@ export const WorkflowActivityLog = ({
             },
           ]
           break
+        // TODO: list send backs with the drawer's Send back action, which is
+        // the only way to make one.
+        case WorkflowEventType.SentBack:
+          entries = []
+          break
       }
       return { at: event.created, entries }
     })
