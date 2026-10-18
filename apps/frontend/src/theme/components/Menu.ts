@@ -26,6 +26,9 @@ const baseStyle = definePartsStyle((props) => {
       justifyContent: 'space-between',
     },
     list: {
+      // RATIONALE: above sticky page content such as a table header, which
+      // Chakra's default of 1 ties with and loses to by coming later.
+      zIndex: 'dropdown',
       mt: '0.5rem',
       border: 'none',
       borderRadius: 0,
