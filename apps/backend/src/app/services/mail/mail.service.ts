@@ -1393,6 +1393,44 @@ export class MailService {
       actionName: 'sendMrfApprovalEmail',
     })
 
+  /**
+   * For MRF forms - tells a step's people the workflow was sent back to them
+   * to amend their answers, with the admin's remarks and a new link.
+   * @returns err(MailSendError) when there was an error in sending the mail
+   */
+  sendMrfWorkflowSentBackEmail = ({
+    emails,
+    formId,
+    formTitle,
+    responseId,
+    responseUrl,
+    remarks,
+  }: {
+    emails: string[]
+    formId: string
+    formTitle: string
+    responseId: string
+    responseUrl: string
+    remarks?: string
+  }): ResultAsync<true, MailGenerationError | MailSendError> =>
+    this.#sendEmailWithTemplate({
+      emails,
+      formId,
+      subject: `Amendments requested - ${formTitle} (${responseId})`,
+      htmlData: {
+        emailTitle: `Review and amend your part of ${formTitle}`,
+        emailBody: [
+          'The form admin has sent this response back to you to amend your answers. Your earlier answers are filled in.',
+          ...(remarks ? [`Remarks from the form admin:\n${remarks}`] : []),
+        ].join('\n\n'),
+        formTitle,
+        responseId,
+        reviewUrl: responseUrl,
+      },
+      emailType: EmailType.WorkflowSentBack,
+      actionName: 'sendMrfWorkflowSentBackEmail',
+    })
+
   sendMrfWorkflowStoppedEmail = (props: {
     emails: string[]
     formId: string

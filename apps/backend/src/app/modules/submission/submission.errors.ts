@@ -80,6 +80,14 @@ export class MrfWorkflowNotPendingError extends ApplicationError {
   }
 }
 
+export class MrfSendBackInvalidStepError extends ApplicationError {
+  constructor(
+    message = 'A workflow can only be sent back to a step after step 1 and before the pending step.',
+  ) {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_SEND_BACK_INVALID_STEP)
+  }
+}
+
 /**
  * A custom error class returned when given submission has invalid encryption encoding
  */

@@ -4,6 +4,7 @@ import { rateLimitConfig } from '../../../../../config/config'
 import * as AdminFormController from '../../../../../modules/form/admin-form/admin-form.controller'
 import * as MultirespondentSubmissionController from '../../../../../modules/submission/multirespondent-submission/multirespondent-submission.controller'
 import * as WorkflowReassignController from '../../../../../modules/submission/multirespondent-submission/workflow-reassign.controller'
+import * as WorkflowSendBackController from '../../../../../modules/submission/multirespondent-submission/workflow-send-back.controller'
 import * as WorkflowStopController from '../../../../../modules/submission/multirespondent-submission/workflow-stop.controller'
 import * as SubmissionController from '../../../../../modules/submission/submission.controller'
 import { limitRate } from '../../../../../utils/limit-rate'
@@ -127,4 +128,22 @@ AdminFormsSubmissionsRouter.post(
   '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/assignees',
   limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
   WorkflowReassignController.handleAddAssigneesToPendingMrfSubmission,
+)
+
+/**
+ * Send a pending multirespondent workflow back to an earlier step, so its
+ * people amend their answers and the steps after it run again
+ * @route POST /admin/forms/:formId/submissions/:submissionId/send-back
+ * @security session
+ *
+ * @returns 200 with the step sent back to and the people emailed
+ * @returns 400 when the body is invalid, or the step is step 1 or not before the pending step
+ * @returns 403 when the user cannot edit the form, or workflow actions are unavailable
+ * @returns 404 when the submission cannot be found
+ * @returns 409 when the workflow is no longer pending on the expected step
+ */
+AdminFormsSubmissionsRouter.post(
+  '/:formId([a-fA-F0-9]{24})/submissions/:submissionId([a-fA-F0-9]{24})/send-back',
+  limitRate({ max: rateLimitConfig.mrfPendingSubmissionEmailReminder }),
+  WorkflowSendBackController.handleSendBackPendingMrfSubmission,
 )
