@@ -5266,6 +5266,7 @@ describe('multirespondent-submission.service', () => {
       expect(sendSpy.mock.calls[0][4]).toEqual({
         submissionIndex: (submission.submittedSteps?.length ?? 1) - 1,
         contentFormat: 'v4',
+        snapshotToken: 'tok-A',
       })
     })
 
@@ -5334,6 +5335,7 @@ describe('multirespondent-submission.service', () => {
       expect(sendSpy.mock.calls[0][4]).toEqual({
         submissionIndex: 1,
         contentFormat: 'v4',
+        snapshotToken: 'tok-step-2',
       })
     })
 
