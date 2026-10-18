@@ -48,13 +48,14 @@ import {
   SubmissionSaveError,
 } from '../../submission.errors'
 import {
-  handleGetMultirespondentSubmissionForRespondent,
+  getMultirespondentSubmissionForRespondentForTest,
   sendPendingMrfSubmissionReminderForTest,
   submitMultirespondentFormForTest,
   updateMultirespondentSubmissionForTest,
 } from '../multirespondent-submission.controller'
 import * as MultiRespondentSubmissionService from '../multirespondent-submission.service'
 import * as MultirespondentSubmissionUtils from '../multirespondent-submission.utils'
+import * as stepToken from '../step-token'
 import { SnapshotWriteError } from '../webhook/submission-snapshot.errors'
 
 jest.mock('src/app/modules/datadog/datadog.utils')
@@ -230,7 +231,7 @@ describe('multirespondent-submision.controller', () => {
       )
 
       // Act
-      await handleGetMultirespondentSubmissionForRespondent(
+      await getMultirespondentSubmissionForRespondentForTest(
         mockReq,
         mockRes,
         jest.fn(),
@@ -272,7 +273,7 @@ describe('multirespondent-submision.controller', () => {
         } as unknown as MultirespondentSubmissionData),
       )
 
-      await handleGetMultirespondentSubmissionForRespondent(
+      await getMultirespondentSubmissionForRespondentForTest(
         mockReq,
         mockRes,
         jest.fn(),
@@ -285,6 +286,82 @@ describe('multirespondent-submision.controller', () => {
         }),
       )
       expect(mockRes.cookie).not.toHaveBeenCalled()
+    })
+
+    describe('step token', () => {
+      const RAW_STEP_TOKEN = stepToken.generate()
+
+      const getWithQuery = async (query: Record<string, string>) => {
+        const mockReq = expressHandler.mockRequest({
+          params: { formId: mockFormId, submissionId: mockSubmissionId },
+          session: { cookie: { maxAge: 1000 } },
+          body: {} as any,
+          query,
+        })
+        const mockRes = expressHandler.mockResponse()
+        await getMultirespondentSubmissionForRespondentForTest(
+          mockReq,
+          mockRes,
+          jest.fn(),
+        )
+        return mockRes
+      }
+
+      beforeEach(() => {
+        MockFormService.retrieveFullFormById = jest.fn().mockReturnValue(
+          okAsync({
+            _id: mockFormId,
+            responseMode: FormResponseMode.Multirespondent,
+            title: 'Mock Form',
+            status: FormStatus.Public,
+          }),
+        )
+        MockSubmissionService.getEncryptedSubmissionData.mockReturnValue(
+          okAsync({
+            _id: mockSubmissionId,
+            submissionType: SubmissionType.Multirespondent,
+            form_fields: [],
+            form_logics: [],
+            workflow: [],
+            workflowStep: 0,
+            submittedSteps: [],
+            stepTokenHash: stepToken.hash(RAW_STEP_TOKEN),
+            created: new Date(),
+          } as unknown as MultirespondentSubmissionData),
+        )
+      })
+
+      it('returns 200 when the presented step token verifies', async () => {
+        const mockRes = await getWithQuery({ stepToken: RAW_STEP_TOKEN })
+
+        expect(mockRes.status).not.toHaveBeenCalled()
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({ workflowStep: 0 }),
+        )
+      })
+
+      it('returns 200 when no step token is presented', async () => {
+        const mockRes = await getWithQuery({})
+
+        expect(mockRes.status).not.toHaveBeenCalled()
+        expect(mockRes.json).toHaveBeenCalledWith(
+          expect.objectContaining({ workflowStep: 0 }),
+        )
+      })
+
+      it('returns 403 with the superseded link message when the presented step token no longer verifies', async () => {
+        const mockRes = await getWithQuery({
+          stepToken: stepToken.generate(),
+        })
+
+        expect(mockRes.status).toHaveBeenCalledWith(StatusCodes.FORBIDDEN)
+        expect(mockRes.json).toHaveBeenCalledWith({
+          message: expect.stringContaining('This link is no longer valid'),
+          messageKey:
+            'features.publicForm.backendErrors.submission.mrf.stepLinkSuperseded',
+        })
+        expect(mockRes.cookie).not.toHaveBeenCalled()
+      })
     })
   })
 
