@@ -53,6 +53,7 @@ import {
 import * as ReceiverMiddleware from '../receiver/receiver.middleware'
 import {
   InvalidSubmissionTypeError,
+  MrfStepLinkSupersededError,
   MrfWorkflowStoppedError,
   SubmissionFailedError,
   SubmissionSaveError,
@@ -87,6 +88,7 @@ import {
   createPublicMultirespondentSubmissionDto,
   getMrfCookieName,
 } from './multirespondent-submission.utils'
+import { verify as verifyStepToken } from './step-token'
 
 const logger = createLoggerWithLabel(module)
 const Payment = getPaymentModel(mongoose)
@@ -583,20 +585,14 @@ export const handleUpdateMultirespondentSubmission = [
   updateMultirespondentSubmission,
 ] as ControllerHandler[]
 
-/**
- * Handler for GET /forms/:formId/submissions/:submissionId
- * @returns 200 with encrypted submission data response
- * @returns 400 when form is not an multirespondent mode form
- * @returns 404 when submissionId cannot be found in the database
- * @returns 404 when form cannot be found
- * @returns 410 when form is archived
- * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
- */
-export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
+const getMultirespondentSubmissionForRespondent: ControllerHandler<
   { formId: string; submissionId: string },
-  PublicMultirespondentSubmissionDto | ErrorDto
+  PublicMultirespondentSubmissionDto | ErrorDto,
+  unknown,
+  { stepToken?: string }
 > = async (req, res) => {
   const { formId, submissionId } = req.params
+  const { stepToken: presentedStepToken } = req.query
 
   const logMeta = {
     action: 'handleGetMultirespondentSubmissionForRespondent',
@@ -628,6 +624,15 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
         }
         if (submissionData.stoppedAt) {
           return errAsync(new MrfWorkflowStoppedError())
+        }
+        // Only a presented token is checked, so links without one still
+        // load; submitting still requires a valid token.
+        if (
+          presentedStepToken &&
+          submissionData.stepTokenHash &&
+          !verifyStepToken(presentedStepToken, submissionData.stepTokenHash)
+        ) {
+          return errAsync(new MrfStepLinkSupersededError())
         }
 
         // Remaining login duration in seconds.
@@ -678,6 +683,25 @@ export const handleGetMultirespondentSubmissionForRespondent: ControllerHandler<
       })
   )
 }
+
+export const getMultirespondentSubmissionForRespondentForTest =
+  getMultirespondentSubmissionForRespondent
+
+/**
+ * Handler for GET /forms/:formId/submissions/:submissionId
+ * @returns 200 with encrypted submission data response
+ * @returns 400 when form is not an multirespondent mode form
+ * @returns 400 when the query is invalid
+ * @returns 403 when a step token is presented that no longer verifies
+ * @returns 404 when submissionId cannot be found in the database
+ * @returns 404 when form cannot be found
+ * @returns 410 when form is archived
+ * @returns 500 when any errors occurs in database query, generating signed URL or retrieving payment data
+ */
+export const handleGetMultirespondentSubmissionForRespondent = [
+  MultirespondentSubmissionMiddleware.validateGetMultirespondentSubmissionQuery,
+  getMultirespondentSubmissionForRespondent,
+] as ControllerHandler[]
 
 const sendPendingMrfSubmissionReminder: ControllerHandler<
   { formId: string; submissionId: string },

@@ -51,6 +51,7 @@ export interface PublicForm {
         missingSubmitterId: string
         invalidLink: string
         workflowStopped: string
+        stepLinkSuperseded: string
         invalidWorkflowType: string
         expectedResponseNotFound: string
       }

@@ -89,6 +89,16 @@ export class MrfSendBackInvalidStepError extends ApplicationError {
 }
 
 /**
+ * Returned when a respondent opens a step link whose step token has been
+ * rotated away, e.g. because the workflow was sent back to an earlier step.
+ */
+export class MrfStepLinkSupersededError extends ApplicationError {
+  constructor(message = 'This step link has been superseded.') {
+    super(message, undefined, ErrorCodes.SUBMISSION_MRF_STEP_LINK_SUPERSEDED)
+  }
+}
+
+/**
  * A custom error class returned when given submission has invalid encryption encoding
  */
 export class InvalidEncodingError extends ApplicationError {

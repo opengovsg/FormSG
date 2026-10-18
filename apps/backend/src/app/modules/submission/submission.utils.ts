@@ -149,6 +149,7 @@ import {
   MrfReminderLimitReachedError,
   MrfReminderRecipientEmailsEmptyError,
   MrfSendBackInvalidStepError,
+  MrfStepLinkSupersededError,
   MrfWorkflowActionsUnavailableError,
   MrfWorkflowNotPendingError,
   MrfWorkflowOverflowError,
@@ -481,6 +482,13 @@ const errorMapper: MapRouteError = (
         errorMessage:
           'This workflow has been stopped. Please contact the form admin that gave you this link.',
         errorMessageKey: submissionErrorKey('mrf.workflowStopped'),
+      }
+    case MrfStepLinkSupersededError:
+      return {
+        statusCode: StatusCodes.FORBIDDEN,
+        errorMessage:
+          'This link is no longer valid. The form admin may have sent this response back to an earlier step. Please use the latest link you were sent.',
+        errorMessageKey: submissionErrorKey('mrf.stepLinkSuperseded'),
       }
     case MrfAssigneeAlreadyAssignedError:
     case MrfSendBackInvalidStepError:

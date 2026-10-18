@@ -321,6 +321,7 @@ export type MultirespondentSubmissionData = {
   | 'mrfVersion'
   | 'submittedSteps'
   | 'encryptedStepToken'
+  | 'stepTokenHash'
   | 'workflowEvents'
   | 'stoppedAt'
 > &
