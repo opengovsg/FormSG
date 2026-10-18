@@ -37,6 +37,11 @@ export const enSG: ResponsesIndividualResponse = {
       reminderSent:
         'Reminder sent to <bold>{recipients}</bold> by <bold>{actor}</bold>.',
       stopped: 'Workflow stopped by <bold>{actor}</bold>.',
+      sentBack:
+        '<bold>{actor}</bold> sent the response back from Step {fromStepNumber} to <bold>{step}</bold>{stepName}.',
+      sentBackSentTo:
+        '<bold>{actor}</bold> sent the response back from Step {fromStepNumber} to <bold>{step}</bold>{stepName}. Sent to <bold>{recipients}</bold>.',
+      remarks: 'Remarks: {remarks}',
     },
     reassignButton: 'Reassign',
     addAssigneeModal: {
@@ -58,6 +63,18 @@ export const enSG: ResponsesIndividualResponse = {
       notifyHeading: 'Select who to notify when the workflow is stopped',
       confirm: 'Stop workflow',
       toastSuccess: 'The workflow was successfully stopped.',
+    },
+    sendBackButton: 'Send back',
+    sendBackModal: {
+      title: 'Send back to an earlier step',
+      description:
+        "The selected step's people will get a new link to amend their answers. Answers so far are kept, and the steps after it will need to be completed again.",
+      stepLabel: 'Send back to',
+      remarksLabel: 'Remarks',
+      remarksDescription: "Added to the email sent to the step's people.",
+      remarksTooLong: 'Remarks must be {max} characters or fewer',
+      confirm: 'Send back',
+      toastSuccess: 'The response was sent back to Step {stepNumber}.',
     },
   },
   paymentSection: {

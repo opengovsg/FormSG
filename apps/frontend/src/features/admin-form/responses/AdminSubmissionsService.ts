@@ -333,3 +333,25 @@ export const addAssignees = ({
     `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/assignees`,
     { emails, submissionSecretKey, stepToken, expectedStepNumber },
   ).then(({ data }) => data)
+
+export const sendBackWorkflow = ({
+  formId,
+  submissionId,
+  targetStepNumber,
+  expectedStepNumber,
+  submissionSecretKey,
+  remarks,
+}: {
+  formId: string
+  submissionId: string
+  /** The earlier step whose people amend their answers. */
+  targetStepNumber: number
+  /** The pending step shown to the admin; the server rejects a stale page. */
+  expectedStepNumber: number
+  submissionSecretKey: string
+  remarks?: string
+}): Promise<{ stepNumber: number; emails: string[] }> =>
+  ApiService.post<{ stepNumber: number; emails: string[] }>(
+    `${ADMIN_FORM_ENDPOINT}/${formId}/submissions/${submissionId}/send-back`,
+    { targetStepNumber, expectedStepNumber, submissionSecretKey, remarks },
+  ).then(({ data }) => data)
