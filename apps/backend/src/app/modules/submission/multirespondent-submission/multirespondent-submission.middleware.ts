@@ -168,6 +168,12 @@ export const validateMultirespondentRemindBody = celebrate({
   [Segments.BODY]: multirespondentSubmissionKeySchema,
 })
 
+export const validateGetMultirespondentSubmissionQuery = celebrate({
+  // RATIONALE: optional so that links sent before step tokens, and clients
+  // that do not pass the token yet, still load.
+  [Segments.QUERY]: Joi.object({ stepToken: Joi.string().optional() }),
+})
+
 const retrieveMultirespondentSubmissionIfExists = (
   submissionId?: string,
 ): ResultAsync<
