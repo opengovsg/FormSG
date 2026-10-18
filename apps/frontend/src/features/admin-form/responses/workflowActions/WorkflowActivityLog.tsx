@@ -130,36 +130,46 @@ export const WorkflowActivityLog = ({
     )
   })
 
-  const eventEntries = events.map((event) => {
+  const eventEntries = events.flatMap((event): ActivityEntry[] => {
     switch (event.type) {
       case WorkflowEventType.AssigneesAdded:
-        return entry(
-          event.created,
-          'assigneeAdded',
-          {
-            emails: formatEmailList(event.emails),
-            ...stepValues(event.stepNumber),
-            actor: event.actorEmail,
-          },
-          'neutral',
-        )
+        return [
+          entry(
+            event.created,
+            'assigneeAdded',
+            {
+              emails: formatEmailList(event.emails),
+              ...stepValues(event.stepNumber),
+              actor: event.actorEmail,
+            },
+            'neutral',
+          ),
+        ]
       case WorkflowEventType.ReminderSent:
-        return entry(
-          event.created,
-          'reminderSent',
-          {
-            recipients: formatEmailList(event.emails),
-            actor: event.actorEmail,
-          },
-          'reminder',
-        )
+        return [
+          entry(
+            event.created,
+            'reminderSent',
+            {
+              recipients: formatEmailList(event.emails),
+              actor: event.actorEmail,
+            },
+            'reminder',
+          ),
+        ]
       case WorkflowEventType.Stopped:
-        return entry(
-          event.created,
-          'stopped',
-          { actor: event.actorEmail },
-          'negative',
-        )
+        return [
+          entry(
+            event.created,
+            'stopped',
+            { actor: event.actorEmail },
+            'negative',
+          ),
+        ]
+      // TODO: list send backs and the steps they undid with the drawer's Send
+      // back action, which is the only way to make one.
+      case WorkflowEventType.SentBack:
+        return []
     }
   })
 

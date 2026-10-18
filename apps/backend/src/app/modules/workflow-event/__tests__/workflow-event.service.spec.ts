@@ -105,4 +105,67 @@ describe('workflow-event.service', () => {
       ])
     })
   })
+
+  describe('getEventsSinceLastSendBack', () => {
+    const event = (type: WorkflowEventType, stepNumber: number) => ({
+      type,
+      actorId: actor._id,
+      actorEmail: actor.email,
+      stepNumber,
+      emails: [],
+      created: new Date(),
+    })
+
+    it('keeps only the events after the last send back', () => {
+      const afterSendBack = event(WorkflowEventType.ReminderSent, 2)
+
+      const result = WorkflowEventService.getEventsSinceLastSendBack([
+        event(WorkflowEventType.ReminderSent, 2),
+        event(WorkflowEventType.SentBack, 2),
+        afterSendBack,
+      ])
+
+      expect(result).toEqual([afterSendBack])
+    })
+
+    it('keeps every event when the workflow was never sent back', () => {
+      const events = [event(WorkflowEventType.ReminderSent, 2)]
+
+      expect(WorkflowEventService.getEventsSinceLastSendBack(events)).toEqual(
+        events,
+      )
+    })
+  })
+
+  describe('toWorkflowEventDtos for a send back', () => {
+    it('carries the step it came from, the remarks and the undone steps', () => {
+      const [dto] = WorkflowEventService.toWorkflowEventDtos([
+        {
+          type: WorkflowEventType.SentBack,
+          actorId: actor._id,
+          actorEmail: actor.email,
+          stepNumber: 2,
+          fromStepNumber: 3,
+          remarks: 'Fix it',
+          undoneSteps: [
+            {
+              stepNumber: 2,
+              submittedAt: '2026-10-08T02:00:00.000Z',
+              isApproval: false,
+            },
+          ],
+          emails: ['lead@example.com'],
+          created: new Date('2026-10-09T00:00:00.000Z'),
+        },
+      ])
+
+      expect(dto).toMatchObject({
+        type: WorkflowEventType.SentBack,
+        stepNumber: 2,
+        fromStepNumber: 3,
+        remarks: 'Fix it',
+        undoneSteps: [{ stepNumber: 2 }],
+      })
+    })
+  })
 })
