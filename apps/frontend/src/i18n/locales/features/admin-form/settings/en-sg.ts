@@ -44,7 +44,7 @@ export const enSG = {
           'NRIC/FIN/UEN collection is now a form field. <builderLink>Add it from the Corppass tab</builderLink>.',
         modalTitle: 'Convert to NRIC/FIN and UEN fields?',
         modalBody:
-          'Add these fields to the end of your form. These will be prefilled after the respondent logs in with Singpass.',
+          'Add these fields to the end of your form. These will be prefilled after the respondent logs in with Corppass.',
         warning:
           '<bold>If you use webhooks, email JSON or CSV exports</bold>, check them after converting. In new responses, "CorpPass Validated UID" becomes "NRIC/FIN" and "CorpPass Validated UEN" becomes "UEN". Past responses, response limits and eligibility stay the same.',
       },
