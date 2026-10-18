@@ -1,12 +1,15 @@
 import { ApiService } from '~services/ApiService'
 
-import { updateMultirespondentSubmission } from './PublicFormService'
+import {
+  getMultirespondentSubmissionById,
+  updateMultirespondentSubmission,
+} from './PublicFormService'
 
 vi.mock('~services/ApiService', async (importOriginal) => {
   const actual = await importOriginal<typeof import('~services/ApiService')>()
   return {
     ...actual,
-    ApiService: { put: vi.fn(), post: vi.fn() },
+    ApiService: { put: vi.fn(), post: vi.fn(), get: vi.fn() },
   }
 })
 
@@ -14,6 +17,7 @@ const MOCK_FORM_ID = '61540ece3d4a6e50ac0cc6ff'
 const MOCK_SUBMISSION_ID = '61540ece3d4a6e50ac0cc700'
 
 const mockPut = ApiService.put as unknown as ReturnType<typeof vi.fn>
+const mockGet = ApiService.get as unknown as ReturnType<typeof vi.fn>
 
 const putBodyFromLastCall = (): Record<string, unknown> => {
   const lastCall = mockPut.mock.calls.at(-1)
@@ -63,5 +67,41 @@ describe('frontend step-token echoes to next-step PUT body', () => {
     })
 
     expect(putBodyFromLastCall()).not.toHaveProperty('stepToken')
+  })
+})
+
+describe('frontend step-token is sent when loading a submission', () => {
+  beforeEach(() => {
+    mockGet.mockReset()
+    mockGet.mockResolvedValue({ data: { attachmentMetadata: {} } })
+  })
+
+  it('sends the step token as the `stepToken` query param when a token is present', async () => {
+    await getMultirespondentSubmissionById({
+      formId: MOCK_FORM_ID,
+      submissionId: MOCK_SUBMISSION_ID,
+      stepToken: 'raw-step-token-abc123',
+    })
+
+    expect(mockGet).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `/${MOCK_FORM_ID}/submissions/${MOCK_SUBMISSION_ID}`,
+      ),
+      { params: { stepToken: 'raw-step-token-abc123' } },
+    )
+  })
+
+  it('sends no query params when no token is present', async () => {
+    await getMultirespondentSubmissionById({
+      formId: MOCK_FORM_ID,
+      submissionId: MOCK_SUBMISSION_ID,
+    })
+
+    expect(mockGet).toHaveBeenCalledWith(
+      expect.stringContaining(
+        `/${MOCK_FORM_ID}/submissions/${MOCK_SUBMISSION_ID}`,
+      ),
+      undefined,
+    )
   })
 })

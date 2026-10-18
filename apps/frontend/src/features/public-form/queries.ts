@@ -18,8 +18,8 @@ export const publicFormKeys = {
   // consistency
   base: ['publicForm'] as const,
   id: (formId: string) => [...publicFormKeys.base, formId] as const,
-  submission: (formId: string, submissionId?: string) =>
-    [...publicFormKeys.id(formId), submissionId] as const,
+  submission: (formId: string, submissionId?: string, stepToken?: string) =>
+    [...publicFormKeys.id(formId), submissionId, stepToken] as const,
 }
 
 export const usePublicFormView = (
@@ -44,6 +44,12 @@ export const usePublicFormView = (
 export const useEncryptedSubmission = (
   formId: string,
   submissionId?: string,
+  /**
+   * Step token from the respondent's link, if any. Part of the query key so
+   * that different links to the same submission are not served each other's
+   * cached result.
+   */
+  stepToken?: string,
   /** Extra override to determine whether query is enabled */
   enabled = true,
 ): UseQueryResult<
@@ -51,10 +57,14 @@ export const useEncryptedSubmission = (
   ApiError
 > => {
   return useQuery(
-    publicFormKeys.submission(formId, submissionId),
+    publicFormKeys.submission(formId, submissionId, stepToken),
     () =>
       submissionId
-        ? getMultirespondentSubmissionById({ formId, submissionId })
+        ? getMultirespondentSubmissionById({
+            formId,
+            submissionId,
+            stepToken,
+          })
         : undefined,
     {
       // Treat submission as static on load.

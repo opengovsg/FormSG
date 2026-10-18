@@ -7,7 +7,11 @@ import {
   WorkflowType,
 } from 'formsg-shared/types'
 
-import { getDraftToSave, getRestoreDraftFormValues } from './saveDraft'
+import {
+  getDraftToSave,
+  getRestoreDraftFormValues,
+  getSaveDraftKey,
+} from './saveDraft'
 
 describe('saveDraft', () => {
   beforeEach(() => {
@@ -616,5 +620,65 @@ describe('saveDraft', () => {
         unchangedFieldIds: ['field1'],
       })
     })
+  })
+})
+
+describe('getSaveDraftKey', () => {
+  const FORM_ID = '61540ece3d4a6e50ac0cc6ff'
+  const SUBMISSION_ID = '68d4b9900415e65225fd3e4e'
+  const MRF_STEP_2 = {
+    formId: FORM_ID,
+    formSubmissionId: SUBMISSION_ID,
+    isMrf: true,
+    currentMrfWorkflowStepNumber: 1,
+  }
+
+  it('keeps the existing key format when the link has no step token', () => {
+    expect(getSaveDraftKey(MRF_STEP_2)).toBe(
+      `formsg-save-draft-${FORM_ID}-${SUBMISSION_ID}-step1`,
+    )
+    expect(getSaveDraftKey({ ...MRF_STEP_2, stepToken: '' })).toBe(
+      `formsg-save-draft-${FORM_ID}-${SUBMISSION_ID}-step1`,
+    )
+  })
+
+  it('gives different links to the same step different keys', () => {
+    const firstLinkKey = getSaveDraftKey({
+      ...MRF_STEP_2,
+      stepToken: 'first-step-token',
+    })
+    const secondLinkKey = getSaveDraftKey({
+      ...MRF_STEP_2,
+      stepToken: 'second-step-token',
+    })
+
+    expect(firstLinkKey).toMatch(
+      new RegExp(
+        `^formsg-save-draft-${FORM_ID}-${SUBMISSION_ID}-step1-[0-9a-f]{16}$`,
+      ),
+    )
+    expect(secondLinkKey).not.toBe(firstLinkKey)
+  })
+
+  it('gives the same link the same key every time', () => {
+    expect(getSaveDraftKey({ ...MRF_STEP_2, stepToken: 'step-token' })).toBe(
+      getSaveDraftKey({ ...MRF_STEP_2, stepToken: 'step-token' }),
+    )
+  })
+
+  it('never puts the raw step token in the key', () => {
+    expect(
+      getSaveDraftKey({ ...MRF_STEP_2, stepToken: 'raw-step-token-abc123' }),
+    ).not.toContain('raw-step-token-abc123')
+  })
+
+  it('keeps the existing key format for non-MRF forms', () => {
+    expect(
+      getSaveDraftKey({
+        formId: FORM_ID,
+        isMrf: false,
+        currentMrfWorkflowStepNumber: 0,
+      }),
+    ).toBe(`formsg-save-draft-${FORM_ID}`)
   })
 })

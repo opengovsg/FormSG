@@ -116,17 +116,25 @@ export const logoutPublicForm = async (
  * Returns the data of a single submission of a given multirespondent form
  * @param arg.formId The id of the form to query
  * @param arg.submissionId The id of the submission
+ * @param arg.stepToken The step token from the respondent's link, if any. When
+ * sent, the server rejects the request if the link has been superseded (e.g.
+ * after the admin sent the response back to an earlier step).
  * @returns The data of the submission
  */
 export const getMultirespondentSubmissionById = async ({
   formId,
   submissionId,
+  stepToken,
 }: {
   formId: string
   submissionId: string
+  stepToken?: string
 }): Promise<PublicMultirespondentSubmissionDtoWithAttachments> => {
   return ApiService.get<PublicMultirespondentSubmissionDto>(
     `${PUBLIC_FORMS_ENDPOINT}/${formId}/submissions/${submissionId}`,
+    // Tokenless links keep sending a bare GET, as the server's strict query
+    // validation accepts no other keys.
+    stepToken ? { params: { stepToken } } : undefined,
   ).then(async ({ data }) => {
     const encryptedAttachments: PublicMultirespondentSubmissionDtoWithAttachments['encryptedAttachments'] =
       {}
