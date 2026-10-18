@@ -2686,8 +2686,15 @@ const joiSavedViewBody = {
   filter: Joi.object({
     startDate: Joi.string().optional(),
     endDate: Joi.string().optional(),
-    searchText: Joi.string().allow('').optional(),
-    searchColumnIds: Joi.array().items(Joi.string()).optional(),
+    columnFilters: Joi.array()
+      .items(
+        Joi.object({
+          columnId: Joi.string().required(),
+          text: Joi.string().trim().min(1).required(),
+        }),
+      )
+      .unique('columnId')
+      .optional(),
   }).required(),
   sort: Joi.object({
     columnId: Joi.string().required(),

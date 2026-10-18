@@ -203,14 +203,20 @@ export enum SavedViewSortDirection {
  * applied, so a view survives its fields being deleted. An omitted list means
  * "no constraint", which keeps older views showing fields added since.
  */
+/** Rows whose value in the column contains `text`, ignoring case. */
+export interface SavedViewColumnFilter {
+  columnId: string
+  text: string
+}
+
 export interface FormSavedView {
   _id: string
   name: string
   filter?: {
     startDate?: DateString
     endDate?: DateString
-    searchText?: string
-    searchColumnIds?: string[]
+    /** Every filter must match, so each one narrows the rows. */
+    columnFilters?: SavedViewColumnFilter[]
   }
   sort?: {
     columnId: string

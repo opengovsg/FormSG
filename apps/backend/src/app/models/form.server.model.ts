@@ -278,8 +278,16 @@ const SavedViewSchema = new Schema<FormSavedView>({
   filter: {
     startDate: { type: String },
     endDate: { type: String },
-    searchText: { type: String },
-    searchColumnIds: { type: [String], default: undefined },
+    columnFilters: {
+      type: [
+        {
+          _id: false,
+          columnId: { type: String, required: true },
+          text: { type: String, required: true },
+        },
+      ],
+      default: undefined,
+    },
   },
   sort: {
     type: {

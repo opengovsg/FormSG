@@ -2684,7 +2684,7 @@ describe('admin-form.service', () => {
     const mockForm = { _id: new ObjectId() } as unknown as IPopulatedForm
     const savedView = {
       name: 'Pending approvals',
-      filter: { searchText: 'pending' },
+      filter: { columnFilters: [{ columnId: 'status', text: 'pending' }] },
       columnIds: ['a'],
     }
 
