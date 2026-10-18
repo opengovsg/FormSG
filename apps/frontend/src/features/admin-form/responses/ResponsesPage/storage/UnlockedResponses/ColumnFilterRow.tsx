@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiChevronRight } from 'react-icons/bi'
+import { BiChevronRight, BiX } from 'react-icons/bi'
 import { useDebounce } from 'react-use'
 import {
   Flex,
   Icon,
+  InputGroup,
+  InputRightElement,
   Popover,
   PopoverBody,
   PopoverContent,
@@ -14,6 +16,7 @@ import {
 } from '@chakra-ui/react'
 
 import Badge from '~components/Badge'
+import IconButton from '~components/IconButton'
 import Input from '~components/Input'
 
 const FILTER_DEBOUNCE_MS = 200
@@ -40,11 +43,12 @@ export const ColumnFilterRow = ({
   onFilter,
 }: ColumnFilterRowProps): JSX.Element => {
   const { t } = useTranslation()
-  const { filterApplied, filterPlaceholder } = t(
+  const { filterApplied, filterPlaceholder, clearFilter } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.filterMenu',
     { returnObjects: true },
   )
   const [draft, setDraft] = useState(text)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => setDraft(text), [text])
 
@@ -55,6 +59,12 @@ export const ColumnFilterRow = ({
     FILTER_DEBOUNCE_MS,
     [draft],
   )
+
+  const handleClear = () => {
+    setDraft('')
+    onFilter('')
+    inputRef.current?.focus()
+  }
 
   // Closing applies the text at once, so a filter typed just before clicking
   // away is not lost to the debounce.
@@ -105,22 +115,38 @@ export const ColumnFilterRow = ({
       <Portal>
         <PopoverContent w="16rem">
           <PopoverBody p="0.75rem">
-            <Input
-              autoFocus
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              // RATIONALE: the popover is portalled but React still bubbles its
-              // key presses to the Filter menu, whose typeahead would take
-              // focus from the field, and whose Escape would close the menu.
-              onKeyDown={(event) => {
-                event.stopPropagation()
-                if (event.key === 'Enter' || event.key === 'Escape') {
-                  handleClose()
-                }
-              }}
-              placeholder={filterPlaceholder}
-              aria-label={label}
-            />
+            <InputGroup>
+              <Input
+                ref={inputRef}
+                autoFocus
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                // RATIONALE: the popover is portalled but React still bubbles its
+                // key presses to the Filter menu, whose typeahead would take
+                // focus from the field, and whose Escape would close the menu.
+                onKeyDown={(event) => {
+                  event.stopPropagation()
+                  if (event.key === 'Enter' || event.key === 'Escape') {
+                    handleClose()
+                  }
+                }}
+                placeholder={filterPlaceholder}
+                aria-label={label}
+              />
+              {draft ? (
+                <InputRightElement>
+                  <IconButton
+                    aria-label={clearFilter}
+                    size="sm"
+                    variant="clear"
+                    colorScheme="secondary"
+                    color="secondary.300"
+                    icon={<BiX fontSize="1.25rem" />}
+                    onClick={handleClear}
+                  />
+                </InputRightElement>
+              ) : null}
+            </InputGroup>
           </PopoverBody>
         </PopoverContent>
       </Portal>

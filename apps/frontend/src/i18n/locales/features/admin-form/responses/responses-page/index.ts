@@ -68,6 +68,7 @@ export interface ResponsesResponsesPage {
         columns: string
         filterApplied: string
         filterPlaceholder: string
+        clearFilter: string
       }
       views: {
         allResponses: string

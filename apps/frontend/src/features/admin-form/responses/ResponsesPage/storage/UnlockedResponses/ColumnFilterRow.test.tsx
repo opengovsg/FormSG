@@ -93,4 +93,23 @@ describe('a column in the Filter menu', () => {
     expect(onFilter).toHaveBeenLastCalledWith('')
     expect(screen.queryByText('Filter applied')).not.toBeInTheDocument()
   })
+
+  it('clears the text from a button that shows only once text is typed', async () => {
+    const onFilter = vi.fn()
+    renderRow({ onFilter })
+    const user = userEvent.setup()
+
+    await user.click(screen.getByRole('button', { name: /name/i }))
+    const field = await screen.findByRole('textbox')
+    expect(
+      screen.queryByRole('button', { name: 'Clear filter' }),
+    ).not.toBeInTheDocument()
+
+    await user.type(field, 'tan')
+    await user.click(screen.getByRole('button', { name: 'Clear filter' }))
+
+    expect(field).toHaveValue('')
+    expect(field).toHaveFocus()
+    expect(onFilter).toHaveBeenLastCalledWith('')
+  })
 })

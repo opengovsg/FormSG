@@ -79,6 +79,7 @@ export const enSG: ResponsesResponsesPage = {
         columns: 'Filter by column',
         filterApplied: 'Filter applied',
         filterPlaceholder: 'Contains...',
+        clearFilter: 'Clear filter',
       },
       views: {
         allResponses: 'All responses',
