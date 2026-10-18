@@ -378,3 +378,45 @@ WithStoppedWorkflow.play = async ({ canvasElement }) => {
     ).toBeInTheDocument(),
   )
 }
+
+export const WithSupersededStepLink = Template.bind({})
+WithSupersededStepLink.parameters = {
+  router: {
+    initialEntries: [
+      `/61540ece3d4a6e50ac0cc6ff/edit/68d4b9900415e65225fd3e4e?key=mock-key&token=superseded-step-token`,
+    ],
+  },
+  msw: [
+    // Rejects any presented step token, as the server does once a send back
+    // has rotated it. Tokenless requests fall through to the default handler.
+    http.get(
+      '/api/v3/forms/:formId/submissions/:submissionId',
+      ({ request }) => {
+        if (!new URL(request.url).searchParams.has('stepToken')) return
+        return HttpResponse.json(
+          {
+            message:
+              'This link is no longer valid. The form admin may have sent this response back to an earlier step. Please use the latest link you were sent.',
+            messageKey:
+              'features.publicForm.backendErrors.submission.mrf.stepLinkSuperseded',
+          },
+          { status: 403 },
+        )
+      },
+    ),
+    getPublicFormResponse({
+      overrides: {
+        form: { responseMode: FormResponseMode.Multirespondent },
+      },
+    }),
+    ...DEFAULT_MSW_HANDLERS,
+  ],
+}
+WithSupersededStepLink.play = async ({ canvasElement }) => {
+  const canvas = within(canvasElement)
+  await waitFor(() =>
+    expect(
+      canvas.getByText(/This link is no longer valid/),
+    ).toBeInTheDocument(),
+  )
+}

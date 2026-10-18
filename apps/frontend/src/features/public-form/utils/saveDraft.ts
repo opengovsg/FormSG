@@ -6,6 +6,7 @@ import {
   pick,
   union,
 } from 'lodash'
+import nacl from 'tweetnacl'
 
 import {
   BasicField,
@@ -19,6 +20,59 @@ import { FormFieldValues, VerifiableFieldValues } from '~templates/Field'
 import { isFieldEnabledByMrfWorkflow } from '~features/form/utils/augmentFieldWithMrfWorkflowDisabling'
 
 import { DraftSubmission } from '../PublicFormContext'
+
+/**
+ * Number of bytes of the step token's hash kept in the save draft key. 8 bytes
+ * (16 hex characters) is plenty to tell a respondent's links apart.
+ */
+const STEP_TOKEN_FINGERPRINT_BYTES = 8
+
+/**
+ * Returns a short, non-reversible fingerprint of a step token, so that a draft
+ * can be tied to the link it was saved under without storing the raw token.
+ */
+const getStepTokenFingerprint = (stepToken: string) =>
+  Array.from(
+    nacl
+      // Copied into a plain Uint8Array, as tweetnacl rejects arrays from
+      // another realm (e.g. TextEncoder's under jsdom).
+      .hash(new Uint8Array(new TextEncoder().encode(stepToken)))
+      .subarray(0, STEP_TOKEN_FINGERPRINT_BYTES),
+    (byte) => byte.toString(16).padStart(2, '0'),
+  ).join('')
+
+export const getSaveDraftKey = ({
+  formId,
+  formSubmissionId,
+  isMrf,
+  currentMrfWorkflowStepNumber,
+  stepToken,
+}: {
+  formId: string
+  formSubmissionId?: string
+  isMrf: boolean
+  /**
+   * @note currentMrfWorkflowStepNumber is 0-indexed.
+   */
+  currentMrfWorkflowStepNumber: number
+  /**
+   * Step token from the respondent's link, if any. A send back issues a new
+   * link for the step it rewinds to, so keying on the token stops a draft
+   * saved in an earlier round from overriding the answers the step now sees.
+   */
+  stepToken?: string
+}) => {
+  const FORMSG_SAVE_DRAFT_PREFIX = 'formsg-save-draft'
+  return [
+    FORMSG_SAVE_DRAFT_PREFIX,
+    formId,
+    formSubmissionId,
+    isMrf ? 'step' + currentMrfWorkflowStepNumber : undefined,
+    isMrf && stepToken ? getStepTokenFingerprint(stepToken) : undefined,
+  ]
+    .filter(Boolean)
+    .join('-')
+}
 
 const getFormFieldIdsToChecksumMap = (formFields: FormFieldDto[]) => {
   return formFields.reduce(
