@@ -113,7 +113,7 @@ export const ColumnFilterRow = ({
         </Flex>
       </PopoverTrigger>
       <Portal>
-        <PopoverContent w="16rem">
+        <PopoverContent w="16rem" bg="white">
           <PopoverBody p="0.75rem">
             <InputGroup>
               <Input
