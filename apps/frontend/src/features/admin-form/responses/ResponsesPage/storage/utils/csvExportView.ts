@@ -1,4 +1,7 @@
-import { SavedViewSortDirection } from 'formsg-shared/types'
+import {
+  SavedViewColumnFilter,
+  SavedViewSortDirection,
+} from 'formsg-shared/types'
 
 import {
   CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID,
@@ -39,10 +42,31 @@ export const TABLE_COLUMN_ID_BY_CSV_COLUMN_ID: Record<string, string> = {
   [CSV_PAYMENT_COLUMN_IDS.payoutDate]: EXPORT_PAYOUT_DATE_COLUMN_ID,
 }
 
+const TABLE_ONLY_COLUMN_IDS = new Set([
+  EXPORT_RESPONSE_NUMBER_COLUMN_ID,
+  EXPORT_TIMESTAMP_COLUMN_ID,
+  EXPORT_WORKFLOW_STATUS_COLUMN_ID,
+  EXPORT_PENDING_RESPONSE_AT_COLUMN_ID,
+  EXPORT_PAYER_EMAIL_COLUMN_ID,
+  EXPORT_PAID_AMOUNT_COLUMN_ID,
+  EXPORT_FEES_COLUMN_ID,
+  EXPORT_PAYOUT_DATE_COLUMN_ID,
+])
+
+/**
+ * Whether a decrypted record can answer the column: a form field, or the
+ * response id. The others hold values only the table derives.
+ */
+export const isRecordColumnId = (columnId: string): boolean =>
+  !TABLE_ONLY_COLUMN_IDS.has(columnId)
+
 /** What the responses table is showing, carried over to the export. */
 export interface CsvExportView {
-  searchText?: string
-  excludedSearchColumnIds?: string[]
+  /**
+   * The table's column filters, for an export past what the table matched
+   * itself. Only form fields and the response id can be matched here.
+   */
+  columnFilters?: SavedViewColumnFilter[]
   sortColumnId?: string
   sortDirection?: SavedViewSortDirection
   hiddenColumnIds?: string[]

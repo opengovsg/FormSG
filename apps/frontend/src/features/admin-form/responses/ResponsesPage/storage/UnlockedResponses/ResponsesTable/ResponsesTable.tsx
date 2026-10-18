@@ -34,7 +34,11 @@ import {
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
-import { FormResponseMode, SubmissionMetadata } from 'formsg-shared/types'
+import {
+  FormResponseMode,
+  SavedViewColumnFilter,
+  SubmissionMetadata,
+} from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -50,11 +54,7 @@ import {
   MRF_STATUS,
 } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
 import { getFieldColumnHeader } from '~features/admin-form/responses/common/utils/questionLabel'
-import {
-  matchesSearchQuery,
-  normaliseSearchQuery,
-  searchableColumnIds,
-} from '~features/admin-form/responses/common/utils/responseSearch'
+import { matchesColumnFilters } from '~features/admin-form/responses/common/utils/responseSearch'
 import { WorkflowStatusBadge } from '~features/admin-form/responses/components/WorkflowStatusBadge'
 import {
   MRF_PENDING_RESPONSE_AT_LABEL,
@@ -351,9 +351,8 @@ export const ResponsesTable = () => {
     isInfiniteScroll,
     setColumnOptions,
     hiddenColumnIds,
-    searchText,
-    excludedSearchColumnIds,
-    setSearchResultCount,
+    columnFilters,
+    setFilterResultCount,
     renderLimit,
     setRenderedRowCount,
     isTableLoading,
@@ -472,26 +471,24 @@ export const ResponsesTable = () => {
     return prefixColumns.concat(fieldColumns)
   }, [fieldColumns, isDelightfulDashboard, legacyColumns, prefixColumns])
 
+  // RATIONALE: react-table's global filter carries the column filters, as its
+  // per-column filters would each need wiring to a header control we do not
+  // render.
   const globalFilter = useCallback(
     (
       rowsToFilter: Row<ResponseColumnData>[],
-      columnIds: string[],
-      searchValue: string,
-    ) => {
-      const query = normaliseSearchQuery(searchValue)
-      if (!query) return rowsToFilter
-      const searchableIds = searchableColumnIds(
-        columnIds,
-        excludedSearchColumnIds,
-      )
-      return rowsToFilter.filter((row) =>
-        matchesSearchQuery(
-          searchableIds.map((columnId) => row.values[columnId]),
-          query,
-        ),
-      )
-    },
-    [excludedSearchColumnIds],
+      _columnIds: string[],
+      filters: SavedViewColumnFilter[],
+    ) =>
+      filters.length
+        ? rowsToFilter.filter((row) =>
+            matchesColumnFilters((columnId) => {
+              const value = row.values[columnId]
+              return typeof value === 'string' ? value : undefined
+            }, filters),
+          )
+        : rowsToFilter,
+    [],
   )
 
   const columnOptions = useMemo(() => {
@@ -569,8 +566,8 @@ export const ResponsesTable = () => {
 
   useEffect(() => {
     if (!isDelightfulDashboard) return
-    setGlobalFilter(searchText)
-  }, [isDelightfulDashboard, searchText, setGlobalFilter])
+    setGlobalFilter(columnFilters)
+  }, [columnFilters, isDelightfulDashboard, setGlobalFilter])
 
   useEffect(() => {
     if (!isDelightfulDashboard) return
@@ -639,8 +636,13 @@ export const ResponsesTable = () => {
 
   useEffect(() => {
     if (!isDelightfulDashboard) return
-    setSearchResultCount(searchText.trim() ? rows.length : undefined)
-  }, [isDelightfulDashboard, rows.length, searchText, setSearchResultCount])
+    setFilterResultCount(columnFilters.length ? rows.length : undefined)
+  }, [
+    columnFilters.length,
+    isDelightfulDashboard,
+    rows.length,
+    setFilterResultCount,
+  ])
 
   useEffect(() => {
     if (!isDelightfulDashboard) return

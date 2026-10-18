@@ -13,10 +13,7 @@ import {
 } from '~features/admin-form/responses/constants'
 
 import { CsvGenerator } from '../../../../common/utils'
-import {
-  matchesSearchQuery,
-  normaliseSearchQuery,
-} from '../../../../common/utils/responseSearch'
+import { matchesColumnFilters } from '../../../../common/utils/responseSearch'
 import type { DecryptedSubmissionData } from '../../types'
 import type { Response } from '../csv-response-classes'
 import {
@@ -25,6 +22,7 @@ import {
   directionFactor,
   EXPORT_RESPONSE_ID_COLUMN_ID,
   EXPORT_TIMESTAMP_COLUMN_ID,
+  isRecordColumnId,
   isTableColumnShown,
   isTimestampColumnId,
   TABLE_COLUMN_ID_BY_CSV_COLUMN_ID,
@@ -280,23 +278,26 @@ export class EncryptedResponseCsvGenerator extends CsvGenerator {
     record: DecryptedSubmissionData['record'],
     submissionId: string,
   ): boolean {
-    const query = normaliseSearchQuery(this.view.searchText ?? '')
-    if (!query) return true
+    const columnFilters = this.view.columnFilters ?? []
+    if (!columnFilters.length) return true
 
-    const excluded = new Set(this.view.excludedSearchColumnIds ?? [])
-    const values: string[] = []
-    if (!excluded.has(EXPORT_RESPONSE_ID_COLUMN_ID)) values.push(submissionId)
-
-    record.forEach((content) => {
-      if (excluded.has(content._id)) return
-      if (content.answerArray) {
-        values.push(...content.answerArray.flat())
-        return
-      }
-      if (content.answer) values.push(content.answer)
-    })
-
-    return matchesSearchQuery(values, query)
+    const answers = new Map(
+      record.map((content) => [
+        content._id,
+        content.answerArray
+          ? content.answerArray.flat().join(', ')
+          : content.answer,
+      ]),
+    )
+    // A filter on a column only the table can read, such as workflow status,
+    // matches every record, as the export has no value to test it against.
+    return matchesColumnFilters(
+      (columnId) =>
+        columnId === EXPORT_RESPONSE_ID_COLUMN_ID
+          ? submissionId
+          : answers.get(columnId),
+      columnFilters.filter(({ columnId }) => isRecordColumnId(columnId)),
+    )
   }
 
   /** Ascending. `sort` applies the direction. */

@@ -1279,8 +1279,10 @@ describe('the view carried over from the responses table', () => {
     expect(generator.records[0 + BOM_LENGTH]).toContain('Secret')
   })
 
-  it('keeps only the records the search matches', () => {
-    const generator = build({ searchText: 'alpha' })
+  it('keeps only the records every column filter matches', () => {
+    const generator = build({
+      columnFilters: [{ columnId: 'sortable', text: 'alpha' }],
+    })
 
     expect(generator.length()).toBe(1)
     expect(generator.unprocessed[0].record['sortable'].getAnswer()).toBe(
@@ -1288,26 +1290,60 @@ describe('the view carried over from the responses table', () => {
     )
   })
 
-  it('matches the search without regard to case', () => {
-    expect(build({ searchText: 'ALPHA' }).length()).toBe(1)
-  })
-
-  it('searches the response id as well as the answers', () => {
-    expect(build({ searchText: 'submission-2' }).length()).toBe(1)
-  })
-
-  it('skips a column the admin excluded from search', () => {
+  it('matches a column filter without regard to case', () => {
     expect(
       build({
-        searchText: 'secret-1',
-        excludedSearchColumnIds: ['hideable'],
+        columnFilters: [{ columnId: 'sortable', text: 'ALPHA' }],
       }).length(),
-    ).toBe(0)
-    expect(build({ searchText: 'secret-1' }).length()).toBe(1)
+    ).toBe(1)
   })
 
-  it('keeps every record when the search is blank', () => {
-    expect(build({ searchText: '   ' }).length()).toBe(3)
+  it('filters on the response id', () => {
+    expect(
+      build({
+        columnFilters: [
+          { columnId: EXPORT_RESPONSE_ID_COLUMN_ID, text: 'submission-2' },
+        ],
+      }).length(),
+    ).toBe(1)
+  })
+
+  it('looks only in the filtered column', () => {
+    expect(
+      build({
+        columnFilters: [{ columnId: 'sortable', text: 'secret-1' }],
+      }).length(),
+    ).toBe(0)
+    expect(
+      build({
+        columnFilters: [{ columnId: 'hideable', text: 'secret-1' }],
+      }).length(),
+    ).toBe(1)
+  })
+
+  it('needs every column filter to match', () => {
+    expect(
+      build({
+        columnFilters: [
+          { columnId: 'sortable', text: 'alpha' },
+          { columnId: 'hideable', text: 'secret-2' },
+        ],
+      }).length(),
+    ).toBe(0)
+  })
+
+  it('keeps every record for a filter on a column only the table reads', () => {
+    expect(
+      build({
+        columnFilters: [
+          { columnId: EXPORT_WORKFLOW_STATUS_COLUMN_ID, text: 'pending' },
+        ],
+      }).length(),
+    ).toBe(3)
+  })
+
+  it('keeps every record with no column filters', () => {
+    expect(build({ columnFilters: [] }).length()).toBe(3)
   })
 })
 

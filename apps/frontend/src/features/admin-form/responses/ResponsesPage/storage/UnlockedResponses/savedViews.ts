@@ -4,6 +4,7 @@ import {
   DateString,
   FormSavedView,
   FormSavedViewInput,
+  SavedViewColumnFilter,
   SavedViewSortDirection,
 } from 'formsg-shared/types'
 
@@ -13,8 +14,7 @@ export const RESPONSE_NUMBER_COLUMN_ID = 'number'
 
 export interface ResponsesViewState {
   dateRange: DateString[]
-  searchText: string
-  excludedSearchColumnIds: string[]
+  columnFilters: SavedViewColumnFilter[]
   hiddenColumnIds: string[]
   sortColumnId?: string
   sortDirection: SavedViewSortDirection
@@ -32,16 +32,43 @@ export const normaliseSort = (
   sortDirection: direction,
 })
 
+/**
+ * Sets one column's filter, keeping the list in column order with blank texts
+ * dropped, so two states with the same filters compare equal however they were
+ * typed in.
+ */
+export const withColumnFilter = (
+  columnFilters: SavedViewColumnFilter[],
+  columnId: string,
+  text: string,
+  columnOptions: ResponseColumnOption[],
+): SavedViewColumnFilter[] =>
+  normaliseColumnFilters(
+    [
+      ...columnFilters.filter((filter) => filter.columnId !== columnId),
+      { columnId, text },
+    ],
+    columnOptions,
+  )
+
+/** Drops blank filters and ones on unknown columns, in column order. */
+export const normaliseColumnFilters = (
+  columnFilters: SavedViewColumnFilter[],
+  columnOptions: ResponseColumnOption[],
+): SavedViewColumnFilter[] =>
+  columnOptions.flatMap(({ id }) => {
+    const filter = columnFilters.find(({ columnId }) => columnId === id)
+    return filter && filter.text.trim() ? [filter] : []
+  })
+
 export const hasActiveViewState = ({
   dateRange,
-  searchText,
-  excludedSearchColumnIds,
+  columnFilters,
   hiddenColumnIds,
   sortColumnId,
 }: ResponsesViewState): boolean =>
   dateRange.length > 0 ||
-  searchText.trim().length > 0 ||
-  excludedSearchColumnIds.length > 0 ||
+  columnFilters.length > 0 ||
   hiddenColumnIds.length > 0 ||
   !!sortColumnId
 
@@ -56,8 +83,9 @@ export const toSavedViewInput = (
 ): FormSavedViewInput => {
   const allIds = columnOptions.map(({ id }) => id)
   const [startDate, endDate] = state.dateRange
-  const searchColumnIds = allIds.filter(
-    (id) => !state.excludedSearchColumnIds.includes(id),
+  const columnFilters = normaliseColumnFilters(
+    state.columnFilters,
+    columnOptions,
   )
   const columnIds = allIds.filter((id) => !state.hiddenColumnIds.includes(id))
 
@@ -65,8 +93,7 @@ export const toSavedViewInput = (
     name,
     filter: {
       ...(startDate && endDate ? { startDate, endDate } : {}),
-      ...(state.searchText.trim() ? { searchText: state.searchText } : {}),
-      ...(state.excludedSearchColumnIds.length ? { searchColumnIds } : {}),
+      ...(columnFilters.length ? { columnFilters } : {}),
     },
     ...(state.sortColumnId
       ? {
@@ -93,7 +120,6 @@ export const fromSavedView = (
     ids ? ids.filter((id) => allIds.includes(id)) : undefined
 
   const filter = view.filter ?? {}
-  const searchColumnIds = known(filter.searchColumnIds)
   const columnIds = known(view.columnIds)
   const sortColumnId =
     view.sort &&
@@ -107,10 +133,10 @@ export const fromSavedView = (
       filter.startDate && filter.endDate
         ? [filter.startDate, filter.endDate]
         : [],
-    searchText: filter.searchText ?? '',
-    excludedSearchColumnIds: searchColumnIds
-      ? allIds.filter((id) => !searchColumnIds.includes(id))
-      : [],
+    columnFilters: normaliseColumnFilters(
+      filter.columnFilters ?? [],
+      columnOptions,
+    ),
     hiddenColumnIds: columnIds
       ? allIds.filter((id) => !columnIds.includes(id))
       : [],

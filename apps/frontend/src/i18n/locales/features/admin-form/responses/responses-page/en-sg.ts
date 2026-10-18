@@ -76,7 +76,9 @@ export const enSG: ResponsesResponsesPage = {
       searchResponsesPlaceholder: 'Search responses...',
       filterMenu: {
         dateRange: 'Date range',
-        columns: 'Columns',
+        columns: 'Filter by column',
+        filterApplied: 'Filter applied',
+        filterPlaceholder: 'Contains...',
       },
       views: {
         allResponses: 'All responses',
