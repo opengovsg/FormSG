@@ -18,7 +18,9 @@ vi.mock('react-i18next', () => ({
         ? `Step ${values?.stepNumber}`
         : key.endsWith('stepNameLabel')
           ? ` (${values?.name})`
-          : key.split('.').pop(),
+          : key.endsWith('remarks')
+            ? `remarks: ${values?.remarks}`
+            : key.split('.').pop(),
   }),
   Trans: ({
     i18nKey,
@@ -106,5 +108,55 @@ describe('WorkflowActivityLog', () => {
     expect(
       screen.getByText(/^stepNotApproved: Step 2 \| +\(Team lead\)/),
     ).toBeInTheDocument()
+  })
+
+  it('keeps the steps a send back undid, then the send back, in time order', () => {
+    const sentBack: WorkflowEventDto = {
+      type: WorkflowEventType.SentBack,
+      actorEmail: 'admin@agency.gov.sg',
+      stepNumber: 2,
+      fromStepNumber: 3,
+      emails: ['lead@agency.gov.sg'],
+      remarks: 'Fix the <b>dates</b>',
+      undoneSteps: [
+        {
+          stepNumber: 2,
+          submittedAt: '2026-10-08T02:00:00.000Z',
+          isApproval: true,
+          status: WorkflowStatus.APPROVED,
+          nextStepRecipientEmails: ['hr@agency.gov.sg'],
+        },
+      ],
+      created: '2026-10-08T03:00:00.000Z' as DateString,
+    }
+
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [
+            history.submittedSteps[0],
+            {
+              isApproval: true,
+              status: WorkflowStatus.APPROVED,
+              submittedAt: '2026-10-08T04:00:00.000Z',
+              nextStepRecipientEmails: ['hr@agency.gov.sg'],
+            },
+          ],
+          workflowEvents: [sentBack],
+        }}
+      />,
+    )
+
+    const entries = screen
+      .getAllByText(/^(step|sentBack|remarks)/)
+      .map((element) => element.textContent)
+    expect(entries).toEqual([
+      'stepCompletedSentTo: Step 1 |  (Applicant) | lead@agency.gov.sg',
+      'stepApprovedSentTo: Step 2 |  (Team lead) | hr@agency.gov.sg',
+      'sentBackSentTo: admin@agency.gov.sg | 3 | Step 2 |  (Team lead) | lead@agency.gov.sg',
+      'remarks: Fix the <b>dates</b>',
+      'stepApprovedSentTo: Step 2 |  (Team lead) | hr@agency.gov.sg',
+    ])
   })
 })

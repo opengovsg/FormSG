@@ -3,7 +3,11 @@ import { Trans, useTranslation } from 'react-i18next'
 import { Circle, Flex, Stack, Text } from '@chakra-ui/react'
 import { formatInTimeZone } from 'date-fns-tz'
 
-import { WorkflowEventType, WorkflowStatus } from 'formsg-shared/types'
+import {
+  UndoneWorkflowStep,
+  WorkflowEventType,
+  WorkflowStatus,
+} from 'formsg-shared/types'
 
 import type { ResponsesIndividualResponse } from '~/i18n/locales/features/admin-form/responses/individual-response'
 
@@ -37,15 +41,19 @@ const TONE_COLORS: Record<ActivityTone, string> = {
 interface ActivityEntry {
   at: string
   title: ReactNode
+  /** Admin-entered text shown under the title, as plain text. */
+  detail?: string
   tone: ActivityTone
 }
 
 const ActivityLogEntry = ({
   title,
+  detail,
   timestamp,
   tone,
 }: {
   title: ReactNode
+  detail?: string
   timestamp: string
   tone: ActivityTone
 }) => (
@@ -55,6 +63,16 @@ const ActivityLogEntry = ({
       <Text textStyle="body-2" color="secondary.700">
         {title}
       </Text>
+      {detail ? (
+        <Text
+          textStyle="body-2"
+          color="secondary.500"
+          whiteSpace="pre-wrap"
+          wordBreak="break-word"
+        >
+          {detail}
+        </Text>
+      ) : null}
       <Text textStyle="caption-1" color="secondary.400">
         {timestamp}
       </Text>
@@ -95,13 +113,14 @@ export const WorkflowActivityLog = ({
     ),
   })
 
-  const stepEntries = submittedSteps.map((step, index) => {
-    const recipients =
-      'nextStepRecipientEmails' in step
-        ? (step.nextStepRecipientEmails ?? [])
-        : []
-    const sentTo = index < workflow.length - 1 && recipients.length > 0
-    const status = 'status' in step ? step.status : undefined
+  const stepEntry = ({
+    stepNumber,
+    submittedAt,
+    status,
+    nextStepRecipientEmails: recipients = [],
+  }: UndoneWorkflowStep): ActivityEntry => {
+    const isLastStep = stepNumber === workflow.length
+    const sentTo = !isLastStep && recipients.length > 0
     const key: ActivityLogKey =
       status === WorkflowStatus.REJECTED
         ? 'stepNotApproved'
@@ -112,7 +131,6 @@ export const WorkflowActivityLog = ({
           : sentTo
             ? 'stepCompletedSentTo'
             : 'stepCompleted'
-    const isLastStep = index === workflow.length - 1
     const tone: ActivityTone =
       status === WorkflowStatus.REJECTED
         ? 'negative'
@@ -120,15 +138,28 @@ export const WorkflowActivityLog = ({
           ? 'complete'
           : 'step'
     return entry(
-      step.submittedAt,
+      submittedAt,
       key,
       {
-        ...stepValues(index + 1),
+        ...stepValues(stepNumber),
         recipients: formatEmailList(recipients),
       },
       tone,
     )
-  })
+  }
+
+  const stepEntries = submittedSteps.map((step, index) =>
+    stepEntry({
+      stepNumber: index + 1,
+      submittedAt: step.submittedAt,
+      isApproval: step.isApproval,
+      status: 'status' in step ? step.status : undefined,
+      nextStepRecipientEmails:
+        'nextStepRecipientEmails' in step
+          ? step.nextStepRecipientEmails
+          : undefined,
+    }),
+  )
 
   const eventEntries = events.flatMap((event): ActivityEntry[] => {
     switch (event.type) {
@@ -166,10 +197,28 @@ export const WorkflowActivityLog = ({
             'negative',
           ),
         ]
-      // TODO: list send backs and the steps they undid with the drawer's Send
-      // back action, which is the only way to make one.
+      // The steps a send back undid are no longer in submittedSteps, so they
+      // are listed from the event to keep the history whole.
       case WorkflowEventType.SentBack:
-        return []
+        return [
+          ...(event.undoneSteps ?? []).map(stepEntry),
+          {
+            ...entry(
+              event.created,
+              event.emails.length > 0 ? 'sentBackSentTo' : 'sentBack',
+              {
+                actor: event.actorEmail,
+                fromStepNumber: String(event.fromStepNumber ?? ''),
+                ...stepValues(event.stepNumber),
+                recipients: formatEmailList(event.emails),
+              },
+              'reminder',
+            ),
+            detail: event.remarks
+              ? t(`${I18N_PREFIX}.remarks`, { remarks: event.remarks })
+              : undefined,
+          },
+        ]
     }
   })
 
@@ -183,10 +232,11 @@ export const WorkflowActivityLog = ({
         {t(`${I18N_PREFIX}.title`)}
       </Text>
       <Stack spacing="1rem">
-        {entries.map(({ at, title, tone }, index) => (
+        {entries.map(({ at, title, detail, tone }, index) => (
           <ActivityLogEntry
             key={`${at}-${index}`}
             title={title}
+            detail={detail}
             timestamp={formatActivityTimestamp(at)}
             tone={tone}
           />

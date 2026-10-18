@@ -5,7 +5,11 @@ import { ApiError } from '~typings/core'
 
 import { useToast } from '~hooks/useToast'
 
-import { addAssignees, stopWorkflow } from '../AdminSubmissionsService'
+import {
+  addAssignees,
+  sendBackWorkflow,
+  stopWorkflow,
+} from '../AdminSubmissionsService'
 import { adminFormResponsesKeys } from '../queries'
 
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
@@ -55,6 +59,41 @@ export const useAddAssigneesMutation = (formId: string) => {
           description: t(
             `${WORKFLOW_ACTIONS_I18N}.addAssigneeModal.toastSuccess`,
             { count: emails.length },
+          ),
+        })
+      },
+      onError: (error: ApiError) => {
+        toast({ status: 'danger', description: error.message })
+      },
+      onSettled: () => {
+        void queryClient.invalidateQueries(adminFormResponsesKeys.id(formId))
+      },
+    },
+  )
+}
+
+export const useSendBackWorkflowMutation = (formId: string) => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const toast = useToast({ isClosable: true })
+
+  return useMutation(
+    (params: {
+      submissionId: string
+      targetStepNumber: number
+      expectedStepNumber: number
+      submissionSecretKey: string
+      remarks?: string
+    }) => sendBackWorkflow({ formId, ...params }),
+    {
+      onSuccess: ({ stepNumber }) => {
+        toast({
+          status: 'success',
+          description: t(
+            `${WORKFLOW_ACTIONS_I18N}.sendBackModal.toastSuccess`,
+            {
+              stepNumber,
+            },
           ),
         })
       },
