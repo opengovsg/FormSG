@@ -40,13 +40,15 @@ const event = (
 const stepSubmitted = (
   stepNumber: number,
   emails: string[],
+  outcome: StepOutcome = WorkflowStatus.COMPLETED,
 ): WorkflowEventDto => ({
   type: WorkflowEventType.StepSubmitted,
-  outcome: WorkflowStatus.COMPLETED,
+  outcome,
   stepNumber,
   emails,
   created: '2026-10-08T01:00:00.000Z' as DateString,
 })
+type StepOutcome = Exclude<WorkflowStatus, WorkflowStatus.PENDING>
 const at = '2026-10-08T01:00:00.000Z'
 const history = {
   submittedSteps: [
@@ -140,7 +142,9 @@ describe('WorkflowActivityLog', () => {
       <WorkflowActivityLog
         history={{
           ...history,
-          workflowEvents: [stepSubmitted(1, ['lead@agency.gov.sg'])],
+          workflowEvents: [
+            stepSubmitted(1, ['lead@agency.gov.sg'], WorkflowStatus.APPROVED),
+          ],
           submittedSteps: [
             {
               isApproval: true,
@@ -260,5 +264,75 @@ describe('WorkflowActivityLog', () => {
       'Step 1 submitted',
       'Step 2 · Team lead approved',
     ])
+  })
+  it('replays the steps a send back undid from their events, in time order', () => {
+    const stepEvent = (
+      stepNumber: number,
+      created: string,
+      emails: string[],
+      outcome: StepOutcome = WorkflowStatus.COMPLETED,
+    ): WorkflowEventDto => ({
+      type: WorkflowEventType.StepSubmitted,
+      outcome,
+      stepNumber,
+      emails,
+      created: created as DateString,
+    })
+    const sentBack: WorkflowEventDto = {
+      type: WorkflowEventType.SentBack,
+      actorEmail: 'admin@agency.gov.sg',
+      stepNumber: 2,
+      fromStepNumber: 3,
+      emails: ['lead@agency.gov.sg'],
+      remarks: 'Fix the <b>dates</b>',
+      created: '2026-10-08T03:00:00.000Z' as DateString,
+    }
+    render(
+      <WorkflowActivityLog
+        history={{
+          ...history,
+          submittedSteps: [
+            history.submittedSteps[0],
+            {
+              isApproval: true,
+              status: WorkflowStatus.APPROVED,
+              submittedAt: '2026-10-08T04:00:00.000Z',
+              nextStepRecipientEmails: ['hr@agency.gov.sg'],
+            },
+          ],
+          workflowEvents: [
+            stepEvent(1, at, ['lead@agency.gov.sg']),
+            stepEvent(
+              2,
+              '2026-10-08T02:00:00.000Z',
+              ['hr@agency.gov.sg'],
+              WorkflowStatus.APPROVED,
+            ),
+            sentBack,
+            stepEvent(
+              2,
+              '2026-10-08T04:00:00.000Z',
+              ['hr@agency.gov.sg'],
+              WorkflowStatus.APPROVED,
+            ),
+          ],
+        }}
+      />,
+    )
+    expect(titles()).toEqual([
+      'Step 1 submitted',
+      'Step 2 · Team lead sent to lead@agency.gov.sg',
+      'Step 2 · Team lead approved',
+      'Step 3 sent to hr@agency.gov.sg',
+      'Sent back from Step 3 to Step 2 · Team lead by admin@agency.gov.sg',
+      'Step 2 · Team lead sent to lead@agency.gov.sg',
+      'Step 2 · Team lead approved',
+      'Step 3 sent to hr@agency.gov.sg',
+    ])
+    const sendBackItem = screen.getAllByRole('listitem')[4]
+    expect(within(sendBackItem).getByText('Remarks')).toBeInTheDocument()
+    expect(
+      within(sendBackItem).getByText('Fix the <b>dates</b>'),
+    ).toBeInTheDocument()
   })
 })

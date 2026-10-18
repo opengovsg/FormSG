@@ -38,6 +38,8 @@ export const enSG: ResponsesIndividualResponse = {
       reminderSent: 'Reminder for {step}{stepName} sent to {recipients}',
       stopped: 'Workflow stopped{actor}',
       notificationRecipients: 'Notification recipients',
+      sentBack: 'Sent back from Step {fromStepNumber} to {step}{stepName}{actor}',
+      remarks: 'Remarks',
     },
     reassignButton: 'Reassign',
     addAssigneeModal: {
@@ -60,6 +62,18 @@ export const enSG: ResponsesIndividualResponse = {
       label: 'Email addresses of who to notify',
       confirm: 'Stop workflow',
       toastSuccess: 'The workflow was successfully stopped.',
+    },
+    sendBackButton: 'Send back',
+    sendBackModal: {
+      title: 'Send back to an earlier step',
+      description:
+        "The selected step's people will get a new link to amend their answers. Answers so far are kept, and the steps after it will need to be completed again.",
+      stepLabel: 'Send back to',
+      remarksLabel: 'Remarks',
+      remarksDescription: "Added to the email sent to the step's people.",
+      remarksTooLong: 'Remarks must be {max} characters or fewer',
+      confirm: 'Send back',
+      toastSuccess: 'The response was sent back to Step {stepNumber}.',
     },
   },
   paymentSection: {

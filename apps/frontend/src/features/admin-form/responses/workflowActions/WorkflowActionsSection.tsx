@@ -1,6 +1,6 @@
 import { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiStopCircle, BiUser } from 'react-icons/bi'
+import { BiStopCircle, BiUndo, BiUser } from 'react-icons/bi'
 import { useParams } from 'react-router-dom'
 import { Flex, useDisclosure } from '@chakra-ui/react'
 
@@ -16,8 +16,13 @@ import { ResponseOverview } from '../IndividualResponsePage/ResponseOverview'
 import { AddAssigneeModal } from './AddAssigneeModal'
 import { getStepRecipients, WorkflowHistory } from './getStopNotifiedEmails'
 import { WORKFLOW_ACTIONS_I18N } from './i18n'
-import { useAddAssigneesMutation, useStopWorkflowMutation } from './mutations'
+import {
+  useAddAssigneesMutation,
+  useSendBackWorkflowMutation,
+  useStopWorkflowMutation,
+} from './mutations'
 import { RemindButton } from './RemindButton'
+import { SendBackModal } from './SendBackModal'
 import { StopWorkflowModal } from './StopWorkflowModal'
 import { useWorkflowActionsGate } from './useWorkflowActionsGate'
 
@@ -47,8 +52,10 @@ export const WorkflowActionsSection = ({
   const { hasEditAccess } = useAdminFormCollaborators(formId)
   const stopModal = useDisclosure()
   const addAssigneeModal = useDisclosure()
+  const sendBackModal = useDisclosure()
   const stopMutation = useStopWorkflowMutation(formId)
   const addAssigneesMutation = useAddAssigneesMutation(formId)
+  const sendBackMutation = useSendBackWorkflowMutation(formId)
   const pendingStepNumber = history.submittedSteps.length + 1
 
   if (mrf?.stoppedAt || mrf?.workflowStatus !== WorkflowStatus.PENDING) {
@@ -61,6 +68,9 @@ export const WorkflowActionsSection = ({
   })
   const canRemind = isDelightfulDashboard && pendingStepAssignees.length > 0
   const canActOnWorkflow = isWorkflowActionsOn && hasEditAccess
+  // Step 1 is never a send back target, so there is a step to go back to only
+  // from step 3 on.
+  const canSendBack = canActOnWorkflow && pendingStepNumber >= 3
 
   if (!canRemind && !canActOnWorkflow)
     return overview ? <ResponseOverview>{overview}</ResponseOverview> : null
@@ -76,6 +86,26 @@ export const WorkflowActionsSection = ({
         expectedStepNumber: pendingStepNumber,
       },
       { onSuccess: addAssigneeModal.onClose },
+    )
+  }
+
+  const handleSendBack = ({
+    targetStepNumber,
+    remarks,
+  }: {
+    targetStepNumber: number
+    remarks: string
+  }) => {
+    if (!submissionSecretKey) return
+    sendBackMutation.mutate(
+      {
+        submissionId,
+        targetStepNumber,
+        expectedStepNumber: pendingStepNumber,
+        submissionSecretKey,
+        remarks,
+      },
+      { onSuccess: sendBackModal.onClose },
     )
   }
 
@@ -108,6 +138,18 @@ export const WorkflowActionsSection = ({
           >
             {t(`${WORKFLOW_ACTIONS_I18N}.reassignButton`)}
           </Button>
+          {canSendBack ? (
+            <Button
+              size="sm"
+              variant="outline"
+              colorScheme="secondary"
+              leftIcon={<BiUndo fontSize="1.25rem" />}
+              isDisabled={isLoading || !submissionSecretKey}
+              onClick={sendBackModal.onOpen}
+            >
+              {t(`${WORKFLOW_ACTIONS_I18N}.sendBackButton`)}
+            </Button>
+          ) : null}
           <Button
             size="sm"
             variant="outline"
@@ -136,6 +178,13 @@ export const WorkflowActionsSection = ({
         onConfirm={handleAddAssignees}
         isLoading={addAssigneesMutation.isLoading}
         currentAssignees={pendingStepAssignees}
+      />
+      <SendBackModal
+        isOpen={sendBackModal.isOpen}
+        onClose={sendBackModal.onClose}
+        onConfirm={handleSendBack}
+        isLoading={sendBackMutation.isLoading}
+        history={history}
       />
       <StopWorkflowModal
         isOpen={stopModal.isOpen}

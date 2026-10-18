@@ -6,6 +6,7 @@ import {
   BiFile,
   BiSend,
   BiStopCircle,
+  BiUndo,
   BiUserPlus,
   BiX,
 } from 'react-icons/bi'
@@ -29,7 +30,14 @@ interface ActivityEntry {
   at: string
   title: string
   icon: IconType
-  notificationRecipients?: string[]
+  detail?: { heading: string; body: string }
+}
+
+interface StepRecord {
+  stepNumber: number
+  at: string
+  outcome?: WorkflowStatus
+  recipients: string[]
 }
 
 export const WorkflowActivityLog = ({
@@ -59,50 +67,81 @@ export const WorkflowActivityLog = ({
     icon,
   })
 
-  // Sort source records before expanding them, so equal-time action/sending
-  // pairs stay adjacent and preserve the existing submitted-steps-first order.
-  const sentToByStep = new Map(
-    events
-      .filter((event) => event.type === WorkflowEventType.StepSubmitted)
-      .map((event): [number, string[]] => [event.stepNumber, event.emails]),
-  )
-  const stepGroups = submittedSteps.map((step, index) => {
-    const id = `step-${index}`
-    const recipients = sentToByStep.get(index + 1) ?? []
-    const status = 'status' in step ? step.status : undefined
-    const rejected = status === WorkflowStatus.REJECTED
-    const approved = status === WorkflowStatus.APPROVED
+  const stepGroup = (
+    { stepNumber, at, outcome, recipients }: StepRecord,
+    id: string,
+  ) => {
+    const rejected = outcome === WorkflowStatus.REJECTED
+    const approved = outcome === WorkflowStatus.APPROVED
     const entries = [
       entry(
         id,
-        step.submittedAt,
+        at,
         rejected
           ? 'stepRejected'
           : approved
             ? 'stepApproved'
-            : index === 0
+            : stepNumber === 1
               ? 'submitted'
               : 'stepSubmitted',
-        stepValues(index + 1),
+        stepValues(stepNumber),
         rejected ? BiX : approved ? BiCheck : BiFile,
       ),
     ]
-    if (!rejected && index < workflow.length - 1 && recipients.length) {
+    if (!rejected && stepNumber < workflow.length && recipients.length) {
       entries.push(
         entry(
           `${id}-sent`,
-          step.submittedAt,
+          at,
           'stepSent',
           {
-            ...stepValues(index + 2),
+            ...stepValues(stepNumber + 1),
             recipients: formatEmailList(recipients),
           },
           BiSend,
         ),
       )
     }
-    return { at: step.submittedAt, entries }
-  })
+    return { at, entries }
+  }
+
+  const stepSubmittedEvents = events.filter(
+    (event) => event.type === WorkflowEventType.StepSubmitted,
+  )
+  const isRecordedAsEvent = (stepNumber: number, submittedAt: string) =>
+    stepSubmittedEvents.some(
+      (event) =>
+        event.stepNumber === stepNumber &&
+        Date.parse(event.created) === Date.parse(submittedAt),
+    )
+  const stepGroups = [
+    ...stepSubmittedEvents.map((event, index) =>
+      stepGroup(
+        {
+          stepNumber: event.stepNumber,
+          at: event.created,
+          outcome: event.outcome,
+          recipients: event.emails,
+        },
+        `step-event-${index}`,
+      ),
+    ),
+    ...submittedSteps.flatMap((step, index) =>
+      isRecordedAsEvent(index + 1, step.submittedAt)
+        ? []
+        : [
+            stepGroup(
+              {
+                stepNumber: index + 1,
+                at: step.submittedAt,
+                outcome: 'status' in step ? step.status : undefined,
+                recipients: [],
+              },
+              `step-${index}`,
+            ),
+          ],
+    ),
+  ]
   const eventGroups = events
     .filter(isAdminWorkflowEvent)
     .map((event, index) => {
@@ -156,20 +195,54 @@ export const WorkflowActivityLog = ({
           entries = [
             {
               ...entry(id, event.created, 'stopped', { actor }, BiStopCircle),
-              notificationRecipients: event.emails,
+              detail: event.emails.length
+                ? {
+                    heading: t(`${I18N_PREFIX}.notificationRecipients`),
+                    body: formatEmailList(event.emails),
+                  }
+                : undefined,
             },
           ]
           break
-        // TODO: list send backs with the drawer's Send back action, which is
-        // the only way to make one.
         case WorkflowEventType.SentBack:
-          entries = []
+          entries = [
+            {
+              ...entry(
+                id,
+                event.created,
+                'sentBack',
+                {
+                  fromStepNumber: String(event.fromStepNumber ?? ''),
+                  ...stepValues(event.stepNumber),
+                  actor,
+                },
+                BiUndo,
+              ),
+              detail: event.remarks
+                ? { heading: t(`${I18N_PREFIX}.remarks`), body: event.remarks }
+                : undefined,
+            },
+          ]
+          if (event.emails.length) {
+            entries.push(
+              entry(
+                `${id}-sent`,
+                event.created,
+                'stepSent',
+                {
+                  ...stepValues(event.stepNumber),
+                  recipients: formatEmailList(event.emails),
+                },
+                BiSend,
+              ),
+            )
+          }
           break
       }
       return { at: event.created, entries }
     })
   const entries = [...stepGroups, ...eventGroups]
-    .sort((a, b) => a.at.localeCompare(b.at))
+    .sort((a, b) => Date.parse(a.at) - Date.parse(b.at))
     .flatMap((group) => group.entries)
 
   return (
@@ -182,81 +255,83 @@ export const WorkflowActivityLog = ({
       aria-label={t(`${I18N_PREFIX}.title`)}
       data-dd-privacy="mask"
     >
-      {entries.map(
-        ({ id, at, title, icon: EventIcon, notificationRecipients }, index) => (
-          <Box
-            as="li"
-            key={id}
-            position="relative"
-            pb={index === entries.length - 1 ? 0 : '2rem'}
-          >
-            {index !== entries.length - 1 && (
-              <Box
-                position="absolute"
-                left="15px"
-                top="1rem"
-                bottom="-1rem"
-                w="2px"
-                bg="neutral.300"
-                aria-hidden
-              />
-            )}
+      {entries.map(({ id, at, title, icon: EventIcon, detail }, index) => (
+        <Box
+          as="li"
+          key={id}
+          position="relative"
+          pb={index === entries.length - 1 ? 0 : '2rem'}
+        >
+          {index !== entries.length - 1 && (
             <Box
               position="absolute"
-              top={0}
-              left={0}
-              boxSize="2rem"
-              bg="secondary.100"
-              color="secondary.500"
-              borderRadius="full"
-              borderWidth="3px"
-              borderColor="white"
-              display="flex"
-              alignItems="center"
-              justifyContent="center"
+              left="15px"
+              top="1rem"
+              bottom="-1rem"
+              w="2px"
+              bg="neutral.300"
               aria-hidden
-            >
-              <EventIcon fontSize="1.25rem" />
+            />
+          )}
+          <Box
+            position="absolute"
+            top={0}
+            left={0}
+            boxSize="2rem"
+            bg="secondary.100"
+            color="secondary.500"
+            borderRadius="full"
+            borderWidth="3px"
+            borderColor="white"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            aria-hidden
+          >
+            <EventIcon fontSize="1.25rem" />
+          </Box>
+          <Stack ml="3rem" spacing="0.75rem" minW={0}>
+            <Box>
+              <Text
+                as="h3"
+                textStyle="subhead-1"
+                pt="0.125rem"
+                overflowWrap="anywhere"
+              >
+                {title}
+              </Text>
+              <Text
+                as="time"
+                dateTime={at}
+                display="block"
+                textStyle="body-2"
+                color="secondary.400"
+                mt="0.25rem"
+              >
+                {formatInTimeZone(
+                  new Date(at),
+                  'Asia/Singapore',
+                  'EEE, d MMM yyyy, hh:mm:ss a',
+                )}
+              </Text>
             </Box>
-            <Stack ml="3rem" spacing="0.75rem" minW={0}>
-              <Box>
+            {detail && (
+              <Box bg="secondary.100" p="1rem" borderRadius="8px">
+                <Text textStyle="subhead-2" mb="0.25rem">
+                  {detail.heading}
+                </Text>
                 <Text
-                  as="h3"
-                  textStyle="subhead-1"
-                  pt="0.125rem"
+                  textStyle="body-2"
+                  whiteSpace="pre-wrap"
                   overflowWrap="anywhere"
                 >
-                  {title}
-                </Text>
-                <Text
-                  as="time"
-                  dateTime={at}
-                  display="block"
-                  textStyle="body-2"
-                  color="secondary.400"
-                  mt="0.25rem"
-                >
-                  {formatInTimeZone(
-                    new Date(at),
-                    'Asia/Singapore',
-                    'EEE, d MMM yyyy, hh:mm:ss a',
-                  )}
+                  {detail.body}
                 </Text>
               </Box>
-              {!!notificationRecipients?.length && (
-                <Box bg="secondary.100" p="1rem" borderRadius="8px">
-                  <Text textStyle="subhead-2" mb="0.25rem">
-                    {t(`${I18N_PREFIX}.notificationRecipients`)}
-                  </Text>
-                  <Text textStyle="body-2" overflowWrap="anywhere">
-                    {formatEmailList(notificationRecipients)}
-                  </Text>
-                </Box>
-              )}
-            </Stack>
-          </Box>
-        ),
-      )}
+            )}
+          </Stack>
+        </Box>
+      ))}
     </Box>
   )
 }

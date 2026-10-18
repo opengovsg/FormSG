@@ -12,6 +12,7 @@ let mockHasEditAccess = true
 let mockIsV2 = true
 const mockMutate = vi.fn()
 const mockAddAssignees = vi.fn()
+const mockSendBack = vi.fn()
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (k: string) => k }),
@@ -39,6 +40,10 @@ vi.mock('./mutations', () => ({
     mutate: mockAddAssignees,
     isLoading: false,
   }),
+  useSendBackWorkflowMutation: () => ({
+    mutate: mockSendBack,
+    isLoading: false,
+  }),
 }))
 
 vi.mock('./RemindButton', () => ({
@@ -62,6 +67,25 @@ vi.mock('./AddAssigneeModal', () => ({
     ) : null,
 }))
 
+vi.mock('./SendBackModal', () => ({
+  SendBackModal: ({
+    isOpen,
+    onConfirm,
+  }: {
+    isOpen: boolean
+    onConfirm: (params: { targetStepNumber: number; remarks: string }) => void
+  }) =>
+    isOpen ? (
+      <button
+        onClick={() =>
+          onConfirm({ targetStepNumber: 2, remarks: 'Fix the dates' })
+        }
+      >
+        confirm send back
+      </button>
+    ) : null,
+}))
+
 vi.mock('./StopWorkflowModal', () => ({
   StopWorkflowModal: ({
     isOpen,
@@ -81,6 +105,8 @@ const STOP =
   'features.adminForm.responses.individualResponse.workflowActions.stopButton'
 const REASSIGN =
   'features.adminForm.responses.individualResponse.workflowActions.reassignButton'
+const SEND_BACK =
+  'features.adminForm.responses.individualResponse.workflowActions.sendBackButton'
 
 const pendingMrf = (
   overrides: Partial<NonNullable<SubmissionMrfMetadata>> = {},
@@ -97,6 +123,7 @@ const renderSection = (
   mrf: SubmissionMrfMetadata = pendingMrf(),
   recipients: string[] = ['lead@agency.gov.sg'],
   withOverview = false,
+  submittedStepCount = 1,
 ) =>
   render(
     <WorkflowActionsSection
@@ -104,14 +131,17 @@ const renderSection = (
       submissionId="mock-submission-id"
       mrf={mrf}
       history={{
-        submittedSteps: [
-          {
-            isApproval: false,
-            submittedAt: '2026-10-08T01:00:00.000Z',
-            nextStepRecipientEmails: recipients,
-          },
+        submittedSteps: Array.from({ length: submittedStepCount }, () => ({
+          isApproval: false,
+          submittedAt: '2026-10-08T01:00:00.000Z',
+          nextStepRecipientEmails: recipients,
+        })),
+        workflow: [
+          { _id: 'step-1' },
+          { _id: 'step-2' },
+          { _id: 'step-3' },
+          { _id: 'step-4' },
         ],
-        workflow: [{ _id: 'step-1' }, { _id: 'step-2' }, { _id: 'step-3' }],
       }}
       submissionSecretKey="mock-secret-key"
       stepToken="mock-step-token"
@@ -126,6 +156,7 @@ describe('WorkflowActionsSection', () => {
     mockIsV2 = true
     mockMutate.mockReset()
     mockAddAssignees.mockReset()
+    mockSendBack.mockReset()
   })
 
   it('keeps the overview alongside eligible actions', () => {
@@ -256,6 +287,73 @@ describe('WorkflowActionsSection', () => {
     renderSection(pendingMrf({ stoppedAt: '2026-10-07T08:00:00.000Z' }))
     expect(
       screen.queryByRole('button', { name: /^remind/ }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('sends back from step 3 on with the step link credentials', async () => {
+    renderSection(pendingMrf(), undefined, false, 2)
+
+    await userEvent.click(screen.getByRole('button', { name: SEND_BACK }))
+    await userEvent.click(
+      screen.getByRole('button', { name: 'confirm send back' }),
+    )
+
+    expect(mockSendBack).toHaveBeenCalledWith(
+      {
+        submissionId: 'mock-submission-id',
+        targetStepNumber: 2,
+        expectedStepNumber: 3,
+        submissionSecretKey: 'mock-secret-key',
+        remarks: 'Fix the dates',
+      },
+      expect.anything(),
+    )
+  })
+
+  it('hides Send back while step 2 is pending', () => {
+    renderSection()
+    expect(
+      screen.queryByRole('button', { name: SEND_BACK }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('hides Send back behind the workflow actions gate', () => {
+    mockIsGateOn = false
+    renderSection(pendingMrf(), undefined, false, 2)
+    expect(
+      screen.queryByRole('button', { name: SEND_BACK }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('hides Send back from read-only collaborators', () => {
+    mockHasEditAccess = false
+    renderSection(pendingMrf(), undefined, false, 2)
+    expect(
+      screen.queryByRole('button', { name: SEND_BACK }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('hides Send back once the workflow is stopped', () => {
+    renderSection(
+      pendingMrf({ stoppedAt: '2026-10-07T08:00:00.000Z' }),
+      undefined,
+      false,
+      2,
+    )
+    expect(
+      screen.queryByRole('button', { name: SEND_BACK }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('hides Send back once the workflow is no longer pending', () => {
+    renderSection(
+      pendingMrf({ workflowStatus: WorkflowStatus.APPROVED }),
+      undefined,
+      false,
+      2,
+    )
+    expect(
+      screen.queryByRole('button', { name: SEND_BACK }),
     ).not.toBeInTheDocument()
   })
 })
