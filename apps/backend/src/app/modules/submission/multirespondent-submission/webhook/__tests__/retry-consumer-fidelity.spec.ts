@@ -65,7 +65,7 @@ jest.mock('src/app/config/logger', () => {
 })
 const mockLogger = (
   jest.requireMock('src/app/config/logger') as {
-    __mockLogger: { error: jest.Mock }
+    __mockLogger: { warn: jest.Mock; error: jest.Mock }
   }
 ).__mockLogger
 
@@ -322,7 +322,11 @@ describe('[GATE] webhook retry consumer fidelity', () => {
           error: expect.any(SnapshotDataIntegrityError),
           meta: expect.objectContaining({
             webhookMessage: expect.objectContaining({
-              snapshotRef: { submissionIndex: 0, contentFormat: 'v1' },
+              snapshotRef: {
+                submissionIndex: 0,
+                contentFormat: 'v1',
+                snapshotToken: expect.any(String),
+              },
             }),
           }),
         }),
@@ -459,5 +463,44 @@ describe('[GATE] webhook retry consumer fidelity', () => {
         error: expect.any(WebhookQueueMessageParsingError),
       }),
     )
+  })
+
+  describe('after a send back', () => {
+    it.each([
+      [
+        'submitted again',
+        { $set: { 'submittedSteps.0.snapshotTokens.v1': 'resubmitted-token' } },
+      ],
+      ['not submitted again yet', { $set: { submittedSteps: [] } }],
+    ])(
+      'drops a retry queued for the replaced step submission when the step was %s',
+      async (_case, update) => {
+        const { submission } = await submit()
+        await submission.updateOne(update)
+
+        await consume()
+
+        expect(posted).toHaveLength(1)
+        expect(queued).toHaveLength(1)
+        expect(mockLogger.warn).toHaveBeenCalledWith(
+          expect.objectContaining({
+            message:
+              'Webhook retry dropped as its step submission was superseded by a send back',
+          }),
+        )
+      },
+    )
+
+    it('replays a retry queued before messages carried the snapshot token', async () => {
+      await submit()
+      const initial = posted[0]
+      const message = JSON.parse(queued[0])
+      expect(message.snapshotRef.snapshotToken).toEqual(expect.any(String))
+      delete message.snapshotRef.snapshotToken
+
+      await consume(JSON.stringify(message))
+
+      expect(posted).toEqual([initial, initial])
+    })
   })
 })
