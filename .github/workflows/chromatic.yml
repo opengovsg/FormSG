@@ -142,8 +142,10 @@ jobs:
           # TurboSnap's untraced globs. Repo-root-relative on purpose: the CLI
           # resolves configFile from the action's cwd, not from workingDir.
           # `untraced` is rejected without onlyChanged, so a full build (build
-          # tooling changed) uses a config without it.
-          configFile: ${{ steps.tooling.outputs.changed == 'true' && 'apps/frontend/chromatic.full.config.json' || 'apps/frontend/chromatic.config.json' }}
+          # tooling changed) uses a config without it. Neither is named
+          # chromatic.config.json: the CLI also loads that from the working
+          # directory by default and would merge `untraced` back in.
+          configFile: ${{ steps.tooling.outputs.changed == 'true' && 'apps/frontend/chromatic.full.config.json' || 'apps/frontend/chromatic.turbosnap.config.json' }}
 
   chromatic-deployment-emailpreview:
     needs: changes
