@@ -26,6 +26,12 @@ Default.args = {
   name: 'Default',
 }
 
+export const Indeterminate = Template.bind({})
+Indeterminate.args = {
+  name: 'Partially selected',
+  isIndeterminate: true,
+}
+
 export const Mobile = Template.bind({})
 Mobile.args = {
   name: 'Mobile',
@@ -56,6 +62,12 @@ const AllStates: StoryFn<CheckboxProps> = (args) => {
         Really long unselected option that overflows and wraps to the next line
         because there is too much text. In fact, there's an entire paragraph so
         we can see what it looks like when there is too much text in the option.
+      </Checkbox>
+      <Checkbox {...args} isIndeterminate>
+        Partially selected
+      </Checkbox>
+      <Checkbox {...args} isIndeterminate isDisabled>
+        Partially selected disabled
       </Checkbox>
       <Checkbox {...args} isChecked>
         Selected

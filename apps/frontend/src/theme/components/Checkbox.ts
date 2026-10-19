@@ -44,6 +44,10 @@ const baseStyle: PartsStyleFunction<typeof parts> = ({
         borderColor: getColor(theme, `neutral.500`),
         bg: getColor(theme, `neutral.500`),
       },
+      _indeterminate: {
+        borderColor: getColor(theme, `neutral.500`),
+        bg: getColor(theme, `neutral.500`),
+      },
     },
   },
   // Container for the checkbox as well as label
