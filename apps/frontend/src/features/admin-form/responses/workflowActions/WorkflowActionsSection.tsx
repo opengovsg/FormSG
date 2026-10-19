@@ -76,8 +76,13 @@ export const WorkflowActionsSection = ({
   const canRemind = isDelightfulDashboard && pendingStepAssignees.length > 0
   const canActOnWorkflow = isWorkflowActionsOn && hasEditAccess
   // Step 1 is never a send back target, so there is a step to go back to only
-  // from step 3 on.
-  const canSendBack = isSendBackOn && hasEditAccess && pendingStepNumber >= 3
+  // from step 3 on. A workflow under way before submittedSteps was recorded
+  // records fewer steps than it has done, and the backend refuses those.
+  const canSendBack =
+    isSendBackOn &&
+    hasEditAccess &&
+    pendingStepNumber >= 3 &&
+    mrf.workflowCurrentStepNumber === history.submittedSteps.length
 
   if (!canRemind && !canActOnWorkflow && !canSendBack) return null
 
