@@ -1,5 +1,6 @@
 import { celebrate, Joi, Segments } from 'celebrate'
 import { AuthedSessionData } from 'express-session'
+import { featureFlags } from 'formsg-shared/constants'
 import { getMultirespondentSubmissionEditPath } from 'formsg-shared/utils/urls'
 
 import { Environment, IPopulatedMultirespondentForm } from '../../../../types'
@@ -61,6 +62,7 @@ const sendBackPendingMrfSubmission: ControllerHandler<
     userId: authedUserId,
     formId,
     growthbook: req.growthbook,
+    flag: featureFlags.workflowActionsSendBack,
   })
     .andThen(({ form, user }) =>
       sendBackMultirespondentSubmission({

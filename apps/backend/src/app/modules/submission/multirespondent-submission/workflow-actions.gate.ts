@@ -13,10 +13,13 @@ export const checkWorkflowActionAllowed = ({
   userId,
   formId,
   growthbook,
+  flag = featureFlags.workflowActions,
 }: {
   userId: string
   formId: string
   growthbook?: GrowthBook
+  /** The flag the action rolls out behind. Send back has its own. */
+  flag?: string
 }) =>
   UserService.findUserById(userId)
     .andThen((user) =>
@@ -30,7 +33,7 @@ export const checkWorkflowActionAllowed = ({
       if (form.responseMode !== FormResponseMode.Multirespondent) {
         return errAsync(new FormInvalidResponseModeError())
       }
-      if (!growthbook?.isOn(featureFlags.workflowActions)) {
+      if (!growthbook?.isOn(flag)) {
         return errAsync(new MrfWorkflowActionsUnavailableError())
       }
       return okAsync({ form, user })
