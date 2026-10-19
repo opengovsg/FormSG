@@ -86,6 +86,13 @@ export const isLoginIdentityField = (field: LoginIdentityCandidate): boolean =>
 export const isMyInfoDataField = (field: LoginIdentityCandidate): boolean =>
   !!field.myInfo?.attr && !isLoginIdentityField(field)
 
+/**
+ * Whether the respondent's login fills the field: a MyInfo data field or a
+ * login identity field. These share one limit per form.
+ */
+export const isLoginField = (field: LoginIdentityCandidate): boolean =>
+  isMyInfoDataField(field) || isLoginIdentityField(field)
+
 /** Fields filled only by the first respondent. */
 export const isStepOneOnlyField = (field: LoginIdentityCandidate): boolean =>
   !!field.myInfo?.attr || isLoginIdentityField(field)

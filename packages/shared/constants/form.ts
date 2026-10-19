@@ -134,3 +134,6 @@ export const TEST_EMAIL_MODE_DEPRECATION_FEEDBACK_FORM_ID =
 export const RESPONDENT_EMAIL_FIELD_ID = 'respondent_email_field'
 
 export const MAX_SAVED_VIEWS = 5
+
+// Shared by MyInfo data fields and login identity fields, across all logins.
+export const MAX_LOGIN_FIELDS = 50

@@ -153,4 +153,77 @@ describe('Form login identity fields', () => {
 
     await expect(form.save()).resolves.toBeDefined()
   })
+
+  describe('login field limit', () => {
+    const myInfoDataFields = (count: number) =>
+      Array.from({ length: count }, () => ({
+        fieldType: BasicField.ShortText,
+        title: 'Name',
+        myInfo: { attr: MyInfoAttribute.Name },
+      }))
+
+    it('accepts 50 login fields on a MyInfo form', async () => {
+      await expect(
+        EncryptedForm.create(
+          storageForm({
+            authType: FormAuthType.MyInfo,
+            form_fields: [nricIdentityField, ...myInfoDataFields(49)],
+          }),
+        ),
+      ).resolves.toBeDefined()
+    })
+
+    it('counts identity fields towards the limit', async () => {
+      await expect(
+        EncryptedForm.create(
+          storageForm({
+            authType: FormAuthType.MyInfo,
+            form_fields: [nricIdentityField, ...myInfoDataFields(50)],
+          }),
+        ),
+      ).rejects.toThrow(
+        'Forms can have at most 50 Myinfo, NRIC/FIN and UEN fields.',
+      )
+    })
+
+    it('applies the same limit to Corppass identity fields', async () => {
+      await expect(
+        EncryptedForm.create(
+          storageForm({
+            authType: FormAuthType.CP,
+            form_fields: Array.from({ length: 51 }, () => uenIdentityField),
+          }),
+        ),
+      ).rejects.toThrow(
+        'Forms can have at most 50 Myinfo, NRIC/FIN and UEN fields.',
+      )
+    })
+
+    it('does not count NRIC and UEN fields the respondent types', async () => {
+      await expect(
+        EncryptedForm.create(
+          storageForm({
+            authType: FormAuthType.MyInfo,
+            form_fields: [
+              nricIdentityField,
+              ...myInfoDataFields(49),
+              { fieldType: BasicField.Nric, title: 'Typed NRIC' },
+              { fieldType: BasicField.Uen, title: 'Typed UEN' },
+            ],
+          }),
+        ),
+      ).resolves.toBeDefined()
+    })
+
+    it('still requires Singpass login for MyInfo data fields', async () => {
+      await expect(
+        EncryptedForm.create(
+          storageForm({
+            authType: FormAuthType.CP,
+            form_fields: myInfoDataFields(1),
+          }),
+        ),
+      ).rejects.toThrow('Myinfo fields need Singpass login.')
+    })
+  })
 })

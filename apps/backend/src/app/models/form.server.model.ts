@@ -3,6 +3,7 @@ import {
   ADMIN_FORM_META_FIELDS,
   EMAIL_FORM_SETTINGS_FIELDS,
   EMAIL_PUBLIC_FORM_FIELDS,
+  MAX_LOGIN_FIELDS,
   MB,
   MULTIRESPONDENT_FORM_SETTINGS_FIELDS,
   MULTIRESPONDENT_PUBLIC_FORM_FIELDS,
@@ -49,6 +50,7 @@ import { getApplicableIfStates } from 'formsg-shared/utils/logic'
 import {
   getLoginIdentityAttr,
   getLoginIdentityConfigErrors,
+  isLoginField,
   isMyInfoDataField,
 } from 'formsg-shared/utils/login-identity'
 import { stripDropdownFieldOptionsToRecipientsMap } from 'formsg-shared/utils/strip-dropdown-field-optionsToRecipientsMap'
@@ -660,20 +662,28 @@ const compileFormModel = (db: Mongoose): IFormModel => {
 
       form_fields: {
         type: [BaseFieldSchema],
-        validate: {
-          validator: function (this: IFormSchema) {
-            const myInfoFieldCount = (this.form_fields ?? []).reduce(
-              (acc, field) => acc + (isMyInfoDataField(field) ? 1 : 0),
-              0,
-            )
-            return (
-              myInfoFieldCount === 0 ||
-              (this.authType === FormAuthType.MyInfo && myInfoFieldCount <= 30)
-            )
+        // Identity fields' logins are checked with the other identity rules
+        // in the pre-validate hook.
+        validate: [
+          {
+            validator: function (this: IFormSchema) {
+              return (
+                this.authType === FormAuthType.MyInfo ||
+                !(this.form_fields ?? []).some(isMyInfoDataField)
+              )
+            },
+            message: 'Myinfo fields need Singpass login.',
           },
-          message:
-            'Check that your form is MyInfo-authenticated and has 30 or fewer MyInfo fields.',
-        },
+          {
+            validator: function (this: IFormSchema) {
+              return (
+                (this.form_fields ?? []).filter(isLoginField).length <=
+                MAX_LOGIN_FIELDS
+              )
+            },
+            message: `Forms can have at most ${MAX_LOGIN_FIELDS} Myinfo, NRIC/FIN and UEN fields. Remove a field and try again.`,
+          },
+        ],
       },
       form_logics: {
         type: [LogicSchema],
