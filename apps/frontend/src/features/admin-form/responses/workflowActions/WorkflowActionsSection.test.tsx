@@ -294,7 +294,7 @@ describe('WorkflowActionsSection', () => {
   })
 
   it('sends back from step 3 on with the step link credentials', async () => {
-    renderSection(pendingMrf(), undefined, false, 2)
+    renderSection(pendingMrf({ workflowCurrentStepNumber: 2 }), undefined, false, 2)
 
     await userEvent.click(screen.getByRole('button', { name: SEND_BACK }))
     await userEvent.click(
@@ -313,6 +313,13 @@ describe('WorkflowActionsSection', () => {
     )
   })
 
+  it('hides Send back when the workflow records fewer steps than it has done', () => {
+    renderSection(pendingMrf({ workflowCurrentStepNumber: 4 }), undefined, false, 2)
+    expect(
+      screen.queryByRole('button', { name: SEND_BACK }),
+    ).not.toBeInTheDocument()
+  })
+
   it('hides Send back while step 2 is pending', () => {
     renderSection()
     expect(
@@ -322,7 +329,7 @@ describe('WorkflowActionsSection', () => {
 
   it('offers Send back with only the send back flag on', () => {
     mockIsGateOn = false
-    renderSection(pendingMrf(), undefined, false, 2)
+    renderSection(pendingMrf({ workflowCurrentStepNumber: 2 }), undefined, false, 2)
 
     expect(screen.getByRole('button', { name: SEND_BACK })).toBeVisible()
     expect(screen.queryByRole('button', { name: STOP })).not.toBeInTheDocument()
@@ -333,7 +340,7 @@ describe('WorkflowActionsSection', () => {
 
   it('hides Send back behind the send back flag', () => {
     mockIsSendBackOn = false
-    renderSection(pendingMrf(), undefined, false, 2)
+    renderSection(pendingMrf({ workflowCurrentStepNumber: 2 }), undefined, false, 2)
     expect(
       screen.queryByRole('button', { name: SEND_BACK }),
     ).not.toBeInTheDocument()
@@ -341,7 +348,7 @@ describe('WorkflowActionsSection', () => {
 
   it('hides Send back from read-only collaborators', () => {
     mockHasEditAccess = false
-    renderSection(pendingMrf(), undefined, false, 2)
+    renderSection(pendingMrf({ workflowCurrentStepNumber: 2 }), undefined, false, 2)
     expect(
       screen.queryByRole('button', { name: SEND_BACK }),
     ).not.toBeInTheDocument()
@@ -349,7 +356,10 @@ describe('WorkflowActionsSection', () => {
 
   it('hides Send back once the workflow is stopped', () => {
     renderSection(
-      pendingMrf({ stoppedAt: '2026-10-07T08:00:00.000Z' }),
+      pendingMrf({
+        workflowCurrentStepNumber: 2,
+        stoppedAt: '2026-10-07T08:00:00.000Z',
+      }),
       undefined,
       false,
       2,
@@ -361,7 +371,10 @@ describe('WorkflowActionsSection', () => {
 
   it('hides Send back once the workflow is no longer pending', () => {
     renderSection(
-      pendingMrf({ workflowStatus: WorkflowStatus.APPROVED }),
+      pendingMrf({
+        workflowCurrentStepNumber: 2,
+        workflowStatus: WorkflowStatus.APPROVED,
+      }),
       undefined,
       false,
       2,
