@@ -162,10 +162,16 @@ export const configureMultipartReceiver = (
       })
       .on('close', () => {
         if (body) {
-          adaptMrfV3BodyToV4(body)
-          handleDuplicatesInAttachments(attachments)
-          addAttachmentToResponses(body, attachments)
-          return resolve(body)
+          try {
+            adaptMrfV3BodyToV4(body)
+            handleDuplicatesInAttachments(attachments)
+            addAttachmentToResponses(body, attachments)
+            return resolve(body)
+          } catch (error) {
+            // Event callbacks run outside the promise executor. Reject parsing
+            // failures explicitly so malformed bodies cannot leave it pending.
+            return reject(error)
+          }
         } else {
           // if body is not defined, the Promise would have been rejected elsewhere.
           // but reject here again just in case.

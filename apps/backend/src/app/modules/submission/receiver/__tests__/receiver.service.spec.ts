@@ -165,6 +165,28 @@ describe('receiver.service', () => {
   })
 
   describe('configureMultipartReceiver', () => {
+    it('rejects an attachment with a null answer during multipart enrichment', async () => {
+      const fieldId = '507f1f77bcf86cd799439011'
+      const form = new FormData()
+      form.append(
+        'body',
+        JSON.stringify({
+          version: 4,
+          responses: {
+            [fieldId]: { fieldType: BasicField.Attachment, answer: null },
+          },
+        }),
+      )
+      form.append('report.pdf', Buffer.alloc(0), fieldId)
+      const receiver = RealBusboy({ headers: form.getHeaders() })
+      const resultPromise =
+        EmailSubmissionReceiver.configureMultipartReceiver(receiver)
+      form.pipe(receiver)
+
+      const result = await resultPromise
+      expect(result._unsafeUnwrapErr()).toEqual(new MultipartError())
+    })
+
     it('should correctly process and return with utf8 file names', async () => {
       const mockResponse = pick(generateNewAttachmentResponse(), [
         '_id',
