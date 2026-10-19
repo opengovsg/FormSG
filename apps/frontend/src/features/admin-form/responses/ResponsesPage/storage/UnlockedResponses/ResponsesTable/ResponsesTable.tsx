@@ -26,11 +26,7 @@ import {
 import { useFeatureIsOn } from '@growthbook/growthbook-react'
 
 import { featureFlags } from 'formsg-shared/constants'
-import {
-  BasicField,
-  FormResponseMode,
-  SubmissionMetadata,
-} from 'formsg-shared/types'
+import { FormResponseMode, SubmissionMetadata } from 'formsg-shared/types'
 import { centsToDollars } from 'formsg-shared/utils/payments'
 
 import { useAdminForm } from '~features/admin-form/common/queries'
@@ -74,6 +70,7 @@ import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { SendReminderButton } from './SendReminderButton'
 import {
+  getFieldColumnSources,
   getIsPaymentsForm,
   getNetAmount,
   getReminderButtonState,
@@ -312,12 +309,6 @@ const getColumnId = (column: Column<ResponseColumnData>): string =>
   (typeof column.accessor === 'string' ? column.accessor : undefined) ??
   String(column.Header)
 
-const NON_ANSWERABLE_FIELD_TYPES = new Set<BasicField>([
-  BasicField.Section,
-  BasicField.Statement,
-  BasicField.Image,
-])
-
 export const ResponsesTable = () => {
   const { data: form } = useAdminForm()
   const isPaymentsForm = getIsPaymentsForm(form)
@@ -384,12 +375,14 @@ export const ResponsesTable = () => {
     return BASE_RESPONSE_TABLE_COLUMNS
   }, [isMultiRespondentForm, isPaymentsForm])
 
-  const answerableFields = useMemo(() => {
+  const fieldColumnSources = useMemo(() => {
     if (!isDelightfulDashboard || !form) return []
-    return form.form_fields.filter(
-      (formField) => !NON_ANSWERABLE_FIELD_TYPES.has(formField.fieldType),
-    )
-  }, [form, isDelightfulDashboard])
+    return getFieldColumnSources({
+      formFields: form.form_fields,
+      responsesBySubmissionId,
+      submissionIdsNewestFirst: metadata.map(({ refNo }) => refNo),
+    })
+  }, [form, isDelightfulDashboard, metadata, responsesBySubmissionId])
 
   const prefixColumns = useMemo(() => {
     if (hasWorkflow) return WORKFLOW_PREFIX_COLUMNS
@@ -399,14 +392,14 @@ export const ResponsesTable = () => {
   }, [hasWorkflow, isPaymentsForm])
 
   const fieldColumns = useMemo((): Column<ResponseColumnData>[] => {
-    return answerableFields.map((formField) => ({
-      id: formField._id,
+    return fieldColumnSources.map((formField) => ({
+      id: formField.id,
       Header: formField.title,
       accessor: ({ refNo }: ResponseColumnData) => {
         const responses = responsesBySubmissionId?.get(refNo)
         if (!responses) return undefined
         return formatResponseForCell(
-          responses.find((response) => response._id === formField._id),
+          responses.find((response) => response._id === formField.id),
         )
       },
       Cell: ({ value }: { value?: string }) => (
@@ -426,7 +419,7 @@ export const ResponsesTable = () => {
       minWidth: 120,
       maxWidth: 400,
     }))
-  }, [answerableFields, isDecrypting, responsesBySubmissionId])
+  }, [fieldColumnSources, isDecrypting, responsesBySubmissionId])
 
   const columns = useMemo(() => {
     if (!isDelightfulDashboard) return legacyColumns
@@ -463,13 +456,8 @@ export const ResponsesTable = () => {
         label: String(column.Header),
       }))
       .filter(({ id }) => id !== RESPONSE_NUMBER_COLUMN_ID)
-      .concat(
-        answerableFields.map((formField) => ({
-          id: formField._id,
-          label: formField.title,
-        })),
-      )
-  }, [answerableFields, isDelightfulDashboard, prefixColumns])
+      .concat(fieldColumnSources.map(({ id, title }) => ({ id, label: title })))
+  }, [fieldColumnSources, isDelightfulDashboard, prefixColumns])
 
   useEffect(() => {
     setColumnOptions(columnOptions)
