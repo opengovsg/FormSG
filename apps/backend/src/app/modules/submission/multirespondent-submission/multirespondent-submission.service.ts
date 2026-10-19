@@ -2459,7 +2459,9 @@ export const addAssigneesToPendingStep = ({
 /**
  * Sends a pending workflow back to an earlier step, so its people can amend
  * their answers and the steps after it run again. Answers stay as they are, so
- * every step sees the form filled so far.
+ * every step sees the form filled so far. The event keeps a copy of them, as
+ * resubmitting the undone steps overwrites them; the conditional update below
+ * guarantees no step submission landed between reading and copying them.
  *
  * @returns ok with the rewound submission, the step's people and the new step
  * token for their link
@@ -2586,6 +2588,23 @@ export const sendBackMultirespondentSubmission = ({
                   emails: recipientEmails,
                   ...(remarks ? { remarks } : {}),
                   undoneSteps,
+                  previousContent: {
+                    encryptedContent: submission.encryptedContent,
+                    encryptedSubmissionSecretKey:
+                      submission.encryptedSubmissionSecretKey,
+                    submissionPublicKey: submission.submissionPublicKey,
+                    ...(submission.verifiedContent
+                      ? { verifiedContent: submission.verifiedContent }
+                      : {}),
+                    ...(submission.attachmentMetadata?.size
+                      ? {
+                          attachmentMetadata: Object.fromEntries(
+                            submission.attachmentMetadata,
+                          ),
+                        }
+                      : {}),
+                    version: submission.version,
+                  },
                 }),
               },
               $inc: { __v: 1 },
