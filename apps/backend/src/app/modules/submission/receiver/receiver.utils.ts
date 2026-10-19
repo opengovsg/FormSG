@@ -3,6 +3,7 @@ import { adaptV3ToV4 } from '@opengovsg/formsg-sdk'
 import { VIRUS_SCANNER_SUBMISSION_VERSION } from 'formsg-shared/constants'
 import { BasicField, FieldResponse } from 'formsg-shared/types'
 import { StatusCodes } from 'http-status-codes'
+import { err, ok, Result } from 'neverthrow'
 
 import { IAttachmentInfo, MapRouteError } from '../../../../types'
 import {
@@ -14,6 +15,7 @@ import { createLoggerWithLabel } from '../../../config/logger'
 
 import {
   InitialiseMultipartReceiverError,
+  MultipartContentParsingError,
   MultipartError,
 } from './receiver.errors'
 import {
@@ -94,12 +96,12 @@ export const adaptMrfV3BodyToV4 = (
  *
  * @param responses - Array of responses received
  * @param attachments - Array of file objects
- * @returns void. Modifies responses in place.
+ * @returns error if a V3+ attachment response has no file part. Modifies responses in place.
  */
 export const addAttachmentToResponses = (
   body: ParsedMultipartForm<FieldResponse[] | FieldResponsesV4>,
   attachments: IAttachmentInfo[],
-): void => {
+): Result<void, MultipartContentParsingError> => {
   // default to 0 for email mode forms where version is undefined
   // TODO (FRM-1413): change to a version existence guardrail when
   // virus scanning has completed rollout, so that virus scanning
@@ -136,17 +138,27 @@ export const addAttachmentToResponses = (
   }
 
   if (isBodyVersion3AndAbove(body)) {
-    Object.keys(body.responses).forEach((id) => {
+    for (const id of Object.keys(body.responses)) {
       const response = body.responses[
         id
       ] as unknown as ParsedClearAttachmentFieldResponseV4
-      if (response.fieldType === BasicField.Attachment && id in attachmentMap) {
-        const file = attachmentMap[id]
-        response.answer.filename = file.filename
-        response.answer.content = file.content
+      if (response.fieldType !== BasicField.Attachment) continue
+      // The file part is the only carrier of the attachment's filename, which
+      // later becomes the answer value once the clean file is retrieved.
+      if (!(id in attachmentMap)) {
+        return err(
+          new MultipartContentParsingError(
+            `Attachment response ${id} has no matching file part`,
+          ),
+        )
       }
-    })
+      const file = attachmentMap[id]
+      response.answer.filename = file.filename
+      response.answer.content = file.content
+    }
   }
+
+  return ok(undefined)
 }
 
 /**

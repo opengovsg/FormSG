@@ -164,7 +164,13 @@ export const configureMultipartReceiver = (
         if (body) {
           adaptMrfV3BodyToV4(body)
           handleDuplicatesInAttachments(attachments)
-          addAttachmentToResponses(body, attachments)
+          const addAttachmentsResult = addAttachmentToResponses(
+            body,
+            attachments,
+          )
+          if (addAttachmentsResult.isErr()) {
+            return reject(addAttachmentsResult.error)
+          }
           return resolve(body)
         } else {
           // if body is not defined, the Promise would have been rejected elsewhere.
