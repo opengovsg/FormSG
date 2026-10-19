@@ -37,7 +37,6 @@ import {
   ProcessedTableResponse,
 } from '../../modules/submission/submission.types'
 
-import { attachmentAnswerShapeValidatorV4 } from './validators/attachmentValidator'
 import {
   constructAddressFieldValidator,
   constructAttachmentFieldValidator,
@@ -60,6 +59,7 @@ import {
   isProcessedTableResponse,
 } from './field-validation.guards'
 import { checkIsResponseChangedV4 } from './field-validation.utils'
+import { validateResponseShapeV4 } from './response-shape-validator'
 
 const logger = createLoggerWithLabel(module)
 
@@ -564,15 +564,13 @@ export const validateFieldV4 = ({
   }
 
   // Shape validation must precede hidden-field and change detection checks.
-  if (response.fieldType === BasicField.Attachment) {
-    const shapeResult = validateResponseWithValidatorV4(
-      attachmentAnswerShapeValidatorV4,
-      formId,
-      formField,
-      response,
-    )
-    if (shapeResult.isErr()) return shapeResult
-  }
+  const shapeResult = validateResponseWithValidatorV4(
+    validateResponseShapeV4,
+    formId,
+    formField,
+    response,
+  )
+  if (shapeResult.isErr()) return shapeResult
 
   const isResponsePresentOnHiddenFieldV4Result =
     isResponsePresentOnHiddenFieldV4({ formField, response, isVisible, formId })

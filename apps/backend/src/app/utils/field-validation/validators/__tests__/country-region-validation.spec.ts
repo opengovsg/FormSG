@@ -241,7 +241,7 @@ describe('CountryRegion field validation V4', () => {
     })
     expect(validateResult.isErr()).toBe(true)
     expect(validateResult._unsafeUnwrapErr()).toEqual(
-      new ValidateFieldErrorV4('Response has invalid shape'),
+      new ValidateFieldErrorV4('Invalid answer submitted'),
     )
   })
 
