@@ -26,6 +26,7 @@ import {
 import { TABLE_ROW_RENDER_CHUNK } from '../../../constants'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
+import { useDecryptNewResponses } from './hooks/useDecryptNewResponses'
 import { usePageSearchParams } from './hooks/usePageSearchParams'
 import { renderLimitToInclude } from './renderLimit'
 import { exceedsTableLimit } from './responseLimit'
@@ -243,6 +244,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   })
 
   const allMetadata = useMemo(() => allData?.metadata ?? [], [allData])
+
+  useDecryptNewResponses({
+    metadata: allMetadata,
+    isDecryptingAll,
+    enabled: isInfiniteScroll && !submissionId,
+  })
 
   const isTableLoading = isLoadingAll || isDecryptingAll
 
