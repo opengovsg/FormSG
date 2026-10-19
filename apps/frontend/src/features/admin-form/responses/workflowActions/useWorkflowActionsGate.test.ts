@@ -1,26 +1,42 @@
 import { renderHook } from '@testing-library/react'
 
-import { useWorkflowActionsGate } from './useWorkflowActionsGate'
+import { featureFlags } from 'formsg-shared/constants'
 
-let mockIsFlagOn = true
+import {
+  useWorkflowActionsGate,
+  useWorkflowActionsSendBackGate,
+} from './useWorkflowActionsGate'
+
+let mockFlagsOn: string[] = []
 
 vi.mock('@growthbook/growthbook-react', () => ({
-  useFeatureIsOn: () => mockIsFlagOn,
+  useFeatureIsOn: (flag: string) => mockFlagsOn.includes(flag),
 }))
 
 describe('useWorkflowActionsGate', () => {
-  afterEach(() => {
-    mockIsFlagOn = true
-  })
-
   it('is on with the flag on', () => {
+    mockFlagsOn = [featureFlags.workflowActions]
     const { result } = renderHook(() => useWorkflowActionsGate())
     expect(result.current).toBe(true)
   })
 
   it('is off with the flag off', () => {
-    mockIsFlagOn = false
+    mockFlagsOn = [featureFlags.workflowActionsSendBack]
     const { result } = renderHook(() => useWorkflowActionsGate())
     expect(result.current).toBe(false)
+  })
+})
+
+describe('useWorkflowActionsSendBackGate', () => {
+  it('follows its own flag, not the workflow actions flag', () => {
+    mockFlagsOn = [featureFlags.workflowActionsSendBack]
+    expect(
+      renderHook(() => useWorkflowActionsSendBackGate()).result.current,
+    ).toBe(true)
+
+    mockFlagsOn = [featureFlags.workflowActions]
+    expect(
+      renderHook(() => useWorkflowActionsSendBackGate()).result.current,
+    ).toBe(false)
   })
 })

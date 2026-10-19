@@ -24,7 +24,10 @@ import {
 import { RemindButton } from './RemindButton'
 import { SendBackModal } from './SendBackModal'
 import { StopWorkflowModal } from './StopWorkflowModal'
-import { useWorkflowActionsGate } from './useWorkflowActionsGate'
+import {
+  useWorkflowActionsGate,
+  useWorkflowActionsSendBackGate,
+} from './useWorkflowActionsGate'
 
 interface WorkflowActionsSectionProps {
   overview?: ReactNode
@@ -48,6 +51,7 @@ export const WorkflowActionsSection = ({
   const { t } = useTranslation()
   const { formId = '' } = useParams()
   const isWorkflowActionsOn = useWorkflowActionsGate()
+  const isSendBackOn = useWorkflowActionsSendBackGate()
   const isDelightfulDashboard = useIsDelightfulDashboard()
   const { hasEditAccess } = useAdminFormCollaborators(formId)
   const stopModal = useDisclosure()
@@ -70,9 +74,9 @@ export const WorkflowActionsSection = ({
   const canActOnWorkflow = isWorkflowActionsOn && hasEditAccess
   // Step 1 is never a send back target, so there is a step to go back to only
   // from step 3 on.
-  const canSendBack = canActOnWorkflow && pendingStepNumber >= 3
+  const canSendBack = isSendBackOn && hasEditAccess && pendingStepNumber >= 3
 
-  if (!canRemind && !canActOnWorkflow)
+  if (!canRemind && !canActOnWorkflow && !canSendBack)
     return overview ? <ResponseOverview>{overview}</ResponseOverview> : null
 
   const handleAddAssignees = (emails: string[]) => {
@@ -127,40 +131,40 @@ export const WorkflowActionsSection = ({
         />
       ) : null}
       {canActOnWorkflow ? (
-        <>
-          <Button
-            size="sm"
-            variant="outline"
-            colorScheme="secondary"
-            leftIcon={<BiUser fontSize="1.25rem" />}
-            isDisabled={isLoading || !submissionSecretKey}
-            onClick={addAssigneeModal.onOpen}
-          >
-            {t(`${WORKFLOW_ACTIONS_I18N}.reassignButton`)}
-          </Button>
-          {canSendBack ? (
-            <Button
-              size="sm"
-              variant="outline"
-              colorScheme="secondary"
-              leftIcon={<BiUndo fontSize="1.25rem" />}
-              isDisabled={isLoading || !submissionSecretKey}
-              onClick={sendBackModal.onOpen}
-            >
-              {t(`${WORKFLOW_ACTIONS_I18N}.sendBackButton`)}
-            </Button>
-          ) : null}
-          <Button
-            size="sm"
-            variant="outline"
-            colorScheme="danger"
-            leftIcon={<BiStopCircle fontSize="1.25rem" />}
-            isDisabled={isLoading}
-            onClick={stopModal.onOpen}
-          >
-            {t(`${WORKFLOW_ACTIONS_I18N}.stopButton`)}
-          </Button>
-        </>
+        <Button
+          size="sm"
+          variant="outline"
+          colorScheme="secondary"
+          leftIcon={<BiUser fontSize="1.25rem" />}
+          isDisabled={isLoading || !submissionSecretKey}
+          onClick={addAssigneeModal.onOpen}
+        >
+          {t(`${WORKFLOW_ACTIONS_I18N}.reassignButton`)}
+        </Button>
+      ) : null}
+      {canSendBack ? (
+        <Button
+          size="sm"
+          variant="outline"
+          colorScheme="secondary"
+          leftIcon={<BiUndo fontSize="1.25rem" />}
+          isDisabled={isLoading || !submissionSecretKey}
+          onClick={sendBackModal.onOpen}
+        >
+          {t(`${WORKFLOW_ACTIONS_I18N}.sendBackButton`)}
+        </Button>
+      ) : null}
+      {canActOnWorkflow ? (
+        <Button
+          size="sm"
+          variant="outline"
+          colorScheme="danger"
+          leftIcon={<BiStopCircle fontSize="1.25rem" />}
+          isDisabled={isLoading}
+          onClick={stopModal.onOpen}
+        >
+          {t(`${WORKFLOW_ACTIONS_I18N}.stopButton`)}
+        </Button>
       ) : null}
     </Flex>
   )

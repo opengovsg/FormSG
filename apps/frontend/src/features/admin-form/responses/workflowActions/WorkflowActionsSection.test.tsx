@@ -8,6 +8,7 @@ import { render } from '~/test-utils'
 import { WorkflowActionsSection } from './WorkflowActionsSection'
 
 let mockIsGateOn = true
+let mockIsSendBackOn = true
 let mockHasEditAccess = true
 let mockIsV2 = true
 const mockMutate = vi.fn()
@@ -24,6 +25,7 @@ vi.mock('react-router-dom', () => ({
 
 vi.mock('./useWorkflowActionsGate', () => ({
   useWorkflowActionsGate: () => mockIsGateOn,
+  useWorkflowActionsSendBackGate: () => mockIsSendBackOn,
 }))
 
 vi.mock('~features/admin-form/common/queries', () => ({
@@ -152,6 +154,7 @@ const renderSection = (
 describe('WorkflowActionsSection', () => {
   afterEach(() => {
     mockIsGateOn = true
+    mockIsSendBackOn = true
     mockHasEditAccess = true
     mockIsV2 = true
     mockMutate.mockReset()
@@ -317,8 +320,19 @@ describe('WorkflowActionsSection', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('hides Send back behind the workflow actions gate', () => {
+  it('offers Send back with only the send back flag on', () => {
     mockIsGateOn = false
+    renderSection(pendingMrf(), undefined, false, 2)
+
+    expect(screen.getByRole('button', { name: SEND_BACK })).toBeVisible()
+    expect(screen.queryByRole('button', { name: STOP })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: REASSIGN }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('hides Send back behind the send back flag', () => {
+    mockIsSendBackOn = false
     renderSection(pendingMrf(), undefined, false, 2)
     expect(
       screen.queryByRole('button', { name: SEND_BACK }),
