@@ -132,17 +132,18 @@ jobs:
       - name: Upload screenshots to Argos
         run: |
           if find screenshots -type f -name '*.png' -print -quit 2>/dev/null | grep -q .; then
-            pnpm exec argos upload ./screenshots --parallel --parallel-nonce "$ARGOS_NONCE"
+            pnpm exec argos upload ./screenshots --parallel --parallel-total -1 --parallel-index "$SHARD" --parallel-nonce "$ARGOS_NONCE"
           elif [ "$FULL" = true ]; then
             echo "::error::A shard of the full Storybook suite produced no screenshots"
             exit 1
           fi
-          # A shard with no affected stories uploads nothing; finalize skips an
-          # empty build.
+          # -1 total: shards with no affected stories upload nothing, so the
+          # build is closed by finalize rather than by a shard count.
         env:
           ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
           ARGOS_BUILD_NAME: frontend
           ARGOS_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
+          SHARD: ${{ matrix.shard }}
           # Subset builds ignore missing screenshots and never become baselines.
           ARGOS_SUBSET: ${{ steps.scope.outputs.full != 'true' }}
           FULL: ${{ steps.scope.outputs.full }}
