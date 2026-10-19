@@ -3,6 +3,7 @@ import { setupApp } from '__tests__/integration/helpers/express-setup'
 import dbHandler from '__tests__/unit/backend/helpers/jest-db'
 import { ObjectId } from 'bson'
 import { Router } from 'express'
+import { featureFlags } from 'formsg-shared/constants'
 import {
   FormResponseMode,
   SubmissionType,
@@ -29,12 +30,14 @@ jest.mock('nodemailer', () => ({
 }))
 jest.mock('src/app/modules/spcp/spcp.oidc.client.ts')
 
-let isFlagOn = true
+let flagsOn: string[] = []
 
 const routerWithGrowthbook = Router()
 routerWithGrowthbook.use((req, _res, next) => {
-  ;(req as unknown as { growthbook: { isOn: () => boolean } }).growthbook = {
-    isOn: () => isFlagOn,
+  ;(
+    req as unknown as { growthbook: { isOn: (flag: string) => boolean } }
+  ).growthbook = {
+    isOn: (flag) => flagsOn.includes(flag),
   }
   next()
 })
@@ -70,7 +73,7 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/send-back', () => 
     const { user } = await dbHandler.insertFormCollectionReqs()
     request = await createAuthedSession(user.email, request)
     defaultUser = user
-    isFlagOn = true
+    flagsOn = [featureFlags.workflowActionsSendBack]
   })
   afterEach(async () => {
     await dbHandler.clearDatabase()
@@ -199,8 +202,17 @@ describe('POST /admin/forms/:formId/submissions/:submissionId/send-back', () => 
     expect(response.status).toEqual(409)
   })
 
-  it('returns 403 with the flag off', async () => {
-    isFlagOn = false
+  it('sends back with only the send back flag on', async () => {
+    const form = await createForm()
+    const submission = await createSubmission(form._id)
+
+    const response = await sendBack(form._id, submission._id)
+
+    expect(response.status).toEqual(200)
+  })
+
+  it('returns 403 with only the workflow actions flag on', async () => {
+    flagsOn = [featureFlags.workflowActions]
     const form = await createForm()
     const submission = await createSubmission(form._id)
 
