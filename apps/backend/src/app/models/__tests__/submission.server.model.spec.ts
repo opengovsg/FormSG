@@ -1080,6 +1080,44 @@ describe('Submission Model', () => {
         expect(mrfEntry?.mrf?.workflowCurrentStepNumber).toEqual(1)
       })
 
+      it('should keep rows and count to the date range across both submission types', async () => {
+        // Arrange
+        // RATIONALE: mongoose treats the created timestamp as immutable, so
+        // set it on the raw collection.
+        const setCreated = (_id: unknown, created: string) =>
+          Submission.collection.updateOne(
+            { _id },
+            { $set: { created: new Date(created) } },
+          )
+        const inRangeEncrypt = await EncryptedSubmission.create(
+          MOCK_ENCRYPT_SUBMISSION_PARAMS,
+        )
+        const inRangeMrf = await MultirespondentSubmission.create(
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+        const outOfRangeMrf = await MultirespondentSubmission.create(
+          MOCK_MULTIRESPONDENT_SUBMISSION_PARAMS,
+        )
+        // 6 Oct 09:00 and 8 Oct 23:30 SGT are inside 6-8 Oct; 9 Oct 00:30
+        // SGT is outside.
+        await setCreated(inRangeEncrypt._id, '2026-10-06T01:00:00.000Z')
+        await setCreated(inRangeMrf._id, '2026-10-08T15:30:00.000Z')
+        await setCreated(outOfRangeMrf._id, '2026-10-08T16:30:00.000Z')
+
+        // Act
+        const actualResult =
+          await Submission.findAllEncryptedOrMultirespondentMetadataByFormId(
+            MOCK_FORM_ID.toHexString(),
+            { startDate: '2026-10-06', endDate: '2026-10-08' },
+          )
+
+        // Assert
+        expect(actualResult.count).toEqual(2)
+        expect(
+          actualResult.metadata.map((entry) => String(entry.refNo)).sort(),
+        ).toEqual([String(inRangeEncrypt._id), String(inRangeMrf._id)].sort())
+      })
+
       it('should return empty page and zero count when the form only has email submissions', async () => {
         // Arrange
         await EmailSubmission.create(MOCK_EMAIL_SUBMISSION_PARAMS)

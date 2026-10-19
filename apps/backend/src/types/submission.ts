@@ -203,7 +203,12 @@ export interface ISubmissionModel extends Model<ISubmissionSchema> {
    */
   findAllEncryptedOrMultirespondentMetadataByFormId(
     formId: string,
-    params?: { page?: number; pageSize?: number },
+    params?: {
+      page?: number
+      pageSize?: number
+      startDate?: string
+      endDate?: string
+    },
   ): Promise<{
     metadata: SubmissionMetadata[]
     count: number

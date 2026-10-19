@@ -391,9 +391,13 @@ SubmissionSchema.statics.findAllEncryptedOrMultirespondentMetadataByFormId =
     {
       page = 1,
       pageSize = 10,
+      startDate,
+      endDate,
     }: {
       page?: number
       pageSize?: number
+      startDate?: string
+      endDate?: string
     } = {},
   ): Promise<{
     metadata: SubmissionMetadata[]
@@ -403,15 +407,16 @@ SubmissionSchema.statics.findAllEncryptedOrMultirespondentMetadataByFormId =
     // Multirespondent forms mode-migrated from storage mode retain their
     // pre-migration encrypt submissions; the page and the count must both
     // span the same two submission types so rows and totals agree. Email
-    // submissions stay excluded from both.
+    // submissions stay excluded from both. The date range must match the
+    // decrypted responses stream, or rows outside it render with no answers.
+    const match = {
+      submissionType: MIXED_METADATA_MATCH_SUBMISSION_TYPES,
+      form: new mongoose.Types.ObjectId(formId),
+      ...createQueryWithDateParam(startDate, endDate),
+    }
     const pageResults: Promise<MixedMetadataAggregateResult[]> = this.aggregate(
       [
-        {
-          $match: {
-            submissionType: MIXED_METADATA_MATCH_SUBMISSION_TYPES,
-            form: new mongoose.Types.ObjectId(formId),
-          },
-        },
+        { $match: match },
         { $sort: { created: -1 } },
         { $skip: numToSkip },
         { $limit: pageSize },
@@ -427,11 +432,7 @@ SubmissionSchema.statics.findAllEncryptedOrMultirespondentMetadataByFormId =
       ],
     ).exec()
 
-    const count =
-      this.countDocuments({
-        form: new mongoose.Types.ObjectId(formId),
-        submissionType: MIXED_METADATA_MATCH_SUBMISSION_TYPES,
-      }).exec() ?? 0
+    const count = this.countDocuments(match).exec() ?? 0
 
     return Promise.all([pageResults, count]).then(([results, count]) => {
       let currentNumber = count - numToSkip

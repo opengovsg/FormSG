@@ -1300,6 +1300,31 @@ describe('submission.service', () => {
       expect(mrfMetaSpy).not.toHaveBeenCalled()
     })
 
+    it('should filter multirespondent form metadata by the date range', async () => {
+      // Arrange
+      const mixedMetaSpy = jest
+        .spyOn(Submission, 'findAllEncryptedOrMultirespondentMetadataByFormId')
+        .mockResolvedValueOnce({ metadata: [], count: 0 })
+      const dateRange = { startDate: '2026-10-06', endDate: '2026-10-08' }
+
+      // Act
+      const actualResult = await SubmissionService.getSubmissionMetadataList(
+        FormResponseMode.Multirespondent,
+        MOCK_FORM_ID,
+        1,
+        10,
+        dateRange,
+      )
+
+      // Assert
+      expect(actualResult.isOk()).toEqual(true)
+      expect(mixedMetaSpy).toHaveBeenCalledWith(MOCK_FORM_ID, {
+        page: 1,
+        pageSize: 10,
+        ...dateRange,
+      })
+    })
+
     it('should return metadata list successfully with page param', async () => {
       // Arrange
       const mockPageNumber = 200
