@@ -2555,7 +2555,15 @@ export const sendBackMultirespondentSubmission = ({
           submission.workflow.length,
         ) === WorkflowStatus.PENDING
       const pendingStepNumber = submittedSteps.length + 1
-      if (!isPending || pendingStepNumber !== expectedStepNumber) {
+      // RATIONALE: submittedSteps arrived in #7965 with no backfill, so a
+      // workflow already under way then records fewer steps than it has
+      // completed. Its positions no longer match step numbers, so the steps
+      // to undo and the people to email cannot be told apart.
+      if (
+        !isPending ||
+        pendingStepNumber !== expectedStepNumber ||
+        submission.workflowStep !== submittedSteps.length - 1
+      ) {
         return errAsync(new MrfWorkflowNotPendingError())
       }
       // Step 1 is never a target: its respondent may be anonymous or have
