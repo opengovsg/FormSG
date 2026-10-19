@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { BiChevronLeft, BiChevronRight } from 'react-icons/bi'
+import { BiChevronDown, BiChevronUp } from 'react-icons/bi'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   ButtonGroup,
@@ -75,18 +75,18 @@ export const IndividualResponseDrawer = (): JSX.Element | null => {
     <Drawer isOpen placement="right" size="lg" onClose={onClose}>
       <DrawerOverlay />
       <DrawerContent>
-        <DrawerCloseButton />
         <DrawerHeader
           display="flex"
           alignItems="center"
+          gap="0.5rem"
+          px={{ base: '1.5rem', md: '1.75rem', lg: '2rem' }}
           borderBottomWidth="1px"
           borderBottomColor="neutral.300"
         >
-          <IndividualResponseTitle textStyle="h4" />
-          <ButtonGroup ml="auto" mr="2.5rem" spacing="0.25rem">
+          <ButtonGroup spacing="0.25rem" alignItems="center" flexShrink={0}>
             <IconButton
               variant="clear"
-              icon={<BiChevronLeft />}
+              icon={<BiChevronUp />}
               isDisabled={!previous}
               onClick={() => previous && openResponse(previous)}
               aria-label={t(
@@ -95,7 +95,7 @@ export const IndividualResponseDrawer = (): JSX.Element | null => {
             />
             <IconButton
               variant="clear"
-              icon={<BiChevronRight />}
+              icon={<BiChevronDown />}
               isDisabled={!next}
               onClick={() => next && openResponse(next)}
               aria-label={t(
@@ -103,6 +103,13 @@ export const IndividualResponseDrawer = (): JSX.Element | null => {
               )}
             />
           </ButtonGroup>
+          <IndividualResponseTitle textStyle="h4" />
+          <DrawerCloseButton
+            ml="auto"
+            position="static"
+            boxSize="2.75rem"
+            flexShrink={0}
+          />
         </DrawerHeader>
         <DrawerBody px={0} py="1.5rem">
           <IndividualResponsePage />

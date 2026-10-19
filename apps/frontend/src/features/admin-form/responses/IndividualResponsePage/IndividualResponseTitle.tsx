@@ -39,14 +39,14 @@ export const IndividualResponseTitle = ({
   const isAdminPrintPdfEnabled = useFeatureIsOn(featureFlags.adminPrintPdf)
 
   return (
-    <Skeleton isLoaded={!isLoading}>
+    <Skeleton isLoaded={!isLoading} minW={0}>
       <Stack direction="row" justify="center" align="center">
-        <Text textStyle={textStyle} as="h2">
+        <Text textStyle={textStyle} as="h2" overflowWrap="anywhere">
           {t('features.common.response')}
           {currentResponseNumber ? ` #${currentResponseNumber}` : ''}
         </Text>
         {isAdminPrintPdfEnabled && (
-          <Box>
+          <Box flexShrink={0}>
             <IconButton
               aria-label="Print"
               icon={<FaRegFilePdf />}
