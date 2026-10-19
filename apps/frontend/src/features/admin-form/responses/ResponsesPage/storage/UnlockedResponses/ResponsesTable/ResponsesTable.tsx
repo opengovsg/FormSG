@@ -1,4 +1,11 @@
-import { CSSProperties, useCallback, useEffect, useMemo, useRef } from 'react'
+import {
+  CSSProperties,
+  UIEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -304,6 +311,23 @@ const FIELD_COLUMN_WIDTH = 200
 const CELL_PADDING_PX = 16
 const SKELETON_CELL_HEIGHT = '1rem'
 const ROW_HEIGHT = '2.75rem'
+
+const TABLE_SCROLLBAR_SX = {
+  '&::-webkit-scrollbar': {
+    height: '8px',
+  },
+  '&::-webkit-scrollbar-track': {
+    background: 'neutral.200',
+    borderRadius: '4px',
+  },
+  '&::-webkit-scrollbar-thumb': {
+    background: 'neutral.400',
+    borderRadius: '4px',
+    '&:hover': {
+      background: 'neutral.500',
+    },
+  },
+}
 
 // react-table derives an id from an explicit id, then a string accessor, then
 // a string Header.
@@ -673,6 +697,13 @@ export const ResponsesTable = () => {
     [navigate, onRowClick],
   )
 
+  const headerViewportRef = useRef<HTMLDivElement>(null)
+  const syncHeaderScroll = useCallback((event: UIEvent<HTMLDivElement>) => {
+    if (headerViewportRef.current) {
+      headerViewportRef.current.scrollLeft = event.currentTarget.scrollLeft
+    }
+  }, [])
+
   const frozenBodyRef = useRef<JSX.Element | null>(null)
   const isResizingColumn = !!columnResizing.isResizingColumn
   const renderTableBody = () => (
@@ -774,6 +805,111 @@ export const ResponsesTable = () => {
       : renderTableBody()
   frozenBodyRef.current = tableBody
 
+  const tableHeader = (
+    <Thead
+      as="div"
+      pos="sticky"
+      top={0}
+      {...(isDelightfulDashboard
+        ? { ref: headerViewportRef, zIndex: 1, overflow: 'hidden' }
+        : {})}
+    >
+      {headerGroups.map((headerGroup) => (
+        <Tr
+          as="div"
+          {...headerGroup.getHeaderGroupProps()}
+          key={headerGroup.getHeaderGroupProps().key}
+          {...(isDelightfulDashboard
+            ? {
+                style: {
+                  ...headerGroup.getHeaderGroupProps().style,
+                  minWidth: 'var(--row-width)',
+                },
+              }
+            : {})}
+          // To toggle _groupHover styles to show divider when header is hovered.
+          data-group
+        >
+          {headerGroup.headers.map((column) => (
+            <Th
+              as="div"
+              pos="relative"
+              {...column.getHeaderProps()}
+              key={column.getHeaderProps().key}
+              minW={0}
+              flexShrink={0}
+              overflow="hidden"
+            >
+              <Flex align="center">{column.render('Header')}</Flex>
+
+              {column.disableResizing ? null : (
+                <Flex
+                  {...column.getResizerProps()}
+                  justify="center"
+                  top={0}
+                  right={0}
+                  zIndex={2}
+                  transitionProperty="background"
+                  transitionDuration="normal"
+                  pos="absolute"
+                  h="100%"
+                  borderX="8px solid"
+                  borderColor="secondary.500"
+                  _hover={{
+                    bg: column.isResizing ? 'white' : 'secondary.200',
+                  }}
+                  _groupHover={{
+                    bg: column.isResizing ? 'white' : 'secondary.300',
+                    _hover: {
+                      bg: column.isResizing ? 'white' : 'secondary.200',
+                    },
+                  }}
+                  w="17px"
+                  sx={{
+                    touchAction: 'none',
+                  }}
+                />
+              )}
+            </Th>
+          ))}
+        </Tr>
+      ))}
+    </Thead>
+  )
+
+  if (isDelightfulDashboard) {
+    // RATIONALE: an element with overflow-x: auto is also a scroll container
+    // vertically, and it is what position: sticky sticks to. Wrapping the whole
+    // table in the horizontal scroller pinned the header to a box that never
+    // scrolls vertically, so it left with the page. Here only the body scrolls
+    // sideways; the header sits outside that box and sticks to the page
+    // scroller (FormResultsLayout), clipping its own overflow and following the
+    // body's scrollLeft so the columns stay aligned.
+    return (
+      <Table
+        as="div"
+        variant="solid"
+        colorScheme="secondary"
+        {...getTableProps()}
+        w="100%"
+        // Not the flex layout's minWidth: the table must stay as wide as the
+        // page so the body, not the page, is what scrolls sideways.
+        style={columnWidthVars}
+      >
+        {tableHeader}
+        <Box
+          overflowX="auto"
+          onScroll={syncHeaderScroll}
+          sx={TABLE_SCROLLBAR_SX}
+        >
+          {/* Inside the scroller, as the column virtualizer looks for it
+              among the ancestors of tableRef. */}
+          <Box ref={tableRef}>{tableBody}</Box>
+        </Box>
+      </Table>
+    )
+  }
+
   return (
     <Table
       as="div"
@@ -783,64 +919,8 @@ export const ResponsesTable = () => {
       {...getTableProps()}
       minW="fit-content"
       w="100%"
-      {...(isDelightfulDashboard
-        ? { style: { ...getTableProps().style, ...columnWidthVars } }
-        : {})}
     >
-      <Thead as="div" pos="sticky" top={0}>
-        {headerGroups.map((headerGroup) => (
-          <Tr
-            as="div"
-            {...headerGroup.getHeaderGroupProps()}
-            key={headerGroup.getHeaderGroupProps().key}
-            // To toggle _groupHover styles to show divider when header is hovered.
-            data-group
-          >
-            {headerGroup.headers.map((column) => (
-              <Th
-                as="div"
-                pos="relative"
-                {...column.getHeaderProps()}
-                key={column.getHeaderProps().key}
-                minW={0}
-                flexShrink={0}
-                overflow="hidden"
-              >
-                <Flex align="center">{column.render('Header')}</Flex>
-
-                {column.disableResizing ? null : (
-                  <Flex
-                    {...column.getResizerProps()}
-                    justify="center"
-                    top={0}
-                    right={0}
-                    zIndex={2}
-                    transitionProperty="background"
-                    transitionDuration="normal"
-                    pos="absolute"
-                    h="100%"
-                    borderX="8px solid"
-                    borderColor="secondary.500"
-                    _hover={{
-                      bg: column.isResizing ? 'white' : 'secondary.200',
-                    }}
-                    _groupHover={{
-                      bg: column.isResizing ? 'white' : 'secondary.300',
-                      _hover: {
-                        bg: column.isResizing ? 'white' : 'secondary.200',
-                      },
-                    }}
-                    w="17px"
-                    sx={{
-                      touchAction: 'none',
-                    }}
-                  />
-                )}
-              </Th>
-            ))}
-          </Tr>
-        ))}
-      </Thead>
+      {tableHeader}
       {tableBody}
     </Table>
   )
