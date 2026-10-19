@@ -37,18 +37,18 @@ Mobile.args = {
   name: 'Mobile',
 }
 Mobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const Tablet = Template.bind({})
 Tablet.args = {
   name: 'Tablet',
 }
 Tablet.parameters = {
-  globals: { viewport: { value: 'tablet', isRotated: false } },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 const AllStates: StoryFn<RadioProps> = (args) => {
   return (

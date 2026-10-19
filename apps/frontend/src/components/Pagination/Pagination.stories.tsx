@@ -105,9 +105,9 @@ Mobile.args = {
   siblingCount: 1,
 }
 Mobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const MobileDisabled = Template.bind({})
 MobileDisabled.args = {
@@ -118,6 +118,6 @@ MobileDisabled.args = {
   isDisabled: true,
 }
 MobileDisabled.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+MobileDisabled.globals = { viewport: { value: 'mobile1', isRotated: false } }

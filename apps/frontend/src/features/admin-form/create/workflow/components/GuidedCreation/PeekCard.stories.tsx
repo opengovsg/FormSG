@@ -66,7 +66,6 @@ MobileTwoActions.args = {
   ],
 }
 MobileTwoActions.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
   docs: {
     description: {
@@ -75,6 +74,7 @@ MobileTwoActions.parameters = {
     },
   },
 }
+MobileTwoActions.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const OneAction = TuckedTemplate.bind({})
 OneAction.storyName = 'Tucked, one action'

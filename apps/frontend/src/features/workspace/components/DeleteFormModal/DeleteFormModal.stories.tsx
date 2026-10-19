@@ -5,7 +5,7 @@ import { FormId } from 'formsg-shared/types'
 
 import { MOCK_USER, userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
 
 import { DeleteFormModal, DeleteFormModalProps } from './DeleteFormModal'
 
@@ -43,3 +43,4 @@ export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()

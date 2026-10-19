@@ -60,8 +60,10 @@ MobileVerificationBoxMobile.args = {
   fieldType: BasicField.Mobile,
 }
 MobileVerificationBoxMobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
+}
+MobileVerificationBoxMobile.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
 }
 
 export const MobileVerificationBoxOrangeThemeMobile = Template.bind({})
@@ -69,7 +71,6 @@ MobileVerificationBoxOrangeThemeMobile.args = {
   fieldType: BasicField.Mobile,
 }
 MobileVerificationBoxOrangeThemeMobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   msw: [
     getPublicFormResponse({
       overrides: {
@@ -81,6 +82,9 @@ MobileVerificationBoxOrangeThemeMobile.parameters = {
       },
     }),
   ],
+}
+MobileVerificationBoxOrangeThemeMobile.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
 }
 
 export const EmailVerificationBox = Template.bind({})
@@ -111,6 +115,8 @@ EmailVerificationBoxMobile.args = {
   fieldType: BasicField.Email,
 }
 EmailVerificationBoxMobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
+}
+EmailVerificationBoxMobile.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
 }

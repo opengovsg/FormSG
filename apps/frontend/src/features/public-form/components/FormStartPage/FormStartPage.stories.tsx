@@ -12,7 +12,7 @@ import {
   getPublicFormWithoutSectionsResponse,
 } from '~/mocks/msw/handlers/public-form'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
 
 import { PublicFormProvider } from '~features/public-form/PublicFormProvider'
 
@@ -127,6 +127,7 @@ OverflowTitleMobile.parameters = {
   ...getMobileViewParameters(),
   ...OverflowTitle.parameters,
 }
+OverflowTitleMobile.globals = getMobileViewGlobals()
 
 export const ColorThemeBrown = Template.bind({})
 ColorThemeBrown.parameters = {
@@ -246,6 +247,7 @@ MiniHeaderMobileWithSections.parameters = {
   ...MiniHeader.parameters,
   ...getMobileViewParameters(),
 }
+MiniHeaderMobileWithSections.globals = getMobileViewGlobals()
 
 export const MiniHeaderMobileWithoutSections = MiniHeaderTemplate.bind({})
 MiniHeaderMobileWithoutSections.args = {
@@ -265,3 +267,4 @@ MiniHeaderMobileWithoutSections.parameters = {
   ],
   ...getMobileViewParameters(),
 }
+MiniHeaderMobileWithoutSections.globals = getMobileViewGlobals()

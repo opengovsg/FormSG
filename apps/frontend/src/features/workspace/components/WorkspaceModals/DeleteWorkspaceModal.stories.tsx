@@ -6,7 +6,7 @@ import { Workspace, WorkspaceId } from 'formsg-shared/types/workspace'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
 
 import {
   DeleteWorkspaceModal,
@@ -47,3 +47,4 @@ export const DeleteWorkspace = Template.bind({})
 
 export const DeleteWorkspaceMobile = Template.bind({})
 DeleteWorkspaceMobile.parameters = getMobileViewParameters()
+DeleteWorkspaceMobile.globals = getMobileViewGlobals()

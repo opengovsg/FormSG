@@ -18,6 +18,7 @@ import { getPreviewFormResponse } from '~/mocks/msw/handlers/admin-form/preview-
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
   StoryRouter,
   viewports,
@@ -177,13 +178,14 @@ Mobile.parameters = {
   ...StorageModeRetryEnabled.parameters,
   ...getMobileViewParameters(),
 }
+Mobile.globals = getMobileViewGlobals()
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
   ...StorageModeRetryEnabled.parameters,
-  globals: { viewport: { value: 'tablet', isRotated: false } },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 const mrfWebhooksGrowthBook = new GrowthBook({
   features: { [featureFlags.enableMrfWebhooks]: { defaultValue: true } },
@@ -340,6 +342,7 @@ StorageModeV4RolloutOnMobile.parameters = {
   ...StorageModeV4RolloutOnWithWebhook.parameters,
   ...getMobileViewParameters(),
 }
+StorageModeV4RolloutOnMobile.globals = getMobileViewGlobals()
 
 export const V4Webhook = Template.bind({})
 V4Webhook.decorators = [withV4Webhooks]

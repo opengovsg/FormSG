@@ -29,6 +29,6 @@ Default.storyName = 'Empty state (no stars selected)'
 export const Mobile = Template.bind({})
 Mobile.storyName = 'Mobile viewport'
 Mobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

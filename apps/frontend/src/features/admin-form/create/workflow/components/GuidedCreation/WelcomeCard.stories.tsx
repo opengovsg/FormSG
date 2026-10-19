@@ -33,10 +33,10 @@ export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
 Mobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: {
     viewports: [viewports.xs],
     pauseAnimationAtEnd: true,
     delay: 1200,
   },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

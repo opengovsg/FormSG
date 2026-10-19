@@ -3,6 +3,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 import { getUnauthedUser } from '~/mocks/msw/handlers/user'
 
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
   LoggedInDecorator,
   LoggedOutDecorator,
@@ -45,6 +46,7 @@ WithMessage.decorators = [LoggedInDecorator]
 
 export const MobileNotLoggedIn = Template.bind({})
 MobileNotLoggedIn.parameters = getMobileViewParameters()
+MobileNotLoggedIn.globals = getMobileViewGlobals()
 MobileNotLoggedIn.decorators = NotLoggedIn.decorators
 
 export const LoggedIn = Template.bind({})
@@ -52,4 +54,5 @@ LoggedIn.decorators = [LoggedInDecorator]
 
 export const MobileLoggedIn = Template.bind({})
 MobileLoggedIn.parameters = getMobileViewParameters()
+MobileLoggedIn.globals = getMobileViewGlobals()
 MobileLoggedIn.decorators = LoggedIn.decorators

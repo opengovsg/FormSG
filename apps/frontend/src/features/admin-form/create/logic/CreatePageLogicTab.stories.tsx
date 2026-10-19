@@ -142,9 +142,9 @@ NoLogic.parameters = {
 export const MobileNoLogic = Template.bind({})
 MobileNoLogic.parameters = {
   msw: { handlers: { default: buildMswRoutes({ form_logics: [] }) } },
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+MobileNoLogic.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const WithLogic = Template.bind({})
 WithLogic.parameters = {
@@ -158,9 +158,9 @@ WithLogic.parameters = {
 export const MobileWithLogic = Template.bind({})
 MobileWithLogic.parameters = {
   msw: { handlers: { default: buildMswRoutes(FORM_WITH_LOGIC) } },
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+MobileWithLogic.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const ErrorIfDeleted = Template.bind({})
 ErrorIfDeleted.parameters = {

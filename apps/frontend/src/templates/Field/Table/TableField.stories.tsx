@@ -174,9 +174,9 @@ Mobile.args = {
   schema: baseSchema,
 }
 Mobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const NoAddableRows = Template.bind({})
 NoAddableRows.args = {

@@ -91,16 +91,16 @@ FormOpen.parameters = {
 export const MobileFormClosed = Template.bind({})
 MobileFormClosed.parameters = {
   ...FormClosed.parameters,
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+MobileFormClosed.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const MobileFormOpen = Template.bind({})
 MobileFormOpen.parameters = {
   ...FormOpen.parameters,
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+MobileFormOpen.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 /**
  * Entered from step 1's delete button. Same outcome and same actions as
@@ -115,6 +115,8 @@ FirstStepFormClosed.parameters = {
 export const MobileFirstStepFormClosed = FirstStepTemplate.bind({})
 MobileFirstStepFormClosed.parameters = {
   ...FirstStepFormClosed.parameters,
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
+}
+MobileFirstStepFormClosed.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
 }

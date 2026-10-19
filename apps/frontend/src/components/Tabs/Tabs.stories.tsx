@@ -54,8 +54,10 @@ WithScrollingLight.args = {
   variant: 'line-light',
 }
 WithScrollingLight.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
+}
+WithScrollingLight.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
 }
 
 export const WithScrollingDark = TabTemplate.bind({})
@@ -63,9 +65,9 @@ WithScrollingDark.args = {
   variant: 'line-dark',
 }
 WithScrollingDark.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+WithScrollingDark.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const VerticalLine = TabTemplate.bind({})
 VerticalLine.args = {

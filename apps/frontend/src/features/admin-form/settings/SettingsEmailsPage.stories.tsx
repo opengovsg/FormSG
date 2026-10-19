@@ -21,6 +21,7 @@ import {
 } from '~/mocks/msw/handlers/admin-form'
 
 import {
+  getMobileViewGlobals,
   getMobileViewParameters,
   StoryRouter,
   viewports,
@@ -380,10 +381,11 @@ Mobile.parameters = {
   ...NoEmailsAddedForm,
   ...getMobileViewParameters(),
 }
+Mobile.globals = getMobileViewGlobals()
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
   ...NoEmailsAddedForm,
-  globals: { viewport: { value: 'tablet', isRotated: false } },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }

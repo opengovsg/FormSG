@@ -173,12 +173,12 @@ Mobile.args = {
   helperText: '1: Strongly agree, 10: Strongly disagree',
 }
 Mobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   controls: {
     include: ['name', 'colorScheme', 'wrapComponentsPerRow', 'helperText'],
   },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const Tablet = ResponsiveGroup.bind({})
 Tablet.args = {
@@ -186,12 +186,12 @@ Tablet.args = {
   helperText: '1: Strongly agree, 10: Strongly disagree',
 }
 Tablet.parameters = {
-  globals: { viewport: { value: 'tablet', isRotated: false } },
   controls: {
     include: ['name', 'colorScheme', 'wrapComponentsPerRow', 'helperText'],
   },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Playground: StoryFn = ({
   name,

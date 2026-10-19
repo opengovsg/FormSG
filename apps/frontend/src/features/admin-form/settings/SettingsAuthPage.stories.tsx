@@ -338,7 +338,6 @@ PrivateStorageMyInfoUpdateWhitelistValidationErrorForm.parameters = {
 
 export const Tablet = Template.bind({})
 Tablet.parameters = {
-  globals: { viewport: { value: 'tablet', isRotated: false } },
   chromatic: { viewports: [viewports.md] },
   msw: {
     handlers: {
@@ -348,10 +347,10 @@ Tablet.parameters = {
     },
   },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Mobile = Template.bind({})
 Mobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
   msw: {
     handlers: {
@@ -361,6 +360,7 @@ Mobile.parameters = {
     },
   },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const Loading = Template.bind({})
 Loading.parameters = {

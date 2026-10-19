@@ -10,7 +10,11 @@ import {
   patchAdminFormSettings,
 } from '~/mocks/msw/handlers/admin-form'
 
-import { getMobileViewParameters, StoryRouter } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  StoryRouter,
+} from '~utils/storybook'
 
 import { SettingsGeneralPage } from './SettingsGeneralPage'
 
@@ -99,3 +103,4 @@ Mobile.parameters = {
   ...WithScheduledClosure.parameters,
   ...getMobileViewParameters(),
 }
+Mobile.globals = getMobileViewGlobals()

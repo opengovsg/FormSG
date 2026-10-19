@@ -218,14 +218,22 @@ export const viewports = {
 
 export const getMobileViewParameters = () => {
   return {
-    globals: { viewport: { value: 'mobile1', isRotated: false } },
     chromatic: { viewports: [viewports.xs] },
   }
 }
 
+/** Assign to `Story.globals`: Storybook ignores globals under parameters. */
+export const getMobileViewGlobals = () => {
+  return { viewport: { value: 'mobile1', isRotated: false } }
+}
+
 export const getTabletViewParameters = () => {
   return {
-    globals: { viewport: { value: 'tablet', isRotated: false } },
     chromatic: { viewports: [viewports.md] },
   }
+}
+
+/** Assign to `Story.globals`: Storybook ignores globals under parameters. */
+export const getTabletViewGlobals = () => {
+  return { viewport: { value: 'tablet', isRotated: false } }
 }

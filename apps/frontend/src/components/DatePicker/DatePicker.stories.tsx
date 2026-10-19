@@ -1,6 +1,10 @@
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewParameters, mockDateDecorator } from '~utils/storybook'
+import {
+  getMobileViewGlobals,
+  getMobileViewParameters,
+  mockDateDecorator,
+} from '~utils/storybook'
 
 import { DatePicker, DatePickerProps } from './DatePicker'
 
@@ -29,6 +33,7 @@ DatePickerDisallowManualInput.args = {
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()
 
 export const Prefilled = Template.bind({})
 Prefilled.args = {

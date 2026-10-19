@@ -3,7 +3,7 @@ import { Meta, StoryFn } from '@storybook/react-vite'
 
 import { userHandlers } from '~/mocks/msw/handlers/user'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
 
 import {
   CreateWorkspaceModal,
@@ -37,3 +37,4 @@ export const CreateWorkspace = Template.bind({})
 
 export const CreateWorkspaceMobile = Template.bind({})
 CreateWorkspaceMobile.parameters = getMobileViewParameters()
+CreateWorkspaceMobile.globals = getMobileViewGlobals()

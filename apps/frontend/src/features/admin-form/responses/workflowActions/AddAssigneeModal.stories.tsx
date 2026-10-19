@@ -1,7 +1,7 @@
 import { Box } from '@chakra-ui/react'
 import { Meta, StoryFn } from '@storybook/react-vite'
 
-import { getMobileViewParameters } from '~utils/storybook'
+import { getMobileViewGlobals, getMobileViewParameters } from '~utils/storybook'
 
 import { AddAssigneeModal, AddAssigneeModalProps } from './AddAssigneeModal'
 
@@ -35,3 +35,4 @@ export const Default = Template.bind({})
 
 export const Mobile = Template.bind({})
 Mobile.parameters = getMobileViewParameters()
+Mobile.globals = getMobileViewGlobals()

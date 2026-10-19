@@ -62,17 +62,17 @@ Mobile.args = {
   schema: baseSchema,
 }
 Mobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }
 export const Tablet = Template.bind({})
 Tablet.args = {
   schema: baseSchema,
 }
 Tablet.parameters = {
-  globals: { viewport: { value: 'tablet', isRotated: false } },
   chromatic: { viewports: [viewports.md] },
 }
+Tablet.globals = { viewport: { value: 'tablet', isRotated: false } }
 
 export const Loading = Template.bind({})
 Loading.args = {

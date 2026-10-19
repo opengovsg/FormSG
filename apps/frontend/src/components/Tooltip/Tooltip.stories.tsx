@@ -89,6 +89,6 @@ const MobileTemplate: StoryFn<TooltipProps> = (args) => {
 
 export const Mobile = MobileTemplate.bind({})
 Mobile.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+Mobile.globals = { viewport: { value: 'mobile1', isRotated: false } }

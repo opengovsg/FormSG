@@ -22,15 +22,15 @@ const Template: StoryFn<GovtMastheadProps> = (args) => (
 
 export const MobileDefault = Template.bind({})
 MobileDefault.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+MobileDefault.globals = { viewport: { value: 'mobile1', isRotated: false } }
 
 export const MobileExpanded = Template.bind({})
 MobileExpanded.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
 }
+MobileExpanded.globals = { viewport: { value: 'mobile1', isRotated: false } }
 MobileExpanded.storyName = 'Mobile/Expanded'
 MobileExpanded.args = {
   defaultIsOpen: true,

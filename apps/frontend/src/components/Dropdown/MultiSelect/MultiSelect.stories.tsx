@@ -97,8 +97,10 @@ MobileTruncatedOption.args = {
   defaultIsOpen: true,
 }
 MobileTruncatedOption.parameters = {
-  globals: { viewport: { value: 'mobile1', isRotated: false } },
   chromatic: { viewports: [viewports.xs] },
+}
+MobileTruncatedOption.globals = {
+  viewport: { value: 'mobile1', isRotated: false },
 }
 
 export const Invalid = Template.bind({})
