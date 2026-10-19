@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [9.50.0](https://github.com/opengovsg/formsg/compare/v9.49.1...v9.50.0) (2026-10-19)
+
+
+### Features
+
+* **frontend:** polish NRIC field conversion copy (#10300) ([#10300](https://github.com/opengovsg/formsg/commit/c0350137cedcc5afcd8d2ac795482362a59c1de3))
+* show the login on NRIC/FIN badges and prefix Corppass answers [Myinfo] (#10309) ([#10309](https://github.com/opengovsg/formsg/commit/4a18a2ee3df213d5b8790f06f7e4cbc57692e2f5))
+
 ## [9.49.1](https://github.com/opengovsg/formsg/compare/v9.49.0...v9.49.1) (2026-10-16)
 
 
