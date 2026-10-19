@@ -74,6 +74,7 @@ interface UnlockedResponsesContextProps {
   columnFilters: SavedViewColumnFilter[]
   /** Blank text clears the column's filter. */
   setColumnFilter: (columnId: string, text: string) => void
+  clearColumnFilters: () => void
   sortColumnId?: string
   sortDirection: ResponseSortDirection
   setSort: (
@@ -173,6 +174,8 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       ),
     [columnOptions],
   )
+
+  const clearColumnFilters = useCallback(() => setColumnFilters([]), [])
 
   const {
     page: [currentPage, setCurrentPage],
@@ -381,6 +384,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     setAllColumnsVisible,
     columnFilters,
     setColumnFilter,
+    clearColumnFilters,
     sortColumnId,
     sortDirection,
     setSort,

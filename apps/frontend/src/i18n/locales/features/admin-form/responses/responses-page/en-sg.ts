@@ -80,6 +80,7 @@ export const enSG: ResponsesResponsesPage = {
         filterApplied: 'Filter applied',
         filterPlaceholder: 'Contains...',
         clearFilter: 'Clear filter',
+        clearAllFilters: 'Clear all filters',
       },
       views: {
         allResponses: 'All responses',

@@ -1,10 +1,18 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { BiFilterAlt } from 'react-icons/bi'
-import { Box, MenuButton, MenuList, Stack, Text } from '@chakra-ui/react'
+import {
+  Box,
+  Divider,
+  MenuButton,
+  MenuList,
+  Stack,
+  Text,
+} from '@chakra-ui/react'
 
 import { DateString } from 'formsg-shared/types'
 
+import Button from '~components/Button'
 import {
   DateRangePicker,
   dateRangePickerHelper,
@@ -30,11 +38,15 @@ export const FilterMenu = ({
   isIconOnly?: boolean
 }): JSX.Element => {
   const { t } = useTranslation()
-  const { dateRange: dateRangeLabel, columns: columnsLabel } = t(
+  const {
+    dateRange: dateRangeLabel,
+    columns: columnsLabel,
+    clearAllFilters: clearAllFiltersLabel,
+  } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.filterMenu',
     { returnObjects: true },
   )
-  const { columnOptions, columnFilters, setColumnFilter } =
+  const { columnOptions, columnFilters, setColumnFilter, clearColumnFilters } =
     useUnlockedResponses()
   const [openColumnId, setOpenColumnId] = useState<string>()
   const { dateRange, setDateRange } = useStorageResponsesContext()
@@ -50,6 +62,15 @@ export const FilterMenu = ({
         setOpenColumnId(undefined)
       },
     })
+
+  const hasFilters = dateRange.length > 0 || columnFilters.length > 0
+
+  const handleClearAllFilters = () => {
+    setOpenColumnId(undefined)
+    clearColumnFilters()
+    setDraftDateRange([])
+    setDateRange([])
+  }
 
   const handleDateRangeChange = (nextDateRange: DateString[]) => {
     setDraftDateRange(nextDateRange)
@@ -129,6 +150,16 @@ export const FilterMenu = ({
                   />
                 ))}
               </Stack>
+            </Box>
+            <Divider />
+            <Box px="1rem" py="0.75rem">
+              <Button
+                variant="clear"
+                isDisabled={!hasFilters}
+                onClick={handleClearAllFilters}
+              >
+                {clearAllFiltersLabel}
+              </Button>
             </Box>
           </MenuList>
         </>
