@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { BiSave } from 'react-icons/bi'
-import { Box, Flex, useBreakpointValue, useDisclosure } from '@chakra-ui/react'
+import { Flex, useBreakpointValue, useDisclosure } from '@chakra-ui/react'
 
 import { MAX_SAVED_VIEWS } from 'formsg-shared/constants'
 
@@ -11,7 +11,6 @@ import Tooltip from '~components/Tooltip'
 import { ColumnsMenu } from './ColumnsMenu'
 import { DownloadButton } from './DownloadButton'
 import { FilterMenu } from './FilterMenu'
-import { ResponsesSearchbar } from './ResponsesSearchbar'
 import { matchesSavedView, toSavedViewInput } from './savedViews'
 import { SaveViewModal } from './SaveViewModal'
 import { SortMenu } from './SortMenu'
@@ -84,10 +83,6 @@ export const ResponsesToolbar = (): JSX.Element => {
       mb="1rem"
       flexShrink={0}
     >
-      <Box w={{ base: '100%', lg: '18rem' }} flexShrink={0}>
-        <ResponsesSearchbar key={selectedViewId} />
-      </Box>
-
       <Flex align="center" justify="space-between" gap="0.75rem" flex={1}>
         <Flex align="center" gap="0.75rem">
           <FilterMenu isIconOnly={isIconOnly} />

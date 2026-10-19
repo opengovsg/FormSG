@@ -10,6 +10,7 @@ import {
 import {
   DateString,
   FormSavedView,
+  SavedViewColumnFilter,
   SavedViewSortDirection,
   SubmissionMetadata,
 } from 'formsg-shared/types'
@@ -32,14 +33,14 @@ import {
   fromSavedView,
   hasActiveViewState,
   ResponsesViewState,
+  withColumnFilter,
 } from './savedViews'
 
 export const ALL_RESPONSES_VIEW_ID = 'all-responses'
 
 const EMPTY_VIEW_STATE: ResponsesViewState = {
   dateRange: [] as DateString[],
-  searchText: '',
-  excludedSearchColumnIds: [],
+  columnFilters: [],
   hiddenColumnIds: [],
   sortColumnId: undefined,
   sortDirection: SavedViewSortDirection.Descending,
@@ -69,19 +70,19 @@ interface UnlockedResponsesContextProps {
   hiddenColumnIds: string[]
   toggleColumnVisibility: (columnId: string) => void
   setAllColumnsVisible: (isVisible: boolean) => void
-  searchText: string
-  setSearchText: (searchText: string) => void
-  excludedSearchColumnIds: string[]
-  toggleSearchColumn: (columnId: string) => void
-  setAllSearchColumns: (isSearchable: boolean) => void
+  /** Every filter must match, so each one narrows the rows. */
+  columnFilters: SavedViewColumnFilter[]
+  /** Blank text clears the column's filter. */
+  setColumnFilter: (columnId: string, text: string) => void
   sortColumnId?: string
   sortDirection: ResponseSortDirection
   setSort: (
     columnId: string | undefined,
     direction: ResponseSortDirection,
   ) => void
-  searchResultCount?: number
-  setSearchResultCount: (count?: number) => void
+  /** Rows left by the column filters, undefined when none are applied. */
+  filterResultCount?: number
+  setFilterResultCount: (count?: number) => void
   visibleSubmissionIds?: string[]
   setVisibleSubmissionIds: (submissionIds?: string[]) => void
   isFullyLoaded: boolean
@@ -159,25 +160,16 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   )
 
   const [renderedRowCount, setRenderedRowCount] = useState(0)
-  const [searchText, setSearchText] = useState('')
-  const [searchResultCount, setSearchResultCount] = useState<number>()
+  const [filterResultCount, setFilterResultCount] = useState<number>()
   const [visibleSubmissionIds, setVisibleSubmissionIds] = useState<string[]>()
-  const [excludedSearchColumnIds, setExcludedSearchColumnIds] = useState<
-    string[]
-  >([])
+  const [columnFilters, setColumnFilters] = useState<SavedViewColumnFilter[]>(
+    [],
+  )
 
-  const toggleSearchColumn = useCallback((columnId: string) => {
-    setExcludedSearchColumnIds((excluded) =>
-      excluded.includes(columnId)
-        ? excluded.filter((id) => id !== columnId)
-        : [...excluded, columnId],
-    )
-  }, [])
-
-  const setAllSearchColumns = useCallback(
-    (isSearchable: boolean) =>
-      setExcludedSearchColumnIds(
-        isSearchable ? [] : columnOptions.map(({ id }) => id),
+  const setColumnFilter = useCallback(
+    (columnId: string, text: string) =>
+      setColumnFilters((current) =>
+        withColumnFilter(current, columnId, text, columnOptions),
       ),
     [columnOptions],
   )
@@ -350,20 +342,12 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
   const currentViewState: ResponsesViewState = useMemo(
     () => ({
       dateRange,
-      searchText,
-      excludedSearchColumnIds,
+      columnFilters,
       hiddenColumnIds,
       sortColumnId,
       sortDirection,
     }),
-    [
-      dateRange,
-      excludedSearchColumnIds,
-      hiddenColumnIds,
-      searchText,
-      sortColumnId,
-      sortDirection,
-    ],
+    [columnFilters, dateRange, hiddenColumnIds, sortColumnId, sortDirection],
   )
 
   const hasActiveFilters = hasActiveViewState(currentViewState)
@@ -374,8 +358,7 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
       const view = savedViews.find(({ _id }) => _id === viewId)
       const next = view ? fromSavedView(view, columnOptions) : EMPTY_VIEW_STATE
       setDateRange(next.dateRange)
-      setSearchText(next.searchText)
-      setExcludedSearchColumnIds(next.excludedSearchColumnIds)
+      setColumnFilters(next.columnFilters)
       setHiddenColumnIds(next.hiddenColumnIds)
       setSortColumnId(next.sortColumnId)
       setSortDirection(next.sortDirection)
@@ -396,16 +379,13 @@ const useProvideUnlockedResponses = (): UnlockedResponsesContextProps => {
     hiddenColumnIds,
     toggleColumnVisibility,
     setAllColumnsVisible,
-    searchText,
-    setSearchText,
-    excludedSearchColumnIds,
-    toggleSearchColumn,
-    setAllSearchColumns,
+    columnFilters,
+    setColumnFilter,
     sortColumnId,
     sortDirection,
     setSort,
-    searchResultCount,
-    setSearchResultCount,
+    filterResultCount,
+    setFilterResultCount,
     visibleSubmissionIds,
     setVisibleSubmissionIds,
     isFullyLoaded,

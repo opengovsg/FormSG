@@ -42,7 +42,7 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
     filteredCount,
     submissionId,
     isAnyFetching,
-    searchResultCount,
+    filterResultCount,
     savedViews,
     selectedViewId,
     isShowingRecentOnly,
@@ -97,13 +97,13 @@ const DelightfulUnlockedResponses = (): JSX.Element => {
             noOfLines={{ base: 2, md: 1 }}
           >
             <Text as="span" color="primary.500">
-              {(searchResultCount ?? countToUse)?.toLocaleString()}
+              {(filterResultCount ?? countToUse)?.toLocaleString()}
             </Text>{' '}
             {t(
-              searchResultCount !== undefined
+              filterResultCount !== undefined
                 ? 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.resultsFound'
                 : 'features.adminForm.responses.responsesPage.storage.unlockedResponses.unlockedResponses.responsesToDate',
-              { count: searchResultCount ?? countToUse ?? 0 },
+              { count: filterResultCount ?? countToUse ?? 0 },
             )}
           </Text>
           {isShowingRecentOnly ? (

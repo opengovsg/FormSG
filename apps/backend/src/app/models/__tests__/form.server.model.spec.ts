@@ -194,6 +194,36 @@ describe('Form Model', () => {
         expect(actualSavedObject).toEqual(expectedObject)
       })
 
+      it('should keep saved view column filters, without old search fields', async () => {
+        // Arrange
+        const formParams = merge({}, MOCK_FORM_PARAMS, {
+          savedViews: [
+            {
+              name: 'Pending in Bedok',
+              filter: {
+                columnFilters: [
+                  { columnId: 'status', text: 'pending' },
+                  { columnId: 'address', text: 'bedok' },
+                ],
+                searchText: 'from an older schema',
+              },
+            },
+          ],
+        })
+
+        // Act
+        const saved = await new Form(formParams).save()
+        const found = await Form.findById(saved._id).lean()
+
+        // Assert
+        expect(found?.savedViews?.[0].filter).toEqual({
+          columnFilters: [
+            { columnId: 'status', text: 'pending' },
+            { columnId: 'address', text: 'bedok' },
+          ],
+        })
+      })
+
       it('should create and save successfully with valid esrvcId', async () => {
         // Arrange
         const validEsrvcId = 'validEsrvcId'

@@ -34,7 +34,6 @@ vi.mock('./useSavedViewMutation', () => ({
   }),
 }))
 
-vi.mock('./ResponsesSearchbar', () => ({ ResponsesSearchbar: () => null }))
 vi.mock('./FilterMenu', () => ({ FilterMenu: () => null }))
 vi.mock('./SortMenu', () => ({ SortMenu: () => null }))
 vi.mock('./ColumnsMenu', () => ({ ColumnsMenu: () => null }))
@@ -48,13 +47,12 @@ const COLUMN_OPTIONS = [
 const VIEW: FormSavedView = {
   _id: 'view-1',
   name: 'Pending approvals',
-  filter: { searchText: 'pending' },
+  filter: { columnFilters: [{ columnId: 'a', text: 'pending' }] },
 }
 
 const VIEW_STATE: ResponsesViewState = {
   dateRange: [],
-  searchText: 'pending',
-  excludedSearchColumnIds: [],
+  columnFilters: [{ columnId: 'a', text: 'pending' }],
   hiddenColumnIds: [],
   sortColumnId: undefined,
   sortDirection: SavedViewSortDirection.Descending,
@@ -101,7 +99,7 @@ describe('the save view button', () => {
       savedViewId: VIEW._id,
       savedView: {
         name: VIEW.name,
-        filter: { searchText: 'pending' },
+        filter: { columnFilters: [{ columnId: 'a', text: 'pending' }] },
         columnIds: ['a'],
       },
     })
@@ -118,7 +116,10 @@ describe('the save view button', () => {
   it('saves changes to the selected view even when the form has the most views allowed', () => {
     renderToolbar({
       selectedViewId: VIEW._id,
-      currentViewState: { ...VIEW_STATE, searchText: 'approved' },
+      currentViewState: {
+        ...VIEW_STATE,
+        columnFilters: [{ columnId: 'a', text: 'approved' }],
+      },
       savedViews: Array.from({ length: MAX_SAVED_VIEWS }, (_, i) => ({
         ...VIEW,
         _id: i === 0 ? VIEW._id : `view-${i + 1}`,
@@ -131,7 +132,10 @@ describe('the save view button', () => {
   it('asks for a name and saves a new view from All responses', async () => {
     renderToolbar({
       selectedViewId: ALL_RESPONSES_VIEW_ID,
-      currentViewState: { ...VIEW_STATE, searchText: 'approved' },
+      currentViewState: {
+        ...VIEW_STATE,
+        columnFilters: [{ columnId: 'a', text: 'approved' }],
+      },
     })
     const user = userEvent.setup()
 
@@ -141,7 +145,7 @@ describe('the save view button', () => {
 
     expect(mockCreateView).toHaveBeenCalledWith({
       name: 'Approved',
-      filter: { searchText: 'approved' },
+      filter: { columnFilters: [{ columnId: 'a', text: 'approved' }] },
     })
     expect(mockUpdateView).not.toHaveBeenCalled()
   })

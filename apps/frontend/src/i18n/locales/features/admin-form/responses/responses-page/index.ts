@@ -66,6 +66,9 @@ export interface ResponsesResponsesPage {
       filterMenu: {
         dateRange: string
         columns: string
+        filterApplied: string
+        filterPlaceholder: string
+        clearFilter: string
       }
       views: {
         allResponses: string

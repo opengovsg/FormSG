@@ -1,3 +1,5 @@
+import { SavedViewColumnFilter } from 'formsg-shared/types'
+
 /**
  * The responses table and the CSV export search the same way but read different
  * values: the table matches what a cell renders, the export what it writes. The
@@ -6,13 +8,6 @@
 
 export const normaliseSearchQuery = (searchValue: string): string =>
   searchValue.trim().toLowerCase()
-
-/** Columns the admin has not excluded from search. */
-export const searchableColumnIds = (
-  columnIds: string[],
-  excludedColumnIds: string[],
-): string[] =>
-  columnIds.filter((columnId) => !excludedColumnIds.includes(columnId))
 
 /** A row matches when any searchable value contains the query. */
 export const matchesSearchQuery = (
@@ -26,3 +21,15 @@ export const matchesSearchQuery = (
       value.toLowerCase().includes(normalisedQuery),
   )
 }
+
+/**
+ * A row matches when every filtered column's value contains its filter text,
+ * so each filter narrows the rows.
+ */
+export const matchesColumnFilters = (
+  getColumnValue: (columnId: string) => string | undefined,
+  columnFilters: SavedViewColumnFilter[],
+): boolean =>
+  columnFilters.every(({ columnId, text }) =>
+    matchesSearchQuery([getColumnValue(columnId)], normaliseSearchQuery(text)),
+  )

@@ -5,7 +5,6 @@ import { Box, MenuButton, MenuList, Stack, Text } from '@chakra-ui/react'
 
 import { DateString } from 'formsg-shared/types'
 
-import Checkbox from '~components/Checkbox'
 import {
   DateRangePicker,
   dateRangePickerHelper,
@@ -15,7 +14,7 @@ import Menu from '~components/Menu'
 import { useStorageResponsesContext } from '../StorageResponsesContext'
 
 import { useToolbarMenuDisclosure } from './hooks/useToolbarMenuDisclosure'
-import { CheckAllFooter } from './CheckAllFooter'
+import { ColumnFilterRow } from './ColumnFilterRow'
 import { toolbarMenuButtonProps } from './toolbarButtonProps'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
@@ -31,16 +30,13 @@ export const FilterMenu = ({
   isIconOnly?: boolean
 }): JSX.Element => {
   const { t } = useTranslation()
-  const { dateRange: dateRangeLabel, columns } = t(
+  const { dateRange: dateRangeLabel, columns: columnsLabel } = t(
     'features.adminForm.responses.responsesPage.storage.unlockedResponses.filterMenu',
     { returnObjects: true },
   )
-  const {
-    columnOptions,
-    excludedSearchColumnIds,
-    toggleSearchColumn,
-    setAllSearchColumns,
-  } = useUnlockedResponses()
+  const { columnOptions, columnFilters, setColumnFilter } =
+    useUnlockedResponses()
+  const [openColumnId, setOpenColumnId] = useState<string>()
   const { dateRange, setDateRange } = useStorageResponsesContext()
 
   const [draftDateRange, setDraftDateRange] = useState(dateRange)
@@ -49,7 +45,10 @@ export const FilterMenu = ({
 
   const { isOpen, onOpen, onClose, buttonRef, listRef } =
     useToolbarMenuDisclosure({
-      onClose: () => setDraftDateRange(dateRange),
+      onClose: () => {
+        setDraftDateRange(dateRange)
+        setOpenColumnId(undefined)
+      },
     })
 
   const handleDateRangeChange = (nextDateRange: DateString[]) => {
@@ -109,25 +108,28 @@ export const FilterMenu = ({
                 />
               </Box>
 
-              <SectionLabel>{columns}</SectionLabel>
-              <Stack spacing={0}>
+              <SectionLabel>{columnsLabel}</SectionLabel>
+              <Stack spacing={0} pt="0.5rem" pb="0.5rem">
                 {columnOptions.map(({ id, label }) => (
-                  <Checkbox
+                  <ColumnFilterRow
                     key={id}
-                    px="1rem"
-                    py="0.5rem"
-                    isChecked={!excludedSearchColumnIds.includes(id)}
-                    onChange={() => toggleSearchColumn(id)}
-                  >
-                    {label}
-                  </Checkbox>
+                    label={label}
+                    text={
+                      columnFilters.find(({ columnId }) => columnId === id)
+                        ?.text ?? ''
+                    }
+                    isOpen={openColumnId === id}
+                    onOpen={() => setOpenColumnId(id)}
+                    onClose={() =>
+                      setOpenColumnId((current) =>
+                        current === id ? undefined : current,
+                      )
+                    }
+                    onFilter={(text) => setColumnFilter(id, text)}
+                  />
                 ))}
               </Stack>
             </Box>
-            <CheckAllFooter
-              onCheckAll={() => setAllSearchColumns(true)}
-              onUncheckAll={() => setAllSearchColumns(false)}
-            />
           </MenuList>
         </>
       )}

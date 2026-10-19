@@ -6,6 +6,8 @@ import {
   normaliseSort,
   RESPONSE_NUMBER_COLUMN_ID,
   ResponsesViewState,
+  toSavedViewInput,
+  withColumnFilter,
 } from './savedViews'
 
 const COLUMN_OPTIONS = [
@@ -16,8 +18,7 @@ const COLUMN_OPTIONS = [
 
 const STATE: ResponsesViewState = {
   dateRange: [],
-  searchText: 'pending',
-  excludedSearchColumnIds: [],
+  columnFilters: [{ columnId: 'a', text: 'pending' }],
   hiddenColumnIds: ['c', 'a'],
   sortColumnId: 'b',
   sortDirection: SavedViewSortDirection.Ascending,
@@ -26,7 +27,7 @@ const STATE: ResponsesViewState = {
 const VIEW: FormSavedView = {
   _id: 'view-1',
   name: 'Pending',
-  filter: { searchText: 'pending' },
+  filter: { columnFilters: [{ columnId: 'a', text: 'pending' }] },
   sort: { columnId: 'b', direction: SavedViewSortDirection.Ascending },
   columnIds: ['b'],
 }
@@ -61,7 +62,7 @@ describe('matchesSavedView', () => {
     }
     expect(
       matchesSavedView(
-        { ...STATE, searchText: '', sortColumnId: undefined },
+        { ...STATE, columnFilters: [], sortColumnId: undefined },
         [view],
         COLUMN_OPTIONS,
       ),
@@ -112,5 +113,72 @@ describe('fromSavedView', () => {
     expect(fromSavedView(view, COLUMN_OPTIONS).sortColumnId).toBe(
       RESPONSE_NUMBER_COLUMN_ID,
     )
+  })
+})
+
+describe('withColumnFilter', () => {
+  it('keeps filters in column order, however they were added', () => {
+    const filters = withColumnFilter(
+      [{ columnId: 'c', text: 'x' }],
+      'a',
+      'y',
+      COLUMN_OPTIONS,
+    )
+    expect(filters).toEqual([
+      { columnId: 'a', text: 'y' },
+      { columnId: 'c', text: 'x' },
+    ])
+  })
+
+  it("replaces a column's filter", () => {
+    expect(
+      withColumnFilter(
+        [{ columnId: 'a', text: 'old' }],
+        'a',
+        'new',
+        COLUMN_OPTIONS,
+      ),
+    ).toEqual([{ columnId: 'a', text: 'new' }])
+  })
+
+  it("clears a column's filter on blank text", () => {
+    expect(
+      withColumnFilter(
+        [{ columnId: 'a', text: 'old' }],
+        'a',
+        '   ',
+        COLUMN_OPTIONS,
+      ),
+    ).toEqual([])
+  })
+})
+
+describe('column filters in a saved view', () => {
+  it('saves and restores them', () => {
+    const input = toSavedViewInput('Pending', STATE, COLUMN_OPTIONS)
+    expect(input.filter?.columnFilters).toEqual([
+      { columnId: 'a', text: 'pending' },
+    ])
+    expect(
+      fromSavedView({ _id: 'view-4', ...input }, COLUMN_OPTIONS).columnFilters,
+    ).toEqual(STATE.columnFilters)
+  })
+
+  it('drops a filter on a column the table no longer has', () => {
+    const view: FormSavedView = {
+      _id: 'view-5',
+      name: 'Gone',
+      filter: { columnFilters: [{ columnId: 'deleted', text: 'x' }] },
+    }
+    expect(fromSavedView(view, COLUMN_OPTIONS).columnFilters).toEqual([])
+  })
+
+  it('ignores a view saved with the old search fields', () => {
+    const view = {
+      _id: 'view-6',
+      name: 'Old',
+      filter: { searchText: 'pending', searchColumnIds: ['a'] },
+    } as unknown as FormSavedView
+    expect(fromSavedView(view, COLUMN_OPTIONS).columnFilters).toEqual([])
   })
 })

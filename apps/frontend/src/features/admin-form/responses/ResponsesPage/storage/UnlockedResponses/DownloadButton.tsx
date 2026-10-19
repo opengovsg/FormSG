@@ -138,8 +138,7 @@ export const DownloadButton = ({
   const {
     visibleSubmissionIds,
     isFullyLoaded,
-    searchText,
-    excludedSearchColumnIds,
+    columnFilters,
     sortColumnId,
     sortDirection,
     hiddenColumnIds,
@@ -164,7 +163,7 @@ export const DownloadButton = ({
   const csvView = useMemo((): CsvExportView | undefined => {
     if (!isDelightfulDashboard) return undefined
     return {
-      ...(exportSubmissionIds ? {} : { searchText, excludedSearchColumnIds }),
+      ...(exportSubmissionIds ? {} : { columnFilters }),
       sortColumnId,
       sortDirection,
       hiddenColumnIds,
@@ -175,12 +174,11 @@ export const DownloadButton = ({
         : {}),
     }
   }, [
+    columnFilters,
     columnOptions,
-    excludedSearchColumnIds,
     exportSubmissionIds,
     hiddenColumnIds,
     isDelightfulDashboard,
-    searchText,
     sortColumnId,
     sortDirection,
   ])
