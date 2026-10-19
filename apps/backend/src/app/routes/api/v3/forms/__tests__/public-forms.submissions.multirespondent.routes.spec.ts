@@ -98,4 +98,13 @@ describe('POST /forms/:formId/submissions/multirespondent', () => {
 
     expect(response.status).toBe(422)
   })
+
+  it.each([null, 'not-an-object'])(
+    'should return 422 when the attachment answer is %p',
+    async (answer) => {
+      const response = await submitAttachment({ answer, withFilePart: true })
+
+      expect(response.status).toBe(422)
+    },
+  )
 })
