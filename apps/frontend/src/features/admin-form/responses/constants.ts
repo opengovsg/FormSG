@@ -19,6 +19,22 @@ export const CSV_FIXED_COLUMN_IDS = [
   CSV_MRF_PENDING_RESPONSE_AT_COLUMN_ID,
 ]
 
+// Reserved pseudo-field ids for the payment details CsvRecord injects. Kept
+// static so the generator puts each value in the same column on every row.
+export const CSV_PAYMENT_COLUMN_IDS = {
+  id: '000000000000000000000001',
+  amount: '000000000000000000000002',
+  email: '000000000000000000000003',
+  status: '000000000000000000000004',
+  paymentDate: '000000000000000000000005',
+  paymentIntentId: '000000000000000000000006',
+  transactionFee: '000000000000000000000007',
+  receiptUrl: '000000000000000000000008',
+  payoutId: '000000000000000000000009',
+  payoutDate: '00000000000000000000000a',
+  products: '00000000000000000000000b',
+} as const
+
 export const TABLE_DECRYPTION_LIMIT = 10000
 
 export const TABLE_ROW_RENDER_CHUNK = 50
