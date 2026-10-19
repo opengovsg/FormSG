@@ -15,8 +15,10 @@ import {
 import { FormAuthType, FormSettings } from 'formsg-shared/types/form'
 import { getLoginIdentityAttrsForAuthType } from 'formsg-shared/utils/login-identity'
 
+import { GUIDE_NRIC_FIELD } from '~constants/links'
 import Button from '~components/Button'
 import InlineMessage from '~components/InlineMessage'
+import Link from '~components/Link'
 import { ModalCloseButton } from '~components/Modal'
 
 import { useMutateFormSettings } from '../../mutations'
@@ -52,7 +54,21 @@ export const SubmitterIdCollectionSetting = ({
         <Stack spacing="0.75rem" align="flex-start">
           <Stack spacing={0}>
             <Text>{t('stopHint')}</Text>
-            <Text>{t('autoConvertNotice')}</Text>
+            <Text>
+              <Trans
+                t={t}
+                i18nKey="autoConvertNotice"
+                components={{
+                  guideLink: (
+                    <Link
+                      href={GUIDE_NRIC_FIELD}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    />
+                  ),
+                }}
+              />
+            </Text>
           </Stack>
           <Button
             variant="outline"

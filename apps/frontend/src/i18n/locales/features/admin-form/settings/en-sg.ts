@@ -19,7 +19,7 @@ export const enSG = {
       stopHint:
         'You cannot disable this anymore. Convert to fields and delete them instead.',
       autoConvertNotice:
-        'This will automatically be converted for you by end Jun 2027.',
+        'This will automatically be converted for you by end Jun 2027. <guideLink>Learn more</guideLink>.',
       otherFormsAutoConvertNotice:
         'This will automatically be converted for other forms by end Jun 2027.',
       preview: {

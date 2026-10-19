@@ -22,6 +22,7 @@ export const GUIDE_SINGPASS_FEATURES =
   'https://go.gov.sg/formsg-guide-singpass-myinfo'
 export const GUIDE_SPCP_ESRVCID =
   'https://go.gov.sg/formsg-guide-singpass-myinfo'
+export const GUIDE_NRIC_FIELD = 'https://go.gov.sg/nric-field'
 export const GUIDE_ENABLE_SPCP =
   'https://go.gov.sg/formsg-guide-singpass-myinfo-enable'
 export const GUIDE_ATTACHMENT_SIZE_LIMIT =
