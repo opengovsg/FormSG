@@ -54,7 +54,7 @@ describe('getFieldColumnHeader', () => {
     ).toBe('[Myinfo] NRIC/FIN')
   })
 
-  it('uses the Myinfo prefix for a Corppass login identity field', () => {
+  it('prefixes a Corppass login identity field as Myinfo', () => {
     expect(
       getFieldColumnHeader(
         field({
