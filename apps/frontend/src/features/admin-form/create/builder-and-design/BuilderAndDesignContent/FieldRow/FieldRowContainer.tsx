@@ -64,6 +64,7 @@ import { CreatePageSidebarContextProps } from '~features/admin-form/create/commo
 import {
   augmentWithMyInfoDisplayValue,
   extractPreviewValue,
+  getFieldLoginLabel,
   getFieldSourceLabel,
   hasExistingFieldValue,
 } from '~features/myinfo/utils'
@@ -159,6 +160,7 @@ const FieldRowContainer = ({
   )
 
   const sourceBadge = getFieldSourceLabel(field)
+  const loginBadge = getFieldLoginLabel(field)
 
   // Explicitly defining isActive here to prevent constant checks to undefined
   // due to falsy nature of FieldBuilderState.CreatingField = 0
@@ -369,6 +371,7 @@ const FieldRowContainer = ({
                     colorTheme={colorTheme}
                     responseMode={responseMode}
                     sourceBadge={sourceBadge}
+                    loginBadge={loginBadge}
                   />
                 </FormProvider>
               </Box>
@@ -525,6 +528,7 @@ type FieldRowProps = {
   colorTheme?: FormColorTheme
   responseMode: FormResponseMode
   sourceBadge?: string
+  loginBadge?: string
 }
 
 const FieldRow = ({ field, ...rest }: FieldRowProps) => {

@@ -36,6 +36,17 @@ export const LOGIN_IDENTITY_SOURCES: Record<LoginIdentityAttribute, string> = {
   [CorppassAttribute.Uid]: 'Myinfo',
 }
 
+/**
+ * The login that fills the field, shown on NRIC/FIN fields only, since both
+ * Singpass and Corppass have one.
+ */
+export const LOGIN_IDENTITY_LOGINS: Partial<
+  Record<LoginIdentityAttribute, string>
+> = {
+  [MyInfoAttribute.UinFin]: 'Singpass',
+  [CorppassAttribute.Uid]: 'Corppass',
+}
+
 /** The identity the respondent's login fills into this field, if any. */
 export const getLoginIdentityAttr = (
   field: LoginIdentityCandidate,

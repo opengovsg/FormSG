@@ -19,6 +19,7 @@ export const NricField = ({
   disableRequiredValidation,
   isHighContrast,
   sourceBadge,
+  loginBadge,
 }: NricFieldProps): JSX.Element => {
   const validationRules = useNricValidationRules(
     schema,
@@ -32,6 +33,7 @@ export const NricField = ({
       schema={schema}
       isHighContrast={isHighContrast}
       sourceBadge={sourceBadge}
+      loginBadge={loginBadge}
     >
       <Input
         aria-label={`${schema.questionNumber}. ${schema.title}`}

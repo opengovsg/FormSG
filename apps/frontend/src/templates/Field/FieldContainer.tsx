@@ -6,7 +6,7 @@
  */
 import { FieldError, useFormState } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { Box, FormControl, Grid } from '@chakra-ui/react'
+import { FormControl, Grid, HStack } from '@chakra-ui/react'
 import { get } from 'lodash'
 
 import { FormColorTheme, Language } from 'formsg-shared/types/form'
@@ -52,6 +52,12 @@ export type BaseFieldProps = {
   sourceBadge?: string
 
   /**
+   * Badge naming the login that fills the field, shown before `sourceBadge`,
+   * e.g. "Singpass" on the NRIC/FIN login identity field.
+   */
+  loginBadge?: string
+
+  /**
    * Optional specification for error message variant.
    */
   errorVariant?: 'white'
@@ -70,6 +76,7 @@ export const FieldContainer = ({
   children,
   errorKey,
   sourceBadge,
+  loginBadge,
   errorVariant,
   isHighContrast,
 }: FieldContainerProps): JSX.Element => {
@@ -115,12 +122,19 @@ export const FieldContainer = ({
         >
           {title}
         </FormLabel>
-        {sourceBadge && (
-          <Box gridArea="myinfobadge">
-            <Badge variant="subtle" colorScheme="secondary">
-              {sourceBadge}
-            </Badge>
-          </Box>
+        {(loginBadge || sourceBadge) && (
+          <HStack gridArea="myinfobadge" spacing="0.5rem" align="start">
+            {loginBadge && (
+              <Badge variant="subtle" colorScheme="secondary">
+                {loginBadge}
+              </Badge>
+            )}
+            {sourceBadge && (
+              <Badge variant="subtle" colorScheme="secondary">
+                {sourceBadge}
+              </Badge>
+            )}
+          </HStack>
         )}
       </Grid>
       {children}
