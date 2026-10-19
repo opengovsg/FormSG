@@ -98,8 +98,7 @@ export interface ResponsesResponsesPage {
         filter: string
         sort: string
         columns: string
-        checkAll: string
-        uncheckAll: string
+        all: string
       }
       downloadButton: {
         label: string

@@ -110,8 +110,7 @@ export const enSG: ResponsesResponsesPage = {
         filter: 'Filter',
         sort: 'Sort',
         columns: 'Columns',
-        checkAll: 'Check all',
-        uncheckAll: 'Uncheck all',
+        all: 'All',
       },
       downloadButton: {
         label: 'Download options',

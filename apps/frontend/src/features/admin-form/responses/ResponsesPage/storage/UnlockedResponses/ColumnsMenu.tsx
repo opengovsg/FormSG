@@ -1,11 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { BiColumns } from 'react-icons/bi'
-import { MenuButton, MenuList, Stack } from '@chakra-ui/react'
+import { Divider, MenuButton, MenuList, Stack } from '@chakra-ui/react'
 
 import Checkbox from '~components/Checkbox'
 import Menu from '~components/Menu'
 
-import { CheckAllFooter } from './CheckAllFooter'
 import { toolbarMenuButtonProps } from './toolbarButtonProps'
 import { useUnlockedResponses } from './UnlockedResponsesProvider'
 
@@ -21,6 +20,12 @@ export const ColumnsMenu = ({
     toggleColumnVisibility,
     setAllColumnsVisible,
   } = useUnlockedResponses()
+
+  const visibleCount = columnOptions.filter(
+    ({ id }) => !hiddenColumnIds.includes(id),
+  ).length
+  const allSelected =
+    columnOptions.length > 0 && visibleCount === columnOptions.length
 
   return (
     <Menu closeOnSelect={false} placement="bottom-end">
@@ -42,6 +47,19 @@ export const ColumnsMenu = ({
           />
           <MenuList display="flex" flexDirection="column" maxH="20rem" pb={0}>
             <Stack spacing={0} flex={1} minH={0} overflowY="auto">
+              <Checkbox
+                px="1rem"
+                py="0.75rem"
+                isChecked={allSelected}
+                isIndeterminate={visibleCount > 0 && !allSelected}
+                isDisabled={columnOptions.length === 0}
+                onChange={() => setAllColumnsVisible(!allSelected)}
+              >
+                {t(
+                  'features.adminForm.responses.responsesPage.storage.unlockedResponses.toolbar.all',
+                )}
+              </Checkbox>
+              <Divider />
               {columnOptions.map(({ id, label }) => (
                 <Checkbox
                   key={id}
@@ -54,10 +72,6 @@ export const ColumnsMenu = ({
                 </Checkbox>
               ))}
             </Stack>
-            <CheckAllFooter
-              onCheckAll={() => setAllColumnsVisible(true)}
-              onUncheckAll={() => setAllColumnsVisible(false)}
-            />
           </MenuList>
         </>
       )}
