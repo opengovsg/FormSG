@@ -48,12 +48,21 @@ jobs:
               - *ci
               - packages/react-email-preview/**
 
+  # The full story suite takes ~15 minutes on one runner, so it is sharded.
+  # Each shard builds Storybook on its own to pick the same affected stories;
+  # only shard 1 deploys it. Shards upload as one parallel Argos build, which
+  # argos-frontend-finalize closes.
   argos-frontend:
+    name: argos-frontend (${{ matrix.shard }}/${{ strategy.job-total }})
     needs: changes
     if: ${{ needs.changes.outputs.frontend == 'true' && !startsWith(github.head_ref, 'dependabot/') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     # A newer push to the same PR cancels this run. develop builds never cancel.
     concurrency:
-      group: argos-frontend-${{ github.event_name == 'push' && github.sha || github.head_ref || github.ref_name }}
+      group: argos-frontend-${{ matrix.shard }}-${{ github.event_name == 'push' && github.sha || github.head_ref || github.ref_name }}
       cancel-in-progress: ${{ github.event_name != 'push' }}
     runs-on: ubuntu-latest
     defaults:
@@ -86,9 +95,12 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
       # The module graph (preview-stats.json) is what picks the affected stories.
+      # develop runs everything, so only shard 1 builds it there, to deploy.
       - name: Build Storybook
+        if: ${{ github.event_name == 'pull_request' || matrix.shard == 1 }}
         run: pnpm exec storybook build --stats-json
       - name: Verify story selection
+        if: ${{ github.event_name == 'pull_request' && matrix.shard == 1 }}
         run: node --test scripts/storybook-affected.check.mjs
       - name: Select affected stories
         id: scope
@@ -108,35 +120,50 @@ jobs:
         run: |
           rm -rf screenshots
           if [ "$FULL" = true ]; then
-            pnpm test-storybook
+            pnpm test-storybook --shard "$SHARD/4"
           elif [ -n "$STORIES" ]; then
             # shellcheck disable=SC2086
-            pnpm test-storybook $STORIES
+            pnpm test-storybook --shard "$SHARD/4" $STORIES
           fi
         env:
           FULL: ${{ steps.scope.outputs.full }}
           STORIES: ${{ steps.scope.outputs.stories }}
+          SHARD: ${{ matrix.shard }}
       - name: Upload screenshots to Argos
         run: |
           if find screenshots -type f -name '*.png' -print -quit 2>/dev/null | grep -q .; then
-            pnpm exec argos upload ./screenshots
+            pnpm exec argos upload ./screenshots --parallel --parallel-nonce "$ARGOS_NONCE"
           elif [ "$FULL" = true ]; then
-            echo "::error::The full Storybook suite produced no screenshots"
+            echo "::error::A shard of the full Storybook suite produced no screenshots"
             exit 1
-          else
-            pnpm exec argos skip
           fi
+          # A shard with no affected stories uploads nothing; finalize skips an
+          # empty build.
         env:
           ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
           ARGOS_BUILD_NAME: frontend
+          ARGOS_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
           # Subset builds ignore missing screenshots and never become baselines.
           ARGOS_SUBSET: ${{ steps.scope.outputs.full != 'true' }}
           FULL: ${{ steps.scope.outputs.full }}
       - name: Deploy Storybook to Argos
-        if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+        if: ${{ matrix.shard == 1 && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository) }}
         run: pnpm exec argos deploy ./storybook-static
         env:
           ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+
+  argos-frontend-finalize:
+    needs: argos-frontend
+    if: ${{ !cancelled() && needs.argos-frontend.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      # Version matches the lockfile; no checkout or install needed.
+      - name: Finalize the Argos build
+        run: npx --yes @argos-ci/cli@6.9.6 finalize --parallel-nonce "$ARGOS_NONCE" --skip-if-empty
+        env:
+          ARGOS_TOKEN: ${{ secrets.ARGOS_TOKEN }}
+          ARGOS_BUILD_NAME: frontend
+          ARGOS_NONCE: ${{ github.run_id }}-${{ github.run_attempt }}
 
   argos-emailpreview:
     needs: changes
