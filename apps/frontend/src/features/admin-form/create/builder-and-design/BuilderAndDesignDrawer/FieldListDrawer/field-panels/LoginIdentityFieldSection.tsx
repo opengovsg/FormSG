@@ -17,6 +17,7 @@ import { useCreateTabForm } from '../../../useCreateTabForm'
 import { DraggableLoginIdentityFieldListOption } from '../FieldListOption'
 
 import { FieldSection } from './FieldSection'
+import { useLoginFieldLimit } from './useLoginFieldLimit'
 import { useOfferedLoginIdentityAttrs } from './useOfferedLoginIdentityAttrs'
 
 // Trans fills in the link text from the translation.
@@ -39,13 +40,28 @@ const ConvertFirstText = () => {
   )
 }
 
-const MessageBox = ({ children }: { children: ReactNode }) => (
+const MessageBox = ({
+  children,
+  variant = 'info',
+}: {
+  children: ReactNode
+  variant?: 'info' | 'error'
+}) => (
   <Box px="1.5rem" pt="2rem" pb="1.5rem">
-    <InlineMessage variant="info">
+    <InlineMessage variant={variant}>
       <Text>{children}</Text>
     </InlineMessage>
   </Box>
 )
+
+/** The shared MyInfo and identity field limit, with the form's usage. */
+export const LoginFieldLimitText = (): JSX.Element => {
+  const { t } = useTranslation('translation', {
+    keyPrefix: 'features.adminForm.sidebar.fields.loginIdentity',
+  })
+  const { count, max } = useLoginFieldLimit()
+  return <>{t('fieldLimit', { count, max })}</>
+}
 
 /** The info box at the top of a login's field panel, like the MyInfo panel's. */
 export const LoginIdentityMessage = ({
@@ -61,14 +77,20 @@ export const LoginIdentityMessage = ({
     keyPrefix: 'features.adminForm.sidebar.fields.loginIdentity',
   })
   const { data: form } = useCreateTabForm()
+  const { isAtLimit } = useLoginFieldLimit()
   if (!form) return null
 
   const isLoginMissing = !getLoginIdentityAttrsForAuthType(
     form.authType,
   ).includes(attrs[0])
+  const isConvertFirst = !isLoginMissing && form.isSubmitterIdCollectionEnabled
 
   return (
-    <MessageBox>
+    <MessageBox
+      variant={
+        isAtLimit && !isLoginMissing && !isConvertFirst ? 'error' : 'info'
+      }
+    >
       {isLoginMissing ? (
         <Trans
           t={t}
@@ -76,10 +98,12 @@ export const LoginIdentityMessage = ({
           values={{ loginName }}
           components={{ settingsLink: <SettingsLink /> }}
         />
-      ) : form.isSubmitterIdCollectionEnabled ? (
+      ) : isConvertFirst ? (
         <ConvertFirstText />
       ) : (
-        info
+        <>
+          {info} <LoginFieldLimitText />
+        </>
       )}
     </MessageBox>
   )
@@ -103,6 +127,7 @@ export const LoginIdentityFieldSection = ({
     keyPrefix: 'features.adminForm.sidebar.fields.loginIdentity',
   })
   const { data: form, isLoading } = useCreateTabForm()
+  const { isAtLimit } = useLoginFieldLimit()
 
   const filteredAttrs = useOfferedLoginIdentityAttrs(attrs, searchValue)
   if (!form || filteredAttrs.length === 0) return null
@@ -111,7 +136,8 @@ export const LoginIdentityFieldSection = ({
     form.authType,
   ).includes(attrs[0])
   const isCollectedBySettings = form.isSubmitterIdCollectionEnabled
-  const isSectionDisabled = isLoading || isLoginMissing || isCollectedBySettings
+  const isSectionDisabled =
+    isLoading || isLoginMissing || isCollectedBySettings || isAtLimit
 
   const options = filteredAttrs.map(({ attr, originalIndex }) => (
     <DraggableLoginIdentityFieldListOption
