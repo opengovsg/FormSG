@@ -41,6 +41,7 @@ import { isDev } from '../../../config/config'
 import { paymentConfig } from '../../../config/features/payment.config'
 import formsgSdk from '../../../config/formsg-sdk'
 import { createLoggerWithLabel } from '../../../config/logger'
+import { isValidSubmittedAnswerV4 } from '../../../utils/field-validation/response-shape-validator'
 import {
   getLogicUnitPreventingSubmitV3,
   getVisibleFieldIdsV3,
@@ -112,7 +113,9 @@ const multirespondentSubmissionBodySchema = Joi.object({
   responses: Joi.object().pattern(
     /^[a-fA-F0-9]{24}$/,
     Joi.object({
-      fieldType: Joi.string().valid(...Object.values(BasicField)),
+      fieldType: Joi.string()
+        .valid(...Object.values(BasicField))
+        .required(),
       answer: Joi.required(),
       question: Joi.any().strip(),
       // Provenance is server-owned: strip every client-supplied key. In
@@ -120,7 +123,14 @@ const multirespondentSubmissionBodySchema = Joi.object({
       // must never be client-suppliable.
       provenance: Joi.object({}).default({}).options({ stripUnknown: true }),
       myInfo: Joi.object({ attr: Joi.string().required() }).optional(),
-    }),
+    }).custom(
+      (response: { fieldType: BasicField; answer: unknown }, helpers) => {
+        // Run before scanning and logic adaptation, both of which consume answers.
+        return isValidSubmittedAnswerV4(response.fieldType, response.answer)
+          ? response
+          : helpers.error('any.invalid')
+      },
+    ),
   ),
   responseMetadata: Joi.object({
     responseTimeMs: Joi.number(),

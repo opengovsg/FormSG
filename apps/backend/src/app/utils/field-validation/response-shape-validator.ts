@@ -81,3 +81,20 @@ export const validateResponseShapeV4: ResponseValidator<
     ? right(response)
     : left(`Invalid answer shape for field type ${response.fieldType}`)
 }
+
+// The receiver supplies the uploaded filename before request validation.
+// Scanning promotes it to the durable answer value, so it must be present.
+const submittedAttachmentAnswer = answerSchemas[BasicField.Attachment].extend({
+  filename: z.string().min(1),
+})
+
+export const isValidSubmittedAnswerV4 = (
+  fieldType: BasicField,
+  answer: unknown,
+): boolean => {
+  const schema =
+    fieldType === BasicField.Attachment
+      ? submittedAttachmentAnswer
+      : answerSchemas[fieldType]
+  return schema.safeParse(answer).success
+}

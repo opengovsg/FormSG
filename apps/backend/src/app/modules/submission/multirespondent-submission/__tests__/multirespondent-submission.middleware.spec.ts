@@ -4,6 +4,7 @@ import {
   isFieldResponsesV4,
 } from '@opengovsg/formsg-sdk/adapters'
 import { ObjectId } from 'bson'
+import { isCelebrateError } from 'celebrate'
 import { featureFlags } from 'formsg-shared/constants'
 import {
   BasicField,
@@ -42,7 +43,9 @@ import {
   scanAndRetrieveAttachments,
   validateMultirespondentRemindBody,
   validateMultirespondentSubmission,
+  validateMultirespondentSubmissionParams,
   validatePaymentSubmission,
+  validateUpdateMultirespondentSubmissionParams,
   verifyLoginIdentityAnswers,
   verifyMyInfoHashes,
 } from '../multirespondent-submission.middleware'
@@ -100,6 +103,63 @@ jest.mock('src/app/config/formsg-sdk', () => ({
 }))
 
 describe('Multirespondent Submission Middleware', () => {
+  describe.each([
+    ['create', validateMultirespondentSubmissionParams],
+    ['update', validateUpdateMultirespondentSubmissionParams],
+  ] as const)('%s request validation', (route, validator) => {
+    const runValidator = (response: unknown) => {
+      const req = {
+        method: 'POST',
+        headers: {},
+        query: {},
+        params: {},
+        body: {
+          version: 4,
+          responses: { '507f1f77bcf86cd799439011': response },
+          ...(route === 'update' && { submissionSecretKey: 'key' }),
+        },
+      }
+      return new Promise<unknown>((resolve) =>
+        validator(req as any, {} as any, resolve),
+      )
+    }
+
+    it.each([
+      null,
+      { answer: { value: '' } },
+      { fieldType: BasicField.ShortText, answer: null },
+      { fieldType: BasicField.Attachment, answer: { hasBeenScanned: false } },
+      {
+        fieldType: BasicField.Attachment,
+        answer: { value: 'quarantine-key', hasBeenScanned: false },
+      },
+      { fieldType: BasicField.Table, answer: { row: { rowNum: 0 } } },
+      { fieldType: BasicField.Address, answer: {} },
+      { fieldType: BasicField.Children, answer: { child: null } },
+    ])(
+      'rejects malformed responses before scanning or logic evaluation: %p',
+      async (response) => {
+        expect(isCelebrateError(await runValidator(response))).toBe(true)
+      },
+    )
+
+    it.each([
+      { fieldType: BasicField.ShortText, answer: { value: '' } },
+      { fieldType: BasicField.Checkbox, answer: { value: [] } },
+      {
+        fieldType: BasicField.Attachment,
+        answer: {
+          value: 'quarantine-key',
+          hasBeenScanned: false,
+          filename: 'report.pdf',
+          content: Buffer.alloc(0),
+        },
+      },
+    ])('accepts valid responses: %p', async (response) => {
+      expect(await runValidator(response)).toBeFalsy()
+    })
+  })
+
   describe('scanAndRetrieveAttachments', () => {
     afterEach(() => jest.restoreAllMocks())
 
