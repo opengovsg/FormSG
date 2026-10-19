@@ -1,4 +1,5 @@
 import { CSSProperties, useCallback, useEffect, useMemo, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
   CellProps,
@@ -41,6 +42,7 @@ import {
   hasWorkflowSubmission,
   MRF_STATUS,
 } from '~features/admin-form/responses/common/utils/mrfSubmissionView'
+import { getFieldColumnHeader } from '~features/admin-form/responses/common/utils/questionLabel'
 import {
   matchesSearchQuery,
   normaliseSearchQuery,
@@ -70,6 +72,7 @@ import { useUnlockedResponses } from '../UnlockedResponsesProvider'
 
 import { SendReminderButton } from './SendReminderButton'
 import {
+  FieldColumnSource,
   getFieldColumnSources,
   getIsPaymentsForm,
   getNetAmount,
@@ -335,6 +338,8 @@ export const ResponsesTable = () => {
     setVisibleSubmissionIds,
   } = useUnlockedResponses()
   const isDelightfulDashboard = useIsDelightfulDashboard()
+  const { t } = useTranslation()
+  const verifiedLabel = t('features.common.verified')
 
   const { data: responsesBySubmissionId, isFetching: isDecrypting } =
     useDecryptedResponsesBySubmissionId({ enabled: isDelightfulDashboard })
@@ -384,6 +389,18 @@ export const ResponsesTable = () => {
     })
   }, [form, isDelightfulDashboard, metadata, responsesBySubmissionId])
 
+  // A field still on the form is labelled as the drawer labels it; a deleted
+  // field keeps the question its newest response stored, prefix included.
+  const getFieldColumnLabel = useCallback(
+    (source: FieldColumnSource) => {
+      const formField = form?.form_fields.find(({ _id }) => _id === source.id)
+      return formField
+        ? getFieldColumnHeader(formField, verifiedLabel)
+        : source.title
+    },
+    [form, verifiedLabel],
+  )
+
   const prefixColumns = useMemo(() => {
     if (hasWorkflow) return WORKFLOW_PREFIX_COLUMNS
     return isPaymentsForm
@@ -394,7 +411,7 @@ export const ResponsesTable = () => {
   const fieldColumns = useMemo((): Column<ResponseColumnData>[] => {
     return fieldColumnSources.map((formField) => ({
       id: formField.id,
-      Header: formField.title,
+      Header: getFieldColumnLabel(formField),
       accessor: ({ refNo }: ResponseColumnData) => {
         const responses = responsesBySubmissionId?.get(refNo)
         if (!responses) return undefined
@@ -419,7 +436,12 @@ export const ResponsesTable = () => {
       minWidth: 120,
       maxWidth: 400,
     }))
-  }, [fieldColumnSources, isDecrypting, responsesBySubmissionId])
+  }, [
+    fieldColumnSources,
+    getFieldColumnLabel,
+    isDecrypting,
+    responsesBySubmissionId,
+  ])
 
   const columns = useMemo(() => {
     if (!isDelightfulDashboard) return legacyColumns
@@ -456,8 +478,18 @@ export const ResponsesTable = () => {
         label: String(column.Header),
       }))
       .filter(({ id }) => id !== RESPONSE_NUMBER_COLUMN_ID)
-      .concat(fieldColumnSources.map(({ id, title }) => ({ id, label: title })))
-  }, [fieldColumnSources, isDelightfulDashboard, prefixColumns])
+      .concat(
+        fieldColumnSources.map((source) => ({
+          id: source.id,
+          label: getFieldColumnLabel(source),
+        })),
+      )
+  }, [
+    fieldColumnSources,
+    getFieldColumnLabel,
+    isDelightfulDashboard,
+    prefixColumns,
+  ])
 
   useEffect(() => {
     setColumnOptions(columnOptions)
