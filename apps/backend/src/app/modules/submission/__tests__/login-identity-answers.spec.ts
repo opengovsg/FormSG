@@ -77,7 +77,7 @@ describe('checkLoginIdentityAnswers', () => {
 })
 
 describe('prefixLoginIdentityQuestions', () => {
-  it('marks verified identity answers by their source', () => {
+  it('marks verified Singpass and Corppass identity answers [Myinfo]', () => {
     const responses = [
       { _id: 'nric', question: 'NRIC/FIN' },
       { _id: 'uid', question: 'NRIC/FIN' },
@@ -91,8 +91,8 @@ describe('prefixLoginIdentityQuestions', () => {
     )
     expect(responses.map(({ question }) => question)).toEqual([
       '[Myinfo] NRIC/FIN',
-      '[Corppass] NRIC/FIN',
-      '[Corppass] UEN',
+      '[Myinfo] NRIC/FIN',
+      '[Myinfo] UEN',
       'Your NRIC',
     ])
   })

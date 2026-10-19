@@ -73,8 +73,8 @@ export const checkLoginIdentityAnswers = (
 
 /**
  * Marks verified identity answers, as storage mode marks MyInfo answers:
- * `[Myinfo] NRIC/FIN`, `[Corppass] NRIC/FIN` or `[Corppass] UEN`. Mutates the
- * responses in place.
+ * `[Myinfo] NRIC/FIN` or `[Myinfo] UEN`, for Singpass and Corppass alike.
+ * Mutates the responses in place.
  */
 export const prefixLoginIdentityQuestions = (
   responses: readonly { _id: string; question: string }[],

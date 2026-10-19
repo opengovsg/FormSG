@@ -1,7 +1,6 @@
 import { GrowthBook } from '@growthbook/growthbook'
 import { featureFlags } from 'formsg-shared/constants/feature-flags'
 import { FormResponseMode, PaymentChannel } from 'formsg-shared/types'
-import { CORPPASS_QUESTION_PREFIX } from 'formsg-shared/utils/myinfo-prefix'
 import mongoose from 'mongoose'
 import { err, ok, okAsync, Result, ResultAsync } from 'neverthrow'
 import Mail from 'nodemailer/lib/mailer'
@@ -265,18 +264,15 @@ export const performEncryptPostSubmissionActions = ({
         new Set(), // the MyInfo prefixes are already inserted in middleware
         form.authType,
       )
-      // Since we insert the [Myinfo] and [Corppass] prefixes in
-      // `encrypt-submission.middleware.ts`, we want to remove them for the
+      // Since we insert the [Myinfo] prefix in
+      // `encrypt-submission.middleware.ts`, we want to remove it for the
       // dataCollationData
-      const formattedDataCollationData = dataCollationData.map((item) => {
-        const prefix = [MYINFO_PREFIX, CORPPASS_QUESTION_PREFIX].find(
-          (verifiedPrefix) => item.question.startsWith(verifiedPrefix),
-        )
-        return {
-          question: prefix ? item.question.slice(prefix.length) : item.question,
-          answer: item.answer,
-        }
-      })
+      const formattedDataCollationData = dataCollationData.map((item) => ({
+        question: item.question.startsWith(MYINFO_PREFIX)
+          ? item.question.slice(MYINFO_PREFIX.length)
+          : item.question,
+        answer: item.answer,
+      }))
       const recipientEmailDatas = [
         ...extractEmailConfirmationData(responses, form.form_fields),
         ...respondentCopyEmailData,

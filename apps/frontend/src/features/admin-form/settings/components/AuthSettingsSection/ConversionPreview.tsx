@@ -6,6 +6,7 @@ import { Box, ButtonGroup, HStack, Stack, Text } from '@chakra-ui/react'
 import { BasicField } from 'formsg-shared/types/field'
 import {
   createLoginIdentityField,
+  LOGIN_IDENTITY_LOGINS,
   LOGIN_IDENTITY_SOURCES,
   LoginIdentityAttribute,
 } from 'formsg-shared/utils/login-identity'
@@ -105,6 +106,7 @@ export const ConversionPreview = ({
                       key={attr}
                       schema={schema}
                       sourceBadge={sourceBadge}
+                      loginBadge={LOGIN_IDENTITY_LOGINS[attr]}
                       isHighContrast
                     />
                   )

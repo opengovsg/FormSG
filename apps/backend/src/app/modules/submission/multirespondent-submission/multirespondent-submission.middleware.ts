@@ -973,7 +973,7 @@ export const verifyMyInfoHashes = async (
 /**
  * Checks Step 1 login identity answers against the login, like
  * verifyMyInfoHashes. Verified fields join myInfoReadOnlyFields, so outputs
- * mark them `[Myinfo]` or `[Corppass]`. Must run before encryptSubmission.
+ * mark them `[Myinfo]`. Must run before encryptSubmission.
  */
 export const verifyLoginIdentityAnswers = async (
   req: ProcessedMultirespondentSubmissionHandlerRequest,
