@@ -185,6 +185,20 @@ describe('sendBackMultirespondentSubmission', () => {
     )
   })
 
+  it('rejects a workflow whose recorded steps fall behind its step', async () => {
+    // Under way before submittedSteps was recorded: 4 steps submitted and
+    // step 5 pending, but only 3 are recorded, so it looks pending at step 4.
+    const submission = await createSubmission({ workflowStep: 3 })
+
+    const result = await sendBack(submission._id, 2)
+
+    expect(result._unsafeUnwrapErr()).toBeInstanceOf(MrfWorkflowNotPendingError)
+    const stored = await MultirespondentSubmission.findById(submission._id)
+    expect(stored?.submittedSteps).toHaveLength(3)
+    expect(stored?.workflowStep).toBe(3)
+    expect(stored?.workflowEvents ?? []).toHaveLength(0)
+  })
+
   it('replaces the step link token so the old link stops working', async () => {
     const submission = await createSubmission()
 
