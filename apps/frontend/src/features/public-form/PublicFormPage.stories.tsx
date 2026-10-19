@@ -1016,8 +1016,6 @@ WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.parameters = {
 }
 WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.globals =
   getMobileViewGlobals()
-WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.globals =
-  getMobileViewGlobals()
 WithSaveDraftEnabledAndClickFormHeaderSaveDraftButtonMobile.play = async ({
   step,
 }) => {
